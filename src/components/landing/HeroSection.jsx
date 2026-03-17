@@ -224,7 +224,7 @@ export default function HeroSection() {
 
             {/* Infra score mini card */}
             <motion.div
-              className="rounded-xl border border-border/50 bg-card p-4 flex items-center gap-4"
+              className="rounded-xl border border-border/50 bg-card p-4 flex items-center gap-3.5"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2, duration: 0.5 }}
@@ -241,12 +241,12 @@ export default function HeroSection() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[11px] font-black text-orange-500">57</span>
+                  <span className="text-sm font-black text-orange-500">57</span>
                 </div>
               </div>
-              <div className="flex-1">
-                <p className="text-xs font-semibold">Infrastructure Score: <span className="text-orange-500">57/100</span></p>
-                <p className="text-[10px] text-muted-foreground/50">Under-optimized — potential: 84/100 with THE NoDE</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold">Infrastructure Score: <span className="text-orange-500 font-black">57/100</span></p>
+                <p className="text-[10px] text-muted-foreground/50 leading-tight">Your potential: 84/100 · See how</p>
               </div>
             </motion.div>
 
