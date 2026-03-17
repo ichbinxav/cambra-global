@@ -109,11 +109,11 @@ function StepWelcome() {
       </div>
 
       <div>
-        <h1 className="text-[clamp(2.2rem,7vw,4rem)] font-black tracking-[-0.05em] leading-[0.9] mb-4">
-          Stop overpaying<br />for infrastructure.
+        <h1 className="text-[clamp(2rem,7vw,4rem)] font-black tracking-[-0.05em] leading-[0.88] mb-4">
+          Stop overpaying<br />infrastructure.<br />Join THE NoDE.
         </h1>
         <p className="text-muted-foreground text-base leading-relaxed max-w-xs mx-auto">
-          In 3 steps, discover how much you can save — and unlock network deals unavailable to individual brands.
+          Unlock margin. Scale your business.
         </p>
       </div>
 

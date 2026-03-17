@@ -41,11 +41,14 @@ export default function HeroSection() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-[clamp(3rem,8.5vw,7.5rem)] font-black tracking-[-0.05em] leading-[0.86] mb-6">
-              Unlock your<br />
-              margin.<br />
-              Scale smarter.
+            <h1 className="text-[clamp(2.4rem,7vw,6.5rem)] font-black tracking-[-0.05em] leading-[0.86] mb-6">
+              Stop overpaying<br />
+              infrastructure.<br />
+              Join THE NoDE.
             </h1>
+            <p className="text-[clamp(1rem,2.5vw,1.4rem)] font-black tracking-[-0.02em] text-muted-foreground/60 leading-tight mb-4 -mt-2">
+              Unlock margin. Scale your business.
+            </p>
 
             <p className="text-[clamp(1rem,2vw,1.2rem)] text-muted-foreground leading-relaxed mb-10 max-w-[420px]">
               The infrastructure layer behind independent brands. Benchmark, optimize, and reduce your costs across payments, shipping, and tools.
