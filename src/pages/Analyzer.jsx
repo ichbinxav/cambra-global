@@ -45,9 +45,9 @@ const STEPS = [
     icon: Package,
   },
   {
-    title: "Upload statements",
-    sub: "Optional but recommended — for a more precise, AI-powered analysis.",
-    why: "Real invoices allow us to extract exact rates and surface hidden charges.",
+    title: "Connect your data",
+    sub: "Choose how you want to provide your infrastructure data for the most accurate analysis.",
+    why: "More connected data = sharper benchmarks and larger identified savings.",
     icon: Upload,
   },
 ];
@@ -377,57 +377,14 @@ export default function Analyzer() {
       );
 
       case 6: return (
-        <div className="space-y-5">
-          <div className="p-4 rounded-xl bg-secondary/40 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">What we extract:</strong> GMV, payment fees, effective rates, shipping patterns, SaaS spend, provider names, and recurring cost signals. Your data is encrypted and never shared without consent.
-          </div>
-
-          {!uploadedFile ? (
-            <div
-              className="border-2 border-dashed border-border/50 rounded-2xl p-8 text-center hover:border-foreground/20 transition-colors cursor-pointer"
-              onClick={() => fileRef.current?.click()}
-              onDragOver={e => e.preventDefault()}
-              onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleUpload(f); }}
-            >
-              {uploading ? (
-                <div className="space-y-3">
-                  <div className="w-8 h-8 rounded-full border-2 border-foreground/20 border-t-foreground animate-spin mx-auto" />
-                  <p className="text-sm text-muted-foreground">Uploading...</p>
-                  <div className="h-1.5 rounded-full bg-secondary overflow-hidden max-w-[200px] mx-auto">
-                    <div className="h-full bg-foreground transition-all duration-200 rounded-full" style={{ width: `${uploadProgress}%` }} />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mx-auto">
-                    <Upload size={20} className="text-muted-foreground/50" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold mb-1">Drop your file here, or click to upload</p>
-                    <p className="text-[11px] text-muted-foreground/50">PDF, Excel, CSV, or images · Max 20MB</p>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground/40">Stripe statements · Shopify exports · Carrier invoices · SaaS billing</p>
-                </div>
-              )}
-              <input ref={fileRef} type="file" className="hidden" accept=".pdf,.xls,.xlsx,.csv,.png,.jpg,.jpeg" onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); }} />
-            </div>
-          ) : (
-            <div className="flex items-center gap-4 p-4 rounded-xl border border-green-500/25 bg-green-500/[0.04]">
-              <CheckCircle2 size={16} className="text-green-500 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{uploadedFile.name}</p>
-                <p className="text-[11px] text-muted-foreground/50">Uploaded · AI analysis included in your results</p>
-              </div>
-              <button onClick={() => setUploadedFile(null)} className="text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0 p-1">
-                <X size={14} />
-              </button>
-            </div>
-          )}
-
-          <p className="text-center text-[11px] text-muted-foreground/40">
-            Skip this step — we can still generate accurate estimates from your inputs above.
-          </p>
-        </div>
+        <DataIngestionStep
+          uploadedFile={uploadedFile}
+          setUploadedFile={setUploadedFile}
+          uploading={uploading}
+          uploadProgress={uploadProgress}
+          fileRef={fileRef}
+          handleUpload={handleUpload}
+        />
       );
 
       default: return null;
