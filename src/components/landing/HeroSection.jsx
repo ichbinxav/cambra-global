@@ -78,13 +78,16 @@ export default function HeroSection() {
             {/* Pricing pill — FREE */}
             <motion.div
               variants={fadeUp}
-              className="inline-flex items-center gap-3 mb-7 px-5 py-3 rounded-full bg-foreground text-background"
+              className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-5 py-4 rounded-full bg-foreground text-background"
             >
-              <span className="text-sm text-background/40 line-through font-light">€120/mo</span>
-              <span className="text-sm font-black">Free for early partners</span>
-              <span className="hidden sm:inline text-background/40 text-xs">· You only pay when your economics improve.</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-background/40 line-through font-light">€120/month</span>
+                <span className="text-xl sm:text-lg font-black">Free</span>
+              </div>
+              <span className="hidden sm:inline text-background/40">·</span>
+              <span className="text-sm text-background/70">Early partners only</span>
             </motion.div>
-            <motion.p variants={fadeUp} className="sm:hidden text-[11px] text-muted-foreground/50 mb-7 -mt-4">
+            <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/50 mb-8">
               You only pay when your economics improve.
             </motion.p>
 
