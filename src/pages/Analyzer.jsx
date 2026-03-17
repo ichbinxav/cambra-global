@@ -471,7 +471,7 @@ export default function Analyzer() {
         {step < STEPS.length - 1 ? (
           <Button
             onClick={() => setStep(s => s + 1)}
-            className="h-12 rounded-full px-8 text-sm font-bold shadow-sm gap-2"
+            className="h-12 rounded-full px-6 sm:px-8 text-sm font-bold shadow-sm gap-2"
           >
             Continue
             <ArrowRight className="h-4 w-4" />
