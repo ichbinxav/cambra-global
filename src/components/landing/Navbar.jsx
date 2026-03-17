@@ -14,6 +14,7 @@ const NAV = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
