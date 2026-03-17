@@ -11,8 +11,7 @@ const NAV = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const open = menuOpen;
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
@@ -61,7 +60,7 @@ export default function Navbar() {
         {/* Mobile toggle */}
         <button
           className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
-          onClick={() => setOpen(o => !o)}
+          onClick={() => setOpen(v => !v)}
           aria-label="Toggle menu"
         >
           {open ? <X size={18} /> : <Menu size={18} />}
