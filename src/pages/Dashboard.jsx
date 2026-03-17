@@ -30,6 +30,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4">
+      {/* Data quality banner — shown when results exist but are based on manual data */}
+      {latest && <DataQualityBanner variant="banner" />}
+
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
