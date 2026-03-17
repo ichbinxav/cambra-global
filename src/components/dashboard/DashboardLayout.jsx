@@ -25,7 +25,7 @@ export default function DashboardLayout() {
       <aside className="hidden lg:flex flex-col w-56 border-r border-border/40 shrink-0 bg-background/98">
         <div className="px-5 h-14 flex items-center border-b border-border/40">
           <Link to="/" className="text-sm font-black tracking-tight group flex items-center gap-1.5">
-            THE N✱DE
+            THE NoDE
             <ArrowUpRight size={11} className="text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
           </Link>
         </div>
@@ -71,7 +71,7 @@ export default function DashboardLayout() {
 
       {/* Mobile header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 h-14 border-b border-border/40 bg-background/95 backdrop-blur-2xl">
-        <Link to="/" className="text-sm font-black tracking-tight">THE N✱DE</Link>
+        <Link to="/" className="text-sm font-black tracking-tight">THE NoDE</Link>
         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
         </Button>
