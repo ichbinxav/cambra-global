@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BarChart3, Users, Zap, FileText, Settings, Menu, X, LogOut, ArrowUpRight } from "lucide-react";
+import { LayoutDashboard, BarChart3, Users, Zap, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Plug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { path: "/Network", label: "Network", icon: Users },
   { path: "/Deals", label: "Deals", icon: Zap },
   { path: "/Insights", label: "Insights", icon: FileText },
+  { path: "/ConnectTools", label: "Data sources", icon: Plug },
   { path: "/Account", label: "Account", icon: Settings },
 ];
 
