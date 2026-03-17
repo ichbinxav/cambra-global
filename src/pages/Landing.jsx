@@ -4,6 +4,7 @@ import ProblemSection from "@/components/landing/ProblemSection";
 import SolutionSection from "@/components/landing/SolutionSection";
 import HowSection from "@/components/landing/HowSection";
 import AnalyzerCTA from "@/components/landing/AnalyzerCTA";
+import IntegrationsSection from "@/components/landing/IntegrationsSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FooterSection from "@/components/landing/FooterSection";
@@ -18,6 +19,7 @@ export default function Landing() {
       <SolutionSection />
       <HowSection />
       <AnalyzerCTA />
+      <IntegrationsSection />
       <TestimonialsSection />
       <PricingSection />
       <FooterSection />
