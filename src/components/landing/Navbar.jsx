@@ -28,9 +28,14 @@ export default function Navbar() {
               Run Analyzer
             </Button>
           </Link>
-          <Link to="/Dashboard">
+          <Link to="/Onboarding">
             <Button size="sm" className="rounded-full text-xs tracking-wide">
-              Enter Network
+              Join THE NODE
+            </Button>
+          </Link>
+          <Link to="/Dashboard">
+            <Button variant="ghost" size="sm" className="rounded-full text-xs tracking-wide">
+              Dashboard →
             </Button>
           </Link>
         </div>
