@@ -46,7 +46,7 @@ export default function HeroSection() {
         style={{
           backgroundImage: "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
-          opacity: 0.008,
+          opacity: 0.004,
         }} />
 
       {/* Parallax watermark */}
@@ -84,11 +84,11 @@ export default function HeroSection() {
               >Join THE NoDE.</motion.span>
             </motion.h1>
 
-            <motion.p variants={fadeUp} className="text-[clamp(1rem,2.5vw,1.4rem)] font-black tracking-[-0.02em] text-muted-foreground/60 leading-tight mb-4 -mt-2">
+            <motion.p variants={fadeUp} className="text-[clamp(1rem,2.5vw,1.4rem)] font-black tracking-[-0.02em] text-foreground/70 leading-tight mb-4 -mt-2">
               Unlock margin. Scale your business.
             </motion.p>
 
-            <motion.p variants={fadeUp} className="text-[clamp(0.9rem,1.8vw,1.1rem)] text-muted-foreground leading-relaxed mb-10 max-w-[420px]">
+            <motion.p variants={fadeUp} className="text-[clamp(0.9rem,1.8vw,1.1rem)] text-foreground/75 leading-relaxed mb-10 max-w-[420px]">
               The infrastructure layer behind independent brands. Benchmark, optimize, and reduce your costs across payments, shipping, and tools.
             </motion.p>
 
