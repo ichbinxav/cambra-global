@@ -146,14 +146,14 @@ export default function HeroSection() {
           >
             {/* Overpaying alert */}
             <motion.div
-              className="flex items-center gap-3 p-4 rounded-xl border border-destructive/20 bg-destructive/[0.04]"
+              className="flex items-center gap-3 p-4 rounded-xl border border-red-600/30 bg-red-500/[0.08]"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
             >
-              <div className="w-2 h-2 rounded-full bg-destructive shrink-0" />
-              <p className="text-sm font-semibold text-foreground/80">Overpaying detected: <span className="text-destructive font-black">€81,400/year</span></p>
-              <TrendingDown size={13} className="text-destructive ml-auto shrink-0" />
+              <div className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
+              <p className="text-sm font-semibold text-foreground/85">Overpaying detected: <span className="text-red-600 font-black">€8,430/year</span></p>
+              <TrendingDown size={14} className="text-red-600 ml-auto shrink-0" />
             </motion.div>
 
             {/* Analyzer card */}
