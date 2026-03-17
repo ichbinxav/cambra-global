@@ -81,11 +81,11 @@ export default function HeroSection() {
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-[clamp(0.95rem,1.8vw,1.15rem)] text-foreground/70 leading-relaxed mb-6 max-w-[440px]">
-              The infrastructure, network, and intelligence layer that helps independent brands reduce costs, benchmark performance, and access better economics.
+              An infrastructure platform that pools independent brands into a single negotiation bloc — giving you the collective buying power of the largest groups, at every level of your business.
             </motion.p>
 
             <motion.p variants={fadeUp} className="text-[11px] font-bold tracking-[0.2em] uppercase text-muted-foreground/50 mb-10">
-              Network · Intelligence · Deals
+              Collective Power · Better Rates · Real Savings
             </motion.p>
 
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 mb-8">
