@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -32,7 +32,7 @@
     --chart-3: 0 0% 30%;
     --chart-4: 220 15% 55%;
     --chart-5: 0 0% 65%;
-    --radius: 0.5rem;
+    --radius: 0.625rem;
     --sidebar-background: 0 0% 99%;
     --sidebar-foreground: 0 0% 10%;
     --sidebar-primary: 222 47% 11%;
