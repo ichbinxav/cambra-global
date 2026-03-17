@@ -106,7 +106,7 @@ export default function ProblemSection() {
               transition={{ duration: 0.6, delay: 0.25 }}
               className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-xs"
             >
-              Large retailers negotiate rates well below market. You pay full price for the same infrastructure.
+              Retailers negotiate volume discounts. You negotiate alone. Same infrastructure. Very different pricing.
             </motion.p>
 
             <motion.div
