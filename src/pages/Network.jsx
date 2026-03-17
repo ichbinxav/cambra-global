@@ -70,7 +70,7 @@ export default function Network() {
           </SelectContent>
         </Select>
         <div className="flex items-center border border-border/60 rounded-lg overflow-hidden h-9">
-          {[{ v: "grid", Icon: LayoutGrid }, { v: "list", Icon: List }].map(({ v, Icon }) => (
+          {([{ v: "grid", icon: LayoutGrid }, { v: "list", icon: List }] ).map(({ v, icon: IconComp }) => (
             <button
               key={v}
               onClick={() => setView(v)}
