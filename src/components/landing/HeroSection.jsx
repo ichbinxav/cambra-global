@@ -50,7 +50,7 @@ export default function HeroSection() {
               Unlock margin. Scale your business.
             </p>
 
-            <p className="text-[clamp(1rem,2vw,1.2rem)] text-muted-foreground leading-relaxed mb-10 max-w-[420px]">
+            <p className="text-[clamp(0.9rem,1.8vw,1.1rem)] text-muted-foreground leading-relaxed mb-10 max-w-[420px]">
               The infrastructure layer behind independent brands. Benchmark, optimize, and reduce your costs across payments, shipping, and tools.
             </p>
 
