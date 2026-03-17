@@ -256,7 +256,7 @@ export default function HeroSection() {
             >Sample analysis · Independent brand · 2025</motion.p>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </section>
