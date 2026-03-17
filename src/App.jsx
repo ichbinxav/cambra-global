@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import AIChatBot from '@/components/shared/AIChatBot';
 
 import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding';
@@ -17,6 +18,8 @@ import Deals from '@/pages/Deals';
 import Insights from '@/pages/Insights';
 import InsightDetail from '@/pages/InsightDetail';
 import Account from '@/pages/Account';
+import Privacy from '@/pages/Privacy';
+import Terms from '@/pages/Terms';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 
 const AuthenticatedApp = () => {
@@ -25,41 +28,45 @@ const AuthenticatedApp = () => {
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center bg-background">
-        <div className="text-4xl animate-spin" style={{ animationDuration: "3s" }}>✱</div>
+        <div
+          className="text-4xl text-foreground/30 select-none"
+          style={{ animation: "spin 4s linear infinite" }}
+        >✱</div>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
-    }
+    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
+    if (authError.type === 'auth_required') { navigateToLogin(); return null; }
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/Landing" replace />} />
-      <Route path="/Landing" element={<Landing />} />
-      <Route path="/Onboarding" element={<Onboarding />} />
-      <Route path="/Analyzer" element={<Analyzer />} />
-      <Route path="/Results" element={<Results />} />
+    <>
+      <Routes>
+        <Route path="/" element={<Navigate to="/Landing" replace />} />
+        <Route path="/Landing" element={<Landing />} />
+        <Route path="/Onboarding" element={<Onboarding />} />
+        <Route path="/Analyzer" element={<Analyzer />} />
+        <Route path="/Results" element={<Results />} />
+        <Route path="/Privacy" element={<Privacy />} />
+        <Route path="/Terms" element={<Terms />} />
 
-      {/* Dashboard routes with layout */}
-      <Route element={<DashboardLayout />}>
-        <Route path="/Dashboard" element={<Dashboard />} />
-        <Route path="/Reports" element={<Reports />} />
-        <Route path="/Network" element={<Network />} />
-        <Route path="/Deals" element={<Deals />} />
-        <Route path="/Insights" element={<Insights />} />
-        <Route path="/InsightDetail" element={<InsightDetail />} />
-        <Route path="/Account" element={<Account />} />
-      </Route>
+        <Route element={<DashboardLayout />}>
+          <Route path="/Dashboard" element={<Dashboard />} />
+          <Route path="/Reports" element={<Reports />} />
+          <Route path="/Network" element={<Network />} />
+          <Route path="/Deals" element={<Deals />} />
+          <Route path="/Insights" element={<Insights />} />
+          <Route path="/InsightDetail" element={<InsightDetail />} />
+          <Route path="/Account" element={<Account />} />
+        </Route>
 
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+      <AIChatBot />
+    </>
   );
 };
 
@@ -73,7 +80,7 @@ function App() {
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;
