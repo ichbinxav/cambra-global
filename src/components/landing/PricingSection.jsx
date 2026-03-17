@@ -124,7 +124,7 @@ export default function PricingSection() {
                 </Button>
               </Link>
               <p className="text-[10px] text-muted-foreground/40 text-center mt-3">
-                THE NoDE early partners get permanent preferential terms · Limited spots
+                Early partners lock in permanent preferential rates · Very limited availability
               </p>
             </div>
           </motion.div>
