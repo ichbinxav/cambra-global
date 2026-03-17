@@ -4,6 +4,7 @@ import { ArrowRight, TrendingDown, Zap, Package, Shield, ArrowUpRight, BarChart2
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
+import DataQualityBanner from "@/components/shared/DataQualityBanner";
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
 
 export default function Dashboard() {
