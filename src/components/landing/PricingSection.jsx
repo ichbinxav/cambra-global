@@ -70,7 +70,13 @@ export default function PricingSection() {
           </div>
 
           {/* Right — pricing card */}
-          <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
+          <motion.div
+            ref={rightRef}
+            initial={{ opacity: 0, x: 40, y: 20 }}
+            animate={rightInView ? { opacity: 1, x: 0, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm"
+          >
             {/* Header */}
             <div className="px-7 py-6 border-b border-border/40 bg-foreground text-background">
               {/* Early partner badge */}
