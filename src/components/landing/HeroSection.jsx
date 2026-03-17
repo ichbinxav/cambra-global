@@ -252,20 +252,20 @@ export default function HeroSection() {
 
             {/* Deals unlocked hint */}
             <motion.div
-              className="rounded-xl border border-border/40 bg-card/60 p-4 flex items-center gap-3"
+              className="rounded-xl border border-green-500/25 bg-green-500/[0.06] p-4 flex items-center gap-3"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.35 }}
             >
-              <div className="w-7 h-7 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0">
-                <span className="text-green-600 text-[10px] font-black">3</span>
+              <div className="w-7 h-7 rounded-lg bg-green-500/15 flex items-center justify-center shrink-0">
+                <span className="text-green-600 text-[11px] font-black">3</span>
               </div>
               <div className="flex-1">
-                <p className="text-[11px] font-semibold">Deals unlocked for your profile</p>
-                <p className="text-[10px] text-muted-foreground/50">Payments · Shipping · SaaS — join to activate</p>
+                <p className="text-[11px] font-semibold text-foreground">Structural rates unlocked</p>
+                <p className="text-[10px] text-muted-foreground/50">Rates you can't negotiate alone · Join to activate</p>
               </div>
               <Link to="/Onboarding">
-                <button className="text-[10px] font-bold text-muted-foreground/60 hover:text-foreground transition-colors flex items-center gap-1">
+                <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
                   Join <ArrowRight size={9} />
                 </button>
               </Link>
