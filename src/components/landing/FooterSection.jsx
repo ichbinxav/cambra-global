@@ -34,7 +34,7 @@ export default function FooterSection() {
             </Link>
             <Link to="/Onboarding" className="w-full sm:w-auto">
               <Button size="lg" variant="ghost" className="w-full h-14 rounded-full px-10 text-base text-background/50 hover:text-background hover:bg-background/10">
-                Join THE N✱DE
+                Join THE NoDE
               </Button>
             </Link>
           </div>

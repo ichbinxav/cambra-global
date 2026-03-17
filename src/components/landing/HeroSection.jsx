@@ -59,7 +59,7 @@ export default function HeroSection() {
               </Link>
               <Link to="/Onboarding" className="w-full sm:w-auto">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-10 text-base font-medium border-border/60">
-                  Join THE N✱DE
+                  Join THE NoDE
                 </Button>
               </Link>
             </div>

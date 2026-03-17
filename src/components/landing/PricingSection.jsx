@@ -102,7 +102,7 @@ export default function PricingSection() {
             <div className="px-7 pb-7">
               <Link to="/Onboarding">
                 <Button className="w-full h-12 rounded-xl text-sm font-bold gap-2 shadow-sm">
-                  Join THE N✱DE <ArrowRight className="h-4 w-4" />
+                  Join THE NoDE <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <p className="text-[10px] text-muted-foreground/40 text-center mt-3">

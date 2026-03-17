@@ -30,7 +30,7 @@ const BENEFITS = [
   {
     icon: Focus,
     title: "Stay focused on your core business",
-    body: "Spend less time on operations, more time on brand, product, and growth. THE N✱DE handles the backend.",
+    body: "Spend less time on operations, more time on brand, product, and growth. THE NoDE handles the backend.",
   },
 ];
 
@@ -60,7 +60,7 @@ export default function BenefitsSection() {
             <span className="w-4 h-px bg-border" /> Why brands join
           </p>
           <h2 className="text-[clamp(2.4rem,6vw,5rem)] font-black tracking-[-0.05em] leading-[0.87] mb-5">
-            The economic advantage<br />of THE N✱DE.
+            The economic advantage<br />of THE NoDE.
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
             We turn your infrastructure into a competitive advantage.
@@ -94,7 +94,7 @@ export default function BenefitsSection() {
           </div>
           <div className="space-y-4 text-muted-foreground text-base leading-relaxed">
             <p>You don't need more tools. You need better economics.</p>
-            <p>THE N✱DE connects your business to a network designed to optimize how you spend, scale, and operate — so your infrastructure works for you, not against you.</p>
+            <p>THE NoDE connects your business to a network designed to optimize how you spend, scale, and operate — so your infrastructure works for you, not against you.</p>
           </div>
         </div>
 
