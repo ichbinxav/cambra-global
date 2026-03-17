@@ -35,7 +35,7 @@ export default function ThreeLayersSection() {
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5 text-foreground"
           >
-            Negotiate like<br />the big players.
+            Get the leverage<br />big players have.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
