@@ -102,18 +102,18 @@ export default function HeroSection() {
             </motion.ul>
 
             {/* CTAs */}
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3">
-              <Link to="/Analyzer" className="w-full sm:w-auto">
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Link to="/Analyzer" className="flex-1 sm:flex-none">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-10 text-base font-bold shadow-lg gap-2">
+                  <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2">
                     Run the Analyzer <ArrowRight className="h-4 w-4" />
                   </Button>
                 </motion.div>
               </Link>
-              <Link to="/Onboarding" className="w-full sm:w-auto">
+              <Link to="/Onboarding" className="flex-1 sm:flex-none">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-10 text-base font-medium border-border/60">
-                    Join THE NoDE
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-medium border-border/60 hover:border-foreground/20">
+                    Join THE NoDE <ArrowRight className="h-4 w-4" />
                   </Button>
                 </motion.div>
               </Link>
