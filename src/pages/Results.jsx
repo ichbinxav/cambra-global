@@ -150,6 +150,22 @@ export default function Results() {
           </div>
         </div>
 
+        {/* Estimated data notice */}
+        {(!scoreReport || scoreReport.dataQuality === "manual") && (
+          <div className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-secondary/30 -mt-4">
+            <div className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground/70 flex-1">
+              <span className="font-semibold text-foreground">This is an estimated analysis</span> — based on manual inputs.
+              {" "}Connect your tools to refine your results and improve your Infrastructure Score.
+            </p>
+            <Link to="/ConnectTools">
+              <button className="h-8 px-3.5 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5 shrink-0 hover:bg-foreground/90 transition-colors">
+                <Zap size={10} /> Connect tools
+              </button>
+            </Link>
+          </div>
+        )}
+
         {/* ── SECTION 2: Cost breakdown ────────────────────────────── */}
         <div>
           <SectionLabel>Cost breakdown</SectionLabel>
