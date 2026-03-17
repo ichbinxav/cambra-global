@@ -63,7 +63,7 @@ export default function HeroSection() {
                 animate={{ scale: [1, 1.5, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               />
-              <span className="text-[11px] font-medium text-muted-foreground">Three layers. One advantage.</span>
+              <span className="text-[11px] font-medium text-muted-foreground">Infrastructure platform for independent brands</span>
             </motion.div>
 
             {/* Headline */}
