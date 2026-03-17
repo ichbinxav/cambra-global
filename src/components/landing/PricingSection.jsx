@@ -67,7 +67,7 @@ export default function PricingSection() {
                 ))}
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right — pricing card */}
           <motion.div
@@ -127,7 +127,7 @@ export default function PricingSection() {
                 THE NoDE early partners get permanent preferential terms · Limited spots
               </p>
             </div>
-          </div>
+          </motion.div>
 
         </div>
       </div>
