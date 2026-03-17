@@ -67,35 +67,77 @@ export default function ThreeLayersSection() {
             </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {LAYERS.map((layer, i) => {
+          {/* Infrastructure — PRIMARY */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="rounded-2xl border border-foreground/10 bg-foreground text-background p-8 mb-5"
+          >
+            <div className="flex flex-col lg:flex-row lg:items-start gap-8">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-4">
+                  <Zap size={16} className="text-background/60" />
+                  <p className="text-[10px] tracking-[0.25em] uppercase text-background/40">Infrastructure · Core</p>
+                </div>
+                <h3 className="text-3xl font-black tracking-[-0.03em] mb-2">Access better economics.</h3>
+                <p className="text-background/60 text-sm leading-relaxed max-w-md">
+                  Unlock pre-negotiated deals across payments, shipping, and tools — powered by collective scale. This is our core product and the foundation of everything.
+                </p>
+              </div>
+              <div className="flex-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                  {[
+                    { icon: CreditCard, label: "Payments", sub: "−52% fee rate" },
+                    { icon: Truck, label: "Shipping", sub: "−18% avg cost" },
+                    { icon: Package, label: "SaaS", sub: "−30% stack waste" },
+                  ].map(item => (
+                    <div key={item.label} className="p-3.5 rounded-xl bg-background/10 border border-background/10 flex flex-col gap-1.5">
+                      <item.icon size={13} className="text-background/50" />
+                      <p className="text-xs font-bold">{item.label}</p>
+                      <p className="text-[10px] text-background/40">{item.sub}</p>
+                    </div>
+                  ))}
+                </div>
+                <Link to="/Deals" className="inline-flex items-center gap-1.5 text-xs font-bold text-background hover:opacity-70 transition-opacity">
+                  Access the deals <ArrowRight size={11} />
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Network + Intelligence — SECONDARY */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {SECONDARIES.map((layer, i) => {
               const ref = useRef(null);
               const inView = useInView(ref, { once: true, margin: "-60px" });
               return (
                 <motion.div
                   key={layer.label}
                   ref={ref}
-                  initial={{ opacity: 0, y: 40 }}
+                  initial={{ opacity: 0, y: 30 }}
                   animate={inView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                  className={`rounded-2xl border p-7 flex flex-col ${layer.bg}`}
+                  transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  className={`rounded-2xl border p-6 flex flex-col ${layer.bg}`}
                 >
-                  <div className={`w-10 h-10 rounded-xl ${layer.iconBg} flex items-center justify-center mb-5`}>
-                    <layer.icon size={18} className={layer.color} />
+                  <div className={`w-9 h-9 rounded-xl ${layer.iconBg} flex items-center justify-center mb-4`}>
+                    <layer.icon size={15} className={layer.color} />
                   </div>
-                  <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/50 mb-1">{layer.label}</p>
-                  <h3 className="text-xl font-black tracking-tight mb-2">{layer.tagline}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-5">{layer.description}</p>
-                  <ul className="space-y-2 mb-7 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50">{layer.label}</p>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground/50 border border-border/30">Coming soon</span>
+                  </div>
+                  <h3 className="text-lg font-black tracking-tight mb-2">{layer.tagline}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-4 flex-1">{layer.description}</p>
+                  <ul className="space-y-1.5 mb-5">
                     {layer.bullets.map(b => (
-                      <li key={b} className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <CheckCircle2 size={11} className={layer.color} />
+                      <li key={b} className="flex items-center gap-2 text-xs text-muted-foreground/70">
+                        <CheckCircle2 size={10} className={layer.color + " opacity-60"} />
                         {b}
                       </li>
                     ))}
                   </ul>
-                  <Link to={layer.href} className={`inline-flex items-center gap-1.5 text-xs font-bold ${layer.color} hover:opacity-70 transition-opacity`}>
-                    {layer.cta} <ArrowRight size={11} />
+                  <Link to={layer.href} className={`inline-flex items-center gap-1.5 text-xs font-bold ${layer.color} opacity-60 hover:opacity-100 transition-opacity`}>
+                    {layer.cta} <ArrowRight size={10} />
                   </Link>
                 </motion.div>
               );
