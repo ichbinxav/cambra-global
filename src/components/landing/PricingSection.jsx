@@ -29,19 +29,19 @@ export default function PricingSection() {
               <span className="w-4 h-px bg-border" /> Pricing
             </p>
             <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5">
-              Free — until<br />you save money.
+              Your savings<br />fund the network.
             </h2>
             <p className="text-muted-foreground text-base leading-relaxed mb-8 max-w-sm">
-              No upfront cost. No subscription. Your savings fund the network.
+              No upfront cost. No risk. You only pay when your economics improve.
             </p>
 
-            {/* Savings range visual */}
+            {/* Savings range */}
             <div className="space-y-3">
               <div className="p-5 rounded-2xl border border-border/40 bg-card">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 mb-2">Average savings per brand</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 mb-2">Margin unlocked per brand</p>
                 <p className="text-3xl font-black tracking-tight">€18K – €72K<span className="text-base font-normal text-muted-foreground">/year</span></p>
+                <p className="text-[11px] text-muted-foreground/40 mt-1">Based on real network benchmarks across payments, shipping, and SaaS.</p>
               </div>
-              {/* Category savings */}
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { label: "Payments", val: "−52%", color: "text-blue-600", bg: "bg-blue-500/[0.06] border-blue-500/15" },
@@ -61,11 +61,18 @@ export default function PricingSection() {
           <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
             {/* Header */}
             <div className="px-7 py-6 border-b border-border/40 bg-foreground text-background">
-              <div className="flex items-baseline gap-3 mb-1">
-                <span className="text-5xl font-black">Free</span>
-                <span className="text-background/40 text-sm">to join · early partner terms</span>
+              {/* Early partner badge */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-background/15 bg-background/10 mb-4">
+                <span className="w-1 h-1 rounded-full bg-green-400" />
+                <span className="text-[10px] font-semibold text-background/60 tracking-[0.1em] uppercase">Early partner</span>
               </div>
-              <p className="text-sm text-background/50">Your savings fund the network. No surprise fees.</p>
+
+              <div className="flex items-baseline gap-3 mb-1">
+                {/* Crossed-out price */}
+                <span className="text-xl font-light text-background/25 line-through">€120/mo</span>
+                <span className="text-5xl font-black">Free</span>
+              </div>
+              <p className="text-sm text-background/50">You only pay when your economics improve.</p>
             </div>
 
             {/* Feature icons */}
@@ -95,7 +102,7 @@ export default function PricingSection() {
             <div className="px-7 pb-7">
               <Link to="/Onboarding">
                 <Button className="w-full h-12 rounded-xl text-sm font-bold gap-2 shadow-sm">
-                  Join THE NoDE — free <ArrowRight className="h-4 w-4" />
+                  Join THE N✱DE <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <p className="text-[10px] text-muted-foreground/40 text-center mt-3">

@@ -16,21 +16,21 @@ export default function AnalyzerCTA() {
 
           <div>
             <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center gap-2">
-              <span className="w-4 h-px bg-border inline-block" /> Free tool
+              <span className="w-4 h-px bg-border inline-block" /> Infrastructure Analyzer
             </p>
             <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-6">
-              How much are<br />you overpaying?
+              Your potential<br />savings — in 2 minutes.
             </h2>
             <p className="text-muted-foreground leading-relaxed text-base mb-8 max-w-sm">
-              The Analyzer benchmarks your payments, shipping, and tools against real network data. It takes 2 minutes and it's completely free.
+              The Analyzer benchmarks your payments, shipping, and tools against real network data. Identify hidden margin and unlock it through collective rates.
             </p>
             <Link to="/Analyzer">
               <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm">
-                Run the Analyzer — free
+                Run the Analyzer
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <p className="mt-4 text-[11px] text-muted-foreground/40">No account required · Results in under 2 minutes</p>
+            <p className="mt-4 text-[11px] text-muted-foreground/40">No commitment · Instant benchmark · Real network data</p>
           </div>
 
           <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
@@ -55,12 +55,12 @@ export default function AnalyzerCTA() {
 
             <div className="px-6 py-5 border-t border-border/40 bg-foreground text-background flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] opacity-40 mb-0.5">Total annual savings</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] opacity-40 mb-0.5">Margin unlocked / year</p>
                 <span className="text-2xl font-black tracking-tight">€22,600<span className="text-base font-normal opacity-50">/yr</span></span>
               </div>
               <Link to="/Analyzer">
                 <button className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 border border-background/20 text-background text-xs font-semibold transition-colors flex items-center gap-1.5">
-                  Analyze mine <ArrowRight size={12} />
+                  Access my report <ArrowRight size={12} />
                 </button>
               </Link>
             </div>

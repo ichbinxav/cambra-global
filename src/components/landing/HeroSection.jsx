@@ -37,18 +37,18 @@ export default function HeroSection() {
             {/* Pill */}
             <div className="inline-flex items-center gap-2 mb-7 px-3.5 py-1.5 rounded-full border border-border/50 bg-background/80">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span className="text-[11px] font-medium text-muted-foreground">Infrastructure intelligence for independent brands</span>
+              <span className="text-[11px] font-medium text-muted-foreground">Used by independent brands across Europe</span>
             </div>
 
             {/* Headline */}
             <h1 className="text-[clamp(3rem,8.5vw,7.5rem)] font-black tracking-[-0.05em] leading-[0.86] mb-6">
-              Stop overpaying<br />
-              for your<br />
-              infrastructure.
+              Unlock your<br />
+              margin.<br />
+              Scale smarter.
             </h1>
 
             <p className="text-[clamp(1rem,2vw,1.2rem)] text-muted-foreground leading-relaxed mb-10 max-w-[420px]">
-              Discover how much you're losing in 2 minutes — then fix it with network-negotiated rates.
+              The infrastructure layer behind independent brands. Benchmark, optimize, and reduce your costs across payments, shipping, and tools.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -59,13 +59,13 @@ export default function HeroSection() {
               </Link>
               <Link to="/Onboarding" className="w-full sm:w-auto">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-10 text-base font-medium border-border/60">
-                  Join THE NoDE
+                  Join THE N✱DE
                 </Button>
               </Link>
             </div>
 
             <p className="text-[11px] text-muted-foreground/45 mb-10">
-              Brands save <strong className="text-foreground/60">€18,000 – €72,000/year</strong> · No credit card required
+              Brands unlock <strong className="text-foreground/60">€18,000 – €72,000/year</strong> · Based on real network benchmarks
             </p>
 
             {/* Stats row */}
@@ -110,7 +110,7 @@ export default function HeroSection() {
               {/* Total */}
               <div className="mx-4 mb-4 p-4 rounded-xl bg-foreground text-background flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Total identified</p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Total margin unlocked</p>
                   <p className="text-3xl font-black tracking-tight">€81K<span className="text-base font-normal opacity-40">/yr</span></p>
                 </div>
                 <Link to="/Analyzer">
