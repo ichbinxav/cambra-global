@@ -21,6 +21,7 @@ export default function Landing() {
       <HowSection />
       <AnalyzerCTA />
       <IntegrationsSection />
+      <BenefitsSection />
       <TestimonialsSection />
       <PricingSection />
       <FooterSection />
