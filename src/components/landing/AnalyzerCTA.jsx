@@ -31,10 +31,10 @@ export default function AnalyzerCTA() {
               <span className="w-4 h-px bg-border inline-block" /> Infrastructure Analyzer
             </p>
             <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-6">
-              Your potential<br />savings — in 2 minutes.
+              See exactly what<br />you're leaving on the table.
             </h2>
             <p className="text-muted-foreground leading-relaxed text-base mb-8 max-w-sm">
-              The Analyzer benchmarks your payments, shipping, and tools against real network data. Identify hidden margin and unlock it through collective rates.
+              Benchmark your payments, shipping, and SaaS stack against real network rates. Discover your overspend in 2 minutes.
             </p>
             <Link to="/Analyzer">
               <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm">
