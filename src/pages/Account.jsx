@@ -5,7 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { LogOut } from "lucide-react";
+import { LogOut, User, Building2, Shield } from "lucide-react";
+
+const Section = ({ icon: Icon, title, children }) => (
+  <div className="p-7 rounded-2xl border border-border/50 bg-card/60">
+    <div className="flex items-center gap-2.5 mb-6">
+      <Icon size={13} className="text-muted-foreground/50" />
+      <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/50">{title}</p>
+    </div>
+    {children}
+  </div>
+);
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -13,10 +23,7 @@ export default function Account() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      base44.auth.me(),
-      base44.entities.Brand.list("-created_date", 1),
-    ]).then(([u, b]) => {
+    Promise.all([base44.auth.me(), base44.entities.Brand.list("-created_date", 1)]).then(([u, b]) => {
       setUser(u);
       setBrands(b);
       setLoading(false);
@@ -33,72 +40,76 @@ export default function Account() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-32">
-        <motion.div className="text-2xl text-muted-foreground/30" animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}>✱</motion.div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center py-40">
+      <motion.div className="text-2xl text-muted-foreground/25" animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}>✱</motion.div>
+    </div>
+  );
 
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
       <div className="mb-10">
-        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground mb-2">Settings</p>
-        <h1 className="text-3xl font-bold tracking-tight">Account</h1>
+        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-2">Settings</p>
+        <h1 className="text-3xl font-black tracking-[-0.03em]">Account</h1>
         <p className="text-muted-foreground text-sm mt-1.5">Manage your profile and brand settings.</p>
       </div>
 
-      <div className="max-w-lg space-y-5">
-        {/* Profile */}
-        <div className="p-7 rounded-2xl border border-border/60 bg-card">
-          <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-6">Profile</p>
-          <div className="space-y-5">
+      <div className="max-w-lg space-y-4">
+        <Section icon={User} title="Profile">
+          <div className="space-y-4">
             <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Full name</Label>
-              <p className="text-sm font-medium">{user?.full_name || "—"}</p>
+              <Label className="text-xs text-muted-foreground/60 mb-1.5 block">Full name</Label>
+              <p className="text-sm font-semibold">{user?.full_name || "—"}</p>
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground mb-1.5 block">Email</Label>
-              <p className="text-sm font-medium">{user?.email || "—"}</p>
+              <Label className="text-xs text-muted-foreground/60 mb-1.5 block">Email</Label>
+              <p className="text-sm font-semibold">{user?.email || "—"}</p>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground/60 mb-1.5 block">Role</Label>
+              <span className="inline-flex items-center text-[10px] tracking-[0.1em] uppercase px-2.5 py-1 rounded-full bg-secondary text-muted-foreground">
+                {user?.role || "Member"}
+              </span>
             </div>
           </div>
-        </div>
+        </Section>
 
-        {/* Brand */}
         {brand && (
-          <div className="p-7 rounded-2xl border border-border/60 bg-card">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-6">Brand</p>
+          <Section icon={Building2} title="Brand">
             <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Brand name</Label>
-                <Input defaultValue={brand.name} onBlur={e => updateBrand("name", e.target.value)} className="h-10 text-sm" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Website</Label>
-                <Input defaultValue={brand.website} onBlur={e => updateBrand("website", e.target.value)} className="h-10 text-sm" placeholder="https://" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Country</Label>
-                <Input defaultValue={brand.country} onBlur={e => updateBrand("country", e.target.value)} className="h-10 text-sm" />
-              </div>
+              {[
+                { field: "name", label: "Brand name", placeholder: "Your brand" },
+                { field: "website", label: "Website", placeholder: "https://" },
+                { field: "country", label: "Country", placeholder: "e.g. Germany" },
+              ].map(({ field, label, placeholder }) => (
+                <div key={field} className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground/60">{label}</Label>
+                  <Input
+                    defaultValue={brand[field]}
+                    onBlur={e => updateBrand(field, e.target.value)}
+                    className="h-9 text-sm border-border/60"
+                    placeholder={placeholder}
+                  />
+                </div>
+              ))}
             </div>
-          </div>
+          </Section>
         )}
 
-        {/* Sign out */}
-        <div className="p-7 rounded-2xl border border-border/60 bg-card">
-          <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground mb-4">Session</p>
+        <Section icon={Shield} title="Session">
+          <p className="text-sm text-muted-foreground mb-5">
+            Signing out will end your current session. You can always sign back in with your credentials.
+          </p>
           <Button
             variant="outline"
             size="sm"
             onClick={() => base44.auth.logout()}
-            className="text-sm h-9 rounded-full px-5 gap-2"
+            className="h-9 rounded-full px-5 text-xs font-medium gap-2 border-border/60"
           >
-            <LogOut size={13} />
-            Sign out of THE Node
+            <LogOut size={12} />
+            Sign out of THE NoDE
           </Button>
-        </div>
+        </Section>
       </div>
     </motion.div>
   );
