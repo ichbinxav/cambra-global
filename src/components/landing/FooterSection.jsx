@@ -6,15 +6,25 @@ export default function FooterSection() {
   return (
     <>
       {/* Final CTA */}
-      <section className="py-36 px-5 bg-foreground text-background relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center text-[50vw] font-thin text-background/[0.025] select-none pointer-events-none leading-none">
+      <section className="py-32 px-5 bg-foreground text-background relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center text-[50vw] font-thin text-background/[0.02] select-none pointer-events-none leading-none">
           ✱
         </div>
+        <div
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: "linear-gradient(hsl(var(--background)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--background)) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+        />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <p className="text-[10px] tracking-[0.3em] uppercase opacity-30 mb-8">Ready to save?</p>
-          <h2 className="text-[clamp(2.5rem,7vw,7rem)] font-black tracking-[-0.04em] leading-[0.88] mb-10">
+          <p className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8">Ready to save?</p>
+          <h2 className="text-[clamp(2.5rem,7vw,7rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4">
             Stop overpaying.<br />Start now.
           </h2>
+          <p className="text-base opacity-40 mb-10 max-w-sm mx-auto">
+            Brands save an average of €29,000/year. It takes 2 minutes to find out what you're missing.
+          </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/Analyzer" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full h-14 rounded-full px-10 text-base font-bold border-background/25 text-background hover:bg-background hover:text-foreground gap-2">
