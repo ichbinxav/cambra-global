@@ -46,7 +46,7 @@ export default function HeroSection() {
         style={{ y: watermarkY }}
       >✱</motion.div>
 
-      <motion.div style={{ opacity }} className="relative z-10 w-full max-w-6xl mx-auto px-5 py-20">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 lg:gap-16 items-center">
 
           {/* LEFT */}
