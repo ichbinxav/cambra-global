@@ -5,7 +5,13 @@ import { Menu, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
-const NAV = [
+const NAV_PUBLIC = [
+  { label: "How it works", href: "#how" },
+  { label: "Analyzer", href: "/Analyzer" },
+  { label: "Join THE NoDE", href: "/Onboarding" },
+];
+
+const NAV_MEMBER = [
   { label: "How it works", href: "#how" },
   { label: "Analyzer", href: "/Analyzer" },
   { label: "Deals", href: "/Deals" },
