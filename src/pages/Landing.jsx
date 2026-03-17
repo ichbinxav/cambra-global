@@ -17,6 +17,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background font-inter">
       <Navbar />
       <HeroSection />
+      <ThreeLayersSection />
       <ProblemSection />
       <SolutionSection />
       <HowSection />

@@ -100,7 +100,7 @@ export default function HeroSection() {
             </motion.div>
 
             <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/45 mb-10">
-              Brands on THE NoDE unlock <strong className="text-foreground/60">€18,000 – €72,000/year</strong> · Based on real network benchmarks · Free to join
+              <strong className="text-foreground/60">€18K–€72K</strong> unlocked per year · <strong className="text-foreground/60">−52%</strong> payment fees · <strong className="text-foreground/60">−18%</strong> shipping costs · <span className="opacity-70">Based on network benchmarks</span>
             </motion.p>
 
             {/* Stats row */}
