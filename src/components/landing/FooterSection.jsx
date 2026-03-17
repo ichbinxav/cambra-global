@@ -28,21 +28,20 @@ export default function FooterSection() {
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8"
-          >Make your economics work for you</motion.p>
+            className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8">Find your unfair advantage</motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 60 }} animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.5rem,7vw,7rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4"
           >
-            Upgrade your<br />infrastructure layer.
+            Stop overpaying<br />for your infrastructure.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-base opacity-40 mb-10 max-w-sm mx-auto"
           >
-            Brands unlock an average of €29,000/year. Benchmark your costs against real network data in 2 minutes.
+            Brands discover €29,000/year in savings. Analyze your costs in 2 minutes.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
