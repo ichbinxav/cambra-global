@@ -1,134 +1,81 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">
       {/* Fine grid */}
       <div
-        className="absolute inset-0 opacity-[0.022]"
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
-          backgroundImage:
-            "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
-          backgroundSize: "72px 72px",
+          backgroundImage: "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
         }}
       />
 
-      {/* Ambient glow */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-blue-500/[0.03] blur-3xl pointer-events-none" />
-
-      {/* Background ✱ */}
-      <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[42vw] font-thin text-foreground/[0.015] select-none pointer-events-none leading-none"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 200, repeat: Infinity, ease: "linear" }}
-      >
+      {/* Background node symbol — static, no animation */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[50vw] font-thin text-foreground/[0.018] select-none pointer-events-none leading-none">
         ✱
-      </motion.div>
+      </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
-        {/* Tag */}
-        <motion.div
-          className="inline-flex items-center gap-2.5 mb-10"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-        >
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse-slow" />
-          <span className="text-[11px] tracking-[0.3em] uppercase text-muted-foreground/70">
-            Infrastructure for independent commerce
-          </span>
-        </motion.div>
+      <div className="relative z-10 max-w-5xl mx-auto px-5 text-center">
 
-        {/* Headline */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <h1 className="text-[clamp(3.2rem,10vw,9.5rem)] font-black tracking-[-0.04em] leading-[0.86]">
-            Independent<br />
-            brands.{" "}
-            <span className="text-foreground/18">One</span>
-            <br />
-            <span className="text-foreground/18">network.</span>
-          </h1>
-        </motion.div>
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-border/50 bg-background/80 backdrop-blur-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+          <span className="text-[11px] font-medium text-muted-foreground">Infrastructure network · Powering independent commerce</span>
+        </div>
 
-        {/* Sub */}
-        <motion.p
-          className="max-w-md mx-auto text-lg text-muted-foreground leading-relaxed mt-10 mb-12"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        >
-          Connect your business. Reduce costs. Scale with the power of a coordinated economic network.
-        </motion.p>
+        {/* Headline — instant render, no delay */}
+        <h1 className="text-[clamp(2.8rem,9vw,8rem)] font-black tracking-[-0.04em] leading-[0.88] mb-6">
+          Stop overpaying<br />
+          for your<br />
+          infrastructure.
+        </h1>
+
+        {/* Subheadline */}
+        <p className="text-[clamp(1rem,2.5vw,1.4rem)] text-muted-foreground leading-relaxed mb-10 max-w-lg mx-auto">
+          See exactly how much you can save in 2 minutes.
+        </p>
 
         {/* CTAs */}
-        <motion.div
-          className="flex flex-col sm:flex-row gap-3 justify-center"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.45 }}
-        >
-          <Link to="/Onboarding">
-            <Button size="lg" className="h-12 rounded-full px-9 text-sm font-semibold group shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <Link to="/Analyzer" className="w-full sm:w-auto">
+            <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-10 text-base font-bold shadow-lg gap-2">
+              Run the Analyzer
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link to="/Onboarding" className="w-full sm:w-auto">
+            <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-10 text-base font-medium border-border/70">
               Join THE NoDE
-              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
-          <Link to="/Analyzer">
-            <Button variant="outline" size="lg" className="h-12 rounded-full px-9 text-sm font-medium border-border/70">
-              Run the Analyzer →
-            </Button>
-          </Link>
-        </motion.div>
+        </div>
 
-        {/* Proof line */}
-        <motion.p
-          className="mt-12 text-[12px] text-muted-foreground/50 tracking-wide"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
-        >
-          Early partners across Europe are already connecting — and outperforming.
-        </motion.p>
+        {/* Social proof line */}
+        <p className="mt-10 text-[12px] text-muted-foreground/50">
+          Brands save an average of <strong className="text-foreground/70">€18,000 – €72,000/year</strong> through THE NoDE network
+        </p>
 
-        {/* Category line */}
-        <motion.div
-          className="mt-16 flex flex-wrap items-center justify-center gap-x-8 gap-y-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.1 }}
-        >
-          {["Fashion", "Beauty", "Wellness", "Lifestyle", "DTC"].map((cat, i, arr) => (
-            <span key={cat} className="flex items-center gap-8 text-[11px] tracking-[0.2em] uppercase text-muted-foreground/35">
-              {cat}
-              {i < arr.length - 1 && <span className="text-muted-foreground/15">✱</span>}
-            </span>
+        {/* Stats row */}
+        <div className="mt-14 grid grid-cols-3 gap-4 max-w-md mx-auto">
+          {[
+            { value: "€29K", label: "Avg. annual savings" },
+            { value: "1.4%", label: "Network payment rate" },
+            { value: "−18%", label: "Avg. shipping savings" },
+          ].map(stat => (
+            <div key={stat.label} className="text-center">
+              <p className="text-xl font-black tracking-tight text-foreground">{stat.value}</p>
+              <p className="text-[11px] text-muted-foreground/60 mt-0.5 leading-tight">{stat.label}</p>
+            </div>
           ))}
-        </motion.div>
+        </div>
       </div>
 
       {/* Bottom gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-      >
-        <motion.div
-          className="w-px h-10 bg-gradient-to-b from-transparent to-border/60"
-          animate={{ scaleY: [0, 1, 0], originY: 0 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </motion.div>
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </section>
   );
 }

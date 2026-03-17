@@ -1,78 +1,73 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import RevealOnScroll from "@/components/shared/RevealOnScroll";
 
 const features = [
-  "Full infrastructure analysis",
-  "Network rate access",
-  "Savings dashboard & history",
-  "Member directory (exclusive)",
-  "Quarterly benchmarks",
-  "FOR LIFESTYLE COMMERCE intelligence",
-  "Priority access to network deals",
+  "Infrastructure Analyzer (unlimited runs)",
+  "Full network benchmark access",
+  "Payment rate optimization",
+  "Shipping contract access",
+  "SaaS group deals",
+  "Savings history & tracking",
+  "Member network directory",
+  "Priority deal activation",
 ];
 
 export default function PricingSection() {
   return (
-    <section id="pricing" className="py-36 px-6 border-t border-border/40">
+    <section className="py-28 px-5 border-t border-border/40">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-20 items-center">
-          <div>
-            <RevealOnScroll>
-              <span className="inline-flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-7">
-                <span className="w-4 h-px bg-border inline-block" /> Pricing
-              </span>
-              <h2 className="text-[clamp(2.4rem,5.5vw,5rem)] font-black tracking-[-0.04em] leading-[0.88] mb-8">
-                You only pay when
-                <br />
-                <span className="text-foreground/20">your economics</span>
-                <br />
-                <span className="text-foreground/20">improve.</span>
-              </h2>
-              <p className="text-muted-foreground leading-relaxed text-[1.05rem]">
-                We win when you win. No upfront cost, no risk. Join as an early partner and lock in access for free — permanently.
-              </p>
-            </RevealOnScroll>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-          <RevealOnScroll delay={0.15} direction="left">
-            <div className="p-10 rounded-3xl border border-border bg-card shadow-sm">
-              <div className="mb-8">
-                <div className="flex items-baseline gap-3 mb-1.5">
-                  <span className="text-6xl font-black tracking-tight">Free</span>
-                  <div className="flex flex-col">
-                    <span className="text-muted-foreground line-through text-sm font-medium">€120/mo</span>
-                    <span className="text-[10px] text-muted-foreground/60 tracking-wide">for early partners</span>
-                  </div>
+          <RevealOnScroll>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center gap-2">
+              <span className="w-4 h-px bg-border inline-block" /> Pricing
+            </p>
+            <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-4">
+              Free — until<br />you save money.
+            </h2>
+            <p className="text-muted-foreground text-base leading-relaxed mb-3 max-w-sm">
+              No upfront cost. No subscription. Join the network and start saving immediately.
+            </p>
+            <p className="text-sm font-semibold text-foreground">
+              Average savings per brand: <span className="text-blue-600">€18,000 – €72,000/year</span>
+            </p>
+          </RevealOnScroll>
+
+          <RevealOnScroll delay={0.1} direction="left">
+            <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
+              <div className="px-7 py-6 border-b border-border/40">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-4xl font-black">Free</span>
+                  <span className="text-muted-foreground text-sm">to join · early partner</span>
                 </div>
-                <div className="inline-flex items-center gap-1.5 bg-green-500/10 text-green-700 text-[11px] px-3 py-1 rounded-full">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                  Limited spots available
-                </div>
+                <p className="text-sm text-muted-foreground">Your savings pay for the network.</p>
               </div>
 
-              <div className="space-y-3 mb-9">
-                {features.map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 text-sm">
-                    <div className="w-4 h-4 rounded-full bg-foreground flex items-center justify-center shrink-0">
-                      <Check className="h-2.5 w-2.5 text-background" strokeWidth={3} />
-                    </div>
-                    <span>{item}</span>
+              <div className="px-7 py-6 space-y-3">
+                {features.map(f => (
+                  <div key={f} className="flex items-start gap-3">
+                    <CheckCircle2 size={14} className="text-green-500 shrink-0 mt-0.5" />
+                    <span className="text-sm">{f}</span>
                   </div>
                 ))}
               </div>
 
-              <Link to="/Onboarding">
-                <Button size="lg" className="w-full rounded-xl h-12 text-sm font-semibold group shadow-sm">
-                  Join as early partner
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-
-              <p className="text-center text-[11px] text-muted-foreground/50 mt-5 italic">"We win when you win."</p>
+              <div className="px-7 pb-7">
+                <Link to="/Onboarding">
+                  <Button className="w-full h-12 rounded-xl text-sm font-bold gap-2 shadow-sm">
+                    Join THE NoDE — free
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <p className="text-[11px] text-muted-foreground/50 text-center mt-3">
+                  Early partners get permanent preferential terms · Limited spots
+                </p>
+              </div>
             </div>
           </RevealOnScroll>
+
         </div>
       </div>
     </section>

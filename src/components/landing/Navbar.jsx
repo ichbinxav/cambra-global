@@ -1,90 +1,96 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+
+const NAV = [
+  { label: "How it works", href: "#how" },
+  { label: "Analyzer", href: "/Analyzer" },
+  { label: "Deals", href: "/Deals" },
+];
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 32);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
   return (
-    <motion.nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "bg-background/92 backdrop-blur-2xl border-b border-border/40 shadow-sm"
-          : "bg-transparent"
-      }`}
-      initial={{ y: -80 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-1.5 group">
-          <span className="text-base font-black tracking-tight">THE N✱DE</span>
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${scrolled ? "bg-background/95 backdrop-blur-2xl border-b border-border/40 shadow-sm" : "bg-transparent"}`}>
+      <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
+
+        {/* Logo */}
+        <Link to="/" className="text-sm font-black tracking-tight flex-shrink-0">
+          THE NoDE
         </Link>
 
-        <div className="hidden md:flex items-center gap-7">
-          <a href="#how" className="text-sm text-muted-foreground hover:text-foreground transition-colors">How it works</a>
-          <a href="#analyzer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Analyzer</a>
-          <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
-        </div>
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-6">
+          {NAV.map(item => (
+            item.href.startsWith("/") ? (
+              <Link key={item.label} to={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                {item.label}
+              </Link>
+            ) : (
+              <a key={item.label} href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                {item.label}
+              </a>
+            )
+          ))}
+        </nav>
 
+        {/* Desktop CTAs */}
         <div className="hidden md:flex items-center gap-2">
           <Link to="/Dashboard">
-            <Button variant="ghost" size="sm" className="h-8 rounded-full px-4 text-xs text-muted-foreground">
-              Dashboard
+            <Button variant="ghost" size="sm" className="h-8 rounded-full px-4 text-sm text-muted-foreground">
+              Sign in
             </Button>
           </Link>
           <Link to="/Analyzer">
-            <Button variant="ghost" size="sm" className="h-8 rounded-full px-4 text-xs">
-              Analyzer
-            </Button>
-          </Link>
-          <Link to="/Onboarding">
-            <Button size="sm" className="h-8 rounded-full px-5 text-xs font-semibold shadow-sm">
-              Join THE NoDE →
+            <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm">
+              Run free Analyzer
             </Button>
           </Link>
         </div>
 
-        <button className="md:hidden p-2 -mr-2" onClick={() => setOpen(!open)}>
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => setOpen(o => !o)}
+          aria-label="Toggle menu"
+        >
           {open ? <X size={18} /> : <Menu size={18} />}
         </button>
       </div>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="md:hidden border-t border-border/40 bg-background/96 backdrop-blur-2xl px-6 py-7 space-y-5"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            <a href="#how" className="block text-sm text-muted-foreground py-1" onClick={() => setOpen(false)}>How it works</a>
-            <a href="#analyzer" className="block text-sm text-muted-foreground py-1" onClick={() => setOpen(false)}>Analyzer</a>
-            <a href="#pricing" className="block text-sm text-muted-foreground py-1" onClick={() => setOpen(false)}>Pricing</a>
-            <div className="pt-2 space-y-2 border-t border-border/40">
-              <Link to="/Analyzer" className="block" onClick={() => setOpen(false)}>
-                <Button variant="outline" size="sm" className="w-full rounded-full text-xs h-10">Run Analyzer</Button>
+      {/* Mobile menu */}
+      {open && (
+        <div className="md:hidden border-t border-border/40 bg-background/98 backdrop-blur-2xl px-5 py-4 space-y-1">
+          {NAV.map(item => (
+            item.href.startsWith("/") ? (
+              <Link key={item.label} to={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground border-b border-border/30 last:border-0">
+                {item.label}
               </Link>
-              <Link to="/Onboarding" className="block" onClick={() => setOpen(false)}>
-                <Button size="sm" className="w-full rounded-full text-xs h-10 font-semibold">Join THE NoDE →</Button>
-              </Link>
-              <Link to="/Dashboard" className="block" onClick={() => setOpen(false)}>
-                <Button variant="ghost" size="sm" className="w-full rounded-full text-xs h-10">Dashboard</Button>
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
+            ) : (
+              <a key={item.label} href={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground border-b border-border/30 last:border-0">
+                {item.label}
+              </a>
+            )
+          ))}
+          <div className="pt-4 flex flex-col gap-2">
+            <Link to="/Analyzer" onClick={() => setOpen(false)}>
+              <Button className="w-full h-12 rounded-full text-sm font-bold">Run the Analyzer</Button>
+            </Link>
+            <Link to="/Onboarding" onClick={() => setOpen(false)}>
+              <Button variant="outline" className="w-full h-12 rounded-full text-sm">Join THE NoDE</Button>
+            </Link>
+          </div>
+        </div>
+      )}
+    </header>
   );
 }
