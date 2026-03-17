@@ -124,8 +124,8 @@ export default function ProblemSection() {
               transition={{ delay: 0.5 }}
             >
               <Link to="/Analyzer">
-                <button className="flex items-center gap-2 text-sm font-semibold hover:gap-3 transition-all">
-                  See my overspend <ArrowRight size={13} />
+                <button className="flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700 hover:gap-3 transition-all">
+                  Check your overspend <ArrowRight size={13} />
                 </button>
               </Link>
             </motion.div>
