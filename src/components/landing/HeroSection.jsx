@@ -67,8 +67,7 @@ export default function HeroSection() {
               variants={fadeUp}
               className="text-[clamp(2.6rem,7.5vw,6.8rem)] font-black tracking-[-0.05em] leading-[0.84] mb-6"
             >
-              Independent<br />brands. One<br />
-              <span className="text-foreground/35">network.<br />Better economics.</span>
+              Independent brands.<br />One network.<br />Better economics.
             </motion.h1>
 
             {/* Subheadline */}
