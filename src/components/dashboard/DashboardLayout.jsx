@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BarChart3, Users, Zap, FileText, Settings, Menu, X, LogOut } from "lucide-react";
+import { LayoutDashboard, BarChart3, Users, Zap, FileText, Settings, Menu, X, LogOut, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 
@@ -19,68 +19,73 @@ export default function DashboardLayout() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-background font-inter">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 border-r border-border/50 bg-background shrink-0">
-        <div className="p-6 border-b border-border/50">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-sm font-bold tracking-tight">THE N✱DE</span>
+      <aside className="hidden lg:flex flex-col w-56 border-r border-border/40 shrink-0 bg-background/98">
+        <div className="px-5 h-14 flex items-center border-b border-border/40">
+          <Link to="/" className="text-sm font-black tracking-tight group flex items-center gap-1.5">
+            THE N✱DE
+            <ArrowUpRight size={11} className="text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
           </Link>
         </div>
 
-        <nav className="flex-1 p-4 space-y-0.5">
+        <nav className="flex-1 p-3 space-y-0.5">
           {NAV_ITEMS.map(item => {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path}>
-                <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                  active
-                    ? "bg-foreground text-background font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/70"
-                }`}>
-                  <item.icon size={15} />
+                <motion.div
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                    active
+                      ? "bg-foreground text-background font-semibold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
+                  }`}
+                  whileHover={active ? {} : { x: 2 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                >
+                  <item.icon size={14} />
                   {item.label}
-                </div>
+                </motion.div>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-border/50">
+        <div className="p-3 border-t border-border/40">
           <button
             onClick={() => base44.auth.logout()}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/70 transition-all"
+            className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
           >
-            <LogOut size={15} />
+            <LogOut size={14} />
             Sign out
           </button>
         </div>
       </aside>
 
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 h-14 border-b border-border/50 bg-background/90 backdrop-blur-xl">
-        <Link to="/" className="text-sm font-bold tracking-tight">THE N✱DE</Link>
-        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          {sidebarOpen ? <X size={17} /> : <Menu size={17} />}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 h-14 border-b border-border/40 bg-background/95 backdrop-blur-2xl">
+        <Link to="/" className="text-sm font-black tracking-tight">THE N✱DE</Link>
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(!sidebarOpen)}>
+          {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
         </Button>
       </div>
 
-      {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
-            className="lg:hidden fixed inset-0 z-40 bg-background/96 backdrop-blur-xl pt-14"
+            className="lg:hidden fixed inset-0 z-40 bg-background/97 backdrop-blur-2xl pt-14"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <nav className="p-5 space-y-0.5">
+            <nav className="p-4 space-y-0.5">
               {NAV_ITEMS.map(item => {
                 const active = location.pathname === item.path;
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)}>
-                    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
-                      active ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:text-foreground"
+                    <div className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm transition-colors ${
+                      active ? "bg-foreground text-background font-semibold" : "text-muted-foreground"
                     }`}>
                       <item.icon size={16} />
                       {item.label}
@@ -89,21 +94,20 @@ export default function DashboardLayout() {
                 );
               })}
             </nav>
-            <div className="px-5 pt-2 border-t border-border/50 mt-2">
+            <div className="px-4 pt-3 border-t border-border/40 mt-3">
               <button
                 onClick={() => base44.auth.logout()}
-                className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm text-muted-foreground"
+                className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm text-muted-foreground"
               >
-                <LogOut size={16} />
-                Sign out
+                <LogOut size={16} /> Sign out
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Main content */}
-      <main className="flex-1 min-w-0 pt-14 lg:pt-0">
+      {/* Main */}
+      <main className="flex-1 min-w-0 pt-14 lg:pt-0 bg-background">
         <div className="max-w-5xl mx-auto p-6 lg:p-10">
           <Outlet />
         </div>
