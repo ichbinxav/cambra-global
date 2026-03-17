@@ -99,7 +99,7 @@ export default function ProblemSection() {
               transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5"
             >
-              Independent brands<br />pay enterprise<br />prices — without<br />the leverage.
+              You're paying<br />what enterprises pay.<br />You don't have<br />their leverage.
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
