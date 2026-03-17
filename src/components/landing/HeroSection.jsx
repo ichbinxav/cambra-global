@@ -63,29 +63,23 @@ export default function HeroSection() {
                 animate={{ scale: [1, 1.5, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               />
-              <span className="text-[11px] font-medium text-muted-foreground">Used by independent brands across Europe</span>
+              <span className="text-[11px] font-medium text-muted-foreground">Three layers. One advantage.</span>
             </motion.div>
 
-            {/* Headline — word by word */}
+            {/* Headline */}
             <motion.h1
               variants={fadeUp}
               className="text-[clamp(2.4rem,7vw,6.5rem)] font-black tracking-[-0.05em] leading-[0.86] mb-6"
             >
-              Stop overpaying<br />
-              infrastructure.<br />
-              <motion.span
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.55, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              >Join THE NoDE.</motion.span>
+              Unlock<br />your margin.
             </motion.h1>
 
-            <motion.p variants={fadeUp} className="text-[clamp(1rem,2.5vw,1.4rem)] font-black tracking-[-0.02em] text-foreground/80 leading-tight mb-4 -mt-2">
-              Unlock margin. Scale your business.
+            <motion.p variants={fadeUp} className="text-[clamp(0.95rem,1.8vw,1.15rem)] text-foreground/70 leading-relaxed mb-6 max-w-[440px]">
+              The infrastructure, network, and intelligence layer that helps independent brands reduce costs, benchmark performance, and access better economics.
             </motion.p>
 
-            <motion.p variants={fadeUp} className="text-[clamp(0.9rem,1.8vw,1.1rem)] text-foreground/85 leading-relaxed mb-10 max-w-[420px]">
-              The infrastructure layer behind independent brands. Benchmark, optimize, and reduce your costs across payments, shipping, and tools.
+            <motion.p variants={fadeUp} className="text-[11px] font-bold tracking-[0.2em] uppercase text-muted-foreground/50 mb-10">
+              Network · Intelligence · Deals
             </motion.p>
 
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 mb-8">
