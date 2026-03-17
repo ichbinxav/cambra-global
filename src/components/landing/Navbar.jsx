@@ -99,9 +99,23 @@ export default function Navbar() {
             <Link to="/Analyzer" onClick={() => setOpen(false)}>
               <Button className="w-full h-12 rounded-full text-sm font-bold">Run the Analyzer</Button>
             </Link>
-            <Link to="/Onboarding" onClick={() => setOpen(false)}>
-              <Button variant="outline" className="w-full h-12 rounded-full text-sm">Join THE NoDE</Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/Dashboard" onClick={() => setOpen(false)}>
+                <Button variant="outline" className="w-full h-12 rounded-full text-sm">Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <button
+                  onClick={() => { setOpen(false); base44.auth.redirectToLogin(window.location.href); }}
+                  className="w-full h-12 rounded-full text-sm border border-border/70 hover:bg-secondary transition-colors"
+                >
+                  Sign in
+                </button>
+                <Link to="/Onboarding" onClick={() => setOpen(false)}>
+                  <Button variant="outline" className="w-full h-12 rounded-full text-sm">Join THE NoDE</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
