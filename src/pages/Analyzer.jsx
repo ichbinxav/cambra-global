@@ -226,7 +226,7 @@ export default function Analyzer() {
       </div>
 
       <div className="flex items-center justify-between px-6 py-4">
-        <span className="text-sm font-semibold tracking-tight">N✱DE Analyzer</span>
+        <span className="text-sm font-semibold tracking-tight">THE NODE Analyzer</span>
         <span className="text-xs text-muted-foreground">{ANALYZER_STEPS[step]}</span>
       </div>
 
