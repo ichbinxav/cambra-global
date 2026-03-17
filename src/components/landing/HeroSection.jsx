@@ -92,11 +92,11 @@ export default function HeroSection() {
             </motion.p>
 
             {/* Value bullets */}
-            <motion.ul variants={container} className="space-y-2 mb-8">
+            <motion.ul variants={container} className="space-y-2.5 mb-10">
               {BULLETS.map((b, i) => (
-                <motion.li key={i} variants={fadeUp} className="flex items-start gap-2.5 text-sm text-foreground/70">
-                  <CheckCircle2 size={14} className="text-green-500 mt-0.5 shrink-0" />
-                  {b}
+                <motion.li key={i} variants={fadeUp} className="flex items-start gap-3 text-sm text-foreground/75">
+                  <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
+                  <span className="font-medium">{b}</span>
                 </motion.li>
               ))}
             </motion.ul>
