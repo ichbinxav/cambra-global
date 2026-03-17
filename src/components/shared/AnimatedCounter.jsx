@@ -7,13 +7,18 @@ export default function AnimatedCounter({ value, prefix = "", suffix = "", durat
   const inView = useInView(ref, { once: true });
 
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || !value) return;
     let start = 0;
-    const end = value;
-    const increment = end / (duration * 60);
+    const end = Number(value) || 0;
+    if (end === 0) return;
+    const totalFrames = duration * 60;
+    let frame = 0;
     const timer = setInterval(() => {
-      start += increment;
-      if (start >= end) {
+      frame++;
+      // Ease out cubic
+      const progress = 1 - Math.pow(1 - frame / totalFrames, 3);
+      start = end * progress;
+      if (frame >= totalFrames) {
         setCount(end);
         clearInterval(timer);
       } else {
@@ -23,14 +28,16 @@ export default function AnimatedCounter({ value, prefix = "", suffix = "", durat
     return () => clearInterval(timer);
   }, [value, duration, inView]);
 
+  const formatted = count.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
   return (
     <motion.span
       ref={ref}
-      initial={{ opacity: 0, y: 10 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6 }}
+      initial={{ opacity: 0 }}
+      animate={inView ? { opacity: 1 } : {}}
+      transition={{ duration: 0.3 }}
     >
-      {prefix}{count.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{suffix}
+      {prefix}{formatted}{suffix}
     </motion.span>
   );
 }
