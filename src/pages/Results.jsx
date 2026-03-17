@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import ScoreCard from "@/components/results/ScoreCard";
 import { computeInfraScore } from "@/lib/scoreEngine";
+import DataQualityBanner from "@/components/shared/DataQualityBanner";
 
 const BREAKDOWN = [
   {
