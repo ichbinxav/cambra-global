@@ -42,7 +42,7 @@ export default function ThreeLayersSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-foreground/60 text-lg leading-relaxed max-w-xl"
           >
-            Large retailers and enterprise groups have one advantage you don't: collective negotiation power. THE NoDE changes that. We pool independent brands into a single infrastructure bloc — and negotiate accordingly.
+            Enterprise retailers negotiate at scale. You negotiate alone. THE NoDE pools independent brands into a single negotiation unit — so you get enterprise rates without the enterprise overhead.
           </motion.p>
         </div>
 
