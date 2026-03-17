@@ -11,10 +11,10 @@ const SAVINGS = [
 ];
 
 const BULLETS = [
-  "Access better negotiated deals across your stack",
-  "Identify exactly where you're overpaying",
-  "Improve your infrastructure economics",
-  "Join a collective with real leverage",
+  "Access deals you can't negotiate alone",
+  "Identify where you're overpaying instantly",
+  "Reduce infrastructure costs across your stack",
+  "Turn collective scale into economic leverage",
 ];
 
 const container = {
