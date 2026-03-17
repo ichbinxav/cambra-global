@@ -73,8 +73,8 @@ export default function Navbar() {
                 Sign in
               </button>
               <Link to="/Analyzer">
-                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm" variant="outline">
-                  Run free Analyzer
+                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm bg-green-600 hover:bg-green-700 text-white">
+                  Check Savings
                 </Button>
               </Link>
             </>
