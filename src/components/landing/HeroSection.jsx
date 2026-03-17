@@ -71,7 +71,13 @@ export default function HeroSection() {
               variants={fadeUp}
               className="text-[clamp(2.4rem,7vw,6.5rem)] font-black tracking-[-0.05em] leading-[0.86] mb-6"
             >
-              Unlock<br />your margin.
+              Unlock your<br />margins.<br />
+              <motion.span
+                className="text-foreground/40"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.55, duration: 0.7 }}
+              >Scale your<br />business.</motion.span>
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-[clamp(0.95rem,1.8vw,1.15rem)] text-foreground/70 leading-relaxed mb-6 max-w-[440px]">

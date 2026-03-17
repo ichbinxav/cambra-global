@@ -1,47 +1,32 @@
 import { Link } from "react-router-dom";
-import { Network, BarChart2, Zap, CheckCircle2, ArrowRight } from "lucide-react";
+import { Network, BarChart2, Zap, CheckCircle2, ArrowRight, CreditCard, Truck, Package } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
-const LAYERS = [
+const SECONDARIES = [
   {
     icon: Network,
     label: "Network",
     tagline: "Connect with the right brands.",
-    description: "Access a curated directory of independent brands. Build partnerships, collaborations, and opportunities across the ecosystem.",
-    bullets: ["Member directory", "Brand profiles", "Collaboration opportunities", "Curated ecosystem"],
+    description: "Access a curated directory of independent brands. Build partnerships and opportunities across the ecosystem.",
+    bullets: ["Member directory", "Brand profiles", "Collaboration opportunities"],
     cta: "Explore the Network",
     href: "/Network",
     color: "text-blue-600",
-    bg: "bg-blue-500/[0.06] border-blue-500/20",
+    bg: "bg-blue-500/[0.05] border-blue-500/15",
     iconBg: "bg-blue-500/[0.08]",
-    accent: "#3b82f6",
   },
   {
     icon: BarChart2,
     label: "Intelligence",
     tagline: "Understand how you operate.",
     description: "Benchmark your business, access market insights, and identify where to improve your economics.",
-    bullets: ["Benchmark vs similar brands", "Market insights", "Infrastructure analysis", "Optimization signals"],
+    bullets: ["Benchmark vs similar brands", "Market insights", "Optimization signals"],
     cta: "Unlock your insights",
     href: "/Insights",
     color: "text-orange-500",
-    bg: "bg-orange-500/[0.06] border-orange-500/20",
+    bg: "bg-orange-500/[0.05] border-orange-500/15",
     iconBg: "bg-orange-500/[0.08]",
-    accent: "#f97316",
-  },
-  {
-    icon: Zap,
-    label: "Deals",
-    tagline: "Access better economics.",
-    description: "Unlock pre-negotiated deals across payments, shipping, and tools — powered by collective scale.",
-    bullets: ["Payments optimization", "Shipping discounts", "SaaS pricing advantages", "Estimated yearly savings"],
-    cta: "Access the deals",
-    href: "/Deals",
-    color: "text-green-600",
-    bg: "bg-green-500/[0.06] border-green-500/20",
-    iconBg: "bg-green-500/[0.08]",
-    accent: "#22c55e",
   },
 ];
 
