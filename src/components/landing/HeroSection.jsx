@@ -128,12 +128,18 @@ export default function HeroSection() {
             </motion.div>
 
             {/* Micro copy under CTA */}
-            <motion.p variants={fadeUp} className="text-sm text-muted-foreground/60 mt-4">
-              Find out how much you're losing in 2 minutes.
-            </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground/60">
+                <span className="w-1 h-1 rounded-full bg-foreground/30"></span>
+                <span>Takes 2 minutes · No commitment</span>
+              </div>
+              <p className="text-sm text-muted-foreground/60">
+                Find out how much you're losing instantly.
+              </p>
+            </motion.div>
 
-            <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/40 mt-3">
-              <strong className="text-foreground/55">Avg. savings detected:</strong> €8,430/year · <strong className="text-foreground/55">€5K–€72K</strong> per brand
+            <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/40 mt-4">
+              <strong className="text-foreground/55">Avg. infrastructure overspend:</strong> €8,430/year · <strong className="text-foreground/55">€3K–€72K</strong> range
             </motion.p>
           </motion.div>
 
