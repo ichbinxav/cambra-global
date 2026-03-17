@@ -1,5 +1,7 @@
 import { CreditCard, Truck, Layers, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 
 const PROBLEMS = [
   {
@@ -12,8 +14,8 @@ const PROBLEMS = [
     color: "text-blue-600",
     bg: "bg-blue-500/[0.05] border-blue-500/20",
     barColor: "#3b82f6",
-    yours: 72, // % of bar (2.9/4 * 100)
-    theirs: 35, // % of bar (1.4/4 * 100)
+    yours: 72,
+    theirs: 35,
   },
   {
     icon: Truck,
@@ -43,87 +45,151 @@ const PROBLEMS = [
   },
 ];
 
+function AnimatedBar({ width, color, delay }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <div ref={ref} className="h-2 rounded-full bg-border/30 overflow-hidden">
+      <motion.div
+        className="h-full rounded-full opacity-70"
+        style={{ background: color || undefined }}
+        initial={{ width: 0 }}
+        animate={inView ? { width: `${width}%` } : { width: 0 }}
+        transition={{ duration: 1, delay: delay || 0, ease: [0.22, 1, 0.36, 1] }}
+      />
+    </div>
+  );
+}
+
+function GreenBar({ width, delay }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <div ref={ref} className="h-2 rounded-full bg-border/30 overflow-hidden">
+      <motion.div
+        className="h-full rounded-full bg-green-500 opacity-70"
+        initial={{ width: 0 }}
+        animate={inView ? { width: `${width}%` } : { width: 0 }}
+        transition={{ duration: 1, delay: (delay || 0) + 0.2, ease: [0.22, 1, 0.36, 1] }}
+      />
+    </div>
+  );
+}
+
 export default function ProblemSection() {
+  const headRef = useRef(null);
+  const headInView = useInView(headRef, { once: true, margin: "-80px" });
+
   return (
     <section className="py-24 px-5 border-t border-border/40">
       <div className="max-w-6xl mx-auto">
-
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-16 items-start">
 
-          {/* Left — headline */}
-          <div className="lg:sticky lg:top-24">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2">
+          {/* Left */}
+          <div className="lg:sticky lg:top-24" ref={headRef}>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6 }}
+              className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2"
+            >
               <span className="w-4 h-px bg-border" /> The problem
-            </p>
-            <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5">
+            </motion.p>
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5"
+            >
               Independent brands<br />pay enterprise<br />prices — without<br />the leverage.
-            </h2>
-            <p className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-xs">
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.25 }}
+              className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-xs"
+            >
               Large retailers negotiate rates well below market. You pay full price for the same infrastructure.
-            </p>
+            </motion.p>
 
-            {/* Total lost */}
-            <div className="p-5 rounded-2xl border border-border/40 bg-card mb-6">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92 }} animate={headInView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.6, delay: 0.35 }}
+              className="p-5 rounded-2xl border border-border/40 bg-card mb-6"
+            >
               <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 mb-1">Total average overspend</p>
               <p className="text-3xl font-black">€29,000<span className="text-base font-normal text-muted-foreground">/year</span></p>
               <p className="text-xs text-muted-foreground/50 mt-1">Across payments, shipping, and SaaS</p>
-            </div>
+            </motion.div>
 
-            <Link to="/Analyzer">
-              <button className="flex items-center gap-2 text-sm font-semibold hover:gap-3 transition-all">
-                See my overspend <ArrowRight size={13} />
-              </button>
-            </Link>
+            <motion.div
+              initial={{ opacity: 0 }} animate={headInView ? { opacity: 1 } : {}}
+              transition={{ delay: 0.5 }}
+            >
+              <Link to="/Analyzer">
+                <button className="flex items-center gap-2 text-sm font-semibold hover:gap-3 transition-all">
+                  See my overspend <ArrowRight size={13} />
+                </button>
+              </Link>
+            </motion.div>
           </div>
 
-          {/* Right — visual comparison cards */}
+          {/* Right — animated cards */}
           <div className="space-y-4">
-            {PROBLEMS.map((item, i) => (
-              <div key={i} className={`p-6 rounded-2xl border ${item.bg}`}>
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${item.bg}`}>
-                      <item.icon size={15} className={item.color} />
+            {PROBLEMS.map((item, i) => {
+              const cardRef = useRef(null);
+              const cardInView = useInView(cardRef, { once: true, margin: "-60px" });
+              return (
+                <motion.div
+                  key={i}
+                  ref={cardRef}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={cardInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.65, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ x: 6, transition: { duration: 0.2 } }}
+                  className={`p-6 rounded-2xl border ${item.bg}`}
+                >
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${item.bg}`}>
+                        <item.icon size={15} className={item.color} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{item.label}</p>
+                        <p className="text-[10px] text-muted-foreground/50">{item.benchmark}</p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <motion.p
+                        className={`text-2xl font-black tabular-nums ${item.color}`}
+                        initial={{ opacity: 0, scale: 0.6 }}
+                        animate={cardInView ? { opacity: 1, scale: 1 } : {}}
+                        transition={{ delay: i * 0.12 + 0.3, type: "spring", stiffness: 260, damping: 16 }}
+                      >{item.metric}</motion.p>
+                      <p className={`text-[10px] font-semibold ${item.color} opacity-70`}>{item.annual}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-[10px] text-muted-foreground/50">You</span>
+                        <span className="text-[10px] font-semibold text-muted-foreground/70">{item.yours}% of max</span>
+                      </div>
+                      <AnimatedBar width={item.yours} color={item.barColor} delay={i * 0.12 + 0.15} />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold">{item.label}</p>
-                      <p className="text-[10px] text-muted-foreground/50">{item.benchmark}</p>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-[10px] text-muted-foreground/50">Network rate</span>
+                        <span className="text-[10px] font-semibold text-green-600">{item.theirs}% of max</span>
+                      </div>
+                      <GreenBar width={item.theirs} delay={i * 0.12 + 0.15} />
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className={`text-2xl font-black tabular-nums ${item.color}`}>{item.metric}</p>
-                    <p className={`text-[10px] font-semibold ${item.color} opacity-70`}>{item.annual}</p>
-                  </div>
-                </div>
 
-                {/* Comparison bars */}
-                <div className="space-y-2">
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-[10px] text-muted-foreground/50">You</span>
-                      <span className="text-[10px] font-semibold text-muted-foreground/70">{item.yours}% of max</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-border/30 overflow-hidden">
-                      <div className="h-full rounded-full opacity-70" style={{ width: `${item.yours}%`, background: item.barColor }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-[10px] text-muted-foreground/50">Network rate</span>
-                      <span className="text-[10px] font-semibold text-green-600">{item.theirs}% of max</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-border/30 overflow-hidden">
-                      <div className="h-full rounded-full bg-green-500 opacity-70" style={{ width: `${item.theirs}%` }} />
-                    </div>
-                  </div>
-                </div>
-
-                <p className={`text-[11px] font-medium mt-3 ${item.color}`}>{item.delta}</p>
-              </div>
-            ))}
+                  <p className={`text-[11px] font-medium mt-3 ${item.color}`}>{item.delta}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
-
       </div>
     </section>
   );
