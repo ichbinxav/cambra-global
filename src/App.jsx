@@ -21,6 +21,7 @@ import Account from '@/pages/Account';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import { base44 } from '@/api/base44Client';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoadingAuth } = useAuth();
