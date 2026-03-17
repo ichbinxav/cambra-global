@@ -85,11 +85,18 @@ export default function ThreeLayersSection() {
               <p className="text-background/40 text-sm leading-relaxed mb-7">
                 You join. We do the negotiating. You keep the savings.
               </p>
-              <Link to="/Deals">
-                <button className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-background text-foreground text-sm font-bold hover:bg-background/90 transition-colors">
-                  See all deals <ArrowRight size={12} />
-                </button>
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Link to="/Deals">
+                  <button className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-background text-foreground text-sm font-bold hover:bg-background/90 transition-colors">
+                    See all deals <ArrowRight size={12} />
+                  </button>
+                </Link>
+                <Link to="/Onboarding">
+                  <button className="inline-flex items-center gap-2 h-11 px-6 rounded-full border border-background/20 text-background/70 text-sm font-medium hover:bg-background/10 transition-colors">
+                    Join to unlock <ArrowRight size={12} />
+                  </button>
+                </Link>
+              </div>
             </div>
             <div className="flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
