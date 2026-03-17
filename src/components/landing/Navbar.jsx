@@ -9,6 +9,9 @@ const NAV = [
   { label: "How it works", href: "#how" },
   { label: "Analyzer", href: "/Analyzer" },
   { label: "Deals", href: "/Deals" },
+  { label: "Insights", href: "/Insights" },
+  { label: "Network", href: "/Network" },
+  { label: "Join THE NoDE", href: "/Onboarding" },
 ];
 
 export default function Navbar() {
