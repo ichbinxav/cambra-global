@@ -126,26 +126,33 @@ export default function ThreeLayersSection() {
           initial={{ opacity: 0, y: 16 }} animate={extraInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
         >
-          <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/35 mb-3">Additional benefits</p>
+          <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-3 font-semibold">Also included</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
               {
                 icon: Network,
                 label: "Network",
                 desc: "Connect with independent brands. Build partnerships, explore collaboration opportunities, and grow within a curated ecosystem of operators.",
+                href: "/Network",
               },
               {
                 icon: BarChart2,
                 label: "Intelligence",
                 desc: "Benchmark your infrastructure against the network. Track your savings score, identify gaps, and access market insights.",
+                href: "/Insights",
               },
             ].map(item => (
-              <div key={item.label} className="rounded-xl border border-border/30 bg-card/40 p-5 flex items-start gap-4">
-                <item.icon size={14} className="text-muted-foreground/35 mt-0.5 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-muted-foreground/55 mb-1">{item.label}</p>
-                  <p className="text-[11px] text-muted-foreground/45 leading-relaxed">{item.desc}</p>
+              <div key={item.label} className="rounded-xl border border-border/50 bg-card p-5 flex flex-col gap-3">
+                <div className="flex items-start gap-3">
+                  <item.icon size={15} className="text-foreground/50 mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold mb-1">{item.label}</p>
+                    <p className="text-[12px] text-muted-foreground/70 leading-relaxed">{item.desc}</p>
+                  </div>
                 </div>
+                <Link to="/Onboarding" className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors border border-border/50 rounded-full px-3 py-1.5 w-fit hover:border-foreground/30">
+                  Join to access <ArrowRight size={10} />
+                </Link>
               </div>
             ))}
           </div>
