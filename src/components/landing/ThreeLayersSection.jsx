@@ -25,7 +25,7 @@ export default function ThreeLayersSection() {
           <motion.h2
             initial={{ opacity: 0, y: 30 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4 max-w-2xl"
+            className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4 max-w-2xl text-foreground"
           >
             Infrastructure first.<br />Everything else follows.
           </motion.h2>
@@ -34,7 +34,7 @@ export default function ThreeLayersSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-muted-foreground text-base max-w-lg"
           >
-            Our core is simple: reduce what you spend on payments, shipping, and tools. The rest — network, intelligence — amplifies that foundation.
+            Infrastructure layer.
           </motion.p>
         </div>
 
