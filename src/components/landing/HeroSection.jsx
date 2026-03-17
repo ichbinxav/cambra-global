@@ -113,7 +113,7 @@ export default function HeroSection() {
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link to="/Analyzer" className="flex-1 sm:flex-none">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2">
+                  <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2 bg-green-600 hover:bg-green-700">
                     Run the Analyzer <ArrowRight className="h-4 w-4" />
                   </Button>
                 </motion.div>
@@ -127,8 +127,13 @@ export default function HeroSection() {
               </Link>
             </motion.div>
 
-            <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/40 mt-4">
-              <strong className="text-foreground/55">€18K–€72K</strong> unlocked per year · <strong className="text-foreground/55">1,000+</strong> member brands · No lock-in
+            {/* Micro copy under CTA */}
+            <motion.p variants={fadeUp} className="text-sm text-muted-foreground/60 mt-4">
+              Find out how much you're losing in 2 minutes.
+            </motion.p>
+
+            <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/40 mt-3">
+              <strong className="text-foreground/55">Avg. savings detected:</strong> €8,430/year · <strong className="text-foreground/55">€5K–€72K</strong> per brand
             </motion.p>
           </motion.div>
 
