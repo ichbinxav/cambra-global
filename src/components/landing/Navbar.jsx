@@ -58,9 +58,9 @@ export default function Navbar() {
             <>
               <button
                 onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                className="h-8 px-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="h-8 px-4 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border border-border/50 rounded-full hover:border-border"
               >
-                Sign in
+                Sign in with Google / Apple
               </button>
               <Link to="/Analyzer">
                 <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm">
