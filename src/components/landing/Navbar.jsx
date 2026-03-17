@@ -48,16 +48,27 @@ export default function Navbar() {
 
         {/* Desktop CTAs */}
         <div className="hidden md:flex items-center gap-2">
-          <Link to="/Dashboard">
-            <Button variant="ghost" size="sm" className="h-8 rounded-full px-4 text-sm text-muted-foreground">
-              Sign in
-            </Button>
-          </Link>
-          <Link to="/Analyzer">
-            <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm">
-              Run free Analyzer
-            </Button>
-          </Link>
+          {isAuthenticated ? (
+            <Link to="/Dashboard">
+              <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm">
+                Dashboard →
+              </Button>
+            </Link>
+          ) : (
+            <>
+              <button
+                onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                className="h-8 px-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Sign in
+              </button>
+              <Link to="/Analyzer">
+                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm">
+                  Run free Analyzer
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile toggle */}
