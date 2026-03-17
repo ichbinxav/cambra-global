@@ -43,9 +43,15 @@ export default function AnalyzerCTA() {
               </Button>
             </Link>
             <p className="mt-4 text-[11px] text-muted-foreground/40">No commitment · Instant benchmark · Real network data</p>
-          </div>
+          </motion.div>
 
-          <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm">
+          <motion.div
+            ref={rightRef}
+            initial={{ opacity: 0, x: 50 }}
+            animate={rightInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm"
+          >
             <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between">
               <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/60">Sample analysis — €500K brand</span>
               <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -76,7 +82,7 @@ export default function AnalyzerCTA() {
                 </button>
               </Link>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
