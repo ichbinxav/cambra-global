@@ -19,6 +19,11 @@ const EXTRAS = [
 ];
 
 export default function PricingSection() {
+  const leftRef = useRef(null);
+  const leftInView = useInView(leftRef, { once: true, margin: "-80px" });
+  const rightRef = useRef(null);
+  const rightInView = useInView(rightRef, { once: true, margin: "-80px" });
+
   return (
     <section className="py-24 px-5 border-t border-border/40">
       <div className="max-w-6xl mx-auto">
@@ -26,7 +31,12 @@ export default function PricingSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
           {/* Left */}
-          <div>
+          <motion.div
+            ref={leftRef}
+            initial={{ opacity: 0, x: -40 }}
+            animate={leftInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
             <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2">
               <span className="w-4 h-px bg-border" /> Pricing
             </p>
