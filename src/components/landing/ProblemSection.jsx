@@ -114,9 +114,9 @@ export default function ProblemSection() {
               transition={{ duration: 0.6, delay: 0.35 }}
               className="p-5 rounded-2xl border border-border/40 bg-card mb-6"
             >
-              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 mb-1">Total average overspend</p>
-              <p className="text-3xl font-black">€29,000<span className="text-base font-normal text-muted-foreground">/year</span></p>
-              <p className="text-xs text-muted-foreground/50 mt-1">Across payments, shipping, and SaaS</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 mb-2">Average annual overspend</p>
+              <p className="text-4xl font-black text-red-600">€29K<span className="text-sm font-normal text-muted-foreground">/yr</span></p>
+              <p className="text-[11px] text-muted-foreground/50 mt-2">Across payments, shipping, SaaS</p>
             </motion.div>
 
             <motion.div
