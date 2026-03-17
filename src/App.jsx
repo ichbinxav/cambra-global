@@ -22,8 +22,18 @@ import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoadingAuth } = useAuth();
+  if (isLoadingAuth) return null;
+  if (!isAuthenticated) {
+    base44.auth.redirectToLogin(window.location.href);
+    return null;
+  }
+  return children;
+};
+
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
