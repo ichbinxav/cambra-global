@@ -78,9 +78,9 @@ export default function HeroSection() {
               THE NoDE fixes that.
             </motion.p>
 
-            {/* Subheadline */}
-            <motion.p variants={fadeUp} className="text-[clamp(0.9rem,1.6vw,1.05rem)] text-foreground/65 leading-relaxed mb-6 max-w-[460px]">
-              THE NoDE is the economic layer behind independent brands. We aggregate demand to unlock better deals across payments, shipping, and software — and show you exactly where you're overpaying.
+            {/* Subheadline — MECHANISM CLARITY */}
+            <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-8 max-w-[520px]">
+              We aggregate independent brands into a single leverage bloc. You unlock better rates on payments, shipping, and SaaS. Our cost analyzer proves exactly where you're losing money — then you access the deals.
             </motion.p>
 
             {/* Pricing pill — FREE */}
