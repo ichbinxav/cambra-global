@@ -107,9 +107,9 @@ export default function Navbar() {
               <>
                 <button
                   onClick={() => { setOpen(false); base44.auth.redirectToLogin(window.location.href); }}
-                  className="w-full h-12 rounded-full text-sm border border-border/70 hover:bg-secondary transition-colors"
+                  className="w-full h-12 rounded-full text-sm border border-border/70 hover:bg-secondary transition-colors font-medium"
                 >
-                  Sign in
+                  Sign in with Google / Apple
                 </button>
                 <Link to="/Onboarding" onClick={() => setOpen(false)}>
                   <Button variant="outline" className="w-full h-12 rounded-full text-sm">Join THE NoDE</Button>

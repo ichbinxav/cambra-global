@@ -42,7 +42,7 @@ export default function AnalyzerCTA() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <p className="mt-4 text-[11px] text-muted-foreground/40">No commitment · Instant benchmark · Real network data</p>
+            <p className="mt-4 text-[11px] text-muted-foreground/40">Instant benchmark · Real network data</p>
           </motion.div>
 
           <motion.div
