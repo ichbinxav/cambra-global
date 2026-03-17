@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { ArrowRight, ArrowLeft, Upload, X, CheckCircle2, CreditCard, Truck, Package, BarChart3, Building2, MapPin } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import DataIngestionStep from "@/components/analyzer/DataIngestionStep";
+import { computeInfraScore } from "@/lib/scoreEngine";
 
 const STEPS = [
   {
@@ -106,10 +107,21 @@ export default function Analyzer() {
     const saasOpt = data.total_saas_spend * 0.7;
     const saasSavings = Math.round((data.total_saas_spend - saasOpt) * 12);
     const totalSavings = paymentSavings + shippingSavings + saasSavings;
-    const payScore = Math.max(0, Math.min(100, 100 - (data.payment_fee_pct - BENCHMARK_PAYMENT) * 30));
-    const shipScore = Math.max(0, Math.min(100, 100 - (data.monthly_shipping_cost / Math.max(data.monthly_shipments, 1) - 5) * 5));
-    const saasScore = Math.max(0, Math.min(100, 100 - data.total_saas_spend / 50));
-    const infraScore = Math.round((payScore + shipScore + saasScore) / 3);
+
+    // Use the multi-dimensional score engine
+    const scoreReport = computeInfraScore({
+      payment_fee_pct: data.payment_fee_pct,
+      monthly_shipping_cost: data.monthly_shipping_cost,
+      monthly_shipments: data.monthly_shipments,
+      total_saas_spend: data.total_saas_spend,
+      monthly_revenue: data.monthly_revenue,
+      payment_provider: data.payment_provider === "Other" ? customPayment : data.payment_provider,
+      shipping_provider: data.shipping_provider === "Other" ? customShipping : data.shipping_provider,
+      dtc_pct: data.dtc_pct,
+      marketplace_pct: data.marketplace_pct,
+      wholesale_pct: data.wholesale_pct,
+    }, "manual");
+    const infraScore = scoreReport.total;
 
     const provider = data.payment_provider === "Other" ? customPayment : data.payment_provider;
     const shipper = data.shipping_provider === "Other" ? customShipping : data.shipping_provider;
