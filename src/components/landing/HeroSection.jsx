@@ -1,63 +1,60 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, TrendingDown } from "lucide-react";
+import { ArrowRight, TrendingDown, CreditCard, Truck, Package } from "lucide-react";
 
-const metrics = [
-  { label: "Avg. annual savings", value: "€29K" },
-  { label: "Network payment rate", value: "1.4%" },
-  { label: "Avg. shipping reduction", value: "−18%" },
+const SAVINGS = [
+  { label: "Payments", value: "€38K", sub: "−52% fee rate", color: "text-blue-600", bg: "bg-blue-500/[0.07] border-blue-500/20", icon: CreditCard },
+  { label: "Shipping", value: "€19K", sub: "−18% carrier cost", color: "text-green-600", bg: "bg-green-500/[0.07] border-green-500/20", icon: Truck },
+  { label: "SaaS", value: "€24K", sub: "−30% stack waste", color: "text-orange-500", bg: "bg-orange-500/[0.07] border-orange-500/20", icon: Package },
 ];
 
-const proof = [
-  { saving: "€38K/yr", area: "Payments", desc: "Reduced from 2.9% → 1.4%" },
-  { saving: "€24K/yr", area: "Infrastructure", desc: "Hidden costs identified" },
-  { saving: "€19K/yr", area: "Shipping", desc: "Repriced in one afternoon" },
+const STATS = [
+  { value: "€29K", label: "Avg. savings/yr" },
+  { value: "1.4%", label: "Network payment rate" },
+  { value: "−18%", label: "Shipping reduction" },
+  { value: "1,000+", label: "Member brands" },
 ];
 
 export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">
-      {/* Fine grid */}
-      <div
-        className="absolute inset-0 opacity-[0.025] pointer-events-none"
+
+      {/* Grid background */}
+      <div className="absolute inset-0 opacity-[0.022] pointer-events-none"
         style={{
-          backgroundImage:
-            "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
+          backgroundImage: "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
-        }}
-      />
+        }} />
 
-      {/* Node watermark */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[55vw] font-thin text-foreground/[0.015] select-none pointer-events-none leading-none">
-        ✱
-      </div>
+      {/* Watermark */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[55vw] font-thin text-foreground/[0.014] select-none pointer-events-none leading-none">✱</div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-5">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-12 lg:gap-20 items-center">
-          
-          {/* Left — headline + CTAs */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_440px] gap-14 lg:gap-20 items-center">
+
+          {/* LEFT */}
           <div>
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 mb-8 px-3.5 py-1.5 rounded-full border border-border/50 bg-background/80 backdrop-blur-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-              <span className="text-[11px] font-medium text-muted-foreground">Powering independent commerce</span>
+            {/* Pill */}
+            <div className="inline-flex items-center gap-2 mb-7 px-3.5 py-1.5 rounded-full border border-border/50 bg-background/80">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="text-[11px] font-medium text-muted-foreground">Infrastructure intelligence for independent brands</span>
             </div>
 
-            <h1 className="text-[clamp(2.8rem,8vw,7rem)] font-black tracking-[-0.04em] leading-[0.88] mb-6">
+            {/* Headline */}
+            <h1 className="text-[clamp(3rem,8.5vw,7.5rem)] font-black tracking-[-0.05em] leading-[0.86] mb-6">
               Stop overpaying<br />
               for your<br />
               infrastructure.
             </h1>
 
-            <p className="text-[clamp(1rem,2vw,1.25rem)] text-muted-foreground leading-relaxed mb-10 max-w-md">
-              See exactly how much you can save in 2 minutes — across payments, shipping, and SaaS.
+            <p className="text-[clamp(1rem,2vw,1.2rem)] text-muted-foreground leading-relaxed mb-10 max-w-[420px]">
+              Discover how much you're losing in 2 minutes — then fix it with network-negotiated rates.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 mb-8">
               <Link to="/Analyzer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-10 text-base font-bold shadow-lg gap-2">
-                  Run the Analyzer
-                  <ArrowRight className="h-4 w-4" />
+                  Run the Analyzer <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/Onboarding" className="w-full sm:w-auto">
@@ -67,66 +64,86 @@ export default function HeroSection() {
               </Link>
             </div>
 
-            {/* Trust line */}
-            <p className="mt-8 text-[12px] text-muted-foreground/50">
-              Brands save <strong className="text-foreground/70">€18,000 – €72,000/year</strong> · No credit card required
+            <p className="text-[11px] text-muted-foreground/45 mb-10">
+              Brands save <strong className="text-foreground/60">€18,000 – €72,000/year</strong> · No credit card required
             </p>
 
             {/* Stats row */}
-            <div className="mt-10 flex gap-8 flex-wrap">
-              {metrics.map(m => (
-                <div key={m.label}>
-                  <p className="text-2xl font-black tracking-tight">{m.value}</p>
-                  <p className="text-[11px] text-muted-foreground/50 mt-0.5">{m.label}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {STATS.map(s => (
+                <div key={s.label} className="p-4 rounded-xl border border-border/40 bg-card/50">
+                  <p className="text-2xl font-black tracking-tight">{s.value}</p>
+                  <p className="text-[10px] text-muted-foreground/50 mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right — live proof card */}
-          <div className="hidden lg:block">
-            <div className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden shadow-xl">
-              <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between">
+          {/* RIGHT — visual savings dashboard */}
+          <div className="hidden lg:flex flex-col gap-3">
+            {/* Header */}
+            <div className="rounded-2xl border border-border/60 bg-card/90 backdrop-blur-sm overflow-hidden shadow-xl">
+              <div className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/60">Live network results</span>
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/50">Live savings analysis</span>
                 </div>
-                <TrendingDown size={13} className="text-muted-foreground/30" />
+                <TrendingDown size={12} className="text-muted-foreground/30" />
               </div>
 
-              <div className="divide-y divide-border/30">
-                {proof.map((item, i) => (
-                  <div key={i} className="px-6 py-4 flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-semibold">{item.area}</p>
-                      <p className="text-[11px] text-muted-foreground/50 mt-0.5">{item.desc}</p>
+              {/* Category cards */}
+              <div className="p-4 space-y-2">
+                {SAVINGS.map((item, i) => (
+                  <div key={i} className={`flex items-center gap-3 p-3.5 rounded-xl border ${item.bg}`}>
+                    <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center shrink-0`}>
+                      <item.icon size={13} className={item.color} />
                     </div>
-                    <span className="text-lg font-black text-foreground tabular-nums">{item.saving}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold">{item.label}</p>
+                      <p className="text-[10px] text-muted-foreground/50">{item.sub}</p>
+                    </div>
+                    <p className={`text-lg font-black tabular-nums ${item.color}`}>{item.value}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="px-6 py-5 bg-foreground text-background flex items-center justify-between">
+              {/* Total */}
+              <div className="mx-4 mb-4 p-4 rounded-xl bg-foreground text-background flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.2em] opacity-40 mb-0.5">Total identified</p>
-                  <p className="text-3xl font-black tracking-tight">€81K<span className="text-lg font-normal opacity-50">/yr</span></p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Total identified</p>
+                  <p className="text-3xl font-black tracking-tight">€81K<span className="text-base font-normal opacity-40">/yr</span></p>
                 </div>
                 <Link to="/Analyzer">
-                  <button className="h-10 px-5 rounded-full bg-background/10 hover:bg-background/20 text-background text-sm font-semibold transition-colors border border-background/20 flex items-center gap-1.5">
-                    Analyze mine <ArrowRight size={13} />
+                  <button className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5">
+                    Analyze mine <ArrowRight size={11} />
                   </button>
                 </Link>
               </div>
             </div>
 
-            <p className="text-center text-[11px] text-muted-foreground/30 mt-4">
-              Sample — 3 independent brands · 2025
-            </p>
+            {/* Infra score mini card */}
+            <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center gap-4">
+              <div className="relative w-12 h-12 shrink-0">
+                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 44 44">
+                  <circle cx="22" cy="22" r="18" fill="none" stroke="hsl(var(--border))" strokeWidth="4" />
+                  <circle cx="22" cy="22" r="18" fill="none" stroke="#f97316" strokeWidth="4" strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 18} strokeDashoffset={2 * Math.PI * 18 * 0.43} />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[11px] font-black text-orange-500">57</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-semibold">Infrastructure Score: <span className="text-orange-500">57/100</span></p>
+                <p className="text-[10px] text-muted-foreground/50">Under-optimized — potential score: 84/100</p>
+              </div>
+            </div>
+
+            <p className="text-center text-[10px] text-muted-foreground/25">Sample analysis · Independent brand · 2025</p>
           </div>
         </div>
       </div>
 
-      {/* Bottom gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </section>
   );
