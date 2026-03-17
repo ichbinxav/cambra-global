@@ -77,13 +77,13 @@ export default function ThreeLayersSection() {
             <div className="flex-1 max-w-md">
               <p className="text-[10px] tracking-[0.3em] uppercase text-background/40 mb-5">What you unlock</p>
               <h3 className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-black tracking-[-0.04em] leading-[0.9] mb-4">
-                Better rates.<br />From day one.
+                Structural rates.<br />Immediately activated.
               </h3>
               <p className="text-background/55 text-sm leading-relaxed mb-3">
-                Payments at 1.4% instead of 2.9%. Shipping 18% cheaper than retail. SaaS tools at group licensing rates. These aren't discounts — they're the rates our collective volume commands.
+                Payment processing at 1.4% vs. your current rate. Shipping 18% below market. SaaS at institutional group rates. These are the rates collective volume commands — not discounts.
               </p>
               <p className="text-background/40 text-sm leading-relaxed mb-7">
-                You join. We do the negotiating. You keep the savings.
+                Join. Activate. Save. No negotiation required.
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Link to="/Deals">
