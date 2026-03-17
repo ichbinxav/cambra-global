@@ -375,7 +375,7 @@ function StepConnect({ mode, setMode, connected, setConnected, uploaded, setUplo
                 <ChevronRight size={12} /> Payments · Shipping · SaaS costs
               </div>
               <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground/60">
-                <ChevronRight size={12} /> Estimated savings in < 2 min
+                <ChevronRight size={12} /> Estimated savings in under 2 min
               </div>
             </div>
           </motion.div>
