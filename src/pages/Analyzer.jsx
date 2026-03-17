@@ -404,6 +404,11 @@ export default function Analyzer() {
     }
   };
 
+  const canContinue = () => {
+    if (step === 0) return data.brand_name.trim().length > 0;
+    return true;
+  };
+
   const StepIcon = STEPS[step].icon;
   const progress = ((step + 1) / STEPS.length) * 100;
 
