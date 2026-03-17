@@ -41,10 +41,10 @@ export default function PricingSection() {
               <span className="w-4 h-px bg-border" /> Pricing
             </p>
             <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5">
-              Your savings<br />fund the network.
+              You don't pay us.<br />You keep the savings.
             </h2>
             <p className="text-muted-foreground text-base leading-relaxed mb-8 max-w-sm">
-              No upfront cost. No risk. You only pay when your economics improve.
+              Zero upfront cost. Zero commitment. You only pay when your infrastructure costs drop. When they do, we share in the gain.
             </p>
 
             {/* Savings range */}
