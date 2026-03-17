@@ -62,7 +62,7 @@ export default function HeroSection() {
         >
           <Link to="/Onboarding">
             <Button size="lg" className="rounded-full px-8 text-sm tracking-wide group">
-              Join THE N✱DE
+              Join THE NODE →
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
