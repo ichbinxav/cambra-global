@@ -64,7 +64,7 @@ export default function PricingSection() {
               {/* Early partner badge */}
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-background/15 bg-background/10 mb-4">
                 <span className="w-1 h-1 rounded-full bg-green-400" />
-                <span className="text-[10px] font-semibold text-background/60 tracking-[0.1em] uppercase">Early partner</span>
+                <span className="text-[10px] font-semibold text-background/60 tracking-[0.1em] uppercase">THE NoDE · Early partner</span>
               </div>
 
               <div className="flex items-baseline gap-3 mb-1">
@@ -106,7 +106,7 @@ export default function PricingSection() {
                 </Button>
               </Link>
               <p className="text-[10px] text-muted-foreground/40 text-center mt-3">
-                Early partners get permanent preferential terms · Limited spots
+                THE NoDE early partners get permanent preferential terms · Limited spots
               </p>
             </div>
           </div>

@@ -65,7 +65,7 @@ export default function HeroSection() {
             </div>
 
             <p className="text-[11px] text-muted-foreground/45 mb-10">
-              Brands unlock <strong className="text-foreground/60">€18,000 – €72,000/year</strong> · Based on real network benchmarks
+              Brands on THE NoDE unlock <strong className="text-foreground/60">€18,000 – €72,000/year</strong> · Based on real network benchmarks
             </p>
 
             {/* Stats row */}
