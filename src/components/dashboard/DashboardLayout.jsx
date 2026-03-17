@@ -60,7 +60,7 @@ export default function DashboardLayout() {
             </div>
           </Link>
           <button
-            onClick={() => base44.auth.logout()}
+            onClick={() => base44.auth.logout("/Landing")}
             className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
           >
             <LogOut size={14} />
@@ -108,7 +108,7 @@ export default function DashboardLayout() {
                 </div>
               </Link>
               <button
-                onClick={() => base44.auth.logout()}
+                onClick={() => base44.auth.logout("/Landing")}
                 className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm text-muted-foreground"
               >
                 <LogOut size={16} /> Sign out
