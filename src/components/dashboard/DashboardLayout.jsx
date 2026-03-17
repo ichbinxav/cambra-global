@@ -52,7 +52,13 @@ export default function DashboardLayout() {
           })}
         </nav>
 
-        <div className="p-3 border-t border-border/40">
+        <div className="p-3 border-t border-border/40 space-y-0.5">
+          <Link to="/Landing">
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors">
+              <Home size={14} />
+              Go to homepage
+            </div>
+          </Link>
           <button
             onClick={() => base44.auth.logout()}
             className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
