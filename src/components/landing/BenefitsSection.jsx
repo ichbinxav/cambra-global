@@ -1,4 +1,6 @@
-import { TrendingUp, BarChart2, Network, Zap, Clock, Focus } from "lucide-react";
+import { TrendingUp, BarChart2, Network, Clock, Focus } from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 
 const BENEFITS = [
   {
@@ -50,65 +52,122 @@ const PROOF = [
 ];
 
 export default function BenefitsSection() {
+  const headRef = useRef(null);
+  const headInView = useInView(headRef, { once: true, margin: "-80px" });
+  const editorialRef = useRef(null);
+  const editorialInView = useInView(editorialRef, { once: true, margin: "-60px" });
+  const proofRef = useRef(null);
+  const proofInView = useInView(proofRef, { once: true, margin: "-60px" });
+
   return (
     <section className="py-28 px-5 border-t border-border/40">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
-        <div className="max-w-2xl mb-16">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2">
+        <div ref={headRef} className="max-w-2xl mb-16">
+          <motion.p
+            initial={{ opacity: 0, y: 16 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5 }}
+            className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2"
+          >
             <span className="w-4 h-px bg-border" /> Why brands join
-          </p>
-          <h2 className="text-[clamp(2.4rem,6vw,5rem)] font-black tracking-[-0.05em] leading-[0.87] mb-5">
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 50 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[clamp(2.4rem,6vw,5rem)] font-black tracking-[-0.05em] leading-[0.87] mb-5"
+          >
             The economic advantage<br />of THE NoDE.
-          </h2>
-          <p className="text-muted-foreground text-lg leading-relaxed">
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-muted-foreground text-lg leading-relaxed"
+          >
             We turn your infrastructure into a competitive advantage.
-          </p>
+          </motion.p>
         </div>
 
         {/* Benefits grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border/30 rounded-2xl overflow-hidden border border-border/30 mb-16">
           {BENEFITS.map((b, i) => {
             const IconComp = b.iconOverride ? ICONS[b.iconOverride] : b.icon;
+            const ref = useRef(null);
+            const inView = useInView(ref, { once: true, margin: "-50px" });
             return (
-              <div key={i} className="bg-background p-8 flex flex-col gap-4">
-                <div className="w-9 h-9 rounded-xl bg-secondary border border-border/50 flex items-center justify-center shrink-0">
+              <motion.div
+                key={i}
+                ref={ref}
+                initial={{ opacity: 0, y: 30 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.55, delay: (i % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ backgroundColor: "hsl(var(--secondary))", transition: { duration: 0.2 } }}
+                className="bg-background p-8 flex flex-col gap-4"
+              >
+                <motion.div
+                  className="w-9 h-9 rounded-xl bg-secondary border border-border/50 flex items-center justify-center shrink-0"
+                  whileHover={{ scale: 1.15, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   <IconComp size={15} className="text-muted-foreground/60" />
-                </div>
+                </motion.div>
                 <div>
                   <h3 className="text-base font-bold tracking-tight mb-2">{b.title}</h3>
                   <p className="text-sm text-muted-foreground/70 leading-relaxed">{b.body}</p>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
 
         {/* Editorial block */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-12 items-center mb-16 py-14 border-y border-border/40">
-          <div>
-            <h3 className="text-[clamp(1.8rem,4vw,3rem)] font-black tracking-[-0.04em] leading-[0.9]">
-              This is not a tool.<br />It's your economic layer.
-            </h3>
-          </div>
-          <div className="space-y-4 text-muted-foreground text-base leading-relaxed">
+        <div
+          ref={editorialRef}
+          className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-12 items-center mb-16 py-14 border-y border-border/40"
+        >
+          <motion.h3
+            initial={{ opacity: 0, x: -50 }} animate={editorialInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[clamp(1.8rem,4vw,3rem)] font-black tracking-[-0.04em] leading-[0.9]"
+          >
+            This is not a tool.<br />It's your economic layer.
+          </motion.h3>
+          <motion.div
+            initial={{ opacity: 0, x: 50 }} animate={editorialInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-4 text-muted-foreground text-base leading-relaxed"
+          >
             <p>You don't need more tools. You need better economics.</p>
             <p>THE NoDE connects your business to a network designed to optimize how you spend, scale, and operate — so your infrastructure works for you, not against you.</p>
-          </div>
+          </motion.div>
         </div>
 
         {/* Proof strip */}
-        <div>
-          <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/35 text-center mb-6">
+        <div ref={proofRef}>
+          <motion.p
+            initial={{ opacity: 0 }} animate={proofInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5 }}
+            className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/35 text-center mb-6"
+          >
             Average impact across network members
-          </p>
+          </motion.p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border/30 rounded-2xl overflow-hidden border border-border/30">
             {PROOF.map((p, i) => (
-              <div key={i} className="bg-card px-6 py-7 text-center">
-                <p className="text-3xl font-black tracking-tight mb-1">{p.value}</p>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                animate={proofInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="bg-card px-6 py-7 text-center"
+              >
+                <motion.p
+                  className="text-3xl font-black tracking-tight mb-1"
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={proofInView ? { scale: 1, opacity: 1 } : {}}
+                  transition={{ delay: i * 0.1 + 0.2, type: "spring", stiffness: 260, damping: 18 }}
+                >{p.value}</motion.p>
                 <p className="text-[11px] text-muted-foreground/50">{p.label}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
