@@ -56,50 +56,71 @@ export default function Onboarding() {
   };
 
   const slideVariants = {
-    enter: { opacity: 0, x: 40 },
+    enter: { opacity: 0, x: 30 },
     center: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -40 },
+    exit: { opacity: 0, x: -30 },
   };
+
+  const ChipButton = ({ label, selected, onClick }) => (
+    <button
+      onClick={onClick}
+      className={`p-4 rounded-xl border text-sm text-left transition-all duration-200 ${
+        selected
+          ? "border-foreground bg-foreground text-background font-medium"
+          : "border-border/60 text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+      }`}
+    >
+      {label}
+    </button>
+  );
 
   const renderStep = () => {
     switch (step) {
       case 0:
         return (
           <div className="text-center">
-            <motion.div className="text-6xl mb-8 select-none" animate={{ rotate: [0, 5, -5, 0] }} transition={{ duration: 4, repeat: Infinity }}>✱</motion.div>
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter mb-4">Welcome to THE N✱DE</h1>
-            <p className="text-muted-foreground text-lg max-w-md mx-auto">Let's set up your brand profile. This takes less than 2 minutes.</p>
+            <motion.div
+              className="text-5xl mb-10 select-none opacity-30"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            >✱</motion.div>
+            <p className="text-[10px] tracking-[0.35em] uppercase text-muted-foreground mb-4">Welcome</p>
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-[-0.03em] leading-[0.92] mb-4">Join THE Node</h1>
+            <p className="text-muted-foreground text-lg max-w-md mx-auto leading-relaxed">Let's set up your brand profile. This takes less than 2 minutes.</p>
           </div>
         );
       case 1:
         return (
-          <div className="space-y-6 max-w-md mx-auto w-full">
-            <h2 className="text-3xl font-bold tracking-tighter text-center mb-8">Your brand</h2>
-            <div className="space-y-2">
-              <Label className="text-xs tracking-wide uppercase text-muted-foreground">Brand name</Label>
-              <Input value={data.name} onChange={e => setData({ ...data, name: e.target.value })} placeholder="Enter brand name" className="h-12" />
+          <div className="space-y-5 max-w-md mx-auto w-full">
+            <div className="mb-8">
+              <p className="text-[10px] tracking-[0.35em] uppercase text-muted-foreground mb-2">Step 1 of 5</p>
+              <h2 className="text-3xl font-bold tracking-tight">Your brand</h2>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs tracking-wide uppercase text-muted-foreground">Website</Label>
-              <Input value={data.website} onChange={e => setData({ ...data, website: e.target.value })} placeholder="https://" className="h-12" />
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Brand name</Label>
+              <Input value={data.name} onChange={e => setData({ ...data, name: e.target.value })} placeholder="Enter brand name" className="h-12 text-sm" />
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs tracking-wide uppercase text-muted-foreground">Country</Label>
-              <Input value={data.country} onChange={e => setData({ ...data, country: e.target.value })} placeholder="e.g. Germany" className="h-12" />
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Website</Label>
+              <Input value={data.website} onChange={e => setData({ ...data, website: e.target.value })} placeholder="https://" className="h-12 text-sm" />
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs tracking-wide uppercase text-muted-foreground">Category</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Country</Label>
+              <Input value={data.country} onChange={e => setData({ ...data, country: e.target.value })} placeholder="e.g. Germany" className="h-12 text-sm" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Category</Label>
               <Select value={data.category} onValueChange={v => setData({ ...data, category: v })}>
-                <SelectTrigger className="h-12"><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectTrigger className="h-12 text-sm"><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs tracking-wide uppercase text-muted-foreground">Team size</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Team size</Label>
               <Select value={data.size} onValueChange={v => setData({ ...data, size: v })}>
-                <SelectTrigger className="h-12"><SelectValue placeholder="Select size" /></SelectTrigger>
+                <SelectTrigger className="h-12 text-sm"><SelectValue placeholder="Select size" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="solo">Solo founder</SelectItem>
                   <SelectItem value="small">2–10 people</SelectItem>
@@ -112,12 +133,15 @@ export default function Onboarding() {
         );
       case 2:
         return (
-          <div className="space-y-6 max-w-md mx-auto w-full">
-            <h2 className="text-3xl font-bold tracking-tighter text-center mb-8">Revenue</h2>
-            <div className="space-y-2">
-              <Label className="text-xs tracking-wide uppercase text-muted-foreground">Annual revenue range</Label>
+          <div className="space-y-5 max-w-md mx-auto w-full">
+            <div className="mb-8">
+              <p className="text-[10px] tracking-[0.35em] uppercase text-muted-foreground mb-2">Step 2 of 5</p>
+              <h2 className="text-3xl font-bold tracking-tight">Revenue</h2>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Annual revenue range</Label>
               <Select value={data.annual_revenue} onValueChange={v => setData({ ...data, annual_revenue: v })}>
-                <SelectTrigger className="h-12"><SelectValue placeholder="Select range" /></SelectTrigger>
+                <SelectTrigger className="h-12 text-sm"><SelectValue placeholder="Select range" /></SelectTrigger>
                 <SelectContent>
                   {REVENUE_RANGES.map(r => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
                 </SelectContent>
@@ -128,20 +152,13 @@ export default function Onboarding() {
       case 3:
         return (
           <div className="space-y-6 max-w-md mx-auto w-full">
-            <h2 className="text-3xl font-bold tracking-tighter text-center mb-8">Sales channels</h2>
+            <div className="mb-8">
+              <p className="text-[10px] tracking-[0.35em] uppercase text-muted-foreground mb-2">Step 3 of 5</p>
+              <h2 className="text-3xl font-bold tracking-tight">Sales channels</h2>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               {CHANNELS.map(ch => (
-                <button
-                  key={ch}
-                  onClick={() => toggle("channels", ch)}
-                  className={`p-4 rounded-xl border text-sm text-left transition-all ${
-                    data.channels.includes(ch)
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border hover:border-foreground/30"
-                  }`}
-                >
-                  {ch}
-                </button>
+                <ChipButton key={ch} label={ch} selected={data.channels.includes(ch)} onClick={() => toggle("channels", ch)} />
               ))}
             </div>
           </div>
@@ -149,20 +166,13 @@ export default function Onboarding() {
       case 4:
         return (
           <div className="space-y-6 max-w-md mx-auto w-full">
-            <h2 className="text-3xl font-bold tracking-tighter text-center mb-8">Your stack</h2>
+            <div className="mb-8">
+              <p className="text-[10px] tracking-[0.35em] uppercase text-muted-foreground mb-2">Step 4 of 5</p>
+              <h2 className="text-3xl font-bold tracking-tight">Your stack</h2>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               {TOOLS.map(t => (
-                <button
-                  key={t}
-                  onClick={() => toggle("stack", t)}
-                  className={`p-4 rounded-xl border text-sm text-left transition-all ${
-                    data.stack.includes(t)
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border hover:border-foreground/30"
-                  }`}
-                >
-                  {t}
-                </button>
+                <ChipButton key={t} label={t} selected={data.stack.includes(t)} onClick={() => toggle("stack", t)} />
               ))}
             </div>
           </div>
@@ -170,20 +180,13 @@ export default function Onboarding() {
       case 5:
         return (
           <div className="space-y-6 max-w-md mx-auto w-full">
-            <h2 className="text-3xl font-bold tracking-tighter text-center mb-8">Your goals</h2>
+            <div className="mb-8">
+              <p className="text-[10px] tracking-[0.35em] uppercase text-muted-foreground mb-2">Step 5 of 5</p>
+              <h2 className="text-3xl font-bold tracking-tight">Your goals</h2>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               {GOALS_LIST.map(g => (
-                <button
-                  key={g}
-                  onClick={() => toggle("goals", g)}
-                  className={`p-4 rounded-xl border text-sm text-left transition-all ${
-                    data.goals.includes(g)
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border hover:border-foreground/30"
-                  }`}
-                >
-                  {g}
-                </button>
+                <ChipButton key={g} label={g} selected={data.goals.includes(g)} onClick={() => toggle("goals", g)} />
               ))}
             </div>
           </div>
@@ -194,9 +197,9 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Progress */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-border">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Progress bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-border/40">
         <motion.div
           className="h-full bg-foreground"
           animate={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
@@ -205,15 +208,15 @@ export default function Onboarding() {
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4">
-        <span className="text-sm font-semibold tracking-tight">THE N✱DE</span>
-        <span className="text-xs text-muted-foreground tracking-wide">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border/40">
+        <span className="text-sm font-bold tracking-tight">THE N✱DE</span>
+        <span className="text-xs text-muted-foreground tabular-nums">
           {step + 1} / {STEPS.length}
         </span>
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
+      <div className="flex-1 flex items-center justify-center px-6 py-16">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -221,7 +224,7 @@ export default function Onboarding() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
             className="w-full max-w-lg"
           >
             {renderStep()}
@@ -230,25 +233,24 @@ export default function Onboarding() {
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between px-6 py-6 border-t border-border">
+      <div className="flex items-center justify-between px-6 py-5 border-t border-border/40">
         <Button
           variant="ghost"
           onClick={() => setStep(s => s - 1)}
           disabled={step === 0}
-          className="text-sm"
+          className="text-sm h-9 rounded-full px-5 text-muted-foreground"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="mr-2 h-3.5 w-3.5" />
           Back
         </Button>
         {step < STEPS.length - 1 ? (
-          <Button onClick={() => setStep(s => s + 1)} className="rounded-full px-8 text-sm">
+          <Button onClick={() => setStep(s => s + 1)} className="rounded-full px-7 text-sm h-9">
             Continue
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <ArrowRight className="ml-2 h-3.5 w-3.5" />
           </Button>
         ) : (
-          <Button onClick={finish} disabled={saving} className="rounded-full px-8 text-sm">
-            {saving ? "Setting up..." : "Enter THE N✱DE"}
-            <ArrowRight className="ml-2 h-4 w-4" />
+          <Button onClick={finish} disabled={saving} className="rounded-full px-7 text-sm h-9">
+            {saving ? "Setting up..." : "Enter THE Node →"}
           </Button>
         )}
       </div>
