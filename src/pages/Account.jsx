@@ -7,10 +7,10 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { LogOut, User, Building2, Shield } from "lucide-react";
 
-const Section = ({ icon: Icon, title, children }) => (
+const Section = ({ icon: IconComp, title, children }) => (
   <div className="p-7 rounded-2xl border border-border/50 bg-card/60">
     <div className="flex items-center gap-2.5 mb-6">
-      <Icon size={13} className="text-muted-foreground/50" />
+      <IconComp size={13} className="text-muted-foreground/50" />
       <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/50">{title}</p>
     </div>
     {children}
