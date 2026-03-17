@@ -5,7 +5,6 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import AIChatBot from '@/components/shared/AIChatBot';
 
 import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding';
@@ -65,7 +64,6 @@ const AuthenticatedApp = () => {
 
         <Route path="*" element={<PageNotFound />} />
       </Routes>
-      <AIChatBot />
     </>
   );
 };
