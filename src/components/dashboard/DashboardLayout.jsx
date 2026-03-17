@@ -21,20 +21,24 @@ export default function DashboardLayout() {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card/50 p-6">
-        <Link to="/" className="flex items-center gap-2 mb-10">
-          <span className="text-base font-semibold tracking-tight">THE N✱DE</span>
-        </Link>
+      <aside className="hidden lg:flex flex-col w-60 border-r border-border/50 bg-background shrink-0">
+        <div className="p-6 border-b border-border/50">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="text-sm font-bold tracking-tight">THE N✱DE</span>
+          </Link>
+        </div>
 
-        <nav className="flex-1 space-y-1">
+        <nav className="flex-1 p-4 space-y-0.5">
           {NAV_ITEMS.map(item => {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path}>
                 <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                  active ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  active
+                    ? "bg-foreground text-background font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/70"
                 }`}>
-                  <item.icon size={16} />
+                  <item.icon size={15} />
                   {item.label}
                 </div>
               </Link>
@@ -42,20 +46,22 @@ export default function DashboardLayout() {
           })}
         </nav>
 
-        <button
-          onClick={() => base44.auth.logout()}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
-        >
-          <LogOut size={16} />
-          Sign out
-        </button>
+        <div className="p-4 border-t border-border/50">
+          <button
+            onClick={() => base44.auth.logout()}
+            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/70 transition-all"
+          >
+            <LogOut size={15} />
+            Sign out
+          </button>
+        </div>
       </aside>
 
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 h-14 border-b border-border bg-background/80 backdrop-blur-xl">
-        <Link to="/" className="text-sm font-semibold tracking-tight">THE N✱DE</Link>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 h-14 border-b border-border/50 bg-background/90 backdrop-blur-xl">
+        <Link to="/" className="text-sm font-bold tracking-tight">THE N✱DE</Link>
         <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+          {sidebarOpen ? <X size={17} /> : <Menu size={17} />}
         </Button>
       </div>
 
@@ -63,33 +69,42 @@ export default function DashboardLayout() {
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
-            className="lg:hidden fixed inset-0 z-40 bg-background/95 backdrop-blur-xl pt-14"
+            className="lg:hidden fixed inset-0 z-40 bg-background/96 backdrop-blur-xl pt-14"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <nav className="p-6 space-y-2">
+            <nav className="p-5 space-y-0.5">
               {NAV_ITEMS.map(item => {
                 const active = location.pathname === item.path;
                 return (
                   <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)}>
-                    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm ${
-                      active ? "bg-foreground text-background font-medium" : "text-muted-foreground"
+                    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
+                      active ? "bg-foreground text-background font-medium" : "text-muted-foreground hover:text-foreground"
                     }`}>
-                      <item.icon size={18} />
+                      <item.icon size={16} />
                       {item.label}
                     </div>
                   </Link>
                 );
               })}
             </nav>
+            <div className="px-5 pt-2 border-t border-border/50 mt-2">
+              <button
+                onClick={() => base44.auth.logout()}
+                className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm text-muted-foreground"
+              >
+                <LogOut size={16} />
+                Sign out
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Main content */}
-      <main className="flex-1 lg:overflow-y-auto pt-14 lg:pt-0">
-        <div className="max-w-6xl mx-auto p-6 lg:p-10">
+      <main className="flex-1 min-w-0 pt-14 lg:pt-0">
+        <div className="max-w-5xl mx-auto p-6 lg:p-10">
           <Outlet />
         </div>
       </main>
