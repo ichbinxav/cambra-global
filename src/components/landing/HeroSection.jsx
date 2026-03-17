@@ -53,22 +53,30 @@ export default function HeroSection() {
           <motion.div variants={container} initial="hidden" animate="show">
 
             {/* Label: for lifestyle commerce */}
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
               <motion.span
                 className="w-1.5 h-1.5 rounded-full bg-green-500"
                 animate={{ scale: [1, 1.5, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               />
-              <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-muted-foreground/70">For Lifestyle Commerce</span>
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">For Lifestyle Commerce</span>
             </motion.div>
 
-            {/* Headline */}
+            {/* Headline — PROBLEM DRIVEN */}
             <motion.h1
               variants={fadeUp}
-              className="text-[clamp(2.6rem,7.5vw,6.8rem)] font-black tracking-[-0.05em] leading-[0.84] mb-6"
+              className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-3"
             >
-              Independent brands.<br />One network.<br />Better economics.
+              You're overpaying<br />for your infrastructure.
             </motion.h1>
+
+            {/* Solution line */}
+            <motion.p
+              variants={fadeUp}
+              className="text-[clamp(1.2rem,3vw,1.8rem)] font-black text-green-600 mb-6 tracking-[-0.02em]"
+            >
+              THE NoDE fixes that.
+            </motion.p>
 
             {/* Subheadline */}
             <motion.p variants={fadeUp} className="text-[clamp(0.9rem,1.6vw,1.05rem)] text-foreground/65 leading-relaxed mb-6 max-w-[460px]">
