@@ -54,7 +54,7 @@ export default function ThreeLayersSection() {
                 Better economics.<br />From day one.
               </h3>
               <p className="text-background/55 text-sm leading-relaxed mb-6">
-                Unlock pre-negotiated rates across payments, shipping, and tools — powered by collective scale. Brands on THE NoDE unlock €18K–€72K per year without changing how they operate.
+                THE NoDE is an infrastructure layer built for independent brands. Through our collective buying power and pre-negotiated deals, you access rates and contracts that were previously only available to large enterprises — on payments, shipping, and SaaS tools.
               </p>
               <Link to="/Deals">
                 <button className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-background text-foreground text-sm font-bold hover:bg-background/90 transition-colors">
@@ -113,7 +113,6 @@ export default function ThreeLayersSection() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-xs font-semibold text-muted-foreground/60">{item.label}</p>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full border border-border/40 text-muted-foreground/35">Coming soon</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground/50 leading-relaxed">{item.desc}</p>
               </div>
