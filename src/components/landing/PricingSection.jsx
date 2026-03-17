@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, CreditCard, Truck, Package, BarChart2 } from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 
 const FEATURES = [
   { icon: BarChart2, label: "Infrastructure Analyzer", sub: "Unlimited runs" },
