@@ -4,9 +4,9 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
 const POWER_POINTS = [
-  { icon: Users, label: "Collective buying power", desc: "1,000+ brands negotiating as one. The leverage of a large enterprise — for every member." },
-  { icon: TrendingDown, label: "Pre-negotiated rates", desc: "We've already secured the deals. You join and immediately access better economics." },
-  { icon: ShieldCheck, label: "Enterprise contracts, indie price", desc: "The same infrastructure contracts that multinationals sign. At a fraction of the cost." },
+  { icon: Users, label: "Collective leverage you don't have", desc: "1,000+ brands negotiate as one bloc. Enterprise-level bargaining power — available to you immediately." },
+  { icon: TrendingDown, label: "Pre-negotiated institutional rates", desc: "Deals are already secured. You don't negotiate — you activate. Instant access to network-negotiated terms." },
+  { icon: ShieldCheck, label: "Enterprise infrastructure, indie economics", desc: "The exact contracts that large retailers sign. At the cost structure independent brands actually pay." },
 ];
 
 export default function ThreeLayersSection() {
