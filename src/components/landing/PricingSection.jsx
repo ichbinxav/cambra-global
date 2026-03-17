@@ -50,8 +50,8 @@ export default function PricingSection() {
             {/* Savings range */}
             <div className="space-y-3">
               <div className="p-5 rounded-2xl border border-border/40 bg-card">
-                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 mb-2">Margin unlocked per brand</p>
-                <p className="text-3xl font-black tracking-tight">€18K – €72K<span className="text-base font-normal text-muted-foreground">/year</span></p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 mb-2">Savings potential per brand</p>
+                <p className="text-4xl font-black tracking-tight">€18K – €72K<span className="text-base font-normal text-muted-foreground">/yr</span></p>
                 <p className="text-[11px] text-muted-foreground/40 mt-1">Based on real network benchmarks across payments, shipping, and SaaS.</p>
               </div>
               <div className="grid grid-cols-3 gap-2">
