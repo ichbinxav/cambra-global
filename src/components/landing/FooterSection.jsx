@@ -18,12 +18,12 @@ export default function FooterSection() {
           }}
         />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <p className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8">Ready to save?</p>
+          <p className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8">Make your economics work for you</p>
           <h2 className="text-[clamp(2.5rem,7vw,7rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4">
-            Stop overpaying.<br />Start now.
+            Upgrade your<br />infrastructure layer.
           </h2>
           <p className="text-base opacity-40 mb-10 max-w-sm mx-auto">
-            Brands save an average of €29,000/year. It takes 2 minutes to find out what you're missing.
+            Brands unlock an average of €29,000/year. Benchmark your costs against real network data in 2 minutes.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/Analyzer" className="w-full sm:w-auto">
@@ -34,7 +34,7 @@ export default function FooterSection() {
             </Link>
             <Link to="/Onboarding" className="w-full sm:w-auto">
               <Button size="lg" variant="ghost" className="w-full h-14 rounded-full px-10 text-base text-background/50 hover:text-background hover:bg-background/10">
-                Join THE NoDE
+                Join THE N✱DE
               </Button>
             </Link>
           </div>
