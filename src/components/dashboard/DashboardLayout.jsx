@@ -101,7 +101,12 @@ export default function DashboardLayout() {
                 );
               })}
             </nav>
-            <div className="px-4 pt-3 border-t border-border/40 mt-3">
+            <div className="px-4 pt-3 border-t border-border/40 mt-3 space-y-0.5">
+              <Link to="/Landing" onClick={() => setSidebarOpen(false)}>
+                <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-muted-foreground">
+                  <Home size={16} /> Go to homepage
+                </div>
+              </Link>
               <button
                 onClick={() => base44.auth.logout()}
                 className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm text-muted-foreground"
