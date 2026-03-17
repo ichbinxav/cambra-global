@@ -59,8 +59,11 @@ export default function Navbar() {
             <Link to="/Analyzer" className="block">
               <Button variant="outline" size="sm" className="w-full rounded-full text-xs">Run Analyzer</Button>
             </Link>
+            <Link to="/Onboarding" className="block">
+              <Button size="sm" className="w-full rounded-full text-xs">Join THE NODE</Button>
+            </Link>
             <Link to="/Dashboard" className="block">
-              <Button size="sm" className="w-full rounded-full text-xs">Enter Network</Button>
+              <Button variant="ghost" size="sm" className="w-full rounded-full text-xs">Dashboard →</Button>
             </Link>
           </motion.div>
         )}
