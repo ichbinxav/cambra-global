@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Users, FileText, Zap, TrendingUp, DollarSign, ArrowUpRight, CheckCircle2, BarChart3 } from "lucide-react";
