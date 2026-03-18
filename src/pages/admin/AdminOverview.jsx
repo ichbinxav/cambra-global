@@ -31,41 +31,51 @@ export default function AdminOverview() {
   if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
 
   const { users, brands, userDeals, results, apps } = data;
+  
+  // Time range filtering
+  const now = new Date();
+  const getDaysAgo = (days) => new Date(now - days * 24 * 60 * 60 * 1000);
+  const timeRangeMap = { "7d": 7, "30d": 30, "90d": 90 };
+  const daysBack = timeRangeMap[timeRange];
+  const rangeStart = getDaysAgo(daysBack);
 
   const activeDeals = userDeals.filter(d => d.status === "active");
   const waitlistDeals = userDeals.filter(d => d.status === "waitlist" || d.status === "pending");
   const totalSavingsIdentified = results.reduce((s, r) => s + (r.total_savings || 0), 0);
   const totalSavingsActivated = activeDeals.reduce((s, d) => s + (d.estimated_savings || 0), 0);
-
-  // Revenue model: 15% of activated savings (estimated)
   const estimatedRevenue = Math.round(totalSavingsActivated * 0.15);
-
-  // Conversion rate
   const conversionRate = userDeals.length > 0 ? Math.round((activeDeals.length / userDeals.length) * 100) : 0;
 
-  // Last 7 days
-  const now = new Date();
-  const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
-  const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
-  const newUsers7d = users.filter(u => new Date(u.created_date) >= sevenDaysAgo).length;
-  const newUsers30d = users.filter(u => new Date(u.created_date) >= thirtyDaysAgo).length;
-  const newDeals7d = userDeals.filter(d => new Date(d.created_date) >= sevenDaysAgo).length;
+  // Filtered by time range
+  const newUsersRange = users.filter(u => new Date(u.created_date) >= rangeStart).length;
+  const newDealsRange = userDeals.filter(d => new Date(d.created_date) >= rangeStart).length;
+  const newAppsRange = apps.filter(a => new Date(a.created_date) >= rangeStart).length;
 
-  // Top deal
+  // Top deals
   const dealCount = {};
   userDeals.forEach(d => { dealCount[d.deal_name] = (dealCount[d.deal_name] || 0) + 1; });
-  const topDeal = Object.entries(dealCount).sort((a, b) => b[1] - a[1])[0];
+  const topDeals = Object.entries(dealCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
-  // Chart: savings per week (last 8 weeks)
+  // Chart: savings per week
   const weeklyData = [];
-  for (let i = 7; i >= 0; i--) {
+  for (let i = (daysBack > 30 ? 12 : daysBack > 7 ? 4 : 1); i >= 0; i--) {
     const start = new Date(now - (i + 1) * 7 * 24 * 60 * 60 * 1000);
     const end = new Date(now - i * 7 * 24 * 60 * 60 * 1000);
     const weekSavings = results
       .filter(r => new Date(r.created_date) >= start && new Date(r.created_date) < end)
       .reduce((s, r) => s + (r.total_savings || 0), 0);
-    weeklyData.push({ week: `W${8 - i}`, savings: Math.round(weekSavings) });
+    weeklyData.push({ week: `W${12 - i}`, savings: Math.round(weekSavings / 1000) });
   }
+
+  // Savings by category
+  const savingsByCategory = {};
+  results.forEach(r => {
+    savingsByCategory["Payments"] = (savingsByCategory["Payments"] || 0) + (r.payment_savings || 0);
+    savingsByCategory["Shipping"] = (savingsByCategory["Shipping"] || 0) + (r.shipping_savings || 0);
+    savingsByCategory["SaaS"] = (savingsByCategory["SaaS"] || 0) + (r.saas_savings || 0);
+  });
+  const categoryData = Object.entries(savingsByCategory).map(([name, value]) => ({ name, value: Math.round(value / 1000) }));
+  const COLORS = ["#3b82f6", "#22c55e", "#f97316"];
 
   // Applications by status
   const appsByStatus = {};
