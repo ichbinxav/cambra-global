@@ -139,10 +139,10 @@ export default function HeroSection() {
             <motion.div variants={fadeUp} className="flex flex-col gap-1.5">
               <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground/60">
                 <span className="w-1 h-1 rounded-full bg-foreground/30"></span>
-                <span>2-minute analysis · No commitment · Read-only access</span>
+                <span>{t(h.microCopy, lang)}</span>
               </div>
               <p className="text-sm text-muted-foreground/60">
-                Identify your optimization potential instantly.
+                {t(h.identifyInstantly, lang)}
               </p>
             </motion.div>
 
