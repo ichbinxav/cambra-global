@@ -2,6 +2,8 @@ import { CreditCard, Truck, Layers, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
 
 const PROBLEMS = [
   {
@@ -77,6 +79,7 @@ function GreenBar({ width, delay }) {
 }
 
 export default function ProblemSection() {
+  const { isAuthenticated } = useAuth();
   const headRef = useRef(null);
   const headInView = useInView(headRef, { once: true, margin: "-80px" });
 
@@ -123,11 +126,20 @@ export default function ProblemSection() {
               initial={{ opacity: 0 }} animate={headInView ? { opacity: 1 } : {}}
               transition={{ delay: 0.5 }}
             >
-              <Link to="/Analyzer">
-                <button className="flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700 hover:gap-3 transition-all">
-                  Calculate your savings <ArrowRight size={13} />
+              {isAuthenticated ? (
+                <Link to="/Analyzer">
+                  <button className="flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700 hover:gap-3 transition-all">
+                    Calculate your savings <ArrowRight size={13} />
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                  className="flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700 hover:gap-3 transition-all"
+                >
+                  Sign in to analyze <ArrowRight size={13} />
                 </button>
-              </Link>
+              )}
             </motion.div>
           </div>
 
