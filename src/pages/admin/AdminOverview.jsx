@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Users, FileText, Zap, TrendingUp, DollarSign, ArrowUpRight, CheckCircle2, Clock } from "lucide-react";
-import { AreaChart, Area, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis } from "recharts";
+import { Users, FileText, Zap, TrendingUp, DollarSign, ArrowUpRight, CheckCircle2, Clock, BarChart3, PieChart } from "lucide-react";
+import { AreaChart, Area, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, PieChart as PieChartComp, Pie, Cell } from "recharts";
+import { motion } from "framer-motion";
 import { DEALS } from "@/lib/deals.js";
 
 export default function AdminOverview() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [timeRange, setTimeRange] = useState("7d");
 
   useEffect(() => {
     Promise.all([
       base44.entities.User.list(),
       base44.entities.Brand.list(),
       base44.entities.UserDeal.list(),
-      base44.entities.AnalyzerResult.list("-created_date", 200),
+      base44.entities.AnalyzerResult.list("-created_date", 500),
       base44.entities.DealApplication.list(),
     ]).then(([users, brands, userDeals, results, apps]) => {
       setData({ users, brands, userDeals, results, apps });
