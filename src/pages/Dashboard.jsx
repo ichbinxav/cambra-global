@@ -18,6 +18,7 @@ import { CreditCard, Truck, Package } from "lucide-react";
 
 export default function Dashboard() {
   const [results, setResults] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [user, setUser] = useState(null);
   const [userDeals, setUserDeals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,13 +28,26 @@ export default function Dashboard() {
       base44.entities.AnalyzerResult.list("-created_date", 10),
       base44.auth.me(),
       base44.entities.UserDeal.list(),
-    ]).then(([r, u, uds]) => { setResults(r); setUser(u); setUserDeals(uds); setLoading(false); });
+      base44.entities.Brand.list(),
+    ]).then(([r, u, uds, b]) => { 
+      setResults(r); 
+      setUser(u); 
+      setUserDeals(uds); 
+      setBrands(b);
+      setLoading(false); 
+    });
   }, []);
 
   const latest = results[0];
   const chartData = results.slice().reverse().map((r, i) => ({ i, value: r.total_savings || 0 }));
   const score = latest?.infra_score || 0;
-  const scoreColor = SCORE_COLOR(score);
+  
+  // GMV calculations
+  const gmvTotal = brands.reduce((sum, b) => {
+    const result = results.find(r => r.brand_id === b.id);
+    return sum + (result?.details?.payment_monthly_volume || 0) * 12;
+  }, 0);
+  const gmvAverage = brands.length > 0 ? gmvTotal / brands.length : 0;
 
   if (loading) return (
     <div className="flex items-center justify-center py-40">
