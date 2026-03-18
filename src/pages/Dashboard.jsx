@@ -27,13 +27,14 @@ export default function Dashboard() {
     Promise.all([
       base44.entities.AnalyzerResult.list("-created_date", 10),
       base44.auth.me(),
-      base44.entities.UserDeal.list(),
       base44.entities.Brand.list(),
-    ]).then(([r, u, uds, b]) => { 
+    ]).then(async ([r, u, b]) => { 
       setResults(r); 
       setUser(u); 
-      setUserDeals(uds); 
       setBrands(b);
+      // Filter UserDeals by current user email
+      const uds = await base44.entities.UserDeal.filter({ user_email: u.email });
+      setUserDeals(uds);
       setLoading(false); 
     });
   }, []);
