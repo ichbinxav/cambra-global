@@ -109,32 +109,26 @@ export default function Analyzer() {
 
   const run = async () => {
     setLoading(true);
-    const annualRev = data.monthly_revenue * 12;
-    const BENCHMARK_PAYMENT = 1.4;
-    const paymentSavings = Math.max(0, Math.round(annualRev * ((data.payment_fee_pct - BENCHMARK_PAYMENT) / 100)));
-    const shippingOpt = data.monthly_shipping_cost * 0.82;
-    const shippingSavings = Math.round((data.monthly_shipping_cost - shippingOpt) * 12);
-    const saasOpt = data.total_saas_spend * 0.7;
-    const saasSavings = Math.round((data.total_saas_spend - saasOpt) * 12);
-    const totalSavings = paymentSavings + shippingSavings + saasSavings;
+    const provider = data.payment_provider === "Other" ? customPayment : data.payment_provider;
+    const shipper = data.shipping_provider === "Other" ? customShipping : data.shipping_provider;
 
-    // Use the multi-dimensional score engine
-    const scoreReport = computeInfraScore({
+    const inputData = {
+      monthly_revenue: data.monthly_revenue,
       payment_fee_pct: data.payment_fee_pct,
       monthly_shipping_cost: data.monthly_shipping_cost,
       monthly_shipments: data.monthly_shipments,
       total_saas_spend: data.total_saas_spend,
-      monthly_revenue: data.monthly_revenue,
-      payment_provider: data.payment_provider === "Other" ? customPayment : data.payment_provider,
-      shipping_provider: data.shipping_provider === "Other" ? customShipping : data.shipping_provider,
+      country: data.country,
+      payment_provider: provider,
+      shipping_provider: shipper,
       dtc_pct: data.dtc_pct,
       marketplace_pct: data.marketplace_pct,
       wholesale_pct: data.wholesale_pct,
-    }, "manual");
-    const infraScore = scoreReport.total;
+    };
 
-    const provider = data.payment_provider === "Other" ? customPayment : data.payment_provider;
-    const shipper = data.shipping_provider === "Other" ? customShipping : data.shipping_provider;
+    // Unified savings calculation (tier + geo aware)
+    const savings = calculateSavings(inputData);
+    const scoreReport = computeInfraScore(inputData, "manual");
 
     const input = await base44.entities.AnalyzerInput.create({
       monthly_revenue: data.monthly_revenue, monthly_transactions: data.monthly_transactions,
@@ -145,15 +139,16 @@ export default function Analyzer() {
       monthly_shipments: data.monthly_shipments, total_saas_spend: data.total_saas_spend,
     });
     const result = await base44.entities.AnalyzerResult.create({
-      input_id: input.id, payment_savings: paymentSavings, shipping_savings: shippingSavings,
-      saas_savings: saasSavings, total_savings: totalSavings, infra_score: infraScore,
-      payment_benchmark: BENCHMARK_PAYMENT, shipping_benchmark: shippingOpt, saas_benchmark: saasOpt,
-      details: {
-        payment_current_rate: data.payment_fee_pct, payment_optimal_rate: BENCHMARK_PAYMENT,
-        shipping_current_avg: data.monthly_shipping_cost / Math.max(data.monthly_shipments, 1),
-        shipping_optimal_avg: shippingOpt / Math.max(data.monthly_shipments, 1),
-        saas_current_total: data.total_saas_spend, saas_optimal_total: saasOpt,
-      }
+      input_id: input.id,
+      payment_savings: savings.paymentSavings,
+      shipping_savings: savings.shippingSavings,
+      saas_savings: savings.saasSavings,
+      total_savings: savings.totalSavings,
+      infra_score: scoreReport.total,
+      payment_benchmark: savings.benchmarks.payment.rate,
+      shipping_benchmark: savings.benchmarks.shipping.perUnit,
+      saas_benchmark: savings.benchmarks.saas.pct,
+      details: savings.details,
     });
     navigate(`/Results?id=${result.id}`);
   };
