@@ -100,41 +100,81 @@ const SavingBadge = ({ label, value, color }) => (
 
 function StepWelcome() {
   return (
-    <div className="text-center space-y-8">
-      {/* Hero badge */}
-      <div className="flex justify-center">
-        <div className="w-20 h-20 rounded-3xl bg-foreground flex items-center justify-center">
+    <div className="text-center space-y-10">
+      {/* Hero badge with animation */}
+      <motion.div
+        className="flex justify-center"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 200, damping: 20 }}
+      >
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 flex justify-center"
+        >
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-green-500/20 to-blue-500/20 blur-2xl" />
+        </motion.div>
+        <div className="relative w-20 h-20 rounded-3xl bg-gradient-to-br from-foreground to-foreground/80 flex items-center justify-center shadow-xl">
           <span className="text-background text-3xl font-black select-none">✱</span>
         </div>
-      </div>
+      </motion.div>
 
-      <div>
-        <h1 className="text-[clamp(2rem,7vw,4rem)] font-black tracking-[-0.05em] leading-[0.88] mb-4">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <h1 className="text-[clamp(2rem,7vw,4rem)] font-black tracking-[-0.05em] leading-[0.88] mb-3 bg-gradient-to-br from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
           Turn your infrastructure<br />into an advantage.<br />Join THE NoDE.
         </h1>
         <p className="text-muted-foreground text-base leading-relaxed max-w-xs mx-auto">
           Access better economics instantly. Improve your cost structure without increasing revenue.
         </p>
-      </div>
+      </motion.div>
 
-      {/* Value proof */}
-      <div className="space-y-2 max-w-xs mx-auto">
-        <SavingBadge label="Payment fees" value="−52%" color="bg-blue-500/[0.06] border-blue-500/15 text-blue-600" />
-        <SavingBadge label="Shipping rates" value="−18%" color="bg-green-500/[0.06] border-green-500/15 text-green-600" />
-        <SavingBadge label="SaaS spend" value="−30%" color="bg-orange-500/[0.06] border-orange-500/15 text-orange-500" />
-        <div className="pt-2 flex items-center justify-center gap-2 text-[11px] text-muted-foreground/50">
-          <span className="text-lg font-black text-foreground">€29K</span> avg. optimization potential per brand per year
-        </div>
-      </div>
-
-      {/* Trust */}
-      <div className="flex flex-wrap justify-center gap-4 text-[11px] text-muted-foreground/50">
-        {["1,000+ brands", "15 countries", "< 3 min setup"].map((t, i) => (
-          <span key={i} className="flex items-center gap-1.5">
-            <CheckCircle2 size={10} className="text-green-500" /> {t}
-          </span>
+      {/* Value proof with stagger */}
+      <motion.div
+        className="space-y-2 max-w-xs mx-auto"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4, staggerChildren: 0.1 }}
+      >
+        {[
+          { label: "Payment fees", value: "−52%", color: "bg-blue-500/[0.08] border-blue-500/20 text-blue-600" },
+          { label: "Shipping rates", value: "−18%", color: "bg-green-500/[0.08] border-green-500/20 text-green-600" },
+          { label: "SaaS spend", value: "−30%", color: "bg-orange-500/[0.08] border-orange-500/20 text-orange-500" },
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 + i * 0.1 }}
+          >
+            <SavingBadge label={item.label} value={item.value} color={item.color} />
+          </motion.div>
         ))}
-      </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="pt-3 flex items-center justify-center gap-2 text-sm font-black text-center"
+        >
+          <span className="text-2xl bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">€29K</span>
+          <span className="text-muted-foreground/70 text-[11px]">avg. optimization potential per year</span>
+        </motion.div>
+      </motion.div>
+
+      {/* Trust badges */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+        className="flex flex-wrap justify-center gap-3 text-[11px]"
+      >
+        {["1,000+ brands", "15 countries", "< 3 min setup"].map((t, i) => (
+          <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary border border-border/40">
+            <CheckCircle2 size={10} className="text-green-500" />
+            <span className="text-muted-foreground/70 font-medium">{t}</span>
+          </div>
+        ))}
+      </motion.div>
     </div>
   );
 }
@@ -142,47 +182,51 @@ function StepWelcome() {
 function StepBrand({ data, setData }) {
   const COUNTRIES = ["Germany", "France", "United Kingdom", "Netherlands", "Belgium", "Spain", "Italy", "Other"];
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-1">Step 1 of 3</p>
-        <h2 className="text-2xl font-black tracking-tight">Tell us about your brand</h2>
-        <p className="text-sm text-muted-foreground mt-1">We benchmark you against similar brands in the network.</p>
-      </div>
+    <motion.div className="space-y-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-2">Step 1 of 3</p>
+        <h2 className="text-3xl font-black tracking-tight mb-2">Tell us about your brand</h2>
+        <p className="text-sm text-muted-foreground">We benchmark you against similar brands in the network.</p>
+      </motion.div>
 
-      <div className="space-y-3">
+      <motion.div className="space-y-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
         <Input
           value={data.name}
           onChange={e => setData(d => ({ ...d, name: e.target.value }))}
           placeholder="Brand name"
-          className="h-12 text-sm border-border/60"
+          className="h-12 text-sm border-border/60 focus:border-foreground/40"
           autoFocus
         />
         <Input
           value={data.website}
           onChange={e => setData(d => ({ ...d, website: e.target.value }))}
           placeholder="Website (optional)"
-          className="h-12 text-sm border-border/60"
+          className="h-12 text-sm border-border/60 focus:border-foreground/40"
         />
-      </div>
+      </motion.div>
 
-      <div>
-        <p className="text-xs text-muted-foreground/60 mb-2">Category</p>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+        <p className="text-xs font-semibold text-muted-foreground/70 mb-3">Select your category</p>
         <div className="grid grid-cols-2 gap-2">
-          {CATEGORIES.map(c => (
-            <Chip key={c} label={c} selected={data.category === c} onClick={() => setData(d => ({ ...d, category: c }))} />
+          {CATEGORIES.map((c, i) => (
+            <motion.div key={c} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.03 }}>
+              <Chip label={c} selected={data.category === c} onClick={() => setData(d => ({ ...d, category: c }))} />
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
-      <div>
-        <p className="text-xs text-muted-foreground/60 mb-2">Country</p>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+        <p className="text-xs font-semibold text-muted-foreground/70 mb-3">Operating country</p>
         <div className="grid grid-cols-2 gap-2">
-          {COUNTRIES.map(c => (
-            <Chip key={c} label={c} selected={data.country === c} onClick={() => setData(d => ({ ...d, country: c }))} />
+          {COUNTRIES.map((c, i) => (
+            <motion.div key={c} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.03 }}>
+              <Chip label={c} selected={data.country === c} onClick={() => setData(d => ({ ...d, country: c }))} />
+            </motion.div>
           ))}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -391,56 +435,69 @@ function StepFinish({ data, mode, connected }) {
     "1m_5m": "€40K–€100K", "5m_20m": "€100K–€400K", "20m_plus": "€400K+",
   };
   return (
-    <div className="text-center space-y-8">
+    <div className="text-center space-y-10">
+      {/* Success icon with glow */}
       <div className="flex justify-center">
         <motion.div
-          initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 280, damping: 18 }}
-          className="w-20 h-20 rounded-3xl bg-green-500 flex items-center justify-center"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          className="absolute"
         >
-          <CheckCircle2 size={36} className="text-white" />
+          <div className="w-28 h-28 rounded-full bg-gradient-to-r from-green-500/30 to-blue-500/30 blur-xl" />
+        </motion.div>
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          className="relative w-20 h-20 rounded-3xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-2xl"
+        >
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+            <CheckCircle2 size={36} className="text-white" />
+          </motion.div>
         </motion.div>
       </div>
 
-      <div>
-        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-2">You're in</p>
-        <h2 className="text-3xl font-black tracking-tight mb-2">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <p className="text-[10px] tracking-[0.3em] uppercase text-green-600 font-bold mb-2">✓ You're in</p>
+        <h2 className="text-4xl font-black tracking-tight mb-3 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
           {data.name ? `Welcome, ${data.name}.` : "You're all set."}
         </h2>
-        <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+        <p className="text-muted-foreground text-sm max-w-xs mx-auto leading-relaxed">
           Your infrastructure intelligence is ready. Here's what happens next.
         </p>
-      </div>
+      </motion.div>
 
-      {/* What's ready */}
-      <div className="space-y-2 text-left max-w-xs mx-auto">
+      {/* What's ready - enhanced cards */}
+      <motion.div className="space-y-2.5 text-left max-w-xs mx-auto">
         {[
-          { icon: BarChart2, label: "Infrastructure Score", sub: "Calculated based on your inputs", color: "text-blue-600" },
-          { icon: CreditCard, label: "Optimization potential", sub: savings[data.annual_revenue] ?? "Personalised estimate", color: "text-green-600" },
+          { icon: BarChart2, label: "Infrastructure Score", sub: "Calculated based on your inputs", color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
+          { icon: CreditCard, label: "Optimization potential", sub: savings[data.annual_revenue] ?? "Personalised estimate", color: "text-green-600", bg: "bg-green-500/[0.08] border-green-500/20" },
           {
             icon: mode === "connect" ? Zap : mode === "upload" ? FileText : Edit3,
             label: mode === "connect" ? `${connected.length || 1} tool${connected.length > 1 ? "s" : ""} ready to connect` : mode === "upload" ? "Statement ready to process" : "Manual inputs queued",
             sub: mode === "manual" ? "Run the Analyzer to complete" : "We'll guide you through connection",
-            color: "text-orange-500"
+            color: "text-orange-500",
+            bg: "bg-orange-500/[0.08] border-orange-500/20"
           },
-        ].map(({ icon: Icon, label, sub, color }, i) => (
+        ].map(({ icon: Icon, label, sub, color, bg }, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, x: -10 }}
+            initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 + i * 0.1 }}
-            className="flex items-center gap-3 p-3.5 rounded-xl border border-border/40 bg-card"
+            transition={{ delay: 0.4 + i * 0.12 }}
+            whileHover={{ x: 4 }}
+            className={`flex items-start gap-3 p-4 rounded-2xl border ${bg} backdrop-blur-sm hover:shadow-md transition-shadow`}
           >
-            <div className={`w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0`}>
-              <Icon size={13} className={color} />
+            <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center shrink-0 flex-shrink-0`}>
+              <Icon size={16} className={color} />
             </div>
             <div className="text-left">
-              <p className="text-xs font-semibold">{label}</p>
-              <p className="text-[10px] text-muted-foreground/50">{sub}</p>
+              <p className="text-sm font-semibold">{label}</p>
+              <p className="text-[11px] text-muted-foreground/60 mt-0.5">{sub}</p>
             </div>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }
