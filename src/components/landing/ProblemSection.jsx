@@ -114,9 +114,9 @@ export default function ProblemSection() {
               transition={{ duration: 0.6, delay: 0.35 }}
               className="p-5 rounded-2xl border border-border/40 bg-card mb-6"
             >
-              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 mb-2">Average annual overspend</p>
-              <p className="text-4xl font-black text-red-600">€29K<span className="text-sm font-normal text-muted-foreground">/yr</span></p>
-              <p className="text-[11px] text-muted-foreground/50 mt-2">Across payments, shipping, SaaS</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 mb-2">Avg. optimization potential</p>
+              <p className="text-4xl font-black text-foreground">€29K<span className="text-sm font-normal text-muted-foreground">/yr</span></p>
+              <p className="text-[11px] text-muted-foreground/50 mt-2">Across payments, shipping, SaaS · Real network benchmarks</p>
             </motion.div>
 
             <motion.div
@@ -125,7 +125,7 @@ export default function ProblemSection() {
             >
               <Link to="/Analyzer">
                 <button className="flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700 hover:gap-3 transition-all">
-                  Check your overspend <ArrowRight size={13} />
+                  Calculate your savings <ArrowRight size={13} />
                 </button>
               </Link>
             </motion.div>
