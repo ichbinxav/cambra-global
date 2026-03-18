@@ -59,6 +59,7 @@ export default function Navbar() {
 
         {/* Desktop CTAs */}
         <div className="hidden md:flex items-center gap-2">
+          <LanguageSwitcher />
           {isAuthenticated ? (
             <Link to="/Dashboard">
               <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm">
