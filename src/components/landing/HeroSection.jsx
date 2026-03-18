@@ -274,7 +274,7 @@ export default function HeroSection() {
               </div>
               <Link to="/Onboarding">
                 <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
-                  Join <ArrowRight size={9} />
+                  {t(h.join, lang)} <ArrowRight size={9} />
                 </button>
               </Link>
             </motion.div>
