@@ -3,11 +3,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { useLanguage, t, translations } from "@/lib/i18n.jsx";
 
 export default function FooterSection() {
-  const { lang } = useLanguage();
-  const f = translations.footer;
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
@@ -31,20 +28,20 @@ export default function FooterSection() {
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8">{t(f.headline, lang)}</motion.p>
+            className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8">Find your unfair advantage</motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 60 }} animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.5rem,7vw,7rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4"
           >
-            {t(f.sub, lang)}
+            Stop overpaying for your infrastructure.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-base opacity-40 mb-10 max-w-sm mx-auto"
           >
-            {t(f.desc, lang)}
+            Brands typically identify €29,000/year in optimization potential. Most improvements activate within minutes.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -54,7 +51,7 @@ export default function FooterSection() {
             <Link to="/Analyzer" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" variant="outline" className="w-full h-14 rounded-full px-10 text-base font-bold border-background/25 text-background hover:bg-background hover:text-foreground gap-2">
-                  {t(f.ctaSavings, lang)}
+                  Calculate your savings
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </motion.div>
@@ -62,7 +59,7 @@ export default function FooterSection() {
             <Link to="/Onboarding" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" variant="ghost" className="w-full h-14 rounded-full px-10 text-base text-background/50 hover:text-background hover:bg-background/10">
-                  {t(f.cta, lang)}
+                  Run the analyzer
                 </Button>
               </motion.div>
             </Link>
@@ -75,12 +72,12 @@ export default function FooterSection() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-5">
             <span className="text-sm font-black tracking-tight">THE NoDE</span>
-            <span className="text-xs text-muted-foreground/40">{t(f.tagline, lang)}</span>
+            <span className="text-xs text-muted-foreground/40">Infrastructure leverage for independent brands</span>
           </div>
           <div className="flex items-center gap-5 text-xs text-muted-foreground/50">
             <span>© {new Date().getFullYear()} THE NoDE</span>
-            <Link to="/Privacy" className="hover:text-foreground transition-colors">{t(f.privacy, lang)}</Link>
-            <Link to="/Terms" className="hover:text-foreground transition-colors">{t(f.terms, lang)}</Link>
+            <Link to="/Privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link to="/Terms" className="hover:text-foreground transition-colors">Terms</Link>
           </div>
         </div>
       </footer>

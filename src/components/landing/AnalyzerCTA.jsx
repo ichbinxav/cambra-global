@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CreditCard, Truck, Package } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { useLanguage, t, translations } from "@/lib/i18n.jsx";
 
 const rows = [
   { icon: CreditCard, label: "Payment fees", current: "2.9%", network: "1.4%", saving: "€8,400/yr", color: "text-blue-600" },
@@ -12,8 +11,6 @@ const rows = [
 ];
 
 export default function AnalyzerCTA() {
-  const { lang } = useLanguage();
-  const a = translations.analyzerCTA;
   const leftRef = useRef(null);
   const leftInView = useInView(leftRef, { once: true, margin: "-80px" });
   const rightRef = useRef(null);
@@ -31,21 +28,21 @@ export default function AnalyzerCTA() {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
             <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center gap-2">
-              <span className="w-4 h-px bg-border inline-block" /> {t(a.label, lang)}
+              <span className="w-4 h-px bg-border inline-block" /> Infrastructure Analyzer
             </p>
             <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-6">
-              {t(a.headline, lang).split("\n").map((line, i) => <span key={i}>{line}{i === 0 && <br />}</span>)}
+              Identify exactly where<br />value is left unoptimized.
             </h2>
             <p className="text-muted-foreground leading-relaxed text-base mb-8 max-w-sm">
-              {t(a.desc, lang)}
+              Benchmark your payments, shipping, and SaaS stack against real network rates. See your optimization potential in 2 minutes.
             </p>
             <Link to="/Analyzer">
               <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm">
-                {t(a.cta, lang)}
+                Run the Analyzer
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <p className="mt-4 text-[11px] text-muted-foreground/40">{t(a.microcopy, lang)}</p>
+            <p className="mt-4 text-[11px] text-muted-foreground/40">2 minutes · Real benchmarks · No commitment</p>
           </motion.div>
 
           <motion.div

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 
 const NAV_PUBLIC = [
   { label: "How it works", href: "#how" },

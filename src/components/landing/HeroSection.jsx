@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingDown, CreditCard, Truck, Package, CheckCircle2 } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { useLanguage, t, translations } from "@/lib/i18n.jsx";
 
 const SAVINGS = [
   { label: "Payments", value: "€38K", sub: "−52% fee rate", color: "text-blue-600", bg: "bg-blue-500/[0.07] border-blue-500/20", icon: CreditCard },
@@ -12,8 +11,8 @@ const SAVINGS = [
 ];
 
 const BULLETS = [
-  "Access deals you can't negotiate alone",
-  "Identify where you're overpaying instantly",
+  "Access rates you can't unlock on your own",
+  "Instantly see where you're overpaying",
   "Reduce infrastructure costs across your stack",
   "Turn collective scale into economic leverage",
 ];
@@ -28,8 +27,6 @@ const fadeUp = {
 };
 
 export default function HeroSection() {
-  const { lang } = useLanguage();
-  const h = translations.hero;
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const watermarkY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
@@ -55,61 +52,56 @@ export default function HeroSection() {
           {/* LEFT */}
           <motion.div variants={container} initial="hidden" animate="show">
 
-            {/* Label: for lifestyle commerce */}
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
               <motion.span
                 className="w-1.5 h-1.5 rounded-full bg-green-500"
                 animate={{ scale: [1, 1.5, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               />
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">{t(h.tag, lang)}</span>
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">For Lifestyle Commerce</span>
             </motion.div>
 
-            {/* Urgency layer */}
             <motion.p variants={fadeUp} className="text-sm text-muted-foreground/60 mb-3 max-w-[480px]">
-              {t(h.urgency, lang)}
+              Most brands operate below optimal infrastructure rates — and don't realize it.
             </motion.p>
 
-            {/* Headline */}
             <motion.h1
               variants={fadeUp}
               className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-3"
             >
-              {t(h.headline, lang).split("\n").map((line, i) => <span key={i}>{line}{i === 0 && <br />}</span>)}
+              Turn your infrastructure<br />into an advantage.
             </motion.h1>
 
-            {/* Solution line */}
             <motion.p
               variants={fadeUp}
               className="text-[clamp(1.2rem,3vw,1.8rem)] font-black text-green-600 mb-6 tracking-[-0.02em]"
             >
-              {t(h.sub, lang)}
+              Unlock the rates your scale should give you.
             </motion.p>
 
-            {/* Subheadline */}
             <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-8 max-w-[520px]">
-              {t(h.desc, lang)}
+              We aggregate independent brands into a single leverage bloc. You unlock better rates on payments, shipping, and SaaS — instantly. Our analyzer identifies exactly where value is left unoptimized, then you access the deals.
             </motion.p>
 
-            {/* Pricing pill — FREE */}
+            {/* Pricing pill */}
             <motion.div
               variants={fadeUp}
               className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-5 py-4 rounded-full bg-foreground text-background"
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm text-background/40 line-through font-light">€120/month</span>
-                <span className="text-xl sm:text-lg font-black">{t(h.pricingFree, lang)}</span>
+                <span className="text-xl sm:text-lg font-black">Free</span>
               </div>
               <span className="hidden sm:inline text-background/40">·</span>
-              <span className="text-sm text-background/70">{t(h.pricingPartners, lang)}</span>
+              <span className="text-sm text-background/70">Early partners only</span>
             </motion.div>
             <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/50 mb-8">
-              {t(h.pricingNote, lang)}
+              You only pay when your economics improve.
             </motion.p>
 
             {/* Value bullets */}
             <motion.ul variants={container} className="space-y-2.5 mb-10">
-              {(t(h.bullets, lang) || []).map((b, i) => (
+              {BULLETS.map((b, i) => (
                 <motion.li key={i} variants={fadeUp} className="flex items-start gap-3 text-sm text-foreground/75">
                   <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
                   <span className="font-medium">{b}</span>
@@ -122,32 +114,31 @@ export default function HeroSection() {
               <Link to="/Analyzer" className="flex-1 sm:flex-none">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2 bg-green-600 hover:bg-green-700">
-                    {t(h.ctaPrimary, lang)} <ArrowRight className="h-4 w-4" />
+                    Calculate your savings <ArrowRight className="h-4 w-4" />
                   </Button>
                 </motion.div>
               </Link>
               <Link to="/Onboarding" className="flex-1 sm:flex-none">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-medium border-border/60 hover:border-foreground/20">
-                    {t(h.ctaSecondary, lang)} <ArrowRight className="h-4 w-4" />
+                    See your optimization potential <ArrowRight className="h-4 w-4" />
                   </Button>
                 </motion.div>
               </Link>
             </motion.div>
 
-            {/* Micro copy under CTA */}
-            <motion.div variants={fadeUp} className="flex flex-col gap-1.5">
+            <motion.div variants={fadeUp} className="flex flex-col gap-1.5 mt-4">
               <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground/60">
                 <span className="w-1 h-1 rounded-full bg-foreground/30"></span>
-                <span>{t(h.microCopy, lang)}</span>
+                <span>2-minute analysis · No commitment · Read-only access</span>
               </div>
               <p className="text-sm text-muted-foreground/60">
-                {t(h.identifyInstantly, lang)}
+                Identify your optimization potential instantly.
               </p>
             </motion.div>
 
             <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/40 mt-4">
-              {t(h.avgBenchmark, lang)}
+              Avg. optimization potential: €29,000/year · €3K–€72K range · Based on real network benchmarks
             </motion.p>
           </motion.div>
 
@@ -166,7 +157,7 @@ export default function HeroSection() {
               transition={{ delay: 0.7 }}
             >
               <div className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
-              <p className="text-sm font-semibold text-foreground/85">{t(h.overpaying, lang)} <span className="text-red-600 font-black">€8,430/year</span></p>
+              <p className="text-sm font-semibold text-foreground/85">Overpaying detected: <span className="text-red-600 font-black">€8,430/year</span></p>
               <TrendingDown size={14} className="text-red-600 ml-auto shrink-0" />
             </motion.div>
 
@@ -179,12 +170,11 @@ export default function HeroSection() {
                     animate={{ scale: [1, 1.6, 1], opacity: [1, 0.5, 1] }}
                     transition={{ repeat: Infinity, duration: 1.8 }}
                   />
-                  <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/50">{t(h.analyzerTitle, lang)}</span>
+                  <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/50">Analyzer · Savings Report</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground/30">{t(h.sampleBrand, lang)}</span>
+                <span className="text-[10px] text-muted-foreground/30">Sample brand · €500K/yr</span>
               </div>
 
-              {/* Savings breakdown */}
               <div className="p-4 space-y-2">
                 {SAVINGS.map((item, i) => (
                   <motion.div
@@ -211,7 +201,6 @@ export default function HeroSection() {
                 ))}
               </div>
 
-              {/* Total + CTA */}
               <motion.div
                className="mx-4 mb-4 p-4 rounded-xl bg-foreground text-background flex items-center justify-between"
                initial={{ opacity: 0, y: 20 }}
@@ -219,12 +208,12 @@ export default function HeroSection() {
                transition={{ delay: 1.05, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               >
                <div>
-                 <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">{t(h.potentialSavings, lang)}</p>
+                 <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Potential savings unlocked</p>
                  <p className="text-3xl font-black tracking-tight">€8.4K<span className="text-base font-normal opacity-40">/yr</span></p>
                </div>
                <Link to="/Analyzer">
                  <button className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5">
-                   {t(h.analyze, lang)} <ArrowRight size={11} />
+                   Analyze <ArrowRight size={11} />
                  </button>
                </Link>
               </motion.div>
@@ -253,8 +242,8 @@ export default function HeroSection() {
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold">{t(h.infraScore, lang)} <span className="text-orange-500 font-black">57/100</span></p>
-                <p className="text-[10px] text-muted-foreground/50 leading-tight">{t(h.infraPotential, lang)}</p>
+                <p className="text-xs font-bold">Infrastructure Score: <span className="text-orange-500 font-black">57/100</span></p>
+                <p className="text-[10px] text-muted-foreground/50 leading-tight">Your potential: 84/100 · See how</p>
               </div>
             </motion.div>
 
@@ -269,12 +258,12 @@ export default function HeroSection() {
                 <span className="text-green-600 text-[11px] font-black">3</span>
               </div>
               <div className="flex-1">
-                <p className="text-[11px] font-semibold text-foreground">{t(h.dealsUnlocked, lang)}</p>
-                <p className="text-[10px] text-muted-foreground/50">{t(h.dealsSubtext, lang)}</p>
+                <p className="text-[11px] font-semibold text-foreground">Structural rates unlocked</p>
+                <p className="text-[10px] text-muted-foreground/50">Rates you can't negotiate alone · Join to activate</p>
               </div>
               <Link to="/Onboarding">
                 <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
-                  {t(h.join, lang)} <ArrowRight size={9} />
+                  Join <ArrowRight size={9} />
                 </button>
               </Link>
             </motion.div>
@@ -282,7 +271,7 @@ export default function HeroSection() {
             <motion.p
               className="text-center text-[10px] text-muted-foreground/25"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
-            >{t(h.sampleNote, lang)}</motion.p>
+            >Sample analysis · Independent brand · 2025</motion.p>
           </motion.div>
         </div>
       </div>
