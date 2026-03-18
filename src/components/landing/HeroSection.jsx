@@ -62,7 +62,7 @@ export default function HeroSection() {
                 animate={{ scale: [1, 1.5, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               />
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">For Lifestyle Commerce</span>
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">{t(h.tag, lang)}</span>
             </motion.div>
 
             {/* Urgency layer */}
