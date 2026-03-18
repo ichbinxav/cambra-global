@@ -23,13 +23,15 @@ const DEALS_PREVIEW = [
 export default function Dashboard() {
   const [results, setResults] = useState([]);
   const [user, setUser] = useState(null);
+  const [userDeals, setUserDeals] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       base44.entities.AnalyzerResult.list("-created_date", 10),
       base44.auth.me(),
-    ]).then(([r, u]) => { setResults(r); setUser(u); setLoading(false); });
+      base44.entities.UserDeal.list(),
+    ]).then(([r, u, uds]) => { setResults(r); setUser(u); setUserDeals(uds); setLoading(false); });
   }, []);
 
   const latest = results[0];
