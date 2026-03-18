@@ -31,21 +31,21 @@ export default function AnalyzerCTA() {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
             <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center gap-2">
-              <span className="w-4 h-px bg-border inline-block" /> Infrastructure Analyzer
+              <span className="w-4 h-px bg-border inline-block" /> {t(a.label, lang)}
             </p>
             <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-6">
-              Identify exactly where<br />value is left unoptimized.
+              {t(a.headline, lang).split("\n").map((line, i) => <span key={i}>{line}{i === 0 && <br />}</span>)}
             </h2>
             <p className="text-muted-foreground leading-relaxed text-base mb-8 max-w-sm">
-              Benchmark your payments, shipping, and SaaS stack against real network rates. See your optimization potential in 2 minutes.
+              {t(a.desc, lang)}
             </p>
             <Link to="/Analyzer">
               <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm">
-                Run the Analyzer
+                {t(a.cta, lang)}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <p className="mt-4 text-[11px] text-muted-foreground/40">2 minutes · Real benchmarks · No commitment</p>
+            <p className="mt-4 text-[11px] text-muted-foreground/40">{t(a.microcopy, lang)}</p>
           </motion.div>
 
           <motion.div
