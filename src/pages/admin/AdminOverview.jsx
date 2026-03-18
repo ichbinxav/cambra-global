@@ -11,20 +11,34 @@ export default function AdminOverview() {
   const [activeTab, setActiveTab] = useState("overview");
   const [timeRange, setTimeRange] = useState("7d");
 
-  useEffect(() => {
-    Promise.all([
-      base44.entities.User.list(),
-      base44.entities.Brand.list(),
-      base44.entities.UserDeal.list(),
-      base44.entities.AnalyzerResult.list("-created_date", 500),
-      base44.entities.DealApplication.list(),
-    ]).then(([users, brands, userDeals, results, apps]) => {
+  const reloadData = async () => {
+    try {
+      const [users, brands, userDeals, results, apps] = await Promise.all([
+        base44.entities.User.list(),
+        base44.entities.Brand.list(),
+        base44.entities.UserDeal.list(),
+        base44.entities.AnalyzerResult.list("-created_date", 500),
+        base44.entities.DealApplication.list(),
+      ]);
       setData({ users, brands, userDeals, results, apps });
-      setLoading(false);
-    }).catch(err => {
-      console.error('Error loading admin data:', err);
-      setLoading(false);
-    });
+    } catch (err) {
+      console.error('Error reloading admin data:', err);
+    }
+  };
+
+  useEffect(() => {
+    reloadData().then(() => setLoading(false));
+
+    // Suscribirse a cambios en tiempo real
+    const unsubUserDeal = base44.entities.UserDeal.subscribe(() => reloadData());
+    const unsubAnalyzerResult = base44.entities.AnalyzerResult.subscribe(() => reloadData());
+    const unsubDealApplication = base44.entities.DealApplication.subscribe(() => reloadData());
+
+    return () => {
+      unsubUserDeal?.();
+      unsubAnalyzerResult?.();
+      unsubDealApplication?.();
+    };
   }, []);
 
   if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
