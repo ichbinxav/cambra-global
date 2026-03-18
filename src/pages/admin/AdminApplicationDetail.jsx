@@ -102,10 +102,11 @@ export default function AdminApplicationDetail({ app, brand, onClose, onStatusCh
         <div>
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">Provider Response</p>
           <textarea
-            defaultValue={app.provider_response || ""}
+            defaultValue={localApp.provider_response || ""}
             onBlur={async (e) => {
-              if (e.target.value !== app.provider_response) {
-                await base44.entities.UserDeal.update(app.id, { provider_response: e.target.value });
+              if (e.target.value !== localApp.provider_response) {
+                await base44.entities.UserDeal.update(localApp.id, { provider_response: e.target.value });
+                setLocalApp(prev => ({ ...prev, provider_response: e.target.value }));
               }
             }}
             placeholder="Log provider response here..."
