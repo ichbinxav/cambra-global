@@ -215,7 +215,7 @@ function generateImpacts(input, scores, benchmarks) {
       category: "Payments",
       issue: `Your rate (${(payment_fee_pct || 2.9).toFixed(1)}%) is ${pctAbove}% above the network benchmark of ${benchmarks.payment.rate}%`,
       pointsGain: Math.min(18, Math.round(parseFloat(pctAbove) * 5)),
-      action: "Access network payment rate",
+      action: "Unlock network payment rate",
       severity: parseFloat(pctAbove) > 1.0 ? "high" : "medium",
     });
   }
@@ -223,9 +223,9 @@ function generateImpacts(input, scores, benchmarks) {
   if (costPerShipment > benchmarks.shipping.perUnit * 1.15) {
     impacts.push({
       category: "Shipping",
-      issue: `€${costPerShipment.toFixed(2)}/shipment vs €${benchmarks.shipping.perUnit} network target`,
+      issue: `€${costPerShipment.toFixed(2)}/shipment vs €${benchmarks.shipping.perUnit.toFixed(2)} network target — efficiency gap identified`,
       pointsGain: 8,
-      action: "Access collective shipping contracts",
+      action: "Activate collective shipping contracts",
       severity: "medium",
     });
   }
@@ -233,9 +233,9 @@ function generateImpacts(input, scores, benchmarks) {
   if (saasRatio > benchmarks.saas.pct * 1.2) {
     impacts.push({
       category: "SaaS",
-      issue: `SaaS spend at ${(saasRatio * 100).toFixed(1)}% of revenue (network range: ${(benchmarks.saas.range[0] * 100).toFixed(1)}–${(benchmarks.saas.range[1] * 100).toFixed(1)}%)`,
+      issue: `Stack spend at ${(saasRatio * 100).toFixed(1)}% of revenue — network range: ${(benchmarks.saas.range[0] * 100).toFixed(1)}–${(benchmarks.saas.range[1] * 100).toFixed(1)}%`,
       pointsGain: 7,
-      action: "Consolidate stack via group licenses",
+      action: "Reduce stack cost via group licenses",
       severity: "medium",
     });
   }
@@ -243,9 +243,9 @@ function generateImpacts(input, scores, benchmarks) {
   if (scores.dataCompleteness < 60) {
     impacts.push({
       category: "Data quality",
-      issue: "Analysis based on estimates — precision improves with connected tools",
+      issue: "Analysis based on estimated inputs — precision improves significantly with connected tools",
       pointsGain: 6,
-      action: "Connect your tools for precise insights",
+      action: "Connect your data for precise insights",
       severity: "low",
     });
   }
