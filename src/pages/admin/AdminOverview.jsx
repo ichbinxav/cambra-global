@@ -47,7 +47,7 @@ export default function AdminOverview() {
     };
   }, []);
 
-  if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
+  if (loading || !data) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
 
   const { users, brands, userDeals, results, apps } = data;
   
