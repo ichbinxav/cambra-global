@@ -181,7 +181,7 @@ export default function HeroSection() {
                   />
                   <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/50">{t(h.analyzerTitle, lang)}</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground/30">Sample brand · €500K/yr</span>
+                <span className="text-[10px] text-muted-foreground/30">{t(h.sampleBrand, lang)}</span>
               </div>
 
               {/* Savings breakdown */}
