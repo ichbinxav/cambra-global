@@ -124,24 +124,14 @@ export default function Dashboard() {
 
           <HeroSavings latest={latest} score={score} />
 
-          {/* ── SAVINGS OPPORTUNITIES ── */}
+          {/* ── SAVINGS OPPORTUNITIES & GMV ── */}
           <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: "Payments", value: latest.payment_savings, icon: CreditCard, color: "text-blue-600", border: "border-blue-500/15", bg: "bg-blue-500/[0.05]", note: "payment efficiency" },
-
-              { label: "Shipping", value: latest.shipping_savings, icon: Truck, color: "text-green-600", border: "border-green-500/15", bg: "bg-green-500/[0.05]", note: "shipping efficiency" },
-              { label: "SaaS", value: latest.saas_savings, icon: Package, color: "text-orange-500", border: "border-orange-500/15", bg: "bg-orange-500/[0.05]", note: "stack efficiency" },
-            ].map((item, i) => (
-              <div key={i} className={`p-4 rounded-2xl border ${item.border} ${item.bg} flex flex-col`}>
-                <item.icon size={13} className={`mb-2 ${item.color}`} />
-                <p className="text-[10px] uppercase tracking-[0.1em] text-muted-foreground/50 mb-1">{item.label}</p>
-                <p className={`text-lg sm:text-xl font-black tabular-nums ${item.color}`}>
-                  €{(item.value || 0).toLocaleString()}
-                </p>
-                <p className="text-[10px] text-muted-foreground/35 mt-0.5 hidden sm:block">{item.note}</p>
-              </div>
-            ))}
+            <MetricCard label="Payments" value={latest.payment_savings} icon={CreditCard} color="text-blue-600" border="border-blue-500/15" bg="bg-blue-500/[0.05]" note="payment efficiency" />
+            <MetricCard label="Shipping" value={latest.shipping_savings} icon={Truck} color="text-green-600" border="border-green-500/15" bg="bg-green-500/[0.05]" note="shipping efficiency" />
+            <MetricCard label="SaaS" value={latest.saas_savings} icon={Package} color="text-orange-500" border="border-orange-500/15" bg="bg-orange-500/[0.05]" note="stack efficiency" />
           </div>
+
+          <GMVMetrics gmvTotal={gmvTotal} gmvAverage={gmvAverage} />
 
           {/* ── SCORE + DEALS ROW ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
