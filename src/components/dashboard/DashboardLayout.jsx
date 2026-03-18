@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, BarChart3, Users, Zap, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Plug, Home, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 
 const NAV_ITEMS = [
   { path: "/Dashboard", label: "Overview", icon: LayoutDashboard },
