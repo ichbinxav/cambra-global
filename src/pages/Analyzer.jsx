@@ -409,16 +409,31 @@ export default function Analyzer() {
           <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
             <strong className="text-foreground">What we check:</strong> E-commerce platforms (Shopify, etc.), email (Klaviyo, etc.), support (Gorgias, Zendesk), analytics, and more. Brands typically overspend by <strong className="text-foreground">30%</strong>.
           </div>
-          <div className="p-4 rounded-xl bg-orange-500/[0.05] border border-orange-500/15">
-            <div className="flex items-center justify-between text-sm mb-1">
-              <span className="text-muted-foreground">Your current spend</span>
-              <span className="font-bold tabular-nums">€{(data.total_saas_spend * 12).toLocaleString()}/yr</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Estimated savings potential</span>
-              <span className="font-black text-orange-500 tabular-nums">€{Math.round(data.total_saas_spend * 0.3 * 12).toLocaleString()}/yr</span>
-            </div>
-          </div>
+          {(() => {
+            const bm = getBenchmarks(data.monthly_revenue, data.country);
+            const saasRatio = data.monthly_revenue > 0 ? data.total_saas_spend / data.monthly_revenue : 0;
+            const saasGap = Math.max(0, saasRatio - bm.saas.pct);
+            const saving = Math.round(saasGap * data.monthly_revenue * 12);
+            const optimal = Math.round(bm.saas.pct * data.monthly_revenue);
+            return (
+              <div className="p-4 rounded-xl bg-orange-500/[0.05] border border-orange-500/15 space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Your current spend</span>
+                  <span className="font-bold tabular-nums">€{(data.total_saas_spend * 12).toLocaleString()}/yr</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Network benchmark ({bm.tier})</span>
+                  <span className="font-bold text-muted-foreground/60 tabular-nums">€{(optimal * 12).toLocaleString()}/yr</span>
+                </div>
+                {saving > 0 && (
+                  <div className="flex items-center justify-between text-sm border-t border-orange-500/15 pt-1.5">
+                    <span className="text-muted-foreground">Optimization potential</span>
+                    <span className="font-black text-orange-500 tabular-nums">€{saving.toLocaleString()}/yr</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       );
 
