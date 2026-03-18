@@ -75,7 +75,7 @@ export default function FooterSection() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-5">
             <span className="text-sm font-black tracking-tight">THE NoDE</span>
-            <span className="text-xs text-muted-foreground/40">Infrastructure leverage for independent brands</span>
+            <span className="text-xs text-muted-foreground/40">{t(f.tagline, lang)}</span>
           </div>
           <div className="flex items-center gap-5 text-xs text-muted-foreground/50">
             <span>© {new Date().getFullYear()} THE NoDE</span>
