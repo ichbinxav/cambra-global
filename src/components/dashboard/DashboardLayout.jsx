@@ -113,42 +113,42 @@ export default function DashboardLayout() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-            <nav className="p-4 space-y-0.5">
-              {NAV_ITEMS.map(item => {
-                const active = location.pathname === item.path;
-                return (
-                  <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)}>
-                    <div className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm transition-colors ${
-                      active ? "bg-foreground text-background font-semibold" : "text-muted-foreground"
-                    }`}>
-                      <item.icon size={16} />
-                      {item.label}
+              <nav className="p-4 space-y-0.5">
+                {NAV_ITEMS.map(item => {
+                  const active = location.pathname === item.path;
+                  return (
+                    <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)}>
+                      <div className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm transition-colors ${
+                        active ? "bg-foreground text-background font-semibold" : "text-muted-foreground"
+                      }`}>
+                        <item.icon size={16} />
+                        {item.label}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </nav>
+              <div className="px-4 pt-3 border-t border-border/40 mt-3 space-y-0.5">
+                {isAdmin && (
+                  <Link to="/admin" onClick={() => setSidebarOpen(false)}>
+                    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-red-600 font-semibold">
+                      <ShieldCheck size={16} />
+                      Admin Panel
                     </div>
                   </Link>
-                );
-              })}
-            </nav>
-            <div className="px-4 pt-3 border-t border-border/40 mt-3 space-y-0.5">
-              {isAdmin && (
-                <Link to="/admin" onClick={() => setSidebarOpen(false)}>
-                  <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-red-600 font-semibold">
-                    <ShieldCheck size={16} />
-                    Admin Panel
+                )}
+                <Link to="/Landing" onClick={() => setSidebarOpen(false)}>
+                  <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-muted-foreground">
+                    <Home size={16} /> Go to homepage
                   </div>
                 </Link>
-              )}
-              <Link to="/Landing" onClick={() => setSidebarOpen(false)}>
-                <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-muted-foreground">
-                  <Home size={16} /> Go to homepage
-                </div>
-              </Link>
-              <button
-                onClick={() => base44.auth.logout("/Landing")}
-                className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm text-muted-foreground"
-              >
-                <LogOut size={16} /> Sign out
-              </button>
-            </div>
+                <button
+                  onClick={() => base44.auth.logout("/Landing")}
+                  className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm text-muted-foreground"
+                >
+                  <LogOut size={16} /> Sign out
+                </button>
+              </div>
             </motion.div>
           </>
         )}
