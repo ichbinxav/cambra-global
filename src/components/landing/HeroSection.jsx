@@ -67,7 +67,7 @@ export default function HeroSection() {
 
             {/* Urgency layer */}
             <motion.p variants={fadeUp} className="text-sm text-muted-foreground/60 mb-3 max-w-[480px]">
-              Most brands operate below optimal infrastructure rates — and don't realize it.
+              {t(h.urgency, lang)}
             </motion.p>
 
             {/* Headline */}
@@ -75,7 +75,7 @@ export default function HeroSection() {
               variants={fadeUp}
               className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-3"
             >
-              Turn your infrastructure<br />into an advantage.
+              {t(h.headline, lang).split("\n").map((line, i) => <span key={i}>{line}{i === 0 && <br />}</span>)}
             </motion.h1>
 
             {/* Solution line */}
@@ -83,12 +83,12 @@ export default function HeroSection() {
               variants={fadeUp}
               className="text-[clamp(1.2rem,3vw,1.8rem)] font-black text-green-600 mb-6 tracking-[-0.02em]"
             >
-              Unlock the rates your scale should give you.
+              {t(h.sub, lang)}
             </motion.p>
 
             {/* Subheadline */}
             <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-8 max-w-[520px]">
-              We aggregate independent brands into a single leverage bloc. You unlock better rates on payments, shipping, and SaaS — instantly. Our analyzer identifies exactly where value is left unoptimized, then you access the deals.
+              {t(h.desc, lang)}
             </motion.p>
 
             {/* Pricing pill — FREE */}
