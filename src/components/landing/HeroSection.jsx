@@ -62,12 +62,17 @@ export default function HeroSection() {
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">For Lifestyle Commerce</span>
             </motion.div>
 
-            {/* Headline — PROBLEM DRIVEN */}
+            {/* Urgency layer */}
+            <motion.p variants={fadeUp} className="text-sm text-muted-foreground/60 mb-3 max-w-[480px]">
+              Most brands operate below optimal infrastructure rates — and don't realize it.
+            </motion.p>
+
+            {/* Headline */}
             <motion.h1
               variants={fadeUp}
               className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-3"
             >
-              You're overpaying<br />for your infrastructure.
+              Turn your infrastructure<br />into an advantage.
             </motion.h1>
 
             {/* Solution line */}
@@ -75,12 +80,12 @@ export default function HeroSection() {
               variants={fadeUp}
               className="text-[clamp(1.2rem,3vw,1.8rem)] font-black text-green-600 mb-6 tracking-[-0.02em]"
             >
-              THE NoDE fixes that.
+              Unlock the rates your scale should give you.
             </motion.p>
 
-            {/* Subheadline — MECHANISM CLARITY */}
+            {/* Subheadline */}
             <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-8 max-w-[520px]">
-              We aggregate independent brands into a single leverage bloc. You unlock better rates on payments, shipping, and SaaS. Our cost analyzer proves exactly where you're losing money — then you access the deals.
+              We aggregate independent brands into a single leverage bloc. You unlock better rates on payments, shipping, and SaaS — instantly. Our analyzer identifies exactly where value is left unoptimized, then you access the deals.
             </motion.p>
 
             {/* Pricing pill — FREE */}
