@@ -6,6 +6,8 @@ import { useRef } from "react";
 import { useLanguage, t, translations } from "@/lib/i18n";
 
 export default function FooterSection() {
+  const { lang } = useLanguage();
+  const f = translations.footer;
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 

@@ -28,6 +28,8 @@ const fadeUp = {
 };
 
 export default function HeroSection() {
+  const { lang } = useLanguage();
+  const h = translations.hero;
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const watermarkY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);

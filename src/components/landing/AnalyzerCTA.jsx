@@ -12,6 +12,8 @@ const rows = [
 ];
 
 export default function AnalyzerCTA() {
+  const { lang } = useLanguage();
+  const a = translations.analyzerCTA;
   const leftRef = useRef(null);
   const leftInView = useInView(leftRef, { once: true, margin: "-80px" });
   const rightRef = useRef(null);
