@@ -149,7 +149,8 @@ export default function DashboardLayout() {
                 <LogOut size={16} /> Sign out
               </button>
             </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
