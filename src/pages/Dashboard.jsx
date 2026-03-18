@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRight, TrendingDown, Zap, Package, Shield, ArrowUpRight,
-  BarChart2, Users, BookOpen, CreditCard, Truck, CheckCircle2,
-  AlertTriangle, Plug, ChevronRight
+  ArrowRight, TrendingDown, Users, BookOpen, AlertTriangle, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import DealsOverview from "@/components/deals/DealsOverview.jsx";
-import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
-
-const SCORE_LABEL = s => s >= 90 ? "Best-in-class" : s >= 80 ? "Strong" : s >= 60 ? "Efficient" : s >= 40 ? "Optimization opportunity detected" : "High optimization potential";
-const SCORE_COLOR = s => s >= 80 ? "#22c55e" : s >= 60 ? "#f97316" : "#3b82f6";
+import MetricCard from "@/components/dashboard/MetricCard";
+import HeroSavings from "@/components/dashboard/HeroSavings";
+import InfraScore from "@/components/dashboard/InfraScore";
+import SavingsTrend from "@/components/dashboard/SavingsTrend";
+import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
+import GMVMetrics from "@/components/dashboard/GMVMetrics";
+import { CreditCard, Truck, Package } from "lucide-react";
 
 
 
