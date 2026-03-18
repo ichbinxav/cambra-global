@@ -119,14 +119,14 @@ export default function HeroSection() {
               <Link to="/Analyzer" className="flex-1 sm:flex-none">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2 bg-green-600 hover:bg-green-700">
-                    Run the Analyzer <ArrowRight className="h-4 w-4" />
+                    Calculate your savings <ArrowRight className="h-4 w-4" />
                   </Button>
                 </motion.div>
               </Link>
               <Link to="/Onboarding" className="flex-1 sm:flex-none">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-medium border-border/60 hover:border-foreground/20">
-                    Join THE NoDE <ArrowRight className="h-4 w-4" />
+                    See your optimization potential <ArrowRight className="h-4 w-4" />
                   </Button>
                 </motion.div>
               </Link>
@@ -136,15 +136,15 @@ export default function HeroSection() {
             <motion.div variants={fadeUp} className="flex flex-col gap-1.5">
               <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground/60">
                 <span className="w-1 h-1 rounded-full bg-foreground/30"></span>
-                <span>Takes 2 minutes · No commitment</span>
+                <span>2-minute analysis · No commitment · Read-only access</span>
               </div>
               <p className="text-sm text-muted-foreground/60">
-                Find out how much you're losing instantly.
+                Identify your optimization potential instantly.
               </p>
             </motion.div>
 
             <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/40 mt-4">
-              <strong className="text-foreground/55">Avg. infrastructure overspend:</strong> €8,430/year · <strong className="text-foreground/55">€3K–€72K</strong> range
+              <strong className="text-foreground/55">Avg. optimization potential:</strong> €29,000/year · <strong className="text-foreground/55">€3K–€72K</strong> range
             </motion.p>
           </motion.div>
 
