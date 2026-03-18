@@ -8,7 +8,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
-import { AreaChart, Area, ResponsiveContainer, Tooltip, RadialBarChart, RadialBar } from "recharts";
+import DealsOverview from "@/components/deals/DealsOverview.jsx";
+import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
 
 const SCORE_LABEL = s => s >= 90 ? "Best-in-class" : s >= 80 ? "Strong" : s >= 60 ? "Efficient" : s >= 40 ? "Optimization opportunity detected" : "High optimization potential";
 const SCORE_COLOR = s => s >= 80 ? "#22c55e" : s >= 60 ? "#f97316" : "#3b82f6";
