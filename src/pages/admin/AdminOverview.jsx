@@ -43,8 +43,12 @@ export default function AdminOverview() {
       console.warn('Subscription error:', err);
     }
 
+    // Refresco automático cada 30 segundos como fallback
+    const interval = setInterval(() => reloadData(), 30000);
+
     return () => {
       subs.forEach(unsub => unsub?.());
+      clearInterval(interval);
     };
   }, []);
 
