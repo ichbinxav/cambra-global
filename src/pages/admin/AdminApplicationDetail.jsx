@@ -56,8 +56,11 @@ export default function AdminApplicationDetail({ app, brand, onClose, onStatusCh
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">Status</p>
           <div className="flex flex-wrap gap-1.5">
             {STATUSES.map(s => (
-              <button key={s} onClick={() => onStatusChange(app.id, s)}
-                className={`px-3 h-7 rounded-full text-[11px] font-semibold border transition-all ${app.status === s ? STATUS_COLORS[s] : "bg-secondary/50 text-muted-foreground border-border/40 hover:border-foreground/20"}`}>
+              <button key={s} onClick={async () => {
+                await onStatusChange(app.id, s);
+                setLocalApp(prev => ({ ...prev, status: s }));
+              }}
+                className={`px-3 h-7 rounded-full text-[11px] font-semibold border transition-all ${localApp.status === s ? STATUS_COLORS[s] : "bg-secondary/50 text-muted-foreground border-border/40 hover:border-foreground/20"}`}>
                 {s.replace(/_/g, " ")}
               </button>
             ))}
