@@ -41,7 +41,7 @@ export default function FooterSection() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-base opacity-40 mb-10 max-w-sm mx-auto"
           >
-            Brands discover €29,000/year in savings. Analyze your costs in 2 minutes.
+            Brands typically unlock €29,000/year in savings. Most improvements can be activated in minutes.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -51,7 +51,7 @@ export default function FooterSection() {
             <Link to="/Analyzer" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" variant="outline" className="w-full h-14 rounded-full px-10 text-base font-bold border-background/25 text-background hover:bg-background hover:text-foreground gap-2">
-                  Run the Analyzer
+                  Calculate your savings
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </motion.div>
@@ -59,7 +59,7 @@ export default function FooterSection() {
             <Link to="/Onboarding" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" variant="ghost" className="w-full h-14 rounded-full px-10 text-base text-background/50 hover:text-background hover:bg-background/10">
-                  Join THE NoDE
+                  Run the analyzer
                 </Button>
               </motion.div>
             </Link>
