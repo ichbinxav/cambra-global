@@ -18,19 +18,15 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, checkAppState } = useAuth();
-  const [freshUser, setFreshUser] = useState(user);
+  const { user } = useAuth();
   const location = useLocation();
 
-  // Refetch user on mount to ensure role is up-to-date
   useEffect(() => {
-    if (!freshUser?.role) {
-      checkAppState();
-    }
-    setFreshUser(user);
-  }, [user, checkAppState]);
+    console.log("DashboardLayout - Current user:", user);
+    console.log("DashboardLayout - User role:", user?.role);
+  }, [user]);
 
-  const isAdmin = (freshUser || user)?.role === "admin";
+  const isAdmin = user?.role === "admin";
 
   return (
     <div className="min-h-screen flex bg-background font-inter">
