@@ -17,12 +17,9 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const location = useLocation();
-
-  useEffect(() => {
-    base44.auth.me().then(u => { if (u?.role === "admin") setIsAdmin(true); });
-  }, []);
 
   return (
     <div className="min-h-screen flex bg-background font-inter">
