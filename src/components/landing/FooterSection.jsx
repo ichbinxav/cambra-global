@@ -79,8 +79,8 @@ export default function FooterSection() {
           </div>
           <div className="flex items-center gap-5 text-xs text-muted-foreground/50">
             <span>© {new Date().getFullYear()} THE NoDE</span>
-            <Link to="/Privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link to="/Terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link to="/Privacy" className="hover:text-foreground transition-colors">{t(f.privacy, lang)}</Link>
+            <Link to="/Terms" className="hover:text-foreground transition-colors">{t(f.terms, lang)}</Link>
           </div>
         </div>
       </footer>
