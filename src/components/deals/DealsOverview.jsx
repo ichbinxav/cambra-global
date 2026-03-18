@@ -30,18 +30,22 @@ export default function DealsOverview({ userDeals }) {
       </div>
 
       {/* Summary row */}
-      <div className="grid grid-cols-3 divide-x divide-border/30 border-b border-border/30">
-        <div className="px-5 py-4">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Active deals</p>
-          <p className="text-xl font-black">{active.length}</p>
+      <div className="grid grid-cols-4 divide-x divide-border/30 border-b border-border/30">
+        <div className="px-4 py-4">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Active</p>
+          <p className="text-lg font-black text-green-600">{active.length}</p>
         </div>
-        <div className="px-5 py-4">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Savings unlocked</p>
-          <p className="text-xl font-black text-green-600">{formatSavings(totalSavings)}/yr</p>
+        <div className="px-4 py-4">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Savings</p>
+          <p className="text-lg font-black">{formatSavings(totalSavings)}/yr</p>
         </div>
-        <div className="px-5 py-4">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">On waitlist</p>
-          <p className="text-xl font-black">{waitlist.length}</p>
+        <div className="px-4 py-4">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Pending</p>
+          <p className="text-lg font-black text-blue-600">{pending.length}</p>
+        </div>
+        <div className="px-4 py-4">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Waitlist</p>
+          <p className="text-lg font-black text-orange-600">{waitlist.length}</p>
         </div>
       </div>
 
