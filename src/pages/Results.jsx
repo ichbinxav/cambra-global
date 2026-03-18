@@ -105,7 +105,7 @@ export default function Results() {
 
   const score = scoreReport?.total ?? result.infra_score ?? 0;
   const scoreColor = scoreReport?.scoreColor ?? (score >= 80 ? "#22c55e" : score >= 60 ? "#f97316" : "#3b82f6");
-  const scoreLabel = scoreReport?.label ?? (score >= 60 ? "Good" : score >= 40 ? "Under-optimized" : "Poor");
+  const scoreLabel = scoreReport?.label ?? (score >= 60 ? "Efficient" : score >= 40 ? "Optimization opportunity detected" : "High optimization potential");
   const isEstimated = !scoreReport || scoreReport.dataQuality === "manual";
 
   const chartData = BREAKDOWN_META.map(m => ({
