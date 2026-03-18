@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { Search, Zap, TrendingUp, ArrowRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
 
 const PILLARS = [
   {
@@ -28,6 +30,7 @@ const PILLARS = [
 ];
 
 export default function SolutionSection() {
+  const { isAuthenticated } = useAuth();
   const headRef = useRef(null);
   const headInView = useInView(headRef, { once: true, margin: "-80px" });
   const flowRef = useRef(null);
@@ -154,14 +157,24 @@ export default function SolutionSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <Link to="/Analyzer">
+          {isAuthenticated ? (
+            <Link to="/Analyzer">
+              <motion.button
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+                className="h-12 px-8 rounded-full bg-foreground text-background text-sm font-bold inline-flex items-center gap-2 hover:opacity-90 transition-opacity shadow-sm"
+              >
+                See my savings <ArrowRight size={14} />
+              </motion.button>
+            </Link>
+          ) : (
             <motion.button
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+              onClick={() => base44.auth.redirectToLogin(window.location.href)}
               className="h-12 px-8 rounded-full bg-foreground text-background text-sm font-bold inline-flex items-center gap-2 hover:opacity-90 transition-opacity shadow-sm"
             >
-              See my savings <ArrowRight size={14} />
+              Sign in to start <ArrowRight size={14} />
             </motion.button>
-          </Link>
+          )}
         </motion.div>
 
       </div>
