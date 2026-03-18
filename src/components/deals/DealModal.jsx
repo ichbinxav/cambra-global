@@ -80,7 +80,7 @@ export default function DealModal({ deal, onClose, userDeal, userEmail, onUserDe
     >
       <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" onClick={onClose} />
       <motion.div
-        className="relative w-full max-w-lg bg-background border border-border/60 rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-lg bg-background border border-border/60 rounded-2xl shadow-2xl"
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }}
