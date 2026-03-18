@@ -166,7 +166,7 @@ export default function HeroSection() {
               transition={{ delay: 0.7 }}
             >
               <div className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
-              <p className="text-sm font-semibold text-foreground/85">Overpaying detected: <span className="text-red-600 font-black">€8,430/year</span></p>
+              <p className="text-sm font-semibold text-foreground/85">{t(h.overpaying, lang)} <span className="text-red-600 font-black">€8,430/year</span></p>
               <TrendingDown size={14} className="text-red-600 ml-auto shrink-0" />
             </motion.div>
 
