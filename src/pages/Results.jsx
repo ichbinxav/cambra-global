@@ -348,21 +348,21 @@ export default function Results() {
           <div className="flex items-start gap-3 mb-4">
             <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${isEstimated ? "bg-orange-400" : "bg-green-500"}`} />
             <div>
-              <p className="text-sm font-semibold">Accuracy: {scoreReport?.accuracyLabel ?? "Low — estimated"}</p>
+              <p className="text-sm font-semibold">{scoreReport?.accuracyLabel ?? "Estimated — connect tools to refine"}</p>
               <p className="text-xs text-muted-foreground/55 mt-1 leading-relaxed">
-                This report uses manual inputs. Connect tools or upload statements to get a verified Infrastructure Score and real savings figures.
+                This report uses manual inputs. Connect your tools or upload statements to unlock a verified Infrastructure Score with precise savings figures.
               </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link to="/ConnectTools">
               <button className="h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5">
-                <Zap size={11} /> Connect tools
+                <Zap size={11} /> Connect your data
               </button>
             </Link>
             <Link to="/ConnectTools">
               <button className="h-9 px-4 rounded-full border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Upload statement
+                Refine your analysis
               </button>
             </Link>
           </div>
