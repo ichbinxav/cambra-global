@@ -50,6 +50,8 @@ export default function Deals() {
       if (exists) return prev.map(ud => ud.id === updated.id ? updated : ud);
       return [...prev, updated];
     });
+    // Recargar desde base de datos después de 500ms para sincronizar
+    setTimeout(() => reloadUserDeals(), 500);
   };
 
   const filtered = DEALS.filter(d => {
