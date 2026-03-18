@@ -258,6 +258,11 @@ export default function Dashboard() {
             )}
           </div>
 
+          {/* ── DEALS OVERVIEW (when chart is shown instead) ── */}
+          {chartData.length > 1 && (
+            <DealsOverview userDeals={userDeals} />
+          )}
+
           {/* ── YOUR INFRASTRUCTURE ── */}
           <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
             <div className="px-6 py-4 border-b border-border/30 flex items-center justify-between">
