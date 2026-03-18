@@ -104,12 +104,12 @@ export default function HeroSection() {
               <span className="text-sm text-background/70">{t(h.pricingPartners, lang)}</span>
             </motion.div>
             <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/50 mb-8">
-              You only pay when your economics improve.
+              {t(h.pricingNote, lang)}
             </motion.p>
 
             {/* Value bullets */}
             <motion.ul variants={container} className="space-y-2.5 mb-10">
-              {BULLETS.map((b, i) => (
+              {(t(h.bullets, lang) || []).map((b, i) => (
                 <motion.li key={i} variants={fadeUp} className="flex items-start gap-3 text-sm text-foreground/75">
                   <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
                   <span className="font-medium">{b}</span>
