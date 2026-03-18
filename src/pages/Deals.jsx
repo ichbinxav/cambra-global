@@ -250,15 +250,15 @@ export default function Deals() {
 
                     <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 mb-1">{deal.provider}</p>
                     <h3 className="font-bold tracking-tight mb-1 text-sm">{deal.title}</h3>
-                    <p className="text-xl font-black text-node-blue tracking-tight mb-3">{deal.headline}</p>
+                    <p className="text-sm font-semibold text-green-600 tracking-tight mb-3 leading-snug">{deal.advantage}</p>
 
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
                       <div>
-                        <p className="text-[10px] text-muted-foreground/40 mb-0.5">Est. savings</p>
+                        <p className="text-[10px] text-muted-foreground/40 mb-0.5">Estimated benefit</p>
                         <p className="text-sm font-bold">{formatSavings(deal.estimated_savings)}/yr</p>
                       </div>
                       <div className="flex items-center gap-1 text-muted-foreground/40 group-hover:text-foreground transition-colors text-xs">
-                        {isActive ? "View contract" : isWaitlist ? "View status" : "View deal"} <ChevronRight size={12} />
+                        {isActive ? "View contract" : isWaitlist ? "View status" : "Unlock deal"} <ChevronRight size={12} />
                       </div>
                     </div>
                   </motion.button>
