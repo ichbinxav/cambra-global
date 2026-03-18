@@ -22,10 +22,20 @@ export default function AdminApplications() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const load = () => Promise.all([
-    base44.entities.UserDeal.list("-created_date", 500),
-    base44.entities.Brand.list(),
-  ]).then(([a, b]) => { setApps(a); setBrands(b); setLoading(false); });
+  const load = async () => {
+    try {
+      const [a, b] = await Promise.all([
+        base44.entities.UserDeal.list("-created_date", 500),
+        base44.entities.Brand.list(),
+      ]);
+      setApps(a);
+      setBrands(b);
+    } catch (err) {
+      console.error('Error loading applications:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => { load(); }, []);
 
