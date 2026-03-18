@@ -92,6 +92,8 @@ export const AuthProvider = ({ children }) => {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
+      console.log('checkUserAuth - currentUser:', currentUser);
+      console.log('checkUserAuth - currentUser.role:', currentUser?.role);
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
