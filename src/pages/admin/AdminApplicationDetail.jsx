@@ -71,11 +71,11 @@ export default function AdminApplicationDetail({ app, brand, onClose, onStatusCh
         <div className="space-y-2">
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">Deal Details</p>
           {[
-            { label: "Provider", val: app.provider },
-            { label: "Category", val: app.category },
-            { label: "Mode", val: app.deal_mode || "negotiated" },
-            { label: "Est. savings", val: app.estimated_savings ? `€${app.estimated_savings.toLocaleString()}/yr` : "—" },
-            { label: "Submitted", val: new Date(app.created_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) },
+            { label: "Provider", val: localApp.provider },
+            { label: "Category", val: localApp.category },
+            { label: "Mode", val: localApp.deal_mode || "negotiated" },
+            { label: "Est. savings", val: localApp.estimated_savings ? `€${localApp.estimated_savings.toLocaleString()}/yr` : "—" },
+            { label: "Submitted", val: new Date(localApp.created_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) },
           ].map((row, i) => (
             <div key={i} className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground/50">{row.label}</p>
