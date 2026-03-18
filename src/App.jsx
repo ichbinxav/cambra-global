@@ -20,6 +20,7 @@ import Account from '@/pages/Account';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import ConnectTools from '@/pages/ConnectTools';
+import StripeAnalyzer from '@/pages/StripeAnalyzer';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { base44 } from '@/api/base44Client';
 
@@ -61,6 +62,7 @@ const AuthenticatedApp = () => {
         <Route path="/Onboarding" element={<Onboarding />} />
         <Route path="/Analyzer" element={<Analyzer />} />
         <Route path="/ConnectTools" element={<ConnectTools />} />
+        <Route path="/StripeAnalyzer" element={<StripeAnalyzer />} />
         <Route path="/Results" element={<Results />} />
         <Route path="/Privacy" element={<Privacy />} />
         <Route path="/Terms" element={<Terms />} />
