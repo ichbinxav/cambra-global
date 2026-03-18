@@ -64,7 +64,7 @@ export default function Reports() {
             >
               <div className="mb-6">
                 <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-1">Savings history</p>
-                <p className="text-sm font-semibold">Annual savings potential by category (€)</p>
+                <p className="text-sm font-semibold">Annual optimization potential by category (€)</p>
               </div>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={chartData} barCategoryGap="35%">
@@ -116,7 +116,7 @@ export default function Reports() {
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="text-sm font-bold tracking-tight">€{r.total_savings?.toLocaleString()}/yr</p>
-                        <p className="text-[10px] text-muted-foreground">potential savings</p>
+                        <p className="text-[10px] text-muted-foreground">optimization potential</p>
                       </div>
                       <ArrowUpRight size={14} className="text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
                     </div>
