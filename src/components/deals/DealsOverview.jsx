@@ -4,7 +4,10 @@ import { getDealById, formatSavings } from "@/lib/deals.js";
 
 export default function DealsOverview({ userDeals }) {
   const active = userDeals.filter(d => d.status === "active");
-  const waitlist = userDeals.filter(d => d.status === "waitlist" || d.status === "pending");
+  const pending = userDeals.filter(d => d.status === "pending");
+  const waitlist = userDeals.filter(d => d.status === "waitlist");
+  const expired = userDeals.filter(d => d.status === "expired");
+  const allInactive = pending.length + waitlist.length + expired.length;
 
   const totalSavings = active.reduce((sum, d) => sum + (d.estimated_savings || 0), 0);
 
