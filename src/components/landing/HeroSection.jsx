@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingDown, CreditCard, Truck, Package, CheckCircle2 } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
 
 const SAVINGS = [
   { label: "Payments", value: "€38K", sub: "−52% fee rate", color: "text-blue-600", bg: "bg-blue-500/[0.07] border-blue-500/20", icon: CreditCard },
@@ -27,6 +29,7 @@ const fadeUp = {
 };
 
 export default function HeroSection() {
+  const { isAuthenticated } = useAuth();
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const watermarkY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
@@ -111,20 +114,41 @@ export default function HeroSection() {
 
             {/* CTAs */}
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link to="/Analyzer" className="flex-1 sm:flex-none">
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2 bg-green-600 hover:bg-green-700">
-                    Calculate your savings <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </motion.div>
-              </Link>
-              <Link to="/Onboarding" className="flex-1 sm:flex-none">
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-medium border-border/60 hover:border-foreground/20">
-                    See your optimization potential <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </motion.div>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link to="/Analyzer" className="flex-1 sm:flex-none">
+                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2 bg-green-600 hover:bg-green-700">
+                        Calculate your savings <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
+                  </Link>
+                  <Link to="/Dashboard" className="flex-1 sm:flex-none">
+                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                      <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-medium border-border/60 hover:border-foreground/20">
+                        Go to Dashboard <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/Analyzer" className="flex-1 sm:flex-none">
+                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2 bg-green-600 hover:bg-green-700">
+                        Calculate your savings <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </motion.div>
+                  </Link>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                    onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                    className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2"
+                  >
+                    Sign in first <ArrowRight className="h-4 w-4" />
+                  </motion.button>
+                </>
+              )}
             </motion.div>
 
             <motion.div variants={fadeUp} className="flex flex-col gap-1.5 mt-4">
@@ -211,11 +235,20 @@ export default function HeroSection() {
                  <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Potential savings unlocked</p>
                  <p className="text-3xl font-black tracking-tight">€8.4K<span className="text-base font-normal opacity-40">/yr</span></p>
                </div>
-               <Link to="/Analyzer">
-                 <button className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5">
-                   Analyze <ArrowRight size={11} />
-                 </button>
-               </Link>
+               {isAuthenticated ? (
+                  <Link to="/Analyzer">
+                    <button className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5">
+                      Analyze <ArrowRight size={11} />
+                    </button>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                    className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5"
+                  >
+                    Sign in <ArrowRight size={11} />
+                  </button>
+                )}
               </motion.div>
             </div>
 
@@ -261,11 +294,20 @@ export default function HeroSection() {
                 <p className="text-[11px] font-semibold text-foreground">Structural rates unlocked</p>
                 <p className="text-[10px] text-muted-foreground/50">Rates you can't negotiate alone · Join to activate</p>
               </div>
-              <Link to="/Onboarding">
-                <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
-                  Join <ArrowRight size={9} />
-                </button>
-              </Link>
+              {!isAuthenticated && (
+                <Link to="/Onboarding">
+                  <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
+                    Join <ArrowRight size={9} />
+                  </button>
+                </Link>
+              )}
+              {isAuthenticated && (
+                <Link to="/Deals">
+                  <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
+                    View deals <ArrowRight size={9} />
+                  </button>
+                </Link>
+              )}
             </motion.div>
 
             <motion.p
