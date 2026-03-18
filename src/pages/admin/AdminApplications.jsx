@@ -2,17 +2,9 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, ArrowUpRight, Filter } from "lucide-react";
 import AdminApplicationDetail from "./AdminApplicationDetail.jsx";
+import { ALL_STATUSES, STATUS_COLORS } from "@/lib/adminStatusConstants";
 
-const STATUSES = ["all", "submitted", "in_review", "provider_contacted", "offer_ready", "activated", "rejected", "closed"];
-const STATUS_COLORS = {
-  submitted: "text-blue-600 bg-blue-500/10 border-blue-500/20",
-  in_review: "text-orange-500 bg-orange-500/10 border-orange-500/20",
-  provider_contacted: "text-purple-600 bg-purple-500/10 border-purple-500/20",
-  offer_ready: "text-amber-600 bg-amber-500/10 border-amber-500/20",
-  activated: "text-green-600 bg-green-500/10 border-green-500/20",
-  rejected: "text-red-600 bg-red-500/10 border-red-500/20",
-  closed: "text-muted-foreground bg-secondary border-border/40",
-};
+const STATUSES = ["all", ...ALL_STATUSES];
 
 export default function AdminApplications() {
   const [apps, setApps] = useState([]);
