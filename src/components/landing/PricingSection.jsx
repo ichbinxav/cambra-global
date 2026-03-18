@@ -124,7 +124,7 @@ export default function PricingSection() {
                 </Button>
               </Link>
               <p className="text-[10px] text-muted-foreground/40 text-center mt-3">
-                Early partners lock in permanent preferential rates · Very limited availability
+                We only succeed when your costs improve · Most brands see results within the first cycle.
               </p>
             </div>
           </motion.div>
