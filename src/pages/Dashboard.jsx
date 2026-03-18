@@ -122,65 +122,7 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          {/* ── HERO: OVERPAYING ── */}
-          <div className="rounded-2xl border border-foreground/8 bg-foreground text-background overflow-hidden">
-            <div className="p-7 sm:p-8">
-              <p className="text-[10px] tracking-[0.3em] uppercase opacity-35 mb-3">Optimization potential identified</p>
-              <div className="text-[clamp(3.5rem,11vw,6rem)] font-black tracking-[-0.055em] leading-none mb-1">
-                <AnimatedCounter value={latest.total_savings} prefix="€" duration={1.8} />
-              </div>
-              <p className="text-sm opacity-40 mb-6">per year left unoptimized across your infrastructure</p>
-
-              {/* 3 key metrics inline */}
-              <div className="grid grid-cols-3 gap-3 mb-6 pb-6 border-b border-background/10">
-                {[
-                  { label: "Payments", value: latest.payment_savings, icon: CreditCard },
-                  { label: "Shipping", value: latest.shipping_savings, icon: Truck },
-                  { label: "SaaS", value: latest.saas_savings, icon: Package },
-                ].map((item, i) => (
-                  <div key={i}>
-                    <p className="text-[10px] uppercase tracking-[0.15em] opacity-35 mb-1">{item.label}</p>
-                    <p className="text-base sm:text-lg font-black tabular-nums opacity-90">
-                      €{(item.value || 0).toLocaleString()}
-                    </p>
-                    <p className="text-[10px] opacity-30">/yr</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Score row */}
-              <div className="flex items-center gap-3 mb-5">
-                <svg className="w-8 h-8 -rotate-90 shrink-0" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="2.5" />
-                  <circle cx="12" cy="12" r="10" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"
-                    strokeDasharray={2 * Math.PI * 10}
-                    strokeDashoffset={2 * Math.PI * 10 * (1 - score / 100)}
-                    style={{ transition: "stroke-dashoffset 1.5s ease-out" }} />
-                </svg>
-                <div className="flex-1">
-                  <p className="text-xs font-black opacity-80">Infra Score: <span className="font-black">{score}/100</span></p>
-                  <p className="text-[10px] opacity-35">{SCORE_LABEL(score)}</p>
-                </div>
-                {/* Progress bar to 100 */}
-                <div className="hidden sm:block w-24 h-1.5 rounded-full bg-background/10 overflow-hidden">
-                  <div className="h-full rounded-full bg-background/60 transition-all duration-1000"
-                    style={{ width: `${score}%` }} />
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-4">
-                <Link to={`/Results?id=${latest.id}`} className="flex items-center gap-1.5 text-xs opacity-60 hover:opacity-100 transition-opacity font-semibold">
-                  Full report <ArrowUpRight size={11} />
-                </Link>
-                <Link to="/Deals" className="flex items-center gap-1.5 text-xs opacity-60 hover:opacity-100 transition-opacity font-semibold">
-                  Activate deals <ArrowUpRight size={11} />
-                </Link>
-                <Link to="/ConnectTools" className="flex items-center gap-1.5 text-xs opacity-60 hover:opacity-100 transition-opacity font-semibold">
-                  Connect tools <ArrowUpRight size={11} />
-                </Link>
-              </div>
-            </div>
-          </div>
+          <HeroSavings latest={latest} score={score} />
 
           {/* ── SAVINGS OPPORTUNITIES ── */}
           <div className="grid grid-cols-3 gap-3">
