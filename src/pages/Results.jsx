@@ -142,13 +142,14 @@ export default function Results() {
             <AccuracyBadge isEstimated={isEstimated} />
           </div>
 
-          <p className="text-sm text-muted-foreground mb-3">You are overpaying by</p>
+          <p className="text-sm text-muted-foreground mb-3">Optimization potential identified</p>
 
           {/* THE BIG NUMBER */}
           <div className="text-[clamp(5rem,18vw,10rem)] font-black tracking-[-0.055em] leading-none mb-2">
             <AnimatedCounter value={result.total_savings} prefix="€" duration={2} />
           </div>
-          <p className="text-muted-foreground/50 text-base mb-7">per year on your infrastructure</p>
+          <p className="text-muted-foreground/50 text-base mb-2">per year across your infrastructure</p>
+          <p className="text-muted-foreground/35 text-sm mb-7">Value currently left unoptimized · Most brands improve this within weeks.</p>
 
           {/* Score pill */}
           <div className="flex flex-wrap items-center justify-center gap-3">
