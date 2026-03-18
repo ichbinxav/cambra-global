@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { LANGUAGES, useLanguage } from "@/lib/i18n";
+import { LANGUAGES, useLanguage } from "@/lib/i18n.jsx";
 import { ChevronDown } from "lucide-react";
 
 export default function LanguageSwitcher({ className = "" }) {
