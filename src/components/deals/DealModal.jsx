@@ -296,7 +296,7 @@ export default function DealModal({ deal, onClose, userDeal, userEmail, onUserDe
           )}
 
         </AnimatePresence>
-        </motion.div>
-        </motion.div>
-        );
-        }
+      </motion.div>
+    </motion.div>
+  );
+}
