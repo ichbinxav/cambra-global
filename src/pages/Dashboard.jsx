@@ -293,7 +293,7 @@ export default function Dashboard() {
             </div>
             <div className="divide-y divide-border/20">
               {[
-                { label: "Payments", value: latest.details?.payment_current_rate ? `${latest.details.payment_current_rate.toFixed(1)}% fee rate` : "Rate not connected", status: "warn", icon: CreditCard },
+                { label: "Payments", value: latest.details?.payment_current_rate ? `${latest.details.payment_current_rate.toFixed(1)}% fee rate` : "Using estimate", status: "warn", icon: CreditCard },
                 { label: "Shipping", value: latest.details?.shipping_current_avg ? `€${latest.details.shipping_current_avg.toFixed(2)}/shipment` : "Rate not connected", status: "warn", icon: Truck },
                 { label: "SaaS stack", value: latest.details?.saas_current_total ? `€${latest.details.saas_current_total.toLocaleString()}/mo` : "Tools not listed", status: "neutral", icon: Package },
               ].map((row, i) => (
