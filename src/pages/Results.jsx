@@ -14,11 +14,17 @@ import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Cell } from "rechar
 /* ── static data ─────────────────────────────────────────────── */
 const BREAKDOWN_META = [
   { key: "payment_savings", label: "Payments", icon: CreditCard, color: "#3b82f6", bg: "bg-blue-500/[0.06] border-blue-500/15", textColor: "text-blue-600",
-    detail: r => r.details?.payment_current_rate ? `${r.details.payment_current_rate.toFixed(1)}% → 1.4% network rate` : "Above network benchmark" },
+    detail: r => r.details?.payment_current_rate
+      ? `${r.details.payment_current_rate.toFixed(1)}% current → ${r.details.payment_optimal_rate?.toFixed(1) ?? "1.4"}% network target`
+      : "Efficiency improvement available" },
   { key: "shipping_savings", label: "Shipping", icon: Truck, color: "#22c55e", bg: "bg-green-500/[0.06] border-green-500/15", textColor: "text-green-600",
-    detail: r => r.details?.shipping_current_avg ? `€${r.details.shipping_current_avg.toFixed(2)}/shipment → collective rate` : "Volume-based repricing available" },
-  { key: "saas_savings", label: "SaaS", icon: Package, color: "#f97316", bg: "bg-orange-500/[0.06] border-orange-500/15", textColor: "text-orange-500",
-    detail: r => r.details?.saas_current_total ? `€${r.details.saas_current_total.toLocaleString()}/mo → group licenses` : "Stack consolidation potential" },
+    detail: r => r.details?.shipping_current_avg
+      ? `€${r.details.shipping_current_avg.toFixed(2)}/shipment → €${r.details.shipping_optimal_avg?.toFixed(2) ?? "5.20"} collective rate`
+      : "Volume-based cost reduction available" },
+  { key: "saas_savings", label: "SaaS & Tools", icon: Package, color: "#f97316", bg: "bg-orange-500/[0.06] border-orange-500/15", textColor: "text-orange-500",
+    detail: r => r.details?.saas_current_total
+      ? `€${r.details.saas_current_total.toLocaleString()}/mo current → €${r.details.saas_optimal_total?.toLocaleString() ?? "—"} via group licenses`
+      : "Stack consolidation efficiency available" },
 ];
 
 const DEALS = [
