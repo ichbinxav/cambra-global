@@ -17,6 +17,11 @@ export default function Deals() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("discover"); // discover | contracts
 
+  const reloadUserDeals = async () => {
+    const uds = await base44.entities.UserDeal.list();
+    setUserDeals(uds);
+  };
+
   useEffect(() => {
     Promise.all([
       base44.auth.me(),
@@ -26,6 +31,15 @@ export default function Deals() {
       setUserDeals(uds);
       setLoading(false);
     });
+
+    // Suscribirse a cambios en tiempo real
+    const unsubscribe = base44.entities.UserDeal.subscribe((event) => {
+      if (event.type === "create" || event.type === "update") {
+        reloadUserDeals();
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   const getUserDeal = (dealId) => userDeals.find(ud => ud.deal_id === dealId);
