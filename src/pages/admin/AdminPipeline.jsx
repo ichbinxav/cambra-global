@@ -51,7 +51,7 @@ export default function AdminPipeline() {
     if (!result.destination) return;
     const { draggableId, destination } = result;
     const newStatus = destination.droppableId;
-    await base44.entities.UserDeal.update(draggableId, { status: newStatus });
+    await base44.entities.DealApplication.update(draggableId, { status: newStatus });
     setApps(prev => prev.map(a => a.id === draggableId ? { ...a, status: newStatus } : a));
   };
 
