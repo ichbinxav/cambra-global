@@ -97,13 +97,22 @@ export default function DashboardLayout() {
 
       <AnimatePresence>
         {sidebarOpen && (
-          <motion.div
-            className="lg:hidden fixed inset-0 z-40 bg-background/97 backdrop-blur-2xl pt-14"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
+          <>
+            <motion.div
+              className="lg:hidden fixed inset-0 z-30 bg-black/20"
+              onClick={() => setSidebarOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+            <motion.div
+              className="lg:hidden fixed inset-0 z-40 bg-background pt-14 overflow-y-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
             <nav className="p-4 space-y-0.5">
               {NAV_ITEMS.map(item => {
                 const active = location.pathname === item.path;
