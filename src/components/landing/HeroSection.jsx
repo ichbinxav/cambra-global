@@ -269,8 +269,8 @@ export default function HeroSection() {
                 <span className="text-green-600 text-[11px] font-black">3</span>
               </div>
               <div className="flex-1">
-                <p className="text-[11px] font-semibold text-foreground">Structural rates unlocked</p>
-                <p className="text-[10px] text-muted-foreground/50">Rates you can't negotiate alone · Join to activate</p>
+                <p className="text-[11px] font-semibold text-foreground">{t(h.dealsUnlocked, lang)}</p>
+                <p className="text-[10px] text-muted-foreground/50">{t(h.dealsSubtext, lang)}</p>
               </div>
               <Link to="/Onboarding">
                 <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
