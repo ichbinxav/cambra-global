@@ -272,6 +272,15 @@ export default function ConnectTools() {
                       >
                         <CheckCircle2 size={11} /> Connected
                       </button>
+                    ) : c.name === "Stripe" && c.status !== "soon" ? (
+                      <Link to="/StripeAnalyzer">
+                        <button
+                          className="h-8 px-3.5 rounded-full border text-xs font-bold shrink-0 transition-all flex items-center gap-1.5 border-[#635BFF]/40 text-[#635BFF] hover:bg-[#635BFF]/10"
+                          style={{ borderColor: "#635BFF55" }}
+                        >
+                          <Plug size={11} /> Analyze
+                        </button>
+                      </Link>
                     ) : (
                       <button
                         onClick={() => c.status !== "soon" && toggleConnect(c.name)}
