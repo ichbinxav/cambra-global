@@ -141,6 +141,26 @@ export default function AdminOverview() {
       {/* OVERVIEW TAB */}
       {activeTab === "overview" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+          {/* Top metric cards */}
+          <div className="grid grid-cols-2 gap-3">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="p-4 rounded-xl border border-border/50 bg-card">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Deals Applied</p>
+                <FileText size={12} className="text-orange-500" />
+              </div>
+              <p className={`text-3xl font-black tabular-nums text-orange-500`}>{userDeals.length}</p>
+              <p className="text-[11px] text-muted-foreground/40 mt-1">+{newDealsRange}</p>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="p-4 rounded-xl border border-border/50 bg-card">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Deals Activated</p>
+                <CheckCircle2 size={12} className="text-green-600" />
+              </div>
+              <p className={`text-3xl font-black tabular-nums text-green-600`}>{activeDeals.length}</p>
+              <p className="text-[11px] text-muted-foreground/40 mt-1">0% rate</p>
+            </motion.div>
+          </div>
+
           {/* Key metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
