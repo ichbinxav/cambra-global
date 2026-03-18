@@ -278,10 +278,35 @@ export default function Results() {
               ))}
             </div>
             {[
-              { metric: "Payment fee", yours: `${result.details?.payment_current_rate?.toFixed(1) ?? "~2.9"}%`, network: "1.4%", gap: result.details?.payment_current_rate ? `−${(result.details.payment_current_rate - 1.4).toFixed(1)}%` : "−1.5%", bad: true },
-              { metric: "Cost/shipment", yours: `€${result.details?.shipping_current_avg?.toFixed(2) ?? "~7.50"}`, network: "€5.20", gap: result.details?.shipping_current_avg ? `−€${(result.details.shipping_current_avg - 5.2).toFixed(2)}` : "−€2.30", bad: true },
-              { metric: "SaaS % of rev", yours: input?.monthly_revenue ? `${((input.total_saas_spend / input.monthly_revenue) * 100).toFixed(1)}%` : "~5%", network: "2.5%", gap: "Consolidate", bad: true },
-              { metric: "Infra score", yours: `${score}/100`, network: "72/100", gap: score >= 72 ? "Above avg ↑" : `−${72 - score} pts`, bad: score < 72 },
+              {
+                metric: "Payment fee", bad: (result.details?.payment_current_rate ?? 2.9) > (result.details?.payment_optimal_rate ?? 1.4),
+                yours: `${(result.details?.payment_current_rate ?? 2.9).toFixed(1)}%`,
+                network: `${(result.details?.payment_optimal_rate ?? 1.4).toFixed(1)}%`,
+                gap: result.details?.payment_current_rate && result.details?.payment_optimal_rate
+                  ? `−${(result.details.payment_current_rate - result.details.payment_optimal_rate).toFixed(1)}%`
+                  : "Potential gap",
+              },
+              {
+                metric: "Cost/shipment", bad: (result.details?.shipping_current_avg ?? 7.5) > (result.details?.shipping_optimal_avg ?? 5.2),
+                yours: `€${(result.details?.shipping_current_avg ?? 7.5).toFixed(2)}`,
+                network: `€${(result.details?.shipping_optimal_avg ?? 5.2).toFixed(2)}`,
+                gap: result.details?.shipping_current_avg && result.details?.shipping_optimal_avg
+                  ? `−€${(result.details.shipping_current_avg - result.details.shipping_optimal_avg).toFixed(2)}`
+                  : "Potential gap",
+              },
+              {
+                metric: "SaaS / revenue", bad: true,
+                yours: input?.monthly_revenue ? `${((input.total_saas_spend / input.monthly_revenue) * 100).toFixed(1)}%` : "~5%",
+                network: result.details?.saas_optimal_total && input?.monthly_revenue
+                  ? `${((result.details.saas_optimal_total / input.monthly_revenue) * 100).toFixed(1)}%`
+                  : "2.5%",
+                gap: "Efficiency gap",
+              },
+              {
+                metric: "Infrastructure score", bad: score < 72,
+                yours: `${score}/100`, network: "72/100",
+                gap: score >= 72 ? "Above avg ↑" : `−${72 - score} pts`,
+              },
             ].map((row, i) => (
               <div key={i} className="grid grid-cols-4 px-6 py-4 border-b border-border/15 last:border-0 items-center">
                 <span className="text-xs text-muted-foreground/60">{row.metric}</span>
