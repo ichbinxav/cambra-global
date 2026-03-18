@@ -77,30 +77,40 @@ export default function DealsOverview({ userDeals }) {
         </div>
       )}
 
+      {/* Status pipeline */}
+      {allInactive > 0 && (
+        <div className="px-6 py-4 space-y-2 border-t border-border/30">
+          {pending.length > 0 && (
+            <p className="text-[11px] text-blue-600"><span className="font-semibold">{pending.length}</span> pending approval</p>
+          )}
+          {waitlist.length > 0 && (
+            <p className="text-[11px] text-orange-600"><span className="font-semibold">{waitlist.length}</span> on waitlist</p>
+          )}
+          {expired.length > 0 && (
+            <p className="text-[11px] text-red-600"><span className="font-semibold">{expired.length}</span> expired</p>
+          )}
+        </div>
+      )}
+
       {/* Empty / CTA */}
-      {active.length === 0 && waitlist.length === 0 && (
+      {active.length === 0 && allInactive === 0 && (
         <div className="px-6 py-6 text-center">
-          <p className="text-sm text-muted-foreground mb-3">No active deals yet.</p>
+          <p className="text-sm text-muted-foreground mb-3">No deals yet.</p>
           <Link to="/Deals">
             <button className="h-9 px-5 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5 mx-auto">
-              <Zap size={11} /> Activate savings
+              <Zap size={11} /> Discover savings
             </button>
           </Link>
         </div>
       )}
 
-      {active.length > 0 && (
-        <div className="px-6 py-4 border-t border-border/30 flex gap-2">
+      {(active.length > 0 || allInactive > 0) && (
+        <div className="px-6 py-4 border-t border-border/30">
           <Link to="/Deals">
-            <button className="h-8 px-4 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5">
-              <Zap size={10} /> Activate more savings
+            <button className="h-8 px-4 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5 w-full justify-center">
+              <Zap size={10} /> Manage deals
             </button>
           </Link>
-          {waitlist.length > 0 && (
-            <span className="flex items-center gap-1 text-[11px] text-muted-foreground/50">
-              <Users size={10} /> {waitlist.length} on waitlist
-            </span>
-          )}
         </div>
       )}
     </div>
