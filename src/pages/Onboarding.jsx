@@ -110,10 +110,10 @@ function StepWelcome() {
 
       <div>
         <h1 className="text-[clamp(2rem,7vw,4rem)] font-black tracking-[-0.05em] leading-[0.88] mb-4">
-          Stop overpaying<br />infrastructure.<br />Join THE NoDE.
+          Turn your infrastructure<br />into an advantage.<br />Join THE NoDE.
         </h1>
         <p className="text-muted-foreground text-base leading-relaxed max-w-xs mx-auto">
-          Unlock margin. Scale your business.
+          Access better economics instantly. Improve your cost structure without increasing revenue.
         </p>
       </div>
 
@@ -123,7 +123,7 @@ function StepWelcome() {
         <SavingBadge label="Shipping rates" value="−18%" color="bg-green-500/[0.06] border-green-500/15 text-green-600" />
         <SavingBadge label="SaaS spend" value="−30%" color="bg-orange-500/[0.06] border-orange-500/15 text-orange-500" />
         <div className="pt-2 flex items-center justify-center gap-2 text-[11px] text-muted-foreground/50">
-          <span className="text-lg font-black text-foreground">€29K</span> average savings per brand per year
+          <span className="text-lg font-black text-foreground">€29K</span> avg. optimization potential per brand per year
         </div>
       </div>
 
@@ -188,11 +188,11 @@ function StepBrand({ data, setData }) {
 
 function StepRevenue({ data, setData }) {
   const leverage = {
-    "under_500k": { msg: "You can recover €10K–€20K/yr via network rates.", color: "text-muted-foreground" },
-    "500k_1m":    { msg: "Realistic savings of €20K–€40K/yr from payments + shipping.", color: "text-blue-600" },
-    "1m_5m":      { msg: "At your scale, network deals save €40K–€100K/yr.", color: "text-blue-600" },
-    "5m_20m":     { msg: "Major leverage. €100K–€400K/yr in recoverable costs.", color: "text-green-600" },
-    "20m_plus":   { msg: "Full enterprise rate access. Significant structural savings.", color: "text-green-600" },
+    "under_500k": { msg: "Brands at this scale typically identify €10K–€20K/yr in optimization potential.", color: "text-muted-foreground" },
+    "500k_1m":    { msg: "At this scale, network rates unlock €20K–€40K/yr across payments & shipping.", color: "text-blue-600" },
+    "1m_5m":      { msg: "Significant leverage available — €40K–€100K/yr in identified efficiency improvements.", color: "text-blue-600" },
+    "5m_20m":     { msg: "Major scale advantage: €100K–€400K/yr in infrastructure cost reduction potential.", color: "text-green-600" },
+    "20m_plus":   { msg: "Full enterprise rate access. Structural improvements at this scale are substantial.", color: "text-green-600" },
   };
   const current = leverage[data.annual_revenue];
 
@@ -233,7 +233,7 @@ function StepRevenue({ data, setData }) {
             exit={{ opacity: 0 }}
             className="p-4 rounded-xl border border-border/40 bg-secondary/40"
           >
-            <p className="text-[11px] text-muted-foreground/50 mb-0.5">Estimated savings potential</p>
+            <p className="text-[11px] text-muted-foreground/50 mb-0.5">Estimated optimization potential</p>
             <p className={`text-sm font-semibold ${current.color}`}>{current.msg}</p>
           </motion.div>
         )}
