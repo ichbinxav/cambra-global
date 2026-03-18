@@ -346,7 +346,8 @@ export default function AdminOverview() {
                 {[
                   { label: "Active", val: activeDeals.length, color: "text-green-600" },
                   { label: "Waitlist", val: waitlistDeals.length, color: "text-blue-600" },
-                  { label: "Pending", val: newAppsRange, color: "text-orange-500" },
+                  { label: "Pending", val: pendingDeals.length, color: "text-orange-500" },
+                  { label: "Expired", val: expiredDeals.length, color: "text-red-600" },
                 ].map((row, i) => (
                   <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-secondary/40 border border-border/20">
                     <p className="text-sm font-medium text-muted-foreground">{row.label}</p>
