@@ -316,24 +316,39 @@ export default function Analyzer() {
             min={0.5} max={5} s={0.1}
             fmt={v => `${v.toFixed(1)}%`}
           />
-          <div className="p-4 rounded-xl bg-blue-500/[0.06] border border-blue-500/15 space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Your current rate</span>
-              <span className="font-bold tabular-nums">{data.payment_fee_pct.toFixed(1)}%</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Network benchmark</span>
-              <span className="font-bold text-blue-600 tabular-nums">1.4%</span>
-            </div>
-            {data.payment_fee_pct > 1.4 && (
-              <div className="pt-2 border-t border-blue-500/15 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Overpaying annually</span>
-                <span className="font-black text-lg text-foreground tabular-nums">
-                  €{Math.round(data.monthly_revenue * 12 * ((data.payment_fee_pct - 1.4) / 100)).toLocaleString()}/yr
-                </span>
+          {(() => {
+            const { getBenchmarks } = require ? null : null; // handled via import
+            // inline benchmark calc for live preview
+            const euCountries = ["France","Germany","Spain","Italy","Netherlands","Belgium","Portugal","Sweden","Denmark","Finland","Norway","Austria","Switzerland","Ireland","Poland","Czech Republic","Romania","Hungary","Greece","Luxembourg","Malta","Cyprus","Slovakia","Slovenia","Croatia","Estonia","Latvia","Lithuania","Bulgaria"];
+            const eu = euCountries.includes(data.country);
+            const rev = data.monthly_revenue;
+            const tier = rev >= 500000 ? "large" : rev >= 100000 ? "mid" : rev >= 30000 ? "small" : "micro";
+            const payBenchmarks = {
+              micro: eu ? 1.8 : 2.2, small: eu ? 1.6 : 1.9, mid: eu ? 1.4 : 1.6, large: eu ? 1.2 : 1.4
+            };
+            const benchmark = payBenchmarks[tier];
+            const annualSavings = Math.max(0, Math.round(data.monthly_revenue * 12 * ((data.payment_fee_pct - benchmark) / 100)));
+            return (
+              <div className="p-4 rounded-xl bg-blue-500/[0.06] border border-blue-500/15 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Your current rate</span>
+                  <span className="font-bold tabular-nums">{data.payment_fee_pct.toFixed(1)}%</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Network target ({tier} tier{eu ? " · EU" : ""})</span>
+                  <span className="font-bold text-blue-600 tabular-nums">{benchmark.toFixed(1)}%</span>
+                </div>
+                {data.payment_fee_pct > benchmark && (
+                  <div className="pt-2 border-t border-blue-500/15 flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Optimization potential</span>
+                    <span className="font-black text-lg text-foreground tabular-nums">
+                      €{annualSavings.toLocaleString()}/yr
+                    </span>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            );
+          })()}
         </div>
       );
 
