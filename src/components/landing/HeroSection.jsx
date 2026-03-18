@@ -224,7 +224,7 @@ export default function HeroSection() {
                </div>
                <Link to="/Analyzer">
                  <button className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5">
-                   Analyze <ArrowRight size={11} />
+                   {t(h.analyze, lang)} <ArrowRight size={11} />
                  </button>
                </Link>
               </motion.div>
