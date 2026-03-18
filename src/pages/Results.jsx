@@ -174,7 +174,12 @@ export default function Results() {
             <AlertTriangle size={16} className="text-orange-500 shrink-0 mt-0.5 sm:mt-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold">Using estimated data</p>
-              <p className="text-xs text-muted-foreground/60 mt-0.5">Connect your tools or upload statements to refine your analysis and unlock verified savings figures.</p>
+              <p className="text-xs text-muted-foreground/60 mt-0.5">This analysis uses your manual inputs. Connect your tools or upload statements to unlock precise, verified savings figures.</p>
+              <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground/40">
+                <span>🔒 Encrypted</span>
+                <span>👁 Read-only access</span>
+                <span>🚫 Never shared</span>
+              </div>
             </div>
             <Link to="/ConnectTools" className="shrink-0">
               <button className="h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5 whitespace-nowrap">
