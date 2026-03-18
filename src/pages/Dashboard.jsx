@@ -42,12 +42,12 @@ export default function Dashboard() {
   const chartData = results.slice().reverse().map((r, i) => ({ i, value: r.total_savings || 0 }));
   const score = latest?.infra_score || 0;
   
-  // GMV calculations
-  const gmvTotal = brands.reduce((sum, b) => {
-    const result = results.find(r => r.brand_id === b.id);
-    return sum + (result?.details?.payment_monthly_volume || 0) * 12;
+  // GMV calculations from AnalyzerInput monthly_revenue
+  const gmvTotal = results.reduce((sum, r) => {
+    const monthlyRevenue = r.details?.monthly_revenue || 0;
+    return sum + (monthlyRevenue * 12);
   }, 0);
-  const gmvAverage = brands.length > 0 ? gmvTotal / brands.length : 0;
+  const gmvAverage = results.length > 0 ? gmvTotal / Math.max(results.length, 1) : 0;
 
   if (loading) return (
     <div className="flex items-center justify-center py-40">
