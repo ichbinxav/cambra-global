@@ -41,15 +41,16 @@ export default function Deals() {
   }, []);
 
   const handleUserDealChange = (updated) => {
+    // Immediately update local state
     setUserDeals(prev => {
       const exists = prev.find(ud => ud.id === updated.id);
       if (exists) return prev.map(ud => ud.id === updated.id ? updated : ud);
       return [...prev, updated];
     });
-    // Force sync after 300ms
+    // Reload from DB after 100ms
     setTimeout(() => {
-      base44.entities.UserDeal.list().then(setUserDeals);
-    }, 300);
+      base44.entities.UserDeal.list().then(uds => setUserDeals(uds));
+    }, 100);
   };
 
   const getUserDeal = (dealId) => userDeals.find(ud => ud.deal_id === dealId);
