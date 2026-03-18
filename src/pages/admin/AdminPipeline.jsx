@@ -58,7 +58,7 @@ export default function AdminPipeline() {
   if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
 
   // Filter out rejected/closed from kanban
-  const activeApps = apps.filter(a => !["rejected", "closed", "expired"].includes(a.status));
+  const activeApps = apps.filter(a => ![DEAL_STATUSES.REJECTED, DEAL_STATUSES.CLOSED].includes(a.status));
 
   return (
     <div className="space-y-5">
