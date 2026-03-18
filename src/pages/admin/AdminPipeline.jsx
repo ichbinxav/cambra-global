@@ -16,10 +16,32 @@ export default function AdminPipeline() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      base44.entities.UserDeal.list("-created_date", 500),
-      base44.entities.Brand.list(),
-    ]).then(([a, b]) => { setApps(a); setBrands(b); setLoading(false); });
+    const load = async () => {
+      const [a, b] = await Promise.all([
+        base44.entities.UserDeal.list("-created_date", 500),
+        base44.entities.Brand.list(),
+      ]);
+      setApps(a);
+      setBrands(b);
+      setLoading(false);
+    };
+
+    load();
+
+    // Subscribe to real-time updates
+    const subs = [];
+    try {
+      const unsub1 = base44.entities.UserDeal.subscribe(() => load());
+      const unsub2 = base44.entities.Brand.subscribe(() => load());
+      if (unsub1) subs.push(unsub1);
+      if (unsub2) subs.push(unsub2);
+    } catch (err) {
+      console.warn('Subscription error:', err);
+    }
+
+    return () => {
+      subs.forEach(unsub => unsub?.());
+    };
   }, []);
 
   const getBrand = (email) => brands.find(b => b.created_by === email);
