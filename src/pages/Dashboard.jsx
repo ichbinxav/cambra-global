@@ -10,7 +10,7 @@ import { base44 } from "@/api/base44Client";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import { AreaChart, Area, ResponsiveContainer, Tooltip, RadialBarChart, RadialBar } from "recharts";
 
-const SCORE_LABEL = s => s >= 90 ? "Best-in-class" : s >= 80 ? "Strong" : s >= 60 ? "Good" : s >= 40 ? "Under-optimized" : "Poor";
+const SCORE_LABEL = s => s >= 90 ? "Best-in-class" : s >= 80 ? "Strong" : s >= 60 ? "Efficient" : s >= 40 ? "Optimization opportunity detected" : "High optimization potential";
 const SCORE_COLOR = s => s >= 80 ? "#22c55e" : s >= 60 ? "#f97316" : "#3b82f6";
 
 const DEALS_PREVIEW = [
@@ -67,8 +67,8 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl border border-orange-500/20 bg-orange-500/[0.04]">
             <AlertTriangle size={16} className="text-orange-500 shrink-0 mt-0.5 sm:mt-0" />
             <div className="flex-1">
-              <p className="text-sm font-semibold">Get a more accurate analysis</p>
-              <p className="text-xs text-muted-foreground/60 mt-0.5">Connect your tools or upload a statement to see real savings.</p>
+              <p className="text-sm font-semibold">Using estimated data</p>
+              <p className="text-xs text-muted-foreground/60 mt-0.5">Connect your tools or upload a statement to unlock precise insights and verified savings figures.</p>
             </div>
             <div className="flex gap-2 shrink-0 flex-wrap">
               <Link to="/ConnectTools">
@@ -84,7 +84,7 @@ export default function Dashboard() {
             <div className="text-5xl mb-5 select-none opacity-10">✱</div>
             <h3 className="text-xl font-bold tracking-tight mb-2">No analysis yet</h3>
             <p className="text-sm text-muted-foreground mb-8 max-w-xs mx-auto">
-              Run the Analyzer in 2 minutes to discover how much you're overpaying.
+              Run the 2-minute Analyzer to identify your infrastructure optimization potential.
             </p>
             <Link to="/Analyzer">
               <Button className="rounded-full px-8 text-sm font-bold gap-2">
@@ -99,12 +99,12 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl border border-orange-500/20 bg-orange-500/[0.04]">
             <div className="flex items-center gap-2 flex-1">
               <div className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0" />
-              <p className="text-xs font-semibold text-orange-600">Estimated analysis</p>
-              <span className="text-xs text-muted-foreground/50 hidden sm:block">— Connect your tools for real data</span>
+              <p className="text-xs font-semibold text-orange-600">Using estimated data</p>
+              <span className="text-xs text-muted-foreground/50 hidden sm:block">— Connect your tools to unlock precise insights</span>
             </div>
             <Link to="/ConnectTools">
               <button className="h-7 px-3 rounded-full border border-orange-500/30 text-[11px] font-semibold text-orange-600 hover:bg-orange-500/10 transition-colors flex items-center gap-1.5">
-                <Zap size={10} /> Improve accuracy
+                <Zap size={10} /> Connect your data
               </button>
             </Link>
           </div>
@@ -112,11 +112,11 @@ export default function Dashboard() {
           {/* ── HERO: OVERPAYING ── */}
           <div className="rounded-2xl border border-foreground/8 bg-foreground text-background overflow-hidden">
             <div className="p-7 sm:p-8">
-              <p className="text-[10px] tracking-[0.3em] uppercase opacity-35 mb-3">You are overpaying by</p>
+              <p className="text-[10px] tracking-[0.3em] uppercase opacity-35 mb-3">Optimization potential identified</p>
               <div className="text-[clamp(3.5rem,11vw,6rem)] font-black tracking-[-0.055em] leading-none mb-1">
                 <AnimatedCounter value={latest.total_savings} prefix="€" duration={1.8} />
               </div>
-              <p className="text-sm opacity-40 mb-6">per year on infrastructure</p>
+              <p className="text-sm opacity-40 mb-6">per year left unoptimized across your infrastructure</p>
 
               {/* 3 key metrics inline */}
               <div className="grid grid-cols-3 gap-3 mb-6 pb-6 border-b border-background/10">
@@ -172,9 +172,9 @@ export default function Dashboard() {
           {/* ── SAVINGS OPPORTUNITIES ── */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: "Payments", value: latest.payment_savings, icon: CreditCard, color: "text-blue-600", border: "border-blue-500/15", bg: "bg-blue-500/[0.05]", note: "vs 1.4% benchmark" },
-              { label: "Shipping", value: latest.shipping_savings, icon: Truck, color: "text-green-600", border: "border-green-500/15", bg: "bg-green-500/[0.05]", note: "collective rate" },
-              { label: "SaaS", value: latest.saas_savings, icon: Package, color: "text-orange-500", border: "border-orange-500/15", bg: "bg-orange-500/[0.05]", note: "group licenses" },
+              { label: "Payments", value: latest.payment_savings, icon: CreditCard, color: "text-blue-600", border: "border-blue-500/15", bg: "bg-blue-500/[0.05]", note: "payment efficiency" },
+              { label: "Shipping", value: latest.shipping_savings, icon: Truck, color: "text-green-600", border: "border-green-500/15", bg: "bg-green-500/[0.05]", note: "shipping efficiency" },
+              { label: "SaaS", value: latest.saas_savings, icon: Package, color: "text-orange-500", border: "border-orange-500/15", bg: "bg-orange-500/[0.05]", note: "stack efficiency" },
             ].map((item, i) => (
               <div key={i} className={`p-4 rounded-2xl border ${item.border} ${item.bg} flex flex-col`}>
                 <item.icon size={13} className={`mb-2 ${item.color}`} />
@@ -212,7 +212,7 @@ export default function Dashboard() {
                   <div className="flex-1">
                     <p className="text-xl font-black mb-0.5" style={{ color: scoreColor }}>{SCORE_LABEL(score)}</p>
                     <p className="text-xs text-muted-foreground leading-snug">
-                      {score >= 60 ? "Above average. THE NoDE can push this further." : "Key inefficiencies detected — fix them now."}
+                      {score >= 60 ? "Above average. THE NoDE can push this further." : "Optimization opportunities identified — activate deals to improve."}
                     </p>
                     {/* Mini progress bar */}
                     <div className="mt-3 h-1 rounded-full bg-border/40 overflow-hidden w-full">
@@ -304,11 +304,11 @@ export default function Dashboard() {
                   <p className="text-xs font-bold flex-1">{row.value}</p>
                   {row.status === "warn" ? (
                     <span className="flex items-center gap-1 text-[10px] text-orange-500 font-semibold bg-orange-500/[0.08] border border-orange-500/20 px-2 py-0.5 rounded-full">
-                      <AlertTriangle size={8} /> Not connected
+                      <AlertTriangle size={8} /> Estimated
                     </span>
                   ) : (
                     <span className="flex items-center gap-1 text-[10px] text-muted-foreground/40 bg-secondary px-2 py-0.5 rounded-full">
-                      Manual
+                      Estimated
                     </span>
                   )}
                 </div>
