@@ -30,13 +30,16 @@ export default function Deals() {
     loadData();
 
     // Subscribe to real-time changes
-    const unsubscribe = base44.entities.UserDeal.subscribe(() => {
-      // Always reload on any change
-      base44.entities.UserDeal.list().then(setUserDeals);
-    });
+    const subs = [];
+    try {
+      const unsub = base44.entities.UserDeal.subscribe(() => loadData());
+      if (unsub) subs.push(unsub);
+    } catch (err) {
+      console.warn('Subscription error:', err);
+    }
 
     return () => {
-      if (unsubscribe) unsubscribe();
+      subs.forEach(unsub => unsub?.());
     };
   }, []);
 
