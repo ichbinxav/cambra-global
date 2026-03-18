@@ -11,13 +11,16 @@ export default function AdminOverview() {
 
   useEffect(() => {
     Promise.all([
-      base44.asServiceRole ? base44.entities.User.list() : base44.entities.User.list(),
+      base44.entities.User.list(),
       base44.entities.Brand.list(),
       base44.entities.UserDeal.list(),
       base44.entities.AnalyzerResult.list("-created_date", 200),
       base44.entities.DealApplication.list(),
     ]).then(([users, brands, userDeals, results, apps]) => {
       setData({ users, brands, userDeals, results, apps });
+      setLoading(false);
+    }).catch(err => {
+      console.error('Error loading admin data:', err);
       setLoading(false);
     });
   }, []);
