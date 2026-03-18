@@ -24,6 +24,7 @@ export default function DashboardLayout() {
   useEffect(() => {
     console.log("DashboardLayout - Current user:", user);
     console.log("DashboardLayout - User role:", user?.role);
+    console.log("DashboardLayout - isAdmin:", user?.role === "admin");
   }, [user]);
 
   const isAdmin = user?.role === "admin";
