@@ -253,8 +253,8 @@ export default function HeroSection() {
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold">Infrastructure Score: <span className="text-orange-500 font-black">57/100</span></p>
-                <p className="text-[10px] text-muted-foreground/50 leading-tight">Your potential: 84/100 · See how</p>
+                <p className="text-xs font-bold">{t(h.infraScore, lang)} <span className="text-orange-500 font-black">57/100</span></p>
+                <p className="text-[10px] text-muted-foreground/50 leading-tight">{t(h.infraPotential, lang)}</p>
               </div>
             </motion.div>
 
