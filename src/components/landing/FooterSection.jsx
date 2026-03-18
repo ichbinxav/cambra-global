@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { useLanguage, t, translations } from "@/lib/i18n";
 
 export default function FooterSection() {
   const ref = useRef(null);
