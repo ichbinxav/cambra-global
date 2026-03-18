@@ -98,10 +98,10 @@ export default function HeroSection() {
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm text-background/40 line-through font-light">€120/month</span>
-                <span className="text-xl sm:text-lg font-black">Free</span>
+                <span className="text-xl sm:text-lg font-black">{t(h.pricingFree, lang)}</span>
               </div>
               <span className="hidden sm:inline text-background/40">·</span>
-              <span className="text-sm text-background/70">Early partners only</span>
+              <span className="text-sm text-background/70">{t(h.pricingPartners, lang)}</span>
             </motion.div>
             <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/50 mb-8">
               You only pay when your economics improve.
