@@ -59,8 +59,8 @@ export default function AdminOverview() {
   const daysBack = timeRangeMap[timeRange];
   const rangeStart = getDaysAgo(daysBack);
 
-  const activeDeals = userDeals.filter(d => d.status === "activated");
-  const waitlistDeals = userDeals.filter(d => d.status === "waitlist" || d.status === "pending" || d.status === "submitted");
+  const activeDeals = userDeals.filter(d => d.status === DEAL_STATUSES.ACTIVATED);
+  const waitlistDeals = userDeals.filter(d => d.status === DEAL_STATUSES.SUBMITTED || d.status === DEAL_STATUSES.IN_REVIEW || d.status === DEAL_STATUSES.PROVIDER_CONTACTED);
   const totalSavingsIdentified = results.reduce((s, r) => s + (r.total_savings || 0), 0);
   const totalSavingsActivated = activeDeals.reduce((s, d) => s + (d.estimated_savings || 0), 0);
   const estimatedRevenue = Math.round(totalSavingsActivated * 0.15);
