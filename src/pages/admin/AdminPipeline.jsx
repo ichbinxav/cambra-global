@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { DEAL_STATUSES } from "@/lib/adminStatusConstants";
 
 const COLUMNS = [
-  { id: "submitted", label: "Submitted", color: "border-blue-500/30 bg-blue-500/[0.03]" },
-  { id: "in_review", label: "In Review", color: "border-orange-500/30 bg-orange-500/[0.03]" },
-  { id: "provider_contacted", label: "Provider Contacted", color: "border-purple-500/30 bg-purple-500/[0.03]" },
-  { id: "offer_ready", label: "Offer Ready", color: "border-amber-500/30 bg-amber-500/[0.03]" },
-  { id: "activated", label: "Activated", color: "border-green-500/30 bg-green-500/[0.03]" },
+  { id: DEAL_STATUSES.SUBMITTED, label: "Submitted", color: "border-blue-500/30 bg-blue-500/[0.03]" },
+  { id: DEAL_STATUSES.IN_REVIEW, label: "In Review", color: "border-orange-500/30 bg-orange-500/[0.03]" },
+  { id: DEAL_STATUSES.PROVIDER_CONTACTED, label: "Provider Contacted", color: "border-purple-500/30 bg-purple-500/[0.03]" },
+  { id: DEAL_STATUSES.OFFER_READY, label: "Offer Ready", color: "border-amber-500/30 bg-amber-500/[0.03]" },
+  { id: DEAL_STATUSES.ACTIVATED, label: "Activated", color: "border-green-500/30 bg-green-500/[0.03]" },
 ];
 
 export default function AdminPipeline() {
@@ -18,7 +19,7 @@ export default function AdminPipeline() {
   useEffect(() => {
     const load = async () => {
       const [a, b] = await Promise.all([
-        base44.entities.UserDeal.list("-created_date", 500),
+        base44.entities.DealApplication.list("-created_date", 500),
         base44.entities.Brand.list(),
       ]);
       setApps(a);
@@ -31,7 +32,7 @@ export default function AdminPipeline() {
     // Subscribe to real-time updates
     const subs = [];
     try {
-      const unsub1 = base44.entities.UserDeal.subscribe(() => load());
+      const unsub1 = base44.entities.DealApplication.subscribe(() => load());
       const unsub2 = base44.entities.Brand.subscribe(() => load());
       if (unsub1) subs.push(unsub1);
       if (unsub2) subs.push(unsub2);
