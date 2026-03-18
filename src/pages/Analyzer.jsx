@@ -370,9 +370,30 @@ export default function Analyzer() {
             min={10} max={10000} s={10}
             fmt={v => v.toLocaleString()}
           />
-          <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">Per-shipment cost:</strong> €{(data.monthly_shipping_cost / Math.max(data.monthly_shipments, 1)).toFixed(2)} · Network benchmark: ~€{(data.monthly_shipping_cost * 0.82 / Math.max(data.monthly_shipments, 1)).toFixed(2)}
-          </div>
+          {(() => {
+            const bm = getBenchmarks(data.monthly_revenue, data.country);
+            const costPerShipment = data.monthly_shipping_cost / Math.max(data.monthly_shipments, 1);
+            const gap = Math.max(0, costPerShipment - bm.shipping.perUnit);
+            const annualSaving = Math.round(gap * Math.max(data.monthly_shipments, 1) * 12);
+            return (
+              <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed space-y-1.5">
+                <div className="flex justify-between">
+                  <span>Your cost/shipment</span>
+                  <span className="font-bold text-foreground">€{costPerShipment.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Network target ({bm.tier} tier{bm.eu ? " · EU" : ""})</span>
+                  <span className="font-bold text-green-600">€{bm.shipping.perUnit.toFixed(2)}</span>
+                </div>
+                {annualSaving > 0 && (
+                  <div className="flex justify-between border-t border-border/30 pt-1.5 mt-1.5">
+                    <span>Optimization potential</span>
+                    <span className="font-black text-foreground">€{annualSaving.toLocaleString()}/yr</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       );
 
