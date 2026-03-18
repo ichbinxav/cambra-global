@@ -21,25 +21,38 @@ const NAV = [
 export default function AdminLayout() {
   const { isAuthenticated, isLoadingAuth } = useAuth();
   const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
-    if (isAuthenticated) base44.auth.me().then(setUser);
-  }, [isAuthenticated]);
+    if (isAuthenticated) {
+      base44.auth.me().then(u => { setUser(u); setLoadingUser(false); });
+    } else if (!isLoadingAuth) {
+      setLoadingUser(false);
+    }
+  }, [isAuthenticated, isLoadingAuth]);
 
-  if (isLoadingAuth) return null;
+  if (isLoadingAuth || loadingUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     base44.auth.redirectToLogin(window.location.href);
     return null;
   }
-  if (user && user.role !== "admin") {
+
+  if (user?.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-4xl mb-4">🔒</p>
           <h1 className="text-xl font-bold mb-2">Admin access required</h1>
-          <p className="text-muted-foreground text-sm mb-6">You don't have permission to access this area.</p>
+          <p className="text-muted-foreground text-sm mb-6">Your account role: <strong>{user?.role || "user"}</strong>. Contact support to get admin access.</p>
           <Link to="/Dashboard" className="text-sm font-semibold underline">Back to Dashboard</Link>
         </div>
       </div>
