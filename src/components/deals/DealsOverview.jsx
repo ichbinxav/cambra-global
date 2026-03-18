@@ -53,7 +53,7 @@ export default function DealsOverview({ userDeals }) {
                 <p className="text-[10px] text-muted-foreground/40">{d.provider}</p>
               </div>
               <p className="text-xs font-black text-green-600 tabular-nums shrink-0">
-                {formatSavings(d.estimated_savings)}/yr
+                +{formatSavings(d.estimated_savings)}/yr
               </p>
             </div>
           ))}
