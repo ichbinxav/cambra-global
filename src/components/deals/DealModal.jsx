@@ -108,10 +108,9 @@ export default function DealModal({ deal, onClose, userDeal, userEmail, onUserDe
           <X size={15} />
         </button>
 
-        <div className="overflow-hidden rounded-2xl">
-          <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait">
 
-            {/* ── STEP: SUMMARY ── */}
+          {/* ── STEP: SUMMARY ── */}
           {step === "summary" && (
             <motion.div key="summary" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
               {/* Header */}
