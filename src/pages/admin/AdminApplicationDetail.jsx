@@ -18,13 +18,15 @@ export default function AdminApplicationDetail({ app, brand, onClose, onStatusCh
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
   const [me, setMe] = useState(null);
+  const [localApp, setLocalApp] = useState(app);
 
   useEffect(() => {
+    setLocalApp(app);
     Promise.all([
       base44.entities.AdminNote.filter({ target_id: app.id }),
       base44.auth.me(),
     ]).then(([n, u]) => { setNotes(n); setMe(u); });
-  }, [app.id]);
+  }, [app.id, app]);
 
   const addNote = async () => {
     if (!newNote.trim()) return;
