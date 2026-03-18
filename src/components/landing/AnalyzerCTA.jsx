@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CreditCard, Truck, Package } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
 
 const rows = [
   { icon: CreditCard, label: "Payment fees", current: "2.9%", network: "1.4%", saving: "€8,400/yr", color: "text-blue-600" },
@@ -11,6 +13,7 @@ const rows = [
 ];
 
 export default function AnalyzerCTA() {
+  const { isAuthenticated } = useAuth();
   const leftRef = useRef(null);
   const leftInView = useInView(leftRef, { once: true, margin: "-80px" });
   const rightRef = useRef(null);
@@ -36,12 +39,23 @@ export default function AnalyzerCTA() {
             <p className="text-muted-foreground leading-relaxed text-base mb-8 max-w-sm">
               Benchmark your payments, shipping, and SaaS stack against real network rates. See your optimization potential in 2 minutes.
             </p>
-            <Link to="/Analyzer">
-              <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm">
-                Run the Analyzer
+            {isAuthenticated ? (
+              <Link to="/Analyzer">
+                <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm">
+                  Run the Analyzer
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                size="lg"
+                className="h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm"
+                onClick={() => base44.auth.redirectToLogin(window.location.href)}
+              >
+                Sign in to Analyze
                 <ArrowRight className="h-4 w-4" />
               </Button>
-            </Link>
+            )}
             <p className="mt-4 text-[11px] text-muted-foreground/40">2 minutes · Real benchmarks · No commitment</p>
           </motion.div>
 
@@ -76,11 +90,20 @@ export default function AnalyzerCTA() {
                 <p className="text-[10px] uppercase tracking-[0.2em] opacity-40 mb-0.5">Optimization potential / year</p>
                 <span className="text-2xl font-black tracking-tight">€22,600<span className="text-base font-normal opacity-50">/yr</span></span>
               </div>
-              <Link to="/Analyzer">
-                <button className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 border border-background/20 text-background text-xs font-semibold transition-colors flex items-center gap-1.5">
-                  Calculate my savings <ArrowRight size={12} />
+              {isAuthenticated ? (
+                <Link to="/Analyzer">
+                  <button className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 border border-background/20 text-background text-xs font-semibold transition-colors flex items-center gap-1.5">
+                    Calculate my savings <ArrowRight size={12} />
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                  className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 border border-background/20 text-background text-xs font-semibold transition-colors flex items-center gap-1.5"
+                >
+                  Sign in <ArrowRight size={12} />
                 </button>
-              </Link>
+              )}
             </div>
           </motion.div>
         </div>
