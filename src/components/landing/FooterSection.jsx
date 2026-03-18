@@ -54,7 +54,7 @@ export default function FooterSection() {
             <Link to="/Analyzer" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" variant="outline" className="w-full h-14 rounded-full px-10 text-base font-bold border-background/25 text-background hover:bg-background hover:text-foreground gap-2">
-                  Calculate your savings
+                  {t(f.ctaSavings, lang)}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </motion.div>
@@ -62,7 +62,7 @@ export default function FooterSection() {
             <Link to="/Onboarding" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" variant="ghost" className="w-full h-14 rounded-full px-10 text-base text-background/50 hover:text-background hover:bg-background/10">
-                  Run the analyzer
+                  {t(f.cta, lang)}
                 </Button>
               </motion.div>
             </Link>
