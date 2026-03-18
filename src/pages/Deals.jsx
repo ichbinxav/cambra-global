@@ -30,14 +30,14 @@ export default function Deals() {
     loadData();
 
     // Subscribe to real-time changes
-    const unsubscribe = base44.entities.UserDeal.subscribe((event) => {
-      if (event.type === "create" || event.type === "update" || event.type === "delete") {
-        // Reload all deals on any change
-        base44.entities.UserDeal.list().then(setUserDeals);
-      }
+    const unsubscribe = base44.entities.UserDeal.subscribe(() => {
+      // Always reload on any change
+      base44.entities.UserDeal.list().then(setUserDeals);
     });
 
-    return unsubscribe;
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const handleUserDealChange = (updated) => {
