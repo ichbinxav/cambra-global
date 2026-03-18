@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BarChart3, Users, Zap, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Plug, Home } from "lucide-react";
+import { LayoutDashboard, BarChart3, Users, Zap, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Plug, Home, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 
@@ -17,7 +17,12 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    base44.auth.me().then(u => { if (u?.role === "admin") setIsAdmin(true); });
+  }, []);
 
   return (
     <div className="min-h-screen flex bg-background font-inter">
@@ -53,6 +58,14 @@ export default function DashboardLayout() {
         </nav>
 
         <div className="p-3 border-t border-border/40 space-y-0.5">
+          {isAdmin && (
+            <Link to="/admin">
+              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-500/10 transition-colors font-semibold">
+                <ShieldCheck size={14} />
+                Admin Panel
+              </div>
+            </Link>
+          )}
           <Link to="/Landing">
             <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors">
               <Home size={14} />
