@@ -14,11 +14,7 @@ import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
 const SCORE_LABEL = s => s >= 90 ? "Best-in-class" : s >= 80 ? "Strong" : s >= 60 ? "Efficient" : s >= 40 ? "Optimization opportunity detected" : "High optimization potential";
 const SCORE_COLOR = s => s >= 80 ? "#22c55e" : s >= 60 ? "#f97316" : "#3b82f6";
 
-const DEALS_PREVIEW = [
-  { label: "Network payment rate", saving: "−52%", color: "text-blue-600", dot: "bg-blue-500" },
-  { label: "Collective shipping", saving: "−18%", color: "text-green-600", dot: "bg-green-500" },
-  { label: "SaaS group licenses", saving: "−30%", color: "text-orange-500", dot: "bg-orange-400" },
-];
+
 
 export default function Dashboard() {
   const [results, setResults] = useState([]);
