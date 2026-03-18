@@ -35,7 +35,6 @@ import AdminDeals from '@/pages/admin/AdminDeals';
 import AdminProviders from '@/pages/admin/AdminProviders';
 import AdminRevenue from '@/pages/admin/AdminRevenue';
 import AdminBenchmarks from '@/pages/admin/AdminBenchmarks';
-import { base44 } from '@/api/base44Client';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoadingAuth } = useAuth();
