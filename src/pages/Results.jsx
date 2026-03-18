@@ -155,9 +155,9 @@ export default function Results() {
           <div className="flex flex-wrap items-center justify-center gap-3">
             <div className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-border/50 bg-card">
               <Shield size={12} className="text-muted-foreground/35" />
-              <span className="text-sm font-bold">Score</span>
+              <span className="text-sm font-bold">Infrastructure Score</span>
               <span className="text-sm font-black tabular-nums" style={{ color: scoreColor }}>{score}/100</span>
-              <span className="text-xs text-muted-foreground/40">{scoreLabel}</span>
+              <span className="text-xs text-muted-foreground/40">· {scoreLabel}</span>
             </div>
           </div>
         </div>
