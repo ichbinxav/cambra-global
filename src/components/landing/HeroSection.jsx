@@ -144,7 +144,7 @@ export default function HeroSection() {
             </motion.div>
 
             <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/40 mt-4">
-              <strong className="text-foreground/55">Avg. optimization potential:</strong> €29,000/year · <strong className="text-foreground/55">€3K–€72K</strong> range
+              <strong className="text-foreground/55">Avg. optimization potential:</strong> €29,000/year · <strong className="text-foreground/55">€3K–€72K</strong> range · Based on real network benchmarks
             </motion.p>
           </motion.div>
 
