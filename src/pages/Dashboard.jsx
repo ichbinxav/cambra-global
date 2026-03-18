@@ -274,7 +274,7 @@ export default function Dashboard() {
                     ))}
                   </div>
                   <div className="mt-4 pt-4 border-t border-border/30">
-                    <p className="text-xs text-muted-foreground/50">Pre-negotiated rates ready to activate</p>
+                    <p className="text-xs text-muted-foreground/50">Pre-negotiated rates — ready to activate instantly</p>
                   </div>
                 </div>
               </Link>
