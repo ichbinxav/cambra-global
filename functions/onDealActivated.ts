@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
   // Email 1: Internal notification to THE NoDE team
   await base44.asServiceRole.integrations.Core.SendEmail({
     from_name: "THE NoDE · Deals",
-    to: "hello@thenode.co",
+    to: "94.martinez.x@gmail.com",
     subject: isActive
       ? `[Deal Request] ${userEmail} → ${provider}`
       : `[Access List] ${userEmail} → ${provider}`,
