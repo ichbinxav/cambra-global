@@ -23,6 +23,16 @@ import Terms from '@/pages/Terms';
 import ConnectTools from '@/pages/ConnectTools';
 import StripeAnalyzer from '@/pages/StripeAnalyzer';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import AdminLayout from '@/pages/admin/AdminLayout';
+import AdminOverview from '@/pages/admin/AdminOverview';
+import AdminUsers from '@/pages/admin/AdminUsers';
+import AdminUserDetail from '@/pages/admin/AdminUserDetail';
+import AdminApplications from '@/pages/admin/AdminApplications';
+import AdminPipeline from '@/pages/admin/AdminPipeline';
+import AdminDeals from '@/pages/admin/AdminDeals';
+import AdminProviders from '@/pages/admin/AdminProviders';
+import AdminRevenue from '@/pages/admin/AdminRevenue';
+import AdminBenchmarks from '@/pages/admin/AdminBenchmarks';
 import { base44 } from '@/api/base44Client';
 
 const ProtectedRoute = ({ children }) => {
@@ -76,6 +86,18 @@ const AuthenticatedApp = () => {
           <Route path="/Insights" element={<Insights />} />
           <Route path="/InsightDetail" element={<InsightDetail />} />
           <Route path="/Account" element={<Account />} />
+        </Route>
+
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminOverview />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/users/:id" element={<AdminUserDetail />} />
+          <Route path="/admin/applications" element={<AdminApplications />} />
+          <Route path="/admin/pipeline" element={<AdminPipeline />} />
+          <Route path="/admin/deals" element={<AdminDeals />} />
+          <Route path="/admin/providers" element={<AdminProviders />} />
+          <Route path="/admin/revenue" element={<AdminRevenue />} />
+          <Route path="/admin/benchmarks" element={<AdminBenchmarks />} />
         </Route>
 
         <Route path="*" element={<PageNotFound />} />
