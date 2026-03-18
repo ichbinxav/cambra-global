@@ -56,7 +56,7 @@ export default function DataIngestionStep({ uploadedFile, setUploadedFile, uploa
         <div className="space-y-4">
           <div className="flex items-center gap-2 p-3.5 rounded-xl bg-green-500/[0.05] border border-green-500/15 text-xs text-muted-foreground">
             <CheckCircle2 size={12} className="text-green-500 shrink-0" />
-            Connect your tools for a more accurate analysis — we pull real rates automatically.
+            Connect your tools to unlock precise insights — we pull real rates and volumes automatically. Read-only access only.
           </div>
           <Link to="/ConnectTools" className="block">
             <div className="group p-5 rounded-2xl border border-border/50 bg-card hover:border-foreground/30 transition-all flex items-center justify-between">
@@ -128,7 +128,11 @@ export default function DataIngestionStep({ uploadedFile, setUploadedFile, uploa
               </button>
             </div>
           )}
-          <p className="text-[11px] text-muted-foreground/30 text-center">Your data is encrypted and never shared without consent.</p>
+          <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground/35">
+            <span>🔒 Encrypted</span>
+            <span>👁 Read-only</span>
+            <span>🚫 Never shared</span>
+          </div>
         </div>
       )}
 
@@ -137,7 +141,7 @@ export default function DataIngestionStep({ uploadedFile, setUploadedFile, uploa
         <div className="space-y-4">
           <div className="flex items-center gap-2 p-3.5 rounded-xl bg-orange-500/[0.05] border border-orange-500/15 text-xs text-muted-foreground">
             <Pencil size={12} className="text-orange-500 shrink-0" />
-            Enter your details manually if needed — we'll generate accurate estimates from your inputs.
+            Using manual inputs — results will be clearly marked as estimated. Connect your data later to refine your analysis.
           </div>
           <div className="p-5 rounded-2xl border border-border/50 bg-secondary/30 space-y-2">
             <p className="text-sm font-semibold">We'll estimate based on:</p>
