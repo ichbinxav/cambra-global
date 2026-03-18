@@ -44,7 +44,7 @@ export default function FooterSection() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-base opacity-40 mb-10 max-w-sm mx-auto"
           >
-            Brands typically identify €29,000/year in optimization potential. Most improvements activate within minutes.
+            {t(f.desc, lang)}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
