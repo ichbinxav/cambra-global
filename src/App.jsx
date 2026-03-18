@@ -45,6 +45,30 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, isLoadingAuth } = useAuth();
+  const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      base44.auth.me().then(u => { setUser(u); setLoadingUser(false); });
+    } else if (!isLoadingAuth) {
+      setLoadingUser(false);
+    }
+  }, [isAuthenticated, isLoadingAuth]);
+
+  if (isLoadingAuth || loadingUser) return null;
+  if (!isAuthenticated) {
+    base44.auth.redirectToLogin(window.location.href);
+    return null;
+  }
+  if (user?.role !== "admin") {
+    return <Navigate to="/Dashboard" replace />;
+  }
+  return children;
+};
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
