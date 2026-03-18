@@ -31,10 +31,10 @@ export default function AnalyzerCTA() {
               <span className="w-4 h-px bg-border inline-block" /> Infrastructure Analyzer
             </p>
             <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-6">
-              See exactly what<br />you're leaving on the table.
+              Identify exactly where<br />value is left unoptimized.
             </h2>
             <p className="text-muted-foreground leading-relaxed text-base mb-8 max-w-sm">
-              Benchmark your payments, shipping, and SaaS stack against real network rates. Discover your overspend in 2 minutes.
+              Benchmark your payments, shipping, and SaaS stack against real network rates. See your optimization potential in 2 minutes.
             </p>
             <Link to="/Analyzer">
               <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm">
@@ -73,12 +73,12 @@ export default function AnalyzerCTA() {
 
             <div className="px-6 py-5 border-t border-border/40 bg-foreground text-background flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] opacity-40 mb-0.5">Margin unlocked / year</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] opacity-40 mb-0.5">Optimization potential / year</p>
                 <span className="text-2xl font-black tracking-tight">€22,600<span className="text-base font-normal opacity-50">/yr</span></span>
               </div>
               <Link to="/Analyzer">
                 <button className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 border border-background/20 text-background text-xs font-semibold transition-colors flex items-center gap-1.5">
-                  Access my report <ArrowRight size={12} />
+                  Calculate my savings <ArrowRight size={12} />
                 </button>
               </Link>
             </div>
