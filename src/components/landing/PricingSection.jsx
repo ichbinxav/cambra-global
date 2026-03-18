@@ -90,7 +90,7 @@ export default function PricingSection() {
                 <span className="text-xl font-light text-background/25 line-through">€120/mo</span>
                 <span className="text-5xl font-black">Free</span>
               </div>
-              <p className="text-sm text-background/50">You only pay when your economics improve.</p>
+              <p className="text-sm text-background/50">You don't pay us. You keep the savings.</p>
             </div>
 
             {/* Feature icons */}
