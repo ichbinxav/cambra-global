@@ -232,7 +232,7 @@ export default function Dashboard() {
               </div>
             </Link>
 
-            {/* Deals or chart */}
+            {/* Savings trend or deals overview */}
             {chartData.length > 1 ? (
               <div className="p-6 rounded-2xl border border-border/50 bg-card">
                 <div className="flex items-center justify-between mb-4">
@@ -258,29 +258,7 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              /* Deals preview */
-              <Link to="/Deals">
-                <div className="p-6 rounded-2xl border border-border/50 bg-card hover:border-border transition-all h-full group">
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50">Available deals</p>
-                    <span className="text-[10px] text-muted-foreground/40 group-hover:text-foreground transition-colors flex items-center gap-0.5">
-                      View all <ChevronRight size={9} />
-                    </span>
-                  </div>
-                  <div className="space-y-2.5">
-                    {DEALS_PREVIEW.map((d, i) => (
-                      <div key={i} className="flex items-center gap-2.5">
-                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${d.dot}`} />
-                        <p className="text-xs font-medium flex-1">{d.label}</p>
-                        <p className={`text-xs font-black tabular-nums ${d.color}`}>{d.saving}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-border/30">
-                    <p className="text-xs text-muted-foreground/50">Pre-negotiated rates — ready to activate instantly</p>
-                  </div>
-                </div>
-              </Link>
+              <DealsOverview userDeals={userDeals} />
             )}
           </div>
 
