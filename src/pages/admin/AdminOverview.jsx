@@ -30,14 +30,20 @@ export default function AdminOverview() {
     reloadData().then(() => setLoading(false));
 
     // Suscribirse a cambios en tiempo real
-    const unsubUserDeal = base44.entities.UserDeal.subscribe(() => reloadData());
-    const unsubAnalyzerResult = base44.entities.AnalyzerResult.subscribe(() => reloadData());
-    const unsubDealApplication = base44.entities.DealApplication.subscribe(() => reloadData());
+    const subs = [];
+    try {
+      const unsub1 = base44.entities.UserDeal.subscribe(() => reloadData());
+      const unsub2 = base44.entities.AnalyzerResult.subscribe(() => reloadData());
+      const unsub3 = base44.entities.DealApplication.subscribe(() => reloadData());
+      if (unsub1) subs.push(unsub1);
+      if (unsub2) subs.push(unsub2);
+      if (unsub3) subs.push(unsub3);
+    } catch (err) {
+      console.warn('Subscription error:', err);
+    }
 
     return () => {
-      unsubUserDeal?.();
-      unsubAnalyzerResult?.();
-      unsubDealApplication?.();
+      subs.forEach(unsub => unsub?.());
     };
   }, []);
 
