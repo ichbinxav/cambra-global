@@ -282,7 +282,7 @@ export default function HeroSection() {
             <motion.p
               className="text-center text-[10px] text-muted-foreground/25"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
-            >Sample analysis · Independent brand · 2025</motion.p>
+            >{t(h.sampleNote, lang)}</motion.p>
           </motion.div>
         </div>
       </div>
