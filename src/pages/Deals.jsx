@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2, ArrowRight, Clock, Users, Zap, ChevronRight, AlertTriangle
 } from "lucide-react";
-import { AnimatePresence as AP } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { DEALS, CATEGORIES, REGIONS, PHASE_CONFIG, STATUS_CONFIG, formatSavings } from "@/lib/deals.js";
 import DealModal from "@/components/deals/DealModal.jsx";
@@ -15,34 +14,31 @@ export default function Deals() {
   const [userDeals, setUserDeals] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("discover"); // discover | contracts
-
-  const reloadUserDeals = async () => {
-    const uds = await base44.entities.UserDeal.list();
-    setUserDeals(uds);
-  };
+  const [tab, setTab] = useState("discover");
 
   useEffect(() => {
-    Promise.all([
-      base44.auth.me(),
-      base44.entities.UserDeal.list(),
-    ]).then(([u, uds]) => {
+    const loadData = async () => {
+      const [u, uds] = await Promise.all([
+        base44.auth.me(),
+        base44.entities.UserDeal.list(),
+      ]);
       setUser(u);
       setUserDeals(uds);
       setLoading(false);
-    });
+    };
 
-    // Suscribirse a cambios en tiempo real
+    loadData();
+
+    // Subscribe to real-time changes
     const unsubscribe = base44.entities.UserDeal.subscribe((event) => {
-      if (event.type === "create" || event.type === "update") {
-        reloadUserDeals();
+      if (event.type === "create" || event.type === "update" || event.type === "delete") {
+        // Reload all deals on any change
+        base44.entities.UserDeal.list().then(setUserDeals);
       }
     });
 
     return unsubscribe;
   }, []);
-
-  const getUserDeal = (dealId) => userDeals.find(ud => ud.deal_id === dealId);
 
   const handleUserDealChange = (updated) => {
     setUserDeals(prev => {
@@ -50,9 +46,13 @@ export default function Deals() {
       if (exists) return prev.map(ud => ud.id === updated.id ? updated : ud);
       return [...prev, updated];
     });
-    // Recargar desde base de datos después de 500ms para sincronizar
-    setTimeout(() => reloadUserDeals(), 500);
+    // Force sync after 300ms
+    setTimeout(() => {
+      base44.entities.UserDeal.list().then(setUserDeals);
+    }, 300);
   };
+
+  const getUserDeal = (dealId) => userDeals.find(ud => ud.deal_id === dealId);
 
   const filtered = DEALS.filter(d => {
     const catMatch = activeCategory === "all" || d.category === activeCategory;
