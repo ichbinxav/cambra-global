@@ -167,12 +167,12 @@ export default function Results() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl border border-orange-500/20 bg-orange-500/[0.04]">
             <AlertTriangle size={16} className="text-orange-500 shrink-0 mt-0.5 sm:mt-0" />
             <div className="flex-1">
-              <p className="text-sm font-semibold">This is an estimated analysis</p>
-              <p className="text-xs text-muted-foreground/60 mt-0.5">Connect your tools or upload statements to get a precise Infrastructure Score and verified savings.</p>
+              <p className="text-sm font-semibold">Using estimated data</p>
+              <p className="text-xs text-muted-foreground/60 mt-0.5">Connect your tools or upload statements to refine your analysis and unlock verified savings figures.</p>
             </div>
             <Link to="/ConnectTools" className="shrink-0">
               <button className="h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5 whitespace-nowrap">
-                <Zap size={11} /> Improve accuracy
+                <Zap size={11} /> Connect your data
               </button>
             </Link>
           </div>
