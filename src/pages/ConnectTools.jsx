@@ -6,7 +6,6 @@ import {
   Search, ArrowLeft, Upload, Pencil, CheckCircle2, X, ArrowRight,
   Plug, ExternalLink, Zap, ChevronRight
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 
 const CATEGORIES = ["All", "Payments", "Commerce", "Accounting", "Shipping", "SaaS"];
