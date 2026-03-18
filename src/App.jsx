@@ -88,7 +88,7 @@ const AuthenticatedApp = () => {
           <Route path="/Account" element={<Account />} />
         </Route>
 
-        <Route element={<AdminLayout />}>
+        <Route element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route path="/admin" element={<AdminOverview />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/users/:id" element={<AdminUserDetail />} />
