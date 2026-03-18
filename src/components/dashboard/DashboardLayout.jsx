@@ -95,11 +95,11 @@ export default function DashboardLayout() {
         </Button>
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {sidebarOpen && (
-          <>
+          <div key="mobile-menu" className="lg:hidden">
             <motion.div
-              className="lg:hidden fixed inset-0 z-30 bg-black/20"
+              className="fixed inset-0 z-30 bg-black/20"
               onClick={() => setSidebarOpen(false)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -107,7 +107,7 @@ export default function DashboardLayout() {
               transition={{ duration: 0.2 }}
             />
             <motion.div
-              className="lg:hidden fixed inset-0 z-40 bg-background pt-14 overflow-y-auto"
+              className="fixed inset-0 z-40 bg-background pt-14 overflow-y-auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -150,7 +150,7 @@ export default function DashboardLayout() {
                 </button>
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
