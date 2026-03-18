@@ -363,9 +363,11 @@ export default function ConnectTools() {
                 ))}
               </div>
             </div>
-            <p className="text-center text-[11px] text-muted-foreground/30">
-              Your data is encrypted and never shared without your consent.
-            </p>
+            <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground/35">
+              <span>🔒 Encrypted</span>
+              <span>👁 Read-only access</span>
+              <span>🚫 Never shared</span>
+            </div>
           </div>
         )}
 
@@ -390,8 +392,8 @@ export default function ConnectTools() {
                 </Button>
               </Link>
             </div>
-            <p className="text-center text-[11px] text-muted-foreground/30">
-              You can always connect tools or upload files later from your dashboard.
+            <p className="text-center text-[11px] text-muted-foreground/35">
+              Manual inputs will be marked as estimated — you can connect tools later from your dashboard to refine your analysis.
             </p>
           </div>
         )}
