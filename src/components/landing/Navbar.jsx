@@ -83,14 +83,17 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
-          onClick={() => setOpen(v => !v)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X size={18} /> : <Menu size={18} />}
-        </button>
+        {/* Mobile: language switcher + toggle */}
+        <div className="md:hidden flex items-center gap-2">
+          <LanguageSwitcher />
+          <button
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => setOpen(v => !v)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
