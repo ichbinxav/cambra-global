@@ -416,7 +416,7 @@ function StepFinish({ data, mode, connected }) {
       <div className="space-y-2 text-left max-w-xs mx-auto">
         {[
           { icon: BarChart2, label: "Infrastructure Score", sub: "Calculated based on your inputs", color: "text-blue-600" },
-          { icon: CreditCard, label: "Savings analysis", sub: savings[data.annual_revenue] ?? "Personalised estimate", color: "text-green-600" },
+          { icon: CreditCard, label: "Optimization potential", sub: savings[data.annual_revenue] ?? "Personalised estimate", color: "text-green-600" },
           {
             icon: mode === "connect" ? Zap : mode === "upload" ? FileText : Edit3,
             label: mode === "connect" ? `${connected.length || 1} tool${connected.length > 1 ? "s" : ""} ready to connect` : mode === "upload" ? "Statement ready to process" : "Manual inputs queued",
