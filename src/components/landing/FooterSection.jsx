@@ -37,7 +37,7 @@ export default function FooterSection() {
             transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.5rem,7vw,7rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4"
           >
-            Stop overpaying<br />for your infrastructure.
+            {t(f.sub, lang)}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 24 }} animate={inView ? { opacity: 1, y: 0 } : {}}
