@@ -390,9 +390,9 @@ export default function Results() {
                 <Zap size={11} /> Connect your data
               </button>
             </Link>
-            <Link to="/ConnectTools">
+            <Link to="/Analyzer">
               <button className="h-9 px-4 rounded-full border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Refine your analysis
+                Re-run analysis
               </button>
             </Link>
           </div>
