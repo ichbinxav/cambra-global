@@ -24,19 +24,36 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      base44.entities.AnalyzerResult.list("-created_date", 10),
-      base44.auth.me(),
-      base44.entities.Brand.list(),
-    ]).then(async ([r, u, b]) => { 
-      setResults(r); 
-      setUser(u); 
+    const loadData = async () => {
+      const [r, u, b] = await Promise.all([
+        base44.entities.AnalyzerResult.list("-created_date", 10),
+        base44.auth.me(),
+        base44.entities.Brand.list(),
+      ]);
+      setResults(r);
+      setUser(u);
       setBrands(b);
-      // Filter UserDeals by current user email
       const uds = await base44.entities.UserDeal.filter({ user_email: u.email });
       setUserDeals(uds);
-      setLoading(false); 
-    });
+      setLoading(false);
+    };
+
+    loadData();
+
+    // Subscribe to real-time updates
+    const subs = [];
+    try {
+      const unsub1 = base44.entities.UserDeal.subscribe(() => loadData());
+      const unsub2 = base44.entities.AnalyzerResult.subscribe(() => loadData());
+      if (unsub1) subs.push(unsub1);
+      if (unsub2) subs.push(unsub2);
+    } catch (err) {
+      console.warn('Subscription error:', err);
+    }
+
+    return () => {
+      subs.forEach(unsub => unsub?.());
+    };
   }, []);
 
   const latest = results[0];
