@@ -219,7 +219,7 @@ export default function HeroSection() {
                transition={{ delay: 1.05, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               >
                <div>
-                 <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Potential savings unlocked</p>
+                 <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">{t(h.potentialSavings, lang)}</p>
                  <p className="text-3xl font-black tracking-tight">€8.4K<span className="text-base font-normal opacity-40">/yr</span></p>
                </div>
                <Link to="/Analyzer">
