@@ -50,9 +50,13 @@ export default function AdminApplications() {
   });
 
   const updateStatus = async (id, status) => {
-    await base44.entities.UserDeal.update(id, { status });
-    setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-    if (selected?.id === id) setSelected(prev => ({ ...prev, status }));
+    try {
+      await base44.entities.UserDeal.update(id, { status });
+      setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+      if (selected?.id === id) setSelected(prev => ({ ...prev, status }));
+    } catch (err) {
+      console.error('Error updating status:', err);
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
