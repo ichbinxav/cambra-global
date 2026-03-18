@@ -179,7 +179,7 @@ export default function HeroSection() {
                     animate={{ scale: [1, 1.6, 1], opacity: [1, 0.5, 1] }}
                     transition={{ repeat: Infinity, duration: 1.8 }}
                   />
-                  <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/50">Analyzer · Savings Report</span>
+                  <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/50">{t(h.analyzerTitle, lang)}</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground/30">Sample brand · €500K/yr</span>
               </div>
