@@ -162,12 +162,10 @@ export default function AdminOverview() {
           </div>
 
           {/* Key metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {[
               { label: "Total Users", value: users.length, sub: `+${newUsersRange}`, icon: Users, color: "text-blue-600" },
               { label: "Active Companies", value: brands.length, sub: "Growing", icon: Users, color: "text-purple-600" },
-              { label: "Deals Applied", value: userDeals.length, sub: `+${newDealsRange}`, icon: FileText, color: "text-orange-500" },
-              { label: "Deals Activated", value: activeDeals.length, sub: `${conversionRate}% rate`, icon: CheckCircle2, color: "text-green-600" },
             ].map((kpi, i) => (
               <motion.div
                 key={i}
