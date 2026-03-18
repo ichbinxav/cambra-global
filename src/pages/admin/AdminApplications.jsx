@@ -37,7 +37,24 @@ export default function AdminApplications() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+
+    // Subscribe to real-time updates
+    const subs = [];
+    try {
+      const unsub1 = base44.entities.UserDeal.subscribe(() => load());
+      const unsub2 = base44.entities.DealApplication.subscribe(() => load());
+      if (unsub1) subs.push(unsub1);
+      if (unsub2) subs.push(unsub2);
+    } catch (err) {
+      console.warn('Subscription error:', err);
+    }
+
+    return () => {
+      subs.forEach(unsub => unsub?.());
+    };
+  }, []);
 
   const getBrand = (email) => brands.find(b => b.created_by === email);
 
