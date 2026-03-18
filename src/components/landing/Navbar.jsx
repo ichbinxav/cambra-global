@@ -58,7 +58,6 @@ export default function Navbar() {
 
         {/* Desktop CTAs */}
         <div className="hidden md:flex items-center gap-2">
-          <LanguageSwitcher />
           {isAuthenticated ? (
             <Link to="/Dashboard">
               <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm">
@@ -82,17 +81,14 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile: language switcher + toggle */}
-        <div className="md:hidden flex items-center gap-2">
-          <LanguageSwitcher />
-          <button
-            className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => setOpen(v => !v)}
-            aria-label="Toggle menu"
-          >
-            {open ? <X size={18} /> : <Menu size={18} />}
-          </button>
-        </div>
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => setOpen(v => !v)}
+          aria-label="Toggle menu"
+        >
+          {open ? <X size={18} /> : <Menu size={18} />}
+        </button>
       </div>
 
       {/* Mobile menu */}
