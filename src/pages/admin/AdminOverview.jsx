@@ -101,10 +101,6 @@ export default function AdminOverview() {
   const categoryData = Object.entries(savingsByCategory).map(([name, value]) => ({ name, value: Math.round(value / 1000) }));
   const COLORS = ["#3b82f6", "#22c55e", "#f97316"];
 
-  // Applications by status
-  const appsByStatus = {};
-  apps.forEach(a => { appsByStatus[a.status] = (appsByStatus[a.status] || 0) + 1; });
-
   return (
     <div className="space-y-6">
       {/* Header with tabs */}
