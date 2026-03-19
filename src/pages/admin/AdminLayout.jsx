@@ -73,8 +73,13 @@ export default function AdminLayout() {
               <p className="text-xs font-black tracking-tight">THE NoDE</p>
               <p className="text-[10px] text-background/30 mt-0.5">Admin System</p>
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-background/40 hover:text-background">
-              <X size={14} />
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setSidebarOpen(false); }}
+              className="lg:hidden text-background/40 hover:text-background p-1.5 rounded-lg hover:bg-background/10 transition-colors"
+              style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+            >
+              <X size={18} />
             </button>
           </div>
         </div>
