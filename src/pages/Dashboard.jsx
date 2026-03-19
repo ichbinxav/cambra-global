@@ -22,39 +22,57 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [userDeals, setUserDeals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState(null);
 
+  // Initial load — fetch user once, then data
   useEffect(() => {
-    const loadData = async () => {
-      const [r, u, b] = await Promise.all([
+    const init = async () => {
+      const u = await base44.auth.me();
+      setUser(u);
+      setUserEmail(u.email);
+
+      const [r, b, uds] = await Promise.all([
         base44.entities.AnalyzerResult.list("-created_date", 10),
-        base44.auth.me(),
         base44.entities.Brand.list(),
+        base44.entities.UserDeal.filter({ user_email: u.email }),
       ]);
       setResults(r);
-      setUser(u);
       setBrands(b);
-      const uds = await base44.entities.UserDeal.filter({ user_email: u.email });
       setUserDeals(uds);
       setLoading(false);
     };
 
-    loadData();
+    init().catch(err => {
+      console.error('Dashboard init error:', err);
+      setLoading(false);
+    });
+  }, []);
 
-    // Subscribe to real-time updates
+  // Subscribe to real-time updates once we have the user email
+  useEffect(() => {
+    if (!userEmail) return;
+
+    const refresh = async () => {
+      const [r, uds] = await Promise.all([
+        base44.entities.AnalyzerResult.list("-created_date", 10),
+        base44.entities.UserDeal.filter({ user_email: userEmail }),
+      ]);
+      setResults(r);
+      setUserDeals(uds);
+    };
+
     const subs = [];
     try {
-      const unsub1 = base44.entities.UserDeal.subscribe(() => loadData());
-      const unsub2 = base44.entities.AnalyzerResult.subscribe(() => loadData());
+      const unsub1 = base44.entities.UserDeal.subscribe(() => refresh());
+      const unsub2 = base44.entities.AnalyzerResult.subscribe(() => refresh());
       if (unsub1) subs.push(unsub1);
       if (unsub2) subs.push(unsub2);
     } catch (err) {
       console.warn('Subscription error:', err);
     }
 
-    return () => {
-      subs.forEach(unsub => unsub?.());
-    };
-  }, []);
+    return () => subs.forEach(unsub => unsub?.());
+  }, [userEmail]);
 
   const latest = results[0];
   const chartData = results.slice().reverse().map((r, i) => ({ i, value: r.total_savings || 0 }));
