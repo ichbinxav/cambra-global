@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -35,8 +35,6 @@ import AdminDeals from '@/pages/admin/AdminDeals';
 import AdminProviders from '@/pages/admin/AdminProviders';
 import AdminRevenue from '@/pages/admin/AdminRevenue';
 import AdminBenchmarks from '@/pages/admin/AdminBenchmarks';
-import AdminTasks from '@/pages/admin/AdminTasks';
-import AdminContracts from '@/pages/admin/AdminContracts';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoadingAuth } = useAuth();
@@ -125,8 +123,6 @@ const AuthenticatedApp = () => {
           <Route path="/admin/providers" element={<AdminProviders />} />
           <Route path="/admin/revenue" element={<AdminRevenue />} />
           <Route path="/admin/benchmarks" element={<AdminBenchmarks />} />
-          <Route path="/admin/tasks" element={<AdminTasks />} />
-          <Route path="/admin/contracts" element={<AdminContracts />} />
         </Route>
 
         <Route path="*" element={<PageNotFound />} />

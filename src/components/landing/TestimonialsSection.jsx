@@ -34,41 +34,6 @@ const testimonials = [
   },
 ];
 
-function TestimonialCard({ t, i }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 50, rotateX: 8 }}
-      animate={inView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
-      transition={{ duration: 0.7, delay: i * 0.13, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -8, boxShadow: "0 20px 40px -12px rgba(0,0,0,0.1)", transition: { duration: 0.25 } }}
-      className="p-7 rounded-2xl border bg-background h-full flex flex-col"
-    >
-      <motion.div
-        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-5 w-fit ${t.bg}`}
-        initial={{ scale: 0.7, opacity: 0 }}
-        animate={inView ? { scale: 1, opacity: 1 } : {}}
-        transition={{ delay: i * 0.13 + 0.25, type: "spring", stiffness: 280, damping: 18 }}
-      >
-        <span className={`text-sm font-black ${t.color}`}>{t.saving}</span>
-        <span className="text-[10px] text-muted-foreground/60">{t.savingNote}</span>
-      </motion.div>
-      <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">"{t.quote}"</p>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold">{t.name}</p>
-          <p className="text-[11px] text-muted-foreground/50">{t.company}</p>
-        </div>
-        <span className={`text-[10px] font-semibold uppercase tracking-[0.15em] px-2 py-1 rounded-full bg-secondary ${t.color}`}>
-          {t.category}
-        </span>
-      </div>
-    </motion.div>
-  );
-}
-
 export default function TestimonialsSection() {
   const headRef = useRef(null);
   const headInView = useInView(headRef, { once: true, margin: "-80px" });
@@ -103,9 +68,43 @@ export default function TestimonialsSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {testimonials.map((t, i) => (
-            <TestimonialCard key={i} t={t} i={i} />
-          ))}
+          {testimonials.map((t, i) => {
+            const ref = useRef(null);
+            const inView = useInView(ref, { once: true, margin: "-60px" });
+            return (
+              <motion.div
+                key={i}
+                ref={ref}
+                initial={{ opacity: 0, y: 50, rotateX: 8 }}
+                animate={inView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
+                transition={{ duration: 0.7, delay: i * 0.13, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ y: -8, boxShadow: "0 20px 40px -12px rgba(0,0,0,0.1)", transition: { duration: 0.25 } }}
+                className="p-7 rounded-2xl border bg-background h-full flex flex-col"
+              >
+                <motion.div
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-5 w-fit ${t.bg}`}
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={inView ? { scale: 1, opacity: 1 } : {}}
+                  transition={{ delay: i * 0.13 + 0.25, type: "spring", stiffness: 280, damping: 18 }}
+                >
+                  <span className={`text-sm font-black ${t.color}`}>{t.saving}</span>
+                  <span className="text-[10px] text-muted-foreground/60">{t.savingNote}</span>
+                </motion.div>
+
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">"{t.quote}"</p>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold">{t.name}</p>
+                    <p className="text-[11px] text-muted-foreground/50">{t.company}</p>
+                  </div>
+                  <span className={`text-[10px] font-semibold uppercase tracking-[0.15em] px-2 py-1 rounded-full bg-secondary ${t.color}`}>
+                    {t.category}
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Trust bar */}
