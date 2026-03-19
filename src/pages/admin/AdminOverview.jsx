@@ -94,13 +94,13 @@ export default function AdminOverview() {
   };
 
   useEffect(() => {
-    loadAll().then(() => setLoading(false));
+    loadAll().catch(console.error).finally(() => setLoading(false));
     const subs = [];
     try {
-      subs.push(base44.entities.DealApplication.subscribe(loadAll));
-      subs.push(base44.entities.UserDeal.subscribe(loadAll));
-      subs.push(base44.entities.AnalyzerResult.subscribe(loadAll));
-    } catch (e) {}
+      subs.push(base44.entities.DealApplication.subscribe(() => loadAll().catch(console.error)));
+      subs.push(base44.entities.UserDeal.subscribe(() => loadAll().catch(console.error)));
+      subs.push(base44.entities.AnalyzerResult.subscribe(() => loadAll().catch(console.error)));
+    } catch (e) { console.warn("Subscription error:", e); }
     return () => subs.forEach(u => u?.());
   }, []);
 
