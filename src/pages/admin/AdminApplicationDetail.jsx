@@ -35,7 +35,7 @@ export default function AdminApplicationDetail({ app, brand, onClose, onStatusCh
   };
 
   return (
-    <div className="w-1/2 rounded-xl border border-border/50 bg-card overflow-hidden sticky top-20">
+    <div className="rounded-xl border border-border/50 bg-card overflow-hidden sticky top-6">
       {/* Header */}
       <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
         <div>
