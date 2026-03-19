@@ -1,98 +1,95 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
+// Triggered when a DealApplication status changes to "activated"
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const body = await req.json();
+  const { data, old_data, event } = body;
 
-  const { data, event } = body;
-  if (!data) return Response.json({ ok: true });
+  // Only act on DealApplication updates where status becomes activated
+  if (event?.entity_name !== "DealApplication") return Response.json({ ok: true });
+  if (data?.status !== "activated") return Response.json({ ok: true });
+  if (old_data?.status === "activated") return Response.json({ ok: true }); // already processed
 
-  // Only trigger on create or update to active/waitlist
-  if (!["active", "waitlist"].includes(data.status)) {
-    return Response.json({ ok: true });
+  const app = data;
+
+  // 1. Create Contract record
+  const today = new Date().toISOString().split("T")[0];
+  const endDate = new Date();
+  endDate.setFullYear(endDate.getFullYear() + 1);
+
+  await base44.asServiceRole.entities.Contract.create({
+    deal_application_id: app.id,
+    user_email: app.user_email,
+    deal_id: app.deal_id,
+    deal_name: app.deal_name,
+    provider: app.provider,
+    category: app.category,
+    status: "active",
+    estimated_savings_annual: app.estimated_savings || 0,
+    start_date: today,
+    end_date: endDate.toISOString().split("T")[0],
+    node_revenue_pct: 15,
+    activity_log: [{ date: today, action: "Contract created — deal activated", by: "system" }],
+  });
+
+  // 2. Also update or create UserDeal as active
+  const existingDeals = await base44.asServiceRole.entities.UserDeal.filter({
+    user_email: app.user_email,
+    deal_id: app.deal_id,
+  });
+
+  if (existingDeals.length > 0) {
+    await base44.asServiceRole.entities.UserDeal.update(existingDeals[0].id, {
+      status: "active",
+      start_date: today,
+      end_date: endDate.toISOString().split("T")[0],
+      estimated_savings: app.estimated_savings || 0,
+    });
+  } else {
+    await base44.asServiceRole.entities.UserDeal.create({
+      user_email: app.user_email,
+      deal_id: app.deal_id,
+      deal_name: app.deal_name,
+      provider: app.provider,
+      category: app.category,
+      status: "active",
+      start_date: today,
+      end_date: endDate.toISOString().split("T")[0],
+      estimated_savings: app.estimated_savings || 0,
+      is_real_savings: false,
+    });
   }
 
-  const isActive = data.status === "active";
-  const userEmail = data.user_email;
-  const dealName = data.deal_name;
-  const provider = data.provider;
-  const savings = data.estimated_savings ? `€${data.estimated_savings.toLocaleString()}/yr` : null;
-
-  // Email 1: Internal notification to THE NoDE team
-  await base44.asServiceRole.integrations.Core.SendEmail({
-    from_name: "THE NoDE · Deals",
-    to: "94.martinez.x@gmail.com",
-    subject: isActive
-      ? `[Deal Request] ${userEmail} → ${provider}`
-      : `[Access List] ${userEmail} → ${provider}`,
-    body: `
-      <div style="font-family: monospace; max-width: 560px; margin: 0 auto; padding: 32px; color: #111;">
-        <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 24px;">THE NoDE · Internal</p>
-        <h2 style="font-size: 22px; font-weight: 900; margin-bottom: 4px;">
-          ${isActive ? "New deal request" : "New access list signup"}
-        </h2>
-        <p style="color: #666; margin-bottom: 32px;">A member has ${isActive ? "requested preferred terms" : "joined the access list"} for <strong>${provider}</strong>.</p>
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 32px;">
-          <tr><td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #999; font-size: 12px;">Member</td><td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold;">${userEmail}</td></tr>
-          <tr><td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #999; font-size: 12px;">Deal</td><td style="padding: 10px 0; border-bottom: 1px solid #eee;">${dealName}</td></tr>
-          <tr><td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #999; font-size: 12px;">Provider</td><td style="padding: 10px 0; border-bottom: 1px solid #eee;">${provider}</td></tr>
-          <tr><td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #999; font-size: 12px;">Status</td><td style="padding: 10px 0; border-bottom: 1px solid #eee;">${data.status}</td></tr>
-          ${savings ? `<tr><td style="padding: 10px 0; color: #999; font-size: 12px;">Est. benefit</td><td style="padding: 10px 0; font-weight: bold; color: #16a34a;">${savings}</td></tr>` : ""}
-        </table>
-        <p style="font-size: 11px; color: #bbb;">Action required: follow up with this member within 5 business days.</p>
-      </div>
-    `,
-  });
-
-  // Email 2 or 3: Confirmation to the user
+  // 3. Send activation email to user
   await base44.asServiceRole.integrations.Core.SendEmail({
     from_name: "THE NoDE",
-    to: userEmail,
-    subject: isActive
-      ? `Your request for ${provider} preferred terms — confirmed`
-      : `You're on the access list — ${provider}`,
-    body: isActive ? `
-      <div style="font-family: -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 32px; color: #111;">
-        <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">THE NoDE · Network Deals</p>
-        <h1 style="font-size: 28px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">Request confirmed.</h1>
-        <p style="color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">
-          We've received your request for preferred <strong>${provider}</strong> conditions. THE NoDE is submitting this on your behalf — you'll receive a follow-up within 5 business days.
+    to: app.user_email,
+    subject: `Deal activated — ${app.deal_name}`,
+    body: `
+      <div style="font-family: -apple-system, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 32px; color: #111;">
+        <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">THE NoDE · Deal Update</p>
+        <h1 style="font-size: 26px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">Your deal is active.</h1>
+        <p style="color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+          <strong style="color:#111;">${app.deal_name}</strong> with <strong style="color:#111;">${app.provider}</strong> has been activated.
         </p>
-        <div style="background: #f9f9f9; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 32px;">
-          <p style="font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: #999; margin-bottom: 12px;">Deal summary</p>
-          <p style="font-weight: 700; font-size: 16px; margin-bottom: 4px;">${dealName}</p>
-          <p style="color: #666; font-size: 14px; margin-bottom: 12px;">${provider}</p>
-          ${savings ? `<p style="font-size: 20px; font-weight: 900; color: #16a34a;">${savings} estimated benefit</p>` : ""}
-        </div>
-        <p style="font-size: 12px; color: #bbb; line-height: 1.6;">
-          This deal is managed exclusively by THE NoDE. Your preferred conditions are negotiated collectively — you never need to approach ${provider} directly.
+        ${app.estimated_savings ? `
+        <div style="background: #f8f8f8; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+          <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: #999; margin-bottom: 6px;">Estimated annual savings</p>
+          <p style="font-size: 36px; font-weight: 900; color: #16a34a; letter-spacing: -0.04em;">€${Math.round(app.estimated_savings).toLocaleString()}/yr</p>
+        </div>` : ""}
+        <p style="font-size: 13px; color: #666; line-height: 1.6;">
+          Your new rates are now in effect. Track your contract and savings in your dashboard.
         </p>
-        <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #eee;">
-          <p style="font-size: 11px; color: #ccc;">THE NoDE · Infrastructure leverage for independent brands</p>
-        </div>
-      </div>
-    ` : `
-      <div style="font-family: -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 32px; color: #111;">
-        <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">THE NoDE · Network Deals</p>
-        <h1 style="font-size: 28px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">You're on the list.</h1>
-        <p style="color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">
-          You've been added to the access list for <strong>${provider}</strong> preferred conditions. We'll notify you the moment this becomes available to network members.
-        </p>
-        <div style="background: #f9f9f9; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 32px;">
-          <p style="font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: #999; margin-bottom: 12px;">Registered interest</p>
-          <p style="font-weight: 700; font-size: 16px; margin-bottom: 4px;">${dealName}</p>
-          <p style="color: #666; font-size: 14px;">${provider}</p>
-          ${savings ? `<p style="font-size: 14px; color: #16a34a; font-weight: 600; margin-top: 8px;">Estimated benefit: ${savings}</p>` : ""}
-        </div>
-        <p style="font-size: 12px; color: #bbb; line-height: 1.6;">
-          THE NoDE is actively negotiating with ${provider}. Your position on the list is confirmed — no further action needed.
-        </p>
-        <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #eee;">
+        <a href="https://thenode.co/Deals" style="display: inline-block; margin-top: 20px; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 24px; border-radius: 100px;">
+          View my contracts →
+        </a>
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
           <p style="font-size: 11px; color: #ccc;">THE NoDE · Infrastructure leverage for independent brands</p>
         </div>
       </div>
     `,
   });
 
-  return Response.json({ ok: true });
+  return Response.json({ ok: true, created: "contract" });
 });
