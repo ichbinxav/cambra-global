@@ -54,7 +54,7 @@ export default function Dashboard() {
 
     const refresh = async () => {
       const [r, uds] = await Promise.all([
-        base44.entities.AnalyzerResult.list("-created_date", 10),
+        base44.entities.AnalyzerResult.filter({ created_by: userEmail }, "-created_date", 10),
         base44.entities.UserDeal.filter({ user_email: userEmail }),
       ]);
       setResults(r);
