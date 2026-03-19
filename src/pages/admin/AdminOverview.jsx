@@ -411,7 +411,7 @@ export default function AdminOverview() {
               </div>
             </div>
           </div>
-          <div className="px-5 pb-5 pt-0 grid grid-cols-3 gap-3 border-t border-border/20 pt-4">
+          <div className="px-5 pb-5 pt-4 grid grid-cols-3 gap-3 border-t border-border/20">
             <div>
               <p className="text-[9px] uppercase tracking-[0.1em] text-muted-foreground/40 mb-1">Total Brands</p>
               <p className="text-lg font-black">{brands.length}</p>
