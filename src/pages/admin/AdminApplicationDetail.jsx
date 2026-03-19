@@ -29,6 +29,11 @@ export default function AdminApplicationDetail({ app, brand, onClose, onStatusCh
     setNewNote("");
   };
 
+  const updateSavings = async (val) => {
+    await base44.entities.DealApplication.update(localApp.id, { estimated_savings: val });
+    setLocalApp(prev => ({ ...prev, estimated_savings: val }));
+  };
+
   return (
     <div className="w-1/2 rounded-xl border border-border/50 bg-card overflow-hidden sticky top-20">
       {/* Header */}
@@ -90,6 +95,16 @@ export default function AdminApplicationDetail({ app, brand, onClose, onStatusCh
           </div>
         </div>
 
+        {/* Savings override */}
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Est. Savings (€/yr)</p>
+            <input type="number" defaultValue={localApp.estimated_savings || ""}
+              onBlur={e => updateSavings(parseFloat(e.target.value) || 0)}
+              className="w-full h-8 px-3 text-xs bg-secondary/60 border border-border/50 rounded-lg focus:outline-none" />
+          </div>
+        </div>
+
         {/* Provider response */}
         <div>
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">Provider Response</p>
@@ -97,7 +112,7 @@ export default function AdminApplicationDetail({ app, brand, onClose, onStatusCh
             defaultValue={localApp.provider_response || ""}
             onBlur={async (e) => {
               if (e.target.value !== localApp.provider_response) {
-                await base44.entities.UserDeal.update(localApp.id, { provider_response: e.target.value });
+                await base44.entities.DealApplication.update(localApp.id, { provider_response: e.target.value });
                 setLocalApp(prev => ({ ...prev, provider_response: e.target.value }));
               }
             }}
