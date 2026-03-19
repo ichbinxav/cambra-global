@@ -126,7 +126,10 @@ const AuthenticatedApp = () => {
           <Route path="/admin/providers" element={<AdminProviders />} />
           <Route path="/admin/revenue" element={<AdminRevenue />} />
           <Route path="/admin/benchmarks" element={<AdminBenchmarks />} />
+          <Route path="/admin/contracts" element={<AdminContracts />} />
+          <Route path="/admin/integrations" element={<AdminIntegrations />} />
         </Route>
+        <Route path="/ProviderPortal" element={<ProtectedRoute><ProviderPortal /></ProtectedRoute>} />
 
         <Route path="*" element={<PageNotFound />} />
       </Routes>
