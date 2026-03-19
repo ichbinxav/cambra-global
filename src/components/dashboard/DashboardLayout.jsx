@@ -146,6 +146,14 @@ export default function DashboardLayout() {
                     </div>
                   </Link>
                 )}
+                {(isProvider || isAdmin) && (
+                  <Link to="/ProviderPortal" onClick={() => setSidebarOpen(false)}>
+                    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-blue-600 font-semibold">
+                      <Building2 size={16} />
+                      Provider Portal
+                    </div>
+                  </Link>
+                )}
                 <Link to="/Landing" onClick={() => setSidebarOpen(false)}>
                   <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-muted-foreground">
                     <Home size={16} /> Go to homepage
