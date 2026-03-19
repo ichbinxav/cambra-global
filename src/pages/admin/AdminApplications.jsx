@@ -17,7 +17,7 @@ export default function AdminApplications() {
   const load = async () => {
     try {
       const [a, b] = await Promise.all([
-        base44.entities.UserDeal.list("-created_date", 500),
+        base44.entities.DealApplication.list("-created_date", 500),
         base44.entities.Brand.list(),
       ]);
       setApps(a);
@@ -31,21 +31,8 @@ export default function AdminApplications() {
 
   useEffect(() => {
     load();
-
-    // Subscribe to real-time updates
-    const subs = [];
-    try {
-      const unsub1 = base44.entities.UserDeal.subscribe(() => load());
-      const unsub2 = base44.entities.DealApplication.subscribe(() => load());
-      if (unsub1) subs.push(unsub1);
-      if (unsub2) subs.push(unsub2);
-    } catch (err) {
-      console.warn('Subscription error:', err);
-    }
-
-    return () => {
-      subs.forEach(unsub => unsub?.());
-    };
+    const unsub = base44.entities.DealApplication.subscribe(() => load());
+    return () => unsub?.();
   }, []);
 
   const getBrand = (email) => brands.find(b => b.created_by === email);
@@ -59,13 +46,9 @@ export default function AdminApplications() {
   });
 
   const updateStatus = async (id, status) => {
-    try {
-      await base44.entities.UserDeal.update(id, { status });
-      setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-      if (selected?.id === id) setSelected(prev => ({ ...prev, status }));
-    } catch (err) {
-      console.error('Error updating status:', err);
-    }
+    await base44.entities.DealApplication.update(id, { status });
+    setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+    if (selected?.id === id) setSelected(prev => ({ ...prev, status }));
   };
 
   if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
