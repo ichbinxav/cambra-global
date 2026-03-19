@@ -116,7 +116,7 @@ const AuthenticatedApp = () => {
         </Route>
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
-          <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
+          <Route path="/admin" element={<AdminOverview />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/users/:id" element={<AdminUserDetail />} />
           <Route path="/admin/applications" element={<AdminApplications />} />
@@ -125,6 +125,8 @@ const AuthenticatedApp = () => {
           <Route path="/admin/providers" element={<AdminProviders />} />
           <Route path="/admin/revenue" element={<AdminRevenue />} />
           <Route path="/admin/benchmarks" element={<AdminBenchmarks />} />
+          <Route path="/admin/tasks" element={<AdminTasks />} />
+          <Route path="/admin/contracts" element={<AdminContracts />} />
         </Route>
 
         <Route path="*" element={<PageNotFound />} />
