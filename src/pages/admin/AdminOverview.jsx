@@ -1,383 +1,446 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { DEAL_STATUSES } from "@/lib/adminStatusConstants";
+import { DEAL_STATUSES, STATUS_COLORS } from "@/lib/adminStatusConstants";
 import { Link } from "react-router-dom";
-import { Users, FileText, Zap, TrendingUp, DollarSign, ArrowUpRight, CheckCircle2, BarChart3 } from "lucide-react";
-import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
-import { motion } from "framer-motion";
+import {
+  Users, FileText, Zap, TrendingUp, DollarSign, ArrowRight,
+  CheckCircle2, BarChart3, AlertTriangle, Clock, Activity,
+  ChevronUp, ChevronDown, Minus, GitBranch, Building2, Star
+} from "lucide-react";
+import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, BarChart, Bar, Cell } from "recharts";
+import { motion, AnimatePresence } from "framer-motion";
+import { formatSavings } from "@/lib/deals";
 
+// ─── KPI Card ────────────────────────────────────────────────────────────────
+function KPICard({ label, value, sub, color = "text-foreground", trend, prefix = "", suffix = "" }) {
+  return (
+    <div className="p-4 rounded-xl border border-border/50 bg-card hover:border-border/80 transition-all">
+      <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-2">{label}</p>
+      <p className={`text-2xl font-black tabular-nums ${color}`}>{prefix}{typeof value === "number" ? value.toLocaleString() : value}{suffix}</p>
+      {sub && <p className="text-[11px] text-muted-foreground/40 mt-1 flex items-center gap-1">{sub}</p>}
+      {trend !== undefined && (
+        <div className={`flex items-center gap-0.5 mt-1 text-[11px] font-semibold ${trend > 0 ? "text-green-600" : trend < 0 ? "text-red-500" : "text-muted-foreground/40"}`}>
+          {trend > 0 ? <ChevronUp size={11} /> : trend < 0 ? <ChevronDown size={11} /> : <Minus size={11} />}
+          {Math.abs(trend)}%
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Priority tag ─────────────────────────────────────────────────────────────
+function PriorityTag({ savings }) {
+  if (savings >= 10000) return <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-red-500/10 text-red-600 border border-red-500/20">HIGH</span>;
+  if (savings >= 4000) return <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-orange-500/10 text-orange-500 border border-orange-500/20">MED</span>;
+  return <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-secondary text-muted-foreground/50 border border-border/30">LOW</span>;
+}
+
+// ─── Feed Item ────────────────────────────────────────────────────────────────
+function FeedItem({ app, brands }) {
+  const brand = brands.find(b => b.created_by === app.user_email);
+  const name = brand?.name || app.company_name || app.user_email?.split("@")[0];
+  const timeAgo = (() => {
+    const diff = Date.now() - new Date(app.created_date).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  })();
+
+  const statusLabel = {
+    submitted: "Deal submitted",
+    in_review: "In review",
+    provider_contacted: "Provider contacted",
+    offer_ready: "🔥 Offer ready",
+    activated: "✅ Activated",
+  }[app.status] || app.status;
+
+  return (
+    <div className="flex items-center gap-3 py-3 border-b border-border/20 last:border-0">
+      <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center shrink-0">
+        <span className="text-[10px] font-black text-muted-foreground">{name?.charAt(0)?.toUpperCase()}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-bold truncate">{name}</p>
+          <PriorityTag savings={app.estimated_savings || 0} />
+        </div>
+        <p className="text-[11px] text-muted-foreground/50 truncate">{statusLabel} · {app.deal_name}</p>
+      </div>
+      <div className="text-right shrink-0">
+        {app.estimated_savings > 0 && <p className="text-xs font-black text-green-600">{formatSavings(app.estimated_savings)}</p>}
+        <p className="text-[10px] text-muted-foreground/30">{timeAgo}</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function AdminOverview() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [timeRange, setTimeRange] = useState("7d");
+  const [timeRange, setTimeRange] = useState("30d");
 
-  const reloadData = async () => {
-    try {
-      const [users, brands, userDeals, results, apps] = await Promise.all([
-        base44.entities.User.list(),
-        base44.entities.Brand.list(),
-        base44.entities.UserDeal.list(),
-        base44.entities.AnalyzerResult.list("-created_date", 500),
-        base44.entities.DealApplication.list(),
-      ]);
-      setData({ users, brands, userDeals, results, apps });
-    } catch (err) {
-      console.error('Error reloading admin data:', err);
-    }
+  const loadAll = async () => {
+    const [users, brands, userDeals, results, apps] = await Promise.all([
+      base44.entities.User.list(),
+      base44.entities.Brand.list(),
+      base44.entities.UserDeal.list(),
+      base44.entities.AnalyzerResult.list("-created_date", 500),
+      base44.entities.DealApplication.list("-created_date", 500),
+    ]);
+    setData({ users, brands, userDeals, results, apps });
   };
 
   useEffect(() => {
-    reloadData().then(() => setLoading(false));
-
-    // Suscribirse a cambios en tiempo real
+    loadAll().then(() => setLoading(false));
     const subs = [];
     try {
-      const unsub1 = base44.entities.UserDeal.subscribe(() => reloadData());
-      const unsub2 = base44.entities.AnalyzerResult.subscribe(() => reloadData());
-      const unsub3 = base44.entities.DealApplication.subscribe(() => reloadData());
-      if (unsub1) subs.push(unsub1);
-      if (unsub2) subs.push(unsub2);
-      if (unsub3) subs.push(unsub3);
-    } catch (err) {
-      console.warn('Subscription error:', err);
-    }
-
-    return () => {
-      subs.forEach(unsub => unsub?.());
-    };
+      subs.push(base44.entities.DealApplication.subscribe(loadAll));
+      subs.push(base44.entities.UserDeal.subscribe(loadAll));
+      subs.push(base44.entities.AnalyzerResult.subscribe(loadAll));
+    } catch (e) {}
+    return () => subs.forEach(u => u?.());
   }, []);
 
-  if (loading || !data) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
+  if (loading || !data) return (
+    <div className="flex items-center justify-center py-40">
+      <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
+    </div>
+  );
 
   const { users, brands, userDeals, results, apps } = data;
-  
-  // Time range filtering
-  const now = new Date();
-  const getDaysAgo = (days) => new Date(now - days * 24 * 60 * 60 * 1000);
-  const timeRangeMap = { "7d": 7, "30d": 30, "90d": 90 };
-  const daysBack = timeRangeMap[timeRange];
-  const rangeStart = getDaysAgo(daysBack);
 
-  const activeDeals = userDeals.filter(d => d.status === DEAL_STATUSES.ACTIVATED);
-  const waitlistDeals = userDeals.filter(d => d.status === DEAL_STATUSES.SUBMITTED || d.status === DEAL_STATUSES.IN_REVIEW || d.status === DEAL_STATUSES.PROVIDER_CONTACTED);
+  // ── Time range ──────────────────────────────────────────────────────────────
+  const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90;
+  const since = new Date(Date.now() - days * 86400000);
+  const prev = new Date(Date.now() - days * 2 * 86400000);
+
+  const inRange = (d) => new Date(d.created_date) >= since;
+  const inPrev = (d) => new Date(d.created_date) >= prev && new Date(d.created_date) < since;
+
+  const trend = (curr, prevVal) => {
+    if (!prevVal) return 0;
+    return Math.round(((curr - prevVal) / prevVal) * 100);
+  };
+
+  // ── KPIs ────────────────────────────────────────────────────────────────────
+  const newUsers = users.filter(inRange).length;
+  const prevUsers = users.filter(inPrev).length;
+
+  const activatedApps = apps.filter(a => a.status === DEAL_STATUSES.ACTIVATED);
+  const submittedApps = apps.filter(a => a.status === DEAL_STATUSES.SUBMITTED);
+  const inProgressApps = apps.filter(a => [DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY].includes(a.status));
+  const offerReadyApps = apps.filter(a => a.status === DEAL_STATUSES.OFFER_READY);
+
   const totalSavingsIdentified = results.reduce((s, r) => s + (r.total_savings || 0), 0);
-  const totalSavingsActivated = activeDeals.reduce((s, d) => s + (d.estimated_savings || 0), 0);
-  const estimatedRevenue = Math.round(totalSavingsActivated * 0.15);
-  const conversionRate = userDeals.length > 0 ? Math.round((activeDeals.length / userDeals.length) * 100) : 0;
+  const totalSavingsActivated = activatedApps.reduce((s, a) => s + (a.estimated_savings || 0), 0);
+  const estimatedRevenue = totalSavingsActivated * 0.15;
+  const avgSavingsPerUser = users.length > 0 ? totalSavingsIdentified / users.length : 0;
 
-  // Filtered by time range
-  const newUsersRange = users.filter(u => new Date(u.created_date) >= rangeStart).length;
-  const newDealsRange = userDeals.filter(d => new Date(d.created_date) >= rangeStart).length;
-  const newAppsRange = apps.filter(a => new Date(a.created_date) >= rangeStart).length;
+  // ── Conversion ──────────────────────────────────────────────────────────────
+  const convAnalysis = results.length > 0 ? Math.round((apps.length / results.length) * 100) : 0;
+  const convActivation = apps.length > 0 ? Math.round((activatedApps.length / apps.length) * 100) : 0;
 
-  // Top deals
-  const dealCount = {};
-  userDeals.forEach(d => { dealCount[d.deal_name] = (dealCount[d.deal_name] || 0) + 1; });
-  const topDeals = Object.entries(dealCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  // ── Pipeline by status ──────────────────────────────────────────────────────
+  const pipelineStages = [
+    { key: DEAL_STATUSES.SUBMITTED, label: "Submitted", color: "#3b82f6" },
+    { key: DEAL_STATUSES.IN_REVIEW, label: "In Review", color: "#f97316" },
+    { key: DEAL_STATUSES.PROVIDER_CONTACTED, label: "Provider Contacted", color: "#a855f7" },
+    { key: DEAL_STATUSES.OFFER_READY, label: "Offer Ready", color: "#f59e0b" },
+    { key: DEAL_STATUSES.ACTIVATED, label: "Activated", color: "#22c55e" },
+  ];
 
-  // Chart: savings per week
-  const weeklyData = [];
-  for (let i = (daysBack > 30 ? 12 : daysBack > 7 ? 4 : 1); i >= 0; i--) {
-    const start = new Date(now - (i + 1) * 7 * 24 * 60 * 60 * 1000);
-    const end = new Date(now - i * 7 * 24 * 60 * 60 * 1000);
-    const weekSavings = results
-      .filter(r => new Date(r.created_date) >= start && new Date(r.created_date) < end)
-      .reduce((s, r) => s + (r.total_savings || 0), 0);
-    weeklyData.push({ week: `W${12 - i}`, savings: Math.round(weekSavings / 1000) });
-  }
+  const pipelineData = pipelineStages.map(s => ({
+    ...s,
+    count: apps.filter(a => a.status === s.key).length,
+    value: apps.filter(a => a.status === s.key).reduce((sum, a) => sum + (a.estimated_savings || 0), 0),
+  }));
 
-  // Savings by category
-  const savingsByCategory = {};
-  results.forEach(r => {
-    savingsByCategory["Payments"] = (savingsByCategory["Payments"] || 0) + (r.payment_savings || 0);
-    savingsByCategory["Shipping"] = (savingsByCategory["Shipping"] || 0) + (r.shipping_savings || 0);
-    savingsByCategory["SaaS"] = (savingsByCategory["SaaS"] || 0) + (r.saas_savings || 0);
+  // ── Weekly trend ────────────────────────────────────────────────────────────
+  const weeklyData = Array.from({ length: 8 }, (_, i) => {
+    const wStart = new Date(Date.now() - (7 - i + 1) * 7 * 86400000);
+    const wEnd = new Date(Date.now() - (7 - i) * 7 * 86400000);
+    const wApps = apps.filter(a => {
+      const d = new Date(a.created_date);
+      return d >= wStart && d < wEnd;
+    });
+    return {
+      week: `W${i + 1}`,
+      apps: wApps.length,
+      savings: Math.round(wApps.reduce((s, a) => s + (a.estimated_savings || 0), 0) / 1000),
+    };
   });
-  const categoryData = Object.entries(savingsByCategory).map(([name, value]) => ({ name, value: Math.round(value / 1000) }));
-  const COLORS = ["#3b82f6", "#22c55e", "#f97316"];
 
-  // Applications by status
-  const appsByStatus = {};
-  apps.forEach(a => { appsByStatus[a.status] = (appsByStatus[a.status] || 0) + 1; });
+  // ── Live feed (last 20 apps) ─────────────────────────────────────────────
+  const feedItems = [...apps].slice(0, 20);
+
+  // ── Alerts ──────────────────────────────────────────────────────────────────
+  const alerts = [];
+  if (offerReadyApps.length > 0) alerts.push({ type: "urgent", msg: `${offerReadyApps.length} deal${offerReadyApps.length > 1 ? "s" : ""} with offer ready — needs activation` });
+
+  const stuckApps = apps.filter(a => {
+    const days = (Date.now() - new Date(a.created_date).getTime()) / 86400000;
+    return days > 7 && [DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED].includes(a.status);
+  });
+  if (stuckApps.length > 0) alerts.push({ type: "warn", msg: `${stuckApps.length} deal${stuckApps.length > 1 ? "s" : ""} stuck in pipeline > 7 days` });
+
+  const highValueNew = apps.filter(a => inRange(a) && (a.estimated_savings || 0) >= 10000);
+  if (highValueNew.length > 0) alerts.push({ type: "info", msg: `${highValueNew.length} high-value application${highValueNew.length > 1 ? "s" : ""} this period` });
+
+  // ── Top brands by savings potential ──────────────────────────────────────
+  const brandSavings = {};
+  results.forEach(r => {
+    const email = r.created_by;
+    if (!brandSavings[email]) brandSavings[email] = 0;
+    brandSavings[email] = Math.max(brandSavings[email], r.total_savings || 0);
+  });
+  const topBrands = Object.entries(brandSavings)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([email, savings]) => ({
+      email,
+      savings,
+      brand: brands.find(b => b.created_by === email),
+    }));
 
   return (
-    <div className="space-y-6">
-      {/* Header with tabs */}
+    <div className="space-y-5">
+      {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black tracking-[-0.03em]">Command Center</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Real-time operational overview</p>
+          <p className="text-xs text-muted-foreground/50 mt-0.5">Real-time operations overview · THE NoDE</p>
         </div>
-        <div className="flex gap-1 p-1 rounded-xl bg-secondary/60">
-          {["overview", "analytics", "deals"].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 h-8 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === tab ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+        <div className="flex gap-1 p-1 rounded-lg bg-secondary/60">
+          {["7d", "30d", "90d"].map(r => (
+            <button key={r} onClick={() => setTimeRange(r)}
+              className={`px-3 h-7 rounded-md text-xs font-semibold transition-all ${timeRange === r ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              {r}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Time range selector */}
-      <div className="flex gap-2">
-        {["7d", "30d", "90d"].map(range => (
-          <button
-            key={range}
-            onClick={() => setTimeRange(range)}
-            className={`px-3 h-8 rounded-lg text-xs font-medium transition-all ${
-              timeRange === range ? "bg-foreground text-background" : "bg-secondary/60 text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {range === "7d" ? "Last 7 days" : range === "30d" ? "Last 30 days" : "Last 90 days"}
-          </button>
-        ))}
+      {/* ── Alerts ── */}
+      {alerts.length > 0 && (
+        <div className="space-y-2">
+          {alerts.map((a, i) => (
+            <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-semibold border ${
+                a.type === "urgent" ? "bg-red-500/[0.06] border-red-500/20 text-red-600" :
+                a.type === "warn" ? "bg-orange-500/[0.06] border-orange-500/20 text-orange-500" :
+                "bg-blue-500/[0.06] border-blue-500/20 text-blue-600"
+              }`}>
+              <AlertTriangle size={13} />
+              {a.msg}
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* ── KPI Grid ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <KPICard label="Total Users" value={users.length} sub={`+${newUsers} this period`} color="text-foreground" trend={trend(newUsers, prevUsers)} />
+        <KPICard label="Analyses Run" value={results.length} sub="infrastructure scans" color="text-blue-600" />
+        <KPICard label="Apps Submitted" value={apps.length} sub={`${submittedApps.length} awaiting review`} color="text-orange-500" />
+        <KPICard label="Deals Activated" value={activatedApps.length} sub={`${convActivation}% conversion rate`} color="text-green-600" />
       </div>
 
-      {/* OVERVIEW TAB */}
-      {activeTab === "overview" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-          {/* Top metric cards */}
-          <div className="grid grid-cols-2 gap-3">
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="p-4 rounded-xl border border-border/50 bg-card">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Deals Applied</p>
-                <FileText size={12} className="text-orange-500" />
-              </div>
-              <p className={`text-3xl font-black tabular-nums text-orange-500`}>{userDeals.length}</p>
-              <p className="text-[11px] text-muted-foreground/40 mt-1">+{newDealsRange}</p>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="p-4 rounded-xl border border-border/50 bg-card">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Deals Activated</p>
-                <CheckCircle2 size={12} className="text-green-600" />
-              </div>
-              <p className={`text-3xl font-black tabular-nums text-green-600`}>{activeDeals.length}</p>
-              <p className="text-[11px] text-muted-foreground/40 mt-1">0% rate</p>
-            </motion.div>
-          </div>
+      {/* ── Financial KPIs ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="p-4 rounded-xl border border-green-500/20 bg-green-500/[0.04] col-span-1">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Savings Identified</p>
+          <p className="text-xl font-black text-green-600">{formatSavings(totalSavingsIdentified)}</p>
+          <p className="text-[11px] text-muted-foreground/40 mt-1">across all analyses</p>
+        </div>
+        <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.04]">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Savings Activated</p>
+          <p className="text-xl font-black text-blue-600">{formatSavings(totalSavingsActivated)}</p>
+          <p className="text-[11px] text-muted-foreground/40 mt-1">live contracts/yr</p>
+        </div>
+        <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Est. Revenue</p>
+          <p className="text-xl font-black text-amber-600">{formatSavings(estimatedRevenue)}</p>
+          <p className="text-[11px] text-muted-foreground/40 mt-1">15% take rate</p>
+        </div>
+        <div className="p-4 rounded-xl border border-purple-500/20 bg-purple-500/[0.04]">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Avg / User</p>
+          <p className="text-xl font-black text-purple-600">{formatSavings(avgSavingsPerUser)}</p>
+          <p className="text-[11px] text-muted-foreground/40 mt-1">savings potential</p>
+        </div>
+      </div>
 
-          {/* Key metrics */}
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: "Total Users", value: users.length, sub: `+${newUsersRange}`, icon: Users, color: "text-blue-600" },
-              { label: "Active Companies", value: brands.length, sub: "Growing", icon: Users, color: "text-purple-600" },
-            ].map((kpi, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="p-4 rounded-xl border border-border/50 bg-card hover:border-border/80 transition-all"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">{kpi.label}</p>
-                  <kpi.icon size={12} className={kpi.color} />
+      {/* ── Conversion funnel ── */}
+      <div className="p-5 rounded-xl border border-border/50 bg-card">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Conversion Funnel</p>
+          <div className="flex gap-3 text-[11px]">
+            <span className="text-muted-foreground/50">Analysis→Deal: <strong className="text-foreground">{convAnalysis}%</strong></span>
+            <span className="text-muted-foreground/50">Deal→Activated: <strong className="text-foreground">{convActivation}%</strong></span>
+          </div>
+        </div>
+        <div className="flex items-end gap-1 h-12">
+          {[
+            { label: "Users", val: users.length, color: "bg-foreground/20" },
+            { label: "Analyses", val: results.length, color: "bg-blue-500/50" },
+            { label: "Applied", val: apps.length, color: "bg-orange-500/60" },
+            { label: "Active", val: activatedApps.length, color: "bg-green-500/70" },
+          ].map((s, i) => {
+            const maxVal = users.length || 1;
+            const pct = Math.max((s.val / maxVal) * 100, 4);
+            return (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-full relative" style={{ height: "40px" }}>
+                  <div className={`absolute bottom-0 w-full rounded-t-sm ${s.color}`} style={{ height: `${pct}%` }} />
                 </div>
-                <p className={`text-3xl font-black tabular-nums ${kpi.color}`}>{kpi.value}</p>
-                <p className="text-[11px] text-muted-foreground/40 mt-1">{kpi.sub}</p>
-              </motion.div>
+                <p className="text-[9px] text-muted-foreground/40 text-center leading-tight">{s.label}<br /><strong className="text-foreground/70">{s.val}</strong></p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Main grid: pipeline + feed ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Pipeline overview */}
+        <div className="p-5 rounded-xl border border-border/50 bg-card">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Deal Pipeline</p>
+            <Link to="/admin/pipeline" className="text-[11px] text-muted-foreground/50 hover:text-foreground flex items-center gap-1 transition-colors">
+              Full pipeline <ArrowRight size={10} />
+            </Link>
+          </div>
+          <div className="space-y-2.5">
+            {pipelineData.map(stage => {
+              const pct = apps.length > 0 ? (stage.count / apps.length) * 100 : 0;
+              return (
+                <div key={stage.key}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ background: stage.color }} />
+                      <p className="text-xs font-medium">{stage.label}</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className="text-muted-foreground/50">{formatSavings(stage.value)}</span>
+                      <span className="font-bold w-5 text-right">{stage.count}</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-border/30 overflow-hidden">
+                    <motion.div className="h-full rounded-full" style={{ background: stage.color }}
+                      initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 pt-4 border-t border-border/30 grid grid-cols-3 gap-2 text-center">
+            <Link to="/admin/pipeline" className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
+              <p className="text-xs font-black text-orange-500">{inProgressApps.length}</p>
+              <p className="text-[10px] text-muted-foreground/40">In Progress</p>
+            </Link>
+            <Link to="/admin/applications" className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
+              <p className="text-xs font-black text-amber-500">{offerReadyApps.length}</p>
+              <p className="text-[10px] text-muted-foreground/40">Offer Ready</p>
+            </Link>
+            <Link to="/admin/pipeline" className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
+              <p className="text-xs font-black text-red-500">{stuckApps.length}</p>
+              <p className="text-[10px] text-muted-foreground/40">Stuck {">"}7d</p>
+            </Link>
+          </div>
+        </div>
+
+        {/* Live activity feed */}
+        <div className="p-5 rounded-xl border border-border/50 bg-card">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Live Activity</p>
+            </div>
+            <Link to="/admin/applications" className="text-[11px] text-muted-foreground/50 hover:text-foreground flex items-center gap-1 transition-colors">
+              All <ArrowRight size={10} />
+            </Link>
+          </div>
+          <div className="overflow-y-auto max-h-[280px]">
+            {feedItems.length === 0 ? (
+              <p className="text-xs text-muted-foreground/40 text-center py-8">No activity yet</p>
+            ) : (
+              feedItems.map(app => <FeedItem key={app.id} app={app} brands={brands} />)
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Weekly chart ── */}
+      <div className="p-5 rounded-xl border border-border/50 bg-card">
+        <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">Weekly Applications & Savings Pipeline</p>
+        <ResponsiveContainer width="100%" height={140}>
+          <BarChart data={weeklyData} barGap={2}>
+            <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" style={{ fontSize: 10 }} />
+            <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 11 }}
+              formatter={(v, name) => [name === "savings" ? `€${v}K` : v, name === "savings" ? "Savings" : "Apps"]} />
+            <Bar dataKey="apps" fill="hsl(var(--border))" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="savings" fill="#22c55e" radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* ── Top opportunities + Quick nav ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Top brands by savings potential */}
+        <div className="p-5 rounded-xl border border-border/50 bg-card">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Top Opportunities</p>
+            <Link to="/admin/users" className="text-[11px] text-muted-foreground/50 hover:text-foreground flex items-center gap-1 transition-colors">
+              All users <ArrowRight size={10} />
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {topBrands.length === 0 && <p className="text-xs text-muted-foreground/40 py-4 text-center">No data yet</p>}
+            {topBrands.map(({ email, savings, brand }, i) => (
+              <Link key={email} to="/admin/users" className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/50 transition-colors">
+                <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                  <span className="text-[9px] font-black">{i + 1}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold truncate">{brand?.name || email.split("@")[0]}</p>
+                  <p className="text-[10px] text-muted-foreground/40 truncate">{email}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-black text-green-600">{formatSavings(savings)}</p>
+                  {savings >= 10000 && <Star size={9} className="text-amber-500 ml-auto" />}
+                </div>
+              </Link>
             ))}
           </div>
+        </div>
 
-          {/* Savings metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="p-5 rounded-xl border border-green-500/20 bg-green-500/[0.05]">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-2">Savings Identified</p>
-              <p className="text-3xl font-black text-green-600">€{(totalSavingsIdentified / 1000).toFixed(0)}K</p>
-              <p className="text-[11px] text-muted-foreground/40 mt-2">across all analyses</p>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="p-5 rounded-xl border border-blue-500/20 bg-blue-500/[0.05]">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-2">Savings Activated</p>
-              <p className="text-3xl font-black text-blue-600">€{(totalSavingsActivated / 1000).toFixed(1)}K</p>
-              <p className="text-[11px] text-muted-foreground/40 mt-2">live contracts/yr</p>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="p-5 rounded-xl border border-amber-500/20 bg-amber-500/[0.05]">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-2">Est. Revenue</p>
-              <p className="text-3xl font-black text-amber-600">€{(estimatedRevenue / 1000).toFixed(1)}K</p>
-              <p className="text-[11px] text-muted-foreground/40 mt-2">15% of activated</p>
-            </motion.div>
-          </div>
-
-          {/* Status breakdown */}
-          <div className="p-5 rounded-xl border border-border/50 bg-card">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">Applications Pipeline</p>
-            <div className="space-y-3">
-              {[
-                { key: "submitted", label: "Submitted", color: "bg-blue-500" },
-                { key: "in_review", label: "In Review", color: "bg-orange-500" },
-                { key: "provider_contacted", label: "Provider Contacted", color: "bg-purple-500" },
-                { key: "offer_ready", label: "Offer Ready", color: "bg-amber-500" },
-                { key: "activated", label: "Activated", color: "bg-green-500" },
-              ].map(s => {
-                const count = appsByStatus[s.key] || 0;
-                const total = apps.length || 1;
-                const pct = Math.round((count / total) * 100);
-                return (
-                  <div key={s.key}>
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-medium text-muted-foreground">{s.label}</p>
-                      <p className="text-xs font-bold">{count} ({pct}%)</p>
-                    </div>
-                    <div className="h-2 rounded-full bg-border/40 overflow-hidden">
-                      <motion.div
-                        className={`h-full rounded-full ${s.color}`}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${pct}%` }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ANALYTICS TAB */}
-      {activeTab === "analytics" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Weekly savings chart */}
-            <div className="p-5 rounded-xl border border-border/50 bg-card">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">Weekly Trend</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={weeklyData}>
-                  <defs>
-                    <linearGradient id="sg3" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#22c55e" stopOpacity={0.2} />
-                      <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" style={{ fontSize: 11 }} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 11 }} formatter={v => `€${v}K`} />
-                  <Area type="monotone" dataKey="savings" stroke="#22c55e" strokeWidth={2} fill="url(#sg3)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Savings by category pie chart */}
-            <div className="p-5 rounded-xl border border-border/50 bg-card">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">Savings by Category</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie data={categoryData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} dataKey="value" label>
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={v => `€${v}K`} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex gap-4 mt-4 justify-center text-xs">
-                {categoryData.map((cat, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: COLORS[i] }} />
-                    <span className="text-muted-foreground">{cat.name} €{cat.value}K</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Conversion funnel */}
-          <div className="p-5 rounded-xl border border-border/50 bg-card">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">User Journey</p>
-            <div className="space-y-3">
-              {[
-                { label: "Sign ups", val: users.length, pct: 100 },
-                { label: "Analyzed infrastructure", val: results.length, pct: (results.length / users.length) * 100 },
-                { label: "Applied for deals", val: userDeals.length, pct: (userDeals.length / users.length) * 100 },
-                { label: "Activated deals", val: activeDeals.length, pct: (activeDeals.length / users.length) * 100 },
-              ].map((row, i) => (
-                <div key={i}>
-                  <div className="flex justify-between mb-1">
-                    <p className="text-xs font-medium text-muted-foreground">{row.label}</p>
-                    <p className="text-xs font-bold">{row.val} ({Math.round(row.pct)}%)</p>
-                  </div>
-                  <div className="h-2 rounded-full bg-border/40 overflow-hidden">
-                    <motion.div
-                      className="h-full rounded-full bg-blue-500"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${row.pct}%` }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                    />
-                  </div>
+        {/* Quick navigation */}
+        <div className="p-5 rounded-xl border border-border/50 bg-card">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">Operations</p>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { label: "Deal Pipeline", path: "/admin/pipeline", icon: GitBranch, count: apps.length, color: "text-blue-600" },
+              { label: "Applications", path: "/admin/applications", icon: FileText, count: submittedApps.length, color: "text-orange-500" },
+              { label: "Users", path: "/admin/users", icon: Users, count: users.length, color: "text-purple-600" },
+              { label: "Providers", path: "/admin/providers", icon: Building2, color: "text-foreground" },
+              { label: "Revenue", path: "/admin/revenue", icon: TrendingUp, color: "text-green-600" },
+              { label: "Benchmarks", path: "/admin/benchmarks", icon: BarChart3, color: "text-amber-600" },
+            ].map((item, i) => (
+              <Link key={i} to={item.path}
+                className="flex items-center gap-2.5 p-3 rounded-lg border border-border/40 hover:border-border hover:bg-secondary/30 transition-all group">
+                <item.icon size={13} className={item.color} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold truncate">{item.label}</p>
+                  {item.count !== undefined && <p className="text-[10px] text-muted-foreground/40">{item.count} total</p>}
                 </div>
-              ))}
-            </div>
+                <ArrowRight size={10} className="text-muted-foreground/20 group-hover:text-muted-foreground/50 transition-colors" />
+              </Link>
+            ))}
           </div>
-        </motion.div>
-      )}
-
-      {/* DEALS TAB */}
-      {activeTab === "deals" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Top deals */}
-            <div className="p-5 rounded-xl border border-border/50 bg-card">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">Top Performing Deals</p>
-              <div className="space-y-3">
-                {topDeals.map((deal, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-secondary/40 border border-border/20">
-                    <div>
-                      <p className="text-sm font-semibold">{deal[0]}</p>
-                      <p className="text-[11px] text-muted-foreground/50">{deal[1]} applications</p>
-                    </div>
-                    <p className="text-lg font-black text-green-600">{deal[1]}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Deal status */}
-            <div className="p-5 rounded-xl border border-border/50 bg-card">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">Deal Status</p>
-              <div className="space-y-3">
-                {[
-                  { label: "Active", val: activeDeals.length, color: "text-green-600" },
-                  { label: "Waitlist", val: waitlistDeals.length, color: "text-blue-600" },
-                  { label: "Pending", val: newAppsRange, color: "text-orange-500" },
-                ].map((row, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-secondary/40 border border-border/20">
-                    <p className="text-sm font-medium text-muted-foreground">{row.label}</p>
-                    <p className={`text-xl font-black tabular-nums ${row.color}`}>{row.val}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Quick links */}
-          <div className="p-5 rounded-xl border border-border/50 bg-card">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">Manage Deals</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {[
-                { label: "View Pipeline", path: "/admin/pipeline", icon: BarChart3 },
-                { label: "Applications", path: "/admin/applications", icon: FileText },
-                { label: "Providers", path: "/admin/providers", icon: Users },
-                { label: "Benchmarks", path: "/admin/benchmarks", icon: TrendingUp },
-              ].map((action, i) => (
-                <Link
-                  key={i}
-                  to={action.path}
-                  className="p-4 rounded-lg border border-border/50 hover:border-border text-center transition-all group"
-                >
-                  <action.icon size={16} className="mx-auto mb-2 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  <p className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">{action.label}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      )}
+        </div>
+      </div>
     </div>
   );
 }
