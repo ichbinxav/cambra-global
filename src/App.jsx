@@ -114,7 +114,7 @@ const AuthenticatedApp = () => {
         </Route>
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
-          <Route path="/admin" element={<AdminOverview />} />
+          <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/users/:id" element={<AdminUserDetail />} />
           <Route path="/admin/applications" element={<AdminApplications />} />
