@@ -32,8 +32,8 @@ export default function Dashboard() {
       setUserEmail(u.email);
 
       const [r, b, uds] = await Promise.all([
-        base44.entities.AnalyzerResult.list("-created_date", 10),
-        base44.entities.Brand.list(),
+        base44.entities.AnalyzerResult.filter({ created_by: u.email }, "-created_date", 10),
+        base44.entities.Brand.filter({ created_by: u.email }),
         base44.entities.UserDeal.filter({ user_email: u.email }),
       ]);
       setResults(r);
