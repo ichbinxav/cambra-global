@@ -290,11 +290,11 @@ export default function DealModal({ deal, onClose, userDeal, userEmail, onUserDe
                   )}
                 </motion.div>
                 <h2 className="text-xl font-black tracking-tight mb-2">
-                  {deal.phase === "live" ? "Request submitted" : "You're on the list"}
+                  {deal.phase === "live" ? "Application submitted" : "You're on the list"}
                 </h2>
                 <p className="text-sm text-muted-foreground/60 max-w-xs mx-auto leading-relaxed mb-2">
                   {deal.phase === "live"
-                    ? `THE NoDE is submitting your request for preferred ${deal.provider} conditions. You'll receive confirmation by email.`
+                    ? `Your application is now in review. THE NoDE will contact ${deal.provider} and activate your deal. You'll receive an email once confirmed.`
                     : `We'll notify you when preferred ${deal.provider} conditions become available to network members.`
                   }
                 </p>
