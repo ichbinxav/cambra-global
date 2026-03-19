@@ -47,7 +47,7 @@ export default function AdminApplicationDetail({ app, brand, onClose, onStatusCh
         </button>
       </div>
 
-      <div className="p-5 space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+      <div className="p-5 space-y-4 overflow-y-auto max-h-[calc(100vh-160px)]">
         {/* Status update */}
         <div>
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">Status</p>
