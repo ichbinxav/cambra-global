@@ -120,12 +120,14 @@ export default function AdminApplications() {
 
         {/* Detail panel */}
         {selected && (
-          <AdminApplicationDetail
-            app={selected}
-            brand={brands.find(b => b.created_by === selected.user_email)}
-            onClose={() => setSelected(null)}
-            onStatusChange={updateStatus}
-          />
+          <div className="w-96 shrink-0">
+            <AdminApplicationDetail
+              app={selected}
+              brand={brands.find(b => b.created_by === selected.user_email)}
+              onClose={() => setSelected(null)}
+              onStatusChange={updateStatus}
+            />
+          </div>
         )}
       </div>
     </div>
