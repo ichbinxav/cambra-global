@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 // Email 4: Welcome to THE NoDE — triggered when a Brand entity is created (onboarding complete)
 Deno.serve(async (req) => {
