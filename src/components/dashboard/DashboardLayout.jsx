@@ -72,6 +72,14 @@ export default function DashboardLayout() {
               </div>
             </Link>
           )}
+          {(isProvider || isAdmin) && (
+            <Link to="/ProviderPortal">
+              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-blue-600 hover:bg-blue-500/10 transition-colors font-semibold">
+                <Building2 size={14} />
+                Provider Portal
+              </div>
+            </Link>
+          )}
           <Link to="/Landing">
             <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors">
               <Home size={14} />
