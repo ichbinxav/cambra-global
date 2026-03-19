@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 // Handles emails 6, 7, 8 based on "type" param passed by automation function_args
 // Email 6: Analyzer follow-up (D+2) — users who ran analyzer but have no active deals
