@@ -8,7 +8,6 @@ import {
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
-  { path: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { path: "/admin/users", label: "Users & Companies", icon: Users },
   { path: "/admin/applications", label: "Deal Applications", icon: FileText },
   { path: "/admin/pipeline", label: "Pipeline", icon: GitBranch },
