@@ -117,7 +117,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Overlay */}
-      {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <div className="fixed inset-0 z-[60] bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* Main */}
       <div className="flex-1 lg:ml-56 min-h-screen flex flex-col">
