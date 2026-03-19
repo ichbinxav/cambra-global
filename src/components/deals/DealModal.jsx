@@ -37,37 +37,54 @@ export default function DealModal({ deal, onClose, userDeal, userEmail, onUserDe
       const now = new Date().toISOString().split("T")[0];
       const endDate = new Date();
       endDate.setFullYear(endDate.getFullYear() + 1);
-      const newStatus = deal.phase === "live" ? "active" : "waitlist";
+      const newStatus = deal.phase === "live" ? "pending" : "waitlist";
 
+      // Create or update UserDeal
+      let uDeal;
       if (userDeal) {
-        const updated = await base44.entities.UserDeal.update(userDeal.id, {
+        uDeal = await base44.entities.UserDeal.update(userDeal.id, {
           status: newStatus,
-          start_date: newStatus === "active" ? now : null,
-          end_date: newStatus === "active" ? endDate.toISOString().split("T")[0] : null,
+          start_date: null,
+          end_date: null,
         });
-        onUserDealChange(updated);
       } else {
-        const created = await base44.entities.UserDeal.create({
+        uDeal = await base44.entities.UserDeal.create({
           user_email: userEmail,
           deal_id: deal.id,
           deal_name: deal.title,
           provider: deal.provider,
           category: deal.category,
           status: newStatus,
-          start_date: newStatus === "active" ? now : null,
-          end_date: newStatus === "active" ? endDate.toISOString().split("T")[0] : null,
           estimated_savings: deal.estimated_savings,
           is_real_savings: false,
         });
-        onUserDealChange(created);
       }
+      onUserDealChange(uDeal);
+
+      // Always create a DealApplication so admin can see and process it
+      // (skip if already exists — check not needed since we check userDeal above)
+      if (!userDeal) {
+        await base44.entities.DealApplication.create({
+          user_email: userEmail,
+          deal_id: deal.id,
+          deal_name: deal.title,
+          provider: deal.provider,
+          category: deal.category,
+          deal_mode: deal.mode,
+          status: "submitted",
+          estimated_savings: deal.estimated_savings,
+          activity_log: [{ date: now, action: "Application submitted by user", by: userEmail }],
+        });
+      }
+
       setStep("done");
       toast.success(
         deal.phase === "live"
           ? `${deal.provider} — preferred terms requested. Check your email.`
           : `You've joined the access list for ${deal.provider}.`
       );
-    } catch {
+    } catch (e) {
+      console.error(e);
       toast.error("Something went wrong. Please try again.");
     }
     setLoading(false);
