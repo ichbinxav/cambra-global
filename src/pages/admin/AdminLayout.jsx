@@ -123,8 +123,13 @@ export default function AdminLayout() {
       <div className="flex-1 lg:ml-56 min-h-screen flex flex-col">
         {/* Top bar */}
         <header className="sticky top-0 z-20 h-12 bg-background border-b border-border/40 flex items-center px-5 gap-3">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground">
-            <Menu size={16} />
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setSidebarOpen(true); }}
+            className="lg:hidden text-muted-foreground hover:text-foreground p-2 -ml-2 rounded-lg hover:bg-secondary active:bg-secondary transition-colors cursor-pointer"
+            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+          >
+            <Menu size={20} />
           </button>
           <div className="text-xs text-muted-foreground/50 flex items-center gap-1.5">
             {location.pathname.split("/").filter(Boolean).map((seg, i, arr) => (
