@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
-  LayoutDashboard, Users, FileText, Handshake, Building2,
+  Users, FileText, Handshake, Building2,
   GitBranch, Settings, ChevronRight, Menu, X, LogOut, BarChart2, Sliders
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
