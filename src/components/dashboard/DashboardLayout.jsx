@@ -28,6 +28,7 @@ export default function DashboardLayout() {
   }, [user]);
 
   const isAdmin = user?.role === "admin";
+  const isProvider = user?.role === "provider";
 
   return (
     <div className="min-h-screen flex bg-background font-inter">
