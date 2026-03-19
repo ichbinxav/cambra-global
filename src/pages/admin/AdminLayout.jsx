@@ -2,19 +2,20 @@ import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
-  Users, FileText, Handshake, Building2,
-  GitBranch, Settings, ChevronRight, Menu, X, LogOut, BarChart2, Sliders
+  LayoutDashboard, Users, Zap, Building2, FileCheck,
+  CheckSquare, GitBranch, ChevronRight, Menu, X, LogOut, Activity
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
-  { path: "/admin/users", label: "Users & Companies", icon: Users },
-  { path: "/admin/applications", label: "Deal Applications", icon: FileText },
-  { path: "/admin/pipeline", label: "Pipeline", icon: GitBranch },
-  { path: "/admin/deals", label: "Deals", icon: Handshake },
+  { path: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
+  { path: "/admin/users", label: "Brands", icon: Users },
+  { path: "/admin/deals", label: "Deals", icon: Zap },
   { path: "/admin/providers", label: "Providers", icon: Building2 },
-  { path: "/admin/revenue", label: "Revenue", icon: BarChart2 },
-  { path: "/admin/benchmarks", label: "Benchmarks", icon: Sliders },
+  { path: "/admin/contracts", label: "Contracts", icon: FileCheck },
+  { path: "/admin/tasks", label: "Tasks", icon: CheckSquare },
+  { path: "/admin/applications", label: "Applications", icon: GitBranch },
+  { path: "/admin/benchmarks", label: "Intelligence", icon: Activity },
 ];
 
 export default function AdminLayout() {
@@ -58,12 +59,12 @@ export default function AdminLayout() {
     );
   }
 
-  const isActive = (path, exact) => exact ? location.pathname === path : location.pathname.startsWith(path);
+  const isActive = (path, exact) => exact ? location.pathname === path : location.pathname.startsWith(path) && path !== "/admin";
 
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-56 bg-foreground text-background flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 w-52 bg-foreground text-background flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
         <div className="px-5 py-5 border-b border-background/10">
           <div className="flex items-center justify-between">
             <div>
@@ -83,7 +84,7 @@ export default function AdminLayout() {
               to={item.path}
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                isActive(item.path, item.exact)
+                item.exact ? location.pathname === item.path : location.pathname.startsWith(item.path)
                   ? "bg-background/10 text-background"
                   : "text-background/40 hover:text-background hover:bg-background/5"
               }`}
@@ -117,8 +118,7 @@ export default function AdminLayout() {
       {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* Main */}
-      <div className="flex-1 lg:ml-56 min-h-screen flex flex-col">
-        {/* Top bar */}
+      <div className="flex-1 lg:ml-52 min-h-screen flex flex-col">
         <header className="sticky top-0 z-20 h-12 bg-background border-b border-border/40 flex items-center px-5 gap-3">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground">
             <Menu size={16} />
