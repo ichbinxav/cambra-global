@@ -143,7 +143,7 @@ export default function AdminPipeline() {
 
         {/* Detail panel */}
         {selected && (
-          <div className="w-1/2 shrink-0">
+          <div className="w-80 shrink-0">
             <AdminApplicationDetail
               app={selected}
               brand={getBrand(selected.user_email)}
