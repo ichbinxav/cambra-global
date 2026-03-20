@@ -159,6 +159,12 @@ export default function AdminLayout() {
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <a
+              href="/Dashboard"
+              className="h-8 px-3 rounded-lg border border-border/40 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            >
+              Volver a la app
+            </a>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 border border-red-500/20 font-semibold">Admin</span>
           </div>
         </header>
