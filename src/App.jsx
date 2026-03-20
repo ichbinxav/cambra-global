@@ -38,6 +38,7 @@ import AdminBenchmarks from '@/pages/admin/AdminBenchmarks';
 import AdminContracts from '@/pages/admin/AdminContracts';
 import AdminIntegrations from '@/pages/admin/AdminIntegrations';
 import ProviderPortal from '@/pages/ProviderPortal';
+import LoginRedirect from '@/pages/LoginRedirect';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoadingAuth } = useAuth();
@@ -108,6 +109,7 @@ const AuthenticatedApp = () => {
         <Route path="/Results" element={<Results />} />
         <Route path="/Privacy" element={<Privacy />} />
         <Route path="/Terms" element={<Terms />} />
+        <Route path="/LoginRedirect" element={<LoginRedirect />} />
 
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="/Dashboard" element={<Dashboard />} />

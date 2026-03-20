@@ -140,13 +140,15 @@ export default function HeroSection() {
                       </Button>
                     </motion.div>
                   </Link>
-                  <motion.button
+                  <motion.a
                     whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                    onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                    href="/LoginRedirect"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2"
                   >
                     Sign in first <ArrowRight className="h-4 w-4" />
-                  </motion.button>
+                  </motion.a>
                 </>
               )}
             </motion.div>
@@ -242,12 +244,14 @@ export default function HeroSection() {
                     </button>
                   </Link>
                 ) : (
-                  <button
-                    onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                  <a
+                    href="/LoginRedirect"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5"
                   >
                     Sign in <ArrowRight size={11} />
-                  </button>
+                  </a>
                 )}
               </motion.div>
             </div>

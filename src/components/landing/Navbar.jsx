@@ -66,12 +66,14 @@ export default function Navbar() {
             </Link>
           ) : (
             <>
-              <button
-                onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                className="h-8 px-5 text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors rounded-full shadow-sm"
+              <a
+                href="/LoginRedirect"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-8 px-5 text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors rounded-full shadow-sm inline-flex items-center justify-center"
               >
                 Sign in
-              </button>
+              </a>
               <Link to="/Analyzer">
                 <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm bg-green-600 hover:bg-green-700 text-white">
                   Check Savings
@@ -115,12 +117,15 @@ export default function Navbar() {
               </Link>
             ) : (
               <>
-                <button
-                  onClick={() => { setOpen(false); base44.auth.redirectToLogin(window.location.href); }}
-                  className="w-full h-12 rounded-full text-sm border border-border/70 hover:bg-secondary transition-colors font-medium"
+                <a
+                  href="/LoginRedirect"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setOpen(false)}
+                  className="w-full h-12 rounded-full text-sm border border-border/70 hover:bg-secondary transition-colors font-medium flex items-center justify-center"
                 >
                   Sign in with Google / Apple
-                </button>
+                </a>
                 <Link to="/Onboarding" onClick={() => setOpen(false)}>
                   <Button variant="outline" className="w-full h-12 rounded-full text-sm">Join THE NoDE</Button>
                 </Link>
