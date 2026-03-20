@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,34 @@ export default function Account() {
               <span className="inline-flex items-center text-[10px] tracking-[0.1em] uppercase px-2.5 py-1 rounded-full bg-secondary text-muted-foreground">
                 {user?.role || "Member"}
               </span>
+            </div>
+          </div>
+        </Section>
+
+        <Section icon={Shield} title="Access">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-muted-foreground/60">Permisos</p>
+                <p className="text-sm font-semibold">{user?.role || 'member'}</p>
+              </div>
+              {user?.role !== 'admin' ? (
+                <Button size="sm" className="h-8 rounded-full px-4 text-xs font-semibold" onClick={makeAdmin}>
+                  Hacerme administrador
+                </Button>
+              ) : (
+                <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/10 text-green-600 border border-green-500/20 font-semibold">Admin activo</span>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-muted-foreground/60">Portal de Proveedor</p>
+                <p className="text-[11px] text-muted-foreground/50">Crea tu perfil con tu email como contacto</p>
+              </div>
+              <Button variant="outline" size="sm" className="h-8 rounded-full px-4 text-xs" onClick={createProvider}>
+                Crear mi proveedor
+              </Button>
             </div>
           </div>
         </Section>
