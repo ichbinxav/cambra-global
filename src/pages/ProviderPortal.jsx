@@ -140,7 +140,11 @@ export default function ProviderPortal() {
       setUser(u);
       // Find provider by matching contact email or creator email
       const providers = await base44.entities.Provider.list();
-      const p = providers.find(pr => pr.contact_email === u.email || pr.created_by === u.email);
+      let p = providers.find(pr => pr.contact_email === u.email || pr.created_by === u.email);
+      // Admins: if no direct provider match, default to the first available provider
+      if (!p && u.role === "admin" && providers.length > 0) {
+        p = providers[0];
+      }
       if (!p) { setNotProvider(true); setLoading(false); return; }
       setProvider(p);
       await loadData(u, p);
