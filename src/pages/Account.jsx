@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +23,28 @@ export default function Account() {
   const [user, setUser] = useState(null);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const makeAdmin = async () => {
+    const res = await base44.functions.invoke('promoteMeToAdmin', {});
+    if (res?.data?.success) {
+      const u = await base44.auth.me();
+      setUser(u);
+      toast.success('Ahora tienes rol administrador');
+    } else {
+      toast.error(res?.data?.error || 'No se pudo otorgar el rol admin');
+    }
+  };
+
+  const createProvider = async () => {
+    const res = await base44.functions.invoke('createMyProvider', {});
+    if (res?.data?.provider) {
+      toast.success(res?.data?.existed ? 'Ya tienes un proveedor vinculado' : 'Proveedor creado');
+      navigate('/ProviderPortal');
+    } else {
+      toast.error(res?.data?.error || 'No se pudo crear el proveedor');
+    }
+  };
 
   useEffect(() => {
     Promise.all([base44.auth.me(), base44.entities.Brand.list("-created_date", 1)]).then(([u, b]) => {
@@ -71,6 +94,34 @@ export default function Account() {
               <span className="inline-flex items-center text-[10px] tracking-[0.1em] uppercase px-2.5 py-1 rounded-full bg-secondary text-muted-foreground">
                 {user?.role || "Member"}
               </span>
+            </div>
+          </div>
+        </Section>
+
+        <Section icon={Shield} title="Access">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-muted-foreground/60">Permisos</p>
+                <p className="text-sm font-semibold">{user?.role || 'member'}</p>
+              </div>
+              {user?.role !== 'admin' ? (
+                <Button size="sm" className="h-8 rounded-full px-4 text-xs font-semibold" onClick={makeAdmin}>
+                  Hacerme administrador
+                </Button>
+              ) : (
+                <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/10 text-green-600 border border-green-500/20 font-semibold">Admin activo</span>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-muted-foreground/60">Portal de Proveedor</p>
+                <p className="text-[11px] text-muted-foreground/50">Crea tu perfil con tu email como contacto</p>
+              </div>
+              <Button variant="outline" size="sm" className="h-8 rounded-full px-4 text-xs" onClick={createProvider}>
+                Crear mi proveedor
+              </Button>
             </div>
           </div>
         </Section>
