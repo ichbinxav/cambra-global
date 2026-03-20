@@ -95,6 +95,7 @@ const AuthenticatedApp = () => {
     // Don't redirect for auth_required — let the app show public pages
   }
 
+  console.log('AuthContext snapshot →', { isLoadingPublicSettings, isLoadingAuth, authError });
   return (
     <>
       <Routes>
