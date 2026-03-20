@@ -77,12 +77,14 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
+    console.log('Loading state →', { isLoadingPublicSettings, isLoadingAuth, authError });
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-background">
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-background" role="status" aria-live="polite">
         <div
-          className="text-4xl text-foreground/30 select-none"
+          className="text-5xl text-foreground select-none"
           style={{ animation: "spin 4s linear infinite" }}
         >✱</div>
+        <p className="mt-3 text-sm text-foreground/70">Cargando…</p>
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );
