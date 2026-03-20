@@ -86,11 +86,26 @@ const AdminRoute = ({ children }) => {
     }
   }, [isAuthenticated, isLoadingAuth]);
 
-  if (isLoadingAuth || loadingUser) return null;
-  if (!isAuthenticated) {
-    base44.auth.redirectToLogin(window.location.href);
-    return null;
+  if (isLoadingAuth || loadingUser) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
+      </div>
+    );
   }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <h1 className="text-lg font-bold mb-2">Solo administradores</h1>
+          <p className="text-sm text-muted-foreground mb-4">Inicia sesión para continuar.</p>
+          <a href="/auth/start" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold">Iniciar sesión</a>
+        </div>
+      </div>
+    );
+  }
+
   if (user?.role !== "admin") {
     return <Navigate to="/Dashboard" replace />;
   }
