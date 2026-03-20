@@ -67,7 +67,7 @@ export default function Navbar() {
           ) : (
             <>
               <a
-                href="/LoginRedirect"
+                href="/auth/start"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-8 px-5 text-sm font-bold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors rounded-full shadow-sm inline-flex items-center justify-center"
@@ -118,7 +118,7 @@ export default function Navbar() {
             ) : (
               <>
                 <a
-                  href="/LoginRedirect"
+                  href="/auth/start"
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setOpen(false)}

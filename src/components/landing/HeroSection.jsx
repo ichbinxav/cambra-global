@@ -142,7 +142,7 @@ export default function HeroSection() {
                   </Link>
                   <motion.a
                     whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                    href="/LoginRedirect"
+                    href="/auth/start"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2"
@@ -245,7 +245,7 @@ export default function HeroSection() {
                   </Link>
                 ) : (
                   <a
-                    href="/LoginRedirect"
+                    href="/auth/start"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5"
