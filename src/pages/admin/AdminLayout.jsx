@@ -44,8 +44,22 @@ export default function AdminLayout() {
   }
 
   if (!isAuthenticated) {
-    base44.auth.redirectToLogin(window.location.href);
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="text-center max-w-sm">
+          <h1 className="text-lg font-bold mb-2">Se requiere inicio de sesión</h1>
+          <p className="text-sm text-muted-foreground mb-4">Abre la ventana de login y vuelve automáticamente.</p>
+          <a
+            href="/auth/start"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold"
+          >
+            Iniciar sesión
+          </a>
+        </div>
+      </div>
+    );
   }
 
   if (user?.role !== "admin") {
