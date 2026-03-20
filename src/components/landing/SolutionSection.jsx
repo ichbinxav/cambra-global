@@ -167,13 +167,15 @@ export default function SolutionSection() {
               </motion.button>
             </Link>
           ) : (
-            <motion.button
+            <motion.a
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-              onClick={() => base44.auth.redirectToLogin(window.location.href)}
+              href="/auth/start"
+              target="_blank"
+              rel="noopener noreferrer"
               className="h-12 px-8 rounded-full bg-foreground text-background text-sm font-bold inline-flex items-center gap-2 hover:opacity-90 transition-opacity shadow-sm"
             >
               Sign in to start <ArrowRight size={14} />
-            </motion.button>
+            </motion.a>
           )}
         </motion.div>
 

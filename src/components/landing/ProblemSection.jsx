@@ -133,12 +133,14 @@ export default function ProblemSection() {
                   </button>
                 </Link>
               ) : (
-                <button
-                  onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                <a
+                  href="/auth/start"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700 hover:gap-3 transition-all"
                 >
                   Sign in to analyze <ArrowRight size={13} />
-                </button>
+                </a>
               )}
             </motion.div>
           </div>

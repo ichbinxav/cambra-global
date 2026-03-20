@@ -47,14 +47,15 @@ export default function AnalyzerCTA() {
                 </Button>
               </Link>
             ) : (
-              <Button
-                size="lg"
-                className="h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm"
-                onClick={() => base44.auth.redirectToLogin(window.location.href)}
+              <a
+                href="/auth/start"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm bg-foreground text-background hover:opacity-90 transition-opacity"
               >
                 Sign in to Analyze
                 <ArrowRight className="h-4 w-4" />
-              </Button>
+              </a>
             )}
             <p className="mt-4 text-[11px] text-muted-foreground/40">2 minutes · Real benchmarks · No commitment</p>
           </motion.div>
