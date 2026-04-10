@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import MoneySlider from "@/components/ui/MoneySlider.jsx";
+import { Slider } from "@/components/ui/slider";
 import { ArrowRight, ArrowLeft, Upload, X, CheckCircle2, CreditCard, Truck, Package, BarChart3, Building2, MapPin } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import DataIngestionStep from "@/components/analyzer/DataIngestionStep";
@@ -159,7 +159,7 @@ export default function Analyzer() {
         <Label className="text-sm font-medium text-foreground">{label}</Label>
         <span className="text-lg font-black tabular-nums">{fmt(value)}</span>
       </div>
-      <MoneySlider value={value} onChange={onChange} min={min} max={max} step={s} format={fmt} />
+      <Slider value={[value]} onValueChange={v => onChange(v[0])} min={min} max={max} step={s} className="py-1" />
       <div className="flex justify-between text-[11px] text-muted-foreground/40">
         <span>{fmt(min)}</span><span>{fmt(max)}</span>
       </div>

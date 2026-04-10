@@ -5,11 +5,10 @@ import { Menu, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
-
 const NAV_PUBLIC = [
   { label: "How it works", href: "#how" },
   { label: "Analyzer", href: "/Analyzer" },
-  { label: "Join THE NODE", href: "/Onboarding" },
+  { label: "Join THE NoDE", href: "/Onboarding" },
 ];
 
 const NAV_MEMBER = [
@@ -18,7 +17,7 @@ const NAV_MEMBER = [
   { label: "Deals", href: "/Deals" },
   { label: "Insights", href: "/Insights" },
   { label: "Network", href: "/Network" },
-  { label: "Join THE NODE", href: "/Onboarding" },
+  { label: "Join THE NoDE", href: "/Onboarding" },
 ];
 
 export default function Navbar() {
@@ -34,23 +33,23 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 bg-brand-navy text-brand-ivory`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${scrolled ? "bg-background/95 backdrop-blur-2xl border-b border-border/40 shadow-sm" : "bg-background/80 backdrop-blur-md border-b border-border/20"}`}>
       <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
 
         {/* Logo */}
-        <Link to="/" className="flex-shrink-0 inline-flex items-center gap-2" aria-label="THE NODE home">
-          <span className="text-brand-ivory font-black tracking-[-0.04em] text-base">THE NODE</span>
+        <Link to="/" className="text-sm font-black tracking-tight flex-shrink-0">
+          THE NoDE
         </Link>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
           {NAV.map(item => (
             item.href.startsWith("/") ? (
-              <Link key={item.label} to={item.href} className="text-sm text-brand-ivory/70 hover:text-brand-ivory transition-colors">
+              <Link key={item.label} to={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 {item.label}
               </Link>
             ) : (
-              <a key={item.label} href={item.href} className="text-sm text-brand-ivory/70 hover:text-brand-ivory transition-colors">
+              <a key={item.label} href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 {item.label}
               </a>
             )
@@ -86,7 +85,7 @@ export default function Navbar() {
 
         {/* Mobile toggle */}
         <button
-          className="md:hidden p-2 text-brand-ivory/70 hover:text-brand-ivory transition-colors"
+          className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
           onClick={() => setOpen(v => !v)}
           aria-label="Toggle menu"
         >
@@ -96,14 +95,14 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t border-brand-ivory/10 bg-brand-navy px-5 py-4 space-y-1 overflow-y-auto max-h-[80vh]">
+        <div className="md:hidden border-t border-border/40 bg-background/98 backdrop-blur-2xl px-5 py-4 space-y-1 overflow-y-auto max-h-[80vh]">
           {NAV.map(item => (
             item.href.startsWith("/") ? (
-              <Link key={item.label} to={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-brand-ivory/80 hover:text-brand-ivory border-b border-brand-ivory/10 last:border-0">
+              <Link key={item.label} to={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground border-b border-border/30 last:border-0">
                 {item.label}
               </Link>
             ) : (
-              <a key={item.label} href={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-brand-ivory/80 hover:text-brand-ivory border-b border-brand-ivory/10 last:border-0">
+              <a key={item.label} href={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground border-b border-border/30 last:border-0">
                 {item.label}
               </a>
             )
@@ -123,7 +122,7 @@ export default function Navbar() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setOpen(false)}
-                  className="w-full h-12 rounded-full text-sm border border-brand-ivory/20 text-brand-ivory/80 hover:bg-white/5 transition-colors font-medium flex items-center justify-center"
+                  className="w-full h-12 rounded-full text-sm border border-border/70 hover:bg-secondary transition-colors font-medium flex items-center justify-center"
                 >
                   Sign in with Google / Apple
                 </a>

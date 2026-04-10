@@ -66,8 +66,6 @@ export default function Results() {
   const [input, setInput] = useState(null);
   const [loading, setLoading] = useState(true);
   const [scoreReport, setScoreReport] = useState(null);
-  const [period, setPeriod] = useState('year');
-  const factor = period === 'year' ? 1 : (1/12);
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("id");
@@ -154,13 +152,9 @@ export default function Results() {
 
           {/* THE BIG NUMBER */}
           <div className="text-[clamp(5rem,18vw,10rem)] font-black tracking-[-0.055em] leading-none mb-2">
-            <AnimatedCounter value={Math.round((result.total_savings || 0) * factor)} prefix="€" duration={2} />
+            <AnimatedCounter value={result.total_savings} prefix="€" duration={2} />
           </div>
-          <p className="text-muted-foreground/50 text-base mb-2">per {period === 'year' ? 'year' : 'month'} across your infrastructure</p>
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <button onClick={() => setPeriod('year')} className={`h-8 px-3 rounded-full text-xs font-semibold border ${period==='year' ? 'bg-foreground text-background' : 'border-border/60 text-muted-foreground hover:text-foreground'}`}>Year</button>
-            <button onClick={() => setPeriod('month')} className={`h-8 px-3 rounded-full text-xs font-semibold border ${period==='month' ? 'bg-foreground text-background' : 'border-border/60 text-muted-foreground hover:text-foreground'}`}>Month</button>
-          </div>
+          <p className="text-muted-foreground/50 text-base mb-2">per year across your infrastructure</p>
           <p className="text-muted-foreground/35 text-sm mb-7">Value currently left unoptimized. Most brands your size improve this within the first cycle.</p>
 
           {/* Score pill */}
@@ -258,9 +252,9 @@ export default function Results() {
                 </div>
                 <div className="text-right shrink-0">
                   <p className={`text-2xl font-black tabular-nums ${item.textColor}`}>
-                    €{Math.round(((result[item.key] || 0) * factor)).toLocaleString()}
+                    €{(result[item.key] || 0).toLocaleString()}
                   </p>
-                  <p className="text-[10px] text-muted-foreground/40">/{period === 'year' ? 'year' : 'month'}</p>
+                  <p className="text-[10px] text-muted-foreground/40">/year</p>
                 </div>
               </div>
             ))}
@@ -268,10 +262,10 @@ export default function Results() {
             {/* Total row */}
             <div className="flex items-center justify-between p-5 rounded-xl bg-foreground text-background">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Total {period === 'year' ? 'annual' : 'monthly'} potential</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Total annual potential</p>
                 <p className="text-2xl font-black tracking-tight tabular-nums">
-                  €{Math.round(((result.total_savings || 0) * factor)).toLocaleString()}
-                  <span className="text-base font-normal opacity-35 ml-1">/{period === 'year' ? 'yr' : 'mo'}</span>
+                  €{(result.total_savings || 0).toLocaleString()}
+                  <span className="text-base font-normal opacity-35 ml-1">/yr</span>
                 </p>
               </div>
               <TrendingDown size={22} className="opacity-15" />

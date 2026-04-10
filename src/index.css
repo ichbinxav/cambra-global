@@ -34,12 +34,6 @@
     --node-blue-subtle: 215 100% 96%;
     --node-green: 142 76% 36%;
     --node-orange: 25 95% 53%;
-
-    /* THE NODE brand tokens */
-    --brand-navy: 220 26% 18%; /* #1B2433 approx */
-    --brand-ivory: 48 29% 96%; /* warm off-white */
-    --brand-graphite: 220 10% 20%;
-    --brand-metal: 210 6% 60%;
   }
 
   .dark {
@@ -91,12 +85,6 @@
 .bg-node-blue { background: hsl(var(--node-blue)); }
 .bg-node-blue-subtle { background: hsl(var(--node-blue-subtle)); }
 .border-node-blue { border-color: hsl(var(--node-blue)); }
-
-/* THE NODE utilities */
-.text-brand-navy { color: hsl(var(--brand-navy)); }
-.bg-brand-navy { background: hsl(var(--brand-navy)); }
-.text-brand-ivory { color: hsl(var(--brand-ivory)); }
-.bg-brand-ivory { background: hsl(var(--brand-ivory)); }
 
 /* Premium gradient text */
 .gradient-text {
