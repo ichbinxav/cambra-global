@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import BrandLogo from "@/components/shared/BrandLogo.jsx";
 
 const NAV_PUBLIC = [
   { label: "How it works", href: "#how" },
@@ -37,8 +38,8 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
 
         {/* Logo */}
-        <Link to="/" className="text-sm font-black tracking-tight flex-shrink-0">
-          THE NoDE
+        <Link to="/" className="flex-shrink-0 inline-flex items-center gap-2" aria-label="THE NODE home">
+          <BrandLogo variant="wordmark" className="h-6" />
         </Link>
 
         {/* Desktop nav */}
