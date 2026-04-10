@@ -128,15 +128,15 @@ export default function Dashboard() {
           <div>
             {/* lazy import avoided; small component inline to keep simple */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-              <div className="p-4 rounded-xl border bg-blue-500/[0.05] border-blue-500/15">
+              <div className="p-4 rounded-xl glass ring-1 ring-blue-500/10 hover:translate-y-0.5 transition-transform">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Identified savings</p>
                 <p className="text-xl font-black tabular-nums text-blue-600">€{Math.round(econ.identified).toLocaleString()}/yr</p>
               </div>
-              <div className="p-4 rounded-xl border bg-purple-500/[0.05] border-purple-500/15">
+              <div className="p-4 rounded-xl glass ring-1 ring-purple-500/10 hover:translate-y-0.5 transition-transform">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Activated savings</p>
                 <p className="text-xl font-black tabular-nums text-purple-600">€{Math.round(econ.activated).toLocaleString()}/yr</p>
               </div>
-              <div className="p-4 rounded-xl border bg-green-500/[0.05] border-green-500/15">
+              <div className="p-4 rounded-xl glass ring-1 ring-green-500/10 hover:translate-y-0.5 transition-transform">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Realized savings</p>
                 <p className="text-xl font-black tabular-nums text-green-600">€{Math.round(econ.realized).toLocaleString()}/yr</p>
               </div>
