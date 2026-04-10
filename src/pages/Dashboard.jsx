@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [userDeals, setUserDeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState(null);
+  const [econ, setEcon] = useState({ identified: 0, activated: 0, realized: 0 });
 
   // Initial load — fetch user once, then data
   useEffect(() => {
@@ -39,6 +40,18 @@ export default function Dashboard() {
       setResults(r);
       setBrands(b);
       setUserDeals(uds);
+      // After basics, if brand exists fetch economics
+      if (b?.length) {
+        try {
+          const res = await base44.functions.invoke('getBrandSavings', { brandId: b[0].id });
+          const d = res?.data || {};
+          setEcon({
+            identified: Number(d?.identified?.yearly || 0),
+            activated: Number(d?.activated?.yearly || 0),
+            realized: Number(d?.realized?.yearly || 0),
+          });
+        } catch (e) { console.warn('getBrandSavings failed', e?.message || e); }
+      }
       setLoading(false);
     };
 
@@ -107,6 +120,29 @@ export default function Dashboard() {
             New Analysis <ArrowRight className="h-3.5 w-3.5" />
           </Button>
         </Link>
+      </div>
+
+      {/* Economics strip */}
+      <div className="mt-1">
+        {econ && (
+          <div>
+            {/* lazy import avoided; small component inline to keep simple */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+              <div className="p-4 rounded-xl border bg-blue-500/[0.05] border-blue-500/15">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Identified savings</p>
+                <p className="text-xl font-black tabular-nums text-blue-600">€{Math.round(econ.identified).toLocaleString()}/yr</p>
+              </div>
+              <div className="p-4 rounded-xl border bg-purple-500/[0.05] border-purple-500/15">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Activated savings</p>
+                <p className="text-xl font-black tabular-nums text-purple-600">€{Math.round(econ.activated).toLocaleString()}/yr</p>
+              </div>
+              <div className="p-4 rounded-xl border bg-green-500/[0.05] border-green-500/15">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Realized savings</p>
+                <p className="text-xl font-black tabular-nums text-green-600">€{Math.round(econ.realized).toLocaleString()}/yr</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {!latest ? (

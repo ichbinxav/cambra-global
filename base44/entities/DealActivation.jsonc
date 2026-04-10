@@ -1,0 +1,50 @@
+{
+  "name": "DealActivation",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "deal_id": {
+      "type": "string"
+    },
+    "deal_name": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "estimated_savings_yearly": {
+      "type": "number"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "activated_savings_yearly": {
+      "type": "number"
+    },
+    "potential_savings_yearly": {
+      "type": "number"
+    },
+    "realized_savings_monthly": {
+      "type": "number"
+    },
+    "realized_savings_yearly": {
+      "type": "number"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "deal_id",
+    "deal_name",
+    "estimated_savings_yearly",
+    "activated_at"
+  ]
+}

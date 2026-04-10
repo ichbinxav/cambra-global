@@ -1,0 +1,32 @@
+{
+  "name": "BrandSavings",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "result_id": {
+      "type": "string"
+    },
+    "estimated_current_cost_monthly": {
+      "type": "number"
+    },
+    "estimated_optimized_cost_monthly": {
+      "type": "number"
+    },
+    "estimated_savings_monthly": {
+      "type": "number"
+    },
+    "estimated_savings_yearly": {
+      "type": "number"
+    },
+    "computed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "brand_id",
+    "estimated_savings_yearly"
+  ]
+}

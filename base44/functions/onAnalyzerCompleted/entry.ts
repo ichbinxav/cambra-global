@@ -20,6 +20,46 @@ Deno.serve(async (req) => {
 
   if (!total) return Response.json({ ok: true });
 
+  // ——— Savings tracking: persist BrandSavings from AnalyzerResult + Input ———
+  try {
+    const inputId = data.input_id;
+    let monthlyRevenue = 0; let monthlyShipments = 0; let shippingMonthlyCost = 0; let saasMonthly = 0;
+    if (inputId) {
+      const inputs = await base44.asServiceRole.entities.AnalyzerInput.filter({ id: inputId });
+      if (inputs?.length) {
+        monthlyRevenue = Number(inputs[0].monthly_revenue || 0);
+        monthlyShipments = Number(inputs[0].monthly_shipments || 0);
+        shippingMonthlyCost = Number(inputs[0].monthly_shipping_cost || 0);
+        saasMonthly = Number(inputs[0].total_saas_spend || 0);
+      }
+    }
+    const d = data.details || {};
+    const payCur = Number(d.payment_current_rate ?? 0);
+    const payOpt = Number(d.payment_optimal_rate ?? data.payment_benchmark ?? 0);
+    const shipCurPer = Number(d.shipping_current_avg ?? (monthlyShipments ? shippingMonthlyCost / monthlyShipments : 0));
+    const shipOptPer = Number(d.shipping_optimal_avg ?? 0);
+    const saasCur = Number(d.saas_current_total ?? saasMonthly);
+    const saasOpt = Number(d.saas_optimal_total ?? saasMonthly);
+
+    const currentMonthly = (monthlyRevenue * (payCur / 100)) + (shipCurPer * monthlyShipments) + saasCur;
+    const optimizedMonthly = (monthlyRevenue * (payOpt / 100)) + (shipOptPer * monthlyShipments) + saasOpt;
+    const savingsMonthly = Math.max(0, currentMonthly - optimizedMonthly);
+    const savingsYearly = savingsMonthly * 12;
+
+    const brandId = data.brand_id || null;
+    await base44.asServiceRole.entities.BrandSavings.create({
+      brand_id: brandId || "",
+      result_id: data.id,
+      estimated_current_cost_monthly: Number(currentMonthly.toFixed(2)),
+      estimated_optimized_cost_monthly: Number(optimizedMonthly.toFixed(2)),
+      estimated_savings_monthly: Number(savingsMonthly.toFixed(2)),
+      estimated_savings_yearly: Number(savingsYearly.toFixed(2)),
+      computed_at: new Date().toISOString()
+    });
+  } catch (e) {
+    console.warn('BrandSavings persist failed:', e?.message || e);
+  }
+
   await base44.asServiceRole.integrations.Core.SendEmail({
     from_name: "THE NoDE · Analyzer",
     to: userEmail,

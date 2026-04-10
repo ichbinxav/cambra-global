@@ -61,7 +61,33 @@ Deno.serve(async (req) => {
     });
   }
 
-  // 3. Send activation email to user
+  // 3. Create DealActivation record for provider lead & tracking
+  try {
+    const brands = await base44.asServiceRole.entities.Brand.filter({ created_by: app.user_email });
+    const brandId = brands?.[0]?.id || null;
+    const providers = await base44.asServiceRole.entities.Provider.filter({ name: app.provider });
+    const providerId = providers?.[0]?.id || null;
+    const estYear = Number(app.estimated_savings || 0);
+    const nowIso = new Date().toISOString();
+    await base44.asServiceRole.entities.DealActivation.create({
+      brand_id: brandId || "",
+      provider_id: providerId || "",
+      deal_id: app.deal_id,
+      deal_name: app.deal_name,
+      user_email: app.user_email,
+      estimated_savings_yearly: estYear,
+      activated_at: nowIso,
+      activated_savings_yearly: estYear,
+      potential_savings_yearly: estYear,
+      realized_savings_monthly: 0,
+      realized_savings_yearly: 0,
+      last_updated: nowIso
+    });
+  } catch (e) {
+    console.warn('DealActivation persist failed:', e?.message || e);
+  }
+
+  // 4. Send activation email to user
   await base44.asServiceRole.integrations.Core.SendEmail({
     from_name: "THE NoDE",
     to: app.user_email,
