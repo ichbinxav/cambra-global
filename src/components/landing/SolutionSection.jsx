@@ -55,7 +55,7 @@ function PillarCard({ p, index }) {
       <h3 className="text-lg font-bold tracking-tight mb-2">{p.title}</h3>
       <p className="text-sm text-muted-foreground/70 leading-relaxed flex-1 mb-5">{p.desc}</p>
 
-      <div className="pt-5 border-t border-border/30 flex items-end justify-between">
+      <div className="pt-5 border-t border-border/30 flex items_end justify-between">
         <div>
           <motion.p
             className={`text-2xl font-black tracking-tight ${p.color}`}
@@ -150,11 +150,8 @@ export default function SolutionSection() {
         {/* Pillars grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {PILLARS.map((p, i) => (
-            const ref = useRef(null);
-            const inView = useInView(ref, { once: true, margin: "-60px" });
-            return (
-              <PillarCard key={i} p={p} index={i} />
-              ))}
+            <PillarCard key={i} p={p} index={i} />
+          ))}
         </div>
 
         <motion.div

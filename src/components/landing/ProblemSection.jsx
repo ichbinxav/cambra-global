@@ -91,7 +91,7 @@ function ProblemCard({ item, index }) {
       whileHover={{ x: 6, transition: { duration: 0.2 } }}
       className={`p-6 rounded-2xl border ${item.bg}`}
     >
-      <div className="flex items-start justify-between gap-4 mb-4">
+      <div className="flex items-start justify_between gap-4 mb-4">
         <div className="flex items-center gap-3">
           <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${item.bg}`}>
             <item.icon size={15} className={item.color} />
@@ -204,11 +204,8 @@ export default function ProblemSection() {
           {/* Right — animated cards */}
           <div className="space-y-4">
             {PROBLEMS.map((item, i) => (
-              const cardRef = useRef(null);
-              const cardInView = useInView(cardRef, { once: true, margin: "-60px" });
-              return (
-                <ProblemCard key={i} item={item} index={i} />
-                ))}
+              <ProblemCard key={i} item={item} index={i} />
+            ))}
           </div>
         </div>
       </div>

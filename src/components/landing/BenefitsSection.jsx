@@ -119,12 +119,8 @@ export default function BenefitsSection() {
         {/* Benefits grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border/30 rounded-2xl overflow-hidden border border-border/30 mb-16">
           {BENEFITS.map((b, i) => (
-            const IconComp = b.iconOverride ? ICONS[b.iconOverride] : b.icon;
-            const ref = useRef(null);
-            const inView = useInView(ref, { once: true, margin: "-50px" });
-            return (
-              <BenefitTile key={i} b={b} index={i} />
-              ))}
+            <BenefitTile key={i} b={b} index={i} />
+          ))}
         </div>
 
         {/* Editorial block */}

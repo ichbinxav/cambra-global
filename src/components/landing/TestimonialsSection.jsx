@@ -99,7 +99,7 @@ export default function TestimonialsSection() {
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.25 }}
-            className="mt-4 text-muted-foreground text-base max-w-md mx-auto"
+            className="mt-4 text-muted-foreground text-base max-w-md mx_auto"
           >
             Independent commerce brands across Europe using THE NoDE network.
           </motion.p>
@@ -107,11 +107,8 @@ export default function TestimonialsSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {testimonials.map((t, i) => (
-            const ref = useRef(null);
-            const inView = useInView(ref, { once: true, margin: "-60px" });
-            return (
-              <TestimonialCard key={i} t={t} index={i} />
-            ))}
+            <TestimonialCard key={i} t={t} index={i} />
+          ))}
         </div>
 
         {/* Trust bar */}

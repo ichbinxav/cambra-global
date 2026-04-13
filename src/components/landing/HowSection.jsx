@@ -149,11 +149,8 @@ export default function HowSection() {
           {/* Steps */}
           <div className="space-y-3">
             {STEPS.map((step, i) => (
-              const ref = useRef(null);
-              const inView = useInView(ref, { once: true, margin: "-50px" });
-              return (
-                <StepItem key={i} step={step} index={i} />
-              ))}
+              <StepItem key={i} step={step} index={i} />
+            ))}
           </div>
         </div>
       </div>
