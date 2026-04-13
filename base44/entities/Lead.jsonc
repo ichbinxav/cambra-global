@@ -1,0 +1,30 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "whatsapp": {
+      "type": "string"
+    },
+    "benchmark_opt_in": {
+      "type": "boolean",
+      "default": false
+    },
+    "consent": {
+      "type": "boolean",
+      "default": false
+    },
+    "source_page": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "email",
+    "consent"
+  ]
+}

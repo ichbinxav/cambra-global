@@ -11,6 +11,8 @@ import ScoreCard from "@/components/results/ScoreCard";
 import LeadModal from "@/components/results/LeadModal";
 import { computeInfraScore } from "@/lib/scoreEngine";
 import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
+import { Download } from "lucide-react";
+import { jsPDF } from "jspdf";
 
 /* ── static data ─────────────────────────────────────────────── */
 const BREAKDOWN_META = [
@@ -117,6 +119,17 @@ export default function Results() {
     ? scoreReport.impacts.map((imp, i) => ({ ...RECS[i] ?? RECS[0], action: imp.action, points: imp.pointsGain, cat: imp.category }))
     : RECS.map(r => ({ ...r, saving: r.saving.replace("€X", `€${Math.round((result.total_savings || 0) / 3).toLocaleString()}`) }));
 
+  const handleExportPdf = () => {
+    const doc = new jsPDF();
+    const total = result.total_savings || 0;
+    const scoreVal = score;
+    doc.setFontSize(18); doc.text('THE NoDE — Results Summary', 20, 20);
+    doc.setFontSize(12); doc.text(`Total annual savings: €${total.toLocaleString()}`, 20, 32);
+    doc.text(`Infrastructure Score: ${scoreVal}/100`, 20, 40);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 52);
+    doc.save('thenode-results.pdf');
+  };
+
   return (
     <div className="min-h-screen font-inter results-dark">
 
@@ -132,6 +145,9 @@ export default function Results() {
               <Zap size={11} /> Connect tools
             </Button>
           </Link>
+          <Button onClick={handleExportPdf} variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5">
+            <Download size={11} /> Export PDF
+          </Button>
           <Link to="/Dashboard">
             <Button size="sm" className="h-8 rounded-full text-xs px-4 font-semibold">Dashboard</Button>
           </Link>
