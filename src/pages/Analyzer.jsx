@@ -114,6 +114,8 @@ export default function Analyzer() {
 
     const inputData = {
       monthly_revenue: data.monthly_revenue,
+      avg_order_value: data.avg_order_value,
+      intl_pct: data.intl_pct,
       payment_fee_pct: data.payment_fee_pct,
       monthly_shipping_cost: data.monthly_shipping_cost,
       monthly_shipments: data.monthly_shipments,
@@ -145,9 +147,6 @@ export default function Analyzer() {
       saas_savings: savings.saasSavings,
       total_savings: savings.totalSavings,
       infra_score: scoreReport.total,
-      payment_benchmark: savings.benchmarks.payment.rate,
-      shipping_benchmark: savings.benchmarks.shipping.perUnit,
-      saas_benchmark: savings.benchmarks.saas.pct,
       details: savings.details,
     });
     navigate(`/Results?id=${result.id}`);
@@ -254,7 +253,7 @@ export default function Analyzer() {
           <div className="space-y-2">
             <Label className="text-sm font-medium">Sector</Label>
             <div className="grid grid-cols-2 gap-2">
-              {['Moda','Joyería','Cosmética','Otros'].map(s => (
+              {['Fashion','Jewelry','Cosmetics','Other'].map(s => (
                 <button key={s} onClick={() => set('sector', s)}
                   className={`py-3 px-4 rounded-xl border text-sm font-medium text-left transition-all min-h-[48px] ${data.sector === s ? 'border-foreground bg-foreground text-background' : 'border-border/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground'}`}>
                   {s}
@@ -309,7 +308,7 @@ export default function Analyzer() {
           ))}
 
           <SliderField
-            label="% Ventas Internacionales"
+            label="% International Sales"
             value={data.intl_pct}
             onChange={v => set('intl_pct', v)}
             min={0} max={100} s={1}
@@ -557,7 +556,7 @@ export default function Analyzer() {
                 Analyzing...
               </>
             ) : (
-              <>Analizar Infraestructura <ArrowRight className="h-4 w-4" /></>
+              <>Analyze Infrastructure <ArrowRight className="h-4 w-4" /></>
             )}
           </Button>
         )}

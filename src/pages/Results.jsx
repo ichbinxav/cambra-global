@@ -188,13 +188,13 @@ export default function Results() {
                   <span className="text-[9px] text-muted-foreground/50">/100</span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground/70 max-w-[180px]">Eficiencia global de tu infraestructura.</p>
+              <p className="text-sm text-muted-foreground/70 max-w-[180px]">Overall infrastructure efficiency.</p>
             </div>
           </div>
 
           {/* 2. Capital Liberado */}
           <div className="card-dark p-5 rounded-2xl">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Capital Liberado</p>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Released Capital</p>
             <div className="text-4xl font-black tracking-tight">
               <AnimatedCounter value={result.total_savings} prefix="€" duration={2} />
               <span className="text-base text-muted-foreground/40 font-normal">/año</span>
@@ -210,7 +210,7 @@ export default function Results() {
               return (
                 <p className="text-sm text-foreground">
                   {pct !== null ? (
-                    <>Tu marca está gastando un <span className="font-bold">{pct}%</span> más que la media de la red THE NoDE.</>
+                    <>Your brand is spending <span className="font-bold">{pct}%</span> more than THE NoDE network average.</>
                   ) : (
                     <span className="text-muted-foreground/60">Sin datos suficientes para el benchmark.</span>
                   )}
@@ -473,7 +473,7 @@ export default function Results() {
 
         {/* Disclaimer */}
         <div className="mt-10 pt-6 border-t border-[#333] text-center">
-          <p className="text-[11px] text-muted-foreground/60">Este análisis es una estimación basada en el volumen agregado actual de la red THE NoDE.</p>
+          <p className="text-[11px] text-muted-foreground/60">This analysis is an estimate based on the current aggregated volume of THE NoDE network.</p>
         </div>
 
       </div>

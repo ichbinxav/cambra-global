@@ -13,21 +13,21 @@ export default function LeadModal() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log({ email, whatsapp, benchmarkOptIn });
-    alert("¡Gracias! Te contactaremos para desbloquear las tarifas.");
+    alert("Thanks! We’ll contact you to unlock these rates.");
   };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button size="lg" className="rounded-full px-8 text-sm font-bold bg-green-600 hover:bg-green-700">
-          Desbloquear estas tarifas
+          Unlock these rates
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Desbloquear tarifas de THE NoDE</DialogTitle>
+          <DialogTitle>Unlock THE NoDE rates</DialogTitle>
           <DialogDescription>
-            Déjanos tu email o WhatsApp y te guiaremos para activar estas condiciones.
+            Leave your email or WhatsApp and we’ll help you activate these rates.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -41,10 +41,10 @@ export default function LeadModal() {
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox id="opt" checked={benchmarkOptIn} onCheckedChange={v => setBenchmarkOptIn(!!v)} />
-            <Label htmlFor="opt" className="text-sm">Quiero recibir el benchmark detallado de mi sector</Label>
+            <Label htmlFor="opt" className="text-sm">I want to receive the detailed benchmark for my sector</Label>
           </div>
           <div className="flex justify-end">
-            <Button type="submit" className="px-6">Enviar</Button>
+            <Button type="submit" className="px-6">Send</Button>
           </div>
         </form>
       </DialogContent>

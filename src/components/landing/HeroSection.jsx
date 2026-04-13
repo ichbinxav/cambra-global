@@ -119,7 +119,7 @@ export default function HeroSection() {
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                       <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2 bg-green-600 hover:bg-green-700">
-                        Calculate your savings <ArrowRight className="h-4 w-4" />
+                        Analyze Infrastructure <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>
                   </Link>
@@ -136,7 +136,7 @@ export default function HeroSection() {
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                       <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2 bg-green-600 hover:bg-green-700">
-                        Calculate your savings <ArrowRight className="h-4 w-4" />
+                        Analyze Infrastructure <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>
                   </Link>
