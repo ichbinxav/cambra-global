@@ -86,9 +86,9 @@ export default function Analyzer() {
   const fileRef = useRef(null);
 
   const [data, setData] = useState({
-    brand_name: "", category: "", country: "",
+    brand_name: "", category: "", country: "", sector: "",
     monthly_revenue: 50000, monthly_transactions: 500, avg_order_value: 100,
-    dtc_pct: 60, marketplace_pct: 20, wholesale_pct: 15, retail_pct: 5,
+    dtc_pct: 60, marketplace_pct: 20, wholesale_pct: 15, retail_pct: 5, intl_pct: 0,
     payment_provider: "", payment_fee_pct: 2.9,
     shipping_provider: "", monthly_shipping_cost: 3000, monthly_shipments: 400,
     total_saas_spend: 1500,
@@ -249,6 +249,19 @@ export default function Analyzer() {
             </div>
             <p className="text-[11px] text-muted-foreground/50">We benchmark you against similar independent commerce brands.</p>
           </div>
+
+          {/* Sector selector */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Sector</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {['Moda','Joyería','Cosmética','Otros'].map(s => (
+                <button key={s} onClick={() => set('sector', s)}
+                  className={`py-3 px-4 rounded-xl border text-sm font-medium text-left transition-all min-h-[48px] ${data.sector === s ? 'border-foreground bg-foreground text-background' : 'border-border/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground'}`}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       );
 
@@ -294,6 +307,14 @@ export default function Analyzer() {
           ].map(c => (
             <SliderField key={c.k} label={c.l} value={data[c.k]} onChange={v => set(c.k, v)} min={0} max={100} s={5} fmt={v => `${v}%`} />
           ))}
+
+          <SliderField
+            label="% Ventas Internacionales"
+            value={data.intl_pct}
+            onChange={v => set('intl_pct', v)}
+            min={0} max={100} s={1}
+            fmt={v => `${v}%`}
+          />
         </div>
       );
 
@@ -536,7 +557,7 @@ export default function Analyzer() {
                 Analyzing...
               </>
             ) : (
-              <>Run Analysis <ArrowRight className="h-4 w-4" /></>
+              <>Analizar Infraestructura <ArrowRight className="h-4 w-4" /></>
             )}
           </Button>
         )}

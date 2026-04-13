@@ -8,6 +8,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import ScoreCard from "@/components/results/ScoreCard";
+import LeadModal from "@/components/results/LeadModal";
 import { computeInfraScore } from "@/lib/scoreEngine";
 import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
 
@@ -117,7 +118,7 @@ export default function Results() {
     : RECS.map(r => ({ ...r, saving: r.saving.replace("€X", `€${Math.round((result.total_savings || 0) / 3).toLocaleString()}`) }));
 
   return (
-    <div className="min-h-screen bg-background font-inter">
+    <div className="min-h-screen font-inter results-dark">
 
       {/* ── Sticky top bar ── */}
       <div className="sticky top-0 z-20 border-b border-border/40 px-5 py-3.5 flex items-center justify-between bg-background/97 backdrop-blur-2xl">
@@ -165,6 +166,57 @@ export default function Results() {
               <span className="text-sm font-black tabular-nums" style={{ color: scoreColor }}>{score}/100</span>
               <span className="text-xs text-muted-foreground/40">· {scoreLabel}</span>
             </div>
+          </div>
+        </div>
+
+        {/* Summary cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* 1. Efficiency Score */}
+          <div className="card-dark p-5 rounded-2xl">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Efficiency Score</p>
+            <div className="flex items-center gap-4">
+              <div className="relative w-20 h-20">
+                <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="34" fill="none" stroke="#333" strokeWidth="6" />
+                  <circle cx="40" cy="40" r="34" fill="none" stroke={score < 50 ? '#ef4444' : (score > 80 ? '#22c55e' : '#f59e0b')} strokeWidth="6" strokeLinecap="round"
+                    strokeDasharray={2 * Math.PI * 34} strokeDashoffset={2 * Math.PI * 34 * (1 - score / 100)} />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-xl font-black" style={{ color: score < 50 ? '#ef4444' : (score > 80 ? '#22c55e' : '#f59e0b') }}>
+                    {score}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground/50">/100</span>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground/70 max-w-[180px]">Eficiencia global de tu infraestructura.</p>
+            </div>
+          </div>
+
+          {/* 2. Capital Liberado */}
+          <div className="card-dark p-5 rounded-2xl">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Capital Liberado</p>
+            <div className="text-4xl font-black tracking-tight">
+              <AnimatedCounter value={result.total_savings} prefix="€" duration={2} />
+              <span className="text-base text-muted-foreground/40 font-normal">/año</span>
+            </div>
+          </div>
+
+          {/* 3. Benchmark */}
+          <div className="card-dark p-5 rounded-2xl">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Benchmark</p>
+            {(() => {
+              const gmvAnnual = input?.monthly_revenue ? input.monthly_revenue * 12 : null;
+              const pct = gmvAnnual && gmvAnnual > 0 ? Math.round((result.total_savings / gmvAnnual) * 100) : null;
+              return (
+                <p className="text-sm text-foreground">
+                  {pct !== null ? (
+                    <>Tu marca está gastando un <span className="font-bold">{pct}%</span> más que la media de la red THE NoDE.</>
+                  ) : (
+                    <span className="text-muted-foreground/60">Sin datos suficientes para el benchmark.</span>
+                  )}
+                </p>
+              );
+            })()}
           </div>
         </div>
 
@@ -405,6 +457,7 @@ export default function Results() {
             Join THE NoDE network and start fixing your infrastructure today.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <LeadModal />
             <Link to="/Onboarding" className="w-full sm:w-auto">
               <Button size="lg" className="w-full rounded-full px-10 text-sm font-bold gap-2 shadow-sm">
                 Join THE NoDE <ArrowRight className="h-4 w-4" />
@@ -416,6 +469,11 @@ export default function Results() {
               </Button>
             </Link>
           </div>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="mt-10 pt-6 border-t border-[#333] text-center">
+          <p className="text-[11px] text-muted-foreground/60">Este análisis es una estimación basada en el volumen agregado actual de la red THE NoDE.</p>
         </div>
 
       </div>

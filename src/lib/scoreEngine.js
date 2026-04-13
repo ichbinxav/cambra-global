@@ -78,54 +78,65 @@ export function getBenchmarks(monthlyRevenue = 50000, country = "") {
 
 // ─── Savings calculation (used in Analyzer + Results) ────────────────────────
 export function calculateSavings(input) {
-  const { monthly_revenue, payment_fee_pct, monthly_shipping_cost, monthly_shipments,
-    total_saas_spend, country } = input;
+  const {
+    monthly_revenue = 0,
+    avg_order_value = 0,
+    total_saas_spend = 0,
+    monthly_shipping_cost = 0,
+    monthly_shipments = 0,
+    country,
+    intl_pct = 0,
+  } = input || {};
 
-  const benchmarks = getBenchmarks(monthly_revenue, country);
-  const annualRev = monthly_revenue * 12;
+  // Annualized GMV and transactions
+  const annualGMV = Math.max(0, (monthly_revenue || 0) * 12);
+  const aov = Math.max(1, avg_order_value || 1);
+  const annualTransactions = Math.floor(annualGMV / aov);
+
+  // Financial model constants
+  const fee_actual = 0.019; // 1.9%
+  const fee_node = 0.012;   // 1.2%
+  const fijo_actual = 0.25; // € per txn
+  const fijo_node = 0.15;   // € per txn
+
+  // Payments savings
+  const ahorro_variable = annualGMV * (fee_actual - fee_node);
+  const ahorro_fijo = annualTransactions * (fijo_actual - fijo_node);
+  const intlBonus = annualGMV * (Math.max(0, Math.min(100, intl_pct)) / 100) * 0.01; // +1% over international volume
+  const paymentSavings = Math.round(ahorro_variable + ahorro_fijo + intlBonus);
+
+  // SaaS savings: 20% on excess above 2% of GMV + 10% direct network discount
+  const saasAnnual = (total_saas_spend || 0) * 12;
+  const saasThreshold = annualGMV * 0.02;
+  const saasExcess = Math.max(0, saasAnnual - saasThreshold);
+  const saasSavings = Math.round(saasExcess * 0.20 + saasAnnual * 0.10);
+
+  // Shipping not modeled in this version — keep for UI compatibility
   const shipCount = Math.max(monthly_shipments || 1, 1);
   const costPerShipment = (monthly_shipping_cost || 0) / shipCount;
+  const shippingSavings = 0;
 
-  // Payment savings: gap between current rate and benchmark target
-  const paymentGap = Math.max(0, (payment_fee_pct || 2.9) - benchmarks.payment.rate);
-  const paymentSavings = Math.round(annualRev * (paymentGap / 100));
-
-  // Shipping savings: gap between current per-unit and benchmark, × annual shipments
-  const shippingGap = Math.max(0, costPerShipment - benchmarks.shipping.perUnit);
-  const shippingSavings = Math.round(shippingGap * shipCount * 12);
-
-  // SaaS savings: gap between current spend% and benchmark%, × annual rev
-  const saasRatio = monthly_revenue > 0 ? (total_saas_spend || 0) / monthly_revenue : 0;
-  const saasGap = Math.max(0, saasRatio - benchmarks.saas.pct);
-  const saasSavings = Math.round(saasGap * monthly_revenue * 12);
-
-  const totalSavings = paymentSavings + shippingSavings + saasSavings;
-
-  // Optimal values (benchmark targets)
-  const optimalShippingCost = Math.round(benchmarks.shipping.perUnit * shipCount);
-  const optimalSaasCost = Math.round(benchmarks.saas.pct * monthly_revenue);
+  const totalSavings = Math.round(paymentSavings + shippingSavings + saasSavings);
 
   return {
     paymentSavings,
     shippingSavings,
     saasSavings,
     totalSavings,
-    benchmarks,
-    optimalShippingCost,
-    optimalSaasCost,
+    benchmarks: null,
+    optimalShippingCost: 0,
+    optimalSaasCost: 0,
     details: {
-      payment_current_rate: payment_fee_pct || 2.9,
-      payment_optimal_rate: benchmarks.payment.rate,
-      payment_benchmark_range: benchmarks.payment.range,
+      annual_gmv: annualGMV,
+      avg_order_value: aov,
+      annual_transactions: annualTransactions,
+      payment_current_rate: fee_actual * 100,
+      payment_optimal_rate: fee_node * 100,
       shipping_current_avg: costPerShipment,
-      shipping_optimal_avg: benchmarks.shipping.perUnit,
-      shipping_benchmark_range: benchmarks.shipping.range,
+      shipping_optimal_avg: costPerShipment,
       saas_current_total: total_saas_spend || 0,
-      saas_optimal_total: optimalSaasCost,
-      saas_benchmark_range: [
-        Math.round(benchmarks.saas.range[0] * monthly_revenue),
-        Math.round(benchmarks.saas.range[1] * monthly_revenue),
-      ],
+      saas_optimal_total: saasThreshold / 12, // monthly optimal spend
+      intl_pct: intl_pct || 0,
     },
   };
 }
@@ -255,51 +266,57 @@ function generateImpacts(input, scores, benchmarks) {
 
 // ─── MAIN EXPORT ─────────────────────────────────────────────────────────────
 export function computeInfraScore(input, dataQuality = "manual") {
-  const benchmarks = getBenchmarks(input.monthly_revenue, input.country);
+  const { monthly_revenue = 0, avg_order_value = 0, total_saas_spend = 0, intl_pct = 0 } = input || {};
+  const annualGMV = Math.max(0, (monthly_revenue || 0) * 12);
 
-  const costEfficiency = scoreCostEfficiency(input, benchmarks);
-  const stackOptimization = scoreStackOptimization(input, benchmarks);
-  const providerQuality = scoreProviderQuality(input);
-  const geoFit = scoreGeoFit(input);
-  const dataCompleteness = scoreDataCompleteness(dataQuality);
+  // If we can't compute GMV, return a neutral score
+  if (annualGMV <= 0) {
+    return {
+      total: 50,
+      potentialTotal: 65,
+      label: "Optimization opportunity detected",
+      scoreColor: "#f97316",
+      accuracyLabel: dataQuality === "connected" ? "High — real data" : dataQuality === "partial" ? "Medium — partial data" : "Estimated — connect tools to refine",
+      dataQuality,
+      benchmarks: null,
+      dimensions: [
+        { key: "efficiency", label: "Efficiency", weight: "100%", score: 50, desc: "Preliminary score" },
+      ],
+      impacts: [],
+    };
+  }
 
-  const WEIGHTS = { costEfficiency: 0.40, stackOptimization: 0.20, providerQuality: 0.15, geoFit: 0.10, dataCompleteness: 0.15 };
-  const scores = { costEfficiency, stackOptimization, providerQuality, geoFit, dataCompleteness };
+  // Financial model constants
+  const fee_actual = 0.019, fee_node = 0.012;
+  const fijo_actual = 0.25, fijo_node = 0.15;
+  const aov = Math.max(1, avg_order_value || 1);
+  const annualTransactions = Math.floor(annualGMV / aov);
 
-  const total = Math.round(
-    costEfficiency * WEIGHTS.costEfficiency +
-    stackOptimization * WEIGHTS.stackOptimization +
-    providerQuality * WEIGHTS.providerQuality +
-    geoFit * WEIGHTS.geoFit +
-    dataCompleteness * WEIGHTS.dataCompleteness
-  );
+  const ahorro_variable = annualGMV * (fee_actual - fee_node);
+  const ahorro_fijo = annualTransactions * (fijo_actual - fijo_node);
+  const intlBonus = annualGMV * (Math.max(0, Math.min(100, intl_pct)) / 100) * 0.01;
 
-  const potentialTotal = Math.min(100, Math.round(
-    Math.min(100, costEfficiency + 20) * WEIGHTS.costEfficiency +
-    Math.min(100, stackOptimization + 15) * WEIGHTS.stackOptimization +
-    Math.min(100, providerQuality + 10) * WEIGHTS.providerQuality +
-    Math.min(100, geoFit + 5) * WEIGHTS.geoFit +
-    95 * WEIGHTS.dataCompleteness
-  ));
+  const saasAnnual = (total_saas_spend || 0) * 12;
+  const saasThreshold = annualGMV * 0.02;
+  const saasExcess = Math.max(0, saasAnnual - saasThreshold);
+  const saasSavings = saasExcess * 0.20 + saasAnnual * 0.10;
 
-  const impacts = generateImpacts(input, scores, benchmarks);
+  const totalSavings = Math.max(0, ahorro_variable + ahorro_fijo + intlBonus + saasSavings);
+
+  // New scoring model
+  let total = 100 - ((totalSavings / annualGMV) * 500);
+  total = Math.max(0, Math.min(100, Math.round(total)));
+
+  const potentialTotal = Math.min(100, total + 15);
 
   const label =
-    total >= 90 ? "Best-in-class" :
     total >= 80 ? "Strong" :
     total >= 60 ? "Efficient" :
     total >= 40 ? "Optimization opportunity detected" :
     "High optimization potential";
 
-  const accuracyLabel =
-    dataQuality === "connected" ? "High — real data" :
-    dataQuality === "partial" ? "Medium — partial data" :
-    "Estimated — connect tools to refine";
-
-  const scoreColor =
-    total >= 80 ? "#22c55e" :
-    total >= 60 ? "#f97316" :
-    "#3b82f6";
+  const scoreColor = total < 50 ? "#ef4444" : (total > 80 ? "#22c55e" : "#f59e0b");
+  const accuracyLabel = dataQuality === "connected" ? "High — real data" : dataQuality === "partial" ? "Medium — partial data" : "Estimated — connect tools to refine";
 
   return {
     total,
@@ -308,14 +325,12 @@ export function computeInfraScore(input, dataQuality = "manual") {
     scoreColor,
     accuracyLabel,
     dataQuality,
-    benchmarks,
+    benchmarks: null,
     dimensions: [
-      { key: "costEfficiency", label: "Cost Efficiency", weight: "40%", score: costEfficiency, desc: "Payments, shipping & SaaS vs tier benchmarks" },
-      { key: "stackOptimization", label: "Stack Optimization", weight: "20%", score: stackOptimization, desc: "Tool redundancy & spend-to-revenue ratio" },
-      { key: "providerQuality", label: "Provider Quality", weight: "15%", score: providerQuality, desc: "Tier-1 providers & renegotiation potential" },
-      { key: "geoFit", label: "Structural Fit", weight: "10%", score: geoFit, desc: "Channel mix & revenue concentration" },
-      { key: "dataCompleteness", label: "Data Quality", weight: "15%", score: dataCompleteness, desc: "Real connected data vs estimates" },
+      { key: "paymentsEfficiency", label: "Payments", weight: "—", score: Math.max(0, Math.min(100, Math.round((ahorro_variable + ahorro_fijo + intlBonus) / Math.max(annualGMV * 0.03, 1) * 100))), desc: "Impacto de pagos" },
+      { key: "saasEfficiency", label: "SaaS", weight: "—", score: Math.max(0, Math.min(100, Math.round(100 - (saasExcess / Math.max(saasThreshold || 1, 1)) * 50))), desc: "Gasto vs umbral" },
+      { key: "overall", label: "Overall", weight: "—", score: total, desc: "Puntuación global" },
     ],
-    impacts,
+    impacts: [],
   };
 }
