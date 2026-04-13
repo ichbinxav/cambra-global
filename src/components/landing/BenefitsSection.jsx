@@ -51,6 +51,34 @@ const PROOF = [
   { value: "−30%", label: "on SaaS tools" },
 ];
 
+function BenefitTile({ b, index }) {
+  const IconComp = b.iconOverride ? ICONS[b.iconOverride] : b.icon;
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-50px" });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.55, delay: (index % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ backgroundColor: "hsl(var(--secondary))", transition: { duration: 0.2 } }}
+      className="bg-background p-8 flex flex-col gap-4"
+    >
+      <motion.div
+        className="w-9 h-9 rounded-xl bg-secondary border border-border/50 flex items-center justify-center shrink-0"
+        whileHover={{ scale: 1.15, rotate: 5 }}
+        transition={{ type: "spring", stiffness: 300 }}
+      >
+        <IconComp size={15} className="text-muted-foreground/60" />
+      </motion.div>
+      <div>
+        <h3 className="text-base font-bold tracking-tight mb-2">{b.title}</h3>
+        <p className="text-sm text-muted-foreground/70 leading-relaxed">{b.body}</p>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function BenefitsSection() {
   const headRef = useRef(null);
   const headInView = useInView(headRef, { once: true, margin: "-80px" });
@@ -90,34 +118,13 @@ export default function BenefitsSection() {
 
         {/* Benefits grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border/30 rounded-2xl overflow-hidden border border-border/30 mb-16">
-          {BENEFITS.map((b, i) => {
+          {BENEFITS.map((b, i) => (
             const IconComp = b.iconOverride ? ICONS[b.iconOverride] : b.icon;
             const ref = useRef(null);
             const inView = useInView(ref, { once: true, margin: "-50px" });
             return (
-              <motion.div
-                key={i}
-                ref={ref}
-                initial={{ opacity: 0, y: 30 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.55, delay: (i % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ backgroundColor: "hsl(var(--secondary))", transition: { duration: 0.2 } }}
-                className="bg-background p-8 flex flex-col gap-4"
-              >
-                <motion.div
-                  className="w-9 h-9 rounded-xl bg-secondary border border-border/50 flex items-center justify-center shrink-0"
-                  whileHover={{ scale: 1.15, rotate: 5 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <IconComp size={15} className="text-muted-foreground/60" />
-                </motion.div>
-                <div>
-                  <h3 className="text-base font-bold tracking-tight mb-2">{b.title}</h3>
-                  <p className="text-sm text-muted-foreground/70 leading-relaxed">{b.body}</p>
-                </div>
-              </motion.div>
-            );
-          })}
+              <BenefitTile key={i} b={b} index={i} />
+              ))}
         </div>
 
         {/* Editorial block */}

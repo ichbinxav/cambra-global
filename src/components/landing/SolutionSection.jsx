@@ -29,6 +29,48 @@ const PILLARS = [
   },
 ];
 
+function PillarCard({ p, index }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <motion.div
+      key={index}
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.65, delay: index * 0.13, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -8, transition: { duration: 0.25 } }}
+      className="p-7 rounded-2xl bg-background border border-border/50 flex flex-col group hover:border-border hover:shadow-lg transition-shadow"
+    >
+      <div className="flex items-center justify-between mb-5">
+        <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/30">{p.num}</span>
+        <motion.div
+          className={`w-9 h-9 rounded-xl border flex items-center justify-center ${p.bg}`}
+          whileHover={{ rotate: 10, scale: 1.1 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
+          <p.icon size={15} className={p.color} />
+        </motion.div>
+      </div>
+      <h3 className="text-lg font-bold tracking-tight mb-2">{p.title}</h3>
+      <p className="text-sm text-muted-foreground/70 leading-relaxed flex-1 mb-5">{p.desc}</p>
+
+      <div className="pt-5 border-t border-border/30 flex items-end justify-between">
+        <div>
+          <motion.p
+            className={`text-2xl font-black tracking-tight ${p.color}`}
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: index * 0.13 + 0.4 }}
+          >{p.stat}</motion.p>
+          <p className="text-[10px] text-muted-foreground/40">{p.statLabel}</p>
+        </div>
+        <p className="text-[10px] text-muted-foreground/30 text-right max-w-[90px]">{p.note}</p>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function SolutionSection() {
   const { isAuthenticated } = useAuth();
   const headRef = useRef(null);
@@ -107,47 +149,12 @@ export default function SolutionSection() {
 
         {/* Pillars grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {PILLARS.map((p, i) => {
+          {PILLARS.map((p, i) => (
             const ref = useRef(null);
             const inView = useInView(ref, { once: true, margin: "-60px" });
             return (
-              <motion.div
-                key={i}
-                ref={ref}
-                initial={{ opacity: 0, y: 50 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.65, delay: i * 0.13, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ y: -8, transition: { duration: 0.25 } }}
-                className="p-7 rounded-2xl bg-background border border-border/50 flex flex-col group hover:border-border hover:shadow-lg transition-shadow"
-              >
-                <div className="flex items-center justify-between mb-5">
-                  <span className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/30">{p.num}</span>
-                  <motion.div
-                    className={`w-9 h-9 rounded-xl border flex items-center justify-center ${p.bg}`}
-                    whileHover={{ rotate: 10, scale: 1.1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <p.icon size={15} className={p.color} />
-                  </motion.div>
-                </div>
-                <h3 className="text-lg font-bold tracking-tight mb-2">{p.title}</h3>
-                <p className="text-sm text-muted-foreground/70 leading-relaxed flex-1 mb-5">{p.desc}</p>
-
-                <div className="pt-5 border-t border-border/30 flex items-end justify-between">
-                  <div>
-                    <motion.p
-                      className={`text-2xl font-black tracking-tight ${p.color}`}
-                      initial={{ opacity: 0 }}
-                      animate={inView ? { opacity: 1 } : {}}
-                      transition={{ delay: i * 0.13 + 0.4 }}
-                    >{p.stat}</motion.p>
-                    <p className="text-[10px] text-muted-foreground/40">{p.statLabel}</p>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground/30 text-right max-w-[90px]">{p.note}</p>
-                </div>
-              </motion.div>
-            );
-          })}
+              <PillarCard key={i} p={p} index={i} />
+              ))}
         </div>
 
         <motion.div

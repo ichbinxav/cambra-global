@@ -78,6 +78,62 @@ function GreenBar({ width, delay }) {
   );
 }
 
+function ProblemCard({ item, index }) {
+  const cardRef = useRef(null);
+  const cardInView = useInView(cardRef, { once: true, margin: "-60px" });
+  return (
+    <motion.div
+      key={index}
+      ref={cardRef}
+      initial={{ opacity: 0, x: 50 }}
+      animate={cardInView ? { opacity: 1, x: 0 } : {}}
+      transition={{ duration: 0.65, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ x: 6, transition: { duration: 0.2 } }}
+      className={`p-6 rounded-2xl border ${item.bg}`}
+    >
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${item.bg}`}>
+            <item.icon size={15} className={item.color} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold">{item.label}</p>
+            <p className="text-[10px] text-muted-foreground/50">{item.benchmark}</p>
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <motion.p
+            className={`text-2xl font-black tabular-nums ${item.color}`}
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={cardInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ delay: index * 0.12 + 0.3, type: "spring", stiffness: 260, damping: 16 }}
+          >{item.metric}</motion.p>
+          <p className={`text-[10px] font-semibold ${item.color} opacity-70`}>{item.annual}</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div>
+          <div className="flex justify-between mb-1">
+            <span className="text-[10px] text-muted-foreground/50">You</span>
+            <span className="text-[10px] font-semibold text-muted-foreground/70">{item.yours}% of max</span>
+          </div>
+          <AnimatedBar width={item.yours} color={item.barColor} delay={index * 0.12 + 0.15} />
+        </div>
+        <div>
+          <div className="flex justify-between mb-1">
+            <span className="text-[10px] text-muted-foreground/50">Network rate</span>
+            <span className="text-[10px] font-semibold text-green-600">{item.theirs}% of max</span>
+          </div>
+          <GreenBar width={item.theirs} delay={index * 0.12 + 0.15} />
+        </div>
+      </div>
+
+      <p className={`text-[11px] font-medium mt-3 ${item.color}`}>{item.delta}</p>
+    </motion.div>
+  );
+}
+
 export default function ProblemSection() {
   const { isAuthenticated } = useAuth();
   const headRef = useRef(null);
@@ -147,61 +203,12 @@ export default function ProblemSection() {
 
           {/* Right — animated cards */}
           <div className="space-y-4">
-            {PROBLEMS.map((item, i) => {
+            {PROBLEMS.map((item, i) => (
               const cardRef = useRef(null);
               const cardInView = useInView(cardRef, { once: true, margin: "-60px" });
               return (
-                <motion.div
-                  key={i}
-                  ref={cardRef}
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={cardInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.65, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                  whileHover={{ x: 6, transition: { duration: 0.2 } }}
-                  className={`p-6 rounded-2xl border ${item.bg}`}
-                >
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${item.bg}`}>
-                        <item.icon size={15} className={item.color} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold">{item.label}</p>
-                        <p className="text-[10px] text-muted-foreground/50">{item.benchmark}</p>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <motion.p
-                        className={`text-2xl font-black tabular-nums ${item.color}`}
-                        initial={{ opacity: 0, scale: 0.6 }}
-                        animate={cardInView ? { opacity: 1, scale: 1 } : {}}
-                        transition={{ delay: i * 0.12 + 0.3, type: "spring", stiffness: 260, damping: 16 }}
-                      >{item.metric}</motion.p>
-                      <p className={`text-[10px] font-semibold ${item.color} opacity-70`}>{item.annual}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-[10px] text-muted-foreground/50">You</span>
-                        <span className="text-[10px] font-semibold text-muted-foreground/70">{item.yours}% of max</span>
-                      </div>
-                      <AnimatedBar width={item.yours} color={item.barColor} delay={i * 0.12 + 0.15} />
-                    </div>
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-[10px] text-muted-foreground/50">Network rate</span>
-                        <span className="text-[10px] font-semibold text-green-600">{item.theirs}% of max</span>
-                      </div>
-                      <GreenBar width={item.theirs} delay={i * 0.12 + 0.15} />
-                    </div>
-                  </div>
-
-                  <p className={`text-[11px] font-medium mt-3 ${item.color}`}>{item.delta}</p>
-                </motion.div>
-              );
-            })}
+                <ProblemCard key={i} item={item} index={i} />
+                ))}
           </div>
         </div>
       </div>
