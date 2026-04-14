@@ -24,6 +24,7 @@ import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import ConnectTools from '@/pages/ConnectTools';
 import StripeAnalyzer from '@/pages/StripeAnalyzer';
+import DevExport from '@/pages/DevExport';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import AdminLayout from '@/pages/admin/AdminLayout';
 import AdminOverview from '@/pages/admin/AdminOverview';
@@ -148,6 +149,7 @@ const AuthenticatedApp = () => {
         <Route path="/Privacy" element={<Privacy />} />
         <Route path="/Terms" element={<Terms />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
+        <Route path="/dev/export" element={<DevExport />} />
 
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="/Dashboard" element={<Dashboard />} />
