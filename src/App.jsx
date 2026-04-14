@@ -55,15 +55,15 @@ const ProtectedRoute = ({ children }) => {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
         <div className="text-center max-w-sm">
-          <h1 className="text-lg font-bold mb-2">Se requiere inicio de sesión</h1>
-          <p className="text-sm text-muted-foreground mb-4">Abre la ventana de login y vuelve automáticamente.</p>
+          <h1 className="text-lg font-bold mb-2">Sign-in required</h1>
+          <p className="text-sm text-muted-foreground mb-4">Open the login window and return automatically.</p>
           <a
             href="/auth/start"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold"
           >
-            Iniciar sesión
+            Sign in
           </a>
         </div>
       </div>
@@ -98,9 +98,9 @@ const AdminRoute = ({ children }) => {
     return (
       <div className="min-h-[60vh] flex items-center justify-center p-6">
         <div className="text-center max-w-sm">
-          <h1 className="text-lg font-bold mb-2">Solo administradores</h1>
-          <p className="text-sm text-muted-foreground mb-4">Inicia sesión para continuar.</p>
-          <a href="/auth/start" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold">Iniciar sesión</a>
+          <h1 className="text-lg font-bold mb-2">Admins only</h1>
+          <p className="text-sm text-muted-foreground mb-4">Sign in to continue.</p>
+          <a href="/auth/start" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold">Sign in</a>
         </div>
       </div>
     );
@@ -123,7 +123,7 @@ const AuthenticatedApp = () => {
           className="text-5xl text-foreground select-none"
           style={{ animation: "spin 4s linear infinite" }}
         >✱</div>
-        <p className="mt-3 text-sm text-foreground/70">Cargando…</p>
+        <p className="mt-3 text-sm text-foreground/70">Loading…</p>
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );

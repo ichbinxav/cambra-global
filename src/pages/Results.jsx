@@ -213,7 +213,7 @@ export default function Results() {
             <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Released Capital</p>
             <div className="text-4xl font-black tracking-tight">
               <AnimatedCounter value={result.total_savings} prefix="€" duration={2} />
-              <span className="text-base text-muted-foreground/40 font-normal">/año</span>
+              <span className="text-base text-muted-foreground/40 font-normal">/yr</span>
             </div>
           </div>
 
@@ -228,7 +228,7 @@ export default function Results() {
                   {pct !== null ? (
                     <>Your brand is spending <span className="font-bold">{pct}%</span> more than THE NoDE network average.</>
                   ) : (
-                    <span className="text-muted-foreground/60">Sin datos suficientes para el benchmark.</span>
+                    <span className="text-muted-foreground/60">Not enough data for the benchmark.</span>
                   )}
                 </p>
               );
