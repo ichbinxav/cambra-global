@@ -194,7 +194,7 @@ export default function Results() {
   };
 
   return (
-    <div className="min-h-screen font-inter results-dark">
+    <div className="min-h-screen font-inter bg-background text-foreground">
 
       {/* ── Sticky top bar ── */}
       <div className="sticky top-0 z-20 border-b border-border/40 px-5 py-3.5 flex items-center justify-between bg-background/97 backdrop-blur-2xl">
@@ -269,7 +269,7 @@ export default function Results() {
         {/* Summary cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* 1. Efficiency Score */}
-          <div className="card-dark p-5 rounded-2xl">
+          <div className="p-5 rounded-2xl border border-border/50 bg-card">
             <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Efficiency Score</p>
             <div className="flex items-center gap-4">
               <div className="relative w-20 h-20">
@@ -290,7 +290,7 @@ export default function Results() {
           </div>
 
           {/* 2. Capital Liberado */}
-          <div className="card-dark p-5 rounded-2xl">
+          <div className="p-5 rounded-2xl border border-border/50 bg-card">
             <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Released Capital</p>
             <div className="text-4xl font-black tracking-tight">
               <span className="tabular-nums"><AnimatedCounter value={result.total_savings} prefix="€" duration={2} /></span>
@@ -299,7 +299,7 @@ export default function Results() {
           </div>
 
           {/* 3. Benchmark */}
-          <div className="card-dark p-5 rounded-2xl">
+          <div className="p-5 rounded-2xl border border-border/50 bg-card">
             <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Benchmark</p>
             {(() => {
               const gmvAnnual = input?.monthly_revenue ? input.monthly_revenue * 12 : null;
