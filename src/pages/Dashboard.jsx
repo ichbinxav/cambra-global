@@ -153,7 +153,7 @@ export default function Dashboard() {
         {!subscribed && (
           <Link to="/Onboarding">
             <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-saas-gradient text-white shadow-md hover:opacity-90">
-              Unlock report — Free
+              Unlock report — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span>
             </Button>
           </Link>
         )}

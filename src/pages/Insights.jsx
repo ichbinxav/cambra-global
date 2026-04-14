@@ -68,7 +68,7 @@ export default function Insights() {
             <p className="text-sm font-semibold">Members-only research</p>
             <p className="text-xs text-muted-foreground/60">Unlock all insights — early partners join for free.</p>
           </div>
-          <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold">Unlock access — Free</Button>
+          <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold">Unlock access — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span></Button>
         </div>
       )}
 
