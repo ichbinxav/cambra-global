@@ -96,6 +96,12 @@ export default function DevExport() {
             const doc = iframe.contentDocument || iframe.contentWindow?.document;
             const html = doc?.documentElement?.outerHTML || "";
             setResults((prev) => ({ ...prev, [route]: html }));
+            try {
+              console.log(`DOM_EXPORT_START:${route}`);
+              console.log(html);
+              console.log(`DOM_EXPORT_END:${route}`);
+            } catch (_) {}
+
           } catch (e) {
             setResults((prev) => ({ ...prev, [route]: `/* ERROR: ${e?.message || e} */` }));
           } finally {
