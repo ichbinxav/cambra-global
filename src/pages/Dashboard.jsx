@@ -146,14 +146,16 @@ export default function Dashboard() {
           <p className="text-xs text-muted-foreground mt-0.5">Infrastructure command center</p>
         </div>
         <Link to="/Analyzer">
-          <Button size="sm" className="h-9 rounded-full px-5 text-xs font-bold gap-1.5">
+          <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-foreground text-background shadow-md hover:shadow-lg">
             New Analysis <ArrowRight className="h-3.5 w-3.5" />
           </Button>
         </Link>
         {!subscribed && (
-          <Button variant="outline" size="sm" onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold gap-1.5">
-            Unlock data <span className="line-through opacity-60">€60</span> <span className="font-bold">Free</span>
-          </Button>
+          <Link to="/Onboarding">
+            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-saas-gradient text-white shadow-md hover:opacity-90">
+              Unlock report — Free
+            </Button>
+          </Link>
         )}
       </div>
 

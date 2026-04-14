@@ -22,7 +22,7 @@ export default function DealsOverview({ userDeals }) {
     <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
       <div className="px-6 py-4 border-b border-border/30 flex items-center justify-between">
         <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50">Deals & contracts</p>
-        <Link to="/Deals">
+        <Link to="/Onboarding">
           <button className="text-[11px] font-semibold text-muted-foreground/50 hover:text-foreground transition-colors flex items-center gap-1">
             All deals <ArrowRight size={10} />
           </button>
@@ -96,7 +96,7 @@ export default function DealsOverview({ userDeals }) {
       {active.length === 0 && allInactive === 0 && (
         <div className="px-6 py-6 text-center">
           <p className="text-sm text-muted-foreground mb-3">No deals yet.</p>
-          <Link to="/Deals">
+          <Link to="/Onboarding">
             <button className="h-9 px-5 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5 mx-auto">
               <Zap size={11} /> Discover savings
             </button>
@@ -106,7 +106,7 @@ export default function DealsOverview({ userDeals }) {
 
       {(active.length > 0 || allInactive > 0) && (
         <div className="px-6 py-4 border-t border-border/30">
-          <Link to="/Deals">
+          <Link to="/Onboarding">
             <button className="h-8 px-4 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5 w-full justify-center">
               <Zap size={10} /> Manage deals
             </button>

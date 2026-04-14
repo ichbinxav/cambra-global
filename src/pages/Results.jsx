@@ -208,9 +208,17 @@ export default function Results() {
               <Zap size={11} /> Connect tools
             </Button>
           </Link>
-          <Button onClick={subscribed ? handleExportPdf : handleSubscribe} variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5">
-            {subscribed ? (<><Download size={11} /> Export PDF</>) : (<><Lock size={11} /> Unlock data <span className='mx-1 line-through opacity-60'>€60</span> Free</>)}
-          </Button>
+          {subscribed ? (
+            <Button onClick={handleExportPdf} variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5">
+              <Download size={11} /> Export PDF
+            </Button>
+          ) : (
+            <Link to="/Onboarding">
+              <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5 bg-saas-gradient text-white">
+                <Lock size={11} /> Unlock report — Free
+              </Button>
+            </Link>
+          )}
           <Link to="/Dashboard">
             <Button size="sm" className="h-8 rounded-full text-xs px-4 font-semibold">Dashboard</Button>
           </Link>
@@ -239,9 +247,11 @@ export default function Results() {
 
           {!subscribed && (
             <div className="mt-2">
-              <Button onClick={handleSubscribe} className="rounded-full px-6 text-sm gap-1.5">
-                Unlock data <span className="line-through opacity-60">€60</span> <span className="font-bold">Free</span>
-              </Button>
+              <Link to="/Onboarding">
+                <Button className="rounded-full px-6 text-sm gap-1.5 bg-saas-gradient text-white">
+                  Unlock report — Free
+                </Button>
+              </Link>
             </div>
           )}
 
@@ -502,7 +512,7 @@ export default function Results() {
                 </div>
                 <div className="shrink-0 text-right">
                   <p className={`text-base font-black ${deal.textColor} mb-1`}>{deal.saving}</p>
-                  <Link to="/Deals">
+                  <Link to="/Onboarding">
                     <button className={`text-[11px] font-bold flex items-center justify-end gap-1 px-3 py-1.5 rounded-full border ${deal.bg} ${deal.textColor} hover:opacity-80 transition-opacity`}>
                       Unlock <ArrowRight size={9} />
                     </button>
@@ -551,7 +561,7 @@ export default function Results() {
                 Join THE NoDE <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/Deals" className="w-full sm:w-auto">
+            <Link to="/Onboarding" className="w-full sm:w-auto">
               <Button variant="outline" size="lg" className="w-full rounded-full px-10 text-sm border-border/60">
                 Activate deals
               </Button>
