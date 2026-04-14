@@ -69,6 +69,7 @@ export default function Results() {
   const [input, setInput] = useState(null);
   const [loading, setLoading] = useState(true);
   const [scoreReport, setScoreReport] = useState(null);
+  const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("id");
@@ -85,6 +86,14 @@ export default function Results() {
         }
       }
       setLoading(false);
+    });
+
+    // Check subscription status (non-blocking)
+    base44.auth.isAuthenticated().then(async (authed) => {
+      if (!authed) { setSubscribed(false); return; }
+      const me = await base44.auth.me();
+      const subs = await base44.entities.Subscription.filter({ user_email: me.email, status: 'active' }, '-created_date', 1);
+      setSubscribed(subs.length > 0);
     });
   }, []);
 
@@ -118,6 +127,21 @@ export default function Results() {
   const recs = scoreReport?.impacts?.length
     ? scoreReport.impacts.map((imp, i) => ({ ...RECS[i] ?? RECS[0], action: imp.action, points: imp.pointsGain, cat: imp.category }))
     : RECS.map(r => ({ ...r, saving: r.saving.replace("€X", `€${Math.round((result.total_savings || 0) / 3).toLocaleString()}`) }));
+
+  const handleSubscribe = async () => {
+    const authed = await base44.auth.isAuthenticated();
+    if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
+    const res = await base44.functions.invoke('startSubscription', {});
+    const status = res?.data?.status;
+    if (status === 'activated_free' || status === 'already_active') {
+      setSubscribed(true);
+      alert('Acceso activado — primeros 500 gratis de por vida.');
+    } else if (status === 'requires_checkout') {
+      alert('No quedan plazas gratuitas. Activaremos el pago (60 €/mes) en breve.');
+    } else if (res?.data?.error) {
+      alert(res.data.error);
+    }
+  };
 
   const handleExportPdf = async () => {
     // Ensure we have analysis data
@@ -184,8 +208,8 @@ export default function Results() {
               <Zap size={11} /> Connect tools
             </Button>
           </Link>
-          <Button onClick={handleExportPdf} variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5">
-            <Download size={11} /> Export PDF
+          <Button onClick={subscribed ? handleExportPdf : handleSubscribe} variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5">
+            {subscribed ? (<><Download size={11} /> Export PDF</>) : (<><Lock size={11} /> Desbloquear PDF</>)}
           </Button>
           <Link to="/Dashboard">
             <Button size="sm" className="h-8 rounded-full text-xs px-4 font-semibold">Dashboard</Button>
@@ -324,7 +348,7 @@ export default function Results() {
         </div>
 
         {/* ═══ 4. TOP SAVINGS OPPORTUNITIES ════════════════════════ */}
-        <div>
+        <div className="relative">
           <SectionLabel>Top savings opportunities</SectionLabel>
 
           {/* Visual bar chart */}
@@ -380,8 +404,18 @@ export default function Results() {
           </div>
         </div>
 
+        {!subscribed && (
+          <div className="absolute inset-0 rounded-2xl bg-background/60 backdrop-blur-sm border border-border/40 flex items-center justify-center z-10">
+            <div className="text-center space-y-2">
+              <Lock size={16} className="mx-auto text-muted-foreground" />
+              <p className="text-sm font-semibold">Desbloquea el informe completo</p>
+              <p className="text-xs text-muted-foreground">Primeros 500 gratis de por vida</p>
+              <Button size="sm" className="rounded-full" onClick={handleSubscribe}>Suscribirme</Button>
+            </div>
+          </div>
+        )}
         {/* ═══ 5. BENCHMARK COMPARISON ══════════════════════════════ */}
-        <div>
+        <div className="relative">
           <SectionLabel>Benchmark comparison</SectionLabel>
           <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
             <div className="grid grid-cols-4 px-6 py-2.5 bg-secondary/50 border-b border-border/30">
@@ -431,7 +465,7 @@ export default function Results() {
         </div>
 
         {/* ═══ 6. RECOMMENDATIONS ══════════════════════════════════ */}
-        <div>
+        <div className="relative">
           <SectionLabel>Recommended actions</SectionLabel>
           <div className="space-y-2">
             {recs.map((item, i) => (
@@ -454,7 +488,7 @@ export default function Results() {
           </div>
         </div>
 
-        {/* ═══ 7. DEALS ════════════════════════════════════════════ */}
+        {/* ═══ 7. DEALS ════════════════════════════════════════════ */}}
         <div>
           <SectionLabel>Available deals via THE NoDE</SectionLabel>
           <div className="space-y-3">

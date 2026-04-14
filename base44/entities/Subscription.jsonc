@@ -1,0 +1,44 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "canceled",
+        "past_due",
+        "trialing"
+      ],
+      "default": "active"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "lifetime_free",
+        "monthly"
+      ],
+      "description": "Subscription plan type"
+    },
+    "is_free_early_bird": {
+      "type": "boolean",
+      "default": false
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ends_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_email",
+    "status",
+    "plan"
+  ]
+}
