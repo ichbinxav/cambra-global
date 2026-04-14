@@ -135,9 +135,9 @@ export default function Results() {
     const status = res?.data?.status;
     if (status === 'activated_free' || status === 'already_active') {
       setSubscribed(true);
-      alert('Acceso activado — primeros 500 gratis de por vida.');
+      alert('Access activated — early partners free for life.');
     } else if (status === 'requires_checkout') {
-      alert('No quedan plazas gratuitas. Activaremos el pago (60 €/mes) en breve.');
+      alert("Free seats are over. We'll enable the paid plan (€60/mo) soon.");
     } else if (res?.data?.error) {
       alert(res.data.error);
     }
@@ -209,7 +209,7 @@ export default function Results() {
             </Button>
           </Link>
           <Button onClick={subscribed ? handleExportPdf : handleSubscribe} variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5">
-            {subscribed ? (<><Download size={11} /> Export PDF</>) : (<><Lock size={11} /> Desbloquear datos <span className='mx-1 line-through opacity-60'>60€</span> Gratis</>)}
+            {subscribed ? (<><Download size={11} /> Export PDF</>) : (<><Lock size={11} /> Unlock data <span className='mx-1 line-through opacity-60'>€60</span> Free</>)}
           </Button>
           <Link to="/Dashboard">
             <Button size="sm" className="h-8 rounded-full text-xs px-4 font-semibold">Dashboard</Button>
@@ -240,7 +240,7 @@ export default function Results() {
           {!subscribed && (
             <div className="mt-2">
               <Button onClick={handleSubscribe} className="rounded-full px-6 text-sm gap-1.5">
-                Desbloquear datos <span className="line-through opacity-60">60€</span> <span className="font-bold">Gratis</span>
+                Unlock data <span className="line-through opacity-60">€60</span> <span className="font-bold">Free</span>
               </Button>
             </div>
           )}

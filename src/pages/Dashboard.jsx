@@ -111,9 +111,9 @@ export default function Dashboard() {
     const status = res?.data?.status;
     if (status === 'activated_free' || status === 'already_active') {
       setSubscribed(true);
-      alert('Acceso activado — primeros 500 gratis de por vida.');
+      alert('Access activated — early partners free for life.');
     } else if (status === 'requires_checkout') {
-      alert('No quedan plazas gratuitas. Activaremos el pago (60 €/mes) en breve.');
+      alert("Free seats are over. We'll enable the paid plan (€60/mo) soon.");
     } else if (res?.data?.error) {
       alert(res.data.error);
     }
@@ -152,7 +152,7 @@ export default function Dashboard() {
         </Link>
         {!subscribed && (
           <Button variant="outline" size="sm" onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold gap-1.5">
-            Desbloquear datos <span className="line-through opacity-60">60€</span> <span className="font-bold">Gratis</span>
+            Unlock data <span className="line-through opacity-60">€60</span> <span className="font-bold">Free</span>
           </Button>
         )}
       </div>

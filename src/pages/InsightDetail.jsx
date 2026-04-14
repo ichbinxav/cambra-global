@@ -11,6 +11,8 @@ const CATEGORIES = { payments: "Payments", margins: "Margins", scaling: "Scaling
 export default function InsightDetail() {
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [subscribed, setSubscribed] = useState(false);
+  const [subLoading, setSubLoading] = useState(true);
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("id");
@@ -20,6 +22,20 @@ export default function InsightDetail() {
         setLoading(false);
       });
     }
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const authed = await base44.auth.isAuthenticated();
+        if (!authed) { setSubscribed(false); return; }
+        const me = await base44.auth.me();
+        const subs = await base44.entities.Subscription.filter({ user_email: me.email, status: 'active' }, '-created_date', 1);
+        setSubscribed(subs.length > 0);
+      } finally {
+        setSubLoading(false);
+      }
+    })();
   }, []);
 
   if (loading) return (
@@ -35,6 +51,21 @@ export default function InsightDetail() {
     </div>
   );
 
+  const handleSubscribe = async () => {
+    const authed = await base44.auth.isAuthenticated();
+    if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
+    const res = await base44.functions.invoke('startSubscription', {});
+    const status = res?.data?.status;
+    if (status === 'activated_free' || status === 'already_active') {
+      setSubscribed(true);
+      alert('Access activated — early partners free for life.');
+    } else if (status === 'requires_checkout') {
+      alert('Free seats are over. We will enable paid plan (€60/mo) soon.');
+    } else if (res?.data?.error) {
+      alert(res.data.error);
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
       <Link to="/Insights">
@@ -43,7 +74,17 @@ export default function InsightDetail() {
         </Button>
       </Link>
 
-      <article className="max-w-2xl">
+      {!subscribed && (
+        <div className="mb-6 p-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.06] flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex-1">
+            <p className="text-sm font-semibold">Members-only research</p>
+            <p className="text-xs text-muted-foreground/60">Unlock this insight — early partners join for free.</p>
+          </div>
+          <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold">Unlock access — Free</Button>
+        </div>
+      )}
+
+       <article className={`max-w-2xl ${!subscribed ? "blur-[2px] select-none pointer-events-none" : ""}`}>
         <div className="flex items-center gap-3 mb-5">
           {insight.category && (
             <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/50 bg-secondary px-2.5 py-1 rounded-full">
