@@ -397,7 +397,7 @@ export default function Results() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold">{item.label}</p>
-                  <p className="text-[11px] text-muted-foreground/50">{item.detail(result)}</p>
+                  <p className="text-[11px] text-muted-foreground/50 sensitive">{item.detail(result)}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className={`text-2xl font-black tabular-nums ${item.textColor}`}>

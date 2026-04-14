@@ -117,6 +117,10 @@
 .lock-blur .recharts-default-tooltip { filter: blur(6px); }
 .lock-blur .no-blur .tabular-nums { filter: none !important; }
 
+/* Additional blur for locked state (details under titles) */
+.lock-blur .sensitive { filter: blur(6px); }
+.lock-blur .no-blur .sensitive { filter: none !important; }
+
 /* Motion reduce */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
