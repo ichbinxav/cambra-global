@@ -9,9 +9,12 @@ import { base44 } from "@/api/base44Client";
 export default function LeadModal() {
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-  const [benchmarkOptIn, setBenchmarkOptIn] = useState(false);
   const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [step, setStep] = useState('form');
+  const [open, setOpen] = useState(false);
+  const [createdId, setCreatedId] = useState(null);
+  const [optedIn, setOptedIn] = useState(true);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,24 +22,23 @@ export default function LeadModal() {
     setSubmitting(true);
     const cta_variant = 'unlock_rates';
     try {
-      await base44.entities.Lead.create({
+      const rec = await base44.entities.LeadCapture.create({
         email,
         whatsapp,
-        benchmark_opt_in: benchmarkOptIn,
         consent: !!consent,
         source_page: 'results',
+        first_submitted_at: new Date().toISOString(),
       });
-
-      base44.analytics.track({ eventName: 'lead_submit', properties: { cta_variant, has_whatsapp: !!whatsapp, benchmark_opt_in: !!benchmarkOptIn } });
+      setCreatedId(rec.id);
+      base44.analytics.track({ eventName: 'lead_submit', properties: { cta_variant, has_whatsapp: !!whatsapp } });
 
       await base44.integrations.Core.SendEmail({
         to: email,
-        subject: 'THE NoDE — Rates request received',
-        body: 'Thanks! We\'ll get back to you shortly with the steps to unlock the network rates.\n\n— THE NoDE Team'
+        subject: 'THE NoDE — Request received',
+        body: 'Thanks! We\'ll email your benchmark summary shortly.\n\n— THE NoDE Team'
       });
 
-      alert("Thanks! We’ll contact you to unlock these rates.");
-      setEmail(""); setWhatsapp(""); setBenchmarkOptIn(false); setConsent(false);
+      setStep('thanks');
     } catch (err) {
       console.error('Lead submit error', err);
       alert('Something went wrong. Please try again.');
@@ -45,41 +47,83 @@ export default function LeadModal() {
     }
   };
 
-  return (
-    <Dialog>
+  const handleOptIn = async () => {
+    setSubmitting(true);
+    try {
+      if (createdId) {
+        await base44.entities.LeadCapture.update(createdId, { opted_in_benchmark: !!optedIn });
+      }
+      base44.analytics.track({ eventName: 'lead_benchmark_choice', properties: { opted_in: !!optedIn } });
+      if (optedIn && email) {
+        await base44.integrations.Core.SendEmail({
+          to: email,
+          subject: 'THE NoDE — Detailed benchmark',
+          body: 'We will send you the detailed sector benchmark shortly.\n\n— THE NoDE Team'
+        });
+      }
+      setOpen(false);
+      setStep('form');
+      setEmail(''); setWhatsapp(''); setConsent(false); setOptedIn(true); setCreatedId(null);
+    } catch (e) {
+      console.error('Lead opt-in error', e);
+      alert('Could not save your preference.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+   return (
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className="rounded-full px-8 text-sm font-bold bg-green-600 hover:bg-green-700" onClick={() => base44.analytics.track({ eventName: 'lead_modal_open' })}>
+        <Button size="lg" className="rounded-full px-8 text-sm font-bold bg-green-600 hover:bg-green-700" onClick={() => { setOpen(true); base44.analytics.track({ eventName: 'lead_modal_open' })}}>
           Unlock these rates
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Unlock THE NoDE rates</DialogTitle>
-          <DialogDescription>
-            Leave your email or WhatsApp and we’ll help you activate these rates.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="tu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="wa">WhatsApp</Label>
-            <Input id="wa" placeholder="+34 600 000 000" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="opt" checked={benchmarkOptIn} onCheckedChange={v => setBenchmarkOptIn(!!v)} />
-            <Label htmlFor="opt" className="text-sm">I want to receive the detailed benchmark for my sector</Label>
-          </div>
-          <div className="flex items-start gap-2 text-xs text-muted-foreground">
-            <Checkbox id="consent" checked={consent} onCheckedChange={v => setConsent(!!v)} />
-            <Label htmlFor="consent">I agree to be contacted and accept the <a href="/Privacy" className="underline">Privacy Policy</a>.</Label>
-          </div>
-          <div className="flex justify-end">
-            <Button type="submit" disabled={!email || !consent || submitting} className="px-6">{submitting ? 'Sending…' : 'Send'}</Button>
-          </div>
-        </form>
+        {step === 'form' ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>Unlock THE NoDE rates</DialogTitle>
+              <DialogDescription>
+                Leave your email or WhatsApp and we’ll help you activate these rates.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="you@company.com" value={email} onChange={e => setEmail(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="wa">WhatsApp</Label>
+                <Input id="wa" placeholder="+34 600 000 000" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} />
+              </div>
+              <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                <Checkbox id="consent" checked={consent} onCheckedChange={v => setConsent(!!v)} />
+                <Label htmlFor="consent">I agree to be contacted and accept the <a href="/Privacy" className="underline">Privacy Policy</a>.</Label>
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={!email || !consent || submitting} className="px-6">{submitting ? 'Sending…' : 'Continue'}</Button>
+              </div>
+            </form>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Thank you</DialogTitle>
+              <DialogDescription>We’ll email your benchmark summary shortly.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-start gap-2 text-sm">
+                <Checkbox id="optin" checked={optedIn} onCheckedChange={v => setOptedIn(!!v)} />
+                <Label htmlFor="optin">Also send me the detailed sector benchmark to {email || 'my email'}.</Label>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" onClick={() => { base44.analytics.track({ eventName: 'lead_benchmark_skip' }); setOpen(false); setStep('form'); setEmail(''); setWhatsapp(''); setConsent(false); }}>No thanks</Button>
+                <Button onClick={handleOptIn} disabled={submitting}>{submitting ? 'Saving…' : 'Finish'}</Button>
+              </div>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

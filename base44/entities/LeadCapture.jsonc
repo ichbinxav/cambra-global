@@ -1,0 +1,31 @@
+{
+  "name": "LeadCapture",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "whatsapp": {
+      "type": "string"
+    },
+    "consent": {
+      "type": "boolean",
+      "default": false
+    },
+    "source_page": {
+      "type": "string"
+    },
+    "opted_in_benchmark": {
+      "type": "boolean",
+      "default": false
+    },
+    "first_submitted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "email",
+    "consent"
+  ]
+}
