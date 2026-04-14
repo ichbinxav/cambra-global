@@ -8,8 +8,8 @@ export default function HeroSavings({ latest, score }) {
     <div className="rounded-2xl border border-foreground/8 bg-foreground text-background overflow-hidden">
       <div className="p-7 sm:p-8">
         <p className="text-[10px] tracking-[0.3em] uppercase opacity-35 mb-3">Optimization potential identified</p>
-        <div className="text-[clamp(3.5rem,11vw,6rem)] font-black tracking-[-0.055em] leading-none mb-1">
-          <AnimatedCounter value={latest.total_savings} prefix="€" duration={1.8} />
+        <div className="text-[clamp(3.5rem,11vw,6rem)] font-black tracking-[-0.055em] leading-none mb-1 no-blur">
+          <span className="tabular-nums"><AnimatedCounter value={latest.total_savings} prefix="€" duration={1.8} /></span>
         </div>
         <p className="text-sm opacity-40 mb-6">per year left unoptimized across your infrastructure</p>
 
@@ -38,7 +38,7 @@ export default function HeroSavings({ latest, score }) {
               style={{ transition: "stroke-dashoffset 1.5s ease-out" }} />
           </svg>
           <div className="flex-1">
-            <p className="text-xs font-black opacity-80">Infra Score: <span className="font-black">{score}/100</span></p>
+            <p className="text-xs font-black opacity-80">Infra Score: <span className="font-black tabular-nums">{score}/100</span></p>
             <p className="text-[10px] opacity-35">{SCORE_LABEL(score)}</p>
           </div>
           <div className="hidden sm:block w-24 h-1.5 rounded-full bg-background/10 overflow-hidden">

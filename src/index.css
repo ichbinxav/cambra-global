@@ -107,6 +107,16 @@
 /* Letter spacing utilities */
 .tracking-editorial { letter-spacing: -0.04em; }
 
+/* Lock blur for unsubscribed (numbers only) */
+.lock-blur .tabular-nums { filter: blur(6px); }
+.lock-blur .recharts-default-tooltip { filter: blur(6px); }
+.lock-blur .no-blur .tabular-nums { filter: none !important; }
+
+/* Lock blur for unsubscribed (numbers only) */
+.lock-blur .tabular-nums { filter: blur(6px); }
+.lock-blur .recharts-default-tooltip { filter: blur(6px); }
+.lock-blur .no-blur .tabular-nums { filter: none !important; }
+
 /* Motion reduce */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

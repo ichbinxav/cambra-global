@@ -23,7 +23,7 @@ export default function InfrastructureStatus({ latest }) {
               <row.icon size={12} className="text-muted-foreground/50" />
             </div>
             <p className="text-xs font-semibold text-muted-foreground/70 w-20 shrink-0">{row.label}</p>
-            <p className="text-xs font-bold flex-1">{row.value}</p>
+            <p className="text-xs font-bold flex-1 tabular-nums">{row.value}</p>
             {row.status === "warn" ? (
               <span className="flex items-center gap-1 text-[10px] text-orange-500 font-semibold bg-orange-500/[0.08] border border-orange-500/20 px-2 py-0.5 rounded-full">
                 <AlertTriangle size={8} /> Estimated

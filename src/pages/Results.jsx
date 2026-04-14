@@ -209,7 +209,7 @@ export default function Results() {
             </Button>
           </Link>
           <Button onClick={subscribed ? handleExportPdf : handleSubscribe} variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5">
-            {subscribed ? (<><Download size={11} /> Export PDF</>) : (<><Lock size={11} /> Desbloquear PDF</>)}
+            {subscribed ? (<><Download size={11} /> Export PDF</>) : (<><Lock size={11} /> Desbloquear datos <span className='mx-1 line-through opacity-60'>60€</span> Gratis</>)}
           </Button>
           <Link to="/Dashboard">
             <Button size="sm" className="h-8 rounded-full text-xs px-4 font-semibold">Dashboard</Button>
@@ -217,7 +217,7 @@ export default function Results() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-5 py-10 pb-24 space-y-12">
+      <div className={`max-w-3xl mx-auto px-5 py-10 pb-24 space-y-12 ${!subscribed ? 'lock-blur' : ''}`}>
 
         {/* ═══ 1. MAIN RESULT ═══════════════════════════════════════ */}
         <div className="text-center">
@@ -231,11 +231,19 @@ export default function Results() {
           <p className="text-sm text-muted-foreground mb-3">Optimization potential identified across your infrastructure</p>
 
           {/* THE BIG NUMBER */}
-          <div className="text-[clamp(5rem,18vw,10rem)] font-black tracking-[-0.055em] leading-none mb-2">
+          <div className="text-[clamp(5rem,18vw,10rem)] font-black tracking-[-0.055em] leading-none mb-2 no-blur">
             <AnimatedCounter value={result.total_savings} prefix="€" duration={2} />
           </div>
           <p className="text-muted-foreground/50 text-base mb-2">per year across your infrastructure</p>
           <p className="text-muted-foreground/35 text-sm mb-7">Value currently left unoptimized. Most brands your size improve this within the first cycle.</p>
+
+          {!subscribed && (
+            <div className="mt-2">
+              <Button onClick={handleSubscribe} className="rounded-full px-6 text-sm gap-1.5">
+                Desbloquear datos <span className="line-through opacity-60">60€</span> <span className="font-bold">Gratis</span>
+              </Button>
+            </div>
+          )}
 
           {/* Score pill */}
           <div className="flex flex-wrap items-center justify-center gap-3">
@@ -275,7 +283,7 @@ export default function Results() {
           <div className="card-dark p-5 rounded-2xl">
             <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Released Capital</p>
             <div className="text-4xl font-black tracking-tight">
-              <AnimatedCounter value={result.total_savings} prefix="€" duration={2} />
+              <span className="tabular-nums"><AnimatedCounter value={result.total_savings} prefix="€" duration={2} /></span>
               <span className="text-base text-muted-foreground/40 font-normal">/yr</span>
             </div>
           </div>
@@ -359,7 +367,7 @@ export default function Results() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false}
                   tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", opacity: 0.6 }} />
                 <Tooltip
-                  contentStyle={{ borderRadius: 10, border: "1px solid hsl(var(--border))", fontSize: 11, background: "hsl(var(--card))" }}
+                  contentStyle={{ borderRadius: 10, border: "1px solid hsl(var(--border))", fontSize: 11, background: "hsl(var(--card))", filter: !subscribed ? 'blur(6px)' : 'none' }}
                   formatter={v => [`€${v?.toLocaleString()}`, "Savings/yr"]}
                   cursor={{ fill: "hsl(var(--secondary))", radius: 6 }}
                 />
@@ -404,16 +412,7 @@ export default function Results() {
           </div>
         </div>
 
-        {!subscribed && (
-          <div className="absolute inset-0 rounded-2xl bg-background/60 backdrop-blur-sm border border-border/40 flex items-center justify-center z-10">
-            <div className="text-center space-y-2">
-              <Lock size={16} className="mx-auto text-muted-foreground" />
-              <p className="text-sm font-semibold">Desbloquea el informe completo</p>
-              <p className="text-xs text-muted-foreground">Primeros 500 gratis de por vida</p>
-              <Button size="sm" className="rounded-full" onClick={handleSubscribe}>Suscribirme</Button>
-            </div>
-          </div>
-        )}
+
         {/* ═══ 5. BENCHMARK COMPARISON ══════════════════════════════ */}
         <div className="relative">
           <SectionLabel>Benchmark comparison</SectionLabel>

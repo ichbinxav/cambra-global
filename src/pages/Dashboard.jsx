@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [userDeals, setUserDeals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subscribed, setSubscribed] = useState(false);
   const [userEmail, setUserEmail] = useState(null);
   const [econ, setEcon] = useState({ identified: 0, activated: 0, realized: 0 });
 
@@ -61,6 +62,20 @@ export default function Dashboard() {
     });
   }, []);
 
+  // Check subscription status (non-blocking)
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const authed = await base44.auth.isAuthenticated();
+        if (!authed) { setSubscribed(false); return; }
+        const me = await base44.auth.me();
+        const subs = await base44.entities.Subscription.filter({ user_email: me.email, status: 'active' }, '-created_date', 1);
+        setSubscribed(subs.length > 0);
+      } catch {}
+    };
+    check();
+  }, []);
+
   // Subscribe to real-time updates once we have the user email
   useEffect(() => {
     if (!userEmail) return;
@@ -88,6 +103,21 @@ export default function Dashboard() {
   }, [userEmail]);
 
   const latest = results[0];
+
+  const handleSubscribe = async () => {
+    const authed = await base44.auth.isAuthenticated();
+    if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
+    const res = await base44.functions.invoke('startSubscription', {});
+    const status = res?.data?.status;
+    if (status === 'activated_free' || status === 'already_active') {
+      setSubscribed(true);
+      alert('Acceso activado — primeros 500 gratis de por vida.');
+    } else if (status === 'requires_checkout') {
+      alert('No quedan plazas gratuitas. Activaremos el pago (60 €/mes) en breve.');
+    } else if (res?.data?.error) {
+      alert(res.data.error);
+    }
+  };
   const chartData = results.slice().reverse().map((r, i) => ({ i, value: r.total_savings || 0 }));
   const score = latest?.infra_score || 0;
   
@@ -105,7 +135,7 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="space-y-4 pb-10">
+    <div className={`space-y-4 pb-10 ${!subscribed ? 'lock-blur' : ''}`}>
 
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between">
@@ -120,6 +150,11 @@ export default function Dashboard() {
             New Analysis <ArrowRight className="h-3.5 w-3.5" />
           </Button>
         </Link>
+        {!subscribed && (
+          <Button variant="outline" size="sm" onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold gap-1.5">
+            Desbloquear datos <span className="line-through opacity-60">60€</span> <span className="font-bold">Gratis</span>
+          </Button>
+        )}
       </div>
 
       {/* Economics strip */}

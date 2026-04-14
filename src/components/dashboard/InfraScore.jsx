@@ -23,7 +23,7 @@ export default function InfraScore({ score, resultId }) {
                 strokeDasharray={2 * Math.PI * 26}
                 strokeDashoffset={2 * Math.PI * 26 * (1 - score / 100)}
                 style={{ transition: "stroke-dashoffset 1.5s ease-out" }} />
-              <text x="30" y="35" textAnchor="middle" fill={scoreColor} fontSize="12" fontWeight="900" transform="rotate(90 30 30)">{score}</text>
+              <text x="30" y="35" textAnchor="middle" fill={scoreColor} fontSize="12" fontWeight="900" transform="rotate(90 30 30)" className="tabular-nums">{score}</text>
             </svg>
           </div>
           <div className="flex-1">
