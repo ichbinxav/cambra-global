@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Search, Globe, MapPin } from "lucide-react";
 
 const CATEGORIES = [
@@ -33,9 +34,25 @@ export default function Network() {
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [sizeFilter, setSizeFilter] = useState("all");
+  const [subscribed, setSubscribed] = useState(false);
+  const [subLoading, setSubLoading] = useState(true);
 
   useEffect(() => {
     base44.entities.Brand.list("-created_date", 100).then(b => { setBrands(b); setLoading(false); });
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const authed = await base44.auth.isAuthenticated();
+        if (!authed) { setSubscribed(false); return; }
+        const me = await base44.auth.me();
+        const subs = await base44.entities.Subscription.filter({ user_email: me.email, status: 'active' }, '-created_date', 1);
+        setSubscribed(subs.length > 0);
+      } finally {
+        setSubLoading(false);
+      }
+    })();
   }, []);
 
   const filtered = brands.filter(b => {
@@ -45,6 +62,21 @@ export default function Network() {
     return matchSearch && matchCat && matchSize;
   });
 
+  const handleSubscribe = async () => {
+    const authed = await base44.auth.isAuthenticated();
+    if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
+    const res = await base44.functions.invoke('startSubscription', {});
+    const status = res?.data?.status;
+    if (status === 'activated_free' || status === 'already_active') {
+      setSubscribed(true);
+      alert('Access activated — early partners free for life.');
+    } else if (status === 'requires_checkout') {
+      alert('Free seats are over. We will enable paid plan (€60/mo) soon.');
+    } else if (res?.data?.error) {
+      alert(res.data.error);
+    }
+  };
+
   return (
     <div>
       <div className="mb-8">
@@ -53,8 +85,19 @@ export default function Network() {
         <p className="text-muted-foreground text-sm mt-1">Independent brands building smarter businesses through THE NoDE.</p>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-2.5 mb-7">
+      {!subscribed && (
+        <div className="mb-6 p-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.06] flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex-1">
+            <p className="text-sm font-semibold">Members-only directory</p>
+            <p className="text-xs text-muted-foreground/60">Unlock full access — early partners join for free.</p>
+          </div>
+          <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold">Unlock access — Free</Button>
+        </div>
+      )}
+
+       {/* Filters */}
+       <div className={`${!subscribed ? 'pointer-events-none select-none blur-[2px]' : ''}`}>
+       <div className="flex flex-col sm:flex-row gap-2.5 mb-7">
         <div className="relative flex-1">
           <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search brands or countries..." className="pl-9 h-10 text-sm border-border/60" />
@@ -139,6 +182,7 @@ export default function Network() {
       {filtered.length > 0 && (
         <p className="text-center text-xs text-muted-foreground/40 mt-6">{filtered.length} member{filtered.length !== 1 ? "s" : ""} in the network</p>
       )}
+      </div>
     </div>
   );
 }
