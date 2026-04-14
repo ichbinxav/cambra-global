@@ -58,9 +58,6 @@ export default function Navbar() {
 
         {/* Desktop CTAs */}
         <div className="hidden md:flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="h-8 rounded-full px-5 text-sm font-medium">
-            <a href="/KEY_CODE.md" download>Descargar código</a>
-          </Button>
           {isAuthenticated ? (
             <Link to="/Dashboard">
               <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm">
@@ -111,14 +108,6 @@ export default function Navbar() {
             )
           ))}
           <div className="pt-4 flex flex-col gap-2">
-            <a
-              href="/KEY_CODE.md"
-              download
-              onClick={() => setOpen(false)}
-              className="w-full h-12 rounded-full text-sm border border-border/70 hover:bg-secondary transition-colors font-medium flex items-center justify-center"
-            >
-              Descargar código
-            </a>
             <Link to="/Analyzer" onClick={() => setOpen(false)}>
               <Button className="w-full h-12 rounded-full text-sm font-bold">Run the Analyzer</Button>
             </Link>
