@@ -193,14 +193,33 @@ function StepBrand({ data, setData }) {
         <Input
           value={data.name}
           onChange={e => setData(d => ({ ...d, name: e.target.value }))}
-          placeholder="Brand name"
+          placeholder="Brand name (required)"
           className="h-12 text-sm border-border/60 focus:border-foreground/40"
           autoFocus
         />
         <Input
+          value={data.contact_name}
+          onChange={e => setData(d => ({ ...d, contact_name: e.target.value }))}
+          placeholder="Your name (required)"
+          className="h-12 text-sm border-border/60 focus:border-foreground/40"
+        />
+        <Input
+          type="email"
+          value={data.contact_email}
+          onChange={e => setData(d => ({ ...d, contact_email: e.target.value }))}
+          placeholder="Email (required)"
+          className="h-12 text-sm border-border/60 focus:border-foreground/40"
+        />
+        <Input
           value={data.website}
           onChange={e => setData(d => ({ ...d, website: e.target.value }))}
-          placeholder="Website (optional)"
+          placeholder="Website (required)"
+          className="h-12 text-sm border-border/60 focus:border-foreground/40"
+        />
+        <Input
+          value={data.tax_id}
+          onChange={e => setData(d => ({ ...d, tax_id: e.target.value }))}
+          placeholder="Tax ID / VAT / EIN (required)"
           className="h-12 text-sm border-border/60 focus:border-foreground/40"
         />
       </motion.div>
@@ -506,7 +525,7 @@ function StepFinish({ data, mode, connected }) {
 
 export default function Onboarding() {
   const [step, setStep] = useState(0);
-  const [data, setData] = useState({ name: "", website: "", country: "", category: "", annual_revenue: "", channels: [], stack: [], goals: [], size: "" });
+  const [data, setData] = useState({ name: "", contact_name: "", contact_email: "", website: "", tax_id: "", country: "", category: "", annual_revenue: "", channels: [], stack: [], goals: [], size: "" });
   const [mode, setMode] = useState("connect");
   const [connected, setConnected] = useState([]);
   const [uploaded, setUploaded] = useState(null);
@@ -530,13 +549,21 @@ export default function Onboarding() {
   const finish = async () => {
     setSaving(true);
     await base44.entities.Brand.create({ ...data, onboarding_complete: true });
-    if (mode === "manual") navigate("/Analyzer");
-    else if (mode === "connect") navigate("/ConnectTools");
+    // Activate free access if available
+    try { await base44.functions.invoke('startSubscription', {}); } catch {}
+    if (mode === "connect") navigate("/ConnectTools");
+    else if (mode === "manual") navigate("/Analyzer");
     else navigate("/Dashboard");
   };
 
   const canAdvance = () => {
-    if (step === 1) return data.name.trim().length > 0;
+    if (step === 1) return (
+      data.name.trim().length > 0 &&
+      data.contact_name.trim().length > 0 &&
+      data.contact_email.trim().length > 0 &&
+      data.website.trim().length > 0 &&
+      data.tax_id.trim().length > 0
+    );
     if (step === 2) return data.annual_revenue.length > 0;
     return true;
   };

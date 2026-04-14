@@ -8,7 +8,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import ScoreCard from "@/components/results/ScoreCard";
-import LeadModal from "@/components/results/LeadModal";
+
 import { computeInfraScore } from "@/lib/scoreEngine";
 import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
 import { Download } from "lucide-react";
@@ -555,13 +555,11 @@ export default function Results() {
             Join THE NoDE network and start fixing your infrastructure today.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <LeadModal />
             <Link to="/Onboarding" className="w-full sm:w-auto">
               <Button size="lg" className="w-full rounded-full px-10 text-sm font-bold gap-2 shadow-sm">
-                Join THE NoDE <ArrowRight className="h-4 w-4" />
+                Join & unlock — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span> <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-
           </div>
         </div>
 

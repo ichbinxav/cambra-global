@@ -1,0 +1,96 @@
+{
+  "name": "Brand",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Brand name"
+    },
+    "website": {
+      "type": "string",
+      "description": "Brand website URL"
+    },
+    "contact_name": {
+      "type": "string",
+      "description": "Primary contact full name"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Primary contact email"
+    },
+    "tax_id": {
+      "type": "string",
+      "description": "Company Tax ID / VAT / EIN"
+    },
+    "country": {
+      "type": "string",
+      "description": "Country of operation"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "fashion",
+        "beauty",
+        "wellness",
+        "lifestyle",
+        "food_bev",
+        "home",
+        "tech",
+        "other"
+      ],
+      "description": "Brand category"
+    },
+    "annual_revenue": {
+      "type": "string",
+      "enum": [
+        "under_500k",
+        "500k_1m",
+        "1m_5m",
+        "5m_20m",
+        "20m_plus"
+      ],
+      "description": "Annual revenue range"
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Sales channels"
+    },
+    "stack": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tech stack tools"
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Business goals"
+    },
+    "onboarding_complete": {
+      "type": "boolean",
+      "default": false
+    },
+    "size": {
+      "type": "string",
+      "enum": [
+        "solo",
+        "small",
+        "medium",
+        "large"
+      ],
+      "description": "Team size"
+    },
+    "logo_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
