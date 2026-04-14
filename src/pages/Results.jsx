@@ -561,11 +561,7 @@ export default function Results() {
                 Join THE NoDE <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/Onboarding" className="w-full sm:w-auto">
-              <Button variant="outline" size="lg" className="w-full rounded-full px-10 text-sm border-border/60">
-                Activate deals
-              </Button>
-            </Link>
+
           </div>
         </div>
 
