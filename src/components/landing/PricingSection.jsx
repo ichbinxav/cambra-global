@@ -87,7 +87,7 @@ export default function PricingSection() {
 
               <div className="flex items-baseline gap-3 mb-1">
                 {/* Crossed-out price */}
-                <span className="text-xl font-light text-background/25 line-through">€120/mo</span>
+                <span className="text-xl font-light text-background/25 line-through">€60/mo</span>
                 <span className="text-5xl font-black">Free</span>
               </div>
               <p className="text-sm text-background/50">You don't pay us. You keep the savings.</p>

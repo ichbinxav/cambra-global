@@ -92,7 +92,7 @@ export default function HeroSection() {
               className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-5 py-4 rounded-full bg-foreground text-background"
             >
               <div className="flex items-center gap-2">
-                <span className="text-sm text-background/40 line-through font-light">€120/month</span>
+                <span className="text-sm text-background/40 line-through font-light">€60/month</span>
                 <span className="text-xl sm:text-lg font-black">Free</span>
               </div>
               <span className="hidden sm:inline text-background/40">·</span>
