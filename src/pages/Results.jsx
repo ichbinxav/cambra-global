@@ -488,7 +488,7 @@ export default function Results() {
           </div>
         </div>
 
-        {/* ═══ 7. DEALS ════════════════════════════════════════════ */}}
+        {/* ═══ 7. DEALS ════════════════════════════════════════════ */}
         <div>
           <SectionLabel>Available deals via THE NoDE</SectionLabel>
           <div className="space-y-3">
