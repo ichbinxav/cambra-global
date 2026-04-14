@@ -119,14 +119,53 @@ export default function Results() {
     ? scoreReport.impacts.map((imp, i) => ({ ...RECS[i] ?? RECS[0], action: imp.action, points: imp.pointsGain, cat: imp.category }))
     : RECS.map(r => ({ ...r, saving: r.saving.replace("€X", `€${Math.round((result.total_savings || 0) / 3).toLocaleString()}`) }));
 
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
+    // Ensure we have analysis data
+    if (!result) { alert('No analysis data to export.'); return; }
+
+    // Require authentication and a registered brand before exporting
+    const authed = await base44.auth.isAuthenticated();
+    if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
+    const me = await base44.auth.me();
+    const brands = await base44.entities.Brand.filter({ created_by: me.email });
+    if (!brands.length) {
+      alert('Please register your brand first (Account > Brand) before exporting the report.');
+      return;
+    }
+    const brand = brands[0];
+
+    // Gather benchmark comparisons
+    const payCurr = result.details?.payment_current_rate ?? null;
+    const payOpt = result.details?.payment_optimal_rate ?? null;
+    const shipCurr = result.details?.shipping_current_avg ?? null;
+    const shipOpt = result.details?.shipping_optimal_avg ?? null;
+    const monthlyRevenue = input?.monthly_revenue ?? null;
+    const saasCurrentPct = monthlyRevenue ? ((input.total_saas_spend / monthlyRevenue) * 100) : null;
+    const saasOptPct = (monthlyRevenue && result.details?.saas_optimal_total)
+      ? ((result.details.saas_optimal_total / monthlyRevenue) * 100) : null;
+
+    // Create PDF
     const doc = new jsPDF();
+    doc.setFontSize(18); doc.text('THE NoDE — Results Summary', 20, 20);
+
+    let y = 28;
+    doc.setFontSize(12);
+    if (brand?.name) { doc.text(`Brand: ${brand.name}`, 20, y); y += 8; }
+
     const total = result.total_savings || 0;
     const scoreVal = score;
-    doc.setFontSize(18); doc.text('THE NoDE — Results Summary', 20, 20);
-    doc.setFontSize(12); doc.text(`Total annual savings: €${total.toLocaleString()}`, 20, 32);
-    doc.text(`Infrastructure Score: ${scoreVal}/100`, 20, 40);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 52);
+    doc.text(`Total annual savings: €${total.toLocaleString()}`, 20, y); y += 8;
+    doc.text(`Infrastructure Score: ${scoreVal}/100`, 20, y); y += 12;
+
+    // Benchmarks section
+    doc.setFontSize(14); doc.text('Key benchmark comparisons', 20, y); y += 8; doc.setFontSize(12);
+    doc.text(`Payment fee: ${payCurr !== null ? payCurr.toFixed(1)+'%' : 'N/A'} vs target ${payOpt !== null ? payOpt.toFixed(1)+'%' : 'N/A'}`, 20, y); y += 6;
+    doc.text(`Cost/shipment: ${shipCurr !== null ? '€'+shipCurr.toFixed(2) : 'N/A'} vs target ${shipOpt !== null ? '€'+shipOpt.toFixed(2) : 'N/A'}`, 20, y); y += 6;
+    doc.text(`SaaS / revenue: ${saasCurrentPct !== null ? saasCurrentPct.toFixed(1)+'%' : 'N/A'} vs target ${saasOptPct !== null ? saasOptPct.toFixed(1)+'%' : 'N/A'}`, 20, y); y += 12;
+
+    // Timestamp
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, y);
+
     doc.save('thenode-results.pdf');
   };
 
