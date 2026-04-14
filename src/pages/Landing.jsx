@@ -10,11 +10,13 @@ import BenefitsSection from "@/components/landing/BenefitsSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FooterSection from "@/components/landing/FooterSection";
+import DomDump from "@/components/dev/DomDump";
 // ForLifestyleSection removed — replaced by brand-aligned sections
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-background font-inter">
+      <DomDump tag="Landing" />
       <Navbar />
       <HeroSection />
       <ThreeLayersSection />
