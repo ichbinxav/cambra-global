@@ -8,6 +8,8 @@ import {
   Plug, ExternalLink, Zap, ChevronRight
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import ConnectorTile from "@/components/connect/ConnectorTile.jsx";
+import { CONNECTORS as CONNECTOR_IDS } from "@/lib/connectors.config.js";
 
 const CATEGORIES = ["All", "Payments", "Commerce", "Accounting", "Shipping", "SaaS"];
 
@@ -204,6 +206,34 @@ export default function ConnectTools() {
             <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-green-500/[0.05] border border-green-500/15 text-xs text-muted-foreground">
               <CheckCircle2 size={13} className="text-green-500 shrink-0" />
               Connect your tools for a more accurate analysis — we pull real rates and volumes automatically.
+            </div>
+
+            {/* Direct connections (OAuth) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <ConnectorTile
+                title="Google Drive"
+                note="Read-only access to files for Analyzer"
+                connectorId={CONNECTOR_IDS.drive}
+                functionName="driveConnectionCheck"
+              />
+              <ConnectorTile
+                title="Google Sheets"
+                note="Read-only access to spreadsheets"
+                connectorId={CONNECTOR_IDS.sheets}
+                functionName="sheetsConnectionCheck"
+              />
+              <ConnectorTile
+                title="Gmail"
+                note="Read-only labels/messages for ingestion"
+                connectorId={CONNECTOR_IDS.gmail}
+                functionName="gmailConnectionCheck"
+              />
+              <ConnectorTile
+                title="Slack"
+                note="Read-only to list basic channels (optional)"
+                connectorId={CONNECTOR_IDS.slack}
+                functionName="slackConnectionCheck"
+              />
             </div>
 
             {/* Search + filters */}
