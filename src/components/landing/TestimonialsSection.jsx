@@ -114,12 +114,12 @@ export default function TestimonialsSection() {
 
         {/* Trust bar */}
         <div ref={trustRef} className="mt-10 pt-10 border-t border-border/40">
-          <div className="mb-4">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/45">Network benchmarks</p>
-            <h3 className="text-[clamp(1.5rem,4vw,2.4rem)] font-black tracking-[-0.02em]">By the numbers</h3>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-          {[
+         <div className="mb-4">
+           <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/45">Network benchmarks</p>
+           <h3 className="text-[clamp(1.5rem,4vw,2.4rem)] font-black tracking-[-0.02em]">By the numbers</h3>
+         </div>
+         <div className="grid grid-cols-1 gap-3">
+         {
             { value: "15+", label: "Countries active", icon: Globe, color: "text-foreground", bg: "bg-secondary/60 border-border/60" },
             { value: "€18K–72K", label: "Savings range per brand", icon: Percent, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
             { value: "1.4%", label: "Network payment rate", icon: CreditCard, color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
@@ -138,7 +138,7 @@ export default function TestimonialsSection() {
               </div>
               <div className="min-w-0">
                 <motion.p
-                  className={`text-5xl md:text-6xl font-black tracking-tight ${s.color}`
+                  className={`text-5xl md:text-6xl font-black tracking-tight ${s.color}`}
                   initial={{ scale: 0.95 }}
                   animate={trustInView ? { scale: 1 } : {}}
                   transition={{ delay: i * 0.08 + 0.1, type: 'spring', stiffness: 280, damping: 16 }}
@@ -147,9 +147,9 @@ export default function TestimonialsSection() {
               </div>
             </motion.div>
           ))}
+            </div>
+          </div>
         </div>
-      </div>
-      </div>
-    </section>
+      </section>
   );
 }
