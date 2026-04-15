@@ -203,9 +203,7 @@ export default function ProblemSection() {
 
           {/* Right — animated cards */}
           <div className="space-y-4">
-            {PROBLEMS.map((item, i) => (
-              <ProblemCard key={i} item={item} index={i} />
-            ))}
+            {/* KPI cards removed per request */}
           </div>
         </div>
       </div>

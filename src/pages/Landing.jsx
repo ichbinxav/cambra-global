@@ -2,9 +2,8 @@ import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 import ThreeLayersSection from "@/components/landing/ThreeLayersSection";
 import ProblemSection from "@/components/landing/ProblemSection";
-import SolutionSection from "@/components/landing/SolutionSection";
-import HowSection from "@/components/landing/HowSection";
 import AnalyzerCTA from "@/components/landing/AnalyzerCTA";
+import HowCombinedSection from "@/components/landing/HowCombinedSection.jsx";
 import IntegrationsSection from "@/components/landing/IntegrationsSection";
 import BenefitsSection from "@/components/landing/BenefitsSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
@@ -19,10 +18,9 @@ export default function Landing() {
 
       <Navbar />
       <HeroSection />
+      <HowCombinedSection />
       <ThreeLayersSection />
       <ProblemSection />
-      <SolutionSection />
-      <HowSection />
       <AnalyzerCTA />
       <IntegrationsSection />
       <BenefitsSection />
