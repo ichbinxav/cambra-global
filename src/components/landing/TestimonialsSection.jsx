@@ -113,7 +113,7 @@ export default function TestimonialsSection() {
         </div>
 
         {/* Trust bar */}
-        <div ref={trustRef} className="mt-10 pt-10 border-t border-border/40 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div ref={trustRef} className="mt-10 pt-10 border-t border-border/40 grid grid-cols-1 gap-3">
           {[
             { value: "15+", label: "Countries active", icon: Globe, color: "text-foreground", bg: "bg-secondary/60 border-border/60" },
             { value: "€18K–72K", label: "Savings range per brand", icon: Percent, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
@@ -126,14 +126,14 @@ export default function TestimonialsSection() {
               animate={trustInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.08 }}
               whileHover={{ y: -2 }}
-              className={`p-4 rounded-xl border flex items-center justify-between gap-3 ${s.bg}`}
+              className={`p-5 md:p-6 rounded-2xl border flex items-center gap-4 ${s.bg}`}
             >
-              <div className="w-10 h-10 rounded-xl bg-background/50 border border-border/40 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-background/70 border border-border/40 flex items-center justify-center shrink-0">
                 <s.icon size={16} className={`${s.color} opacity-90`} />
               </div>
-              <div className="text-right">
+              <div className="min-w-0">
                 <motion.p
-                  className={`text-2xl font-black tracking-tight ${s.color}`}
+                  className={`text-3xl font-black tracking-tight ${s.color}`}
                   initial={{ scale: 0.95 }}
                   animate={trustInView ? { scale: 1 } : {}}
                   transition={{ delay: i * 0.08 + 0.1, type: 'spring', stiffness: 280, damping: 16 }}
