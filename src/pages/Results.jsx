@@ -10,7 +10,7 @@ import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import ScoreCard from "@/components/results/ScoreCard";
 
 import { computeInfraScore } from "@/lib/scoreEngine";
-import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
+import NormalizedBarChart from "@/components/charts/NormalizedBarChart";
 import { Download } from "lucide-react";
 import { jsPDF } from "jspdf";
 
@@ -385,22 +385,9 @@ export default function Results() {
           <SectionLabel>Top savings opportunities</SectionLabel>
 
           {/* Visual bar chart */}
-          <div className="mb-4 p-5 rounded-2xl border border-border/50 bg-card">
+          <div className="mb-4 p-5 rounded-2xl border border-border/50 bg-card overflow-hidden">
             <p className="text-[10px] text-muted-foreground/40 uppercase tracking-[0.15em] mb-4">Annual savings by category</p>
-            <ResponsiveContainer width="100%" height={90}>
-              <BarChart data={chartData} barSize={32} barGap={8}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false}
-                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", opacity: 0.6 }} />
-                <Tooltip
-                  contentStyle={{ borderRadius: 10, border: "1px solid hsl(var(--border))", fontSize: 11, background: "hsl(var(--card))", filter: !subscribed ? 'blur(6px)' : 'none' }}
-                  formatter={v => [`€${v?.toLocaleString()}`, "Savings/yr"]}
-                  cursor={{ fill: "hsl(var(--secondary))", radius: 6 }}
-                />
-                <Bar dataKey="value" radius={[5, 5, 0, 0]}>
-                  {chartData.map((entry, i) => <Cell key={i} fill={entry.fill} fillOpacity={0.85} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <NormalizedBarChart data={chartData} className="h-28 sm:h-32 md:h-36" hideLabels={!subscribed} />
           </div>
 
           {/* Cards */}

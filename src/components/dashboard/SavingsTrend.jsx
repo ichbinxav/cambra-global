@@ -5,7 +5,7 @@ import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
 
 export default function SavingsTrend({ chartData }) {
   return (
-    <div className="p-6 rounded-2xl border border-border/50 bg-card">
+    <div className="p-6 rounded-2xl border border-border/50 bg-card overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50">Savings trend</p>
         <Link to="/Reports">
