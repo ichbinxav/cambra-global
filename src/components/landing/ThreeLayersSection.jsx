@@ -87,12 +87,12 @@ export default function ThreeLayersSection() {
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Link to="/Deals">
-                  <button className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-background text-foreground text-sm font-bold hover:bg-background/90 transition-colors">
+                  <button className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-saas-gradient text-white text-sm font-bold shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-colors">
                     See all deals <ArrowRight size={12} />
                   </button>
                 </Link>
                 <Link to="/Onboarding">
-                  <button className="inline-flex items-center gap-2 h-11 px-6 rounded-full border border-background/20 text-background/70 text-sm font-medium hover:bg-background/10 transition-colors">
+                  <button className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-saas-gradient text-white text-sm font-bold shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-colors">
                     Join to unlock <ArrowRight size={12} />
                   </button>
                 </Link>

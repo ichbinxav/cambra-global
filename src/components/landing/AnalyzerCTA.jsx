@@ -41,7 +41,7 @@ export default function AnalyzerCTA() {
             </p>
             {isAuthenticated ? (
               <Link to="/Analyzer">
-                <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm">
+                <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40">
                   Run the Analyzer
                   <ArrowRight className="h-4 w-4" />
                 </Button>

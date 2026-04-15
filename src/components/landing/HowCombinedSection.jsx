@@ -95,7 +95,7 @@ export default function HowCombinedSection() {
 
         <div className="text-center mt-8">
           <Link to="/Analyzer">
-            <Button className="h-11 rounded-full px-7 text-sm font-bold gap-2 shadow-sm">
+            <Button className="h-11 rounded-full px-7 text-sm font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40">
               Start now — free <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
