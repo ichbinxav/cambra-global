@@ -1,4 +1,4 @@
-import { TrendingUp, BarChart2, Network, Clock, Focus } from "lucide-react";
+import { TrendingUp, BarChart2, Network, Clock, Focus, CreditCard, Truck, Package } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
@@ -57,10 +57,10 @@ const ICONS = {
 };
 
 const PROOF = [
-  { value: "€18K–€72K", label: "unlocked per year" },
-  { value: "−52%", label: "on payments" },
-  { value: "−18%", label: "on shipping" },
-  { value: "−30%", label: "on SaaS tools" },
+  { value: "€18K–€72K", label: "unlocked per year", icon: BarChart2, color: "text-foreground", bg: "bg-card border-border/40" },
+  { value: "−52%", label: "on payments", icon: CreditCard, color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
+  { value: "−18%", label: "on shipping", icon: Truck, color: "text-green-600", bg: "bg-green-500/[0.08] border-green-500/20" },
+  { value: "−30%", label: "on SaaS tools", icon: Package, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
 ];
 
 function BenefitTile({ b, index }) {
@@ -170,22 +170,27 @@ export default function BenefitsSection() {
           >
             Average impact across network members
           </motion.p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border/30 rounded-2xl overflow-hidden border border-border/30">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {PROOF.map((p, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 18 }}
                 animate={proofInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-card px-6 py-7 text-center"
+                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className={`px-5 py-5 rounded-2xl border flex items-center justify-between gap-3 ${p.bg}`}
               >
-                <motion.p
-                  className="text-3xl font-black tracking-tight mb-1"
-                  initial={{ scale: 0.7, opacity: 0 }}
-                  animate={proofInView ? { scale: 1, opacity: 1 } : {}}
-                  transition={{ delay: i * 0.1 + 0.2, type: "spring", stiffness: 260, damping: 18 }}
-                >{p.value}</motion.p>
-                <p className="text-[11px] text-muted-foreground/50">{p.label}</p>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${p.bg?.includes('bg-card') ? 'bg-secondary border-border/50' : ''}`}>
+                  <p.icon size={16} className={`${p.color} opacity-90`} />
+                </div>
+                <div className="text-right min-w-0">
+                  <motion.p
+                    className={`text-2xl font-black tracking-tight ${p.color}`}
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={proofInView ? { scale: 1, opacity: 1 } : {}}
+                    transition={{ delay: i * 0.08 + 0.15, type: 'spring', stiffness: 280, damping: 16 }}
+                  >{p.value}</motion.p>
+                  <p className="text-[10px] text-muted-foreground/55 truncate">{p.label}</p>
+                </div>
               </motion.div>
             ))}
           </div>
