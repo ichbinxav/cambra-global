@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+
 import { ArrowRight, ArrowLeft, Upload, X, CheckCircle2, CreditCard, Truck, Package, BarChart3, Building2, MapPin } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import DataIngestionStep from "@/components/analyzer/DataIngestionStep";
+import SmartNumberField from "@/components/inputs/SmartNumberField.jsx";
 import { computeInfraScore, calculateSavings, getBenchmarks } from "@/lib/scoreEngine";
 
 const STEPS = [
@@ -152,18 +153,7 @@ export default function Analyzer() {
     navigate(`/Results?id=${result.id}`);
   };
 
-  const SliderField = ({ label, value, onChange, min, max, s = 1, fmt = v => v }) => (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium text-foreground">{label}</Label>
-        <span className="text-lg font-black tabular-nums">{fmt(value)}</span>
-      </div>
-      <Slider value={[value]} onValueChange={v => onChange(v[0])} min={min} max={max} step={s} className="py-1" />
-      <div className="flex justify-between text-[11px] text-muted-foreground/40">
-        <span>{fmt(min)}</span><span>{fmt(max)}</span>
-      </div>
-    </div>
-  );
+// SliderField replaced by SmartNumberField for premium UX
 
   const ProviderGrid = ({ options, selected, onSelect, customValue, onCustomChange }) => (
     <div className="space-y-3">
@@ -266,29 +256,32 @@ export default function Analyzer() {
 
       case 1: return (
         <div className="space-y-8">
-          <SliderField
+          <SmartNumberField
             label="Monthly revenue"
             value={data.monthly_revenue}
-            onChange={v => set("monthly_revenue", v)}
-            min={5000} max={500000} s={5000}
-            fmt={v => `€${v.toLocaleString()}`}
+            onChange={v => set("monthly_revenue", Math.round(v))}
+            min={1000}
+            max={10000000}
+            scale="log"
+            prefix="€"
           />
           <div className="p-4 rounded-xl bg-blue-500/[0.05] border border-blue-500/15 text-[12px] text-muted-foreground leading-relaxed">
             <span className="font-semibold text-foreground">Why this matters:</span> Your revenue determines your leverage. Brands above €500K/mo unlock the strongest network terms.
           </div>
-          <SliderField
+          <SmartNumberField
             label="Monthly transactions"
             value={data.monthly_transactions}
-            onChange={v => set("monthly_transactions", v)}
-            min={50} max={10000} s={50}
-            fmt={v => v.toLocaleString()}
+            onChange={v => set("monthly_transactions", Math.round(v))}
+            min={10}
+            max={100000}
           />
-          <SliderField
+          <SmartNumberField
             label="Average order value"
             value={data.avg_order_value}
-            onChange={v => set("avg_order_value", v)}
-            min={10} max={500} s={5}
-            fmt={v => `€${v}`}
+            onChange={v => set("avg_order_value", Math.round(v))}
+            min={1}
+            max={1000}
+            prefix="€"
           />
         </div>
       );
@@ -304,15 +297,16 @@ export default function Analyzer() {
             { k: "wholesale_pct", l: "Wholesale / B2B" },
             { k: "retail_pct", l: "Retail / Physical" },
           ].map(c => (
-            <SliderField key={c.k} label={c.l} value={data[c.k]} onChange={v => set(c.k, v)} min={0} max={100} s={5} fmt={v => `${v}%`} />
+            <SmartNumberField key={c.k} label={c.l} value={data[c.k]} onChange={v => set(c.k, Math.round(v))} min={0} max={100} suffix="%" />
           ))}
 
-          <SliderField
+          <SmartNumberField
             label="% International Sales"
             value={data.intl_pct}
-            onChange={v => set('intl_pct', v)}
-            min={0} max={100} s={1}
-            fmt={v => `${v}%`}
+            onChange={v => set('intl_pct', Math.round(v))}
+            min={0}
+            max={100}
+            suffix="%"
           />
         </div>
       );
@@ -329,12 +323,14 @@ export default function Analyzer() {
               onCustomChange={setCustomPayment}
             />
           </div>
-          <SliderField
+          <SmartNumberField
             label="Current effective fee rate"
             value={data.payment_fee_pct}
-            onChange={v => set("payment_fee_pct", v)}
-            min={0.5} max={5} s={0.1}
-            fmt={v => `${v.toFixed(1)}%`}
+            onChange={v => set("payment_fee_pct", Number(Number(v).toFixed(1)))}
+            min={0.5}
+            max={5}
+            decimals={1}
+            suffix="%"
           />
           {(() => {
             const bm = getBenchmarks(data.monthly_revenue, data.country);
@@ -376,19 +372,22 @@ export default function Analyzer() {
               onCustomChange={setCustomShipping}
             />
           </div>
-          <SliderField
+          <SmartNumberField
             label="Monthly shipping spend"
             value={data.monthly_shipping_cost}
-            onChange={v => set("monthly_shipping_cost", v)}
-            min={100} max={50000} s={100}
-            fmt={v => `€${v.toLocaleString()}`}
+            onChange={v => set("monthly_shipping_cost", Math.round(v))}
+            min={100}
+            max={100000}
+            prefix="€"
+            scale="log"
           />
-          <SliderField
+          <SmartNumberField
             label="Monthly shipments"
             value={data.monthly_shipments}
-            onChange={v => set("monthly_shipments", v)}
-            min={10} max={10000} s={10}
-            fmt={v => v.toLocaleString()}
+            onChange={v => set("monthly_shipments", Math.round(v))}
+            min={10}
+            max={100000}
+            scale="log"
           />
           {(() => {
             const bm = getBenchmarks(data.monthly_revenue, data.country);
@@ -419,12 +418,13 @@ export default function Analyzer() {
 
       case 5: return (
         <div className="space-y-6">
-          <SliderField
+          <SmartNumberField
             label="Total monthly SaaS spend"
             value={data.total_saas_spend}
-            onChange={v => set("total_saas_spend", v)}
-            min={0} max={10000} s={50}
-            fmt={v => `€${v.toLocaleString()}`}
+            onChange={v => set("total_saas_spend", Math.round(v))}
+            min={0}
+            max={50000}
+            prefix="€"
           />
           <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
             <strong className="text-foreground">What we check:</strong> E-commerce platforms (Shopify, etc.), email (Klaviyo, etc.), support (Gorgias, Zendesk), analytics, and more. Brands typically overspend by <strong className="text-foreground">30%</strong>.
