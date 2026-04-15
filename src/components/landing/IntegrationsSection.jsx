@@ -61,14 +61,14 @@ export default function IntegrationsSection() {
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
-        <div className="text-center mb-14">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center gap-2">
+        <div className="mb-12">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2">
             <span className="w-4 h-px bg-border" /> Data ingestion
           </p>
           <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4">
             Connect any tool.<br />Analyze everything.
           </h2>
-          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+          <p className="text-muted-foreground text-sm max-w-sm">
             THE NoDE works with your existing stack — more connected = sharper intelligence.
           </p>
         </div>
