@@ -93,14 +93,14 @@ export default function AnalyzerCTA() {
               </div>
               {isAuthenticated ? (
                 <Link to="/Analyzer">
-                  <button className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 border border-background/20 text-background text-xs font-semibold transition-colors flex items-center gap-1.5">
+                  <button className="h-11 px-6 rounded-full bg-saas-gradient text-white font-bold text-sm shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5 flex items-center gap-2">
                     Calculate my savings <ArrowRight size={12} />
                   </button>
                 </Link>
               ) : (
                 <button
                   onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                  className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 border border-background/20 text-background text-xs font-semibold transition-colors flex items-center gap-1.5"
+                  className="h-11 px-6 rounded-full bg-saas-gradient text-white font-bold text-sm shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5 flex items-center gap-2"
                 >
                   Sign in <ArrowRight size={12} />
                 </button>
