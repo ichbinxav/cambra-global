@@ -68,9 +68,9 @@ export default function HowCombinedSection() {
   const headInView = useInView(headRef, { once: true, margin: "-80px" });
 
   return (
-    <section className="py-20 px-5 border-t border-border/40">
+    <section className="py-14 px-5 border-t border-border/40">
       <div className="max-w-6xl mx-auto">
-        <div ref={headRef} className="mb-10 text-center">
+        <div ref={headRef} className="mb-8">
           <motion.p
             initial={{ opacity: 0, y: 12 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.45 }}

@@ -104,7 +104,7 @@ export default function BenefitsSection() {
   const proofInView = useInView(proofRef, { once: true, margin: "-60px" });
 
   return (
-    <section className="py-28 px-5 border-t border-border/40">
+    <section className="py-18 px-5 border-t border-border/40">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}

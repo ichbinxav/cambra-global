@@ -79,7 +79,7 @@ export default function TestimonialsSection() {
   const trustInView = useInView(trustRef, { once: true, margin: "-60px" });
 
   return (
-    <section className="py-24 px-5 border-t border-border/40 bg-secondary/20">
+    <section className="py-16 px-5 border-t border-border/40 bg-secondary/20">
       <div className="max-w-6xl mx-auto">
         <div ref={headRef} className="text-center mb-14">
           <motion.p
