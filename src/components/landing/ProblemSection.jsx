@@ -184,7 +184,7 @@ export default function ProblemSection() {
             >
               {isAuthenticated ? (
                 <Link to="/Analyzer">
-                  <button className="flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700 hover:gap-3 transition-all">
+                  <button className="h-11 px-6 rounded-full bg-saas-gradient text-white font-bold text-sm shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5 flex items-center gap-2">
                     Calculate your savings <ArrowRight size={13} />
                   </button>
                 </Link>
@@ -193,7 +193,7 @@ export default function ProblemSection() {
                   href="/auth/start"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700 hover:gap-3 transition-all"
+                  className="h-11 px-6 rounded-full bg-saas-gradient text-white font-bold text-sm shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5 inline-flex items-center gap-2"
                 >
                   Sign in to analyze <ArrowRight size={13} />
                 </a>
