@@ -148,7 +148,7 @@ export default function HeroSection() {
                     rel="noopener noreferrer"
                     className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium bg-background text-foreground border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2"
                   >
-                    Start now — free analysis <ArrowRight className="h-4 w-4" />
+                    Sign in <ArrowRight className="h-4 w-4" />
                   </motion.a>
                 </>
               )}
