@@ -113,20 +113,21 @@ export default function HeroSection() {
             </motion.ul>
 
             {/* CTAs */}
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4"
+            aria-label="Llamadas a la acción principales">
               {isAuthenticated ? (
                 <>
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2 bg-green-600 hover:bg-green-700">
-                        Analyze Infrastructure <ArrowRight className="h-4 w-4" />
+                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5">
+                        Empezar ahora — análisis gratuito <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>
                   </Link>
                   <Link to="/Dashboard" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                       <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-medium border-border/60 hover:border-foreground/20">
-                        Go to Dashboard <ArrowRight className="h-4 w-4" />
+                        Ir al panel <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>
                   </Link>
@@ -135,8 +136,8 @@ export default function HeroSection() {
                 <>
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold shadow-lg gap-2 bg-green-600 hover:bg-green-700">
-                        Analyze Infrastructure <ArrowRight className="h-4 w-4" />
+                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5">
+                        Empezar ahora — análisis gratuito <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>
                   </Link>
@@ -145,9 +146,9 @@ export default function HeroSection() {
                     href="/auth/start"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2"
+                    className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40"
                   >
-                    Sign in first <ArrowRight className="h-4 w-4" />
+                    Empezar ahora — análisis gratuito <ArrowRight className="h-4 w-4" />
                   </motion.a>
                 </>
               )}
