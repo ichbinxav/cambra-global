@@ -7,32 +7,44 @@ const BENEFITS = [
     icon: TrendingUp,
     title: "Reduce your costs instantly",
     body: "Access pre-negotiated rates across payments, shipping, and SaaS. Stop overpaying for infrastructure you rely on every day.",
+    color: "text-blue-600",
+    bg: "bg-blue-500/[0.08] border-blue-500/20",
   },
   {
     icon: BarChart2,
     title: "Increase your margins",
     body: "Every % saved goes directly to your bottom line. No revenue growth needed — just smarter economics.",
+    color: "text-green-600",
+    bg: "bg-green-500/[0.08] border-green-500/20",
   },
   {
     icon: BarChart2,
     title: "Benchmark like top operators",
     body: "See how your costs compare to similar brands. Understand where you're inefficient and where to optimize.",
     iconOverride: "benchmark",
+    color: "text-purple-600",
+    bg: "bg-purple-500/[0.08] border-purple-500/20",
   },
   {
     icon: Network,
     title: "Access network-level deals",
     body: "Benefit from collective scale. What large companies negotiate, you now access instantly.",
+    color: "text-orange-500",
+    bg: "bg-orange-500/[0.08] border-orange-500/20",
   },
   {
     icon: Clock,
     title: "Save time and complexity",
     body: "No need to negotiate contracts, compare providers, or audit costs. We centralize your entire infrastructure layer.",
+    color: "text-teal-600",
+    bg: "bg-teal-500/[0.08] border-teal-500/20",
   },
   {
     icon: Focus,
     title: "Stay focused on your core business",
     body: "Spend less time on operations, more time on brand, product, and growth. THE NoDE handles the backend.",
+    color: "text-rose-600",
+    bg: "bg-rose-500/[0.08] border-rose-500/20",
   },
 ];
 
@@ -58,23 +70,27 @@ function BenefitTile({ b, index }) {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
+      initial={{ opacity: 0, y: 26, scale: 0.98 }}
+      animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ duration: 0.55, delay: (index % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ backgroundColor: "hsl(var(--secondary))", transition: { duration: 0.2 } }}
-      className="bg-background p-8 flex flex-col gap-4"
+      whileHover={{ y: -4, boxShadow: "0 14px 30px -18px rgba(0,0,0,0.25)" }}
+      className="relative p-6 rounded-2xl border border-border/50 bg-card overflow-hidden"
     >
-      <motion.div
-        className="w-9 h-9 rounded-xl bg-secondary border border-border/50 flex items-center justify-center shrink-0"
-        whileHover={{ scale: 1.15, rotate: 5 }}
-        transition={{ type: "spring", stiffness: 300 }}
-      >
-        <IconComp size={15} className="text-muted-foreground/60" />
-      </motion.div>
-      <div>
-        <h3 className="text-base font-bold tracking-tight mb-2">{b.title}</h3>
-        <p className="text-sm text-muted-foreground/70 leading-relaxed">{b.body}</p>
+      {/* Accent blob */}
+      <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-[0.06] bg-foreground" />
+
+      <div className="flex items-start gap-3 mb-3">
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${b?.bg || "bg-secondary border-border/50"}`}>
+          <IconComp size={18} className={b?.color || "text-muted-foreground/60"} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-base font-bold tracking-tight mb-1.5">{b.title}</h3>
+          <p className="text-sm text-muted-foreground/70 leading-relaxed">{b.body}</p>
+        </div>
       </div>
+
+      {/* Bottom accent line */}
+      <div className={`h-1 rounded-full ${b?.bg || "bg-secondary"}`} />
     </motion.div>
   );
 }
@@ -117,7 +133,7 @@ export default function BenefitsSection() {
         </div>
 
         {/* Benefits grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border/30 rounded-2xl overflow-hidden border border-border/30 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
           {BENEFITS.map((b, i) => (
             <BenefitTile key={i} b={b} index={i} />
           ))}
