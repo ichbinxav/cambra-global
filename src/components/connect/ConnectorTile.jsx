@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { Loader2, CheckCircle2, XCircle, Link as LinkIcon } from 'lucide-react';
 
-export default function ConnectorTile({ title, note, connectorId, functionName }) {
+export default function ConnectorTile({ title, note, connectorId, functionName, connectorKey }) {
   const [authed, setAuthed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
@@ -34,16 +34,19 @@ export default function ConnectorTile({ title, note, connectorId, functionName }
 
   const handleConnect = async () => {
     try {
+      await base44.functions.invoke('securityAuditLog', { event_type: 'connect_attempt', connector: connectorKey, success: true });
       const url = await base44.connectors.connectAppUser(connectorId);
       const popup = window.open(url, '_blank', 'width=500,height=700');
-      const timer = setInterval(() => {
+      const timer = setInterval(async () => {
         if (!popup || popup.closed) {
           clearInterval(timer);
-          fetchData();
+          const ok = await fetchData();
+          await base44.functions.invoke('securityAuditLog', { event_type: 'integration_access_check', connector: connectorKey, success: !!ok });
         }
       }, 600);
     } catch (e) {
       setError('Connection failed');
+      try { await base44.functions.invoke('securityAuditLog', { event_type: 'failure', connector: connectorKey, success: false }); } catch {}
     }
   };
 
@@ -51,8 +54,10 @@ export default function ConnectorTile({ title, note, connectorId, functionName }
     try {
       await base44.connectors.disconnectAppUser(connectorId);
       setConnected(false);
+      await base44.functions.invoke('securityAuditLog', { event_type: 'disconnect', connector: connectorKey, success: true });
     } catch (e) {
       setError('Disconnect failed');
+      try { await base44.functions.invoke('securityAuditLog', { event_type: 'failure', connector: connectorKey, success: false }); } catch {}
     }
   };
 

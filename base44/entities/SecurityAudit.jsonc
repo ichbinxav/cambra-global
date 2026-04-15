@@ -1,0 +1,38 @@
+{
+  "name": "SecurityAudit",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "integration_access_check",
+        "connect_attempt",
+        "disconnect",
+        "failure"
+      ]
+    },
+    "connector": {
+      "type": "string",
+      "enum": [
+        "drive",
+        "sheets",
+        "gmail",
+        "slack",
+        "other"
+      ]
+    },
+    "success": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_email",
+    "event_type",
+    "connector",
+    "success"
+  ]
+}

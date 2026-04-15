@@ -13,13 +13,19 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const connectorId = typeof body?.connectorId === 'string' ? body.connectorId : '';
     if (!connectorId || !/^cntr_[a-zA-Z0-9]+$/.test(connectorId)) {
+      await base44.entities.SecurityAudit.create({ user_email: user.email, event_type: 'integration_access_check', connector: 'gmail', success: false });
       return Response.json({ error: 'Invalid connectorId' }, { status: 400 });
     }
 
     const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(connectorId);
+    await base44.entities.SecurityAudit.create({ user_email: user.email, event_type: 'integration_access_check', connector: 'gmail', success: !!accessToken });
     return Response.json({ connected: !!accessToken });
   } catch (_err) {
-    console.warn('gmailConnectionCheck error');
+    try {
+      const base44c = createClientFromRequest(req);
+      const me = await base44c.auth.me();
+      if (me) await base44c.entities.SecurityAudit.create({ user_email: me.email, event_type: 'integration_access_check', connector: 'gmail', success: false });
+    } catch {}
     return Response.json({ error: 'Internal error' }, { status: 500 });
   }
 });

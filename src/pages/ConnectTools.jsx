@@ -215,24 +215,28 @@ export default function ConnectTools() {
                 note="Read-only access to files for Analyzer"
                 connectorId={CONNECTOR_IDS.drive}
                 functionName="driveConnectionCheck"
+                connectorKey="drive"
               />
               <ConnectorTile
                 title="Google Sheets"
                 note="Read-only access to spreadsheets"
                 connectorId={CONNECTOR_IDS.sheets}
                 functionName="sheetsConnectionCheck"
+                connectorKey="sheets"
               />
               <ConnectorTile
                 title="Gmail"
                 note="Read-only labels/messages for ingestion"
                 connectorId={CONNECTOR_IDS.gmail}
                 functionName="gmailConnectionCheck"
+                connectorKey="gmail"
               />
               <ConnectorTile
                 title="Slack"
                 note="Read-only to list basic channels (optional)"
                 connectorId={CONNECTOR_IDS.slack}
                 functionName="slackConnectionCheck"
+                connectorKey="slack"
               />
             </div>
 
