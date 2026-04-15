@@ -11,6 +11,7 @@ export default function ConnectorTile({ title, note, connectorId, functionName }
 
   const fetchData = useCallback(async () => {
     setError('');
+    if (!connectorId) return;
     try {
       const res = await base44.functions.invoke(functionName, { connectorId });
       const ok = !!res?.data?.connected;
@@ -42,7 +43,7 @@ export default function ConnectorTile({ title, note, connectorId, functionName }
         }
       }, 600);
     } catch (e) {
-      setError(e?.message || 'Failed to start OAuth');
+      setError('Connection failed');
     }
   };
 
@@ -51,7 +52,7 @@ export default function ConnectorTile({ title, note, connectorId, functionName }
       await base44.connectors.disconnectAppUser(connectorId);
       setConnected(false);
     } catch (e) {
-      setError(e?.message || 'Failed to disconnect');
+      setError('Disconnect failed');
     }
   };
 

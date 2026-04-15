@@ -117,7 +117,7 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
-    console.log('Loading state →', { isLoadingPublicSettings, isLoadingAuth, authError });
+    // redacted debug log removed for security
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center bg-background" role="status" aria-live="polite">
         <div
@@ -135,7 +135,7 @@ const AuthenticatedApp = () => {
     // Don't redirect for auth_required — let the app show public pages
   }
 
-  console.log('AuthContext snapshot →', { isLoadingPublicSettings, isLoadingAuth, authError });
+  // redacted debug log removed for security
   return (
     <>
       <Routes>
@@ -149,7 +149,7 @@ const AuthenticatedApp = () => {
         <Route path="/Privacy" element={<Privacy />} />
         <Route path="/Terms" element={<Terms />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
-        <Route path="/dev/export" element={<DevExport />} />
+        <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="/Dashboard" element={<Dashboard />} />

@@ -84,7 +84,7 @@ export default function InsightDetail() {
         </div>
       )}
 
-       <article className={`max-w-2xl ${!subscribed ? "blur-[2px] select-none pointer-events-none" : ""}`}>
+       <article className="max-w-2xl">
         <div className="flex items-center gap-3 mb-5">
           {insight.category && (
             <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/50 bg-secondary px-2.5 py-1 rounded-full">
@@ -104,9 +104,15 @@ export default function InsightDetail() {
           <img src={insight.cover_image} alt="" className="w-full rounded-2xl mb-10 object-cover max-h-80" />
         )}
 
-        <div className="prose prose-sm prose-neutral max-w-none [&_h2]:font-black [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_p]:leading-relaxed [&_strong]:text-foreground">
-          <ReactMarkdown>{insight.content || ""}</ReactMarkdown>
-        </div>
+        {subscribed ? (
+          <div className="prose prose-sm prose-neutral max-w-none [&_h2]:font-black [&_h2]:tracking-tight [&_p]:text-muted-foreground [&_p]:leading-relaxed [&_strong]:text-foreground">
+            <ReactMarkdown>{insight.content || ""}</ReactMarkdown>
+          </div>
+        ) : (
+          <div className="p-4 rounded-xl border border-border/40 bg-secondary/20 text-sm text-muted-foreground">
+            Sign in and activate membership to read this research.
+          </div>
+        )}
       </article>
     </motion.div>
   );

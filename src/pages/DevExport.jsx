@@ -97,9 +97,7 @@ export default function DevExport() {
             const html = doc?.documentElement?.outerHTML || "";
             setResults((prev) => ({ ...prev, [route]: html }));
             try {
-              console.log(`DOM_EXPORT_START:${route}`);
-              console.log(html);
-              console.log(`DOM_EXPORT_END:${route}`);
+              // redacted: DOM export logs disabled in production
             } catch (_) {}
 
           } catch (e) {

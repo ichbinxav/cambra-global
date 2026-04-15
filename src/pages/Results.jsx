@@ -70,12 +70,17 @@ export default function Results() {
   const [loading, setLoading] = useState(true);
   const [scoreReport, setScoreReport] = useState(null);
   const [subscribed, setSubscribed] = useState(false);
+  const [needsAuth, setNeedsAuth] = useState(false);
 
   useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get("id");
-    if (!id) { setLoading(false); return; }
-    base44.entities.AnalyzerResult.filter({ id }).then(async res => {
-      if (!res.length) { setLoading(false); return; }
+    (async () => {
+      const id = new URLSearchParams(window.location.search).get("id");
+      const authed = await base44.auth.isAuthenticated();
+      if (!authed) { setNeedsAuth(true); setLoading(false); return; }
+      if (!id) { setLoading(false); return; }
+      const me = await base44.auth.me();
+      const res = await base44.entities.AnalyzerResult.filter({ id });
+      if (!res.length || res[0].created_by !== me.email) { setLoading(false); setResult(null); return; }
       const r = res[0];
       setResult(r);
       if (r.input_id) {
@@ -86,7 +91,7 @@ export default function Results() {
         }
       }
       setLoading(false);
-    });
+    })();
 
     // Check subscription status (non-blocking)
     base44.auth.isAuthenticated().then(async (authed) => {
@@ -102,6 +107,16 @@ export default function Results() {
       <div className="text-center space-y-4">
         <div className="w-10 h-10 rounded-full border-2 border-border border-t-foreground animate-spin mx-auto" />
         <p className="text-sm text-muted-foreground">Computing your infrastructure score…</p>
+      </div>
+    </div>
+  );
+
+  if (needsAuth) return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <div className="text-center max-w-sm">
+        <h1 className="text-lg font-bold mb-2">Sign-in required</h1>
+        <p className="text-sm text-muted-foreground mb-4">Open the login window and return automatically.</p>
+        <a href="/auth/start" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold">Sign in</a>
       </div>
     </div>
   );
