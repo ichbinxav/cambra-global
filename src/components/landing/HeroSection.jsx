@@ -146,7 +146,7 @@ export default function HeroSection() {
                     href="/auth/start"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40"
+                    className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium bg-background text-foreground border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2"
                   >
                     Start now — free analysis <ArrowRight className="h-4 w-4" />
                   </motion.a>
