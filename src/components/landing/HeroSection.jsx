@@ -126,7 +126,7 @@ export default function HeroSection() {
                   </Link>
                   <Link to="/Dashboard" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-medium border-border/60 hover:border-foreground/20">
+                      <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-medium bg-background text-foreground border-border/60 hover:border-foreground/20">
                         Go to Dashboard <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>

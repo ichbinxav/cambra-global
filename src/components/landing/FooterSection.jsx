@@ -50,7 +50,7 @@ export default function FooterSection() {
           >
             <Link to="/Analyzer" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                <Button size="lg" variant="outline" className="w-full h-14 rounded-full px-10 text-base font-bold border-background/25 text-foreground hover:bg-background hover:text-foreground gap-2">
+                <Button size="lg" className="w-full h-14 rounded-full px-10 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40">
                   Calculate your savings
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -58,7 +58,7 @@ export default function FooterSection() {
             </Link>
             <Link to="/Onboarding" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                <Button size="lg" variant="ghost" className="w-full h-14 rounded-full px-10 text-base text-background/50 hover:text-background hover:bg-background/10">
+                <Button size="lg" className="w-full h-14 rounded-full px-10 text-base font-bold bg-background text-foreground border border-background/20 hover:bg-background/90">
                   Run the analyzer
                 </Button>
               </motion.div>
