@@ -46,10 +46,22 @@ export default function SmartNumberField({
 }) {
   const safeMin = scale === "log" ? (min <= 0 ? 1 : min) : min;
   const [internal, setInternal] = useState(String(value ?? ""));
+  const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
-    setInternal(String(value ?? ""));
-  }, [value]);
+    const v = Number(value ?? 0);
+    setInternal(formatShortNumber(v, { decimals }));
+  }, [value, decimals]);
+
+  useEffect(() => {
+    const end = () => setDragging(false);
+    window.addEventListener('pointerup', end, { passive: true });
+    window.addEventListener('touchend', end, { passive: true });
+    return () => {
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('touchend', end);
+    };
+  }, []);
 
   const toPos = useMemo(() => {
     if (scale === "log") {
@@ -58,10 +70,10 @@ export default function SmartNumberField({
       return (v) => {
         const vv = clamp(v, safeMin, max);
         const t = (Math.log(vv) - lnMin) / (lnMax - lnMin);
-        return clamp(Math.round(t * 100), 0, 100);
+        return clamp(t * 100, 0, 100);
       };
     }
-    return (v) => clamp(Math.round(((v - min) / (max - min)) * 100), 0, 100);
+    return (v) => clamp((((v - min) / (max - min)) * 100), 0, 100);
   }, [scale, min, max, safeMin]);
 
   const fromPos = useMemo(() => {
@@ -105,21 +117,22 @@ export default function SmartNumberField({
         </span>
       </div>
 
-      <div className="relative">
+      <div className="relative" onPointerDown={() => setDragging(true)}>
         <Slider
           value={[pos]}
           onValueChange={handleSlide}
           min={0}
           max={100}
-          step={1}
-          className="py-3"
+          step={0.1}
+          className="py-4 touch-none select-none"
+          aria-label={label}
         />
         <motion.div
-          className="absolute -top-6 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-foreground text-background select-none"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          style={{ left: `calc(${pos}% - 20px)` }}
+          className="absolute -top-7 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-foreground text-background select-none shadow-sm"
+          initial={{ opacity: 0.9, scale: 0.96 }}
+          animate={{ opacity: 1, scale: dragging ? 1.05 : 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 26, mass: 0.4 }}
+          style={{ left: `${pos}%`, transform: "translateX(-50%)" }}
         >
           {formatShortNumber(Number(value ?? 0), { prefix, suffix, decimals })}
         </motion.div>
@@ -129,6 +142,8 @@ export default function SmartNumberField({
         <Input
           value={internal}
           onChange={handleInput}
+          onBlur={() => setInternal(formatShortNumber(Number(value ?? 0), { decimals }))}
+          onFocus={(e) => e.currentTarget.select()}
           className="h-10 text-sm border-border/60"
           placeholder={formatShortNumber(min, { prefix, suffix }) + " … " + formatShortNumber(max, { prefix, suffix })}
         />
