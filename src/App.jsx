@@ -39,6 +39,7 @@ import AdminBenchmarks from '@/pages/admin/AdminBenchmarks';
 import AdminContracts from '@/pages/admin/AdminContracts';
 import AdminIntegrations from '@/pages/admin/AdminIntegrations';
 import AdminControl from '@/pages/admin/AdminControl';
+import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
 import ProviderPortal from '@/pages/ProviderPortal';
 import AuthRedirect from '@/pages/AuthRedirect';
 import ActivateDeal from '@/pages/deals/ActivateDeal';
@@ -195,6 +196,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/contracts" element={<AdminContracts />} />
           <Route path="/admin/integrations" element={<AdminIntegrations />} />
           <Route path="/admin/control" element={<AdminControl />} />
+          <Route path="/admin/activation" element={<AdminActivationDetail />} />
 
 
         </Route>

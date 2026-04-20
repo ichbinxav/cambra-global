@@ -124,14 +124,18 @@ export default function ProviderPortal() {
   const [user, setUser] = useState(null);
   const [provider, setProvider] = useState(null);
   const [leads, setLeads] = useState([]);
+  const [acts, setActs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [notProvider, setNotProvider] = useState(false);
 
-  const loadData = async (u, p) => {
-    const provLeads = await base44.entities.ProviderLead.filter({ provider_id: p.id }, "-created_date", 200);
-    setLeads(provLeads);
+  const loadData = async () => {
+    const res = await base44.functions.invoke('providerScopedData', {});
+    if (res.data?.ok) {
+      setLeads(res.data.leads || []);
+      setActs(res.data.activations || []);
+    }
   };
 
   useEffect(() => {
@@ -147,7 +151,7 @@ export default function ProviderPortal() {
       }
       if (!p) { setNotProvider(true); setLoading(false); return; }
       setProvider(p);
-      await loadData(u, p);
+      await loadData();
       setLoading(false);
     };
     init();
@@ -262,6 +266,31 @@ export default function ProviderPortal() {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+
+        {/* Activations (scoped) */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-black">Activations</h2>
+            <span className="text-[11px] text-muted-foreground/50">Provider-scoped</span>
+          </div>
+          {acts.length === 0 ? (
+            <div className="py-8 text-center border border-dashed border-border/40 rounded-2xl text-sm text-muted-foreground">No activations yet.</div>
+          ) : (
+            <div className="rounded-xl border border-border/50 overflow-hidden">
+              <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr] px-5 py-3 bg-secondary/40 border-b border-border/40 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 gap-3">
+                <span>Brand</span><span>Vertical</span><span>Status</span><span>Provider tasks</span>
+              </div>
+              {acts.map(a => (
+                <div key={a.id} className="grid grid-cols-[1.5fr_1fr_1fr_1fr] px-5 py-3 border-b border-border/20 last:border-0 items-center gap-3">
+                  <span className="text-xs font-medium">{a.brand_id}</span>
+                  <span className="text-xs capitalize">{a.vertical}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full border bg-secondary/40">{a.status}</span>
+                  <span className="text-xs">{a.task_counts?.provider_required || 0} req · {a.task_counts?.blocked || 0} blocked</span>
+                </div>
+              ))}
             </div>
           )}
         </div>

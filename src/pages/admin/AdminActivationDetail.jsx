@@ -1,0 +1,120 @@
+import React, { useEffect, useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Link, useSearchParams } from 'react-router-dom';
+
+export default function AdminActivationDetail(){
+  const [sp] = useSearchParams();
+  const id = sp.get('id');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(()=>{ (async()=>{
+    try {
+      const res = await base44.functions.invoke('getActivationAdminDetail', { id });
+      if (res.data?.error) throw new Error(res.data.error);
+      setData(res.data);
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  })(); }, [id]);
+
+  if (loading) return <div className="p-6">Loading…</div>;
+  if (error) return <div className="p-6 text-red-600">{error}</div>;
+  const { activation, baselines, rules, mandates, tasks, reports, invoices, logs, progress } = data || {};
+
+  const reload = async () => {
+    const res = await base44.functions.invoke('getActivationAdminDetail', { id });
+    setData(res.data);
+  };
+
+  const doOverride = async (action, payload={}) => {
+    const reason = prompt('Reason for override'); if (!reason) return;
+    const res = await base44.functions.invoke('adminOverrides', { action, reason, payload });
+    if (res.data?.error) return alert(res.data.error);
+    await reload();
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-black">Activation {activation.id}</h1>
+        <Link to="/admin">Back</Link>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-3">
+        <div className="rounded-xl border p-4 bg-card">
+          <p className="text-xs text-muted-foreground">Core</p>
+          <div className="text-sm mt-2 space-y-1">
+            <div>Status: <b>{activation.status}</b></div>
+            <div>Brand: <b>{activation.brand_id}</b></div>
+            <div>Provider: <b>{activation.provider_id||'-'}</b></div>
+            <div>Vertical: <b>{activation.vertical}</b></div>
+            <div>Projected/yr: <b>€{(activation.projected_savings_annual||0).toLocaleString()}</b></div>
+            <div>Progress: <b>{progress}%</b></div>
+          </div>
+        </div>
+        <div className="rounded-xl border p-4 bg-card">
+          <p className="text-xs text-muted-foreground">Baseline</p>
+          <div className="text-sm mt-2">{baselines?.[0] ? (
+            <div>Type: {baselines[0].baseline_type} · Value: {baselines[0].baseline_value}</div>
+          ) : 'Missing'}</div>
+        </div>
+        <div className="rounded-xl border p-4 bg-card">
+          <p className="text-xs text-muted-foreground">Billing Rule</p>
+          <div className="text-sm mt-2">{rules?.[0] ? (
+            <div>{rules[0].billing_model} · Share {rules[0].node_share_percent}%</div>
+          ) : 'Missing'}</div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border p-4 bg-card">
+        <p className="text-sm font-semibold">Mandate</p>
+        <div className="text-sm mt-2">{mandates?.[0] ? (
+          <div>Status: {mandates[0].status} · Signed by {mandates[0].signed_by_name} · {mandates[0].signed_at}</div>
+        ) : 'No mandate'}</div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <div className="rounded-xl border p-4 bg-card">
+          <p className="text-sm font-semibold mb-2">Migration tasks</p>
+          <ul className="space-y-1 text-sm">
+            {tasks.map(t=> (
+              <li key={t.id} className="flex items-center justify-between border rounded-md px-2 py-1">
+                <span>{t.step_name} · {t.status}</span>
+                <span className="text-xs text-muted-foreground">{t.owner_type||'admin'}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-xl border p-4 bg-card">
+          <p className="text-sm font-semibold mb-2">Reports & invoices</p>
+          <div className="text-xs text-muted-foreground mb-2">Latest</div>
+          <ul className="space-y-1 text-sm">
+            {reports.map(r=> (
+              <li key={r.id} className="flex items-center justify-between border rounded-md px-2 py-1">
+                <span>{r.month} · Savings €{(r.savings||0).toLocaleString()} · Fee €{(r.node_fee||0).toLocaleString()} · {r.measurement_mode}</span>
+                <button onClick={()=>doOverride('verify_report', { report_id: r.id })} className="text-xs underline">Verify</button>
+              </li>
+            ))}
+          </ul>
+          <div className="h-2"/>
+          <ul className="space-y-1 text-sm">
+            {invoices.map(i=> (
+              <li key={i.id} className="flex items-center justify-between border rounded-md px-2 py-1">
+                <span>{i.month} · €{Number(i.amount||0).toLocaleString()} · {i.status}</span>
+                {i.status!=='void' && <button onClick={()=>doOverride('void_invoice', { invoice_id: i.id })} className="text-xs underline">Void</button>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="rounded-xl border p-4 bg-card">
+        <p className="text-sm font-semibold mb-2">Operational logs</p>
+        <ul className="space-y-1 text-xs">
+          {logs.map(l=> <li key={l.id} className="border rounded-md px-2 py-1">{l.created_at} · {l.event_type} — {l.message}</li>)}
+        </ul>
+      </div>
+    </div>
+  );
+}
