@@ -26,11 +26,22 @@ export default function AuthorizeDeal() {
   const allChecked = Object.values(consents).every(Boolean);
   const canSubmit = allChecked && sig && form.entity && form.name && form.role && form.email;
 
+  const dataUrlToBlob = (dataUrl) => {
+    const [meta, b64] = dataUrl.split(',');
+    const mime = /data:(.*?);base64/.exec(meta)?.[1] || 'image/png';
+    const bin = atob(b64);
+    const len = bin.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  };
+
   const submit = async () => {
     if (!canSubmit) return;
     let fileUri = '';
     if (sig) {
-      const res = await base44.integrations.Core.UploadPrivateFile({ file: sig });
+      const blob = dataUrlToBlob(sig);
+      const res = await base44.integrations.Core.UploadPrivateFile({ file: blob });
       fileUri = res.file_uri;
     }
     await base44.entities.Mandate.create({

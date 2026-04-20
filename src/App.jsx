@@ -161,6 +161,9 @@ const AuthenticatedApp = () => {
         <Route path="/Terms" element={<Terms />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
+        <Route path="/deal/activate" element={<ProtectedRoute><ActivateDeal /></ProtectedRoute>} />
+        <Route path="/deal/authorize/:dealId" element={<ProtectedRoute><AuthorizeDeal /></ProtectedRoute>} />
+        <Route path="/deal/migration/:dealId" element={<ProtectedRoute><MigrationHub /></ProtectedRoute>} />
 
 
 

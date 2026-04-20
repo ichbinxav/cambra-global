@@ -68,6 +68,8 @@ export default function ActivateDeal() {
   const net = estAnnual - fee;
 
   const handleContinue = async () => {
+    const ok = window.confirm('Confirm activation and baseline lock? This will start the authorization process.');
+    if (!ok) return;
     const me = await base44.auth.me();
     const deal = await base44.entities.DealActivation.create({
       brand_id: brand?.id,
@@ -79,7 +81,7 @@ export default function ActivateDeal() {
       projected_savings_annual: Math.round(estAnnual),
       node_share_percent: 25,
       billing_model: 'monthly_success_fee',
-      status: 'awaiting_authorization',
+      status: 'activated',
       activated_at: new Date().toISOString(),
     });
 

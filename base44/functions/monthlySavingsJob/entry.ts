@@ -13,36 +13,52 @@ Deno.serve(async (req) => {
       const rule = rules[0] || { model: 'monthly_success_fee', node_share_percent: d.node_share_percent || 25 };
       const baselines = await base44.asServiceRole.entities.Baseline.filter({ deal_id: d.id }, '-created_date', 1);
       const baseline = baselines[0];
-
-      let gmvReal = null; let baselineCost = null; let actualCost = null; let savings = null; let nodeFee = 0; let confidence = 0.3;
-
-      if (d.vertical === 'payments') {
-        const inputs = await base44.asServiceRole.entities.AnalyzerInput.list();
-        const first = inputs[0];
-        gmvReal = first?.monthly_revenue || 0;
-        const oldRate = baseline?.baseline_value ?? 2.9;
-        const newRate = Math.max(0, oldRate - (d.projected_savings_annual && gmvReal ? ((d.projected_savings_annual/12)/gmvReal)*100 : 0));
-        if (gmvReal) {
-          const rateImprovement = Math.max(0, (oldRate - newRate) / 100);
-          const nodeCut = rateImprovement * (rule.node_share_percent/100);
-          nodeFee = Math.max(0, gmvReal * nodeCut);
-          savings = Math.max(0, gmvReal * (oldRate/100 - newRate/100));
-          baselineCost = gmvReal * (oldRate/100);
-          actualCost = gmvReal * (newRate/100);
-          confidence = 0.5;
-        }
-      } else {
-        const oldCost = baseline?.baseline_value ?? null;
-        if (oldCost != null) {
-          baselineCost = oldCost;
-          actualCost = Math.max(0, oldCost - (d.projected_savings_monthly || 0));
-          savings = Math.max(0, baselineCost - actualCost);
-          nodeFee = savings * (rule.node_share_percent/100);
-          confidence = 0.4;
-        }
+      if (!baseline) {
+        // Cannot calculate savings without a locked baseline
+        continue;
       }
 
-      const status = savings == null ? 'pending' : 'calculated';
+      // Try to get brand-scoped AnalyzerInput to infer GMV for payments
+      let gmvReal = 0;
+      if (d.brand_id) {
+        const ins = await base44.asServiceRole.entities.AnalyzerInput.filter({ brand_id: d.brand_id }, '-created_date', 1);
+        if (ins?.length) gmvReal = Number(ins[0].monthly_revenue || 0);
+      }
+      if (!gmvReal && baseline?.snapshot_json?.inputId) {
+        const insById = await base44.asServiceRole.entities.AnalyzerInput.filter({ id: baseline.snapshot_json.inputId }, '-created_date', 1);
+        if (insById?.length) gmvReal = Number(insById[0].monthly_revenue || 0);
+      }
+
+      let baselineCost = 0; let actualCost = 0; let savings = 0; let nodeFee = 0; let confidence = 0.3;
+
+      if (d.vertical === 'payments') {
+        if (!gmvReal) {
+          // No GMV available → cannot compute monthly savings reliably
+          savings = 0;
+        }
+        const details = baseline?.snapshot_json?.details || {};
+        const oldRate = Number(baseline.baseline_value);
+        const newRate = typeof details.payment_optimal_rate === 'number' ? Number(details.payment_optimal_rate) : oldRate; // default to no improvement
+        const rateImprovement = Math.max(0, (oldRate - newRate) / 100);
+        const nodeCut = rateImprovement * (rule.node_share_percent/100);
+        baselineCost = gmvReal * (oldRate/100);
+        actualCost = gmvReal * (newRate/100);
+        savings = Math.max(0, baselineCost - actualCost);
+        nodeFee = Math.max(0, gmvReal * nodeCut);
+        confidence = gmvReal ? 0.6 : 0.3;
+      } else {
+        // shipping / saas
+        const oldCost = Number(baseline.baseline_value ?? 0);
+        const projected = Number(d.projected_savings_monthly || 0);
+        baselineCost = oldCost;
+        actualCost = Math.max(0, oldCost - projected);
+        savings = Math.max(0, baselineCost - actualCost);
+        nodeFee = savings * (rule.node_share_percent/100);
+        confidence = 0.4;
+      }
+
+      // Only mark calculated when positive savings exist
+      const status = savings > 0 ? 'calculated' : 'pending';
       await base44.asServiceRole.entities.MonthlySavingsReport.create({
         deal_id: d.id,
         month: ym,
