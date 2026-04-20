@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ActivateDeal() {
@@ -9,6 +9,8 @@ export default function ActivateDeal() {
   const [input, setInput] = useState(null);
   const [brand, setBrand] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [preflight, setPreflight] = useState({ can_activate: false, checklist: [] });
+  const [activating, setActivating] = useState(false);
   const navigate = useNavigate();
 
   const params = new URLSearchParams(window.location.search);
@@ -32,6 +34,9 @@ export default function ActivateDeal() {
           }
         }
       }
+      // Preflight validation
+      const pf = await base44.functions.invoke('preflightActivateDeal', { vertical, resultId });
+      setPreflight(pf.data || { can_activate: false, checklist: [] });
       setLoading(false);
     })();
   }, [resultId]);
@@ -68,11 +73,14 @@ export default function ActivateDeal() {
   const net = estAnnual - fee;
 
   const handleContinue = async () => {
-    const ok = window.confirm('Confirm activation and baseline lock? This will start the authorization process.');
+    if (!preflight.can_activate) { alert('Faltan requisitos para activar. Revisa la lista.'); return; }
+    const ok = window.confirm('Confirmar activación y bloqueo de baseline. Continuar al mandato.');
     if (!ok) return;
-    const resp = await base44.functions.invoke('activateDeal', { vertical, resultId });
+    setActivating(true);
+    const resp = await base44.functions.invoke('activateDealOrchestrator', { vertical, resultId });
+    setActivating(false);
     const activationId = resp?.data?.deal_activation_id;
-    if (!activationId) { alert('Failed to activate deal'); return; }
+    if (!activationId) { alert(resp?.data?.error || 'No se pudo activar'); return; }
     navigate(`/deal/authorize/${activationId}`);
   };
 
@@ -115,8 +123,22 @@ export default function ActivateDeal() {
           </div>
         </div>
       </div>
+      <div className="rounded-xl border p-5 bg-card">
+        <p className="text-sm font-semibold mb-2">Checklist de pre-activación</p>
+        <ul className="space-y-2 text-sm">
+          {preflight.checklist.map((i) => (
+            <li key={i.key} className="flex items-center gap-2">
+              {i.ok ? <CheckCircle2 className="w-4 h-4 text-green-600"/> : <AlertTriangle className="w-4 h-4 text-orange-500"/>}
+              <span>{i.label}</span>
+              {!i.ok && i.details && <span className="text-muted-foreground">— {i.details}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
       <div className="flex justify-end">
-        <Button onClick={handleContinue} className="gap-2">Continue <ArrowRight className="w-4 h-4"/></Button>
+        <Button onClick={handleContinue} disabled={!preflight.can_activate || activating} className="gap-2">
+          {activating ? 'Activando…' : 'Continuar'} <ArrowRight className="w-4 h-4"/>
+        </Button>
       </div>
     </div>
   );

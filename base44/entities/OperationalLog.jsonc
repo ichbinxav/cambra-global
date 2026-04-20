@@ -1,0 +1,46 @@
+{
+  "name": "OperationalLog",
+  "type": "object",
+  "properties": {
+    "deal_activation_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "activation_created",
+        "baseline_frozen",
+        "mandate_signed",
+        "mandate_revoked",
+        "tasks_generated",
+        "task_updated",
+        "status_changed",
+        "go_live",
+        "override_applied"
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "data_json": {
+      "type": "object"
+    },
+    "actor_email": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "event_type",
+    "created_at"
+  ]
+}

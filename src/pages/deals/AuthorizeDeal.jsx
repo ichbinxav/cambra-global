@@ -48,7 +48,8 @@ export default function AuthorizeDeal() {
       dealActivationId: dealId,
       consents,
       signer: { entity: form.entity, name: form.name, role: form.role, email: form.email },
-      signed_document_uri: fileUri
+      signed_document_uri: fileUri,
+      document_version: 'v1'
     });
     if (resp?.data?.error) { alert(resp.data.error); return; }
     navigate(`/deal/migration/${dealId}`);

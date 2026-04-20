@@ -25,7 +25,8 @@ export default function MigrationHub() {
   }, [tasks]);
 
   const toggle = async (task, next) => {
-    const resp = await base44.functions.invoke('updateMigrationTaskStatus', { taskId: task.id, nextStatus: next });
+    const payload = next === 'blocked' ? { taskId: task.id, nextStatus: next, blocked_reason: prompt('Razón de bloqueo (opcional)') || undefined } : { taskId: task.id, nextStatus: next };
+    const resp = await base44.functions.invoke('updateMigrationTaskStatus', payload);
     if (resp?.data?.error) { alert(resp.data.error); return; }
     const updated = resp?.data?.task;
     if (updated) setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
@@ -52,11 +53,13 @@ export default function MigrationHub() {
             <li key={t.id} className="flex items-center justify-between border rounded-lg px-3 py-2">
               <div className="flex items-center gap-2">
                 {t.status === 'done' ? <CheckCircle2 className="text-green-600 w-4 h-4"/> : <Clock className="text-muted-foreground w-4 h-4"/>}
-                <span className="text-sm font-medium">{t.step_name.replaceAll('_',' ')}</span>
+                <span className="text-sm font-medium">{t.step_name.replaceAll('_',' ')}{t.requires_provider_input ? ' · provider' : ''}{t.requires_brand_input ? ' · brand' : ''}{t.requires_admin_review ? ' · admin review' : ''}</span>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <button onClick={() => toggle(t, 'pending')} className={`px-2 py-1 rounded border ${t.status==='pending'?'bg-secondary':''}`}>Pending</button>
                 <button onClick={() => toggle(t, 'in_progress')} className={`px-2 py-1 rounded border ${t.status==='in_progress'?'bg-secondary':''}`}>In progress</button>
+                <button onClick={() => toggle(t, 'blocked')} className={`px-2 py-1 rounded border ${t.status==='blocked'?'bg-orange-500/10 text-orange-700':''}`}>Blocked</button>
+                <button onClick={() => toggle(t, 'canceled')} className={`px-2 py-1 rounded border ${t.status==='canceled'?'bg-muted':''}`}>Canceled</button>
                 <button onClick={() => toggle(t, 'done')} className={`px-2 py-1 rounded border ${t.status==='done'?'bg-green-500/10 text-green-700':''}`}>Done</button>
               </div>
             </li>

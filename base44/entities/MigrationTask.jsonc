@@ -21,12 +21,17 @@
     "step_name": {
       "type": "string"
     },
+    "description": {
+      "type": "string"
+    },
     "status": {
       "type": "string",
       "enum": [
         "pending",
         "in_progress",
-        "done"
+        "blocked",
+        "done",
+        "canceled"
       ],
       "default": "pending"
     },
@@ -35,6 +40,44 @@
     },
     "order": {
       "type": "number"
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": [
+        "brand",
+        "provider",
+        "admin"
+      ],
+      "default": "admin"
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "requires_provider_input": {
+      "type": "boolean",
+      "default": false
+    },
+    "requires_brand_input": {
+      "type": "boolean",
+      "default": false
+    },
+    "requires_admin_review": {
+      "type": "boolean",
+      "default": false
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "blocked_reason": {
+      "type": "string"
+    },
+    "metadata_json": {
+      "type": "object"
     }
   },
   "required": [
