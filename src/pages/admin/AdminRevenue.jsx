@@ -6,23 +6,23 @@ const COLORS = ["#3b82f6", "#22c55e", "#f97316", "#8b5cf6", "#f59e0b", "#06b6d4"
 const REALIZED_STATUSES = ["invoiced", "paid"];
 
 export default function AdminRevenue() {
-  const [userDeals, setUserDeals] = useState([]);
+  const [activations, setActivations] = useState([]);
   const [brands, setBrands] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
-      base44.entities.UserDeal.list(),
+      base44.entities.DealActivation.list(),
       base44.entities.Brand.list(),
       base44.entities.MonthlySavingsReport.list("-month", 500),
-    ]).then(([ud, b, msr]) => { setUserDeals(ud); setBrands(b); setReports(msr); setLoading(false); });
+    ]).then(([acts, b, msr]) => { setActivations(acts); setBrands(b); setReports(msr); setLoading(false); });
   }, []);
 
   if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
 
-  const activeDeals = userDeals.filter(d => d.status === "active");
-  const totalSavings = activeDeals.reduce((s, d) => s + (d.estimated_savings || 0), 0);
+  const activeActivations = activations.filter(a => ["activated","migrating","live","monetizing"].includes(a.status));
+  const totalSavings = 0;
   const realizedFees = reports.filter(r => REALIZED_STATUSES.includes(r.status)).reduce((s, r) => s + (r.node_fee || 0), 0);
   const realizedSavings = reports.filter(r => REALIZED_STATUSES.includes(r.status) || r.status === 'calculated').reduce((s, r) => s + (r.savings || 0), 0);
 
@@ -65,10 +65,10 @@ export default function AdminRevenue() {
       {/* Top KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Active Contracts", val: activeDeals.length, color: "text-foreground" },
-          { label: "Realized Savings", val: `€${(realizedSavings / 1000).toFixed(1)}K/yr`, color: "text-green-600" },
-          { label: "Monetized (realized)", val: `€${(realizedFees / 1000).toFixed(1)}K/yr`, color: "text-amber-600" },
-          { label: "Avg. per Contract", val: activeDeals.length ? `€${Math.round((realizedFees || 0) / activeDeals.length).toLocaleString()}` : "—", color: "text-blue-600" },
+          { label: "Active activations", val: activeActivations.length, color: "text-foreground" },
+          { label: "Cumulative realized", val: `€${Math.round(realizedSavings).toLocaleString()}`, color: "text-green-600" },
+          { label: "Cumulative monetized", val: `€${Math.round(realizedFees).toLocaleString()}`, color: "text-amber-600" },
+          { label: "Avg per active activation", val: activeActivations.length ? `€${Math.round((realizedFees || 0) / activeActivations.length).toLocaleString()}` : "—", color: "text-blue-600" },
         ].map((kpi, i) => (
           <div key={i} className="p-4 rounded-xl border border-border/50 bg-card">
             <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-2">{kpi.label}</p>
@@ -125,8 +125,8 @@ export default function AdminRevenue() {
                 </div>
                 <p className="text-sm font-semibold flex-1">{p.name}</p>
                 <p className="text-xs text-muted-foreground/50">{p.deals} deal{p.deals !== 1 ? "s" : ""}</p>
-                <p className="text-sm font-bold text-green-600 w-28 text-right">€{p.savings.toLocaleString()}/yr realized</p>
-                <p className="text-sm font-black text-amber-600 w-24 text-right">€{p.revenue.toLocaleString()}/yr monetized</p>
+                <p className="text-sm font-bold text-green-600 w-28 text-right">€{p.savings.toLocaleString()} realized</p>
+                <p className="text-sm font-black text-amber-600 w-24 text-right">€{p.revenue.toLocaleString()} monetized</p>
               </div>
             ))}
           </div>

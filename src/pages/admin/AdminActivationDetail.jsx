@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link, useSearchParams, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function AdminActivationDetail(){
   const [sp] = useSearchParams();
@@ -14,6 +15,7 @@ export default function AdminActivationDetail(){
   const [overrideAction, setOverrideAction] = useState(null);
   const [overridePayload, setOverridePayload] = useState({});
   const [overrideReason, setOverrideReason] = useState('');
+  const [overrideReasonError, setOverrideReasonError] = useState(null);
 
   useEffect(()=>{ (async()=>{
     try {
@@ -35,10 +37,11 @@ export default function AdminActivationDetail(){
 
   const openOverride = (action, payload={}) => { setOverrideAction(action); setOverridePayload(payload); setOverrideOpen(true); };
   const submitOverride = async () => {
-    if (!overrideReason.trim()) { alert('Please provide a reason'); return; }
+    if (!overrideReason.trim()) { setOverrideReasonError('Please provide a reason'); return; }
     const res = await base44.functions.invoke('adminOverrides', { action: overrideAction, reason: overrideReason, payload: overridePayload });
-    if (res.data?.error) { alert(res.data.error); return; }
+    if (res.data?.error) { toast.error(res.data.error); return; }
     setOverrideOpen(false); setOverrideReason('');
+    setOverrideReasonError(null);
     await reload();
   };
 
@@ -57,7 +60,9 @@ export default function AdminActivationDetail(){
             <div>Brand: <b>{activation.brand_id}</b></div>
             <div>Provider: <b>{activation.provider_id||'-'}</b></div>
             <div>Vertical: <b>{activation.vertical}</b></div>
-            <div>Projected/yr: <b>€{(activation.projected_savings_annual||0).toLocaleString()}</b></div>
+            <div>Projected savings / yr: <b>€{(activation.projected_savings_annual ?? 0).toLocaleString()}</b></div>
+            <div>Realized savings / yr: <b>{activation.realized_savings_yearly !== undefined ? `€${(activation.realized_savings_yearly||0).toLocaleString()}` : '—'}</b></div>
+            <div>Monetized to date: <b>{reports && reports.length ? `€${reports.reduce((sum, r) => sum + (r.node_fee || 0), 0).toLocaleString()}` : '—'}</b></div>
             <div>Progress: <b>{progress}%</b></div>
           </div>
         </div>
@@ -131,6 +136,7 @@ export default function AdminActivationDetail(){
             <p className="text-sm font-bold">Admin override</p>
             <textarea value={overrideReason} onChange={e=>setOverrideReason(e.target.value)} rows={4}
               className="w-full text-sm bg-background border border-border rounded-lg p-2" placeholder="Reason (required)" />
+            {overrideReasonError && <p className="text-xs text-red-500 mt-1">{overrideReasonError}</p>}
             <div className="flex justify-end gap-2">
               <button onClick={()=>setOverrideOpen(false)} className="h-8 px-3 rounded-md border border-border text-xs">Cancel</button>
               <button onClick={submitOverride} className="h-8 px-3 rounded-md bg-foreground text-background text-xs font-bold">Confirm</button>

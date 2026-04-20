@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, ArrowUpRight, Filter } from "lucide-react";
 import AdminApplicationDetail from "./AdminApplicationDetail.jsx";
+import { toast } from "sonner";
 import { ALL_STATUSES, STATUS_COLORS } from "@/lib/adminStatusConstants";
 
 const STATUSES = ["all", ...ALL_STATUSES];
@@ -47,7 +48,7 @@ export default function AdminApplications() {
 
   const updateStatus = async (id, status) => {
     const res = await base44.functions.invoke('adminUpdateApplicationStatus', { id, status });
-    if (res.data?.error) return alert(res.data.error);
+    if (res.data?.error) { toast.error(res.data.error); return; }
     setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     if (selected?.id === id) setSelected(prev => ({ ...prev, status }));
   };

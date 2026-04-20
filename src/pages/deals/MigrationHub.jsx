@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { CheckCircle2, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function MigrationHub() {
   const dealId = window.location.pathname.split('/').pop();
@@ -30,7 +31,7 @@ export default function MigrationHub() {
   const toggle = async (task, next) => {
     if (next === 'blocked') { setBlockTask(task); setBlockOpen(true); return; }
     const resp = await base44.functions.invoke('updateMigrationTaskStatus', { taskId: task.id, nextStatus: next });
-    if (resp?.data?.error) { alert(resp.data.error); return; }
+    if (resp?.data?.error) { toast.error(resp.data.error); return; }
     const updated = resp?.data?.task;
     if (updated) setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
   };
@@ -38,7 +39,7 @@ export default function MigrationHub() {
     if (!blockTask) return;
     const resp = await base44.functions.invoke('updateMigrationTaskStatus', { taskId: blockTask.id, nextStatus: 'blocked', blocked_reason: blockReason || undefined });
     setBlockOpen(false); setBlockTask(null); setBlockReason('');
-    if (resp?.data?.error) { alert(resp.data.error); return; }
+    if (resp?.data?.error) { toast.error(resp.data.error); return; }
     const updated = resp?.data?.task;
     if (updated) setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
   };

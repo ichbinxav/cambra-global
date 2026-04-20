@@ -4,6 +4,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { DEAL_STATUSES } from "@/lib/adminStatusConstants";
 import { AnimatePresence } from "framer-motion";
 import AdminApplicationDetail from "./AdminApplicationDetail.jsx";
+import { toast } from "sonner";
 
 const COLUMNS = [
   { id: DEAL_STATUSES.SUBMITTED, label: "Submitted", color: "border-blue-500/30 bg-blue-500/[0.03]", dot: "bg-blue-500" },
@@ -46,13 +47,13 @@ export default function AdminPipeline() {
     const { draggableId, destination } = result;
     const newStatus = destination.droppableId;
     const res = await base44.functions.invoke('adminUpdateApplicationStatus', { id: draggableId, status: newStatus });
-    if (res.data?.error) return alert(res.data.error);
+    if (res.data?.error) { toast.error(res.data.error); return; }
     setApps(prev => prev.map(a => a.id === draggableId ? { ...a, status: newStatus } : a));
   };
 
   const updateStatus = async (id, status) => {
     const res = await base44.functions.invoke('adminUpdateApplicationStatus', { id, status });
-    if (res.data?.error) return alert(res.data.error);
+    if (res.data?.error) { toast.error(res.data.error); return; }
     setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     if (selected?.id === id) setSelected(prev => ({ ...prev, status }));
   };

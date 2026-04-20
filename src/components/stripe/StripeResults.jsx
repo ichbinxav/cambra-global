@@ -77,7 +77,7 @@ export default function StripeResults({ data }) {
 
       {/* Big savings number */}
       <div className="text-center py-4">
-        <p className="text-sm text-muted-foreground/60 mb-2">You're overpaying by</p>
+        <p className="text-sm text-muted-foreground/60 mb-2">{data?.simulated ? "Based on demo data, you're estimated to be overpaying by" : "You're overpaying by"}</p>
         <div className="text-[clamp(4rem,16vw,8rem)] font-black tracking-[-0.06em] leading-none mb-2 text-red-600">
           <AnimatedCounter value={data.annual_savings_potential} prefix="€" duration={1.8} />
         </div>
@@ -227,7 +227,7 @@ export default function StripeResults({ data }) {
       {/* Security footer */}
       <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground/35 pb-4">
         <Shield size={11} />
-        <span>Read-only access · We never modify your data · Analysis runs server-side</span>
+        <span>{data?.simulated ? "Simulated data analysis · Read-only access · We never modify your data" : "Read-only access · We never modify your data · Analysis runs server-side"}</span>
       </div>
     </div>
   );

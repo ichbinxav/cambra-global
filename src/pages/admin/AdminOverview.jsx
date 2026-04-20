@@ -257,9 +257,9 @@ export default function AdminOverview() {
           <p className="text-[11px] text-muted-foreground/40 mt-1">across all analyses</p>
         </div>
         <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Savings Activated</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Estimated savings activated</p>
           <p className="text-xl font-black text-blue-600">{formatSavings(totalSavingsActivated)}</p>
-          <p className="text-[11px] text-muted-foreground/40 mt-1">live contracts/yr</p>
+          <p className="text-[11px] text-muted-foreground/40 mt-1">estimated annual</p>
         </div>
         <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Monetized (realized)</p>
