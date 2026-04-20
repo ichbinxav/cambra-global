@@ -21,6 +21,8 @@ const paths = Object.keys(fileLoaders).sort();
 export default function Snapshot() {
   const [contents, setContents] = React.useState({});
   const [loadingPath, setLoadingPath] = React.useState(null);
+  const [copying, setCopying] = React.useState(false);
+
   const loadFile = async (path) => {
     if (contents[path]) return;
     try {
@@ -29,6 +31,22 @@ export default function Snapshot() {
       setContents((prev) => ({ ...prev, [path]: mod?.default ?? mod }));
     } finally {
       setLoadingPath(null);
+    }
+  };
+
+  const handleCopyAll = async () => {
+    try {
+      setCopying(true);
+      const parts = await Promise.all(
+        paths.map(async (p) => {
+          const text = contents[p] ?? (await fileLoaders[p]().then((m) => m?.default ?? m));
+          return `/* ${p} */\n${text}`;
+        })
+      );
+      const sep = "\n\n/* ------------------------------------------------------------------ */\n\n";
+      await navigator.clipboard.writeText(parts.join(sep));
+    } finally {
+      setCopying(false);
     }
   };
 
@@ -42,7 +60,12 @@ export default function Snapshot() {
             <h1 className="text-base font-bold tracking-tight">Project Snapshot</h1>
             <p className="text-[11px] text-muted-foreground">Copia y pega desde aquí · docs/PROJECT_SNAPSHOT_B1-5.md</p>
           </div>
-          <Button size="sm" variant="outline" onClick={handleScrollTop}>Arriba</Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={handleCopyAll} className="bg-foreground text-background hover:bg-foreground/90" disabled={copying}>
+              {copying ? 'Copiando…' : 'Copiar todo'}
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleScrollTop}>Arriba</Button>
+          </div>
         </div>
       </div>
 
