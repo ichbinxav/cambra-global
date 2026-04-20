@@ -5,7 +5,17 @@
     "company_id": {
       "type": "string"
     },
+    "brand_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
     "deal_id": {
+      "type": "string",
+      "description": "Legacy: previous ambiguous reference"
+    },
+    "deal_activation_id": {
       "type": "string"
     },
     "action_type": {
@@ -29,7 +39,6 @@
     }
   },
   "required": [
-    "company_id",
     "action_type",
     "approved_at"
   ]

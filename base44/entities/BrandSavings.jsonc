@@ -27,6 +27,6 @@
   },
   "required": [
     "brand_id",
-    "estimated_savings_yearly"
+    "result_id"
   ]
 }

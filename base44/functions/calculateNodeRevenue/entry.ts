@@ -1,6 +1,6 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
-const SHARE = 0.25; // 25%
+const SHARE = 0.25;
 
 Deno.serve(async (req) => {
   try {
@@ -10,6 +10,12 @@ Deno.serve(async (req) => {
 
     const { brandId } = await req.json().catch(() => ({}));
     if (!brandId) return Response.json({ error: 'brandId required' }, { status: 400 });
+
+    const brands = await base44.entities.Brand.filter({ id: brandId });
+    const brand = brands?.[0];
+    if (!brand) return Response.json({ error: 'Brand not found' }, { status: 404 });
+    const allowed = brand.created_by === user.email || user.role === 'admin';
+    if (!allowed) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     const activations = await base44.asServiceRole.entities.DealActivation.filter({ brand_id: brandId });
     const realizedYearly = activations.reduce((s, a) => s + Number(a.realized_savings_yearly || 0), 0);

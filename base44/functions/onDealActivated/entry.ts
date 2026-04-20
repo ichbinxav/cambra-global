@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
 // Triggered when a DealApplication status changes to "activated"
 Deno.serve(async (req) => {

@@ -1,0 +1,82 @@
+{
+  "name": "Contract",
+  "type": "object",
+  "properties": {
+    "deal_application_id": {
+      "type": "string"
+    },
+    "deal_activation_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "deal_id": {
+      "type": "string",
+      "description": "Legacy: previous ambiguous reference"
+    },
+    "deal_name": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas",
+        "insurance",
+        "banking",
+        "logistics"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "estimated_savings_annual": {
+      "type": "number"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "node_revenue_pct": {
+      "type": "number"
+    },
+    "activity_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "by": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "user_email",
+    "deal_name",
+    "provider",
+    "status"
+  ]
+}

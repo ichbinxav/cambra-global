@@ -44,27 +44,13 @@ export default function AuthorizeDeal() {
       const res = await base44.integrations.Core.UploadPrivateFile({ file: blob });
       fileUri = res.file_uri;
     }
-    await base44.entities.Mandate.create({
-      company_id: brand?.id,
-      deal_id: dealId,
-      scope_type: 'deal_specific',
-      vertical: deal?.vertical,
-      authorized_actions_json: consents,
-      signed_by_name: form.name,
-      signed_by_email: form.email,
-      signed_by_role: form.role,
-      signed_at: new Date().toISOString(),
-      ip_address: (window?.userIP) || 'unknown',
-      document_version: 'v1',
-      status: 'active',
-      signed_document_url: fileUri,
+    const resp = await base44.functions.invoke('authorizeDeal', {
+      dealActivationId: dealId,
+      consents,
+      signer: { entity: form.entity, name: form.name, role: form.role, email: form.email },
+      signed_document_uri: fileUri
     });
-    await base44.entities.AuthorizationLog.create({ company_id: brand?.id, deal_id: dealId, action_type: 'mandate_signed', description: 'Mandate accepted', approved_by: form.email, approved_at: new Date().toISOString(), source: 'app', document_version: 'v1' });
-    await base44.entities.DealActivation.update(dealId, { status: 'authorized', last_updated: new Date().toISOString() });
-
-    const flows = deal?.vertical === 'payments' ? ['mandate_signed', 'provider_setup', 'pricing_confirmed', 'integration', 'go_live'] : deal?.vertical === 'shipping' ? ['account_created', 'rate_configuration', 'label_setup', 'go_live'] : ['audit_completed', 'tools_cancelled', 'tools_migrated', 'savings_confirmed'];
-    await base44.entities.MigrationTask.bulkCreate(flows.map((name, idx) => ({ deal_id: dealId, step_name: name, status: name === 'mandate_signed' ? 'done' : 'pending', order: idx + 1 })));
-
+    if (resp?.data?.error) { alert(resp.data.error); return; }
     navigate(`/deal/migration/${dealId}`);
   };
 

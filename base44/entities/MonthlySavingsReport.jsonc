@@ -3,6 +3,16 @@
   "type": "object",
   "properties": {
     "deal_id": {
+      "type": "string",
+      "description": "Legacy: previous ambiguous reference"
+    },
+    "deal_activation_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "provider_id": {
       "type": "string"
     },
     "month": {
@@ -38,7 +48,6 @@
     }
   },
   "required": [
-    "deal_id",
     "month",
     "status"
   ]

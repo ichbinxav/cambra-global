@@ -11,7 +11,9 @@ export default function MigrationHub() {
     (async () => {
       const d = await base44.entities.DealActivation.filter({ id: dealId });
       setDeal(d[0] || null);
-      const t = await base44.entities.MigrationTask.filter({ deal_id: dealId });
+      // Canonical first, legacy fallback
+      let t = await base44.entities.MigrationTask.filter({ deal_activation_id: dealId });
+      if (!t?.length) t = await base44.entities.MigrationTask.filter({ deal_id: dealId });
       setTasks(t.sort((a,b) => (a.order||0)-(b.order||0)));
     })();
   }, [dealId]);
@@ -23,13 +25,10 @@ export default function MigrationHub() {
   }, [tasks]);
 
   const toggle = async (task, next) => {
-    const updated = await base44.entities.MigrationTask.update(task.id, { status: next, updated_at: new Date().toISOString() });
-    setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
-    if (next !== 'pending') {
-      const after = tasks.map(t => t.id === task.id ? { ...t, status: next } : t);
-      const allDone = after.every(t => t.status === 'done');
-      await base44.entities.DealActivation.update(dealId, { status: allDone ? 'live' : 'migrating' });
-    }
+    const resp = await base44.functions.invoke('updateMigrationTaskStatus', { taskId: task.id, nextStatus: next });
+    if (resp?.data?.error) { alert(resp.data.error); return; }
+    const updated = resp?.data?.task;
+    if (updated) setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
   };
 
   return (

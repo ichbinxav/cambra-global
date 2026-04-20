@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
 // Email 5: Analyzer results summary — triggered when an AnalyzerResult is created
 Deno.serve(async (req) => {

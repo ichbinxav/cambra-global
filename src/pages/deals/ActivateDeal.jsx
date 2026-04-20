@@ -70,43 +70,10 @@ export default function ActivateDeal() {
   const handleContinue = async () => {
     const ok = window.confirm('Confirm activation and baseline lock? This will start the authorization process.');
     if (!ok) return;
-    const me = await base44.auth.me();
-    const deal = await base44.entities.DealActivation.create({
-      brand_id: brand?.id,
-      user_email: me.email,
-      vertical,
-      provider_from: summary.currentProvider,
-      provider_to: summary.projectedProvider,
-      projected_savings_monthly: Math.round(estMonthly),
-      projected_savings_annual: Math.round(estAnnual),
-      node_share_percent: 25,
-      billing_model: 'monthly_success_fee',
-      status: 'activated',
-      activated_at: new Date().toISOString(),
-    });
-
-    // lock baseline
-    const baselineType = vertical === 'payments' ? 'rate' : 'cost';
-    const baselineValue = vertical === 'payments'
-      ? (result.details?.payment_current_rate ?? 2.9)
-      : (vertical === 'shipping' ? (result.details?.shipping_current_avg ?? 7.5) : (input?.total_saas_spend ?? 2500));
-
-    await base44.entities.Baseline.create({
-      company_id: brand?.id,
-      deal_id: deal.id,
-      vertical,
-      baseline_type: baselineType,
-      baseline_value: baselineValue,
-      snapshot_json: { resultId, inputId: result.input_id, details: result.details },
-      source: input ? 'manual' : 'api',
-      locked: true,
-      locked_at: new Date().toISOString(),
-    });
-
-    // default billing rule
-    await base44.entities.BillingRule.create({ deal_id: deal.id, start_date: new Date().toISOString().slice(0,10), node_share_percent: 25, model: 'monthly_success_fee' });
-
-    navigate(`/deal/authorize/${deal.id}`);
+    const resp = await base44.functions.invoke('activateDeal', { vertical, resultId });
+    const activationId = resp?.data?.deal_activation_id;
+    if (!activationId) { alert('Failed to activate deal'); return; }
+    navigate(`/deal/authorize/${activationId}`);
   };
 
   return (

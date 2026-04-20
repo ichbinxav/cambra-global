@@ -6,6 +6,20 @@
       "type": "string"
     },
     "deal_id": {
+      "type": "string",
+      "description": "Legacy: previous ambiguous reference"
+    },
+    "deal_activation_id": {
+      "type": "string",
+      "description": "Canonical: references DealActivation.id"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "catalog_deal_id": {
       "type": "string"
     },
     "vertical": {
@@ -26,6 +40,10 @@
     "baseline_value": {
       "type": "number"
     },
+    "currency": {
+      "type": "string",
+      "default": "EUR"
+    },
     "snapshot_json": {
       "type": "object"
     },
@@ -45,11 +63,16 @@
     "locked_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "version": {
+      "type": "string"
+    },
+    "is_current": {
+      "type": "boolean",
+      "default": true
     }
   },
   "required": [
-    "company_id",
-    "deal_id",
     "vertical",
     "baseline_type",
     "baseline_value",

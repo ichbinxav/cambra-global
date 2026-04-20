@@ -3,22 +3,61 @@
   "type": "object",
   "properties": {
     "deal_id": {
+      "type": "string",
+      "description": "Legacy: previous ambiguous reference"
+    },
+    "deal_activation_id": {
+      "type": "string",
+      "description": "Canonical: references DealActivation.id"
+    },
+    "brand_id": {
       "type": "string"
     },
-    "model": {
+    "provider_id": {
+      "type": "string"
+    },
+    "billing_model": {
       "type": "string",
       "enum": [
         "monthly_success_fee"
       ],
       "default": "monthly_success_fee"
     },
+    "model": {
+      "type": "string",
+      "enum": [
+        "monthly_success_fee"
+      ],
+      "default": "monthly_success_fee",
+      "description": "Legacy compatibility"
+    },
     "node_share_percent": {
       "type": "number",
       "default": 25
     },
-    "start_date": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    },
+    "effective_start_date": {
       "type": "string",
       "format": "date"
+    },
+    "effective_end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "terms_version": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Legacy compatibility"
     },
     "min_fee": {
       "type": "number"
@@ -28,9 +67,7 @@
     }
   },
   "required": [
-    "deal_id",
-    "model",
-    "node_share_percent",
-    "start_date"
+    "billing_model",
+    "node_share_percent"
   ]
 }

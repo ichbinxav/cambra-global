@@ -6,6 +6,19 @@
       "type": "string"
     },
     "deal_id": {
+      "type": "string",
+      "description": "Legacy: previous ambiguous reference"
+    },
+    "deal_activation_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "catalog_deal_id": {
       "type": "string"
     },
     "scope_type": {
@@ -59,8 +72,6 @@
     }
   },
   "required": [
-    "company_id",
-    "vertical",
     "authorized_actions_json",
     "signed_by_name",
     "signed_by_email",

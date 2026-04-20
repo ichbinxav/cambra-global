@@ -8,7 +8,10 @@
     "user_email": {
       "type": "string"
     },
-    "deal_id": {
+    "deal_application_id": {
+      "type": "string"
+    },
+    "catalog_deal_id": {
       "type": "string"
     },
     "deal_name": {
@@ -76,7 +79,10 @@
         "authorized",
         "migrating",
         "live",
-        "monetizing"
+        "monetizing",
+        "paused",
+        "revoked",
+        "closed"
       ],
       "default": "activated"
     },
