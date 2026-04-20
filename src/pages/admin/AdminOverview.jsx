@@ -1,150 +1,185 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { DEAL_STATUSES, STATUS_COLORS } from "@/lib/adminStatusConstants";
-import { Link } from "react-router-dom";
-import {
-  Users, FileText, Zap, TrendingUp, DollarSign, ArrowRight,
-  CheckCircle2, BarChart3, AlertTriangle, Clock, Activity,
-  ChevronUp, ChevronDown, Minus, GitBranch, Building2, Star
-} from "lucide-react";
-import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, BarChart, Bar, Cell } from "recharts";
-import { motion, AnimatePresence } from "framer-motion";
-import { formatSavings } from "@/lib/deals";
+import { DEAL_STATUSES } from "@/lib/adminStatusConstants";
 
-// ─── KPI Card ────────────────────────────────────────────────────────────────
-function KPICard({ label, value, sub, color = "text-foreground", trend, prefix = "", suffix = "" }) {
-  return (
-    <div className="p-4 rounded-xl border border-border/50 bg-card hover:border-border/80 transition-all">
-      <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-2">{label}</p>
-      <p className={`text-2xl font-black tabular-nums ${color}`}>{prefix}{typeof value === "number" ? value.toLocaleString() : value}{suffix}</p>
-      {sub && <p className="text-[11px] text-muted-foreground/40 mt-1 flex items-center gap-1">{sub}</p>}
-      {trend !== undefined && (
-        <div className={`flex items-center gap-0.5 mt-1 text-[11px] font-semibold ${trend > 0 ? "text-green-600" : trend < 0 ? "text-red-500" : "text-muted-foreground/40"}`}>
-          {trend > 0 ? <ChevronUp size={11} /> : trend < 0 ? <ChevronDown size={11} /> : <Minus size={11} />}
-          {Math.abs(trend)}%
-        </div>
-      )}
-    </div>
-  );
+// UI blocks
+import AdminFiltersBar from "@/components/admin/AdminFiltersBar";
+import KPIStrip from "@/components/admin/KPIStrip";
+import ActionQueue from "@/components/admin/ActionQueue";
+import ConversionBottlenecks from "@/components/admin/ConversionBottlenecks";
+import PipelineMini from "@/components/admin/PipelineMini";
+import TopOpportunities from "@/components/admin/TopOpportunities";
+import ProviderPerformance from "@/components/admin/ProviderPerformance";
+import BrandHealth from "@/components/admin/BrandHealth";
+import RevenueBilling from "@/components/admin/RevenueBilling";
+import LiveActivity from "@/components/admin/LiveActivity";
+
+function toDateFromMonth(ym) {
+  // ym = 'YYYY-MM'
+  if (!ym) return null;
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, 1);
 }
 
-// ─── Priority tag ─────────────────────────────────────────────────────────────
-function PriorityTag({ savings }) {
-  if (savings >= 10000) return <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-red-500/10 text-red-600 border border-red-500/20">HIGH</span>;
-  if (savings >= 4000) return <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-orange-500/10 text-orange-500 border border-orange-500/20">MED</span>;
-  return <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-secondary text-muted-foreground/50 border border-border/30">LOW</span>;
+function safeCurrency(n) {
+  const v = Math.round(Number(n || 0));
+  return `€${v.toLocaleString()}`;
 }
 
-// ─── Feed Item ────────────────────────────────────────────────────────────────
-function FeedItem({ app, brands }) {
-  const brand = brands.find(b => b.created_by === app.user_email);
-  const name = brand?.name || app.company_name || app.user_email?.split("@")[0];
-  const timeAgo = (() => {
-    const diff = Date.now() - new Date(app.created_date).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
-  })();
-
-  const statusLabel = {
-    submitted: "Deal submitted",
-    in_review: "In review",
-    provider_contacted: "Provider contacted",
-    offer_ready: "🔥 Offer ready",
-    activated: "✅ Activated",
-  }[app.status] || app.status;
-
-  return (
-    <div className="flex items-center gap-3 py-3 border-b border-border/20 last:border-0">
-      <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center shrink-0">
-        <span className="text-[10px] font-black text-muted-foreground">{name?.charAt(0)?.toUpperCase()}</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-xs font-bold truncate">{name}</p>
-          <PriorityTag savings={app.estimated_savings || 0} />
-        </div>
-        <p className="text-[11px] text-muted-foreground/50 truncate">{statusLabel} · {app.deal_name}</p>
-      </div>
-      <div className="text-right shrink-0">
-        {app.estimated_savings > 0 && <p className="text-xs font-black text-green-600">{formatSavings(app.estimated_savings)}</p>}
-        <p className="text-[10px] text-muted-foreground/30">{timeAgo}</p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function AdminOverview() {
-  const [data, setData] = useState(null);
+  // Filters / controls
+  const [timeRange, setTimeRange] = useState("30d"); // 7d / 30d / 90d / YTD
+  const [search, setSearch] = useState("");
+  const [vertical, setVertical] = useState("all");
+  const [providerId, setProviderId] = useState("all");
+  const [country, setCountry] = useState("all");
+  const [stage, setStage] = useState("all");
+  const [status, setStatus] = useState("all");
+
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState("30d");
+  const [data, setData] = useState(null);
 
   const loadAll = async () => {
-    const [users, brands, userDeals, results, apps, reports] = await Promise.all([
+    const [users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices] = await Promise.all([
       base44.entities.User.list(),
       base44.entities.Brand.list(),
       base44.entities.UserDeal.list(),
       base44.entities.AnalyzerResult.list("-created_date", 500),
       base44.entities.DealApplication.list("-created_date", 500),
       base44.entities.MonthlySavingsReport.list("-month", 500),
+      base44.entities.Provider.list(),
+      base44.entities.DealActivation.list(),
+      base44.entities.MigrationTask.list("-updated_date", 500),
+      base44.entities.Mandate.list(),
+      base44.entities.Invoice.list("-issued_at", 500),
     ]);
-    setData({ users, brands, userDeals, results, apps, reports });
+    setData({ users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices });
   };
 
   useEffect(() => {
-    loadAll().catch(console.error).finally(() => setLoading(false));
+    loadAll().finally(() => setLoading(false));
     const subs = [];
     try {
-      subs.push(base44.entities.DealApplication.subscribe(() => loadAll().catch(console.error)));
-      subs.push(base44.entities.UserDeal.subscribe(() => loadAll().catch(console.error)));
-      subs.push(base44.entities.AnalyzerResult.subscribe(() => loadAll().catch(console.error)));
-    } catch (e) { console.warn("Subscription error:", e); }
+      subs.push(base44.entities.DealApplication.subscribe(() => loadAll()));
+      subs.push(base44.entities.AnalyzerResult.subscribe(() => loadAll()));
+      subs.push(base44.entities.MonthlySavingsReport.subscribe(() => loadAll()));
+      subs.push(base44.entities.DealActivation.subscribe(() => loadAll()));
+      subs.push(base44.entities.MigrationTask.subscribe(() => loadAll()));
+      subs.push(base44.entities.Invoice.subscribe(() => loadAll()));
+    } catch (e) { /* ignore realtime failures */ }
     return () => subs.forEach(u => u?.());
   }, []);
 
-  if (loading || !data) return (
-    <div className="flex items-center justify-center py-40">
-      <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
-    </div>
-  );
+  // Time window helpers
+  const now = useMemo(() => new Date(), []);
+  const since = useMemo(() => {
+    if (timeRange === "7d") return new Date(Date.now() - 7 * 86400000);
+    if (timeRange === "30d") return new Date(Date.now() - 30 * 86400000);
+    if (timeRange === "90d") return new Date(Date.now() - 90 * 86400000);
+    if (timeRange === "YTD") return new Date(new Date().getFullYear(), 0, 1);
+    return new Date(Date.now() - 30 * 86400000);
+  }, [timeRange]);
+  const prevSince = useMemo(() => new Date(since.getTime() - (now.getTime() - since.getTime())), [since, now]);
 
-  const { users, brands, userDeals, results, apps, reports } = data;
+  if (loading || !data) {
+    return (
+      <div className="flex items-center justify-center py-40">
+        <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
+      </div>
+    );
+  }
 
-  // ── Time range ──────────────────────────────────────────────────────────────
-  const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90;
-  const since = new Date(Date.now() - days * 86400000);
-  const prev = new Date(Date.now() - days * 2 * 86400000);
+  const { users, brands, results, apps, reports, providers, activations, tasks, mandates, invoices } = data;
 
-  const inRange = (d) => new Date(d.created_date) >= since;
-  const inPrev = (d) => new Date(d.created_date) >= prev && new Date(d.created_date) < since;
+  // Derived lists with filters applied where relevant
+  const countries = Array.from(new Set((brands || []).map(b => b.country).filter(Boolean)));
 
-  const trend = (curr, prevVal) => {
-    if (!prevVal) return 0;
-    return Math.round(((curr - prevVal) / prevVal) * 100);
+  const brandByEmail = (email) => (brands || []).find(b => b?.created_by === email);
+  const brandCountryMap = new Map((brands || []).map(b => [b?.created_by, b?.country || null]));
+
+  const appsFiltered = (apps || []).filter(a => {
+    const q = search.toLowerCase();
+    const b = brandByEmail(a.user_email);
+    const matchQ = !q || a.deal_name?.toLowerCase().includes(q) || a.provider?.toLowerCase().includes(q) || a.user_email?.toLowerCase().includes(q) || b?.name?.toLowerCase().includes(q);
+    const matchStage = stage === "all" || a.status === stage;
+    const matchCountry = country === "all" || brandCountryMap.get(a.user_email) === country;
+    return matchQ && matchStage && matchCountry;
+  });
+
+  const activationsActive = (activations || []).filter(a => ["activated","migrating","live","monetizing"].includes(a.status));
+  const providersActiveSet = new Set(activationsActive.map(a => a.provider_id).filter(Boolean));
+
+  // Time-ranged helpers
+  const inRangeDate = (d) => (d ? new Date(d) >= since && new Date(d) <= now : false);
+  const inPrevRange = (d) => (d ? new Date(d) >= prevSince && new Date(d) < since : false);
+
+  const resultsInRange = (results || []).filter(r => inRangeDate(r.created_date));
+  const resultsPrevRange = (results || []).filter(r => inPrevRange(r.created_date));
+
+  // SECTION 1 — HERO KPI STRIP
+  const identifiedSavings = resultsInRange.reduce((s, r) => s + (r.total_savings || 0), 0);
+  const identifiedPrev = resultsPrevRange.reduce((s, r) => s + (r.total_savings || 0), 0);
+  const identifiedTrend = identifiedPrev ? Math.round(((identifiedSavings - identifiedPrev) / identifiedPrev) * 100) : 0;
+
+  const activatedSavingsAnnual = activationsActive.reduce((s, a) => s + (a.projected_savings_annual || a.estimated_savings_yearly || a.realized_savings_yearly || 0), 0);
+
+  // Monetized revenue split (time-ranged by month key)
+  const reportsInRange = (reports || []).filter(r => {
+    const d = toDateFromMonth(r.month);
+    return d && d >= since && d <= now;
+  });
+  const monetizedPaid = reportsInRange.filter(r => r.status === "paid").reduce((s, r) => s + (r.node_fee || 0), 0);
+  const monetizedInvoiced = reportsInRange.filter(r => r.status === "invoiced").reduce((s, r) => s + (r.node_fee || 0), 0);
+
+  const pendingStatuses = [DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY];
+  const pendingDealValue = (apps || []).filter(a => pendingStatuses.includes(a.status)).reduce((s, a) => s + (a.estimated_savings || 0), 0);
+
+  // Action needs
+  const blockedTasks = (tasks || []).filter(t => t.status === "blocked");
+  const offerReady = (apps || []).filter(a => a.status === DEAL_STATUSES.OFFER_READY);
+  const toInvoice = (reports || []).filter(r => r.status === "calculated");
+  const awaitingAuth = (activations || []).filter(a => a.status === "awaiting_authorization");
+  const inReviewAged = (apps || []).filter(a => {
+    const ageDays = (Date.now() - new Date(a.created_date).getTime()) / 86400000;
+    return a.status === DEAL_STATUSES.IN_REVIEW && ageDays > 3;
+  });
+  const dealsNeedingActionCount = blockedTasks.length + offerReady.length + toInvoice.length + awaitingAuth.length + inReviewAged.length;
+
+  const kpis = [
+    { title: "Identified savings (est.)", value: safeCurrency(identifiedSavings), subtitle: "Across all analyzed opportunities", color: "text-purple-600", helper: identifiedTrend ? `${identifiedTrend > 0 ? "+" : ""}${identifiedTrend}% vs prev` : undefined },
+    { title: "Activated savings", value: safeCurrency(activatedSavingsAnnual), subtitle: "Savings currently live", color: "text-green-600" },
+    { title: "Monetized revenue", value: safeCurrency(monetizedPaid + monetizedInvoiced), subtitle: "Invoiced / paid platform revenue", color: "text-amber-600", helper: `Paid ${safeCurrency(monetizedPaid)} · Invoiced ${safeCurrency(monetizedInvoiced)}` },
+    { title: "Pending deal value", value: safeCurrency(pendingDealValue), subtitle: "Savings still in motion", color: "text-orange-600" },
+    { title: "Deals needing action", value: dealsNeedingActionCount, subtitle: "Requires follow-up now", color: "text-red-600" },
+    { title: "Active providers", value: providersActiveSet.size, subtitle: "Live partners in pipeline", color: "text-foreground" },
+  ];
+
+  // SECTION 2 — ACTION QUEUE (top 10)
+  const actionQueue = [
+    ...blockedTasks.map(t => ({ type: "Blocked", title: t.step_name?.replaceAll("_"," ") || "Migration task", sub: t.blocked_reason || "—", link: `/admin/activation/${t.deal_activation_id || ""}`, badge: "bg-red-500/[0.06] text-red-600 border-red-500/20" })),
+    ...offerReady.map(a => ({ type: "Offer ready", title: a.deal_name, sub: brandByEmail(a.user_email)?.name || a.user_email, link: "/admin/applications", badge: "bg-purple-500/[0.06] text-purple-600 border-purple-500/20" })),
+    ...toInvoice.map(r => ({ type: "Ready to invoice", title: r.month, sub: `${safeCurrency(r.node_fee)} · ${r.vertical || ""}`, link: "/admin/revenue", badge: "bg-orange-500/[0.06] text-orange-600 border-orange-500/20" })),
+    ...awaitingAuth.map(a => ({ type: "Awaiting signature", title: a.deal_name || a.id, sub: a.brand_id || "—", link: "/admin/activation", badge: "bg-blue-500/[0.06] text-blue-600 border-blue-500/20" })),
+    ...inReviewAged.map(a => ({ type: "Incomplete review", title: a.deal_name, sub: brandByEmail(a.user_email)?.name || a.user_email, link: "/admin/applications", badge: "bg-amber-500/[0.06] text-amber-600 border-amber-500/20" })),
+  ];
+
+  // SECTION 3 — CONVERSION + BOTTLENECKS
+  const convAnalysis = results.length > 0 ? Math.round(((apps.length || 0) / results.length) * 100) : 0;
+  const activeActivated = (activations || []).filter(a => a.status === DEAL_STATUSES.ACTIVATED).length;
+  const convActivation = apps.length > 0 ? Math.round((activeActivated / apps.length) * 100) : 0;
+  const stuckCount = (apps || []).filter(a => {
+    const days = (Date.now() - new Date(a.created_date).getTime()) / 86400000;
+    return days > 7 && [DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED].includes(a.status);
+  }).length;
+  const funnel = {
+    users: users.length,
+    analyses: results.length,
+    applied: apps.length,
+    active: (activations || []).filter(a => ["activated","migrating","live","monetizing"].includes(a.status)).length,
+    inProgress: (apps || []).filter(a => [DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY].includes(a.status)).length,
   };
 
-  // ── KPIs ────────────────────────────────────────────────────────────────────
-  const newUsers = users.filter(inRange).length;
-  const prevUsers = users.filter(inPrev).length;
-
-  const activatedApps = apps.filter(a => a.status === DEAL_STATUSES.ACTIVATED);
-  const submittedApps = apps.filter(a => a.status === DEAL_STATUSES.SUBMITTED);
-  const inProgressApps = apps.filter(a => [DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY].includes(a.status));
-  const offerReadyApps = apps.filter(a => a.status === DEAL_STATUSES.OFFER_READY);
-
-  const totalSavingsIdentified = results.reduce((s, r) => s + (r.total_savings || 0), 0);
-  const totalSavingsActivated = activatedApps.reduce((s, a) => s + (a.estimated_savings || 0), 0);
-  const monetizedRealized = (reports || []).filter(r => ['invoiced','paid'].includes(r.status)).reduce((s, r) => s + (r.node_fee || 0), 0);
-  const avgSavingsPerUser = users.length > 0 ? totalSavingsIdentified / users.length : 0;
-
-  // ── Conversion ──────────────────────────────────────────────────────────────
-  const convAnalysis = results.length > 0 ? Math.round((apps.length / results.length) * 100) : 0;
-  const convActivation = apps.length > 0 ? Math.round((activatedApps.length / apps.length) * 100) : 0;
-
-  // ── Pipeline by status ──────────────────────────────────────────────────────
+  // SECTION 4 — DEAL PIPELINE (mini)
   const pipelineStages = [
     { key: DEAL_STATUSES.SUBMITTED, label: "Submitted", color: "#3b82f6" },
     { key: DEAL_STATUSES.IN_REVIEW, label: "In Review", color: "#f97316" },
@@ -152,296 +187,142 @@ export default function AdminOverview() {
     { key: DEAL_STATUSES.OFFER_READY, label: "Offer Ready", color: "#f59e0b" },
     { key: DEAL_STATUSES.ACTIVATED, label: "Activated", color: "#22c55e" },
   ];
-
   const pipelineData = pipelineStages.map(s => ({
     ...s,
-    count: apps.filter(a => a.status === s.key).length,
-    value: apps.filter(a => a.status === s.key).reduce((sum, a) => sum + (a.estimated_savings || 0), 0),
+    count: appsFiltered.filter(a => a.status === s.key).length,
+    value: appsFiltered.filter(a => a.status === s.key).reduce((sum, a) => sum + (a.estimated_savings || 0), 0),
   }));
 
-  // ── Weekly trend ────────────────────────────────────────────────────────────
-  const weeklyData = Array.from({ length: 8 }, (_, i) => {
-    const wStart = new Date(Date.now() - (7 - i + 1) * 7 * 86400000);
-    const wEnd = new Date(Date.now() - (7 - i) * 7 * 86400000);
-    const wApps = apps.filter(a => {
-      const d = new Date(a.created_date);
-      return d >= wStart && d < wEnd;
-    });
-    return {
-      week: `W${i + 1}`,
-      apps: wApps.length,
-      savings: Math.round(wApps.reduce((s, a) => s + (a.estimated_savings || 0), 0) / 1000),
-    };
-  });
-
-  // ── Live feed (last 20 apps) ─────────────────────────────────────────────
-  const feedItems = [...apps].slice(0, 20);
-
-  // ── Alerts ──────────────────────────────────────────────────────────────────
-  const alerts = [];
-  if (offerReadyApps.length > 0) alerts.push({ type: "urgent", msg: `${offerReadyApps.length} deal${offerReadyApps.length > 1 ? "s" : ""} with offer ready — needs activation` });
-
-  const stuckApps = apps.filter(a => {
-    const days = (Date.now() - new Date(a.created_date).getTime()) / 86400000;
-    return days > 7 && [DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED].includes(a.status);
-  });
-  if (stuckApps.length > 0) alerts.push({ type: "warn", msg: `${stuckApps.length} deal${stuckApps.length > 1 ? "s" : ""} stuck in pipeline > 7 days` });
-
-  const highValueNew = apps.filter(a => inRange(a) && (a.estimated_savings || 0) >= 10000);
-  if (highValueNew.length > 0) alerts.push({ type: "info", msg: `${highValueNew.length} high-value application${highValueNew.length > 1 ? "s" : ""} this period` });
-
-  // ── Top brands by savings potential ──────────────────────────────────────
+  // SECTION 5 — TOP OPPORTUNITIES (fix undefined)
   const brandSavings = {};
-  results.forEach(r => {
+  (results || []).forEach(r => {
     const email = r.created_by;
-    if (!brandSavings[email]) brandSavings[email] = 0;
-    brandSavings[email] = Math.max(brandSavings[email], r.total_savings || 0);
+    if (!email) return;
+    const v = Math.max(0, r.total_savings || 0);
+    brandSavings[email] = Math.max(brandSavings[email] || 0, v);
   });
-  const topBrands = Object.entries(brandSavings)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([email, savings]) => ({
-      email,
-      savings,
-      brand: brands.find(b => b.created_by === email),
-    }));
+  const topOpp = Object.entries(brandSavings)
+    .map(([email, savings]) => ({ email, savings, brandName: (brands.find(b => b.created_by === email)?.name) || email.split("@")[0] }))
+    .sort((a, b) => b.savings - a.savings)
+    .slice(0, 5);
+
+  // SECTION 6 — PROVIDER PERFORMANCE
+  const providerAgg = {};
+  (reports || []).forEach(r => {
+    const key = r.provider_id || r.provider || "—";
+    if (!providerAgg[key]) providerAgg[key] = { savings: 0, revenue: 0, deals: 0 };
+    providerAgg[key].savings += r.savings || 0;
+    providerAgg[key].revenue += r.node_fee || 0;
+    providerAgg[key].deals += 1;
+  });
+  const providerRows = Object.entries(providerAgg)
+    .map(([idOrName, v]) => ({
+      name: providers.find(p => p.id === idOrName)?.name || idOrName,
+      savings: Math.round(v.savings),
+      revenue: Math.round(v.revenue),
+      deals: v.deals,
+    }))
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 8);
+
+  // SECTION 7 — BRAND HEALTH
+  const latestScoreByEmail = {};
+  (results || []).forEach(r => {
+    const email = r.created_by;
+    const t = new Date(r.created_date).getTime();
+    if (!latestScoreByEmail[email] || latestScoreByEmail[email].t < t) {
+      latestScoreByEmail[email] = { t, score: r.infra_score || 0 };
+    }
+  });
+  const brandHealthRows = (brands || []).map(b => ({
+    name: b.name || b.created_by?.split("@")[0] || "Brand",
+    email: b.created_by,
+    score: latestScoreByEmail[b.created_by]?.score || 0,
+    deals: (apps || []).filter(a => a.user_email === b.created_by).length,
+  })).sort((a, b) => b.score - a.score).slice(0, 8);
+
+  // SECTION 8 — REVENUE & BILLING
+  const realizedSavings = (reports || []).filter(r => ["invoiced","paid"].includes(r.status)).reduce((s, r) => s + (r.savings || 0), 0);
+  const monetizedPaidAll = (reports || []).filter(r => r.status === "paid").reduce((s, r) => s + (r.node_fee || 0), 0);
+  const monetizedInvoicedAll = (reports || []).filter(r => r.status === "invoiced").reduce((s, r) => s + (r.node_fee || 0), 0);
+  // last 6 months paid trend
+  const monthSeries = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const paid = (reports || []).filter(r => r.month === key && r.status === 'paid').reduce((s, r) => s + (r.node_fee || 0), 0);
+    monthSeries.push({ label: d.toLocaleDateString('en-GB', { month: 'short' }), paid: Math.round(paid) });
+  }
+  const overdueInvoices = (invoices || []).filter(i => i.status === 'overdue').length;
+  const toInvoiceCount = (reports || []).filter(r => r.status === 'calculated').length;
+
+  const revenueBilling = {
+    realizedSavings, monetizedPaid: monetizedPaidAll, monetizedInvoiced: monetizedInvoicedAll,
+    overdueInvoices, toInvoiceCount, monthSeries
+  };
+
+  // SECTION 9 — LIVE ACTIVITY: use recent apps
+
+  const handleQuickAction = (key) => {
+    if (key === 'applications') window.location.href = '/admin/applications';
+    if (key === 'deal') window.location.href = '/admin/deals';
+    if (key === 'followup') window.location.href = '/admin/users';
+    if (key === 'invoice') window.location.href = '/admin/revenue';
+    if (key === 'pipeline') window.location.href = '/admin/pipeline';
+  };
 
   return (
     <div className="space-y-5">
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-black tracking-[-0.03em]">Command Center</h1>
           <p className="text-xs text-muted-foreground/50 mt-0.5">Real-time operations overview · THE NoDE</p>
         </div>
-        <div className="flex gap-1 p-1 rounded-lg bg-secondary/60">
-          {["7d", "30d", "90d"].map(r => (
-            <button key={r} onClick={() => setTimeRange(r)}
-              className={`px-3 h-7 rounded-md text-xs font-semibold transition-all ${timeRange === r ? "bg-background shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-              {r}
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* ── Alerts ── */}
-      {alerts.length > 0 && (
-        <div className="space-y-2">
-          {alerts.map((a, i) => (
-            <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-xs font-semibold border ${
-                a.type === "urgent" ? "bg-red-500/[0.06] border-red-500/20 text-red-600" :
-                a.type === "warn" ? "bg-orange-500/[0.06] border-orange-500/20 text-orange-500" :
-                "bg-blue-500/[0.06] border-blue-500/20 text-blue-600"
-              }`}>
-              <AlertTriangle size={13} />
-              {a.msg}
-            </motion.div>
-          ))}
-        </div>
-      )}
+      {/* Top bar filters & quick actions */}
+      <AdminFiltersBar
+        timeRange={timeRange} setTimeRange={setTimeRange}
+        search={search} setSearch={setSearch}
+        vertical={vertical} setVertical={setVertical}
+        providerId={providerId} setProviderId={setProviderId}
+        country={country} setCountry={setCountry}
+        stage={stage} setStage={setStage}
+        status={status} setStatus={setStatus}
+        providers={providers}
+        countries={countries}
+        stages={[DEAL_STATUSES.SUBMITTED, DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY, DEAL_STATUSES.ACTIVATED]}
+        statuses={[DEAL_STATUSES.SUBMITTED, DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY, DEAL_STATUSES.ACTIVATED]}
+        onQuickAction={handleQuickAction}
+      />
 
-      {/* ── KPI Grid ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KPICard label="Total Users" value={users.length} sub={`+${newUsers} this period`} color="text-foreground" trend={trend(newUsers, prevUsers)} />
-        <KPICard label="Analyses Run" value={results.length} sub="infrastructure scans" color="text-blue-600" />
-        <KPICard label="Apps Submitted" value={apps.length} sub={`${submittedApps.length} awaiting review`} color="text-orange-500" />
-        <KPICard label="Deals Activated" value={activatedApps.length} sub={`${convActivation}% conversion rate`} color="text-green-600" />
-      </div>
+      {/* 1. HERO KPI STRIP */}
+      <KPIStrip kpis={kpis} />
 
-      {/* ── Financial KPIs ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="p-4 rounded-xl border border-green-500/20 bg-green-500/[0.04] col-span-1">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Identified savings (estimated)</p>
-          <p className="text-xl font-black text-green-600">{formatSavings(totalSavingsIdentified)}</p>
-          <p className="text-[11px] text-muted-foreground/40 mt-1">across all analyses</p>
-        </div>
-        <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Estimated savings activated</p>
-          <p className="text-xl font-black text-blue-600">{formatSavings(totalSavingsActivated)}</p>
-          <p className="text-[11px] text-muted-foreground/40 mt-1">estimated annual</p>
-        </div>
-        <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Monetized (realized)</p>
-          <p className="text-xl font-black text-amber-600">{formatSavings(monetizedRealized)}</p>
-          <p className="text-[11px] text-muted-foreground/40 mt-1">invoiced/paid reports</p>
-        </div>
-        <div className="p-4 rounded-xl border border-purple-500/20 bg-purple-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Avg identified per user</p>
-          <p className="text-xl font-black text-purple-600">{formatSavings(avgSavingsPerUser)}</p>
-          <p className="text-[11px] text-muted-foreground/40 mt-1">savings potential</p>
-        </div>
-      </div>
+      {/* 2. ACTION QUEUE */}
+      <ActionQueue items={actionQueue} />
 
-      {/* ── Conversion funnel ── */}
-      <div className="p-5 rounded-xl border border-border/50 bg-card">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Conversion Funnel</p>
-          <div className="flex gap-3 text-[11px]">
-            <span className="text-muted-foreground/50">Analysis→Deal: <strong className="text-foreground">{convAnalysis}%</strong></span>
-            <span className="text-muted-foreground/50">Deal→Activated: <strong className="text-foreground">{convActivation}%</strong></span>
-          </div>
-        </div>
-        <div className="flex items-end gap-1 h-12">
-          {[
-            { label: "Users", val: users.length, color: "bg-foreground/20" },
-            { label: "Analyses", val: results.length, color: "bg-blue-500/50" },
-            { label: "Applied", val: apps.length, color: "bg-orange-500/60" },
-            { label: "Active", val: activatedApps.length, color: "bg-green-500/70" },
-          ].map((s, i) => {
-            const maxVal = users.length || 1;
-            const pct = Math.max((s.val / maxVal) * 100, 4);
-            return (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full relative" style={{ height: "40px" }}>
-                  <div className={`absolute bottom-0 w-full rounded-t-sm ${s.color}`} style={{ height: `${pct}%` }} />
-                </div>
-                <p className="text-[9px] text-muted-foreground/40 text-center leading-tight">{s.label}<br /><strong className="text-foreground/70">{s.val}</strong></p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* 3. CONVERSION + BOTTLENECKS */}
+      <ConversionBottlenecks data={{ convAnalysis, convActivation, stuckCount, offerReady: offerReady.length, funnel }} />
 
-      {/* ── Main grid: pipeline + feed ── */}
+      {/* 4 + 5 + 6 + 7 in a responsive grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Pipeline overview */}
-        <div className="p-5 rounded-xl border border-border/50 bg-card">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Deal Pipeline</p>
-            <Link to="/admin/pipeline" className="text-[11px] text-muted-foreground/50 hover:text-foreground flex items-center gap-1 transition-colors">
-              Full pipeline <ArrowRight size={10} />
-            </Link>
-          </div>
-          <div className="space-y-2.5">
-            {pipelineData.map(stage => {
-              const pct = apps.length > 0 ? (stage.count / apps.length) * 100 : 0;
-              return (
-                <div key={stage.key}>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ background: stage.color }} />
-                      <p className="text-xs font-medium">{stage.label}</p>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="text-muted-foreground/50">{formatSavings(stage.value)}</span>
-                      <span className="font-bold w-5 text-right">{stage.count}</span>
-                    </div>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-border/30 overflow-hidden">
-                    <motion.div className="h-full rounded-full" style={{ background: stage.color }}
-                      initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-4 pt-4 border-t border-border/30 grid grid-cols-3 gap-2 text-center">
-            <Link to="/admin/pipeline" className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
-              <p className="text-xs font-black text-orange-500">{inProgressApps.length}</p>
-              <p className="text-[10px] text-muted-foreground/40">In Progress</p>
-            </Link>
-            <Link to="/admin/applications" className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
-              <p className="text-xs font-black text-amber-500">{offerReadyApps.length}</p>
-              <p className="text-[10px] text-muted-foreground/40">Offer Ready</p>
-            </Link>
-            <Link to="/admin/pipeline" className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
-              <p className="text-xs font-black text-red-500">{stuckApps.length}</p>
-              <p className="text-[10px] text-muted-foreground/40">Stuck {">"}7d</p>
-            </Link>
-          </div>
-        </div>
-
-        {/* Live activity feed */}
-        <div className="p-5 rounded-xl border border-border/50 bg-card">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Live Activity</p>
-            </div>
-            <Link to="/admin/applications" className="text-[11px] text-muted-foreground/50 hover:text-foreground flex items-center gap-1 transition-colors">
-              All <ArrowRight size={10} />
-            </Link>
-          </div>
-          <div className="overflow-y-auto max-h-[280px]">
-            {feedItems.length === 0 ? (
-              <p className="text-xs text-muted-foreground/40 text-center py-8">No activity yet</p>
-            ) : (
-              feedItems.map(app => <FeedItem key={app.id} app={app} brands={brands} />)
-            )}
-          </div>
-        </div>
+        {/* 4. DEAL PIPELINE */}
+        <PipelineMini data={pipelineData} totalApps={appsFiltered.length} />
+        {/* 5. TOP OPPORTUNITIES */}
+        <TopOpportunities items={topOpp} />
+        {/* 6. PROVIDER PERFORMANCE */}
+        <ProviderPerformance rows={providerRows} />
+        {/* 7. BRAND HEALTH */}
+        <BrandHealth rows={brandHealthRows} />
       </div>
 
-      {/* ── Weekly chart ── */}
-      <div className="p-5 rounded-xl border border-border/50 bg-card">
-        <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">Weekly Applications & Savings Pipeline</p>
-        <ResponsiveContainer width="100%" height={140}>
-          <BarChart data={weeklyData} barGap={2}>
-            <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" style={{ fontSize: 10 }} />
-            <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", fontSize: 11 }}
-              formatter={(v, name) => [name === "savings" ? `€${v}K` : v, name === "savings" ? "Savings" : "Apps"]} />
-            <Bar dataKey="apps" fill="hsl(var(--border))" radius={[3, 3, 0, 0]} />
-            <Bar dataKey="savings" fill="#22c55e" radius={[3, 3, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      {/* 8. REVENUE & BILLING */}
+      <RevenueBilling data={revenueBilling} />
 
-      {/* ── Top opportunities + Quick nav ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Top brands by savings potential */}
-        <div className="p-5 rounded-xl border border-border/50 bg-card">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Top Opportunities</p>
-            <Link to="/admin/users" className="text-[11px] text-muted-foreground/50 hover:text-foreground flex items-center gap-1 transition-colors">
-              All users <ArrowRight size={10} />
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {topBrands.length === 0 && <p className="text-xs text-muted-foreground/40 py-4 text-center">No data yet</p>}
-            {topBrands.map(({ email, savings, brand }, i) => (
-              <Link key={email} to="/admin/users" className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/50 transition-colors">
-                <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                  <span className="text-[9px] font-black">{i + 1}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold truncate">{brand?.name || email.split("@")[0]}</p>
-                  <p className="text-[10px] text-muted-foreground/40 truncate">{email}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-black text-green-600">{formatSavings(savings)}</p>
-                  {savings >= 10000 && <Star size={9} className="text-amber-500 ml-auto" />}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Quick navigation */}
-        <div className="p-5 rounded-xl border border-border/50 bg-card">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">Operations</p>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: "Deal Pipeline", path: "/admin/pipeline", icon: GitBranch, count: apps.length, color: "text-blue-600" },
-              { label: "Applications", path: "/admin/applications", icon: FileText, count: submittedApps.length, color: "text-orange-500" },
-              { label: "Users", path: "/admin/users", icon: Users, count: users.length, color: "text-purple-600" },
-              { label: "Providers", path: "/admin/providers", icon: Building2, color: "text-foreground" },
-              { label: "Revenue", path: "/admin/revenue", icon: TrendingUp, color: "text-green-600" },
-              { label: "Benchmarks", path: "/admin/benchmarks", icon: BarChart3, color: "text-amber-600" },
-            ].map((item, i) => (
-              <Link key={i} to={item.path}
-                className="flex items-center gap-2.5 p-3 rounded-lg border border-border/40 hover:border-border hover:bg-secondary/30 transition-all group">
-                <item.icon size={13} className={item.color} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold truncate">{item.label}</p>
-                  {item.count !== undefined && <p className="text-[10px] text-muted-foreground/40">{item.count} total</p>}
-                </div>
-                <ArrowRight size={10} className="text-muted-foreground/20 group-hover:text-muted-foreground/50 transition-colors" />
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* 9. LIVE ACTIVITY */}
+      <LiveActivity apps={apps} brands={brands} />
     </div>
   );
 }
