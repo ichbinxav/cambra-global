@@ -22,8 +22,13 @@ Deno.serve(async (req) => {
     const savingsRows = await base44.asServiceRole.entities.BrandSavings.filter({ brand_id: brandId }, '-created_date', 100);
 
     const activations = await base44.asServiceRole.entities.DealActivation.filter({ brand_id: brandId });
-    const activatedYearly = activations.reduce((s, a) => s + Number(a.estimated_savings_yearly || 0), 0);
-    const realizedYearly = activations.reduce((s, a) => s + Number(a.realized_savings_yearly || 0), 0);
+    const activatedYearly = activations.reduce((s, a) => s + Number(a.estimated_savings_yearly || a.projected_savings_annual || 0), 0);
+
+    const since = new Date(); since.setFullYear(since.getFullYear()-1);
+    const ymSince = `${since.getFullYear()}-${String(since.getMonth()+1).padStart(2,'0')}`;
+    const reports = await base44.asServiceRole.entities.MonthlySavingsReport.filter({ brand_id: brandId });
+    const last12 = reports.filter(r => r.month >= ymSince);
+    const realizedYearly = last12.reduce((s,r)=> s + Number(r.savings || 0), 0);
 
     return Response.json({
       brandId,

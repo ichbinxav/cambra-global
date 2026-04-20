@@ -2,13 +2,8 @@
   "name": "BillingRule",
   "type": "object",
   "properties": {
-    "deal_id": {
-      "type": "string",
-      "description": "Legacy: previous ambiguous reference"
-    },
     "deal_activation_id": {
-      "type": "string",
-      "description": "Canonical: references DealActivation.id"
+      "type": "string"
     },
     "brand_id": {
       "type": "string"
@@ -23,25 +18,19 @@
       ],
       "default": "monthly_success_fee"
     },
-    "model": {
-      "type": "string",
-      "enum": [
-        "monthly_success_fee"
-      ],
-      "default": "monthly_success_fee",
-      "description": "Legacy compatibility"
-    },
     "node_share_percent": {
       "type": "number",
       "default": 25
     },
-    "status": {
+    "min_fee": {
+      "type": "number"
+    },
+    "cap_fee": {
+      "type": "number"
+    },
+    "currency": {
       "type": "string",
-      "enum": [
-        "active",
-        "inactive"
-      ],
-      "default": "active"
+      "default": "EUR"
     },
     "effective_start_date": {
       "type": "string",
@@ -51,23 +40,48 @@
       "type": "string",
       "format": "date"
     },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "archived"
+      ],
+      "default": "active"
+    },
     "terms_version": {
       "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "model": {
+      "type": "string",
+      "enum": [
+        "monthly_success_fee"
+      ],
+      "default": "monthly_success_fee",
+      "description": "Legacy compatibility"
     },
     "start_date": {
       "type": "string",
       "format": "date",
       "description": "Legacy compatibility"
-    },
-    "min_fee": {
-      "type": "number"
-    },
-    "cap_fee": {
-      "type": "number"
     }
   },
   "required": [
     "billing_model",
-    "node_share_percent"
+    "node_share_percent",
+    "status"
   ]
 }

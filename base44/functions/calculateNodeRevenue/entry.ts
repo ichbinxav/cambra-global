@@ -17,13 +17,14 @@ Deno.serve(async (req) => {
     const allowed = brand.created_by === user.email || user.role === 'admin';
     if (!allowed) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    const activations = await base44.asServiceRole.entities.DealActivation.filter({ brand_id: brandId });
-    const realizedYearly = activations.reduce((s, a) => s + Number(a.realized_savings_yearly || 0), 0);
+    const since = new Date(); since.setFullYear(since.getFullYear()-1);
+    const ymSince = `${since.getFullYear()}-${String(since.getMonth()+1).padStart(2,'0')}`;
+    const reports = await base44.asServiceRole.entities.MonthlySavingsReport.filter({ brand_id: brandId });
+    const last12 = reports.filter(r => r.month >= ymSince);
+    const nodeRevenueYearly = last12.reduce((s,r)=> s + Number(r.node_fee || 0), 0);
+    const monthlyRevenue = nodeRevenueYearly / 12;
 
-    const yearlyRevenue = realizedYearly * SHARE;
-    const monthlyRevenue = yearlyRevenue / 12;
-
-    return Response.json({ brandId, monthlyRevenue, yearlyRevenue, share: SHARE });
+    return Response.json({ brandId, monthlyRevenue, yearlyRevenue: nodeRevenueYearly, share: SHARE });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

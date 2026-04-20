@@ -64,7 +64,7 @@ export default function Reports() {
             >
               <div className="mb-6">
                 <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-1">Savings history</p>
-                <p className="text-sm font-semibold">Annual optimization potential by category (€)</p>
+                <p className="text-sm font-semibold">Identified (Analyzer) savings by category (€)</p>
               </div>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={chartData} barCategoryGap="35%">

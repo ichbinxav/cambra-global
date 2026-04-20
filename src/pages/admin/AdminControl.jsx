@@ -46,7 +46,7 @@ export default function AdminControl() {
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-black">Admin Control</h1>
       <div className="grid sm:grid-cols-4 gap-3">
-        {[{label:'Projected savings', val: `€${totals.projected.toLocaleString()}`}, {label:'Real savings (last month)', val:`€${totals.realSavings.toLocaleString()}`}, {label:'THE NoDE MRR', val:`€${totals.nodeMRR.toLocaleString()}`}, {label:'Active deals', val: totals.activeDeals}].map((c,i)=>(
+        {[{label:'Activated savings (proj.)', val: `€${totals.projected.toLocaleString()}`}, {label:'Realized savings (last month)', val:`€${totals.realSavings.toLocaleString()}`}, {label:'THE NoDE MRR', val:`€${totals.nodeMRR.toLocaleString()}`}, {label:'Active deals', val: totals.activeDeals}].map((c,i)=>(
           <div key={i} className="rounded-xl border p-4 bg-card">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">{c.label}</p>
             <p className="text-xl font-black">{c.val}</p>

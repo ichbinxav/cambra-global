@@ -2,10 +2,6 @@
   "name": "MonthlySavingsReport",
   "type": "object",
   "properties": {
-    "deal_id": {
-      "type": "string",
-      "description": "Legacy: previous ambiguous reference"
-    },
     "deal_activation_id": {
       "type": "string"
     },
@@ -15,10 +11,45 @@
     "provider_id": {
       "type": "string"
     },
+    "vertical": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas"
+      ]
+    },
     "month": {
-      "type": "string"
+      "type": "string",
+      "description": "YYYY-MM"
+    },
+    "measurement_source": {
+      "type": "string",
+      "enum": [
+        "api",
+        "file_upload",
+        "manual_review",
+        "hybrid"
+      ],
+      "default": "manual_review"
+    },
+    "measurement_mode": {
+      "type": "string",
+      "enum": [
+        "fully_verified",
+        "estimated_from_partial_data",
+        "fallback_projection",
+        "manual_override"
+      ],
+      "default": "fallback_projection"
     },
     "gmv_real": {
+      "type": "number"
+    },
+    "shipment_count_real": {
+      "type": "number"
+    },
+    "saas_usage_real": {
       "type": "number"
     },
     "baseline_cost": {
@@ -33,21 +64,40 @@
     "node_fee": {
       "type": "number"
     },
-    "status": {
+    "currency": {
       "type": "string",
-      "enum": [
-        "calculated",
-        "invoiced",
-        "paid",
-        "pending"
-      ],
-      "default": "calculated"
+      "default": "EUR"
     },
     "confidence_score": {
       "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "calculated",
+        "invoiced",
+        "paid",
+        "void"
+      ],
+      "default": "calculated"
+    },
+    "supporting_snapshot_json": {
+      "type": "object"
+    },
+    "verified_by": {
+      "type": "string"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
     }
   },
   "required": [
+    "deal_activation_id",
     "month",
     "status"
   ]

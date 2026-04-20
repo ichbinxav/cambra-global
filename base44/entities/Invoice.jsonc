@@ -2,10 +2,6 @@
   "name": "Invoice",
   "type": "object",
   "properties": {
-    "deal_id": {
-      "type": "string",
-      "description": "Legacy: previous ambiguous reference"
-    },
     "deal_activation_id": {
       "type": "string"
     },
@@ -21,16 +17,54 @@
     "amount": {
       "type": "number"
     },
+    "currency": {
+      "type": "string",
+      "default": "EUR"
+    },
     "status": {
       "type": "string",
       "enum": [
         "draft",
+        "issued",
         "sent",
-        "paid"
+        "paid",
+        "void",
+        "disputed",
+        "overdue"
       ],
       "default": "draft"
     },
+    "invoice_number": {
+      "type": "string"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "due_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "payment_link": {
+      "type": "string"
+    },
+    "payment_provider": {
+      "type": "string"
+    },
+    "monthly_savings_report_id": {
+      "type": "string"
+    },
+    "billing_snapshot_json": {
+      "type": "object"
+    },
+    "pdf_url": {
+      "type": "string"
+    },
+    "notes": {
       "type": "string"
     }
   },
