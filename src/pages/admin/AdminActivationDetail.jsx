@@ -9,6 +9,11 @@ export default function AdminActivationDetail(){
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // Override modal state (must be before any early returns)
+  const [overrideOpen, setOverrideOpen] = useState(false);
+  const [overrideAction, setOverrideAction] = useState(null);
+  const [overridePayload, setOverridePayload] = useState({});
+  const [overrideReason, setOverrideReason] = useState('');
 
   useEffect(()=>{ (async()=>{
     try {
@@ -28,10 +33,6 @@ export default function AdminActivationDetail(){
     setData(res.data);
   };
 
-  const [overrideOpen, setOverrideOpen] = useState(false);
-  const [overrideAction, setOverrideAction] = useState(null);
-  const [overridePayload, setOverridePayload] = useState({});
-  const [overrideReason, setOverrideReason] = useState('');
   const openOverride = (action, payload={}) => { setOverrideAction(action); setOverridePayload(payload); setOverrideOpen(true); };
   const submitOverride = async () => {
     if (!overrideReason.trim()) { alert('Please provide a reason'); return; }
