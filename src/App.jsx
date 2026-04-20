@@ -38,8 +38,15 @@ import AdminRevenue from '@/pages/admin/AdminRevenue';
 import AdminBenchmarks from '@/pages/admin/AdminBenchmarks';
 import AdminContracts from '@/pages/admin/AdminContracts';
 import AdminIntegrations from '@/pages/admin/AdminIntegrations';
+import AdminControl from '@/pages/admin/AdminControl';
 import ProviderPortal from '@/pages/ProviderPortal';
 import AuthRedirect from '@/pages/AuthRedirect';
+import ActivateDeal from '@/pages/deals/ActivateDeal';
+import AuthorizeDeal from '@/pages/deals/AuthorizeDeal';
+import MigrationHub from '@/pages/deals/MigrationHub';
+import ActivateDeal from '@/pages/deals/ActivateDeal';
+import AuthorizeDeal from '@/pages/deals/AuthorizeDeal';
+import MigrationHub from '@/pages/deals/MigrationHub';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoadingAuth } = useAuth();
@@ -150,6 +157,12 @@ const AuthenticatedApp = () => {
         <Route path="/Terms" element={<Terms />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
+        <Route path="/deal/activate" element={<ProtectedRoute><ActivateDeal /></ProtectedRoute>} />
+        <Route path="/deal/authorize/:dealId" element={<ProtectedRoute><AuthorizeDeal /></ProtectedRoute>} />
+        <Route path="/deal/migration/:dealId" element={<ProtectedRoute><MigrationHub /></ProtectedRoute>} />
+        <Route path="/deal/activate" element={<ProtectedRoute><ActivateDeal /></ProtectedRoute>} />
+        <Route path="/deal/authorize/:dealId" element={<ProtectedRoute><AuthorizeDeal /></ProtectedRoute>} />
+        <Route path="/deal/migration/:dealId" element={<ProtectedRoute><MigrationHub /></ProtectedRoute>} />
 
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="/Dashboard" element={<Dashboard />} />
@@ -173,6 +186,8 @@ const AuthenticatedApp = () => {
           <Route path="/admin/benchmarks" element={<AdminBenchmarks />} />
           <Route path="/admin/contracts" element={<AdminContracts />} />
           <Route path="/admin/integrations" element={<AdminIntegrations />} />
+          <Route path="/admin/control" element={<AdminControl />} />
+          <Route path="/admin/control" element={<AdminControl />} />
         </Route>
         <Route path="/ProviderPortal" element={<ProtectedRoute><ProviderPortal /></ProtectedRoute>} />
 

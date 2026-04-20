@@ -5,7 +5,7 @@
     "brand_id": {
       "type": "string"
     },
-    "provider_id": {
+    "user_email": {
       "type": "string"
     },
     "deal_id": {
@@ -14,15 +14,34 @@
     "deal_name": {
       "type": "string"
     },
-    "user_email": {
+    "provider_id": {
       "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas"
+      ]
+    },
+    "provider_from": {
+      "type": "string"
+    },
+    "provider_to": {
+      "type": "string"
+    },
+    "projected_savings_monthly": {
+      "type": "number"
+    },
+    "projected_savings_annual": {
+      "type": "number"
     },
     "estimated_savings_yearly": {
       "type": "number"
-    },
-    "activated_at": {
-      "type": "string",
-      "format": "date-time"
     },
     "activated_savings_yearly": {
       "type": "number"
@@ -36,15 +55,45 @@
     "realized_savings_yearly": {
       "type": "number"
     },
+    "node_share_percent": {
+      "type": "number",
+      "default": 25
+    },
+    "billing_model": {
+      "type": "string",
+      "enum": [
+        "monthly_success_fee"
+      ],
+      "default": "monthly_success_fee"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "proposed",
+        "activated",
+        "awaiting_authorization",
+        "authorized",
+        "migrating",
+        "live",
+        "monetizing"
+      ],
+      "default": "activated"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "last_updated": {
       "type": "string",
       "format": "date-time"
     }
   },
   "required": [
-    "deal_id",
-    "deal_name",
-    "estimated_savings_yearly",
-    "activated_at"
+    "brand_id",
+    "vertical",
+    "node_share_percent",
+    "billing_model",
+    "status"
   ]
 }

@@ -1,0 +1,36 @@
+{
+  "name": "BillingRule",
+  "type": "object",
+  "properties": {
+    "deal_id": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string",
+      "enum": [
+        "monthly_success_fee"
+      ],
+      "default": "monthly_success_fee"
+    },
+    "node_share_percent": {
+      "type": "number",
+      "default": 25
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "min_fee": {
+      "type": "number"
+    },
+    "cap_fee": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "deal_id",
+    "model",
+    "node_share_percent",
+    "start_date"
+  ]
+}

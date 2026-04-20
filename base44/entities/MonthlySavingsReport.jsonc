@@ -1,0 +1,45 @@
+{
+  "name": "MonthlySavingsReport",
+  "type": "object",
+  "properties": {
+    "deal_id": {
+      "type": "string"
+    },
+    "month": {
+      "type": "string"
+    },
+    "gmv_real": {
+      "type": "number"
+    },
+    "baseline_cost": {
+      "type": "number"
+    },
+    "actual_cost": {
+      "type": "number"
+    },
+    "savings": {
+      "type": "number"
+    },
+    "node_fee": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "calculated",
+        "invoiced",
+        "paid",
+        "pending"
+      ],
+      "default": "calculated"
+    },
+    "confidence_score": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "deal_id",
+    "month",
+    "status"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "name": "Baseline",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "deal_id": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas"
+      ]
+    },
+    "baseline_type": {
+      "type": "string",
+      "enum": [
+        "rate",
+        "cost"
+      ]
+    },
+    "baseline_value": {
+      "type": "number"
+    },
+    "snapshot_json": {
+      "type": "object"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "api",
+        "upload",
+        "manual"
+      ],
+      "default": "manual"
+    },
+    "locked": {
+      "type": "boolean",
+      "default": true
+    },
+    "locked_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "company_id",
+    "deal_id",
+    "vertical",
+    "baseline_type",
+    "baseline_value",
+    "locked",
+    "locked_at"
+  ]
+}

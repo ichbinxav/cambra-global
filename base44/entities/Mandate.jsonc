@@ -1,0 +1,70 @@
+{
+  "name": "Mandate",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "deal_id": {
+      "type": "string"
+    },
+    "scope_type": {
+      "type": "string",
+      "enum": [
+        "general",
+        "deal_specific"
+      ],
+      "default": "deal_specific"
+    },
+    "vertical": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas"
+      ]
+    },
+    "authorized_actions_json": {
+      "type": "object"
+    },
+    "signed_by_name": {
+      "type": "string"
+    },
+    "signed_by_email": {
+      "type": "string"
+    },
+    "signed_by_role": {
+      "type": "string"
+    },
+    "signed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "document_version": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "signed_document_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "vertical",
+    "authorized_actions_json",
+    "signed_by_name",
+    "signed_by_email",
+    "signed_at",
+    "status"
+  ]
+}

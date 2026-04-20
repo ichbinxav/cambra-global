@@ -1,0 +1,32 @@
+{
+  "name": "MigrationTask",
+  "type": "object",
+  "properties": {
+    "deal_id": {
+      "type": "string"
+    },
+    "step_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "done"
+      ],
+      "default": "pending"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "order": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "deal_id",
+    "step_name",
+    "status"
+  ]
+}

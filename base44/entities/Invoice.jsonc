@@ -1,0 +1,33 @@
+{
+  "name": "Invoice",
+  "type": "object",
+  "properties": {
+    "deal_id": {
+      "type": "string"
+    },
+    "month": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "sent",
+        "paid"
+      ],
+      "default": "draft"
+    },
+    "payment_link": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "deal_id",
+    "month",
+    "amount",
+    "status"
+  ]
+}

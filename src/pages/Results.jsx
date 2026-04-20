@@ -406,6 +406,12 @@ export default function Results() {
                     €{(result[item.key] || 0).toLocaleString()}
                   </p>
                   <p className="text-[10px] text-muted-foreground/40">/year</p>
+                  <a
+                    href={`/deal/activate?vertical=${item.label.toLowerCase().includes('payment') ? 'payments' : (item.label.toLowerCase().includes('shipping') ? 'shipping' : 'saas')}&resultId=${result.id}`}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 mt-2 rounded-full border text-[11px] hover:opacity-80"
+                  >
+                    Activate this deal
+                  </a>
                 </div>
               </div>
             ))}

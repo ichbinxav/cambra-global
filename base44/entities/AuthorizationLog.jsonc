@@ -1,0 +1,36 @@
+{
+  "name": "AuthorizationLog",
+  "type": "object",
+  "properties": {
+    "company_id": {
+      "type": "string"
+    },
+    "deal_id": {
+      "type": "string"
+    },
+    "action_type": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "string"
+    },
+    "document_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "company_id",
+    "action_type",
+    "approved_at"
+  ]
+}
