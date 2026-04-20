@@ -68,11 +68,11 @@ export default function MigrationHub() {
                 <span className="text-sm font-medium">{t.step_name.replaceAll('_',' ')}{t.requires_provider_input ? ' · provider' : ''}{t.requires_brand_input ? ' · brand' : ''}{t.requires_admin_review ? ' · admin review' : ''}</span>
               </div>
               <div className="flex items-center gap-2 text-xs">
-                <button onClick={() => toggle(t, 'pending')} className={`px-2 py-1 rounded border ${t.status==='pending'?'bg-secondary':''}`}>Pending</button>
-                <button onClick={() => toggle(t, 'in_progress')} className={`px-2 py-1 rounded border ${t.status==='in_progress'?'bg-secondary':''}`}>In progress</button>
-                <button onClick={() => toggle(t, 'blocked')} className={`px-2 py-1 rounded border ${t.status==='blocked'?'bg-orange-500/10 text-orange-700':''}`}>Blocked</button>
-                <button onClick={() => toggle(t, 'canceled')} className={`px-2 py-1 rounded border ${t.status==='canceled'?'bg-muted':''}`}>Canceled</button>
-                <button onClick={() => toggle(t, 'done')} className={`px-2 py-1 rounded border ${t.status==='done'?'bg-green-500/10 text-green-700':''}`}>Done</button>
+                <button onClick={() => toggle(t, 'pending')} className={`${'px-2 py-1 rounded border'} ${t.status==='pending' ? 'bg-secondary' : ''}`}>Pending</button>
+                <button onClick={() => toggle(t, 'in_progress')} className={`${'px-2 py-1 rounded border'} ${t.status==='in_progress' ? 'bg-secondary' : ''}`}>In progress</button>
+                <button onClick={() => toggle(t, 'blocked')} className={`${'px-2 py-1 rounded border'} ${t.status==='blocked' ? 'bg-orange-500/10 text-orange-700' : ''}`}>Blocked</button>
+                <button onClick={() => toggle(t, 'canceled')} className={`${'px-2 py-1 rounded border'} ${t.status==='canceled' ? 'bg-muted' : ''}`}>Canceled</button>
+                <button onClick={() => toggle(t, 'done')} className={`${'px-2 py-1 rounded border'} ${t.status==='done' ? 'bg-green-500/10 text-green-700' : ''}`}>Done</button>
               </div>
             </li>
           ))}

@@ -24,7 +24,8 @@ export default function AdminRevenue() {
   const activeActivations = activations.filter(a => ["activated","migrating","live","monetizing"].includes(a.status));
   const totalSavings = 0;
   const realizedFees = reports.filter(r => REALIZED_STATUSES.includes(r.status)).reduce((s, r) => s + (r.node_fee || 0), 0);
-  const realizedSavings = reports.filter(r => REALIZED_STATUSES.includes(r.status) || r.status === 'calculated').reduce((s, r) => s + (r.savings || 0), 0);
+  const realizedSavings = reports.filter(r => REALIZED_STATUSES.includes(r.status)).reduce((s, r) => s + (r.savings || 0), 0);
+  const contractsWithRealized = Array.from(new Set((reports || []).filter(r => REALIZED_STATUSES.includes(r.status)).map(r => r.deal_activation_id))).length;
 
   // Monetized by provider (from MonthlySavingsReport)
   const byProvider = {};
@@ -65,10 +66,10 @@ export default function AdminRevenue() {
       {/* Top KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Active activations", val: activeActivations.length, color: "text-foreground" },
-          { label: "Cumulative realized", val: `€${Math.round(realizedSavings).toLocaleString()}`, color: "text-green-600" },
+          { label: "Live activations", val: activeActivations.length, color: "text-foreground" },
+          { label: "Cumulative realized savings", val: `€${Math.round(realizedSavings).toLocaleString()}`, color: "text-green-600" },
           { label: "Cumulative monetized", val: `€${Math.round(realizedFees).toLocaleString()}`, color: "text-amber-600" },
-          { label: "Avg per active activation", val: activeActivations.length ? `€${Math.round((realizedFees || 0) / activeActivations.length).toLocaleString()}` : "—", color: "text-blue-600" },
+          { label: "Contracts with realized activity", val: contractsWithRealized, color: "text-blue-600" },
         ].map((kpi, i) => (
           <div key={i} className="p-4 rounded-xl border border-border/50 bg-card">
             <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-2">{kpi.label}</p>

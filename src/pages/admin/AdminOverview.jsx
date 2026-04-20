@@ -252,7 +252,7 @@ export default function AdminOverview() {
       {/* ── Financial KPIs ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="p-4 rounded-xl border border-green-500/20 bg-green-500/[0.04] col-span-1">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Savings Identified</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Identified savings (estimated)</p>
           <p className="text-xl font-black text-green-600">{formatSavings(totalSavingsIdentified)}</p>
           <p className="text-[11px] text-muted-foreground/40 mt-1">across all analyses</p>
         </div>
@@ -267,7 +267,7 @@ export default function AdminOverview() {
           <p className="text-[11px] text-muted-foreground/40 mt-1">invoiced/paid reports</p>
         </div>
         <div className="p-4 rounded-xl border border-purple-500/20 bg-purple-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Avg / User</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Avg identified per user</p>
           <p className="text-xl font-black text-purple-600">{formatSavings(avgSavingsPerUser)}</p>
           <p className="text-[11px] text-muted-foreground/40 mt-1">savings potential</p>
         </div>

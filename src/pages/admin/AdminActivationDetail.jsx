@@ -29,6 +29,7 @@ export default function AdminActivationDetail(){
   if (loading) return <div className="p-6">Loading…</div>;
   if (error) return <div className="p-6 text-red-600">{error}</div>;
   const { activation, baselines, rules, mandates, tasks, reports, invoices, logs, progress } = data || {};
+  const realizedToDate = (reports || []).filter(r => ['invoiced','paid'].includes(r.status)).reduce((s, r) => s + (r.savings || 0), 0);
 
   const reload = async () => {
     const res = await base44.functions.invoke('getActivationAdminDetail', { id });
@@ -62,6 +63,7 @@ export default function AdminActivationDetail(){
             <div>Vertical: <b>{activation.vertical}</b></div>
             <div>Projected savings / yr: <b>€{(activation.projected_savings_annual ?? 0).toLocaleString()}</b></div>
             <div>Realized savings / yr: <b>{activation.realized_savings_yearly !== undefined ? `€${(activation.realized_savings_yearly||0).toLocaleString()}` : '—'}</b></div>
+            <div>Realized to date: <b>{reports && reports.length ? `€${realizedToDate.toLocaleString()}` : '—'}</b></div>
             <div>Monetized to date: <b>{reports && reports.length ? `€${reports.reduce((sum, r) => sum + (r.node_fee || 0), 0).toLocaleString()}` : '—'}</b></div>
             <div>Progress: <b>{progress}%</b></div>
           </div>
