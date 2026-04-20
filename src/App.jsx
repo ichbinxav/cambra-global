@@ -154,14 +154,24 @@ const AuthenticatedApp = () => {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/Landing" element={<Landing />} />
+        <Route path="/landing" element={<Navigate to="/Landing" replace />} />
         <Route path="/Onboarding" element={<Onboarding />} />
+        <Route path="/onboarding" element={<Navigate to="/Onboarding" replace />} />
         <Route path="/Analyzer" element={<Analyzer />} />
         <Route path="/ConnectTools" element={<ConnectTools />} />
+        <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
         <Route path="/StripeAnalyzer" element={<StripeAnalyzer />} />
+        <Route path="/stripeanalyzer" element={<Navigate to="/StripeAnalyzer" replace />} />
         <Route path="/Results" element={<Results />} />
+        {/* Aliases (lowercase) to avoid Not Found when typed */}
+        <Route path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
+        <Route path="/results" element={<Navigate to="/Results" replace />} />
         <Route path="/Privacy" element={<Privacy />} />
+        <Route path="/privacy" element={<Navigate to="/Privacy" replace />} />
         <Route path="/Terms" element={<Terms />} />
+        <Route path="/terms" element={<Navigate to="/Terms" replace />} />
         <Route path="/Snapshot" element={<Snapshot />} />
+        <Route path="/snapshot" element={<Navigate to="/Snapshot" replace />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
         <Route path="/deal/activate" element={<ProtectedRoute><ActivateDeal /></ProtectedRoute>} />
