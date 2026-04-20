@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
-import SavingsEstimator from "@/components/landing/SavingsEstimator";
+
 
 const SAVINGS = [
   { label: "Payments", value: "€38K", sub: "−52% fee rate", color: "text-blue-600", bg: "bg-blue-500/[0.07] border-blue-500/20", icon: CreditCard },
@@ -155,21 +155,11 @@ export default function HeroSection() {
               )}
             </motion.div>
 
-            <SavingsEstimator />
 
-            <motion.div variants={fadeUp} className="flex flex-col gap-1.5 mt-4">
-              <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground/60">
-                <span className="w-1 h-1 rounded-full bg-foreground/30"></span>
-                <span>2-minute analysis · No commitment · Read-only access</span>
-              </div>
-              <p className="text-sm text-muted-foreground/60">
-                Identify your optimization potential instantly.
-              </p>
-            </motion.div>
 
-            <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/40 mt-4">
-              Avg. optimization potential: €29,000/year · €3K–€72K range · Based on real network benchmarks
-            </motion.p>
+
+
+
           </motion.div>
 
           {/* RIGHT — product visual */}
