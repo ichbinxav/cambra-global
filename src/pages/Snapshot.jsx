@@ -1,7 +1,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
-import snapshot from "../../docs/PROJECT_SNAPSHOT_B1-5.md?raw";
+import snapshot from "@/docs/PROJECT_SNAPSHOT_B1-5.md?raw";
 
 export default function Snapshot() {
   const handleScrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
