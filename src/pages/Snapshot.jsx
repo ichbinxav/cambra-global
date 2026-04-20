@@ -2,21 +2,19 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 
 // Gather raw source files (no links, full content)
-const glob = (pattern) => import.meta.glob(pattern, { as: "raw", eager: true });
-
 const entries = [
-  ...Object.entries(glob('/src/App.jsx')),
-  ...Object.entries(glob('/src/index.css')),
-  ...Object.entries(glob('/tailwind.config.js')),
-  ...Object.entries(glob('/src/pages/**/*.jsx')),
-  ...Object.entries(glob('/src/pages/deals/**/*.jsx')),
-  ...Object.entries(glob('/src/pages/admin/**/*.jsx')),
-  ...Object.entries(glob('/src/components/landing/**/*.jsx')),
-  ...Object.entries(glob('/src/components/deals/**/*.jsx')),
-  ...Object.entries(glob('/src/components/stripe/**/*.jsx')),
-  ...Object.entries(glob('/src/components/ui/*.{jsx,js}')),
-  ...Object.entries(glob('/src/lib/**/*.{js,jsx}')),
-  ...Object.entries(glob('/functions/**/*.js')),
+  ...Object.entries(import.meta.glob('/src/App.jsx', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/src/index.css', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/tailwind.config.js', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/src/pages/**/*.jsx', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/src/pages/deals/**/*.jsx', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/src/pages/admin/**/*.jsx', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/src/components/landing/**/*.jsx', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/src/components/deals/**/*.jsx', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/src/components/stripe/**/*.jsx', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/src/components/ui/*.{jsx,js}', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/src/lib/**/*.{js,jsx}', { as: 'raw', eager: true })),
+  ...Object.entries(import.meta.glob('/functions/**/*.js', { as: 'raw', eager: true })),
 ]
   .map(([path, content]) => ({ path, content }))
   .sort((a, b) => a.path.localeCompare(b.path));
