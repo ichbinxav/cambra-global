@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { jsPDF } from "jspdf";
 
 // Gather raw source files (no links, full content)
 const fileLoaders = {
@@ -22,6 +23,7 @@ export default function Snapshot() {
   const [contents, setContents] = React.useState({});
   const [loadingPath, setLoadingPath] = React.useState(null);
   const [copying, setCopying] = React.useState(false);
+  const [downloading, setDownloading] = React.useState(false);
 
   const loadFile = async (path) => {
     if (contents[path]) return;
@@ -50,6 +52,53 @@ export default function Snapshot() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloading(true);
+      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const margin = 40;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const maxWidth = pageWidth - margin * 2;
+      let y = margin;
+
+      const addWrappedText = (text, font='courier', size=9, gap=12) => {
+        doc.setFont(font, 'normal');
+        doc.setFontSize(size);
+        const lines = doc.splitTextToSize(text, maxWidth);
+        for (const line of lines) {
+          if (y > pageHeight - margin) {
+            doc.addPage();
+            y = margin;
+          }
+          doc.text(line, margin, y);
+          y += gap;
+        }
+      };
+
+      for (const p of paths) {
+        const content = contents[p] ?? (await fileLoaders[p]().then((m) => m?.default ?? m));
+        if (y > pageHeight - margin - 30) { doc.addPage(); y = margin; }
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.text(`/* ${p} */`, margin, y);
+        y += 16;
+
+        addWrappedText(String(content || ''), 'courier', 9, 12);
+
+        y += 8;
+        if (y > pageHeight - margin - 10) { doc.addPage(); y = margin; }
+        doc.setDrawColor(200);
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 14;
+      }
+
+      doc.save('snapshot-code.pdf');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const handleScrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
@@ -63,6 +112,9 @@ export default function Snapshot() {
           <div className="flex items-center gap-2">
             <Button size="sm" onClick={handleCopyAll} className="bg-foreground text-background hover:bg-foreground/90" disabled={copying}>
               {copying ? 'Copiando…' : 'Copiar todo'}
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleDownloadPdf} disabled={downloading} className="gap-1">
+              {downloading ? 'Generando…' : 'Descargar PDF'}
             </Button>
             <Button size="sm" variant="outline" onClick={handleScrollTop}>Arriba</Button>
           </div>
