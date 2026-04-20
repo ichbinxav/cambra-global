@@ -115,7 +115,7 @@ export default function HeroSection() {
 
             {/* CTAs */}
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4"
-            aria-label="Llamadas a la acción principales">
+            aria-label="Primary calls to action">
               {isAuthenticated ? (
                 <>
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">

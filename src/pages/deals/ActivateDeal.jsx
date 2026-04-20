@@ -73,14 +73,14 @@ export default function ActivateDeal() {
   const net = estAnnual - fee;
 
   const handleContinue = async () => {
-    if (!preflight.can_activate) { alert('Faltan requisitos para activar. Revisa la lista.'); return; }
-    const ok = window.confirm('Confirmar activación y bloqueo de baseline. Continuar al mandato.');
+    if (!preflight.can_activate) { alert('Missing requirements to activate. Review the checklist.'); return; }
+    const ok = window.confirm('Confirm activation and baseline lock. Continue to mandate?');
     if (!ok) return;
     setActivating(true);
     const resp = await base44.functions.invoke('activateDealOrchestrator', { vertical, resultId });
     setActivating(false);
     const activationId = resp?.data?.deal_activation_id;
-    if (!activationId) { alert(resp?.data?.error || 'No se pudo activar'); return; }
+    if (!activationId) { alert(resp?.data?.error || 'Could not activate'); return; }
     navigate(`/deal/authorize/${activationId}`);
   };
 
@@ -124,7 +124,7 @@ export default function ActivateDeal() {
         </div>
       </div>
       <div className="rounded-xl border p-5 bg-card">
-        <p className="text-sm font-semibold mb-2">Checklist de pre-activación</p>
+        <p className="text-sm font-semibold mb-2">Pre-activation checklist</p>
         <ul className="space-y-2 text-sm">
           {preflight.checklist.map((i) => (
             <li key={i.key} className="flex items-center gap-2">
@@ -137,7 +137,7 @@ export default function ActivateDeal() {
       </div>
       <div className="flex justify-end">
         <Button onClick={handleContinue} disabled={!preflight.can_activate || activating} className="gap-2">
-          {activating ? 'Activando…' : 'Continuar'} <ArrowRight className="w-4 h-4"/>
+          {activating ? 'Activating…' : 'Continue'} <ArrowRight className="w-4 h-4"/>
         </Button>
       </div>
     </div>

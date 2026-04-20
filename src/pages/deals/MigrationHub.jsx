@@ -25,7 +25,7 @@ export default function MigrationHub() {
   }, [tasks]);
 
   const toggle = async (task, next) => {
-    const payload = next === 'blocked' ? { taskId: task.id, nextStatus: next, blocked_reason: prompt('Razón de bloqueo (opcional)') || undefined } : { taskId: task.id, nextStatus: next };
+    const payload = next === 'blocked' ? { taskId: task.id, nextStatus: next, blocked_reason: prompt('Block reason (optional)') || undefined } : { taskId: task.id, nextStatus: next };
     const resp = await base44.functions.invoke('updateMigrationTaskStatus', payload);
     if (resp?.data?.error) { alert(resp.data.error); return; }
     const updated = resp?.data?.task;
