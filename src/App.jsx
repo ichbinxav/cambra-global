@@ -45,6 +45,7 @@ import AuthRedirect from '@/pages/AuthRedirect';
 import ActivateDeal from '@/pages/deals/ActivateDeal';
 import AuthorizeDeal from '@/pages/deals/AuthorizeDeal';
 import MigrationHub from '@/pages/deals/MigrationHub';
+import Snapshot from '@/pages/Snapshot';
 
 
 
@@ -160,6 +161,7 @@ const AuthenticatedApp = () => {
         <Route path="/Results" element={<Results />} />
         <Route path="/Privacy" element={<Privacy />} />
         <Route path="/Terms" element={<Terms />} />
+        <Route path="/Snapshot" element={<Snapshot />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
         <Route path="/deal/activate" element={<ProtectedRoute><ActivateDeal /></ProtectedRoute>} />
