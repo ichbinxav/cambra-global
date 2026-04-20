@@ -83,14 +83,15 @@ export default function AdminOverview() {
   const [timeRange, setTimeRange] = useState("30d");
 
   const loadAll = async () => {
-    const [users, brands, userDeals, results, apps] = await Promise.all([
+    const [users, brands, userDeals, results, apps, reports] = await Promise.all([
       base44.entities.User.list(),
       base44.entities.Brand.list(),
       base44.entities.UserDeal.list(),
       base44.entities.AnalyzerResult.list("-created_date", 500),
       base44.entities.DealApplication.list("-created_date", 500),
+      base44.entities.MonthlySavingsReport.list("-month", 500),
     ]);
-    setData({ users, brands, userDeals, results, apps });
+    setData({ users, brands, userDeals, results, apps, reports });
   };
 
   useEffect(() => {
@@ -110,7 +111,7 @@ export default function AdminOverview() {
     </div>
   );
 
-  const { users, brands, userDeals, results, apps } = data;
+  const { users, brands, userDeals, results, apps, reports } = data;
 
   // ── Time range ──────────────────────────────────────────────────────────────
   const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90;
@@ -136,7 +137,7 @@ export default function AdminOverview() {
 
   const totalSavingsIdentified = results.reduce((s, r) => s + (r.total_savings || 0), 0);
   const totalSavingsActivated = activatedApps.reduce((s, a) => s + (a.estimated_savings || 0), 0);
-  const estimatedRevenue = totalSavingsActivated * 0.15;
+  const monetizedRealized = (reports || []).filter(r => ['invoiced','paid'].includes(r.status)).reduce((s, r) => s + (r.node_fee || 0), 0);
   const avgSavingsPerUser = users.length > 0 ? totalSavingsIdentified / users.length : 0;
 
   // ── Conversion ──────────────────────────────────────────────────────────────
@@ -261,9 +262,9 @@ export default function AdminOverview() {
           <p className="text-[11px] text-muted-foreground/40 mt-1">live contracts/yr</p>
         </div>
         <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Est. Revenue</p>
-          <p className="text-xl font-black text-amber-600">{formatSavings(estimatedRevenue)}</p>
-          <p className="text-[11px] text-muted-foreground/40 mt-1">15% take rate</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Monetized (realized)</p>
+          <p className="text-xl font-black text-amber-600">{formatSavings(monetizedRealized)}</p>
+          <p className="text-[11px] text-muted-foreground/40 mt-1">invoiced/paid reports</p>
         </div>
         <div className="p-4 rounded-xl border border-purple-500/20 bg-purple-500/[0.04]">
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Avg / User</p>

@@ -45,12 +45,14 @@ export default function AdminPipeline() {
     if (!result.destination) return;
     const { draggableId, destination } = result;
     const newStatus = destination.droppableId;
-    await base44.entities.DealApplication.update(draggableId, { status: newStatus });
+    const res = await base44.functions.invoke('adminUpdateApplicationStatus', { id: draggableId, status: newStatus });
+    if (res.data?.error) return alert(res.data.error);
     setApps(prev => prev.map(a => a.id === draggableId ? { ...a, status: newStatus } : a));
   };
 
   const updateStatus = async (id, status) => {
-    await base44.entities.DealApplication.update(id, { status });
+    const res = await base44.functions.invoke('adminUpdateApplicationStatus', { id, status });
+    if (res.data?.error) return alert(res.data.error);
     setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     if (selected?.id === id) setSelected(prev => ({ ...prev, status }));
   };

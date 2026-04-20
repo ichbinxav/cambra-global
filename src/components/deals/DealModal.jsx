@@ -39,44 +39,24 @@ export default function DealModal({ deal, onClose, userDeal, userEmail, onUserDe
       endDate.setFullYear(endDate.getFullYear() + 1);
       const newStatus = deal.phase === "live" ? "pending" : "waitlist";
 
-      // Create or update UserDeal
-      let uDeal;
-      if (userDeal) {
-        uDeal = await base44.entities.UserDeal.update(userDeal.id, {
-          status: newStatus,
-          start_date: null,
-          end_date: null,
-        });
-      } else {
-        uDeal = await base44.entities.UserDeal.create({
-          user_email: userEmail,
-          deal_id: deal.id,
-          deal_name: deal.title,
+      // Submit via guarded backend
+      const resp = await base44.functions.invoke('submitDealApplication', {
+        user_email: userEmail,
+        deal: {
+          id: deal.id,
+          title: deal.title,
           provider: deal.provider,
           category: deal.category,
-          status: newStatus,
+          mode: deal.mode,
           estimated_savings: deal.estimated_savings,
-          is_real_savings: false,
-        });
-      }
-      onUserDealChange(uDeal);
-
-      // Always create a DealApplication so admin can see and process it
-      // (skip if already exists — check not needed since we check userDeal above)
-      if (!userDeal) {
-        await base44.entities.DealApplication.create({
-          user_email: userEmail,
-          deal_id: deal.id,
-          deal_name: deal.title,
-          provider: deal.provider,
-          category: deal.category,
-          deal_mode: deal.mode,
-          status: "submitted",
-          estimated_savings: deal.estimated_savings,
-          activity_log: [{ date: now, action: "Application submitted by user", by: userEmail }],
-        });
-      }
-
+          phase: deal.phase,
+        },
+        current_user_deal_id: userDeal?.id || null,
+        requested_status: newStatus,
+      });
+      const data = resp?.data || {};
+      if (data.error) throw new Error(data.error);
+      if (data.userDeal) onUserDealChange(data.userDeal);
       setStep("done");
       toast.success(
         deal.phase === "live"

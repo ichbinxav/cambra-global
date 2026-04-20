@@ -61,14 +61,17 @@ export default function StripeResults({ data }) {
     <div className="space-y-8">
       {/* Live badge */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-500/25 bg-green-500/[0.05]">
-          <motion.div
-            className="w-1.5 h-1.5 rounded-full bg-green-500"
-            animate={{ scale: [1, 1.5, 1] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-          />
-          <span className="text-[10px] font-bold text-green-600">Stripe connected · Live data</span>
-        </div>
+        {data?.simulated ? (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-500/25 bg-amber-500/[0.06]">
+            <motion.div className="w-1.5 h-1.5 rounded-full bg-amber-500" animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 2 }} />
+            <span className="text-[10px] font-bold text-amber-600">Simulated · Demo data</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-500/25 bg-green-500/[0.05]">
+            <motion.div className="w-1.5 h-1.5 rounded-full bg-green-500" animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 2 }} />
+            <span className="text-[10px] font-bold text-green-600">Stripe connected · Live data</span>
+          </div>
+        )}
         <span className="text-[10px] text-muted-foreground/35">Last 30 days</span>
       </div>
 

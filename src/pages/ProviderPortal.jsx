@@ -219,7 +219,7 @@ export default function ProviderPortal() {
           <KPI label="Offers Sent" value={offersSent} color="text-amber-600" />
           <KPI label="Accepted" value={accepted} color="text-green-600" sub="deals activated" />
           <KPI label="Conversion Rate" value={`${conversion}%`} color="text-purple-600" />
-          <KPI label="Savings Generated" value={formatSavings(totalSavings)} color="text-green-600" sub="per year, collective" />
+          <KPI label="Estimated savings" value={formatSavings(totalSavings)} color="text-green-600" sub="accepted deals · not realized" />
         </div>
 
         {/* Leads */}

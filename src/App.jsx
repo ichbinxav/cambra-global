@@ -199,6 +199,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/integrations" element={<AdminIntegrations />} />
           <Route path="/admin/control" element={<AdminControl />} />
           <Route path="/admin/activation" element={<AdminActivationDetail />} />
+          <Route path="/admin/activation/:id" element={<AdminActivationDetail />} />
 
 
         </Route>

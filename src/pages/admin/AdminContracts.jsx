@@ -86,7 +86,7 @@ export default function AdminContracts() {
           <p className="text-2xl font-black text-blue-600">{formatSavings(totalValue)}/yr</p>
         </div>
         <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Est. THE NoDE Revenue</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Estimated THE NoDE revenue (config-based)</p>
           <p className="text-2xl font-black text-amber-600">{formatSavings(nodeRevenue)}/yr</p>
         </div>
       </div>
@@ -213,8 +213,8 @@ export default function AdminContracts() {
               {/* Savings */}
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { key: "estimated_savings_annual", label: "Est. Savings (€/yr)" },
-                  { key: "actual_savings_annual", label: "Actual Savings (€/yr)" },
+                  { key: "estimated_savings_annual", label: "Estimated Savings (€/yr)" },
+                  { key: "actual_savings_annual", label: "Realized Savings (€/yr) — admin verified" },
                   { key: "start_date", label: "Start Date", type: "date" },
                   { key: "end_date", label: "End Date", type: "date" },
                 ].map(f => (

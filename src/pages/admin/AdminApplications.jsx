@@ -46,7 +46,8 @@ export default function AdminApplications() {
   });
 
   const updateStatus = async (id, status) => {
-    await base44.entities.DealApplication.update(id, { status });
+    const res = await base44.functions.invoke('adminUpdateApplicationStatus', { id, status });
+    if (res.data?.error) return alert(res.data.error);
     setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     if (selected?.id === id) setSelected(prev => ({ ...prev, status }));
   };

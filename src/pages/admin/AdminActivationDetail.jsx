@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useParams } from 'react-router-dom';
 
 export default function AdminActivationDetail(){
   const [sp] = useSearchParams();
-  const id = sp.get('id');
+  const params = useParams();
+  const id = params.id || sp.get('id');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,10 +28,16 @@ export default function AdminActivationDetail(){
     setData(res.data);
   };
 
-  const doOverride = async (action, payload={}) => {
-    const reason = prompt('Reason for override'); if (!reason) return;
-    const res = await base44.functions.invoke('adminOverrides', { action, reason, payload });
-    if (res.data?.error) return alert(res.data.error);
+  const [overrideOpen, setOverrideOpen] = useState(false);
+  const [overrideAction, setOverrideAction] = useState(null);
+  const [overridePayload, setOverridePayload] = useState({});
+  const [overrideReason, setOverrideReason] = useState('');
+  const openOverride = (action, payload={}) => { setOverrideAction(action); setOverridePayload(payload); setOverrideOpen(true); };
+  const submitOverride = async () => {
+    if (!overrideReason.trim()) { alert('Please provide a reason'); return; }
+    const res = await base44.functions.invoke('adminOverrides', { action: overrideAction, reason: overrideReason, payload: overridePayload });
+    if (res.data?.error) { alert(res.data.error); return; }
+    setOverrideOpen(false); setOverrideReason('');
     await reload();
   };
 
@@ -93,7 +100,7 @@ export default function AdminActivationDetail(){
             {reports.map(r=> (
               <li key={r.id} className="flex items-center justify-between border rounded-md px-2 py-1">
                 <span>{r.month} · Savings €{(r.savings||0).toLocaleString()} · Fee €{(r.node_fee||0).toLocaleString()} · {r.measurement_mode}</span>
-                <button onClick={()=>doOverride('verify_report', { report_id: r.id })} className="text-xs underline">Verify</button>
+                <button onClick={()=>openOverride('verify_report', { report_id: r.id })} className="text-xs underline">Verify</button>
               </li>
             ))}
           </ul>
@@ -102,7 +109,7 @@ export default function AdminActivationDetail(){
             {invoices.map(i=> (
               <li key={i.id} className="flex items-center justify-between border rounded-md px-2 py-1">
                 <span>{i.month} · €{Number(i.amount||0).toLocaleString()} · {i.status}</span>
-                {i.status!=='void' && <button onClick={()=>doOverride('void_invoice', { invoice_id: i.id })} className="text-xs underline">Void</button>}
+                {i.status!=='void' && <button onClick={()=>openOverride('void_invoice', { invoice_id: i.id })} className="text-xs underline">Void</button>}
               </li>
             ))}
           </ul>
@@ -115,6 +122,21 @@ export default function AdminActivationDetail(){
           {logs.map(l=> <li key={l.id} className="border rounded-md px-2 py-1">{l.created_at} · {l.event_type} — {l.message}</li>)}
         </ul>
       </div>
+      {/* Override modal */}
+      {overrideOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-background/75 backdrop-blur" onClick={()=>setOverrideOpen(false)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-5 space-y-3">
+            <p className="text-sm font-bold">Admin override</p>
+            <textarea value={overrideReason} onChange={e=>setOverrideReason(e.target.value)} rows={4}
+              className="w-full text-sm bg-background border border-border rounded-lg p-2" placeholder="Reason (required)" />
+            <div className="flex justify-end gap-2">
+              <button onClick={()=>setOverrideOpen(false)} className="h-8 px-3 rounded-md border border-border text-xs">Cancel</button>
+              <button onClick={submitOverride} className="h-8 px-3 rounded-md bg-foreground text-background text-xs font-bold">Confirm</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

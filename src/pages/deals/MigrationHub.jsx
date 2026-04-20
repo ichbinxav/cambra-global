@@ -24,12 +24,23 @@ export default function MigrationHub() {
     return Math.round((done / tasks.length) * 100);
   }, [tasks]);
 
+  const [blockOpen, setBlockOpen] = useState(false);
+  const [blockTask, setBlockTask] = useState(null);
+  const [blockReason, setBlockReason] = useState('');
   const toggle = async (task, next) => {
-    const payload = next === 'blocked' ? { taskId: task.id, nextStatus: next, blocked_reason: prompt('Block reason (optional)') || undefined } : { taskId: task.id, nextStatus: next };
-    const resp = await base44.functions.invoke('updateMigrationTaskStatus', payload);
+    if (next === 'blocked') { setBlockTask(task); setBlockOpen(true); return; }
+    const resp = await base44.functions.invoke('updateMigrationTaskStatus', { taskId: task.id, nextStatus: next });
     if (resp?.data?.error) { alert(resp.data.error); return; }
     const updated = resp?.data?.task;
     if (updated) setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
+  };
+  const submitBlock = async () => {
+    if (!blockTask) return;
+    const resp = await base44.functions.invoke('updateMigrationTaskStatus', { taskId: blockTask.id, nextStatus: 'blocked', blocked_reason: blockReason || undefined });
+    setBlockOpen(false); setBlockTask(null); setBlockReason('');
+    if (resp?.data?.error) { alert(resp.data.error); return; }
+    const updated = resp?.data?.task;
+    if (updated) setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
   };
 
   return (
@@ -66,6 +77,21 @@ export default function MigrationHub() {
           ))}
         </ul>
       </div>
+      {/* Block modal */}
+      {blockOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-background/75 backdrop-blur" onClick={()=>setBlockOpen(false)} />
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-5 space-y-3">
+            <p className="text-sm font-bold">Set blocked reason</p>
+            <textarea value={blockReason} onChange={e=>setBlockReason(e.target.value)} rows={4}
+              className="w-full text-sm bg-background border border-border rounded-lg p-2" placeholder="Optional reason" />
+            <div className="flex justify-end gap-2">
+              <button onClick={()=>setBlockOpen(false)} className="h-8 px-3 rounded-md border border-border text-xs">Cancel</button>
+              <button onClick={submitBlock} className="h-8 px-3 rounded-md bg-foreground text-background text-xs font-bold">Confirm</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -65,7 +65,7 @@ export default function StripeConnectFlow({ onComplete }) {
     let step = 0;
     const run = () => {
       if (step >= STEPS.length) {
-        setTimeout(() => onComplete(generateMockData()), 400);
+        setTimeout(() => onComplete({ ...generateMockData(), simulated: true }), 400);
         return;
       }
       const duration = STEPS[step].duration;
