@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import SavingsEstimator from "@/components/landing/SavingsEstimator";
 
 const SAVINGS = [
   { label: "Payments", value: "€38K", sub: "−52% fee rate", color: "text-blue-600", bg: "bg-blue-500/[0.07] border-blue-500/20", icon: CreditCard },
@@ -99,7 +100,7 @@ export default function HeroSection() {
               <span className="text-sm text-background/70">Early partners only</span>
             </motion.div>
             <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/50 mb-8">
-              You only pay when your economics improve.
+              25% success fee on realized savings — if we don’t save you money, you pay zero.
             </motion.p>
 
             {/* Value bullets */}
@@ -153,6 +154,8 @@ export default function HeroSection() {
                 </>
               )}
             </motion.div>
+
+            <SavingsEstimator />
 
             <motion.div variants={fadeUp} className="flex flex-col gap-1.5 mt-4">
               <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground/60">

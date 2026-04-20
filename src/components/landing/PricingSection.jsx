@@ -90,7 +90,7 @@ export default function PricingSection() {
                 <span className="text-xl font-light text-background/25 line-through">€60/mo</span>
                 <span className="text-5xl font-black">Free</span>
               </div>
-              <p className="text-sm text-background/50">You don't pay us. You keep the savings.</p>
+              <p className="text-sm text-background/50">25% success fee on realized savings · If we don’t save you money, you pay zero.</p>
             </div>
 
             {/* Feature icons */}
@@ -114,6 +114,18 @@ export default function PricingSection() {
                   <span className="text-xs text-muted-foreground">{f}</span>
                 </div>
               ))}
+            </div>
+
+            {/* Economics clarity */}
+            <div className="px-7 pb-4">
+              <div className="p-4 rounded-xl border border-border/40 bg-secondary/30">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 mb-2">Economics</p>
+                <ul className="text-xs text-muted-foreground space-y-1.5">
+                  <li>• 25% success fee on realized savings</li>
+                  <li>• If we don’t save you money, you pay zero</li>
+                  <li>• Membership standard price: <span className="line-through">€60/month</span> — Free for Early Adopters</li>
+                </ul>
+              </div>
             </div>
 
             {/* CTA */}

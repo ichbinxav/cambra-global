@@ -200,7 +200,7 @@ function StepBrand({ data, setData }) {
         <Input
           value={data.contact_name}
           onChange={e => setData(d => ({ ...d, contact_name: e.target.value }))}
-          placeholder="Your name (required)"
+          placeholder="Your name (optional)"
           className="h-12 text-sm border-border/60 focus:border-foreground/40"
         />
         <Input
@@ -213,15 +213,16 @@ function StepBrand({ data, setData }) {
         <Input
           value={data.website}
           onChange={e => setData(d => ({ ...d, website: e.target.value }))}
-          placeholder="Website (required)"
+          placeholder="Website (optional)"
           className="h-12 text-sm border-border/60 focus:border-foreground/40"
         />
         <Input
           value={data.tax_id}
           onChange={e => setData(d => ({ ...d, tax_id: e.target.value }))}
-          placeholder="Tax ID / VAT / EIN (required)"
+          placeholder="Tax ID / VAT / EIN (optional)"
           className="h-12 text-sm border-border/60 focus:border-foreground/40"
         />
+        <p className="text-[11px] text-muted-foreground/60">You can provide this later when activating a specific deal.</p>
       </motion.div>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
@@ -559,10 +560,7 @@ export default function Onboarding() {
   const canAdvance = () => {
     if (step === 1) return (
       data.name.trim().length > 0 &&
-      data.contact_name.trim().length > 0 &&
-      data.contact_email.trim().length > 0 &&
-      data.website.trim().length > 0 &&
-      data.tax_id.trim().length > 0
+      /\S+@\S+\.\S+/.test(data.contact_email || "")
     );
     if (step === 2) return data.annual_revenue.length > 0;
     return true;

@@ -18,7 +18,7 @@ export default function Landing() {
 
       <Navbar />
       <HeroSection />
-      <HowCombinedSection />
+      <div id="how"><HowCombinedSection /></div>
       <ThreeLayersSection />
       <ProblemSection />
       <AnalyzerCTA />
