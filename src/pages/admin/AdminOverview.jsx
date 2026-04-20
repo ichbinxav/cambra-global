@@ -13,6 +13,8 @@ import ProviderPerformance from "@/components/admin/ProviderPerformance";
 import BrandHealth from "@/components/admin/BrandHealth";
 import RevenueBilling from "@/components/admin/RevenueBilling";
 import LiveActivity from "@/components/admin/LiveActivity";
+import CommandHero from "@/components/admin/CommandHero";
+import OperationsConsole from "@/components/admin/OperationsConsole";
 
 function toDateFromMonth(ym) {
   // ym = 'YYYY-MM'
@@ -146,13 +148,21 @@ export default function AdminOverview() {
   const dealsNeedingActionCount = blockedTasks.length + offerReady.length + toInvoice.length + awaitingAuth.length + inReviewAged.length;
 
   const kpis = [
-    { title: "Identified savings (est.)", value: safeCurrency(identifiedSavings), subtitle: "Across all analyzed opportunities", color: "text-purple-600", helper: identifiedTrend ? `${identifiedTrend > 0 ? "+" : ""}${identifiedTrend}% vs prev` : undefined },
-    { title: "Activated savings", value: safeCurrency(activatedSavingsAnnual), subtitle: "Savings currently live", color: "text-green-600" },
-    { title: "Monetized revenue", value: safeCurrency(monetizedPaid + monetizedInvoiced), subtitle: "Invoiced / paid platform revenue", color: "text-amber-600", helper: `Paid ${safeCurrency(monetizedPaid)} · Invoiced ${safeCurrency(monetizedInvoiced)}` },
-    { title: "Pending deal value", value: safeCurrency(pendingDealValue), subtitle: "Savings still in motion", color: "text-orange-600" },
-    { title: "Deals needing action", value: dealsNeedingActionCount, subtitle: "Requires follow-up now", color: "text-red-600" },
-    { title: "Active providers", value: providersActiveSet.size, subtitle: "Live partners in pipeline", color: "text-foreground" },
+    { title: "Savings Identified", value: safeCurrency(identifiedSavings), subtitle: "Opportunities discovered", color: "text-purple-600", helper: identifiedTrend ? `${identifiedTrend > 0 ? "+" : ""}${identifiedTrend}% vs prev` : undefined },
+    { title: "Live Savings", value: safeCurrency(activatedSavingsAnnual), subtitle: "Currently active", color: "text-green-600" },
+    { title: "Revenue Realized", value: safeCurrency(monetizedPaid + monetizedInvoiced), subtitle: `Paid ${safeCurrency(monetizedPaid)} • Invoiced ${safeCurrency(monetizedInvoiced)}` , color: "text-amber-600" },
+    { title: "Needs Attention", value: dealsNeedingActionCount, subtitle: "Items requiring follow-up", color: "text-red-600" },
+    { title: "Pipeline in Motion", value: safeCurrency(pendingDealValue), subtitle: "Value moving through stages", color: "text-blue-600" },
+    { title: "Partner Performance", value: providersActiveSet.size, subtitle: "Active providers", color: "text-foreground" },
   ];
+
+  const heroMetrics = [
+    { label: "Savings Identified", value: safeCurrency(identifiedSavings), helper: identifiedTrend ? `${identifiedTrend > 0 ? "+" : ""}${identifiedTrend}%` : undefined, accent: "text-purple-600" },
+    { label: "Live Savings", value: safeCurrency(activatedSavingsAnnual), helper: "", accent: "text-green-600" },
+    { label: "Revenue Realized", value: safeCurrency(monetizedPaid + monetizedInvoiced), helper: "", accent: "text-amber-600" },
+  ];
+
+  const secondaryKpis = kpis.slice(3);
 
   // SECTION 2 — ACTION QUEUE (top 10)
   const actionQueue = [
@@ -273,53 +283,74 @@ export default function AdminOverview() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-black tracking-[-0.03em]">Command Center</h1>
-          <p className="text-xs text-muted-foreground/50 mt-0.5">Real-time operations overview · THE NoDE</p>
+      <CommandHero
+        title="Command Center"
+        subtitle="Infrastructure Intelligence · THE NoDE"
+        metrics={heroMetrics}
+      />
+
+      <div className="mt-4">
+        <AdminFiltersBar
+          timeRange={timeRange} setTimeRange={setTimeRange}
+          search={search} setSearch={setSearch}
+          vertical={vertical} setVertical={setVertical}
+          providerId={providerId} setProviderId={setProviderId}
+          country={country} setCountry={setCountry}
+          stage={stage} setStage={setStage}
+          status={status} setStatus={setStatus}
+          providers={providers}
+          countries={countries}
+          stages={[DEAL_STATUSES.SUBMITTED, DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY, DEAL_STATUSES.ACTIVATED]}
+          statuses={[DEAL_STATUSES.SUBMITTED, DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY, DEAL_STATUSES.ACTIVATED]}
+          onQuickAction={handleQuickAction}
+        />
+      </div>
+
+      <div className="mt-4">
+        <OperationsConsole
+          actions={actionQueue}
+          convData={{ convAnalysis, convActivation, stuckCount, offerReady: offerReady.length, funnel }}
+        />
+      </div>
+
+      <div className="mt-4">
+        <KPIStrip kpis={secondaryKpis} />
+      </div>
+
+
+
+      {/* 3. CONVERSION + BOTTLENECKS — now inside OperationsConsole */}
+
+      {/* 4 + 5 + 6 + 7 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold">Pipeline in Motion</h3>
+          </div>
+          <PipelineMini data={pipelineData} totalApps={appsFiltered.length} />
+        </div>
+
+        <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
+          <h3 className="text-sm font-semibold mb-2">Top Opportunities</h3>
+          <TopOpportunities items={topOpp} />
+        </div>
+
+        <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
+          <h3 className="text-sm font-semibold mb-2">Partner Performance</h3>
+          <ProviderPerformance rows={providerRows} />
+        </div>
+
+        <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
+          <h3 className="text-sm font-semibold mb-2">Brand Health</h3>
+          <BrandHealth rows={brandHealthRows} />
         </div>
       </div>
 
-      {/* Top bar filters & quick actions */}
-      <AdminFiltersBar
-        timeRange={timeRange} setTimeRange={setTimeRange}
-        search={search} setSearch={setSearch}
-        vertical={vertical} setVertical={setVertical}
-        providerId={providerId} setProviderId={setProviderId}
-        country={country} setCountry={setCountry}
-        stage={stage} setStage={setStage}
-        status={status} setStatus={setStatus}
-        providers={providers}
-        countries={countries}
-        stages={[DEAL_STATUSES.SUBMITTED, DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY, DEAL_STATUSES.ACTIVATED]}
-        statuses={[DEAL_STATUSES.SUBMITTED, DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY, DEAL_STATUSES.ACTIVATED]}
-        onQuickAction={handleQuickAction}
-      />
-
-      {/* 1. HERO KPI STRIP */}
-      <KPIStrip kpis={kpis} />
-
-      {/* 2. ACTION QUEUE */}
-      <ActionQueue items={actionQueue} />
-
-      {/* 3. CONVERSION + BOTTLENECKS */}
-      <ConversionBottlenecks data={{ convAnalysis, convActivation, stuckCount, offerReady: offerReady.length, funnel }} />
-
-      {/* 4 + 5 + 6 + 7 in a responsive grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* 4. DEAL PIPELINE */}
-        <PipelineMini data={pipelineData} totalApps={appsFiltered.length} />
-        {/* 5. TOP OPPORTUNITIES */}
-        <TopOpportunities items={topOpp} />
-        {/* 6. PROVIDER PERFORMANCE */}
-        <ProviderPerformance rows={providerRows} />
-        {/* 7. BRAND HEALTH */}
-        <BrandHealth rows={brandHealthRows} />
-      </div>
-
       {/* 8. REVENUE & BILLING */}
-      <RevenueBilling data={revenueBilling} />
+      <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
+        <h3 className="text-sm font-semibold mb-2">Revenue Flow</h3>
+        <RevenueBilling data={revenueBilling} />
+      </div>
 
       {/* 9. LIVE ACTIVITY */}
       <LiveActivity apps={apps} brands={brands} />
