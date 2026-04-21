@@ -3,36 +3,37 @@ import { Button } from "@/components/ui/button";
 import { Search, Zap, BarChart2, ArrowRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { useI18n } from "@/lib/i18n.jsx";
 
-const STEPS = [
+const buildSteps = (t) => ([
   {
     num: "01",
     icon: Search,
-    title: "Analyze",
-    desc: "Run the Analyzer to benchmark payments, shipping, and SaaS against real network data.",
-    tag: "< 2 min",
+    title: t('landing.how.steps.analyze.title'),
+    desc: t('landing.how.steps.analyze.desc'),
+    tag: t('landing.how.tags.quick'),
     color: "text-blue-600",
     bg: "bg-blue-500/[0.08] border-blue-500/20",
   },
   {
     num: "02",
     icon: Zap,
-    title: "Unlock rates",
-    desc: "Activate pre‑negotiated network deals — payment rate 1.4%, −18% shipping, −30% SaaS.",
-    tag: "1 click",
+    title: t('landing.how.steps.unlock.title'),
+    desc: t('landing.how.steps.unlock.desc'),
+    tag: t('landing.how.tags.oneClick'),
     color: "text-green-600",
     bg: "bg-green-500/[0.08] border-green-500/20",
   },
   {
     num: "03",
     icon: BarChart2,
-    title: "Track savings",
-    desc: "Monitor your Infrastructure Score and savings over time as the network compounds.",
-    tag: "Ongoing",
+    title: t('landing.how.steps.track.title'),
+    desc: t('landing.how.steps.track.desc'),
+    tag: t('landing.how.tags.ongoing'),
     color: "text-purple-600",
     bg: "bg-purple-500/[0.08] border-purple-500/20",
   },
-];
+]);
 
 function StepCard({ s, index }) {
   const ref = useRef(null);
@@ -64,6 +65,7 @@ function StepCard({ s, index }) {
 }
 
 export default function HowCombinedSection() {
+  const { t } = useI18n();
   const headRef = useRef(null);
   const headInView = useInView(headRef, { once: true, margin: "-80px" });
 
@@ -76,19 +78,19 @@ export default function HowCombinedSection() {
             transition={{ duration: 0.45 }}
             className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-4 flex items-center justify-center gap-2"
           >
-            <span className="w-4 h-px bg-border" /> How it works
+            <span className="w-4 h-px bg-border" /> {t('landing.how.tag')}
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 30 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.65, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2rem,5vw,3.2rem)] font-black tracking-[-0.04em] leading-[0.9] text-center"
           >
-            From analysis to savings — fast.
+            {t('landing.how.title')}
           </motion.h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {STEPS.map((s, i) => (
+          {buildSteps(t).map((s, i) => (
             <StepCard key={i} s={s} index={i} />
           ))}
         </div>
@@ -96,7 +98,7 @@ export default function HowCombinedSection() {
         <div className="text-center mt-8">
           <Link to="/Analyzer">
             <Button className="h-11 rounded-full px-7 text-sm font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40">
-              Start now — free <ArrowRight className="h-4 w-4" />
+              {t('landing.how.cta')} <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         </div>
