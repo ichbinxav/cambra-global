@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useI18n } from "@/lib/i18n.jsx";
 
-export default function AdminControl() {
+export default function AdminControl() { const { t } = useI18n();
   const [deals, setDeals] = useState([]);
   const [brands, setBrands] = useState([]);
   const [reports, setReports] = useState([]);
@@ -49,7 +50,7 @@ export default function AdminControl() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-black">Admin Control</h1>
+      <h1 className="text-2xl font-black">{t('admin.control.title', { default: 'Admin Control' })}</h1>
       <div className="grid sm:grid-cols-4 gap-3">
         {[
           {label:'Brands', val: summary?.totals?.brands ?? 0},

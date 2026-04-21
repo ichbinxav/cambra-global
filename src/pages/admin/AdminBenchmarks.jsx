@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { getBenchmarks } from "@/lib/scoreEngine.js";
 import { Save, RefreshCw } from "lucide-react";
+import { useI18n } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
 
 const TIERS = ["micro", "small", "mid", "large"];
 const TIER_LABELS = { micro: "Micro (<€30K/mo)", small: "Small (€30–100K/mo)", mid: "Mid (€100–500K/mo)", large: "Large (>€500K/mo)" };
 
-export default function AdminBenchmarks() {
+export default function AdminBenchmarks() { const { t } = useI18n();
   const [region, setRegion] = useState("EU");
   const [sampleRev, setSampleRev] = useState(50000);
 
@@ -24,8 +25,8 @@ export default function AdminBenchmarks() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-[-0.03em]">Benchmark Engine</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Control the ranges used to calculate savings and infrastructure scores</p>
+          <h1 className="text-2xl font-black tracking-[-0.03em]">{t('admin.benchmarks.title', { default: 'Benchmark Engine' })}</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('admin.benchmarks.subtitle', { default: 'Control the ranges used to calculate savings and infrastructure scores' })}</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => setRegion(r => r === "EU" ? "Global" : "EU")}
@@ -37,10 +38,10 @@ export default function AdminBenchmarks() {
 
       {/* Live preview */}
       <div className="p-5 rounded-xl border border-border/50 bg-card">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 mb-4">Live Preview</p>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 mb-4">{t('admin.benchmarks.live_preview', { default: 'Live Preview' })}</p>
         <div className="flex items-center gap-4 mb-4">
           <div className="flex-1">
-            <label className="text-xs text-muted-foreground/60 block mb-1.5">Monthly Revenue (€)</label>
+            <label className="text-xs text-muted-foreground/60 block mb-1.5">{t('admin.benchmarks.monthly_rev', { default: 'Monthly Revenue (€)' })}</label>
             <input type="range" min={5000} max={600000} step={5000} value={sampleRev}
               onChange={e => setSampleRev(Number(e.target.value))}
               className="w-full accent-foreground" />

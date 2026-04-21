@@ -2,28 +2,29 @@ import { useState } from "react";
 import { DEALS, PHASE_CONFIG } from "@/lib/deals.js";
 import { base44 } from "@/api/base44Client";
 import { CheckCircle2, Clock, AlertCircle, Edit2, X, Save } from "lucide-react";
+import { useI18n } from "@/lib/i18n.jsx";
 
 const PHASE_LABELS = { live: "Live", soon: "Q2 2026", planned: "Planned" };
 
-export default function AdminDeals() {
+export default function AdminDeals() { const { t } = useI18n();
   const [selected, setSelected] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-black tracking-[-0.03em]">Deals Management</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">{DEALS.length} deals configured · Edit deal metadata and status</p>
+        <h1 className="text-2xl font-black tracking-[-0.03em]">{t('admin.deals.title', { default: 'Deals Management' })}</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">{DEALS.length} {t('admin.deals.subtitle_suffix', { default: 'deals configured · Edit deal metadata and status' })}</p>
       </div>
 
       <div className="flex gap-4">
         {/* Deal list */}
         <div className={`${selected ? "w-1/2" : "w-full"} rounded-xl border border-border/50 overflow-hidden transition-all`}>
           <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] px-5 py-3 bg-secondary/40 border-b border-border/40 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 gap-3">
-            <span>Deal</span>
-            <span>Category</span>
-            <span>Mode</span>
-            <span>Phase</span>
+            <span>{t('admin.deals.table.deal', { default: 'Deal' })}</span>
+            <span>{t('admin.deals.table.category', { default: 'Category' })}</span>
+            <span>{t('admin.deals.table.mode', { default: 'Mode' })}</span>
+            <span>{t('admin.deals.table.phase', { default: 'Phase' })}</span>
             <span></span>
           </div>
           {DEALS.map(deal => {
@@ -61,7 +62,7 @@ export default function AdminDeals() {
             <div className="p-5 space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
               {/* Provider info */}
               <div className="space-y-2">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">Provider</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">{t('admin.deals.sections.provider', { default: 'Provider' })}</p>
                 {[
                   { label: "Provider", val: selected.provider },
                   { label: "Category", val: selected.category },
@@ -78,18 +79,18 @@ export default function AdminDeals() {
 
               {/* Rates */}
               <div className="space-y-2">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">Rate Conditions</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">{t('admin.deals.sections.rate_conditions', { default: 'Rate Conditions' })}</p>
                 <div className="p-3 rounded-lg bg-secondary/40 space-y-2">
                   <div className="flex justify-between">
-                    <p className="text-xs text-muted-foreground/50">Standard</p>
+                    <p className="text-xs text-muted-foreground/50">{t('admin.deals.rates.standard', { default: 'Standard' })}</p>
                     <p className="text-xs font-semibold line-through text-muted-foreground/40">{selected.normal_rate}</p>
                   </div>
                   <div className="flex justify-between">
-                    <p className="text-xs text-muted-foreground/50">Via THE NoDE</p>
+                    <p className="text-xs text-muted-foreground/50">{t('admin.deals.rates.via_node', { default: 'Via THE NoDE' })}</p>
                     <p className="text-xs font-bold">{selected.node_rate}</p>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-border/30">
-                    <p className="text-xs text-muted-foreground/50">Est. savings</p>
+                    <p className="text-xs text-muted-foreground/50">{t('admin.deals.rates.estimated', { default: 'Est. savings' })}</p>
                     <p className="text-xs font-black text-green-600">€{selected.estimated_savings?.toLocaleString()}/yr</p>
                   </div>
                   <p className="text-[10px] text-muted-foreground/30">{selected.saving_note}</p>
@@ -98,14 +99,14 @@ export default function AdminDeals() {
 
               {/* Description */}
               <div>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">Description</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">{t('admin.deals.sections.description', { default: 'Description' })}</p>
                 <p className="text-xs text-muted-foreground/70 leading-relaxed">{selected.desc}</p>
               </div>
 
               {/* Acceptance items */}
               {selected.acceptance_items?.length > 0 && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">Acceptance Items</p>
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">{t('admin.deals.sections.acceptance', { default: 'Acceptance Items' })}</p>
                   <div className="space-y-1.5">
                     {selected.acceptance_items.map((item, i) => (
                       <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-secondary/40">
@@ -119,7 +120,7 @@ export default function AdminDeals() {
 
               {/* Action */}
               <div className="space-y-2">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">Action Config</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40">{t('admin.deals.sections.action', { default: 'Action Config' })}</p>
                 <div className="p-3 rounded-lg bg-secondary/40 space-y-1.5">
                   <p className="text-xs"><span className="text-muted-foreground/40">Label: </span>{selected.action_label}</p>
                   <p className="text-xs text-muted-foreground/50 text-[11px]">{selected.action_note}</p>

@@ -15,7 +15,12 @@
     "export_pdf": "Export PDF",
     "dashboard": "Dashboard",
     "connect_data": "Connect your data",
-    "run_analyzer": "Run the Analyzer"
+    "run_analyzer": "Run the Analyzer",
+    "loading": "Loading…",
+    "back": "Back",
+    "all": "All",
+    "start_date": "Start Date",
+    "end_date": "End Date"
   },
   "navigation": {"how_it_works":"How it works","analyzer":"Analyzer","join":"Join THE NoDE","deals":"Deals","insights":"Insights","network":"Network","dashboard":"Dashboard","check_savings":"Check Savings","run_analyzer":"Run the Analyzer"},
   "footer": {"tagline":"Infrastructure leverage for independent brands","headline":"Find your unfair advantage","sub":"Stop overpaying for your infrastructure.","ctaSavings":"Calculate your savings","cta":"Run the analyzer","desc":"Brands typically identify €29,000/year in optimization potential. Most improvements activate within minutes.","privacy":"Privacy","terms":"Terms"},
@@ -124,6 +129,69 @@
       "close": "Close panel",
       "columns": {"submitted":"Submitted","in_review":"In Review","provider_contacted":"Provider Contacted","offer_ready":"Offer Ready","activated":"Activated"},
       "stuck": "stuck >7d"
-    }
+    },
+    "deals": {
+      "title": "Deals Management",
+      "subtitle_suffix": "deals configured · Edit deal metadata and status",
+      "table": {"deal":"Deal","category":"Category","mode":"Mode","phase":"Phase"},
+      "sections": {"provider":"Provider","rate_conditions":"Rate Conditions","description":"Description","acceptance":"Acceptance Items","action":"Action Config"},
+      "rates": {"standard":"Standard","via_node":"Via THE NoDE","estimated":"Est. savings"}
+    },
+    "revenue": {
+      "title": "Revenue Tracking",
+      "subtitle": "Admin truth: Monetized (realized) based on invoiced/paid reports",
+      "kpis": {"live":"Live activations","realized_savings":"Cumulative realized savings","monetized":"Cumulative monetized","contracts_with_activity":"Contracts with realized activity"},
+      "monthly_monetized": "Monthly Monetized (realized)",
+      "by_provider": "Monetized by Provider",
+      "table": {"title":"Revenue per Provider","deals":"deals","realized":"realized","monetized":"monetized"},
+      "data_integrity": {"title":"Data integrity","desc":"Monetized figures reflect invoiced/paid node fees from Monthly Savings Reports. Pipeline figures based on activated deals are labelled as estimated."}
+    },
+    "providers": {
+      "title": "Providers",
+      "subtitle_suffix": "providers in directory",
+      "add": "Add Provider",
+      "empty": "No providers yet. Add your first provider.",
+      "status": {"connected":"API Connected","error":"API Error","disconnected":"Not connected"},
+      "metrics": {"leads":"Leads","active":"Active","conversion":"Conversion","savings":"Savings"},
+      "form": {
+        "new":"New Provider","provider_name":"Provider Name","contact_email":"Contact Email","account_manager":"Account Manager","contract_type":"Contract Type","revenue_share":"Revenue Share %","category":"Category","api_status":"API Status","notes":"Notes","create":"Create Provider","save":"Save Changes"
+      }
+    },
+    "benchmarks": {
+      "title": "Benchmark Engine",
+      "subtitle": "Control the ranges used to calculate savings and infrastructure scores",
+      "live_preview": "Live Preview",
+      "monthly_rev": "Monthly Revenue (€)"
+    },
+    "contracts": {
+      "title": "Contract Tracking",
+      "subtitle": "Centralized visibility — THE NoDE does not own contracts",
+      "kpis": {"active":"Active Contracts","savings":"Savings Activated","revenue":"Estimated THE NoDE revenue (config-based)"},
+      "search_ph": "Search...",
+      "table": {"company":"Company","deal":"Deal","status":"Status","savings":"Savings/yr","expires":"Expires"},
+      "empty": {"title":"No contracts found","hint":"Contracts are created automatically when deals are activated"},
+      "detail": {
+        "status":"Contract Status","docs":"Contract Documents","contract_link":"Contract Link (URL)",
+        "prev_conditions":"Previous Conditions","new_conditions":"New Conditions (Node)",
+        "estimated_savings":"Estimated Savings (€/yr)","realized_savings":"Realized Savings (€/yr) — admin verified",
+        "internal_notes":"Internal Notes","save":"Save Contract"
+      }
+    },
+    "integrations": {
+      "title": "Integration Monitoring",
+      "subtitle": "Read-only connections · All tokens stored server-side",
+      "security_note": "All connections are read-only. THE NoDE never modifies user data. Tokens are encrypted and stored server-side only.",
+      "kpis": {"total":"Total Connections","active":"Active","errors":"Errors","brands":"Brands Connected"},
+      "by_type": "By Integration Type",
+      "connections": "connections",
+      "search_ph": "Search by brand or email...",
+      "errors_banner": "errors requiring attention",
+      "table": {"company":"Company","integration":"Integration","status":"Status","last_sync":"Last Sync","read_only":"Read Only"},
+      "empty": "No connections found",
+      "read_only": "Read-only",
+      "write": "Write"
+    },
+    "control": {"title":"Admin Control"},
+    "activation": {"title":"Activation"}
   }
 }

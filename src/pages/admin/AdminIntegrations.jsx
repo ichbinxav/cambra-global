@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Wifi, WifiOff, AlertTriangle, RefreshCw, Clock, Shield, CheckCircle2 } from "lucide-react";
+import { useI18n } from "@/lib/i18n.jsx";
 
 const INTEGRATION_META = {
   stripe: { label: "Stripe", category: "Payments", icon: "💳" },
@@ -22,7 +23,7 @@ const STATUS_CFG = {
   pending: { label: "Pending", icon: Clock, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" },
 };
 
-export default function AdminIntegrations() {
+export default function AdminIntegrations() { const { t } = useI18n();
   const [connections, setConnections] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,46 +69,46 @@ export default function AdminIntegrations() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-black tracking-[-0.03em]">Integration Monitoring</h1>
-        <p className="text-xs text-muted-foreground/50 mt-0.5">Read-only connections · All tokens stored server-side</p>
+        <h1 className="text-2xl font-black tracking-[-0.03em]">{t('admin.integrations.title', { default: 'Integration Monitoring' })}</h1>
+        <p className="text-xs text-muted-foreground/50 mt-0.5">{t('admin.integrations.subtitle', { default: 'Read-only connections · All tokens stored server-side' })}</p>
       </div>
 
       {/* Security notice */}
       <div className="flex items-center gap-3 p-3.5 rounded-xl border border-border/40 bg-secondary/30">
         <Shield size={13} className="text-muted-foreground/50 shrink-0" />
-        <p className="text-[11px] text-muted-foreground/60">All connections are read-only. THE NoDE never modifies user data. Tokens are encrypted and stored server-side only.</p>
+        <p className="text-[11px] text-muted-foreground/60">{t('admin.integrations.security_note', { default: 'All connections are read-only. THE NoDE never modifies user data. Tokens are encrypted and stored server-side only.' })}</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="p-4 rounded-xl border border-border/50 bg-card">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Total Connections</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">{t('admin.integrations.kpis.total', { default: 'Total Connections' })}</p>
           <p className="text-2xl font-black">{connections.length}</p>
         </div>
         <div className="p-4 rounded-xl border border-green-500/20 bg-green-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Active</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">{t('admin.integrations.kpis.active', { default: 'Active' })}</p>
           <p className="text-2xl font-black text-green-600">{connected.length}</p>
         </div>
         <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Errors</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">{t('admin.integrations.kpis.errors', { default: 'Errors' })}</p>
           <p className="text-2xl font-black text-red-600">{errored.length}</p>
         </div>
         <div className="p-4 rounded-xl border border-border/50 bg-card">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Brands Connected</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">{t('admin.integrations.kpis.brands', { default: 'Brands Connected' })}</p>
           <p className="text-2xl font-black">{new Set(connected.map(c => c.user_email)).size}</p>
         </div>
       </div>
 
       {/* Breakdown by type */}
       <div className="p-5 rounded-xl border border-border/50 bg-card">
-        <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">By Integration Type</p>
+        <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-4">{t('admin.integrations.by_type', { default: 'By Integration Type' })}</p>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
           {Object.entries(INTEGRATION_META).map(([type, meta]) => (
             <button key={type} onClick={() => setTypeFilter(typeFilter === type ? "all" : type)}
               className={`p-3 rounded-lg border transition-all text-left ${typeFilter === type ? "border-foreground/20 bg-foreground/5" : "border-border/40 hover:border-border"}`}>
               <div className="text-base mb-1">{meta.icon}</div>
               <p className="text-xs font-semibold">{meta.label}</p>
-              <p className="text-[10px] text-muted-foreground/40">{byType[type] || 0} connections</p>
+              <p className="text-[10px] text-muted-foreground/40">{byType[type] || 0} {t('admin.integrations.connections', { default: 'connections' })}</p>
             </button>
           ))}
         </div>
@@ -115,11 +116,11 @@ export default function AdminIntegrations() {
 
       {/* Filter */}
       <div className="flex items-center gap-3">
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by brand or email..."
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('admin.integrations.search_ph', { default: 'Search by brand or email...' })}
           className="h-9 px-4 text-sm bg-secondary/60 border border-border/50 rounded-lg focus:outline-none w-64" />
         {errored.length > 0 && (
           <div className="flex items-center gap-2 px-3 h-9 rounded-lg bg-red-500/[0.06] border border-red-500/20 text-red-600 text-xs font-semibold">
-            <AlertTriangle size={11} /> {errored.length} error{errored.length > 1 ? "s" : ""} requiring attention
+            <AlertTriangle size={11} /> {errored.length} {t('admin.integrations.errors_banner', { default: 'errors requiring attention' })}
           </div>
         )}
       </div>
@@ -127,10 +128,10 @@ export default function AdminIntegrations() {
       {/* Table */}
       <div className="rounded-xl border border-border/50 overflow-hidden">
         <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr] px-5 py-3 bg-secondary/40 border-b border-border/40 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 gap-3">
-          <span>Company</span><span>Integration</span><span>Status</span><span>Last Sync</span><span>Read Only</span>
+          <span>{t('admin.integrations.table.company', { default: 'Company' })}</span><span>{t('admin.integrations.table.integration', { default: 'Integration' })}</span><span>{t('admin.integrations.table.status', { default: 'Status' })}</span><span>{t('admin.integrations.table.last_sync', { default: 'Last Sync' })}</span><span>{t('admin.integrations.table.read_only', { default: 'Read Only' })}</span>
         </div>
         {filtered.length === 0 && (
-          <div className="py-12 text-center text-sm text-muted-foreground/50">No connections found</div>
+          <div className="py-12 text-center text-sm text-muted-foreground/50">{t('admin.integrations.empty', { default: 'No connections found' })}</div>
         )}
         {filtered.map(c => {
           const brand = getBrand(c.user_email);
@@ -160,7 +161,7 @@ export default function AdminIntegrations() {
                 {stale && " ⚠"}
               </p>
               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border w-fit ${c.is_read_only !== false ? "text-green-600 bg-green-500/10 border-green-500/20" : "text-orange-500 bg-orange-500/10 border-orange-500/20"}`}>
-                {c.is_read_only !== false ? "Read-only" : "Write"}
+                {c.is_read_only !== false ? t('admin.integrations.read_only', { default: 'Read-only' }) : t('admin.integrations.write', { default: 'Write' })}
               </span>
             </div>
           );
