@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Clock } from "lucide-react";
+import { useI18n } from "@/lib/i18n.jsx";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 
 const CATEGORIES = { payments: "Payments", margins: "Margins", scaling: "Scaling", infrastructure: "Infrastructure" };
 
-export default function InsightDetail() {
+export default function InsightDetail() { const { t } = useI18n(); const CATS = { payments: t('insights.categories.payments', { default: 'Payments' }), margins: t('insights.categories.margins', { default: 'Margins' }), scaling: t('insights.categories.scaling', { default: 'Scaling' }), infrastructure: t('insights.categories.infrastructure', { default: 'Infrastructure' }) };
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(true);
   const [subscribed, setSubscribed] = useState(false);
@@ -70,17 +71,17 @@ export default function InsightDetail() {
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
       <Link to="/Insights">
         <Button variant="ghost" size="sm" className="mb-8 h-8 text-muted-foreground -ml-2 text-xs rounded-full px-3">
-          <ArrowLeft size={13} className="mr-1.5" /> Back to Insights
+          <ArrowLeft size={13} className="mr-1.5" /> {t('insights.ui.back_to', { default: 'Back to Insights' })}
         </Button>
       </Link>
 
       {!subscribed && (
         <div className="mb-6 p-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.06] flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="flex-1">
-            <p className="text-sm font-semibold">Members-only research</p>
-            <p className="text-xs text-muted-foreground/60">Unlock this insight — early partners join for free.</p>
+            <p className="text-sm font-semibold">{t('insights.banner.members_only', { default: 'Members-only research' })}</p>
+            <p className="text-xs text-muted-foreground/60">{t('insights.banner.unlock_one', { default: 'Unlock this insight — early partners join for free.' })}</p>
           </div>
-          <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold">Unlock access — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span></Button>
+          <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold">{t('insights.banner.unlock_prefix', { default: 'Unlock access —' })} <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">{t('common.free', { default: 'Free' })}</span></Button>
         </div>
       )}
 
@@ -88,12 +89,12 @@ export default function InsightDetail() {
         <div className="flex items-center gap-3 mb-5">
           {insight.category && (
             <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/50 bg-secondary px-2.5 py-1 rounded-full">
-              {CATEGORIES[insight.category] || insight.category}
+              {CATS[insight.category] || insight.category}
             </span>
           )}
           {insight.read_time && (
             <span className="text-[11px] text-muted-foreground/50 flex items-center gap-1.5">
-              <Clock size={11} /> {insight.read_time} min read
+              <Clock size={11} /> {insight.read_time} {t('insights.ui.min_read', { default: 'min read' })}
             </span>
           )}
         </div>
@@ -110,7 +111,7 @@ export default function InsightDetail() {
           </div>
         ) : (
           <div className="p-4 rounded-xl border border-border/40 bg-secondary/20 text-sm text-muted-foreground">
-            Sign in and activate membership to read this research.
+            {t('insights.ui.sign_in_to_read', { default: 'Sign in and activate membership to read this research.' })}
           </div>
         )}
       </article>

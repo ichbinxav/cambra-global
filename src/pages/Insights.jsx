@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock } from "lucide-react";
+import { useI18n } from "@/lib/i18n.jsx";
 
 const CATEGORIES = {
   payments: "Payments",
@@ -12,7 +13,7 @@ const CATEGORIES = {
   infrastructure: "Infrastructure",
 };
 
-export default function Insights() {
+export default function Insights() { const { t } = useI18n(); const CATS = { payments: t('insights.categories.payments', { default: 'Payments' }), margins: t('insights.categories.margins', { default: 'Margins' }), scaling: t('insights.categories.scaling', { default: 'Scaling' }), infrastructure: t('insights.categories.infrastructure', { default: 'Infrastructure' }) };
   const [insights, setInsights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -57,25 +58,25 @@ export default function Insights() {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
       <div className="mb-10">
-        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-2">Research</p>
-        <h1 className="text-3xl font-black tracking-[-0.03em]">Insights</h1>
-        <p className="text-muted-foreground text-sm mt-1.5">Intelligence for independent brands. FOR LIFESTYLE COMMERCE.</p>
+        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-2">{t('insights.header.tag', { default: 'Research' })}</p>
+        <h1 className="text-3xl font-black tracking-[-0.03em]">{t('insights.header.title', { default: 'Insights' })}</h1>
+        <p className="text-muted-foreground text-sm mt-1.5">{t('insights.header.sub', { default: 'Intelligence for independent brands. FOR LIFESTYLE COMMERCE.' })}</p>
       </div>
 
       {!subscribed && (
         <div className="mb-6 p-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.06] flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="flex-1">
-            <p className="text-sm font-semibold">Members-only research</p>
-            <p className="text-xs text-muted-foreground/60">Unlock all insights — early partners join for free.</p>
+            <p className="text-sm font-semibold">{t('insights.banner.members_only', { default: 'Members-only research' })}</p>
+            <p className="text-xs text-muted-foreground/60">{t('insights.banner.unlock_all', { default: 'Unlock all insights — early partners join for free.' })}</p>
           </div>
-          <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold">Unlock access — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span></Button>
+          <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold">{t('insights.banner.unlock_prefix', { default: 'Unlock access —' })} <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">{t('common.free', { default: 'Free' })}</span></Button>
         </div>
       )}
 
        {/* Filter chips */}
        <div className={`${!subscribed ? 'pointer-events-none select-none blur-[2px]' : ''}`}>
        <div className="flex gap-2 mb-8 flex-wrap">
-        {["all", ...Object.keys(CATEGORIES)].map(cat => (
+        {["all", ...Object.keys(CATS)].map(cat => (
           <button
             key={cat}
             onClick={() => setFilter(cat)}
@@ -97,7 +98,7 @@ export default function Insights() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-36 border border-dashed border-border/50 rounded-2xl">
           <div className="text-3xl mb-4 select-none opacity-15">✱</div>
-          <p className="text-muted-foreground text-sm">No insights published yet. Check back soon.</p>
+          <p className="text-muted-foreground text-sm">{t('insights.ui.empty', { default: 'No insights published yet. Check back soon.' })}</p>
         </div>
       ) : (
         <>
@@ -116,12 +117,12 @@ export default function Insights() {
                 <div className="flex items-center gap-3 mb-4">
                   {filtered[0].category && (
                     <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/50 bg-secondary/80 px-2.5 py-1 rounded-full">
-                      {CATEGORIES[filtered[0].category] || filtered[0].category}
+                      {CATS[filtered[0].category] || filtered[0].category}
                     </span>
                   )}
                   {filtered[0].read_time && (
                     <span className="text-[11px] text-muted-foreground/50 flex items-center gap-1">
-                      <Clock size={11} /> {filtered[0].read_time} min
+                      <Clock size={11} /> {filtered[0].read_time} {t('insights.ui.min', { default: 'min' })}
                     </span>
                   )}
                 </div>
@@ -149,10 +150,10 @@ export default function Insights() {
                     <div className="flex items-center gap-3 mb-3">
                       {insight.category && (
                         <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground/50 bg-secondary/80 px-2.5 py-1 rounded-full">
-                          {CATEGORIES[insight.category] || insight.category}
+                          {CATS[insight.category] || insight.category}
                         </span>
                       )}
-                      {insight.read_time && <span className="text-[11px] text-muted-foreground/50 flex items-center gap-1"><Clock size={11} /> {insight.read_time} min</span>}
+                      {insight.read_time && <span className="text-[11px] text-muted-foreground/50 flex items-center gap-1"><Clock size={11} /> {insight.read_time} {t('insights.ui.min', { default: 'min' })}</span>}
                     </div>
                     <h3 className="text-base font-bold tracking-tight mb-2 group-hover:opacity-70 transition-opacity">{insight.title}</h3>
                     {insight.excerpt && <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{insight.excerpt}</p>}
