@@ -86,7 +86,7 @@ export default function Insights() { const { t } = useI18n(); const CATS = { pay
                 : "border border-border/60 text-muted-foreground hover:text-foreground hover:border-foreground/20"
             }`}
           >
-            {cat === "all" ? "All" : CATEGORIES[cat]}
+            {cat === 'all' ? t('common.all', { default: 'All' }) : CATS[cat]}
           </button>
         ))}
       </div>
@@ -129,7 +129,7 @@ export default function Insights() { const { t } = useI18n(); const CATS = { pay
                 <h2 className="text-2xl font-black tracking-[-0.02em] mb-3 group-hover:opacity-70 transition-opacity">{filtered[0].title}</h2>
                 {filtered[0].excerpt && <p className="text-muted-foreground leading-relaxed">{filtered[0].excerpt}</p>}
                 <div className="flex items-center gap-1.5 mt-5 text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-                  Read more <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                  {t('insights.ui.read_more', { default: 'Read more' })} <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </motion.article>
             </Link>
@@ -158,7 +158,7 @@ export default function Insights() { const { t } = useI18n(); const CATS = { pay
                     <h3 className="text-base font-bold tracking-tight mb-2 group-hover:opacity-70 transition-opacity">{insight.title}</h3>
                     {insight.excerpt && <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{insight.excerpt}</p>}
                     <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-                      Read more <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
+                      {t('insights.ui.read_more', { default: 'Read more' })} <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
                     </div>
                   </motion.article>
                 </Link>

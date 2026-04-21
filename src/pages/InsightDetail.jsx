@@ -47,8 +47,8 @@ export default function InsightDetail() { const { t } = useI18n(); const CATS = 
 
   if (!insight) return (
     <div className="text-center py-36">
-      <p className="text-muted-foreground text-sm mb-4">Insight not found.</p>
-      <Link to="/Insights"><Button variant="outline" className="rounded-full px-6 text-sm">Back to Insights</Button></Link>
+      <p className="text-muted-foreground text-sm mb-4">{t('insights.ui.not_found', { default: 'Insight not found.' })}</p>
+      <Link to="/Insights"><Button variant="outline" className="rounded-full px-6 text-sm">{t('insights.ui.back_to', { default: 'Back to Insights' })}</Button></Link>
     </div>
   );
 
