@@ -19,5 +19,25 @@
     },
     "pricing": {"tag":"Precios","title":"No nos pagas a nosotros.<br />Te quedas el ahorro.","desc":"Sin coste inicial. Sin compromiso. Solo pagas cuando bajan tus costes. Entonces, compartimos el beneficio.","savings_card": {"tag":"Potencial de ahorro por marca","note":"Basado en benchmarks reales del red (pagos, envíos, SaaS)."},"savings_breakdown": {"payments":"Pagos","shipping":"Envíos","saas":"SaaS"},"badge":"THE NoDE · Socio temprano","fee_text":"25% de comisión de éxito sobre ahorros realizados · Si no ahorramos, no pagas.","features": {"analyzer":"Analizador de infraestructura","analyzer_sub":"Ejecuciones ilimitadas","payments":"Optimización de tasa de pago","payments_sub":"Tasa de red 1,4%","shipping":"Acceso a contratos de envío","shipping_sub":"−18% ahorro medio","saas":"Acuerdos de grupo SaaS","saas_sub":"Hasta −30% en herramientas"},"extras": {"benchmarks":"Acceso completo a benchmarks","history":"Historial de ahorro y panel","directory":"Directorio de miembros","priority":"Activación prioritaria"},"econ": {"title":"Economía","point1":"25% de comisión de éxito sobre ahorros","point2":"Si no hay ahorros, no pagas","point3":"Precio estándar de membresía:","point3_tail":"Gratis para Early Adopters"},"cta":"Únete a THE NoDE","footnote":"Solo tenemos éxito cuando mejoran tus costes · La mayoría ve resultados en el primer ciclo."}
   },
+  "analyzer": {
+    "ui": {"eta":"~2 minutos","step":"Paso","of":"de","home":"Inicio","back":"Atrás","continue":"Continuar","analyzing":"Analizando...","analyze_infra":"Analizar infraestructura"},
+    "common": {"optimization_potential":"Potencial de optimización","tier":"nivel","other":"Otro"},
+    "providers": {"search_or_enter":"Busca o introduce tu proveedor"},
+    "form": {"brand_name":"Nombre de la marca","brand_name_ph":"Tu nombre de marca","country":"País","select_country":"Selecciona tu país","geo_note":"Tu geografía afecta tarifas de envío y pagos.","category":"Categoría","category_note":"Te comparamos con marcas independientes similares.","sector":"Sector"},
+    "steps": {
+      "brand": {"title":"Tu marca","sub":"Cuéntanos tu negocio para un benchmark preciso.","why":"La geografía y la categoría determinan los benchmarks más relevantes."},
+      "revenue": {"title":"Ingresos y escala","sub":"Tus ingresos determinan el apalancamiento y ahorro potencial.","why":"Más volumen = más poder de negociación en la red."},
+      "channels": {"title":"Canales de venta","sub":"Cada canal implica costes y oportunidades distintos.","why":"El mix de canales define los costes de infraestructura clave."},
+      "payments": {"title":"Pagos","sub":"Comparamos tu coste actual con el 1,4% de referencia.","why":"Las comisiones suelen ser el mayor coste oculto."},
+      "shipping": {"title":"Envíos","sub":"Benchmark de tarifas vs. precios por volumen colectivo.","why":"El volumen de red desbloquea tarifas inalcanzables a solas."},
+      "saas": {"title":"SaaS y herramientas","sub":"Detectamos herramientas redundantes o caras vs. licencias de grupo.","why":"Las marcas suelen sobrepagar ~30% en SaaS."},
+      "connect": {"title":"Conecta tus datos","sub":"Elige cómo aportar datos para mayor precisión.","why":"Más datos conectados = mejores benchmarks."}
+    },
+    "revenue": {"monthly_revenue":"Ingresos mensuales","why":"Por qué importa: tus ingresos determinan tu palanca. >500K€/mes = mejores condiciones.","monthly_transactions":"Transacciones mensuales","aov":"Ticket medio"},
+    "channels": {"info":"Las marcas DTC ahorran más en pagos; las wholesale en logística.","dtc":"DTC / Web","marketplaces":"Marketplaces (Amazon, etc.)","wholesale":"Wholesale / B2B","retail":"Retail / Físico","intl_pct":"% Ventas internacionales"},
+    "payments": {"provider":"Tu proveedor de pagos","current_fee":"Tasa efectiva actual","your_rate":"Tu tasa actual","network_target":"Objetivo de red"},
+    "shipping": {"provider":"Tu transportista","monthly_spend":"Gasto mensual en envíos","monthly_shipments":"Envíos mensuales","your_cost_per":"Tu coste/envío","network_target":"Objetivo de red"},
+    "saas": {"total_spend":"Gasto mensual total en SaaS","info":"Qué revisamos: plataforma e‑commerce, email, soporte, analítica... Sobrepago típico ~30%.","current_spend":"Gasto actual","benchmark":"Referencia de red"}
+  },
   "legal": {"privacy": {"title": "Privacidad"}, "terms": {"title": "Términos"}}
 }

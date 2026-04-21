@@ -19,5 +19,25 @@
     },
     "pricing": {"tag":"Pricing","title":"You don't pay us.<br />You keep the savings.","desc":"Zero upfront cost. Zero commitment. You only pay when your infrastructure costs drop. When they do, we share in the gain.","savings_card": {"tag":"Savings potential per brand","note":"Based on real network benchmarks across payments, shipping, and SaaS."},"savings_breakdown": {"payments":"Payments","shipping":"Shipping","saas":"SaaS"},"badge":"THE NoDE · Early partner","fee_text":"25% success fee on realized savings · If we don’t save you money, you pay zero.","features": {"analyzer":"Infrastructure Analyzer","analyzer_sub":"Unlimited runs","payments":"Payment rate optimization","payments_sub":"1.4% network rate","shipping":"Shipping contract access","shipping_sub":"−18% avg. saving","saas":"SaaS group deals","saas_sub":"Up to −30% on tools"},"extras": {"benchmarks":"Full network benchmark access","history":"Savings history & dashboard","directory":"Member network directory","priority":"Priority deal activation"},"econ": {"title":"Economics","point1":"25% success fee on realized savings","point2":"If we don’t save you money, you pay zero","point3":"Membership standard price:","point3_tail":"Free for Early Adopters"},"cta":"Join THE NoDE","footnote":"We only succeed when your costs improve · Most brands see results within the first cycle."}
   },
+  "analyzer": {
+    "ui": {"eta":"~2 minutes","step":"Step","of":"of","home":"Home","back":"Back","continue":"Continue","analyzing":"Analyzing...","analyze_infra":"Analyze Infrastructure"},
+    "common": {"optimization_potential":"Optimization potential","tier":"tier","other":"Other"},
+    "providers": {"search_or_enter":"Search or enter your provider"},
+    "form": {"brand_name":"Brand name","brand_name_ph":"Your brand name","country":"Country","select_country":"Select your country","geo_note":"Your geography affects shipping rates and payment setups.","category":"Category","category_note":"We benchmark you against similar independent commerce brands.","sector":"Sector"},
+    "steps": {
+      "brand": {"title":"Your brand","sub":"Tell us about your business so we can benchmark you accurately.","why":"Your geography and category determine the most relevant benchmarks."},
+      "revenue": {"title":"Revenue & scale","sub":"Your revenue determines your infrastructure leverage and savings potential.","why":"Larger volume = more negotiation leverage in the network."},
+      "channels": {"title":"Sales channels","sub":"Different channels create different cost structures and opportunities.","why":"Channel mix affects which infrastructure costs matter most for you."},
+      "payments": {"title":"Payments","sub":"We compare your current payment costs against the network benchmark of 1.4%.","why":"Payment fees are often the single largest hidden infrastructure cost."},
+      "shipping": {"title":"Shipping","sub":"We benchmark your shipping rates against collective volume pricing.","why":"Network volume unlocks carrier rates unavailable to individual brands."},
+      "saas": {"title":"SaaS & Tools","sub":"We identify redundant or overpriced tools against network group licenses.","why":"Brands typically overspend on SaaS by 30% — mostly on redundant tools."},
+      "connect": {"title":"Connect your data","sub":"Choose how you want to provide your infrastructure data for the most accurate analysis.","why":"More connected data = sharper benchmarks and larger identified savings."}
+    },
+    "revenue": {"monthly_revenue":"Monthly revenue","why":"Why this matters: Your revenue determines your leverage. Brands above €500K/mo unlock the strongest network terms.","monthly_transactions":"Monthly transactions","aov":"Average order value"},
+    "channels": {"info":"DTC-heavy brands typically save most on payments. Wholesale-heavy brands save most on shipping and logistics.","dtc":"DTC / Website","marketplaces":"Marketplaces (Amazon, etc.)","wholesale":"Wholesale / B2B","retail":"Retail / Physical","intl_pct":"% International Sales"},
+    "payments": {"provider":"Your payment provider","current_fee":"Current effective fee rate","your_rate":"Your current rate","network_target":"Network target"},
+    "shipping": {"provider":"Your shipping provider","monthly_spend":"Monthly shipping spend","monthly_shipments":"Monthly shipments","your_cost_per":"Your cost/shipment","network_target":"Network target"},
+    "saas": {"total_spend":"Total monthly SaaS spend","info":"What we check: E-commerce platforms (Shopify, etc.), email (Klaviyo, etc.), support (Gorgias, Zendesk), analytics, and more. Brands typically overspend by 30%.","current_spend":"Your current spend","benchmark":"Network benchmark"}
+  },
   "legal": {"privacy": {"title": "Privacy"}, "terms": {"title": "Terms"}}
 }

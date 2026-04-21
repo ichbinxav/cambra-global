@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/lib/i18n.jsx";
 
 import { ArrowRight, ArrowLeft, Upload, X, CheckCircle2, CreditCard, Truck, Package, BarChart3, Building2, MapPin } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -10,50 +11,50 @@ import DataIngestionStep from "@/components/analyzer/DataIngestionStep";
 import SmartNumberField from "@/components/inputs/SmartNumberField.jsx";
 import { computeInfraScore, calculateSavings, getBenchmarks } from "@/lib/scoreEngine";
 
-const STEPS = [
+const buildSteps = (t) => ([
   {
-    title: "Your brand",
-    sub: "Tell us about your business so we can benchmark you accurately.",
-    why: "Your geography and category determine the most relevant benchmarks.",
+    title: t('analyzer.steps.brand.title', { default: 'Your brand' }),
+    sub: t('analyzer.steps.brand.sub', { default: 'Tell us about your business so we can benchmark you accurately.' }),
+    why: t('analyzer.steps.brand.why', { default: 'Your geography and category determine the most relevant benchmarks.' }),
     icon: Building2,
   },
   {
-    title: "Revenue & scale",
-    sub: "Your revenue determines your infrastructure leverage and savings potential.",
-    why: "Larger volume = more negotiation leverage in the network.",
+    title: t('analyzer.steps.revenue.title', { default: 'Revenue & scale' }),
+    sub: t('analyzer.steps.revenue.sub', { default: 'Your revenue determines your infrastructure leverage and savings potential.' }),
+    why: t('analyzer.steps.revenue.why', { default: 'Larger volume = more negotiation leverage in the network.' }),
     icon: BarChart3,
   },
   {
-    title: "Sales channels",
-    sub: "Different channels create different cost structures and opportunities.",
-    why: "Channel mix affects which infrastructure costs matter most for you.",
+    title: t('analyzer.steps.channels.title', { default: 'Sales channels' }),
+    sub: t('analyzer.steps.channels.sub', { default: 'Different channels create different cost structures and opportunities.' }),
+    why: t('analyzer.steps.channels.why', { default: 'Channel mix affects which infrastructure costs matter most for you.' }),
     icon: Package,
   },
   {
-    title: "Payments",
-    sub: "We compare your current payment costs against the network benchmark of 1.4%.",
-    why: "Payment fees are often the single largest hidden infrastructure cost.",
+    title: t('analyzer.steps.payments.title', { default: 'Payments' }),
+    sub: t('analyzer.steps.payments.sub', { default: 'We compare your current payment costs against the network benchmark of 1.4%.' }),
+    why: t('analyzer.steps.payments.why', { default: 'Payment fees are often the single largest hidden infrastructure cost.' }),
     icon: CreditCard,
   },
   {
-    title: "Shipping",
-    sub: "We benchmark your shipping rates against collective volume pricing.",
-    why: "Network volume unlocks carrier rates unavailable to individual brands.",
+    title: t('analyzer.steps.shipping.title', { default: 'Shipping' }),
+    sub: t('analyzer.steps.shipping.sub', { default: 'We benchmark your shipping rates against collective volume pricing.' }),
+    why: t('analyzer.steps.shipping.why', { default: 'Network volume unlocks carrier rates unavailable to individual brands.' }),
     icon: Truck,
   },
   {
-    title: "SaaS & Tools",
-    sub: "We identify redundant or overpriced tools against network group licenses.",
-    why: "Brands typically overspend on SaaS by 30% — mostly on redundant tools.",
+    title: t('analyzer.steps.saas.title', { default: 'SaaS & Tools' }),
+    sub: t('analyzer.steps.saas.sub', { default: 'We identify redundant or overpriced tools against network group licenses.' }),
+    why: t('analyzer.steps.saas.why', { default: 'Brands typically overspend on SaaS by 30% — mostly on redundant tools.' }),
     icon: Package,
   },
   {
-    title: "Connect your data",
-    sub: "Choose how you want to provide your infrastructure data for the most accurate analysis.",
-    why: "More connected data = sharper benchmarks and larger identified savings.",
+    title: t('analyzer.steps.connect.title', { default: 'Connect your data' }),
+    sub: t('analyzer.steps.connect.sub', { default: 'Choose how you want to provide your infrastructure data for the most accurate analysis.' }),
+    why: t('analyzer.steps.connect.why', { default: 'More connected data = sharper benchmarks and larger identified savings.' }),
     icon: Upload,
   },
-];
+]);
 
 const PAYMENT_PROVIDERS = ["Stripe", "Adyen", "Mollie", "PayPal", "Klarna", "Square", "Braintree", "Worldpay", "Checkout.com", "Shopify Payments"];
 const SHIPPING_PROVIDERS = ["DHL", "UPS", "FedEx", "DPD", "PostNL", "Royal Mail", "Evri", "GLS", "Colissimo", "Chronopost"];
@@ -95,6 +96,8 @@ export default function Analyzer() {
     total_saas_spend: 1500,
   });
   const navigate = useNavigate();
+  const { t } = useI18n();
+  const steps = buildSteps(t);
   const set = (k, v) => setData(d => ({ ...d, [k]: v }));
 
   const handleUpload = async (file) => {
@@ -186,18 +189,18 @@ export default function Analyzer() {
       case 0: return (
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Brand name</Label>
+            <Label className="text-sm font-medium">{t('analyzer.form.brand_name', { default: 'Brand name' })}</Label>
             <Input
               value={data.brand_name}
               onChange={e => set("brand_name", e.target.value)}
-              placeholder="Your brand name"
+              placeholder={t('analyzer.form.brand_name_ph', { default: 'Your brand name' })}
               className="h-12 text-sm border-border/60"
               autoFocus
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Country</Label>
+            <Label className="text-sm font-medium">{t('analyzer.form.country', { default: 'Country' })}</Label>
             <div className="relative">
               <button
                 onClick={() => setCountryOpen(v => !v)}
@@ -205,7 +208,7 @@ export default function Analyzer() {
               >
                 <span className="flex items-center gap-2">
                   <MapPin size={14} className="text-muted-foreground/50 shrink-0" />
-                  {data.country || "Select your country"}
+                  {data.country || t('analyzer.form.select_country', { default: 'Select your country' })}
                 </span>
                 <span className="text-muted-foreground/40 text-xs">▾</span>
               </button>
@@ -223,11 +226,11 @@ export default function Analyzer() {
                 </div>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground/50">Your geography affects shipping rates and payment setups.</p>
+            <p className="text-[11px] text-muted-foreground/50">{t('analyzer.form.geo_note', { default: 'Your geography affects shipping rates and payment setups.' })}</p>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Category</Label>
+            <Label className="text-sm font-medium">{t('analyzer.form.category', { default: 'Category' })}</Label>
             <div className="grid grid-cols-2 gap-2">
               {CATEGORIES.map(c => (
                 <button key={c} onClick={() => set("category", c)}
@@ -236,12 +239,12 @@ export default function Analyzer() {
                 </button>
               ))}
             </div>
-            <p className="text-[11px] text-muted-foreground/50">We benchmark you against similar independent commerce brands.</p>
+            <p className="text-[11px] text-muted-foreground/50">{t('analyzer.form.category_note', { default: 'We benchmark you against similar independent commerce brands.' })}</p>
           </div>
 
           {/* Sector selector */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Sector</Label>
+            <Label className="text-sm font-medium">{t('analyzer.form.sector', { default: 'Sector' })}</Label>
             <div className="grid grid-cols-2 gap-2">
               {['Fashion','Jewelry','Cosmetics','Other'].map(s => (
                 <button key={s} onClick={() => set('sector', s)}
@@ -257,7 +260,7 @@ export default function Analyzer() {
       case 1: return (
         <div className="space-y-8">
           <SmartNumberField
-            label="Monthly revenue"
+            label={t('analyzer.revenue.monthly_revenue', { default: 'Monthly revenue' })}
             value={data.monthly_revenue}
             onChange={v => set("monthly_revenue", Math.round(v))}
             min={1000}
@@ -266,17 +269,17 @@ export default function Analyzer() {
             prefix="€"
           />
           <div className="p-4 rounded-xl bg-blue-500/[0.05] border border-blue-500/15 text-[12px] text-muted-foreground leading-relaxed">
-            <span className="font-semibold text-foreground">Why this matters:</span> Your revenue determines your leverage. Brands above €500K/mo unlock the strongest network terms.
+            {t('analyzer.revenue.why', { default: 'Why this matters: Your revenue determines your leverage. Brands above €500K/mo unlock the strongest network terms.' })}
           </div>
           <SmartNumberField
-            label="Monthly transactions"
+            label={t('analyzer.revenue.monthly_transactions', { default: 'Monthly transactions' })}
             value={data.monthly_transactions}
             onChange={v => set("monthly_transactions", Math.round(v))}
             min={10}
             max={100000}
           />
           <SmartNumberField
-            label="Average order value"
+            label={t('analyzer.revenue.aov', { default: 'Average order value' })}
             value={data.avg_order_value}
             onChange={v => set("avg_order_value", Math.round(v))}
             min={1}
@@ -289,19 +292,19 @@ export default function Analyzer() {
       case 2: return (
         <div className="space-y-6">
           <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
-            DTC-heavy brands typically save most on payments. Wholesale-heavy brands save most on shipping and logistics.
+            {t('analyzer.channels.info', { default: 'DTC-heavy brands typically save most on payments. Wholesale-heavy brands save most on shipping and logistics.' })}
           </div>
           {[
-            { k: "dtc_pct", l: "DTC / Website" },
-            { k: "marketplace_pct", l: "Marketplaces (Amazon, etc.)" },
-            { k: "wholesale_pct", l: "Wholesale / B2B" },
-            { k: "retail_pct", l: "Retail / Physical" },
+            { k: "dtc_pct", l: t('analyzer.channels.dtc', { default: 'DTC / Website' }) },
+            { k: "marketplace_pct", l: t('analyzer.channels.marketplaces', { default: 'Marketplaces (Amazon, etc.)' }) },
+            { k: "wholesale_pct", l: t('analyzer.channels.wholesale', { default: 'Wholesale / B2B' }) },
+            { k: "retail_pct", l: t('analyzer.channels.retail', { default: 'Retail / Physical' }) },
           ].map(c => (
             <SmartNumberField key={c.k} label={c.l} value={data[c.k]} onChange={v => set(c.k, Math.round(v))} min={0} max={100} suffix="%" />
           ))}
 
           <SmartNumberField
-            label="% International Sales"
+            label={t('analyzer.channels.intl_pct', { default: '% International Sales' })}
             value={data.intl_pct}
             onChange={v => set('intl_pct', Math.round(v))}
             min={0}
@@ -314,7 +317,7 @@ export default function Analyzer() {
       case 3: return (
         <div className="space-y-6">
           <div>
-            <Label className="text-sm font-medium mb-3 block">Your payment provider</Label>
+            <Label className="text-sm font-medium mb-3 block">{t('analyzer.payments.provider', { default: 'Your payment provider' })}</Label>
             <ProviderGrid
               options={PAYMENT_PROVIDERS}
               selected={data.payment_provider}
@@ -324,7 +327,7 @@ export default function Analyzer() {
             />
           </div>
           <SmartNumberField
-            label="Current effective fee rate"
+            label={t('analyzer.payments.current_fee', { default: 'Current effective fee rate' })}
             value={data.payment_fee_pct}
             onChange={v => set("payment_fee_pct", Number(Number(v).toFixed(1)))}
             min={0.5}
@@ -339,16 +342,16 @@ export default function Analyzer() {
             return (
               <div className="p-4 rounded-xl bg-blue-500/[0.06] border border-blue-500/15 space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Your current rate</span>
+                  <span className="text-muted-foreground">{t('analyzer.payments.your_rate', { default: 'Your current rate' })}</span>
                   <span className="font-bold tabular-nums">{data.payment_fee_pct.toFixed(1)}%</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Network target ({bm.tier} tier{bm.eu ? " · EU" : ""})</span>
+                  <span className="text-muted-foreground">{t('analyzer.payments.network_target', { default: 'Network target' })} ({bm.tier} {t('analyzer.common.tier', { default: 'tier' })}{bm.eu ? " · EU" : ""})</span>
                   <span className="font-bold text-blue-600 tabular-nums">{benchmark.toFixed(1)}%</span>
                 </div>
                 {data.payment_fee_pct > benchmark && (
                   <div className="pt-2 border-t border-blue-500/15 flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Optimization potential</span>
+                    <span className="text-sm text-muted-foreground">{t('analyzer.common.optimization_potential', { default: 'Optimization potential' })}</span>
                     <span className="font-black text-lg text-foreground tabular-nums">
                       €{annualSavings.toLocaleString()}/yr
                     </span>
@@ -363,7 +366,7 @@ export default function Analyzer() {
       case 4: return (
         <div className="space-y-6">
           <div>
-            <Label className="text-sm font-medium mb-3 block">Your shipping provider</Label>
+            <Label className="text-sm font-medium mb-3 block">{t('analyzer.shipping.provider', { default: 'Your shipping provider' })}</Label>
             <ProviderGrid
               options={SHIPPING_PROVIDERS}
               selected={data.shipping_provider}
@@ -373,7 +376,7 @@ export default function Analyzer() {
             />
           </div>
           <SmartNumberField
-            label="Monthly shipping spend"
+            label={t('analyzer.shipping.monthly_spend', { default: 'Monthly shipping spend' })}
             value={data.monthly_shipping_cost}
             onChange={v => set("monthly_shipping_cost", Math.round(v))}
             min={100}
@@ -382,7 +385,7 @@ export default function Analyzer() {
             scale="log"
           />
           <SmartNumberField
-            label="Monthly shipments"
+            label={t('analyzer.shipping.monthly_shipments', { default: 'Monthly shipments' })}
             value={data.monthly_shipments}
             onChange={v => set("monthly_shipments", Math.round(v))}
             min={10}
@@ -397,16 +400,16 @@ export default function Analyzer() {
             return (
               <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed space-y-1.5">
                 <div className="flex justify-between">
-                  <span>Your cost/shipment</span>
+                  <span>{t('analyzer.shipping.your_cost_per', { default: 'Your cost/shipment' })}</span>
                   <span className="font-bold text-foreground">€{costPerShipment.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Network target ({bm.tier} tier{bm.eu ? " · EU" : ""})</span>
+                  <span>{t('analyzer.shipping.network_target', { default: 'Network target' })} ({bm.tier} {t('analyzer.common.tier', { default: 'tier' })}{bm.eu ? " · EU" : ""})</span>
                   <span className="font-bold text-green-600">€{bm.shipping.perUnit.toFixed(2)}</span>
                 </div>
                 {annualSaving > 0 && (
                   <div className="flex justify-between border-t border-border/30 pt-1.5 mt-1.5">
-                    <span>Optimization potential</span>
+                    <span>{t('analyzer.common.optimization_potential', { default: 'Optimization potential' })}</span>
                     <span className="font-black text-foreground">€{annualSaving.toLocaleString()}/yr</span>
                   </div>
                 )}
@@ -419,7 +422,7 @@ export default function Analyzer() {
       case 5: return (
         <div className="space-y-6">
           <SmartNumberField
-            label="Total monthly SaaS spend"
+            label={t('analyzer.saas.total_spend', { default: 'Total monthly SaaS spend' })}
             value={data.total_saas_spend}
             onChange={v => set("total_saas_spend", Math.round(v))}
             min={0}
@@ -477,8 +480,8 @@ export default function Analyzer() {
     return true;
   };
 
-  const StepIcon = STEPS[step].icon;
-  const progress = ((step + 1) / STEPS.length) * 100;
+  const StepIcon = steps[step].icon;
+  const progress = ((step + 1) / steps.length) * 100;
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-inter">
@@ -491,16 +494,16 @@ export default function Analyzer() {
       <div className="sticky top-0 z-40 flex items-center justify-between px-5 py-4 border-b border-border/40 bg-background/98 backdrop-blur-xl">
         <span className="text-sm font-black tracking-tight">THE NoDE</span>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground/50 hidden sm:block">~2 minutes</span>
+          <span className="text-xs text-muted-foreground/50 hidden sm:block">{t('analyzer.ui.eta', { default: '~2 minutes' })}</span>
           <div className="flex items-center gap-1.5">
-            {STEPS.map((_, i) => (
+            {steps.map((_, i) => (
               <div
                 key={i}
                 className={`h-1.5 rounded-full transition-all ${i === step ? "w-6 bg-foreground" : i < step ? "w-1.5 bg-foreground/50" : "w-1.5 bg-border"}`}
               />
             ))}
           </div>
-          <span className="text-xs font-semibold tabular-nums text-muted-foreground">{step + 1}/{STEPS.length}</span>
+          <span className="text-xs font-semibold tabular-nums text-muted-foreground">{step + 1}/{steps.length}</span>
         </div>
       </div>
 
@@ -514,11 +517,11 @@ export default function Analyzer() {
                 <StepIcon size={17} className="text-muted-foreground/60" />
               </div>
               <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 font-medium">
-                Step {step + 1} of {STEPS.length}
+                {t('analyzer.ui.step', { default: 'Step' })} {step + 1} {t('analyzer.ui.of', { default: 'of' })} {steps.length}
               </p>
             </div>
-            <h2 className="text-2xl font-black tracking-tight mb-2">{STEPS[step].title}</h2>
-            <p className="text-sm text-muted-foreground">{STEPS[step].sub}</p>
+            <h2 className="text-2xl font-black tracking-tight mb-2">{steps[step].title}</h2>
+            <p className="text-sm text-muted-foreground">{steps[step].sub}</p>
           </div>
 
           {renderStep()}
@@ -536,7 +539,7 @@ export default function Analyzer() {
           {step === 0 ? "Home" : "Back"}
         </Button>
 
-        {step < STEPS.length - 1 ? (
+        {step < steps.length - 1 ? (
           <Button
             onClick={() => setStep(s => s + 1)}
             className="h-12 rounded-full px-6 sm:px-8 text-sm font-bold shadow-sm gap-2"
@@ -553,7 +556,7 @@ export default function Analyzer() {
             {loading ? (
               <>
                 <div className="w-4 h-4 rounded-full border-2 border-background/30 border-t-background animate-spin" />
-                Analyzing...
+                {t('analyzer.ui.analyzing', { default: 'Analyzing...' })}
               </>
             ) : (
               <>Analyze Infrastructure <ArrowRight className="h-4 w-4" /></>

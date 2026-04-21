@@ -19,5 +19,25 @@
     },
     "pricing": {"tag":"Tarification","title":"Vous ne nous payez pas.<br />Vous gardez les économies.","desc":"Aucun coût initial. Aucun engagement. Vous ne payez que quand vos coûts baissent. Ensuite, on partage le gain.","savings_card": {"tag":"Potentiel d'économies par marque","note":"Basé sur de vrais benchmarks du réseau (paiements, expédition, SaaS)."},"savings_breakdown": {"payments":"Paiements","shipping":"Expédition","saas":"SaaS"},"badge":"THE NoDE · Partenaire précoce","fee_text":"25% de frais de succès sur économies réalisées · Si pas d'économies, vous ne payez rien.","features": {"analyzer":"Analyseur d'infrastructure","analyzer_sub":"Exécutions illimitées","payments":"Optimisation du taux de paiement","payments_sub":"Taux réseau 1,4%","shipping":"Accès aux contrats d'expédition","shipping_sub":"−18% d'économie moyenne","saas":"Accords groupés SaaS","saas_sub":"Jusqu'à −30% sur outils"},"extras": {"benchmarks":"Accès complet aux benchmarks","history":"Historique d'économies & dashboard","directory":"Annuaire des membres","priority":"Activation prioritaire des offres"},"econ": {"title":"Économie","point1":"25% de frais de succès sur économies réalisées","point2":"Si pas d'économies, vous ne payez rien","point3":"Prix standard de l'abonnement :","point3_tail":"Gratuit pour les pionniers"},"cta":"Rejoindre THE NoDE","footnote":"Nous réussissons seulement quand vos coûts s'améliorent · La plupart voient des résultats au premier cycle."}
   },
+  "analyzer": {
+    "ui": {"eta":"~2 minutes","step":"Étape","of":"sur","home":"Accueil","back":"Retour","continue":"Continuer","analyzing":"Analyse en cours...","analyze_infra":"Analyser l'infrastructure"},
+    "common": {"optimization_potential":"Potentiel d'optimisation","tier":"palier","other":"Autre"},
+    "providers": {"search_or_enter":"Recherchez ou saisissez votre prestataire"},
+    "form": {"brand_name":"Nom de la marque","brand_name_ph":"Votre nom de marque","country":"Pays","select_country":"Sélectionnez votre pays","geo_note":"Votre géographie impacte les tarifs d'expédition et les paiements.","category":"Catégorie","category_note":"Nous vous comparons à des marques de commerce indépendantes similaires.","sector":"Secteur"},
+    "steps": {
+      "brand": {"title":"Votre marque","sub":"Parlez-nous de votre activité pour un benchmark précis.","why":"La géographie et la catégorie déterminent les bons benchmarks."},
+      "revenue": {"title":"Revenu & échelle","sub":"Votre revenu détermine votre levier et votre potentiel d'économies.","why":"Plus de volume = meilleur levier de négociation dans le réseau."},
+      "channels": {"title":"Canaux de vente","sub":"Chaque canal a des coûts et opportunités différents.","why":"Le mix canal détermine les postes d'infrastructure clés."},
+      "payments": {"title":"Paiements","sub":"Comparaison à la référence réseau de 1,4%.","why":"Les frais de paiement sont souvent le plus gros coût caché."},
+      "shipping": {"title":"Expédition","sub":"Benchmark de vos tarifs vs. prix volume collectif.","why":"Le volume réseau débloque des tarifs inaccessibles seul."},
+      "saas": {"title":"SaaS & Outils","sub":"Identification des redondances et surcoûts vs. licences groupées.","why":"Les marques surdépensent ~30% en SaaS."},
+      "connect": {"title":"Connecter vos données","sub":"Choisissez comment fournir vos données pour plus de précision.","why":"Plus de données connectées = benchmarks plus fins."}
+    },
+    "revenue": {"monthly_revenue":"Revenu mensuel","why":"Pourquoi c'est important : votre revenu détermine votre levier. >500K€/mois = meilleures conditions.","monthly_transactions":"Transactions mensuelles","aov":"Panier moyen"},
+    "channels": {"info":"Les marques DTC gagnent surtout sur paiements ; le wholesale sur logistique.","dtc":"DTC / Site web","marketplaces":"Marketplaces (Amazon, etc.)","wholesale":"Wholesale / B2B","retail":"Retail / Physique","intl_pct":"% Ventes internationales"},
+    "payments": {"provider":"Votre prestataire de paiement","current_fee":"Taux effectif actuel","your_rate":"Votre taux actuel","network_target":"Cible réseau"},
+    "shipping": {"provider":"Votre transporteur","monthly_spend":"Dépense mensuelle d'expédition","monthly_shipments":"Envois mensuels","your_cost_per":"Votre coût/envoi","network_target":"Cible réseau"},
+    "saas": {"total_spend":"Dépense SaaS mensuelle totale","info":"Ce que l'on vérifie : plateformes e‑commerce, email, support, analytics... Surdépense typique ~30%.","current_spend":"Dépense actuelle","benchmark":"Référence réseau"}
+  },
   "legal": {"privacy": {"title": "Confidentialité"}, "terms": {"title": "Conditions"}}
 }
