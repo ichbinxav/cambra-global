@@ -139,6 +139,9 @@ export default function Navbar() {
                 </Link>
               </>
             )}
+            <div className="pt-3">
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       )}
