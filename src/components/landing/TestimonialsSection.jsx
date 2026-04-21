@@ -1,6 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Globe, CreditCard, Truck, Percent } from "lucide-react";
+import { useI18n } from "@/lib/i18n.jsx";
 
 const testimonials = [
   {
@@ -74,6 +75,7 @@ function TestimonialCard({ t, index }) {
 }
 
 export default function TestimonialsSection() {
+  const { t } = useI18n();
   const headRef = useRef(null);
   const headInView = useInView(headRef, { once: true, margin: "-80px" });
   const trustRef = useRef(null);
@@ -88,21 +90,21 @@ export default function TestimonialsSection() {
             transition={{ duration: 0.5 }}
             className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center justify-center gap-2"
           >
-            <span className="w-4 h-px bg-border inline-block" /> Results
+            <span className="w-4 h-px bg-border inline-block" /> {t('landing.testimonials.tag', { default: 'Results' })}
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 40 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.75, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9]"
           >
-            Brands are saving real money.
+            {t('landing.testimonials.title', { default: 'Brands are saving real money.' })}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.25 }}
             className="mt-4 text-muted-foreground text-base max-w-md mx-auto"
           >
-            Independent commerce brands across Europe using THE NoDE network.
+            {t('landing.testimonials.subtitle', { default: 'Independent commerce brands across Europe using THE NoDE network.' })}
           </motion.p>
         </div>
 
@@ -115,16 +117,16 @@ export default function TestimonialsSection() {
         {/* Trust bar */}
         <div ref={trustRef} className="mt-10 pt-10 border-t border-border/40">
          <div className="mb-4 text-center lg:text-left">
-           <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/45">Network benchmarks</p>
-           <h3 className="text-[clamp(1.5rem,4vw,2.4rem)] font-black tracking-[-0.02em]">By the numbers</h3>
+           <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/45">{t('landing.testimonials.trust.tag', { default: 'Network benchmarks' })}</p>
+           <h3 className="text-[clamp(1.5rem,4vw,2.4rem)] font-black tracking-[-0.02em]">{t('landing.testimonials.trust.title', { default: 'By the numbers' })}</h3>
          </div>
          <div className="grid grid-cols-1 gap-3">
          {[
-            { value: "15+", label: "Countries active", icon: Globe, color: "text-foreground", bg: "bg-secondary/60 border-border/60" },
-            { value: "€18K–72K", label: "Savings range per brand", icon: Percent, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
-            { value: "1.4%", label: "Network payment rate", icon: CreditCard, color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
-            { value: "−18%", label: "Avg. shipping reduction", icon: Truck, color: "text-green-600", bg: "bg-green-500/[0.08] border-green-500/20" },
-          ].map((s, i) => (
+                      { value: "15+", label: t('landing.testimonials.stats.countries', { default: 'Countries active' }), icon: Globe, color: "text-foreground", bg: "bg-secondary/60 border-border/60" },
+                      { value: "€18K–72K", label: t('landing.testimonials.stats.savings_range', { default: 'Savings range per brand' }), icon: Percent, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
+                      { value: "1.4%", label: t('landing.testimonials.stats.payment_rate', { default: 'Network payment rate' }), icon: CreditCard, color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
+                      { value: "−18%", label: t('landing.testimonials.stats.shipping_reduction', { default: 'Avg. shipping reduction' }), icon: Truck, color: "text-green-600", bg: "bg-green-500/[0.08] border-green-500/20" },
+                    ].map((s, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 18 }}

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Plug, Upload, Pencil, Zap, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n.jsx";
 
 const CONNECTORS = [
   { name: "Stripe",      cat: "Payments",   color: "#635BFF" },
@@ -17,33 +18,33 @@ const CONNECTORS = [
   { name: "Holded",      cat: "Accounting", color: "#0052CC" },
 ];
 
-const MODES = [
+const buildModes = (t) => ([
   {
     icon: Plug,
-    title: "Connect directly",
-    sub: "One-click integrations",
-    desc: "Stripe, Shopify, accounting tools and more. Real-time, most accurate.",
-    tag: "Most accurate",
+    title: t('landing.integrations.modes.direct.title', { default: 'Connect directly' }),
+    sub: t('landing.integrations.modes.direct.sub', { default: 'One-click integrations' }),
+    desc: t('landing.integrations.modes.direct.desc', { default: 'Stripe, Shopify, accounting tools and more. Real-time, most accurate.' }),
+    tag: t('landing.integrations.modes.direct.tag', { default: 'Most accurate' }),
     tagColor: "text-green-600 bg-green-500/[0.07] border-green-500/20",
     accent: true,
   },
   {
     icon: Upload,
-    title: "Upload files",
-    sub: "PDF · CSV · Excel",
-    desc: "Drop invoices or carrier statements. We extract and analyze automatically.",
-    tag: "Flexible",
+    title: t('landing.integrations.modes.upload.title', { default: 'Upload files' }),
+    sub: t('landing.integrations.modes.upload.sub', { default: 'PDF · CSV · Excel' }),
+    desc: t('landing.integrations.modes.upload.desc', { default: 'Drop invoices or carrier statements. We extract and analyze automatically.' }),
+    tag: t('landing.integrations.modes.upload.tag', { default: 'Flexible' }),
     tagColor: "text-blue-600 bg-blue-500/[0.07] border-blue-500/20",
   },
   {
     icon: Pencil,
-    title: "Enter manually",
-    sub: "Structured inputs",
-    desc: "Full control without integrations. Always available, no account needed.",
-    tag: "Always available",
+    title: t('landing.integrations.modes.manual.title', { default: 'Enter manually' }),
+    sub: t('landing.integrations.modes.manual.sub', { default: 'Structured inputs' }),
+    desc: t('landing.integrations.modes.manual.desc', { default: 'Full control without integrations. Always available, no account needed.' }),
+    tag: t('landing.integrations.modes.manual.tag', { default: 'Always available' }),
     tagColor: "text-orange-500 bg-orange-500/[0.07] border-orange-500/20",
   },
-];
+]);
 
 function Avatar({ name, color }) {
   const isDark = ["#000000", "#351C15", "#1a1a1a"].includes(color);
@@ -56,6 +57,7 @@ function Avatar({ name, color }) {
 }
 
 export default function IntegrationsSection() {
+  const { t } = useI18n();
   return (
     <section className="py-16 px-5 border-t border-border/40">
       <div className="max-w-6xl mx-auto">
@@ -63,19 +65,19 @@ export default function IntegrationsSection() {
         {/* Header */}
         <div className="mb-12 max-w-3xl mx-auto text-center lg:text-left">
           <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center lg:justify-start gap-2">
-            <span className="w-4 h-px bg-border" /> Data ingestion
+            <span className="w-4 h-px bg-border" /> {t('landing.integrations.tag', { default: 'Data ingestion' })}
           </p>
           <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4 text-center lg:text-left">
-            Connect any tool.<br />Analyze everything.
+            {t('landing.integrations.title', { default: 'Connect any tool.<br />Analyze everything.' })}
           </h2>
           <p className="text-muted-foreground text-sm max-w-sm mx-auto text-center lg:text-left">
-            THE NoDE works with your existing stack — more connected = sharper intelligence.
+            {t('landing.integrations.desc', { default: 'THE NoDE works with your existing stack — more connected = sharper intelligence.' })}
           </p>
         </div>
 
         {/* 3 ingestion modes */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {MODES.map((mode, i) => (
+          {buildModes(t).map((mode, i) => (
             <div key={i} className={`p-7 rounded-2xl border flex flex-col gap-5 ${mode.accent ? "bg-foreground text-background border-foreground/10" : "bg-card border-border/50"}`}>
               <div className="flex items-start justify-between">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${mode.accent ? "bg-background/10" : "bg-secondary border border-border/40"}`}>
@@ -99,10 +101,10 @@ export default function IntegrationsSection() {
           <div className="px-6 py-3.5 border-b border-border/40 flex items-center justify-between bg-secondary/30">
             <div className="flex items-center gap-2">
               <Zap size={11} className="text-muted-foreground/40" />
-              <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/45">Available connectors</span>
+              <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/45">{t('landing.integrations.available', { default: 'Available connectors' })}</span>
             </div>
             <Link to="/ConnectTools" className="text-xs text-muted-foreground/50 hover:text-foreground transition-colors flex items-center gap-1">
-              View all <ArrowRight size={10} />
+              {t('common.view_all', { default: 'View all' })} <ArrowRight size={10} />
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 divide-x divide-y divide-border/25">
@@ -121,7 +123,7 @@ export default function IntegrationsSection() {
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground/50">More tools</p>
-                <p className="text-[10px] text-muted-foreground/30">Request or upload files</p>
+                <p className="text-[10px] text-muted-foreground/30">{t('landing.integrations.request_or_upload', { default: 'Request or upload files' })}</p>
               </div>
             </Link>
           </div>
@@ -129,13 +131,13 @@ export default function IntegrationsSection() {
 
         {/* Security note */}
         <p className="text-center text-[11px] text-muted-foreground/35 flex items-center justify-center gap-1.5">
-          <Shield size={10} /> Read-only access · Encrypted · Never shared with third parties
+          <Shield size={10} /> {t('landing.integrations.security_note', { default: 'Read-only access · Encrypted · Never shared with third parties' })}
         </p>
 
         <div className="text-center mt-8">
           <Link to="/ConnectTools">
             <Button className="h-11 rounded-full px-7 text-sm font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40">
-              Connect your tools <ArrowRight className="h-4 w-4" />
+              {t('landing.integrations.cta', { default: 'Connect your tools' })} <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         </div>
