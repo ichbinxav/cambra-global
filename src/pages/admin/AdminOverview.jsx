@@ -15,6 +15,7 @@ import RevenueBilling from "@/components/admin/RevenueBilling";
 import LiveActivity from "@/components/admin/LiveActivity";
 import CommandHero from "@/components/admin/CommandHero";
 import OperationsConsole from "@/components/admin/OperationsConsole";
+import { useI18n } from "@/lib/i18n.jsx";
 
 function toDateFromMonth(ym) {
   // ym = 'YYYY-MM'
@@ -28,7 +29,7 @@ function safeCurrency(n) {
   return `€${v.toLocaleString()}`;
 }
 
-export default function AdminOverview() {
+export default function AdminOverview() { const { t } = useI18n();
   // Filters / controls
   const [timeRange, setTimeRange] = useState("30d"); // 7d / 30d / 90d / YTD
   const [search, setSearch] = useState("");
@@ -284,10 +285,10 @@ export default function AdminOverview() {
   return (
     <div className="space-y-5">
       <CommandHero
-        title="Command Center"
-        subtitle="Infrastructure Intelligence · THE NoDE"
-        metrics={heroMetrics}
-      />
+               title={t('admin.overview.heroTitle', { default: 'Command Center' })}
+               subtitle={t('admin.overview.heroSubtitle', { default: 'Infrastructure Intelligence · THE NoDE' })}
+               metrics={heroMetrics}
+             />
 
       <div className="mt-4">
         <AdminFiltersBar
@@ -325,23 +326,23 @@ export default function AdminOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold">Pipeline in Motion</h3>
+            <h3 className="text-sm font-semibold">{t('admin.overview.sections.pipeline', { default: 'Pipeline in Motion' })}</h3>
           </div>
           <PipelineMini data={pipelineData} totalApps={appsFiltered.length} />
         </div>
 
         <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
-          <h3 className="text-sm font-semibold mb-2">Top Opportunities</h3>
+          <h3 className="text-sm font-semibold mb-2">{t('admin.overview.sections.topOpp', { default: 'Top Opportunities' })}</h3>
           <TopOpportunities items={topOpp} />
         </div>
 
         <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
-          <h3 className="text-sm font-semibold mb-2">Partner Performance</h3>
+          <h3 className="text-sm font-semibold mb-2">{t('admin.overview.sections.partnerPerf', { default: 'Partner Performance' })}</h3>
           <ProviderPerformance rows={providerRows} />
         </div>
 
         <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
-          <h3 className="text-sm font-semibold mb-2">Brand Health</h3>
+          <h3 className="text-sm font-semibold mb-2">{t('admin.overview.sections.brandHealth', { default: 'Brand Health' })}</h3>
           <BrandHealthTable
             brands={brands}
             apps={apps}
@@ -355,7 +356,7 @@ export default function AdminOverview() {
 
       {/* 8. REVENUE & BILLING */}
       <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
-        <h3 className="text-sm font-semibold mb-2">Revenue Flow</h3>
+        <h3 className="text-sm font-semibold mb-2">{t('admin.overview.sections.revenueFlow', { default: 'Revenue Flow' })}</h3>
         <RevenueBilling data={revenueBilling} />
       </div>
 

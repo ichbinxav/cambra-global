@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import { Search, ArrowUpRight, ChevronDown } from "lucide-react";
+import { useI18n } from "@/lib/i18n.jsx";
 
-export default function AdminUsers() {
+export default function AdminUsers() { const { t } = useI18n();
   const [users, setUsers] = useState([]);
   const [brands, setBrands] = useState([]);
   const [results, setResults] = useState([]);
@@ -40,8 +41,8 @@ export default function AdminUsers() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-[-0.03em]">Users & Companies</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">{users.length} registered users</p>
+          <h1 className="text-2xl font-black tracking-[-0.03em]">{t('admin.users.title', { default: 'Users & Companies' })}</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">{users.length} {t('admin.users.registered_suffix', { default: 'registered users' })}</p>
         </div>
       </div>
 
@@ -50,7 +51,7 @@ export default function AdminUsers() {
         <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
         <input
           value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Search name, email, company..."
+          placeholder={t('admin.users.search_ph', { default: 'Search name, email, company...' })}
           className="w-full h-9 pl-8 pr-4 text-sm bg-secondary/60 border border-border/50 rounded-lg focus:outline-none focus:border-foreground/20"
         />
       </div>
@@ -58,12 +59,12 @@ export default function AdminUsers() {
       {/* Table */}
       <div className="rounded-xl border border-border/50 overflow-hidden">
         <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_auto] px-5 py-3 bg-secondary/40 border-b border-border/40 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 gap-4">
-          <span>User / Company</span>
-          <span>Email</span>
-          <span>Score</span>
-          <span>Analyses</span>
-          <span>Active Deals</span>
-          <span>Joined</span>
+          <span>{t('admin.users.table.userCompany', { default: 'User / Company' })}</span>
+          <span>{t('admin.users.table.email', { default: 'Email' })}</span>
+          <span>{t('admin.users.table.score', { default: 'Score' })}</span>
+          <span>{t('admin.users.table.analyses', { default: 'Analyses' })}</span>
+          <span>{t('admin.users.table.activeDeals', { default: 'Active Deals' })}</span>
+          <span>{t('admin.users.table.joined', { default: 'Joined' })}</span>
           <span></span>
         </div>
         {filtered.map(u => {
@@ -99,7 +100,7 @@ export default function AdminUsers() {
           );
         })}
         {filtered.length === 0 && (
-          <div className="py-12 text-center text-sm text-muted-foreground">No users found</div>
+          <div className="py-12 text-center text-sm text-muted-foreground">{t('admin.users.empty', { default: 'No users found' })}</div>
         )}
       </div>
     </div>

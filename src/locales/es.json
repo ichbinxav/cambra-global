@@ -70,5 +70,35 @@
     "brand": {"brand_name":"Nombre de la marca","brand_ph":"Tu marca","website":"Sitio web","country":"País","country_ph":"p. ej., Alemania"},
     "session": {"note":"Cerrar sesión finalizará tu sesión actual. Podrás iniciar sesión de nuevo cuando quieras.","sign_out":"Cerrar sesión de THE NoDE"}
   },
-  "legal": {"privacy": {"title": "Privacidad"}, "terms": {"title": "Términos"}}
+  "legal": {"privacy": {"title": "Privacidad"}, "terms": {"title": "Términos"}},
+  "admin": {
+    "overview": {
+      "heroTitle": "Centro de mando",
+      "heroSubtitle": "Inteligencia de infraestructura · THE NoDE",
+      "sections": {"pipeline":"Pipeline en marcha","topOpp":"Mejores oportunidades","partnerPerf":"Rendimiento de partners","brandHealth":"Salud de marcas","revenueFlow":"Flujo de ingresos"}
+    },
+    "users": {
+      "title": "Usuarios y Empresas",
+      "registered_suffix": "usuarios registrados",
+      "search_ph": "Buscar nombre, email, empresa...",
+      "table": {"userCompany":"Usuario / Empresa","email":"Email","score":"Puntuación","analyses":"Análisis","activeDeals":"Ofertas activas","joined":"Alta","view":"Ver"},
+      "empty": "No se encontraron usuarios"
+    },
+    "applications": {
+      "title": "Solicitudes de ofertas",
+      "total_suffix": "solicitudes en total",
+      "search_ph": "Buscar...",
+      "filters": {"all":"Todas"},
+      "table": {"companyUser":"Empresa / Usuario","deal":"Oferta","status":"Estado","mode":"Modo","savings":"Ahorro"},
+      "empty": "No se encontraron solicitudes"
+    },
+    "pipeline": {
+      "title": "Pipeline de ofertas",
+      "hint": "Arrastrar para mover · Clic para inspeccionar",
+      "active": "activas",
+      "close": "Cerrar panel",
+      "columns": {"submitted":"Enviada","in_review":"En revisión","provider_contacted":"Proveedor contactado","offer_ready":"Oferta lista","activated":"Activada"},
+      "stuck": ">7d bloqueada"
+    }
+  }
 }

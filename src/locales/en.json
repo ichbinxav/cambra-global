@@ -95,5 +95,35 @@
     "brand": {"brand_name":"Brand name","brand_ph":"Your brand","website":"Website","country":"Country","country_ph":"e.g. Germany"},
     "session": {"note":"Signing out will end your current session. You can always sign back in with your credentials.","sign_out":"Sign out of THE NoDE"}
   },
-  "legal": {"privacy": {"title": "Privacy"}, "terms": {"title": "Terms"}}
+  "legal": {"privacy": {"title": "Privacy"}, "terms": {"title": "Terms"}},
+  "admin": {
+    "overview": {
+      "heroTitle": "Command Center",
+      "heroSubtitle": "Infrastructure Intelligence · THE NoDE",
+      "sections": {"pipeline":"Pipeline in Motion","topOpp":"Top Opportunities","partnerPerf":"Partner Performance","brandHealth":"Brand Health","revenueFlow":"Revenue Flow"}
+    },
+    "users": {
+      "title": "Users & Companies",
+      "registered_suffix": "registered users",
+      "search_ph": "Search name, email, company...",
+      "table": {"userCompany":"User / Company","email":"Email","score":"Score","analyses":"Analyses","activeDeals":"Active Deals","joined":"Joined","view":"View"},
+      "empty": "No users found"
+    },
+    "applications": {
+      "title": "Deal Applications",
+      "total_suffix": "total applications",
+      "search_ph": "Search...",
+      "filters": {"all":"All"},
+      "table": {"companyUser":"Company / User","deal":"Deal","status":"Status","mode":"Mode","savings":"Savings"},
+      "empty": "No applications found"
+    },
+    "pipeline": {
+      "title": "Deal Pipeline",
+      "hint": "Drag & drop to move · Click to inspect",
+      "active": "active",
+      "close": "Close panel",
+      "columns": {"submitted":"Submitted","in_review":"In Review","provider_contacted":"Provider Contacted","offer_ready":"Offer Ready","activated":"Activated"},
+      "stuck": "stuck >7d"
+    }
+  }
 }

@@ -70,5 +70,35 @@
     "brand": {"brand_name":"Nom de la marque","brand_ph":"Votre marque","website":"Site web","country":"Pays","country_ph":"ex. Allemagne"},
     "session": {"note":"La déconnexion met fin à votre session en cours. Vous pourrez vous reconnecter ensuite.","sign_out":"Se déconnecter de THE NoDE"}
   },
-  "legal": {"privacy": {"title": "Confidentialité"}, "terms": {"title": "Conditions"}}
+  "legal": {"privacy": {"title": "Confidentialité"}, "terms": {"title": "Conditions"}},
+  "admin": {
+    "overview": {
+      "heroTitle": "Centre de commande",
+      "heroSubtitle": "Intelligence d'infrastructure · THE NoDE",
+      "sections": {"pipeline":"Pipeline en mouvement","topOpp":"Top opportunités","partnerPerf":"Performance partenaires","brandHealth":"Santé des marques","revenueFlow":"Flux de revenus"}
+    },
+    "users": {
+      "title": "Utilisateurs & Entreprises",
+      "registered_suffix": "utilisateurs enregistrés",
+      "search_ph": "Rechercher nom, email, entreprise...",
+      "table": {"userCompany":"Utilisateur / Entreprise","email":"Email","score":"Score","analyses":"Analyses","activeDeals":"Offres actives","joined":"Inscription","view":"Voir"},
+      "empty": "Aucun utilisateur"
+    },
+    "applications": {
+      "title": "Demandes d'offres",
+      "total_suffix": "demandes au total",
+      "search_ph": "Rechercher...",
+      "filters": {"all":"Tous"},
+      "table": {"companyUser":"Entreprise / Utilisateur","deal":"Offre","status":"Statut","mode":"Mode","savings":"Économies"},
+      "empty": "Aucune demande trouvée"
+    },
+    "pipeline": {
+      "title": "Pipeline d'offres",
+      "hint": "Glisser‑déposer pour déplacer · Cliquer pour inspecter",
+      "active": "actives",
+      "close": "Fermer le panneau",
+      "columns": {"submitted":"Soumise","in_review":"En révision","provider_contacted":"Prestataire contacté","offer_ready":"Offre prête","activated":"Activée"},
+      "stuck": ">7j bloquée"
+    }
+  }
 }
