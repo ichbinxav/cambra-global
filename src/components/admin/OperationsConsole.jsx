@@ -1,6 +1,6 @@
 import React from "react";
 import ActionQueue from "@/components/admin/ActionQueue";
-import ConversionBottlenecks from "@/components/admin/ConversionBottlenecks";
+import CompactConversion from "@/components/admin/CompactConversion";
 
 export default function OperationsConsole({ actions = [], convData }) {
   return (
@@ -16,7 +16,13 @@ export default function OperationsConsole({ actions = [], convData }) {
           <ActionQueue items={actions} />
         </div>
         <div className="lg:col-span-5">
-          <ConversionBottlenecks data={convData} />
+          <CompactConversion
+            funnel={convData?.funnel}
+            convAnalysis={convData?.convAnalysis}
+            convActivation={convData?.convActivation}
+            stuckCount={convData?.stuckCount}
+            offerReady={convData?.offerReady}
+          />
         </div>
       </div>
     </div>

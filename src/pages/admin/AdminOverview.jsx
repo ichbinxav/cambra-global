@@ -6,11 +6,11 @@ import { DEAL_STATUSES } from "@/lib/adminStatusConstants";
 import AdminFiltersBar from "@/components/admin/AdminFiltersBar";
 import KPIStrip from "@/components/admin/KPIStrip";
 import ActionQueue from "@/components/admin/ActionQueue";
-import ConversionBottlenecks from "@/components/admin/ConversionBottlenecks";
 import PipelineMini from "@/components/admin/PipelineMini";
 import TopOpportunities from "@/components/admin/TopOpportunities";
 import ProviderPerformance from "@/components/admin/ProviderPerformance";
-import BrandHealth from "@/components/admin/BrandHealth";
+// import BrandHealth from "@/components/admin/BrandHealth";
+import BrandHealthTable from "@/components/admin/BrandHealthTable";
 import RevenueBilling from "@/components/admin/RevenueBilling";
 import LiveActivity from "@/components/admin/LiveActivity";
 import CommandHero from "@/components/admin/CommandHero";
@@ -309,7 +309,7 @@ export default function AdminOverview() {
       <div className="mt-4">
         <OperationsConsole
           actions={actionQueue}
-          convData={{ convAnalysis, convActivation, stuckCount, offerReady: offerReady.length, funnel }}
+          convData={{ funnel, convAnalysis, convActivation, stuckCount, offerReady: offerReady.length }}
         />
       </div>
 
@@ -342,7 +342,14 @@ export default function AdminOverview() {
 
         <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
           <h3 className="text-sm font-semibold mb-2">Brand Health</h3>
-          <BrandHealth rows={brandHealthRows} />
+          <BrandHealthTable
+            brands={brands}
+            apps={apps}
+            activations={activations}
+            tasks={tasks}
+            results={results}
+            limit={8}
+          />
         </div>
       </div>
 
