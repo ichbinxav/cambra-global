@@ -100,7 +100,7 @@ export default function TestimonialsSection() {
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.25 }}
-            className="mt-4 text-muted-foreground text-base max-w-md mx_auto"
+            className="mt-4 text-muted-foreground text-base max-w-md mx-auto"
           >
             Independent commerce brands across Europe using THE NoDE network.
           </motion.p>
@@ -114,7 +114,7 @@ export default function TestimonialsSection() {
 
         {/* Trust bar */}
         <div ref={trustRef} className="mt-10 pt-10 border-t border-border/40">
-         <div className="mb-4">
+         <div className="mb-4 text-center lg:text-left">
            <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/45">Network benchmarks</p>
            <h3 className="text-[clamp(1.5rem,4vw,2.4rem)] font-black tracking-[-0.02em]">By the numbers</h3>
          </div>

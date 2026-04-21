@@ -22,25 +22,25 @@ export default function ThreeLayersSection() {
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
-        <div ref={headRef} className="mb-12 max-w-3xl">
+        <div ref={headRef} className="mb-12 max-w-3xl mx-auto text-center lg:text-left">
           <motion.p
             initial={{ opacity: 0, y: 12 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2"
+            className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center lg:justify-start gap-2"
           >
             <span className="w-4 h-px bg-border" /> Infrastructure platform
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 30 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5 text-foreground"
+            className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5 text-foreground text-center lg:text-left"
           >
             Get the leverage<br />big players have.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-foreground/60 text-lg leading-relaxed max-w-xl"
+            className="text-foreground/60 text-lg leading-relaxed max-w-xl mx-auto text-center lg:text-left"
           >
             Enterprise retailers negotiate at scale. You negotiate alone. THE NoDE pools independent brands into a single negotiation unit — so you get enterprise rates without the enterprise overhead.
           </motion.p>
@@ -74,7 +74,7 @@ export default function ThreeLayersSection() {
           className="rounded-2xl bg-foreground text-background p-8 lg:p-12 mb-4"
         >
           <div className="flex flex-col lg:flex-row lg:items-start gap-10">
-            <div className="flex-1 max-w-md">
+            <div className="flex-1 max-w-md mx-auto text-center lg:text-left">
               <p className="text-[10px] tracking-[0.3em] uppercase text-background/40 mb-5">What you unlock</p>
               <h3 className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-black tracking-[-0.04em] leading-[0.9] mb-4">
                 Structural rates.<br />Immediately activated.
@@ -85,7 +85,7 @@ export default function ThreeLayersSection() {
               <p className="text-background/40 text-sm leading-relaxed mb-7">
                 Join. Activate. Save. No negotiation required.
               </p>
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 items-center justify-center lg:justify-start">
                 <Link to="/Deals">
                   <button className="inline-flex items-center gap-2 h-11 px-6 rounded-full bg-saas-gradient text-white text-sm font-bold shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-colors">
                     See all deals <ArrowRight size={12} />
@@ -133,7 +133,7 @@ export default function ThreeLayersSection() {
           initial={{ opacity: 0, y: 16 }} animate={extraInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
         >
-          <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-3 font-semibold">Also included</p>
+          <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-3 font-semibold text-center lg:text-left">Also included</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
               {
