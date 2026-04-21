@@ -86,32 +86,32 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
-          onClick={() => setOpen(v => !v)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X size={18} /> : <Menu size={18} />}
-        </button>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          {/* Mobile toggle */}
+          <button
+            className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => setOpen(v => !v)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
       </div>
 
-      {/* Language switcher */}
-      <div className="hidden md:flex items-center gap-3 pr-2">
-        <LanguageSwitcher />
-      </div>
+      
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t border-border/40 bg-background/98 backdrop-blur-2xl px-5 py-4 space-y-1 overflow-y-auto max-h-[80vh]">
+        <div className="md:hidden border-t border-border/40 bg-background px-5 py-4 space-y-1 overflow-y-auto max-h-[80vh]">
           {NAV.map(item => (
             item.href.startsWith("/") ? (
-              <Link key={item.label} to={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground border-b border-border/30 last:border-0">
-                {item.label}
+              <Link key={item.href} to={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-foreground border-b border-border/30 last:border-0">
+                {t(item.labelKey)}
               </Link>
             ) : (
-              <a key={item.label} href={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground border-b border-border/30 last:border-0">
-                {item.label}
+              <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-foreground border-b border-border/30 last:border-0">
+                {t(item.labelKey)}
               </a>
             )
           ))}
@@ -121,7 +121,7 @@ export default function Navbar() {
             </Link>
             {isAuthenticated ? (
               <Link to="/Dashboard" onClick={() => setOpen(false)}>
-                <Button variant="outline" className="w-full h-12 rounded-full text-sm">Dashboard</Button>
+                <Button variant="outline" className="w-full h-12 rounded-full text-sm">{t('navigation.dashboard')}</Button>
               </Link>
             ) : (
               <>

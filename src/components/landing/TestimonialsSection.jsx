@@ -3,38 +3,38 @@ import { useRef } from "react";
 import { Globe, CreditCard, Truck, Percent } from "lucide-react";
 import { useI18n } from "@/lib/i18n.jsx";
 
-const testimonials = [
+const buildTestimonials = (t) => ([
   {
-    quote: "Discovered we were overpaying on Stripe by 1.4%. After switching to the network rate, we recovered €38,000 in the first year alone.",
-    name: "Founder",
-    company: "Contemporary skincare brand",
-    saving: "€38K",
-    savingNote: "recovered year 1",
-    category: "Payments",
+    quote: t('landing.testimonials.items.0.quote', { default: 'Discovered we were overpaying on Stripe by 1.4%. After switching to the network rate, we recovered €38,000 in the first year alone.' }),
+    name: t('landing.testimonials.items.0.name', { default: 'Founder' }),
+    company: t('landing.testimonials.items.0.company', { default: 'Contemporary skincare brand' }),
+    saving: t('landing.testimonials.items.0.saving', { default: '€38K' }),
+    savingNote: t('landing.testimonials.items.0.savingNote', { default: 'recovered year 1' }),
+    category: t('landing.testimonials.items.0.category', { default: 'Payments' }),
     color: "text-blue-600",
     bg: "bg-blue-500/[0.04] border-blue-500/15",
   },
   {
-    quote: "The Analyzer identified €24,000 in hidden infrastructure costs we hadn't tracked. Changed how we think about our entire P&L.",
-    name: "CEO",
-    company: "Premium activewear brand",
-    saving: "€24K",
-    savingNote: "hidden costs surfaced",
-    category: "Infrastructure",
+    quote: t("landing.testimonials.items.1.quote", { default: "The Analyzer identified €24,000 in hidden infrastructure costs we hadn't tracked. Changed how we think about our entire P&L." }),
+    name: t('landing.testimonials.items.1.name', { default: 'CEO' }),
+    company: t('landing.testimonials.items.1.company', { default: 'Premium activewear brand' }),
+    saving: t('landing.testimonials.items.1.saving', { default: '€24K' }),
+    savingNote: t('landing.testimonials.items.1.savingNote', { default: 'hidden costs surfaced' }),
+    category: t('landing.testimonials.items.1.category', { default: 'Infrastructure' }),
     color: "text-orange-500",
     bg: "bg-orange-500/[0.04] border-orange-500/15",
   },
   {
-    quote: "Repriced our full shipping structure through the network. We save €19,000 a year now. It genuinely took one afternoon.",
-    name: "Operations Director",
-    company: "Design-led home fragrance",
-    saving: "€19K",
-    savingNote: "per year on shipping",
-    category: "Shipping",
+    quote: t('landing.testimonials.items.2.quote', { default: 'Repriced our full shipping structure through the network. We save €19,000 a year now. It genuinely took one afternoon.' }),
+    name: t('landing.testimonials.items.2.name', { default: 'Operations Director' }),
+    company: t('landing.testimonials.items.2.company', { default: 'Design-led home fragrance' }),
+    saving: t('landing.testimonials.items.2.saving', { default: '€19K' }),
+    savingNote: t('landing.testimonials.items.2.savingNote', { default: 'per year on shipping' }),
+    category: t('landing.testimonials.items.2.category', { default: 'Shipping' }),
     color: "text-green-600",
     bg: "bg-green-500/[0.04] border-green-500/15",
   },
-];
+]);
 
 function TestimonialCard({ t, index }) {
   const ref = useRef(null);
@@ -109,8 +109,8 @@ export default function TestimonialsSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {testimonials.map((t, i) => (
-            <TestimonialCard key={i} t={t} index={i} />
+          {buildTestimonials(t).map((item, i) => (
+            <TestimonialCard key={i} t={item} index={i} />
           ))}
         </div>
 

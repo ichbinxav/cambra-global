@@ -113,7 +113,7 @@ export default function IntegrationsSection() {
                 <Avatar name={c.name} color={c.color} />
                 <div className="min-w-0">
                   <p className="text-xs font-semibold truncate">{c.name}</p>
-                  <p className="text-[10px] text-muted-foreground/35">{c.cat}</p>
+                  <p className="text-[10px] text-muted-foreground/35">{t(`landing.integrations.cats.${c.cat.toLowerCase()}`, { default: c.cat })}</p>
                 </div>
               </div>
             ))}
