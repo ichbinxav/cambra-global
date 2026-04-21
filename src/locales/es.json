@@ -1,0 +1,77 @@
+{
+  "common": {
+    "brand": "THE NoDE",
+    "sign_in": "Iniciar sesión",
+    "sign_in_with": "Inicia sesión con Google / Apple",
+    "join": "Únete",
+    "free": "Gratis"
+  },
+  "navigation": {
+    "how_it_works": "Cómo funciona",
+    "analyzer": "Analizador",
+    "join": "Únete a THE NoDE",
+    "deals": "Ofertas",
+    "insights": "Insights",
+    "network": "Red",
+    "dashboard": "Panel",
+    "check_savings": "Comprobar ahorro",
+    "run_analyzer": "Ejecutar el Analizador"
+  },
+  "footer": {
+    "tagline": "Apalancamiento de infraestructura para marcas independientes",
+    "headline": "Encuentra tu ventaja injusta",
+    "sub": "Deja de pagar de más por tu infraestructura.",
+    "ctaSavings": "Calcula tu ahorro",
+    "cta": "Ejecutar el analizador",
+    "desc": "Las marcas suelen identificar 29.000 €/año en potencial de optimización. La mayoría de las mejoras se activan en minutos.",
+    "privacy": "Privacidad",
+    "terms": "Términos"
+  },
+  "landing": {
+    "hero": {
+      "tag": "Para marcas de lifestyle",
+      "urgency": "La mayoría de las marcas operan por debajo de sus condiciones óptimas — sin siquiera saberlo.",
+      "headline": "Convierte tu infraestructura en una ventaja.",
+      "sub": "Accede a las condiciones que tu escala ya debería darte.",
+      "desc": "Agrupamos marcas independientes en un único bloque de negociación. Accedes a mejores condiciones en pagos, envíos y SaaS — al instante. Nuestro analizador detecta dónde queda valor sin optimizar y luego activas las ofertas.",
+      "pricing_free": "Gratis",
+      "pricing_partners": "Solo socios fundadores",
+      "pricing_note": "Comisión de éxito del 25% sobre ahorros realizados — si no te ahorramos, no pagas.",
+      "bullets": [
+        "Accede a condiciones que no puedes conseguir solo",
+        "Detecta al instante dónde estás pagando de más",
+        "Reduce los costes de infraestructura en todo tu stack",
+        "Convierte la escala colectiva en ventaja económica"
+      ],
+      "cta_primary": "Empieza ahora — análisis gratis",
+      "cta_dashboard": "Ir al panel",
+      "cta_sign_in": "Iniciar sesión",
+      "overpaying": "Pago excesivo detectado:",
+      "analyzer_title": "Analizador · Informe de ahorro",
+      "sample_brand": "Marca de ejemplo · 500K€/año",
+      "potential_savings": "Ahorro potencial desbloqueado",
+      "analyze": "Analizar",
+      "infra_score": "Índice de infraestructura:",
+      "infra_potential": "Tu potencial: 84/100 · Ver cómo",
+      "deals_unlocked": "Tarifas estructurales desbloqueadas",
+      "deals_subtext": "Tarifas que no puedes negociar solo · Únete para activar",
+      "join": "Únete",
+      "sample_note": "Análisis de muestra · Marca independiente · 2025"
+    },
+    "analyzerCTA": {
+      "label": "Analizador de infraestructura",
+      "headline": "Identifica exactamente dónde queda valor sin optimizar.",
+      "desc": "Compara tus pagos, envíos y stack SaaS con las tarifas reales de la red. Ve tu potencial de optimización en 2 minutos.",
+      "cta": "Ejecutar el Analizador",
+      "microcopy": "2 minutos · Benchmarks reales · Sin compromiso",
+      "sample": "Análisis de muestra — marca de 500K€",
+      "savings_per_year": "Ahorro/año",
+      "total_optimization": "Potencial de optimización / año",
+      "calc_savings": "Calcular mi ahorro"
+    }
+  },
+  "legal": {
+    "privacy": { "title": "Privacidad" },
+    "terms": { "title": "Términos" }
+  }
+}

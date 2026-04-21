@@ -1,0 +1,77 @@
+{
+  "common": {
+    "brand": "THE NoDE",
+    "sign_in": "Se connecter",
+    "sign_in_with": "Connexion avec Google / Apple",
+    "join": "Rejoindre",
+    "free": "Gratuit"
+  },
+  "navigation": {
+    "how_it_works": "Comment ça marche",
+    "analyzer": "Analyseur",
+    "join": "Rejoindre THE NoDE",
+    "deals": "Offres",
+    "insights": "Analyses",
+    "network": "Réseau",
+    "dashboard": "Tableau de bord",
+    "check_savings": "Vérifier les économies",
+    "run_analyzer": "Lancer l'analyse"
+  },
+  "footer": {
+    "tagline": "Levier d'infrastructure pour les marques indépendantes",
+    "headline": "Trouvez votre avantage décisif",
+    "sub": "Arrêtez de payer trop cher votre infrastructure.",
+    "ctaSavings": "Calculez vos économies",
+    "cta": "Lancer l'analyse",
+    "desc": "Les marques identifient généralement 29 000 €/an de potentiel d'optimisation. La plupart des améliorations s'activent en quelques minutes.",
+    "privacy": "Confidentialité",
+    "terms": "Conditions"
+  },
+  "landing": {
+    "hero": {
+      "tag": "Pour les marques lifestyle",
+      "urgency": "La plupart des marques opèrent en dessous de leurs conditions optimales — sans même s'en rendre compte.",
+      "headline": "Faites de votre infrastructure un avantage.",
+      "sub": "Accédez aux conditions que votre échelle devrait déjà vous offrir.",
+      "desc": "Nous regroupons des marques indépendantes en un seul bloc de levier. Vous accédez immédiatement à de meilleures conditions sur les paiements, la livraison et le SaaS. Notre analyseur identifie où la valeur reste inexploitée, puis vous activez les offres.",
+      "pricing_free": "Gratuit",
+      "pricing_partners": "Partenaires fondateurs uniquement",
+      "pricing_note": "25% de frais de succès sur les économies réalisées — si nous ne vous faisons pas économiser, vous ne payez rien.",
+      "bullets": [
+        "Accédez à des conditions impossibles à obtenir seul",
+        "Identifiez instantanément où vous payez trop",
+        "Réduisez les coûts d'infrastructure sur l'ensemble de votre stack",
+        "Transformez l'échelle collective en levier économique"
+      ],
+      "cta_primary": "Commencer maintenant — analyse gratuite",
+      "cta_dashboard": "Aller au tableau de bord",
+      "cta_sign_in": "Se connecter",
+      "overpaying": "Surpaiement détecté :",
+      "analyzer_title": "Analyseur · Rapport d'économies",
+      "sample_brand": "Marque test · 500K€/an",
+      "potential_savings": "Économies potentielles débloquées",
+      "analyze": "Analyser",
+      "infra_score": "Score d'infrastructure :",
+      "infra_potential": "Votre potentiel : 84/100 · Voir comment",
+      "deals_unlocked": "Conditions structurelles débloquées",
+      "deals_subtext": "Des conditions que vous ne pouvez pas négocier seul · Rejoignez pour activer",
+      "join": "Rejoindre",
+      "sample_note": "Analyse exemple · Marque indépendante · 2025"
+    },
+    "analyzerCTA": {
+      "label": "Analyseur d'infrastructure",
+      "headline": "Identifiez exactement où la valeur reste inexploitée.",
+      "desc": "Comparez vos paiements, votre logistique et votre stack SaaS avec les tarifs réels du réseau. Voyez votre potentiel d'optimisation en 2 minutes.",
+      "cta": "Lancer l'Analyseur",
+      "microcopy": "2 minutes · Benchmarks réels · Sans engagement",
+      "sample": "Analyse exemple — marque à 500K€",
+      "savings_per_year": "Économies/an",
+      "total_optimization": "Potentiel d'optimisation / an",
+      "calc_savings": "Calculer mes économies"
+    }
+  },
+  "legal": {
+    "privacy": { "title": "Confidentialité" },
+    "terms": { "title": "Conditions" }
+  }
+}
