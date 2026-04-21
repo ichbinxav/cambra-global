@@ -17,15 +17,17 @@ export default function Landing() {
     <div className="min-h-screen bg-background font-inter">
 
       <Navbar />
-      <HeroSection />
-      <div id="how"><HowCombinedSection /></div>
-      <ThreeLayersSection />
-      <ProblemSection />
-      <AnalyzerCTA />
-      <IntegrationsSection />
-      <BenefitsSection />
-      <TestimonialsSection />
-      <PricingSection />
+      <main className="sm:text-center md:text-center lg:text-left">
+        <HeroSection />
+        <div id="how"><HowCombinedSection /></div>
+        <ThreeLayersSection />
+        <ProblemSection />
+        <AnalyzerCTA />
+        <IntegrationsSection />
+        <BenefitsSection />
+        <TestimonialsSection />
+        <PricingSection />
+      </main>
       <FooterSection />
     </div>
   );
