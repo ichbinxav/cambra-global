@@ -122,7 +122,7 @@ export default function IntegrationsSection() {
                 <span className="text-muted-foreground/30 text-lg leading-none">+</span>
               </div>
               <div>
-                <p className="text-xs font-semibold text-muted-foreground/50">More tools</p>
+                <p className="text-xs font-semibold text-muted-foreground/50">{t('landing.integrations.more_tools', { default: 'More tools' })}</p>
                 <p className="text-[10px] text-muted-foreground/30">{t('landing.integrations.request_or_upload', { default: 'Request or upload files' })}</p>
               </div>
             </Link>
