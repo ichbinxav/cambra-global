@@ -4,15 +4,16 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import { useI18n } from "@/lib/i18n.jsx";
 
-const PROBLEMS = [
+const PROBLEMS = (t) => [
   {
     icon: CreditCard,
     metric: "2.9%",
-    label: "Avg. payment fee",
-    benchmark: "Network: 1.4%",
-    delta: "You overpay by 107%",
-    annual: "€18K–€38K/yr lost",
+    label: t('landing.problem.cards.payments.label', { default: 'Avg. payment fee' }),
+    benchmark: t('landing.problem.cards.payments.benchmark', { default: 'Network: 1.4%' }),
+    delta: t('landing.problem.cards.payments.delta', { default: 'You overpay by 107%' }),
+    annual: t('landing.problem.cards.payments.annual', { default: '€18K–€38K/yr lost' }),
     color: "text-blue-600",
     bg: "bg-blue-500/[0.05] border-blue-500/20",
     barColor: "#3b82f6",
@@ -22,10 +23,10 @@ const PROBLEMS = [
   {
     icon: Truck,
     metric: "+23%",
-    label: "Shipping overspend vs. enterprise",
-    benchmark: "Volume-based gap",
-    delta: "Pay enterprise prices without the scale",
-    annual: "€12K–€24K/yr lost",
+    label: t('landing.problem.cards.shipping.label', { default: 'Shipping overspend vs. enterprise' }),
+    benchmark: t('landing.problem.cards.shipping.benchmark', { default: 'Volume-based gap' }),
+    delta: t('landing.problem.cards.shipping.delta', { default: 'Pay enterprise prices without the scale' }),
+    annual: t('landing.problem.cards.shipping.annual', { default: '€12K–€24K/yr lost' }),
     color: "text-orange-500",
     bg: "bg-orange-500/[0.05] border-orange-500/20",
     barColor: "#f97316",
@@ -35,10 +36,10 @@ const PROBLEMS = [
   {
     icon: Layers,
     metric: "€28K",
-    label: "Avg. SaaS waste per year",
-    benchmark: "Redundant & overpriced tools",
-    delta: "30% of SaaS spend is recoverable",
-    annual: "€8K–€28K/yr lost",
+    label: t('landing.problem.cards.saas.label', { default: 'Avg. SaaS waste per year' }),
+    benchmark: t('landing.problem.cards.saas.benchmark', { default: 'Redundant & overpriced tools' }),
+    delta: t('landing.problem.cards.saas.delta', { default: '30% of SaaS spend is recoverable' }),
+    annual: t('landing.problem.cards.saas.annual', { default: '€8K–€28K/yr lost' }),
     color: "text-green-600",
     bg: "bg-green-500/[0.05] border-green-500/20",
     barColor: "#22c55e",
@@ -79,6 +80,7 @@ function GreenBar({ width, delay }) {
 }
 
 function ProblemCard({ item, index }) {
+  const { t } = useI18n();
   const cardRef = useRef(null);
   const cardInView = useInView(cardRef, { once: true, margin: "-60px" });
   return (
@@ -115,14 +117,14 @@ function ProblemCard({ item, index }) {
       <div className="space-y-2">
         <div>
           <div className="flex justify-between mb-1">
-            <span className="text-[10px] text-muted-foreground/50">You</span>
+            <span className="text-[10px] text-muted-foreground/50">{t('landing.problem.you', { default: 'You' })}</span>
             <span className="text-[10px] font-semibold text-muted-foreground/70">{item.yours}% of max</span>
           </div>
           <AnimatedBar width={item.yours} color={item.barColor} delay={index * 0.12 + 0.15} />
         </div>
         <div>
           <div className="flex justify-between mb-1">
-            <span className="text-[10px] text-muted-foreground/50">Network rate</span>
+            <span className="text-[10px] text-muted-foreground/50">{t('landing.problem.network_rate', { default: 'Network rate' })}</span>
             <span className="text-[10px] font-semibold text-green-600">{item.theirs}% of max</span>
           </div>
           <GreenBar width={item.theirs} delay={index * 0.12 + 0.15} />
@@ -136,6 +138,7 @@ function ProblemCard({ item, index }) {
 
 export default function ProblemSection() {
   const { isAuthenticated } = useAuth();
+  const { t } = useI18n();
   const headRef = useRef(null);
   const headInView = useInView(headRef, { once: true, margin: "-80px" });
 
@@ -151,21 +154,21 @@ export default function ProblemSection() {
               transition={{ duration: 0.6 }}
               className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center lg:justify-start gap-2"
             >
-              <span className="w-4 h-px bg-border" /> The problem
+              <span className="w-4 h-px bg-border" /> {t('landing.problem.tag', { default: 'The problem' })}
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 30 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5 text-center lg:text-left"
             >
-              You're paying<br />what enterprises pay.<br />You don't have<br />their leverage.
+              {t('landing.problem.title', { default: "You're paying what enterprises pay. You don't have their leverage." })}
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.25 }}
               className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-xs mx-auto text-center lg:text-left"
             >
-              Retailers negotiate volume discounts. You negotiate alone. Same infrastructure. Very different pricing.
+              {t('landing.problem.desc', { default: 'Retailers negotiate volume discounts. You negotiate alone. Same infrastructure. Very different pricing.' })}
             </motion.p>
 
             <motion.div
@@ -185,7 +188,7 @@ export default function ProblemSection() {
               {isAuthenticated ? (
                 <Link to="/Analyzer">
                   <button className="h-11 px-6 rounded-full bg-saas-gradient text-white font-bold text-sm shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5 flex items-center gap-2">
-                    Calculate your savings <ArrowRight size={13} />
+                    {t('landing.problem.cta_calc', { default: 'Calculate your savings' })} <ArrowRight size={13} />
                   </button>
                 </Link>
               ) : (
@@ -195,7 +198,7 @@ export default function ProblemSection() {
                   rel="noopener noreferrer"
                   className="h-11 px-6 rounded-full bg-saas-gradient text-white font-bold text-sm shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5 inline-flex items-center gap-2"
                 >
-                  Sign in to analyze <ArrowRight size={13} />
+                  {t('landing.problem.cta_signin', { default: 'Sign in to analyze' })} <ArrowRight size={13} />
                 </a>
               )}
             </motion.div>
