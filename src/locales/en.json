@@ -1,5 +1,22 @@
 {
-  "common": {"brand":"THE NoDE","sign_in":"Sign in","sign_in_with":"Sign in with Google / Apple","join":"Join","free":"Free","view_all":"View all"},
+  "common": {
+    "brand": "THE NoDE",
+    "sign_in": "Sign in",
+    "sign_in_with": "Sign in with Google / Apple",
+    "join": "Join",
+    "free": "Free",
+    "view_all": "View all",
+    "connect_tools": "Connect tools",
+    "upload_data": "Upload data",
+    "sign_in_required": "Sign-in required",
+    "open_login_note": "Open the login window and return automatically.",
+    "no_results": "No results found.",
+    "history": "History",
+    "export_pdf": "Export PDF",
+    "dashboard": "Dashboard",
+    "connect_data": "Connect your data",
+    "run_analyzer": "Run the Analyzer"
+  },
   "navigation": {"how_it_works":"How it works","analyzer":"Analyzer","join":"Join THE NoDE","deals":"Deals","insights":"Insights","network":"Network","dashboard":"Dashboard","check_savings":"Check Savings","run_analyzer":"Run the Analyzer"},
   "footer": {"tagline":"Infrastructure leverage for independent brands","headline":"Find your unfair advantage","sub":"Stop overpaying for your infrastructure.","ctaSavings":"Calculate your savings","cta":"Run the analyzer","desc":"Brands typically identify €29,000/year in optimization potential. Most improvements activate within minutes.","privacy":"Privacy","terms":"Terms"},
   "landing": {
@@ -38,6 +55,45 @@
     "payments": {"provider":"Your payment provider","current_fee":"Current effective fee rate","your_rate":"Your current rate","network_target":"Network target"},
     "shipping": {"provider":"Your shipping provider","monthly_spend":"Monthly shipping spend","monthly_shipments":"Monthly shipments","your_cost_per":"Your cost/shipment","network_target":"Network target"},
     "saas": {"total_spend":"Total monthly SaaS spend","info":"What we check: E-commerce platforms (Shopify, etc.), email (Klaviyo, etc.), support (Gorgias, Zendesk), analytics, and more. Brands typically overspend by 30%.","current_spend":"Your current spend","benchmark":"Network benchmark"}
+  },
+  "dashboard": {
+    "title":"Dashboard","subtitle":"Infrastructure command center","new_analysis":"New Analysis","unlock_prefix":"Unlock report —",
+    "econ": {"identified":"Identified savings","activated":"Activated savings","realized":"Realized savings"},
+    "estimated": {"title":"Using estimated data","desc":"Connect your tools or upload a statement to unlock precise insights and verified savings figures."},
+    "empty": {"title":"No analysis yet","desc":"Run the 2-minute Analyzer to identify your infrastructure optimization potential."},
+    "cards": {"payments":"Payments","shipping":"Shipping","saas":"SaaS"},
+    "actions": {
+      "run": {"title":"Run new analysis","desc":"Update your score"},
+      "network": {"title":"Browse network","desc":"1,000+ member brands"},
+      "insights": {"title":"Read insights","desc":"Infrastructure intelligence"}
+    }
+  },
+  "deals": {
+    "header": {"tag":"Member exclusive","title":"Network Deals","sub":"Pre-negotiated infrastructure discounts. Available only to THE NoDE members."},
+    "tabs": {"discover":"Discover","contracts":"My Contracts"},
+    "stats": {"live":"Live deals","available":"Available savings","your_active":"Your active"},
+    "member_badge":"THE NoDE member — you have access to all live deals below. Click any card to activate.",
+    "status": {"active":"Active","waitlist":"Waitlist"},
+    "labels": {"estimated_benefit":"Estimated benefit"},
+    "cta": {"view_contract":"View contract","view_status":"View status","unlock_deal":"Unlock deal","discover":"Discover deals"},
+    "contracts": {
+      "summary": {"active_deals":"Active deals","savings_unlocked":"Savings unlocked","on_waitlist":"On waitlist","expiring_soon":"Expiring soon"},
+      "expiring_alert":"{count} deals expiring in the next 60 days — renew to keep your rates.",
+      "empty":"No active contracts yet."
+    }
+  },
+  "results": {
+    "loader": {"computing":"Computing your infrastructure score…"},
+    "header": {"complete":"Infrastructure analysis complete","optimization":"Optimization potential identified across your infrastructure","per_year":"per year across your infrastructure"},
+    "labels": {"infrastructure_score":"Infrastructure Score"},
+    "cards": {"efficiency_score":"Efficiency Score","released_capital":"Released Capital","benchmark":"Benchmark"}
+  },
+  "account": {
+    "header": {"tag":"Settings","title":"Account","sub":"Manage your profile and brand settings."},
+    "sections": {"profile":"Profile","brand":"Brand","session":"Session"},
+    "profile": {"full_name":"Full name","email":"Email","role":"Role"},
+    "brand": {"brand_name":"Brand name","brand_ph":"Your brand","website":"Website","country":"Country","country_ph":"e.g. Germany"},
+    "session": {"note":"Signing out will end your current session. You can always sign back in with your credentials.","sign_out":"Sign out of THE NoDE"}
   },
   "legal": {"privacy": {"title": "Privacy"}, "terms": {"title": "Terms"}}
 }

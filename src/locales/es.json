@@ -1,5 +1,5 @@
 {
-  "common": {"brand":"THE NoDE","sign_in":"Iniciar sesión","sign_in_with":"Inicia sesión con Google / Apple","join":"Únete","free":"Gratis","view_all":"Ver todo"},
+  "common": {"brand":"THE NoDE","sign_in":"Iniciar sesión","sign_in_with":"Inicia sesión con Google / Apple","join":"Únete","free":"Gratis","view_all":"Ver todo","connect_tools":"Conectar herramientas","upload_data":"Subir datos","sign_in_required":"Inicio de sesión requerido","open_login_note":"Abre la ventana de login y vuelve automáticamente.","no_results":"No hay resultados.","history":"Historial","export_pdf":"Exportar PDF","dashboard":"Panel","connect_data":"Conecta tus datos","run_analyzer":"Ejecutar el Analizador"},
   "navigation": {"how_it_works":"Cómo funciona","analyzer":"Analizador","join":"Únete a THE NoDE","deals":"Ofertas","insights":"Insights","network":"Red","dashboard":"Panel","check_savings":"Comprobar ahorro","run_analyzer":"Ejecutar el Analizador"},
   "footer": {"tagline":"Apalancamiento de infraestructura para marcas independientes","headline":"Encuentra tu ventaja injusta","sub":"Deja de pagar de más por tu infraestructura.","ctaSavings":"Calcula tu ahorro","cta":"Ejecutar el analizador","desc":"Las marcas suelen identificar 29.000 €/año en potencial de optimización. La mayoría de las mejoras se activan en minutos.","privacy":"Privacidad","terms":"Términos"},
   "landing": {
@@ -38,6 +38,37 @@
     "payments": {"provider":"Tu proveedor de pagos","current_fee":"Tasa efectiva actual","your_rate":"Tu tasa actual","network_target":"Objetivo de red"},
     "shipping": {"provider":"Tu transportista","monthly_spend":"Gasto mensual en envíos","monthly_shipments":"Envíos mensuales","your_cost_per":"Tu coste/envío","network_target":"Objetivo de red"},
     "saas": {"total_spend":"Gasto mensual total en SaaS","info":"Qué revisamos: plataforma e‑commerce, email, soporte, analítica... Sobrepago típico ~30%.","current_spend":"Gasto actual","benchmark":"Referencia de red"}
+  },
+  "dashboard": {
+    "title":"Panel","subtitle":"Centro de control de infraestructura","new_analysis":"Nueva análisis","unlock_prefix":"Desbloquear informe —",
+    "econ": {"identified":"Ahorro identificado","activated":"Ahorro activado","realized":"Ahorro realizado"},
+    "estimated": {"title":"Datos estimados","desc":"Conecta tus herramientas o sube un extracto para obtener cifras precisas y verificadas."},
+    "empty": {"title":"Sin análisis todavía","desc":"Ejecuta el Analizador de 2 minutos para identificar tu potencial de optimización."},
+    "cards": {"payments":"Pagos","shipping":"Envíos","saas":"SaaS"},
+    "actions": {"run": {"title":"Ejecutar nuevo análisis","desc":"Actualiza tu puntuación"},"network": {"title":"Explorar la red","desc":"Más de 1.000 marcas"},"insights": {"title":"Leer insights","desc":"Inteligencia de infraestructura"}}
+  },
+  "deals": {
+    "header": {"tag":"Exclusivo para miembros","title":"Ofertas de la red","sub":"Descuentos de infraestructura pre‑negociados. Solo para miembros de THE NoDE."},
+    "tabs": {"discover":"Descubrir","contracts":"Mis contratos"},
+    "stats": {"live":"Ofertas activas","available":"Ahorro disponible","your_active":"Tus activas"},
+    "member_badge":"Miembro de THE NoDE — tienes acceso a todas las ofertas activas. Haz clic para activar.",
+    "status": {"active":"Activo","waitlist":"Lista de espera"},
+    "labels": {"estimated_benefit":"Beneficio estimado"},
+    "cta": {"view_contract":"Ver contrato","view_status":"Ver estado","unlock_deal":"Desbloquear oferta","discover":"Descubrir ofertas"},
+    "contracts": {"summary": {"active_deals":"Contratos activos","savings_unlocked":"Ahorro desbloqueado","on_waitlist":"En espera","expiring_soon":"Expira pronto"},"expiring_alert":"{count} contrato(s) expiran en los próximos 60 días — renueva para mantener tus tarifas.","empty":"Aún no hay contratos activos."}
+  },
+  "results": {
+    "loader": {"computing":"Calculando tu índice de infraestructura…"},
+    "header": {"complete":"Análisis de infraestructura completado","optimization":"Potencial de optimización identificado en tu infraestructura","per_year":"al año en tu infraestructura"},
+    "labels": {"infrastructure_score":"Índice de infraestructura"},
+    "cards": {"efficiency_score":"Puntuación de eficiencia","released_capital":"Capital liberado","benchmark":"Benchmark"}
+  },
+  "account": {
+    "header": {"tag":"Ajustes","title":"Cuenta","sub":"Gestiona tu perfil y tu marca."},
+    "sections": {"profile":"Perfil","brand":"Marca","session":"Sesión"},
+    "profile": {"full_name":"Nombre completo","email":"Email","role":"Rol"},
+    "brand": {"brand_name":"Nombre de la marca","brand_ph":"Tu marca","website":"Sitio web","country":"País","country_ph":"p. ej., Alemania"},
+    "session": {"note":"Cerrar sesión finalizará tu sesión actual. Podrás iniciar sesión de nuevo cuando quieras.","sign_out":"Cerrar sesión de THE NoDE"}
   },
   "legal": {"privacy": {"title": "Privacidad"}, "terms": {"title": "Términos"}}
 }

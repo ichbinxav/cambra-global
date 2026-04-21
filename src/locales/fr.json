@@ -1,5 +1,5 @@
 {
-  "common": {"brand":"THE NoDE","sign_in":"Se connecter","sign_in_with":"Connexion avec Google / Apple","join":"Rejoindre","free":"Gratuit","view_all":"Voir tout"},
+  "common": {"brand":"THE NoDE","sign_in":"Se connecter","sign_in_with":"Connexion avec Google / Apple","join":"Rejoindre","free":"Gratuit","view_all":"Voir tout","connect_tools":"Connecter des outils","upload_data":"Téléverser des données","sign_in_required":"Connexion requise","open_login_note":"Ouvrez la fenêtre de connexion et revenez automatiquement.","no_results":"Aucun résultat.","history":"Historique","export_pdf":"Exporter PDF","dashboard":"Tableau de bord","connect_data":"Connecter vos données","run_analyzer":"Lancer l'Analyseur"},
   "navigation": {"how_it_works":"Comment ça marche","analyzer":"Analyseur","join":"Rejoindre THE NoDE","deals":"Offres","insights":"Analyses","network":"Réseau","dashboard":"Tableau de bord","check_savings":"Vérifier les économies","run_analyzer":"Lancer l'analyse"},
   "footer": {"tagline":"Levier d'infrastructure pour les marques indépendantes","headline":"Trouvez votre avantage décisif","sub":"Arrêtez de payer trop cher votre infrastructure.","ctaSavings":"Calculez vos économies","cta":"Lancer l'analyse","desc":"Les marques identifient généralement 29 000 €/an de potentiel d'optimisation. La plupart des améliorations s'activent en quelques minutes.","privacy":"Confidentialité","terms":"Conditions"},
   "landing": {
@@ -38,6 +38,37 @@
     "payments": {"provider":"Votre prestataire de paiement","current_fee":"Taux effectif actuel","your_rate":"Votre taux actuel","network_target":"Cible réseau"},
     "shipping": {"provider":"Votre transporteur","monthly_spend":"Dépense mensuelle d'expédition","monthly_shipments":"Envois mensuels","your_cost_per":"Votre coût/envoi","network_target":"Cible réseau"},
     "saas": {"total_spend":"Dépense SaaS mensuelle totale","info":"Ce que l'on vérifie : plateformes e‑commerce, email, support, analytics... Surdépense typique ~30%.","current_spend":"Dépense actuelle","benchmark":"Référence réseau"}
+  },
+  "dashboard": {
+    "title":"Tableau de bord","subtitle":"Centre de commande d'infrastructure","new_analysis":"Nouvelle analyse","unlock_prefix":"Déverrouiller le rapport —",
+    "econ": {"identified":"Économies identifiées","activated":"Économies activées","realized":"Économies réalisées"},
+    "estimated": {"title":"Données estimées","desc":"Connectez vos outils ou téléversez un relevé pour obtenir des informations précises et vérifiées."},
+    "empty": {"title":"Aucune analyse","desc":"Lancez l'Analyseur 2 minutes pour identifier votre potentiel d'optimisation."},
+    "cards": {"payments":"Paiements","shipping":"Expédition","saas":"SaaS"},
+    "actions": {"run": {"title":"Lancer une nouvelle analyse","desc":"Mettre à jour votre score"},"network": {"title":"Parcourir le réseau","desc":"1 000+ marques membres"},"insights": {"title":"Lire les analyses","desc":"Intelligence d'infrastructure"}}
+  },
+  "deals": {
+    "header": {"tag":"Réservé aux membres","title":"Offres du réseau","sub":"Remises d'infrastructure pré‑négociées. Uniquement pour les membres THE NoDE."},
+    "tabs": {"discover":"Découvrir","contracts":"Mes contrats"},
+    "stats": {"live":"Offres actives","available":"Économies disponibles","your_active":"Vos actives"},
+    "member_badge":"Membre THE NoDE — vous avez accès à toutes les offres actives ci‑dessous. Cliquez pour activer.",
+    "status": {"active":"Actif","waitlist":"Liste d'attente"},
+    "labels": {"estimated_benefit":"Bénéfice estimé"},
+    "cta": {"view_contract":"Voir le contrat","view_status":"Voir l'état","unlock_deal":"Débloquer l'offre","discover":"Découvrir les offres"},
+    "contracts": {"summary": {"active_deals":"Contrats actifs","savings_unlocked":"Économies débloquées","on_waitlist":"En attente","expiring_soon":"Expire bientôt"},"expiring_alert":"{count} contrat(s) expirent dans 60 jours — renouvelez pour conserver vos tarifs.","empty":"Aucun contrat actif."}
+  },
+  "results": {
+    "loader": {"computing":"Calcul de votre score d'infrastructure…"},
+    "header": {"complete":"Analyse d'infrastructure terminée","optimization":"Potentiel d'optimisation identifié sur votre infrastructure","per_year":"par an sur votre infrastructure"},
+    "labels": {"infrastructure_score":"Score d'infrastructure"},
+    "cards": {"efficiency_score":"Score d'efficacité","released_capital":"Capital libéré","benchmark":"Benchmark"}
+  },
+  "account": {
+    "header": {"tag":"Paramètres","title":"Compte","sub":"Gérez votre profil et votre marque."},
+    "sections": {"profile":"Profil","brand":"Marque","session":"Session"},
+    "profile": {"full_name":"Nom complet","email":"Email","role":"Rôle"},
+    "brand": {"brand_name":"Nom de la marque","brand_ph":"Votre marque","website":"Site web","country":"Pays","country_ph":"ex. Allemagne"},
+    "session": {"note":"La déconnexion met fin à votre session en cours. Vous pourrez vous reconnecter ensuite.","sign_out":"Se déconnecter de THE NoDE"}
   },
   "legal": {"privacy": {"title": "Confidentialité"}, "terms": {"title": "Conditions"}}
 }
