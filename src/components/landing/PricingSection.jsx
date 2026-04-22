@@ -25,7 +25,7 @@ export default function PricingSection() {
   const rightInView = useInView(rightRef, { once: true, margin: "-80px" });
 
   return (
-    <section className="py-16 px-5 border-t border-border/40">
+    <section className="py-10 px-5 border-t border-border/40">
       <div className="max-w-6xl mx-auto">
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">

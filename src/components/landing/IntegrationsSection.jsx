@@ -57,7 +57,7 @@ function Avatar({ name, color }) {
 
 export default function IntegrationsSection() {
   return (
-    <section className="py-16 px-5 border-t border-border/40">
+    <section className="py-10 px-5 border-t border-border/40">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}

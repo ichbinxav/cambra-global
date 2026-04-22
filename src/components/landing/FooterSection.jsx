@@ -11,7 +11,7 @@ export default function FooterSection() {
   return (
     <>
       {/* Final CTA */}
-      <section ref={ref} className="py-32 px-5 bg-foreground text-background relative overflow-hidden">
+      <section ref={ref} className="py-20 px-5 bg-foreground text-background relative overflow-hidden">
         <motion.div
           className="absolute inset-0 flex items-center justify-center text-[50vw] font-thin text-background/[0.02] select-none pointer-events-none leading-none"
           animate={{ rotate: [0, 360] }}
