@@ -1,0 +1,86 @@
+{
+  "name": "SaaSProfile",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "plataforma": {
+      "type": "string"
+    },
+    "crm": {
+      "type": "string"
+    },
+    "email_sms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "soporte": {
+      "type": "string"
+    },
+    "analytics": {
+      "type": "string"
+    },
+    "subs_payments": {
+      "type": "string"
+    },
+    "extras": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "search / reviews / loyalty"
+    },
+    "gasto_mensual_map": {
+      "type": "object"
+    },
+    "contrato_map": {
+      "type": "object"
+    },
+    "renovaciones_map": {
+      "type": "object"
+    },
+    "overlapping_tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "underused_tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dissatisfaction": {
+      "type": "string"
+    },
+    "current_providers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "completeness_score": {
+      "type": "number",
+      "default": 0
+    },
+    "readiness_score": {
+      "type": "number",
+      "default": 0
+    },
+    "missing_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "metadata_json": {
+      "type": "object"
+    }
+  },
+  "required": []
+}

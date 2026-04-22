@@ -1,0 +1,108 @@
+{
+  "name": "PaymentsProfile",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "psp_actual": {
+      "type": "string"
+    },
+    "blended_rate": {
+      "type": "number"
+    },
+    "canales": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "online",
+          "in_store",
+          "omni"
+        ]
+      }
+    },
+    "paises": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "monedas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "vol_mensual": {
+      "type": "number"
+    },
+    "tx_mensuales": {
+      "type": "number"
+    },
+    "aov": {
+      "type": "number"
+    },
+    "refunds_rate": {
+      "type": "number"
+    },
+    "chargeback_rate": {
+      "type": "number"
+    },
+    "payout_timing": {
+      "type": "number",
+      "description": "d\u00edas"
+    },
+    "fraude_flags": {
+      "type": "string"
+    },
+    "terminal_provider": {
+      "type": "string"
+    },
+    "contrato": {
+      "type": "object",
+      "properties": {
+        "renovacion_en": {
+          "type": "string",
+          "format": "date"
+        },
+        "tipo": {
+          "type": "string",
+          "enum": [
+            "mensual",
+            "anual",
+            "otro"
+          ]
+        }
+      }
+    },
+    "frustraciones": {
+      "type": "string"
+    },
+    "current_providers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "completeness_score": {
+      "type": "number",
+      "default": 0
+    },
+    "readiness_score": {
+      "type": "number",
+      "default": 0
+    },
+    "missing_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "metadata_json": {
+      "type": "object"
+    }
+  },
+  "required": []
+}

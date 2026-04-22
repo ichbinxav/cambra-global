@@ -1,0 +1,97 @@
+{
+  "name": "ShippingProfile",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "carriers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "modelo": {
+      "type": "string",
+      "enum": [
+        "agregador",
+        "directo"
+      ]
+    },
+    "three_pl": {
+      "type": "boolean",
+      "default": false
+    },
+    "in_house": {
+      "type": "boolean",
+      "default": true
+    },
+    "paises_serv": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "domestic_vs_intl": {
+      "type": "number",
+      "description": "porcentaje domestic (0-100)"
+    },
+    "pedidos_mensuales": {
+      "type": "number"
+    },
+    "avg_weight": {
+      "type": "number"
+    },
+    "dims": {
+      "type": "string",
+      "description": "LxAxH opcional"
+    },
+    "returns_rate": {
+      "type": "number"
+    },
+    "coste_envio": {
+      "type": "number"
+    },
+    "mix_express_standard": {
+      "type": "number",
+      "description": "% express (0-100)"
+    },
+    "warehouse_model": {
+      "type": "string",
+      "enum": [
+        "propio",
+        "3pl",
+        "hibrido",
+        "otro"
+      ]
+    },
+    "pain_points": {
+      "type": "string"
+    },
+    "current_providers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "completeness_score": {
+      "type": "number",
+      "default": 0
+    },
+    "readiness_score": {
+      "type": "number",
+      "default": 0
+    },
+    "missing_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "metadata_json": {
+      "type": "object"
+    }
+  },
+  "required": []
+}

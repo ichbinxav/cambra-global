@@ -10,7 +10,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
 
 import Landing from '@/pages/Landing';
-import Onboarding from '@/pages/Onboarding';
+import Onboarding from '@/pages/Onboarding.jsx';
 import Analyzer from '@/pages/Analyzer';
 import Results from '@/pages/Results';
 import Dashboard from '@/pages/Dashboard';
