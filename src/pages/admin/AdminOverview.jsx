@@ -13,6 +13,7 @@ import ProviderPerformance from "@/components/admin/ProviderPerformance";
 import BrandHealthTable from "@/components/admin/BrandHealthTable";
 import RevenueBilling from "@/components/admin/RevenueBilling";
 import LiveActivity from "@/components/admin/LiveActivity";
+import RecommendationsWidget from "@/components/admin/RecommendationsWidget";
 import CommandHero from "@/components/admin/CommandHero";
 import OperationsConsole from "@/components/admin/OperationsConsole";
 
@@ -317,7 +318,10 @@ export default function AdminOverview() {
         <KPIStrip kpis={secondaryKpis} />
       </div>
 
-
+      {/* Recommendations for Admin */}
+      <div className="mt-4">
+        <RecommendationsWidget />
+      </div>
 
       {/* 3. CONVERSION + BOTTLENECKS — now inside OperationsConsole */}
 

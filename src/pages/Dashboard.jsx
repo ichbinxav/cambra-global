@@ -13,6 +13,7 @@ import SavingsTrend from "@/components/dashboard/SavingsTrend";
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import GMVMetrics from "@/components/dashboard/GMVMetrics";
 import { CreditCard, Truck, Package } from "lucide-react";
+import RecommendationList from "@/components/recommendations/RecommendationList";
 
 
 
@@ -258,6 +259,12 @@ export default function Dashboard() {
           )}
 
           <InfrastructureStatus latest={latest} />
+
+          {/* Recommendations */}
+          <div className="rounded-2xl bg-card/50 border border-border/40 p-4 mt-3">
+            <h3 className="text-sm font-semibold mb-2">Recomendaciones</h3>
+            <RecommendationList />
+          </div>
 
           {/* ── QUICK ACTIONS ── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

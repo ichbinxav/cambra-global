@@ -1,0 +1,73 @@
+{
+  "name": "Recommendation",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "deal_activation_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas",
+        "general"
+      ],
+      "default": "general"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "vertical_priority",
+        "deal_suggestion",
+        "missing_data",
+        "next_action",
+        "opportunity_ranking"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "expected_benefit": {
+      "type": "string"
+    },
+    "action_required": {
+      "type": "string"
+    },
+    "action_link": {
+      "type": "string"
+    },
+    "score_json": {
+      "type": "object"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "seen_by_user_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dismissed_by_user_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "admin_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "title",
+    "description"
+  ]
+}
