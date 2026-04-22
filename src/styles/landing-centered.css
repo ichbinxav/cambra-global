@@ -1,0 +1,9 @@
+/* Centraliza toda la landing en todos los tamaños */
+.landing-centered { text-align: center; }
+.landing-centered :where(h1,h2,h3,h4,h5,h6,p,li,blockquote,small,span){ text-align: inherit !important; }
+.landing-centered :where(section,.container){ margin-left: auto; margin-right: auto; }
+.landing-centered :where(.flex){ justify-content: center !important; }
+.landing-centered :where(.grid){ justify-items: center; }
+.landing-centered :where(img,video,canvas,svg){ display: block; margin-left: auto; margin-right: auto; }
+
+/* No forzamos ancho máximo: cada sección mantiene su responsive propio. */
