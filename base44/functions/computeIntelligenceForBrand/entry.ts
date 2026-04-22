@@ -76,31 +76,42 @@ Deno.serve(async (req) => {
       ? (Number(input.total_saas_spend) / Number(monthlyRevenue)) * 100
       : null;
 
-    // Gather peer data (recent)
-    const peerResults = await base44.asServiceRole.entities.AnalyzerResult.filter({}, '-created_date', 500);
-    const peerPay = peerResults.map(r => r?.details?.payment_current_rate).filter(v => typeof v === 'number' && isFinite(v));
-    const peerShip = peerResults.map(r => r?.details?.shipping_current_avg).filter(v => typeof v === 'number' && isFinite(v));
-    // Note: SaaS % requires AnalyzerInput; fallback to empty for now
-
-    peerPay.sort((a,b)=>a-b);
-    peerShip.sort((a,b)=>a-b);
-
-    const paymentsBench = {
-      value: payEff,
-      unit: '%',
-      n: peerPay.length,
-      p50: peerPay.length ? quantile(peerPay, 0.5) : 1.4,
-      p75: peerPay.length ? quantile(peerPay, 0.75) : 1.8,
-      p90: peerPay.length ? quantile(peerPay, 0.9) : 2.2,
-    };
-    const shippingBench = {
-      value: shipAvg,
-      unit: '€',
-      n: peerShip.length,
-      p50: peerShip.length ? quantile(peerShip, 0.5) : 5.2,
-      p75: peerShip.length ? quantile(peerShip, 0.75) : 6.9,
-      p90: peerShip.length ? quantile(peerShip, 0.9) : 8.5,
-    };
+    // Prefer cohort snapshots; fallback to ad-hoc peers
+    let paymentsBench, shippingBench;
+    try {
+      const snaps = await base44.asServiceRole.entities.BenchmarkSnapshot.filter({ cohort_key: cohortKey }, '-month', 100);
+      const pick = (arr, metric) => (arr || []).filter(s => s.metric_key === metric).sort((a,b)=> (a.month > b.month ? -1 : 1))[0] || null;
+      let pSnap = pick(snaps, 'payments.effective_rate');
+      let sSnap = pick(snaps, 'shipping.avg_cost');
+      if (!pSnap || !sSnap) {
+        const gSnaps = await base44.asServiceRole.entities.BenchmarkSnapshot.filter({ cohort_key: 'global|all|mixed' }, '-month', 100);
+        pSnap = pSnap || pick(gSnaps, 'payments.effective_rate');
+        sSnap = sSnap || pick(gSnaps, 'shipping.avg_cost');
+      }
+      paymentsBench = {
+        value: payEff,
+        unit: '%',
+        n: pSnap?.n || 0,
+        p50: pSnap?.p50 ?? 1.4,
+        p75: pSnap?.p75 ?? 1.8,
+        p90: pSnap?.p90 ?? 2.2,
+      };
+      shippingBench = {
+        value: shipAvg,
+        unit: '€',
+        n: sSnap?.n || 0,
+        p50: sSnap?.p50 ?? 5.2,
+        p75: sSnap?.p75 ?? 6.9,
+        p90: sSnap?.p90 ?? 8.5,
+      };
+    } catch {
+      // Fallback to ad-hoc peers (bounded)
+      const peerResults = await base44.asServiceRole.entities.AnalyzerResult.filter({}, '-created_date', 500);
+      const peerPay = peerResults.map(r => r?.details?.payment_current_rate).filter(v => typeof v === 'number' && isFinite(v)).sort((a,b)=>a-b);
+      const peerShip = peerResults.map(r => r?.details?.shipping_current_avg).filter(v => typeof v === 'number' && isFinite(v)).sort((a,b)=>a-b);
+      paymentsBench = { value: payEff, unit: '%', n: peerPay.length, p50: peerPay.length ? quantile(peerPay, 0.5) : 1.4, p75: peerPay.length ? quantile(peerPay, 0.75) : 1.8, p90: peerPay.length ? quantile(peerPay, 0.9) : 2.2 };
+      shippingBench = { value: shipAvg, unit: '€', n: peerShip.length, p50: peerShip.length ? quantile(peerShip, 0.5) : 5.2, p75: peerShip.length ? quantile(peerShip, 0.75) : 6.9, p90: peerShip.length ? quantile(peerShip, 0.9) : 8.5 };
+    }
     const saasBench = {
       value: saasPct,
       unit: '%',
