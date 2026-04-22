@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
       projected_savings_annual: estAnnual,
       node_share_percent: 25,
       billing_model: 'monthly_success_fee',
-      status: 'activated',
+      status: 'detected',
       activated_at: new Date().toISOString(),
       last_updated: new Date().toISOString()
     });

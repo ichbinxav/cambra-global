@@ -8,8 +8,12 @@ async function getReport(base44, report_id) {
 }
 
 async function getBillingRule(base44, report) {
-  // Prefer deal_activation_id match, fallback to brand/provider active
-  const q = report.deal_activation_id ? { deal_activation_id: report.deal_activation_id, status: 'active' } : { brand_id: report.brand_id, provider_id: report.provider_id, status: 'active' };
+  // Prefer deal_activation_id match; fallback to brand+provider_id only if ambos existen
+  const q = report.deal_activation_id
+    ? { deal_activation_id: report.deal_activation_id, status: 'active' }
+    : (report.brand_id && report.provider_id
+      ? { brand_id: report.brand_id, provider_id: report.provider_id, status: 'active' }
+      : { deal_activation_id: '__no_match__' });
   const rules = await base44.asServiceRole.entities.BillingRule.filter(q, '-effective_start_date', 1);
   return rules?.[0] || null;
 }
