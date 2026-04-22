@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link, useSearchParams, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 export default function AdminActivationDetail(){
   const [sp] = useSearchParams();
@@ -122,6 +123,47 @@ export default function AdminActivationDetail(){
             ))}
           </ul>
         </div>
+      </div>
+
+      <div className="rounded-xl border p-4 bg-card">
+        <Tabs defaultValue="savings">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-semibold">Savings & Baseline</p>
+            <TabsList>
+              <TabsTrigger value="savings">Summary</TabsTrigger>
+              <TabsTrigger value="baseline">Baseline</TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="savings">
+            <div className="text-sm space-y-2">
+              {reports?.[0] ? (
+                <>
+                  <div>Latest report: <b>{reports[0].month}</b> · Status: <b>{reports[0].verification_status || reports[0].status}</b></div>
+                  <div>Savings: <b>€{Number(reports[0].savings||0).toLocaleString()}</b> · Fee: <b>€{Number(reports[0].node_fee||0).toLocaleString()}</b></div>
+                  <div>Evidence files: <b>{reports[0].evidence_count ?? 0}</b></div>
+                </>
+              ) : (
+                <div>No reports yet</div>
+              )}
+            </div>
+          </TabsContent>
+          <TabsContent value="baseline">
+            <div className="text-sm space-y-2">
+              {baselines?.[0] ? (
+                <>
+                  <div>Type: <b>{baselines[0].baseline_type}</b> · Value: <b>{baselines[0].baseline_value}</b></div>
+                  <div>Locked: <b>{baselines[0].locked ? 'yes' : 'no'}</b>{baselines[0].locked_at ? ` · at ${baselines[0].locked_at}` : ''}</div>
+                  <div>Version: <b>{baselines[0].version || '—'}</b> · Current: <b>{baselines[0].is_current ? 'yes' : 'no'}</b></div>
+                  {(baselines[0].period_start || baselines[0].period_end) && (
+                    <div>Period: <b>{baselines[0].period_start || '—'}</b> → <b>{baselines[0].period_end || '—'}</b></div>
+                  )}
+                </>
+              ) : (
+                <div>No baseline</div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div className="rounded-xl border p-4 bg-card">

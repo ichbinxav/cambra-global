@@ -4,18 +4,45 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
-import { ArrowRight, TrendingUp, ArrowUpRight } from "lucide-react";
+import { ArrowRight, TrendingUp, ArrowUpRight, CheckCircle2, Circle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Reports() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [brand, setBrand] = useState(null);
+  const [lastReport, setLastReport] = useState(null);
+  const [baseline, setBaseline] = useState(null);
+  const [vLoading, setVLoading] = useState(true);
 
   useEffect(() => {
     base44.entities.AnalyzerResult.list("-created_date", 20).then(r => {
       setResults(r);
       setLoading(false);
     });
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const authed = await base44.auth.isAuthenticated();
+        if (!authed) { setVLoading(false); return; }
+        const me = await base44.auth.me();
+        const brands = await base44.entities.Brand.filter({ created_by: me.email }, '-created_date', 1);
+        const b = brands?.[0] || null;
+        setBrand(b);
+        if (b) {
+          const [reports, baselines] = await Promise.all([
+            base44.entities.MonthlySavingsReport.filter({ brand_id: b.id }, '-month', 1),
+            base44.entities.Baseline.filter({ brand_id: b.id, is_current: true }, '-locked_at', 1),
+          ]);
+          setLastReport(reports?.[0] || null);
+          setBaseline(baselines?.[0] || null);
+        }
+      } finally {
+        setVLoading(false);
+      }
+    })();
   }, []);
 
   const chartData = results.slice().reverse().map(r => ({
@@ -84,7 +111,56 @@ export default function Reports() {
             </motion.div>
           )}
 
-          {/* History list */}
+           {/* Verification checklist */}
+           {!vLoading && (
+             <motion.div
+               className="p-7 rounded-2xl border border-border/50 bg-card/60 mb-6"
+               initial={{ opacity: 0, y: 12 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.15 }}
+             >
+               <div className="mb-4 flex items-center justify-between">
+                 <div>
+                   <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-1">Verification</p>
+                   <p className="text-sm font-semibold">Checklist for verified savings</p>
+                 </div>
+                 {lastReport?.verification_status && (
+                   <span className="text-[11px] px-2 py-1 rounded-full border">
+                     {lastReport.verification_status.replaceAll("_"," ")}
+                   </span>
+                 )}
+               </div>
+               <ul className="space-y-2">
+                 {(() => {
+                   const ORDER = ["estimated","proposed","evidence_submitted","under_review","verified","realized","invoiced","paid"];
+                   const vs = lastReport?.verification_status || "estimated";
+                   const idx = ORDER.indexOf(vs);
+                   const steps = [
+                     { key: "baseline", label: "Baseline locked", done: !!(baseline?.locked), hint: baseline?.locked_at ? new Date(baseline.locked_at).toLocaleDateString() : null },
+                     { key: "evidence", label: "Evidence submitted", done: idx >= ORDER.indexOf("evidence_submitted"), hint: (lastReport?.evidence_count || 0) > 0 ? `${lastReport.evidence_count} file(s)` : null },
+                     { key: "under_review", label: "Under review", done: idx >= ORDER.indexOf("under_review") },
+                     { key: "verified", label: "Verified", done: idx >= ORDER.indexOf("verified") },
+                     { key: "realized", label: "Realized", done: idx >= ORDER.indexOf("realized") },
+                   ];
+                   return steps.map(s => (
+                     <li key={s.key} className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2">
+                       <div className="flex items-center gap-3">
+                         {s.done ? <CheckCircle2 className="w-4 h-4 text-green-600" /> : <Circle className="w-4 h-4 text-muted-foreground/40" />}
+                         <span className={`text-sm ${s.done ? "font-semibold" : ""}`}>{s.label}</span>
+                         {s.hint && <span className="text-[11px] text-muted-foreground/70">· {s.hint}</span>}
+                       </div>
+                       {!s.done && <AlertCircle className="w-4 h-4 text-muted-foreground/40" />}
+                     </li>
+                   ))
+                 })()}
+               </ul>
+               {!brand && (
+                 <p className="text-xs text-muted-foreground mt-3">Complete onboarding to enable verification tracking.</p>
+               )}
+             </motion.div>
+           )}
+
+           {/* History list */}
           <motion.div
             className="rounded-2xl border border-border/50 overflow-hidden bg-card/60"
             initial={{ opacity: 0, y: 12 }}
