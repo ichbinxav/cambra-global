@@ -108,25 +108,25 @@ export default function BenefitsSection() {
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
-        <div ref={headRef} className="max-w-2xl mb-16">
+        <div ref={headRef} className="max-w-2xl mb-16 mx-auto text-center lg:text-left">
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2"
+            className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center lg:justify-start gap-2"
           >
             <span className="w-4 h-px bg-border" /> Why brands join
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 50 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(2.4rem,6vw,5rem)] font-black tracking-[-0.05em] leading-[0.87] mb-5"
+            className="text-[clamp(2.4rem,6vw,5rem)] font-black tracking-[-0.05em] leading-[0.87] mb-5 text-center lg:text-left"
           >
             The economic advantage<br />of THE NoDE.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-muted-foreground text-lg leading-relaxed"
+            className="text-muted-foreground text-lg leading-relaxed mx-auto text-center lg:text-left"
           >
             We turn your infrastructure into a competitive advantage.
           </motion.p>
@@ -147,7 +147,7 @@ export default function BenefitsSection() {
           <motion.h3
             initial={{ opacity: 0, x: -50 }} animate={editorialInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(1.8rem,4vw,3rem)] font-black tracking-[-0.04em] leading-[0.9]"
+            className="text-[clamp(1.8rem,4vw,3rem)] font-black tracking-[-0.04em] leading-[0.9] text-center lg:text-left"
           >
             This is not a tool.<br />It's your economic layer.
           </motion.h3>

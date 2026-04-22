@@ -54,7 +54,7 @@ export default function HeroSection() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 lg:gap-16 items-center">
 
           {/* LEFT */}
-          <motion.div variants={container} initial="hidden" animate="show">
+          <motion.div variants={container} initial="hidden" animate="show" className="text-center md:text-center lg:text-left">
 
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
               <motion.span
@@ -65,32 +65,32 @@ export default function HeroSection() {
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">For Lifestyle Commerce</span>
             </motion.div>
 
-            <motion.p variants={fadeUp} className="text-sm text-muted-foreground/60 mb-3 max-w-[480px]">
+            <motion.p variants={fadeUp} className="text-sm text-muted-foreground/60 mb-3 max-w-[480px] mx-auto text-center lg:text-left">
               Most brands operate below optimal infrastructure rates — and don't realize it.
             </motion.p>
 
             <motion.h1
               variants={fadeUp}
-              className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-3"
+              className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-3 text-center lg:text-left"
             >
               Turn your infrastructure<br />into an advantage.
             </motion.h1>
 
             <motion.p
               variants={fadeUp}
-              className="text-[clamp(1.2rem,3vw,1.8rem)] font-black text-green-600 mb-6 tracking-[-0.02em]"
+              className="text-[clamp(1.2rem,3vw,1.8rem)] font-black text-green-600 mb-6 tracking-[-0.02em] text-center lg:text-left"
             >
               Unlock the rates your scale should give you.
             </motion.p>
 
-            <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-8 max-w-[520px]">
+            <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-8 max-w-[520px] mx-auto text-center lg:text-left">
               We aggregate independent brands into a single leverage bloc. You unlock better rates on payments, shipping, and SaaS — instantly. Our analyzer identifies exactly where value is left unoptimized, then you access the deals.
             </motion.p>
 
             {/* Pricing pill */}
             <motion.div
               variants={fadeUp}
-              className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-5 py-4 rounded-full bg-foreground text-background"
+              className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-5 py-4 rounded-full bg-foreground text-background mx-auto"
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm text-background/40 line-through font-light">€60/month</span>
@@ -99,7 +99,7 @@ export default function HeroSection() {
               <span className="hidden sm:inline text-background/40">·</span>
               <span className="text-sm text-background/70">Early partners only</span>
             </motion.div>
-            <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/50 mb-8">
+            <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/50 mb-8 text-center lg:text-left">
               25% success fee on realized savings — if we don’t save you money, you pay zero.
             </motion.p>
 
@@ -114,7 +114,7 @@ export default function HeroSection() {
             </motion.ul>
 
             {/* CTAs */}
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4"
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
             aria-label="Primary calls to action">
               {isAuthenticated ? (
                 <>

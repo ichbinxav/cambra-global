@@ -81,7 +81,7 @@ export default function HowCombinedSection() {
           <motion.h2
             initial={{ opacity: 0, y: 30 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.65, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(2rem,5vw,3.2rem)] font-black tracking-[-0.04em] leading-[0.9]"
+            className="text-[clamp(2rem,5vw,3.2rem)] font-black tracking-[-0.04em] leading-[0.9] text-center"
           >
             From analysis to savings — fast.
           </motion.h2>

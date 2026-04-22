@@ -26,17 +26,18 @@ export default function AnalyzerCTA() {
 
           <motion.div
             ref={leftRef}
+            className="text-center lg:text-left"
             initial={{ opacity: 0, x: -50 }}
             animate={leftInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center gap-2">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center justify-center lg:justify-start gap-2">
               <span className="w-4 h-px bg-border inline-block" /> Infrastructure Analyzer
             </p>
-            <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-6">
+            <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-6 text-center lg:text-left">
               Identify exactly where<br />value is left unoptimized.
             </h2>
-            <p className="text-muted-foreground leading-relaxed text-base mb-8 max-w-sm">
+            <p className="text-muted-foreground leading-relaxed text-base mb-8 max-w-sm mx-auto text-center lg:text-left">
               Benchmark your payments, shipping, and SaaS stack against real network rates. See your optimization potential in 2 minutes.
             </p>
             {isAuthenticated ? (

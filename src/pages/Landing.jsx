@@ -9,7 +9,6 @@ import BenefitsSection from "@/components/landing/BenefitsSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FooterSection from "@/components/landing/FooterSection";
-import "@/styles/landing-centered.css";
 
 // ForLifestyleSection removed — replaced by brand-aligned sections
 
@@ -18,8 +17,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background font-inter">
 
       <Navbar />
-      <main className="landing-centered flex flex-col items-center text-center">
-      <main className="landing-centered flex flex-col items-center text-center">
+      <main className="sm:text-center md:text-center lg:text-left">
         <HeroSection />
         <div id="how"><HowCombinedSection /></div>
         <ThreeLayersSection />
@@ -29,9 +27,8 @@ export default function Landing() {
         <BenefitsSection />
         <TestimonialsSection />
         <PricingSection />
-        <FooterSection />
       </main>
-      </main>
+      <FooterSection />
     </div>
   );
 }

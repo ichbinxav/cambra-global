@@ -145,25 +145,25 @@ export default function ProblemSection() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-16 items-start">
 
           {/* Left */}
-          <div className="lg:sticky lg:top-24" ref={headRef}>
+          <div className="lg:sticky lg:top-24 text-center lg:text-left" ref={headRef}>
             <motion.p
               initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6 }}
-              className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2"
+              className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center lg:justify-start gap-2"
             >
               <span className="w-4 h-px bg-border" /> The problem
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 30 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5"
+              className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5 text-center lg:text-left"
             >
               You're paying<br />what enterprises pay.<br />You don't have<br />their leverage.
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.25 }}
-              className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-xs"
+              className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-xs mx-auto text-center lg:text-left"
             >
               Retailers negotiate volume discounts. You negotiate alone. Same infrastructure. Very different pricing.
             </motion.p>
@@ -178,7 +178,7 @@ export default function ProblemSection() {
               <p className="text-[11px] text-muted-foreground/50 mt-2">Across payments, shipping, SaaS · Real network benchmarks</p>
             </motion.div>
 
-            <motion.div
+            <motion.div className="flex justify-center lg:justify-start"
               initial={{ opacity: 0 }} animate={headInView ? { opacity: 1 } : {}}
               transition={{ delay: 0.5 }}
             >

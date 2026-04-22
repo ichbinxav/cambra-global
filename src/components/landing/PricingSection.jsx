@@ -33,17 +33,18 @@ export default function PricingSection() {
           {/* Left */}
           <motion.div
             ref={leftRef}
+            className="text-center lg:text-left"
             initial={{ opacity: 0, x: -40 }}
             animate={leftInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center lg:justify-start gap-2">
               <span className="w-4 h-px bg-border" /> Pricing
             </p>
-            <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5">
+            <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5 text-center lg:text-left">
               You don't pay us.<br />You keep the savings.
             </h2>
-            <p className="text-muted-foreground text-base leading-relaxed mb-8 max-w-sm">
+            <p className="text-muted-foreground text-base leading-relaxed mb-8 max-w-sm mx-auto text-center lg:text-left">
               Zero upfront cost. Zero commitment. You only pay when your infrastructure costs drop. When they do, we share in the gain.
             </p>
 
