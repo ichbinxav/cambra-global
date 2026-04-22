@@ -48,6 +48,7 @@ import MigrationHub from '@/pages/deals/MigrationHub';
 import Snapshot from '@/pages/Snapshot';
 import AdminInvoices from '@/pages/admin/AdminInvoices';
 import Invoices from '@/pages/Invoices';
+import Vault from '@/pages/Vault';
 
 
 
@@ -196,6 +197,7 @@ const AuthenticatedApp = () => {
           <Route path="/InsightDetail" element={<InsightDetail />} />
           <Route path="/Account" element={<Account />} />
           <Route path="/Invoices" element={<Invoices />} />
+          <Route path="/Vault" element={<Vault />} />
         </Route>
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>

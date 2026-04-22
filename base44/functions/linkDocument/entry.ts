@@ -1,0 +1,30 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const isAdmin = user?.role === 'admin';
+
+    const body = await req.json();
+    const { document_id, target_type, target_id, is_primary = false } = body || {};
+    if (!document_id || !target_type || !target_id) return Response.json({ error: 'Missing fields' }, { status: 400 });
+
+    const docs = await base44.entities.Document.filter({ id: document_id }, '-created_date', 1);
+    const doc = docs?.[0];
+    if (!doc) return Response.json({ error: 'Document not found' }, { status: 404 });
+
+    if (!isAdmin) {
+      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1);
+      const brandId = brands?.[0]?.id || null;
+      const allowed = (doc.owner_type === 'brand' && doc.owner_id === brandId);
+      if (!allowed) return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const link = await base44.entities.DocumentLink.create({ document_id, target_type, target_id, is_primary });
+    return Response.json({ link });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});

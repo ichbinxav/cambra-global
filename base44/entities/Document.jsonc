@@ -1,0 +1,102 @@
+{
+  "name": "Document",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "file_name": {
+      "type": "string"
+    },
+    "file_ext": {
+      "type": "string"
+    },
+    "file_size": {
+      "type": "number"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "invoices",
+        "statements",
+        "provider_proposals",
+        "contracts",
+        "signed_mandates",
+        "tax_docs",
+        "screenshots",
+        "benchmark_evidence",
+        "migration_docs",
+        "pricing_docs",
+        "internal_files"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "admin_only",
+        "brand_and_admin",
+        "provider_and_admin",
+        "public"
+      ],
+      "default": "brand_and_admin"
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": [
+        "brand",
+        "provider",
+        "admin"
+      ],
+      "default": "brand"
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "uploaded_by": {
+      "type": "string"
+    },
+    "uploaded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "superseded"
+      ],
+      "default": "pending"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "version_of_id": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "checksum": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "file_url",
+    "category",
+    "visibility",
+    "owner_type",
+    "review_status"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "name": "DocumentLink",
+  "type": "object",
+  "properties": {
+    "document_id": {
+      "type": "string"
+    },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "brand",
+        "deal_activation",
+        "provider",
+        "mandate",
+        "monthly_savings_report",
+        "invoice",
+        "contract",
+        "statement_import",
+        "verification_event",
+        "baseline",
+        "savings_evidence",
+        "payment_event"
+      ]
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "is_primary": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "document_id",
+    "target_type",
+    "target_id"
+  ]
+}
