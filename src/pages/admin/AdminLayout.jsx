@@ -5,6 +5,7 @@ import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
   GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug
 } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
@@ -17,6 +18,7 @@ const NAV = [
   { path: "/admin/revenue", label: "Revenue", icon: BarChart2 },
   { path: "/admin/contracts", label: "Contracts", icon: FileCheck },
   { path: "/admin/benchmarks", label: "Benchmarks", icon: Sliders },
+  { path: "/admin/recommendations", label: "Recommendations", icon: Lightbulb },
   { path: "/admin/integrations", label: "Integrations", icon: Plug },
 ];
 

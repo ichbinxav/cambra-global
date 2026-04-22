@@ -102,31 +102,31 @@ function computeScores({ brand, latestResult, reports, activations, tasks, provi
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin only' }, { status: 403 });
+    let user = null;
+    try { user = await base44.auth.me(); } catch {}
+    if (user && user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin only' }, { status: 403 });
 
-    const brands = await base44.entities.Brand.list('-created_date', 500);
-    const providers = await base44.entities.Provider.list();
+    const brands = await base44.asServiceRole.entities.Brand.list('-created_date', 500);
+    const providers = await base44.asServiceRole.entities.Provider.list();
 
     for (const brand of (brands||[])) {
-      const results = await base44.entities.AnalyzerResult.filter({ created_by: brand.created_by }, '-created_date', 1);
+      const results = await base44.asServiceRole.entities.AnalyzerResult.filter({ created_by: brand.created_by }, '-created_date', 1);
       const latestResult = results?.[0] || null;
-      const reports = await base44.entities.MonthlySavingsReport.filter({ brand_id: brand.id }, '-month', 6);
-      const activations = await base44.entities.DealActivation.filter({ brand_id: brand.id }, '-created_date', 50);
-      const tasks = await base44.entities.MigrationTask.filter({ brand_id: brand.id }, '-updated_date', 100);
+      const reports = await base44.asServiceRole.entities.MonthlySavingsReport.filter({ brand_id: brand.id }, '-month', 6);
+      const activations = await base44.asServiceRole.entities.DealActivation.filter({ brand_id: brand.id }, '-created_date', 50);
+      const tasks = await base44.asServiceRole.entities.MigrationTask.filter({ brand_id: brand.id }, '-updated_date', 100);
 
       const recs = computeScores({ brand, latestResult, reports, activations, tasks, providers });
 
       // clear previous recs for brand (archive by dismissing)
-      const existing = await base44.entities.Recommendation.filter({ brand_id: brand.id }, '-created_date', 500);
+      const existing = await base44.asServiceRole.entities.Recommendation.filter({ brand_id: brand.id }, '-created_date', 500);
       for (const r of (existing||[])) {
-        await base44.entities.Recommendation.delete(r.id);
+        await base44.asServiceRole.entities.Recommendation.delete(r.id);
       }
 
       const now = new Date().toISOString();
       for (const r of recs) {
-        await base44.entities.Recommendation.create({
+        await base44.asServiceRole.entities.Recommendation.create({
           brand_id: brand.id,
           provider_id: r.provider?.id,
           vertical: r.vertical || 'general',
