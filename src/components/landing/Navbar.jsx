@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
-import { useI18n } from "@/lib/i18n.jsx";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -8,23 +6,22 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
 const NAV_PUBLIC = [
-  { labelKey: "navigation.how_it_works", href: "#how" },
-  { labelKey: "navigation.analyzer", href: "/Analyzer" },
-  { labelKey: "navigation.join", href: "/Onboarding" },
+  { label: "How it works", href: "#how" },
+  { label: "Analyzer", href: "/Analyzer" },
+  { label: "Join THE NoDE", href: "/Onboarding" },
 ];
 
 const NAV_MEMBER = [
-  { labelKey: "navigation.how_it_works", href: "#how" },
-  { labelKey: "navigation.analyzer", href: "/Analyzer" },
-  { labelKey: "navigation.deals", href: "/Deals" },
-  { labelKey: "navigation.insights", href: "/Insights" },
-  { labelKey: "navigation.network", href: "/Network" },
-  { labelKey: "navigation.join", href: "/Onboarding" },
+  { label: "How it works", href: "#how" },
+  { label: "Analyzer", href: "/Analyzer" },
+  { label: "Deals", href: "/Deals" },
+  { label: "Insights", href: "/Insights" },
+  { label: "Network", href: "/Network" },
+  { label: "Join THE NoDE", href: "/Onboarding" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const { isAuthenticated } = useAuth();
   const NAV = isAuthenticated ? NAV_MEMBER : NAV_PUBLIC;
@@ -48,12 +45,12 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-6">
           {NAV.map(item => (
             item.href.startsWith("/") ? (
-              <Link key={item.href} to={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {t(item.labelKey)}
+              <Link key={item.label} to={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                {item.label}
               </Link>
             ) : (
-              <a key={item.href} href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {t(item.labelKey)}
+              <a key={item.label} href={item.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                {item.label}
               </a>
             )
           ))}
@@ -64,8 +61,8 @@ export default function Navbar() {
           {isAuthenticated ? (
             <Link to="/Dashboard">
               <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm">
-                                {t('navigation.dashboard')} →
-                              </Button>
+                Dashboard →
+              </Button>
             </Link>
           ) : (
             <>
@@ -75,53 +72,48 @@ export default function Navbar() {
                 rel="noopener noreferrer"
                 className="h-8 px-5 text-sm font-bold text-white bg-saas-gradient hover:opacity-90 transition-opacity rounded-full shadow-sm inline-flex items-center justify-center"
               >
-                {t('common.sign_in')}
+                Sign in
               </a>
               <Link to="/Analyzer">
                 <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm bg-green-600 hover:bg-green-700 text-white">
-                  {t('navigation.check_savings')}
+                  Check Savings
                 </Button>
               </Link>
             </>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <LanguageSwitcher />
-          {/* Mobile toggle */}
-          <button
-            className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => setOpen(v => !v)}
-            aria-label="Toggle menu"
-          >
-            {open ? <X size={18} /> : <Menu size={18} />}
-          </button>
-        </div>
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => setOpen(v => !v)}
+          aria-label="Toggle menu"
+        >
+          {open ? <X size={18} /> : <Menu size={18} />}
+        </button>
       </div>
-
-      
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t border-border/40 bg-background px-5 py-4 space-y-1 overflow-y-auto max-h-[80vh]">
+        <div className="md:hidden border-t border-border/40 bg-background/98 backdrop-blur-2xl px-5 py-4 space-y-1 overflow-y-auto max-h-[80vh]">
           {NAV.map(item => (
             item.href.startsWith("/") ? (
-              <Link key={item.href} to={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-foreground border-b border-border/30 last:border-0">
-                {t(item.labelKey)}
+              <Link key={item.label} to={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground border-b border-border/30 last:border-0">
+                {item.label}
               </Link>
             ) : (
-              <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-foreground border-b border-border/30 last:border-0">
-                {t(item.labelKey)}
+              <a key={item.label} href={item.href} onClick={() => setOpen(false)} className="block py-3 text-sm text-muted-foreground border-b border-border/30 last:border-0">
+                {item.label}
               </a>
             )
           ))}
           <div className="pt-4 flex flex-col gap-2">
             <Link to="/Analyzer" onClick={() => setOpen(false)}>
-              <Button className="w-full h-12 rounded-full text-sm font-bold">{t('navigation.run_analyzer')}</Button>
+              <Button className="w-full h-12 rounded-full text-sm font-bold">Run the Analyzer</Button>
             </Link>
             {isAuthenticated ? (
               <Link to="/Dashboard" onClick={() => setOpen(false)}>
-                <Button variant="outline" className="w-full h-12 rounded-full text-sm">{t('navigation.dashboard')}</Button>
+                <Button variant="outline" className="w-full h-12 rounded-full text-sm">Dashboard</Button>
               </Link>
             ) : (
               <>
@@ -132,16 +124,13 @@ export default function Navbar() {
                   onClick={() => setOpen(false)}
                   className="w-full h-12 rounded-full text-sm border border-border/70 hover:bg-secondary transition-colors font-medium flex items-center justify-center"
                 >
-                  {t('common.sign_in_with')}
+                  Sign in with Google / Apple
                 </a>
                 <Link to="/Onboarding" onClick={() => setOpen(false)}>
-                  <Button variant="outline" className="w-full h-12 rounded-full text-sm">{t('navigation.join')}</Button>
+                  <Button variant="outline" className="w-full h-12 rounded-full text-sm">Join THE NoDE</Button>
                 </Link>
               </>
             )}
-            <div className="pt-3">
-              <LanguageSwitcher />
-            </div>
           </div>
         </div>
       )}

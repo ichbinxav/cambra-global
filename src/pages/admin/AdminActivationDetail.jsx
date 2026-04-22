@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useI18n } from "@/lib/i18n.jsx";
 import { Link, useSearchParams, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
-export default function AdminActivationDetail(){ const { t } = useI18n();
+export default function AdminActivationDetail(){
   const [sp] = useSearchParams();
   const params = useParams();
   const id = params.id || sp.get('id');
@@ -27,7 +26,7 @@ export default function AdminActivationDetail(){ const { t } = useI18n();
     setLoading(false);
   })(); }, [id]);
 
-  if (loading) return <div className="p-6">{t('common.loading', { default: 'Loading…' })}</div>;
+  if (loading) return <div className="p-6">Loading…</div>;
   if (error) return <div className="p-6 text-red-600">{error}</div>;
   const { activation, baselines, rules, mandates, tasks, reports, invoices, logs, progress } = data || {};
   const realizedToDate = (reports || []).filter(r => ['invoiced','paid'].includes(r.status)).reduce((s, r) => s + (r.savings || 0), 0);
@@ -50,7 +49,7 @@ export default function AdminActivationDetail(){ const { t } = useI18n();
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black">{t('admin.activation.title', { default: 'Activation' })} {activation.id}</h1>
+        <h1 className="text-2xl font-black">Activation {activation.id}</h1>
         <Link to="/admin">Back</Link>
       </div>
 

@@ -1,40 +1,39 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Globe, CreditCard, Truck, Percent } from "lucide-react";
-import { useI18n } from "@/lib/i18n.jsx";
 
-const buildTestimonials = (t) => ([
+const testimonials = [
   {
-    quote: t('landing.testimonials.items.0.quote', { default: 'Discovered we were overpaying on Stripe by 1.4%. After switching to the network rate, we recovered €38,000 in the first year alone.' }),
-    name: t('landing.testimonials.items.0.name', { default: 'Founder' }),
-    company: t('landing.testimonials.items.0.company', { default: 'Contemporary skincare brand' }),
-    saving: t('landing.testimonials.items.0.saving', { default: '€38K' }),
-    savingNote: t('landing.testimonials.items.0.savingNote', { default: 'recovered year 1' }),
-    category: t('landing.testimonials.items.0.category', { default: 'Payments' }),
+    quote: "Discovered we were overpaying on Stripe by 1.4%. After switching to the network rate, we recovered €38,000 in the first year alone.",
+    name: "Founder",
+    company: "Contemporary skincare brand",
+    saving: "€38K",
+    savingNote: "recovered year 1",
+    category: "Payments",
     color: "text-blue-600",
     bg: "bg-blue-500/[0.04] border-blue-500/15",
   },
   {
-    quote: t("landing.testimonials.items.1.quote", { default: "The Analyzer identified €24,000 in hidden infrastructure costs we hadn't tracked. Changed how we think about our entire P&L." }),
-    name: t('landing.testimonials.items.1.name', { default: 'CEO' }),
-    company: t('landing.testimonials.items.1.company', { default: 'Premium activewear brand' }),
-    saving: t('landing.testimonials.items.1.saving', { default: '€24K' }),
-    savingNote: t('landing.testimonials.items.1.savingNote', { default: 'hidden costs surfaced' }),
-    category: t('landing.testimonials.items.1.category', { default: 'Infrastructure' }),
+    quote: "The Analyzer identified €24,000 in hidden infrastructure costs we hadn't tracked. Changed how we think about our entire P&L.",
+    name: "CEO",
+    company: "Premium activewear brand",
+    saving: "€24K",
+    savingNote: "hidden costs surfaced",
+    category: "Infrastructure",
     color: "text-orange-500",
     bg: "bg-orange-500/[0.04] border-orange-500/15",
   },
   {
-    quote: t('landing.testimonials.items.2.quote', { default: 'Repriced our full shipping structure through the network. We save €19,000 a year now. It genuinely took one afternoon.' }),
-    name: t('landing.testimonials.items.2.name', { default: 'Operations Director' }),
-    company: t('landing.testimonials.items.2.company', { default: 'Design-led home fragrance' }),
-    saving: t('landing.testimonials.items.2.saving', { default: '€19K' }),
-    savingNote: t('landing.testimonials.items.2.savingNote', { default: 'per year on shipping' }),
-    category: t('landing.testimonials.items.2.category', { default: 'Shipping' }),
+    quote: "Repriced our full shipping structure through the network. We save €19,000 a year now. It genuinely took one afternoon.",
+    name: "Operations Director",
+    company: "Design-led home fragrance",
+    saving: "€19K",
+    savingNote: "per year on shipping",
+    category: "Shipping",
     color: "text-green-600",
     bg: "bg-green-500/[0.04] border-green-500/15",
   },
-]);
+];
 
 function TestimonialCard({ t, index }) {
   const ref = useRef(null);
@@ -75,7 +74,6 @@ function TestimonialCard({ t, index }) {
 }
 
 export default function TestimonialsSection() {
-  const { t } = useI18n();
   const headRef = useRef(null);
   const headInView = useInView(headRef, { once: true, margin: "-80px" });
   const trustRef = useRef(null);
@@ -90,43 +88,43 @@ export default function TestimonialsSection() {
             transition={{ duration: 0.5 }}
             className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center justify-center gap-2"
           >
-            <span className="w-4 h-px bg-border inline-block" /> {t('landing.testimonials.tag', { default: 'Results' })}
+            <span className="w-4 h-px bg-border inline-block" /> Results
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 40 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.75, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9]"
           >
-            {t('landing.testimonials.title', { default: 'Brands are saving real money.' })}
+            Brands are saving real money.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.25 }}
-            className="mt-4 text-muted-foreground text-base max-w-md mx-auto"
+            className="mt-4 text-muted-foreground text-base max-w-md mx_auto"
           >
-            {t('landing.testimonials.subtitle', { default: 'Independent commerce brands across Europe using THE NoDE network.' })}
+            Independent commerce brands across Europe using THE NoDE network.
           </motion.p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {buildTestimonials(t).map((item, i) => (
-            <TestimonialCard key={i} t={item} index={i} />
+          {testimonials.map((t, i) => (
+            <TestimonialCard key={i} t={t} index={i} />
           ))}
         </div>
 
         {/* Trust bar */}
         <div ref={trustRef} className="mt-10 pt-10 border-t border-border/40">
-         <div className="mb-4 text-center lg:text-left">
-           <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/45">{t('landing.testimonials.trust.tag', { default: 'Network benchmarks' })}</p>
-           <h3 className="text-[clamp(1.5rem,4vw,2.4rem)] font-black tracking-[-0.02em]">{t('landing.testimonials.trust.title', { default: 'By the numbers' })}</h3>
+         <div className="mb-4">
+           <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/45">Network benchmarks</p>
+           <h3 className="text-[clamp(1.5rem,4vw,2.4rem)] font-black tracking-[-0.02em]">By the numbers</h3>
          </div>
          <div className="grid grid-cols-1 gap-3">
          {[
-                      { value: "15+", label: t('landing.testimonials.stats.countries', { default: 'Countries active' }), icon: Globe, color: "text-foreground", bg: "bg-secondary/60 border-border/60" },
-                      { value: "€18K–72K", label: t('landing.testimonials.stats.savings_range', { default: 'Savings range per brand' }), icon: Percent, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
-                      { value: "1.4%", label: t('landing.testimonials.stats.payment_rate', { default: 'Network payment rate' }), icon: CreditCard, color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
-                      { value: "−18%", label: t('landing.testimonials.stats.shipping_reduction', { default: 'Avg. shipping reduction' }), icon: Truck, color: "text-green-600", bg: "bg-green-500/[0.08] border-green-500/20" },
-                    ].map((s, i) => (
+            { value: "15+", label: "Countries active", icon: Globe, color: "text-foreground", bg: "bg-secondary/60 border-border/60" },
+            { value: "€18K–72K", label: "Savings range per brand", icon: Percent, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
+            { value: "1.4%", label: "Network payment rate", icon: CreditCard, color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
+            { value: "−18%", label: "Avg. shipping reduction", icon: Truck, color: "text-green-600", bg: "bg-green-500/[0.08] border-green-500/20" },
+          ].map((s, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 18 }}

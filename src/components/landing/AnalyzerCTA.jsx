@@ -5,7 +5,6 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
-import { useI18n } from "@/lib/i18n.jsx";
 
 const rows = [
   { icon: CreditCard, label: "Payment fees", current: "2.9%", network: "1.4%", saving: "€8,400/yr", color: "text-blue-600" },
@@ -15,7 +14,6 @@ const rows = [
 
 export default function AnalyzerCTA() {
   const { isAuthenticated } = useAuth();
-  const { t } = useI18n();
   const leftRef = useRef(null);
   const leftInView = useInView(leftRef, { once: true, margin: "-80px" });
   const rightRef = useRef(null);
@@ -28,24 +26,23 @@ export default function AnalyzerCTA() {
 
           <motion.div
             ref={leftRef}
-            className="text-center lg:text-left"
             initial={{ opacity: 0, x: -50 }}
             animate={leftInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center justify-center lg:justify-start gap-2">
-              <span className="w-4 h-px bg-border inline-block" /> {t('landing.analyzerCTA.label')}
+            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center gap-2">
+              <span className="w-4 h-px bg-border inline-block" /> Infrastructure Analyzer
             </p>
-            <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-6 text-center lg:text-left">
-              {t('landing.analyzerCTA.headline')}
+            <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-6">
+              Identify exactly where<br />value is left unoptimized.
             </h2>
-            <p className="text-muted-foreground leading-relaxed text-base mb-8 max-w-sm mx-auto text-center lg:text-left">
-              {t('landing.analyzerCTA.desc')}
+            <p className="text-muted-foreground leading-relaxed text-base mb-8 max-w-sm">
+              Benchmark your payments, shipping, and SaaS stack against real network rates. See your optimization potential in 2 minutes.
             </p>
             {isAuthenticated ? (
               <Link to="/Analyzer">
                 <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40">
-                  {t('landing.analyzerCTA.cta')}
+                  Run the Analyzer
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -56,11 +53,11 @@ export default function AnalyzerCTA() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm bg-foreground text-background hover:opacity-90 transition-opacity"
               >
-                {t('common.sign_in')}
+                Sign in to Analyze
                 <ArrowRight className="h-4 w-4" />
               </a>
             )}
-            <p className="mt-4 text-[11px] text-muted-foreground/40">{t('landing.analyzerCTA.microcopy')}</p>
+            <p className="mt-4 text-[11px] text-muted-foreground/40">2 minutes · Real benchmarks · No commitment</p>
           </motion.div>
 
           <motion.div
@@ -71,7 +68,7 @@ export default function AnalyzerCTA() {
             className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm"
           >
             <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between">
-              <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/60">{t('landing.analyzerCTA.sample')}</span>
+              <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/60">Sample analysis — €500K brand</span>
               <div className="w-2 h-2 rounded-full bg-green-500" />
             </div>
 
@@ -91,13 +88,13 @@ export default function AnalyzerCTA() {
 
             <div className="px-6 py-5 border-t border-border/40 bg-foreground text-background flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] opacity-40 mb-0.5">{t('landing.analyzerCTA.total_optimization')}</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] opacity-40 mb-0.5">Optimization potential / year</p>
                 <span className="text-2xl font-black tracking-tight">€22,600<span className="text-base font-normal opacity-50">/yr</span></span>
               </div>
               {isAuthenticated ? (
                 <Link to="/Analyzer">
                   <button className="h-11 px-6 rounded-full bg-saas-gradient text-white font-bold text-sm shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5 flex items-center gap-2">
-                    {t('landing.analyzerCTA.calc_savings')} <ArrowRight size={12} />
+                    Calculate my savings <ArrowRight size={12} />
                   </button>
                 </Link>
               ) : (
@@ -105,7 +102,7 @@ export default function AnalyzerCTA() {
                   onClick={() => base44.auth.redirectToLogin(window.location.href)}
                   className="h-11 px-6 rounded-full bg-saas-gradient text-white font-bold text-sm shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5 flex items-center gap-2"
                 >
-                  {t('common.sign_in')} <ArrowRight size={12} />
+                  Sign in <ArrowRight size={12} />
                 </button>
               )}
             </div>

@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
-import { useI18n } from "@/lib/i18n.jsx";
 
 const COLORS = ["#3b82f6", "#22c55e", "#f97316", "#8b5cf6", "#f59e0b", "#06b6d4"];
 const REALIZED_STATUSES = ["invoiced", "paid"];
 
-export default function AdminRevenue() { const { t } = useI18n();
+export default function AdminRevenue() {
   const [activations, setActivations] = useState([]);
   const [brands, setBrands] = useState([]);
   const [reports, setReports] = useState([]);
@@ -60,17 +59,17 @@ export default function AdminRevenue() { const { t } = useI18n();
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black tracking-[-0.03em]">{t('admin.revenue.title', { default: 'Revenue Tracking' })}</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">{t('admin.revenue.subtitle', { default: 'Admin truth: Monetized (realized) based on invoiced/paid reports' })}</p>
+        <h1 className="text-2xl font-black tracking-[-0.03em]">Revenue Tracking</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">Admin truth: Monetized (realized) based on invoiced/paid reports</p>
       </div>
 
       {/* Top KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: t('admin.revenue.kpis.live', { default: 'Live activations' }), val: activeActivations.length, color: "text-foreground" },
-          { label: t('admin.revenue.kpis.realized_savings', { default: 'Cumulative realized savings' }), val: `€${Math.round(realizedSavings).toLocaleString()}`, color: "text-green-600" },
-          { label: t('admin.revenue.kpis.monetized', { default: 'Cumulative monetized' }), val: `€${Math.round(realizedFees).toLocaleString()}`, color: "text-amber-600" },
-          { label: t('admin.revenue.kpis.contracts_with_activity', { default: 'Contracts with realized activity' }), val: contractsWithRealized, color: "text-blue-600" },
+          { label: "Live activations", val: activeActivations.length, color: "text-foreground" },
+          { label: "Cumulative realized savings", val: `€${Math.round(realizedSavings).toLocaleString()}`, color: "text-green-600" },
+          { label: "Cumulative monetized", val: `€${Math.round(realizedFees).toLocaleString()}`, color: "text-amber-600" },
+          { label: "Contracts with realized activity", val: contractsWithRealized, color: "text-blue-600" },
         ].map((kpi, i) => (
           <div key={i} className="p-4 rounded-xl border border-border/50 bg-card">
             <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-2">{kpi.label}</p>
@@ -83,7 +82,7 @@ export default function AdminRevenue() { const { t } = useI18n();
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Monthly revenue trend */}
         <div className="p-5 rounded-xl border border-border/50 bg-card">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 mb-4">{t('admin.revenue.monthly_monetized', { default: 'Monthly Monetized (realized)' })}</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 mb-4">Monthly Monetized (realized)</p>
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={monthlyData}>
               <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -97,7 +96,7 @@ export default function AdminRevenue() { const { t } = useI18n();
 
         {/* Revenue by category */}
         <div className="p-5 rounded-xl border border-border/50 bg-card">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 mb-4">{t('admin.revenue.by_provider', { default: 'Monetized by Provider' })}</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 mb-4">Monetized by Provider</p>
           {providerData.length > 0 ? (
             <ResponsiveContainer width="100%" height={160}>
               <PieChart>
@@ -108,7 +107,7 @@ export default function AdminRevenue() { const { t } = useI18n();
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">{t('common.no_results', { default: 'No data yet' })}</div>
+            <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">No data yet</div>
           )}
         </div>
       </div>
@@ -116,7 +115,7 @@ export default function AdminRevenue() { const { t } = useI18n();
       {/* Revenue per provider */}
       <div className="rounded-xl border border-border/50 overflow-hidden">
         <div className="px-5 py-3.5 border-b border-border/40 bg-secondary/30">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50">{t('admin.revenue.table.title', { default: 'Revenue per Provider' })}</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50">Revenue per Provider</p>
         </div>
         {providerData.length > 0 ? (
           <div className="divide-y divide-border/20">
@@ -126,9 +125,9 @@ export default function AdminRevenue() { const { t } = useI18n();
                   {i + 1}
                 </div>
                 <p className="text-sm font-semibold flex-1">{p.name}</p>
-                <p className="text-xs text-muted-foreground/50">{p.deals} {t('admin.revenue.table.deals', { default: 'deals' })}</p>
-                <p className="text-sm font-bold text-green-600 w-28 text-right">€{p.savings.toLocaleString()} {t('admin.revenue.table.realized', { default: 'realized' })}</p>
-                <p className="text-sm font-black text-amber-600 w-24 text-right">€{p.revenue.toLocaleString()} {t('admin.revenue.table.monetized', { default: 'monetized' })}</p>
+                <p className="text-xs text-muted-foreground/50">{p.deals} deal{p.deals !== 1 ? "s" : ""}</p>
+                <p className="text-sm font-bold text-green-600 w-28 text-right">€{p.savings.toLocaleString()} realized</p>
+                <p className="text-sm font-black text-amber-600 w-24 text-right">€{p.revenue.toLocaleString()} monetized</p>
               </div>
             ))}
           </div>
@@ -139,9 +138,9 @@ export default function AdminRevenue() { const { t } = useI18n();
 
       {/* Notes */}
       <div className="p-4 rounded-xl border border-border/40 bg-secondary/20">
-        <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">{t('admin.revenue.data_integrity.title', { default: 'Data integrity' })}</p>
+        <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">Data integrity</p>
         <p className="text-xs text-muted-foreground/70 leading-relaxed">
-          {t('admin.revenue.data_integrity.desc', { default: 'Monetized figures reflect invoiced/paid node fees from Monthly Savings Reports. Pipeline figures based on activated deals are labelled as estimated.' })}
+          Monetized figures reflect invoiced/paid node fees from Monthly Savings Reports. Pipeline figures based on activated deals are labelled as estimated.
         </p>
       </div>
     </div>

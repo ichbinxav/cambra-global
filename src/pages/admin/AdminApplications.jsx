@@ -4,11 +4,10 @@ import { Search, ArrowUpRight, Filter } from "lucide-react";
 import AdminApplicationDetail from "./AdminApplicationDetail.jsx";
 import { toast } from "sonner";
 import { ALL_STATUSES, STATUS_COLORS } from "@/lib/adminStatusConstants";
-import { useI18n } from "@/lib/i18n.jsx";
 
 const STATUSES = ["all", ...ALL_STATUSES];
 
-export default function AdminApplications() { const { t } = useI18n();
+export default function AdminApplications() {
   const [apps, setApps] = useState([]);
   const [brands, setBrands] = useState([]);
   const [search, setSearch] = useState("");
@@ -59,15 +58,15 @@ export default function AdminApplications() { const { t } = useI18n();
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-black tracking-[-0.03em]">{t('admin.applications.title', { default: 'Deal Applications' })}</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">{apps.length} {t('admin.applications.total_suffix', { default: 'total applications' })}</p>
+        <h1 className="text-2xl font-black tracking-[-0.03em]">Deal Applications</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">{apps.length} total applications</p>
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
         <div className="relative">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('admin.applications.search_ph', { default: 'Search...' })}
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
             className="h-9 pl-8 pr-4 text-sm bg-secondary/60 border border-border/50 rounded-lg focus:outline-none focus:border-foreground/20 w-56" />
         </div>
         <div className="flex gap-1 flex-wrap">
@@ -84,11 +83,11 @@ export default function AdminApplications() { const { t } = useI18n();
       <div className={`flex gap-4 ${selected ? "items-start" : ""}`}>
         <div className={`${selected ? "w-1/2" : "w-full"} rounded-xl border border-border/50 overflow-hidden transition-all`}>
           <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_auto] px-5 py-3 bg-secondary/40 border-b border-border/40 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 gap-3">
-            <span>{t('admin.applications.table.companyUser', { default: 'Company / User' })}</span>
-            <span>{t('admin.applications.table.deal', { default: 'Deal' })}</span>
-            <span>{t('admin.applications.table.status', { default: 'Status' })}</span>
-            <span>{t('admin.applications.table.mode', { default: 'Mode' })}</span>
-            <span>{t('admin.applications.table.savings', { default: 'Savings' })}</span>
+            <span>Company / User</span>
+            <span>Deal</span>
+            <span>Status</span>
+            <span>Mode</span>
+            <span>Savings</span>
             <span></span>
           </div>
           {filtered.map(a => {
@@ -118,7 +117,7 @@ export default function AdminApplications() { const { t } = useI18n();
               </div>
             );
           })}
-          {filtered.length === 0 && <div className="py-12 text-center text-sm text-muted-foreground">{t('admin.applications.empty', { default: 'No applications found' })}</div>}
+          {filtered.length === 0 && <div className="py-12 text-center text-sm text-muted-foreground">No applications found</div>}
         </div>
 
         {/* Detail panel */}

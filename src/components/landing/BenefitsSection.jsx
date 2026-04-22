@@ -1,53 +1,52 @@
 import { TrendingUp, BarChart2, Network, Clock, Focus, CreditCard, Truck, Package } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { useI18n } from "@/lib/i18n.jsx";
 
-const buildBenefits = (t) => ([
+const BENEFITS = [
   {
     icon: TrendingUp,
-    title: t('landing.benefits.items.reduce.title', { default: 'Reduce your costs instantly' }),
-    body: t('landing.benefits.items.reduce.body', { default: 'Access pre-negotiated rates across payments, shipping, and SaaS. Stop overpaying for infrastructure you rely on every day.' }),
+    title: "Reduce your costs instantly",
+    body: "Access pre-negotiated rates across payments, shipping, and SaaS. Stop overpaying for infrastructure you rely on every day.",
     color: "text-blue-600",
     bg: "bg-blue-500/[0.08] border-blue-500/20",
   },
   {
     icon: BarChart2,
-    title: t('landing.benefits.items.margins.title', { default: 'Increase your margins' }),
-    body: t('landing.benefits.items.margins.body', { default: 'Every % saved goes directly to your bottom line. No revenue growth needed — just smarter economics.' }),
+    title: "Increase your margins",
+    body: "Every % saved goes directly to your bottom line. No revenue growth needed — just smarter economics.",
     color: "text-green-600",
     bg: "bg-green-500/[0.08] border-green-500/20",
   },
   {
     icon: BarChart2,
-    title: t('landing.benefits.items.benchmark.title', { default: 'Benchmark like top operators' }),
-    body: t('landing.benefits.items.benchmark.body', { default: "See how your costs compare to similar brands. Understand where you're inefficient and where to optimize." }),
+    title: "Benchmark like top operators",
+    body: "See how your costs compare to similar brands. Understand where you're inefficient and where to optimize.",
     iconOverride: "benchmark",
     color: "text-purple-600",
     bg: "bg-purple-500/[0.08] border-purple-500/20",
   },
   {
     icon: Network,
-    title: t('landing.benefits.items.deals.title', { default: 'Access network-level deals' }),
-    body: t('landing.benefits.items.deals.body', { default: 'Benefit from collective scale. What large companies negotiate, you now access instantly.' }),
+    title: "Access network-level deals",
+    body: "Benefit from collective scale. What large companies negotiate, you now access instantly.",
     color: "text-orange-500",
     bg: "bg-orange-500/[0.08] border-orange-500/20",
   },
   {
     icon: Clock,
-    title: t('landing.benefits.items.time.title', { default: 'Save time and complexity' }),
-    body: t('landing.benefits.items.time.body', { default: 'No need to negotiate contracts, compare providers, or audit costs. We centralize your entire infrastructure layer.' }),
+    title: "Save time and complexity",
+    body: "No need to negotiate contracts, compare providers, or audit costs. We centralize your entire infrastructure layer.",
     color: "text-teal-600",
     bg: "bg-teal-500/[0.08] border-teal-500/20",
   },
   {
     icon: Focus,
-    title: t('landing.benefits.items.focus.title', { default: 'Stay focused on your core business' }),
-    body: t('landing.benefits.items.focus.body', { default: 'Spend less time on operations, more time on brand, product, and growth. THE NoDE handles the backend.' }),
+    title: "Stay focused on your core business",
+    body: "Spend less time on operations, more time on brand, product, and growth. THE NoDE handles the backend.",
     color: "text-rose-600",
     bg: "bg-rose-500/[0.08] border-rose-500/20",
   },
-]);
+];
 
 const ICONS = {
   benchmark: ({ size, className }) => (
@@ -57,12 +56,12 @@ const ICONS = {
   ),
 };
 
-const buildProof = (t) => ([
-  { value: "€18K–€72K", label: t('landing.benefits.proof.labels.unlocked', { default: 'unlocked per year' }), icon: BarChart2, color: "text-foreground", bg: "bg-card border-border/40" },
-  { value: "−52%", label: t('landing.benefits.proof.labels.payments', { default: 'on payments' }), icon: CreditCard, color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
-  { value: "−18%", label: t('landing.benefits.proof.labels.shipping', { default: 'on shipping' }), icon: Truck, color: "text-green-600", bg: "bg-green-500/[0.08] border-green-500/20" },
-  { value: "−30%", label: t('landing.benefits.proof.labels.saas', { default: 'on SaaS tools' }), icon: Package, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
-]);
+const PROOF = [
+  { value: "€18K–€72K", label: "unlocked per year", icon: BarChart2, color: "text-foreground", bg: "bg-card border-border/40" },
+  { value: "−52%", label: "on payments", icon: CreditCard, color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
+  { value: "−18%", label: "on shipping", icon: Truck, color: "text-green-600", bg: "bg-green-500/[0.08] border-green-500/20" },
+  { value: "−30%", label: "on SaaS tools", icon: Package, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
+];
 
 function BenefitTile({ b, index }) {
   const IconComp = b.iconOverride ? ICONS[b.iconOverride] : b.icon;
@@ -97,7 +96,6 @@ function BenefitTile({ b, index }) {
 }
 
 export default function BenefitsSection() {
-  const { t } = useI18n();
   const headRef = useRef(null);
   const headInView = useInView(headRef, { once: true, margin: "-80px" });
   const editorialRef = useRef(null);
@@ -110,33 +108,33 @@ export default function BenefitsSection() {
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
-        <div ref={headRef} className="max-w-2xl mb-16 mx-auto text-center lg:text-left">
+        <div ref={headRef} className="max-w-2xl mb-16">
           <motion.p
             initial={{ opacity: 0, y: 16 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center lg:justify-start gap-2"
+            className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center gap-2"
           >
-            <span className="w-4 h-px bg-border" /> {t('landing.benefits.tag', { default: 'Why brands join' })}
+            <span className="w-4 h-px bg-border" /> Why brands join
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 50 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(2.4rem,6vw,5rem)] font-black tracking-[-0.05em] leading-[0.87] mb-5 text-center lg:text-left"
+            className="text-[clamp(2.4rem,6vw,5rem)] font-black tracking-[-0.05em] leading-[0.87] mb-5"
           >
-            {t('landing.benefits.title', { default: 'The economic advantage<br />of THE NoDE.' })}
+            The economic advantage<br />of THE NoDE.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-muted-foreground text-lg leading-relaxed mx-auto text-center lg:text-left"
+            className="text-muted-foreground text-lg leading-relaxed"
           >
-            {t('landing.benefits.subtitle', { default: 'We turn your infrastructure into a competitive advantage.' })}
+            We turn your infrastructure into a competitive advantage.
           </motion.p>
         </div>
 
         {/* Benefits grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
-          {buildBenefits(t).map((b, i) => (
+          {BENEFITS.map((b, i) => (
             <BenefitTile key={i} b={b} index={i} />
           ))}
         </div>
@@ -149,17 +147,17 @@ export default function BenefitsSection() {
           <motion.h3
             initial={{ opacity: 0, x: -50 }} animate={editorialInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(1.8rem,4vw,3rem)] font-black tracking-[-0.04em] leading-[0.9] text-center lg:text-left"
+            className="text-[clamp(1.8rem,4vw,3rem)] font-black tracking-[-0.04em] leading-[0.9]"
           >
-            {t("landing.benefits.editorial.title", { default: "This is not a tool.<br />It's your economic layer." })}
+            This is not a tool.<br />It's your economic layer.
           </motion.h3>
           <motion.div
             initial={{ opacity: 0, x: 50 }} animate={editorialInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-4 text-muted-foreground text-base leading-relaxed"
           >
-            <p>{t('landing.benefits.editorial.p1', { default: "You don't need more tools. You need better economics." })}</p>
-            <p>{t('landing.benefits.editorial.p2', { default: 'THE NoDE connects your business to a network designed to optimize how you spend, scale, and operate — so your infrastructure works for you, not against you.' })}</p>
+            <p>You don't need more tools. You need better economics.</p>
+            <p>THE NoDE connects your business to a network designed to optimize how you spend, scale, and operate — so your infrastructure works for you, not against you.</p>
           </motion.div>
         </div>
 
@@ -170,10 +168,10 @@ export default function BenefitsSection() {
             transition={{ duration: 0.5 }}
             className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/35 text-center mb-6"
           >
-            {t('landing.benefits.proof.tag', { default: 'Average impact across network members' })}
+            Average impact across network members
           </motion.p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {buildProof(t).map((p, i) => (
+            {PROOF.map((p, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 18 }}

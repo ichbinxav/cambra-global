@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { DEAL_STATUSES } from "@/lib/adminStatusConstants";
-import { useI18n } from "@/lib/i18n.jsx";
 import { AnimatePresence } from "framer-motion";
 import AdminApplicationDetail from "./AdminApplicationDetail.jsx";
 import { toast } from "sonner";
@@ -19,7 +18,7 @@ function daysInStage(created_date) {
   return Math.floor((Date.now() - new Date(created_date).getTime()) / 86400000);
 }
 
-export default function AdminPipeline() { const { t } = useI18n();
+export default function AdminPipeline() {
   const [apps, setApps] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,11 +66,11 @@ export default function AdminPipeline() { const { t } = useI18n();
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-[-0.03em]">{t('admin.pipeline.title', { default: 'Deal Pipeline' })}</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">{t('admin.pipeline.hint', { default: 'Drag & drop to move · Click to inspect' })} · {activeApps.length} {t('admin.pipeline.active', { default: 'active' })}</p>
+          <h1 className="text-2xl font-black tracking-[-0.03em]">Deal Pipeline</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">Drag & drop to move · Click to inspect · {activeApps.length} active</p>
         </div>
         {selected && (
-          <button onClick={() => setSelected(null)} className="text-xs text-muted-foreground/50 hover:text-foreground flex items-center gap-1">{`✕ ${t('admin.pipeline.close', { default: 'Close panel' })}`}</button>
+          <button onClick={() => setSelected(null)} className="text-xs text-muted-foreground/50 hover:text-foreground flex items-center gap-1">✕ Close panel</button>
         )}
       </div>
 
@@ -91,7 +90,7 @@ export default function AdminPipeline() { const { t } = useI18n();
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
                             <div className={`w-1.5 h-1.5 rounded-full ${col.dot}`} />
-                            <p className="text-xs font-bold">{t(`admin.pipeline.columns.${col.id}`, { default: col.label })}</p>
+                            <p className="text-xs font-bold">{col.label}</p>
                           </div>
                           <span className="text-[10px] font-black bg-background/60 px-2 py-0.5 rounded-full">{colApps.length}</span>
                         </div>

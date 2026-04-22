@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, X, Save, FileText, Link2, Plus, ExternalLink, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import { formatSavings } from "@/lib/deals";
-import { useI18n } from "@/lib/i18n.jsx";
 
 const STATUS_CFG = {
   pending: { label: "Pending", color: "text-muted-foreground bg-secondary border-border/40" },
@@ -13,7 +12,7 @@ const STATUS_CFG = {
   terminated: { label: "Terminated", color: "text-red-600 bg-red-500/10 border-red-500/20" },
 };
 
-export default function AdminContracts() { const { t } = useI18n();
+export default function AdminContracts() {
   const [contracts, setContracts] = useState([]);
   const [brands, setBrands] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -72,22 +71,22 @@ export default function AdminContracts() { const { t } = useI18n();
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-black tracking-[-0.03em]">{t('admin.contracts.title', { default: 'Contract Tracking' })}</h1>
-        <p className="text-xs text-muted-foreground/50 mt-0.5">{t('admin.contracts.subtitle', { default: 'Centralized visibility — THE NoDE does not own contracts' })}</p>
+        <h1 className="text-2xl font-black tracking-[-0.03em]">Contract Tracking</h1>
+        <p className="text-xs text-muted-foreground/50 mt-0.5">Centralized visibility — THE NoDE does not own contracts</p>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-3 gap-3">
         <div className="p-4 rounded-xl border border-green-500/20 bg-green-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">{t('admin.contracts.kpis.active', { default: 'Active Contracts' })}</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Active Contracts</p>
           <p className="text-2xl font-black text-green-600">{totalActive}</p>
         </div>
         <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">{t('admin.contracts.kpis.savings', { default: 'Savings Activated' })}</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Savings Activated</p>
           <p className="text-2xl font-black text-blue-600">{formatSavings(totalValue)}/yr</p>
         </div>
         <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">{t('admin.contracts.kpis.revenue', { default: 'Estimated THE NoDE revenue (config-based)' })}</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Estimated THE NoDE revenue (config-based)</p>
           <p className="text-2xl font-black text-amber-600">{formatSavings(nodeRevenue)}/yr</p>
         </div>
       </div>
@@ -96,7 +95,7 @@ export default function AdminContracts() { const { t } = useI18n();
       <div className="flex flex-wrap gap-2 items-center">
         <div className="relative">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('admin.contracts.search_ph', { default: 'Search...' })}
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
             className="h-9 pl-8 pr-4 text-sm bg-secondary/60 border border-border/50 rounded-lg focus:outline-none w-52" />
         </div>
         <div className="flex gap-1 flex-wrap">
@@ -113,13 +112,13 @@ export default function AdminContracts() { const { t } = useI18n();
         {/* Table */}
         <div className={`${selected ? "w-1/2" : "w-full"} rounded-xl border border-border/50 overflow-hidden transition-all`}>
           <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr] px-5 py-3 bg-secondary/40 border-b border-border/40 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 gap-3">
-            <span>{t('admin.contracts.table.company', { default: 'Company' })}</span><span>{t('admin.contracts.table.deal', { default: 'Deal' })}</span><span>{t('admin.contracts.table.status', { default: 'Status' })}</span><span>{t('admin.contracts.table.savings', { default: 'Savings/yr' })}</span><span>{t('admin.contracts.table.expires', { default: 'Expires' })}</span>
+            <span>Company</span><span>Deal</span><span>Status</span><span>Savings/yr</span><span>Expires</span>
           </div>
           {filtered.length === 0 && (
             <div className="py-16 text-center">
               <FileText size={24} className="text-muted-foreground/20 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground/50">{t('admin.contracts.empty.title', { default: 'No contracts found' })}</p>
-              <p className="text-xs text-muted-foreground/30 mt-1">{t('admin.contracts.empty.hint', { default: 'Contracts are created automatically when deals are activated' })}</p>
+              <p className="text-sm text-muted-foreground/50">No contracts found</p>
+              <p className="text-xs text-muted-foreground/30 mt-1">Contracts are created automatically when deals are activated</p>
             </div>
           )}
           {filtered.map(c => {
@@ -158,7 +157,7 @@ export default function AdminContracts() { const { t } = useI18n();
             <div className="p-5 space-y-4 overflow-y-auto max-h-[calc(100vh-220px)]">
               {/* Status */}
               <div>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">{t('admin.contracts.detail.status', { default: 'Contract Status' })}</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">Contract Status</p>
                 <div className="flex flex-wrap gap-1.5">
                   {Object.entries(STATUS_CFG).map(([key, cfg]) => (
                     <button key={key} onClick={() => setForm(f => ({ ...f, status: key }))}
@@ -171,10 +170,10 @@ export default function AdminContracts() { const { t } = useI18n();
 
               {/* Contract docs */}
               <div>
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">{t('admin.contracts.detail.docs', { default: 'Contract Documents' })}</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-2">Contract Documents</p>
                 <div className="space-y-2">
                   <div>
-                    <label className="text-[10px] text-muted-foreground/40 block mb-1">{t('admin.contracts.detail.contract_link', { default: 'Contract Link (URL)' })}</label>
+                    <label className="text-[10px] text-muted-foreground/40 block mb-1">Contract Link (URL)</label>
                     <div className="flex gap-2">
                       <input value={form.contract_link || ""} onChange={e => setForm(f => ({ ...f, contract_link: e.target.value }))}
                         placeholder="https://..." className="flex-1 h-8 px-3 text-xs bg-secondary/60 border border-border/50 rounded-lg focus:outline-none" />
@@ -187,8 +186,8 @@ export default function AdminContracts() { const { t } = useI18n();
               {/* Previous vs New conditions */}
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { key: "previous_conditions", label: t('admin.contracts.detail.prev_conditions', { default: 'Previous Conditions' }), color: "border-red-500/20 bg-red-500/[0.03]" },
-                  { key: "new_conditions", label: t('admin.contracts.detail.new_conditions', { default: 'New Conditions (Node)' }), color: "border-green-500/20 bg-green-500/[0.03]" },
+                  { key: "previous_conditions", label: "Previous Conditions", color: "border-red-500/20 bg-red-500/[0.03]" },
+                  { key: "new_conditions", label: "New Conditions (Node)", color: "border-green-500/20 bg-green-500/[0.03]" },
                 ].map(({ key, label, color }) => (
                   <div key={key} className={`p-3 rounded-lg border ${color} space-y-2`}>
                     <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground/40">{label}</p>
@@ -214,10 +213,10 @@ export default function AdminContracts() { const { t } = useI18n();
               {/* Savings */}
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { key: "estimated_savings_annual", label: t('admin.contracts.detail.estimated_savings', { default: 'Estimated Savings (€/yr)' }) },
-                  { key: "actual_savings_annual", label: t('admin.contracts.detail.realized_savings', { default: 'Realized Savings (€/yr) — admin verified' }) },
-                  { key: "start_date", label: t('common.start_date', { default: 'Start Date' }), type: "date" },
-                  { key: "end_date", label: t('common.end_date', { default: 'End Date' }), type: "date" },
+                  { key: "estimated_savings_annual", label: "Estimated Savings (€/yr)" },
+                  { key: "actual_savings_annual", label: "Realized Savings (€/yr) — admin verified" },
+                  { key: "start_date", label: "Start Date", type: "date" },
+                  { key: "end_date", label: "End Date", type: "date" },
                 ].map(f => (
                   <div key={f.key}>
                     <label className="text-[10px] text-muted-foreground/40 block mb-1">{f.label}</label>
@@ -230,7 +229,7 @@ export default function AdminContracts() { const { t } = useI18n();
 
               {/* Notes */}
               <div>
-                <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 block mb-1.5">{t('admin.contracts.detail.internal_notes', { default: 'Internal Notes' })}</label>
+                <label className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 block mb-1.5">Internal Notes</label>
                 <textarea value={form.internal_notes || ""} onChange={e => setForm(f => ({ ...f, internal_notes: e.target.value }))}
                   rows={3} className="w-full px-3 py-2 text-xs bg-secondary/60 border border-border/50 rounded-lg focus:outline-none resize-none" />
               </div>
