@@ -46,6 +46,8 @@ import ActivateDeal from '@/pages/deals/ActivateDeal';
 import AuthorizeDeal from '@/pages/deals/AuthorizeDeal';
 import MigrationHub from '@/pages/deals/MigrationHub';
 import Snapshot from '@/pages/Snapshot';
+import AdminInvoices from '@/pages/admin/AdminInvoices';
+import Invoices from '@/pages/Invoices';
 
 
 
@@ -193,6 +195,7 @@ const AuthenticatedApp = () => {
           <Route path="/Insights" element={<Insights />} />
           <Route path="/InsightDetail" element={<InsightDetail />} />
           <Route path="/Account" element={<Account />} />
+          <Route path="/Invoices" element={<Invoices />} />
         </Route>
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
@@ -210,8 +213,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/control" element={<AdminControl />} />
           <Route path="/admin/activation" element={<AdminActivationDetail />} />
           <Route path="/admin/activation/:id" element={<AdminActivationDetail />} />
-
-
+          <Route path="/admin/invoices" element={<AdminInvoices />} />
         </Route>
         <Route path="/ProviderPortal" element={<ProtectedRoute><ProviderPortal /></ProtectedRoute>} />
 

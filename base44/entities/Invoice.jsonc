@@ -15,7 +15,8 @@
       "type": "string"
     },
     "amount": {
-      "type": "number"
+      "type": "number",
+      "description": "Legacy total amount; kept for backward-compat. Use total_amount for new code."
     },
     "currency": {
       "type": "string",
@@ -27,15 +28,27 @@
         "draft",
         "issued",
         "sent",
+        "due",
+        "partially_paid",
         "paid",
+        "failed",
         "void",
         "disputed",
-        "overdue"
+        "overdue",
+        "refunded"
       ],
       "default": "draft"
     },
     "invoice_number": {
       "type": "string"
+    },
+    "series": {
+      "type": "string",
+      "description": "Invoice series code, e.g. INV-2026"
+    },
+    "sequence": {
+      "type": "number",
+      "description": "Sequential number within series"
     },
     "issued_at": {
       "type": "string",
@@ -49,11 +62,48 @@
       "type": "string",
       "format": "date-time"
     },
+    "subtotal_amount": {
+      "type": "number"
+    },
+    "tax_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "total_amount": {
+      "type": "number"
+    },
+    "amount_paid": {
+      "type": "number",
+      "default": 0
+    },
+    "balance_due": {
+      "type": "number"
+    },
     "payment_link": {
+      "type": "string"
+    },
+    "hosted_invoice_url": {
       "type": "string"
     },
     "payment_provider": {
       "type": "string"
+    },
+    "processor_customer_id": {
+      "type": "string"
+    },
+    "processor_payment_intent_id": {
+      "type": "string"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_error": {
+      "type": "string"
+    },
+    "last_failed_at": {
+      "type": "string",
+      "format": "date-time"
     },
     "monthly_savings_report_id": {
       "type": "string"
@@ -69,7 +119,6 @@
     }
   },
   "required": [
-    "amount",
     "status"
   ]
 }

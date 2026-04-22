@@ -1,0 +1,57 @@
+{
+  "name": "PaymentEvent",
+  "type": "object",
+  "properties": {
+    "invoice_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "invoice_issued",
+        "invoice_sent",
+        "payment_link_created",
+        "payment_succeeded",
+        "payment_partially_succeeded",
+        "payment_failed",
+        "refund_issued",
+        "status_overridden",
+        "marked_overdue"
+      ]
+    },
+    "processor": {
+      "type": "string"
+    },
+    "processor_ref": {
+      "type": "string"
+    },
+    "error_code": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "metadata_json": {
+      "type": "object"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "invoice_id",
+    "event_type",
+    "occurred_at"
+  ]
+}
