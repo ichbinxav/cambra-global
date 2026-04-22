@@ -1,0 +1,65 @@
+{
+  "name": "IntelligenceInsight",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "result_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "overpaying_payments",
+        "overpaying_shipping",
+        "saas_redundancy",
+        "low_readiness",
+        "high_opportunity_low_readiness",
+        "general"
+      ],
+      "default": "general"
+    },
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "metric_key": {
+      "type": "string"
+    },
+    "cohort_ref": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "default": "info"
+    },
+    "action_key": {
+      "type": "string"
+    },
+    "estimated": {
+      "type": "boolean",
+      "default": true
+    },
+    "confidence": {
+      "type": "number",
+      "default": 0.5
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "type",
+    "title",
+    "message"
+  ]
+}

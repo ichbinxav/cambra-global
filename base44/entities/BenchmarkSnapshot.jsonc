@@ -1,0 +1,47 @@
+{
+  "name": "BenchmarkSnapshot",
+  "type": "object",
+  "properties": {
+    "cohort_key": {
+      "type": "string"
+    },
+    "month": {
+      "type": "string",
+      "description": "YYYY-MM"
+    },
+    "metric_key": {
+      "type": "string"
+    },
+    "n": {
+      "type": "number",
+      "default": 0
+    },
+    "mean": {
+      "type": "number"
+    },
+    "p25": {
+      "type": "number"
+    },
+    "p50": {
+      "type": "number"
+    },
+    "p75": {
+      "type": "number"
+    },
+    "p90": {
+      "type": "number"
+    },
+    "std": {
+      "type": "number"
+    },
+    "source_count_json": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "cohort_key",
+    "month",
+    "metric_key",
+    "n"
+  ]
+}

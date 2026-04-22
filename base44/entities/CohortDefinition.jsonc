@@ -1,0 +1,23 @@
+{
+  "name": "CohortDefinition",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "rules_json": {
+      "type": "object"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "rules_json"
+  ]
+}

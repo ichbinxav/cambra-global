@@ -8,6 +8,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import ScoreCard from "@/components/results/ScoreCard";
+import IntelligencePanel from "@/components/results/IntelligencePanel";
 
 import { computeInfraScore } from "@/lib/scoreEngine";
 import NormalizedBarChart from "@/components/charts/NormalizedBarChart";
@@ -71,6 +72,7 @@ export default function Results() {
   const [scoreReport, setScoreReport] = useState(null);
   const [subscribed, setSubscribed] = useState(false);
   const [needsAuth, setNeedsAuth] = useState(false);
+  const [intelligence, setIntelligence] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -88,6 +90,8 @@ export default function Results() {
         if (inputs.length) {
           setInput(inputs[0]);
           setScoreReport(computeInfraScore(inputs[0], "manual"));
+          const intel = await base44.functions.invoke('computeIntelligenceForBrand', { resultId: id });
+          setIntelligence(intel.data?.intelligence || null);
         }
       }
       setLoading(false);
@@ -351,6 +355,11 @@ export default function Results() {
               </button>
             </Link>
           </div>
+        )}
+
+        {/* ═══ 3A. INTELLIGENCE ═════════════════════════════════════ */}
+        {intelligence && (
+          <IntelligencePanel intelligence={intelligence} />
         )}
 
         {/* ═══ 3. INFRASTRUCTURE SCORE ══════════════════════════════ */}
