@@ -35,16 +35,20 @@ export default function AdminRecommendations(){
         <div className="py-20 text-center text-sm text-muted-foreground">Cargando…</div>
       ) : (
         <div className="overflow-auto rounded-lg border">
-          <table className="min-w-[900px] w-full text-sm">
+          <table className="min-w-[1100px] w-full text-sm">
             <thead className="bg-secondary/40">
               <tr>
                 <th className="text-left p-2">Brand</th>
                 <th className="text-left p-2">Tipo</th>
                 <th className="text-left p-2">Título</th>
+                <th className="text-left p-2">Prioridad</th>
+                <th className="text-left p-2">Esfuerzo</th>
+                <th className="text-left p-2">MD</th>
                 <th className="text-left p-2">Beneficio</th>
                 <th className="text-left p-2">Acción</th>
                 <th className="text-left p-2">Score</th>
                 <th className="text-left p-2">Generada</th>
+                <th className="text-left p-2">Ops</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -53,14 +57,20 @@ export default function AdminRecommendations(){
                   <td className="p-2">{r.brand_id}</td>
                   <td className="p-2"><span className="text-[10px] px-2 py-0.5 rounded-full border">{r.type}</span></td>
                   <td className="p-2 font-medium">{r.title}</td>
+                  <td className="p-2">{typeof r.score_json?.total==='number' ? (r.score_json.total>=75?'Alta':r.score_json.total>=50?'Media':'Baja') : '—'}</td>
+                  <td className="p-2">{r.effort_level || '—'}</td>
+                  <td className="p-2">{Array.isArray(r.missing_data)? r.missing_data.length : 0}</td>
                   <td className="p-2">{r.expected_benefit || '—'}</td>
                   <td className="p-2">{r.action_required || '—'}</td>
                   <td className="p-2">{Math.round((r.score_json?.total||0)*100)/100}</td>
                   <td className="p-2">{r.generated_at ? new Date(r.generated_at).toLocaleString() : '—'}</td>
+                  <td className="p-2">
+                    <button className="text-xs underline" onClick={async()=>{ await base44.functions.invoke('regenerateRecommendationsForBrand', { brandId: r.brand_id }); load(); }}>Recalcular</button>
+                  </td>
                 </tr>
               ))}
               {items.length===0 && (
-                <tr><td colSpan={7} className="p-6 text-center text-sm text-muted-foreground">Sin recomendaciones</td></tr>
+                <tr><td colSpan={11} className="p-6 text-center text-sm text-muted-foreground">Sin recomendaciones</td></tr>
               )}
             </tbody>
           </table>
