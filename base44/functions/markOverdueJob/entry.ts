@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.PaymentEvent.create({
         invoice_id: inv.id,
         brand_id: inv.brand_id || null,
-        amount: inv.balance_due || (inv.total_amount || inv.amount || 0),
+        amount: inv.balance_due || (inv.total_amount || 0),
         currency: inv.currency || 'EUR',
         event_type: 'marked_overdue',
         occurred_at: nowIso

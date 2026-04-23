@@ -14,10 +14,6 @@
     "month": {
       "type": "string"
     },
-    "amount": {
-      "type": "number",
-      "description": "Legacy total amount; kept for backward-compat. Use total_amount for new code."
-    },
     "currency": {
       "type": "string",
       "default": "EUR"

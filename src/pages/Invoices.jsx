@@ -42,7 +42,7 @@ export default function Invoices() {
                 <td className="p-2">{inv.invoice_number || inv.id}</td>
                 <td className="p-2">{inv.issued_at ? new Date(inv.issued_at).toLocaleDateString() : '—'}</td>
                 <td className="p-2">{inv.due_at ? new Date(inv.due_at).toLocaleDateString() : '—'}</td>
-                <td className="p-2">€{(inv.total_amount ?? inv.amount ?? 0).toLocaleString()}</td>
+                <td className="p-2">€{(inv.total_amount ?? 0).toLocaleString()}</td>
                 <td className="p-2">{inv.status}</td>
                 <td className="p-2">{inv.hosted_invoice_url ? <a className="text-blue-600 underline" href={inv.hosted_invoice_url} target="_blank">Pay</a> : '—'}</td>
               </tr>

@@ -117,7 +117,7 @@ export default function AdminActivationDetail(){
           <ul className="space-y-1 text-sm">
             {invoices.map(i=> (
               <li key={i.id} className="flex items-center justify-between border rounded-md px-2 py-1">
-                <span>{i.month} · €{Number(i.amount||0).toLocaleString()} · {i.status}</span>
+                <span>{i.month} · €{Number(i.total_amount||0).toLocaleString()} · {i.status}</span>
                 {i.status!=='void' && <button onClick={()=>openOverride('void_invoice', { invoice_id: i.id })} className="text-xs underline">Void</button>}
               </li>
             ))}

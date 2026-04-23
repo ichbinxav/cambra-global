@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
 
     const stripe = new Stripe(key, { apiVersion: '2023-10-16' });
 
-    const amountCents = Math.round((inv.total_amount || inv.amount || 0) * 100);
+    const amountCents = Math.round((inv.total_amount || 0) * 100);
     if (!amountCents || amountCents <= 0) return Response.json({ error: 'Invalid invoice amount' }, { status: 400 });
 
     const session = await stripe.checkout.sessions.create({
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.PaymentEvent.create({
       invoice_id: inv.id,
       brand_id: inv.brand_id || null,
-      amount: inv.total_amount || inv.amount || 0,
+      amount: inv.total_amount || 0,
       currency: inv.currency || 'EUR',
       event_type: 'payment_link_created',
       processor: 'stripe',

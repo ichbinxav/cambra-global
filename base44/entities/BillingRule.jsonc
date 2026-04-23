@@ -64,19 +64,6 @@
     "approved_at": {
       "type": "string",
       "format": "date-time"
-    },
-    "model": {
-      "type": "string",
-      "enum": [
-        "monthly_success_fee"
-      ],
-      "default": "monthly_success_fee",
-      "description": "Legacy compatibility"
-    },
-    "start_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Legacy compatibility"
     }
   },
   "required": [

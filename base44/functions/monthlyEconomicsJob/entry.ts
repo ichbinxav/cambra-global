@@ -123,7 +123,8 @@ Deno.serve(async (req) => {
           subtotal_amount: Number(feeRes.fee || 0),
           tax_amount: 0,
           total_amount: Number(feeRes.fee || 0),
-          amount: Number(feeRes.fee || 0),
+          amount_paid: 0,
+          balance_due: Number(feeRes.fee || 0),
           currency: feeRes.currency || 'EUR',
           status: 'draft',
           monthly_savings_report_id: report.id,
@@ -139,7 +140,7 @@ Deno.serve(async (req) => {
           subtotal_amount: Number(feeRes.fee || 0),
           tax_amount: 0,
           total_amount: Number(feeRes.fee || 0),
-          amount: Number(feeRes.fee || 0),
+          balance_due: Math.max(0, Number(feeRes.fee || 0) - Number(inv[0].amount_paid || 0)),
           currency: feeRes.currency || 'EUR',
           monthly_savings_report_id: report.id
         });

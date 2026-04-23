@@ -66,6 +66,7 @@ Deno.serve(async (req) => {
     const tax = 0; // extend later
     const total = subtotal + tax;
 
+    // canonical-only amounts (no legacy 'amount')
     const inv = await base44.asServiceRole.entities.Invoice.create({
       monthly_savings_report_id: report.id,
       deal_activation_id: report.deal_activation_id || null,

@@ -83,7 +83,7 @@ export default function AdminInvoices() {
                   <td className="p-2">{inv.brand_id || '—'}</td>
                   <td className="p-2">{inv.issued_at ? new Date(inv.issued_at).toLocaleDateString() : '—'}</td>
                   <td className="p-2">{inv.due_at ? new Date(inv.due_at).toLocaleDateString() : '—'}</td>
-                  <td className="p-2">€{(inv.total_amount ?? inv.amount ?? 0).toLocaleString()}</td>
+                  <td className="p-2">€{(inv.total_amount ?? 0).toLocaleString()}</td>
                   <td className="p-2">€{(inv.amount_paid ?? 0).toLocaleString()}</td>
                   <td className="p-2"><span className="px-2 py-0.5 rounded-full border text-xs">{inv.status}</span></td>
                   <td className="p-2 flex gap-2">

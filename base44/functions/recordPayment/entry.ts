@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
     const inv = rows?.[0];
     if (!inv) return Response.json({ error: 'Invoice not found' }, { status: 404 });
 
-    const total = Number(inv.total_amount || inv.amount || 0);
+    const total = Number(inv.total_amount || 0);
     const newPaid = Math.round(((Number(inv.amount_paid || 0) + Number(amount)) + Number.EPSILON) * 100) / 100;
     const newBalance = Math.max(0, Math.round(((total - newPaid) + Number.EPSILON) * 100) / 100);
     const newStatus = computeStatus(total, newPaid);
