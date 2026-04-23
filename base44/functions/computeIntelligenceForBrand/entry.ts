@@ -76,18 +76,24 @@ Deno.serve(async (req) => {
       ? (Number(input.total_saas_spend) / Number(monthlyRevenue)) * 100
       : null;
 
-    // Prefer cohort snapshots; fallback to ad-hoc peers
+    // Prefer cohort snapshots; fallback to global, then ad-hoc peers
     let paymentsBench, shippingBench;
+    let usedKeyPay = cohortKey, usedKeyShip = cohortKey;
+    let fallbackUsed = false;
+    const monthsAgo = (ym) => { if(!ym) return Infinity; const [y,m]=ym.split('-').map(Number); const d=new Date(y, (m||1)-1, 1); const now=new Date(); return (now.getFullYear()-d.getFullYear())*12 + (now.getMonth()-d.getMonth()); };
+    const confFrom = (n, ym) => {
+      const nComp = Math.min(1, (n||0) / 100);
+      const rec = monthsAgo(ym);
+      const recComp = rec <= 1 ? 1 : (rec <= 3 ? 0.85 : (rec <= 6 ? 0.7 : 0.5));
+      return Math.round((0.3 + 0.6*nComp*recComp) * 100) / 100; // 0.3..0.9
+    };
     try {
       const snaps = await base44.asServiceRole.entities.BenchmarkSnapshot.filter({ cohort_key: cohortKey }, '-month', 100);
       const pick = (arr, metric) => (arr || []).filter(s => s.metric_key === metric).sort((a,b)=> (a.month > b.month ? -1 : 1))[0] || null;
       let pSnap = pick(snaps, 'payments.effective_rate');
       let sSnap = pick(snaps, 'shipping.avg_cost');
-      if (!pSnap || !sSnap) {
-        const gSnaps = await base44.asServiceRole.entities.BenchmarkSnapshot.filter({ cohort_key: 'global|all|mixed' }, '-month', 100);
-        pSnap = pSnap || pick(gSnaps, 'payments.effective_rate');
-        sSnap = sSnap || pick(gSnaps, 'shipping.avg_cost');
-      }
+      if (!pSnap) { const gSnaps = await base44.asServiceRole.entities.BenchmarkSnapshot.filter({ cohort_key: 'global|all|mixed' }, '-month', 100); pSnap = pick(gSnaps, 'payments.effective_rate'); usedKeyPay = 'global|all|mixed'; fallbackUsed = true; }
+      if (!sSnap) { const gSnaps = await base44.asServiceRole.entities.BenchmarkSnapshot.filter({ cohort_key: 'global|all|mixed' }, '-month', 100); sSnap = pick(gSnaps, 'shipping.avg_cost'); usedKeyShip = 'global|all|mixed'; fallbackUsed = true; }
       paymentsBench = {
         value: payEff,
         unit: '%',
@@ -95,6 +101,8 @@ Deno.serve(async (req) => {
         p50: pSnap?.p50 ?? 1.4,
         p75: pSnap?.p75 ?? 1.8,
         p90: pSnap?.p90 ?? 2.2,
+        month: pSnap?.month || null,
+        confidence: confFrom(pSnap?.n || 0, pSnap?.month || null),
       };
       shippingBench = {
         value: shipAvg,
@@ -103,6 +111,8 @@ Deno.serve(async (req) => {
         p50: sSnap?.p50 ?? 5.2,
         p75: sSnap?.p75 ?? 6.9,
         p90: sSnap?.p90 ?? 8.5,
+        month: sSnap?.month || null,
+        confidence: confFrom(sSnap?.n || 0, sSnap?.month || null),
       };
     } catch {
       // Fallback to ad-hoc peers (bounded)
@@ -162,8 +172,9 @@ Deno.serve(async (req) => {
 
     // Insights
     const insights = [];
-    const estFlag = !(paymentsBench.n >= 20 && shippingBench.n >= 20);
-    const confidence = estFlag ? 0.55 : 0.8;
+    const MIN_N = 20;
+    const estFlag = fallbackUsed || !(paymentsBench.n >= MIN_N && shippingBench.n >= MIN_N);
+    const confidence = Math.round((Math.min(paymentsBench.confidence||0.9, shippingBench.confidence||0.9)) * 100) / 100;
 
     if (paymentsBench.value != null && paymentsBench.p50 != null && paymentsBench.value > paymentsBench.p50 + 0.3) {
       insights.push({
@@ -219,7 +230,7 @@ Deno.serve(async (req) => {
     }
 
     const intelligence = {
-      cohort: { key: cohortKey, rules: { geo, gmv_band: gmvBand, channel: channelBucket }, n: Math.max(paymentsBench.n, shippingBench.n) },
+      cohort: { key: cohortKey, rules: { geo, gmv_band: gmvBand, channel: channelBucket }, n: Math.max(paymentsBench.n, shippingBench.n), used_keys: { payments: usedKeyPay, shipping: usedKeyShip } },
       metrics: {
         payments: { effective_rate: paymentsBench },
         shipping: { avg_cost: shippingBench },
@@ -228,7 +239,10 @@ Deno.serve(async (req) => {
       infra_breakdown: breakdown,
       infra_score: infraScore,
       insights,
-      flags: { estimated: estFlag, confidence }
+      flags: { estimated: estFlag, confidence, fallback_used: fallbackUsed },
+      explanation: fallbackUsed
+        ? 'Using global cohort fallback due to limited samples for your cohort.'
+        : 'Benchmarks sourced from your cohort snapshot (latest month) with reported sample size.'
     };
 
     return Response.json({ intelligence });

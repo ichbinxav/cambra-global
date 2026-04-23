@@ -72,6 +72,18 @@ export default function IntelligencePanel({ intelligence }){
         <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/45 font-medium">Intelligence</p>
       </div>
 
+      {/* Cohort summary */}
+      {intelligence?.cohort && (
+        <div className="rounded-2xl border border-border/50 bg-card p-3 flex flex-wrap items-center gap-2 text-[11px]">
+          <span className="px-2 py-0.5 rounded-full border">Cohort: {intelligence.cohort.key}</span>
+          <span className="px-2 py-0.5 rounded-full border">n={intelligence.cohort.n || 0}</span>
+          <span className={`px-2 py-0.5 rounded-full border ${intelligence?.flags?.fallback_used ? 'border-orange-400 text-orange-600' : 'border-green-400 text-green-600'}`}>
+            {intelligence?.flags?.fallback_used ? 'Global fallback' : 'Cohort match'}
+          </span>
+          <span className="ml-auto text-muted-foreground/60">Confidence: {Math.round((intelligence?.flags?.confidence || 0)*100)}%</span>
+        </div>
+      )}
+
       {/* Percentiles */}
       <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
         <div className="grid grid-cols-5 gap-3 px-4 py-2.5 bg-secondary/40 border-b border-border/30">
