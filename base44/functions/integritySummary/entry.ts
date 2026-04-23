@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Invoice.list(),
     ]);
 
-    const byAct = (arr, key='deal_activation_id') => arr.reduce((m,x)=>{ const k=x[key]||x.deal_id; if(!k) return m; (m[k]=m[k]||[]).push(x); return m; },{});
+    const byAct = (arr, key='deal_activation_id') => arr.reduce((m,x)=>{ const k = x[key]; if(!k) return m; (m[k]=m[k]||[]).push(x); return m; },{});
 
     const blByA = byAct(baselines);
     const ruByA = byAct(rules);

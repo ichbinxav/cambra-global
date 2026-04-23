@@ -16,6 +16,7 @@ import LiveActivity from "@/components/admin/LiveActivity";
 import RecommendationsWidget from "@/components/admin/RecommendationsWidget";
 import CommandHero from "@/components/admin/CommandHero";
 import OperationsConsole from "@/components/admin/OperationsConsole";
+import DataIntegrityWidget from "@/components/admin/DataIntegrityWidget";
 
 function toDateFromMonth(ym) {
   // ym = 'YYYY-MM'
@@ -321,6 +322,10 @@ export default function AdminOverview() {
       {/* Recommendations for Admin */}
       <div className="mt-4">
         <RecommendationsWidget />
+      </div>
+
+      <div className="mt-4">
+        <DataIntegrityWidget />
       </div>
 
       {/* 3. CONVERSION + BOTTLENECKS — now inside OperationsConsole */}
