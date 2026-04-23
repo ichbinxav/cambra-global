@@ -49,15 +49,15 @@ export default function AdminLayout() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="text-center max-w-sm">
-          <h1 className="text-lg font-bold mb-2">Se requiere inicio de sesión</h1>
-          <p className="text-sm text-muted-foreground mb-4">Abre la ventana de login y vuelve automáticamente.</p>
+          <h1 className="text-lg font-bold mb-2">Sign-in required</h1>
+          <p className="text-sm text-muted-foreground mb-4">Open the login window and return automatically.</p>
           <a
             href="/auth/start"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold"
           >
-            Iniciar sesión
+            Sign in
           </a>
         </div>
       </div>
@@ -165,7 +165,7 @@ export default function AdminLayout() {
               href="/Dashboard"
               className="h-8 px-3 rounded-lg border border-border/40 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             >
-              Volver a la app
+              Back to app
             </a>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 border border-red-500/20 font-semibold">Admin</span>
           </div>
