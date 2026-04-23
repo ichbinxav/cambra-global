@@ -289,7 +289,7 @@ export default function Results() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* 1. Efficiency Score */}
           <div className="p-5 rounded-2xl border border-border/50 bg-card">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Efficiency Score</p>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Cost Efficiency</p>
             <div className="flex items-center gap-4">
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
@@ -364,7 +364,7 @@ export default function Results() {
 
         {/* ═══ 3. INFRASTRUCTURE SCORE ══════════════════════════════ */}
         <div>
-          <SectionLabel>Infrastructure score</SectionLabel>
+          <SectionLabel>Infrastructure Score</SectionLabel>
           {scoreReport ? (
             <ScoreCard scoreReport={scoreReport} />
           ) : (
