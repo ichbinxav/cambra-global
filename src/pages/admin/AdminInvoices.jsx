@@ -46,6 +46,13 @@ export default function AdminInvoices() {
     await load();
   };
 
+  const generatePdf = async (id) => {
+    try {
+      const res = await base44.functions.invoke('generateInvoicePdf', { invoice_id: id });
+      if (res.data?.url) window.open(res.data.url, '_blank');
+    } catch (e) { alert(e.response?.data?.error || e.message); }
+  };
+
   return (
     <div className="p-4 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -87,6 +94,7 @@ export default function AdminInvoices() {
                   <td className="p-2">€{(inv.amount_paid ?? 0).toLocaleString()}</td>
                   <td className="p-2"><span className="px-2 py-0.5 rounded-full border text-xs">{inv.status}</span></td>
                   <td className="p-2 flex gap-2">
+                    <Button size="sm" variant="outline" onClick={()=>generatePdf(inv.id)}>PDF</Button>
                     <Button size="sm" variant="outline" onClick={()=>createLink(inv.id)}>Payment link</Button>
                     <Button size="sm" onClick={()=>markPaid(inv.id)}>Record payment</Button>
                     <Button size="sm" variant="ghost" onClick={()=>reconcile(inv.id)}>Reconcile</Button>

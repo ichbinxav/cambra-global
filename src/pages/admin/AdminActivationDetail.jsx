@@ -37,6 +37,18 @@ export default function AdminActivationDetail(){
     setData(res.data);
   };
 
+  const issueInvoiceFromReport = async (reportId) => {
+    const res = await base44.functions.invoke('generateInvoiceFromReport', { report_id: reportId, issue: true });
+    if (res.data?.error) { toast.error(res.data.error); return; }
+    toast.success('Invoice issued');
+    await reload();
+  };
+
+  const downloadInvoicePdf = async (invoiceId) => {
+    const res = await base44.functions.invoke('generateInvoicePdf', { invoice_id: invoiceId });
+    if (res.data?.url) window.open(res.data.url, '_blank');
+  };
+
   const openOverride = (action, payload={}) => { setOverrideAction(action); setOverridePayload(payload); setOverrideOpen(true); };
   const submitOverride = async () => {
     if (!overrideReason.trim()) { setOverrideReasonError('Please provide a reason'); return; }
@@ -109,7 +121,12 @@ export default function AdminActivationDetail(){
             {reports.map(r=> (
               <li key={r.id} className="flex items-center justify-between border rounded-md px-2 py-1">
                 <span>{r.month} · Savings €{(r.savings||0).toLocaleString()} · Fee €{(r.node_fee||0).toLocaleString()} · {r.measurement_mode}</span>
-                <button onClick={()=>openOverride('verify_report', { report_id: r.id })} className="text-xs underline">Verify</button>
+                <div className="flex items-center gap-2">
+                  <button onClick={()=>openOverride('verify_report', { report_id: r.id })} className="text-xs underline">Verify</button>
+                  {r.status === 'calculated' && (
+                    <button onClick={()=>issueInvoiceFromReport(r.id)} className="text-xs underline">Issue</button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
@@ -118,7 +135,10 @@ export default function AdminActivationDetail(){
             {invoices.map(i=> (
               <li key={i.id} className="flex items-center justify-between border rounded-md px-2 py-1">
                 <span>{i.month} · €{Number(i.total_amount||0).toLocaleString()} · {i.status}</span>
-                {i.status!=='void' && <button onClick={()=>openOverride('void_invoice', { invoice_id: i.id })} className="text-xs underline">Void</button>}
+                <div className="flex items-center gap-2">
+                  <button onClick={()=>downloadInvoicePdf(i.id)} className="text-xs underline">PDF</button>
+                  {i.status!=='void' && <button onClick={()=>openOverride('void_invoice', { invoice_id: i.id })} className="text-xs underline">Void</button>}
+                </div>
               </li>
             ))}
           </ul>
