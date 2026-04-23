@@ -103,7 +103,7 @@ export default function AdminOverview() {
   const appsFiltered = (apps || []).filter(a => {
     const q = search.toLowerCase();
     const b = brandByEmail(a.user_email);
-    const matchQ = !q || a.deal_name?.toLowerCase().includes(q) || a.provider?.toLowerCase().includes(q) || a.user_email?.toLowerCase().includes(q) || b?.name?.toLowerCase().includes(q);
+    const matchQ = !q || a.deal_name?.toLowerCase().includes(q) || a.user_email?.toLowerCase().includes(q) || b?.name?.toLowerCase().includes(q);
     const matchStage = stage === "all" || a.status === stage;
     const matchCountry = country === "all" || brandCountryMap.get(a.user_email) === country;
     return matchQ && matchStage && matchCountry;
@@ -220,15 +220,15 @@ export default function AdminOverview() {
   // SECTION 6 — PROVIDER PERFORMANCE
   const providerAgg = {};
   (reports || []).forEach(r => {
-    const key = r.provider_id || r.provider || "—";
+    const key = r.provider_id || 'unknown';
     if (!providerAgg[key]) providerAgg[key] = { savings: 0, revenue: 0, deals: 0 };
     providerAgg[key].savings += r.savings || 0;
     providerAgg[key].revenue += r.node_fee || 0;
     providerAgg[key].deals += 1;
   });
   const providerRows = Object.entries(providerAgg)
-    .map(([idOrName, v]) => ({
-      name: providers.find(p => p.id === idOrName)?.name || idOrName,
+    .map(([providerId, v]) => ({
+      name: providers.find(p => p.id === providerId)?.name || providerId,
       savings: Math.round(v.savings),
       revenue: Math.round(v.revenue),
       deals: v.deals,

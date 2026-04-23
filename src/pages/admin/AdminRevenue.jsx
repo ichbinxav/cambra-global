@@ -9,6 +9,7 @@ export default function AdminRevenue() {
   const [activations, setActivations] = useState([]);
   const [brands, setBrands] = useState([]);
   const [reports, setReports] = useState([]);
+  const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,7 +17,8 @@ export default function AdminRevenue() {
       base44.entities.DealActivation.list(),
       base44.entities.Brand.list(),
       base44.entities.MonthlySavingsReport.list("-month", 500),
-    ]).then(([acts, b, msr]) => { setActivations(acts); setBrands(b); setReports(msr); setLoading(false); });
+      base44.entities.Provider.list(),
+    ]).then(([acts, b, msr, prov]) => { setActivations(acts); setBrands(b); setReports(msr); setProviders(prov); setLoading(false); });
   }, []);
 
   if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
@@ -30,14 +32,14 @@ export default function AdminRevenue() {
   // Monetized by provider (from MonthlySavingsReport)
   const byProvider = {};
   (reports || []).forEach(r => {
-    const key = r.provider_id || r.provider || '—';
+    const key = r.provider_id || 'unknown';
     if (!byProvider[key]) byProvider[key] = { savings: 0, revenue: 0, count: 0 };
     byProvider[key].savings += r.savings || 0;
     byProvider[key].revenue += r.node_fee || 0;
     byProvider[key].count++;
   });
   const providerData = Object.entries(byProvider)
-    .map(([name, v]) => ({ name, savings: Math.round(v.savings), revenue: Math.round(v.revenue), deals: v.count }))
+    .map(([providerId, v]) => ({ name: (providers.find(p => p.id === providerId)?.name) || providerId, savings: Math.round(v.savings), revenue: Math.round(v.revenue), deals: v.count }))
     .sort((a, b) => b.revenue - a.revenue);
 
   // Helper: months (last 6) monetized fees from reports

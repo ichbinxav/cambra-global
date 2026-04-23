@@ -15,7 +15,7 @@ export default function AdminInvoices() {
   const load = async () => {
     setLoading(true);
     const list = status==='all' ? await base44.entities.Invoice.list('-issued_at', 500) : await base44.entities.Invoice.filter({ status }, '-issued_at', 500);
-    const data = (list || []).filter(i => !q || (i.invoice_number||'').toLowerCase().includes(q.toLowerCase()) || (i.brand_id||'').includes(q));
+    const data = (list || []).filter(i => !q || (i.invoice_number||'').toLowerCase().includes(q.toLowerCase()) || (i.brand_id||'').includes(q) || (i.provider_id||'').includes(q));
     setItems(data);
     setLoading(false);
   };
@@ -55,7 +55,7 @@ export default function AdminInvoices() {
             {STATUSES.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
           </SelectContent>
         </Select>
-        <Input placeholder="Search # or brand_id" value={q} onChange={e=>setQ(e.target.value)} className="w-64" />
+        <Input placeholder="Search #, brand_id o provider_id" value={q} onChange={e=>setQ(e.target.value)} className="w-64" />
         <Button variant="outline" onClick={load}>Refresh</Button>
       </div>
 

@@ -60,7 +60,7 @@ export default function AdminActivationDetail(){
           <div className="text-sm mt-2 space-y-1">
             <div>Status: <b>{activation.status}</b></div>
             <div>Brand: <b>{activation.brand_id}</b></div>
-            <div>Provider: <b>{activation.provider_id||'-'}</b></div>
+            <div>Provider ID: <b>{activation.provider_id||'-'}</b></div>
             <div>Vertical: <b>{activation.vertical}</b></div>
             <div>Projected savings / yr: <b>€{(activation.projected_savings_annual ?? 0).toLocaleString()}</b></div>
             <div>Realized savings / yr: <b>{activation.realized_savings_yearly !== undefined ? `€${(activation.realized_savings_yearly||0).toLocaleString()}` : '—'}</b></div>
