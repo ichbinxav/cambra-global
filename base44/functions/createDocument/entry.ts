@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
     const isAdmin = user?.role === 'admin';
 
-    // Resolve owner (brand by default)
+    // Resolve owner (brand preferred; fallback to provider; else admin)
     let owner_type = 'brand';
     let owner_id = null;
     if (isAdmin && ownerTypeInput && ownerIdInput) {
@@ -37,7 +37,18 @@ Deno.serve(async (req) => {
     } else {
       const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1);
       if (brands && brands[0]) { owner_id = brands[0].id; owner_type = 'brand'; }
-      else { owner_type = 'admin'; owner_id = user.id || user.email; }
+      else {
+        // try provider scope
+        try {
+          const providers = await base44.entities.Provider.filter({ contact_email: user.email });
+          const managed = await base44.entities.Provider.filter({ account_manager: user.email });
+          const pid = (providers?.[0]?.id) || (managed?.[0]?.id) || null;
+          if (pid) { owner_type = 'provider'; owner_id = pid; }
+          else { owner_type = 'admin'; owner_id = user.id || user.email; }
+        } catch {
+          owner_type = 'admin'; owner_id = user.id || user.email;
+        }
+      }
     }
 
     // Non-admins cannot set admin_only/provider_and_admin visibility

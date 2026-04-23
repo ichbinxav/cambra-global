@@ -15,6 +15,11 @@ function monthKey(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padSt
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    // Allow scheduled/service calls; block non-admin interactive calls
+    const user = await base44.auth.me().catch(() => null);
+    if (user && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
 
     const now = new Date(); now.setMonth(now.getMonth()-1); // process previous month
     const ym = monthKey(now);
