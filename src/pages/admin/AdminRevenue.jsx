@@ -10,6 +10,7 @@ export default function AdminRevenue() {
   const [brands, setBrands] = useState([]);
   const [reports, setReports] = useState([]);
   const [providers, setProviders] = useState([]);
+  const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,41 +19,46 @@ export default function AdminRevenue() {
       base44.entities.Brand.list(),
       base44.entities.MonthlySavingsReport.list("-month", 500),
       base44.entities.Provider.list(),
-    ]).then(([acts, b, msr, prov]) => { setActivations(acts); setBrands(b); setReports(msr); setProviders(prov); setLoading(false); });
+      base44.entities.Invoice.list("-issued_at", 500),
+    ]).then(([acts, b, msr, prov, invs]) => { setActivations(acts); setBrands(b); setReports(msr); setProviders(prov); setInvoices(invs); setLoading(false); });
   }, []);
 
   if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
 
   const activeActivations = activations.filter(a => ["activated","migrating","live","monetizing"].includes(a.status));
   const totalSavings = 0;
-  const realizedFees = reports.filter(r => REALIZED_STATUSES.includes(r.status)).reduce((s, r) => s + (r.node_fee || 0), 0);
+  const realizedFees = (invoices || []).filter(i => ['issued','sent','due','overdue','paid'].includes(i.status)).reduce((s, i) => s + (i.total_amount || 0), 0);
   const realizedSavings = reports.filter(r => REALIZED_STATUSES.includes(r.status)).reduce((s, r) => s + (r.savings || 0), 0);
-  const contractsWithRealized = Array.from(new Set((reports || []).filter(r => REALIZED_STATUSES.includes(r.status)).map(r => r.deal_activation_id))).length;
+  const contractsWithRealized = Array.from(new Set((invoices || []).filter(i => ['issued','sent','due','overdue','paid'].includes(i.status)).map(i => i.deal_activation_id))).length;
 
-  // Monetized by provider (from MonthlySavingsReport)
+  // Monetized by provider (revenue from Invoices, savings from Reports)
   const byProvider = {};
   (reports || []).forEach(r => {
     const key = r.provider_id || 'unknown';
     if (!byProvider[key]) byProvider[key] = { savings: 0, revenue: 0, count: 0 };
     byProvider[key].savings += r.savings || 0;
-    byProvider[key].revenue += r.node_fee || 0;
     byProvider[key].count++;
+  });
+  (invoices || []).forEach(i => {
+    if (['void','failed','refunded'].includes(i.status)) return;
+    const key = i.provider_id || 'unknown';
+    if (!byProvider[key]) byProvider[key] = { savings: 0, revenue: 0, count: 0 };
+    byProvider[key].revenue += i.total_amount || 0;
   });
   const providerData = Object.entries(byProvider)
     .map(([providerId, v]) => ({ name: (providers.find(p => p.id === providerId)?.name) || providerId, savings: Math.round(v.savings), revenue: Math.round(v.revenue), deals: v.count }))
     .sort((a, b) => b.revenue - a.revenue);
 
-  // Helper: months (last 6) monetized fees from reports
+  // Helper: months (last 6) monetized (paid invoices by paid_at month)
   const now = new Date();
   const monthlyData = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const monthFees = (reports || []).filter(r => r.month === key && REALIZED_STATUSES.includes(r.status))
-      .reduce((s, r) => s + (r.node_fee || 0), 0);
+    const paidSum = (invoices || []).filter(inv => inv.status === 'paid' && inv.paid_at && new Date(inv.paid_at).getMonth() === d.getMonth() && new Date(inv.paid_at).getFullYear() === d.getFullYear())
+      .reduce((s, inv) => s + (inv.total_amount || 0), 0);
     monthlyData.push({
       month: d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
-      monetized: Math.round(monthFees),
+      monetized: Math.round(paidSum),
     });
   }
 
@@ -62,7 +68,7 @@ export default function AdminRevenue() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-black tracking-[-0.03em]">Revenue Tracking</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">Admin truth: Monetized (realized) based on invoiced/paid reports</p>
+        <p className="text-xs text-muted-foreground mt-0.5">Admin truth: Monetized basado en facturas (issued/sent/due/overdue/paid) y Realized en facturas pagadas</p>
       </div>
 
       {/* Top KPIs */}

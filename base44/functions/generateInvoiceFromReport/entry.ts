@@ -98,6 +98,10 @@ Deno.serve(async (req) => {
       metadata_json: { report_id: report.id, invoice_number }
     });
 
+    if (issue && report?.id) {
+      await base44.asServiceRole.entities.MonthlySavingsReport.update(report.id, { status: 'invoiced' });
+    }
+
     return Response.json({ invoice: inv });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

@@ -41,6 +41,17 @@ Deno.serve(async (req) => {
       metadata_json: { from_status: old?.status, to_status: data.status }
     });
 
+    // Sync linked report status (if automation is wired)
+    if (data.monthly_savings_report_id) {
+      let target = null;
+      if (["issued","sent","due","overdue"].includes(data.status)) target = 'invoiced';
+      else if (data.status === 'paid') target = 'paid';
+      else if (data.status === 'void') target = 'calculated';
+      if (target) {
+        await base44.asServiceRole.entities.MonthlySavingsReport.update(data.monthly_savings_report_id, { status: target });
+      }
+    }
+
     return Response.json({ status: 'ok' });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

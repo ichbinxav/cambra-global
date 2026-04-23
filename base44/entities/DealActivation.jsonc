@@ -84,7 +84,7 @@
         "revoked",
         "closed"
       ],
-      "default": "activated"
+      "default": "detected"
     },
     "realization_mode": {
       "type": "string",

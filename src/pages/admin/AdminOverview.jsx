@@ -132,8 +132,8 @@ export default function AdminOverview() {
     const d = toDateFromMonth(r.month);
     return d && d >= since && d <= now;
   });
-  const monetizedPaid = reportsInRange.filter(r => r.status === "paid").reduce((s, r) => s + (r.node_fee || 0), 0);
-  const monetizedInvoiced = reportsInRange.filter(r => r.status === "invoiced").reduce((s, r) => s + (r.node_fee || 0), 0);
+  const monetizedPaid = (invoices || []).filter(i => i.status === 'paid').reduce((s, i) => s + (i.total_amount || 0), 0);
+  const monetizedInvoiced = (invoices || []).filter(i => ['issued','sent','due','overdue'].includes(i.status)).reduce((s, i) => s + (i.total_amount || 0), 0);
 
   const pendingStatuses = [DEAL_STATUSES.IN_REVIEW, DEAL_STATUSES.PROVIDER_CONTACTED, DEAL_STATUSES.OFFER_READY];
   const pendingDealValue = (apps || []).filter(a => pendingStatuses.includes(a.status)).reduce((s, a) => s + (a.estimated_savings || 0), 0);
@@ -255,14 +255,13 @@ export default function AdminOverview() {
 
   // SECTION 8 — REVENUE & BILLING
   const realizedSavings = (reports || []).filter(r => ["invoiced","paid"].includes(r.status)).reduce((s, r) => s + (r.savings || 0), 0);
-  const monetizedPaidAll = (reports || []).filter(r => r.status === "paid").reduce((s, r) => s + (r.node_fee || 0), 0);
-  const monetizedInvoicedAll = (reports || []).filter(r => r.status === "invoiced").reduce((s, r) => s + (r.node_fee || 0), 0);
-  // last 6 months paid trend
+  const monetizedPaidAll = (invoices || []).filter(i => i.status === 'paid').reduce((s, i) => s + (i.total_amount || 0), 0);
+  const monetizedInvoicedAll = (invoices || []).filter(i => ['issued','sent','due','overdue'].includes(i.status)).reduce((s, i) => s + (i.total_amount || 0), 0);
+  // last 6 months paid trend (by paid_at)
   const monthSeries = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const paid = (reports || []).filter(r => r.month === key && r.status === 'paid').reduce((s, r) => s + (r.node_fee || 0), 0);
+    const paid = (invoices || []).filter(i => i.status === 'paid' && i.paid_at && new Date(i.paid_at).getMonth() === d.getMonth() && new Date(i.paid_at).getFullYear() === d.getFullYear()).reduce((s, i) => s + (i.total_amount || 0), 0);
     monthSeries.push({ label: d.toLocaleDateString('en-GB', { month: 'short' }), paid: Math.round(paid) });
   }
   const overdueInvoices = (invoices || []).filter(i => i.status === 'overdue').length;

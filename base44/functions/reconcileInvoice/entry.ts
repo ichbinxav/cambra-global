@@ -15,6 +15,23 @@ Deno.serve(async (req) => {
     const rows = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id }, '-created_date', 1);
     const inv = rows?.[0];
     if (!inv) return Response.json({ error: 'Invoice not found' }, { status: 404 });
+    // Enforce valid state transitions
+    const ALLOWED = {
+      draft: ['issued','void'],
+      issued: ['sent','void','failed','due','disputed'],
+      sent: ['due','void','failed','disputed'],
+      due: ['overdue','void','failed','disputed'],
+      overdue: ['paid','void','failed','disputed'],
+      partially_paid: ['paid','void','failed','disputed'],
+      paid: ['refunded'],
+      failed: [],
+      void: [],
+      disputed: []
+    };
+    const allowedNext = ALLOWED[inv.status] || [];
+    if (!allowedNext.includes(target_status)) {
+      return Response.json({ error: `Invalid transition ${inv.status} -> ${target_status}` }, { status: 400 });
+    }
 
     const patch = { status: target_status };
     if (adjustments && (typeof adjustments.amount_delta === 'number' || typeof adjustments.tax_delta === 'number')) {
@@ -40,6 +57,12 @@ Deno.serve(async (req) => {
       occurred_at: new Date().toISOString(),
       metadata_json: { target_status, reason, adjustments }
     });
+
+    if (inv.monthly_savings_report_id) {
+      if (target_status === 'void' || target_status === 'failed') {
+        await base44.asServiceRole.entities.MonthlySavingsReport.update(inv.monthly_savings_report_id, { status: 'calculated' });
+      }
+    }
 
     return Response.json({ invoice: updated });
   } catch (error) {

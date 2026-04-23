@@ -23,6 +23,10 @@ Deno.serve(async (req) => {
     const rows = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id }, '-created_date', 1);
     const inv = rows?.[0];
     if (!inv) return Response.json({ error: 'Invoice not found' }, { status: 404 });
+    const blockedStatuses = ['draft','void','refunded','failed'];
+    if (blockedStatuses.includes(inv.status)) {
+      return Response.json({ error: `Payments not allowed from status ${inv.status}` }, { status: 400 });
+    }
 
     const total = Number(inv.total_amount || 0);
     const newPaid = Math.round(((Number(inv.amount_paid || 0) + Number(amount)) + Number.EPSILON) * 100) / 100;
@@ -48,6 +52,11 @@ Deno.serve(async (req) => {
       occurred_at: received_at || new Date().toISOString(),
       metadata_json: { method, note }
     });
+
+    if (inv.monthly_savings_report_id) {
+      const target = newStatus === 'paid' ? 'paid' : 'invoiced';
+      await base44.asServiceRole.entities.MonthlySavingsReport.update(inv.monthly_savings_report_id, { status: target });
+    }
 
     return Response.json({ invoice: updated });
   } catch (error) {

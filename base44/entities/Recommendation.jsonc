@@ -84,6 +84,18 @@
     },
     "admin_notes": {
       "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "seen",
+        "dismissed",
+        "implemented",
+        "archived"
+      ],
+      "default": "active"
     }
   },
   "required": [
