@@ -76,21 +76,31 @@ export default function Results() {
 
   useEffect(() => {
     (async () => {
-      const id = new URLSearchParams(window.location.search).get("id");
+      const urlId = new URLSearchParams(window.location.search).get("id");
       const authed = await base44.auth.isAuthenticated();
       if (!authed) { setNeedsAuth(true); setLoading(false); return; }
-      if (!id) { setLoading(false); return; }
       const me = await base44.auth.me();
-      const res = await base44.entities.AnalyzerResult.filter({ id });
-      if (!res.length || res[0].created_by !== me.email) { setLoading(false); setResult(null); return; }
+
+      // Fetch by URL id first; if missing or not found yet, fallback to latest result for this user
+      let res = [];
+      if (urlId) {
+        res = await base44.entities.AnalyzerResult.filter({ id: urlId });
+      }
+      if (!res.length) {
+        res = await base44.entities.AnalyzerResult.filter({ created_by: me.email }, "-created_date", 1);
+      }
+      if (!res.length) { setLoading(false); setResult(null); return; }
+
       const r = res[0];
+      if (r.created_by && r.created_by !== me.email) { setLoading(false); setResult(null); return; }
+
       setResult(r);
       if (r.input_id) {
         const inputs = await base44.entities.AnalyzerInput.filter({ id: r.input_id });
         if (inputs.length) {
           setInput(inputs[0]);
           setScoreReport(computeInfraScore(inputs[0], "manual"));
-          const intel = await base44.functions.invoke('computeIntelligenceForBrand', { resultId: id });
+          const intel = await base44.functions.invoke('computeIntelligenceForBrand', { resultId: r.id });
           setIntelligence(intel.data?.intelligence || null);
         }
       }
