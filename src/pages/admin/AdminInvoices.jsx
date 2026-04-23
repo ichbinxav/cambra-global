@@ -62,7 +62,7 @@ export default function AdminInvoices() {
             {STATUSES.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
           </SelectContent>
         </Select>
-        <Input placeholder="Search #, brand_id o provider_id" value={q} onChange={e=>setQ(e.target.value)} className="w-64" />
+        <Input placeholder="Search #, brand_id or provider_id" value={q} onChange={e=>setQ(e.target.value)} className="w-64" />
         <Button variant="outline" onClick={load}>Refresh</Button>
       </div>
 

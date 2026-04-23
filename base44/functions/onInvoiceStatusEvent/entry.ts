@@ -5,7 +5,9 @@ const statusToEvent = (status) => {
     case 'issued': return 'invoice_issued';
     case 'sent': return 'invoice_sent';
     case 'paid': return 'payment_succeeded';
+    case 'partially_paid': return 'payment_partially_succeeded';
     case 'overdue': return 'marked_overdue';
+    case 'refunded': return 'refund_issued';
     case 'void': return 'status_overridden';
     default: return null;
   }
@@ -14,7 +16,10 @@ const statusToEvent = (status) => {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch(() => null);
+    if (user && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
 
     const payload = await req.json();
     const event = payload?.event || {};
@@ -32,7 +37,7 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.PaymentEvent.create({
       invoice_id: data.id,
       brand_id: data.brand_id || null,
-      amount: data.total_amount || data.amount || 0,
+      amount: data.total_amount || 0,
       currency: data.currency || 'EUR',
       event_type: evType,
       processor: data.payment_provider || null,
@@ -46,7 +51,7 @@ Deno.serve(async (req) => {
       let target = null;
       if (["issued","sent","due","overdue"].includes(data.status)) target = 'invoiced';
       else if (data.status === 'paid') target = 'paid';
-      else if (data.status === 'void') target = 'calculated';
+      else if (data.status === 'refunded' || data.status === 'void') target = 'calculated';
       if (target) {
         await base44.asServiceRole.entities.MonthlySavingsReport.update(data.monthly_savings_report_id, { status: target });
       }

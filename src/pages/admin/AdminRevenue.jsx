@@ -68,7 +68,7 @@ export default function AdminRevenue() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-black tracking-[-0.03em]">Revenue Tracking</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">Admin truth: Monetized basado en facturas (issued/sent/due/overdue/paid) y Realized en facturas pagadas</p>
+        <p className="text-xs text-muted-foreground mt-0.5">Admin truth: Monetized based on invoices (issued/sent/due/overdue/paid) and Realized from paid invoices</p>
       </div>
 
       {/* Top KPIs */}
