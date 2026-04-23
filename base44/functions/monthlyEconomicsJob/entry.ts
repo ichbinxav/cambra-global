@@ -27,7 +27,10 @@ Deno.serve(async (req) => {
       processed += 1;
       // Resolve baseline (canonical first)
       let baselines = await base44.asServiceRole.entities.Baseline.filter({ deal_activation_id: a.id }, '-created_date', 1);
-      if (!baselines.length) baselines = await base44.asServiceRole.entities.Baseline.filter({ deal_id: a.id }, '-created_date', 1);
+      if (!baselines.length) {
+        console.warn('monthlyEconomicsJob: legacy fallback to deal_id for baseline', { activation_id: a.id });
+        baselines = await base44.asServiceRole.entities.Baseline.filter({ deal_id: a.id }, '-created_date', 1);
+      }
       const baseline = baselines[0];
       if (!baseline) { skipped += 1; continue; }
 
@@ -66,7 +69,7 @@ Deno.serve(async (req) => {
         savings = Math.max(0, baselineCost - actualCost);
       }
 
-      const rule = await selectRule(base44, a.id, ym) || { node_share_percent: a.node_share_percent || 25, currency: 'EUR' };
+      const rule = await selectRule(base44, a.id, ym) || { node_share_percent: a.node_share_percent || 25, currency: 'EUR' }; // canonical by deal_activation_id
       const feeRes = await calcFee(base44, savings, rule);
 
       // Idempotent upsert for MonthlySavingsReport
@@ -117,6 +120,9 @@ Deno.serve(async (req) => {
           brand_id: a.brand_id || '',
           provider_id: a.provider_id || '',
           month: ym,
+          subtotal_amount: Number(feeRes.fee || 0),
+          tax_amount: 0,
+          total_amount: Number(feeRes.fee || 0),
           amount: Number(feeRes.fee || 0),
           currency: feeRes.currency || 'EUR',
           status: 'draft',
@@ -129,7 +135,14 @@ Deno.serve(async (req) => {
           await base44.asServiceRole.entities.Invoice.update(inv[i].id, { status: 'void', notes: 'Duplicate auto-void' });
         }
       } else if (inv[0].status === 'draft') {
-        await base44.asServiceRole.entities.Invoice.update(inv[0].id, { amount: Number(feeRes.fee || 0), currency: feeRes.currency || 'EUR', monthly_savings_report_id: report.id });
+        await base44.asServiceRole.entities.Invoice.update(inv[0].id, {
+          subtotal_amount: Number(feeRes.fee || 0),
+          tax_amount: 0,
+          total_amount: Number(feeRes.fee || 0),
+          amount: Number(feeRes.fee || 0),
+          currency: feeRes.currency || 'EUR',
+          monthly_savings_report_id: report.id
+        });
       }
     }
 

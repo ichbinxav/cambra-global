@@ -38,6 +38,8 @@ Deno.serve(async (req) => {
 
     const report = await getReport(base44, report_id);
     if (!report) return Response.json({ error: 'Report not found' }, { status: 404 });
+    if (!report.provider_id) console.warn('generateInvoiceFromReport: report missing provider_id', { report_id });
+    if (!report.deal_activation_id) console.warn('generateInvoiceFromReport: report missing deal_activation_id', { report_id });
 
     // Determine fee (prefer report.node_fee). If missing, compute from rule or error.
     let currency = report.currency || 'EUR';

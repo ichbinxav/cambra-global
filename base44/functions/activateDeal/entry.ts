@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
     assert(me, 'Unauthorized');
 
     const body = await req.json().catch(() => ({}));
-    const { vertical, resultId } = body || {};
+    const { vertical, resultId, provider_id: providerId } = body || {};
     assert(vertical, 'vertical required');
 
     const brands = await base44.entities.Brand.filter({ created_by: me.email }, '-created_date', 1);
@@ -60,6 +60,7 @@ Deno.serve(async (req) => {
       brand_id: brand.id,
       user_email: me.email,
       vertical,
+      provider_id: providerId || undefined,
       provider_from: providerFrom,
       provider_to: providerTo,
       projected_savings_monthly: Math.round(estMonthly),

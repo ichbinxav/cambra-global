@@ -14,11 +14,19 @@ Deno.serve(async (req) => {
     if (!myProviders.size) return Response.json({ ok: true, providers: [], activations: [], leads: [] });
 
     const provIds = Array.from(myProviders);
-    const activations = (await base44.entities.DealActivation.list()).filter(a=>provIds.includes(a.provider_id));
+    const activations = (await base44.entities.DealActivation.list()).filter(a=>provIds.includes(a.provider_id)); // canonical provider_id
     const leads = (await base44.entities.ProviderLead?.list?.() || []).filter(l=>provIds.includes(l.provider_id));
     const tasks = await base44.entities.MigrationTask.list();
 
-    const tasksByA = tasks.reduce((m,t)=>{ const k=t.deal_activation_id||t.deal_id; if(!k) return m; (m[k]=m[k]||[]).push(t); return m; },{});
+    const tasksByA = tasks.reduce((m,t)=>{
+    const k = t.deal_activation_id || t.deal_id;
+    if (!k) return m;
+    if (!t.deal_activation_id && t.deal_id) {
+      console.warn('providerScopedData: legacy fallback task.deal_id', { task_id: t.id });
+    }
+    (m[k] = m[k] || []).push(t);
+    return m;
+  },{});
 
     const shapedActs = activations.map(a=>({
       ...a,
