@@ -315,18 +315,11 @@ export const translations = {
 const LanguageContext = createContext({ lang: "en", setLang: () => {} });
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("node_lang");
-      if (stored && LANGUAGES.find(l => l.code === stored)) return stored;
-      const browser = navigator.language?.slice(0, 2);
-      if (browser && LANGUAGES.find(l => l.code === browser)) return browser;
-    }
-    return "en";
-  });
+  const [lang, setLang] = useState('en');
 
   useEffect(() => {
-    localStorage.setItem("node_lang", lang);
+    // Persist English to ensure consistency
+    try { localStorage.setItem("node_lang", 'en'); } catch {}
   }, [lang]);
 
   return (
