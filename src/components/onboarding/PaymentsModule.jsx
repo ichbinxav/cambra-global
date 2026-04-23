@@ -29,7 +29,28 @@ export default function PaymentsModule(){
   const save = async () => {
     if (!brandId) return;
     setSaving(true);
-    const body = { ...item, brand_id: brandId };
+    const body = {
+      ...item,
+      brand_id: brandId,
+      // canonical write (EN) + legacy mirror (ES)
+      current_psp: item.psp_actual ?? item.current_psp ?? '',
+      blended_rate_percent: item.blended_rate ?? item.blended_rate_percent ?? 0,
+      channels: item.canales ?? item.channels ?? [],
+      countries: item.paises ?? item.countries ?? [],
+      currencies: item.monedas ?? item.currencies ?? [],
+      monthly_volume_eur: item.vol_mensual ?? item.monthly_volume_eur ?? 0,
+      monthly_tx_count: item.tx_mensuales ?? item.monthly_tx_count ?? 0,
+      average_order_value_eur: item.aov ?? item.average_order_value_eur ?? 0,
+      refunds_rate_percent: item.refunds_rate ?? item.refunds_rate_percent ?? 0,
+      chargeback_rate_percent: item.chargeback_rate ?? item.chargeback_rate_percent ?? 0,
+      payout_days: item.payout_timing ?? item.payout_days ?? 0,
+      risk_notes: item.fraude_flags ?? item.risk_notes ?? '',
+      contract: {
+        renewal_on: item.contrato?.renovacion_en ?? item.contract?.renewal_on ?? '',
+        type: item.contrato?.tipo ? (item.contrato.tipo === 'mensual' ? 'monthly' : item.contrato.tipo === 'anual' ? 'annual' : 'other') : (item.contract?.type ?? undefined)
+      },
+      frustrations: item.frustraciones ?? item.frustrations ?? ''
+    };
     if (item?.id) await base44.entities.PaymentsProfile.update(item.id, body);
     else {
       const created = await base44.entities.PaymentsProfile.create(body);

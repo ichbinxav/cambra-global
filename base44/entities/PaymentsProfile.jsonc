@@ -6,12 +6,32 @@
       "type": "string"
     },
     "psp_actual": {
+      "type": "string",
+      "description": "DEPRECATED: use current_psp"
+    },
+    "current_psp": {
       "type": "string"
     },
     "blended_rate": {
+      "type": "number",
+      "description": "DEPRECATED: use blended_rate_percent"
+    },
+    "blended_rate_percent": {
       "type": "number"
     },
     "canales": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "online",
+          "in_store",
+          "omni"
+        ]
+      },
+      "description": "DEPRECATED: use channels"
+    },
+    "channels": {
       "type": "array",
       "items": {
         "type": "string",
@@ -26,34 +46,75 @@
       "type": "array",
       "items": {
         "type": "string"
+      },
+      "description": "DEPRECATED: use countries"
+    },
+    "countries": {
+      "type": "array",
+      "items": {
+        "type": "string"
       }
     },
     "monedas": {
       "type": "array",
       "items": {
         "type": "string"
+      },
+      "description": "DEPRECATED: use currencies"
+    },
+    "currencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
       }
     },
     "vol_mensual": {
+      "type": "number",
+      "description": "DEPRECATED: use monthly_volume_eur"
+    },
+    "monthly_volume_eur": {
       "type": "number"
     },
     "tx_mensuales": {
+      "type": "number",
+      "description": "DEPRECATED: use monthly_tx_count"
+    },
+    "monthly_tx_count": {
       "type": "number"
     },
     "aov": {
+      "type": "number",
+      "description": "DEPRECATED: use average_order_value_eur"
+    },
+    "average_order_value_eur": {
       "type": "number"
     },
     "refunds_rate": {
+      "type": "number",
+      "description": "DEPRECATED: use refunds_rate_percent"
+    },
+    "refunds_rate_percent": {
       "type": "number"
     },
     "chargeback_rate": {
+      "type": "number",
+      "description": "DEPRECATED: use chargeback_rate_percent"
+    },
+    "chargeback_rate_percent": {
       "type": "number"
     },
     "payout_timing": {
       "type": "number",
-      "description": "d\u00edas"
+      "description": "DEPRECATED: use payout_days"
+    },
+    "payout_days": {
+      "type": "number"
     },
     "fraude_flags": {
+      "type": "string",
+      "description": "DEPRECATED: use risk_notes"
+    },
+    "risk_notes": {
       "type": "string"
     },
     "terminal_provider": {
@@ -61,6 +122,7 @@
     },
     "contrato": {
       "type": "object",
+      "description": "DEPRECATED: use contract",
       "properties": {
         "renovacion_en": {
           "type": "string",
@@ -76,7 +138,28 @@
         }
       }
     },
+    "contract": {
+      "type": "object",
+      "properties": {
+        "renewal_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "monthly",
+            "annual",
+            "other"
+          ]
+        }
+      }
+    },
     "frustraciones": {
+      "type": "string",
+      "description": "DEPRECATED: use frustrations"
+    },
+    "frustrations": {
       "type": "string"
     },
     "current_providers": {

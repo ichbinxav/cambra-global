@@ -6,6 +6,10 @@
       "type": "string"
     },
     "plataforma": {
+      "type": "string",
+      "description": "DEPRECATED: use platform"
+    },
+    "platform": {
       "type": "string"
     },
     "crm": {
@@ -18,6 +22,10 @@
       }
     },
     "soporte": {
+      "type": "string",
+      "description": "DEPRECATED: use support"
+    },
+    "support": {
       "type": "string"
     },
     "analytics": {
@@ -34,12 +42,20 @@
       "description": "search / reviews / loyalty"
     },
     "gasto_mensual_map": {
+      "type": "object",
+      "description": "DEPRECATED: use monthly_spend_map"
+    },
+    "monthly_spend_map": {
       "type": "object"
     },
     "contrato_map": {
       "type": "object"
     },
     "renovaciones_map": {
+      "type": "object",
+      "description": "DEPRECATED: use renewals_map"
+    },
+    "renewals_map": {
       "type": "object"
     },
     "overlapping_tools": {

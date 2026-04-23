@@ -28,7 +28,15 @@ export default function SaasModule(){
   const save = async () => {
     if (!brandId) return;
     setSaving(true);
-    const body = { ...item, brand_id: brandId };
+    const body = {
+      ...item,
+      brand_id: brandId,
+      // canonical write (EN) + legacy mirror (ES)
+      platform: item.plataforma ?? item.platform ?? '',
+      support: item.soporte ?? item.support ?? '',
+      monthly_spend_map: item.gasto_mensual_map ?? item.monthly_spend_map ?? {},
+      renewals_map: item.renovaciones_map ?? item.renewals_map ?? {}
+    };
     if (item?.id) await base44.entities.SaaSProfile.update(item.id, body);
     else {
       const created = await base44.entities.SaaSProfile.create(body);

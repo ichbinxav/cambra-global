@@ -28,7 +28,20 @@ export default function ShippingModule(){
   const save = async () => {
     if (!brandId) return;
     setSaving(true);
-    const body = { ...item, brand_id: brandId };
+    const body = {
+      ...item,
+      brand_id: brandId,
+      // canonical write (EN) + legacy mirror (ES)
+      shipping_model: item.modelo ? (item.modelo === 'agregador' ? 'aggregator' : 'direct') : (item.shipping_model ?? undefined),
+      served_countries: item.paises_serv ?? item.served_countries ?? [],
+      domestic_share_percent: item.domestic_vs_intl ?? item.domestic_share_percent ?? 0,
+      monthly_orders: item.pedidos_mensuales ?? item.monthly_orders ?? 0,
+      avg_weight_kg: item.avg_weight ?? item.avg_weight_kg ?? 0,
+      dimensions: item.dims ?? item.dimensions ?? '',
+      return_rate_percent: item.returns_rate ?? item.return_rate_percent ?? 0,
+      shipping_cost_eur: item.coste_envio ?? item.shipping_cost_eur ?? 0,
+      express_mix_percent: item.mix_express_standard ?? item.express_mix_percent ?? 0
+    };
     if (item?.id) await base44.entities.ShippingProfile.update(item.id, body);
     else {
       const created = await base44.entities.ShippingProfile.create(body);

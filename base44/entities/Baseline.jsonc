@@ -7,7 +7,7 @@
     },
     "deal_id": {
       "type": "string",
-      "description": "Legacy: previous ambiguous reference"
+      "description": "DEPRECATED: legacy ambiguous reference. Present for temporary read-only compatibility."
     },
     "deal_activation_id": {
       "type": "string",
@@ -70,6 +70,36 @@
     "is_current": {
       "type": "boolean",
       "default": true
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "metric_name": {
+      "type": "string"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "methodology": {
+      "type": "string"
+    },
+    "confidence_score": {
+      "type": "number"
+    },
+    "verified_by": {
+      "type": "string"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "supersedes_id": {
+      "type": "string"
     }
   },
   "required": [

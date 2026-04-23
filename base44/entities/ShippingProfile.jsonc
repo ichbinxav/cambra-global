@@ -16,6 +16,14 @@
       "enum": [
         "agregador",
         "directo"
+      ],
+      "description": "DEPRECATED: use shipping_model"
+    },
+    "shipping_model": {
+      "type": "string",
+      "enum": [
+        "aggregator",
+        "direct"
       ]
     },
     "three_pl": {
@@ -30,31 +38,63 @@
       "type": "array",
       "items": {
         "type": "string"
+      },
+      "description": "DEPRECATED: use served_countries"
+    },
+    "served_countries": {
+      "type": "array",
+      "items": {
+        "type": "string"
       }
     },
     "domestic_vs_intl": {
       "type": "number",
-      "description": "porcentaje domestic (0-100)"
+      "description": "DEPRECATED: use domestic_share_percent (0-100)"
+    },
+    "domestic_share_percent": {
+      "type": "number"
     },
     "pedidos_mensuales": {
+      "type": "number",
+      "description": "DEPRECATED: use monthly_orders"
+    },
+    "monthly_orders": {
       "type": "number"
     },
     "avg_weight": {
+      "type": "number",
+      "description": "DEPRECATED: use avg_weight_kg"
+    },
+    "avg_weight_kg": {
       "type": "number"
     },
     "dims": {
       "type": "string",
-      "description": "LxAxH opcional"
+      "description": "DEPRECATED: use dimensions"
+    },
+    "dimensions": {
+      "type": "string"
     },
     "returns_rate": {
+      "type": "number",
+      "description": "DEPRECATED: use return_rate_percent"
+    },
+    "return_rate_percent": {
       "type": "number"
     },
     "coste_envio": {
+      "type": "number",
+      "description": "DEPRECATED: use shipping_cost_eur"
+    },
+    "shipping_cost_eur": {
       "type": "number"
     },
     "mix_express_standard": {
       "type": "number",
-      "description": "% express (0-100)"
+      "description": "DEPRECATED: use express_mix_percent"
+    },
+    "express_mix_percent": {
+      "type": "number"
     },
     "warehouse_model": {
       "type": "string",
@@ -62,7 +102,11 @@
         "propio",
         "3pl",
         "hibrido",
-        "otro"
+        "otro",
+        "own",
+        "3pl",
+        "hybrid",
+        "other"
       ]
     },
     "pain_points": {

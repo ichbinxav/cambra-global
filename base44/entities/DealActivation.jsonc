@@ -21,7 +21,8 @@
       "type": "string"
     },
     "provider": {
-      "type": "string"
+      "type": "string",
+      "description": "DEPRECATED: legacy provider name. Present for temporary read-only compatibility."
     },
     "vertical": {
       "type": "string",
