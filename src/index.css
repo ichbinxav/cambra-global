@@ -92,7 +92,7 @@
 .results-dark .card-dark { background: #1a1a1a; border: 1px solid #333; }
 
 /* SaaS gradient + glass (CAMBRA) */
-.bg-saas-gradient { background: linear-gradient(135deg, #C7B7F4 0%, #F7F5F0 45%, #DCEBE3 100%); }
+.bg-saas-gradient { background: linear-gradient(135deg, #9C86EE 0%, #E3DED5 45%, #B7D6C8 100%); }
 .text-saas-gradient { background: linear-gradient(135deg, #C7B7F4 0%, #DCEBE3 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .glass { background: hsl(var(--card) / 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid hsl(var(--border) / 0.6); }
 
@@ -106,9 +106,9 @@
   --brand-bluegrey: 193 16% 86%; /* #D6E0E2 */
 }
 
-/* Button gradient — high readability */
-.btn-gradient { background: linear-gradient(135deg, #C7B7F4 0%, #EDEAE3 40%, #DCEBE3 100%); color: hsl(var(--foreground)); border: 1px solid hsl(var(--brand-accent) / 0.35); box-shadow: 0 12px 30px rgba(30,20,60,0.06); }
-.btn-gradient:hover { box-shadow: 0 16px 34px rgba(30,20,60,0.09); }
+/* Button gradient — high readability (darker) */
+.btn-gradient { background: linear-gradient(135deg, #9C86EE 0%, #D7D0C4 40%, #B7D6C8 100%); color: hsl(var(--foreground)); border: 1px solid hsl(var(--brand-accent) / 0.5); box-shadow: 0 10px 26px rgba(30,20,60,0.10); }
+.btn-gradient:hover { box-shadow: 0 14px 30px rgba(30,20,60,0.16); }
 
 /* Brand utilities */
 .text-brand { color: hsl(var(--brand-accent)); }
