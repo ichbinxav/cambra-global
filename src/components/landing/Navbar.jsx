@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/AuthContext";
 const NAV_PUBLIC = [
   { label: "How it works", href: "#how" },
   { label: "Analyzer", href: "/Analyzer" },
-  { label: "Join THE NoDE", href: "/Onboarding" },
+  { label: "Join CAMBRA", href: "/Onboarding" },
 ];
 
 const NAV_MEMBER = [
@@ -17,7 +17,7 @@ const NAV_MEMBER = [
   { label: "Deals", href: "/Deals" },
   { label: "Insights", href: "/Insights" },
   { label: "Network", href: "/Network" },
-  { label: "Join THE NoDE", href: "/Onboarding" },
+  { label: "Join CAMBRA", href: "/Onboarding" },
 ];
 
 export default function Navbar() {
@@ -38,7 +38,7 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link to="/" className="text-sm font-black tracking-tight flex-shrink-0">
-          THE NoDE
+          CAMBRA
         </Link>
 
         {/* Desktop nav */}
@@ -127,7 +127,7 @@ export default function Navbar() {
                   Sign in with Google / Apple
                 </a>
                 <Link to="/Onboarding" onClick={() => setOpen(false)}>
-                  <Button variant="outline" className="w-full h-12 rounded-full text-sm">Join THE NoDE</Button>
+                  <Button variant="outline" className="w-full h-12 rounded-full text-sm">Join CAMBRA</Button>
                 </Link>
               </>
             )}

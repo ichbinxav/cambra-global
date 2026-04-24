@@ -489,7 +489,7 @@ export default function Analyzer() {
 
       {/* Header */}
       <div className="sticky top-0 z-40 flex items-center justify-between px-5 py-4 border-b border-border/40 bg-background/98 backdrop-blur-xl">
-        <span className="text-sm font-black tracking-tight">THE NoDE</span>
+        <span className="text-sm font-black tracking-tight">CAMBRA</span>
         <div className="flex items-center gap-3">
           <span className="text-xs text-muted-foreground/50 hidden sm:block">~2 minutes</span>
           <div className="flex items-center gap-1.5">

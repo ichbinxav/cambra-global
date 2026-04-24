@@ -199,7 +199,7 @@ export default function Results() {
 
     // Create PDF
     const doc = new jsPDF();
-    doc.setFontSize(18); doc.text('THE NoDE — Results Summary', 20, 20);
+    doc.setFontSize(18); doc.text('CAMBRA — Results Summary', 20, 20);
 
     let y = 28;
     doc.setFontSize(12);
@@ -227,7 +227,7 @@ export default function Results() {
 
       {/* ── Sticky top bar ── */}
       <div className="sticky top-0 z-20 border-b border-border/40 px-5 py-3.5 flex items-center justify-between bg-background/97 backdrop-blur-2xl">
-        <Link to="/" className="text-sm font-black tracking-tight">THE NoDE</Link>
+        <Link to="/" className="text-sm font-black tracking-tight">CAMBRA</Link>
         <div className="flex items-center gap-2">
           <Link to="/Reports">
             <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground rounded-full px-3 hidden sm:flex">History</Button>
@@ -336,7 +336,7 @@ export default function Results() {
               return (
                 <p className="text-sm text-foreground">
                   {pct !== null ? (
-                    <>Your brand is spending <span className="font-bold">{pct}%</span> more than THE NoDE network average.</>
+                    <>Your brand is spending <span className="font-bold">{pct}%</span> more than CAMBRA network average.</>
                   ) : (
                     <span className="text-muted-foreground/60">Not enough data for the benchmark.</span>
                   )}
@@ -526,7 +526,7 @@ export default function Results() {
 
         {/* ═══ 7. DEALS ════════════════════════════════════════════ */}
         <div>
-          <SectionLabel>Available deals via THE NoDE</SectionLabel>
+          <SectionLabel>Available deals via CAMBRA</SectionLabel>
           <div className="space-y-3">
             {DEALS.map((deal, i) => (
               <div key={i} className={`p-5 rounded-xl border flex items-center gap-4 ${deal.bg}`}>
@@ -579,7 +579,7 @@ export default function Results() {
         <div className="text-center pt-2">
           <h3 className="text-2xl font-black tracking-[-0.03em] mb-2">Ready to recover this?</h3>
           <p className="text-muted-foreground text-sm mb-7 max-w-sm mx-auto">
-            Join THE NoDE network and start fixing your infrastructure today.
+            Join CAMBRA network and start fixing your infrastructure today.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/Onboarding" className="w-full sm:w-auto">
@@ -592,7 +592,7 @@ export default function Results() {
 
         {/* Disclaimer */}
         <div className="mt-10 pt-6 border-t border-[#333] text-center">
-          <p className="text-[11px] text-muted-foreground/60">This analysis is an estimate based on the current aggregated volume of THE NoDE network.</p>
+          <p className="text-[11px] text-muted-foreground/60">This analysis is an estimate based on the current aggregated volume of CAMBRA network.</p>
         </div>
 
       </div>

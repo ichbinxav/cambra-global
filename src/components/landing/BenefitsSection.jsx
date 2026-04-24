@@ -121,7 +121,7 @@ export default function BenefitsSection() {
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.4rem,6vw,5rem)] font-black tracking-[-0.05em] leading-[0.87] mb-5 text-center lg:text-left"
           >
-            The economic advantage<br />of THE NoDE.
+            The economic advantage<br />of CAMBRA.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
@@ -157,7 +157,7 @@ export default function BenefitsSection() {
             className="space-y-4 text-muted-foreground text-base leading-relaxed"
           >
             <p>You don't need more tools. You need better economics.</p>
-            <p>THE NoDE connects your business to a network designed to optimize how you spend, scale, and operate — so your infrastructure works for you, not against you.</p>
+            <p>CAMBRA connects your business to a network designed to optimize how you spend, scale, and operate — so your infrastructure works for you, not against you.</p>
           </motion.div>
         </div>
 

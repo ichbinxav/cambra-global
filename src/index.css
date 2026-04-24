@@ -91,9 +91,9 @@
 .results-dark { background: #0a0a0a; }
 .results-dark .card-dark { background: #1a1a1a; border: 1px solid #333; }
 
-/* SaaS gradient + glass */
-.bg-saas-gradient { background: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%); }
-.text-saas-gradient { background: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+/* SaaS gradient + glass (CAMBRA) */
+.bg-saas-gradient { background: linear-gradient(135deg, #C7B9FF 0%, #A7F3D0 100%); }
+.text-saas-gradient { background: linear-gradient(135deg, #C7B9FF 0%, #A7F3D0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .glass { background: hsl(var(--card) / 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid hsl(var(--border) / 0.6); }
 
 /* Premium gradient text */

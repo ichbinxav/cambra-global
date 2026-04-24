@@ -71,11 +71,11 @@ export default function FooterSection() {
       <footer className="py-10 px-5 border-t border-border/40 bg-background">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-5">
-            <span className="text-sm font-black tracking-tight">THE NoDE</span>
-            <span className="text-xs text-muted-foreground/40">Infrastructure leverage for independent brands</span>
+            <span className="text-sm font-black tracking-tight">CAMBRA</span>
+            <span className="text-xs text-muted-foreground/40">The operating layer behind independent brands</span>
           </div>
           <div className="flex items-center gap-5 text-xs text-muted-foreground/50">
-            <span>© {new Date().getFullYear()} THE NoDE</span>
+            <span>© {new Date().getFullYear()} CAMBRA Collective</span>
             <Link to="/Privacy" className="hover:text-foreground transition-colors">Privacy</Link>
             <Link to="/Terms" className="hover:text-foreground transition-colors">Terms</Link>
           </div>
