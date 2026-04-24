@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --font-inter: 'Inter', sans-serif;
+    --font-inter: 'Space Grotesk', 'Inter', sans-serif;
 
     --background: 45 33% 97%;
     --foreground: 260 12% 9%;
@@ -164,6 +164,12 @@
 /* Additional blur for locked state (details under titles) */
 .lock-blur .sensitive { filter: blur(6px); }
 .lock-blur .no-blur .sensitive { filter: none !important; }
+
+/* Typography weight normalization — tech-smart */
+.font-black { font-weight: 700 !important; }
+.font-extrabold { font-weight: 700 !important; }
+.font-bold { font-weight: 600 !important; }
+h1, h2, h3 { font-weight: 700; letter-spacing: -0.02em; }
 
 /* Motion reduce */
 @media (prefers-reduced-motion: reduce) {
