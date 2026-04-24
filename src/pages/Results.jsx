@@ -243,7 +243,7 @@ export default function Results() {
             </Button>
           ) : (
             <Link to="/Onboarding">
-              <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5 bg-saas-gradient text-white">
+              <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5 btn-gradient text-foreground border border-brand-subtle shadow-soft">
                 <Lock size={11} /> Unlock report — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span>
               </Button>
             </Link>
@@ -277,7 +277,7 @@ export default function Results() {
           {!subscribed && (
             <div className="mt-2">
               <Link to="/Onboarding">
-                <Button className="rounded-full px-6 text-sm gap-1.5 bg-saas-gradient text-white">
+                <Button className="rounded-full px-6 text-sm gap-1.5 btn-gradient text-foreground border border-brand-subtle shadow-soft">
                   Unlock report — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-bold">Free</span>
                 </Button>
               </Link>

@@ -106,6 +106,10 @@
   --brand-bluegrey: 193 16% 86%; /* #D6E0E2 */
 }
 
+/* Button gradient — high readability */
+.btn-gradient { background: linear-gradient(135deg, #C7B7F4 0%, #EDEAE3 40%, #DCEBE3 100%); color: hsl(var(--foreground)); border: 1px solid hsl(var(--brand-accent) / 0.35); box-shadow: 0 12px 30px rgba(30,20,60,0.06); }
+.btn-gradient:hover { box-shadow: 0 16px 34px rgba(30,20,60,0.09); }
+
 /* Brand utilities */
 .text-brand { color: hsl(var(--brand-accent)); }
 .text-deep { color: hsl(var(--brand-deep)); }

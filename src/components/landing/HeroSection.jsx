@@ -92,11 +92,11 @@ export default function HeroSection() {
               className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-6 py-4 rounded-full bg-saas-gradient text-foreground mx-auto border border-brand-subtle shadow-soft"
             >
               <div className="flex items-center gap-2">
-                <span className="text-sm text-background/40 line-through font-light">€60/month</span>
+                <span className="text-sm text-foreground/55 line-through font-light">€60/month</span>
                 <span className="text-xl sm:text-lg font-black">Free</span>
               </div>
-              <span className="hidden sm:inline text-background/40">·</span>
-              <span className="text-sm text-background/70">Early partners only</span>
+              <span className="hidden sm:inline text-foreground/55">·</span>
+              <span className="text-sm text-foreground/70">Early partners only</span>
             </motion.div>
             <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/50 mb-8 text-center lg:text-left">
               25% success fee on realized savings — if we don’t save you money, you pay zero.
@@ -119,7 +119,7 @@ export default function HeroSection() {
                 <>
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5">
+                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 btn-gradient text-foreground border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5">
                         Start now — free analysis <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>
@@ -136,7 +136,7 @@ export default function HeroSection() {
                 <>
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5">
+                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 btn-gradient text-foreground border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5">
                         Start now — free analysis <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>
