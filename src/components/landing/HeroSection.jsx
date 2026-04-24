@@ -38,11 +38,10 @@ export default function HeroSection() {
   return (
     <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">
 
-      {/* Grid background */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: "linear-gradient(hsl(0 0% 0% / 0.025) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 0% / 0.025) 1px, transparent 1px)",
-        backgroundSize: "48px 48px",
-      }} />
+      {/* Ambient background */}
+      <div className="absolute inset-0 pointer-events-none bg-ambient" />
+      <div className="absolute inset-0 pointer-events-none bg-dots" style={{ opacity: 0.5 }} />
+      <div className="absolute inset-0 pointer-events-none bg-mesh" style={{ opacity: 0.55 }} />
 
       {/* Parallax watermark */}
       <motion.div
@@ -56,7 +55,7 @@ export default function HeroSection() {
           {/* LEFT */}
           <motion.div variants={container} initial="hidden" animate="show" className="text-center md:text-center lg:text-left">
 
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
+            <motion.div variants={fadeUp} className="chip chip-brand mb-8">
               <motion.span
                 className="w-1.5 h-1.5 rounded-full bg-green-500"
                 animate={{ scale: [1, 1.5, 1] }}
@@ -90,7 +89,7 @@ export default function HeroSection() {
             {/* Pricing pill */}
             <motion.div
               variants={fadeUp}
-              className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-5 py-4 rounded-full bg-foreground text-background mx-auto"
+              className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-6 py-4 rounded-full bg-saas-gradient text-foreground mx-auto border border-brand-subtle shadow-soft"
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm text-background/40 line-through font-light">€60/month</span>

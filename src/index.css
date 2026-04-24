@@ -113,17 +113,28 @@
 .text-lilac { color: hsl(var(--brand-lilac)); }
 .text-mint { color: hsl(var(--brand-mint)); }
 
-.bg-brand-subtle { background: hsl(var(--brand-accent) / 0.06); }
-.border-brand-subtle { border-color: hsl(var(--brand-accent) / 0.2); }
-.bg-lilac-subtle { background: hsl(var(--brand-lilac) / 0.1); }
-.border-lilac-subtle { border-color: hsl(var(--brand-lilac) / 0.25); }
-.bg-mint-subtle { background: hsl(var(--brand-mint) / 0.18); }
-.border-mint-subtle { border-color: hsl(var(--brand-mint) / 0.28); }
+.bg-brand-subtle { background: hsl(var(--brand-accent) / 0.14); }
+.border-brand-subtle { border-color: hsl(var(--brand-accent) / 0.35); }
+.bg-lilac-subtle { background: hsl(var(--brand-lilac) / 0.18); }
+.border-lilac-subtle { border-color: hsl(var(--brand-lilac) / 0.35); }
+.bg-mint-subtle { background: hsl(var(--brand-mint) / 0.16); }
+.border-mint-subtle { border-color: hsl(var(--brand-mint) / 0.32); }
 
 /* Ambient visuals */
 .bg-ambient { background: linear-gradient(135deg, #C7B7F4 0%, #F7F5F0 45%, #DCEBE3 100%); }
 .bg-dots { background-image: radial-gradient(hsl(var(--brand-bluegrey) / 0.35) 1px, transparent 1px); background-size: 18px 18px; }
+.bg-mesh { background:
+  radial-gradient(40% 40% at 20% 15%, rgba(199,183,244,0.35), transparent 60%),
+  radial-gradient(35% 35% at 75% 20%, rgba(220,235,227,0.35), transparent 62%),
+  radial-gradient(45% 45% at 65% 80%, rgba(216,204,255,0.30), transparent 60%);
+  filter: saturate(105%);
+}
 .shadow-soft { box-shadow: 0 10px 30px rgba(30,20,60,0.06); }
+
+/* Chips / Pills */
+.chip { display:inline-flex; align-items:center; gap:0.5rem; padding:0.375rem 0.75rem; border-radius:999px; border:1px solid hsl(var(--border)); background: hsl(var(--background) / 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
+.chip-brand { border-color: hsl(var(--brand-accent) / 0.3); background: linear-gradient(135deg, rgba(199,183,244,0.32), rgba(247,245,240,0.7)); color: hsl(var(--foreground)); }
+.chip-mint { border-color: hsl(var(--brand-mint) / 0.35); background: linear-gradient(135deg, rgba(220,235,227,0.28), rgba(247,245,240,0.7)); color: hsl(var(--foreground)); }
 
 /* Premium gradient text */
 .gradient-text {
