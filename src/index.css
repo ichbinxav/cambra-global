@@ -8,26 +8,26 @@
   :root {
     --font-inter: 'Inter', sans-serif;
 
-    --background: 0 0% 100%;
-    --foreground: 0 0% 4%;
-    --card: 0 0% 99%;
-    --card-foreground: 0 0% 4%;
+    --background: 45 33% 97%;
+    --foreground: 260 12% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 260 12% 9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 4%;
     --primary: 0 0% 4%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 44%;
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 4%;
+    --secondary: 45 20% 95%;
+    --secondary-foreground: 260 12% 9%;
+    --muted: 45 20% 95%;
+    --muted-foreground: 265 8% 45%;
+    --accent: 45 20% 95%;
+    --accent-foreground: 260 12% 9%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 4%;
-    --radius: 0.75rem;
+    --border: 45 22% 90%;
+    --input: 45 22% 90%;
+    --ring: 259 88% 66%;
+    --radius: 1.25rem;
 
     /* Brand accents */
     --node-blue: 215 100% 50%;
@@ -92,9 +92,38 @@
 .results-dark .card-dark { background: #1a1a1a; border: 1px solid #333; }
 
 /* SaaS gradient + glass (CAMBRA) */
-.bg-saas-gradient { background: linear-gradient(135deg, #C7B9FF 0%, #A7F3D0 100%); }
-.text-saas-gradient { background: linear-gradient(135deg, #C7B9FF 0%, #A7F3D0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.bg-saas-gradient { background: linear-gradient(135deg, #C7B7F4 0%, #F7F5F0 45%, #DCEBE3 100%); }
+.text-saas-gradient { background: linear-gradient(135deg, #C7B7F4 0%, #DCEBE3 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .glass { background: hsl(var(--card) / 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid hsl(var(--border) / 0.6); }
+
+/* CAMBRA brand tokens */
+:root {
+  --brand-accent: 259 88% 66%; /* #8B5CF6 */
+  --brand-deep: 289 98% 15%;  /* #3C014D */
+  --brand-lavender: 262 73% 85%; /* #C7B7F4 */
+  --brand-lilac: 257 100% 88%; /* #D8CCFF (approx) */
+  --brand-mint: 150 31% 86%;   /* #DCEBE3 */
+  --brand-bluegrey: 193 16% 86%; /* #D6E0E2 */
+}
+
+/* Brand utilities */
+.text-brand { color: hsl(var(--brand-accent)); }
+.text-deep { color: hsl(var(--brand-deep)); }
+.text-lavender { color: hsl(var(--brand-lavender)); }
+.text-lilac { color: hsl(var(--brand-lilac)); }
+.text-mint { color: hsl(var(--brand-mint)); }
+
+.bg-brand-subtle { background: hsl(var(--brand-accent) / 0.06); }
+.border-brand-subtle { border-color: hsl(var(--brand-accent) / 0.2); }
+.bg-lilac-subtle { background: hsl(var(--brand-lilac) / 0.1); }
+.border-lilac-subtle { border-color: hsl(var(--brand-lilac) / 0.25); }
+.bg-mint-subtle { background: hsl(var(--brand-mint) / 0.18); }
+.border-mint-subtle { border-color: hsl(var(--brand-mint) / 0.28); }
+
+/* Ambient visuals */
+.bg-ambient { background: linear-gradient(135deg, #C7B7F4 0%, #F7F5F0 45%, #DCEBE3 100%); }
+.bg-dots { background-image: radial-gradient(hsl(var(--brand-bluegrey) / 0.35) 1px, transparent 1px); background-size: 18px 18px; }
+.shadow-soft { box-shadow: 0 10px 30px rgba(30,20,60,0.06); }
 
 /* Premium gradient text */
 .gradient-text {

@@ -57,9 +57,9 @@ export default function PricingSection() {
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { label: "Payments", val: "−52%", color: "text-blue-600", bg: "bg-blue-500/[0.06] border-blue-500/15" },
-                  { label: "Shipping", val: "−18%", color: "text-green-600", bg: "bg-green-500/[0.06] border-green-500/15" },
-                  { label: "SaaS", val: "−30%", color: "text-orange-500", bg: "bg-orange-500/[0.06] border-orange-500/15" },
+                  { label: "Payments", val: "−52%", color: "text-brand", bg: "bg-blue-500/[0.06] border-blue-500/15" },
+                  { label: "Shipping", val: "−18%", color: "text-deep", bg: "bg-green-500/[0.06] border-green-500/15" },
+                  { label: "SaaS", val: "−30%", color: "text-lavender", bg: "bg-orange-500/[0.06] border-orange-500/15" },
                 ].map((item, i) => (
                   <div key={i} className={`p-3.5 rounded-xl border text-center ${item.bg}`}>
                     <p className={`text-xl font-black ${item.color}`}>{item.val}</p>
