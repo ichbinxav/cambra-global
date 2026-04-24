@@ -8,25 +8,25 @@
   :root {
     --font-inter: 'Space Grotesk', 'Inter', sans-serif;
 
-    --background: 45 33% 97%;
-    --foreground: 260 12% 9%;
-    --card: 0 0% 100%;
-    --card-foreground: 260 12% 9%;
+    --background: 0 0% 8%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 99%;
+    --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 4%;
     --primary: 0 0% 4%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 45 20% 95%;
-    --secondary-foreground: 260 12% 9%;
-    --muted: 45 20% 95%;
-    --muted-foreground: 265 8% 45%;
-    --accent: 45 20% 95%;
-    --accent-foreground: 260 12% 9%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 96%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 45 22% 90%;
-    --input: 45 22% 90%;
-    --ring: 259 88% 66%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 85%;
     --radius: 1.25rem;
 
     /* Brand accents */
@@ -68,6 +68,7 @@
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-inter);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-weight: 400;
   }
   ::selection {
     background: hsl(var(--foreground));
@@ -91,10 +92,10 @@
 .results-dark { background: #0a0a0a; }
 .results-dark .card-dark { background: #1a1a1a; border: 1px solid #333; }
 
-/* SaaS gradient + glass (CAMBRA) */
-.bg-saas-gradient { background: linear-gradient(135deg, #6E5BD8 0%, #C9C2B6 45%, #7FAE9D 100%); }
-.text-saas-gradient { background: linear-gradient(135deg, #C7B7F4 0%, #DCEBE3 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.glass { background: hsl(var(--card) / 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid hsl(var(--border) / 0.6); }
+/* Editorial surfaces — no gradients, no glass */
+.bg-saas-gradient { background: none; }
+.text-saas-gradient { color: hsl(var(--foreground)); }
+.glass { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); }
 
 /* CAMBRA brand tokens */
 :root {
@@ -106,9 +107,9 @@
   --brand-bluegrey: 193 16% 86%; /* #D6E0E2 */
 }
 
-/* Button gradient — darkest, high contrast; enforce light weight */
-.btn-gradient { background: linear-gradient(135deg, #6E5BD8 0%, #AFA79B 40%, #7FAE9D 100%); color: #fff !important; font-weight: 500 !important; border: 1px solid hsl(var(--brand-accent) / 0.65); box-shadow: 0 10px 22px rgba(30,20,60,0.22); }
-.btn-gradient:hover { filter: brightness(0.96); box-shadow: 0 12px 26px rgba(30,20,60,0.28); }
+/* Editorial button — flat, no gradient */
+.btn-gradient { background: hsl(var(--foreground)); color: hsl(var(--background)) !important; font-weight: 500 !important; border: 1px solid hsl(var(--border)); box-shadow: none; }
+.btn-gradient:hover { background: hsl(var(--foreground) / 0.92); }
 
 /* Brand utilities */
 .text-brand { color: hsl(var(--brand-accent)); }
@@ -124,16 +125,11 @@
 .bg-mint-subtle { background: hsl(var(--brand-mint) / 0.16); }
 .border-mint-subtle { border-color: hsl(var(--brand-mint) / 0.32); }
 
-/* Ambient visuals */
-.bg-ambient { background: linear-gradient(135deg, #C7B7F4 0%, #F7F5F0 45%, #DCEBE3 100%); }
-.bg-dots { background-image: radial-gradient(hsl(var(--brand-bluegrey) / 0.35) 1px, transparent 1px); background-size: 18px 18px; }
-.bg-mesh { background:
-  radial-gradient(40% 40% at 20% 15%, rgba(199,183,244,0.35), transparent 60%),
-  radial-gradient(35% 35% at 75% 20%, rgba(220,235,227,0.35), transparent 62%),
-  radial-gradient(45% 45% at 65% 80%, rgba(216,204,255,0.30), transparent 60%);
-  filter: saturate(105%);
-}
-.shadow-soft { box-shadow: 0 10px 30px rgba(30,20,60,0.06); }
+/* Ambient visuals — flattened */
+.bg-ambient { background: none; }
+.bg-dots { background-image: radial-gradient(hsl(var(--brand-bluegrey) / 0.22) 1px, transparent 1px); background-size: 18px 18px; }
+.bg-mesh { background: none; filter: none; }
+.shadow-soft { box-shadow: none; }
 
 /* Chips / Pills */
 .chip { display:inline-flex; align-items:center; gap:0.5rem; padding:0.375rem 0.75rem; border-radius:999px; border:1px solid hsl(var(--border)); background: hsl(var(--background) / 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
@@ -169,7 +165,7 @@
 .font-black { font-weight: 700 !important; }
 .font-extrabold { font-weight: 700 !important; }
 .font-bold { font-weight: 600 !important; }
-h1, h2, h3 { font-weight: 700; letter-spacing: -0.02em; }
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.01em; }
 
 /* Motion reduce */
 @media (prefers-reduced-motion: reduce) {
