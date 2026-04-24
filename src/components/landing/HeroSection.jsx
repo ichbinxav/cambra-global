@@ -119,7 +119,7 @@ export default function HeroSection() {
                 <>
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 btn-gradient text-foreground border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5">
+                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 btn-gradient text-white font-medium border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5">
                         Start now — free analysis <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>
@@ -136,7 +136,7 @@ export default function HeroSection() {
                 <>
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 btn-gradient text-foreground border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5">
+                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 btn-gradient text-white font-medium border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5">
                         Start now — free analysis <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>

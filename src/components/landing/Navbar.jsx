@@ -70,12 +70,12 @@ export default function Navbar() {
                 href="/auth/start"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-8 px-5 text-sm font-bold btn-gradient hover:opacity-95 transition-opacity rounded-full shadow-sm inline-flex items-center justify-center"
+                className="h-8 px-5 text-sm font-medium btn-gradient text-white hover:opacity-95 transition-opacity rounded-full shadow-sm inline-flex items-center justify-center"
               >
                 Sign in
               </a>
               <Link to="/Analyzer">
-                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm btn-gradient text-foreground border border-brand-subtle">
+                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm btn-gradient text-white font-medium border border-brand-subtle">
                   Check Savings
                 </Button>
               </Link>

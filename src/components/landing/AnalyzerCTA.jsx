@@ -42,7 +42,7 @@ export default function AnalyzerCTA() {
             </p>
             {isAuthenticated ? (
               <Link to="/Analyzer">
-                <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 btn-gradient text-foreground border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft">
+                <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 btn-gradient text-white font-medium border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft">
                   Run the Analyzer
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -94,14 +94,14 @@ export default function AnalyzerCTA() {
               </div>
               {isAuthenticated ? (
                 <Link to="/Analyzer">
-                  <button className="h-11 px-6 rounded-full btn-gradient text-foreground border border-brand-subtle shadow-soft font-bold text-sm shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5 flex items-center gap-2">
+                  <button className="h-11 px-6 rounded-full btn-gradient text-white font-medium border border-brand-subtle shadow-soft font-bold text-sm shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5 flex items-center gap-2">
                     Calculate my savings <ArrowRight size={12} />
                   </button>
                 </Link>
               ) : (
                 <button
                   onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                  className="h-11 px-6 rounded-full btn-gradient text-foreground border border-brand-subtle shadow-soft font-bold text-sm shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5 flex items-center gap-2"
+                  className="h-11 px-6 rounded-full btn-gradient text-white font-medium border border-brand-subtle shadow-soft font-bold text-sm shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5 flex items-center gap-2"
                 >
                   Sign in <ArrowRight size={12} />
                 </button>

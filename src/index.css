@@ -92,7 +92,7 @@
 .results-dark .card-dark { background: #1a1a1a; border: 1px solid #333; }
 
 /* SaaS gradient + glass (CAMBRA) */
-.bg-saas-gradient { background: linear-gradient(135deg, #9C86EE 0%, #E3DED5 45%, #B7D6C8 100%); }
+.bg-saas-gradient { background: linear-gradient(135deg, #6E5BD8 0%, #C9C2B6 45%, #7FAE9D 100%); }
 .text-saas-gradient { background: linear-gradient(135deg, #C7B7F4 0%, #DCEBE3 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .glass { background: hsl(var(--card) / 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid hsl(var(--border) / 0.6); }
 
@@ -106,9 +106,9 @@
   --brand-bluegrey: 193 16% 86%; /* #D6E0E2 */
 }
 
-/* Button gradient — high readability (darker) */
-.btn-gradient { background: linear-gradient(135deg, #9C86EE 0%, #D7D0C4 40%, #B7D6C8 100%); color: hsl(var(--foreground)); border: 1px solid hsl(var(--brand-accent) / 0.5); box-shadow: 0 10px 26px rgba(30,20,60,0.10); }
-.btn-gradient:hover { box-shadow: 0 14px 30px rgba(30,20,60,0.16); }
+/* Button gradient — darkest, high contrast; enforce light weight */
+.btn-gradient { background: linear-gradient(135deg, #6E5BD8 0%, #AFA79B 40%, #7FAE9D 100%); color: #fff !important; font-weight: 500 !important; border: 1px solid hsl(var(--brand-accent) / 0.65); box-shadow: 0 10px 22px rgba(30,20,60,0.22); }
+.btn-gradient:hover { filter: brightness(0.96); box-shadow: 0 12px 26px rgba(30,20,60,0.28); }
 
 /* Brand utilities */
 .text-brand { color: hsl(var(--brand-accent)); }
