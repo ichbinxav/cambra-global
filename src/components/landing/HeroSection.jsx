@@ -72,31 +72,31 @@ export default function HeroSection() {
 
 
             <motion.h1
-              variants={fadeUp}
+              initial={false}
               className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-3 text-center lg:text-left"
             >
-              Turn your <span className="text-saas-gradient">infrastructure</span> into your leverage.
+              Independent brands. <span className="text-saas-gradient">Collective leverage.</span>
             </motion.h1>
 
             <motion.p
-              variants={fadeUp}
+              initial={false}
               className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-2 tracking-[-0.01em] text-center lg:text-left"
             >
-              CAMBRA aggregates independent brands into one infrastructure layer to unlock enterprise-level pricing and terms.
+              CAMBRA helps independent commerce brands improve operating margins through better infrastructure terms across payments, shipping, SaaS and operational providers.
             </motion.p>
             <motion.p
-              variants={fadeUp}
+              initial={false}
               className="text-base text-foreground/70 leading-relaxed mb-4 max-w-[620px] mx-auto text-center lg:text-left"
             >
               We analyze your current stack, surface where money leaks, and activate better conditions through our collective network — fast, with minimal change management.
             </motion.p>
 
-            <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-4 max-w-[620px] mx-auto text-center lg:text-left">
+            <motion.p initial={false} className="text-base text-foreground/70 leading-relaxed mb-4 max-w-[620px] mx-auto text-center lg:text-left">
               Starting with payments, shipping and SaaS.
             </motion.p>
 
             {/* Quick bullets for clarity */}
-            <motion.ul variants={fadeUp} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-6">
+            <motion.ul initial={false} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-6">
               {BULLETS.slice(0,3).map((b, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground/85">
                   <CheckCircle2 className="h-4 w-4 text-chart-2 mt-0.5" />
@@ -106,22 +106,21 @@ export default function HeroSection() {
             </motion.ul>
 
             {/* CTAs */}
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
-            aria-label="Primary calls to action">
-              <Link to="/Analyzer" className="flex-1 sm:flex-none">
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                  <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5">
-                  Run your cost analysis <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </motion.div>
-              </Link>
+            <motion.div initial={false} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center" aria-label="Primary calls to action">
               <motion.a
                 whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                 href="/Onboarding"
-                className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-semibold bg-foreground text-background hover:opacity-90 transition inline-flex items-center justify-center gap-2"
+                className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-bold bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition inline-flex items-center justify-center gap-2"
               >
-                Join as founding brand <ArrowRight className="h-4 w-4" />
+                Join the Founding Brands <ArrowRight className="h-4 w-4" />
               </motion.a>
+              <Link to="/Analyzer" className="flex-1 sm:flex-none">
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-semibold bg-foreground text-background hover:opacity-90 transition gap-2">
+                    Run the Cost Analyzer <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+              </Link>
             </motion.div>
 
             {/* Trusted strip — hidden until partner logos are ready */}
