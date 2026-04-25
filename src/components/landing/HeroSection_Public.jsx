@@ -25,7 +25,7 @@ export default function HeroSection_Public() {
   const watermarkY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   return (
-    <section ref={ref} className="relative min-h-[72vh] md:min-h-screen flex items-start justify-start overflow-hidden">
+    <section ref={ref} className="relative min-h-[72vh] md:min-h-screen flex items-start justify-start overflow-hidden pt-8 md:pt-12">
       {/* Ambient glows */}
       <div className="absolute -top-24 -left-24 w-[46rem] h-[46rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.35] pointer-events-none" />
       <div className="absolute -bottom-20 -right-20 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.35] pointer-events-none" />
