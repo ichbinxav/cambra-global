@@ -10,6 +10,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import ConnectorTile from "@/components/connect/ConnectorTile.jsx";
 import { CONNECTORS as CONNECTOR_IDS } from "@/lib/connectors.config.js";
+import Navbar from "@/components/landing/Navbar";
 
 const CATEGORIES = ["All", "Payments", "Commerce", "Accounting", "Shipping", "SaaS"];
 
@@ -171,28 +172,9 @@ export default function ConnectTools() {
 
   return (
     <div className="min-h-screen bg-background font-inter flex flex-col">
-      {/* Top bar */}
-      <div className="sticky top-0 z-40 flex items-center justify-between px-5 py-4 border-b border-border/40 bg-background/98 backdrop-blur-xl">
-        <div className="flex items-center gap-3">
-          <Link to="/Analyzer" className="text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft size={16} />
-          </Link>
-          <span className="text-sm font-black tracking-tight">THE NoDE</span>
-          <span className="text-muted-foreground/30 text-sm">/</span>
-          <span className="text-sm text-muted-foreground/60">Connect your tools</span>
-        </div>
-        {hasData && (
-          <Button
-            size="sm"
-            onClick={() => navigate("/Analyzer")}
-            className="h-9 rounded-full px-5 text-xs font-bold gap-1.5 shadow-sm"
-          >
-            Continue to Analyzer <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        )}
-      </div>
+      <Navbar />
 
-      <div className="flex-1 max-w-3xl mx-auto w-full px-5 py-8 space-y-8">
+      <div className="flex-1 max-w-3xl mx-auto w-full px-5 py-8 space-y-8 mt-16">
 
         {/* Header */}
         <div>
