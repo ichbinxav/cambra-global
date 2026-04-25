@@ -20,11 +20,11 @@ export default function RecommendationList(){
     try { const unsub = base44.entities.Recommendation.subscribe(()=>load()); return ()=>unsub?.(); } catch(e){}
   },[]);
 
-  if (loading) return <div className="text-sm text-muted-foreground">Cargando recomendaciones…</div>;
-  if (!items.length) return <div className="text-sm text-muted-foreground">Sin recomendaciones por ahora.</div>;
+  if (loading) return <div className="text-sm text-muted-foreground">Loading recommendations…</div>;
+  if (!items.length) return <div className="text-sm text-muted-foreground">No recommendations yet.</div>;
 
-  const priorityLabel = (t) => t>=75? 'Alta' : t>=50? 'Media' : 'Baja';
-  const priorityColors = (p) => p==='Alta' ? 'bg-cambra-plum-soft border-cambra-plum text-cambra-plum' : p==='Media' ? 'bg-cambra-lilac-soft border-cambra-lilac text-cambra-lilac' : 'bg-cambra-mint-soft border-cambra-mint text-cambra-mint';
+  const priorityLabel = (t) => t>=75? 'High' : t>=50? 'Medium' : 'Low';
+  const priorityColors = (p) => p==='High' ? 'bg-cambra-plum-soft border-cambra-plum text-cambra-plum' : p==='Medium' ? 'bg-cambra-lilac-soft border-cambra-lilac text-cambra-lilac' : 'bg-cambra-mint-soft border-cambra-mint text-cambra-mint';
   const formatCurrency = (n) => { try { return `€${Math.round(n).toLocaleString()}`; } catch { return `€${n}`; } };
   const computeImpact = (r) => {
     const s = r?.score_json || {};
@@ -36,15 +36,15 @@ export default function RecommendationList(){
   };
 
   const typeLabel = (t) => ({
-    vertical_priority: 'Priorizar vertical',
-    deal_suggestion: 'Sugerencia de acuerdo',
-    missing_data: 'Datos faltantes',
-    next_action: 'Próximo paso',
-    opportunity_ranking: 'Ranking de oportunidades',
+    vertical_priority: 'Vertical priority',
+    deal_suggestion: 'Deal suggestion',
+    missing_data: 'Missing data',
+    next_action: 'Next action',
+    opportunity_ranking: 'Opportunity ranking',
     general: 'General',
   }[t] || t);
 
-  const effortLabel = (e) => ({ low: 'Baja', medium: 'Media', high: 'Alta' }[e] || e);
+  const effortLabel = (e) => ({ low: 'Low', medium: 'Medium', high: 'High' }[e] || e);
 
   const byImpact = items.slice().sort((a,b) => computeImpact(b) - computeImpact(a));
 
@@ -55,7 +55,7 @@ export default function RecommendationList(){
         const prio = priorityLabel(total);
         const s = r?.score_json || {};
         const euros = [s.impact_yearly_eur, s.impact_eur, s.annual_savings, s.savings_eur].find(v => typeof v === 'number');
-        const impactText = typeof euros === 'number' ? `${formatCurrency(euros)}/año` : (r.expected_benefit || `${prio} impacto`);
+        const impactText = typeof euros === 'number' ? `${formatCurrency(euros)}/yr` : (r.expected_benefit || `${prio} impact`);
         const isOpen = expanded === r.id;
 
         return (
@@ -74,7 +74,7 @@ export default function RecommendationList(){
               </div>
 
               <div className="shrink-0 sm:min-w-[9rem] text-right">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Impacto estimado</p>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Estimated impact</p>
                 <p className="text-lg font-black tabular-nums">{impactText}</p>
               </div>
             </div>
@@ -86,11 +86,11 @@ export default function RecommendationList(){
                 onClick={() => setExpanded(isOpen ? null : r.id)}
                 className="h-8 text-xs rounded-full px-3 gap-1.5"
               >
-                {isOpen ? (<><ChevronUp className="h-3.5 w-3.5" /> Ocultar</>) : (<><ChevronDown className="h-3.5 w-3.5" /> Descubrir</>)}
+                {isOpen ? (<><ChevronUp className="h-3.5 w-3.5" /> Hide</>) : (<><ChevronDown className="h-3.5 w-3.5" /> Details</>)}
               </Button>
               <div className="flex items-center gap-2">
                 {r.action_link && (
-                  <a href={r.action_link} className="text-[11px] underline">{r.action_required || 'Abrir'}</a>
+                  <a href={r.action_link} className="text-[11px] underline">{r.action_required || 'Open'}</a>
                 )}
                 <Button
                   variant="ghost"
@@ -98,7 +98,7 @@ export default function RecommendationList(){
                   className="h-8 text-[11px]"
                   onClick={async()=>{ await base44.functions.invoke('dismissRecommendation', { id: r.id }); load(); }}
                 >
-                  Descartar
+                  Dismiss
                 </Button>
               </div>
             </div>
@@ -107,7 +107,7 @@ export default function RecommendationList(){
               <div className="mt-3 border-t border-border/40 pt-3 space-y-2">
                 {(Array.isArray(r.reasons) && r.reasons.length>0) && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Por qué</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Why</p>
                     <ul className="text-[12px] list-disc ml-4 text-foreground/80">
                       {r.reasons.slice(0,4).map((rs, i) => <li key={i}>{rs}</li>)}
                     </ul>
@@ -115,13 +115,13 @@ export default function RecommendationList(){
                 )}
                 {r.action_required && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Siguiente paso</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Next step</p>
                     <p className="text-[12px] text-foreground/80">{r.action_required}</p>
                   </div>
                 )}
                 {(Array.isArray(r.missing_data) && r.missing_data.length>0) && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Datos faltantes</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Missing data</p>
                     <div className="flex flex-wrap gap-1">
                       {r.missing_data.slice(0,6).map((m,i)=> <Badge key={i} variant="outline" className="text-[10px]">{m}</Badge>)}
                     </div>
