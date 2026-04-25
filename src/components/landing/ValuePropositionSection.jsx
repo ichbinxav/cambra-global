@@ -20,7 +20,7 @@ export default function ValuePropositionSection() {
       <div className="max-w-6xl mx-auto relative z-10">
         <div ref={ref} className="max-w-4xl mx-auto">
           <motion.h2
-            initial={{ opacity: 0, y: 24 }}
+            initial={false}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
             className="text-[clamp(2rem,5vw,3.4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-4"
@@ -28,7 +28,7 @@ export default function ValuePropositionSection() {
             Reduce operating costs through collective infrastructure.
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0, y: 12 }}
+            initial={false}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-base text-muted-foreground leading-relaxed mb-6"
@@ -39,7 +39,7 @@ export default function ValuePropositionSection() {
             {BENEFITS.map((b, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 8 }}
+                initial={false}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.45, delay: 0.15 + i * 0.05 }}
                 className="flex items-center gap-2 p-3 rounded-xl border border-border/40 bg-secondary/40 hover:bg-secondary/60 transition-colors"

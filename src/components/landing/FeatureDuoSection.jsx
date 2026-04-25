@@ -31,7 +31,7 @@ export default function FeatureDuoSection(){
     <section className="py-10 px-5 border-t border-border/40">
       <div className="max-w-6xl mx-auto">
         <div ref={ref} className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <motion.div initial={{opacity:0, y:14}} animate={inView?{opacity:1,y:0}:{}} transition={{duration:0.5}}>
+          <motion.div initial={false} animate={inView?{opacity:1,y:0}:{}} transition={{duration:0.5}}>
             <FeatureCard
               icon={Network}
               title="Network"
@@ -39,7 +39,7 @@ export default function FeatureDuoSection(){
               accent="radial-gradient(600px 220px at 10% -10%, rgba(44,167,193,0.12), transparent)"
             />
           </motion.div>
-          <motion.div initial={{opacity:0, y:14}} animate={inView?{opacity:1,y:0}:{}} transition={{duration:0.5, delay:0.06}}>
+          <motion.div initial={false} animate={inView?{opacity:1,y:0}:{}} transition={{duration:0.5, delay:0.06}}>
             <FeatureCard
               icon={BarChart2}
               title="Intelligence"

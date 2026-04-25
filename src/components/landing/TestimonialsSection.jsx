@@ -42,7 +42,7 @@ function TestimonialCard({ t, index }) {
     <motion.div
       key={index}
       ref={ref}
-      initial={{ opacity: 0, y: 50, rotateX: 8 }}
+      initial={false}
       animate={inView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
       transition={{ duration: 0.7, delay: index * 0.13, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -8, boxShadow: "0 20px 40px -12px rgba(0,0,0,0.1)", transition: { duration: 0.25 } }}
@@ -50,7 +50,7 @@ function TestimonialCard({ t, index }) {
     >
       <motion.div
         className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-5 w-fit ${t.bg}`}
-        initial={{ scale: 0.7, opacity: 0 }}
+        initial={false}
         animate={inView ? { scale: 1, opacity: 1 } : {}}
         transition={{ delay: index * 0.13 + 0.25, type: "spring", stiffness: 280, damping: 18 }}
       >
@@ -84,21 +84,21 @@ export default function TestimonialsSection() {
       <div className="max-w-6xl mx-auto">
         <div ref={headRef} className="text-center mb-14">
           <motion.p
-            initial={{ opacity: 0, y: 16 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
             className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center justify-center gap-2"
           >
             <span className="w-4 h-px bg-border inline-block" /> Results
           </motion.p>
           <motion.h2
-            initial={{ opacity: 0, y: 40 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.75, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9]"
           >
             Brands are saving real money.
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.25 }}
             className="mt-4 text-muted-foreground text-base max-w-md mx-auto"
           >
@@ -127,7 +127,7 @@ export default function TestimonialsSection() {
           ].map((s, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 18 }}
+              initial={false}
               animate={trustInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.08 }}
               whileHover={{ y: -2 }}
@@ -139,7 +139,7 @@ export default function TestimonialsSection() {
               <div className="min-w-0">
                 <motion.p
                   className={`text-5xl md:text-6xl font-black tracking-tight ${s.color}`}
-                  initial={{ scale: 0.95 }}
+                  initial={false}
                   animate={trustInView ? { scale: 1 } : {}}
                   transition={{ delay: i * 0.08 + 0.1, type: 'spring', stiffness: 280, damping: 16 }}
                 >{s.value}</motion.p>

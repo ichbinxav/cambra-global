@@ -40,7 +40,7 @@ function StepCard({ s, index }) {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 40 }}
+      initial={false}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -4 }}
@@ -72,14 +72,14 @@ export default function HowCombinedSection() {
       <div className="max-w-6xl mx-auto">
         <div ref={headRef} className="mb-8">
           <motion.p
-            initial={{ opacity: 0, y: 12 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.45 }}
             className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-4 flex items-center justify-center gap-2"
           >
             <span className="w-4 h-px bg-border" /> How it works
           </motion.p>
           <motion.h2
-            initial={{ opacity: 0, y: 30 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.65, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2rem,5vw,3.2rem)] font-black tracking-[-0.04em] leading-[0.9] text-center"
           >

@@ -85,7 +85,7 @@ function ProblemCard({ item, index }) {
     <motion.div
       key={index}
       ref={cardRef}
-      initial={{ opacity: 0, x: 50 }}
+      initial={false}
       animate={cardInView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.65, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ x: 6, transition: { duration: 0.2 } }}
@@ -104,7 +104,7 @@ function ProblemCard({ item, index }) {
         <div className="text-right shrink-0">
           <motion.p
             className={`text-2xl font-black tabular-nums ${item.color}`}
-            initial={{ opacity: 0, scale: 0.6 }}
+            initial={false}
             animate={cardInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ delay: index * 0.12 + 0.3, type: "spring", stiffness: 260, damping: 16 }}
           >{item.metric}</motion.p>
@@ -147,21 +147,21 @@ export default function ProblemSection() {
           {/* Left */}
           <div className="lg:sticky lg:top-24 text-center lg:text-left" ref={headRef}>
             <motion.p
-              initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+              initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6 }}
               className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center lg:justify-start gap-2"
             >
               <span className="w-4 h-px bg-border" /> The problem
             </motion.p>
             <motion.h2
-              initial={{ opacity: 0, y: 30 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+              initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5 text-center lg:text-left"
             >
               You're paying<br />what enterprises pay.<br />You don't have<br />their leverage.
             </motion.h2>
             <motion.p
-              initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+              initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.25 }}
               className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-xs mx-auto text-center lg:text-left"
             >
@@ -169,7 +169,7 @@ export default function ProblemSection() {
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0, scale: 0.92 }} animate={headInView ? { opacity: 1, scale: 1 } : {}}
+              initial={false} animate={headInView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.35 }}
               className="p-5 rounded-2xl border border-border/40 bg-card mb-6"
             >
@@ -179,7 +179,7 @@ export default function ProblemSection() {
             </motion.div>
 
             <motion.div className="flex justify-center lg:justify-start"
-              initial={{ opacity: 0 }} animate={headInView ? { opacity: 1 } : {}}
+              initial={false} animate={headInView ? { opacity: 1 } : {}}
               transition={{ delay: 0.5 }}
             >
               {isAuthenticated ? (

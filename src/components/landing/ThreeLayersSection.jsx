@@ -24,21 +24,21 @@ export default function ThreeLayersSection() {
         {/* Header */}
         <div ref={headRef} className="mb-12 max-w-3xl mx-auto text-center lg:text-left">
           <motion.p
-            initial={{ opacity: 0, y: 12 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
             className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center lg:justify-start gap-2"
           >
             <span className="w-4 h-px bg-border" /> Infrastructure platform
           </motion.p>
           <motion.h2
-            initial={{ opacity: 0, y: 30 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5 text-foreground text-center lg:text-left"
           >
             Get the leverage<br />big players have.
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0, y: 16 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-foreground/60 text-lg leading-relaxed max-w-xl mx-auto text-center lg:text-left"
           >
@@ -49,7 +49,7 @@ export default function ThreeLayersSection() {
         {/* Collective power — 3 pillars */}
         <motion.div
           ref={powerRef}
-          initial={{ opacity: 0, y: 30 }} animate={powerInView ? { opacity: 1, y: 0 } : {}}
+          initial={false} animate={powerInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5"
         >
@@ -69,7 +69,7 @@ export default function ThreeLayersSection() {
 
         {/* Infrastructure deals — HERO BLOCK */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }} animate={powerInView ? { opacity: 1, y: 0 } : {}}
+          initial={false} animate={powerInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="rounded-2xl bg-foreground text-background p-8 lg:p-12 mb-4"
         >
@@ -130,7 +130,7 @@ export default function ThreeLayersSection() {
         {/* Network + Intelligence — additional benefits */}
         <motion.div
           ref={extraRef}
-          initial={{ opacity: 0, y: 16 }} animate={extraInView ? { opacity: 1, y: 0 } : {}}
+          initial={false} animate={extraInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
         >
           <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-3 font-semibold text-center lg:text-left">Also included</p>

@@ -27,7 +27,7 @@ export default function AnalyzerCTA() {
           <motion.div
             ref={leftRef}
             className="text-center lg:text-left"
-            initial={{ opacity: 0, x: -50 }}
+            initial={false}
             animate={leftInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
@@ -63,7 +63,7 @@ export default function AnalyzerCTA() {
 
           <motion.div
             ref={rightRef}
-            initial={{ opacity: 0, x: 50 }}
+            initial={false}
             animate={rightInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm"

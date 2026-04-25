@@ -139,8 +139,9 @@ const AdminRoute = ({ children }) => {
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+  const isPublicLanding = typeof window !== "undefined" && (window.location.pathname === "/" || window.location.pathname === "/Landing" || window.location.pathname === "/landing");
 
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  if (!isPublicLanding && (isLoadingPublicSettings || isLoadingAuth)) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center bg-background" role="status" aria-live="polite">
         <div className="h-12 w-12 text-foreground/90" style={{ animation: 'spin 4s linear infinite' }}>
@@ -152,7 +153,7 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError) {
+  if (!isPublicLanding && authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
     // Don't redirect for auth_required — let the app show public pages
   }
@@ -161,6 +162,7 @@ const AuthenticatedApp = () => {
   return (
     <>
       <Routes>
+        {/* Public-first landing — always accessible without auth */}
         <Route path="/" element={<Landing />} />
         <Route path="/Landing" element={<Landing />} />
         <Route path="/landing" element={<Navigate to="/Landing" replace />} />

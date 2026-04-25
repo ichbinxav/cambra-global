@@ -70,7 +70,7 @@ function BenefitTile({ b, index }) {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 26, scale: 0.98 }}
+      initial={false}
       animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ duration: 0.55, delay: (index % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -4, boxShadow: "0 14px 30px -18px rgba(0,0,0,0.25)" }}
@@ -111,21 +111,21 @@ export default function BenefitsSection() {
         {/* Header */}
         <div ref={headRef} className="max-w-2xl mb-16 mx-auto text-center lg:text-left">
           <motion.p
-            initial={{ opacity: 0, y: 16 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
             className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-5 flex items-center justify-center lg:justify-start gap-2"
           >
             <span className="w-4 h-px bg-border" /> Why brands join
           </motion.p>
           <motion.h2
-            initial={{ opacity: 0, y: 50 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.4rem,6vw,5rem)] font-black tracking-[-0.05em] leading-[0.87] mb-5 text-center lg:text-left"
           >
             The economic advantage<br />of CAMBRA.
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
+            initial={false} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-muted-foreground text-lg leading-relaxed mx-auto text-center lg:text-left"
           >
@@ -146,14 +146,14 @@ export default function BenefitsSection() {
           className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-12 items-center mb-16 py-14 border-y border-border/40"
         >
           <motion.h3
-            initial={{ opacity: 0, x: -50 }} animate={editorialInView ? { opacity: 1, x: 0 } : {}}
+            initial={false} animate={editorialInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(1.8rem,4vw,3rem)] font-black tracking-[-0.04em] leading-[0.9] text-center lg:text-left"
           >
             This is not a tool.<br />It's your economic layer.
           </motion.h3>
           <motion.div
-            initial={{ opacity: 0, x: 50 }} animate={editorialInView ? { opacity: 1, x: 0 } : {}}
+            initial={false} animate={editorialInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-4 text-muted-foreground text-base leading-relaxed"
           >
@@ -165,7 +165,7 @@ export default function BenefitsSection() {
         {/* Proof strip */}
         <div ref={proofRef}>
           <motion.p
-            initial={{ opacity: 0 }} animate={proofInView ? { opacity: 1 } : {}}
+            initial={false} animate={proofInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5 }}
             className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/35 text-center mb-6"
           >
@@ -175,7 +175,7 @@ export default function BenefitsSection() {
             {PROOF.map((p, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 18 }}
+                initial={false}
                 animate={proofInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
                 className={`px-5 py-5 rounded-2xl border flex items-center justify-between gap-3 ${p.bg}`}

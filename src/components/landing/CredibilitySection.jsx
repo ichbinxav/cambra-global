@@ -39,7 +39,7 @@ export default function CredibilitySection() {
           {BLOCKS.map((b, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 16 }}
+              initial={false}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.06 }}
               className="group p-5 rounded-2xl border border-border/40 bg-card overflow-hidden relative"
