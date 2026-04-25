@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import BrandGlyph from "@/components/shared/BrandGlyph";
 
 
 const SAVINGS = [
@@ -44,6 +45,11 @@ export default function HeroSection() {
       {/* Grid background */}
       <div className="absolute inset-0 pointer-events-none dot-grid" />
       <div className="noise-soft" />
+
+      {/* Centered brand C glyph */}
+      <div className="absolute top-24 md:top-28 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+        <BrandGlyph className="h-10 w-10 opacity-85" />
+      </div>
 
       {/* Single subtle watermark (Landing only) */}
       <img
