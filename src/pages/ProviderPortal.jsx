@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { CheckCircle2, Clock, AlertCircle, ArrowRight, Send, Upload, ExternalLink, X, LogOut, Building2, FileText, TrendingUp, Zap, Eye, Save } from "lucide-react";
 import { formatSavings } from "@/lib/deals";
 import { toast } from "sonner";
+import Navbar from "@/components/landing/Navbar";
 
 const STATUS_CFG = {
   new: { label: "New Lead", color: "text-blue-600 bg-blue-500/10 border-blue-500/20" },
@@ -187,7 +188,7 @@ export default function ProviderPortal() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-20 h-14 border-b border-border/40 bg-background/95 backdrop-blur flex items-center px-6 gap-4">
+      <Navbar />
         <div className="flex-1">
           <p className="text-xs font-black tracking-tight">THE NoDE</p>
           <p className="text-[10px] text-muted-foreground/40">Provider Portal · {provider?.name}</p>
@@ -203,9 +204,9 @@ export default function ProviderPortal() {
             <LogOut size={11} /> Sign out
           </button>
         </div>
-      </header>
 
-      <main className="max-w-5xl mx-auto p-6 space-y-6">
+
+      <main className="max-w-5xl mx-auto p-6 space-y-6 mt-16">
         {/* Welcome */}
         <div>
           <h1 className="text-2xl font-black tracking-[-0.03em]">{provider?.name}</h1>
