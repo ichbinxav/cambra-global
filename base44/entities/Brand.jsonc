@@ -88,6 +88,35 @@
     },
     "logo_url": {
       "type": "string"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Brand biography / description"
+    },
+    "instagram_url": {
+      "type": "string",
+      "description": "Instagram profile URL"
+    },
+    "linkedin_url": {
+      "type": "string",
+      "description": "LinkedIn page URL"
+    },
+    "twitter_url": {
+      "type": "string",
+      "description": "Twitter/X profile URL"
+    },
+    "tiktok_url": {
+      "type": "string",
+      "description": "TikTok profile URL"
+    },
+    "youtube_url": {
+      "type": "string",
+      "description": "YouTube channel URL"
+    },
+    "accept_terms": {
+      "type": "boolean",
+      "default": false,
+      "description": "User accepted terms and conditions"
     }
   },
   "required": [
