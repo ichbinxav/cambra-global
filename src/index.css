@@ -30,10 +30,21 @@
     --radius: 0.75rem;
 
     /* Brand accents */
-    --node-blue: 215 100% 50%;
-    --node-blue-subtle: 215 100% 96%;
+    --node-blue: 217 100% 52%;
+    --node-blue-subtle: 217 100% 96%;
     --node-green: 142 76% 36%;
     --node-orange: 25 95% 53%;
+
+    /* Neon Blue palette (1=darkest … 9=lightest) */
+    --neon-1: 220 80% 6%;   /* deep navy */
+    --neon-2: 220 75% 9%;
+    --neon-3: 220 70% 13%;
+    --neon-4: 220 70% 18%;
+    --neon-5: 221 80% 36%;  /* royal */
+    --neon-6: 217 100% 52%; /* electric blue #0B5CFF */
+    --neon-7: 194 100% 50%; /* cyan #00D1FF */
+    --neon-8: 196 100% 62%; /* bright cyan */
+    --neon-9: 196 100% 88%; /* ice glow */
   }
 
   .dark {
@@ -56,6 +67,17 @@
     --border: 0 0% 14%;
     --input: 0 0% 14%;
     --ring: 0 0% 83%;
+
+    /* Neon Blue palette (dark mode) */
+    --neon-1: 220 80% 6%;
+    --neon-2: 220 75% 9%;
+    --neon-3: 220 70% 13%;
+    --neon-4: 220 70% 18%;
+    --neon-5: 221 80% 36%;
+    --neon-6: 217 100% 52%;
+    --neon-7: 194 100% 50%;
+    --neon-8: 196 100% 62%;
+    --neon-9: 196 100% 88%;
   }
 }
 
@@ -111,21 +133,30 @@
   background-clip: text;
 }
 
-/* CAMBRA brand accent utilities */
-.text-cambra-lilac { color: #7C6CFF; }
-.border-cambra-lilac { border-color: rgba(124,108,255,0.35); }
-.bg-cambra-lilac-soft { background-color: rgba(199,185,255,0.10); }
-.bg-cambra-lilac { background-color: #C7B9FF; }
+/* Neon utilities */
+.text-neon-1 { color: hsl(var(--neon-1)); }
+.text-neon-2 { color: hsl(var(--neon-2)); }
+.text-neon-3 { color: hsl(var(--neon-3)); }
+.text-neon-4 { color: hsl(var(--neon-4)); }
+.text-neon-5 { color: hsl(var(--neon-5)); }
+.text-neon-6 { color: hsl(var(--neon-6)); }
+.text-neon-7 { color: hsl(var(--neon-7)); }
+.text-neon-8 { color: hsl(var(--neon-8)); }
+.text-neon-9 { color: hsl(var(--neon-9)); }
 
-.text-cambra-mint { color: #2FC9A6; }
-.border-cambra-mint { border-color: rgba(167,243,208,0.40); }
-.bg-cambra-mint-soft { background-color: rgba(167,243,208,0.12); }
-.bg-cambra-mint { background-color: #A7F3D0; }
+.bg-neon-1 { background-color: hsl(var(--neon-1)); }
+.bg-neon-2 { background-color: hsl(var(--neon-2)); }
+.bg-neon-3 { background-color: hsl(var(--neon-3)); }
+.bg-neon-4 { background-color: hsl(var(--neon-4)); }
+.bg-neon-5 { background-color: hsl(var(--neon-5)); }
+.bg-neon-6 { background-color: hsl(var(--neon-6)); }
+.bg-neon-7 { background-color: hsl(var(--neon-7)); }
+.bg-neon-8 { background-color: hsl(var(--neon-8)); }
+.bg-neon-9 { background-color: hsl(var(--neon-9)); }
 
-.text-cambra-plum { color: #5B3A83; }
-.border-cambra-plum { border-color: rgba(91,58,131,0.35); }
-.bg-cambra-plum-soft { background-color: rgba(91,58,131,0.10); }
-.bg-cambra-plum { background-color: #5B3A83; }
+.border-neon-5 { border-color: hsl(var(--neon-5)); }
+.border-neon-6 { border-color: hsl(var(--neon-6)); }
+.border-neon-7 { border-color: hsl(var(--neon-7)); }
 
 /* Map legacy utility colors to CAMBRA palette */
 .text-blue-600 { color: #7C6CFF !important; }

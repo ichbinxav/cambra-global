@@ -36,6 +36,17 @@ module.exports = {
           '4': 'hsl(var(--muted-foreground))',
           '5': 'hsl(var(--border))',
         },
+        neon: {
+          '1': 'hsl(var(--neon-1))',
+          '2': 'hsl(var(--neon-2))',
+          '3': 'hsl(var(--neon-3))',
+          '4': 'hsl(var(--neon-4))',
+          '5': 'hsl(var(--neon-5))',
+          '6': 'hsl(var(--neon-6))',
+          '7': 'hsl(var(--neon-7))',
+          '8': 'hsl(var(--neon-8))',
+          '9': 'hsl(var(--neon-9))',
+        },
         sidebar: {
           DEFAULT: 'hsl(var(--background))',
           foreground: 'hsl(var(--foreground))',
