@@ -45,6 +45,13 @@ export default function HeroSection() {
       <div className="absolute inset-0 pointer-events-none dot-grid" />
       <div className="noise-soft" />
 
+      {/* Single subtle watermark (Landing only) */}
+      <img
+        src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png"
+        alt=""
+        className="absolute bottom-6 right-6 w-20 sm:w-24 md:w-28 lg:w-32 opacity-[0.06] pointer-events-none select-none"
+      />
+
 
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-20">
