@@ -227,7 +227,7 @@ export default function Results() {
 
       {/* ── Sticky top bar ── */}
       <div className="sticky top-0 z-20 border-b border-border/40 px-5 py-3.5 flex items-center justify-between bg-background/97 backdrop-blur-2xl">
-        <Link to="/" className="text-sm font-black tracking-tight">CAMBRA</Link>
+        <Link to="/" aria-label="CAMBRA home"><span className="sr-only">CAMBRA</span></Link>
         <div className="flex items-center gap-2">
           <Link to="/Reports">
             <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground rounded-full px-3 hidden sm:flex">History</Button>

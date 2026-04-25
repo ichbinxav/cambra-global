@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useAuth } from "@/lib/AuthContext";
 
 const NAV_PUBLIC = [
@@ -37,9 +38,8 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
 
         {/* Logo */}
-        <Link to="/" className="text-sm font-black tracking-tight flex-shrink-0 inline-flex items-center gap-2">
-          <img src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/e61217a34_A31C1A4E-097D-4DE7-B15B-10A9EF45F8AC.png" alt="CAMBRA logo" className="h-5 w-auto" />
-          <span>CAMBRA</span>
+        <Link to="/" className="flex-shrink-0 inline-flex items-center gap-2" aria-label="CAMBRA home">
+          <BrandLogoWordmark className="h-5" />
         </Link>
 
         {/* Desktop nav */}

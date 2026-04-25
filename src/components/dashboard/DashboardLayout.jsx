@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, BarChart3, Users, Zap, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Plug, Home, ShieldCheck, Building2 } from "lucide-react";
+import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -35,8 +36,9 @@ export default function DashboardLayout() {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-56 border-r border-border/30 shrink-0 bg-card/95 backdrop-blur-xl shadow-sm">
         <div className="px-5 h-14 flex items-center border-b border-border/40">
-          <Link to="/" className="text-sm font-black tracking-tight group flex items-center gap-1.5">
-            CAMBRA
+          <Link to="/" className="group flex items-center gap-2" aria-label="CAMBRA home">
+            <BrandGlyph className="h-5 w-5" />
+            <span className="sr-only">CAMBRA</span>
             <ArrowUpRight size={11} className="text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
           </Link>
         </div>

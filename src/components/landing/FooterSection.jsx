@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
+import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useRef } from "react";
 
 export default function FooterSection() {
@@ -71,7 +72,7 @@ export default function FooterSection() {
       <footer className="py-10 px-5 border-t border-border/40 bg-background">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-5">
-            <span className="text-sm font-black tracking-tight">CAMBRA</span>
+            <BrandLogoWordmark className="h-4" />
             <span className="text-xs text-muted-foreground/40">The operating layer behind independent brands</span>
           </div>
           <div className="flex items-center gap-5 text-xs text-muted-foreground/50">
