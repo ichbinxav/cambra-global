@@ -36,7 +36,7 @@ export default function HeroSection() {
   const watermarkY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14 bg-hero-gradient">
+    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">
 
       {/* Ambient background */}
       <div className="absolute inset-0 pointer-events-none bg-ambient" />
@@ -181,7 +181,7 @@ export default function HeroSection() {
             </motion.div>
 
             {/* Analyzer card */}
-            <div className="glass rounded-2xl border border-border/50 overflow-hidden shadow-xl">
+            <div className="rounded-2xl border border-border/60 bg-card/90 backdrop-blur-sm overflow-hidden shadow-xl">
               <div className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <motion.div
