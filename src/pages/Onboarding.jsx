@@ -33,19 +33,16 @@ export default function Onboarding(){
       </TabsContent>
       <TabsContent value="payments">
         <div className="space-y-6">
-          <OnboardingHero />
           <PaymentsModule />
         </div>
       </TabsContent>
       <TabsContent value="shipping">
         <div className="space-y-6">
-          <OnboardingHero />
           <ShippingModule />
         </div>
       </TabsContent>
       <TabsContent value="saas">
         <div className="space-y-6">
-          <OnboardingHero />
           <SaasModule />
         </div>
       </TabsContent>
