@@ -14,6 +14,7 @@ import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import GMVMetrics from "@/components/dashboard/GMVMetrics";
 import { CreditCard, Truck, Package } from "lucide-react";
 import RecommendationList from "@/components/recommendations/RecommendationList";
+import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 
 
 
@@ -129,11 +130,7 @@ export default function Dashboard() {
   }, 0);
   const gmvAverage = results.length > 0 ? gmvTotal / Math.max(results.length, 1) : 0;
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-40">
-      <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
-    </div>
-  );
+  if (loading) return (<DashboardSkeleton />);
 
   return (
     <div className={`space-y-4 pb-10 ${!subscribed ? 'lock-blur' : ''}`}>
