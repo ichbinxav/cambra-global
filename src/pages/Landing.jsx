@@ -11,6 +11,7 @@ import PricingSection from "@/components/landing/PricingSection";
 import FooterSection from "@/components/landing/FooterSection";
 import CredibilitySection from "@/components/landing/CredibilitySection";
 import ValuePropositionSection from "@/components/landing/ValuePropositionSection";
+import FeatureDuoSection from "@/components/landing/FeatureDuoSection";
 
 // ForLifestyleSection removed — replaced by brand-aligned sections
 
@@ -23,6 +24,7 @@ export default function Landing() {
         <HeroSection />
         <CredibilitySection />
         <ValuePropositionSection />
+        <FeatureDuoSection />
         <div id="how"><HowCombinedSection /></div>
         <ThreeLayersSection />
         <ProblemSection />

@@ -14,9 +14,11 @@ export default function ValuePropositionSection() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section className="py-12 px-5 border-t border-border/40">
-      <div className="max-w-6xl mx-auto">
-        <div ref={ref} className="max-w-3xl mx-auto text-center lg:text-left">
+    <section className="py-12 px-5 border-t border-border/40 relative overflow-hidden">
+      {/* background pattern */}
+      <div className="absolute inset-0 pointer-events-none dot-grid opacity-[0.25]" />
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div ref={ref} className="max-w-4xl mx-auto">
           <motion.h2
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -33,17 +35,17 @@ export default function ValuePropositionSection() {
           >
             Most independent brands operate below optimal infrastructure rates — and don’t realize it. CAMBRA aggregates independent brands into a single leverage bloc, identifies where value is being lost, and helps members access better terms.
           </motion.p>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-5">
             {BENEFITS.map((b, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 8 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.45, delay: 0.15 + i * 0.05 }}
-                className="flex items-start gap-2 text-sm text-foreground/80"
+                className="flex items-center gap-2 p-3 rounded-xl border border-border/40 bg-secondary/40 hover:bg-secondary/60 transition-colors"
               >
-                <CheckCircle2 className="h-4 w-4 text-chart-2 mt-0.5" />
-                <span className="font-medium">{b}</span>
+                <CheckCircle2 className="h-4 w-4 text-chart-2" />
+                <span className="text-sm font-medium">{b}</span>
               </motion.div>
             ))}
           </div>
