@@ -17,15 +17,15 @@ import { jsPDF } from "jspdf";
 
 /* ── static data ─────────────────────────────────────────────── */
 const BREAKDOWN_META = [
-  { key: "payment_savings", label: "Payments", icon: CreditCard, color: "#8B5CF6", bg: "bg-blue-500/[0.06] border-blue-500/15", textColor: "text-blue-600",
+  { key: "payment_savings", label: "Payments", icon: CreditCard, color: "#3b82f6", bg: "bg-blue-500/[0.06] border-blue-500/15", textColor: "text-blue-600",
     detail: r => r.details?.payment_current_rate
       ? `${r.details.payment_current_rate.toFixed(1)}% current → ${r.details.payment_optimal_rate?.toFixed(1) ?? "1.4"}% network target`
       : "Efficiency improvement available" },
-  { key: "shipping_savings", label: "Shipping", icon: Truck, color: "#3C014D", bg: "bg-green-500/[0.06] border-green-500/15", textColor: "text-green-600",
+  { key: "shipping_savings", label: "Shipping", icon: Truck, color: "#22c55e", bg: "bg-green-500/[0.06] border-green-500/15", textColor: "text-green-600",
     detail: r => r.details?.shipping_current_avg
       ? `€${r.details.shipping_current_avg.toFixed(2)}/shipment → €${r.details.shipping_optimal_avg?.toFixed(2) ?? "5.20"} collective rate`
       : "Volume-based cost reduction available" },
-  { key: "saas_savings", label: "SaaS & Tools", icon: Package, color: "#C7B7F4", bg: "bg-orange-500/[0.06] border-orange-500/15", textColor: "text-orange-500",
+  { key: "saas_savings", label: "SaaS & Tools", icon: Package, color: "#f97316", bg: "bg-orange-500/[0.06] border-orange-500/15", textColor: "text-orange-500",
     detail: r => r.details?.saas_current_total
       ? `€${r.details.saas_current_total.toLocaleString()}/mo current → €${r.details.saas_optimal_total?.toLocaleString() ?? "—"} via group licenses`
       : "Stack consolidation efficiency available" },
@@ -145,7 +145,7 @@ export default function Results() {
   );
 
   const score = scoreReport?.total ?? result.infra_score ?? 0;
-  const scoreColor = scoreReport?.scoreColor ?? (score >= 80 ? "#3C014D" : score >= 60 ? "#C7B7F4" : "#8B5CF6");
+  const scoreColor = scoreReport?.scoreColor ?? (score >= 80 ? "#22c55e" : score >= 60 ? "#f97316" : "#3b82f6");
   const scoreLabel = scoreReport?.label ?? (score >= 60 ? "Efficient" : score >= 40 ? "Optimization opportunity detected" : "High optimization potential");
   const isEstimated = !scoreReport || scoreReport.dataQuality === "manual";
 
@@ -243,7 +243,7 @@ export default function Results() {
             </Button>
           ) : (
             <Link to="/Onboarding">
-              <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5 btn-gradient text-white font-medium border border-brand-subtle shadow-soft">
+              <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5 bg-saas-gradient text-white">
                 <Lock size={11} /> Unlock report — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span>
               </Button>
             </Link>
@@ -277,7 +277,7 @@ export default function Results() {
           {!subscribed && (
             <div className="mt-2">
               <Link to="/Onboarding">
-                <Button className="rounded-full px-6 text-sm gap-1.5 btn-gradient text-white font-medium border border-brand-subtle shadow-soft">
+                <Button className="rounded-full px-6 text-sm gap-1.5 bg-saas-gradient text-white">
                   Unlock report — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-bold">Free</span>
                 </Button>
               </Link>

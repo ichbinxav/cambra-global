@@ -5,13 +5,12 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
-import HexOrbital from "@/components/brand/HexOrbital";
 
 
 const SAVINGS = [
-  { label: "Payments", value: "€38K", sub: "−52% fee rate", color: "text-brand", bg: "bg-brand-subtle border-brand-subtle", icon: CreditCard },
-  { label: "Shipping", value: "€19K", sub: "−18% carrier cost", color: "text-deep", bg: "bg-green-500/[0.07] border-green-500/20", icon: Truck },
-  { label: "SaaS", value: "€24K", sub: "−30% stack waste", color: "text-lavender", bg: "bg-orange-500/[0.07] border-orange-500/20", icon: Package },
+  { label: "Payments", value: "€38K", sub: "−52% fee rate", color: "text-blue-600", bg: "bg-blue-500/[0.07] border-blue-500/20", icon: CreditCard },
+  { label: "Shipping", value: "€19K", sub: "−18% carrier cost", color: "text-green-600", bg: "bg-green-500/[0.07] border-green-500/20", icon: Truck },
+  { label: "SaaS", value: "€24K", sub: "−30% stack waste", color: "text-orange-500", bg: "bg-orange-500/[0.07] border-orange-500/20", icon: Package },
 ];
 
 const BULLETS = [
@@ -37,13 +36,13 @@ export default function HeroSection() {
   const watermarkY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14 bg-paper text-ink">
+    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">
 
-      {/* Ambient background */}
-      <div className="absolute inset-0 pointer-events-none bg-ambient" />
-      <div className="absolute inset-0 pointer-events-none bg-dots" style={{ opacity: 0.5 }} />
-      <div className="absolute inset-0 pointer-events-none bg-mesh" style={{ opacity: 0.55 }} />
-      <HexOrbital className="absolute inset-0 pointer-events-none" />
+      {/* Grid background */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: "linear-gradient(hsl(0 0% 0% / 0.025) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 0% / 0.025) 1px, transparent 1px)",
+        backgroundSize: "48px 48px",
+      }} />
 
       {/* Parallax watermark */}
       <motion.div
@@ -57,7 +56,7 @@ export default function HeroSection() {
           {/* LEFT */}
           <motion.div variants={container} initial="hidden" animate="show" className="text-center md:text-center lg:text-left">
 
-            <motion.div variants={fadeUp} className="chip chip-brand mb-8">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
               <motion.span
                 className="w-1.5 h-1.5 rounded-full bg-green-500"
                 animate={{ scale: [1, 1.5, 1] }}
@@ -79,26 +78,26 @@ export default function HeroSection() {
 
             <motion.p
               variants={fadeUp}
-              className="text-[clamp(1.2rem,3vw,1.8rem)] font-black text-deep mb-6 tracking-[-0.02em] text-center lg:text-left"
+              className="text-[clamp(1.2rem,3vw,1.8rem)] font-black text-green-600 mb-6 tracking-[-0.02em] text-center lg:text-left"
             >
               Unlock the rates your scale should give you.
             </motion.p>
 
-            <motion.p variants={fadeUp} className="text-base text-ink/80 leading-relaxed mb-8 max-w-[520px] mx-auto text-center lg:text-left">
+            <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-8 max-w-[520px] mx-auto text-center lg:text-left">
               We aggregate independent brands into a single leverage bloc. You unlock better rates on payments, shipping, and SaaS — instantly. Our analyzer identifies exactly where value is left unoptimized, then you access the deals.
             </motion.p>
 
             {/* Pricing pill */}
             <motion.div
               variants={fadeUp}
-              className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-6 py-4 rounded-full bg-saas-gradient text-ink mx-auto border border-brand-subtle shadow-soft"
+              className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-5 py-4 rounded-full bg-foreground text-background mx-auto"
             >
               <div className="flex items-center gap-2">
-                <span className="text-sm text-ink/55 line-through font-light">€60/month</span>
+                <span className="text-sm text-background/40 line-through font-light">€60/month</span>
                 <span className="text-xl sm:text-lg font-black">Free</span>
               </div>
-              <span className="hidden sm:inline text-ink/55">·</span>
-              <span className="text-sm text-ink/80">Early partners only</span>
+              <span className="hidden sm:inline text-background/40">·</span>
+              <span className="text-sm text-background/70">Early partners only</span>
             </motion.div>
             <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/50 mb-8 text-center lg:text-left">
               25% success fee on realized savings — if we don’t save you money, you pay zero.
@@ -121,7 +120,7 @@ export default function HeroSection() {
                 <>
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 btn-institutional text-white font-medium border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5">
+                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5">
                         Start now — free analysis <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>
@@ -138,7 +137,7 @@ export default function HeroSection() {
                 <>
                   <Link to="/Analyzer" className="flex-1 sm:flex-none">
                     <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 btn-institutional text-white font-medium border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5">
+                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5">
                         Start now — free analysis <ArrowRight className="h-4 w-4" />
                       </Button>
                     </motion.div>
@@ -178,12 +177,12 @@ export default function HeroSection() {
               transition={{ delay: 0.7 }}
             >
               <div className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
-              <p className="text-sm font-semibold text-ink/90">Overpaying detected: <span className="text-red-600 font-black">€8,430/year</span></p>
+              <p className="text-sm font-semibold text-foreground/85">Overpaying detected: <span className="text-red-600 font-black">€8,430/year</span></p>
               <TrendingDown size={14} className="text-red-600 ml-auto shrink-0" />
             </motion.div>
 
             {/* Analyzer card */}
-            <div className="card-premium overflow-hidden shadow-xl">
+            <div className="rounded-2xl border border-border/60 bg-card/90 backdrop-blur-sm overflow-hidden shadow-xl">
               <div className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <motion.div
@@ -205,7 +204,7 @@ export default function HeroSection() {
                     transition={{ delay: 0.65 + i * 0.13, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                     className={`flex items-center gap-3 p-3.5 rounded-xl border ${item.bg}`}
                   >
-                    <div className={`w-8 h-8 hex-frame ${item.bg} flex items-center justify-center shrink-0`}>
+                    <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center shrink-0`}>
                       <item.icon size={13} className={item.color} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -253,7 +252,7 @@ export default function HeroSection() {
 
             {/* Infra score mini card */}
             <motion.div
-              className="rounded-xl border border-border/50 bg-card p-4 flex items-center gap-3.5 text-ink"
+              className="rounded-xl border border-border/50 bg-card p-4 flex items-center gap-3.5"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2, duration: 0.5 }}
@@ -270,11 +269,11 @@ export default function HeroSection() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-black text-lavender">57</span>
+                  <span className="text-sm font-black text-orange-500">57</span>
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold">Infrastructure Score: <span className="text-lavender font-black">57/100</span></p>
+                <p className="text-xs font-bold">Infrastructure Score: <span className="text-orange-500 font-black">57/100</span></p>
                 <p className="text-[10px] text-muted-foreground/50 leading-tight">Your potential: 84/100 · See how</p>
               </div>
             </motion.div>
@@ -286,23 +285,23 @@ export default function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.35 }}
             >
-              <div className="w-7 h-7 hex-frame bg-green-500/15 flex items-center justify-center shrink-0">
-                <span className="text-deep text-[11px] font-black">3</span>
+              <div className="w-7 h-7 rounded-lg bg-green-500/15 flex items-center justify-center shrink-0">
+                <span className="text-green-600 text-[11px] font-black">3</span>
               </div>
               <div className="flex-1">
-                <p className="text-[11px] font-semibold text-ink">Structural rates unlocked</p>
+                <p className="text-[11px] font-semibold text-foreground">Structural rates unlocked</p>
                 <p className="text-[10px] text-muted-foreground/50">Rates you can't negotiate alone · Join to activate</p>
               </div>
               {!isAuthenticated && (
                 <Link to="/Onboarding">
-                  <button className="text-[10px] font-bold text-deep hover:text-green-700 transition-colors flex items-center gap-1">
+                  <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
                     Join <ArrowRight size={9} />
                   </button>
                 </Link>
               )}
               {isAuthenticated && (
                 <Link to="/Deals">
-                  <button className="text-[10px] font-bold text-deep hover:text-green-700 transition-colors flex items-center gap-1">
+                  <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
                     View deals <ArrowRight size={9} />
                   </button>
                 </Link>

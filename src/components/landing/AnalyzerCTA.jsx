@@ -7,9 +7,9 @@ import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 
 const rows = [
-  { icon: CreditCard, label: "Payment fees", current: "2.9%", network: "1.4%", saving: "€8,400/yr", color: "text-brand" },
-  { icon: Truck, label: "Shipping rates", current: "Base retail", network: "−18%", saving: "€5,200/yr", color: "text-deep" },
-  { icon: Package, label: "SaaS stack", current: "€2,500/mo", network: "€1,750/mo", saving: "€9,000/yr", color: "text-lavender" },
+  { icon: CreditCard, label: "Payment fees", current: "2.9%", network: "1.4%", saving: "€8,400/yr", color: "text-blue-600" },
+  { icon: Truck, label: "Shipping rates", current: "Base retail", network: "−18%", saving: "€5,200/yr", color: "text-green-600" },
+  { icon: Package, label: "SaaS stack", current: "€2,500/mo", network: "€1,750/mo", saving: "€9,000/yr", color: "text-orange-500" },
 ];
 
 export default function AnalyzerCTA() {
@@ -31,7 +31,7 @@ export default function AnalyzerCTA() {
             animate={leftInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center justify-center lg:justify-start gap-2 chip chip-mint w-fit mx-auto lg:mx-0">
+            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-5 flex items-center justify-center lg:justify-start gap-2">
               <span className="w-4 h-px bg-border inline-block" /> Infrastructure Analyzer
             </p>
             <h2 className="text-[clamp(2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-6 text-center lg:text-left">
@@ -42,7 +42,7 @@ export default function AnalyzerCTA() {
             </p>
             {isAuthenticated ? (
               <Link to="/Analyzer">
-                <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 btn-gradient text-white font-medium border border-brand-subtle shadow-soft shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft">
+                <Button size="lg" className="h-14 rounded-full px-9 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40">
                   Run the Analyzer
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -66,7 +66,7 @@ export default function AnalyzerCTA() {
             initial={{ opacity: 0, x: 50 }}
             animate={rightInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="card-premium overflow-hidden shadow-sm"
+            className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm"
           >
             <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between">
               <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/60">Sample analysis — €500K brand</span>
@@ -94,14 +94,14 @@ export default function AnalyzerCTA() {
               </div>
               {isAuthenticated ? (
                 <Link to="/Analyzer">
-                  <button className="h-11 px-6 rounded-full btn-gradient text-white font-medium border border-brand-subtle shadow-soft font-bold text-sm shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5 flex items-center gap-2">
+                  <button className="h-11 px-6 rounded-full bg-saas-gradient text-white font-bold text-sm shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5 flex items-center gap-2">
                     Calculate my savings <ArrowRight size={12} />
                   </button>
                 </Link>
               ) : (
                 <button
                   onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                  className="h-11 px-6 rounded-full btn-gradient text-white font-medium border border-brand-subtle shadow-soft font-bold text-sm shadow-lg shadow-soft ring-1 ring-white/10 hover:shadow-soft transition-transform hover:-translate-y-0.5 flex items-center gap-2"
+                  className="h-11 px-6 rounded-full bg-saas-gradient text-white font-bold text-sm shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5 flex items-center gap-2"
                 >
                   Sign in <ArrowRight size={12} />
                 </button>

@@ -168,7 +168,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
               <div className="p-4 rounded-xl glass ring-1 ring-blue-500/10 hover:translate-y-0.5 transition-transform">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Identified savings</p>
-                <p className="text-xl font-black tabular-nums text-brand">€{Math.round(econ.identified).toLocaleString()}/yr</p>
+                <p className="text-xl font-black tabular-nums text-blue-600">€{Math.round(econ.identified).toLocaleString()}/yr</p>
               </div>
               <div className="p-4 rounded-xl glass ring-1 ring-purple-500/10 hover:translate-y-0.5 transition-transform">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Activated savings</p>
@@ -176,7 +176,7 @@ export default function Dashboard() {
               </div>
               <div className="p-4 rounded-xl glass ring-1 ring-green-500/10 hover:translate-y-0.5 transition-transform">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Realized savings</p>
-                <p className="text-xl font-black tabular-nums text-deep">€{Math.round(econ.realized).toLocaleString()}/yr</p>
+                <p className="text-xl font-black tabular-nums text-green-600">€{Math.round(econ.realized).toLocaleString()}/yr</p>
               </div>
             </div>
           </div>
@@ -188,7 +188,7 @@ export default function Dashboard() {
         <div className="space-y-3">
           {/* Accuracy banner */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl border border-orange-500/20 bg-orange-500/[0.04]">
-            <AlertTriangle size={16} className="text-lavender shrink-0 mt-0.5 sm:mt-0" />
+            <AlertTriangle size={16} className="text-orange-500 shrink-0 mt-0.5 sm:mt-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold">Using estimated data</p>
               <p className="text-xs text-muted-foreground/60 mt-0.5">Connect your tools or upload a statement to unlock precise insights and verified savings figures.</p>
@@ -236,9 +236,9 @@ export default function Dashboard() {
 
           {/* ── SAVINGS OPPORTUNITIES & GMV ── */}
           <div className="grid grid-cols-3 gap-3">
-            <MetricCard label="Payments" value={latest.payment_savings} icon={CreditCard} color="text-brand" border="border-brand-subtle" bg="bg-blue-500/[0.05]" note="payment efficiency" />
-            <MetricCard label="Shipping" value={latest.shipping_savings} icon={Truck} color="text-deep" border="border-mint-subtle" bg="bg-green-500/[0.05]" note="shipping efficiency" />
-            <MetricCard label="SaaS" value={latest.saas_savings} icon={Package} color="text-lavender" border="border-lilac-subtle" bg="bg-orange-500/[0.05]" note="stack efficiency" />
+            <MetricCard label="Payments" value={latest.payment_savings} icon={CreditCard} color="text-blue-600" border="border-blue-500/15" bg="bg-blue-500/[0.05]" note="payment efficiency" />
+            <MetricCard label="Shipping" value={latest.shipping_savings} icon={Truck} color="text-green-600" border="border-green-500/15" bg="bg-green-500/[0.05]" note="shipping efficiency" />
+            <MetricCard label="SaaS" value={latest.saas_savings} icon={Package} color="text-orange-500" border="border-orange-500/15" bg="bg-orange-500/[0.05]" note="stack efficiency" />
           </div>
 
           <GMVMetrics gmvTotal={gmvTotal} gmvAverage={gmvAverage} />
