@@ -30,40 +30,15 @@ export default function OnboardingLayout({ children, activeTab, onTabChange, sta
           </div>
           <p className="text-xs text-muted-foreground">Visit each tab and add your info to get precise benchmarks.</p>
         </div>
-        <div className="mt-3 flex items-center gap-2 overflow-x-auto py-1">
-          {[
-            { key: 'general', label: 'General', icon: Building2 },
-            { key: 'payments', label: 'Payments', icon: CreditCard },
-            { key: 'shipping', label: 'Shipping', icon: Truck },
-            { key: 'saas', label: 'SaaS', icon: Package },
-          ].map((s, i, arr) => {
-            const percent = s.key === 'general' ? (statuses?.general?.completeness ?? 0) : (statuses?.[s.key]?.completeness ?? 0);
-            const done = percent >= 70;
-            const Icon = s.icon;
-            return (
-              <div key={s.key} className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => onTabChange(s.key)}
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs transition-colors ${activeTab===s.key ? 'bg-background border-foreground text-foreground' : done ? 'border-green-500/40 text-green-700 bg-green-500/10' : 'border-border/60 text-muted-foreground bg-card/60 hover:border-foreground/30 hover:text-foreground'}`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  <span>{s.label}</span>
-                  {done && <span className="text-[10px] font-semibold">Done</span>}
-                </button>
-                {i < arr.length - 1 && <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />}
-              </div>
-            );
-          })}
-        </div>
+
       </div>
 
       <Tabs value={activeTab} onValueChange={onTabChange}>
         <TabsList>
-          <TabsTrigger value="general"><span className="inline-flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /><span>General</span></span></TabsTrigger>
-          <TabsTrigger value="payments"><span className="inline-flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /><span>Payments</span>{statuses?.payments && <span className="ml-1 text-[10px] opacity-70">{statuses.payments.completeness}%</span>}</span></TabsTrigger>
-          <TabsTrigger value="shipping"><span className="inline-flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" /><span>Shipping</span>{statuses?.shipping && <span className="ml-1 text-[10px] opacity-70">{statuses.shipping.completeness}%</span>}</span></TabsTrigger>
-          <TabsTrigger value="saas"><span className="inline-flex items-center gap-1.5"><Package className="h-3.5 w-3.5" /><span>SaaS</span>{statuses?.saas && <span className="ml-1 text-[10px] opacity-70">{statuses.saas.completeness}%</span>}</span></TabsTrigger>
+          <TabsTrigger value="general"><span className="inline-flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5 text-muted-foreground" /><span>General</span></span></TabsTrigger>
+          <TabsTrigger value="payments"><span className="inline-flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5 text-chart-1" /><span>Payments</span>{statuses?.payments && <span className="ml-1 text-[10px] opacity-70">{statuses.payments.completeness}%</span>}</span></TabsTrigger>
+          <TabsTrigger value="shipping"><span className="inline-flex items-center gap-1.5"><Truck className="h-3.5 w-3.5 text-chart-2" /><span>Shipping</span>{statuses?.shipping && <span className="ml-1 text-[10px] opacity-70">{statuses.shipping.completeness}%</span>}</span></TabsTrigger>
+          <TabsTrigger value="saas"><span className="inline-flex items-center gap-1.5"><Package className="h-3.5 w-3.5 text-chart-3" /><span>SaaS</span>{statuses?.saas && <span className="ml-1 text-[10px] opacity-70">{statuses.saas.completeness}%</span>}</span></TabsTrigger>
         </TabsList>
         {children}
       </Tabs>
