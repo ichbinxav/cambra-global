@@ -14,13 +14,15 @@ export default function StepGrid({ onScrollToProfile }) {
       color: "text-cambra-plum",
       bg: "bg-cambra-plum-soft border-cambra-plum",
       cta: (
-        <Button onClick={onScrollToProfile} className="w-full h-auto rounded-xl px-4 py-3 text-left flex items-start justify-between gap-3">
-          <span>
-            <span className="block text-sm font-semibold">Tell us about your brand</span>
-            <span className="block text-[11px] text-muted-foreground/75">Name, country, category</span>
-          </span>
-          <ArrowRight size={14} />
-        </Button>
+        <Link to="/BrandProfile" className="w-full">
+          <Button className="w-full h-auto rounded-xl px-4 py-3 text-left flex items-start justify-between gap-3">
+            <span>
+              <span className="block text-sm font-semibold">Tell us about your brand</span>
+              <span className="block text-[11px] text-muted-foreground/75">Name, country, category</span>
+            </span>
+            <ArrowRight size={14} />
+          </Button>
+        </Link>
       ),
     },
     {

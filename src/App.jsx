@@ -50,6 +50,7 @@ import Snapshot from '@/pages/Snapshot';
 import AdminInvoices from '@/pages/admin/AdminInvoices';
 import Invoices from '@/pages/Invoices';
 import Vault from '@/pages/Vault';
+import BrandProfile from '@/pages/BrandProfile';
 import BrandGlyph from '@/components/shared/BrandGlyph';
 
 
@@ -165,6 +166,8 @@ const AuthenticatedApp = () => {
         <Route path="/landing" element={<Navigate to="/Landing" replace />} />
         <Route path="/Onboarding" element={<Onboarding />} />
         <Route path="/onboarding" element={<Navigate to="/Onboarding" replace />} />
+        <Route path="/BrandProfile" element={<BrandProfile />} />
+        <Route path="/brandprofile" element={<Navigate to="/BrandProfile" replace />} />
         <Route path="/Analyzer" element={<Analyzer />} />
         <Route path="/ConnectTools" element={<ConnectTools />} />
         <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
