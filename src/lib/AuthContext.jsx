@@ -19,6 +19,20 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = async () => {
+    // Hard stop for public homepage: no auth or app calls on '/'
+    const isPublicLandingPath = typeof window !== 'undefined' && (
+      window.location.pathname === '/' ||
+      window.location.pathname === '/Landing' ||
+      window.location.pathname === '/landing'
+    );
+    if (isPublicLandingPath) {
+      setIsLoadingPublicSettings(false);
+      setIsLoadingAuth(false);
+      setIsAuthenticated(false);
+      setAuthError(null);
+      return;
+    }
+
     // Skip network calls for crawlers/bots to avoid 4xx XHRs in Google Search Console
     if (isBot) {
       setIsLoadingPublicSettings(false);
