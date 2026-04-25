@@ -5,7 +5,6 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
-import BrandGlyph from "@/components/shared/BrandGlyph";
 
 
 const SAVINGS = [
@@ -49,7 +48,7 @@ export default function HeroSection() {
       {/* Centered brand C glyph (favicon style) */}
       <div className="absolute top-24 md:top-28 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
         <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl border border-border/60 bg-card/90 backdrop-blur-sm shadow-sm flex items-center justify-center">
-          <BrandGlyph className="h-6 w-6 opacity-95" />
+          <img src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png" alt="CAMBRA C" className="h-6 w-6 object-contain" />
         </div>
       </div>
 
