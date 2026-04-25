@@ -8,9 +8,9 @@ export function cn(...inputs) {
 
 export const isIframe = typeof window !== 'undefined' && window.self !== window.top;
 
-// Basic bot detection for SSR/crawler contexts (GSC, Lighthouse, etc.)
+// Broad bot/inspection detection to avoid auth/network calls during SEO tools rendering
 export const isBot = (() => {
-  if (typeof navigator === 'undefined') return true; // conservative: in headless render treat as bot
+  if (typeof navigator === 'undefined') return true; // headless render → treat as bot
   const ua = (navigator.userAgent || '').toLowerCase();
-  return /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandex|semrush|ahrefs|crawler|spider|facebookexternalhit|twitterbot|linkedinbot|embedly|quora link preview|pinterest|vkshare|bitlybot|whatsapp|telegrambot|discordbot/.test(ua);
+  return /googlebot|google-inspectiontool|googleweblight|adsbot-google|pagespeed|chrome-lighthouse|lighthouse|headlesschrome|rendertron|puppeteer|playwright|bingbot|slurp|duckduckbot|baiduspider|yandex|semrush|ahrefs|crawler|crawl|spider|facebookexternalhit|twitterbot|linkedinbot|embedly|quora link preview|pinterest|vkshare|bitlybot|whatsapp|telegrambot|discordbot|urlinspector|python-requests|postmanruntime|curl|wget|httpclient/.test(ua) || navigator.webdriver === true;
 })();
