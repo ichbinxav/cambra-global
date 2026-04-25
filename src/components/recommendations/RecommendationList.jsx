@@ -12,7 +12,45 @@ export default function RecommendationList(){
   const load = async () => {
     setLoading(true);
     const res = await base44.functions.invoke('getRecommendationsForBrand', {});
-    setItems(res.data?.items || []);
+    const raw = res.data?.items || [];
+
+    // Force English for dynamic fields (title, description, actions, lists)
+    const translated = await Promise.all(raw.map(async (r) => {
+      try {
+        const payload = {
+          title: r.title || "",
+          description: r.description || "",
+          action_required: r.action_required || "",
+          reasons: Array.isArray(r.reasons) ? r.reasons : [],
+          missing_data: Array.isArray(r.missing_data) ? r.missing_data : [],
+        };
+        const out = await base44.integrations.Core.InvokeLLM({
+          prompt: `Translate the following fields to natural, concise English. Keep currency symbols and numbers unchanged. Return ONLY JSON.\nInput: ${JSON.stringify(payload)}`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              description: { type: "string" },
+              action_required: { type: "string" },
+              reasons: { type: "array", items: { type: "string" } },
+              missing_data: { type: "array", items: { type: "string" } }
+            }
+          }
+        });
+        return {
+          ...r,
+          title: out?.title || r.title,
+          description: out?.description || r.description,
+          action_required: out?.action_required || r.action_required,
+          reasons: Array.isArray(out?.reasons) ? out.reasons : r.reasons,
+          missing_data: Array.isArray(out?.missing_data) ? out.missing_data : r.missing_data,
+        };
+      } catch (_) {
+        return r;
+      }
+    }));
+
+    setItems(translated);
     setLoading(false);
   };
 
