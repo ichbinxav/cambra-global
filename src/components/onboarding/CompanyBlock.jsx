@@ -5,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { Building2, Mail, Globe, MapPin, Tag, Instagram, Linkedin, Twitter, Youtube, Music2, CheckCircle2 } from 'lucide-react';
 
 export default function CompanyBlock(){
   const [brand, setBrand] = useState(null);
@@ -57,54 +59,114 @@ export default function CompanyBlock(){
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <Label htmlFor="brand-name">Nombre</Label>
-          <Input id="brand-name" placeholder="Nombre de la marca" value={brand.name||''} onChange={e=>setBrand({...brand, name: e.target.value})} />
+      {/* Identidad de marca */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="p-5 rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm space-y-4 hover:shadow-sm transition-shadow"
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-7 h-7 rounded-lg bg-foreground text-background flex items-center justify-center">
+            <Building2 className="w-4 h-4" />
+          </div>
+          <p className="text-sm font-semibold">Identidad de la marca</p>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="brand-email">Email</Label>
-          <Input id="brand-email" type="email" placeholder="correo@brand.com" value={brand.contact_email||''} onChange={e=>setBrand({...brand, contact_email: e.target.value})} />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="brand-website">Website</Label>
-          <Input id="brand-website" placeholder="https://..." value={brand.website||''} onChange={e=>setBrand({...brand, website: e.target.value})} />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="brand-country">País</Label>
-          <Input id="brand-country" placeholder="España" value={brand.country||''} onChange={e=>setBrand({...brand, country: e.target.value})} />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="brand-category">Categoría</Label>
-          <Input id="brand-category" placeholder="fashion / beauty / ..." value={brand.category||''} onChange={e=>setBrand({...brand, category: e.target.value})} />
-        </div>
-      </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="brand-bio">Biografía / Descripción</Label>
-        <Textarea id="brand-bio" placeholder="Cuéntanos sobre la marca, misión, producto..." value={brand.bio||''} onChange={e=>setBrand({...brand, bio: e.target.value})} />
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="brand-name">Nombre</Label>
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+              <Input id="brand-name" className="pl-9" placeholder="Nombre de la marca" value={brand.name||''} onChange={e=>setBrand({...brand, name: e.target.value})} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="brand-email">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+              <Input id="brand-email" className="pl-9" type="email" placeholder="correo@brand.com" value={brand.contact_email||''} onChange={e=>setBrand({...brand, contact_email: e.target.value})} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="brand-website">Website</Label>
+            <div className="relative">
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+              <Input id="brand-website" className="pl-9" placeholder="https://..." value={brand.website||''} onChange={e=>setBrand({...brand, website: e.target.value})} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="brand-country">País</Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+              <Input id="brand-country" className="pl-9" placeholder="España" value={brand.country||''} onChange={e=>setBrand({...brand, country: e.target.value})} />
+            </div>
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="brand-category">Categoría</Label>
+            <div className="relative">
+              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+              <Input id="brand-category" className="pl-9" placeholder="fashion / beauty / home / tech ..." value={brand.category||''} onChange={e=>setBrand({...brand, category: e.target.value})} />
+            </div>
+          </div>
+        </div>
 
-      <div className="p-4 rounded-2xl border border-border/50 bg-secondary/10 space-y-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="brand-bio">Biografía / Descripción</Label>
+          <Textarea id="brand-bio" className="min-h-[110px]" placeholder="Cuéntanos sobre la marca, misión, producto..." value={brand.bio||''} onChange={e=>setBrand({...brand, bio: e.target.value})} />
+        </div>
+      </motion.div>
+
+      {/* Redes sociales */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05 }}
+        className="p-5 rounded-2xl border border-border/50 bg-secondary/10 space-y-3 hover:bg-secondary/20 transition-colors"
+      >
         <p className="text-xs font-semibold text-muted-foreground">Redes sociales (opcionales)</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Input placeholder="Instagram URL" value={brand.instagram_url||''} onChange={e=>setBrand({...brand, instagram_url: e.target.value})} />
-          <Input placeholder="LinkedIn URL" value={brand.linkedin_url||''} onChange={e=>setBrand({...brand, linkedin_url: e.target.value})} />
-          <Input placeholder="Twitter/X URL" value={brand.twitter_url||''} onChange={e=>setBrand({...brand, twitter_url: e.target.value})} />
-          <Input placeholder="TikTok URL" value={brand.tiktok_url||''} onChange={e=>setBrand({...brand, tiktok_url: e.target.value})} />
-          <Input placeholder="YouTube URL" value={brand.youtube_url||''} onChange={e=>setBrand({...brand, youtube_url: e.target.value})} />
+          <div className="relative">
+            <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cambra-plum" />
+            <Input className="pl-9" placeholder="Instagram URL" value={brand.instagram_url||''} onChange={e=>setBrand({...brand, instagram_url: e.target.value})} />
+          </div>
+          <div className="relative">
+            <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cambra-lilac" />
+            <Input className="pl-9" placeholder="LinkedIn URL" value={brand.linkedin_url||''} onChange={e=>setBrand({...brand, linkedin_url: e.target.value})} />
+          </div>
+          <div className="relative">
+            <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cambra-mint" />
+            <Input className="pl-9" placeholder="Twitter/X URL" value={brand.twitter_url||''} onChange={e=>setBrand({...brand, twitter_url: e.target.value})} />
+          </div>
+          <div className="relative">
+            <Music2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+            <Input className="pl-9" placeholder="TikTok URL" value={brand.tiktok_url||''} onChange={e=>setBrand({...brand, tiktok_url: e.target.value})} />
+          </div>
+          <div className="relative sm:col-span-2">
+            <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
+            <Input className="pl-9" placeholder="YouTube URL" value={brand.youtube_url||''} onChange={e=>setBrand({...brand, youtube_url: e.target.value})} />
+          </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="flex items-center gap-2">
-        <Checkbox id="accept" checked={!!brand.accept_terms} onCheckedChange={(v)=>setBrand({...brand, accept_terms: !!v})} />
-        <Label htmlFor="accept" className="text-sm">Acepto los <a href="/Terms" target="_blank" className="underline">términos y condiciones</a></Label>
-      </div>
-
-      <div className="flex gap-2">
-        <Button onClick={saveOrCreate} disabled={saving}>{saving ? 'Guardando…' : (brand?.id ? 'Guardar' : 'Crear perfil')}</Button>
-        <a href="/Analyzer" className="text-sm underline">Ir al Analyzer</a>
-      </div>
+      {/* Términos + acciones */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+      >
+        <div className="flex items-center gap-2">
+          <Checkbox id="accept" checked={!!brand.accept_terms} onCheckedChange={(v)=>setBrand({...brand, accept_terms: !!v})} />
+          <Label htmlFor="accept" className="text-sm">Acepto los <a href="/Terms" target="_blank" className="underline">términos y condiciones</a></Label>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={saveOrCreate} disabled={saving} className="gap-2">
+            <CheckCircle2 className="w-4 h-4" /> {saving ? 'Guardando…' : (brand?.id ? 'Guardar' : 'Crear perfil')}
+          </Button>
+          <a href="/Analyzer" className="text-sm underline self-center">Ir al Analyzer</a>
+        </div>
+      </motion.div>
     </div>
   );
 }
