@@ -133,13 +133,7 @@ export default function HeroSection() {
               </motion.a>
             </motion.div>
 
-            {/* Trusted strip */}
-            <motion.div variants={fadeUp} className="mt-10 opacity-70">
-              <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-3">Trusted by independent brands</p>
-              <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm text-muted-foreground/60">
-                <span>Aēsop</span><span>SKIMS</span><span>BYREDO</span><span>AMI</span><span>Carhartt</span><span>Rhude</span>
-              </div>
-            </motion.div>
+            {/* Trusted strip — hidden until partner logos are ready */}
 
 
 
