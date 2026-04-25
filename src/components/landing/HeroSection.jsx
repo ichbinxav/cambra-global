@@ -74,7 +74,7 @@ export default function HeroSection() {
               variants={fadeUp}
               className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-3 text-center lg:text-left"
             >
-              Independent brands. One <br /><span className="text-saas-gradient">infrastructure</span> layer.
+              Turn your <span className="text-saas-gradient">infrastructure</span> into your leverage.
             </motion.h1>
 
             <motion.p
