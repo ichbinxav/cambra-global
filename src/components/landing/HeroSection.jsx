@@ -79,9 +79,15 @@ export default function HeroSection() {
 
             <motion.p
               variants={fadeUp}
-              className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-4 tracking-[-0.01em] text-center lg:text-left"
+              className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-2 tracking-[-0.01em] text-center lg:text-left"
             >
-              CAMBRA aggregates independent brands into one infrastructure layer to unlock enterprise-level pricing and terms. We analyze your current stack, surface where money leaks, and activate better conditions through our collective network — fast, with minimal change management.
+              CAMBRA aggregates independent brands into one infrastructure layer to unlock enterprise-level pricing and terms.
+            </motion.p>
+            <motion.p
+              variants={fadeUp}
+              className="text-base text-foreground/70 leading-relaxed mb-4 max-w-[620px] mx-auto text-center lg:text-left"
+            >
+              We analyze your current stack, surface where money leaks, and activate better conditions through our collective network — fast, with minimal change management.
             </motion.p>
 
             <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-4 max-w-[620px] mx-auto text-center lg:text-left">
