@@ -49,7 +49,7 @@ export default function HeroSection() {
       <img
         src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png"
         alt=""
-        className="absolute bottom-6 right-6 w-20 sm:w-24 md:w-28 lg:w-32 opacity-[0.06] pointer-events-none select-none"
+        className="absolute bottom-6 right-6 w-40 sm:w-52 md:w-64 lg:w-80 opacity-[0.06] pointer-events-none select-none"
       />
 
 
