@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --font-inter: 'Inter', sans-serif;
+    --font-inter: 'IBM Plex Sans', 'Space Grotesk', Inter, system-ui, sans-serif;
 
     --background: 0 0% 100%;
     --foreground: 0 0% 4%;
@@ -148,6 +148,11 @@
 /* Additional blur for locked state (details under titles) */
 .lock-blur .sensitive { filter: blur(6px); }
 .lock-blur .no-blur .sensitive { filter: none !important; }
+
+/* Tech-forward typography */
+h1, h2, h3, .font-display { font-family: 'Space Grotesk', var(--font-inter); letter-spacing: -0.02em; }
+/* Numeric consistency for dashboards */
+body { font-variant-numeric: tabular-nums; }
 
 /* Motion reduce */
 @media (prefers-reduced-motion: reduce) {
