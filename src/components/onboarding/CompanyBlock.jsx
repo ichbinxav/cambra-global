@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import CountrySelect from '@/components/inputs/CountrySelect';
+import CategorySelect from '@/components/inputs/CategorySelect';
 import { Building2, Mail, Globe, MapPin, Tag, Instagram, Linkedin, Twitter, Youtube, Music2, CheckCircle2 } from 'lucide-react';
 
 export default function CompanyBlock(){
@@ -102,10 +103,7 @@ export default function CompanyBlock(){
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="brand-category">Category</Label>
-            <div className="relative">
-              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-              <Input id="brand-category" className="pl-9" placeholder="fashion / beauty / home / tech ..." value={brand.category||''} onChange={e=>setBrand({...brand, category: e.target.value})} />
-            </div>
+            <CategorySelect value={brand.category || ''} onChange={(val)=> setBrand({...brand, category: val})} />
           </div>
         </div>
 
