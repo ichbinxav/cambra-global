@@ -116,7 +116,15 @@
 /* CAMBRA surfaces + gradients */
 /* Stronger, higher-contrast gradient (less white/pastel) */
 .bg-saas-gradient { background: linear-gradient(135deg, #0A1024 0%, #1F4ED8 55%, #2CA7C1 100%); }
-.text-saas-gradient { background: linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.text-saas-gradient { color: hsl(var(--neon-6)); }
+@supports (-webkit-background-clip: text) {
+  .text-saas-gradient {
+    background: linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
 .glass { background: hsl(var(--card) / 0.65); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid hsl(var(--border) / 0.6); }
 
 /* Ambient glows & patterns */

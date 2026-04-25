@@ -59,7 +59,7 @@ export default function HeroSection() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 lg:gap-16 items-center">
 
           {/* LEFT */}
-          <motion.div variants={container} initial="hidden" animate="show" className="text-center md:text-center lg:text-left">
+          <motion.div variants={container} initial={false} animate="show" className="text-center md:text-center lg:text-left">
 
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
               <motion.span
@@ -136,14 +136,14 @@ export default function HeroSection() {
           {/* RIGHT — product visual */}
           <motion.div
             className="hidden lg:flex flex-col gap-3"
-            initial={{ opacity: 0, x: 60 }}
+            initial={false}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* Overpaying alert */}
             <motion.div
               className="flex items-center gap-3 p-4 rounded-xl border border-destructive/30 bg-red-500/[0.08]"
-              initial={{ opacity: 0, y: -10 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
             >
@@ -170,7 +170,7 @@ export default function HeroSection() {
                 {SAVINGS.map((item, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, x: 30 }}
+                    initial={false}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.65 + i * 0.13, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                     className={`flex items-center gap-3 p-3.5 rounded-xl border bg-card`}
@@ -194,7 +194,7 @@ export default function HeroSection() {
 
               <motion.div
                className="mx-4 mb-4 p-4 rounded-xl bg-foreground text-background flex items-center justify-between"
-               initial={{ opacity: 0, y: 20 }}
+               initial={false}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 1.05, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               >
@@ -224,7 +224,7 @@ export default function HeroSection() {
             {/* Infra score mini card */}
             <motion.div
               className="rounded-xl border border-border/50 bg-card p-4 flex items-center gap-3.5"
-              initial={{ opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.2, duration: 0.5 }}
             >
@@ -253,7 +253,7 @@ export default function HeroSection() {
             {/* Deals unlocked hint */}
             <motion.div
               className="rounded-xl border border-cambra-mint bg-cambra-mint-soft p-4 flex items-center gap-3"
-              initial={{ opacity: 0, y: 10 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.35 }}
             >
@@ -282,7 +282,7 @@ export default function HeroSection() {
 
             <motion.p
               className="text-center text-[10px] text-muted-foreground/25"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
+              initial={false} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
             >Sample analysis · Independent brand · 2025</motion.p>
           </motion.div>
         </div>
