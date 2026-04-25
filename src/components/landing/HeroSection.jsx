@@ -61,7 +61,7 @@ export default function HeroSection() {
           {/* LEFT */}
           <motion.div variants={container} initial={false} animate="show" className="text-center md:text-center lg:text-left">
 
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
+            <motion.div initial={false} variants={fadeUp} className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
               <motion.span
                 className="w-1.5 h-1.5 rounded-full bg-cambra-mint"
                 animate={{ scale: [1, 1.5, 1] }}
