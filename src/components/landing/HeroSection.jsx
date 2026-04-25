@@ -91,7 +91,7 @@ export default function HeroSection() {
             {/* Pricing pill */}
             <motion.div
               variants={fadeUp}
-              className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-5 py-4 rounded-full bg-foreground text-background mx-auto"
+              className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-5 py-4 rounded-full bg-foreground text-background mx-auto shadow-sm"
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm text-background/40 line-through font-light">€60/month</span>
@@ -127,7 +127,7 @@ export default function HeroSection() {
               <motion.a
                 whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                 href="#how"
-                className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium bg-background text-foreground border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2"
+                className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-semibold bg-foreground text-background hover:opacity-90 transition inline-flex items-center justify-center gap-2"
               >
                 Explore platform <ArrowRight className="h-4 w-4" />
               </motion.a>
@@ -188,7 +188,7 @@ export default function HeroSection() {
                     initial={{ opacity: 0, x: 30 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.65 + i * 0.13, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                    className={`flex items-center gap-3 p-3.5 rounded-xl border ${item.bg}`}
+                    className={`flex items-center gap-3 p-3.5 rounded-xl border bg-card`}
                   >
                     <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center shrink-0`}>
                       <item.icon size={13} className={item.color} />

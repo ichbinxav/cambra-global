@@ -52,7 +52,7 @@ export default function AnalyzerCTA() {
                 href="/auth/start"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center h-14 rounded-full px-9 text-base font-bold gap-2 shadow-sm bg-foreground text-background hover:opacity-90 transition-opacity"
+                className="inline-flex items-center justify-center h-14 rounded-full px-9 text-base font-bold gap-2 shadow-md bg-foreground text-background hover:opacity-90 transition"
               >
                 Sign in to Analyze
                 <ArrowRight className="h-4 w-4" />

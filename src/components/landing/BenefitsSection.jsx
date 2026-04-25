@@ -80,7 +80,7 @@ function BenefitTile({ b, index }) {
       <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-[0.06] bg-foreground" />
 
       <div className="flex items-start gap-3 mb-3">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${b?.bg || "bg-secondary border-border/50"}`}>
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border bg-foreground/90 text-background`}>
           <IconComp size={18} className={b?.color || "text-muted-foreground/60"} />
         </div>
         <div className="min-w-0 flex-1">
@@ -90,7 +90,7 @@ function BenefitTile({ b, index }) {
       </div>
 
       {/* Bottom accent line */}
-      <div className={`h-1 rounded-full ${b?.bg || "bg-secondary"}`} />
+      <div className="h-1 rounded-full bg-foreground/70" />
     </motion.div>
   );
 }

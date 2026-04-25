@@ -132,7 +132,7 @@ export default function PricingSection() {
             {/* CTA */}
             <div className="px-7 pb-7">
               <Link to="/Onboarding">
-                <Button className="w-full h-12 rounded-xl text-sm font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40">
+                <Button className="w-full h-12 rounded-xl text-sm font-bold gap-2 bg-saas-gradient text-white shadow-lg ring-1 ring-white/20">
                   Join CAMBRA <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
