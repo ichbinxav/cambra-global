@@ -3,7 +3,9 @@ import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import MissingDataChips from './MissingDataChips';
+import TagChipsInput from './TagChipsInput';
 
 export default function PaymentsModule(){
   const [brandId, setBrandId] = useState(null);
@@ -62,30 +64,47 @@ export default function PaymentsModule(){
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Input placeholder="PSP actual" value={item.psp_actual||''} onChange={e=>setItem({...item, psp_actual: e.target.value})} />
+        <Input placeholder="Current PSP (e.g. Stripe)" value={item.psp_actual||''} onChange={e=>setItem({...item, psp_actual: e.target.value})} />
         <Input type="number" step="0.01" placeholder="Blended rate %" value={item.blended_rate||''} onChange={e=>setItem({...item, blended_rate: Number(e.target.value)})} />
-        <Input placeholder="Canales (online,in_store,omni)" value={(item.canales||[]).join(',')} onChange={e=>setItem({...item, canales: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} />
-        <Input placeholder="Países (separados por coma)" value={(item.paises||[]).join(',')} onChange={e=>setItem({...item, paises: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} />
-        <Input placeholder="Monedas (EUR,USD,...)" value={(item.monedas||[]).join(',')} onChange={e=>setItem({...item, monedas: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} />
-        <Input type="number" placeholder="Volumen mensual (€)" value={item.vol_mensual||''} onChange={e=>setItem({...item, vol_mensual: Number(e.target.value)})} />
-        <Input type="number" placeholder="Transacciones mensuales" value={item.tx_mensuales||''} onChange={e=>setItem({...item, tx_mensuales: Number(e.target.value)})} />
-        <Input type="number" step="0.01" placeholder="AOV (€)" value={item.aov||''} onChange={e=>setItem({...item, aov: Number(e.target.value)})} />
+        <TagChipsInput
+          label="Sales channels"
+          values={item.canales||[]}
+          onChange={(vals)=>setItem({...item, canales: vals})}
+          placeholder="Add channel (online, in_store, omni)"
+          suggestions={["online","in_store","omni"]}
+        />
+        <TagChipsInput
+          label="Countries"
+          values={item.paises||[]}
+          onChange={(vals)=>setItem({...item, paises: vals})}
+          placeholder="Add country code or name"
+        />
+        <TagChipsInput
+          label="Currencies"
+          values={item.monedas||[]}
+          onChange={(vals)=>setItem({...item, monedas: vals})}
+          placeholder="Add currency (EUR, USD, ...)"
+          suggestions={["EUR","USD","GBP"]}
+        />
+        <Input type="number" placeholder="Monthly volume (€)" value={item.vol_mensual||''} onChange={e=>setItem({...item, vol_mensual: Number(e.target.value)})} />
+        <Input type="number" placeholder="Monthly transactions" value={item.tx_mensuales||''} onChange={e=>setItem({...item, tx_mensuales: Number(e.target.value)})} />
+        <Input type="number" step="0.01" placeholder="Average order value (€)" value={item.aov||''} onChange={e=>setItem({...item, aov: Number(e.target.value)})} />
         <Input type="number" step="0.01" placeholder="Refunds %" value={item.refunds_rate||''} onChange={e=>setItem({...item, refunds_rate: Number(e.target.value)})} />
         <Input type="number" step="0.01" placeholder="Chargebacks %" value={item.chargeback_rate||''} onChange={e=>setItem({...item, chargeback_rate: Number(e.target.value)})} />
-        <Input type="number" placeholder="Payout timing (días)" value={item.payout_timing||''} onChange={e=>setItem({...item, payout_timing: Number(e.target.value)})} />
-        <Input placeholder="Fraude / riesgo (notas)" value={item.fraude_flags||''} onChange={e=>setItem({...item, fraude_flags: e.target.value})} />
+        <Input type="number" placeholder="Payout timing (days)" value={item.payout_timing||''} onChange={e=>setItem({...item, payout_timing: Number(e.target.value)})} />
+        <Input placeholder="Risk notes" value={item.fraude_flags||''} onChange={e=>setItem({...item, fraude_flags: e.target.value})} />
         <Input placeholder="Terminal provider" value={item.terminal_provider||''} onChange={e=>setItem({...item, terminal_provider: e.target.value})} />
-        <Input placeholder="Renovación (YYYY-MM-DD)" value={item.contrato?.renovacion_en||''} onChange={e=>setItem({...item, contrato: { ...(item.contrato||{}), renovacion_en: e.target.value }})} />
-        <Input placeholder="Tipo contrato (mensual/anual)" value={item.contrato?.tipo||''} onChange={e=>setItem({...item, contrato: { ...(item.contrato||{}), tipo: e.target.value }})} />
-        <Input placeholder="Frustraciones" value={item.frustraciones||''} onChange={e=>setItem({...item, frustraciones: e.target.value})} />
+        <Input placeholder="Contract renewal (YYYY-MM-DD)" value={item.contrato?.renovacion_en||''} onChange={e=>setItem({...item, contrato: { ...(item.contrato||{}), renovacion_en: e.target.value }})} />
+        <Input placeholder="Contract type (monthly/annual)" value={item.contrato?.tipo||''} onChange={e=>setItem({...item, contrato: { ...(item.contrato||{}), tipo: e.target.value }})} />
+        <Input placeholder="Frustrations" value={item.frustraciones||''} onChange={e=>setItem({...item, frustraciones: e.target.value})} />
       </div>
       <MissingDataChips items={status?.missing_fields||[]} />
       <div className="flex items-center gap-2">
-        <Button onClick={save} disabled={saving}>{saving? 'Guardando…':'Guardar módulo'}</Button>
-        <a href="/Deals?vertical=payments" className="text-sm underline">Ver deals</a>
-        <a href="/Analyzer" className="text-sm underline">Ir al Analyzer</a>
+        <Button onClick={save} disabled={saving}>{saving? 'Saving…':'Save module'}</Button>
+        <a href="/Deals?vertical=payments" className="text-sm underline">View deals</a>
+        <a href="/Analyzer" className="text-sm underline">Go to Analyzer</a>
       </div>
     </div>
   );
