@@ -77,14 +77,14 @@ export default function PaymentsModule(){
     <div className="space-y-4">
       <div className="space-y-4">
         <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 glass">
-          <p className="text-xs text-muted-foreground">Solo pedimos lo básico. Puedes ampliar cuando quieras.</p>
+          <p className="text-xs text-muted-foreground">We only ask for the basics. You can expand anytime.</p>
           <Button variant="outline" onClick={()=>setShowAdvanced(v=>!v)} className="h-8 text-xs">
             {showAdvanced ? 'Hide advanced' : 'Enrich your information'}
           </Button>
         </div>
-        {/* Proveedor y mercados */}
+        {/* Provider and markets */}
         <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
-          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Proveedor y mercados</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Provider and markets</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-3">
               <OptionTiles
@@ -95,7 +95,7 @@ export default function PaymentsModule(){
               />
               {showAdvanced && (
                 <ComboBox
-                  label="Buscar/añadir proveedor"
+                  label="Search/add provider"
                   value={item.psp_actual||''}
                   onChange={(v)=>setItem({...item, psp_actual: v})}
                   options={["Stripe","Adyen","Mollie","PayPal","Klarna","Square","Braintree","Worldpay","Checkout.com","Shopify Payments"]}
@@ -134,9 +134,9 @@ export default function PaymentsModule(){
           </div>
         </div>
 
-        {/* Volúmenes y métricas */}
+        {/* Volumes and metrics */}
         <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
-          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Volúmenes y métricas</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Volumes and metrics</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <SmartNumberField label="Blended rate %" value={item.blended_rate||0} onChange={(v)=>setItem({...item, blended_rate: Number(v)})} min={0} max={5} decimals={2} suffix="%" />
             <SmartNumberField label="Monthly volume (€)" value={item.vol_mensual||0} onChange={(v)=>setItem({...item, vol_mensual: Number(v)})} min={0} max={100000000} prefix="€" scale="log" />
@@ -150,9 +150,9 @@ export default function PaymentsModule(){
           </div>
         </div>
 
-        {/* Riesgo y terminales */}
+        {/* Risk and terminals */}
         <div className={`p-4 sm:p-5 rounded-2xl border border-border/60 glass ${showAdvanced ? '' : 'hidden'}`}>
-          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Riesgo y terminales</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Risk and terminals</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <MultiComboBox
               label="Risk flags"
@@ -170,9 +170,9 @@ export default function PaymentsModule(){
           </div>
         </div>
 
-        {/* Contrato y notas */}
+        {/* Contract and notes */}
         <div className={`p-4 sm:p-5 rounded-2xl border border-border/60 glass ${showAdvanced ? '' : 'hidden'}`}>
-          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Contrato y notas</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Contract and notes</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Input type="date" placeholder="Contract renewal" value={item.contrato?.renovacion_en||''} onChange={e=>setItem({...item, contrato: { ...(item.contrato||{}), renovacion_en: e.target.value }})} />
             <ComboBox

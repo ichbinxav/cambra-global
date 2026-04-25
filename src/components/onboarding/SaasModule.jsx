@@ -61,7 +61,7 @@ export default function SaasModule(){
     <div className="space-y-4">
       <div className="space-y-4">
         <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 glass">
-          <p className="text-xs text-muted-foreground">Solo pedimos lo básico. Puedes ampliar cuando quieras.</p>
+          <p className="text-xs text-muted-foreground">We only ask for the basics. You can expand anytime.</p>
           <Button variant="outline" onClick={()=>setShowAdvanced(v=>!v)} className="h-8 text-xs">
             {showAdvanced ? 'Hide advanced' : 'Enrich your information'}
           </Button>
@@ -72,7 +72,7 @@ export default function SaasModule(){
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-3">
               <OptionTiles label="E‑commerce platform" value={item.plataforma||''} onChange={(v)=>setItem({...item, plataforma: v})} options={["Shopify","Shopify Plus","BigCommerce","Magento","WooCommerce","Custom"]} />
-              <ComboBox label="Buscar/añadir plataforma" value={item.plataforma||''} onChange={(v)=>setItem({...item, plataforma: v})} options={["Shopify","Shopify Plus","BigCommerce","Magento","WooCommerce","Custom"]} />
+              <ComboBox label="Search/add platform" value={item.plataforma||''} onChange={(v)=>setItem({...item, plataforma: v})} options={["Shopify","Shopify Plus","BigCommerce","Magento","WooCommerce","Custom"]} />
             </div>
             {showAdvanced && (
               <ComboBox label="CRM" value={item.crm||''} onChange={(v)=>setItem({...item, crm: v})} options={["HubSpot","Salesforce","Pipedrive","Zoho","None"]} />
@@ -83,9 +83,9 @@ export default function SaasModule(){
           </div>
         </div>
 
-        {/* Mensajería y extras */}
+        {/* Messaging and extras */}
         <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
-          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Mensajería y extras</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Messaging and extras</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <MultiComboBox label="Email / SMS tools" values={item.email_sms||[]} onChange={(vals)=>setItem({...item, email_sms: vals})} options={["Klaviyo","Mailchimp","Attentive","Postscript","Omnisend","SmsBump"]} />
             {showAdvanced && (
@@ -94,9 +94,9 @@ export default function SaasModule(){
           </div>
         </div>
 
-        {/* Spend y renovaciones */}
+        {/* Spend and renewals */}
         <div className={`p-4 sm:p-5 rounded-2xl border border-border/60 glass ${showAdvanced ? '' : 'hidden'}`}>
-          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Spend y renovaciones</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Spend and renewals</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <KeyValueListInput label="Monthly spend by tool" entries={item.gasto_mensual_map||{}} onChange={(obj)=>setItem({...item, gasto_mensual_map: obj})} keyPlaceholder="Tool" valuePlaceholder="€ per month" />
             <KeyValueListInput label="Renewals" entries={item.renovaciones_map||{}} onChange={(obj)=>setItem({...item, renovaciones_map: obj})} keyPlaceholder="Tool" valuePlaceholder="YYYY-MM-DD" />
@@ -104,9 +104,9 @@ export default function SaasModule(){
           </div>
         </div>
 
-        {/* Overlap y notas */}
+        {/* Overlap and notes */}
         <div className={`p-4 sm:p-5 rounded-2xl border border-border/60 glass ${showAdvanced ? '' : 'hidden'}`}>
-          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Overlap y notas</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Overlap and notes</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <TagChipsInput label="Overlapping tools" values={item.overlapping_tools||[]} onChange={(vals)=>setItem({...item, overlapping_tools: vals})} placeholder="Add tool" />
             <TagChipsInput label="Underused tools" values={item.underused_tools||[]} onChange={(vals)=>setItem({...item, underused_tools: vals})} placeholder="Add tool" />
