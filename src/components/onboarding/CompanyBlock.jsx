@@ -24,8 +24,8 @@ export default function CompanyBlock(){
   })(); },[]);
 
   const saveOrCreate = async () => {
-    if (!brand?.name) { alert('Por favor, indica el nombre de tu marca'); return; }
-    if (!brand?.id && !brand?.accept_terms) { alert('Debes aceptar los términos para crear el perfil'); return; }
+    if (!brand?.name) { alert('Please enter your brand name'); return; }
+    if (!brand?.id && !brand?.accept_terms) { alert('You must accept the terms to create the profile'); return; }
     setSaving(true);
     const payload = {
       name: brand.name,
@@ -61,7 +61,7 @@ export default function CompanyBlock(){
 
   return (
     <div className="space-y-4">
-      {/* Identidad de marca */}
+      {/* Brand identity */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -87,7 +87,7 @@ export default function CompanyBlock(){
             <Label htmlFor="brand-email">Email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-              <Input id="brand-email" className="pl-9" type="email" placeholder="correo@brand.com" value={brand.contact_email||''} onChange={e=>setBrand({...brand, contact_email: e.target.value})} />
+              <Input id="brand-email" className="pl-9" type="email" placeholder="email@brand.com" value={brand.contact_email||''} onChange={e=>setBrand({...brand, contact_email: e.target.value})} />
             </div>
           </div>
           <div className="space-y-1.5">
@@ -113,7 +113,7 @@ export default function CompanyBlock(){
         </div>
       </motion.div>
 
-      {/* Redes sociales */}
+      {/* Social media */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -145,7 +145,7 @@ export default function CompanyBlock(){
         </div>
       </motion.div>
 
-      {/* Términos + acciones */}
+      {/* Terms + actions */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

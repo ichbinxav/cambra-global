@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { base44 } from '@/api/base44Client';
+import { Building2, CreditCard, Truck, Package } from 'lucide-react';
 
 export default function OnboardingLayout({ children, activeTab, onTabChange, statuses }){
   const total = ['payments','shipping','saas'];
@@ -23,10 +24,10 @@ export default function OnboardingLayout({ children, activeTab, onTabChange, sta
 
       <Tabs value={activeTab} onValueChange={onTabChange}>
         <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="payments">Payments {statuses?.payments && <span className="ml-1 text-[10px] opacity-70">{statuses.payments.completeness}%</span>}</TabsTrigger>
-          <TabsTrigger value="shipping">Shipping {statuses?.shipping && <span className="ml-1 text-[10px] opacity-70">{statuses.shipping.completeness}%</span>}</TabsTrigger>
-          <TabsTrigger value="saas">SaaS {statuses?.saas && <span className="ml-1 text-[10px] opacity-70">{statuses.saas.completeness}%</span>}</TabsTrigger>
+          <TabsTrigger value="general"><span className="inline-flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /><span>General</span></span></TabsTrigger>
+          <TabsTrigger value="payments"><span className="inline-flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /><span>Payments</span>{statuses?.payments && <span className="ml-1 text-[10px] opacity-70">{statuses.payments.completeness}%</span>}</span></TabsTrigger>
+          <TabsTrigger value="shipping"><span className="inline-flex items-center gap-1.5"><Truck className="h-3.5 w-3.5" /><span>Shipping</span>{statuses?.shipping && <span className="ml-1 text-[10px] opacity-70">{statuses.shipping.completeness}%</span>}</span></TabsTrigger>
+          <TabsTrigger value="saas"><span className="inline-flex items-center gap-1.5"><Package className="h-3.5 w-3.5" /><span>SaaS</span>{statuses?.saas && <span className="ml-1 text-[10px] opacity-70">{statuses.saas.completeness}%</span>}</span></TabsTrigger>
         </TabsList>
         {children}
       </Tabs>
