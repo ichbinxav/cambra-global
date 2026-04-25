@@ -46,14 +46,102 @@
   </head>
   <body>
     <div id="root">
-  <!-- Static fallback hero for crawlers and very slow JS environments; React will replace this on hydration -->
-  <div id="prerender-hero" style="max-width:960px;margin:72px auto 40px;padding:0 20px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;color:#0a0a0a">
-    <h1 style="font-size:38px;line-height:1.05;margin:0 0 10px;font-weight:900;letter-spacing:-0.02em">Independent brands. <span style="background:linear-gradient(135deg,#1F4ED8,#2CA7C1);-webkit-background-clip:text;background-clip:text;color:transparent">Collective leverage.</span></h1>
-    <p style="font-size:16px;color:#4b5563;margin:10px 0 12px;max-width:720px">CAMBRA helps independent commerce brands improve operating margins through better infrastructure terms across payments, shipping, SaaS and operational providers.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
-      <a href="/Onboarding" style="display:inline-block;padding:12px 16px;border-radius:999px;background:#0a0a0a;color:#fff;font-weight:700;text-decoration:none">Join the Founding Brands →</a>
-      <a href="/Analyzer" style="display:inline-block;padding:12px 16px;border-radius:999px;border:1px solid #0a0a0a;color:#0a0a0a;font-weight:700;text-decoration:none">Run the Cost Analyzer →</a>
+  <!-- Full static landing prerender; React will replace on hydration -->
+  <div id="prerender-landing" style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;color:#0a0a0a">
+    <style>
+      .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+      .nav{position:fixed;top:0;left:0;right:0;height:56px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;z-index:10}
+      .nav a{color:#111827;text-decoration:none;font-weight:600;font-size:14px;margin:0 10px}
+      .hero{padding:88px 0 32px;margin-top:56px}
+      .h1{font-size:52px;line-height:1.05;margin:0 0 12px;font-weight:900;letter-spacing:-0.02em}
+      .grad{background:linear-gradient(135deg,#1F4ED8,#2CA7C1);-webkit-background-clip:text;background-clip:text;color:transparent}
+      .lead{font-size:18px;color:#4b5563;max-width:760px}
+      .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+      .btn{display:inline-block;padding:12px 18px;border-radius:999px;font-weight:800;text-decoration:none}
+      .btn-primary{background:#0a0a0a;color:#fff}
+      .btn-outline{border:1px solid #0a0a0a;color:#0a0a0a}
+      .bullets{margin:16px 0 0;padding:0;list-style:none;max-width:760px}
+      .bullets li{margin:6px 0;padding-left:22px;position:relative;color:#111827}
+      .bullets li:before{content:"✓";position:absolute;left:0;color:#2CA7C1;font-weight:bold}
+      section{padding:28px 0;border-top:1px solid #e5e7eb}
+      h2{font-size:34px;line-height:1.1;margin:0 0 8px;font-weight:900;letter-spacing:-0.02em}
+      .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+      .card{border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:#fff}
+      .foot{padding:28px 0;border-top:1px solid #e5e7eb;color:#4b5563;font-size:14px}
+      @media (max-width:640px){.h1{font-size:38px}}
+    </style>
+
+    <!-- Navbar -->
+    <div class="nav">
+      <div class="wrap" style="display:flex;align-items:center;justify-content:space-between">
+        <a href="/" aria-label="CAMBRA" style="font-weight:900;letter-spacing:0.08em">CAMBRA</a>
+        <nav>
+          <a href="#how">Cómo funciona</a>
+          <a href="/Analyzer">Analyzer</a>
+          <a href="/Onboarding">Unirse</a>
+        </nav>
+      </div>
     </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="wrap">
+        <h1 class="h1">Independent brands. <span class="grad">Collective leverage.</span></h1>
+        <p class="lead">CAMBRA ayuda a marcas independientes a mejorar sus márgenes operativos con mejores condiciones en pagos, logística y SaaS mediante escala colectiva.</p>
+        <ul class="bullets">
+          <li>Accede a tarifas que no puedes conseguir solo</li>
+          <li>Detecta al instante dónde estás sobrepagando</li>
+          <li>Reduce costes de infraestructura en todo tu stack</li>
+        </ul>
+        <div class="cta">
+          <a class="btn btn-primary" href="/Onboarding">Join the Founding Brands →</a>
+          <a class="btn btn-outline" href="/Analyzer">Run the Cost Analyzer →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Credibility -->
+    <section>
+      <div class="wrap cols">
+        <div class="card"><strong>Para comercio independiente</strong><br/>Moda, belleza, wellness y lifestyle; online y retail.</div>
+        <div class="card"><strong>Enfocado en costes reales</strong><br/>Pagos, envíos y SaaS primero.</div>
+        <div class="card"><strong>Escala colectiva</strong><br/>Condiciones que superan negociaciones individuales.</div>
+      </div>
+    </section>
+
+    <!-- Propuesta de valor -->
+    <section>
+      <div class="wrap">
+        <h2>Reduce costes operativos con infraestructura colectiva</h2>
+        <p class="lead">Agregamos marcas, identificamos fugas y activamos mejores términos con mínimo cambio operativo.</p>
+        <div class="cols" style="margin-top:10px">
+          <div class="card">Ver dónde sobrepagas</div>
+          <div class="card">Acceso inmediato a mejores tarifas</div>
+          <div class="card">Pagas solo cuando hay ahorro real</div>
+          <div class="card">Mejora de margen sin crecer ventas</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cómo funciona (ancla #how) -->
+    <section id="how">
+      <div class="wrap cols">
+        <div class="card"><strong>1) Analiza</strong><br/>Sube datos o conecta herramientas y comparamos con benchmarks.</div>
+        <div class="card"><strong>2) Activa</strong><br/>Desbloquea términos estructurales con proveedores.</div>
+        <div class="card"><strong>3) Ahorra</strong><br/>Seguimiento mensual y verificación del ahorro.</div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="foot">
+      <div class="wrap" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div>© CAMBRA · Infraestructura para marcas independientes</div>
+        <div>
+          <a href="/Privacy" style="margin-right:12px;color:#111827">Privacidad</a>
+          <a href="/Terms" style="color:#111827">Términos</a>
+        </div>
+      </div>
+    </footer>
   </div>
 </div>
     <noscript>
