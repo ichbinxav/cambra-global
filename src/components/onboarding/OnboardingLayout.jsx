@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { base44 } from '@/api/base44Client';
-import { Building2, CreditCard, Truck, Package } from 'lucide-react';
+import { Building2, CreditCard, Truck, Package, ArrowRight, Zap } from 'lucide-react';
 
 export default function OnboardingLayout({ children, activeTab, onTabChange, statuses }){
   const total = ['payments','shipping','saas'];
@@ -22,35 +22,37 @@ export default function OnboardingLayout({ children, activeTab, onTabChange, sta
         </div>
       </div>
 
-      <div className="p-3 rounded-xl border border-border/60 bg-secondary/40">
-        <p className="text-xs text-muted-foreground mb-2">
-          Para completar el onboarding, navega por las 4 pestañas y rellena la información en cada una.
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-r from-chart-1/15 via-secondary/40 to-chart-2/15 p-4">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Zap className="h-4 w-4 text-chart-1" />
+            <p className="text-sm font-semibold">Complete your onboarding</p>
+          </div>
+          <p className="text-xs text-muted-foreground">Visit each tab and add your info to get precise benchmarks.</p>
+        </div>
+        <div className="mt-3 flex items-center gap-2 overflow-x-auto py-1">
           {[
             { key: 'general', label: 'General', icon: Building2 },
             { key: 'payments', label: 'Payments', icon: CreditCard },
             { key: 'shipping', label: 'Shipping', icon: Truck },
             { key: 'saas', label: 'SaaS', icon: Package },
-          ].map(s => {
+          ].map((s, i, arr) => {
             const percent = s.key === 'general' ? (statuses?.general?.completeness ?? 0) : (statuses?.[s.key]?.completeness ?? 0);
             const done = percent >= 70;
             const Icon = s.icon;
             return (
-              <button
-                key={s.key}
-                type="button"
-                onClick={() => onTabChange(s.key)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border transition-colors text-xs ${activeTab===s.key ? 'border-foreground text-foreground bg-background' : 'border-border/60 text-muted-foreground hover:border-foreground/30 hover:text-foreground'}`}
-              >
-                <span className="inline-flex items-center gap-2">
+              <div key={s.key} className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onTabChange(s.key)}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs transition-colors ${activeTab===s.key ? 'bg-background border-foreground text-foreground' : done ? 'border-green-500/40 text-green-700 bg-green-500/10' : 'border-border/60 text-muted-foreground bg-card/60 hover:border-foreground/30 hover:text-foreground'}`}
+                >
                   <Icon className="h-3.5 w-3.5" />
                   <span>{s.label}</span>
-                </span>
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${done ? 'bg-green-500/10 border-green-500/30 text-green-600' : 'bg-secondary/60 border-border/60 text-muted-foreground'}`}>
-                  {percent || 0}%
-                </span>
-              </button>
+                  {done && <span className="text-[10px] font-semibold">Done</span>}
+                </button>
+                {i < arr.length - 1 && <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />}
+              </div>
             );
           })}
         </div>
