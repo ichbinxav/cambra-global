@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import MissingDataChips from './MissingDataChips';
+
 import TagChipsInput from './TagChipsInput';
 import KeyValueListInput from './KeyValueListInput';
 import MultiComboBox from '@/components/inputs/MultiComboBox';
@@ -114,7 +114,7 @@ export default function SaasModule(){
           </div>
         </div>
       </div>
-      <MissingDataChips items={status?.missing_fields||[]} />
+
       <div className="flex items-center gap-2">
         <Button onClick={save} disabled={saving}>{saving? 'Saving…':'Save module'}</Button>
         <a href="/Deals?vertical=saas" className="text-sm underline">View deals</a>

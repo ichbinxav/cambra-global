@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import MissingDataChips from './MissingDataChips';
+
 import TagChipsInput from './TagChipsInput';
 import ComboBox from '@/components/inputs/ComboBox';
 import MultiComboBox from '@/components/inputs/MultiComboBox';
@@ -186,7 +186,7 @@ export default function PaymentsModule(){
           </div>
         </div>
       </div>
-      <MissingDataChips items={status?.missing_fields||[]} />
+
       <div className="flex items-center gap-2">
         <Button onClick={save} disabled={saving}>{saving? 'Saving…':'Save module'}</Button>
         <a href="/Deals?vertical=payments" className="text-sm underline">View deals</a>

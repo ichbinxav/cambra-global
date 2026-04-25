@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import MissingDataChips from './MissingDataChips';
+
 import MultiComboBox from '@/components/inputs/MultiComboBox';
 import { COUNTRIES } from '@/components/inputs/CountrySelect';
 import ComboBox from '@/components/inputs/ComboBox';
@@ -138,7 +138,7 @@ export default function ShippingModule(){
           </div>
         </div>
       </div>
-      <MissingDataChips items={status?.missing_fields||[]} />
+
       <div className="flex items-center gap-2">
         <Button onClick={save} disabled={saving}>{saving? 'Saving…':'Save module'}</Button>
         <a href="/Deals?vertical=shipping" className="text-sm underline">View deals</a>
