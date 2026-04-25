@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Wifi, WifiOff, AlertTriangle, RefreshCw, Clock, Shield, CheckCircle2 } from "lucide-react";
+import ConnectorTile from "@/components/connect/ConnectorTile.jsx";
+import { CONNECTORS as CONNECTOR_IDS } from "@/lib/connectors.config.js";
 
 const INTEGRATION_META = {
   stripe: { label: "Stripe", category: "Payments", icon: "💳" },
@@ -76,6 +78,41 @@ export default function AdminIntegrations() {
       <div className="flex items-center gap-3 p-3.5 rounded-xl border border-border/40 bg-secondary/30">
         <Shield size={13} className="text-muted-foreground/50 shrink-0" />
         <p className="text-[11px] text-muted-foreground/60">All connections are read-only. THE NoDE never modifies user data. Tokens are encrypted and stored server-side only.</p>
+      </div>
+
+      {/* Direct connections (OAuth) — always on top */}
+      <div className="p-5 rounded-xl border border-border/50 bg-card">
+        <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-3">Direct connections</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <ConnectorTile
+            title="Google Drive"
+            note="Read-only access to files for Analyzer"
+            connectorId={CONNECTOR_IDS.drive}
+            functionName="driveConnectionCheck"
+            connectorKey="drive"
+          />
+          <ConnectorTile
+            title="Google Sheets"
+            note="Read-only access to spreadsheets"
+            connectorId={CONNECTOR_IDS.sheets}
+            functionName="sheetsConnectionCheck"
+            connectorKey="sheets"
+          />
+          <ConnectorTile
+            title="Gmail"
+            note="Read-only labels/messages for ingestion"
+            connectorId={CONNECTOR_IDS.gmail}
+            functionName="gmailConnectionCheck"
+            connectorKey="gmail"
+          />
+          <ConnectorTile
+            title="Slack"
+            note="Read-only to list basic channels (optional)"
+            connectorId={CONNECTOR_IDS.slack}
+            functionName="slackConnectionCheck"
+            connectorKey="slack"
+          />
+        </div>
       </div>
 
       {/* Stats */}

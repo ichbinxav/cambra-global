@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Input } from "@/components/ui/input";
@@ -127,6 +127,11 @@ export default function ConnectTools() {
   const [customTool, setCustomTool] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const navigate = useNavigate();
+
+  // Temporary redirect: unified integrations live in Admin → Integrations
+  useEffect(() => {
+    navigate("/admin/integrations", { replace: true });
+  }, []);
 
   const filtered = CONNECTORS.filter(c => {
     const matchCat = cat === "All" || c.cat === cat;
