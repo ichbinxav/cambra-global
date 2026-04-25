@@ -81,14 +81,22 @@ export default function HeroSection() {
               variants={fadeUp}
               className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-4 tracking-[-0.01em] text-center lg:text-left"
             >
-              CAMBRA helps independent brands reduce operating costs through collective infrastructure deals.
+              CAMBRA aggregates independent brands into one infrastructure layer to unlock enterprise-level pricing and terms. We analyze your current stack, surface where money leaks, and activate better conditions through our collective network — fast, with minimal change management.
             </motion.p>
 
-            <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-8 max-w-[520px] mx-auto text-center lg:text-left">
+            <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-4 max-w-[620px] mx-auto text-center lg:text-left">
               Starting with payments, shipping and SaaS.
             </motion.p>
 
-
+            {/* Quick bullets for clarity */}
+            <motion.ul variants={fadeUp} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-6">
+              {BULLETS.slice(0,3).map((b, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-foreground/85">
+                  <CheckCircle2 className="h-4 w-4 text-chart-2 mt-0.5" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </motion.ul>
 
             {/* CTAs */}
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
