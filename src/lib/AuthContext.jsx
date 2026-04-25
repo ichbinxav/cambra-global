@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
+import { isBot } from '@/lib/utils';
 
 
 const AuthContext = createContext();
@@ -18,6 +19,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = async () => {
+    // Skip network calls for crawlers/bots to avoid 4xx XHRs in Google Search Console
+    if (isBot) {
+      setIsLoadingPublicSettings(false);
+      setIsLoadingAuth(false);
+      setIsAuthenticated(false);
+      setAuthError(null);
+      return;
+    }
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
