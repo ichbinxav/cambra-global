@@ -262,7 +262,7 @@ export default function Dashboard() {
 
           {/* Recommendations */}
           <div className="rounded-2xl bg-card/50 border border-border/40 p-4 mt-3">
-            <h3 className="text-sm font-semibold mb-2">Recommendations</h3>
+            <h3 className="text-sm font-semibold mb-2">Recomendaciones</h3>
             <RecommendationList />
           </div>
 

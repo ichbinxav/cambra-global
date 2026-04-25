@@ -38,7 +38,7 @@ export default function RecommendationList(){
   const byImpact = items.slice().sort((a,b) => computeImpact(b) - computeImpact(a));
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {byImpact.map((r)=> {
         const total = typeof r?.score_json?.total === 'number' ? r.score_json.total : 0;
         const prio = priorityLabel(total);
@@ -49,7 +49,7 @@ export default function RecommendationList(){
 
         return (
           <div key={r.id} className="rounded-xl border border-border/50 bg-card p-4">
-            <div className="flex items-start justify-between gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] items-start gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className="font-semibold text-sm truncate max-w-[80%]">{r.title}</span>
@@ -62,7 +62,7 @@ export default function RecommendationList(){
                 <p className="text-xs text-muted-foreground leading-relaxed">{r.description}</p>
               </div>
 
-              <div className="shrink-0 text-right">
+              <div className="shrink-0 sm:min-w-[9rem] text-right">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Impacto estimado</p>
                 <p className="text-lg font-black tabular-nums">{impactText}</p>
               </div>
