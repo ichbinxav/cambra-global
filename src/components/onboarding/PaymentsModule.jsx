@@ -12,11 +12,16 @@ import { COUNTRIES } from '@/components/inputs/CountrySelect';
 import SmartNumberField from '@/components/inputs/SmartNumberField.jsx';
 import OptionTiles from '@/components/onboarding/OptionTiles';
 
+
+
+
+
 export default function PaymentsModule(){
   const [brandId, setBrandId] = useState(null);
   const [item, setItem] = useState({ canales: [], paises: [], monedas: [] });
   const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(()=>{ (async()=>{
     const me = await base44.auth.me();
@@ -71,6 +76,12 @@ export default function PaymentsModule(){
   return (
     <div className="space-y-4">
       <div className="space-y-4">
+        <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 glass">
+          <p className="text-xs text-muted-foreground">Solo pedimos lo básico. Puedes ampliar cuando quieras.</p>
+          <Button variant="outline" onClick={()=>setShowAdvanced(v=>!v)} className="h-8 text-xs">
+            {showAdvanced ? 'Hide advanced' : 'Enrich your information'}
+          </Button>
+        </div>
         {/* Proveedor y mercados */}
         <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Proveedor y mercados</div>
@@ -82,38 +93,44 @@ export default function PaymentsModule(){
                 onChange={(v)=>setItem({...item, psp_actual: v})}
                 options={["Stripe","Adyen","Mollie","PayPal","Klarna","Square","Braintree","Worldpay","Checkout.com","Shopify Payments"]}
               />
-              <ComboBox
-                label="Buscar/añadir proveedor"
-                value={item.psp_actual||''}
-                onChange={(v)=>setItem({...item, psp_actual: v})}
-                options={["Stripe","Adyen","Mollie","PayPal","Klarna","Square","Braintree","Worldpay","Checkout.com","Shopify Payments"]}
-                allowCustom
-              />
+              {showAdvanced && (
+                <ComboBox
+                  label="Buscar/añadir proveedor"
+                  value={item.psp_actual||''}
+                  onChange={(v)=>setItem({...item, psp_actual: v})}
+                  options={["Stripe","Adyen","Mollie","PayPal","Klarna","Square","Braintree","Worldpay","Checkout.com","Shopify Payments"]}
+                  allowCustom
+                />
+              )}
             </div>
 
-            <MultiComboBox
-              label="Sales channels"
-              values={item.canales||[]}
-              onChange={(vals)=>setItem({...item, canales: vals})}
-              options={["online","in_store","omni"]}
-              allowCustom={false}
-            />
+            {showAdvanced && (
+              <MultiComboBox
+                label="Sales channels"
+                values={item.canales||[]}
+                onChange={(vals)=>setItem({...item, canales: vals})}
+                options={["online","in_store","omni"]}
+                allowCustom={false}
+              />
+            )}
 
-            <div className="space-y-3">
-              <MultiComboBox
-                label="Countries"
-                values={item.paises||[]}
-                onChange={(vals)=>setItem({...item, paises: vals})}
-                options={COUNTRIES}
-              />
-              <MultiComboBox
-                label="Currencies"
-                values={item.monedas||[]}
-                onChange={(vals)=>setItem({...item, monedas: vals})}
-                options={["EUR","USD","GBP","AUD","CAD","SEK","NOK","DKK","CHF","JPY"]}
-                allowCustom
-              />
-            </div>
+            {showAdvanced && (
+              <div className="space-y-3">
+                <MultiComboBox
+                  label="Countries"
+                  values={item.paises||[]}
+                  onChange={(vals)=>setItem({...item, paises: vals})}
+                  options={COUNTRIES}
+                />
+                <MultiComboBox
+                  label="Currencies"
+                  values={item.monedas||[]}
+                  onChange={(vals)=>setItem({...item, monedas: vals})}
+                  options={["EUR","USD","GBP","AUD","CAD","SEK","NOK","DKK","CHF","JPY"]}
+                  allowCustom
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -123,16 +140,18 @@ export default function PaymentsModule(){
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <SmartNumberField label="Blended rate %" value={item.blended_rate||0} onChange={(v)=>setItem({...item, blended_rate: Number(v)})} min={0} max={5} decimals={2} suffix="%" />
             <SmartNumberField label="Monthly volume (€)" value={item.vol_mensual||0} onChange={(v)=>setItem({...item, vol_mensual: Number(v)})} min={0} max={100000000} prefix="€" scale="log" />
-            <SmartNumberField label="Monthly transactions" value={item.tx_mensuales||0} onChange={(v)=>setItem({...item, tx_mensuales: Number(v)})} min={0} max={1000000} scale="log" />
-            <SmartNumberField label="Average order value (€)" value={item.aov||0} onChange={(v)=>setItem({...item, aov: Number(v)})} min={0} max={10000} prefix="€" />
-            <SmartNumberField label="Refunds %" value={item.refunds_rate||0} onChange={(v)=>setItem({...item, refunds_rate: Number(v)})} min={0} max={100} decimals={1} suffix="%" />
-            <SmartNumberField label="Chargebacks %" value={item.chargeback_rate||0} onChange={(v)=>setItem({...item, chargeback_rate: Number(v)})} min={0} max={100} decimals={2} suffix="%" />
-            <SmartNumberField label="Payout timing" value={item.payout_timing||0} onChange={(v)=>setItem({...item, payout_timing: Number(v)})} min={0} max={60} suffix="d" />
+            {showAdvanced && (<>
+              <SmartNumberField label="Monthly transactions" value={item.tx_mensuales||0} onChange={(v)=>setItem({...item, tx_mensuales: Number(v)})} min={0} max={1000000} scale="log" />
+              <SmartNumberField label="Average order value (€)" value={item.aov||0} onChange={(v)=>setItem({...item, aov: Number(v)})} min={0} max={10000} prefix="€" />
+              <SmartNumberField label="Refunds %" value={item.refunds_rate||0} onChange={(v)=>setItem({...item, refunds_rate: Number(v)})} min={0} max={100} decimals={1} suffix="%" />
+              <SmartNumberField label="Chargebacks %" value={item.chargeback_rate||0} onChange={(v)=>setItem({...item, chargeback_rate: Number(v)})} min={0} max={100} decimals={2} suffix="%" />
+              <SmartNumberField label="Payout timing" value={item.payout_timing||0} onChange={(v)=>setItem({...item, payout_timing: Number(v)})} min={0} max={60} suffix="d" />
+            </>)}
           </div>
         </div>
 
         {/* Riesgo y terminales */}
-        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+        <div className={`p-4 sm:p-5 rounded-2xl border border-border/60 glass ${showAdvanced ? '' : 'hidden'}`}>
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Riesgo y terminales</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <MultiComboBox
@@ -152,7 +171,7 @@ export default function PaymentsModule(){
         </div>
 
         {/* Contrato y notas */}
-        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+        <div className={`p-4 sm:p-5 rounded-2xl border border-border/60 glass ${showAdvanced ? '' : 'hidden'}`}>
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Contrato y notas</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Input type="date" placeholder="Contract renewal" value={item.contrato?.renovacion_en||''} onChange={e=>setItem({...item, contrato: { ...(item.contrato||{}), renovacion_en: e.target.value }})} />

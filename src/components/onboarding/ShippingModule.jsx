@@ -10,11 +10,20 @@ import OptionTiles from '@/components/onboarding/OptionTiles';
 import { Switch } from '@/components/ui/switch';
 import SmartNumberField from '@/components/inputs/SmartNumberField.jsx';
 
+
+
+
+
+
+
+
+
 export default function ShippingModule(){
   const [brandId, setBrandId] = useState(null);
   const [item, setItem] = useState({ carriers: [], paises_serv: [] });
   const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(()=>{ (async()=>{
     const me = await base44.auth.me();
@@ -61,27 +70,35 @@ export default function ShippingModule(){
   return (
     <div className="space-y-4">
       <div className="space-y-4">
+        <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 glass">
+          <p className="text-xs text-muted-foreground">Solo pedimos lo básico. Puedes ampliar cuando quieras.</p>
+          <Button variant="outline" onClick={()=>setShowAdvanced(v=>!v)} className="h-8 text-xs">
+            {showAdvanced ? 'Hide advanced' : 'Enrich your information'}
+          </Button>
+        </div>
         {/* Carriers y modelo */}
         <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Carriers y modelo</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <MultiComboBox label="Carriers" values={item.carriers||[]} onChange={(vals)=>setItem({...item, carriers: vals})} options={["DHL","UPS","FedEx","DPD","PostNL","Royal Mail","Evri","GLS","Colissimo","Chronopost"]} />
             <OptionTiles label="Model" value={item.shipping_model||''} onChange={(v)=>setItem({...item, shipping_model: v})} options={["aggregator","direct"]} />
-            <div className="space-y-3">
-              <div className="flex items-center justify-between px-3 py-2 rounded-xl border border-border/60 glass">
-                <span className="text-sm">Uses 3PL</span>
-                <Switch checked={!!item.three_pl} onCheckedChange={(v)=>setItem({...item, three_pl: !!v})} />
+            {showAdvanced && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl border border-border/60 glass">
+                  <span className="text-sm">Uses 3PL</span>
+                  <Switch checked={!!item.three_pl} onCheckedChange={(v)=>setItem({...item, three_pl: !!v})} />
+                </div>
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl border border-border/60 glass">
+                  <span className="text-sm">In-house ops</span>
+                  <Switch checked={!!item.in_house} onCheckedChange={(v)=>setItem({...item, in_house: !!v})} />
+                </div>
               </div>
-              <div className="flex items-center justify-between px-3 py-2 rounded-xl border border-border/60 glass">
-                <span className="text-sm">In-house ops</span>
-                <Switch checked={!!item.in_house} onCheckedChange={(v)=>setItem({...item, in_house: !!v})} />
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
         {/* Países servidos */}
-        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+        <div className={`p-4 sm:p-5 rounded-2xl border border-border/60 glass ${showAdvanced ? '' : 'hidden'}`}>
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Países servidos</div>
           <MultiComboBox label="Served countries" values={item.paises_serv||[]} onChange={(vals)=>setItem({...item, paises_serv: vals})} options={COUNTRIES} />
         </div>
@@ -91,8 +108,10 @@ export default function ShippingModule(){
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Volumen y paquetes</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <SmartNumberField label="Monthly orders" value={item.pedidos_mensuales||0} onChange={(v)=>setItem({...item, pedidos_mensuales: Number(v)})} min={0} max={1000000} scale="log" />
-            <SmartNumberField label="Avg weight" value={item.avg_weight||0} onChange={(v)=>setItem({...item, avg_weight: Number(v)})} min={0} max={200} decimals={2} suffix="kg" />
-            <Input placeholder="Dimensions (LxWxH)" value={item.dims||''} onChange={e=>setItem({...item, dims: e.target.value})} />
+            {showAdvanced && (<>
+              <SmartNumberField label="Avg weight" value={item.avg_weight||0} onChange={(v)=>setItem({...item, avg_weight: Number(v)})} min={0} max={200} decimals={2} suffix="kg" />
+              <Input placeholder="Dimensions (LxWxH)" value={item.dims||''} onChange={e=>setItem({...item, dims: e.target.value})} />
+            </>)}
           </div>
         </div>
 
@@ -100,14 +119,18 @@ export default function ShippingModule(){
         <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Costes y mix</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <SmartNumberField label="Return rate" value={item.returns_rate||0} onChange={(v)=>setItem({...item, returns_rate: Number(v)})} min={0} max={100} decimals={1} suffix="%" />
+            {showAdvanced && (
+              <SmartNumberField label="Return rate" value={item.returns_rate||0} onChange={(v)=>setItem({...item, returns_rate: Number(v)})} min={0} max={100} decimals={1} suffix="%" />
+            )}
             <SmartNumberField label="Cost per shipment" value={item.coste_envio||0} onChange={(v)=>setItem({...item, coste_envio: Number(v)})} min={0} max={1000} decimals={2} prefix="€" />
-            <SmartNumberField label="Express share" value={item.mix_express_standard||0} onChange={(v)=>setItem({...item, mix_express_standard: Number(v)})} min={0} max={100} suffix="%" />
+            {showAdvanced && (
+              <SmartNumberField label="Express share" value={item.mix_express_standard||0} onChange={(v)=>setItem({...item, mix_express_standard: Number(v)})} min={0} max={100} suffix="%" />
+            )}
           </div>
         </div>
 
         {/* Almacén y fricciones */}
-        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+        <div className={`p-4 sm:p-5 rounded-2xl border border-border/60 glass ${showAdvanced ? '' : 'hidden'}`}>
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Almacén y fricciones</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <ComboBox label="Warehouse model" value={item.warehouse_model||''} onChange={(v)=>setItem({...item, warehouse_model: v})} options={["own","3pl","hybrid","other"]} allowCustom={false} />
