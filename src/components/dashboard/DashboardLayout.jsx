@@ -68,7 +68,7 @@ export default function DashboardLayout() {
         <div className="p-3 border-t border-border/40 space-y-0.5">
           {isAdmin && (
             <Link to="/admin">
-              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-500/10 transition-colors font-semibold">
+              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors font-semibold">
                 <ShieldCheck size={14} />
                 Admin Panel
               </div>
@@ -76,7 +76,7 @@ export default function DashboardLayout() {
           )}
           {(isProvider || isAdmin) && (
             <Link to="/ProviderPortal">
-              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-blue-600 hover:bg-blue-500/10 transition-colors font-semibold">
+              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-chart-1 hover:bg-chart-1/10 transition-colors font-semibold">
                 <Building2 size={14} />
                 Provider Portal
               </div>
@@ -142,7 +142,7 @@ export default function DashboardLayout() {
               <div className="px-4 pt-3 border-t border-border/40 mt-3 space-y-0.5">
                 {isAdmin && (
                   <Link to="/admin" onClick={() => setSidebarOpen(false)}>
-                    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-red-600 font-semibold">
+                    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-destructive font-semibold">
                       <ShieldCheck size={16} />
                       Admin Panel
                     </div>
@@ -150,7 +150,7 @@ export default function DashboardLayout() {
                 )}
                 {(isProvider || isAdmin) && (
                   <Link to="/ProviderPortal" onClick={() => setSidebarOpen(false)}>
-                    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-blue-600 font-semibold">
+                    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-chart-1 font-semibold">
                       <Building2 size={16} />
                       Provider Portal
                     </div>

@@ -33,7 +33,7 @@ export default function DealsOverview({ userDeals }) {
       <div className="grid grid-cols-4 divide-x divide-border/30 border-b border-border/30">
         <div className="px-4 py-4">
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Active</p>
-          <p className="text-lg font-black text-green-600">{active.length}</p>
+          <p className="text-lg font-black text-chart-2">{active.length}</p>
         </div>
         <div className="px-4 py-4">
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Savings</p>
@@ -59,7 +59,7 @@ export default function DealsOverview({ userDeals }) {
                 <p className="text-xs font-semibold truncate">{d.deal_name}</p>
                 <p className="text-[10px] text-muted-foreground/40">{d.provider}</p>
               </div>
-              <p className="text-xs font-black text-green-600 tabular-nums shrink-0">
+              <p className="text-xs font-black text-chart-2 tabular-nums shrink-0">
                 +{formatSavings(d.estimated_savings)}/yr
               </p>
             </div>
@@ -87,7 +87,7 @@ export default function DealsOverview({ userDeals }) {
             <p className="text-[11px] text-orange-600"><span className="font-semibold">{waitlist.length}</span> on waitlist</p>
           )}
           {expired.length > 0 && (
-            <p className="text-[11px] text-red-600"><span className="font-semibold">{expired.length}</span> expired</p>
+            <p className="text-[11px] text-destructive"><span className="font-semibold">{expired.length}</span> expired</p>
           )}
         </div>
       )}

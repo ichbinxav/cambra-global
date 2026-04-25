@@ -33,7 +33,7 @@ const MODES = [
     sub: "PDF · CSV · Excel",
     desc: "Drop invoices or carrier statements. We extract and analyze automatically.",
     tag: "Flexible",
-    tagColor: "text-blue-600 bg-blue-500/[0.07] border-blue-500/20",
+    tagColor: "text-chart-1 bg-blue-500/[0.07] border-blue-500/20",
   },
   {
     icon: Pencil,

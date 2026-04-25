@@ -10,7 +10,7 @@ const testimonials = [
     saving: "€38K",
     savingNote: "recovered year 1",
     category: "Payments",
-    color: "text-blue-600",
+    color: "text-chart-1",
     bg: "bg-blue-500/[0.04] border-blue-500/15",
   },
   {
@@ -20,7 +20,7 @@ const testimonials = [
     saving: "€24K",
     savingNote: "hidden costs surfaced",
     category: "Infrastructure",
-    color: "text-orange-500",
+    color: "text-chart-3",
     bg: "bg-orange-500/[0.04] border-orange-500/15",
   },
   {
@@ -30,7 +30,7 @@ const testimonials = [
     saving: "€19K",
     savingNote: "per year on shipping",
     category: "Shipping",
-    color: "text-green-600",
+    color: "text-chart-2",
     bg: "bg-green-500/[0.04] border-green-500/15",
   },
 ];
@@ -121,9 +121,9 @@ export default function TestimonialsSection() {
          <div className="grid grid-cols-1 gap-3">
          {[
             { value: "15+", label: "Countries active", icon: Globe, color: "text-foreground", bg: "bg-secondary/60 border-border/60" },
-            { value: "€18K–72K", label: "Savings range per brand", icon: Percent, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
-            { value: "1.4%", label: "Network payment rate", icon: CreditCard, color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
-            { value: "−18%", label: "Avg. shipping reduction", icon: Truck, color: "text-green-600", bg: "bg-green-500/[0.08] border-green-500/20" },
+            { value: "€18K–72K", label: "Savings range per brand", icon: Percent, color: "text-chart-3", bg: "bg-orange-500/[0.08] border-orange-500/20" },
+            { value: "1.4%", label: "Network payment rate", icon: CreditCard, color: "text-chart-1", bg: "bg-blue-500/[0.08] border-blue-500/20" },
+            { value: "−18%", label: "Avg. shipping reduction", icon: Truck, color: "text-chart-2", bg: "bg-green-500/[0.08] border-green-500/20" },
           ].map((s, i) => (
             <motion.div
               key={i}
