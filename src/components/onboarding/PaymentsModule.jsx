@@ -138,14 +138,14 @@ export default function PaymentsModule(){
         <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Volumes and metrics</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <SmartNumberField label="Blended rate %" value={item.blended_rate||0} onChange={(v)=>setItem({...item, blended_rate: Number(v)})} min={0} max={5} decimals={2} suffix="%" />
-            <SmartNumberField label="Monthly volume (€)" value={item.vol_mensual||0} onChange={(v)=>setItem({...item, vol_mensual: Number(v)})} min={0} max={100000000} prefix="€" scale="log" />
+            <SmartNumberField label="Blended rate %" value={item.blended_rate||0} onChange={(v)=>setItem({...item, blended_rate: Number(v)})} min={0} max={3.5} decimals={2} suffix="%" />
+            <SmartNumberField label="Monthly volume (€)" value={item.vol_mensual||0} onChange={(v)=>setItem({...item, vol_mensual: Number(v)})} min={0} max={10000000} prefix="€" scale="log" />
             {showAdvanced && (<>
-              <SmartNumberField label="Monthly transactions" value={item.tx_mensuales||0} onChange={(v)=>setItem({...item, tx_mensuales: Number(v)})} min={0} max={1000000} scale="log" />
-              <SmartNumberField label="Average order value (€)" value={item.aov||0} onChange={(v)=>setItem({...item, aov: Number(v)})} min={0} max={10000} prefix="€" />
-              <SmartNumberField label="Refunds %" value={item.refunds_rate||0} onChange={(v)=>setItem({...item, refunds_rate: Number(v)})} min={0} max={100} decimals={1} suffix="%" />
-              <SmartNumberField label="Chargebacks %" value={item.chargeback_rate||0} onChange={(v)=>setItem({...item, chargeback_rate: Number(v)})} min={0} max={100} decimals={2} suffix="%" />
-              <SmartNumberField label="Payout timing" value={item.payout_timing||0} onChange={(v)=>setItem({...item, payout_timing: Number(v)})} min={0} max={60} suffix="d" />
+              <SmartNumberField label="Monthly transactions" value={item.tx_mensuales||0} onChange={(v)=>setItem({...item, tx_mensuales: Number(v)})} min={0} max={200000} scale="log" />
+              <SmartNumberField label="Average order value (€)" value={item.aov||0} onChange={(v)=>setItem({...item, aov: Number(v)})} min={0} max={500} prefix="€" />
+              <SmartNumberField label="Refunds %" value={item.refunds_rate||0} onChange={(v)=>setItem({...item, refunds_rate: Number(v)})} min={0} max={30} decimals={1} suffix="%" />
+              <SmartNumberField label="Chargebacks %" value={item.chargeback_rate||0} onChange={(v)=>setItem({...item, chargeback_rate: Number(v)})} min={0} max={5} decimals={2} suffix="%" />
+              <SmartNumberField label="Payout timing" value={item.payout_timing||0} onChange={(v)=>setItem({...item, payout_timing: Number(v)})} min={0} max={30} suffix="d" />
             </>)}
           </div>
         </div>

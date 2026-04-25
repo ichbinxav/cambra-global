@@ -107,9 +107,9 @@ export default function ShippingModule(){
         <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Volume and packages</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <SmartNumberField label="Monthly orders" value={item.pedidos_mensuales||0} onChange={(v)=>setItem({...item, pedidos_mensuales: Number(v)})} min={0} max={1000000} scale="log" />
+            <SmartNumberField label="Monthly orders" value={item.pedidos_mensuales||0} onChange={(v)=>setItem({...item, pedidos_mensuales: Number(v)})} min={0} max={200000} scale="log" />
             {showAdvanced && (<>
-              <SmartNumberField label="Avg weight" value={item.avg_weight||0} onChange={(v)=>setItem({...item, avg_weight: Number(v)})} min={0} max={200} decimals={2} suffix="kg" />
+              <SmartNumberField label="Avg weight" value={item.avg_weight||0} onChange={(v)=>setItem({...item, avg_weight: Number(v)})} min={0} max={50} decimals={2} suffix="kg" />
               <Input placeholder="Dimensions (LxWxH)" value={item.dims||''} onChange={e=>setItem({...item, dims: e.target.value})} />
             </>)}
           </div>
@@ -120,9 +120,9 @@ export default function ShippingModule(){
           <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Costs and mix</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {showAdvanced && (
-              <SmartNumberField label="Return rate" value={item.returns_rate||0} onChange={(v)=>setItem({...item, returns_rate: Number(v)})} min={0} max={100} decimals={1} suffix="%" />
+              <SmartNumberField label="Return rate" value={item.returns_rate||0} onChange={(v)=>setItem({...item, returns_rate: Number(v)})} min={0} max={40} decimals={1} suffix="%" />
             )}
-            <SmartNumberField label="Cost per shipment" value={item.coste_envio||0} onChange={(v)=>setItem({...item, coste_envio: Number(v)})} min={0} max={1000} decimals={2} prefix="€" />
+            <SmartNumberField label="Cost per shipment" value={item.coste_envio||0} onChange={(v)=>setItem({...item, coste_envio: Number(v)})} min={0} max={100} decimals={2} prefix="€" />
             {showAdvanced && (
               <SmartNumberField label="Express share" value={item.mix_express_standard||0} onChange={(v)=>setItem({...item, mix_express_standard: Number(v)})} min={0} max={100} suffix="%" />
             )}
