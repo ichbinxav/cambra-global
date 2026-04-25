@@ -35,16 +35,16 @@
     --node-green: 142 76% 36%;
     --node-orange: 25 95% 53%;
 
-    /* Neon Blue palette (1=darkest … 9=lightest) */
-    --neon-1: 220 80% 6%;   /* deep navy */
-    --neon-2: 220 75% 9%;
-    --neon-3: 220 70% 13%;
-    --neon-4: 220 70% 18%;
-    --neon-5: 221 80% 36%;  /* royal */
-    --neon-6: 217 100% 52%; /* electric blue #0B5CFF */
-    --neon-7: 194 100% 50%; /* cyan #00D1FF */
-    --neon-8: 196 100% 62%; /* bright cyan */
-    --neon-9: 196 100% 88%; /* ice glow */
+    /* Neon palette — serious */
+    --neon-1: 220 45% 7%;
+    --neon-2: 220 45% 10%;
+    --neon-3: 220 45% 14%;
+    --neon-4: 220 50% 20%;
+    --neon-5: 221 60% 35%;
+    --neon-6: 221 65% 45%;
+    --neon-7: 200 60% 46%;
+    --neon-8: 200 55% 60%;
+    --neon-9: 200 45% 88%;
   }
 
   .dark {
@@ -68,16 +68,16 @@
     --input: 0 0% 14%;
     --ring: 0 0% 83%;
 
-    /* Neon Blue palette (dark mode) */
-    --neon-1: 220 80% 6%;
-    --neon-2: 220 75% 9%;
-    --neon-3: 220 70% 13%;
-    --neon-4: 220 70% 18%;
-    --neon-5: 221 80% 36%;
-    --neon-6: 217 100% 52%;
-    --neon-7: 194 100% 50%;
-    --neon-8: 196 100% 62%;
-    --neon-9: 196 100% 88%;
+    /* Neon palette — dark mode, serious */
+    --neon-1: 220 45% 7%;
+    --neon-2: 220 45% 10%;
+    --neon-3: 220 45% 14%;
+    --neon-4: 220 50% 20%;
+    --neon-5: 221 60% 35%;
+    --neon-6: 221 65% 45%;
+    --neon-7: 200 60% 46%;
+    --neon-8: 200 55% 60%;
+    --neon-9: 200 45% 88%;
   }
 }
 
@@ -115,19 +115,19 @@
 
 /* CAMBRA surfaces + gradients */
 /* Stronger, higher-contrast gradient (less white/pastel) */
-.bg-saas-gradient { background: linear-gradient(135deg, #0B1020 0%, #0B5CFF 55%, #00D1FF 100%); }
-.text-saas-gradient { background: linear-gradient(135deg, #0B5CFF 0%, #00D1FF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.bg-saas-gradient { background: linear-gradient(135deg, #0A1024 0%, #1F4ED8 55%, #2CA7C1 100%); }
+.text-saas-gradient { background: linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .glass { background: hsl(var(--card) / 0.65); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid hsl(var(--border) / 0.6); }
 
 /* Ambient glows & patterns */
-.bg-ambient-lilac { background: radial-gradient(closest-side, rgba(11,92,255,0.85) 0%, rgba(11,92,255,0.00) 60%); }
-.bg-ambient-mint { background: radial-gradient(closest-side, rgba(0,209,255,0.85) 0%, rgba(0,209,255,0.00) 60%); }
+.bg-ambient-lilac { background: radial-gradient(closest-side, rgba(31,78,216,0.65) 0%, rgba(31,78,216,0.00) 60%); }
+.bg-ambient-mint { background: radial-gradient(closest-side, rgba(44,167,193,0.65) 0%, rgba(44,167,193,0.00) 60%); }
 .dot-grid { background-image: linear-gradient(hsl(0 0% 0% / 0.025) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 0% / 0.025) 1px, transparent 1px); background-size: 48px 48px; }
 .noise-soft { position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(rgba(0,0,0,0.02) 1px, transparent 1px); background-size: 3px 3px; mix-blend-mode: multiply; }
 
 /* Premium gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #0B5CFF 0%, #00D1FF 100%);
+  background: linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
