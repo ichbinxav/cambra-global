@@ -45,10 +45,6 @@ export default function HeroSection() {
       <div className="absolute inset-0 pointer-events-none dot-grid" />
       <div className="noise-soft" />
 
-      {/* Centered brand C glyph */}
-      <div className="absolute top-12 md:top-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-        <img src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png" alt="CAMBRA C" className="h-10 w-10 sm:h-11 sm:w-11 object-contain" />
-      </div>
 
       {/* Single subtle watermark (Landing only) */}
       <img
