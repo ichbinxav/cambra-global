@@ -6,6 +6,8 @@ import MissingDataChips from './MissingDataChips';
 import TagChipsInput from './TagChipsInput';
 import KeyValueListInput from './KeyValueListInput';
 import MultiComboBox from '@/components/inputs/MultiComboBox';
+import ComboBox from '@/components/inputs/ComboBox';
+import OptionTiles from '@/components/onboarding/OptionTiles';
 
 export default function SaasModule(){
   const [brandId, setBrandId] = useState(null);
@@ -52,20 +54,48 @@ export default function SaasModule(){
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Input placeholder="E‑commerce platform" value={item.plataforma||''} onChange={e=>setItem({...item, plataforma: e.target.value})} />
-        <Input placeholder="CRM" value={item.crm||''} onChange={e=>setItem({...item, crm: e.target.value})} />
-        <TagChipsInput label="Email / SMS tools" values={item.email_sms||[]} onChange={(vals)=>setItem({...item, email_sms: vals})} placeholder="Add tool" suggestions={["Klaviyo","Mailchimp","Attentive"]} />
-        <Input placeholder="Support" value={item.soporte||''} onChange={e=>setItem({...item, soporte: e.target.value})} />
-        <Input placeholder="Analytics" value={item.analytics||''} onChange={e=>setItem({...item, analytics: e.target.value})} />
-        <Input placeholder="Subscriptions / Payments" value={item.subs_payments||''} onChange={e=>setItem({...item, subs_payments: e.target.value})} />
-        <MultiComboBox label="Extras (search, reviews, loyalty)" values={item.extras||[]} onChange={(vals)=>setItem({...item, extras: vals})} options={["Algolia","Searchanise","Yotpo","Reviews.io","Judge.me","Stamped","LoyaltyLion","Smile.io"]} />
-        <KeyValueListInput label="Monthly spend by tool" entries={item.gasto_mensual_map||{}} onChange={(obj)=>setItem({...item, gasto_mensual_map: obj})} keyPlaceholder="Tool" valuePlaceholder="€ per month" />
-        <KeyValueListInput label="Renewals" entries={item.renovaciones_map||{}} onChange={(obj)=>setItem({...item, renovaciones_map: obj})} keyPlaceholder="Tool" valuePlaceholder="YYYY-MM-DD" />
-        <KeyValueListInput label="Contract type" entries={item.contrato_map||{}} onChange={(obj)=>setItem({...item, contrato_map: obj})} keyPlaceholder="Tool" valuePlaceholder="monthly/annual" />
-        <TagChipsInput label="Overlapping tools" values={item.overlapping_tools||[]} onChange={(vals)=>setItem({...item, overlapping_tools: vals})} placeholder="Add tool" />
-        <TagChipsInput label="Underused tools" values={item.underused_tools||[]} onChange={(vals)=>setItem({...item, underused_tools: vals})} placeholder="Add tool" />
-        <Input placeholder="Dissatisfaction (notes)" value={item.dissatisfaction||item.insatisfaccion||''} onChange={e=>setItem({...item, dissatisfaction: e.target.value})} />
+      <div className="space-y-4">
+        {/* Core stack */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Core stack</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-3">
+              <OptionTiles label="E‑commerce platform" value={item.plataforma||''} onChange={(v)=>setItem({...item, plataforma: v})} options={["Shopify","Shopify Plus","BigCommerce","Magento","WooCommerce","Custom"]} />
+              <ComboBox label="Buscar/añadir plataforma" value={item.plataforma||''} onChange={(v)=>setItem({...item, plataforma: v})} options={["Shopify","Shopify Plus","BigCommerce","Magento","WooCommerce","Custom"]} />
+            </div>
+            <ComboBox label="CRM" value={item.crm||''} onChange={(v)=>setItem({...item, crm: v})} options={["HubSpot","Salesforce","Pipedrive","Zoho","None"]} />
+            <ComboBox label="Analytics" value={item.analytics||''} onChange={(v)=>setItem({...item, analytics: v})} options={["GA4","Mixpanel","Amplitude","Looker","None"]} />
+          </div>
+        </div>
+
+        {/* Mensajería y extras */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Mensajería y extras</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <MultiComboBox label="Email / SMS tools" values={item.email_sms||[]} onChange={(vals)=>setItem({...item, email_sms: vals})} options={["Klaviyo","Mailchimp","Attentive","Postscript","Omnisend","SmsBump"]} />
+            <MultiComboBox label="Extras (search, reviews, loyalty)" values={item.extras||[]} onChange={(vals)=>setItem({...item, extras: vals})} options={["Algolia","Searchanise","Yotpo","Reviews.io","Judge.me","Stamped","LoyaltyLion","Smile.io"]} />
+          </div>
+        </div>
+
+        {/* Spend y renovaciones */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Spend y renovaciones</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <KeyValueListInput label="Monthly spend by tool" entries={item.gasto_mensual_map||{}} onChange={(obj)=>setItem({...item, gasto_mensual_map: obj})} keyPlaceholder="Tool" valuePlaceholder="€ per month" />
+            <KeyValueListInput label="Renewals" entries={item.renovaciones_map||{}} onChange={(obj)=>setItem({...item, renovaciones_map: obj})} keyPlaceholder="Tool" valuePlaceholder="YYYY-MM-DD" />
+            <KeyValueListInput label="Contract type" entries={item.contrato_map||{}} onChange={(obj)=>setItem({...item, contrato_map: obj})} keyPlaceholder="Tool" valuePlaceholder="monthly/annual" />
+          </div>
+        </div>
+
+        {/* Overlap y notas */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Overlap y notas</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <TagChipsInput label="Overlapping tools" values={item.overlapping_tools||[]} onChange={(vals)=>setItem({...item, overlapping_tools: vals})} placeholder="Add tool" />
+            <TagChipsInput label="Underused tools" values={item.underused_tools||[]} onChange={(vals)=>setItem({...item, underused_tools: vals})} placeholder="Add tool" />
+            <Input placeholder="Dissatisfaction (notes)" value={item.dissatisfaction||item.insatisfaccion||''} onChange={e=>setItem({...item, dissatisfaction: e.target.value})} />
+          </div>
+        </div>
       </div>
       <MissingDataChips items={status?.missing_fields||[]} />
       <div className="flex items-center gap-2">

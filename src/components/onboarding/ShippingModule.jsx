@@ -5,6 +5,10 @@ import { Button } from '@/components/ui/button';
 import MissingDataChips from './MissingDataChips';
 import MultiComboBox from '@/components/inputs/MultiComboBox';
 import { COUNTRIES } from '@/components/inputs/CountrySelect';
+import ComboBox from '@/components/inputs/ComboBox';
+import OptionTiles from '@/components/onboarding/OptionTiles';
+import { Switch } from '@/components/ui/switch';
+import SmartNumberField from '@/components/inputs/SmartNumberField.jsx';
 
 export default function ShippingModule(){
   const [brandId, setBrandId] = useState(null);
@@ -56,21 +60,60 @@ export default function ShippingModule(){
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <MultiComboBox label="Carriers" values={item.carriers||[]} onChange={(vals)=>setItem({...item, carriers: vals})} options={["DHL","UPS","FedEx","DPD","PostNL","Royal Mail","Evri","GLS","Colissimo","Chronopost"]} />
-        <Input placeholder="Model (aggregator/direct)" value={item.modelo||''} onChange={e=>setItem({...item, modelo: e.target.value})} />
-        <Input placeholder="3PL (true/false)" value={String(item.three_pl||'')} onChange={e=>setItem({...item, three_pl: e.target.value==='true'})} />
-        <Input placeholder="In-house (true/false)" value={String(item.in_house||'')} onChange={e=>setItem({...item, in_house: e.target.value==='true'})} />
-        <MultiComboBox label="Served countries" values={item.paises_serv||[]} onChange={(vals)=>setItem({...item, paises_serv: vals})} options={COUNTRIES} />
-        <Input type="number" placeholder="Domestic share % (0-100)" value={item.domestic_vs_intl||''} onChange={e=>setItem({...item, domestic_vs_intl: Number(e.target.value)})} />
-        <Input type="number" placeholder="Monthly orders" value={item.pedidos_mensuales||''} onChange={e=>setItem({...item, pedidos_mensuales: Number(e.target.value)})} />
-        <Input type="number" step="0.01" placeholder="Avg weight (kg)" value={item.avg_weight||''} onChange={e=>setItem({...item, avg_weight: Number(e.target.value)})} />
-        <Input placeholder="Dimensions (LxWxH)" value={item.dims||''} onChange={e=>setItem({...item, dims: e.target.value})} />
-        <Input type="number" step="0.01" placeholder="Return rate %" value={item.returns_rate||''} onChange={e=>setItem({...item, returns_rate: Number(e.target.value)})} />
-        <Input type="number" step="0.01" placeholder="Cost per shipment €" value={item.coste_envio||''} onChange={e=>setItem({...item, coste_envio: Number(e.target.value)})} />
-        <Input type="number" placeholder="Express share % (0-100)" value={item.mix_express_standard||''} onChange={e=>setItem({...item, mix_express_standard: Number(e.target.value)})} />
-        <Input placeholder="Warehouse model (own/3pl/hybrid)" value={item.warehouse_model||''} onChange={e=>setItem({...item, warehouse_model: e.target.value})} />
-        <Input placeholder="Pain points" value={item.pain_points||''} onChange={e=>setItem({...item, pain_points: e.target.value})} />
+      <div className="space-y-4">
+        {/* Carriers y modelo */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Carriers y modelo</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <MultiComboBox label="Carriers" values={item.carriers||[]} onChange={(vals)=>setItem({...item, carriers: vals})} options={["DHL","UPS","FedEx","DPD","PostNL","Royal Mail","Evri","GLS","Colissimo","Chronopost"]} />
+            <OptionTiles label="Model" value={item.shipping_model||''} onChange={(v)=>setItem({...item, shipping_model: v})} options={["aggregator","direct"]} />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between px-3 py-2 rounded-xl border border-border/60 glass">
+                <span className="text-sm">Uses 3PL</span>
+                <Switch checked={!!item.three_pl} onCheckedChange={(v)=>setItem({...item, three_pl: !!v})} />
+              </div>
+              <div className="flex items-center justify-between px-3 py-2 rounded-xl border border-border/60 glass">
+                <span className="text-sm">In-house ops</span>
+                <Switch checked={!!item.in_house} onCheckedChange={(v)=>setItem({...item, in_house: !!v})} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Países servidos */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Países servidos</div>
+          <MultiComboBox label="Served countries" values={item.paises_serv||[]} onChange={(vals)=>setItem({...item, paises_serv: vals})} options={COUNTRIES} />
+        </div>
+
+        {/* Volumen y paquetes */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Volumen y paquetes</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <SmartNumberField label="Monthly orders" value={item.pedidos_mensuales||0} onChange={(v)=>setItem({...item, pedidos_mensuales: Number(v)})} min={0} max={1000000} scale="log" />
+            <SmartNumberField label="Avg weight" value={item.avg_weight||0} onChange={(v)=>setItem({...item, avg_weight: Number(v)})} min={0} max={200} decimals={2} suffix="kg" />
+            <Input placeholder="Dimensions (LxWxH)" value={item.dims||''} onChange={e=>setItem({...item, dims: e.target.value})} />
+          </div>
+        </div>
+
+        {/* Costes y mix */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Costes y mix</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <SmartNumberField label="Return rate" value={item.returns_rate||0} onChange={(v)=>setItem({...item, returns_rate: Number(v)})} min={0} max={100} decimals={1} suffix="%" />
+            <SmartNumberField label="Cost per shipment" value={item.coste_envio||0} onChange={(v)=>setItem({...item, coste_envio: Number(v)})} min={0} max={1000} decimals={2} prefix="€" />
+            <SmartNumberField label="Express share" value={item.mix_express_standard||0} onChange={(v)=>setItem({...item, mix_express_standard: Number(v)})} min={0} max={100} suffix="%" />
+          </div>
+        </div>
+
+        {/* Almacén y fricciones */}
+        <div className="p-4 sm:p-5 rounded-2xl border border-border/60 glass">
+          <div className="mb-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground/60">Almacén y fricciones</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <ComboBox label="Warehouse model" value={item.warehouse_model||''} onChange={(v)=>setItem({...item, warehouse_model: v})} options={["own","3pl","hybrid","other"]} allowCustom={false} />
+            <Input placeholder="Pain points" value={item.pain_points||''} onChange={e=>setItem({...item, pain_points: e.target.value})} />
+          </div>
+        </div>
       </div>
       <MissingDataChips items={status?.missing_fields||[]} />
       <div className="flex items-center gap-2">
