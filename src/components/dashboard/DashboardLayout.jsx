@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { path: "/Network", label: "Network", icon: Users },
   { path: "/Deals", label: "Deals", icon: Zap },
   { path: "/Insights", label: "Insights", icon: FileText },
+  { path: "/Onboarding", label: "Onboarding", icon: Building2 },
   { path: "/ConnectTools", label: "Data sources", icon: Plug },
   { path: "/Account", label: "Account", icon: Settings },
 ];

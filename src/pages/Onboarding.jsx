@@ -10,6 +10,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { TrendingDown, Zap, Building2, ArrowRight } from 'lucide-react';
+import Navbar from '@/components/landing/Navbar';
 
 export default function Onboarding(){
   const [tab, setTab] = useState('general');
@@ -24,28 +25,33 @@ export default function Onboarding(){
   useEffect(()=>{ load(); },[]);
 
   return (
-    <OnboardingLayout activeTab={tab} onTabChange={(v)=>{ setTab(v); if(v!=='general') load(); }} statuses={statuses}>
-      <TabsContent value="general">
-        <div className="space-y-6">
-          <OnboardingHero />
-          <StepGrid />
-        </div>
-      </TabsContent>
-      <TabsContent value="payments">
-        <div className="space-y-6">
-          <PaymentsModule />
-        </div>
-      </TabsContent>
-      <TabsContent value="shipping">
-        <div className="space-y-6">
-          <ShippingModule />
-        </div>
-      </TabsContent>
-      <TabsContent value="saas">
-        <div className="space-y-6">
-          <SaasModule />
-        </div>
-      </TabsContent>
-    </OnboardingLayout>
+    <>
+      <Navbar />
+      <div className="pt-16">
+        <OnboardingLayout activeTab={tab} onTabChange={(v)=>{ setTab(v); if(v!=='general') load(); }} statuses={statuses}>
+          <TabsContent value="general">
+            <div className="space-y-6">
+              <OnboardingHero />
+              <StepGrid />
+            </div>
+          </TabsContent>
+          <TabsContent value="payments">
+            <div className="space-y-6">
+              <PaymentsModule />
+            </div>
+          </TabsContent>
+          <TabsContent value="shipping">
+            <div className="space-y-6">
+              <ShippingModule />
+            </div>
+          </TabsContent>
+          <TabsContent value="saas">
+            <div className="space-y-6">
+              <SaasModule />
+            </div>
+          </TabsContent>
+        </OnboardingLayout>
+      </div>
+    </>
   );
 }
