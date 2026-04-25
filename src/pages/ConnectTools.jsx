@@ -286,42 +286,53 @@ export default function ConnectTools() {
               </div>
             )}
 
-            {/* Connector grid */}
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {filtered.map((c, i) => {
-                  const connected = connectedTools.includes(c.name);
-                  return (
-                    <div key={i} className={`p-4 rounded-2xl border text-center flex flex-col items-center gap-2 ${connected ? 'border-green-500/30 bg-green-500/[0.04]' : 'border-border/50 bg-card hover:border-foreground/20 transition-colors'}`}>
-                      <ConnectorAvatar name={c.name} color={c.color} size="lg" />
-                      <p className="text-sm font-semibold">{c.name}</p>
-                      <p className="text-[10px] text-muted-foreground/50">{c.cat}</p>
-                      {connected ? (
-                        <button onClick={() => toggleConnect(c.name)} className="h-8 px-3.5 rounded-full border border-green-500/30 bg-green-500/[0.08] text-green-600 text-xs font-semibold">
-                          <CheckCircle2 size={11} className="inline mr-1" /> Connected
-                        </button>
-                      ) : c.name === 'Stripe' && c.status !== 'soon' ? (
-                        <Link to="/StripeAnalyzer">
-                          <button className="h-8 px-3.5 rounded-full border text-xs font-bold border-[#635BFF]/40 text-[#635BFF] hover:bg-[#635BFF]/10">
-                            <Plug size={11} className="inline mr-1" /> Analyze
-                          </button>
-                        </Link>
-                      ) : (
-                        <button onClick={() => c.status !== 'soon' && toggleConnect(c.name)} className={`h-8 px-3.5 rounded-full border text-xs font-semibold ${c.status === 'soon' ? 'border-border/30 text-muted-foreground/30 cursor-default' : 'border-border/60 text-muted-foreground hover:border-foreground hover:text-foreground'}`}>
-                          {c.status === 'soon' ? 'Coming soon' : (<><Plug size={11} className="inline mr-1" /> Connect</>)}
-                        </button>
-                      )}
+            {/* Connector list */}
+            <div className="space-y-2">
+              {filtered.map((c, i) => {
+                const connected = connectedTools.includes(c.name);
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${connected ? 'border-green-500/30 bg-green-500/[0.03]' : 'border-border/50 bg-card hover:border-foreground/20'}`}
+                  >
+                    <ConnectorAvatar name={c.name} color={c.color} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="text-sm font-semibold">{c.name}</p>
+                        {c.status === 'soon' && (
+                          <span className="text-[9px] uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground/50 font-semibold">Soon</span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground/50 truncate">{c.desc}</p>
                     </div>
-                  );
-                })}
-                {/* More tools tile */}
-                <Link to="/ConnectTools?mode=connect" className="p-4 rounded-2xl border border-dashed border-border/50 hover:border-foreground/20 transition-colors text-center flex flex-col items-center justify-center gap-2">
-                  <div className="w-12 h-12 rounded-xl border-2 border-dashed border-border/50 flex items-center justify-center">
-                    <span className="text-muted-foreground/30 text-2xl leading-none">+</span>
+                    <span className="text-[10px] text-muted-foreground/30 hidden sm:block">{c.cat}</span>
+                    {connected ? (
+                      <button
+                        onClick={() => toggleConnect(c.name)}
+                        className="flex items-center gap-1.5 h-8 px-3.5 rounded-full border border-green-500/30 bg-green-500/[0.08] text-green-600 text-xs font-semibold shrink-0 hover:bg-green-500/[0.15] transition-colors"
+                      >
+                        <CheckCircle2 size={11} /> Connected
+                      </button>
+                    ) : c.name === 'Stripe' && c.status !== 'soon' ? (
+                      <Link to="/StripeAnalyzer">
+                        <button
+                          className="h-8 px-3.5 rounded-full border text-xs font-bold shrink-0 transition-all flex items-center gap-1.5 border-[#635BFF]/40 text-[#635BFF] hover:bg-[#635BFF]/10"
+                          style={{ borderColor: '#635BFF55' }}
+                        >
+                          <Plug size={11} /> Analyze
+                        </button>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => c.status !== 'soon' && toggleConnect(c.name)}
+                        className={`h-8 px-3.5 rounded-full border text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5 ${c.status === 'soon' ? 'border-border/30 text-muted-foreground/30 cursor-default' : 'border-border/60 text-muted-foreground hover:border-foreground hover:text-foreground'}`}
+                      >
+                        {c.status === 'soon' ? 'Coming soon' : (<><Plug size={11} /> Connect</>)}
+                      </button>
+                    )}
                   </div>
-                  <p className="text-xs font-semibold text-muted-foreground/60">More tools</p>
-                </Link>
-              </div>
+                );
+              })}
 
               {/* Generic connector */}
               {!showCustom ? (
@@ -350,10 +361,15 @@ export default function ConnectTools() {
                   />
                   <p className="text-[11px] text-muted-foreground/40">We'll add it to our roadmap. In the meantime, use the upload option below.</p>
                   <div className="flex gap-2">
-                    <button onClick={() => setActiveMode('upload')} className="h-9 px-4 rounded-full border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors flex items-center gap-1.5">
+                    <button
+                      onClick={() => setActiveMode('upload')}
+                      className="h-9 px-4 rounded-full border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors flex items-center gap-1.5"
+                    >
                       <Upload size={12} /> Upload files instead
                     </button>
-                    <button onClick={() => setShowCustom(false)} className="h-9 px-4 rounded-full text-xs text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+                    <button onClick={() => setShowCustom(false)} className="h-9 px-4 rounded-full text-xs text-muted-foreground hover:text-foreground transition-colors">
+                      Cancel
+                    </button>
                   </div>
                 </div>
               )}

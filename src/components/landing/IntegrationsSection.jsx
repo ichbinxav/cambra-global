@@ -97,19 +97,26 @@ export default function IntegrationsSection() {
               View all <ArrowRight size={10} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="divide-y divide-border/25">
             {CONNECTORS.map((c, i) => (
-              <div key={i} className="p-4 rounded-2xl border border-border/50 bg-card hover:border-foreground/20 transition-colors text-center flex flex-col items-center gap-2">
+              <Link to="/ConnectTools?mode=connect" key={i} className="flex items-center gap-3 px-5 py-3 hover:bg-secondary/30 transition-colors">
                 <Avatar name={c.name} color={c.color} />
-                <p className="text-xs font-semibold">{c.name}</p>
-                <p className="text-[10px] text-muted-foreground/40">{c.cat}</p>
-              </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{c.name}</p>
+                  <p className="text-[10px] text-muted-foreground/40">{c.cat}</p>
+                </div>
+                <ArrowRight size={12} className="ml-auto text-muted-foreground/30" />
+              </Link>
             ))}
-            <Link to="/ConnectTools?mode=connect" className="p-4 rounded-2xl border border-dashed border-border/50 hover:border-foreground/20 transition-colors text-center flex flex-col items-center justify-center gap-2">
+            <Link to="/ConnectTools?mode=connect" className="flex items-center gap-3 px-5 py-3 hover:bg-secondary/30 transition-colors">
               <div className="w-9 h-9 rounded-xl border-2 border-dashed border-border/40 flex items-center justify-center">
                 <span className="text-muted-foreground/30 text-lg leading-none">+</span>
               </div>
-              <p className="text-xs font-semibold text-muted-foreground/50">More tools</p>
+              <div>
+                <p className="text-sm font-semibold text-muted-foreground/60">More tools</p>
+                <p className="text-[10px] text-muted-foreground/35">Request or upload files</p>
+              </div>
+              <ArrowRight size={12} className="ml-auto text-muted-foreground/30" />
             </Link>
           </div>
         </div>
