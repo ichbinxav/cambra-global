@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function RecommendationList(){
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -22,47 +24,103 @@ export default function RecommendationList(){
   if (!items.length) return <div className="text-sm text-muted-foreground">Sin recomendaciones por ahora.</div>;
 
   const priorityLabel = (t) => t>=75? 'Alta' : t>=50? 'Media' : 'Baja';
+  const priorityColors = (p) => p==='Alta' ? 'bg-cambra-plum-soft border-cambra-plum text-cambra-plum' : p==='Media' ? 'bg-cambra-lilac-soft border-cambra-lilac text-cambra-lilac' : 'bg-cambra-mint-soft border-cambra-mint text-cambra-mint';
+  const formatCurrency = (n) => { try { return `€${Math.round(n).toLocaleString()}`; } catch { return `€${n}`; } };
+  const computeImpact = (r) => {
+    const s = r?.score_json || {};
+    const euros = [s.impact_yearly_eur, s.impact_eur, s.annual_savings, s.savings_eur].find(v => typeof v === 'number');
+    if (typeof euros === 'number') return euros;
+    if (typeof s.points === 'number') return s.points;
+    if (typeof s.total === 'number') return s.total;
+    return 0;
+  };
+
+  const byImpact = items.slice().sort((a,b) => computeImpact(b) - computeImpact(a));
 
   return (
     <div className="space-y-2">
-      {items.map((r)=> (
-        <div key={r.id} className="rounded-lg border p-3 bg-card">
-          <div className="flex items-center justify-between gap-2">
-            <div className="font-semibold text-sm truncate">{r.title}</div>
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <Badge variant="outline" className="text-[10px]">{r.type}</Badge>
-              {typeof r.score_json?.total === 'number' && (
-                <Badge className="text-[10px]">{priorityLabel(r.score_json.total)} · {r.score_json.total}</Badge>
-              )}
-              {r.effort_level && <Badge variant="outline" className="text-[10px]">{r.effort_level}</Badge>}
+      {byImpact.map((r)=> {
+        const total = typeof r?.score_json?.total === 'number' ? r.score_json.total : 0;
+        const prio = priorityLabel(total);
+        const s = r?.score_json || {};
+        const euros = [s.impact_yearly_eur, s.impact_eur, s.annual_savings, s.savings_eur].find(v => typeof v === 'number');
+        const impactText = typeof euros === 'number' ? `${formatCurrency(euros)}/yr` : (r.expected_benefit || `${prio} impacto`);
+        const isOpen = expanded === r.id;
+
+        return (
+          <div key={r.id} className="rounded-xl border border-border/50 bg-card p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="font-semibold text-sm truncate max-w-[80%]">{r.title}</span>
+                  <Badge variant="outline" className="text-[10px]">{r.type}</Badge>
+                  {r.effort_level && <Badge variant="outline" className="text-[10px]">{r.effort_level}</Badge>}
+                  {typeof total === 'number' && (
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${priorityColors(prio)}`}>{prio}</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{r.description}</p>
+              </div>
+
+              <div className="shrink-0 text-right">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50">Impacto estimado</p>
+                <p className="text-lg font-black tabular-nums">{impactText}</p>
+              </div>
             </div>
+
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExpanded(isOpen ? null : r.id)}
+                className="h-8 text-xs rounded-full px-3 gap-1.5"
+              >
+                {isOpen ? (<><ChevronUp className="h-3.5 w-3.5" /> Ocultar</>) : (<><ChevronDown className="h-3.5 w-3.5" /> Descubrir</>)}
+              </Button>
+              <div className="flex items-center gap-2">
+                {r.action_link && (
+                  <a href={r.action_link} className="text-[11px] underline">{r.action_required || 'Abrir'}</a>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-[11px]"
+                  onClick={async()=>{ await base44.functions.invoke('dismissRecommendation', { id: r.id }); load(); }}
+                >
+                  Descartar
+                </Button>
+              </div>
+            </div>
+
+            {isOpen && (
+              <div className="mt-3 border-t border-border/40 pt-3 space-y-2">
+                {(Array.isArray(r.reasons) && r.reasons.length>0) && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Por qué</p>
+                    <ul className="text-[12px] list-disc ml-4 text-foreground/80">
+                      {r.reasons.slice(0,4).map((rs, i) => <li key={i}>{rs}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {r.action_required && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Siguiente paso</p>
+                    <p className="text-[12px] text-foreground/80">{r.action_required}</p>
+                  </div>
+                )}
+                {(Array.isArray(r.missing_data) && r.missing_data.length>0) && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Datos faltantes</p>
+                    <div className="flex flex-wrap gap-1">
+                      {r.missing_data.slice(0,6).map((m,i)=> <Badge key={i} variant="outline" className="text-[10px]">{m}</Badge>)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">{r.description}</p>
-
-          {(Array.isArray(r.reasons) && r.reasons.length>0) && (
-            <div className="mt-2">
-              <p className="text-[10px] text-muted-foreground">Por qué:</p>
-              <ul className="text-[11px] list-disc ml-4">
-                {r.reasons.slice(0,2).map((rs, i) => <li key={i}>{rs}</li>)}
-              </ul>
-            </div>
-          )}
-
-          {(Array.isArray(r.missing_data) && r.missing_data.length>0) && (
-            <div className="mt-1 flex flex-wrap gap-1">
-              {r.missing_data.slice(0,4).map((m,i)=> <Badge key={i} variant="outline" className="text-[10px]">{m}</Badge>)}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between mt-2 gap-2">
-            <div className="text-[10px] text-muted-foreground">Score: {Math.round((r.score_json?.total||0)*100)/100}</div>
-            <div className="flex items-center gap-2">
-              {r.action_link && <a href={r.action_link} className="text-xs underline">{r.action_required || 'Abrir'}</a>}
-              <Button variant="ghost" size="sm" onClick={async()=>{ await base44.functions.invoke('dismissRecommendation', { id: r.id }); load(); }}>Descartar</Button>
-            </div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
