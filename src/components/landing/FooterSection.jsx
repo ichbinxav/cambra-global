@@ -57,7 +57,7 @@ export default function FooterSection() {
                 </Button>
               </motion.div>
             </Link>
-            <Link to="/Onboarding" className="w-full sm:w-auto">
+            <Link to="/Analyzer" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" className="w-full h-14 rounded-full px-10 text-base font-bold bg-background text-foreground border border-background/20 hover:bg-background/90">
                   Run the analyzer
