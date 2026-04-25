@@ -168,15 +168,15 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
               <div className="p-4 rounded-xl glass ring-1 ring-blue-500/10 hover:translate-y-0.5 transition-transform">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Identified savings</p>
-                <p className="text-xl font-black tabular-nums text-blue-600">€{Math.round(econ.identified).toLocaleString()}/yr</p>
+                <p className="text-xl font-black tabular-nums text-chart-1">€{Math.round(econ.identified).toLocaleString()}/yr</p>
               </div>
               <div className="p-4 rounded-xl glass ring-1 ring-purple-500/10 hover:translate-y-0.5 transition-transform">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Activated savings</p>
-                <p className="text-xl font-black tabular-nums text-purple-600">€{Math.round(econ.activated).toLocaleString()}/yr</p>
+                <p className="text-xl font-black tabular-nums text-chart-3">€{Math.round(econ.activated).toLocaleString()}/yr</p>
               </div>
               <div className="p-4 rounded-xl glass ring-1 ring-green-500/10 hover:translate-y-0.5 transition-transform">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Realized savings</p>
-                <p className="text-xl font-black tabular-nums text-green-600">€{Math.round(econ.realized).toLocaleString()}/yr</p>
+                <p className="text-xl font-black tabular-nums text-chart-2">€{Math.round(econ.realized).toLocaleString()}/yr</p>
               </div>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function Dashboard() {
         /* ── EMPTY STATE ── */
         <div className="space-y-3">
           {/* Accuracy banner */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl border border-orange-500/20 bg-orange-500/[0.04]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl border border-chart-3/20 bg-orange-500/[0.04]">
             <AlertTriangle size={16} className="text-orange-500 shrink-0 mt-0.5 sm:mt-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold">Using estimated data</p>
@@ -219,14 +219,14 @@ export default function Dashboard() {
       ) : (
         <>
           {/* ── ACCURACY BANNER ── */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl border border-orange-500/20 bg-orange-500/[0.04]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl border border-chart-3/20 bg-orange-500/[0.04]">
             <div className="flex items-center gap-2 flex-1">
               <div className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0" />
-              <p className="text-xs font-semibold text-orange-600">Using estimated data</p>
+              <p className="text-xs font-semibold text-chart-3">Using estimated data</p>
               <span className="text-xs text-muted-foreground/50 hidden sm:block">— Connect your tools to unlock precise insights</span>
             </div>
             <Link to="/ConnectTools">
-              <button className="h-7 px-3 rounded-full border border-orange-500/30 text-[11px] font-semibold text-orange-600 hover:bg-orange-500/10 transition-colors flex items-center gap-1.5">
+              <button className="h-7 px-3 rounded-full border border-chart-3/30 text-[11px] font-semibold text-chart-3 hover:bg-chart-3/10 transition-colors flex items-center gap-1.5">
                 <Zap size={10} /> Connect your data
               </button>
             </Link>
@@ -236,8 +236,8 @@ export default function Dashboard() {
 
           {/* ── SAVINGS OPPORTUNITIES & GMV ── */}
           <div className="grid grid-cols-3 gap-3">
-            <MetricCard label="Payments" value={latest.payment_savings} icon={CreditCard} color="text-blue-600" border="border-blue-500/15" bg="bg-blue-500/[0.05]" note="payment efficiency" />
-            <MetricCard label="Shipping" value={latest.shipping_savings} icon={Truck} color="text-green-600" border="border-green-500/15" bg="bg-green-500/[0.05]" note="shipping efficiency" />
+            <MetricCard label="Payments" value={latest.payment_savings} icon={CreditCard} color="text-chart-1" border="border-chart-1/20" bg="bg-blue-500/[0.05]" note="payment efficiency" />
+            <MetricCard label="Shipping" value={latest.shipping_savings} icon={Truck} color="text-chart-2" border="border-chart-2/20" bg="bg-green-500/[0.05]" note="shipping efficiency" />
             <MetricCard label="SaaS" value={latest.saas_savings} icon={Package} color="text-orange-500" border="border-orange-500/15" bg="bg-orange-500/[0.05]" note="stack efficiency" />
           </div>
 

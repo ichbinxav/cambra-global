@@ -56,7 +56,7 @@ function SectionLabel({ children }) {
 function AccuracyBadge({ isEstimated }) {
   return (
     <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold ${
-      isEstimated ? "bg-orange-500/[0.07] border-orange-500/20 text-orange-600" : "bg-green-500/[0.07] border-green-500/20 text-green-600"
+      isEstimated ? "bg-orange-500/[0.07] border-chart-3/20 text-chart-3" : "bg-chart-2/10 border-green-500/20 text-chart-2"
     }`}>
       <div className={`w-1.5 h-1.5 rounded-full ${isEstimated ? "bg-orange-400" : "bg-green-500"}`} />
       {isEstimated ? "Estimated analysis" : "Real data connected"}
@@ -304,7 +304,8 @@ export default function Results() {
               <div className="relative w-20 h-20">
                 <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
                   <circle cx="40" cy="40" r="34" fill="none" stroke="#333" strokeWidth="6" />
-                  <circle cx="40" cy="40" r="34" fill="none" stroke={score < 50 ? '#ef4444' : (score > 80 ? '#22c55e' : '#f59e0b')} strokeWidth="6" strokeLinecap="round"
+                  <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round"
+                    className={score < 50 ? 'text-destructive' : (score > 80 ? 'text-chart-2' : 'text-chart-3')}
                     strokeDasharray={2 * Math.PI * 34} strokeDashoffset={2 * Math.PI * 34 * (1 - score / 100)} />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -514,8 +515,8 @@ export default function Results() {
                   <p className="text-sm font-semibold">{item.action}</p>
                 </div>
                 <div className="text-right shrink-0 space-y-1">
-                  <p className="text-xs font-semibold text-green-600">{item.saving}</p>
-                  <p className="text-[10px] font-bold text-green-600/60 bg-green-500/[0.07] border border-green-500/15 px-2 py-0.5 rounded-full">
+                  <p className="text-xs font-semibold text-chart-2">{item.saving}</p>
+                  <p className="text-[10px] font-bold text-chart-2/60 bg-chart-2/10 border border-chart-2/20 px-2 py-0.5 rounded-full">
                     +{item.points} pts
                   </p>
                 </div>

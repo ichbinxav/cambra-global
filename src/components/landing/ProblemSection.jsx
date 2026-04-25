@@ -27,7 +27,7 @@ const PROBLEMS = [
     delta: "Pay enterprise prices without the scale",
     annual: "€12K–€24K/yr lost",
     color: "text-orange-500",
-    bg: "bg-orange-500/[0.05] border-orange-500/20",
+    bg: "bg-orange-500/[0.05] border-chart-3/20",
     barColor: "#f97316",
     yours: 85,
     theirs: 62,

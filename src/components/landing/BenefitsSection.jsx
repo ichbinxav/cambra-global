@@ -30,20 +30,20 @@ const BENEFITS = [
     title: "Access network-level deals",
     body: "Benefit from collective scale. What large companies negotiate, you now access instantly.",
     color: "text-cambra-plum",
-    bg: "bg-orange-500/[0.08] border-orange-500/20",
+    bg: "bg-orange-500/[0.08] border-chart-3/20",
   },
   {
     icon: Clock,
     title: "Save time and complexity",
     body: "No need to negotiate contracts, compare providers, or audit costs. We centralize your entire infrastructure layer.",
-    color: "text-teal-600",
+    color: "text-chart-2",
     bg: "bg-cambra-mint-soft border-cambra-mint",
   },
   {
     icon: Focus,
     title: "Stay focused on your core business",
     body: "Spend less time on operations, more time on brand, product, and growth. THE NoDE handles the backend.",
-    color: "text-rose-600",
+    color: "text-destructive",
     bg: "bg-cambra-plum-soft border-cambra-plum",
   },
 ];
@@ -60,7 +60,7 @@ const PROOF = [
   { value: "€18K–€72K", label: "unlocked per year", icon: BarChart2, color: "text-foreground", bg: "bg-card border-border/40" },
   { value: "−52%", label: "on payments", icon: CreditCard, color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac" },
   { value: "−18%", label: "on shipping", icon: Truck, color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint" },
-  { value: "−30%", label: "on SaaS tools", icon: Package, color: "text-cambra-plum", bg: "bg-orange-500/[0.08] border-orange-500/20" },
+  { value: "−30%", label: "on SaaS tools", icon: Package, color: "text-cambra-plum", bg: "bg-orange-500/[0.08] border-chart-3/20" },
 ];
 
 function BenefitTile({ b, index }) {

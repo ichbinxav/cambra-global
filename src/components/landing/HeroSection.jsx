@@ -108,7 +108,7 @@ export default function HeroSection() {
             <motion.ul variants={container} className="space-y-2.5 mb-10">
               {BULLETS.map((b, i) => (
                 <motion.li key={i} variants={fadeUp} className="flex items-start gap-3 text-sm text-foreground/75">
-                  <CheckCircle2 size={16} className="text-green-500 mt-0.5 shrink-0" />
+                  <CheckCircle2 size={16} className="text-chart-2 mt-0.5 shrink-0" />
                   <span className="font-medium">{b}</span>
                 </motion.li>
               ))}
@@ -157,14 +157,14 @@ export default function HeroSection() {
           >
             {/* Overpaying alert */}
             <motion.div
-              className="flex items-center gap-3 p-4 rounded-xl border border-red-600/30 bg-red-500/[0.08]"
+              className="flex items-center gap-3 p-4 rounded-xl border border-destructive/30 bg-red-500/[0.08]"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
             >
               <div className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
-              <p className="text-sm font-semibold text-foreground/85">Overpaying detected: <span className="text-red-600 font-black">€8,430/year</span></p>
-              <TrendingDown size={14} className="text-red-600 ml-auto shrink-0" />
+              <p className="text-sm font-semibold text-foreground/85">Overpaying detected: <span className="text-destructive font-black">€8,430/year</span></p>
+              <TrendingDown size={14} className="text-destructive ml-auto shrink-0" />
             </motion.div>
 
             {/* Analyzer card */}
@@ -247,7 +247,8 @@ export default function HeroSection() {
                 <svg className="w-12 h-12 -rotate-90" viewBox="0 0 44 44">
                   <circle cx="22" cy="22" r="18" fill="none" stroke="hsl(var(--border))" strokeWidth="4" />
                   <motion.circle
-                    cx="22" cy="22" r="18" fill="none" stroke="#f97316" strokeWidth="4" strokeLinecap="round"
+                    cx="22" cy="22" r="18" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round"
+                    className="text-chart-3"
                     strokeDasharray={2 * Math.PI * 18}
                     initial={{ strokeDashoffset: 2 * Math.PI * 18 }}
                     animate={{ strokeDashoffset: 2 * Math.PI * 18 * 0.43 }}

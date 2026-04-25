@@ -265,7 +265,7 @@ export default function Analyzer() {
             scale="log"
             prefix="€"
           />
-          <div className="p-4 rounded-xl bg-blue-500/[0.05] border border-blue-500/15 text-[12px] text-muted-foreground leading-relaxed">
+          <div className="p-4 rounded-xl bg-blue-500/[0.05] border border-chart-1/20 text-[12px] text-muted-foreground leading-relaxed">
             <span className="font-semibold text-foreground">Why this matters:</span> Your revenue determines your leverage. Brands above €500K/mo unlock the strongest network terms.
           </div>
           <SmartNumberField
@@ -337,17 +337,17 @@ export default function Analyzer() {
             const benchmark = bm.payment.rate;
             const annualSavings = Math.max(0, Math.round(data.monthly_revenue * 12 * ((data.payment_fee_pct - benchmark) / 100)));
             return (
-              <div className="p-4 rounded-xl bg-blue-500/[0.06] border border-blue-500/15 space-y-2">
+              <div className="p-4 rounded-xl bg-blue-500/[0.06] border border-chart-1/20 space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Your current rate</span>
                   <span className="font-bold tabular-nums">{data.payment_fee_pct.toFixed(1)}%</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Network target ({bm.tier} tier{bm.eu ? " · EU" : ""})</span>
-                  <span className="font-bold text-blue-600 tabular-nums">{benchmark.toFixed(1)}%</span>
+                  <span className="font-bold text-chart-1 tabular-nums">{benchmark.toFixed(1)}%</span>
                 </div>
                 {data.payment_fee_pct > benchmark && (
-                  <div className="pt-2 border-t border-blue-500/15 flex items-center justify-between">
+                  <div className="pt-2 border-t border-chart-1/20 flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Optimization potential</span>
                     <span className="font-black text-lg text-foreground tabular-nums">
                       €{annualSavings.toLocaleString()}/yr
@@ -402,7 +402,7 @@ export default function Analyzer() {
                 </div>
                 <div className="flex justify-between">
                   <span>Network target ({bm.tier} tier{bm.eu ? " · EU" : ""})</span>
-                  <span className="font-bold text-green-600">€{bm.shipping.perUnit.toFixed(2)}</span>
+                  <span className="font-bold text-chart-2">€{bm.shipping.perUnit.toFixed(2)}</span>
                 </div>
                 {annualSaving > 0 && (
                   <div className="flex justify-between border-t border-border/30 pt-1.5 mt-1.5">
@@ -436,7 +436,7 @@ export default function Analyzer() {
             const saving = Math.round(saasGap * data.monthly_revenue * 12);
             const optimal = Math.round(bm.saas.pct * data.monthly_revenue);
             return (
-              <div className="p-4 rounded-xl bg-orange-500/[0.05] border border-orange-500/15 space-y-1.5">
+              <div className="p-4 rounded-xl bg-orange-500/[0.05] border border-chart-3/20 space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Your current spend</span>
                   <span className="font-bold tabular-nums">€{(data.total_saas_spend * 12).toLocaleString()}/yr</span>
@@ -446,9 +446,9 @@ export default function Analyzer() {
                   <span className="font-bold text-muted-foreground/60 tabular-nums">€{(optimal * 12).toLocaleString()}/yr</span>
                 </div>
                 {saving > 0 && (
-                  <div className="flex items-center justify-between text-sm border-t border-orange-500/15 pt-1.5">
+                  <div className="flex items-center justify-between text-sm border-t border-chart-3/20 pt-1.5">
                     <span className="text-muted-foreground">Optimization potential</span>
-                    <span className="font-black text-orange-500 tabular-nums">€{saving.toLocaleString()}/yr</span>
+                    <span className="font-black text-chart-3 tabular-nums">€{saving.toLocaleString()}/yr</span>
                   </div>
                 )}
               </div>

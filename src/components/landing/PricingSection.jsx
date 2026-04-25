@@ -82,7 +82,7 @@ export default function PricingSection() {
             <div className="px-7 py-6 border-b border-border/40 bg-foreground text-background">
               {/* Early partner badge */}
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-background/15 bg-background/10 mb-4">
-                <span className="w-1 h-1 rounded-full bg-green-400" />
+                <span className="w-1 h-1 rounded-full bg-chart-2" />
                 <span className="text-[10px] font-semibold text-background/60 tracking-[0.1em] uppercase">CAMBRA · Early partner</span>
               </div>
 
