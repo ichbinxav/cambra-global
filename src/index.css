@@ -158,10 +158,26 @@
 .border-neon-6 { border-color: hsl(var(--neon-6)); }
 .border-neon-7 { border-color: hsl(var(--neon-7)); }
 
+/* Legacy CAMBRA synonyms -> Neon mapping */
+.text-cambra-lilac { color: hsl(var(--neon-6)); }
+.border-cambra-lilac { border-color: hsl(var(--neon-6)); }
+.bg-cambra-lilac-soft { background-color: hsl(var(--neon-6) / 0.12); }
+.bg-cambra-lilac { background-color: hsl(var(--neon-6)); }
+
+.text-cambra-mint { color: hsl(var(--neon-7)); }
+.border-cambra-mint { border-color: hsl(var(--neon-7)); }
+.bg-cambra-mint-soft { background-color: hsl(var(--neon-7) / 0.12); }
+.bg-cambra-mint { background-color: hsl(var(--neon-7)); }
+
+.text-cambra-plum { color: hsl(var(--neon-5)); }
+.border-cambra-plum { border-color: hsl(var(--neon-5)); }
+.bg-cambra-plum-soft { background-color: hsl(var(--neon-5) / 0.10); }
+.bg-cambra-plum { background-color: hsl(var(--neon-5)); }
+
 /* Map legacy utility colors to CAMBRA palette */
-.text-blue-600 { color: #7C6CFF !important; }
-.text-green-600 { color: #2FC9A6 !important; }
-.text-orange-500 { color: #5B3A83 !important; }
+.text-blue-600 { color: hsl(var(--neon-6)) !important; }
+.text-green-600 { color: hsl(var(--neon-7)) !important; }
+.text-orange-500 { color: hsl(var(--neon-5)) !important; }
 
 /* Letter spacing utilities */
 .tracking-editorial { letter-spacing: -0.04em; }
