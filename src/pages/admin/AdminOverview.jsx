@@ -356,7 +356,7 @@ export default function AdminOverview() {
             activations={activations}
             tasks={tasks}
             results={results}
-            limit={8}
+            limit={3}
           />
         </div>
       </div>
