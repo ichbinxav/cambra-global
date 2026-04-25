@@ -45,11 +45,9 @@ export default function HeroSection() {
       <div className="absolute inset-0 pointer-events-none dot-grid" />
       <div className="noise-soft" />
 
-      {/* Centered brand C glyph (favicon style) */}
+      {/* Centered brand C glyph */}
       <div className="absolute top-24 md:top-28 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-        <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl border border-border/60 bg-card/90 backdrop-blur-sm shadow-sm flex items-center justify-center">
-          <img src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png" alt="CAMBRA C" className="h-6 w-6 object-contain" />
-        </div>
+        <img src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png" alt="CAMBRA C" className="h-10 w-10 sm:h-11 sm:w-11 object-contain" />
       </div>
 
       {/* Single subtle watermark (Landing only) */}
