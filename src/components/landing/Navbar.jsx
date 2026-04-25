@@ -37,8 +37,9 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
 
         {/* Logo */}
-        <Link to="/" className="text-sm font-black tracking-tight flex-shrink-0">
-          CAMBRA
+        <Link to="/" className="text-sm font-black tracking-tight flex-shrink-0 inline-flex items-center gap-2">
+          <img src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/e61217a34_A31C1A4E-097D-4DE7-B15B-10A9EF45F8AC.png" alt="CAMBRA logo" className="h-5 w-auto" />
+          <span>CAMBRA</span>
         </Link>
 
         {/* Desktop nav */}
@@ -75,9 +76,9 @@ export default function Navbar() {
                 Sign in
               </a>
               <Link to="/Analyzer">
-                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm bg-green-600 hover:bg-green-700 text-white">
-                  Check Savings
-                </Button>
+                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm bg-foreground text-background hover:opacity-90">
+                                Explore platform
+                              </Button>
               </Link>
             </>
           )}

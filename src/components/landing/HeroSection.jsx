@@ -38,11 +38,12 @@ export default function HeroSection() {
   return (
     <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">
 
+      {/* Ambient glows */}
+      <div className="absolute -top-24 -left-24 w-[46rem] h-[46rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.35] pointer-events-none" />
+      <div className="absolute -bottom-20 -right-20 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.35] pointer-events-none" />
       {/* Grid background */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: "linear-gradient(hsl(0 0% 0% / 0.025) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 0% / 0.025) 1px, transparent 1px)",
-        backgroundSize: "48px 48px",
-      }} />
+      <div className="absolute inset-0 pointer-events-none dot-grid" />
+      <div className="noise-soft" />
 
       {/* Parallax watermark */}
       <motion.div
@@ -62,7 +63,7 @@ export default function HeroSection() {
                 animate={{ scale: [1, 1.5, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               />
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">For Lifestyle Commerce</span>
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">Infrastructure for independent brands</span>
             </motion.div>
 
             <motion.p variants={fadeUp} className="text-sm text-muted-foreground/60 mb-3 max-w-[480px] mx-auto text-center lg:text-left">
@@ -73,14 +74,14 @@ export default function HeroSection() {
               variants={fadeUp}
               className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-3 text-center lg:text-left"
             >
-              Turn your infrastructure<br />into an advantage.
+              Independent brands. One <br /><span className="text-saas-gradient">infrastructure</span> layer.
             </motion.h1>
 
             <motion.p
               variants={fadeUp}
-              className="text-[clamp(1.2rem,3vw,1.8rem)] font-black text-green-600 mb-6 tracking-[-0.02em] text-center lg:text-left"
+              className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-6 tracking-[-0.01em] text-center lg:text-left"
             >
-              Unlock the rates your scale should give you.
+              CAMBRA helps independent brands unlock better terms, reduce costs, and grow with confidence.
             </motion.p>
 
             <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-8 max-w-[520px] mx-auto text-center lg:text-left">
@@ -116,43 +117,28 @@ export default function HeroSection() {
             {/* CTAs */}
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
             aria-label="Primary calls to action">
-              {isAuthenticated ? (
-                <>
-                  <Link to="/Analyzer" className="flex-1 sm:flex-none">
-                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5">
-                        Start now — free analysis <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </motion.div>
-                  </Link>
-                  <Link to="/Dashboard" className="flex-1 sm:flex-none">
-                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-medium bg-background text-foreground border-border/60 hover:border-foreground/20">
-                        Go to Dashboard <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </motion.div>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/Analyzer" className="flex-1 sm:flex-none">
-                    <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                      <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5">
-                        Start now — free analysis <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </motion.div>
-                  </Link>
-                  <motion.a
-                    whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                    href="/auth/start"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium bg-background text-foreground border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2"
-                  >
-                    Sign in <ArrowRight className="h-4 w-4" />
-                  </motion.a>
-                </>
-              )}
+              <Link to="/Onboarding" className="flex-1 sm:flex-none">
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5">
+                    Book a demo <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+              </Link>
+              <motion.a
+                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                href="#how"
+                className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-medium bg-background text-foreground border border-border/60 hover:border-foreground/20 transition-colors inline-flex items-center justify-center gap-2"
+              >
+                Explore platform <ArrowRight className="h-4 w-4" />
+              </motion.a>
+            </motion.div>
+
+            {/* Trusted strip */}
+            <motion.div variants={fadeUp} className="mt-10 opacity-70">
+              <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/60 mb-3">Trusted by independent brands</p>
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm text-muted-foreground/60">
+                <span>Aēsop</span><span>SKIMS</span><span>BYREDO</span><span>AMI</span><span>Carhartt</span><span>Rhude</span>
+              </div>
             </motion.div>
 
 

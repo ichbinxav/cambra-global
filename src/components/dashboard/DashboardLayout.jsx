@@ -33,7 +33,7 @@ export default function DashboardLayout() {
   return (
     <div className="min-h-screen flex bg-background font-inter">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-56 border-r border-border/40 shrink-0 bg-background/98">
+      <aside className="hidden lg:flex flex-col w-56 border-r border-border/30 shrink-0 bg-card/95 backdrop-blur-xl shadow-sm">
         <div className="px-5 h-14 flex items-center border-b border-border/40">
           <Link to="/" className="text-sm font-black tracking-tight group flex items-center gap-1.5">
             CAMBRA

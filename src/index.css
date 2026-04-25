@@ -91,10 +91,16 @@
 .results-dark { background: #0a0a0a; }
 .results-dark .card-dark { background: #1a1a1a; border: 1px solid #333; }
 
-/* SaaS gradient + glass (CAMBRA) */
+/* CAMBRA surfaces + gradients */
 .bg-saas-gradient { background: linear-gradient(135deg, #C7B9FF 0%, #A7F3D0 100%); }
 .text-saas-gradient { background: linear-gradient(135deg, #C7B9FF 0%, #A7F3D0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.glass { background: hsl(var(--card) / 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid hsl(var(--border) / 0.6); }
+.glass { background: hsl(var(--card) / 0.65); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid hsl(var(--border) / 0.6); }
+
+/* Ambient glows & patterns */
+.bg-ambient-lilac { background: radial-gradient(closest-side, rgba(199,185,255,0.9) 0%, rgba(199,185,255,0.0) 60%); }
+.bg-ambient-mint { background: radial-gradient(closest-side, rgba(167,243,208,0.9) 0%, rgba(167,243,208,0.0) 60%); }
+.dot-grid { background-image: linear-gradient(hsl(0 0% 0% / 0.025) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 0% / 0.025) 1px, transparent 1px); background-size: 48px 48px; }
+.noise-soft { position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(rgba(0,0,0,0.02) 1px, transparent 1px); background-size: 3px 3px; mix-blend-mode: multiply; }
 
 /* Premium gradient text */
 .gradient-text {

@@ -14,7 +14,7 @@ import FooterSection from "@/components/landing/FooterSection";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-background font-inter">
+    <div className="min-h-screen bg-background font-inter relative">
 
       <Navbar />
       <main className="sm:text-center md:text-center lg:text-left">
