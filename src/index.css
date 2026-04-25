@@ -162,6 +162,43 @@
 .lock-blur .no-blur .sensitive { filter: none !important; }
 
 /* Typography weight normalization — tech-smart */
+
+/* CAMBRA premium landing utilities (page-scoped, non-global theme) */
+.bg-paper {
+  background:
+    radial-gradient(1400px 800px at 10% -10%, #f7f3ee 0%, rgba(255,255,255,0) 50%),
+    linear-gradient(180deg, #faf8f5 0%, #f6f4f1 60%, #f3f1ee 100%);
+}
+.text-ink { color: #0e1420; }
+.text-cobalt { color: #244c8a; }
+.border-stone { border-color: #e7e4df; }
+
+.card-premium {
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(14,20,32,0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 rgba(14,20,32,0.05), 0 8px 30px rgba(14,20,32,0.05);
+  border-radius: var(--radius);
+}
+
+.btn-institutional {
+  background: #0e1420;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 20px rgba(14,20,32,0.18);
+}
+.btn-institutional:hover { background: #152033; }
+.btn-institutional:focus-visible { outline: 2px solid rgba(36,76,138,0.35); outline-offset: 2px; }
+
+/* Hex / orbit helpers */
+.hex-stroke { stroke: rgba(36,76,138,0.28); }
+.node-dot { fill: #244c8a; opacity: .6; }
+@keyframes orbit-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.orbit-slow { animation: orbit-slow 40s linear infinite; }
+
+/* Hex frame utility for icon containers */
+.hex-frame { clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); display:flex; align-items:center; justify-content:center; border:1px solid rgba(14,20,32,0.08); box-shadow: 0 1px 0 rgba(14,20,32,0.04); }
 .font-black { font-weight: 700 !important; }
 .font-extrabold { font-weight: 700 !important; }
 .font-bold { font-weight: 600 !important; }

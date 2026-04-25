@@ -66,7 +66,7 @@ export default function AnalyzerCTA() {
             initial={{ opacity: 0, x: 50 }}
             animate={rightInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm"
+            className="card-premium overflow-hidden shadow-sm"
           >
             <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between">
               <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/60">Sample analysis — €500K brand</span>
