@@ -22,6 +22,40 @@ export default function OnboardingLayout({ children, activeTab, onTabChange, sta
         </div>
       </div>
 
+      <div className="p-3 rounded-xl border border-border/60 bg-secondary/40">
+        <p className="text-xs text-muted-foreground mb-2">
+          Para completar el onboarding, navega por las 4 pestañas y rellena la información en cada una.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {[
+            { key: 'general', label: 'General', icon: Building2 },
+            { key: 'payments', label: 'Payments', icon: CreditCard },
+            { key: 'shipping', label: 'Shipping', icon: Truck },
+            { key: 'saas', label: 'SaaS', icon: Package },
+          ].map(s => {
+            const percent = s.key === 'general' ? (statuses?.general?.completeness ?? 0) : (statuses?.[s.key]?.completeness ?? 0);
+            const done = percent >= 70;
+            const Icon = s.icon;
+            return (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => onTabChange(s.key)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border transition-colors text-xs ${activeTab===s.key ? 'border-foreground text-foreground bg-background' : 'border-border/60 text-muted-foreground hover:border-foreground/30 hover:text-foreground'}`}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Icon className="h-3.5 w-3.5" />
+                  <span>{s.label}</span>
+                </span>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${done ? 'bg-green-500/10 border-green-500/30 text-green-600' : 'bg-secondary/60 border-border/60 text-muted-foreground'}`}>
+                  {percent || 0}%
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <Tabs value={activeTab} onValueChange={onTabChange}>
         <TabsList>
           <TabsTrigger value="general"><span className="inline-flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /><span>General</span></span></TabsTrigger>
