@@ -30,9 +30,9 @@ module.exports = {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         chart: {
-          '1': 'hsl(215, 100%, 50%)',
-          '2': 'hsl(142, 76%, 36%)',
-          '3': 'hsl(25, 95%, 53%)',
+          '1': '#7C6CFF',      // lilac
+          '2': '#2FC9A6',      // mint
+          '3': '#5B3A83',      // plum
           '4': 'hsl(var(--muted-foreground))',
           '5': 'hsl(var(--border))',
         },

@@ -126,6 +126,11 @@
 .bg-cambra-plum-soft { background-color: rgba(91,58,131,0.10); }
 .bg-cambra-plum { background-color: #5B3A83; }
 
+/* Map legacy utility colors to CAMBRA palette */
+.text-blue-600 { color: #7C6CFF !important; }
+.text-green-600 { color: #2FC9A6 !important; }
+.text-orange-500 { color: #5B3A83 !important; }
+
 /* Letter spacing utilities */
 .tracking-editorial { letter-spacing: -0.04em; }
 

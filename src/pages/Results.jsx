@@ -17,24 +17,24 @@ import { jsPDF } from "jspdf";
 
 /* ── static data ─────────────────────────────────────────────── */
 const BREAKDOWN_META = [
-  { key: "payment_savings", label: "Payments", icon: CreditCard, color: "#3b82f6", bg: "bg-blue-500/[0.06] border-blue-500/15", textColor: "text-blue-600",
+  { key: "payment_savings", label: "Payments", icon: CreditCard, color: "#7C6CFF", bg: "bg-cambra-lilac-soft border-cambra-lilac", textColor: "text-cambra-lilac",
     detail: r => r.details?.payment_current_rate
       ? `${r.details.payment_current_rate.toFixed(1)}% current → ${r.details.payment_optimal_rate?.toFixed(1) ?? "1.4"}% network target`
       : "Efficiency improvement available" },
-  { key: "shipping_savings", label: "Shipping", icon: Truck, color: "#22c55e", bg: "bg-green-500/[0.06] border-green-500/15", textColor: "text-green-600",
+  { key: "shipping_savings", label: "Shipping", icon: Truck, color: "#2FC9A6", bg: "bg-cambra-mint-soft border-cambra-mint", textColor: "text-cambra-mint",
     detail: r => r.details?.shipping_current_avg
       ? `€${r.details.shipping_current_avg.toFixed(2)}/shipment → €${r.details.shipping_optimal_avg?.toFixed(2) ?? "5.20"} collective rate`
       : "Volume-based cost reduction available" },
-  { key: "saas_savings", label: "SaaS & Tools", icon: Package, color: "#f97316", bg: "bg-orange-500/[0.06] border-orange-500/15", textColor: "text-orange-500",
+  { key: "saas_savings", label: "SaaS & Tools", icon: Package, color: "#5B3A83", bg: "bg-cambra-plum-soft border-cambra-plum", textColor: "text-cambra-plum",
     detail: r => r.details?.saas_current_total
       ? `€${r.details.saas_current_total.toLocaleString()}/mo current → €${r.details.saas_optimal_total?.toLocaleString() ?? "—"} via group licenses`
       : "Stack consolidation efficiency available" },
 ];
 
 const DEALS = [
-  { title: "Network payment rate", desc: "1.4% effective fee — pre-negotiated at collective volume", saving: "Up to −52%", cat: "Payments", textColor: "text-blue-600", bg: "bg-blue-500/[0.05] border-blue-500/15" },
-  { title: "Collective shipping contracts", desc: "Enterprise carrier rates without enterprise volume", saving: "−18% avg.", cat: "Shipping", textColor: "text-green-600", bg: "bg-green-500/[0.05] border-green-500/15" },
-  { title: "SaaS group licenses", desc: "Shared contracts on Klaviyo, Gorgias, Shopify and more", saving: "Up to −30%", cat: "SaaS", textColor: "text-orange-500", bg: "bg-orange-500/[0.05] border-orange-500/15" },
+  { title: "Network payment rate", desc: "1.4% effective fee — pre-negotiated at collective volume", saving: "Up to −52%", cat: "Payments", textColor: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac" },
+  { title: "Collective shipping contracts", desc: "Enterprise carrier rates without enterprise volume", saving: "−18% avg.", cat: "Shipping", textColor: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint" },
+  { title: "SaaS group licenses", desc: "Shared contracts on Klaviyo, Gorgias, Shopify and more", saving: "Up to −30%", cat: "SaaS", textColor: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum" },
 ];
 
 const RECS = [
@@ -145,7 +145,7 @@ export default function Results() {
   );
 
   const score = scoreReport?.total ?? result.infra_score ?? 0;
-  const scoreColor = scoreReport?.scoreColor ?? (score >= 80 ? "#22c55e" : score >= 60 ? "#f97316" : "#3b82f6");
+  const scoreColor = scoreReport?.scoreColor ?? (score >= 80 ? "#2FC9A6" : score >= 60 ? "#5B3A83" : "#7C6CFF");
   const scoreLabel = scoreReport?.label ?? (score >= 60 ? "Efficient" : score >= 40 ? "Optimization opportunity detected" : "High optimization potential");
   const isEstimated = !scoreReport || scoreReport.dataQuality === "manual";
 
@@ -348,8 +348,8 @@ export default function Results() {
 
         {/* ═══ 2. ACCURACY NOTICE ══════════════════════════════════ */}
         {isEstimated && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl border border-orange-500/20 bg-orange-500/[0.04]">
-            <AlertTriangle size={16} className="text-orange-500 shrink-0 mt-0.5 sm:mt-0" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl border border-cambra-plum bg-cambra-plum-soft">
+            <AlertTriangle size={16} className="text-cambra-plum shrink-0 mt-0.5 sm:mt-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold">Using estimated data</p>
               <p className="text-xs text-muted-foreground/60 mt-0.5">This analysis uses your manual inputs. Connect your tools or upload statements to unlock precise, verified savings figures.</p>
@@ -494,7 +494,7 @@ export default function Results() {
                 <span className="text-xs text-muted-foreground/60">{row.metric}</span>
                 <span className="text-xs font-bold tabular-nums text-center">{row.yours}</span>
                 <span className="text-xs text-muted-foreground/35 tabular-nums text-center">{row.network}</span>
-                <span className={`text-xs font-bold text-right tabular-nums ${row.bad ? "text-orange-500" : "text-green-600"}`}>{row.gap}</span>
+                <span className={`text-xs font-bold text-right tabular-nums ${row.bad ? "text-cambra-plum" : "text-cambra-mint"}`}>{row.gap}</span>
               </div>
             ))}
           </div>
