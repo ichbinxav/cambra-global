@@ -25,7 +25,7 @@ export default function HeroSection_Public() {
   const watermarkY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">
+    <section ref={ref} className="relative min-h-[72vh] md:min-h-screen flex items-start justify-start overflow-hidden">
       {/* Ambient glows */}
       <div className="absolute -top-24 -left-24 w-[46rem] h-[46rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.35] pointer-events-none" />
       <div className="absolute -bottom-20 -right-20 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.35] pointer-events-none" />
@@ -40,11 +40,11 @@ export default function HeroSection_Public() {
         className="absolute bottom-6 right-6 w-40 sm:w-52 md:w-64 lg:w-80 opacity-[0.06] pointer-events-none select-none"
       />
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-20">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-12 md:py-16 lg:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 lg:gap-16 items-center">
           {/* LEFT */}
           <motion.div variants={container} initial={false} animate="show" className="text-center md:text-center lg:text-left">
-            <motion.div initial={false} variants={fadeUp} className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
+            <motion.div initial={false} variants={fadeUp} className="inline-flex items-center gap-2 mb-6 md:mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
               <motion.span
                 className="w-1.5 h-1.5 rounded-full bg-cambra-mint"
                 animate={{ scale: [1, 1.5, 1] }}
@@ -53,21 +53,21 @@ export default function HeroSection_Public() {
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">Infrastructure for independent brands</span>
             </motion.div>
 
-            <motion.h1 initial={false} className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-3 text-center lg:text-left">
+            <motion.h1 initial={false} className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-2 md:mb-3 text-center lg:text-left">
               Independent brands. <span className="text-saas-gradient">Collective leverage.</span>
             </motion.h1>
 
             <motion.p initial={false} className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-2 tracking-[-0.01em] text-center lg:text-left">
               CAMBRA helps independent commerce brands improve operating margins through better infrastructure terms across payments, shipping, SaaS and operational providers.
             </motion.p>
-            <motion.p initial={false} className="text-base text-foreground/70 leading-relaxed mb-4 max-w-[620px] mx-auto text-center lg:text-left">
+            <motion.p initial={false} className="text-base text-foreground/70 leading-relaxed mb-3 md:mb-4 max-w-[620px] mx-auto text-center lg:text-left">
               We analyze your current stack, surface where money leaks, and activate better conditions through our collective network — fast, with minimal change management.
             </motion.p>
-            <motion.p initial={false} className="text-base text-foreground/70 leading-relaxed mb-4 max-w-[620px] mx-auto text-center lg:text-left">
+            <motion.p initial={false} className="text-base text-foreground/70 leading-relaxed mb-3 md:mb-4 max-w-[620px] mx-auto text-center lg:text-left">
               Starting with payments, shipping and SaaS.
             </motion.p>
 
-            <motion.ul initial={false} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-6">
+            <motion.ul initial={false} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-4 md:mb-6">
               {BULLETS.slice(0, 3).map((b, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground/85">
                   <CheckCircle2 className="h-4 w-4 text-chart-2 mt-0.5" />

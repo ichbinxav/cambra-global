@@ -27,7 +27,7 @@ export default function Landing() {
         </div>
       </header>
 
-      <main className="sm:text-center md:text-center lg:text-left pt-14">
+      <main className="sm:text-center md:text-center lg:text-left">
         <HeroSection_Public />
         <CredibilitySection />
         <ValuePropositionSection />
