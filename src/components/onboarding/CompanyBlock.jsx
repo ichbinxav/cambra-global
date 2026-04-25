@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import CountrySelect from '@/components/inputs/CountrySelect';
 import { Building2, Mail, Globe, MapPin, Tag, Instagram, Linkedin, Twitter, Youtube, Music2, CheckCircle2 } from 'lucide-react';
 
 export default function CompanyBlock(){
@@ -97,10 +98,7 @@ export default function CompanyBlock(){
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="brand-country">Country</Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-              <Input id="brand-country" className="pl-9" placeholder="Spain" value={brand.country||''} onChange={e=>setBrand({...brand, country: e.target.value})} />
-            </div>
+            <CountrySelect value={brand.country || ''} onChange={(val)=> setBrand({...brand, country: val})} />
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="brand-category">Category</Label>
