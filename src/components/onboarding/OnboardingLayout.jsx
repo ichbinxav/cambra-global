@@ -12,11 +12,11 @@ export default function OnboardingLayout({ children, activeTab, onTabChange, sta
     <div className="p-5 space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-black tracking-tight">Onboarding por vertical</h1>
-          <p className="text-xs text-muted-foreground">Completa los bloques clave para mejorar el análisis y las recomendaciones.</p>
+          <h1 className="text-2xl font-black tracking-tight">Onboarding</h1>
+          <p className="text-xs text-muted-foreground">Complete the key blocks to improve the analysis and recommendations.</p>
         </div>
         <div className="w-56">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1"><span>Progreso global</span><span>{overall}%</span></div>
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1"><span>Overall progress</span><span>{overall}%</span></div>
           <Progress value={overall} />
         </div>
       </div>
