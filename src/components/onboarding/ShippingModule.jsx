@@ -3,7 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import MissingDataChips from './MissingDataChips';
-import TagChipsInput from './TagChipsInput';
+import MultiComboBox from '@/components/inputs/MultiComboBox';
+import { COUNTRIES } from '@/components/inputs/CountrySelect';
 
 export default function ShippingModule(){
   const [brandId, setBrandId] = useState(null);
@@ -56,11 +57,11 @@ export default function ShippingModule(){
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <TagChipsInput label="Carriers" values={item.carriers||[]} onChange={(vals)=>setItem({...item, carriers: vals})} placeholder="Add carrier" suggestions={["DHL","UPS","FedEx","GLS","Royal Mail"]} />
+        <MultiComboBox label="Carriers" values={item.carriers||[]} onChange={(vals)=>setItem({...item, carriers: vals})} options={["DHL","UPS","FedEx","DPD","PostNL","Royal Mail","Evri","GLS","Colissimo","Chronopost"]} />
         <Input placeholder="Model (aggregator/direct)" value={item.modelo||''} onChange={e=>setItem({...item, modelo: e.target.value})} />
         <Input placeholder="3PL (true/false)" value={String(item.three_pl||'')} onChange={e=>setItem({...item, three_pl: e.target.value==='true'})} />
         <Input placeholder="In-house (true/false)" value={String(item.in_house||'')} onChange={e=>setItem({...item, in_house: e.target.value==='true'})} />
-        <TagChipsInput label="Served countries" values={item.paises_serv||[]} onChange={(vals)=>setItem({...item, paises_serv: vals})} placeholder="Add country" />
+        <MultiComboBox label="Served countries" values={item.paises_serv||[]} onChange={(vals)=>setItem({...item, paises_serv: vals})} options={COUNTRIES} />
         <Input type="number" placeholder="Domestic share % (0-100)" value={item.domestic_vs_intl||''} onChange={e=>setItem({...item, domestic_vs_intl: Number(e.target.value)})} />
         <Input type="number" placeholder="Monthly orders" value={item.pedidos_mensuales||''} onChange={e=>setItem({...item, pedidos_mensuales: Number(e.target.value)})} />
         <Input type="number" step="0.01" placeholder="Avg weight (kg)" value={item.avg_weight||''} onChange={e=>setItem({...item, avg_weight: Number(e.target.value)})} />

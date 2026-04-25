@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import MissingDataChips from './MissingDataChips';
 import TagChipsInput from './TagChipsInput';
+import ComboBox from '@/components/inputs/ComboBox';
+import MultiComboBox from '@/components/inputs/MultiComboBox';
+import { COUNTRIES } from '@/components/inputs/CountrySelect';
 
 export default function PaymentsModule(){
   const [brandId, setBrandId] = useState(null);
@@ -66,27 +69,33 @@ export default function PaymentsModule(){
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Input placeholder="Current PSP (e.g. Stripe)" value={item.psp_actual||''} onChange={e=>setItem({...item, psp_actual: e.target.value})} />
+        <ComboBox
+          label="Payment provider"
+          value={item.psp_actual||''}
+          onChange={(v)=>setItem({...item, psp_actual: v})}
+          options={["Stripe","Adyen","Mollie","PayPal","Klarna","Square","Braintree","Worldpay","Checkout.com","Shopify Payments"]}
+          allowCustom
+        />
         <Input type="number" step="0.01" placeholder="Blended rate %" value={item.blended_rate||''} onChange={e=>setItem({...item, blended_rate: Number(e.target.value)})} />
-        <TagChipsInput
+        <MultiComboBox
           label="Sales channels"
           values={item.canales||[]}
           onChange={(vals)=>setItem({...item, canales: vals})}
-          placeholder="Add channel (online, in_store, omni)"
-          suggestions={["online","in_store","omni"]}
+          options={["online","in_store","omni"]}
+          allowCustom={false}
         />
-        <TagChipsInput
+        <MultiComboBox
           label="Countries"
           values={item.paises||[]}
           onChange={(vals)=>setItem({...item, paises: vals})}
-          placeholder="Add country code or name"
+          options={COUNTRIES}
         />
-        <TagChipsInput
+        <MultiComboBox
           label="Currencies"
           values={item.monedas||[]}
           onChange={(vals)=>setItem({...item, monedas: vals})}
-          placeholder="Add currency (EUR, USD, ...)"
-          suggestions={["EUR","USD","GBP"]}
+          options={["EUR","USD","GBP","AUD","CAD","SEK","NOK","DKK","CHF","JPY"]}
+          allowCustom
         />
         <Input type="number" placeholder="Monthly volume (€)" value={item.vol_mensual||''} onChange={e=>setItem({...item, vol_mensual: Number(e.target.value)})} />
         <Input type="number" placeholder="Monthly transactions" value={item.tx_mensuales||''} onChange={e=>setItem({...item, tx_mensuales: Number(e.target.value)})} />

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import MissingDataChips from './MissingDataChips';
 import TagChipsInput from './TagChipsInput';
 import KeyValueListInput from './KeyValueListInput';
+import MultiComboBox from '@/components/inputs/MultiComboBox';
 
 export default function SaasModule(){
   const [brandId, setBrandId] = useState(null);
@@ -58,7 +59,7 @@ export default function SaasModule(){
         <Input placeholder="Support" value={item.soporte||''} onChange={e=>setItem({...item, soporte: e.target.value})} />
         <Input placeholder="Analytics" value={item.analytics||''} onChange={e=>setItem({...item, analytics: e.target.value})} />
         <Input placeholder="Subscriptions / Payments" value={item.subs_payments||''} onChange={e=>setItem({...item, subs_payments: e.target.value})} />
-        <TagChipsInput label="Extras (search, reviews, loyalty)" values={item.extras||[]} onChange={(vals)=>setItem({...item, extras: vals})} placeholder="Add extra tool" />
+        <MultiComboBox label="Extras (search, reviews, loyalty)" values={item.extras||[]} onChange={(vals)=>setItem({...item, extras: vals})} options={["Algolia","Searchanise","Yotpo","Reviews.io","Judge.me","Stamped","LoyaltyLion","Smile.io"]} />
         <KeyValueListInput label="Monthly spend by tool" entries={item.gasto_mensual_map||{}} onChange={(obj)=>setItem({...item, gasto_mensual_map: obj})} keyPlaceholder="Tool" valuePlaceholder="€ per month" />
         <KeyValueListInput label="Renewals" entries={item.renovaciones_map||{}} onChange={(obj)=>setItem({...item, renovaciones_map: obj})} keyPlaceholder="Tool" valuePlaceholder="YYYY-MM-DD" />
         <KeyValueListInput label="Contract type" entries={item.contrato_map||{}} onChange={(obj)=>setItem({...item, contrato_map: obj})} keyPlaceholder="Tool" valuePlaceholder="monthly/annual" />
