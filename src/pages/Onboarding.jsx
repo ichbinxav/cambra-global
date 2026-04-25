@@ -32,13 +32,22 @@ export default function Onboarding(){
         </div>
       </TabsContent>
       <TabsContent value="payments">
-        <PaymentsModule />
+        <div className="space-y-6">
+          <OnboardingHero />
+          <PaymentsModule />
+        </div>
       </TabsContent>
       <TabsContent value="shipping">
-        <ShippingModule />
+        <div className="space-y-6">
+          <OnboardingHero />
+          <ShippingModule />
+        </div>
       </TabsContent>
       <TabsContent value="saas">
-        <SaasModule />
+        <div className="space-y-6">
+          <OnboardingHero />
+          <SaasModule />
+        </div>
       </TabsContent>
     </OnboardingLayout>
   );
