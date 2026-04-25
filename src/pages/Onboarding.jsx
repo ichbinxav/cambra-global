@@ -3,7 +3,6 @@ import { TabsContent } from '@/components/ui/tabs';
 import OnboardingLayout from '@/components/onboarding/OnboardingLayout';
 import OnboardingHero from '@/components/onboarding/OnboardingHero.jsx';
 import StepGrid from '@/components/onboarding/StepGrid.jsx';
-import CompanyBlock from '@/components/onboarding/CompanyBlock';
 import PaymentsModule from '@/components/onboarding/PaymentsModule';
 import ShippingModule from '@/components/onboarding/ShippingModule';
 import SaasModule from '@/components/onboarding/SaasModule';
@@ -21,13 +20,6 @@ export default function Onboarding(){
     setStatuses(res.data?.statuses || {});
   };
 
-  const handleScrollToProfile = () => {
-    setTab('general');
-    setTimeout(() => {
-      const el = document.getElementById('brand-profile');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 0);
-  };
 
   useEffect(()=>{ load(); },[]);
 
@@ -36,10 +28,7 @@ export default function Onboarding(){
       <TabsContent value="general">
         <div className="space-y-6">
           <OnboardingHero />
-          <StepGrid onScrollToProfile={handleScrollToProfile} />
-          <div id="brand-profile">
-            <CompanyBlock />
-          </div>
+          <StepGrid />
         </div>
       </TabsContent>
       <TabsContent value="payments">
