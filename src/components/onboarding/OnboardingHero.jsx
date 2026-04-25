@@ -59,7 +59,7 @@ export default function OnboardingHero() {
 
           {/* Faux progress tiles */}
           <div className="grid grid-cols-3 gap-2">
-            {[{label:'Analyzer', color:'text-cambra-lilac', bg:'bg-cambra-lilac-soft border-cambra-lilac'}, {label:'Data', color:'text-cambra-mint', bg:'bg-cambra-mint-soft border-cambra-mint'}, {label:'Profile', color:'text-cambra-plum', bg:'bg-cambra-plum-soft border-cambra-plum'}].map((t, i)=> (
+            {[{label:'Brand', color:'text-cambra-plum', bg:'bg-cambra-plum-soft border-cambra-plum'}, {label:'Analyzer', color:'text-cambra-lilac', bg:'bg-cambra-lilac-soft border-cambra-lilac'}, {label:'Connect', color:'text-cambra-mint', bg:'bg-cambra-mint-soft border-cambra-mint'}].map((t, i)=> (
               <motion.div
                 key={t.label}
                 initial={{ opacity: 0, y: 10 }}
