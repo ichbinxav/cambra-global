@@ -78,11 +78,7 @@ function BenefitTile({ b, index }) {
     >
       {/* Accent blob */}
       <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-[0.06] bg-foreground" />
-      <img
-        src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png"
-        alt=""
-        className="absolute -bottom-6 -right-6 w-20 opacity-[0.06] pointer-events-none select-none rounded-lg"
-      />
+
 
       <div className="flex items-start gap-3 mb-3">
         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border bg-foreground/90 text-background`}>

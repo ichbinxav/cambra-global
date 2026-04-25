@@ -45,13 +45,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 pointer-events-none dot-grid" />
       <div className="noise-soft" />
 
-      {/* Parallax watermark — subtle logo */}
-      <motion.img
-        src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png"
-        alt=""
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] max-w-[720px] opacity-[0.05] pointer-events-none select-none rounded-3xl"
-        style={{ y: watermarkY }}
-      />
+
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 lg:gap-16 items-center">

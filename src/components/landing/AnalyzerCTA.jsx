@@ -66,9 +66,8 @@ export default function AnalyzerCTA() {
             initial={{ opacity: 0, x: 50 }}
             animate={rightInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="relative rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm"
+            className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm"
           >
-            <img src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png" alt="" className="pointer-events-none select-none absolute -bottom-4 -right-4 w-24 opacity-[0.05]" />
             <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between">
               <span className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/60">Sample analysis — €500K brand</span>
               <div className="w-2 h-2 rounded-full bg-cambra-mint" />
