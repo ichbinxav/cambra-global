@@ -50,7 +50,7 @@ import Snapshot from '@/pages/Snapshot';
 import AdminInvoices from '@/pages/admin/AdminInvoices';
 import Invoices from '@/pages/Invoices';
 import Vault from '@/pages/Vault';
-
+import BrandGlyph from '@/components/shared/BrandGlyph';
 
 
 
@@ -64,7 +64,10 @@ const ProtectedRoute = ({ children }) => {
   if (isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
+        <div className="h-8 w-8" style={{ animation: 'spin 4s linear infinite' }}>
+          <BrandGlyph className="h-8 w-8" />
+        </div>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -107,7 +110,10 @@ const AdminRoute = ({ children }) => {
   if (isLoadingAuth || loadingUser) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
+        <div className="h-8 w-8" style={{ animation: 'spin 4s linear infinite' }}>
+          <BrandGlyph className="h-8 w-8" />
+        </div>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -134,13 +140,11 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
-    // redacted debug log removed for security
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center bg-background" role="status" aria-live="polite">
-        <div
-          className="text-5xl text-foreground select-none"
-          style={{ animation: "spin 4s linear infinite" }}
-        >✱</div>
+        <div className="h-12 w-12 text-foreground/90" style={{ animation: 'spin 4s linear infinite' }}>
+          <BrandGlyph className="h-12 w-12" />
+        </div>
         <p className="mt-3 text-sm text-foreground/70">Loading…</p>
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
