@@ -46,9 +46,11 @@ export default function HeroSection() {
       <div className="absolute inset-0 pointer-events-none dot-grid" />
       <div className="noise-soft" />
 
-      {/* Centered brand C glyph */}
+      {/* Centered brand C glyph (favicon style) */}
       <div className="absolute top-24 md:top-28 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
-        <BrandGlyph className="h-10 w-10 opacity-85" />
+        <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl border border-border/60 bg-card/90 backdrop-blur-sm shadow-sm flex items-center justify-center">
+          <BrandGlyph className="h-6 w-6 opacity-95" />
+        </div>
       </div>
 
       {/* Single subtle watermark (Landing only) */}
