@@ -79,7 +79,7 @@ function BenefitTile({ b, index }) {
       {/* Accent blob */}
       <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-[0.06] bg-foreground" />
       <img
-        src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/ba8e6e2a7_9C75B759-EDEE-4257-B939-9FC1DC208571.png"
+        src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png"
         alt=""
         className="absolute -bottom-6 -right-6 w-20 opacity-[0.06] pointer-events-none select-none rounded-lg"
       />
