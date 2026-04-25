@@ -11,17 +11,17 @@ export default function BrandProfile() {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border/40 px-5 py-3.5">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <Link to="/Onboarding" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-            <ArrowLeft size={14} /> Volver
+            <ArrowLeft size={14} /> Back
           </Link>
-          <h1 className="ml-auto text-base font-bold">Perfil de marca</h1>
+          <h1 className="ml-auto text-base font-bold">Brand Profile</h1>
         </div>
       </div>
 
       {/* Body */}
       <div className="max-w-3xl mx-auto px-5 py-6 space-y-6">
         <div className="p-5 rounded-2xl border border-border/50 bg-card">
-          <h2 className="text-xl font-black tracking-[-0.02em] mb-1">Cuéntanos sobre tu marca</h2>
-          <p className="text-sm text-muted-foreground/70">Nombre, país, categoría y datos básicos para personalizar tu análisis.</p>
+          <h2 className="text-xl font-black tracking-[-0.02em] mb-1">Tell us about your brand</h2>
+          <p className="text-sm text-muted-foreground/70">Name, country, category, and basics to personalize your analysis.</p>
         </div>
 
         {/* Brand form */}

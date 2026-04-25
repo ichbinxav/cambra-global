@@ -44,18 +44,18 @@ export default function CompanyBlock(){
       if (brand?.id) {
         const updated = await base44.entities.Brand.update(brand.id, payload);
         setBrand(updated);
-        alert('Guardado');
+        alert('Saved');
       } else {
         const created = await base44.entities.Brand.create(payload);
         setBrand(created);
-        alert('Perfil creado');
+        alert('Profile created');
       }
     } finally {
       setSaving(false);
     }
   };
 
-  if (!brand) return <div className="py-10 text-sm text-muted-foreground">Cargando…</div>;
+  if (!brand) return <div className="py-10 text-sm text-muted-foreground">Loading…</div>;
 
   return (
     <div className="space-y-4">
@@ -70,15 +70,15 @@ export default function CompanyBlock(){
           <div className="w-7 h-7 rounded-lg bg-foreground text-background flex items-center justify-center">
             <Building2 className="w-4 h-4" />
           </div>
-          <p className="text-sm font-semibold">Identidad de la marca</p>
+          <p className="text-sm font-semibold">Brand identity</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="brand-name">Nombre</Label>
+            <Label htmlFor="brand-name">Name</Label>
             <div className="relative">
               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-              <Input id="brand-name" className="pl-9" placeholder="Nombre de la marca" value={brand.name||''} onChange={e=>setBrand({...brand, name: e.target.value})} />
+              <Input id="brand-name" className="pl-9" placeholder="Brand name" value={brand.name||''} onChange={e=>setBrand({...brand, name: e.target.value})} />
             </div>
           </div>
           <div className="space-y-1.5">
@@ -96,14 +96,14 @@ export default function CompanyBlock(){
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="brand-country">País</Label>
+            <Label htmlFor="brand-country">Country</Label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-              <Input id="brand-country" className="pl-9" placeholder="España" value={brand.country||''} onChange={e=>setBrand({...brand, country: e.target.value})} />
+              <Input id="brand-country" className="pl-9" placeholder="Spain" value={brand.country||''} onChange={e=>setBrand({...brand, country: e.target.value})} />
             </div>
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="brand-category">Categoría</Label>
+            <Label htmlFor="brand-category">Category</Label>
             <div className="relative">
               <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
               <Input id="brand-category" className="pl-9" placeholder="fashion / beauty / home / tech ..." value={brand.category||''} onChange={e=>setBrand({...brand, category: e.target.value})} />
@@ -112,8 +112,8 @@ export default function CompanyBlock(){
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="brand-bio">Biografía / Descripción</Label>
-          <Textarea id="brand-bio" className="min-h-[110px]" placeholder="Cuéntanos sobre la marca, misión, producto..." value={brand.bio||''} onChange={e=>setBrand({...brand, bio: e.target.value})} />
+          <Label htmlFor="brand-bio">Bio / Description</Label>
+          <Textarea id="brand-bio" className="min-h-[110px]" placeholder="Tell us about your brand, mission, product..." value={brand.bio||''} onChange={e=>setBrand({...brand, bio: e.target.value})} />
         </div>
       </motion.div>
 
@@ -124,7 +124,7 @@ export default function CompanyBlock(){
         transition={{ duration: 0.4, delay: 0.05 }}
         className="p-5 rounded-2xl border border-border/50 bg-secondary/10 space-y-3 hover:bg-secondary/20 transition-colors"
       >
-        <p className="text-xs font-semibold text-muted-foreground">Redes sociales (opcionales)</p>
+        <p className="text-xs font-semibold text-muted-foreground">Social links (optional)</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="relative">
             <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cambra-plum" />
@@ -158,13 +158,13 @@ export default function CompanyBlock(){
       >
         <div className="flex items-center gap-2">
           <Checkbox id="accept" checked={!!brand.accept_terms} onCheckedChange={(v)=>setBrand({...brand, accept_terms: !!v})} />
-          <Label htmlFor="accept" className="text-sm">Acepto los <a href="/Terms" target="_blank" className="underline">términos y condiciones</a></Label>
+          <Label htmlFor="accept" className="text-sm">I accept the <a href="/Terms" target="_blank" className="underline">terms and conditions</a></Label>
         </div>
         <div className="flex gap-2">
           <Button onClick={saveOrCreate} disabled={saving} className="gap-2">
-            <CheckCircle2 className="w-4 h-4" /> {saving ? 'Guardando…' : (brand?.id ? 'Guardar' : 'Crear perfil')}
+            <CheckCircle2 className="w-4 h-4" /> {saving ? 'Saving…' : (brand?.id ? 'Save' : 'Create profile')}
           </Button>
-          <a href="/Analyzer" className="text-sm underline self-center">Ir al Analyzer</a>
+          <a href="/Analyzer" className="text-sm underline self-center">Go to Analyzer</a>
         </div>
       </motion.div>
     </div>
