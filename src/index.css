@@ -201,6 +201,25 @@ h1, h2, h3, .font-display { font-family: 'Space Grotesk', var(--font-inter); let
 /* Numeric consistency for dashboards */
 body { font-variant-numeric: tabular-nums; }
 
+:root {
+  --brand-watermark-url: url('https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png');
+}
+
+/* Global subtle repeating watermark (light mode only) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: var(--brand-watermark-url);
+  background-size: 220px auto; /* adjust density */
+  background-repeat: repeat;
+  background-position: center;
+  opacity: 0.02; /* ultra subtle */
+  pointer-events: none;
+  mix-blend-mode: multiply; /* softer integration on light bg */
+}
+.dark body::after { display: none; }
+
 /* Motion reduce */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
