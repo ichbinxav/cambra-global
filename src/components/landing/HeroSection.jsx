@@ -69,9 +69,6 @@ export default function HeroSection() {
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">Infrastructure for independent brands</span>
             </motion.div>
 
-            <motion.p variants={fadeUp} className="text-sm text-muted-foreground/60 mb-3 max-w-[480px] mx-auto text-center lg:text-left">
-              Most brands operate below optimal infrastructure rates — and don't realize it.
-            </motion.p>
 
             <motion.h1
               variants={fadeUp}
@@ -82,57 +79,33 @@ export default function HeroSection() {
 
             <motion.p
               variants={fadeUp}
-              className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-6 tracking-[-0.01em] text-center lg:text-left"
+              className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-4 tracking-[-0.01em] text-center lg:text-left"
             >
-              CAMBRA helps independent brands unlock better terms, reduce costs, and grow with confidence.
+              CAMBRA helps independent brands reduce operating costs through collective infrastructure deals.
             </motion.p>
 
             <motion.p variants={fadeUp} className="text-base text-foreground/70 leading-relaxed mb-8 max-w-[520px] mx-auto text-center lg:text-left">
-              We aggregate independent brands into a single leverage bloc. You unlock better rates on payments, shipping, and SaaS — instantly. Our analyzer identifies exactly where value is left unoptimized, then you access the deals.
+              Starting with payments, shipping and SaaS.
             </motion.p>
 
-            {/* Pricing pill */}
-            <motion.div
-              variants={fadeUp}
-              className="inline-flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-8 px-5 py-4 rounded-full bg-foreground text-background mx-auto shadow-sm"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-background/40 line-through font-light">€60/month</span>
-                <span className="text-xl sm:text-lg font-black">Free</span>
-              </div>
-              <span className="hidden sm:inline text-background/40">·</span>
-              <span className="text-sm text-background/70">Early partners only</span>
-            </motion.div>
-            <motion.p variants={fadeUp} className="text-[11px] text-muted-foreground/50 mb-8 text-center lg:text-left">
-              25% success fee on realized savings — if we don’t save you money, you pay zero.
-            </motion.p>
 
-            {/* Value bullets */}
-            <motion.ul variants={container} className="space-y-2.5 mb-10">
-              {BULLETS.map((b, i) => (
-                <motion.li key={i} variants={fadeUp} className="flex items-start gap-3 text-sm text-foreground/75">
-                  <CheckCircle2 size={16} className="text-chart-2 mt-0.5 shrink-0" />
-                  <span className="font-medium">{b}</span>
-                </motion.li>
-              ))}
-            </motion.ul>
 
             {/* CTAs */}
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center sm:justify-center"
             aria-label="Primary calls to action">
-              <Link to="/Onboarding" className="flex-1 sm:flex-none">
+              <Link to="/Analyzer" className="flex-1 sm:flex-none">
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Button size="lg" className="w-full sm:w-auto h-14 rounded-full px-12 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40 transition-transform hover:-translate-y-0.5">
-                  JOIN CAMBRA <ArrowRight className="h-4 w-4" />
+                  Run your cost analysis <ArrowRight className="h-4 w-4" />
                   </Button>
                 </motion.div>
               </Link>
               <motion.a
                 whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                href="#how"
+                href="/Onboarding"
                 className="flex-1 sm:flex-none h-14 rounded-full px-12 text-base font-semibold bg-foreground text-background hover:opacity-90 transition inline-flex items-center justify-center gap-2"
               >
-                Explore platform <ArrowRight className="h-4 w-4" />
+                Join as founding brand <ArrowRight className="h-4 w-4" />
               </motion.a>
             </motion.div>
 

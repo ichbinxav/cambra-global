@@ -42,10 +42,10 @@ export default function PricingSection() {
               <span className="w-4 h-px bg-border" /> Pricing
             </p>
             <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5 text-center lg:text-left">
-              You don't pay us.<br />You keep the savings.
+              Free for early partners.
             </h2>
             <p className="text-muted-foreground text-base leading-relaxed mb-8 max-w-sm mx-auto text-center lg:text-left">
-              Zero upfront cost. Zero commitment. You only pay when your infrastructure costs drop. When they do, we share in the gain.
+              The first founding brands get full access to CAMBRA during the launch phase.
             </p>
 
             {/* Savings range */}
@@ -91,7 +91,7 @@ export default function PricingSection() {
                 <span className="text-xl font-light text-background/25 line-through">€60/mo</span>
                 <span className="text-5xl font-black">Free</span>
               </div>
-              <p className="text-sm text-background/50">25% success fee on realized savings · If we don’t save you money, you pay zero.</p>
+              <p className="text-sm text-background/50">25% success fee on verified savings · If CAMBRA doesn’t save you money, you pay zero.</p>
             </div>
 
             {/* Feature icons */}
@@ -122,9 +122,9 @@ export default function PricingSection() {
               <div className="p-4 rounded-xl border border-border/40 bg-secondary/30">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 mb-2">Economics</p>
                 <ul className="text-xs text-muted-foreground space-y-1.5">
-                  <li>• 25% success fee on realized savings</li>
-                  <li>• If we don’t save you money, you pay zero</li>
-                  <li>• Membership standard price: <span className="line-through">€60/month</span> — Free for Early Adopters</li>
+                  <li>• 25% success fee on verified savings</li>
+                  <li>• If CAMBRA doesn’t save you money, you pay zero</li>
+                  <li>• Membership standard price: <span className="line-through">€60/month</span> — Free for Early Partners</li>
                 </ul>
               </div>
             </div>
