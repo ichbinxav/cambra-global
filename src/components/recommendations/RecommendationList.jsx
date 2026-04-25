@@ -35,6 +35,17 @@ export default function RecommendationList(){
     return 0;
   };
 
+  const typeLabel = (t) => ({
+    vertical_priority: 'Priorizar vertical',
+    deal_suggestion: 'Sugerencia de acuerdo',
+    missing_data: 'Datos faltantes',
+    next_action: 'Próximo paso',
+    opportunity_ranking: 'Ranking de oportunidades',
+    general: 'General',
+  }[t] || t);
+
+  const effortLabel = (e) => ({ low: 'Baja', medium: 'Media', high: 'Alta' }[e] || e);
+
   const byImpact = items.slice().sort((a,b) => computeImpact(b) - computeImpact(a));
 
   return (
@@ -44,7 +55,7 @@ export default function RecommendationList(){
         const prio = priorityLabel(total);
         const s = r?.score_json || {};
         const euros = [s.impact_yearly_eur, s.impact_eur, s.annual_savings, s.savings_eur].find(v => typeof v === 'number');
-        const impactText = typeof euros === 'number' ? `${formatCurrency(euros)}/yr` : (r.expected_benefit || `${prio} impacto`);
+        const impactText = typeof euros === 'number' ? `${formatCurrency(euros)}/año` : (r.expected_benefit || `${prio} impacto`);
         const isOpen = expanded === r.id;
 
         return (
@@ -53,8 +64,8 @@ export default function RecommendationList(){
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className="font-semibold text-sm truncate max-w-[80%]">{r.title}</span>
-                  <Badge variant="outline" className="text-[10px]">{r.type}</Badge>
-                  {r.effort_level && <Badge variant="outline" className="text-[10px]">{r.effort_level}</Badge>}
+                  <Badge variant="outline" className="text-[10px]">{typeLabel(r.type)}</Badge>
+                  {r.effort_level && <Badge variant="outline" className="text-[10px]">{effortLabel(r.effort_level)}</Badge>}
                   {typeof total === 'number' && (
                     <span className={`text-[10px] px-2 py-0.5 rounded-full border ${priorityColors(prio)}`}>{prio}</span>
                   )}
