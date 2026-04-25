@@ -60,10 +60,15 @@ function UploadZone({ onUpload, uploadedFiles, onRemove }) {
     setProgress(0);
     const interval = setInterval(() => setProgress(p => Math.min(p + 20, 90)), 180);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    let analysis = null;
+    try {
+      const res = await base44.functions.invoke('processUploadedFile', { file_url, file_name: file.name });
+      analysis = res?.data || null;
+    } catch (_) {}
     clearInterval(interval);
     setProgress(100);
     setUploading(false);
-    onUpload({ name: file.name, url: file_url });
+    onUpload({ name: file.name, url: file_url, analysis });
   };
 
   return (
@@ -106,7 +111,14 @@ function UploadZone({ onUpload, uploadedFiles, onRemove }) {
           {uploadedFiles.map((f, i) => (
             <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-green-500/25 bg-green-500/[0.04]">
               <CheckCircle2 size={14} className="text-green-500 shrink-0" />
-              <span className="text-sm flex-1 truncate font-medium">{f.name}</span>
+              <span className="text-sm flex-1 truncate font-medium">
+                {f.name}
+                {f.analysis?.detected && (
+                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full border bg-background text-muted-foreground">
+                    Procesado: {f.analysis.detected}
+                  </span>
+                )}
+              </span>
               <button onClick={() => onRemove(i)} className="text-muted-foreground/30 hover:text-muted-foreground transition-colors">
                 <X size={13} />
               </button>
