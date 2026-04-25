@@ -8,9 +8,9 @@ import { base44 } from "@/api/base44Client";
 
 
 const SAVINGS = [
-  { label: "Payments", value: "€38K", sub: "−52% fee rate", color: "text-blue-600", bg: "bg-blue-500/[0.07] border-blue-500/20", icon: CreditCard },
-  { label: "Shipping", value: "€19K", sub: "−18% carrier cost", color: "text-green-600", bg: "bg-green-500/[0.07] border-green-500/20", icon: Truck },
-  { label: "SaaS", value: "€24K", sub: "−30% stack waste", color: "text-orange-500", bg: "bg-orange-500/[0.07] border-orange-500/20", icon: Package },
+  { label: "Payments", value: "€38K", sub: "−52% fee rate", color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac", icon: CreditCard },
+  { label: "Shipping", value: "€19K", sub: "−18% carrier cost", color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint", icon: Truck },
+  { label: "SaaS", value: "€24K", sub: "−30% stack waste", color: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum", icon: Package },
 ];
 
 const BULLETS = [
@@ -59,7 +59,7 @@ export default function HeroSection() {
 
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
               <motion.span
-                className="w-1.5 h-1.5 rounded-full bg-green-500"
+                className="w-1.5 h-1.5 rounded-full bg-cambra-mint"
                 animate={{ scale: [1, 1.5, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
               />
@@ -172,7 +172,7 @@ export default function HeroSection() {
               <div className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <motion.div
-                    className="w-2 h-2 rounded-full bg-green-500"
+                    className="w-2 h-2 rounded-full bg-cambra-mint"
                     animate={{ scale: [1, 1.6, 1], opacity: [1, 0.5, 1] }}
                     transition={{ repeat: Infinity, duration: 1.8 }}
                   />
@@ -255,24 +255,24 @@ export default function HeroSection() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-black text-orange-500">57</span>
+                  <span className="text-sm font-black text-cambra-plum">57</span>
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-bold">Infrastructure Score: <span className="text-orange-500 font-black">57/100</span></p>
+                <p className="text-xs font-bold">Infrastructure Score: <span className="text-cambra-plum font-black">57/100</span></p>
                 <p className="text-[10px] text-muted-foreground/50 leading-tight">Your potential: 84/100 · See how</p>
               </div>
             </motion.div>
 
             {/* Deals unlocked hint */}
             <motion.div
-              className="rounded-xl border border-green-500/25 bg-green-500/[0.06] p-4 flex items-center gap-3"
+              className="rounded-xl border border-cambra-mint bg-cambra-mint-soft p-4 flex items-center gap-3"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.35 }}
             >
-              <div className="w-7 h-7 rounded-lg bg-green-500/15 flex items-center justify-center shrink-0">
-                <span className="text-green-600 text-[11px] font-black">3</span>
+              <div className="w-7 h-7 rounded-lg bg-cambra-mint/15 flex items-center justify-center shrink-0">
+                <span className="text-cambra-mint text-[11px] font-black">3</span>
               </div>
               <div className="flex-1">
                 <p className="text-[11px] font-semibold text-foreground">Structural rates unlocked</p>
@@ -280,14 +280,14 @@ export default function HeroSection() {
               </div>
               {!isAuthenticated && (
                 <Link to="/Onboarding">
-                  <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
+                  <button className="text-[10px] font-bold text-cambra-mint hover:opacity-90 transition-colors flex items-center gap-1">
                     Join <ArrowRight size={9} />
                   </button>
                 </Link>
               )}
               {isAuthenticated && (
                 <Link to="/Deals">
-                  <button className="text-[10px] font-bold text-green-600 hover:text-green-700 transition-colors flex items-center gap-1">
+                  <button className="text-[10px] font-bold text-cambra-mint hover:opacity-90 transition-colors flex items-center gap-1">
                     View deals <ArrowRight size={9} />
                   </button>
                 </Link>

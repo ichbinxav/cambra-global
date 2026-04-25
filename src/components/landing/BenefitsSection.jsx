@@ -7,29 +7,29 @@ const BENEFITS = [
     icon: TrendingUp,
     title: "Reduce your costs instantly",
     body: "Access pre-negotiated rates across payments, shipping, and SaaS. Stop overpaying for infrastructure you rely on every day.",
-    color: "text-blue-600",
-    bg: "bg-blue-500/[0.08] border-blue-500/20",
+    color: "text-cambra-lilac",
+    bg: "bg-cambra-lilac-soft border-cambra-lilac",
   },
   {
     icon: BarChart2,
     title: "Increase your margins",
     body: "Every % saved goes directly to your bottom line. No revenue growth needed — just smarter economics.",
-    color: "text-green-600",
-    bg: "bg-green-500/[0.08] border-green-500/20",
+    color: "text-cambra-mint",
+    bg: "bg-cambra-mint-soft border-cambra-mint",
   },
   {
     icon: BarChart2,
     title: "Benchmark like top operators",
     body: "See how your costs compare to similar brands. Understand where you're inefficient and where to optimize.",
     iconOverride: "benchmark",
-    color: "text-purple-600",
-    bg: "bg-purple-500/[0.08] border-purple-500/20",
+    color: "text-cambra-lilac",
+    bg: "bg-cambra-lilac-soft border-cambra-lilac",
   },
   {
     icon: Network,
     title: "Access network-level deals",
     body: "Benefit from collective scale. What large companies negotiate, you now access instantly.",
-    color: "text-orange-500",
+    color: "text-cambra-plum",
     bg: "bg-orange-500/[0.08] border-orange-500/20",
   },
   {
@@ -37,14 +37,14 @@ const BENEFITS = [
     title: "Save time and complexity",
     body: "No need to negotiate contracts, compare providers, or audit costs. We centralize your entire infrastructure layer.",
     color: "text-teal-600",
-    bg: "bg-teal-500/[0.08] border-teal-500/20",
+    bg: "bg-cambra-mint-soft border-cambra-mint",
   },
   {
     icon: Focus,
     title: "Stay focused on your core business",
     body: "Spend less time on operations, more time on brand, product, and growth. THE NoDE handles the backend.",
     color: "text-rose-600",
-    bg: "bg-rose-500/[0.08] border-rose-500/20",
+    bg: "bg-cambra-plum-soft border-cambra-plum",
   },
 ];
 
@@ -58,9 +58,9 @@ const ICONS = {
 
 const PROOF = [
   { value: "€18K–€72K", label: "unlocked per year", icon: BarChart2, color: "text-foreground", bg: "bg-card border-border/40" },
-  { value: "−52%", label: "on payments", icon: CreditCard, color: "text-blue-600", bg: "bg-blue-500/[0.08] border-blue-500/20" },
-  { value: "−18%", label: "on shipping", icon: Truck, color: "text-green-600", bg: "bg-green-500/[0.08] border-green-500/20" },
-  { value: "−30%", label: "on SaaS tools", icon: Package, color: "text-orange-500", bg: "bg-orange-500/[0.08] border-orange-500/20" },
+  { value: "−52%", label: "on payments", icon: CreditCard, color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac" },
+  { value: "−18%", label: "on shipping", icon: Truck, color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint" },
+  { value: "−30%", label: "on SaaS tools", icon: Package, color: "text-cambra-plum", bg: "bg-orange-500/[0.08] border-orange-500/20" },
 ];
 
 function BenefitTile({ b, index }) {

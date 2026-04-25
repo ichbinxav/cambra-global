@@ -110,6 +110,22 @@
   background-clip: text;
 }
 
+/* CAMBRA brand accent utilities */
+.text-cambra-lilac { color: #7C6CFF; }
+.border-cambra-lilac { border-color: rgba(124,108,255,0.35); }
+.bg-cambra-lilac-soft { background-color: rgba(199,185,255,0.10); }
+.bg-cambra-lilac { background-color: #C7B9FF; }
+
+.text-cambra-mint { color: #2FC9A6; }
+.border-cambra-mint { border-color: rgba(167,243,208,0.40); }
+.bg-cambra-mint-soft { background-color: rgba(167,243,208,0.12); }
+.bg-cambra-mint { background-color: #A7F3D0; }
+
+.text-cambra-plum { color: #5B3A83; }
+.border-cambra-plum { border-color: rgba(91,58,131,0.35); }
+.bg-cambra-plum-soft { background-color: rgba(91,58,131,0.10); }
+.bg-cambra-plum { background-color: #5B3A83; }
+
 /* Letter spacing utilities */
 .tracking-editorial { letter-spacing: -0.04em; }
 

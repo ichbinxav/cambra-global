@@ -57,9 +57,9 @@ export default function PricingSection() {
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { label: "Payments", val: "−52%", color: "text-blue-600", bg: "bg-blue-500/[0.06] border-blue-500/15" },
-                  { label: "Shipping", val: "−18%", color: "text-green-600", bg: "bg-green-500/[0.06] border-green-500/15" },
-                  { label: "SaaS", val: "−30%", color: "text-orange-500", bg: "bg-orange-500/[0.06] border-orange-500/15" },
+                  { label: "Payments", val: "−52%", color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac" },
+                  { label: "Shipping", val: "−18%", color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint" },
+                  { label: "SaaS", val: "−30%", color: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum" },
                 ].map((item, i) => (
                   <div key={i} className={`p-3.5 rounded-xl border text-center ${item.bg}`}>
                     <p className={`text-xl font-black ${item.color}`}>{item.val}</p>
@@ -111,7 +111,7 @@ export default function PricingSection() {
             <div className="px-7 pb-6 space-y-2">
               {EXTRAS.map(f => (
                 <div key={f} className="flex items-center gap-2.5">
-                  <CheckCircle2 size={12} className="text-green-500 shrink-0" />
+                  <CheckCircle2 size={12} className="text-cambra-mint shrink-0" />
                   <span className="text-xs text-muted-foreground">{f}</span>
                 </div>
               ))}
