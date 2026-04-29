@@ -72,6 +72,7 @@ export default function CopilotPanel() {
   const [answer, setAnswer] = useState('');
   const [pageIntro, setPageIntro] = useState('');
   const [sending, setSending] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -98,6 +99,8 @@ export default function CopilotPanel() {
     const question = ask.trim();
     if (!copilot || !question || sending) return;
     setSending(true);
+    setErrorMessage('');
+    setAnswer('');
     const currentQuestion = question;
     setAsk('');
 
@@ -109,6 +112,8 @@ export default function CopilotPanel() {
         nextStep: copilot.guidance.nextStep,
       });
       setAnswer(response?.data?.answer || copilot.page.description);
+    } catch (error) {
+      setErrorMessage(error?.message || 'No se pudo enviar el mensaje.');
     } finally {
       setSending(false);
     }
@@ -171,9 +176,21 @@ export default function CopilotPanel() {
                     </div>
                   </section>
 
-                  {answer && (
+                  {sending && (
                     <section className="rounded-2xl border border-border/60 bg-secondary/40 p-4">
-                      <p className="text-sm leading-6 text-foreground">{sending ? 'Thinking…' : answer}</p>
+                      <p className="text-sm leading-6 text-foreground">Thinking…</p>
+                    </section>
+                  )}
+
+                  {answer && !sending && (
+                    <section className="rounded-2xl border border-border/60 bg-secondary/40 p-4">
+                      <p className="text-sm leading-6 text-foreground">{answer}</p>
+                    </section>
+                  )}
+
+                  {errorMessage && !sending && (
+                    <section className="rounded-2xl border border-red-500/20 bg-red-500/[0.04] p-4">
+                      <p className="text-sm leading-6 text-red-600">{errorMessage}</p>
                     </section>
                   )}
 
@@ -183,6 +200,7 @@ export default function CopilotPanel() {
                       className="mt-3 flex items-center gap-2"
                       onSubmit={(e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         handleAsk();
                       }}
                     >
@@ -193,9 +211,10 @@ export default function CopilotPanel() {
                         className="h-11 rounded-full border-border/60 bg-card pr-3 text-base md:text-sm"
                       />
                       <button
-                        type="submit"
+                        type="button"
                         aria-label="Send message"
                         disabled={sending}
+                        onClick={handleAsk}
                         className="shrink-0 flex h-11 w-11 items-center justify-center rounded-full border border-border/60 bg-card text-foreground active:scale-95 disabled:opacity-50"
                       >
                         <ChevronRight className="h-4 w-4" />
