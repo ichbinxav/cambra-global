@@ -144,101 +144,57 @@ export default function CopilotPanel() {
                 </button>
               </div>
 
-              <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
-                <section className="rounded-2xl border border-border/60 bg-background p-4">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">You are here</p>
-                  <h3 className="mt-2 text-lg font-black tracking-tight">{copilot.page.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{copilot.page.description}</p>
-                </section>
-
-                <section>
-                  <div className="mb-3 flex items-center justify-between">
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Journey progress</p>
-                    <span className="text-[11px] text-muted-foreground">{copilot.journey.filter((item) => item.status === 'done').length}/{copilot.journey.length}</span>
-                  </div>
-                  <div className="space-y-2">
-                    {copilot.journey.map((item) => (
-                      <Link key={item.key} to={item.href} onClick={() => setOpen(false)} className={`flex items-center justify-between rounded-2xl border px-3 py-3 transition ${JOURNEY_STYLES[item.status]}`}>
-                        <div className="flex items-center gap-3">
-                          <JourneyIcon status={item.status} />
-                          <span className="text-sm font-medium">{item.label}</span>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-
-                <section className="rounded-2xl border border-border/60 bg-foreground p-4 text-background">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-background/10">
-                      <Sparkles className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.22em] text-background/45">Next best action</p>
-                      <h3 className="mt-2 text-base font-black">{copilot.guidance.nextStep}</h3>
-                      <p className="mt-2 text-sm leading-6 text-background/72">{copilot.guidance.why}</p>
-                      <p className="mt-3 text-xs text-background/55">{copilot.guidance.unlocks}</p>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="space-y-2">
-                  {copilot.guidance.ctas.map((item) => (
-                    <Link key={item.label} to={item.href} onClick={() => setOpen(false)}>
-                      <Button className="h-11 w-full justify-between rounded-full px-4 text-sm font-semibold">
-                        {item.label}
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  ))}
-                </section>
-
-                {(copilot.missingData.length > 0 || copilot.blockers.length > 0) && (
+              <div className="flex-1 overflow-y-auto px-5 py-5">
+                <div className="space-y-4">
                   <section className="rounded-2xl border border-border/60 bg-background p-4">
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Missing data & blockers</p>
-                    <div className="mt-3 space-y-2">
-                      {copilot.missingData.map((item) => (
-                        <div key={item} className="rounded-xl border border-border/50 px-3 py-2 text-sm text-muted-foreground">
-                          Missing: {item}
-                        </div>
-                      ))}
-                      {copilot.blockers.map((item) => (
-                        <div key={item} className="rounded-xl border border-orange-500/20 bg-orange-500/[0.04] px-3 py-2 text-sm text-foreground">
-                          Blocked: {item}
-                        </div>
-                      ))}
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Cambra Copilot</p>
+                        <p className="mt-2 text-sm leading-6 text-foreground">
+                          Estás en <span className="font-semibold">{copilot.page.title}</span>. {copilot.guidance.nextStep}
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">{copilot.guidance.why}</p>
+                      </div>
                     </div>
                   </section>
-                )}
 
-                <section className="rounded-2xl border border-border/60 bg-background p-4">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Smart nudges</p>
-                  <div className="mt-3 space-y-2">
-                    {copilot.guidance.nudges.map((item) => (
-                      <p key={item} className="text-sm leading-6 text-foreground">{item}</p>
+                  {answer && (
+                    <section className="rounded-2xl border border-border/60 bg-secondary/40 p-4">
+                      <p className="text-sm leading-6 text-foreground">{answer}</p>
+                    </section>
+                  )}
+
+                  <section className="rounded-2xl border border-border/60 bg-background p-4">
+                    <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Chat</p>
+                    <div className="mt-3 flex gap-2">
+                      <Input
+                        value={ask}
+                        onChange={(e) => setAsk(e.target.value)}
+                        placeholder="Pregúntame algo…"
+                        className="h-10 rounded-full border-border/60 bg-card"
+                      />
+                      <button
+                        onClick={handleAsk}
+                        className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card text-foreground"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </section>
+
+                  <section className="flex flex-wrap gap-2">
+                    {copilot.guidance.ctas.slice(0, 2).map((item) => (
+                      <Link key={item.label} to={item.href} onClick={() => setOpen(false)}>
+                        <Button variant="outline" className="h-10 rounded-full px-4 text-sm font-medium">
+                          {item.label}
+                        </Button>
+                      </Link>
                     ))}
-                  </div>
-                </section>
-
-                <section className="rounded-2xl border border-border/60 bg-background p-4">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Platform context</p>
-                  <div className="mt-3 flex gap-2">
-                    <Input
-                      value={ask}
-                      onChange={(e) => setAsk(e.target.value)}
-                      placeholder="What is a PSP?"
-                      className="h-10 rounded-full border-border/60 bg-card"
-                    />
-                    <button
-                      onClick={handleAsk}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card text-foreground"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                  {answer && <p className="mt-3 text-sm leading-6 text-muted-foreground">{answer}</p>}
-                </section>
+                  </section>
+                </div>
               </div>
             </motion.aside>
           </>
