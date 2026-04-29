@@ -88,29 +88,116 @@ export default function CopilotPanel() {
   }
 
   return (
-    <div className="fixed right-4 top-20 bottom-4 z-40 hidden lg:block xl:right-6 xl:top-6 xl:bottom-6">
-      <AnimatePresence mode="wait">
-        {collapsed ? (
-          <motion.button
-            key="collapsed"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            transition={{ duration: 0.18 }}
-            onClick={() => setCollapsed(false)}
-            className="flex h-full w-14 flex-col items-center justify-between rounded-[1.5rem] border border-border/60 bg-card/95 px-2 py-4 shadow-[0_18px_50px_rgba(0,0,0,0.08)] backdrop-blur-xl"
-          >
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-foreground text-background">
+    <>
+      <div className="fixed bottom-4 right-4 z-40 lg:hidden">
+        <AnimatePresence mode="wait">
+          {collapsed ? (
+            <motion.button
+              key="collapsed-mobile"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.18 }}
+              onClick={() => setCollapsed(false)}
+              className="relative flex h-14 w-14 items-center justify-center rounded-full border border-border/60 bg-foreground text-background shadow-[0_18px_50px_rgba(0,0,0,0.16)]"
+            >
               <span className="text-sm font-black tracking-[0.1em]">C</span>
-              {attentionNeeded && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-orange-500" />}
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <PanelRightOpen className="h-4 w-4 text-muted-foreground" />
-              {attentionNeeded && <span className="h-8 w-1 rounded-full bg-orange-500/70 animate-pulse" />}
-            </div>
-          </motion.button>
-        ) : (
-          <motion.aside
+              {attentionNeeded && <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-orange-500" />}
+            </motion.button>
+          ) : (
+            <motion.div
+              key="expanded-mobile"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-x-3 bottom-3 z-50 max-h-[82vh] overflow-hidden rounded-[1.5rem] border border-border/60 bg-card/95 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl lg:hidden"
+            >
+              <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
+                <div>
+                  <p className="text-sm font-black tracking-tight">Cambra Copilot</p>
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className={`h-1.5 w-1.5 rounded-full ${copilot.guidance.status === 'action_needed' ? 'bg-orange-500' : 'bg-green-500'}`} />
+                    {STATUS_LABELS[copilot.guidance.status]}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setCollapsed(true)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background text-muted-foreground"
+                >
+                  <PanelRightClose className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="max-h-[calc(82vh-64px)] space-y-4 overflow-y-auto px-4 py-4">
+                <section className="rounded-2xl border border-border/60 bg-background p-4">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">You are here</p>
+                  <h3 className="mt-2 text-lg font-black tracking-tight">{copilot.page.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{copilot.page.description}</p>
+                </section>
+
+                <section className="rounded-2xl border border-border/60 bg-foreground p-4 text-background">
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-background/45">Next best action</p>
+                  <h3 className="mt-2 text-base font-black">{copilot.guidance.nextStep}</h3>
+                  <p className="mt-2 text-sm leading-6 text-background/72">{copilot.guidance.why}</p>
+                </section>
+
+                <section className="space-y-2">
+                  {copilot.guidance.ctas.map((item) => (
+                    <Link key={item.label} to={item.href}>
+                      <Button className="h-11 w-full justify-between rounded-full px-4 text-sm font-semibold">
+                        {item.label}
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  ))}
+                </section>
+
+                {(copilot.missingData.length > 0 || copilot.blockers.length > 0) && (
+                  <section className="rounded-2xl border border-border/60 bg-background p-4">
+                    <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Missing data & blockers</p>
+                    <div className="mt-3 space-y-2">
+                      {copilot.missingData.map((item) => (
+                        <div key={item} className="rounded-xl border border-border/50 px-3 py-2 text-sm text-muted-foreground">
+                          Missing: {item}
+                        </div>
+                      ))}
+                      {copilot.blockers.map((item) => (
+                        <div key={item} className="rounded-xl border border-orange-500/20 bg-orange-500/[0.04] px-3 py-2 text-sm text-foreground">
+                          Blocked: {item}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="fixed right-4 top-20 bottom-4 z-40 hidden lg:block xl:right-6 xl:top-6 xl:bottom-6">
+        <AnimatePresence mode="wait">
+          {collapsed ? (
+            <motion.button
+              key="collapsed-desktop"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.18 }}
+              onClick={() => setCollapsed(false)}
+              className="flex h-full w-14 flex-col items-center justify-between rounded-[1.5rem] border border-border/60 bg-card/95 px-2 py-4 shadow-[0_18px_50px_rgba(0,0,0,0.08)] backdrop-blur-xl"
+            >
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-foreground text-background">
+                <span className="text-sm font-black tracking-[0.1em]">C</span>
+                {attentionNeeded && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-orange-500" />}
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <PanelRightOpen className="h-4 w-4 text-muted-foreground" />
+                {attentionNeeded && <span className="h-8 w-1 rounded-full bg-orange-500/70 animate-pulse" />}
+              </div>
+            </motion.button>
+          ) : (
+            <motion.aside
             key="expanded"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -234,5 +321,6 @@ export default function CopilotPanel() {
         )}
       </AnimatePresence>
     </div>
+    </>
   );
 }
