@@ -50,7 +50,7 @@ function FloatingPill({ open, setOpen, attentionNeeded }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2 }}
       onClick={() => setOpen(!open)}
-      className="fixed bottom-4 right-4 z-50 inline-flex h-12 items-center gap-2 rounded-full border border-border/70 bg-card/95 px-4 text-sm font-semibold text-foreground shadow-[0_18px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl hover:bg-card"
+      className="fixed bottom-4 left-4 z-50 inline-flex h-12 items-center gap-2 rounded-full border border-border/70 bg-card/95 px-4 text-sm font-semibold text-foreground shadow-[0_18px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl hover:bg-card"
     >
       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background text-[11px] font-black">
         C
