@@ -5,7 +5,7 @@ import { CheckCircle2 } from "lucide-react";
 const BENEFITS = [
   "See where your brand is overpaying",
   "Access better rates through collective scale",
-  "Improve margins across payments, shipping and SaaS",
+  "Improve margins across payments, retail TPE, shipping and SaaS",
   "Pay only when real savings are created",
 ];
 

@@ -1,4 +1,4 @@
-import { TrendingUp, BarChart2, Network, Clock, Focus, CreditCard, Truck, Package } from "lucide-react";
+import { TrendingUp, BarChart2, Network, Clock, Focus, CreditCard, Truck, Package, Store } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
@@ -59,6 +59,7 @@ const ICONS = {
 const PROOF = [
   { value: "€18K–€72K", label: "unlocked per year", icon: BarChart2, color: "text-foreground", bg: "bg-card border-border/40" },
   { value: "−52%", label: "on payments", icon: CreditCard, color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac" },
+  { value: "−35%", label: "on retail TPE", icon: Store, color: "text-chart-1", bg: "bg-blue-500/[0.08] border-blue-500/20" },
   { value: "−18%", label: "on shipping", icon: Truck, color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint" },
   { value: "−30%", label: "on SaaS tools", icon: Package, color: "text-cambra-plum", bg: "bg-orange-500/[0.08] border-chart-3/20" },
 ];
@@ -171,7 +172,7 @@ export default function BenefitsSection() {
           >
             Average impact across network members
           </motion.p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {PROOF.map((p, i) => (
               <motion.div
                 key={i}

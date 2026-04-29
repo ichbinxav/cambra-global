@@ -26,7 +26,7 @@ export default function AnalyzerCTA_Public() {
         <div className="rounded-2xl border border-border/60 bg-card/90 backdrop-blur-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-border/40 text-[11px] uppercase tracking-[0.24em] text-muted-foreground/60">Sample analysis</div>
           <div className="p-4">
-            <div className="grid grid-cols-3 gap-3 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
               <div className="rounded-xl border border-border/50 p-3">
                 <div className="text-[11px] text-muted-foreground/60">Payments</div>
                 <div className="text-lg font-black text-cambra-lilac">€38K/yr</div>
@@ -36,6 +36,11 @@ export default function AnalyzerCTA_Public() {
                 <div className="text-[11px] text-muted-foreground/60">Shipping</div>
                 <div className="text-lg font-black text-cambra-mint">€19K/yr</div>
                 <div className="text-[11px] text-muted-foreground/60">-18% carrier cost</div>
+              </div>
+              <div className="rounded-xl border border-border/50 p-3">
+                <div className="text-[11px] text-muted-foreground/60">Retail TPE</div>
+                <div className="text-lg font-black text-chart-1">€12K/yr</div>
+                <div className="text-[11px] text-muted-foreground/60">-35% terminal costs</div>
               </div>
               <div className="rounded-xl border border-border/50 p-3">
                 <div className="text-[11px] text-muted-foreground/60">SaaS</div>
