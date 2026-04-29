@@ -21,7 +21,8 @@ const JOURNEY_STYLES = {
 function useCopilotPreference() {
   const [open, setOpen] = useState(() => {
     try {
-      return localStorage.getItem('cambra_copilot_open') === 'true';
+      const saved = localStorage.getItem('cambra_copilot_open');
+      return saved === null ? true : saved === 'true';
     } catch {
       return false;
     }
@@ -50,7 +51,7 @@ function FloatingPill({ open, setOpen, attentionNeeded }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2 }}
       onClick={() => setOpen(!open)}
-      className="fixed bottom-4 left-4 z-50 inline-flex h-12 items-center gap-2 rounded-full border border-border/70 bg-card/95 px-4 text-sm font-semibold text-foreground shadow-[0_18px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl hover:bg-card sm:bottom-5 sm:left-5"
+      className="fixed bottom-4 left-4 z-[80] inline-flex h-12 items-center gap-2 rounded-full border border-border/70 bg-card/95 px-4 text-sm font-semibold text-foreground shadow-[0_18px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl hover:bg-card sm:bottom-5 sm:left-5"
     >
       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background text-[11px] font-black">
         C
@@ -117,7 +118,7 @@ export default function CopilotPanel() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]"
+              className="fixed inset-0 z-[70] bg-black/20 backdrop-blur-[2px]"
             />
 
             <motion.aside
@@ -125,7 +126,7 @@ export default function CopilotPanel() {
               animate={{ opacity: 1, x: 0, y: 0 }}
               exit={{ opacity: 0, x: -24, y: 8 }}
               transition={{ duration: 0.22 }}
-              className="fixed bottom-20 left-4 z-50 flex max-h-[78vh] w-[calc(100vw-2rem)] max-w-[380px] flex-col overflow-hidden rounded-[1.75rem] border border-border/60 bg-card/95 shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:bottom-24 sm:left-5"
+              className="fixed bottom-20 left-4 z-[80] flex max-h-[78vh] w-[calc(100vw-2rem)] max-w-[380px] flex-col overflow-hidden rounded-[1.75rem] border border-border/60 bg-card/95 shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:bottom-24 sm:left-5"
             >
               <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
                 <div>
