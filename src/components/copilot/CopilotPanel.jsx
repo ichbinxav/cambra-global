@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, CheckCircle2, ChevronRight, CircleDot, Sparkles, X } from 'lucide-react';
@@ -73,6 +73,7 @@ export default function CopilotPanel() {
   const [pageIntro, setPageIntro] = useState('');
   const [sending, setSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const audioContextRef = useRef(null);
 
   useEffect(() => {
     let mounted = true;
@@ -95,6 +96,30 @@ export default function CopilotPanel() {
     return copilot.blockers.length > 0 || copilot.missingData.length > 0 || copilot.guidance.status === 'action_needed';
   }, [copilot]);
 
+  const playReceiveSound = () => {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const context = audioContextRef.current || new AudioCtx();
+    audioContextRef.current = context;
+
+    const now = context.currentTime;
+    const oscillator = context.createOscillator();
+    const gainNode = context.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(880, now);
+    oscillator.frequency.exponentialRampToValueAtTime(1320, now + 0.12);
+
+    gainNode.gain.setValueAtTime(0.0001, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.05, now + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(context.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.2);
+  };
+
   const handleAsk = async () => {
     const question = ask.trim();
     if (!copilot || !question || sending) return;
@@ -112,12 +137,19 @@ export default function CopilotPanel() {
         nextStep: copilot.guidance.nextStep,
       });
       setAnswer(response?.data?.answer || copilot.page.description);
+      playReceiveSound();
     } catch (error) {
       setErrorMessage(error?.message || 'No se pudo enviar el mensaje.');
     } finally {
       setSending(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      audioContextRef.current?.close?.();
+    };
+  }, []);
 
   if (loading || !copilot) {
     return null;
