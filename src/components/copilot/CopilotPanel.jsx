@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, CheckCircle2, ChevronRight, CircleDot, Sparkles, X } from 'lucide-react';
@@ -69,6 +69,8 @@ export default function CopilotPanel() {
   const [copilot, setCopilot] = useState(null);
   const [ask, setAsk] = useState('');
   const [answer, setAnswer] = useState('');
+  const [pageIntro, setPageIntro] = useState('');
+  const previousPathRef = useRef('');
 
   useEffect(() => {
     let mounted = true;
@@ -76,6 +78,7 @@ export default function CopilotPanel() {
     getCopilotState({ pathname: location.pathname }).then((data) => {
       if (!mounted) return;
       setCopilot(data);
+      setPageIntro(`Estás en ${data.page.title}. ${data.page.description} Aquí lo principal es: ${data.guidance.nextStep}`);
       setLoading(false);
     });
     return () => {
@@ -92,14 +95,18 @@ export default function CopilotPanel() {
     if (!copilot || !ask.trim()) return;
     const lower = ask.toLowerCase();
     if (lower.includes('psp')) {
-      setAnswer('A PSP is your payment service provider. Cambra uses it to estimate your effective payment cost and benchmark your rate.');
+      setAnswer('Un PSP es tu proveedor de pagos. Aquí sirve para estimar tu coste real de cobro y compararlo con referencias mejores.');
       return;
     }
-    if (lower.includes('savings')) {
-      setAnswer('Savings are estimated from your current setup versus Cambra benchmark conditions. Cambra only shows structured outputs tied to real platform data.');
+    if (lower.includes('savings') || lower.includes('ahorro')) {
+      setAnswer('El ahorro es la diferencia entre tu situación actual y las condiciones de referencia que Cambra detecta para tu caso.');
       return;
     }
-    setAnswer(`${copilot.guidance.nextStep} ${copilot.guidance.why}`);
+    if (lower.includes('qué hago') || lower.includes('que hago') || lower.includes('qué debo hacer')) {
+      setAnswer(copilot.guidance.nextStep);
+      return;
+    }
+    setAnswer(`${copilot.page.description} ${copilot.guidance.nextStep}`);
   };
 
   if (loading || !copilot) {
@@ -153,9 +160,7 @@ export default function CopilotPanel() {
                       </div>
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Cambra Copilot</p>
-                        <p className="mt-2 text-sm leading-6 text-foreground">
-                          Estás en <span className="font-semibold">{copilot.page.title}</span>. {copilot.guidance.nextStep}
-                        </p>
+                        <p className="mt-2 text-sm leading-6 text-foreground">{pageIntro}</p>
                         <p className="mt-2 text-sm leading-6 text-muted-foreground">{copilot.guidance.why}</p>
                       </div>
                     </div>
@@ -173,7 +178,7 @@ export default function CopilotPanel() {
                       <Input
                         value={ask}
                         onChange={(e) => setAsk(e.target.value)}
-                        placeholder="Pregúntame algo…"
+                        placeholder="Pregúntame qué es esta página o qué hacer…"
                         className="h-10 rounded-full border-border/60 bg-card"
                       />
                       <button
