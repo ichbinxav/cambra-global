@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle2, ChevronRight, CircleDot, Sparkles, X } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getCopilotState } from '@/lib/copilotEngine';
+import { base44 } from '@/api/base44Client';
 
 const STATUS_LABELS = {
   ready: 'Ready',
@@ -70,6 +71,7 @@ export default function CopilotPanel() {
   const [ask, setAsk] = useState('');
   const [answer, setAnswer] = useState('');
   const [pageIntro, setPageIntro] = useState('');
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -92,32 +94,24 @@ export default function CopilotPanel() {
     return copilot.blockers.length > 0 || copilot.missingData.length > 0 || copilot.guidance.status === 'action_needed';
   }, [copilot]);
 
-  const handleAsk = () => {
+  const handleAsk = async () => {
     const question = ask.trim();
-    if (!copilot || !question) return;
-    const lower = question.toLowerCase();
-    if (lower.includes('psp')) {
-      setAnswer('A PSP is your payment service provider. It helps Cambra estimate your real payment costs and compare them to stronger benchmarks.');
-      setAsk('');
-      return;
-    }
-    if (lower.includes('saving')) {
-      setAnswer('Savings are the difference between your current setup and the benchmark conditions Cambra identifies for your business.');
-      setAsk('');
-      return;
-    }
-    if (lower.includes('what should i do') || lower.includes('what do i do') || lower.includes('next step') || lower.includes('qué hago') || lower.includes('que hago') || lower.includes('siguiente paso')) {
-      setAnswer(copilot.guidance.nextStep);
-      setAsk('');
-      return;
-    }
-    if (lower.includes('what is this page') || lower.includes('qué es esta página') || lower.includes('que es esta pagina')) {
-      setAnswer(copilot.page.description);
-      setAsk('');
-      return;
-    }
-    setAnswer(`You asked: ${question}`);
+    if (!copilot || !question || sending) return;
+    setSending(true);
+    const currentQuestion = question;
     setAsk('');
+
+    try {
+      const response = await base44.functions.invoke('copilotChat', {
+        question: currentQuestion,
+        pageTitle: copilot.page.title,
+        pageDescription: copilot.page.description,
+        nextStep: copilot.guidance.nextStep,
+      });
+      setAnswer(response?.data?.answer || copilot.page.description);
+    } finally {
+      setSending(false);
+    }
   };
 
   if (loading || !copilot) {
@@ -179,7 +173,7 @@ export default function CopilotPanel() {
 
                   {answer && (
                     <section className="rounded-2xl border border-border/60 bg-secondary/40 p-4">
-                      <p className="text-sm leading-6 text-foreground">{answer}</p>
+                      <p className="text-sm leading-6 text-foreground">{sending ? 'Thinking…' : answer}</p>
                     </section>
                   )}
 
@@ -201,7 +195,8 @@ export default function CopilotPanel() {
                       <button
                         type="submit"
                         aria-label="Send message"
-                        className="shrink-0 flex h-11 w-11 items-center justify-center rounded-full border border-border/60 bg-card text-foreground active:scale-95"
+                        disabled={sending}
+                        className="shrink-0 flex h-11 w-11 items-center justify-center rounded-full border border-border/60 bg-card text-foreground active:scale-95 disabled:opacity-50"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </button>
