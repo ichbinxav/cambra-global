@@ -17,6 +17,11 @@ export default function Onboarding(){
   const [statuses, setStatuses] = useState(null);
 
   const load = async () => {
+    const authed = await base44.auth.isAuthenticated();
+    if (!authed) {
+      setStatuses({});
+      return;
+    }
     const res = await base44.functions.invoke('getOnboardingStatus', {});
     setStatuses(res.data?.statuses || {});
   };

@@ -52,7 +52,7 @@ import Invoices from '@/pages/Invoices';
 import Vault from '@/pages/Vault';
 import BrandProfile from '@/pages/BrandProfile';
 import BrandGlyph from '@/components/shared/BrandGlyph';
-import CopilotPanel from '@/components/copilot/CopilotPanel';
+import CopilotPanel from '@/components/copilot/CopilotPanel.jsx';
 
 
 
