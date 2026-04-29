@@ -51,7 +51,7 @@ function FloatingPill({ open, setOpen, attentionNeeded }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2 }}
       onClick={() => setOpen(!open)}
-      className="fixed bottom-20 left-3 z-[90] inline-flex h-12 items-center gap-2 rounded-full border border-border/70 bg-card/95 px-4 text-sm font-semibold text-foreground shadow-[0_18px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl hover:bg-card sm:bottom-5 sm:left-5"
+      className="fixed bottom-24 left-3 z-[90] inline-flex h-12 items-center gap-2 rounded-full border border-border/70 bg-card/95 px-4 text-sm font-semibold text-foreground shadow-[0_18px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl hover:bg-card sm:bottom-5 sm:left-5"
     >
       <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background text-[11px] font-black">
         C
@@ -138,7 +138,7 @@ export default function CopilotPanel() {
               animate={{ opacity: 1, x: 0, y: 0 }}
               exit={{ opacity: 0, x: -24, y: 8 }}
               transition={{ duration: 0.22 }}
-              className="fixed bottom-20 left-4 z-[80] flex max-h-[78vh] w-[calc(100vw-2rem)] max-w-[380px] flex-col overflow-hidden rounded-[1.75rem] border border-border/60 bg-card/95 shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:bottom-24 sm:left-5"
+              className="fixed bottom-28 left-4 z-[80] flex max-h-[72vh] w-[calc(100vw-2rem)] max-w-[380px] flex-col overflow-hidden rounded-[1.75rem] border border-border/60 bg-card/95 shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:bottom-24 sm:left-5 sm:max-h-[78vh]"
             >
               <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
                 <div>
@@ -180,7 +180,7 @@ export default function CopilotPanel() {
                   <section className="rounded-2xl border border-border/60 bg-background p-4">
                     <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Chat</p>
                     <form
-                      className="mt-3 flex gap-2"
+                      className="mt-3 flex items-center gap-2"
                       onSubmit={(e) => {
                         e.preventDefault();
                         handleAsk();
@@ -190,18 +190,19 @@ export default function CopilotPanel() {
                         value={ask}
                         onChange={(e) => setAsk(e.target.value)}
                         placeholder="Ask what this page is or what to do next..."
-                        className="h-10 rounded-full border-border/60 bg-card"
+                        className="h-11 rounded-full border-border/60 bg-card pr-3 text-base md:text-sm"
                       />
                       <button
                         type="submit"
-                        className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card text-foreground"
+                        aria-label="Send message"
+                        className="shrink-0 flex h-11 w-11 items-center justify-center rounded-full border border-border/60 bg-card text-foreground active:scale-95"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     </form>
                   </section>
 
-                  <section className="flex flex-wrap gap-2">
+                  <section className="flex flex-wrap gap-2 pb-2 sm:pb-0">
                     {copilot.guidance.ctas.slice(0, 2).map((item) => (
                       <Link key={item.label} to={item.href} onClick={() => setOpen(false)}>
                         <Button variant="outline" className="h-10 rounded-full px-4 text-sm font-medium">
