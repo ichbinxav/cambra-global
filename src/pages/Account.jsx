@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { LogOut, User, Building2, Shield } from "lucide-react";
+import { LogOut, User, Building2, Shield, Store } from "lucide-react";
 
 const Section = ({ icon: IconComp, title, children }) => (
   <div className="p-7 rounded-2xl border border-border/50 bg-card/60">
@@ -21,6 +21,7 @@ const Section = ({ icon: IconComp, title, children }) => (
 export default function Account() {
   const [user, setUser] = useState(null);
   const [brands, setBrands] = useState([]);
+  const [paymentsProfiles, setPaymentsProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -46,14 +47,24 @@ export default function Account() {
   };
 
   useEffect(() => {
-    Promise.all([base44.auth.me(), base44.entities.Brand.list("-created_date", 1)]).then(([u, b]) => {
+    Promise.all([base44.auth.me(), base44.entities.Brand.list("-created_date", 1), base44.entities.PaymentsProfile.list("-created_date", 1)]).then(([u, b, p]) => {
       setUser(u);
       setBrands(b);
+      setPaymentsProfiles(p);
       setLoading(false);
     });
   }, []);
 
   const brand = brands[0];
+  const paymentsProfile = paymentsProfiles[0];
+
+  const updatePaymentsProfile = async (field, value) => {
+    if (paymentsProfile) {
+      await base44.entities.PaymentsProfile.update(paymentsProfile.id, { [field]: value });
+      setPaymentsProfiles([{ ...paymentsProfile, [field]: value }]);
+      toast.success("Saved");
+    }
+  };
 
   const updateBrand = async (field, value) => {
     if (brand) {
@@ -110,6 +121,34 @@ export default function Account() {
                   <Input
                     defaultValue={brand[field]}
                     onBlur={e => updateBrand(field, e.target.value)}
+                    className="h-9 text-sm border-border/60"
+                    placeholder={placeholder}
+                  />
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {paymentsProfile && (
+          <Section icon={Store} title="TPE / In-store payments">
+            <div className="space-y-4">
+              {[
+                { field: "tpe_provider", label: "TPE provider", placeholder: "Worldline, SumUp..." },
+                { field: "terminal_count", label: "Number of terminals", placeholder: "2" },
+                { field: "monthly_terminal_rental", label: "Monthly rental", placeholder: "40" },
+                { field: "fixed_banking_fees", label: "Fixed banking fees", placeholder: "15" },
+                { field: "in_store_gmv", label: "In-store GMV", placeholder: "15000" },
+                { field: "in_store_avg_ticket", label: "Average ticket", placeholder: "45" },
+                { field: "tpe_transaction_fee_pct", label: "Transaction fee %", placeholder: "1.2" },
+                { field: "contract_duration_months", label: "Contract duration (months)", placeholder: "24" },
+                { field: "renewal_date", label: "Renewal date", placeholder: "2026-12-31" },
+              ].map(({ field, label, placeholder }) => (
+                <div key={field} className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground/60">{label}</Label>
+                  <Input
+                    defaultValue={paymentsProfile[field]}
+                    onBlur={e => updatePaymentsProfile(field, e.target.value)}
                     className="h-9 text-sm border-border/60"
                     placeholder={placeholder}
                   />

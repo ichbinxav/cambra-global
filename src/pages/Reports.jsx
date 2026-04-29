@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { ArrowRight, TrendingUp, ArrowUpRight, CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { getBenchmarks } from "@/lib/scoreEngine";
 import { Button } from "@/components/ui/button";
 
 export default function Reports() {
@@ -47,7 +48,8 @@ export default function Reports() {
 
   const chartData = results.slice().reverse().map(r => ({
     date: format(new Date(r.created_date), "MMM d"),
-    Payments: r.payment_savings || 0,
+    "Online Payments": Math.max(0, (r.payment_savings || 0) - (r.details?.tpe_savings || 0)),
+    "In-Store / TPE": r.details?.tpe_savings || 0,
     Shipping: r.shipping_savings || 0,
     SaaS: r.saas_savings || 0,
   }));
@@ -103,9 +105,10 @@ export default function Reports() {
                     formatter={v => [`€${v?.toLocaleString()}/yr`]}
                   />
                   <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
-                  <Bar dataKey="Payments" fill="hsl(215,100%,50%)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Online Payments" fill="hsl(215,100%,50%)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="In-Store / TPE" fill="hsl(25,95%,53%)" radius={[3, 3, 0, 0]} />
                   <Bar dataKey="Shipping" fill="hsl(142,76%,36%)" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="SaaS" fill="hsl(25,95%,53%)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="SaaS" fill="hsl(260,60%,45%)" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </motion.div>
@@ -157,6 +160,52 @@ export default function Reports() {
                {!brand && (
                  <p className="text-xs text-muted-foreground mt-3">Complete onboarding to enable verification tracking.</p>
                )}
+             </motion.div>
+           )}
+
+           {lastReport && (
+             <motion.div
+               className="p-7 rounded-2xl border border-border/50 bg-card/60 mb-6"
+               initial={{ opacity: 0, y: 12 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.18 }}
+             >
+               <div className="mb-4">
+                 <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-1">TPE report</p>
+                 <p className="text-sm font-semibold">In-store terminal benchmark and savings opportunity</p>
+               </div>
+               {(() => {
+                 const input = results[0];
+                 const effectiveRate = input?.details?.tpe_effective_rate || 0;
+                 const benchmarkRate = input?.details?.tpe_optimal_rate || getBenchmarks(input?.details?.monthly_revenue || 50000, brand?.country || '').tpe.rate;
+                 const tpeSavings = input?.details?.tpe_savings || 0;
+                 const annualInStoreCost = input?.details?.annual_gmv && effectiveRate ? (input.details.annual_gmv * (effectiveRate / 100)) : 0;
+                 const benchmarkCost = input?.details?.annual_gmv && benchmarkRate ? (input.details.annual_gmv * (benchmarkRate / 100)) : 0;
+                 return (
+                   <div className="grid gap-3 md:grid-cols-2">
+                     <div className="rounded-xl border border-border/40 p-4 bg-background/40">
+                       <p className="text-xs text-muted-foreground mb-2">Current cost</p>
+                       <p className="text-lg font-black">€{Math.round(annualInStoreCost).toLocaleString()}/yr</p>
+                       <p className="text-xs text-muted-foreground mt-2">Effective TPE rate: {effectiveRate.toFixed(2)}%</p>
+                     </div>
+                     <div className="rounded-xl border border-border/40 p-4 bg-background/40">
+                       <p className="text-xs text-muted-foreground mb-2">Benchmark cost</p>
+                       <p className="text-lg font-black">€{Math.round(benchmarkCost).toLocaleString()}/yr</p>
+                       <p className="text-xs text-muted-foreground mt-2">Collective rate: {benchmarkRate.toFixed(2)}%</p>
+                     </div>
+                     <div className="rounded-xl border border-border/40 p-4 bg-background/40">
+                       <p className="text-xs text-muted-foreground mb-2">Savings opportunity</p>
+                       <p className="text-lg font-black text-orange-500">€{Math.round(tpeSavings).toLocaleString()}/yr</p>
+                       <p className="text-xs text-muted-foreground mt-2">Recommendation: renegotiate terminals and fixed fees.</p>
+                     </div>
+                     <div className="rounded-xl border border-border/40 p-4 bg-background/40">
+                       <p className="text-xs text-muted-foreground mb-2">Next action</p>
+                       <p className="text-sm font-semibold">Open a payments deal and compare TPE providers.</p>
+                       <p className="text-xs text-muted-foreground mt-2">Include rental, contract renewal and banking fees.</p>
+                     </div>
+                   </div>
+                 );
+               })()}
              </motion.div>
            )}
 

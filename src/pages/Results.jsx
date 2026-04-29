@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight, CreditCard, Truck, Package, TrendingDown, Zap,
-  Shield, AlertTriangle, CheckCircle2, ChevronRight, Lock
+  Shield, AlertTriangle, CheckCircle2, ChevronRight, Lock, Store
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
@@ -17,10 +17,14 @@ import { jsPDF } from "jspdf";
 
 /* ── static data ─────────────────────────────────────────────── */
 const BREAKDOWN_META = [
-  { key: "payment_savings", label: "Payments", icon: CreditCard, color: "#7C6CFF", bg: "bg-cambra-lilac-soft border-cambra-lilac", textColor: "text-cambra-lilac",
+  { key: "online_payment_savings", label: "Online Payments", icon: CreditCard, color: "#7C6CFF", bg: "bg-cambra-lilac-soft border-cambra-lilac", textColor: "text-cambra-lilac",
     detail: r => r.details?.payment_current_rate
       ? `${r.details.payment_current_rate.toFixed(1)}% current → ${r.details.payment_optimal_rate?.toFixed(1) ?? "1.4"}% network target`
       : "Efficiency improvement available" },
+  { key: "tpe_savings", label: "In-Store / TPE", icon: Store, color: "#f59e0b", bg: "bg-orange-500/[0.05] border-orange-500/20", textColor: "text-orange-500",
+    detail: r => r.details?.tpe_effective_rate
+      ? `${r.details.tpe_effective_rate.toFixed(2)}% current → ${r.details.tpe_optimal_rate?.toFixed(2) ?? "1.0"}% collective TPE benchmark`
+      : "Terminal cost optimization available" },
   { key: "shipping_savings", label: "Shipping", icon: Truck, color: "#2FC9A6", bg: "bg-cambra-mint-soft border-cambra-mint", textColor: "text-cambra-mint",
     detail: r => r.details?.shipping_current_avg
       ? `€${r.details.shipping_current_avg.toFixed(2)}/shipment → €${r.details.shipping_optimal_avg?.toFixed(2) ?? "5.20"} collective rate`
@@ -149,8 +153,15 @@ export default function Results() {
   const scoreLabel = scoreReport?.label ?? (score >= 60 ? "Efficient" : score >= 40 ? "Optimization opportunity detected" : "High optimization potential");
   const isEstimated = !scoreReport || scoreReport.dataQuality === "manual";
 
+  const onlinePaymentSavings = Math.max(0, (result.payment_savings || 0) - (result.details?.tpe_savings || 0));
+  const resultWithTpe = {
+    ...result,
+    online_payment_savings: onlinePaymentSavings,
+    tpe_savings: result.details?.tpe_savings || 0,
+  };
+
   const chartData = BREAKDOWN_META.map(m => ({
-    name: m.label, value: result[m.key] || 0, fill: m.color,
+    name: m.label, value: resultWithTpe[m.key] || 0, fill: m.color,
   }));
 
   const recs = scoreReport?.impacts?.length
@@ -213,6 +224,7 @@ export default function Results() {
     // Benchmarks section
     doc.setFontSize(14); doc.text('Key benchmark comparisons', 20, y); y += 8; doc.setFontSize(12);
     doc.text(`Payment fee: ${payCurr !== null ? payCurr.toFixed(1)+'%' : 'N/A'} vs target ${payOpt !== null ? payOpt.toFixed(1)+'%' : 'N/A'}`, 20, y); y += 6;
+    doc.text(`TPE fee: ${result.details?.tpe_effective_rate !== undefined ? result.details.tpe_effective_rate.toFixed(2)+'%' : 'N/A'} vs target ${result.details?.tpe_optimal_rate !== undefined ? result.details.tpe_optimal_rate.toFixed(2)+'%' : 'N/A'}`, 20, y); y += 6;
     doc.text(`Cost/shipment: ${shipCurr !== null ? '€'+shipCurr.toFixed(2) : 'N/A'} vs target ${shipOpt !== null ? '€'+shipOpt.toFixed(2) : 'N/A'}`, 20, y); y += 6;
     doc.text(`SaaS / revenue: ${saasCurrentPct !== null ? saasCurrentPct.toFixed(1)+'%' : 'N/A'} vs target ${saasOptPct !== null ? saasOptPct.toFixed(1)+'%' : 'N/A'}`, 20, y); y += 12;
 
@@ -419,15 +431,15 @@ export default function Results() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold">{item.label}</p>
-                  <p className="text-[11px] text-muted-foreground/50 sensitive">{item.detail(result)}</p>
+                  <p className="text-[11px] text-muted-foreground/50 sensitive">{item.detail(resultWithTpe)}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className={`text-2xl font-black tabular-nums ${item.textColor}`}>
-                    €{(result[item.key] || 0).toLocaleString()}
+                    €{(resultWithTpe[item.key] || 0).toLocaleString()}
                   </p>
                   <p className="text-[10px] text-muted-foreground/40">/year</p>
                   <a
-                    href={`/deal/activate?vertical=${item.label.toLowerCase().includes('payment') ? 'payments' : (item.label.toLowerCase().includes('shipping') ? 'shipping' : 'saas')}&resultId=${result.id}`}
+                    href={`/deal/activate?vertical=${item.label.toLowerCase().includes('payment') || item.label.toLowerCase().includes('tpe') ? 'payments' : (item.label.toLowerCase().includes('shipping') ? 'shipping' : 'saas')}&resultId=${result.id}`}
                     className="inline-flex items-center gap-1 px-3 py-1.5 mt-2 rounded-full border text-[11px] hover:opacity-80"
                   >
                     Activate this deal
@@ -467,6 +479,14 @@ export default function Results() {
                 network: `${(result.details?.payment_optimal_rate ?? 1.4).toFixed(1)}%`,
                 gap: result.details?.payment_current_rate && result.details?.payment_optimal_rate
                   ? `−${(result.details.payment_current_rate - result.details.payment_optimal_rate).toFixed(1)}%`
+                  : "Potential gap",
+              },
+              {
+                metric: "TPE rate", bad: (result.details?.tpe_effective_rate ?? 0) > (result.details?.tpe_optimal_rate ?? 1.0),
+                yours: `${(result.details?.tpe_effective_rate ?? 0).toFixed(2)}%`,
+                network: `${(result.details?.tpe_optimal_rate ?? 1.0).toFixed(2)}%`,
+                gap: result.details?.tpe_effective_rate && result.details?.tpe_optimal_rate
+                  ? `−${(result.details.tpe_effective_rate - result.details.tpe_optimal_rate).toFixed(2)}%`
                   : "Potential gap",
               },
               {

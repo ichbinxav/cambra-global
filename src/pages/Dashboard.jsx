@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight, TrendingDown, Users, BookOpen, AlertTriangle, Zap
@@ -12,7 +12,7 @@ import InfraScore from "@/components/dashboard/InfraScore";
 import SavingsTrend from "@/components/dashboard/SavingsTrend";
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import GMVMetrics from "@/components/dashboard/GMVMetrics";
-import { CreditCard, Truck, Package } from "lucide-react";
+import { CreditCard, Truck, Package, Store } from "lucide-react";
 import RecommendationList from "@/components/recommendations/RecommendationList";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 
@@ -21,6 +21,7 @@ import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 export default function Dashboard() {
   const [results, setResults] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [paymentsProfiles, setPaymentsProfiles] = useState([]);
   const [user, setUser] = useState(null);
   const [userDeals, setUserDeals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,13 +36,15 @@ export default function Dashboard() {
       setUser(u);
       setUserEmail(u.email);
 
-      const [r, b, uds] = await Promise.all([
+      const [r, b, p, uds] = await Promise.all([
         base44.entities.AnalyzerResult.filter({ created_by: u.email }, "-created_date", 10),
         base44.entities.Brand.filter({ created_by: u.email }),
+        base44.entities.PaymentsProfile.filter({ created_by: u.email }, "-created_date", 1),
         base44.entities.UserDeal.filter({ user_email: u.email }),
       ]);
       setResults(r);
       setBrands(b);
+      setPaymentsProfiles(p);
       setUserDeals(uds);
       // After basics, if brand exists fetch economics
       if (b?.length) {
@@ -105,6 +108,15 @@ export default function Dashboard() {
   }, [userEmail]);
 
   const latest = results[0];
+  const latestPaymentsProfile = paymentsProfiles[0];
+  const tpeEstimated = latest?.details?.tpe_savings || latestPaymentsProfile?.tpe_estimated_annual_savings || 0;
+  const onlinePayments = Math.max(0, (latest?.payment_savings || 0) - tpeEstimated);
+  const totalPaymentSavings = onlinePayments + tpeEstimated;
+  const paymentCards = useMemo(() => ([
+    { label: "Online Payments", value: onlinePayments, icon: CreditCard, color: "text-chart-1", border: "border-chart-1/20", bg: "bg-blue-500/[0.05]", note: "online PSP" },
+    { label: "In-Store / TPE", value: tpeEstimated, icon: Store, color: "text-chart-3", border: "border-chart-3/20", bg: "bg-orange-500/[0.05]", note: "terminals & fees" },
+    { label: "Total Payments", value: totalPaymentSavings, icon: CreditCard, color: "text-foreground", border: "border-border/40", bg: "bg-secondary/40", note: "combined savings" },
+  ]), [onlinePayments, tpeEstimated, totalPaymentSavings]);
 
   const handleSubscribe = async () => {
     const authed = await base44.auth.isAuthenticated();
@@ -232,8 +244,13 @@ export default function Dashboard() {
           <HeroSavings latest={latest} score={score} />
 
           {/* ── SAVINGS OPPORTUNITIES & GMV ── */}
-          <div className="grid grid-cols-3 gap-3">
-            <MetricCard label="Payments" value={latest.payment_savings} icon={CreditCard} color="text-chart-1" border="border-chart-1/20" bg="bg-blue-500/[0.05]" note="payment efficiency" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {paymentCards.map((card) => (
+              <MetricCard key={card.label} label={card.label} value={card.value} icon={card.icon} color={card.color} border={card.border} bg={card.bg} note={card.note} />
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <MetricCard label="Shipping" value={latest.shipping_savings} icon={Truck} color="text-chart-2" border="border-chart-2/20" bg="bg-green-500/[0.05]" note="shipping efficiency" />
             <MetricCard label="SaaS" value={latest.saas_savings} icon={Package} color="text-orange-500" border="border-orange-500/15" bg="bg-orange-500/[0.05]" note="stack efficiency" />
           </div>

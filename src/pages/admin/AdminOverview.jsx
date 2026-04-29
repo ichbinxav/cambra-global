@@ -124,6 +124,8 @@ export default function AdminOverview() {
   const identifiedSavings = resultsInRange.reduce((s, r) => s + (r.total_savings || 0), 0);
   const identifiedPrev = resultsPrevRange.reduce((s, r) => s + (r.total_savings || 0), 0);
   const identifiedTrend = identifiedPrev ? Math.round(((identifiedSavings - identifiedPrev) / identifiedPrev) * 100) : 0;
+  const tpeEstimatedSavings = resultsInRange.reduce((s, r) => s + (r.details?.tpe_savings || 0), 0);
+  const tpeActivatedSavings = activations.filter(a => ["activated","migrating","live","monetizing"].includes(a.status) && a.vertical === "payments").reduce((s, a) => s + (a.activated_savings_yearly || 0), 0);
 
   const activatedSavingsAnnual = activationsActive.reduce((s, a) => s + (a.projected_savings_annual || a.estimated_savings_yearly || a.realized_savings_yearly || 0), 0);
 
@@ -160,8 +162,8 @@ export default function AdminOverview() {
 
   const heroMetrics = [
     { label: "Savings Identified", value: safeCurrency(identifiedSavings), helper: identifiedTrend ? `${identifiedTrend > 0 ? "+" : ""}${identifiedTrend}%` : undefined, accent: "text-purple-600" },
-    { label: "Live Savings", value: safeCurrency(activatedSavingsAnnual), helper: "", accent: "text-green-600" },
-    { label: "Revenue Realized", value: safeCurrency(monetizedPaid + monetizedInvoiced), helper: "", accent: "text-amber-600" },
+    { label: "TPE Estimated", value: safeCurrency(tpeEstimatedSavings), helper: "in-store terminals", accent: "text-orange-600" },
+    { label: "TPE Activated", value: safeCurrency(tpeActivatedSavings), helper: "payments activations", accent: "text-green-600" },
   ];
 
   const secondaryKpis = kpis.slice(3);

@@ -120,6 +120,67 @@
     "terminal_provider": {
       "type": "string"
     },
+    "tpe_provider": {
+      "type": "string"
+    },
+    "terminal_count": {
+      "type": "number"
+    },
+    "monthly_terminal_rental": {
+      "type": "number"
+    },
+    "fixed_fees_monthly": {
+      "type": "number"
+    },
+    "fixed_banking_fees": {
+      "type": "number"
+    },
+    "maintenance_fees": {
+      "type": "number"
+    },
+    "in_store_gmv_monthly": {
+      "type": "number"
+    },
+    "in_store_gmv": {
+      "type": "number"
+    },
+    "in_store_average_ticket": {
+      "type": "number"
+    },
+    "in_store_avg_ticket": {
+      "type": "number"
+    },
+    "tpe_transaction_fee_percent": {
+      "type": "number"
+    },
+    "tpe_transaction_fee_pct": {
+      "type": "number"
+    },
+    "card_mix_percent": {
+      "type": "number"
+    },
+    "card_mix_pct": {
+      "type": "number"
+    },
+    "contract_duration_months": {
+      "type": "number"
+    },
+    "renewal_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "effective_tpe_rate_percent": {
+      "type": "number"
+    },
+    "tpe_benchmark_rate_percent": {
+      "type": "number"
+    },
+    "tpe_estimated_annual_savings": {
+      "type": "number"
+    },
+    "tpe_activated_annual_savings": {
+      "type": "number"
+    },
     "contrato": {
       "type": "object",
       "description": "DEPRECATED: use contract",
