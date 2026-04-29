@@ -499,8 +499,11 @@ export default function Analyzer() {
 
       case 5: return (
         <div className="space-y-6">
+          <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
+            Tell us only the basics about your card terminals in store. If you don’t know an exact number, a rough estimate is totally fine.
+          </div>
           <div>
-            <Label className="text-sm font-medium mb-3 block">Your TPE provider</Label>
+            <Label className="text-sm font-medium mb-3 block">Who gives you the card machines?</Label>
             <ProviderGrid
               options={TPE_PROVIDERS}
               selected={data.tpe_provider}
@@ -508,16 +511,17 @@ export default function Analyzer() {
               customValue={customTpe}
               onCustomChange={setCustomTpe}
             />
+            <p className="text-[11px] text-muted-foreground/50 mt-2">For example: SumUp, Worldline, Square or your bank.</p>
           </div>
           <SmartNumberField
-            label="Terminal count"
+            label="How many card machines do you use?"
             value={data.terminal_count}
             onChange={v => set("terminal_count", Math.round(v))}
             min={1}
             max={100}
           />
           <SmartNumberField
-            label="Monthly terminal rental"
+            label="About how much do you pay each month for them?"
             value={data.monthly_terminal_rental}
             onChange={v => set("monthly_terminal_rental", Math.round(v))}
             min={0}
@@ -525,16 +529,7 @@ export default function Analyzer() {
             prefix="€"
           />
           <SmartNumberField
-            label="In-store transaction fee"
-            value={data.tpe_transaction_fee_pct}
-            onChange={v => set("tpe_transaction_fee_pct", Number(Number(v).toFixed(2)))}
-            min={0}
-            max={5}
-            decimals={2}
-            suffix="%"
-          />
-          <SmartNumberField
-            label="In-store GMV"
+            label="Roughly how much do you sell in store each month?"
             value={data.in_store_gmv}
             onChange={v => set("in_store_gmv", Math.round(v))}
             min={0}
@@ -543,44 +538,25 @@ export default function Analyzer() {
             scale="log"
           />
           <SmartNumberField
-            label="Average in-store ticket"
-            value={data.in_store_avg_ticket}
-            onChange={v => set("in_store_avg_ticket", Math.round(v))}
-            min={1}
-            max={1000}
-            prefix="€"
-          />
-          <SmartNumberField
-            label="Card mix"
-            value={data.card_mix_pct}
-            onChange={v => set("card_mix_pct", Math.round(v))}
+            label="What % do they usually charge per card payment?"
+            value={data.tpe_transaction_fee_pct}
+            onChange={v => set("tpe_transaction_fee_pct", Number(Number(v).toFixed(2)))}
             min={0}
-            max={100}
+            max={5}
+            decimals={2}
             suffix="%"
           />
           <SmartNumberField
-            label="Fixed banking fees"
-            value={data.fixed_banking_fees}
-            onChange={v => set("fixed_banking_fees", Math.round(v))}
+            label="Any extra fixed monthly fees from the bank or terminal provider?"
+            value={(data.fixed_banking_fees || 0) + (data.maintenance_fees || 0)}
+            onChange={v => {
+              const rounded = Math.round(v);
+              set("fixed_banking_fees", rounded);
+              set("maintenance_fees", 0);
+            }}
             min={0}
             max={5000}
             prefix="€"
-          />
-          <SmartNumberField
-            label="Maintenance fees"
-            value={data.maintenance_fees}
-            onChange={v => set("maintenance_fees", Math.round(v))}
-            min={0}
-            max={5000}
-            prefix="€"
-          />
-          <SmartNumberField
-            label="Contract duration"
-            value={data.contract_duration_months}
-            onChange={v => set("contract_duration_months", Math.round(v))}
-            min={1}
-            max={60}
-            suffix=" months"
           />
           {(() => {
             const bm = getBenchmarks(data.monthly_revenue, data.country);
@@ -592,16 +568,16 @@ export default function Analyzer() {
             return (
               <div className="p-4 rounded-xl bg-blue-500/[0.06] border border-chart-1/20 space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Effective in-store rate</span>
+                  <span className="text-muted-foreground">Your estimated all-in cost rate</span>
                   <span className="font-bold tabular-nums">{effectiveRate.toFixed(2)}%</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Collective TPE benchmark</span>
+                  <span className="text-muted-foreground">Typical collective rate</span>
                   <span className="font-bold text-chart-1 tabular-nums">{bm.tpe.rate.toFixed(2)}%</span>
                 </div>
                 {annualSavings > 0 && (
                   <div className="pt-2 border-t border-chart-1/20 flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">TPE optimization potential</span>
+                    <span className="text-sm text-muted-foreground">Possible yearly savings</span>
                     <span className="font-black text-lg text-foreground tabular-nums">€{annualSavings.toLocaleString()}/yr</span>
                   </div>
                 )}
