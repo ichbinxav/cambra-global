@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, CheckCircle2, ChevronRight, CircleDot, Sparkles, X } from 'lucide-react';
@@ -70,7 +70,6 @@ export default function CopilotPanel() {
   const [ask, setAsk] = useState('');
   const [answer, setAnswer] = useState('');
   const [pageIntro, setPageIntro] = useState('');
-  const previousPathRef = useRef('');
 
   useEffect(() => {
     let mounted = true;
@@ -78,7 +77,9 @@ export default function CopilotPanel() {
     getCopilotState({ pathname: location.pathname }).then((data) => {
       if (!mounted) return;
       setCopilot(data);
-      setPageIntro(`Estás en ${data.page.title}. ${data.page.description} Aquí lo principal es: ${data.guidance.nextStep}`);
+      setPageIntro(`You are on ${data.page.title}. ${data.page.description} The main thing to do here is: ${data.guidance.nextStep}`);
+      setAnswer('');
+      setAsk('');
       setLoading(false);
     });
     return () => {
@@ -95,15 +96,19 @@ export default function CopilotPanel() {
     if (!copilot || !ask.trim()) return;
     const lower = ask.toLowerCase();
     if (lower.includes('psp')) {
-      setAnswer('Un PSP es tu proveedor de pagos. Aquí sirve para estimar tu coste real de cobro y compararlo con referencias mejores.');
+      setAnswer('A PSP is your payment service provider. It helps Cambra estimate your real payment costs and compare them to stronger benchmarks.');
       return;
     }
-    if (lower.includes('savings') || lower.includes('ahorro')) {
-      setAnswer('El ahorro es la diferencia entre tu situación actual y las condiciones de referencia que Cambra detecta para tu caso.');
+    if (lower.includes('saving')) {
+      setAnswer('Savings are the difference between your current setup and the benchmark conditions Cambra identifies for your business.');
       return;
     }
-    if (lower.includes('qué hago') || lower.includes('que hago') || lower.includes('qué debo hacer')) {
+    if (lower.includes('what should i do') || lower.includes('what do i do') || lower.includes('next step')) {
       setAnswer(copilot.guidance.nextStep);
+      return;
+    }
+    if (lower.includes('what is this page')) {
+      setAnswer(copilot.page.description);
       return;
     }
     setAnswer(`${copilot.page.description} ${copilot.guidance.nextStep}`);
@@ -178,7 +183,7 @@ export default function CopilotPanel() {
                       <Input
                         value={ask}
                         onChange={(e) => setAsk(e.target.value)}
-                        placeholder="Pregúntame qué es esta página o qué hacer…"
+                        placeholder="Ask what this page is or what to do next..."
                         className="h-10 rounded-full border-border/60 bg-card"
                       />
                       <button
