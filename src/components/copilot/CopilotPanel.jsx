@@ -19,13 +19,13 @@ const JOURNEY_STYLES = {
   blocked: 'border-orange-500/20 bg-orange-500/[0.05] text-foreground',
 };
 
-function useCopilotPreference() {
+function useCopilotPreference(defaultValue = false) {
   const [open, setOpen] = useState(() => {
     try {
       const saved = localStorage.getItem('cambra_copilot_open');
-      return saved === null ? true : saved === 'true';
+      return saved === null ? defaultValue : saved === 'true';
     } catch {
-      return false;
+      return defaultValue;
     }
   });
 
@@ -65,7 +65,7 @@ function FloatingPill({ open, setOpen, attentionNeeded }) {
 
 export default function CopilotPanel() {
   const location = useLocation();
-  const [open, setOpen] = useCopilotPreference();
+  const [open, setOpen] = useCopilotPreference(false);
   const [loading, setLoading] = useState(true);
   const [copilot, setCopilot] = useState(null);
   const [ask, setAsk] = useState('');
@@ -80,7 +80,7 @@ export default function CopilotPanel() {
       if (!mounted) return;
       setCopilot(data);
       setPageIntro(`You are on ${data.page.title}. ${data.page.description} The main thing to do here is: ${data.guidance.nextStep}`);
-      setAnswer(`You are on ${data.page.title}. ${data.page.description} The main thing to do here is: ${data.guidance.nextStep}`);
+      setAnswer('');
       setAsk('');
       setLoading(false);
     });
