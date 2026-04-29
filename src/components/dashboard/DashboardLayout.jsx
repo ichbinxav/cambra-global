@@ -6,6 +6,7 @@ import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import CopilotPanel from "@/components/copilot/CopilotPanel";
 
 const NAV_ITEMS = [
   { path: "/Dashboard", label: "Overview", icon: LayoutDashboard },
@@ -175,11 +176,13 @@ export default function DashboardLayout() {
       </AnimatePresence>
 
       {/* Main */}
-      <main className="flex-1 min-w-0 pt-14 lg:pt-0 bg-background">
+      <main className="flex-1 min-w-0 pt-14 lg:pt-0 bg-background xl:pr-[392px]">
         <div className="max-w-5xl mx-auto p-6 lg:p-10">
           <Outlet />
         </div>
       </main>
+
+      <CopilotPanel />
     </div>
   );
 }
