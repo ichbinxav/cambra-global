@@ -2,6 +2,7 @@ const PROMPTS = [
   "Find my biggest overpay",
   "Analyze my payment fees",
   "Review my shipping costs",
+  "Analyze my card terminals",
   "Explain an invoice",
   "Compare providers",
 ];

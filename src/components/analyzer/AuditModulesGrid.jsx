@@ -16,6 +16,13 @@ const MODULES = [
     cta: "Start shipping audit",
   },
   {
+    key: "tpe",
+    eyebrow: "In-store payments",
+    title: "Audit your Card Terminals",
+    description: "Review TPE providers, terminal rental, in-store fees, banking costs and contract lock-ins.",
+    cta: "Start TPE audit",
+  },
+  {
     key: "saas",
     eyebrow: "SaaS",
     title: "Audit your SaaS Stack",

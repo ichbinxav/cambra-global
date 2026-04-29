@@ -49,6 +49,13 @@ export function getBenchmarks(monthlyRevenue = 50000, country = "") {
     large: { rate: eu ? 1.2 : 1.4, range: eu ? [1.2, 1.8] : [1.4, 2.0] },
   };
 
+  const tpeBenchmarks = {
+    micro: { rate: eu ? 1.2 : 1.5, range: eu ? [1.2, 1.7] : [1.5, 2.0] },
+    small: { rate: eu ? 1.0 : 1.3, range: eu ? [1.0, 1.5] : [1.3, 1.8] },
+    mid:   { rate: eu ? 0.9 : 1.1, range: eu ? [0.9, 1.3] : [1.1, 1.5] },
+    large: { rate: eu ? 0.8 : 1.0, range: eu ? [0.8, 1.2] : [1.0, 1.4] },
+  };
+
   // Shipping benchmark: per-shipment cost, based on volume tier
   // EU benefits from dense carrier networks
   const shippingBenchmarks = {
@@ -69,6 +76,7 @@ export function getBenchmarks(monthlyRevenue = 50000, country = "") {
 
   return {
     payment: paymentBenchmarks[tier],
+    tpe: tpeBenchmarks[tier],
     shipping: shippingBenchmarks[tier],
     saas: saasBenchmarks[tier],
     tier,
@@ -86,6 +94,11 @@ export function calculateSavings(input) {
     monthly_shipments = 0,
     country,
     intl_pct = 0,
+    in_store_gmv = 0,
+    tpe_transaction_fee_pct = 0,
+    monthly_terminal_rental = 0,
+    fixed_banking_fees = 0,
+    maintenance_fees = 0,
   } = input || {};
 
   // Annualized GMV and transactions
@@ -103,7 +116,15 @@ export function calculateSavings(input) {
   const ahorro_variable = annualGMV * (fee_actual - fee_node);
   const ahorro_fijo = annualTransactions * (fijo_actual - fijo_node);
   const intlBonus = annualGMV * (Math.max(0, Math.min(100, intl_pct)) / 100) * 0.01; // +1% over international volume
-  const paymentSavings = Math.round(ahorro_variable + ahorro_fijo + intlBonus);
+
+  const annualInStoreGmv = Math.max(0, (in_store_gmv || 0) * 12);
+  const tpeBenchmarks = getBenchmarks(monthly_revenue, country).tpe;
+  const tpeVariableAnnual = annualInStoreGmv * ((tpe_transaction_fee_pct || 0) / 100);
+  const tpeFixedAnnual = ((monthly_terminal_rental || 0) + (fixed_banking_fees || 0) + (maintenance_fees || 0)) * 12;
+  const tpeEffectiveRate = annualInStoreGmv > 0 ? ((tpeVariableAnnual + tpeFixedAnnual) / annualInStoreGmv) * 100 : 0;
+  const tpeSavings = Math.max(0, Math.round(annualInStoreGmv * ((tpeEffectiveRate - tpeBenchmarks.rate) / 100)));
+
+  const paymentSavings = Math.round(ahorro_variable + ahorro_fijo + intlBonus + tpeSavings);
 
   // SaaS savings: 20% on excess above 2% of GMV + 10% direct network discount
   const saasAnnual = (total_saas_spend || 0) * 12;
@@ -132,10 +153,13 @@ export function calculateSavings(input) {
       annual_transactions: annualTransactions,
       payment_current_rate: fee_actual * 100,
       payment_optimal_rate: fee_node * 100,
+      tpe_effective_rate: tpeEffectiveRate,
+      tpe_optimal_rate: tpeBenchmarks.rate,
+      tpe_savings: tpeSavings,
       shipping_current_avg: costPerShipment,
       shipping_optimal_avg: costPerShipment,
       saas_current_total: total_saas_spend || 0,
-      saas_optimal_total: saasThreshold / 12, // monthly optimal spend
+      saas_optimal_total: saasThreshold / 12,
       intl_pct: intl_pct || 0,
     },
   };

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { ArrowRight, ArrowLeft, Upload, X, CheckCircle2, CreditCard, Truck, Package, BarChart3, Building2, MapPin } from "lucide-react";
+import { ArrowRight, ArrowLeft, Upload, X, CheckCircle2, CreditCard, Truck, Package, BarChart3, Building2, MapPin, Store } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import DataIngestionStep from "@/components/analyzer/DataIngestionStep";
 import AnalyzerHero from "@/components/analyzer/AnalyzerHero";
@@ -46,6 +46,12 @@ const STEPS = [
     icon: Truck,
   },
   {
+    title: "TPE / Card terminals",
+    sub: "We review in-store card terminals, rental costs, banking fees and effective in-store payment rate.",
+    why: "Physical terminals often hide fixed fees and contracts that can be renegotiated through collective buying.",
+    icon: Store,
+  },
+  {
     title: "SaaS & Tools",
     sub: "We identify redundant or overpriced tools against network group licenses.",
     why: "Brands typically overspend on SaaS by 30% — mostly on redundant tools.",
@@ -61,6 +67,7 @@ const STEPS = [
 
 const PAYMENT_PROVIDERS = ["Stripe", "Adyen", "Mollie", "PayPal", "Klarna", "Square", "Braintree", "Worldpay", "Checkout.com", "Shopify Payments"];
 const SHIPPING_PROVIDERS = ["DHL", "UPS", "FedEx", "DPD", "PostNL", "Royal Mail", "Evri", "GLS", "Colissimo", "Chronopost"];
+const TPE_PROVIDERS = ["Ingenico", "Worldline", "SumUp", "Zettle", "Square", "myPOS", "Adyen", "Stripe Terminal", "Verifone", "Nexi"];
 const CATEGORIES = ["Fashion", "Beauty", "Wellness", "Lifestyle", "Food & Beverage", "Home", "Tech", "Other"];
 
 const COUNTRIES = [
@@ -93,6 +100,7 @@ export default function Analyzer() {
   const [uploading, setUploading] = useState(false);
   const [customPayment, setCustomPayment] = useState("");
   const [customShipping, setCustomShipping] = useState("");
+  const [customTpe, setCustomTpe] = useState("");
   const [countryOpen, setCountryOpen] = useState(false);
   const fileRef = useRef(null);
 
@@ -102,6 +110,7 @@ export default function Analyzer() {
     dtc_pct: 60, marketplace_pct: 20, wholesale_pct: 15, retail_pct: 5, intl_pct: 0,
     payment_provider: "", payment_fee_pct: 2.9,
     shipping_provider: "", monthly_shipping_cost: 3000, monthly_shipments: 400,
+    tpe_provider: "", terminal_count: 2, monthly_terminal_rental: 40, tpe_transaction_fee_pct: 1.4, in_store_gmv: 15000, in_store_avg_ticket: 45, card_mix_pct: 85, fixed_banking_fees: 15, maintenance_fees: 0, contract_duration_months: 24,
     total_saas_spend: 1500,
   });
   const set = (k, v) => setData(d => ({ ...d, [k]: v }));
@@ -111,8 +120,9 @@ export default function Analyzer() {
 
     if (selectedModule === "payments") setStep(3);
     else if (selectedModule === "shipping") setStep(4);
-    else if (selectedModule === "saas") setStep(5);
-    else if (selectedModule === "upload") setStep(6);
+    else if (selectedModule === "tpe") setStep(5);
+    else if (selectedModule === "saas") setStep(6);
+    else if (selectedModule === "upload") setStep(7);
     else setStep(0);
   }, [mode, selectedModule]);
 
@@ -140,6 +150,10 @@ export default function Analyzer() {
       openQuestionnaire("shipping");
       return;
     }
+    if (prompt === "Analyze my card terminals") {
+      openQuestionnaire("tpe");
+      return;
+    }
     if (prompt === "Explain an invoice") {
       openQuestionnaire("upload");
       return;
@@ -163,6 +177,8 @@ export default function Analyzer() {
     const provider = data.payment_provider === "Other" ? customPayment : data.payment_provider;
     const shipper = data.shipping_provider === "Other" ? customShipping : data.shipping_provider;
 
+    const tpeProvider = data.tpe_provider === "Other" ? customTpe : data.tpe_provider;
+
     const inputData = {
       monthly_revenue: data.monthly_revenue,
       avg_order_value: data.avg_order_value,
@@ -174,6 +190,16 @@ export default function Analyzer() {
       country: data.country,
       payment_provider: provider,
       shipping_provider: shipper,
+      tpe_provider: tpeProvider,
+      terminal_count: data.terminal_count,
+      monthly_terminal_rental: data.monthly_terminal_rental,
+      tpe_transaction_fee_pct: data.tpe_transaction_fee_pct,
+      in_store_gmv: data.in_store_gmv,
+      in_store_avg_ticket: data.in_store_avg_ticket,
+      card_mix_pct: data.card_mix_pct,
+      fixed_banking_fees: data.fixed_banking_fees,
+      maintenance_fees: data.maintenance_fees,
+      contract_duration_months: data.contract_duration_months,
       dtc_pct: data.dtc_pct,
       marketplace_pct: data.marketplace_pct,
       wholesale_pct: data.wholesale_pct,
@@ -190,6 +216,11 @@ export default function Analyzer() {
       payment_provider: provider, payment_fee_pct: data.payment_fee_pct,
       shipping_provider: shipper, monthly_shipping_cost: data.monthly_shipping_cost,
       monthly_shipments: data.monthly_shipments, total_saas_spend: data.total_saas_spend,
+      tpe_provider: tpeProvider, terminal_count: data.terminal_count,
+      monthly_terminal_rental: data.monthly_terminal_rental, tpe_transaction_fee_pct: data.tpe_transaction_fee_pct,
+      in_store_gmv: data.in_store_gmv, in_store_avg_ticket: data.in_store_avg_ticket,
+      card_mix_pct: data.card_mix_pct, fixed_banking_fees: data.fixed_banking_fees,
+      maintenance_fees: data.maintenance_fees, contract_duration_months: data.contract_duration_months,
     });
     const result = await base44.entities.AnalyzerResult.create({
       input_id: input.id,
@@ -468,6 +499,120 @@ export default function Analyzer() {
 
       case 5: return (
         <div className="space-y-6">
+          <div>
+            <Label className="text-sm font-medium mb-3 block">Your TPE provider</Label>
+            <ProviderGrid
+              options={TPE_PROVIDERS}
+              selected={data.tpe_provider}
+              onSelect={v => set("tpe_provider", v)}
+              customValue={customTpe}
+              onCustomChange={setCustomTpe}
+            />
+          </div>
+          <SmartNumberField
+            label="Terminal count"
+            value={data.terminal_count}
+            onChange={v => set("terminal_count", Math.round(v))}
+            min={1}
+            max={100}
+          />
+          <SmartNumberField
+            label="Monthly terminal rental"
+            value={data.monthly_terminal_rental}
+            onChange={v => set("monthly_terminal_rental", Math.round(v))}
+            min={0}
+            max={5000}
+            prefix="€"
+          />
+          <SmartNumberField
+            label="In-store transaction fee"
+            value={data.tpe_transaction_fee_pct}
+            onChange={v => set("tpe_transaction_fee_pct", Number(Number(v).toFixed(2)))}
+            min={0}
+            max={5}
+            decimals={2}
+            suffix="%"
+          />
+          <SmartNumberField
+            label="In-store GMV"
+            value={data.in_store_gmv}
+            onChange={v => set("in_store_gmv", Math.round(v))}
+            min={0}
+            max={1000000}
+            prefix="€"
+            scale="log"
+          />
+          <SmartNumberField
+            label="Average in-store ticket"
+            value={data.in_store_avg_ticket}
+            onChange={v => set("in_store_avg_ticket", Math.round(v))}
+            min={1}
+            max={1000}
+            prefix="€"
+          />
+          <SmartNumberField
+            label="Card mix"
+            value={data.card_mix_pct}
+            onChange={v => set("card_mix_pct", Math.round(v))}
+            min={0}
+            max={100}
+            suffix="%"
+          />
+          <SmartNumberField
+            label="Fixed banking fees"
+            value={data.fixed_banking_fees}
+            onChange={v => set("fixed_banking_fees", Math.round(v))}
+            min={0}
+            max={5000}
+            prefix="€"
+          />
+          <SmartNumberField
+            label="Maintenance fees"
+            value={data.maintenance_fees}
+            onChange={v => set("maintenance_fees", Math.round(v))}
+            min={0}
+            max={5000}
+            prefix="€"
+          />
+          <SmartNumberField
+            label="Contract duration"
+            value={data.contract_duration_months}
+            onChange={v => set("contract_duration_months", Math.round(v))}
+            min={1}
+            max={60}
+            suffix=" months"
+          />
+          {(() => {
+            const bm = getBenchmarks(data.monthly_revenue, data.country);
+            const annualInStoreGmv = data.in_store_gmv * 12;
+            const variableAnnual = annualInStoreGmv * ((data.tpe_transaction_fee_pct || 0) / 100);
+            const fixedAnnual = ((data.monthly_terminal_rental || 0) + (data.fixed_banking_fees || 0) + (data.maintenance_fees || 0)) * 12;
+            const effectiveRate = annualInStoreGmv > 0 ? ((variableAnnual + fixedAnnual) / annualInStoreGmv) * 100 : 0;
+            const annualSavings = Math.max(0, Math.round(annualInStoreGmv * ((effectiveRate - bm.tpe.rate) / 100)));
+            return (
+              <div className="p-4 rounded-xl bg-blue-500/[0.06] border border-chart-1/20 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Effective in-store rate</span>
+                  <span className="font-bold tabular-nums">{effectiveRate.toFixed(2)}%</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Collective TPE benchmark</span>
+                  <span className="font-bold text-chart-1 tabular-nums">{bm.tpe.rate.toFixed(2)}%</span>
+                </div>
+                {annualSavings > 0 && (
+                  <div className="pt-2 border-t border-chart-1/20 flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">TPE optimization potential</span>
+                    <span className="font-black text-lg text-foreground tabular-nums">€{annualSavings.toLocaleString()}/yr</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+      );
+
+      case 6: return (
+        <div className="space-y-6">
           <SmartNumberField
             label="Total monthly SaaS spend"
             value={data.total_saas_spend}
@@ -507,7 +652,7 @@ export default function Analyzer() {
         </div>
       );
 
-      case 6: return (
+      case 7: return (
         <DataIngestionStep
           uploadedFile={uploadedFile}
           setUploadedFile={setUploadedFile}
