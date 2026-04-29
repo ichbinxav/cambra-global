@@ -93,25 +93,31 @@ export default function CopilotPanel() {
   }, [copilot]);
 
   const handleAsk = () => {
-    if (!copilot || !ask.trim()) return;
-    const lower = ask.toLowerCase();
+    const question = ask.trim();
+    if (!copilot || !question) return;
+    const lower = question.toLowerCase();
     if (lower.includes('psp')) {
       setAnswer('A PSP is your payment service provider. It helps Cambra estimate your real payment costs and compare them to stronger benchmarks.');
+      setAsk('');
       return;
     }
     if (lower.includes('saving')) {
       setAnswer('Savings are the difference between your current setup and the benchmark conditions Cambra identifies for your business.');
+      setAsk('');
       return;
     }
-    if (lower.includes('what should i do') || lower.includes('what do i do') || lower.includes('next step')) {
+    if (lower.includes('what should i do') || lower.includes('what do i do') || lower.includes('next step') || lower.includes('qué hago') || lower.includes('que hago') || lower.includes('siguiente paso')) {
       setAnswer(copilot.guidance.nextStep);
+      setAsk('');
       return;
     }
-    if (lower.includes('what is this page')) {
+    if (lower.includes('what is this page') || lower.includes('qué es esta página') || lower.includes('que es esta pagina')) {
       setAnswer(copilot.page.description);
+      setAsk('');
       return;
     }
-    setAnswer(`${copilot.page.description} ${copilot.guidance.nextStep}`);
+    setAnswer(`You asked: ${question}`);
+    setAsk('');
   };
 
   if (loading || !copilot) {
