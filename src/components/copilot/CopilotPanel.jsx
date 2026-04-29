@@ -189,7 +189,7 @@ export default function CopilotPanel() {
                       <Input
                         value={ask}
                         onChange={(e) => setAsk(e.target.value)}
-                        placeholder="Ask what this page is or what to do next..."
+                        placeholder="Ask anything. Best next step: Analyzer or Connect tools."
                         className="h-11 rounded-full border-border/60 bg-card pr-3 text-base md:text-sm"
                       />
                       <button

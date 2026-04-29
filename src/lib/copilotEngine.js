@@ -138,30 +138,28 @@ function buildGuidance(state, page, journey, missing, blockers) {
   if (page.key === 'analyzer') {
     return {
       status: 'ready',
-      nextStep: state.paymentsProfile ? 'Continue with Shipping or SaaS.' : 'Start with the Payments audit.',
+      nextStep: state.paymentsProfile ? 'Finish the next audit module and then connect your tools.' : 'Start the Payments audit now.',
       why: state.paymentsProfile
-        ? 'You already have payment context. Expanding the audit increases savings visibility.'
-        : 'Payments is usually the fastest path to a first savings estimate.',
-      unlocks: 'This unlocks your first quantified savings view.',
+        ? 'You already started. One more quick step gets you to better savings visibility.'
+        : 'This is the fastest way to get a clear savings estimate.',
+      unlocks: 'This gets you to results faster and makes tool connection more useful.',
       ctas: state.paymentsProfile
-        ? [cta('Continue audit', '/Analyzer?mode=questionnaire&module=shipping'), cta('Run analysis', '/Results')]
-        : [cta('Start audit', '/Analyzer?mode=questionnaire&module=payments'), cta('Upload statement', '/ConnectTools?mode=upload')],
-      nudges: ['Most brands your size optimize payments first.'],
+        ? [cta('Continue audit', '/Analyzer?mode=questionnaire&module=shipping'), cta('Connect tools', '/ConnectTools')]
+        : [cta('Start analyzer', '/Analyzer?mode=questionnaire&module=payments'), cta('Connect tools', '/ConnectTools')],
+      nudges: ['Do the Analyzer first. Then connect tools to improve accuracy.'],
     };
   }
 
   if (page.key === 'results') {
     return {
       status: 'ready',
-      nextStep: state.documents.length ? 'Review benchmarks and move toward eligibility.' : 'Connect tools or upload files to strengthen confidence.',
+      nextStep: state.documents.length ? 'Connect your tools to make the result stronger.' : 'Connect tools or upload one file now.',
       why: state.documents.length
-        ? 'You already have a first estimate. The next step is turning it into action.'
-        : 'Results are stronger when supported by real statements or connected sources.',
-      unlocks: 'This unlocks clearer eligibility and better activation decisions.',
-      ctas: state.documents.length
-        ? [cta('View benchmarks', '/Reports'), cta('Check eligibility', '/Deals')]
-        : [cta('Connect tools', '/ConnectTools'), cta('Upload statement', '/ConnectTools?mode=upload')],
-      nudges: [state.latestResult ? 'You are one step away from operationalizing your first estimate.' : 'No savings estimate exists yet.'],
+        ? 'You have a first result. Now improve it with real data.'
+        : 'Real data makes the Analyzer more useful and actionable.',
+      unlocks: 'This sharpens accuracy and helps you move faster.',
+      ctas: [cta('Connect tools', '/ConnectTools'), cta('Run analyzer', '/Analyzer?mode=questionnaire&module=payments')],
+      nudges: ['Best flow: Analyzer first, tools second, results stronger.'],
     };
   }
 
@@ -183,25 +181,23 @@ function buildGuidance(state, page, journey, missing, blockers) {
   if (page.key === 'documents') {
     return {
       status: 'ready',
-      nextStep: state.documents.length ? 'Add the highest-signal missing file.' : 'Upload your first supporting document.',
-      why: 'Statements and invoices improve rate accuracy, benchmark confidence and downstream activation quality.',
-      unlocks: 'This unlocks stronger estimates and faster verification.',
-      ctas: [cta('Upload statement', '/ConnectTools?mode=upload'), cta('Go to documents', '/Vault')],
-      nudges: ['Real files reduce guesswork across the platform.'],
+      nextStep: state.documents.length ? 'Connect a tool or add one more high-signal file.' : 'Connect a tool or upload your first file.',
+      why: 'Connected sources and key files make the Analyzer sharper.',
+      unlocks: 'This improves accuracy and makes next steps easier.',
+      ctas: [cta('Connect tools', '/ConnectTools'), cta('Upload file', '/ConnectTools?mode=upload')],
+      nudges: ['Fastest path: Analyzer, then connect tools.'],
     };
   }
 
   return {
     status: missing.length || blockers.length ? 'action_needed' : 'ready',
-    nextStep: state.latestResult ? 'Review your strongest remaining audit gap.' : 'Start your first audit.',
+    nextStep: state.latestResult ? 'Connect tools or finish the next audit step.' : 'Start the Analyzer now.',
     why: state.latestResult
-      ? 'Your platform context is already partially built. Closing missing inputs sharpens activation paths.'
-      : 'Cambra guides best when at least one audit is complete.',
-    unlocks: state.latestResult ? 'This unlocks clearer eligibility and stronger prioritization.' : 'This unlocks your first savings estimate.',
-    ctas: state.latestResult
-      ? [cta('View results', '/Results'), cta('Continue audit', '/Analyzer?mode=questionnaire&module=shipping')]
-      : [cta('Start audit', '/Analyzer?mode=questionnaire&module=payments'), cta('Connect tools', '/ConnectTools')],
-    nudges: [state.latestResult ? 'You are already carrying signal — now turn it into action.' : 'You are likely leaving margin on the table.'],
+      ? 'You already have signal. Now make it stronger with better data.'
+      : 'The Analyzer is the fastest way to get value from Cambra.',
+    unlocks: state.latestResult ? 'This makes your next action clearer.' : 'This gets you to your first savings estimate fast.',
+    ctas: [cta('Start analyzer', '/Analyzer?mode=questionnaire&module=payments'), cta('Connect tools', '/ConnectTools')],
+    nudges: ['Keep it simple: Analyzer first, tools next.'],
   };
 }
 
