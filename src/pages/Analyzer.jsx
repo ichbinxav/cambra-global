@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,10 @@ import { Label } from "@/components/ui/label";
 import { ArrowRight, ArrowLeft, Upload, X, CheckCircle2, CreditCard, Truck, Package, BarChart3, Building2, MapPin } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import DataIngestionStep from "@/components/analyzer/DataIngestionStep";
+import AnalyzerHero from "@/components/analyzer/AnalyzerHero";
+import AuditModulesGrid from "@/components/analyzer/AuditModulesGrid";
+import HowItWorksSection from "@/components/analyzer/HowItWorksSection";
+import CopilotPanel from "@/components/analyzer/CopilotPanel";
 import SmartNumberField from "@/components/inputs/SmartNumberField.jsx";
 import { computeInfraScore, calculateSavings, getBenchmarks } from "@/lib/scoreEngine";
 
@@ -76,6 +80,12 @@ const COUNTRIES = [
 ];
 
 export default function Analyzer() {
+  const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialMode = urlParams.get("mode") || "hub";
+  const initialModule = urlParams.get("module") || "";
+  const [mode, setMode] = useState(initialMode);
+  const [selectedModule, setSelectedModule] = useState(initialModule);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -94,8 +104,48 @@ export default function Analyzer() {
     shipping_provider: "", monthly_shipping_cost: 3000, monthly_shipments: 400,
     total_saas_spend: 1500,
   });
-  const navigate = useNavigate();
   const set = (k, v) => setData(d => ({ ...d, [k]: v }));
+
+  useEffect(() => {
+    if (mode !== "questionnaire") return;
+
+    if (selectedModule === "payments") setStep(3);
+    else if (selectedModule === "shipping") setStep(4);
+    else if (selectedModule === "saas") setStep(5);
+    else if (selectedModule === "upload") setStep(6);
+    else setStep(0);
+  }, [mode, selectedModule]);
+
+  const openQuestionnaire = (module = "") => {
+    setSelectedModule(module);
+    setMode("questionnaire");
+    const nextUrl = module ? `/Analyzer?mode=questionnaire&module=${module}` : "/Analyzer?mode=questionnaire";
+    window.history.replaceState({}, "", nextUrl);
+  };
+
+  const handleModuleSelect = (module) => {
+    if (module === "upload") {
+      openQuestionnaire("upload");
+      return;
+    }
+    openQuestionnaire(module);
+  };
+
+  const handleCopilotPrompt = (prompt) => {
+    if (prompt === "Analyze my payment fees" || prompt === "Find my biggest overpay") {
+      openQuestionnaire("payments");
+      return;
+    }
+    if (prompt === "Review my shipping costs") {
+      openQuestionnaire("shipping");
+      return;
+    }
+    if (prompt === "Explain an invoice") {
+      openQuestionnaire("upload");
+      return;
+    }
+    openQuestionnaire("saas");
+  };
 
   const handleUpload = async (file) => {
     setUploading(true);
@@ -477,17 +527,35 @@ export default function Analyzer() {
     return true;
   };
 
+  if (mode === "hub") {
+    return (
+      <div className="min-h-screen bg-[#fbfaf7] font-inter text-foreground">
+        <div className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-12">
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="space-y-8">
+              <AnalyzerHero
+                onStartFullAudit={() => openQuestionnaire("payments")}
+                onUploadDocuments={() => openQuestionnaire("upload")}
+              />
+              <AuditModulesGrid onSelectModule={handleModuleSelect} />
+              <HowItWorksSection />
+            </div>
+            <CopilotPanel onSelectPrompt={handleCopilotPrompt} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const StepIcon = STEPS[step].icon;
   const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-inter">
-      {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 z-50 h-[3px] bg-border/30">
         <div className="h-full bg-foreground transition-all duration-500" style={{ width: `${progress}%` }} />
       </div>
 
-      {/* Header */}
       <div className="sticky top-0 z-40 flex items-center justify-between px-5 py-4 border-b border-border/40 bg-background/98 backdrop-blur-xl">
         <span className="text-sm font-black tracking-tight">CAMBRA</span>
         <div className="flex items-center gap-3">
@@ -504,10 +572,8 @@ export default function Analyzer() {
         </div>
       </div>
 
-      {/* Step content */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-5 py-8 pb-36">
-          {/* Step header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
@@ -525,20 +591,27 @@ export default function Analyzer() {
         </div>
       </div>
 
-      {/* Sticky bottom nav */}
       <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-4 border-t border-border/40 bg-background/98 backdrop-blur-xl">
         <Button
           variant="ghost"
-          onClick={() => step === 0 ? navigate("/") : setStep(s => s - 1)}
+          onClick={() => {
+            if (step === 0) {
+              setMode("hub");
+              window.history.replaceState({}, "", "/Analyzer");
+              return;
+            }
+            setStep(s => s - 1);
+          }}
           className="h-12 rounded-full px-5 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {step === 0 ? "Home" : "Back"}
+          {step === 0 ? "Back to hub" : "Back"}
         </Button>
 
         {step < STEPS.length - 1 ? (
           <Button
             onClick={() => setStep(s => s + 1)}
+            disabled={!canContinue()}
             className="h-12 rounded-full px-6 sm:px-8 text-sm font-bold shadow-sm gap-2"
           >
             Continue
