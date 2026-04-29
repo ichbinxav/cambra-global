@@ -88,7 +88,7 @@ export default function CopilotPanel() {
   }
 
   return (
-    <div className="hidden xl:block fixed right-6 top-6 bottom-6 z-40">
+    <div className="fixed right-4 top-20 bottom-4 z-40 hidden lg:block xl:right-6 xl:top-6 xl:bottom-6">
       <AnimatePresence mode="wait">
         {collapsed ? (
           <motion.button

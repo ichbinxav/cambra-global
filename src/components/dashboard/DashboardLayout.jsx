@@ -6,7 +6,6 @@ import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import CopilotPanel from "@/components/copilot/CopilotPanel";
 
 const NAV_ITEMS = [
   { path: "/Dashboard", label: "Overview", icon: LayoutDashboard },
@@ -181,8 +180,6 @@ export default function DashboardLayout() {
           <Outlet />
         </div>
       </main>
-
-      <CopilotPanel />
     </div>
   );
 }

@@ -52,6 +52,7 @@ import Invoices from '@/pages/Invoices';
 import Vault from '@/pages/Vault';
 import BrandProfile from '@/pages/BrandProfile';
 import BrandGlyph from '@/components/shared/BrandGlyph';
+import CopilotPanel from '@/components/copilot/CopilotPanel';
 
 
 
@@ -243,6 +244,7 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <AuthenticatedApp />
+            <CopilotPanel />
           </Router>
           <Toaster />
         </QueryClientProvider>
