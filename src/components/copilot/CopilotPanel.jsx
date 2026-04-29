@@ -78,14 +78,14 @@ export default function CopilotPanel() {
       if (!mounted) return;
       setCopilot(data);
       setPageIntro(`You are on ${data.page.title}. ${data.page.description} The main thing to do here is: ${data.guidance.nextStep}`);
-      setAnswer('');
+      setAnswer(`You are on ${data.page.title}. ${data.page.description} The main thing to do here is: ${data.guidance.nextStep}`);
       setAsk('');
       setLoading(false);
     });
     return () => {
       mounted = false;
     };
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   const attentionNeeded = useMemo(() => {
     if (!copilot) return false;
@@ -179,7 +179,13 @@ export default function CopilotPanel() {
 
                   <section className="rounded-2xl border border-border/60 bg-background p-4">
                     <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Chat</p>
-                    <div className="mt-3 flex gap-2">
+                    <form
+                      className="mt-3 flex gap-2"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleAsk();
+                      }}
+                    >
                       <Input
                         value={ask}
                         onChange={(e) => setAsk(e.target.value)}
@@ -187,12 +193,12 @@ export default function CopilotPanel() {
                         className="h-10 rounded-full border-border/60 bg-card"
                       />
                       <button
-                        onClick={handleAsk}
+                        type="submit"
                         className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card text-foreground"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </button>
-                    </div>
+                    </form>
                   </section>
 
                   <section className="flex flex-wrap gap-2">

@@ -113,6 +113,17 @@ function cta(label, href) {
 }
 
 function buildGuidance(state, page, journey, missing, blockers) {
+  if (!state.user) {
+    return {
+      status: 'ready',
+      nextStep: 'Explore this page or sign in when you want to save progress.',
+      why: 'The copilot is available even without an account and can explain what each page is for.',
+      unlocks: 'Signing in later unlocks personalized guidance and saved progress.',
+      ctas: [cta('Open analyzer', '/Analyzer'), cta('Join now', '/Onboarding')],
+      nudges: ['You can browse freely and sign in only when you are ready.'],
+    };
+  }
+
   if (!state.brand) {
     return {
       status: 'action_needed',
@@ -195,10 +206,11 @@ function buildGuidance(state, page, journey, missing, blockers) {
 }
 
 export async function getCopilotState({ pathname }) {
-  const user = await base44.auth.me();
+  const isAuthenticated = await base44.auth.isAuthenticated();
+  const user = isAuthenticated ? await base44.auth.me() : null;
   const email = user?.email;
 
-  const [brands, paymentsProfiles, shippingProfiles, saasProfiles, results, documents, userDeals] = await Promise.all([
+  const [brands, paymentsProfiles, shippingProfiles, saasProfiles, results, documents, userDeals] = email ? await Promise.all([
     base44.entities.Brand.filter({ created_by: email }, '-created_date', 1),
     base44.entities.PaymentsProfile.filter({ created_by: email }, '-created_date', 1),
     base44.entities.ShippingProfile.filter({ created_by: email }, '-created_date', 1),
@@ -206,7 +218,7 @@ export async function getCopilotState({ pathname }) {
     base44.entities.AnalyzerResult.filter({ created_by: email }, '-created_date', 3),
     base44.entities.Document.filter({ created_by: email }, '-created_date', 10),
     base44.entities.UserDeal.filter({ user_email: email }, '-created_date', 10),
-  ]);
+  ]) : [[], [], [], [], [], [], []];
 
   const page = PAGE_META[pathKey(pathname)] || {
     key: 'platform',
