@@ -73,7 +73,7 @@ export default function FooterSection() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-5">
             <BrandLogoWordmark className="h-4" />
-            <span className="text-xs text-muted-foreground/40">The operating layer behind independent brands</span>
+            <span className="text-xs text-muted-foreground/40">CAMBRA, the operating layer behind independent brands</span>
           </div>
           <div className="flex items-center gap-5 text-xs text-muted-foreground/50">
             <span>© {new Date().getFullYear()} CAMBRA Collective</span>
