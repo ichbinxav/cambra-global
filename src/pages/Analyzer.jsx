@@ -12,6 +12,7 @@ import AuditModulesGrid from "@/components/analyzer/AuditModulesGrid";
 import HowItWorksSection from "@/components/analyzer/HowItWorksSection";
 import CopilotPanel from "@/components/analyzer/CopilotPanel";
 import SmartNumberField from "@/components/inputs/SmartNumberField.jsx";
+import Navbar from "@/components/landing/Navbar";
 import { computeInfraScore, calculateSavings, getBenchmarks } from "@/lib/scoreEngine";
 
 const STEPS = [
@@ -651,7 +652,8 @@ export default function Analyzer() {
   if (mode === "hub") {
     return (
       <div className="min-h-screen bg-[#fbfaf7] font-inter text-foreground">
-        <div className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-12">
+        <Navbar />
+        <div className="mx-auto max-w-7xl px-5 pt-24 pb-10 md:px-8 md:pt-28 md:pb-12">
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="space-y-8">
               <AnalyzerHero
@@ -673,11 +675,12 @@ export default function Analyzer() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-inter">
-      <div className="fixed top-0 left-0 right-0 z-50 h-[3px] bg-border/30">
+      <Navbar />
+      <div className="fixed top-14 left-0 right-0 z-50 h-[3px] bg-border/30">
         <div className="h-full bg-foreground transition-all duration-500" style={{ width: `${progress}%` }} />
       </div>
 
-      <div className="sticky top-0 z-40 flex items-center justify-between px-5 py-4 border-b border-border/40 bg-background/98 backdrop-blur-xl">
+      <div className="sticky top-14 z-40 flex items-center justify-between px-5 py-4 border-b border-border/40 bg-background/98 backdrop-blur-xl">
         <span className="text-sm font-black tracking-tight">CAMBRA</span>
         <div className="flex items-center gap-3">
           <span className="text-xs text-muted-foreground/50 hidden sm:block">~2 minutes</span>
