@@ -57,11 +57,11 @@ const ICONS = {
 };
 
 const PROOF = [
-  { value: "€18K–€72K", label: "unlocked per year", icon: BarChart2, color: "text-foreground", bg: "bg-card border-border/40" },
-  { value: "−52%", label: "on payments", icon: CreditCard, color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac" },
-  { value: "−35%", label: "on retail TPE", icon: Store, color: "text-chart-1", bg: "bg-blue-500/[0.08] border-blue-500/20" },
-  { value: "−18%", label: "on shipping", icon: Truck, color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint" },
-  { value: "−30%", label: "on SaaS tools", icon: Package, color: "text-cambra-plum", bg: "bg-orange-500/[0.08] border-chart-3/20" },
+  { value: "€18K–€72K", label: "Unlocked per year", icon: BarChart2 },
+  { value: "−52%", label: "Payments", icon: CreditCard },
+  { value: "−35%", label: "Retail TPE", icon: Store },
+  { value: "−18%", label: "Shipping", icon: Truck },
+  { value: "−30%", label: "SaaS tools", icon: Package },
 ];
 
 function BenefitTile({ b, index }) {
@@ -164,11 +164,11 @@ export default function BenefitsSection() {
         </div>
 
         {/* Proof strip */}
-        <div ref={proofRef}>
+        <div ref={proofRef} className="rounded-[2rem] border border-border/50 bg-card/70 p-4 sm:p-6">
           <motion.p
             initial={false} animate={proofInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5 }}
-            className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/35 text-center mb-6"
+            className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/35 text-center mb-5"
           >
             Average impact across network members
           </motion.p>
@@ -179,20 +179,18 @@ export default function BenefitsSection() {
                 initial={false}
                 animate={proofInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className={`px-5 py-5 rounded-2xl border flex items-center justify-between gap-3 ${p.bg}`}
+                className="rounded-2xl border border-neon-6/20 bg-neon-6/5 px-4 py-4 text-center shadow-sm"
               >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${p.bg?.includes('bg-card') ? 'bg-secondary border-border/50' : ''}`}>
-                  <p.icon size={16} className={`${p.color} opacity-90`} />
+                <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl border border-neon-6/15 bg-background">
+                  <p.icon size={16} className="text-neon-6 opacity-90" />
                 </div>
-                <div className="text-right min-w-0">
-                  <motion.p
-                    className={`text-2xl font-black tracking-tight ${p.color}`}
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={proofInView ? { scale: 1, opacity: 1 } : {}}
-                    transition={{ delay: i * 0.08 + 0.15, type: 'spring', stiffness: 280, damping: 16 }}
-                  >{p.value}</motion.p>
-                  <p className="text-[10px] text-muted-foreground/55 truncate">{p.label}</p>
-                </div>
+                <motion.p
+                  className="text-2xl font-black tracking-tight text-neon-6"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={proofInView ? { scale: 1, opacity: 1 } : {}}
+                  transition={{ delay: i * 0.08 + 0.15, type: 'spring', stiffness: 280, damping: 16 }}
+                >{p.value}</motion.p>
+                <p className="mt-1 text-[11px] text-muted-foreground">{p.label}</p>
               </motion.div>
             ))}
           </div>
