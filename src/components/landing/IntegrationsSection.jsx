@@ -69,7 +69,7 @@ export default function IntegrationsSection() {
             Connect any tool.<br />Analyze everything.
           </h2>
           <p className="text-muted-foreground text-sm max-w-sm mx-auto text-center lg:text-left">
-            THE NoDE works with your existing stack — more connected = sharper intelligence.
+            CAMBRA works with your existing stack — more connected = sharper intelligence.
           </p>
         </div>
 

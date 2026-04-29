@@ -102,7 +102,7 @@ export default function TestimonialsSection() {
             transition={{ duration: 0.6, delay: 0.25 }}
             className="mt-4 text-muted-foreground text-base max-w-md mx-auto"
           >
-            Independent commerce brands across Europe using THE NoDE network.
+            Independent commerce brands across Europe using the CAMBRA network.
           </motion.p>
         </div>
 
