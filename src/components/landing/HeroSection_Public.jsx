@@ -53,7 +53,7 @@ export default function HeroSection_Public() {
               <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">Infrastructure for independent brands</span>
             </motion.div>
 
-            <motion.h1 initial={false} className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-5 md:mb-6 text-center lg:text-left">
+            <motion.h1 initial={false} className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-6 md:mb-7 text-center lg:text-left">
               Independent brands. <span className="text-saas-gradient">Collective leverage.</span>
             </motion.h1>
 
