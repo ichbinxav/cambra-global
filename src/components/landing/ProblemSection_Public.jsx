@@ -41,17 +41,17 @@ export default function ProblemSection_Public() {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
               <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">Typical fee</div>
-              <div className="mt-3 text-3xl font-black text-neon-6">2.4%</div>
+              <div className="mt-3 text-3xl font-black text-neon-6">3.1%</div>
               <div className="mt-1 text-[12px] text-muted-foreground/70">Payments</div>
             </div>
             <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
               <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">Retail TPE</div>
-              <div className="mt-3 text-3xl font-black text-neon-5">1.9%</div>
+              <div className="mt-3 text-3xl font-black text-neon-5">2.5%</div>
               <div className="mt-1 text-[12px] text-muted-foreground/70">+ rentals</div>
             </div>
             <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
               <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">Cost / parcel</div>
-              <div className="mt-3 text-3xl font-black text-neon-7">€5.90</div>
+              <div className="mt-3 text-3xl font-black text-neon-7">€7.60</div>
               <div className="mt-1 text-[12px] text-muted-foreground/70">Shipping</div>
             </div>
             <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
