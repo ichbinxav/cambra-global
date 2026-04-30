@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Network, BarChart2, CreditCard, Truck, Package, ArrowRight, Users, TrendingDown, ShieldCheck } from "lucide-react";
+import { Network, BarChart2, CreditCard, Truck, Package, Store, ArrowRight, Users, TrendingDown, ShieldCheck } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
@@ -100,6 +100,7 @@ export default function ThreeLayersSection() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                 {[
                   { icon: CreditCard, label: "Payments", detail: "Estimated from 2.9% → 1.4%", stat: "−52%", sub: "estimated fee drop" },
+                  { icon: Store, label: "Retail TPE", detail: "Estimated from lower terminal + bank fees", stat: "−35%", sub: "estimated terminal costs" },
                   { icon: Truck, label: "Shipping", detail: "Estimated from collective rates", stat: "−18%", sub: "estimated avg cost" },
                   { icon: Package, label: "SaaS & Tools", detail: "Estimated from group deals", stat: "−30%", sub: "estimated savings" },
                 ].map(item => (
