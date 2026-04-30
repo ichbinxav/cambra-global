@@ -44,13 +44,13 @@ export default function HeroSection_Public() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 lg:gap-16 items-center">
           {/* LEFT */}
           <motion.div variants={container} initial={false} animate="show" className="pt-8 md:pt-10 text-center md:text-center lg:text-left">
-            <motion.div initial={false} variants={fadeUp} className="inline-flex items-center gap-2 mb-6 md:mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80 shadow-[0_6px_18px_rgba(0,0,0,0.04)]">
+            <motion.div initial={false} variants={fadeUp} className="inline-flex w-fit items-center gap-2 mb-6 md:mb-8 px-2.5 py-1 rounded-full border border-border/50 bg-background/80 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
               <motion.span
-                className="w-2.5 h-2.5 rounded-full bg-[#45A8D8] shadow-[0_0_0_4px_rgba(69,168,216,0.08)]"
+                className="w-2 h-2 rounded-full bg-[#45A8D8] shadow-[0_0_0_3px_rgba(69,168,216,0.08)]"
                 animate={{ scale: [1, 1.08, 1] }}
                 transition={{ repeat: Infinity, duration: 2.2 }}
               />
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#8E8883] whitespace-nowrap">Infrastructure for independent brands</span>
+              <span className="text-[9px] font-bold tracking-[0.16em] uppercase text-[#8E8883] whitespace-nowrap">Infrastructure for independent brands</span>
             </motion.div>
 
 
