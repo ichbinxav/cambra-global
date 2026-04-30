@@ -124,17 +124,17 @@ export default function ThreeLayersSection() {
                   </div>
                 ))}
               </div>
-              <div className="rounded-2xl border border-background/10 bg-background/[0.04] p-4 sm:p-5">
+              <div className="rounded-2xl border border-white/15 bg-white/[0.08] p-4 sm:p-5 shadow-[0_18px_50px_-24px_rgba(255,255,255,0.35)]">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-[10px] text-background/30 uppercase tracking-[0.18em] mb-1">Estimated margin unlocked</p>
-                    <p className="text-3xl font-black leading-none">€18K – €72K<span className="ml-1 text-base font-normal text-background/40">/yr</span></p>
+                    <p className="text-[10px] text-background/55 uppercase tracking-[0.18em] mb-1">Estimated margin unlocked</p>
+                    <p className="text-4xl sm:text-5xl font-black leading-none text-white">€18K – €72K<span className="ml-1 text-base sm:text-lg font-medium text-background/65">/yr</span></p>
                   </div>
-                  <span className="shrink-0 rounded-full border border-background/10 bg-background/[0.04] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-background/45">
+                  <span className="shrink-0 rounded-full border border-white/15 bg-white/[0.08] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-background/65">
                     Estimated
                   </span>
                 </div>
-                <p className="mt-3 text-[11px] text-background/30 leading-relaxed">Based on network benchmarks and brand averages.</p>
+                <p className="mt-3 text-[11px] text-background/50 leading-relaxed">Based on network benchmarks and brand averages.</p>
               </div>
             </div>
           </div>
