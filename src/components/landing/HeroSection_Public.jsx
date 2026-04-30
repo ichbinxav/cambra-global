@@ -61,7 +61,7 @@ export default function HeroSection_Public() {
               CAMBRA aggregates independent brands into one collective infrastructure to unlock better rates and stronger margins. Turn your scale into leverage and stop overpaying for the tools that run your business.
             </motion.p>
 
-            <motion.ul initial={false} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-4 md:mb-6">
+            <motion.ul initial={false} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-6 md:mb-8">
               {BULLETS.slice(0, 3).map((b, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground/85">
                   <CheckCircle2 className="h-4 w-4 text-chart-2 mt-0.5" />
