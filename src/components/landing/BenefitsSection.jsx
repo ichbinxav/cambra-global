@@ -165,13 +165,7 @@ export default function BenefitsSection() {
 
         {/* Proof strip */}
         <div ref={proofRef} className="rounded-[2rem] border border-border/50 bg-card/70 p-4 sm:p-6">
-          <motion.p
-            initial={false} animate={proofInView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.5 }}
-            className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/35 text-center mb-5"
-          >
-            Average impact across network members
-          </motion.p>
+
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {PROOF.map((p, i) => (
               <motion.div
