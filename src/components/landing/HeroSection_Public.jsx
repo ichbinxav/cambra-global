@@ -122,7 +122,7 @@ export default function HeroSection_Public() {
               <motion.div className="mx-4 mb-4 p-4 rounded-xl bg-foreground text-background flex items-center justify-between" initial={false} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.05, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Potential savings unlocked</p>
-                  <p className="text-3xl font-black tracking-tight">€8.4K<span className="text-base font-normal opacity-40">/yr</span></p>
+                  <p className="text-3xl font-black tracking-tight">€93K<span className="text-base font-normal opacity-40">/yr</span></p>
                 </div>
                 <a href="/Analyzer" className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5">
                   Analyze <ArrowRight size={11} />
