@@ -163,32 +163,6 @@ export default function BenefitsSection() {
           </motion.div>
         </div>
 
-        {/* Proof strip */}
-        <div ref={proofRef} className="rounded-[2rem] border border-border/50 bg-card/70 p-4 sm:p-6">
-
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {PROOF.map((p, i) => (
-              <motion.div
-                key={i}
-                initial={false}
-                animate={proofInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="rounded-2xl border border-neon-6/20 bg-neon-6/5 px-4 py-4 text-center shadow-sm"
-              >
-                <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl border border-neon-6/15 bg-background">
-                  <p.icon size={16} className="text-neon-6 opacity-90" />
-                </div>
-                <motion.p
-                  className="text-2xl font-black tracking-tight text-neon-6"
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={proofInView ? { scale: 1, opacity: 1 } : {}}
-                  transition={{ delay: i * 0.08 + 0.15, type: 'spring', stiffness: 280, damping: 16 }}
-                >{p.value}</motion.p>
-                <p className="mt-1 text-[11px] text-muted-foreground">{p.label}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
 
       </div>
     </section>
