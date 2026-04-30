@@ -58,13 +58,11 @@ export default function HeroSection_Public() {
             </motion.h1>
 
             <motion.p initial={false} className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-2 tracking-[-0.01em] text-center lg:text-left">
-              Better terms across payments, shipping and SaaS.
+              Better terms across payments, TPE, shipping and SaaS.
             </motion.p>
+...
             <motion.p initial={false} className="text-base text-foreground/70 leading-relaxed mb-3 md:mb-4 max-w-[620px] mx-auto text-center lg:text-left">
-              We find the leaks and unlock better rates through collective scale.
-            </motion.p>
-            <motion.p initial={false} className="text-base text-foreground/70 leading-relaxed mb-3 md:mb-4 max-w-[620px] mx-auto text-center lg:text-left">
-              Start with payments, shipping and SaaS.
+              Start with payments, TPE, shipping and SaaS.
             </motion.p>
 
             <motion.ul initial={false} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-4 md:mb-6">
