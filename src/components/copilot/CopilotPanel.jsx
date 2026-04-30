@@ -54,8 +54,12 @@ function FloatingPill({ open, setOpen, attentionNeeded }) {
       onClick={() => setOpen(!open)}
       className="fixed bottom-24 left-3 z-[90] inline-flex h-12 items-center gap-2 rounded-full border border-border/70 bg-card/95 px-4 text-sm font-semibold text-foreground shadow-[0_18px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl hover:bg-card sm:bottom-5 sm:left-5"
     >
-      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background text-[11px] font-black">
-        C
+      <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-border/60 bg-background">
+        <img
+          src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png"
+          alt="CAMBRA"
+          className="h-full w-full object-cover"
+        />
       </span>
       <span>Copilot</span>
       {attentionNeeded && <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />}
