@@ -44,14 +44,15 @@ export default function HeroSection_Public() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 lg:gap-16 items-center">
           {/* LEFT */}
           <motion.div variants={container} initial={false} animate="show" className="pt-8 md:pt-10 text-center md:text-center lg:text-left">
-            <motion.div initial={false} variants={fadeUp} className="hidden inline-flex items-center gap-2 mb-6 md:mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
+            <motion.div initial={false} variants={fadeUp} className="inline-flex items-center gap-3 mb-6 md:mb-8 px-5 md:px-7 py-3 md:py-4 rounded-full border border-border/50 bg-background/80 shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
               <motion.span
-                className="w-1.5 h-1.5 rounded-full bg-cambra-mint"
-                animate={{ scale: [1, 1.5, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
+                className="w-4 h-4 rounded-full bg-[#45A8D8] shadow-[0_0_0_6px_rgba(69,168,216,0.10)]"
+                animate={{ scale: [1, 1.08, 1] }}
+                transition={{ repeat: Infinity, duration: 2.2 }}
               />
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">Infrastructure for independent brands</span>
+              <span className="text-[clamp(0.72rem,1.8vw,0.95rem)] font-bold tracking-[0.28em] uppercase text-[#8E8883] whitespace-nowrap">Infrastructure for independent brands</span>
             </motion.div>
+
 
             <motion.h1 initial={false} className="text-[clamp(2.8rem,8vw,7.2rem)] font-black tracking-[-0.05em] leading-[0.85] mb-6 md:mb-7 text-center lg:text-left">
               Independent brands. <span className="text-saas-gradient">Collective leverage.</span>
