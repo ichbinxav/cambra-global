@@ -40,7 +40,7 @@ export default function HeroSection_Public() {
         className="absolute bottom-6 right-6 w-40 sm:w-52 md:w-64 lg:w-80 opacity-[0.06] pointer-events-none select-none"
       />
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-12 md:py-16 lg:py-20">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-16 md:py-16 lg:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 lg:gap-16 items-center">
           {/* LEFT */}
           <motion.div variants={container} initial={false} animate="show" className="pt-4 md:pt-6 text-center md:text-center lg:text-left">
