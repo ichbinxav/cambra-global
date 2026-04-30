@@ -207,7 +207,6 @@ export default function CopilotPanel() {
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Cambra Copilot</p>
                         <p className="mt-2 text-sm leading-6 text-foreground">{pageIntro}</p>
-                        <p className="mt-2 text-sm leading-6 text-muted-foreground">{copilot.guidance.why}</p>
                       </div>
                     </div>
                   </section>
@@ -220,7 +219,19 @@ export default function CopilotPanel() {
 
                   {answer && !sending && (
                     <section className="rounded-2xl border border-border/60 bg-secondary/40 p-4">
-                      <p className="text-sm leading-6 text-foreground">{answer}</p>
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-border/60 bg-background shrink-0">
+                          <img
+                            src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png"
+                            alt="CAMBRA"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Cambra Copilot</p>
+                          <p className="mt-2 text-sm leading-6 text-foreground">{answer}</p>
+                        </div>
+                      </div>
                     </section>
                   )}
 
