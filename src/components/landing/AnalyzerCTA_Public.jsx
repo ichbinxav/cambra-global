@@ -24,7 +24,10 @@ export default function AnalyzerCTA_Public() {
         </div>
 
         <div className="rounded-2xl border border-border/60 bg-card/90 backdrop-blur-sm overflow-hidden">
-          <div className="px-4 py-3 border-b border-border/40 text-[11px] uppercase tracking-[0.24em] text-muted-foreground/60">Sample analysis</div>
+          <div className="px-4 py-3 border-b border-border/40 flex items-center justify-between gap-3">
+            <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground/60">Sample analysis</div>
+            <div className="rounded-full border border-border/60 bg-secondary/70 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">Estimated</div>
+          </div>
           <div className="p-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
               <div className="rounded-xl border border-border/50 p-3">
