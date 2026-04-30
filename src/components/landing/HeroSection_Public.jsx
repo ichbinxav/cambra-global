@@ -43,8 +43,8 @@ export default function HeroSection_Public() {
       <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-12 md:py-16 lg:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 lg:gap-16 items-center">
           {/* LEFT */}
-          <motion.div variants={container} initial={false} animate="show" className="text-center md:text-center lg:text-left">
-            <motion.div initial={false} variants={fadeUp} className="inline-flex items-center gap-2 mb-6 md:mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
+          <motion.div variants={container} initial={false} animate="show" className="pt-4 md:pt-6 text-center md:text-center lg:text-left">
+            <motion.div initial={false} variants={fadeUp} className="hidden inline-flex items-center gap-2 mb-6 md:mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
               <motion.span
                 className="w-1.5 h-1.5 rounded-full bg-cambra-mint"
                 animate={{ scale: [1, 1.5, 1] }}
