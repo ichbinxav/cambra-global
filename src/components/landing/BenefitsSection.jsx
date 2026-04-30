@@ -144,12 +144,12 @@ export default function BenefitsSection() {
         {/* Editorial block */}
         <div
           ref={editorialRef}
-          className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-12 items-center mb-16 py-14 border-y border-border/40"
+          className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-12 items-center mb-16 py-14 border-y border-border/40 text-center lg:text-left"
         >
           <motion.h3
             initial={false} animate={editorialInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(1.8rem,4vw,3rem)] font-black tracking-[-0.04em] leading-[0.9] text-center lg:text-left"
+            className="text-[clamp(1.8rem,4vw,3rem)] font-black tracking-[-0.04em] leading-[0.9]"
           >
             This is not a tool.<br />It's your economic layer.
           </motion.h3>
