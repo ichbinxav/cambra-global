@@ -315,15 +315,17 @@ export const translations = {
 const LanguageContext = createContext({ lang: "en", setLang: () => {} });
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState('en');
+  const [lang] = useState('en');
 
   useEffect(() => {
-    // Persist English to ensure consistency
-    try { localStorage.setItem("node_lang", 'en'); } catch {}
-  }, [lang]);
+    try {
+      localStorage.setItem("node_lang", "en");
+      document.documentElement.lang = "en";
+    } catch {}
+  }, []);
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang }}>
+    <LanguageContext.Provider value={{ lang, setLang: () => {} }}>
       {children}
     </LanguageContext.Provider>
   );
