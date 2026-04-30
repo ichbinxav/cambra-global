@@ -45,7 +45,7 @@ function JourneyIcon({ status }) {
   return <CircleDot className="h-4 w-4 text-muted-foreground/35" />;
 }
 
-function FloatingPill({ open, setOpen, attentionNeeded }) {
+function FloatingPill({ open, setOpen }) {
   return (
     <motion.button
       initial={{ opacity: 0, y: 18, scale: 0.96 }}
@@ -62,7 +62,7 @@ function FloatingPill({ open, setOpen, attentionNeeded }) {
         />
       </span>
       <span>Copilot</span>
-      {attentionNeeded && <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />}
+      <span className="h-2 w-2 rounded-full bg-green-500" />
     </motion.button>
   );
 }
@@ -74,6 +74,7 @@ export default function CopilotPanel() {
   const [copilot, setCopilot] = useState(null);
   const [ask, setAsk] = useState('');
   const [answer, setAnswer] = useState('');
+  const [messages, setMessages] = useState([]);
   const [pageIntro, setPageIntro] = useState('');
   const [sending, setSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -87,6 +88,7 @@ export default function CopilotPanel() {
       setCopilot(data);
       setPageIntro(`You are on ${data.page.title}. ${data.page.description} The main thing to do here is: ${data.guidance.nextStep}`);
       setAnswer('');
+      setMessages([]);
       setAsk('');
       setLoading(false);
     });
@@ -131,6 +133,7 @@ export default function CopilotPanel() {
     setErrorMessage('');
     setAnswer('');
     const currentQuestion = question;
+    setMessages((prev) => [...prev, { role: 'user', content: currentQuestion }]);
     setAsk('');
 
     try {
@@ -140,7 +143,9 @@ export default function CopilotPanel() {
         pageDescription: copilot.page.description,
         nextStep: copilot.guidance.nextStep,
       });
-      setAnswer(response?.data?.answer || copilot.page.description);
+      const nextAnswer = response?.data?.answer || copilot.page.description;
+      setAnswer(nextAnswer);
+      setMessages((prev) => [...prev, { role: 'assistant', content: nextAnswer }]);
       playReceiveSound();
     } catch (error) {
       setErrorMessage(error?.message || 'No se pudo enviar el mensaje.');
@@ -161,7 +166,7 @@ export default function CopilotPanel() {
 
   return (
     <>
-      <FloatingPill open={open} setOpen={setOpen} attentionNeeded={attentionNeeded} />
+      <FloatingPill open={open} setOpen={setOpen} />
 
       <AnimatePresence>
         {open && (
@@ -211,13 +216,28 @@ export default function CopilotPanel() {
                     </div>
                   </section>
 
-                  {sending && (
-                    <section className="rounded-2xl border border-border/60 bg-secondary/40 p-4">
-                      <p className="text-sm leading-6 text-foreground">Thinking…</p>
+                  {messages.map((message, index) => (
+                    <section
+                      key={`${message.role}-${index}`}
+                      className={`rounded-2xl border p-4 ${message.role === 'user' ? 'border-border/60 bg-card' : 'border-border/60 bg-secondary/40'}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-border/60 bg-background shrink-0">
+                          <img
+                            src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png"
+                            alt="CAMBRA"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">{message.role === 'user' ? 'You' : 'Cambra Copilot'}</p>
+                          <p className="mt-2 text-sm leading-6 text-foreground">{message.content}</p>
+                        </div>
+                      </div>
                     </section>
-                  )}
+                  ))}
 
-                  {answer && !sending && (
+                  {sending && (
                     <section className="rounded-2xl border border-border/60 bg-secondary/40 p-4">
                       <div className="flex items-start gap-3">
                         <div className="mt-0.5 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-border/60 bg-background shrink-0">
@@ -229,7 +249,7 @@ export default function CopilotPanel() {
                         </div>
                         <div>
                           <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Cambra Copilot</p>
-                          <p className="mt-2 text-sm leading-6 text-foreground">{answer}</p>
+                          <p className="mt-2 text-sm leading-6 text-foreground">Thinking…</p>
                         </div>
                       </div>
                     </section>
