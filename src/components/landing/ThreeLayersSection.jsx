@@ -99,27 +99,41 @@ export default function ThreeLayersSection() {
             <div className="flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                 {[
-                  { icon: CreditCard, label: "Payments", detail: "From 2.9% → 1.4%", stat: "−52%", sub: "fee reduction" },
-                  { icon: Truck, label: "Shipping", detail: "Collective volume rates", stat: "−18%", sub: "avg cost" },
-                  { icon: Package, label: "SaaS & Tools", detail: "Group licensing deals", stat: "−30%", sub: "stack savings" },
+                  { icon: CreditCard, label: "Payments", detail: "Estimated from 2.9% → 1.4%", stat: "−52%", sub: "estimated fee drop" },
+                  { icon: Truck, label: "Shipping", detail: "Estimated from collective rates", stat: "−18%", sub: "estimated avg cost" },
+                  { icon: Package, label: "SaaS & Tools", detail: "Estimated from group deals", stat: "−30%", sub: "estimated savings" },
                 ].map(item => (
-                  <div key={item.label} className="p-4 rounded-xl border border-background/10 bg-background/[0.06] flex flex-col gap-1.5">
-                    <item.icon size={13} className="text-background/40" />
-                    <p className="text-xs font-bold mt-1">{item.label}</p>
-                    <p className="text-[10px] text-background/35 leading-tight">{item.detail}</p>
-                    <div className="mt-auto pt-3 border-t border-background/10">
-                      <p className="text-2xl font-black">{item.stat}</p>
-                      <p className="text-[9px] text-background/30 uppercase tracking-wider">{item.sub}</p>
+                  <div key={item.label} className="rounded-2xl border border-background/10 bg-background/[0.06] p-4 sm:p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl border border-background/10 bg-background/[0.03]">
+                          <item.icon size={13} className="text-background/45" />
+                        </div>
+                        <p className="text-sm font-bold">{item.label}</p>
+                        <p className="mt-1 text-[11px] text-background/45 leading-tight">{item.detail}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full border border-background/10 bg-background/[0.04] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-background/45">
+                        Estimated
+                      </span>
+                    </div>
+                    <div className="mt-4 border-t border-background/10 pt-4">
+                      <p className="text-3xl font-black leading-none">{item.stat}</p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-background/30">{item.sub}</p>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="flex items-center justify-between p-4 rounded-xl border border-background/10 bg-background/[0.04]">
-                <div>
-                  <p className="text-[10px] text-background/30 uppercase tracking-wider mb-0.5">Avg. margin unlocked</p>
-                  <p className="text-2xl font-black">€18K – €72K<span className="text-sm font-normal text-background/40">/yr</span></p>
+              <div className="rounded-2xl border border-background/10 bg-background/[0.04] p-4 sm:p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] text-background/30 uppercase tracking-[0.18em] mb-1">Estimated margin unlocked</p>
+                    <p className="text-3xl font-black leading-none">€18K – €72K<span className="ml-1 text-base font-normal text-background/40">/yr</span></p>
+                  </div>
+                  <span className="shrink-0 rounded-full border border-background/10 bg-background/[0.04] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-background/45">
+                    Estimated
+                  </span>
                 </div>
-                <p className="text-[10px] text-background/25 text-right max-w-[100px] leading-relaxed">Real network benchmarks · 1,000+ brands</p>
+                <p className="mt-3 text-[11px] text-background/30 leading-relaxed">Based on network benchmarks and brand averages.</p>
               </div>
             </div>
           </div>
