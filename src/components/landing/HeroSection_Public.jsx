@@ -57,11 +57,10 @@ export default function HeroSection_Public() {
               Independent brands. <span className="text-saas-gradient">Collective leverage.</span>
             </motion.h1>
 
-            <motion.p initial={false} className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-2 tracking-[-0.01em] text-center lg:text-left">
-              Better terms across payments, TPE, shipping and SaaS.
+            <motion.p initial={false} className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-4 tracking-[-0.01em] text-center lg:text-left max-w-[760px] mx-auto lg:mx-0 leading-[1.35]">
+              CAMBRA aggregates independent brands into one collective infrastructure to unlock better rates and stronger margins. Turn your scale into leverage and stop overpaying for the tools that run your business.
             </motion.p>
 ...
-
             <motion.ul initial={false} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-4 md:mb-6">
               {BULLETS.slice(0, 3).map((b, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground/85">
