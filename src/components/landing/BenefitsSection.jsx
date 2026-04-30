@@ -82,8 +82,10 @@ function BenefitTile({ b, index }) {
 
 
       <div className="flex items-start gap-3 mb-3">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border bg-foreground/90 text-background`}>
-          <IconComp size={18} className={b?.color || "text-muted-foreground/60"} />
+        <div className="w-12 h-12 rounded-[1.15rem] flex items-center justify-center border border-border/60 bg-background shadow-sm ring-1 ring-black/[0.03]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-saas-gradient shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+            <IconComp size={16} className="text-white" />
+          </div>
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-bold tracking-tight mb-1.5">{b.title}</h3>
