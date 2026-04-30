@@ -43,7 +43,7 @@ export default function HeroSection_Public() {
       <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-16 md:py-16 lg:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-14 lg:gap-16 items-center">
           {/* LEFT */}
-          <motion.div variants={container} initial={false} animate="show" className="pt-4 md:pt-6 text-center md:text-center lg:text-left">
+          <motion.div variants={container} initial={false} animate="show" className="pt-8 md:pt-10 text-center md:text-center lg:text-left">
             <motion.div initial={false} variants={fadeUp} className="hidden inline-flex items-center gap-2 mb-6 md:mb-8 px-3 py-1.5 rounded-full border border-border/50 bg-background/80">
               <motion.span
                 className="w-1.5 h-1.5 rounded-full bg-cambra-mint"
@@ -60,7 +60,7 @@ export default function HeroSection_Public() {
             <motion.p initial={false} className="text-[clamp(1.08rem,2.4vw,1.45rem)] font-medium text-foreground/80 mb-6 md:mb-7 tracking-[-0.01em] text-center lg:text-left max-w-[760px] mx-auto lg:mx-0 leading-[1.42]">
               CAMBRA aggregates independent brands into one collective infrastructure to unlock better rates and stronger margins. Turn your scale into leverage and stop overpaying for the tools that run your business.
             </motion.p>
-...
+
             <motion.ul initial={false} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-4 md:mb-6">
               {BULLETS.slice(0, 3).map((b, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground/85">
