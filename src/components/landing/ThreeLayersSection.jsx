@@ -4,9 +4,9 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
 const POWER_POINTS = [
-  { icon: Users, label: "Collective leverage you don't have", desc: "1,000+ brands negotiate as one bloc. Enterprise-level bargaining power — available to you immediately." },
-  { icon: TrendingDown, label: "Pre-negotiated institutional rates", desc: "Deals are already secured. You don't negotiate — you activate. Instant access to network-negotiated terms." },
-  { icon: ShieldCheck, label: "Enterprise infrastructure, indie economics", desc: "The exact contracts that large retailers sign. At the cost structure independent brands actually pay." },
+  { icon: Users, label: "Collective leverage", desc: "1,000+ brands negotiate as one." },
+  { icon: TrendingDown, label: "Pre-negotiated rates", desc: "No negotiation. Just activation." },
+  { icon: ShieldCheck, label: "Enterprise terms", desc: "Big-player infrastructure for indie brands." },
 ];
 
 export default function ThreeLayersSection() {
@@ -42,7 +42,7 @@ export default function ThreeLayersSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-foreground/60 text-lg leading-relaxed max-w-xl mx-auto text-center lg:text-left"
           >
-            Enterprise retailers negotiate at scale. You negotiate alone. CAMBRA pools independent brands into a single negotiation unit — so you get enterprise rates without the enterprise overhead.
+            CAMBRA gives independent brands the leverage usually reserved for big players.
           </motion.p>
         </div>
 
@@ -80,10 +80,10 @@ export default function ThreeLayersSection() {
                 Structural rates.<br />Immediately activated.
               </h3>
               <p className="text-background/55 text-sm leading-relaxed mb-3">
-                Payment processing at 1.4% vs. your current rate. Shipping 18% below market. SaaS at institutional group rates. These are the rates collective volume commands — not discounts.
+                Payments at 1.4%. Shipping 18% below market. SaaS on group rates.
               </p>
               <p className="text-background/40 text-sm leading-relaxed mb-7">
-                Join. Activate. Save. No negotiation required.
+                Join. Activate. Save.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 items-center justify-center lg:justify-start">
                 <Link to="/Deals">
@@ -139,13 +139,13 @@ export default function ThreeLayersSection() {
               {
                 icon: Network,
                 label: "Network",
-                desc: "Connect with independent brands. Build partnerships, explore collaboration opportunities, and grow within a curated ecosystem of operators.",
+                desc: "Meet independent brands and unlock partnerships.",
                 href: "/Network",
               },
               {
                 icon: BarChart2,
                 label: "Intelligence",
-                desc: "Benchmark your infrastructure against the network. Track your savings score, identify gaps, and access market insights.",
+                desc: "Benchmark your stack and spot savings faster.",
                 href: "/Insights",
               },
             ].map(item => (

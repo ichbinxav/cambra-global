@@ -10,10 +10,10 @@ const SAVINGS = [
 ];
 
 const BULLETS = [
-  "Access rates you can't unlock on your own",
-  "Instantly see where you're overpaying",
-  "Reduce infrastructure costs across your stack",
-  "Turn collective scale into economic leverage",
+  "Access rates you can't get alone",
+  "See where you overpay",
+  "Cut costs across your stack",
+  "Turn scale into leverage",
 ];
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } } };
@@ -58,13 +58,13 @@ export default function HeroSection_Public() {
             </motion.h1>
 
             <motion.p initial={false} className="text-[clamp(1.1rem,2.6vw,1.6rem)] font-semibold text-foreground/80 mb-2 tracking-[-0.01em] text-center lg:text-left">
-              CAMBRA helps independent commerce brands improve operating margins through better infrastructure terms across payments, shipping, SaaS and operational providers.
+              Better terms across payments, shipping and SaaS.
             </motion.p>
             <motion.p initial={false} className="text-base text-foreground/70 leading-relaxed mb-3 md:mb-4 max-w-[620px] mx-auto text-center lg:text-left">
-              We analyze your current stack, surface where money leaks, and activate better conditions through our collective network — fast, with minimal change management.
+              We find the leaks and unlock better rates through collective scale.
             </motion.p>
             <motion.p initial={false} className="text-base text-foreground/70 leading-relaxed mb-3 md:mb-4 max-w-[620px] mx-auto text-center lg:text-left">
-              Starting with payments, shipping and SaaS.
+              Start with payments, shipping and SaaS.
             </motion.p>
 
             <motion.ul initial={false} className="grid gap-2 max-w-[640px] mx-auto text-left lg:mx-0 mb-4 md:mb-6">

@@ -7,12 +7,12 @@ export default function ProblemSection_Public() {
         <div>
           <p className="text-[11px] tracking-[0.28em] uppercase text-muted-foreground/60 font-semibold mb-2">The problem</p>
           <h3 className="text-2xl md:text-3xl font-black tracking-tight mb-2">Operating without scale is expensive</h3>
-          <p className="text-foreground/70">Most indie brands overpay on payment processing, retail card terminals, parcel shipping and SaaS subscriptions. CAMBRA aggregates demand to unlock structural terms typically reserved for enterprises.</p>
+          <p className="text-foreground/70">Most indie brands overpay across payments, retail TPE, shipping and SaaS. CAMBRA unlocks enterprise terms through collective scale.</p>
           <ul className="mt-4 space-y-2 text-sm">
-            <li>Payment fees above network benchmark by 0.6–1.2 pp</li>
-            <li>Retail TPE fees and terminal rentals often sit far above collective rates</li>
-            <li>Shipping cost per parcel 10–25% higher than collective rates</li>
-            <li>30% wasted SaaS spend due to overlap and unused seats</li>
+            <li>Payments: +0.6–1.2 pp above benchmark</li>
+            <li>Retail TPE: high fees + terminal rentals</li>
+            <li>Shipping: 10–25% above collective rates</li>
+            <li>SaaS: up to 30% wasted spend</li>
           </ul>
           <div className="mt-5 flex flex-wrap gap-3">
             <a href="/Analyzer" className="h-11 px-5 rounded-full bg-foreground text-background text-sm font-bold inline-flex items-center justify-center">Run the Analyzer →</a>

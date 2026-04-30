@@ -33,7 +33,7 @@ export default function ValuePropositionSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-base text-muted-foreground leading-relaxed mb-6"
           >
-            Most independent brands operate below optimal infrastructure rates — and don’t realize it. CAMBRA aggregates independent brands into a single leverage bloc, identifies where value is being lost, and helps members access better terms.
+            Most independent brands overpay. CAMBRA finds the gap and unlocks better terms.
           </motion.p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-5">
             {BENEFITS.map((b, i) => (
