@@ -9,7 +9,7 @@ const STEPS = [
     num: "01",
     icon: Search,
     title: "Analyze",
-    desc: "Run the Analyzer to benchmark payments, shipping, and SaaS against real network data.",
+    desc: "Run the Analyzer to benchmark payments, shipping, SaaS and insurance against real network data.",
     tag: "< 2 min",
     color: "text-blue-600",
     bg: "bg-blue-500/[0.08] border-blue-500/20",

@@ -87,7 +87,7 @@ export default function Deals() {
       <div className="mb-6">
         <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-2">Member exclusive</p>
         <h1 className="text-3xl font-black tracking-[-0.03em]">Network Deals</h1>
-        <p className="text-muted-foreground text-sm mt-1.5">Pre-negotiated infrastructure discounts. Available only to THE NoDE members.</p>
+        <p className="text-muted-foreground text-sm mt-1.5">Pre-negotiated infrastructure discounts across payments, shipping, SaaS, insurance and retail TPE. Available only to THE NoDE members.</p>
       </div>
 
       {/* Tabs */}

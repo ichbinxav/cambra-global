@@ -30,6 +30,13 @@ const MODULES = [
     cta: "Start SaaS audit",
   },
   {
+    key: "insurance",
+    eyebrow: "Insurance",
+    title: "Insurance Audit",
+    description: "Benchmark essential insurance costs like RC Pro, employee health cover and business protection.",
+    cta: "Start insurance audit",
+  },
+  {
     key: "upload",
     eyebrow: "Data",
     title: "Connect / Upload Data",

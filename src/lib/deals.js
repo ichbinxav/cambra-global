@@ -144,20 +144,20 @@ export const DEALS = [
     category: "insurance",
     mode: "negotiated",
     icon: Shield,
-    provider: "AXA / Specialist",
-    title: "Group Business Insurance",
-    headline: "Preferred insurance conditions",
-    advantage: "Up to 25% better premiums via collective risk pool",
-    normal_rate: "Individual underwriting",
-    node_rate: "Group risk pool pricing",
-    estimated_savings: 4000,
-    saving_note: "Based on typical SME cover",
-    desc: "THE NoDE is building a group insurance product for independent brands — product liability, D&O, and e-commerce specific risk, underwritten collectively.",
-    phase: "planned",
+    provider: "Cambra Insurance Network",
+    title: "Insurance Optimization",
+    headline: "Essential coverage. Better economics.",
+    advantage: "Benchmark and reduce core insurance costs through collective deals",
+    normal_rate: "Individual broker pricing",
+    node_rate: "Collective benchmark-driven pricing",
+    estimated_savings: 1900,
+    saving_note: "Based on a typical independent brand policy mix",
+    desc: "Benchmark RC Pro, employee health insurance and business coverage without turning this into a complex insurance marketplace. Insurance is infrastructure. Treat it like one.",
+    phase: "live",
     region: ["EU", "Eurozone"],
     acceptance_items: [],
-    action_label: "Register interest",
-    action_note: "Register your interest to join the founding group. Group quote available in Q4 2026.",
+    action_label: "Request optimized quote",
+    action_note: "Upload your contract or request a Cambra benchmark to start the review.",
   },
   {
     id: "banking",
@@ -205,6 +205,10 @@ export const PHASE_CONFIG = {
   live: { label: "Live", dot: "bg-green-500", badge: "bg-green-500/10 text-green-600 border-green-500/20" },
   soon: { label: "Q2 2026", dot: "bg-blue-500", badge: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
   planned: { label: "Planned", dot: "bg-border", badge: "bg-secondary text-muted-foreground/60 border-border/50" },
+  proposed: { label: "Proposed", dot: "bg-blue-500", badge: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
+  quote_requested: { label: "Quote Requested", dot: "bg-violet-500", badge: "bg-violet-500/10 text-violet-600 border-violet-500/20" },
+  in_review: { label: "In Review", dot: "bg-orange-500", badge: "bg-orange-500/10 text-orange-600 border-orange-500/20" },
+  monetizing: { label: "Monetizing", dot: "bg-emerald-500", badge: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
 };
 
 export const STATUS_CONFIG = {
@@ -220,8 +224,7 @@ export const CATEGORIES = [
   { id: "shipping", label: "Shipping" },
   { id: "saas", label: "SaaS" },
   { id: "insurance", label: "Insurance" },
-  { id: "banking", label: "Banking" },
-  { id: "logistics", label: "Logistics" },
+  { id: "tpe", label: "Retail TPE" },
 ];
 
 export const REGIONS = [

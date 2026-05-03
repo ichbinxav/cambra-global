@@ -99,6 +99,11 @@ export function calculateSavings(input) {
     monthly_terminal_rental = 0,
     fixed_banking_fees = 0,
     maintenance_fees = 0,
+    annual_insurance_cost = 0,
+    insurance_rc_pro = "not_sure",
+    insurance_has_employees = "no",
+    insurance_mutuelle = "no_employees",
+    insurance_has_physical_assets = "no",
   } = input || {};
 
   // Annualized GMV and transactions
@@ -137,12 +142,20 @@ export function calculateSavings(input) {
   const costPerShipment = (monthly_shipping_cost || 0) / shipCount;
   const shippingSavings = 0;
 
-  const totalSavings = Math.round(paymentSavings + shippingSavings + saasSavings);
+  const insuranceBenchmarkBase = insurance_has_employees === "yes" || insurance_has_physical_assets === "yes" ? 3200 : 1200;
+  const insuranceComplexityLoad = (insurance_rc_pro === "yes" ? 500 : 0) + (insurance_mutuelle === "yes" ? 1200 : 0) + (insurance_has_physical_assets === "yes" ? 1500 : 0);
+  const insuranceBenchmarkLow = insuranceBenchmarkBase + insuranceComplexityLoad * 0.8;
+  const insuranceBenchmarkHigh = insuranceBenchmarkBase + insuranceComplexityLoad * 1.15;
+  const insuranceBenchmarkMid = (insuranceBenchmarkLow + insuranceBenchmarkHigh) / 2;
+  const insuranceSavings = Math.max(0, Math.round((annual_insurance_cost || 0) - insuranceBenchmarkMid));
+
+  const totalSavings = Math.round(paymentSavings + shippingSavings + saasSavings + insuranceSavings);
 
   return {
     paymentSavings,
     shippingSavings,
     saasSavings,
+    insuranceSavings,
     totalSavings,
     benchmarks: null,
     optimalShippingCost: 0,
@@ -160,6 +173,13 @@ export function calculateSavings(input) {
       shipping_optimal_avg: costPerShipment,
       saas_current_total: total_saas_spend || 0,
       saas_optimal_total: saasThreshold / 12,
+      insurance_current_total: annual_insurance_cost || 0,
+      insurance_benchmark_low: Math.round(insuranceBenchmarkLow),
+      insurance_benchmark_high: Math.round(insuranceBenchmarkHigh),
+      insurance_benchmark_mid: Math.round(insuranceBenchmarkMid),
+      insurance_savings: insuranceSavings,
+      insurance_coverage_quality: annual_insurance_cost > 0 ? (annual_insurance_cost < insuranceBenchmarkLow ? "At risk" : annual_insurance_cost > insuranceBenchmarkHigh ? "Similar" : "Better") : "Similar",
+      insurance_status: annual_insurance_cost > 0 ? (insuranceSavings > 0 ? "Review recommended" : "Optimized") : "Not analyzed",
       intl_pct: intl_pct || 0,
     },
   };

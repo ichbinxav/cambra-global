@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight, CreditCard, Truck, Package, TrendingDown, Zap,
-  Shield, AlertTriangle, CheckCircle2, ChevronRight, Lock, Store
+  Shield, AlertTriangle, CheckCircle2, ChevronRight, Lock, Store, ShieldCheck
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
@@ -33,12 +33,17 @@ const BREAKDOWN_META = [
     detail: r => r.details?.saas_current_total
       ? `€${r.details.saas_current_total.toLocaleString()}/mo current → €${r.details.saas_optimal_total?.toLocaleString() ?? "—"} via group licenses`
       : "Stack consolidation efficiency available" },
+  { key: "insurance_savings", label: "Insurance", icon: ShieldCheck, color: "#1f4ed8", bg: "bg-blue-500/[0.05] border-blue-500/20", textColor: "text-chart-1",
+    detail: r => r.details?.insurance_current_total
+      ? `€${r.details.insurance_current_total.toLocaleString()}/yr current → €${r.details.insurance_benchmark_low?.toLocaleString() ?? "—"}–€${r.details.insurance_benchmark_high?.toLocaleString() ?? "—"} Cambra benchmark`
+      : "Insurance benchmark review available" },
 ];
 
 const DEALS = [
   { title: "Network payment rate", desc: "1.4% effective fee — pre-negotiated at collective volume", saving: "Up to −52%", cat: "Payments", textColor: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac" },
   { title: "Collective shipping contracts", desc: "Enterprise carrier rates without enterprise volume", saving: "−18% avg.", cat: "Shipping", textColor: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint" },
   { title: "SaaS group licenses", desc: "Shared contracts on Klaviyo, Gorgias, Shopify and more", saving: "Up to −30%", cat: "SaaS", textColor: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum" },
+  { title: "Insurance optimization", desc: "Benchmark essential coverage and request an optimized quote through Cambra.", saving: "Better economics", cat: "Insurance", textColor: "text-chart-1", bg: "bg-blue-500/[0.05] border-blue-500/20" },
 ];
 
 const RECS = [
@@ -158,6 +163,7 @@ export default function Results() {
     ...result,
     online_payment_savings: onlinePaymentSavings,
     tpe_savings: result.details?.tpe_savings || 0,
+    insurance_savings: result.details?.insurance_savings || 0,
   };
 
   const chartData = BREAKDOWN_META.map(m => ({

@@ -12,7 +12,7 @@ import InfraScore from "@/components/dashboard/InfraScore";
 import SavingsTrend from "@/components/dashboard/SavingsTrend";
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import GMVMetrics from "@/components/dashboard/GMVMetrics";
-import { CreditCard, Truck, Package, Store } from "lucide-react";
+import { CreditCard, Truck, Package, Store, ShieldCheck } from "lucide-react";
 import RecommendationList from "@/components/recommendations/RecommendationList";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 
@@ -250,9 +250,10 @@ export default function Dashboard() {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <MetricCard label="Shipping" value={latest.shipping_savings} icon={Truck} color="text-chart-2" border="border-chart-2/20" bg="bg-green-500/[0.05]" note="shipping efficiency" />
             <MetricCard label="SaaS" value={latest.saas_savings} icon={Package} color="text-orange-500" border="border-orange-500/15" bg="bg-orange-500/[0.05]" note="stack efficiency" />
+            <MetricCard label="Insurance" value={latest.details?.insurance_savings || 0} icon={ShieldCheck} color="text-chart-1" border="border-chart-1/20" bg="bg-blue-500/[0.05]" note={(latest.details?.insurance_status || "Not analyzed").toLowerCase()} />
           </div>
 
           <GMVMetrics gmvTotal={gmvTotal} gmvAverage={gmvAverage} />
@@ -284,8 +285,9 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { title: "Run new analysis", desc: "Update your score", path: "/Analyzer", icon: TrendingDown, accent: true },
-              { title: "Browse network", desc: "1,000+ member brands", path: "/Network", icon: Users },
-              { title: "Read insights", desc: "Infrastructure intelligence", path: "/Insights", icon: BookOpen },
+              { title: "Upload insurance contract", desc: "Deeper insurance review", path: "/ConnectTools", icon: ShieldCheck },
+              { title: "Request Cambra benchmark", desc: "Benchmark your coverage", path: "/Deals", icon: Users },
+              { title: "Activate insurance optimization", desc: "Request optimized quote", path: "/Deals", icon: BookOpen },
             ].map((action, i) => (
               <Link key={i} to={action.path}>
                 <div className={`group p-5 rounded-2xl border transition-all cursor-pointer ${action.accent ? "border-foreground/8 bg-foreground text-background" : "border-border/50 bg-card hover:border-border"}`}>
