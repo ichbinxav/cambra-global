@@ -54,7 +54,7 @@ export default function AnalyzerCTA_Public() {
             <div className="mt-3 rounded-xl bg-foreground text-background p-4 flex items-center justify-between">
               <div>
                 <div className="text-[10px] uppercase opacity-50 mb-0.5">Potential savings unlocked</div>
-                <div className="text-2xl font-black">€8.4K<span className="text-sm opacity-60 font-normal">/yr</span></div>
+                <div className="text-2xl font-black">€93K<span className="text-sm opacity-60 font-normal">/yr</span></div>
               </div>
               <a href="/Analyzer" className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold border border-background/15 inline-flex items-center gap-1.5">
                 Analyze <ArrowRight className="h-3 w-3" />
