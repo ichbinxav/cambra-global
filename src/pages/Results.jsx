@@ -10,7 +10,7 @@ import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import ScoreCard from "@/components/results/ScoreCard";
 import IntelligencePanel from "@/components/results/IntelligencePanel";
 
-import { computeInfraScore } from "@/lib/scoreEngine";
+import { computeInfraScore, calculateSavings } from "@/lib/scoreEngine";
 import NormalizedBarChart from "@/components/charts/NormalizedBarChart";
 import { Download } from "lucide-react";
 import { jsPDF } from "jspdf";
@@ -109,6 +109,8 @@ export default function Results() {
         if (inputs.length) {
           setInput(inputs[0]);
           setScoreReport(computeInfraScore(inputs[0], "manual"));
+          const recalculated = calculateSavings(inputs[0]);
+          setResult(prev => prev ? { ...prev, details: { ...recalculated.details, ...(prev.details || {}) }, payment_savings: recalculated.paymentSavings, shipping_savings: recalculated.shippingSavings, saas_savings: recalculated.saasSavings, total_savings: recalculated.totalSavings } : prev);
           const intel = await base44.functions.invoke('computeIntelligenceForBrand', { resultId: r.id });
           setIntelligence(intel.data?.intelligence || null);
         }

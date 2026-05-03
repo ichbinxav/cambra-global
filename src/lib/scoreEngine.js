@@ -111,19 +111,18 @@ export function calculateSavings(input) {
   const aov = Math.max(1, avg_order_value || 1);
   const annualTransactions = Math.floor(annualGMV / aov);
 
-  // Financial model constants
-  const fee_actual = 0.019; // 1.9%
-  const fee_node = 0.012;   // 1.2%
-  const fijo_actual = 0.25; // € per txn
-  const fijo_node = 0.15;   // € per txn
+  const benchmarks = getBenchmarks(monthly_revenue, country);
 
   // Payments savings
-  const ahorro_variable = annualGMV * (fee_actual - fee_node);
-  const ahorro_fijo = annualTransactions * (fijo_actual - fijo_node);
-  const intlBonus = annualGMV * (Math.max(0, Math.min(100, intl_pct)) / 100) * 0.01; // +1% over international volume
+  const currentPaymentRate = Math.max(0, Number(input?.payment_fee_pct || 0));
+  const targetPaymentRate = benchmarks.payment.rate;
+  const ahorro_variable = annualGMV * Math.max(0, (currentPaymentRate - targetPaymentRate) / 100);
+  const averageTicketDelta = Math.max(0, 0.10 - 0.05);
+  const ahorro_fijo = annualTransactions * averageTicketDelta;
+  const intlBonus = annualGMV * (Math.max(0, Math.min(100, intl_pct)) / 100) * 0.001;
 
   const annualInStoreGmv = Math.max(0, (in_store_gmv || 0) * 12);
-  const tpeBenchmarks = getBenchmarks(monthly_revenue, country).tpe;
+  const tpeBenchmarks = benchmarks.tpe;
   const tpeVariableAnnual = annualInStoreGmv * ((tpe_transaction_fee_pct || 0) / 100);
   const tpeFixedAnnual = ((monthly_terminal_rental || 0) + (fixed_banking_fees || 0) + (maintenance_fees || 0)) * 12;
   const tpeEffectiveRate = annualInStoreGmv > 0 ? ((tpeVariableAnnual + tpeFixedAnnual) / annualInStoreGmv) * 100 : 0;
@@ -137,10 +136,9 @@ export function calculateSavings(input) {
   const saasExcess = Math.max(0, saasAnnual - saasThreshold);
   const saasSavings = Math.round(saasExcess * 0.20 + saasAnnual * 0.10);
 
-  // Shipping not modeled in this version — keep for UI compatibility
   const shipCount = Math.max(monthly_shipments || 1, 1);
   const costPerShipment = (monthly_shipping_cost || 0) / shipCount;
-  const shippingSavings = 0;
+  const shippingSavings = Math.max(0, Math.round((costPerShipment - benchmarks.shipping.perUnit) * shipCount * 12));
 
   const insuranceBenchmarkBase = insurance_has_employees === "yes" || insurance_has_physical_assets === "yes" ? 3200 : 1200;
   const insuranceComplexityLoad = (insurance_rc_pro === "yes" ? 500 : 0) + (insurance_mutuelle === "yes" ? 1200 : 0) + (insurance_has_physical_assets === "yes" ? 1500 : 0);
@@ -164,13 +162,13 @@ export function calculateSavings(input) {
       annual_gmv: annualGMV,
       avg_order_value: aov,
       annual_transactions: annualTransactions,
-      payment_current_rate: fee_actual * 100,
-      payment_optimal_rate: fee_node * 100,
+      payment_current_rate: currentPaymentRate,
+      payment_optimal_rate: targetPaymentRate,
       tpe_effective_rate: tpeEffectiveRate,
       tpe_optimal_rate: tpeBenchmarks.rate,
       tpe_savings: tpeSavings,
       shipping_current_avg: costPerShipment,
-      shipping_optimal_avg: costPerShipment,
+      shipping_optimal_avg: benchmarks.shipping.perUnit,
       saas_current_total: total_saas_spend || 0,
       saas_optimal_total: saasThreshold / 12,
       insurance_current_total: annual_insurance_cost || 0,
@@ -310,7 +308,7 @@ function generateImpacts(input, scores, benchmarks) {
 
 // ─── MAIN EXPORT ─────────────────────────────────────────────────────────────
 export function computeInfraScore(input, dataQuality = "manual") {
-  const { monthly_revenue = 0, avg_order_value = 0, total_saas_spend = 0, intl_pct = 0 } = input || {};
+  const { monthly_revenue = 0, avg_order_value = 0, total_saas_spend = 0, intl_pct = 0, country = "", payment_fee_pct = 0 } = input || {};
   const annualGMV = Math.max(0, (monthly_revenue || 0) * 12);
 
   // If we can't compute GMV, return a neutral score
@@ -330,15 +328,15 @@ export function computeInfraScore(input, dataQuality = "manual") {
     };
   }
 
-  // Financial model constants
-  const fee_actual = 0.019, fee_node = 0.012;
-  const fijo_actual = 0.25, fijo_node = 0.15;
+  const benchmarks = getBenchmarks(monthly_revenue, country);
   const aov = Math.max(1, avg_order_value || 1);
   const annualTransactions = Math.floor(annualGMV / aov);
 
-  const ahorro_variable = annualGMV * (fee_actual - fee_node);
-  const ahorro_fijo = annualTransactions * (fijo_actual - fijo_node);
-  const intlBonus = annualGMV * (Math.max(0, Math.min(100, intl_pct)) / 100) * 0.01;
+  const currentPaymentRate = Math.max(0, Number(payment_fee_pct || 0));
+  const targetPaymentRate = benchmarks.payment.rate;
+  const ahorro_variable = annualGMV * Math.max(0, (currentPaymentRate - targetPaymentRate) / 100);
+  const ahorro_fijo = annualTransactions * Math.max(0, 0.10 - 0.05);
+  const intlBonus = annualGMV * (Math.max(0, Math.min(100, intl_pct)) / 100) * 0.001;
 
   const saasAnnual = (total_saas_spend || 0) * 12;
   const saasThreshold = annualGMV * 0.02;

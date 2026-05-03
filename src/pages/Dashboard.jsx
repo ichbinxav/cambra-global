@@ -137,7 +137,7 @@ export default function Dashboard() {
   
   // GMV calculations from AnalyzerInput monthly_revenue
   const gmvTotal = results.reduce((sum, r) => {
-    const monthlyRevenue = r.details?.monthly_revenue || 0;
+    const monthlyRevenue = r.details?.annual_gmv ? r.details.annual_gmv / 12 : 0;
     return sum + (monthlyRevenue * 12);
   }, 0);
   const gmvAverage = results.length > 0 ? gmvTotal / Math.max(results.length, 1) : 0;

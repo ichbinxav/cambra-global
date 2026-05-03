@@ -227,7 +227,9 @@ export default function Analyzer() {
     const input = await base44.entities.AnalyzerInput.create({
       monthly_revenue: data.monthly_revenue, monthly_transactions: data.monthly_transactions,
       avg_order_value: data.avg_order_value,
-      channel_mix: { dtc_pct: data.dtc_pct, marketplace_pct: data.marketplace_pct, wholesale_pct: data.wholesale_pct, retail_pct: data.retail_pct },
+      country: data.country,
+      category: data.category,
+      channel_mix: { dtc_pct: data.dtc_pct, marketplace_pct: data.marketplace_pct, wholesale_pct: data.wholesale_pct, retail_pct: data.retail_pct, intl_pct: data.intl_pct },
       payment_provider: provider, payment_fee_pct: data.payment_fee_pct,
       shipping_provider: shipper, monthly_shipping_cost: data.monthly_shipping_cost,
       monthly_shipments: data.monthly_shipments, total_saas_spend: data.total_saas_spend,
@@ -236,6 +238,9 @@ export default function Analyzer() {
       in_store_gmv: data.in_store_gmv, in_store_avg_ticket: data.in_store_avg_ticket,
       card_mix_pct: data.card_mix_pct, fixed_banking_fees: data.fixed_banking_fees,
       maintenance_fees: data.maintenance_fees, contract_duration_months: data.contract_duration_months,
+      insurance_rc_pro: data.insurance_rc_pro, insurance_has_employees: data.insurance_has_employees,
+      insurance_mutuelle: data.insurance_mutuelle, insurance_has_physical_assets: data.insurance_has_physical_assets,
+      insurance_provider: data.insurance_provider, annual_insurance_cost: data.annual_insurance_cost,
     });
     const result = await base44.entities.AnalyzerResult.create({
       input_id: input.id,
