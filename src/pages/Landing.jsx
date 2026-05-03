@@ -38,10 +38,10 @@ export default function Landing() {
         <ProblemSection_Public />
         <AnalyzerCTA_Public />
         <InsuranceSection />
+        <PricingSection />
         <IntegrationsSection />
         <BenefitsSection />
         <TestimonialsSection />
-        <PricingSection />
       </main>
 
       <FooterSection />
