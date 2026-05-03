@@ -55,11 +55,12 @@ export default function PricingSection() {
                 <p className="text-4xl font-black tracking-tight">€18K – €72K<span className="text-base font-normal text-muted-foreground">/yr</span></p>
                 <p className="text-[11px] text-muted-foreground/40 mt-1">Based on real network benchmarks across payments, shipping, and SaaS.</p>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {[
                   { label: "Payments", val: "−52%", color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac" },
                   { label: "Shipping", val: "−18%", color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint" },
                   { label: "SaaS", val: "−30%", color: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum" },
+                  { label: "Insurance", val: "−25%", color: "text-chart-1", bg: "bg-blue-500/[0.05] border-blue-500/20" },
                 ].map((item, i) => (
                   <div key={i} className={`p-3.5 rounded-xl border text-center ${item.bg}`}>
                     <p className={`text-xl font-black ${item.color}`}>{item.val}</p>
