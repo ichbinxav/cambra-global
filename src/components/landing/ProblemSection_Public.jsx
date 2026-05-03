@@ -7,12 +7,11 @@ export default function ProblemSection_Public() {
         <div className="lg:sticky lg:top-24">
           <p className="text-[11px] tracking-[0.28em] uppercase text-muted-foreground/60 font-semibold mb-3">The problem</p>
           <h3 className="text-3xl md:text-5xl font-black tracking-[-0.04em] leading-[0.92] mb-4">Operating without scale is expensive</h3>
-          <p className="text-lg text-foreground/70 leading-relaxed max-w-xl">Most indie brands overpay across payments, retail TPE, shipping, insurance and SaaS. CAMBRA unlocks enterprise terms through collective scale.</p>
+          <p className="text-lg text-foreground/70 leading-relaxed max-w-xl">Most indie brands overpay across payments, shipping, insurance and SaaS. CAMBRA unlocks enterprise terms through collective scale.</p>
 
           <div className="mt-6 space-y-3">
             {[
-              "Payments: +0.6–1.2 pp above benchmark",
-              "Retail TPE: high fees + terminal rentals",
+              "Payments: online fees + TPE often sit above benchmark",
               "Shipping: 10–25% above collective rates",
               "Insurance: rarely benchmarked, often overpriced",
               "SaaS: up to 30% wasted spend",
@@ -39,16 +38,11 @@ export default function ProblemSection_Public() {
             <div className="hidden sm:flex h-10 w-10 items-center justify-center rounded-2xl bg-background border border-border/60 text-neon-6 text-lg font-black">!</div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">Typical fee</div>
+              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">Payments</div>
               <div className="mt-3 text-3xl font-black text-neon-6">3.1%</div>
-              <div className="mt-1 text-[12px] text-muted-foreground/70">Payments</div>
-            </div>
-            <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">Retail TPE</div>
-              <div className="mt-3 text-3xl font-black text-neon-5">2.5%</div>
-              <div className="mt-1 text-[12px] text-muted-foreground/70">+ rentals</div>
+              <div className="mt-1 text-[12px] text-muted-foreground/70">online + TPE</div>
             </div>
             <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
               <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">Cost / parcel</div>

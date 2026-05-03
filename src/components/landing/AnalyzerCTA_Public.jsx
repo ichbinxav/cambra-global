@@ -29,21 +29,16 @@ export default function AnalyzerCTA_Public() {
             <div className="rounded-full border border-border/60 bg-secondary/70 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">Estimated</div>
           </div>
           <div className="p-4">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
               <div className="rounded-xl border border-border/50 p-3">
                 <div className="text-[11px] text-muted-foreground/60">Payments</div>
-                <div className="text-lg font-black text-cambra-lilac">€38K/yr</div>
-                <div className="text-[11px] text-muted-foreground/60">-52% fee rate</div>
+                <div className="text-lg font-black text-cambra-lilac">€50K/yr</div>
+                <div className="text-[11px] text-muted-foreground/60">online + TPE</div>
               </div>
               <div className="rounded-xl border border-border/50 p-3">
                 <div className="text-[11px] text-muted-foreground/60">Shipping</div>
                 <div className="text-lg font-black text-cambra-mint">€19K/yr</div>
                 <div className="text-[11px] text-muted-foreground/60">-18% carrier cost</div>
-              </div>
-              <div className="rounded-xl border border-border/50 p-3">
-                <div className="text-[11px] text-muted-foreground/60">Retail TPE</div>
-                <div className="text-lg font-black text-chart-1">€12K/yr</div>
-                <div className="text-[11px] text-muted-foreground/60">-35% terminal costs</div>
               </div>
               <div className="rounded-xl border border-border/50 p-3">
                 <div className="text-[11px] text-muted-foreground/60">Insurance</div>
