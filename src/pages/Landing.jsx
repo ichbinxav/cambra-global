@@ -11,7 +11,6 @@ import ValuePropositionSection from "@/components/landing/ValuePropositionSectio
 import FeatureDuoSection from "@/components/landing/FeatureDuoSection";
 import FooterSection from "@/components/landing/FooterSection";
 import AnalyzerCTA_Public from "@/components/landing/AnalyzerCTA_Public.jsx";
-import InsuranceSection from "@/components/landing/InsuranceSection.jsx";
 
 export default function Landing() {
   return (
@@ -37,7 +36,6 @@ export default function Landing() {
         <ThreeLayersSection />
         <ProblemSection_Public />
         <AnalyzerCTA_Public />
-        <InsuranceSection />
         <PricingSection />
         <IntegrationsSection />
         <BenefitsSection />

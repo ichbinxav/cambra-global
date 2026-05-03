@@ -59,8 +59,8 @@ export default function PricingSection() {
                 {[
                   { label: "Payments", val: "−52%", color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac" },
                   { label: "Shipping", val: "−18%", color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint" },
-                  { label: "SaaS", val: "−30%", color: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum" },
                   { label: "Insurance", val: "−25%", color: "text-chart-1", bg: "bg-blue-500/[0.05] border-blue-500/20" },
+                  { label: "SaaS", val: "−30%", color: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum" },
                 ].map((item, i) => (
                   <div key={i} className={`p-3.5 rounded-xl border text-center ${item.bg}`}>
                     <p className={`text-xl font-black ${item.color}`}>{item.val}</p>

@@ -102,6 +102,7 @@ export default function ThreeLayersSection() {
                   { icon: CreditCard, label: "Payments", detail: "Estimated from 2.9% → 1.4%", stat: "−52%", sub: "estimated fee drop" },
                   { icon: Store, label: "Retail TPE", detail: "Estimated from lower terminal + bank fees", stat: "−35%", sub: "estimated terminal costs" },
                   { icon: Truck, label: "Shipping", detail: "Estimated from collective rates", stat: "−18%", sub: "estimated avg cost" },
+                  { icon: ShieldCheck, label: "Insurance", detail: "Estimated from Cambra benchmark review", stat: "−25%", sub: "estimated benchmark gap" },
                   { icon: Package, label: "SaaS & Tools", detail: "Estimated from group deals", stat: "−30%", sub: "estimated savings" },
                 ].map(item => (
                   <div key={item.label} className="rounded-2xl border border-background/10 bg-background/[0.06] p-4 sm:p-5">
