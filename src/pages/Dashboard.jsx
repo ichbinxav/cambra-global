@@ -148,25 +148,27 @@ export default function Dashboard() {
     <div className={`space-y-4 pb-10 ${!subscribed ? 'lock-blur' : ''}`}>
 
       {/* ── HEADER ── */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-black tracking-[-0.03em]">
             {user?.full_name ? `${user.full_name.split(" ")[0]}.` : "Dashboard"}
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">Infrastructure command center</p>
         </div>
-        <Link to="/Analyzer">
-          <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-foreground text-background shadow-md hover:shadow-lg">
-            New Analysis <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </Link>
-        {!subscribed && (
-          <Link to="/Onboarding">
-            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-saas-gradient text-white shadow-md hover:opacity-90">
-              Unlock report — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span>
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          <Link to="/Analyzer">
+            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-foreground text-background shadow-md hover:shadow-lg">
+              New Analysis <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
-        )}
+          {!subscribed && (
+            <Link to="/Onboarding">
+              <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-saas-gradient text-white shadow-md hover:opacity-90">
+                Unlock report — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span>
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Economics strip */}

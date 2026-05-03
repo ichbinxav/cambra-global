@@ -178,7 +178,7 @@ export function calculateSavings(input) {
       insurance_benchmark_high: Math.round(insuranceBenchmarkHigh),
       insurance_benchmark_mid: Math.round(insuranceBenchmarkMid),
       insurance_savings: insuranceSavings,
-      insurance_coverage_quality: annual_insurance_cost > 0 ? (annual_insurance_cost < insuranceBenchmarkLow ? "At risk" : annual_insurance_cost > insuranceBenchmarkHigh ? "Similar" : "Better") : "Similar",
+      insurance_coverage_quality: annual_insurance_cost > 0 ? (annual_insurance_cost < insuranceBenchmarkLow ? "At risk" : annual_insurance_cost > insuranceBenchmarkHigh ? "Better" : "Similar") : "Similar",
       insurance_status: annual_insurance_cost > 0 ? (insuranceSavings > 0 ? "Review recommended" : "Optimized") : "Not analyzed",
       intl_pct: intl_pct || 0,
     },

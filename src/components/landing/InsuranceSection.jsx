@@ -57,7 +57,7 @@ export default function InsuranceSection() {
                 <p className="text-sm font-semibold">Similar</p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">You’re probably overpaying for insurance.</p>
+            <p className="text-sm text-muted-foreground">Many independent brands never benchmark insurance, so hidden savings often go unnoticed.</p>
           </div>
         </div>
       </div>
