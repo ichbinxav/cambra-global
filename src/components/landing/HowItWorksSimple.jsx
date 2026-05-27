@@ -157,12 +157,12 @@ export default function HowItWorksSimple() {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-20 flex flex-wrap items-center gap-2"
+          className="mt-8 flex flex-wrap items-center gap-2"
         >
           <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/35 mr-2">
             What you get →
           </span>
-          {["€15K–120K / yr", "Zero upfront", "Success-fee only", "Live benchmarks", "Instant access"].map((chip) => (
+          {["Guaranteed infrastructure inefficiencies detected", "Zero upfront", "Success-fee only", "Live benchmarks", "Instant access"].map((chip) => (
             <span
               key={chip}
               className="px-3 py-1.5 text-[11px] font-medium rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm text-white/80"
