@@ -75,31 +75,35 @@ function UploadZone({ onUpload, uploadedFiles, onRemove }) {
   return (
     <div className="space-y-3">
       <div
-        className="border-2 border-dashed border-border/50 rounded-2xl p-8 text-center hover:border-foreground/20 transition-colors cursor-pointer"
+        className="group relative border-2 border-dashed border-border/40 rounded-2xl p-8 text-center hover:border-foreground/20 transition-all cursor-pointer overflow-hidden"
         onClick={() => ref.current?.click()}
         onDragOver={e => e.preventDefault()}
         onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handle(f); }}
       >
+        {/* Ambient glow on hover */}
+        <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl opacity-0 group-hover:opacity-40 transition-opacity" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.35), transparent)" }} />
+        <div className="pointer-events-none absolute -bottom-16 right-0 w-56 h-56 rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition-opacity" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.3), transparent)" }} />
+
         {uploading ? (
-          <div className="space-y-3">
+          <div className="relative space-y-3">
             <div className="w-8 h-8 rounded-full border-2 border-foreground/20 border-t-foreground animate-spin mx-auto" />
             <p className="text-sm text-muted-foreground">Uploading...</p>
             <div className="h-1.5 rounded-full bg-secondary overflow-hidden max-w-[180px] mx-auto">
-              <div className="h-full bg-foreground transition-all duration-200 rounded-full" style={{ width: `${progress}%` }} />
+              <div className="h-full transition-all duration-200 rounded-full" style={{ width: `${progress}%`, background: "linear-gradient(90deg, #1F4ED8, #2CA7C1)" }} />
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mx-auto">
-              <Upload size={20} className="text-muted-foreground/40" />
+          <div className="relative space-y-3">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto" style={{ background: "linear-gradient(135deg, rgba(31,78,216,0.12), rgba(44,167,193,0.12))", border: "1px solid rgba(44,167,193,0.15)" }}>
+              <Upload size={22} className="text-cambra-mint opacity-60" />
             </div>
             <div>
-              <p className="text-sm font-semibold mb-1">Drop your files here, or click to upload</p>
+              <p className="text-sm font-bold mb-1">Drop your files here, or click to upload</p>
               <p className="text-[11px] text-muted-foreground/50">PDF, Excel, CSV, images · Max 20MB</p>
             </div>
             <div className="flex flex-wrap justify-center gap-1.5 mt-2">
               {["Stripe statement", "Shopify export", "Carrier invoice", "SaaS billing"].map(t => (
-                <span key={t} className="text-[10px] px-2.5 py-1 rounded-full bg-secondary text-muted-foreground/50">{t}</span>
+                <span key={t} className="text-[10px] px-2.5 py-1 rounded-full border border-border/40 bg-secondary/50 text-muted-foreground/50">{t}</span>
               ))}
             </div>
           </div>
@@ -182,42 +186,72 @@ export default function ConnectTools() {
 
       <div className="relative flex-1 max-w-3xl mx-auto w-full px-5 py-8 space-y-8 mt-16">
 
-        {/* Header */}
-        <div>
-          <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Open integration system</span>
+        {/* ── PREMIUM DARK HERO — landing grade ── */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#06080F] text-white shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6)]">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-40 -left-32 w-[34rem] h-[34rem] rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.55), transparent 60%)" }} />
+            <div className="absolute -bottom-32 -right-20 w-[32rem] h-[32rem] rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.45), transparent 60%)" }} />
+            <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "44px 44px" }} />
+            <div className="absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)" }} />
           </div>
-          <h1 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-black tracking-[-0.045em] leading-[0.92] mb-3">
-            Connect your <span className="text-saas-gradient">tools.</span>
-          </h1>
-          <p className="text-foreground/65 text-sm leading-relaxed max-w-lg">
-            The more you connect, the more precise your infrastructure intelligence. Use direct integrations for best results — or upload files and enter data manually if needed.
-          </p>
+          <div className="relative p-7 sm:p-10">
+            <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+              </span>
+              <Plug size={10} className="text-white/60" />
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">Open integration system</span>
+            </div>
+            <h1 className="font-display text-[clamp(2.2rem,5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.92] mb-3">
+              <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", filter: "drop-shadow(0 0 22px rgba(44,167,193,0.35))" }}>
+                Connect your tools.
+              </span>
+            </h1>
+            <p className="text-sm text-white/55 leading-relaxed max-w-lg">
+              The more you connect, the more precise your infrastructure intelligence. Use direct integrations for best results — or upload files and enter data manually if needed.
+            </p>
+          </div>
         </div>
 
-        {/* Mode switcher */}
-        <div className="grid grid-cols-3 gap-2">
-          {MODES.map(m => (
-            <button
-              key={m.id}
-              onClick={() => setActiveMode(m.id)}
-              className={`p-4 rounded-xl border text-left transition-all ${activeMode === m.id ? "border-foreground bg-foreground text-background" : "border-border/50 hover:border-foreground/30 bg-card"}`}
-            >
-              <m.icon size={15} className={`mb-2 ${activeMode === m.id ? "text-background/60" : "text-muted-foreground/40"}`} />
-              <p className={`text-xs font-bold mb-0.5 ${activeMode === m.id ? "text-background" : ""}`}>{m.label}</p>
-              <p className={`text-[10px] ${activeMode === m.id ? "text-background/40" : "text-muted-foreground/40"}`}>{m.sub}</p>
-            </button>
-          ))}
+        {/* Mode switcher — premium glass cards */}
+        <div className="grid grid-cols-3 gap-3">
+          {MODES.map(m => {
+            const active = activeMode === m.id;
+            return (
+              <button
+                key={m.id}
+                onClick={() => setActiveMode(m.id)}
+                className={`group relative p-4 rounded-2xl border text-left transition-all overflow-hidden ${active ? "border-white/15 text-white shadow-[0_18px_40px_-16px_rgba(0,0,0,0.5)]" : "border-border/50 hover:border-foreground/20 bg-card/95 backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(0,0,0,0.12)]"}`}
+                style={active ? { background: "linear-gradient(135deg, #0A1024, #1F4ED8 65%, #2CA7C1)" } : {}}
+              >
+                {active && (
+                  <div className="pointer-events-none absolute inset-0 opacity-[0.12]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+                )}
+                {!active && (
+                  <div className="pointer-events-none absolute -top-12 -right-12 w-28 h-28 rounded-full blur-2xl opacity-0 group-hover:opacity-50 transition-opacity" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.3), transparent)" }} />
+                )}
+                <div className="relative">
+                  <m.icon size={15} className={`mb-2.5 ${active ? "text-white/70" : "text-muted-foreground/40"}`} />
+                  <p className={`text-xs font-bold mb-0.5 ${active ? "text-white" : ""}`}>{m.label}</p>
+                  <p className={`text-[10px] ${active ? "text-white/50" : "text-muted-foreground/40"}`}>{m.sub}</p>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         {/* MODE: Connect */}
         {activeMode === "connect" && (
           <div className="space-y-4">
-            {/* Info strip */}
-            <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-green-500/[0.05] border border-green-500/15 text-xs text-muted-foreground">
-              <CheckCircle2 size={13} className="text-green-500 shrink-0" />
-              Connect your tools for a more accurate analysis — we pull real rates and volumes automatically.
+            {/* Info strip — premium gradient border */}
+            <div className="relative p-3.5 rounded-xl text-xs text-muted-foreground overflow-hidden bg-card/95 backdrop-blur-sm">
+              <div className="pointer-events-none absolute inset-0 rounded-xl" style={{ padding: "1px", background: "linear-gradient(135deg, rgba(44,167,193,0.4), rgba(31,78,216,0.25), transparent 70%)", WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)", WebkitMaskComposite: "xor", maskComposite: "exclude" }} />
+              <div className="pointer-events-none absolute -top-12 -left-12 w-32 h-32 rounded-full blur-2xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.35), transparent)" }} />
+              <div className="relative flex items-center gap-2.5">
+                <CheckCircle2 size={13} className="text-cambra-mint shrink-0" />
+                Connect your tools for a more accurate analysis — we pull real rates and volumes automatically.
+              </div>
             </div>
 
             {/* Direct connections (OAuth) */}
@@ -385,9 +419,13 @@ export default function ConnectTools() {
         {/* MODE: Upload */}
         {activeMode === "upload" && (
           <div className="space-y-4">
-            <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-blue-500/[0.05] border border-blue-500/15 text-xs text-muted-foreground">
-              <Upload size={13} className="text-blue-500 shrink-0" />
-              Upload your files if your provider is not yet supported. We extract rates, volumes, and costs automatically using AI.
+            <div className="relative p-3.5 rounded-xl text-xs text-muted-foreground overflow-hidden bg-card/95 backdrop-blur-sm">
+              <div className="pointer-events-none absolute inset-0 rounded-xl" style={{ padding: "1px", background: "linear-gradient(135deg, rgba(31,78,216,0.4), rgba(44,167,193,0.25), transparent 70%)", WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)", WebkitMaskComposite: "xor", maskComposite: "exclude" }} />
+              <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full blur-2xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.35), transparent)" }} />
+              <div className="relative flex items-center gap-2.5">
+                <Upload size={13} className="text-cambra-lilac shrink-0" />
+                Upload your files if your provider is not yet supported. We extract rates, volumes, and costs automatically using AI.
+              </div>
             </div>
             <UploadZone
               onUpload={f => setUploadedFiles(prev => [...prev, f])}
@@ -433,7 +471,7 @@ export default function ConnectTools() {
                 </p>
               </div>
               <Link to="/Analyzer">
-                <Button className="h-11 rounded-full px-7 text-sm font-bold gap-2 shadow-sm mt-2">
+                <Button className="h-11 rounded-full px-7 text-sm font-bold gap-2 mt-2 bg-saas-gradient text-white hover:opacity-90 shadow-[0_0_24px_rgba(44,167,193,0.35)]">
                   Open Analyzer <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -454,8 +492,7 @@ export default function ConnectTools() {
             </p>
             <Button
               onClick={() => navigate("/Analyzer")}
-              variant={hasData ? "default" : "outline"}
-              className="h-10 rounded-full px-7 text-sm font-bold gap-2"
+              className={`h-10 rounded-full px-7 text-sm font-bold gap-2 ${hasData ? "bg-saas-gradient text-white hover:opacity-90 shadow-[0_0_24px_rgba(44,167,193,0.35)]" : "border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:border-foreground/30"}`}
             >
               {hasData ? "Run Analysis" : "Skip — enter manually"}
               <ArrowRight className="h-4 w-4" />
