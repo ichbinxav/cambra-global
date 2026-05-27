@@ -119,26 +119,23 @@ export default function HeroSystemic() {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
               </span>
-              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Infrastructure for independent commerce</span>
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Infrastructure intelligence · for independent commerce</span>
             </motion.div>
 
-            {/* Headline — staggered words */}
-            <h1 className="font-display text-[clamp(2.4rem,6.2vw,5.4rem)] font-black tracking-[-0.05em] leading-[0.88] mb-5">
-              {["We find the money", ""].map((line, li) => (
-                <motion.span
-                  key={li}
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.15 + li * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  className="block"
-                >
-                  {line}
-                </motion.span>
-              ))}
+            {/* Headline — staggered words, tighter & sharper */}
+            <h1 className="font-display text-[clamp(2.6rem,6.8vw,5.8rem)] font-black tracking-[-0.05em] leading-[0.86] mb-6">
               <motion.span
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                className="block"
+              >
+                We find the margin
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 className="block relative"
               >
                 <span
@@ -154,14 +151,14 @@ export default function HeroSystemic() {
               </motion.span>
             </h1>
 
-            {/* Sub */}
+            {/* Sub — tightened, value prop clear in 3 seconds */}
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.55 }}
-              className="text-[clamp(0.95rem,1.55vw,1.15rem)] text-foreground/80 mb-6 max-w-[540px] leading-[1.55]"
+              transition={{ duration: 0.7, delay: 0.5 }}
+              className="text-[clamp(1rem,1.6vw,1.2rem)] text-foreground/75 mb-7 max-w-[520px] leading-[1.5]"
             >
-              CAMBRA audits every hidden cost in your business — payments, shipping, SaaS, banking and more — and shows you what you're overpaying vs. peers your size.
+              CAMBRA identifies hidden operational inefficiencies — payments, shipping, SaaS — and surfaces the recoverable margin your peers don't pay.
             </motion.p>
 
             {/* Layer chips — staggered */}
@@ -190,36 +187,37 @@ export default function HeroSystemic() {
                 href="/Analyzer"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="relative h-12 rounded-full px-7 text-sm font-bold text-white inline-flex items-center justify-center gap-2 overflow-hidden group border border-white/10"
+                className="relative h-14 rounded-full px-8 text-[15px] font-black text-white inline-flex items-center justify-center gap-2.5 overflow-hidden group border border-white/15"
                 style={{
-                  background: "linear-gradient(180deg, hsl(222 80% 2%) 0%, hsl(222 85% 1%) 100%)"
+                  background: "linear-gradient(180deg, hsl(222 80% 2%) 0%, hsl(222 85% 1%) 100%)",
+                  boxShadow: "0 16px 40px -12px rgba(31,78,216,0.5), 0 4px 12px -2px rgba(44,167,193,0.3)"
                 }}
               >
                 {/* Shimmer sweep */}
                 <motion.span
                   aria-hidden
                   className="absolute inset-0 pointer-events-none"
-                  style={{ background: "linear-gradient(110deg, transparent 35%, rgba(44,167,193,0.35) 50%, transparent 65%)" }}
+                  style={{ background: "linear-gradient(110deg, transparent 35%, rgba(44,167,193,0.4) 50%, transparent 65%)" }}
                   animate={{ x: ["-100%", "100%"] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
                 />
                 {/* Glow */}
                 <span
                   aria-hidden
-                  className="absolute -inset-1 rounded-full opacity-50 blur-md group-hover:opacity-80 transition-opacity"
+                  className="absolute -inset-1 rounded-full opacity-60 blur-lg group-hover:opacity-90 transition-opacity"
                   style={{ background: "linear-gradient(110deg, #1F4ED8, #2CA7C1)" }}
                 />
-                <Sparkles className="relative h-3.5 w-3.5" />
+                <Sparkles className="relative h-4 w-4" />
                 <span className="relative">Run free audit</span>
-                <ArrowRight className="relative h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="relative h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </motion.a>
               <motion.a
                 href="/auth/start"
                 target="_blank"
                 rel="noopener noreferrer"
-                whileHover={{ scale: 1.03 }}
+                whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
-                className="h-12 rounded-full px-6 text-sm font-semibold border border-border/60 bg-background/60 backdrop-blur-sm text-foreground hover:border-foreground/40 transition inline-flex items-center justify-center gap-2"
+                className="h-14 rounded-full px-6 text-sm font-semibold text-foreground/70 hover:text-foreground transition inline-flex items-center justify-center gap-2"
               >
                 Sign in
                 <ArrowRight className="h-3.5 w-3.5" />

@@ -48,21 +48,21 @@ function JourneyIcon({ status }) {
 function FloatingPill({ open, setOpen }) {
   return (
     <motion.button
-      initial={{ opacity: 0, y: 18, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.2 }}
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
       onClick={() => setOpen(!open)}
-      className="fixed bottom-20 right-4 z-[90] inline-flex h-11 items-center gap-2 rounded-full border border-border/70 bg-card/95 px-3.5 text-sm font-semibold text-foreground shadow-[0_18px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl hover:bg-card sm:bottom-5 sm:right-5"
+      aria-label="Open Cambra Copilot"
+      className="group fixed bottom-5 right-5 z-[90] flex h-11 w-11 items-center justify-center rounded-full border border-border/60 bg-card/95 text-foreground shadow-[0_8px_24px_rgba(0,0,0,0.10)] backdrop-blur-xl transition hover:border-foreground/30 hover:shadow-[0_12px_32px_rgba(0,0,0,0.14)]"
     >
-      <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-border/60 bg-background">
+      <span className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-background">
         <img
           src="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png"
-          alt="CAMBRA"
+          alt=""
           className="h-full w-full object-cover"
         />
       </span>
-      <span>Copilot</span>
-      <span className="h-2 w-2 rounded-full bg-green-500" />
+      <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 ring-2 ring-card" />
     </motion.button>
   );
 }

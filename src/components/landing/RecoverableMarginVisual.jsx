@@ -83,19 +83,19 @@ export default function RecoverableMarginVisual() {
 
       <div className="relative max-w-5xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-10 md:mb-14">
+        <div className="text-center mb-12 md:mb-16">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 mb-5"
+            className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm"
           >
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
             </span>
             <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">
-              Potential recoverable margin
+              Recoverable margin · live estimate
             </span>
           </motion.div>
 
@@ -103,7 +103,7 @@ export default function RecoverableMarginVisual() {
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="font-display text-[clamp(2rem,5vw,3.4rem)] font-black tracking-[-0.04em] leading-[1]"
+            className="font-display text-[clamp(2.2rem,5.5vw,3.8rem)] font-black tracking-[-0.045em] leading-[0.95] mb-5"
           >
             Where your margin <span className="text-saas-gradient">leaks.</span>
           </motion.h2>
@@ -112,9 +112,9 @@ export default function RecoverableMarginVisual() {
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.12 }}
-            className="mt-4 text-sm md:text-base text-foreground/65 max-w-md mx-auto leading-relaxed"
+            className="text-base md:text-lg text-foreground/65 max-w-lg mx-auto leading-[1.55]"
           >
-            A typical operator your size carries this much recoverable margin — hidden across three layers.
+            A typical operator your size carries recoverable margin hidden across three operational layers.
           </motion.p>
         </div>
 
@@ -165,7 +165,7 @@ export default function RecoverableMarginVisual() {
             transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
           />
 
-          <div className="relative grid md:grid-cols-3 gap-3 sm:gap-4 mb-6 md:mb-8 z-10">
+          <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8 md:mb-10 z-10">
             {ITEMS.map((it, i) => {
               const isPulsing = pulseIdx === i;
               return (
@@ -174,36 +174,35 @@ export default function RecoverableMarginVisual() {
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
                   transition={{ duration: 0.6, delay: 0.25 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative rounded-2xl bg-white/[0.03] backdrop-blur-sm p-4 sm:p-5"
+                  className="relative rounded-2xl bg-white/[0.03] backdrop-blur-sm p-5 sm:p-6"
                   style={{
                     border: "1px solid",
                     borderColor: isPulsing ? "rgba(44,167,193,0.7)" : "rgba(255,255,255,0.1)",
                     boxShadow: isPulsing
-                      ? "0 0 0 1px rgba(44,167,193,0.35), 0 0 24px -2px rgba(44,167,193,0.45)"
+                      ? "0 0 0 1px rgba(44,167,193,0.35), 0 0 28px -2px rgba(44,167,193,0.5)"
                       : "0 0 0 0 rgba(44,167,193,0)",
                     transition: "border-color 600ms ease, box-shadow 600ms ease",
                   }}
                 >
-
-                  <div className="relative flex items-center gap-2 mb-3">
+                  <div className="relative flex items-center gap-2.5 mb-4">
                     <motion.div
-                      className="h-7 w-7 rounded-lg flex items-center justify-center bg-white/[0.05] border border-white/10"
+                      className="h-8 w-8 rounded-lg flex items-center justify-center bg-white/[0.05] border border-white/10"
                       animate={isPulsing ? { scale: [1, 1.12, 1] } : {}}
                       transition={{ duration: 0.6 }}
                     >
-                      <it.Icon className="h-3.5 w-3.5 text-cambra-cyan" strokeWidth={2} />
+                      <it.Icon className="h-4 w-4 text-cambra-cyan" strokeWidth={2} />
                     </motion.div>
-                    <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/55">
+                    <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/60">
                       {it.label}
                     </span>
                   </div>
-                  <div className="relative flex items-baseline gap-1 mb-1.5">
-                    <span className="text-2xl sm:text-3xl font-black tabular-nums text-white tracking-tight">
+                  <div className="relative flex items-baseline gap-1.5 mb-2.5">
+                    <span className="text-[28px] sm:text-[32px] font-black tabular-nums text-white tracking-[-0.02em] leading-none">
                       €<Counter to={it.value} duration={1300 + i * 200} start={inView} />
                     </span>
-                    <span className="text-[10px] font-mono text-white/40">/yr</span>
+                    <span className="text-[11px] font-mono text-white/40">/yr</span>
                   </div>
-                  <p className="relative text-[11px] text-white/55 leading-snug">{it.detail}</p>
+                  <p className="relative text-[12px] text-white/60 leading-[1.5]">{it.detail}</p>
                 </motion.div>
               );
             })}

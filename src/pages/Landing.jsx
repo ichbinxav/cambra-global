@@ -6,6 +6,7 @@ import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import MeetTheFounder from "@/components/landing/MeetTheFounder.jsx";
 import FooterSection from "@/components/landing/FooterSection";
 import Navbar from "@/components/landing/Navbar";
+import SectionTransition from "@/components/landing/SectionTransition.jsx";
 
 export default function Landing() {
   return (
@@ -16,21 +17,31 @@ export default function Landing() {
         {/* 1 — Hidden margin leaks (hero) */}
         <HeroSystemic />
 
+        <SectionTransition variant="strong" />
+
         {/* 2 — Potential recoverable margin (money visual under hero) */}
         <RecoverableMarginVisual />
+
+        <SectionTransition />
 
         {/* 3 — Free audit + benchmarks (the 4 steps) */}
         <div id="how">
           <HowItWorksSimple />
         </div>
 
+        <SectionTransition />
+
         {/* 4 — Intelligence first, Recovery second (alignment model) */}
         <div id="pricing">
           <PricingSection />
         </div>
 
+        <SectionTransition />
+
         {/* 5 — Operator findings */}
         <TestimonialsSection />
+
+        <SectionTransition />
 
         {/* Founder */}
         <MeetTheFounder />

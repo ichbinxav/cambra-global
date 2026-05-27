@@ -286,10 +286,15 @@
 .lock-blur .sensitive { filter: blur(6px); }
 .lock-blur .no-blur .sensitive { filter: none !important; }
 
-/* Tech-forward typography */
-h1, h2, h3, .font-display { font-family: 'Space Grotesk', 'Inter', var(--font-inter); letter-spacing: -0.025em; }
+/* Tech-forward typography — clearer hierarchy */
+h1, h2, h3, .font-display { font-family: 'Space Grotesk', 'Inter', var(--font-inter); letter-spacing: -0.03em; }
+h1 { line-height: 0.92; }
+h2 { line-height: 1.0; }
+h3 { line-height: 1.15; }
 /* Numeric consistency for dashboards */
 body { font-variant-numeric: tabular-nums; }
+/* Paragraph readability — softer body weight, calmer line-height */
+p { line-height: 1.6; }
 
 /* Premium glow utilities */
 .glow-violet { box-shadow: 0 0 30px rgba(99, 91, 255, 0.15), 0 0 80px rgba(99, 91, 255, 0.05); }
