@@ -156,10 +156,10 @@
 /* Editorial step number — giant cinematic */
 .cambra-step-number {
   font-family: 'Space Grotesk', 'Inter', sans-serif;
-  font-weight: 800;
-  font-size: clamp(4.5rem, 11vw, 8.5rem);
-  line-height: 0.85;
-  letter-spacing: -0.06em;
+  font-weight: 900;
+  font-size: clamp(7rem, 20vw, 14rem);
+  line-height: 0.82;
+  letter-spacing: -0.07em;
   background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0) 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -167,10 +167,10 @@
 }
 .cambra-step-number-light {
   font-family: 'Space Grotesk', 'Inter', sans-serif;
-  font-weight: 800;
-  font-size: clamp(4.5rem, 11vw, 8.5rem);
-  line-height: 0.85;
-  letter-spacing: -0.06em;
+  font-weight: 900;
+  font-size: clamp(7rem, 20vw, 14rem);
+  line-height: 0.82;
+  letter-spacing: -0.07em;
   background: linear-gradient(180deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 100%);
   -webkit-background-clip: text;
   background-clip: text;
