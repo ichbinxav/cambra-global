@@ -82,21 +82,22 @@ export default function HowItWorks() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-80px" }}
                   transition={{ duration: 0.5, delay: i * 0.05 }}
-                  className="cambra-card p-8 sm:p-10 relative"
+                  className="cambra-card p-8 sm:p-10"
                 >
-                  {/* CTA — mini pill top-right */}
-                  <Link
-                    to={step.cta.href}
-                    style={{ zIndex: 20, top: '1rem', right: '1rem', left: 'auto' }}
-                    className="group/cta absolute inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full border border-white/20 bg-cambra-navy-deep/80 hover:bg-cambra-navy-deep hover:border-white/40 transition-all backdrop-blur-md"
-                  >
-                    <span className="text-[9px] sm:text-[10px] font-bold text-white tracking-[0.08em] uppercase whitespace-nowrap">
-                      {step.cta.label}
-                    </span>
-                    <span className="h-4 w-4 rounded-full flex items-center justify-center bg-cambra-mint transition-transform group-hover/cta:translate-x-0.5">
-                      <ArrowRight className="h-2.5 w-2.5 text-cambra-navy-deep" strokeWidth={3} />
-                    </span>
-                  </Link>
+                  {/* CTA row — pill anchored to the right */}
+                  <div className="flex justify-end mb-4" style={{ position: 'relative', zIndex: 20 }}>
+                    <Link
+                      to={step.cta.href}
+                      className="group/cta inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full border border-white/20 bg-cambra-navy-deep/80 hover:bg-cambra-navy-deep hover:border-white/40 transition-all backdrop-blur-md"
+                    >
+                      <span className="text-[9px] sm:text-[10px] font-bold text-white tracking-[0.08em] uppercase whitespace-nowrap">
+                        {step.cta.label}
+                      </span>
+                      <span className="h-4 w-4 rounded-full flex items-center justify-center bg-cambra-mint transition-transform group-hover/cta:translate-x-0.5">
+                        <ArrowRight className="h-2.5 w-2.5 text-cambra-navy-deep" strokeWidth={3} />
+                      </span>
+                    </Link>
+                  </div>
 
                   <div className="grid md:grid-cols-[auto_1fr] gap-6 sm:gap-10 items-end">
                     {/* Giant cinematic number */}
