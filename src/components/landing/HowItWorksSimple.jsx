@@ -39,7 +39,7 @@ export default function HowItWorksSimple() {
             How it works
           </p>
           <h2 className="font-display text-[clamp(1.8rem,4vw,2.8rem)] font-black tracking-[-0.04em] leading-[0.95]">
-            <span className="text-saas-gradient">Three steps.</span> No procurement contracts.
+            <span className="text-saas-gradient">Recover margin.</span> Three steps.
           </h2>
         </div>
 
@@ -74,8 +74,8 @@ export default function HowItWorksSimple() {
 
         {/* Quick chips row */}
         <div className="mt-10 flex flex-wrap items-center gap-2 justify-center">
-          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground/40 mr-1">Includes</span>
-          {["No subscription", "No card required", "3-min audit", "Success fee only", "Cancel anytime"].map((chip) => (
+          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground/40 mr-1">Recovery includes</span>
+          {["15K–120K €/yr", "Zero upfront", "Success-based fees", "Live benchmarks", "Instant access"].map((chip) => (
             <span
               key={chip}
               className="px-3 py-1.5 text-[11px] font-medium rounded-full border border-border/50 bg-card text-foreground/70"
