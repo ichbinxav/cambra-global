@@ -50,27 +50,40 @@ export default function HowItWorksSection() {
           {STEPS.map((step) => (
             <article
               key={step.number}
-              className="group relative overflow-hidden rounded-[1.4rem] border border-border/70 bg-background/90 backdrop-blur-sm p-5 shadow-[0_8px_24px_rgba(0,0,0,0.04)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(0,0,0,0.08)] hover:border-foreground/30"
+              className="group relative overflow-hidden rounded-[1.4rem] border border-white/8 bg-gradient-to-br from-[#0f1829] to-[#0a0f1a] p-5 transition duration-200 hover:-translate-y-0.5 hover:border-white/15 hover:shadow-[0_14px_36px_rgba(44,167,193,0.15)]"
             >
+              {/* Ambient layers */}
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -top-20 -left-12 w-[16rem] h-[16rem] rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.25), transparent 70%)" }} />
+                <div className="absolute -bottom-16 -right-10 w-[14rem] h-[14rem] rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.18), transparent 70%)" }} />
+                <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+              </div>
+
               <div className="relative flex items-start justify-between gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black tracking-[0.16em] bg-foreground text-background">
+                <div className="font-display font-black leading-[0.85] tracking-[-0.06em] select-none text-[3.5rem]"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 65%, rgba(255,255,255,0) 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}>
                   {step.number}
                 </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-foreground transition group-hover:bg-foreground group-hover:text-background">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/85 backdrop-blur-sm transition group-hover:bg-white/[0.14] group-hover:border-white/20">
                   <ArrowUpRight className="h-4 w-4" />
                 </div>
               </div>
 
-              <div className="relative mt-5">
-                <p className="font-display text-lg font-black tracking-[-0.03em] text-foreground">
+              <div className="relative mt-4">
+                <p className="font-display text-lg font-black tracking-[-0.03em] text-white">
                   {step.title}
                 </p>
-                <p className="mt-2 text-sm leading-5 text-foreground/65">
+                <p className="mt-2 text-sm leading-5 text-white/60">
                   {step.detail}
                 </p>
               </div>
 
-              <div className="relative mt-5 h-1 overflow-hidden rounded-full bg-secondary">
+              <div className="relative mt-5 h-1 overflow-hidden rounded-full bg-white/10">
                 <div className="h-full rounded-full bg-saas-gradient" style={{ width: "68%" }} />
               </div>
             </article>

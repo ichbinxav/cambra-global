@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 
-export default function AuditModuleCard({ eyebrow, title, description, cta, onClick, icon: Icon, number }) {
+export default function AuditModuleCard({ eyebrow, title, description, cta, onClick, icon: Icon }) {
   return (
     <article 
       className="group relative overflow-hidden rounded-[1.6rem] border border-white/8 bg-gradient-to-br from-[#0f1829] to-[#0a0f1a] backdrop-blur-xl p-7 cursor-pointer transition duration-200 hover:-translate-y-1 hover:border-white/12 hover:shadow-[0_16px_48px_rgba(44,167,193,0.15)]"
@@ -14,20 +14,7 @@ export default function AuditModuleCard({ eyebrow, title, description, cta, onCl
       </div>
 
       <div className="relative">
-        {/* Big number with gradient */}
-        {number && (
-          <div className="mb-5 font-display text-[4.5rem] font-black leading-[0.9] tracking-[-0.06em] select-none"
-            style={{
-              background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 60%, rgba(255,255,255,0) 100%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}>
-            {number}
-          </div>
-        )}
-
-        <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex items-start justify-between gap-3 mb-5">
           <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-white/12 bg-white/[0.06] backdrop-blur-sm">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-[#2CA7C1] opacity-50" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
