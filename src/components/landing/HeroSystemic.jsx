@@ -79,7 +79,7 @@ export default function HeroSystemic() {
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <a
                 href="/Analyzer"
-                className="h-12 rounded-full px-7 text-sm font-bold bg-foreground text-background ring-1 ring-foreground/10 hover:bg-foreground/90 transition inline-flex items-center justify-center gap-2"
+                className="h-12 rounded-full px-7 text-sm font-bold bg-cambra-navy text-white hover:bg-cambra-navy/90 transition inline-flex items-center justify-center gap-2 shadow-[0_0_24px_rgba(31,78,216,0.3)]"
               >
                 Run free audit
                 <ArrowRight className="h-3.5 w-3.5" />
