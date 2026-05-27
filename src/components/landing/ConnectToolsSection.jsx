@@ -20,7 +20,7 @@ export default function ConnectToolsSection() {
         <div className="absolute -bottom-32 right-1/4 w-[32rem] h-[32rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.12]" />
       </div>
 
-      <div className="relative max-w-4xl">
+      <div className="relative max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8 md:mb-10">
           <motion.div
