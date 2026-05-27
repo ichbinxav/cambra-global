@@ -10,6 +10,7 @@ const NAV_PUBLIC = [
   { label: "Analyzer", href: "/Analyzer" },
   { label: "Insights", href: "/Insights" },
   { label: "Pricing", href: "/Pricing" },
+  { label: "Founder", href: "/#founder-letter" },
   { label: "Help", href: "/Help" },
   { label: "Contact", href: "/Contact" },
 ];
