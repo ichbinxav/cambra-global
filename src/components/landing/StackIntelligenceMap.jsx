@@ -134,9 +134,9 @@ export default function StackIntelligenceMap() {
               {/* Connection lines removed — clean radial map without center-to-node links */}
 
               {/* Center engine — always on top of lines */}
-              <circle cx={0} cy={0} r={34} fill="rgba(10,16,36,0.9)" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
+              <circle cx={0} cy={0} r={48} fill="rgba(10,16,36,0.95)" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
               <motion.circle
-                cx={0} cy={0} r={34}
+                cx={0} cy={0} r={48}
                 fill="none"
                 stroke={focusState.color}
                 strokeWidth={1.5}
@@ -145,17 +145,20 @@ export default function StackIntelligenceMap() {
               />
               {/* Inner glow */}
               <motion.circle
-                cx={0} cy={0} r={22}
+                cx={0} cy={0} r={30}
                 fill={focusState.color}
                 animate={{ opacity: [0.04, 0.12, 0.04] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               />
-              <text x={0} y={-4} textAnchor="middle" className="fill-white font-mono" style={{ fontSize: 9, letterSpacing: "0.15em", fontWeight: 700 }}>
-                CAMBRA
-              </text>
-              <text x={0} y={8} textAnchor="middle" className="fill-white/40 font-mono" style={{ fontSize: 7 }}>
-                ENGINE
-              </text>
+              {/* CAMBRA Logo SVG */}
+              <g transform="translate(-16, -18) scale(0.65)">
+                {/* Left vertical */}
+                <polygon points="20,10 28,14 28,44 20,48" fill="white" />
+                {/* Top right */}
+                <polygon points="32,12 48,22 40,28 24,18" fill="white" />
+                {/* Bottom right */}
+                <polygon points="24,38 40,48 48,42 32,32" fill="white" />
+              </g>
 
               {/* Layer nodes — TOPMOST layer, nothing overlaps these */}
               {LAYERS.map((layer, i) => {
