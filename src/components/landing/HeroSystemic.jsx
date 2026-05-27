@@ -59,7 +59,13 @@ export default function HeroSystemic() {
   }, [revealedRows]);
 
   return (
-    <section ref={ref} className="relative min-h-[100vh] flex items-center overflow-hidden pt-8 bg-background">
+    <section
+      ref={ref}
+      className="relative min-h-[100vh] flex items-center overflow-hidden pt-8"
+      style={{
+        background: "linear-gradient(135deg, hsl(217 100% 96%) 0%, hsl(217 85% 92%) 100%)"
+      }}
+    >
       {/* Animated backdrop */}
       <motion.div className="absolute inset-0 pointer-events-none" style={{ y: bgY }}>
         <div
