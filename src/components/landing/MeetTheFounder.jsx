@@ -50,13 +50,13 @@ export default function MeetTheFounder() {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-[180px_1fr] gap-6 md:gap-10 items-start">
+        <div className="grid md:grid-cols-[240px_1fr] gap-6 md:gap-12 items-start">
           {/* Photo — smaller */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-[140px] md:w-[180px]"
+            className="relative w-[160px] md:w-[240px]"
           >
             <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-border/40 bg-secondary/50">
               <img
