@@ -98,9 +98,9 @@ export default function OperationalTension() {
                     <p className="text-[10px] uppercase tracking-[0.18em] font-mono text-muted-foreground/40 mb-0.5">
                       {r.layer}
                     </p>
-                    <p className="text-sm font-semibold text-foreground/85 truncate">{r.finding}</p>
+                    <p className="text-sm text-foreground/75 truncate">{r.finding}</p>
                   </div>
-                  <span className="text-xs font-mono tabular-nums font-bold text-foreground shrink-0">
+                  <span className="text-base font-mono tabular-nums font-bold text-saas-gradient shrink-0">
                     {r.recovered}
                   </span>
                 </motion.div>
