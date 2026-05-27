@@ -50,23 +50,21 @@ export default function MeetTheFounder() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-[160px_1fr] md:grid-cols-[240px_1fr] gap-4 md:gap-12 items-start md:items-center">
+        <div className="grid grid-cols-[120px_1fr] md:grid-cols-[220px_1fr] gap-3 md:gap-10 items-start">
           {/* Photo */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-[160px] md:w-[240px]"
+            className="relative w-[120px] md:w-[220px] shrink-0"
           >
-            <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-border/40 bg-secondary/50">
+            <div className="relative aspect-[3/4] rounded-xl overflow-hidden border border-border/40 bg-secondary/50">
               <img
                 src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/f1e34eda8_0347F92E-E1B9-4977-A6B1-85897923556A.jpeg"
                 alt="Xavier M. Contero, Founder of CAMBRA"
                 className="w-full h-full object-cover"
               />
             </div>
-            {/* Quote mark on photo (mobile) */}
-            <Quote className="h-8 w-8 md:hidden text-saas-gradient absolute -top-2 -right-2 opacity-80" strokeWidth={1.5} />
           </motion.div>
 
           {/* Short quote card */}
@@ -74,15 +72,14 @@ export default function MeetTheFounder() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="relative rounded-2xl border border-border/40 bg-secondary/30 p-4 md:p-8"
+            className="relative rounded-2xl border border-border/40 bg-secondary/30 p-4 md:p-8 h-fit"
           >
-            <Quote className="hidden md:block h-10 w-10 md:h-12 md:w-12 text-saas-gradient mb-4 opacity-80" strokeWidth={1.5} />
-            
-            <p className="text-sm md:text-xl font-medium leading-snug text-foreground mb-3 md:mb-5">
+            <Quote className="h-7 w-7 md:h-12 md:w-12 text-saas-gradient -ml-3.5 -mt-3.5 md:-ml-4 md:-mt-4 opacity-80 absolute" strokeWidth={1.5} />
+            <p className="text-sm md:text-lg font-medium leading-snug text-foreground mb-3 md:mb-4">
               After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.
             </p>
 
-            <p className="text-foreground/70 text-xs md:text-base font-light mb-4 md:mb-6">
+            <p className="text-foreground/70 text-xs md:text-sm font-light mb-3 md:mb-4">
               That's why I started CAMBRA.
             </p>
 
