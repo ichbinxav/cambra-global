@@ -91,10 +91,12 @@ export default function HeroSystemic() {
                 <ArrowRight className="h-3.5 w-3.5" />
               </a>
               <a
-                href="#how"
+                href="/auth/start"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="h-12 rounded-full px-6 text-sm font-semibold border border-border/60 bg-background/60 backdrop-blur-sm text-foreground hover:border-foreground/40 hover:text-foreground transition inline-flex items-center justify-center gap-2"
               >
-                How it works
+                Sign in
               </a>
             </div>
 
