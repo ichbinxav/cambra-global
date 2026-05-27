@@ -176,39 +176,39 @@ export default function ConnectTools() {
 
   const HERO_CONFIG = {
     connect: {
-      eyebrow: "Open integration system",
-      title: "Connect your tools.",
-      subtitle: "Direct integrations pull real rates and volumes — automatically. The most precise way to map your infrastructure.",
-      accuracy: "99%",
-      accuracyLabel: "Accuracy",
-      stats: [
-        { value: "99%", label: "Accuracy" },
+       eyebrow: "Open integration system",
+       title: "Connect your tools.",
+       subtitle: "Direct integrations pull real rates and volumes — automatically. The most precise way to map your infrastructure.",
+       accuracy: "98%",
+       accuracyLabel: "Accuracy",
+       stats: [
+         { value: "98%", label: "Accuracy" },
         { value: "Real-time", label: "Data freshness" },
         { value: "22+", label: "Integrations" },
         { value: "OAuth", label: "Secure access" },
       ],
     },
     upload: {
-      eyebrow: "AI-powered ingestion",
-      title: "Upload your files.",
-      subtitle: "Drop statements, invoices or exports — our AI extracts rates, volumes and costs in seconds. Great when direct integration isn't available.",
-      accuracy: "92%",
-      accuracyLabel: "Accuracy",
-      stats: [
-        { value: "92%", label: "Accuracy" },
+       eyebrow: "AI-powered ingestion",
+       title: "Upload your files.",
+       subtitle: "Drop statements, invoices or exports — our AI extracts rates, volumes and costs in seconds. Great when direct integration isn't available.",
+       accuracy: "79%",
+       accuracyLabel: "Accuracy",
+       stats: [
+         { value: "79%", label: "Accuracy" },
         { value: "<30s", label: "Processing" },
         { value: "PDF/CSV/XLS", label: "Formats" },
         { value: "AI-extracted", label: "Method" },
       ],
     },
     manual: {
-      eyebrow: "Fallback mode",
-      title: "Enter manually.",
-      subtitle: "Always available — answer a few questions and we'll generate an estimate. Connect tools later to refine your analysis.",
-      accuracy: "~75%",
-      accuracyLabel: "Estimate confidence",
-      stats: [
-        { value: "~75%", label: "Confidence" },
+       eyebrow: "Fallback mode",
+       title: "Enter manually.",
+       subtitle: "Always available — answer a few questions and we'll generate an estimate. Connect tools later to refine your analysis.",
+       accuracy: "66%",
+       accuracyLabel: "Estimate confidence",
+       stats: [
+         { value: "66%", label: "Confidence" },
         { value: "5 min", label: "Setup time" },
         { value: "Guided", label: "Step-by-step" },
         { value: "Estimated", label: "Result quality" },
