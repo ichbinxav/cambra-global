@@ -25,14 +25,14 @@ const SAVINGS = [
   { label: "SaaS Stack", amount: "€5,800", pct: "3 redundant tools", color: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum", icon: Package },
 ];
 
-const fadeUp = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] } } };
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } } };
+const fadeUp = { hidden: { opacity: 0, y: 40 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } } };
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } } };
 
 export default function HeroSection_Public() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
-  const leakage = useCounter(26400, 2.2, 1.0);
+  const leakage = useCounter(26400, 1.2, 0.6);
 
   return (
     <section ref={ref} className="relative min-h-screen flex items-center overflow-hidden pt-14">
@@ -116,16 +116,16 @@ export default function HeroSection_Public() {
           {/* RIGHT — original-style product visual */}
           <motion.div
             className="hidden lg:flex flex-col gap-3"
-            initial={{ opacity: 0, x: 40 }}
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* Overpaying alert */}
             <motion.div
               className="flex items-center gap-3 p-4 rounded-xl border border-destructive/30 bg-red-500/[0.08]"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 28 }}
             >
               <div className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
               <p className="text-sm font-semibold text-foreground/85">Margin leakage detected: <span className="text-destructive font-black">€26,400/year</span></p>
@@ -151,9 +151,9 @@ export default function HeroSection_Public() {
                   <motion.div
                     key={i}
                     className="flex items-center gap-3 p-3.5 rounded-xl border bg-card"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.8 + i * 0.13, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    initial={{ opacity: 0, x: -16, scale: 0.97 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    transition={{ delay: 0.35 + i * 0.08, type: "spring", stiffness: 500, damping: 30 }}
                   >
                     <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center shrink-0`}>
                       <item.icon size={13} className={item.color} />
@@ -164,9 +164,9 @@ export default function HeroSection_Public() {
                     </div>
                     <motion.p
                       className={`text-lg font-black tabular-nums ${item.color}`}
-                      initial={{ opacity: 0, scale: 0.5 }}
+                      initial={{ opacity: 0, scale: 0.4 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.9 + i * 0.13, type: "spring", stiffness: 300, damping: 18 }}
+                      transition={{ delay: 0.5 + i * 0.08, type: "spring", stiffness: 600, damping: 22 }}
                     >{item.amount}</motion.p>
                   </motion.div>
                 ))}
@@ -174,9 +174,9 @@ export default function HeroSection_Public() {
 
               <motion.div
                 className="mx-4 mb-4 p-4 rounded-xl bg-foreground text-background flex items-center justify-between"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.15, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                initial={{ opacity: 0, y: 16, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.6, type: "spring", stiffness: 450, damping: 28 }}
               >
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Estimated recoverable margin</p>
@@ -193,9 +193,9 @@ export default function HeroSection_Public() {
             {/* Infra score mini card */}
             <motion.div
               className="rounded-xl border border-border/50 bg-card p-4 flex items-center gap-3.5"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.25, duration: 0.5 }}
+              initial={{ opacity: 0, y: 16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: 0.72, type: "spring", stiffness: 450, damping: 28 }}
             >
               <div className="relative w-12 h-12 shrink-0">
                 <svg className="w-12 h-12 -rotate-90" viewBox="0 0 44 44">
@@ -206,7 +206,7 @@ export default function HeroSection_Public() {
                     strokeDasharray={2 * Math.PI * 18}
                     initial={{ strokeDashoffset: 2 * Math.PI * 18 }}
                     animate={{ strokeDashoffset: 2 * Math.PI * 18 * 0.37 }}
-                    transition={{ delay: 1.4, duration: 1.2, ease: "easeOut" }}
+                    transition={{ delay: 0.85, duration: 0.8, ease: "easeOut" }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -221,7 +221,7 @@ export default function HeroSection_Public() {
 
             <motion.p
               className="text-center text-[10px] text-muted-foreground/25"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
             >Sample analysis · Estimated figures · 2025</motion.p>
           </motion.div>
         </div>
