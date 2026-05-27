@@ -107,13 +107,14 @@ export default function TestimonialsSection() {
                     <p className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50 mb-3">
                       The change
                     </p>
-                    <div className="space-y-2">
+                    <div className="flex items-end gap-3">
                       <div>
-                        <p className="text-[8px] uppercase tracking-widest font-mono text-muted-foreground/40 mb-0.5">Before</p>
+                        <p className="text-[8px] uppercase tracking-widest font-mono text-muted-foreground/40 mb-1">Before</p>
                         <p className="text-sm font-medium text-foreground/50 line-through decoration-1">{t.before}</p>
                       </div>
+                      <div className="text-muted-foreground/40 text-xs">→</div>
                       <div>
-                        <p className="text-[8px] uppercase tracking-widest font-mono text-muted-foreground/40 mb-0.5">After</p>
+                        <p className="text-[8px] uppercase tracking-widest font-mono text-muted-foreground/40 mb-1">After</p>
                         <p className="text-lg font-black text-foreground">{t.after}</p>
                       </div>
                     </div>
