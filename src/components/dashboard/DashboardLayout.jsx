@@ -160,8 +160,14 @@ export default function DashboardLayout() {
       </AnimatePresence>
 
       {/* Main */}
-      <main className="flex-1 min-w-0 pt-14 lg:pt-0 bg-background xl:pr-[392px]">
-        <div className="max-w-5xl mx-auto p-6 lg:p-10">
+      <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 bg-background xl:pr-[392px] overflow-hidden">
+        {/* Ambient backdrop */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 dot-grid opacity-40" />
+          <div className="absolute -top-32 right-1/4 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.14]" />
+          <div className="absolute top-1/3 -left-32 w-[30rem] h-[30rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.12]" />
+        </div>
+        <div className="relative max-w-5xl mx-auto p-6 lg:p-10">
           <Outlet />
         </div>
       </main>

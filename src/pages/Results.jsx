@@ -258,10 +258,16 @@ export default function Results() {
   };
 
   return (
-    <div className="min-h-screen font-inter bg-background text-foreground">
+    <div className="relative min-h-screen font-inter bg-background text-foreground overflow-hidden">
+      {/* Ambient backdrop */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 dot-grid opacity-40" />
+        <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.18]" />
+        <div className="absolute top-1/3 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.14]" />
+      </div>
 
       {/* ── Sticky top bar ── */}
-      <div className="sticky top-0 z-20 border-b border-border/40 px-5 py-3.5 flex items-center justify-between bg-background/97 backdrop-blur-2xl">
+      <div className="relative sticky top-0 z-20 border-b border-border/40 px-5 py-3.5 flex items-center justify-between bg-background/97 backdrop-blur-2xl">
         <Link to="/" aria-label="CAMBRA home"><span className="sr-only">CAMBRA</span></Link>
         <div className="flex items-center gap-2">
           <Link to="/Reports">
@@ -287,11 +293,14 @@ export default function Results() {
         </div>
       </div>
 
-      <div className={`max-w-3xl mx-auto px-5 py-10 pb-24 space-y-12 ${!subscribed ? 'lock-blur' : ''}`}>
+      <div className={`relative max-w-3xl mx-auto px-5 py-10 pb-24 space-y-12 ${!subscribed ? 'lock-blur' : ''}`}>
 
         {/* ═══ 1. MAIN RESULT ═══════════════════════════════════════ */}
         <div className="text-center">
-          <p className="text-[10px] tracking-[0.4em] uppercase text-muted-foreground/40 mb-5">Infrastructure analysis complete</p>
+          <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground font-semibold">Infrastructure analysis complete</p>
+          </div>
 
           {/* Accuracy badge */}
           <div className="flex justify-center mb-5">

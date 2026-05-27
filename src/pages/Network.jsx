@@ -80,9 +80,12 @@ export default function Network() {
   return (
     <div>
       <div className="mb-8">
-        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-2">Members</p>
-        <h1 className="text-3xl font-black tracking-[-0.03em]">Network</h1>
-        <p className="text-muted-foreground text-sm mt-1">Independent brands building smarter businesses through THE NoDE.</p>
+        <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Members · Independent operators</span>
+        </div>
+        <h1 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-black tracking-[-0.045em] leading-[0.92]"><span className="text-saas-gradient">Network.</span></h1>
+        <p className="text-foreground/65 text-sm mt-3">Independent brands building smarter businesses through CAMBRA.</p>
       </div>
 
       {!subscribed && (

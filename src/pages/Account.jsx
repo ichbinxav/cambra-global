@@ -10,10 +10,12 @@ import { LogOut, User, Building2, Shield, Store, Mail } from "lucide-react";
 import MonthlyEmailPreference from "@/components/account/MonthlyEmailPreference";
 
 const Section = ({ icon: IconComp, title, children }) => (
-  <div className="p-7 rounded-2xl border border-border/50 bg-card/60">
-    <div className="flex items-center gap-2.5 mb-6">
-      <IconComp size={13} className="text-muted-foreground/50" />
-      <p className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground/50">{title}</p>
+  <div className="p-7 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
+    <div className="flex items-center gap-2 mb-6">
+      <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
+        <IconComp size={13} className="text-muted-foreground" />
+      </div>
+      <p className="text-[10px] tracking-[0.22em] uppercase text-muted-foreground font-semibold">{title}</p>
     </div>
     {children}
   </div>
@@ -84,9 +86,16 @@ export default function Account() {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
       <div className="mb-10">
-        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-2">Settings</p>
-        <h1 className="text-3xl font-black tracking-[-0.03em]">Account</h1>
-        <p className="text-muted-foreground text-sm mt-1.5">Manage your profile and brand settings.</p>
+        <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+            Settings · Profile & brand
+          </span>
+        </div>
+        <h1 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-black tracking-[-0.045em] leading-[0.92]">
+          <span className="text-saas-gradient">Account.</span>
+        </h1>
+        <p className="text-foreground/65 text-sm mt-3">Manage your profile and brand settings.</p>
       </div>
 
       <div className="max-w-lg space-y-4">

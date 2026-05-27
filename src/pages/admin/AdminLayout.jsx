@@ -171,8 +171,16 @@ export default function AdminLayout() {
           </div>
         </header>
 
-        <main className="flex-1 p-6 max-w-[1400px] mx-auto w-full">
-          <Outlet />
+        <main className="relative flex-1 overflow-hidden">
+          {/* Ambient backdrop */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute inset-0 dot-grid opacity-40" />
+            <div className="absolute -top-32 right-1/4 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.12]" />
+            <div className="absolute top-1/3 -left-32 w-[30rem] h-[30rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.10]" />
+          </div>
+          <div className="relative p-6 max-w-[1400px] mx-auto w-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

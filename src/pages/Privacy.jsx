@@ -5,8 +5,13 @@ import { Button } from "@/components/ui/button";
 
 export default function Privacy() {
   return (
-    <div className="min-h-screen bg-background font-inter">
-      <div className="max-w-3xl mx-auto px-6 py-16">
+    <div className="relative min-h-screen bg-background font-inter overflow-hidden">
+      {/* Ambient backdrop */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 dot-grid opacity-50" />
+        <div className="absolute -top-32 left-1/4 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.16]" />
+      </div>
+      <div className="relative max-w-3xl mx-auto px-6 py-16">
         <Link to="/">
           <Button variant="ghost" size="sm" className="mb-10 -ml-2 h-8 text-xs rounded-full px-3 text-muted-foreground">
             <ArrowLeft size={13} className="mr-1.5" /> Back
@@ -14,9 +19,12 @@ export default function Privacy() {
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-4">Legal</p>
-          <h1 className="text-[clamp(2.5rem,6vw,5rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4">Privacy Policy</h1>
-          <p className="text-muted-foreground text-sm mb-16">Last updated: {new Date().getFullYear()}</p>
+          <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Legal</span>
+          </div>
+          <h1 className="font-display text-[clamp(2.5rem,6vw,5rem)] font-black tracking-[-0.045em] leading-[0.88] mb-4">Privacy <span className="text-saas-gradient">Policy.</span></h1>
+          <p className="text-foreground/65 text-sm mb-16">Last updated: {new Date().getFullYear()}</p>
 
           <div className="space-y-10 text-sm text-muted-foreground leading-relaxed">
             {[

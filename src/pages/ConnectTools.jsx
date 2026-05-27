@@ -171,16 +171,27 @@ export default function ConnectTools() {
   ];
 
   return (
-    <div className="min-h-screen bg-background font-inter flex flex-col">
+    <div className="relative min-h-screen bg-background font-inter flex flex-col overflow-hidden">
       <Navbar />
+      {/* Ambient backdrop */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 dot-grid opacity-50" />
+        <div className="absolute -top-32 left-1/4 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.18]" />
+        <div className="absolute top-1/3 -right-32 w-[30rem] h-[30rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.14]" />
+      </div>
 
-      <div className="flex-1 max-w-3xl mx-auto w-full px-5 py-8 space-y-8 mt-16">
+      <div className="relative flex-1 max-w-3xl mx-auto w-full px-5 py-8 space-y-8 mt-16">
 
         {/* Header */}
         <div>
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-3">Open integration system</p>
-          <h1 className="text-3xl font-black tracking-[-0.03em] mb-2">Connect your tools.</h1>
-          <p className="text-muted-foreground text-sm leading-relaxed max-w-lg">
+          <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Open integration system</span>
+          </div>
+          <h1 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-black tracking-[-0.045em] leading-[0.92] mb-3">
+            Connect your <span className="text-saas-gradient">tools.</span>
+          </h1>
+          <p className="text-foreground/65 text-sm leading-relaxed max-w-lg">
             The more you connect, the more precise your infrastructure intelligence. Use direct integrations for best results — or upload files and enter data manually if needed.
           </p>
         </div>

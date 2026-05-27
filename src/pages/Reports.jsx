@@ -58,9 +58,12 @@ export default function Reports() {
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
       <div className="flex items-start justify-between mb-12">
         <div>
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-2">Analytics</p>
-          <h1 className="text-3xl font-black tracking-[-0.03em]">Reports</h1>
-          <p className="text-muted-foreground text-sm mt-1.5">Your analysis history and savings trends.</p>
+          <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Analytics · Savings history</span>
+          </div>
+          <h1 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-black tracking-[-0.045em] leading-[0.92]"><span className="text-saas-gradient">Reports.</span></h1>
+          <p className="text-foreground/65 text-sm mt-3">Your analysis history and savings trends.</p>
         </div>
         <Link to="/Analyzer">
           <Button size="sm" className="h-8 rounded-full px-4 text-xs font-semibold shadow-sm">

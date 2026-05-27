@@ -761,9 +761,15 @@ export default function Analyzer() {
 
   if (mode === "hub") {
     return (
-      <div className="min-h-screen bg-[#fbfaf7] font-inter text-foreground">
+      <div className="relative min-h-screen bg-background font-inter text-foreground overflow-hidden">
         <Navbar />
-        <div className="mx-auto max-w-7xl px-5 pt-24 pb-10 md:px-8 md:pt-28 md:pb-12">
+        {/* Ambient background */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 dot-grid opacity-50" />
+          <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.18]" />
+          <div className="absolute top-1/3 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.15]" />
+        </div>
+        <div className="relative mx-auto max-w-7xl px-5 pt-24 pb-10 md:px-8 md:pt-28 md:pb-12">
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="space-y-8">
               <AnalyzerHero

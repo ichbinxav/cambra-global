@@ -66,8 +66,12 @@ export default function Vault() {
     <div className="p-5 space-y-5">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-black tracking-tight">Document Vault</h1>
-          <p className="text-xs text-muted-foreground">Sube, organiza y vincula documentos.</p>
+          <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Documents · Organized</span>
+          </div>
+          <h1 className="font-display text-2xl font-black tracking-[-0.04em]"><span className="text-saas-gradient">Document Vault.</span></h1>
+          <p className="text-xs text-foreground/65 mt-1">Sube, organiza y vincula documentos.</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={newCat} onValueChange={setNewCat}>

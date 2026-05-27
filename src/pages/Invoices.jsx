@@ -22,9 +22,15 @@ export default function Invoices() {
   if (loading) return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
 
   return (
-    <div className="p-4 space-y-3">
-      <h1 className="text-xl font-bold">My Invoices</h1>
-      <div className="rounded-lg border overflow-auto">
+    <div className="space-y-5">
+      <div className="mb-2">
+        <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Billing</span>
+        </div>
+        <h1 className="font-display text-2xl font-black tracking-[-0.04em]"><span className="text-saas-gradient">My Invoices.</span></h1>
+      </div>
+      <div className="rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm overflow-auto shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
         <table className="min-w-[700px] w-full text-sm">
           <thead className="bg-secondary/40">
             <tr>

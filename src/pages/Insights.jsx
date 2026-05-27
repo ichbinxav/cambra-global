@@ -57,9 +57,16 @@ export default function Insights() {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
       <div className="mb-10">
-        <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 mb-2">Research</p>
-        <h1 className="text-3xl font-black tracking-[-0.03em]">Insights</h1>
-        <p className="text-muted-foreground text-sm mt-1.5">Intelligence for independent brands. FOR LIFESTYLE COMMERCE.</p>
+        <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+            Research · For lifestyle commerce
+          </span>
+        </div>
+        <h1 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-black tracking-[-0.045em] leading-[0.92]">
+          <span className="text-saas-gradient">Insights.</span>
+        </h1>
+        <p className="text-foreground/65 text-sm mt-3 max-w-xl leading-relaxed">Intelligence for independent brands. Trends, benchmarks and research curated for operators.</p>
       </div>
 
       {!subscribed && (

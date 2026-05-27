@@ -34,7 +34,14 @@ export default function Onboarding(){
   return (
     <>
       <Navbar />
-      <div className="pt-16">
+      <div className="relative pt-16 min-h-screen overflow-hidden">
+        {/* Ambient backdrop */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 dot-grid opacity-40" />
+          <div className="absolute -top-32 right-1/4 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.15]" />
+          <div className="absolute top-1/3 -left-32 w-[30rem] h-[30rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.12]" />
+        </div>
+        <div className="relative">
         <OnboardingLayout activeTab={tab} onTabChange={(v)=>{ setTab(v); if(v!=='general') load(); }} statuses={statuses}>
           <TabsContent value="general">
             <div className="space-y-6">
@@ -83,6 +90,7 @@ export default function Onboarding(){
             </div>
           </TabsContent>
         </OnboardingLayout>
+        </div>
       </div>
     </>
   );

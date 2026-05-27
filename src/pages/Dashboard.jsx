@@ -155,10 +155,19 @@ export default function Dashboard() {
         {/* ── HEADER ── */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-4">
           <div>
-            <h1 className="text-2xl font-black tracking-[-0.03em]">
+            <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cambra-mint opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+              </span>
+              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+                Live · 8 operational layers
+              </span>
+            </div>
+            <h1 className="font-display text-3xl font-black tracking-[-0.04em] leading-[0.95]">
               {user?.full_name ? `${user.full_name.split(" ")[0]}.` : "Dashboard"}
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">8 operational layers · Continuous monitoring</p>
+            <p className="text-xs text-foreground/65 mt-1">Continuous monitoring · Benchmarked against your peers</p>
           </div>
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <Link to="/Analyzer">
