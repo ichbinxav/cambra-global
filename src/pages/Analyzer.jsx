@@ -814,17 +814,34 @@ export default function Analyzer() {
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-5 py-8 pb-36">
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                <StepIcon size={17} className="text-muted-foreground/60" />
+          {/* Premium step header with gradient number */}
+          <div className="mb-10 relative rounded-2xl overflow-hidden p-6 sm:p-8 bg-gradient-to-br from-card/80 to-secondary/40 border border-border/60 backdrop-blur-sm">
+            <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-30"
+                 style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.25), transparent)" }} />
+            <div className="relative">
+              <div className="mb-4">
+                <div
+                  className="font-display text-[5rem] sm:text-[6rem] font-black leading-[0.85] tracking-[-0.05em] tabular-nums select-none"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  {String(step + 1).padStart(2, "0")}
+                </div>
               </div>
-              <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50 font-medium">
-                Step {step + 1} of {STEPS.length}
-              </p>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h2 className="text-xl sm:text-2xl font-black tracking-tight mb-2">{STEPS[step].title}</h2>
+                  <p className="text-sm text-muted-foreground/75">{STEPS[step].sub}</p>
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0 ml-4">
+                  <StepIcon size={16} className="text-muted-foreground/50" />
+                </div>
+              </div>
             </div>
-            <h2 className="text-2xl font-black tracking-tight mb-2">{STEPS[step].title}</h2>
-            <p className="text-sm text-muted-foreground">{STEPS[step].sub}</p>
           </div>
 
           {renderStep()}
