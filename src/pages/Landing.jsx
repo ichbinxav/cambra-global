@@ -1,6 +1,7 @@
 import HeroSystemic from "@/components/landing/HeroSystemic.jsx";
 import HowItWorksSimple from "@/components/landing/HowItWorksSimple.jsx";
 import StackIntelligenceMap from "@/components/landing/StackIntelligenceMap.jsx";
+import ConnectToolsSection from "@/components/landing/ConnectToolsSection.jsx";
 import PricingSection from "@/components/landing/PricingSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import MeetTheFounder from "@/components/landing/MeetTheFounder.jsx";
@@ -23,6 +24,9 @@ export default function Landing() {
 
         {/* 3 — Living stack map */}
         <StackIntelligenceMap />
+
+        {/* 4 — Connect your tools (priority path for accuracy) */}
+        <ConnectToolsSection />
 
         {/* 5 — Pricing */}
         <div id="pricing">

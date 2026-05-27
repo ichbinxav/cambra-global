@@ -9,9 +9,9 @@ import { useAuth } from "@/lib/AuthContext";
 const NAV_PUBLIC = [
   { label: "Homepage", href: "/" },
   { label: "Analyzer", href: "/Analyzer" },
+  { label: "Connect tools", href: "/#connect" },
   { label: "Insights", href: "/Insights" },
   { label: "Pricing", href: "/Pricing" },
-  { label: "Founder", href: "/#founder-letter" },
   { label: "Help", href: "/Help" },
   { label: "Contact", href: "/Contact" },
 ];
