@@ -38,8 +38,8 @@ export default function Onboarding(){
         <OnboardingLayout activeTab={tab} onTabChange={(v)=>{ setTab(v); if(v!=='general') load(); }} statuses={statuses}>
           <TabsContent value="general">
             <div className="space-y-6">
-              <OnboardingHero />
-              <StepGrid />
+              <OnboardingHero statuses={statuses} />
+              <StepGrid statuses={statuses} />
             </div>
           </TabsContent>
           <TabsContent value="payments">

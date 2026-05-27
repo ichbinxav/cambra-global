@@ -1,31 +1,42 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 import CountrySelect from '@/components/inputs/CountrySelect';
 import CategorySelect from '@/components/inputs/CategorySelect';
-import { Building2, Mail, Globe, MapPin, Tag, Instagram, Linkedin, Twitter, Youtube, Music2, CheckCircle2 } from 'lucide-react';
+import { Building2, Mail, Globe, MapPin, Tag, Instagram, Linkedin, Twitter, Youtube, Music2, CheckCircle2, ArrowRight } from 'lucide-react';
 
-export default function CompanyBlock(){
+export default function CompanyBlock({ onCreated, autoRedirect = true } = {}){
   const [brand, setBrand] = useState(null);
   const [saving, setSaving] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(()=>{ (async()=>{
     const me = await base44.auth.me();
-    const [b] = await base44.entities.Brand.filter({ created_by: me.email }, '-created_date', 1);
+    // Use built-in created_by_id (Brand entity stores it automatically)
+    const [b] = await base44.entities.Brand.filter({ created_by_id: me.id }, '-created_date', 1);
     setBrand(b || {
       name: '', website: '', country: '', category: '', size: '',
-      contact_email: '', bio: '', instagram_url: '', linkedin_url: '', twitter_url: '', tiktok_url: '', youtube_url: '', accept_terms: false,
+      contact_email: me?.email || '', bio: '', instagram_url: '', linkedin_url: '', twitter_url: '', tiktok_url: '', youtube_url: '', accept_terms: false,
     });
   })(); },[]);
 
   const saveOrCreate = async () => {
-    if (!brand?.name) { alert('Please enter your brand name'); return; }
-    if (!brand?.id && !brand?.accept_terms) { alert('You must accept the terms to create the profile'); return; }
+    if (!brand?.name) {
+      toast({ title: 'Brand name required', description: 'Please enter your brand name to continue.', variant: 'destructive' });
+      return;
+    }
+    if (!brand?.id && !brand?.accept_terms) {
+      toast({ title: 'Accept terms', description: 'You must accept the terms to create your brand profile.', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     const payload = {
       name: brand.name,
@@ -43,15 +54,22 @@ export default function CompanyBlock(){
       accept_terms: !!brand.accept_terms,
     };
     try {
-      if (brand?.id) {
-        const updated = await base44.entities.Brand.update(brand.id, payload);
-        setBrand(updated);
-        alert('Saved');
-      } else {
-        const created = await base44.entities.Brand.create(payload);
-        setBrand(created);
-        alert('Profile created');
+      const isNew = !brand?.id;
+      const saved = isNew
+        ? await base44.entities.Brand.create(payload)
+        : await base44.entities.Brand.update(brand.id, payload);
+      setBrand(saved);
+      toast({
+        title: isNew ? 'Brand profile created' : 'Profile saved',
+        description: isNew ? 'Next: run the Analyzer to surface your savings.' : 'Your changes have been saved.',
+      });
+      if (onCreated) onCreated(saved);
+      // Auto-redirect to Analyzer on first creation — keeps the flow continuous
+      if (isNew && autoRedirect) {
+        setTimeout(() => navigate('/Analyzer'), 600);
       }
+    } catch (err) {
+      toast({ title: 'Could not save', description: err?.message || 'Please try again.', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -156,11 +174,28 @@ export default function CompanyBlock(){
           <Checkbox id="accept" checked={!!brand.accept_terms} onCheckedChange={(v)=>setBrand({...brand, accept_terms: !!v})} />
           <Label htmlFor="accept" className="text-sm">I accept the <a href="/Terms" target="_blank" className="underline">terms and conditions</a></Label>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={saveOrCreate} disabled={saving} className="gap-2">
-            <CheckCircle2 className="w-4 h-4" /> {saving ? 'Saving…' : (brand?.id ? 'Save' : 'Create profile')}
+        <div className="flex gap-2 items-center">
+          <Button onClick={saveOrCreate} disabled={saving} className="gap-2 h-10 rounded-full px-5">
+            {saving ? (
+              <>
+                <span className="w-3.5 h-3.5 rounded-full border-2 border-background/30 border-t-background animate-spin" />
+                Saving…
+              </>
+            ) : brand?.id ? (
+              <><CheckCircle2 className="w-4 h-4" /> Save changes</>
+            ) : (
+              <>Create &amp; continue <ArrowRight className="w-4 h-4" /></>
+            )}
           </Button>
-          <a href="/Analyzer" className="text-sm underline self-center">Go to Analyzer</a>
+          {brand?.id && (
+            <Button
+              variant="outline"
+              onClick={() => navigate('/Analyzer')}
+              className="h-10 rounded-full px-5 gap-2"
+            >
+              Run Analyzer <ArrowRight className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </motion.div>
     </div>

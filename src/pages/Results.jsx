@@ -96,12 +96,12 @@ export default function Results() {
         res = await base44.entities.AnalyzerResult.filter({ id: urlId });
       }
       if (!res.length) {
-        res = await base44.entities.AnalyzerResult.filter({ created_by: me.email }, "-created_date", 1);
+        res = await base44.entities.AnalyzerResult.filter({ created_by_id: me.id }, "-created_date", 1);
       }
       if (!res.length) { setLoading(false); setResult(null); return; }
 
       const r = res[0];
-      if (r.created_by && r.created_by !== me.email) { setLoading(false); setResult(null); return; }
+      if (r.created_by_id && r.created_by_id !== me.id) { setLoading(false); setResult(null); return; }
 
       setResult(r);
       if (r.input_id) {
@@ -199,7 +199,7 @@ export default function Results() {
     const authed = await base44.auth.isAuthenticated();
     if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
     const me = await base44.auth.me();
-    const brands = await base44.entities.Brand.filter({ created_by: me.email });
+    const brands = await base44.entities.Brand.filter({ created_by_id: me.id });
     if (!brands.length) {
       alert('Please register your brand first (Account > Brand) before exporting the report.');
       return;
