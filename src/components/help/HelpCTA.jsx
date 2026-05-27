@@ -54,30 +54,16 @@ export default function HelpCTA() {
             >
               <Link
                 to={a.href}
-                className={`group block h-full p-5 rounded-2xl border transition-all overflow-hidden relative ${
-                  a.primary
-                    ? "border-transparent bg-foreground text-background hover:opacity-95"
-                    : "border-border/40 bg-card hover:border-foreground/30"
-                }`}
+                className={`cambra-card ${a.primary ? "" : "cambra-card--soft"} group block h-full p-5 transition-all hover:-translate-y-0.5`}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      a.primary ? "bg-background/10" : "bg-secondary"
-                    }`}
-                  >
+                <div className="flex items-center justify-between mb-4 relative">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/10 border border-white/10 text-white">
                     <a.icon className="w-4 h-4" />
                   </div>
-                  <ArrowRight
-                    className={`w-4 h-4 group-hover:translate-x-0.5 transition-transform ${
-                      a.primary ? "opacity-60" : "text-muted-foreground/40"
-                    }`}
-                  />
+                  <ArrowRight className="w-4 h-4 text-white/50 group-hover:translate-x-0.5 group-hover:text-white transition-all" />
                 </div>
-                <h3 className="text-base font-bold tracking-tight mb-1.5">{a.title}</h3>
-                <p className={`text-xs leading-relaxed ${a.primary ? "opacity-60" : "text-muted-foreground/70"}`}>
-                  {a.description}
-                </p>
+                <h3 className="text-base font-bold tracking-tight mb-1.5 text-white relative">{a.title}</h3>
+                <p className="text-xs leading-relaxed text-white/60 relative">{a.description}</p>
               </Link>
             </motion.div>
           ))}

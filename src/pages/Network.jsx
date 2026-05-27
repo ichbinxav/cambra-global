@@ -134,32 +134,31 @@ export default function Network() {
           {filtered.map((brand) => (
             <div
               key={brand.id}
-              className="group relative p-6 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-[0_22px_48px_-22px_rgba(0,0,0,0.18)] transition-all overflow-hidden"
+              className="cambra-card group p-6 transition-all hover:-translate-y-0.5"
             >
-              <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-70 transition-opacity" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.25), transparent)" }} />
               <div className="relative">
               {/* Logo + category */}
               <div className="flex items-start justify-between mb-5">
-                <div className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center text-base font-black text-foreground/60 shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-base font-black text-white shrink-0">
                   {brand.name?.[0]?.toUpperCase() || "?"}
                 </div>
                 {brand.category && (
-                  <span className="text-[10px] tracking-[0.1em] uppercase text-muted-foreground/50 bg-secondary/80 px-2.5 py-1 rounded-full">
+                  <span className="text-[10px] tracking-[0.1em] uppercase text-white/65 bg-white/8 border border-white/10 px-2.5 py-1 rounded-full">
                     {brand.category.replace(/_/g, " ")}
                   </span>
                 )}
               </div>
 
               {/* Name */}
-              <h3 className="font-bold text-sm tracking-tight mb-1.5">{brand.name}</h3>
+              <h3 className="font-bold text-sm tracking-tight mb-1.5 text-white">{brand.name}</h3>
 
               {/* Description line */}
-              <p className="text-[12px] text-muted-foreground mb-4 leading-relaxed">
+              <p className="text-[12px] text-white/65 mb-4 leading-relaxed">
                 {brand.category ? CATEGORY_DESC[brand.category] || "Independent commerce brand" : "Independent commerce brand"}
               </p>
 
               {/* Meta */}
-              <div className="flex items-center gap-3 text-[11px] text-muted-foreground/50">
+              <div className="flex items-center gap-3 text-[11px] text-white/55">
                 {brand.country && (
                   <span className="flex items-center gap-1">
                     <MapPin size={9} />
@@ -173,7 +172,7 @@ export default function Network() {
                   </span>
                 )}
                 {brand.annual_revenue && (
-                  <span className="ml-auto bg-secondary/80 px-2 py-0.5 rounded-full text-[10px]">
+                  <span className="ml-auto bg-white/8 border border-white/10 px-2 py-0.5 rounded-full text-[10px]">
                     {brand.annual_revenue.replace(/_/g, " ").replace("under", "<").replace("plus", "+")}
                   </span>
                 )}

@@ -71,35 +71,39 @@ export default function Pricing() {
             {PLANS.map((plan, i) => (
               <div
                 key={i}
-                className={`relative overflow-hidden rounded-3xl border p-7 backdrop-blur-md transition shadow-[0_18px_50px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 hover:shadow-[0_22px_60px_rgba(0,0,0,0.09)] ${
-                  plan.highlight
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border/60 bg-card/95"
-                }`}
+                className={`cambra-card p-7 transition hover:-translate-y-0.5 ${plan.highlight ? "" : "cambra-card--soft"}`}
               >
                 {plan.highlight && (
                   <div className="pointer-events-none absolute -top-24 -right-24 w-56 h-56 rounded-full blur-3xl bg-ambient-lilac opacity-[0.25]" />
                 )}
                 <div className="relative">
-                  <h3 className="font-display text-2xl font-black tracking-[-0.03em] mb-1">{plan.name}</h3>
-                  <p className={`text-sm mb-6 ${plan.highlight ? 'text-background/60' : 'text-foreground/65'}`}>{plan.desc}</p>
+                  {plan.highlight && (
+                    <div className="cc-pill mb-4">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-[#52EBA4] opacity-50" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#52EBA4]" />
+                      </span>
+                      Recommended
+                    </div>
+                  )}
+                  <h3 className="font-display text-2xl font-black tracking-[-0.03em] mb-1 text-white">{plan.name}</h3>
+                  <p className="text-sm mb-6 text-white/60">{plan.desc}</p>
                   <div className="mb-8">
-                    <span className="font-display text-4xl font-black tracking-tight">{plan.price}</span>
+                    <span className="font-display text-4xl font-black tracking-tight text-white">{plan.price}</span>
                   </div>
 
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((f, j) => (
                       <li key={j} className="flex items-start gap-3">
-                        <Check className={`w-4 h-4 shrink-0 mt-0.5 ${plan.highlight ? 'text-background' : 'text-foreground'}`} />
-                        <span className={`text-sm ${plan.highlight ? 'text-background/85' : 'text-foreground/80'}`}>{f}</span>
+                        <Check className="w-4 h-4 shrink-0 mt-0.5 text-[#52EBA4]" />
+                        <span className="text-sm text-white/80">{f}</span>
                       </li>
                     ))}
                   </ul>
 
                   <Link to={plan.ctaHref} className="w-full">
                     <Button
-                      variant={plan.variant}
-                      className={`w-full h-12 rounded-full font-bold gap-2 ${plan.highlight ? 'bg-background text-foreground hover:bg-background/90' : ''}`}
+                      className={`w-full h-12 rounded-full font-bold gap-2 ${plan.highlight ? 'bg-white text-[#06080F] hover:bg-white/90' : 'bg-white/10 text-white hover:bg-white/15 border border-white/15'}`}
                     >
                       {plan.cta} <ArrowRight className="w-4 h-4" />
                     </Button>

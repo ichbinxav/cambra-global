@@ -88,32 +88,30 @@ export default function Reports() {
           {/* Chart */}
           {chartData.length > 0 && (
             <motion.div
-              className="relative p-7 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm mb-6 overflow-hidden shadow-[0_18px_48px_-24px_rgba(0,0,0,0.18)]"
+              className="cambra-card p-7 mb-6"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <div className="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.20), transparent)" }} />
-              <div className="pointer-events-none absolute -bottom-24 -left-24 w-72 h-72 rounded-full blur-3xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.18), transparent)" }} />
               <div className="relative">
               <div className="mb-6">
-                <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-1">Savings history</p>
-                <p className="text-sm font-semibold">Identified (Analyzer) savings by category (€)</p>
+                <p className="cc-eyebrow mb-1">Savings history</p>
+                <p className="text-sm font-semibold text-white">Identified savings by category (€)</p>
               </div>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={chartData} barCategoryGap="35%">
-                  <CartesianGrid strokeDasharray="2 4" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
+                  <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.08)" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
                   <Tooltip
-                    contentStyle={{ borderRadius: 10, border: "1px solid hsl(var(--border))", fontSize: 11, background: "hsl(var(--card))" }}
+                    contentStyle={{ borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", fontSize: 11, background: "#0B1023", color: "#fff" }}
                     formatter={v => [`€${v?.toLocaleString()}/yr`]}
                   />
-                  <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
-                  <Bar dataKey="Online Payments" fill="hsl(var(--cambra-blue))" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="In-Store / TPE" fill="hsl(var(--score-medium))" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="Shipping" fill="hsl(var(--cambra-cyan))" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="SaaS" fill="hsl(var(--cambra-navy))" radius={[3, 3, 0, 0]} />
+                  <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16, color: "rgba(255,255,255,0.7)" }} />
+                  <Bar dataKey="Online Payments" fill="#7AA8FF" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="In-Store / TPE" fill="#FFB05A" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Shipping" fill="#7BD9F0" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="SaaS" fill="#52EBA4" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               </div>
@@ -123,20 +121,19 @@ export default function Reports() {
            {/* Verification checklist */}
            {!vLoading && (
              <motion.div
-               className="relative p-7 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm mb-6 overflow-hidden shadow-[0_18px_48px_-24px_rgba(0,0,0,0.18)]"
+               className="cambra-card p-7 mb-6"
                initial={{ opacity: 0, y: 12 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.15 }}
              >
-               <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(34,197,94,0.20), transparent)" }} />
                <div className="relative">
                <div className="mb-4 flex items-center justify-between">
                  <div>
-                   <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-1">Verification</p>
-                   <p className="text-sm font-semibold">Checklist for verified savings</p>
+                   <p className="cc-eyebrow mb-1">Verification</p>
+                   <p className="text-sm font-semibold text-white">Checklist for verified savings</p>
                  </div>
                  {lastReport?.verification_status && (
-                   <span className="text-[11px] px-2 py-1 rounded-full border">
+                   <span className="text-[11px] px-2 py-1 rounded-full border border-white/15 text-white/75">
                      {lastReport.verification_status.replaceAll("_"," ")}
                    </span>
                  )}
@@ -154,19 +151,19 @@ export default function Reports() {
                      { key: "realized", label: "Realized", done: idx >= ORDER.indexOf("realized") },
                    ];
                    return steps.map(s => (
-                     <li key={s.key} className="flex items-center justify-between rounded-lg border border-border/40 px-3 py-2">
+                     <li key={s.key} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
                        <div className="flex items-center gap-3">
-                         {s.done ? <CheckCircle2 className="w-4 h-4 text-green-600" /> : <Circle className="w-4 h-4 text-muted-foreground/40" />}
-                         <span className={`text-sm ${s.done ? "font-semibold" : ""}`}>{s.label}</span>
-                         {s.hint && <span className="text-[11px] text-muted-foreground/70">· {s.hint}</span>}
+                         {s.done ? <CheckCircle2 className="w-4 h-4 text-[#52EBA4]" /> : <Circle className="w-4 h-4 text-white/30" />}
+                         <span className={`text-sm ${s.done ? "font-semibold text-white" : "text-white/65"}`}>{s.label}</span>
+                         {s.hint && <span className="text-[11px] text-white/55">· {s.hint}</span>}
                        </div>
-                       {!s.done && <AlertCircle className="w-4 h-4 text-muted-foreground/40" />}
+                       {!s.done && <AlertCircle className="w-4 h-4 text-white/30" />}
                      </li>
                    ))
                  })()}
                </ul>
                {!brand && (
-                <p className="text-xs text-muted-foreground mt-3">Complete onboarding to enable verification tracking.</p>
+                <p className="text-xs text-white/55 mt-3">Complete onboarding to enable verification tracking.</p>
                )}
                </div>
                </motion.div>
@@ -174,16 +171,15 @@ export default function Reports() {
 
                {lastReport && (
                <motion.div
-               className="relative p-7 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm mb-6 overflow-hidden shadow-[0_18px_48px_-24px_rgba(0,0,0,0.18)]"
+               className="cambra-card p-7 mb-6"
                initial={{ opacity: 0, y: 12 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.18 }}
                >
-               <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(251,146,60,0.20), transparent)" }} />
                <div className="relative">
                <div className="mb-4">
-                 <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-1">TPE report</p>
-                 <p className="text-sm font-semibold">In-store terminal benchmark and savings opportunity</p>
+                 <p className="cc-eyebrow mb-1">TPE report</p>
+                 <p className="text-sm font-semibold text-white">In-store terminal benchmark and savings opportunity</p>
                </div>
                {(() => {
                  const input = results[0];
@@ -194,25 +190,25 @@ export default function Reports() {
                  const benchmarkCost = input?.details?.annual_gmv && benchmarkRate ? (input.details.annual_gmv * (benchmarkRate / 100)) : 0;
                  return (
                    <div className="grid gap-3 md:grid-cols-2">
-                     <div className="rounded-xl border border-border/40 p-4 bg-background/40">
-                       <p className="text-xs text-muted-foreground mb-2">Current cost</p>
-                       <p className="text-lg font-black">€{Math.round(annualInStoreCost).toLocaleString()}/yr</p>
-                       <p className="text-xs text-muted-foreground mt-2">Effective TPE rate: {effectiveRate.toFixed(2)}%</p>
+                     <div className="rounded-xl border border-white/10 p-4 bg-white/[0.04]">
+                       <p className="text-xs text-white/55 mb-2">Current cost</p>
+                       <p className="text-lg font-black text-white">€{Math.round(annualInStoreCost).toLocaleString()}/yr</p>
+                       <p className="text-xs text-white/55 mt-2">Effective TPE rate: {effectiveRate.toFixed(2)}%</p>
                      </div>
-                     <div className="rounded-xl border border-border/40 p-4 bg-background/40">
-                       <p className="text-xs text-muted-foreground mb-2">Benchmark cost</p>
-                       <p className="text-lg font-black">€{Math.round(benchmarkCost).toLocaleString()}/yr</p>
-                       <p className="text-xs text-muted-foreground mt-2">Collective rate: {benchmarkRate.toFixed(2)}%</p>
+                     <div className="rounded-xl border border-white/10 p-4 bg-white/[0.04]">
+                       <p className="text-xs text-white/55 mb-2">Benchmark cost</p>
+                       <p className="text-lg font-black text-white">€{Math.round(benchmarkCost).toLocaleString()}/yr</p>
+                       <p className="text-xs text-white/55 mt-2">Network rate: {benchmarkRate.toFixed(2)}%</p>
                      </div>
-                     <div className="rounded-xl border border-border/40 p-4 bg-background/40">
-                       <p className="text-xs text-muted-foreground mb-2">Savings opportunity</p>
-                       <p className="text-lg font-black text-orange-500">€{Math.round(tpeSavings).toLocaleString()}/yr</p>
-                       <p className="text-xs text-muted-foreground mt-2">Recommendation: renegotiate terminals and fixed fees.</p>
+                     <div className="rounded-xl border border-white/10 p-4 bg-white/[0.04]">
+                       <p className="text-xs text-white/55 mb-2">Savings opportunity</p>
+                       <p className="text-lg font-black text-[#FFB05A]">€{Math.round(tpeSavings).toLocaleString()}/yr</p>
+                       <p className="text-xs text-white/55 mt-2">Recommendation: renegotiate terminals and fixed fees.</p>
                      </div>
-                     <div className="rounded-xl border border-border/40 p-4 bg-background/40">
-                       <p className="text-xs text-muted-foreground mb-2">Next action</p>
-                       <p className="text-sm font-semibold">Open a payments deal and compare TPE providers.</p>
-                       <p className="text-xs text-muted-foreground mt-2">Include rental, contract renewal and banking fees.</p>
+                     <div className="rounded-xl border border-white/10 p-4 bg-white/[0.04]">
+                       <p className="text-xs text-white/55 mb-2">Next action</p>
+                       <p className="text-sm font-semibold text-white">Improve payment infrastructure terms.</p>
+                       <p className="text-xs text-white/55 mt-2">Include rental, contract renewal and banking fees.</p>
                      </div>
                    </div>
                  );
@@ -223,46 +219,45 @@ export default function Reports() {
 
                  {/* History list */}
                  <motion.div
-                 className="relative rounded-2xl border border-border/60 overflow-hidden bg-card/95 backdrop-blur-sm shadow-[0_18px_48px_-24px_rgba(0,0,0,0.18)]"
+                 className="cambra-card overflow-hidden"
                  initial={{ opacity: 0, y: 12 }}
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ delay: 0.2 }}
                  >
-                 <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.18), transparent)" }} />
-            <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between">
-              <p className="text-xs font-semibold tracking-tight">Analysis history</p>
-              <span className="text-[10px] text-muted-foreground/50">{results.length} reports</span>
-            </div>
-            <div className="divide-y divide-border/40">
-              {results.map((r, i) => (
-                <Link key={r.id} to={`/Results?id=${r.id}`}>
-                  <motion.div
-                    className="px-6 py-4 flex items-center justify-between hover:bg-secondary/30 transition-colors group"
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 + i * 0.04 }}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground">
-                        {i + 1}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{format(new Date(r.created_date), "MMMM d, yyyy")}</p>
-                        <p className="text-xs text-muted-foreground">Score: {r.infra_score}/100</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-sm font-bold tracking-tight">€{r.total_savings?.toLocaleString()}/yr</p>
-                        <p className="text-[10px] text-muted-foreground">optimization potential</p>
-                      </div>
-                      <ArrowUpRight size={14} className="text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
-                    </div>
-                  </motion.div>
-                </Link>
-              ))}
-            </div>
-          </motion.div>
+                 <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between relative">
+                 <p className="text-xs font-semibold tracking-tight text-white">Analysis history</p>
+                 <span className="text-[10px] text-white/50">{results.length} reports</span>
+                 </div>
+                 <div className="divide-y divide-white/8 relative">
+                 {results.map((r, i) => (
+                 <Link key={r.id} to={`/Results?id=${r.id}`}>
+                 <motion.div
+                   className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.04] transition-colors group"
+                   initial={{ opacity: 0, x: -8 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   transition={{ delay: 0.1 + i * 0.04 }}
+                 >
+                   <div className="flex items-center gap-4">
+                     <div className="w-8 h-8 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center text-xs font-bold text-white">
+                       {i + 1}
+                     </div>
+                     <div>
+                       <p className="text-sm font-medium text-white">{format(new Date(r.created_date), "MMMM d, yyyy")}</p>
+                       <p className="text-xs text-white/55">Score: {r.infra_score}/100</p>
+                     </div>
+                   </div>
+                   <div className="flex items-center gap-4">
+                     <div className="text-right">
+                       <p className="text-sm font-bold tracking-tight text-white">€{r.total_savings?.toLocaleString()}/yr</p>
+                       <p className="text-[10px] text-white/55">optimization potential</p>
+                     </div>
+                     <ArrowUpRight size={14} className="text-white/40 group-hover:text-white transition-colors" />
+                   </div>
+                 </motion.div>
+                 </Link>
+                 ))}
+                 </div>
+                 </motion.div>
         </>
       )}
     </motion.div>

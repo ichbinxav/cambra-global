@@ -76,16 +76,14 @@ export default function Insights() {
       />
 
       {!subscribed && (
-        <div className="mb-6 relative overflow-hidden rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm p-5">
-          <div className="pointer-events-none absolute -top-20 -right-20 w-52 h-52 rounded-full blur-3xl opacity-50"
-               style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.25), transparent)" }} />
+        <div className="cambra-card mb-6 p-5">
           <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="flex-1">
-              <p className="text-sm font-bold mb-0.5">Members-only research</p>
-              <p className="text-xs text-muted-foreground/70">Unlock all insights — early partners join for free.</p>
+              <p className="text-sm font-bold mb-0.5 text-white">Members-only research</p>
+              <p className="text-xs text-white/65">Unlock all insights — early partners join for free.</p>
             </div>
-            <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold bg-saas-gradient text-white hover:opacity-90">
-              Unlock — <span className="mx-1 line-through opacity-80">€60</span> Free
+            <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold bg-white text-[#06080F] hover:bg-white/90">
+              Unlock — <span className="mx-1 line-through opacity-60">€60</span> Free
             </Button>
           </div>
         </div>
@@ -211,49 +209,41 @@ export default function Insights() {
                   return (
                     <Link key={insight.id} to={`/InsightDetail?id=${insight.id}`}>
                       <motion.article
-                        className="group relative h-full overflow-hidden rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm transition-all hover:-translate-y-1 hover:shadow-[0_22px_48px_-24px_rgba(0,0,0,0.18)] hover:border-border"
+                        className="cambra-card group h-full transition-all hover:-translate-y-1"
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: (i + 1) * 0.05 }}
                       >
-                        {/* Hover halo */}
-                        <div className="pointer-events-none absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-60 transition-opacity"
-                             style={{ background: `radial-gradient(closest-side, ${cat?.color || "#2CA7C1"}40, transparent)` }} />
-
                         {/* Cover */}
-                        <div className="relative aspect-[16/10] overflow-hidden bg-secondary">
+                        <div className="relative aspect-[16/10] overflow-hidden">
                           {insight.cover_image ? (
                             <img src={insight.cover_image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center"
-                                 style={{ background: `linear-gradient(135deg, ${cat?.color || "#1F4ED8"}22, ${cat?.color || "#2CA7C1"}11)` }}>
-                              <div className="text-[5rem] font-black opacity-10 select-none">{String(i + 2).padStart(2, "0")}</div>
+                                 style={{ background: `linear-gradient(135deg, ${cat?.color || "#1F4ED8"}33, ${cat?.color || "#2CA7C1"}15)` }}>
+                              <div className="text-[5rem] font-black opacity-10 select-none text-white">{String(i + 2).padStart(2, "0")}</div>
                             </div>
                           )}
                           {cat && (
                             <div className="absolute top-3 left-3">
-                              <span className="text-[9px] tracking-[0.15em] uppercase font-bold px-2 py-1 rounded-full backdrop-blur-md border"
-                                    style={{
-                                      background: `${cat.color}99`,
-                                      borderColor: `${cat.color}`,
-                                      color: "#fff",
-                                    }}>
+                              <span className="text-[9px] tracking-[0.15em] uppercase font-bold px-2 py-1 rounded-full backdrop-blur-md border border-white/20 bg-white/10 text-white">
                                 {cat.label}
                               </span>
                             </div>
                           )}
+                          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#06080F] to-transparent" />
                         </div>
 
                         <div className="relative p-5">
                           {insight.read_time && (
-                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/55 mb-2">
+                            <div className="flex items-center gap-1.5 text-[11px] text-white/50 mb-2">
                               <Clock size={10} /> {insight.read_time} min read
                             </div>
                           )}
-                          <h3 className="text-base font-black tracking-tight mb-2 leading-snug group-hover:text-foreground transition-colors line-clamp-2">{insight.title}</h3>
-                          {insight.excerpt && <p className="text-[13px] text-muted-foreground/75 leading-relaxed line-clamp-2">{insight.excerpt}</p>}
-                          <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
-                            Read article <ArrowRight size={11} className="group-hover:translate-x-0.5 transition-transform" />
+                          <h3 className="text-base font-black tracking-tight mb-2 leading-snug text-white line-clamp-2">{insight.title}</h3>
+                          {insight.excerpt && <p className="text-[13px] text-white/65 leading-relaxed line-clamp-2">{insight.excerpt}</p>}
+                          <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-white group-hover:gap-2 transition-all">
+                            Read article <ArrowRight size={11} />
                           </div>
                         </div>
                       </motion.article>

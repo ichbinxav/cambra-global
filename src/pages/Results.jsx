@@ -337,34 +337,34 @@ export default function Results() {
           </div>
         </div>
 
-        {/* Summary strip — compact, no duplication */}
+        {/* Summary strip — navy cards, CAMBRA identity */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <div className="p-5 rounded-2xl border border-border/50 bg-card">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Released capital</p>
-            <div className="text-3xl font-black tracking-tight">
+          <div className="cambra-card cambra-card--soft p-5">
+            <p className="cc-eyebrow mb-2">Released capital</p>
+            <div className="text-3xl font-black tracking-tight text-white">
               <span className="tabular-nums"><AnimatedCounter value={result.total_savings} prefix="€" duration={2} /></span>
-              <span className="text-sm text-muted-foreground/40 font-normal">/yr</span>
+              <span className="text-sm text-white/40 font-normal">/yr</span>
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl border border-border/50 bg-card">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Infrastructure score</p>
-            <div className="text-3xl font-black tracking-tight tabular-nums" style={{ color: scoreColor }}>
-              {score}<span className="text-sm text-muted-foreground/40 font-normal">/100</span>
+          <div className="cambra-card cambra-card--soft p-5">
+            <p className="cc-eyebrow mb-2">Infrastructure score</p>
+            <div className="text-3xl font-black tracking-tight tabular-nums" style={{ color: score >= 80 ? "#52EBA4" : score >= 60 ? "#FFB05A" : "#7AA8FF" }}>
+              {score}<span className="text-sm text-white/40 font-normal">/100</span>
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl border border-border/50 bg-card col-span-2 md:col-span-1">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Network benchmark</p>
+          <div className="cambra-card cambra-card--soft p-5 col-span-2 md:col-span-1">
+            <p className="cc-eyebrow mb-2">Network benchmark</p>
             {(() => {
               const gmvAnnual = input?.monthly_revenue ? input.monthly_revenue * 12 : null;
               const pct = gmvAnnual && gmvAnnual > 0 ? Math.round((result.total_savings / gmvAnnual) * 100) : null;
               return (
-                <p className="text-sm text-foreground leading-snug">
+                <p className="text-sm text-white/85 leading-snug">
                   {pct !== null ? (
-                    <>Currently <span className="font-bold">{pct}%</span> above CAMBRA network median.</>
+                    <>Currently <span className="font-bold text-white">{pct}%</span> above CAMBRA network median.</>
                   ) : (
-                    <span className="text-muted-foreground/60">Not enough data yet.</span>
+                    <span className="text-white/55">Not enough data yet.</span>
                   )}
                 </p>
               );
