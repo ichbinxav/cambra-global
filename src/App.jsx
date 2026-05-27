@@ -43,6 +43,9 @@ import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
 import AdminRecommendations from '@/pages/admin/AdminRecommendations';
 import ProviderPortal from '@/pages/ProviderPortal';
 import AuthRedirect from '@/pages/AuthRedirect';
+import Pricing from '@/pages/Pricing';
+import Testimonials from '@/pages/Testimonials';
+import Contact from '@/pages/Contact';
 import ActivateDeal from '@/pages/deals/ActivateDeal';
 import AuthorizeDeal from '@/pages/deals/AuthorizeDeal';
 import MigrationHub from '@/pages/deals/MigrationHub';
@@ -186,6 +189,12 @@ const AuthenticatedApp = () => {
         <Route path="/terms" element={<Navigate to="/Terms" replace />} />
         <Route path="/Snapshot" element={<Snapshot />} />
         <Route path="/snapshot" element={<Navigate to="/Snapshot" replace />} />
+        <Route path="/Pricing" element={<Pricing />} />
+        <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
+        <Route path="/Testimonials" element={<Testimonials />} />
+        <Route path="/testimonials" element={<Navigate to="/Testimonials" replace />} />
+        <Route path="/Contact" element={<Contact />} />
+        <Route path="/contact" element={<Navigate to="/Contact" replace />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
         <Route path="/deal/activate" element={<ProtectedRoute><ActivateDeal /></ProtectedRoute>} />
