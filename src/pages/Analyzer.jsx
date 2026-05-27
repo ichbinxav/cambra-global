@@ -333,13 +333,16 @@ export default function Analyzer() {
             <p className="text-[11px] text-muted-foreground/50">Your geography affects shipping rates and payment setups.</p>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label className="text-sm font-medium">Category</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
               {CATEGORIES.map(c => (
                 <button key={c} onClick={() => set("category", c)}
-                  className={`py-3 px-4 rounded-xl border text-sm font-medium text-left transition-all min-h-[48px] ${data.category === c ? "border-foreground bg-foreground text-background" : "border-border/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground"}`}>
-                  {c}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${data.category === c ? "border-foreground bg-foreground/5" : "border-border/40 hover:border-foreground/30"}`}>
+                  <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${data.category === c ? "border-foreground bg-foreground" : "border-border/60"}`}>
+                    {data.category === c && <span className="text-background text-xs font-bold">✓</span>}
+                  </div>
+                  <span className={`text-sm font-medium ${data.category === c ? "text-foreground" : "text-muted-foreground"}`}>{c}</span>
                 </button>
               ))}
             </div>
