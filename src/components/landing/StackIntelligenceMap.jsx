@@ -3,11 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Activity, Zap, AlertTriangle } from "lucide-react";
 
 /**
- * StackIntelligenceMap — THE iconic visual.
- *
- * A radial intelligence graph of 8 operational layers connected to a central
- * benchmark engine. A live findings feed shows what the engine just detected
- * — no redundant grid. The side panel adds context, never repeats the map.
+ * StackIntelligenceMap — Hero-style section with light bg,
+ * responsive grid for map + live findings panel.
  */
 
 const LAYERS = [
@@ -61,63 +58,58 @@ export default function StackIntelligenceMap() {
   const NODE_R = 52;
 
   return (
-    <section className="relative pt-16 md:pt-20 pb-16 md:pb-20 bg-neon-1 text-neon-9 overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60rem] h-[60rem] rounded-full blur-[140px] opacity-50"
-             style={{ background: "radial-gradient(circle, rgba(31,78,216,0.25), transparent 60%)" }} />
+    <section className="relative py-20 md:py-28 px-5 border-t border-border/40 bg-background overflow-hidden">
+      {/* Ambient (matches other landing sections) */}
+      <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute top-1/3 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.15]" />
+        <div className="absolute bottom-0 -right-32 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.12]" />
       </div>
 
-      <div className="relative max-w-6xl mx-auto px-5">
-        {/* Section header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint animate-pulse" />
-            <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-white/60">
+      <div className="relative max-w-6xl mx-auto">
+        {/* Header — matches landing pattern */}
+        <div className="mb-12 md:mb-16 max-w-4xl">
+          <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-cambra-cyan animate-pulse" />
+            <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-muted-foreground">
               Stack Intelligence
             </span>
           </div>
-          <h2 className="font-display text-[clamp(2rem,5vw,3.6rem)] font-black tracking-[-0.04em] leading-[0.92] max-w-3xl mx-auto">
+          <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92]">
             Every cost, in one place.<br />
             <span className="text-saas-gradient">Eight layers. One screen.</span>
           </h2>
-          <p className="mt-4 text-sm md:text-base text-white/55 max-w-xl mx-auto leading-relaxed">
+          <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed">
             Continuously benchmarked against brands your exact size and country.
           </p>
         </div>
 
         {/* Map + Live feed */}
-        <div className="grid lg:grid-cols-[1.35fr_1fr] gap-6 items-stretch">
-          {/* The radial map */}
-          <div className="rounded-2xl border border-white/10 bg-white/[0.025] backdrop-blur-md p-6 md:p-8 flex items-center justify-center min-h-[480px] relative overflow-hidden">
+        <div className="grid lg:grid-cols-[1.35fr_1fr] gap-5 md:gap-6 items-stretch">
+          {/* The radial map — in cambra-card */}
+          <div className="cambra-card p-6 md:p-8 flex items-center justify-center min-h-[480px] relative overflow-hidden">
             <svg
               viewBox={`-${RADIUS + NODE_R + 20} -${RADIUS + NODE_R + 20} ${(RADIUS + NODE_R + 20) * 2} ${(RADIUS + NODE_R + 20) * 2}`}
               className="w-full max-w-[440px] h-auto relative z-10"
             >
               <defs>
-                {/* Scan arc gradient — fades to transparent so no text overlap */}
                 <linearGradient id="scan-arc-grad" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor={focusState.color} stopOpacity="0" />
                   <stop offset="70%" stopColor={focusState.color} stopOpacity="0.35" />
                   <stop offset="100%" stopColor={focusState.color} stopOpacity="0.7" />
                 </linearGradient>
-                {/* Expanding pulse ring */}
                 <radialGradient id="pulse-ring">
                   <stop offset="85%" stopColor={focusState.color} stopOpacity="0.12" />
                   <stop offset="100%" stopColor={focusState.color} stopOpacity="0" />
                 </radialGradient>
               </defs>
 
-              {/* Background orbit rings — behind everything */}
               {[64, 112, RADIUS].map((r, i) => (
                 <circle key={`ring-${i}`} cx={0} cy={0} r={r}
                   fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={0.5}
                   strokeDasharray="3 6" />
               ))}
 
-
-
-              {/* Scan hand — synced to active node via SVG transform attribute (works in all browsers) */}
               <g
                 transform={`rotate(${focus.angle})`}
                 style={{ transition: "transform 1.2s cubic-bezier(0.22, 1, 0.36, 1)" }}
@@ -131,9 +123,6 @@ export default function StackIntelligenceMap() {
                 />
               </g>
 
-              {/* Connection lines removed — clean radial map without center-to-node links */}
-
-              {/* Center engine — always on top of lines */}
               <circle cx={0} cy={0} r={48} fill="rgba(10,16,36,0.95)" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
               <motion.circle
                 cx={0} cy={0} r={48}
@@ -143,24 +132,18 @@ export default function StackIntelligenceMap() {
                 animate={{ opacity: [0.3, 0.8, 0.3] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               />
-              {/* Inner glow */}
               <motion.circle
                 cx={0} cy={0} r={30}
                 fill={focusState.color}
                 animate={{ opacity: [0.04, 0.12, 0.04] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               />
-              {/* CAMBRA Logo SVG */}
               <g transform="translate(-16, -18) scale(0.65)">
-                {/* Left vertical */}
                 <polygon points="20,10 28,14 28,44 20,48" fill="white" />
-                {/* Top right */}
                 <polygon points="32,12 48,22 40,28 24,18" fill="white" />
-                {/* Bottom right */}
                 <polygon points="24,38 40,48 48,42 32,32" fill="white" />
               </g>
 
-              {/* Layer nodes — TOPMOST layer, nothing overlaps these */}
               {LAYERS.map((layer, i) => {
                 const { x, y } = polar(layer.angle, RADIUS);
                 const isActive = i === focusIdx;
@@ -172,8 +155,6 @@ export default function StackIntelligenceMap() {
                     onMouseLeave={() => setHoveredId(null)}
                     style={{ cursor: "pointer" }}
                   >
-
-                    {/* Node bg — opaque so nothing bleeds through */}
                     <circle
                       cx={x} cy={y} r={NODE_R}
                       fill="hsl(220, 45%, 7%)"
@@ -211,8 +192,8 @@ export default function StackIntelligenceMap() {
             </div>
           </div>
 
-          {/* Live context panel — NOT a duplicate grid */}
-          <div className="rounded-2xl border border-white/10 bg-white/[0.025] backdrop-blur-md p-5 md:p-6 flex flex-col gap-5">
+          {/* Live context panel — in cambra-card */}
+          <div className="cambra-card p-5 md:p-6 flex flex-col gap-5">
             {/* Status summary chip row */}
             <div className="grid grid-cols-3 gap-2">
               <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
@@ -234,7 +215,7 @@ export default function StackIntelligenceMap() {
               </div>
             </div>
 
-            {/* Live finding card — animates as the engine cycles */}
+            {/* Live finding card */}
             <div className="relative rounded-xl border overflow-hidden"
                  style={{ borderColor: `${focusState.color}40`, background: `${focusState.color}0D` }}>
               <div className="px-4 py-2 border-b flex items-center justify-between"
