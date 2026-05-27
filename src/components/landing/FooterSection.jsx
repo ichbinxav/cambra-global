@@ -131,8 +131,7 @@ export default function FooterSection() {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="text-base md:text-xl text-background/55 mb-12 max-w-xl leading-[1.55] font-light"
           >
-            Turn operating costs into recovered margin.{" "}
-            <span className="text-background/85 font-medium">€10K–€100K</span> annual recovery.
+            Turn operating costs into recovered margin.
             Verified. Immediate. Aligned incentives.
           </motion.p>
 
