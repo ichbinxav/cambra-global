@@ -88,11 +88,17 @@ export default function HowItWorks() {
                   transition={{ duration: 0.5, delay: i * 0.05 }}
                   className="cambra-card p-6 sm:p-8"
                 >
-                  {/* CTA row — pill anchored to the right */}
-                  <div className="flex justify-end mb-3" style={{ position: 'relative', zIndex: 20 }}>
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    {/* Giant cinematic number — on top */}
+                    <div className="cambra-step-number">
+                      {step.n}
+                    </div>
+
+                    {/* CTA row — aligned with number */}
                     <Link
                       to={step.cta.href}
-                      className="group/cta inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full border border-white/20 bg-cambra-navy-deep/80 hover:bg-cambra-navy-deep hover:border-white/40 transition-all backdrop-blur-md"
+                      className="group/cta inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full border border-white/20 bg-cambra-navy-deep/80 hover:bg-cambra-navy-deep hover:border-white/40 transition-all backdrop-blur-md mt-1 flex-shrink-0"
+                      style={{ position: 'relative', zIndex: 20 }}
                     >
                       <span className="text-[9px] sm:text-[10px] font-bold text-white tracking-[0.08em] uppercase whitespace-nowrap">
                         {step.cta.label}
@@ -104,10 +110,6 @@ export default function HowItWorks() {
                   </div>
 
                   <div>
-                    {/* Giant cinematic number — on top */}
-                    <div className="cambra-step-number mb-3">
-                      {step.n}
-                    </div>
 
                     {/* Content */}
                     <div className="min-w-0">
