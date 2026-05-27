@@ -117,19 +117,35 @@ export default function TestimonialsSection() {
                 </div>
 
                 {/* Metrics — navy card style */}
-                <div className="cambra-card flex md:flex-col items-center md:items-end justify-between gap-4 md:gap-3 p-5 md:p-6 md:border-l-0 md:min-w-[220px]">
-                  <div className="flex items-baseline gap-1.5 md:order-1">
-                    <span className="text-sm font-medium text-white/50 line-through decoration-1">{t.before}</span>
-                    <span className="text-white/40 text-xs">→</span>
-                    <span className="text-base font-black text-white">{t.after}</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5 md:order-2">
-                    <span className="text-2xl md:text-3xl font-black tracking-tighter text-white tabular-nums leading-none">
-                      €{(t.recovery / 1000).toFixed(t.recovery % 1000 === 0 ? 0 : 1)}K
-                    </span>
-                    <span className="text-[10px] font-mono text-white/50">/ yr</span>
-                  </div>
-                </div>
+                <div className="cambra-card flex flex-col items-stretch justify-between gap-4 p-5 md:p-6 md:border-l-0 md:min-w-[280px]">
+                   {/* Before & After */}
+                   <div className="space-y-3">
+                     <div>
+                       <div className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/40 mb-1.5">Before</div>
+                       <div className="text-lg font-black text-white/50 line-through decoration-white/30">{t.before}</div>
+                     </div>
+                     <div className="flex items-center justify-center">
+                       <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/20" />
+                       <ArrowRight className="h-3.5 w-3.5 text-cambra-mint mx-2" />
+                       <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
+                     </div>
+                     <div>
+                       <div className="text-[9px] font-bold tracking-[0.2em] uppercase text-cambra-cyan mb-1.5">After</div>
+                       <div className="text-2xl font-black text-white">{t.after}</div>
+                     </div>
+                   </div>
+
+                   {/* Recovery */}
+                   <div className="pt-3 border-t border-white/10">
+                     <div className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/40 mb-1.5">Annual savings</div>
+                     <div className="flex items-baseline gap-1">
+                       <span className="text-3xl font-black tracking-tighter text-cambra-cyan tabular-nums leading-none">
+                         €{(t.recovery / 1000).toFixed(t.recovery % 1000 === 0 ? 0 : 1)}K
+                       </span>
+                       <span className="text-[9px] font-mono text-white/40">/year</span>
+                     </div>
+                   </div>
+                 </div>
               </div>
             </motion.div>
           </AnimatePresence>
