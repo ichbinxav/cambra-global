@@ -56,7 +56,7 @@ export default function HeroSystemic() {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
               </span>
-              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Live · 8 cost layers</span>
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Infrastructure for independent commerce</span>
             </div>
 
             <h1 className="font-display text-[clamp(2.2rem,5.8vw,5rem)] font-black tracking-[-0.05em] leading-[0.9] mb-5">
