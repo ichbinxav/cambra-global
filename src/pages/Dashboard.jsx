@@ -10,6 +10,7 @@ import MetricCard from "@/components/dashboard/MetricCard";
 import HeroSavings from "@/components/dashboard/HeroSavings";
 import InfraScore from "@/components/dashboard/InfraScore";
 import SavingsTrend from "@/components/dashboard/SavingsTrend";
+import CumulativeSavingsChart from "@/components/dashboard/CumulativeSavingsChart";
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import GMVMetrics from "@/components/dashboard/GMVMetrics";
 import { CreditCard, Truck, Package, Store, ShieldCheck } from "lucide-react";
@@ -265,6 +266,9 @@ export default function Dashboard() {
           </div>
 
           <GMVMetrics gmvTotal={gmvTotal} gmvAverage={gmvAverage} />
+
+          {/* ── CUMULATIVE SAVINGS — historical impact ── */}
+          <CumulativeSavingsChart results={results} />
 
           {/* ── SCORE + DEALS ROW ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
