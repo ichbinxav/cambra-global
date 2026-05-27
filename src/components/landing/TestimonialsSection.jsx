@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Quote, TrendingDown, ArrowRight } from "luci
 
 const TESTIMONIALS = [
   {
-    quote: "Found €18K in duplicate email tools. Killed one, kept the workflow.",
+    quote: "€18K back in the bank — same team, same workflow, one less subscription. Feels great.",
     layer: "SaaS",
     before: "2 ESPs",
     after: "1 ESP",
@@ -15,7 +15,7 @@ const TESTIMONIALS = [
     initials: "MR",
   },
   {
-    quote: "Never benchmarked our PSP. Turns out we were 0.6pp above market. Renegotiated.",
+    quote: "Renegotiated our PSP in a week. 0.6pp shaved off — pure margin we never knew we had.",
     layer: "Payments",
     before: "2.9%",
     after: "2.3%",
@@ -26,7 +26,7 @@ const TESTIMONIALS = [
     initials: "JL",
   },
   {
-    quote: "Shipping was €0.40 per order above peer median. Fixed it. No service change.",
+    quote: "Shipping costs quietly fixed. Customers never noticed — our P&L definitely did.",
     layer: "Shipping",
     before: "€7.20/order",
     after: "€6.80/order",
