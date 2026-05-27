@@ -134,7 +134,7 @@ export default function HeroSystemic() {
                 <span
                   className="bg-clip-text text-transparent"
                   style={{
-                    backgroundImage: "linear-gradient(180deg, rgba(31,78,216,0.45) 0%, rgba(44,167,193,0.45) 45%, rgba(44,167,193,0.15) 100%)",
+                    backgroundImage: "linear-gradient(180deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 55%, hsl(var(--cambra-cyan)) 100%)",
                     backgroundSize: "200% 100%",
                     WebkitBackgroundClip: "text",
                   }}
