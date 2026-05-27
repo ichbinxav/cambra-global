@@ -182,7 +182,7 @@ export default function HeroSystemic() {
                 whileTap={{ scale: 0.97 }}
                 className="relative h-12 rounded-full px-7 text-sm font-bold text-white inline-flex items-center justify-center gap-2 overflow-hidden group border border-white/10"
                 style={{
-                  background: "linear-gradient(180deg, hsl(222 65% 4%) 0%, hsl(222 70% 2%) 100%)"
+                  background: "linear-gradient(180deg, hsl(222 80% 2%) 0%, hsl(222 85% 1%) 100%)"
                 }}
               >
                 {/* Shimmer sweep */}
