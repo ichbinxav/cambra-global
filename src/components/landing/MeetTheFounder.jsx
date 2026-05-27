@@ -50,19 +50,19 @@ export default function MeetTheFounder() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-[120px_1fr] md:grid-cols-[220px_1fr] gap-3 md:gap-10 items-start">
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6 items-stretch">
           {/* Photo */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-[120px] md:w-[220px] shrink-0"
+            className="relative"
           >
-            <div className="relative aspect-[3/4] rounded-xl overflow-hidden border border-border/40 bg-secondary/50">
+            <div className="relative h-full w-full rounded-2xl overflow-hidden border border-border/40 bg-secondary/50">
               <img
                 src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/f1e34eda8_0347F92E-E1B9-4977-A6B1-85897923556A.jpeg"
                 alt="Xavier M. Contero, Founder of CAMBRA"
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
               />
             </div>
           </motion.div>
@@ -72,30 +72,32 @@ export default function MeetTheFounder() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="relative rounded-2xl border border-border/40 bg-secondary/30 p-4 md:p-8 h-fit"
+            className="relative rounded-2xl border border-border/40 bg-secondary/30 p-3 md:p-6 flex flex-col justify-between"
           >
-            <Quote className="h-7 w-7 md:h-12 md:w-12 text-saas-gradient -ml-3.5 -mt-3.5 md:-ml-4 md:-mt-4 opacity-80 absolute" strokeWidth={1.5} />
-            <p className="text-sm md:text-lg font-medium leading-snug text-foreground mb-3 md:mb-4">
-              After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.
-            </p>
+            <Quote className="h-5 w-5 md:h-8 md:w-8 text-saas-gradient mb-2 opacity-80" strokeWidth={1.5} />
+            <div className="flex-1">
+              <p className="text-[11px] md:text-base font-medium leading-snug text-foreground mb-1.5 md:mb-3">
+                After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.
+              </p>
 
-            <p className="text-foreground/70 text-xs md:text-sm font-light mb-3 md:mb-4">
-              That's why I started CAMBRA.
-            </p>
+              <p className="text-foreground/70 text-[10px] md:text-sm font-light">
+                That's why I started CAMBRA.
+              </p>
+            </div>
 
-            <div className="flex items-start md:items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 mt-3 md:mt-4">
               <div className="flex-1 min-w-0">
-                <p className="text-xs md:text-sm font-bold text-foreground truncate">Xavier M. Contero</p>
-                <p className="text-[9px] md:text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground/50 mt-0.5">
+                <p className="text-[10px] md:text-sm font-bold text-foreground truncate">Xavier M. Contero</p>
+                <p className="text-[8px] md:text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/50 mt-0.5">
                   Founder
                 </p>
               </div>
               <button
                 onClick={() => setOpen(true)}
-                className="h-10 w-10 rounded-full border border-foreground/20 flex items-center justify-center hover:bg-foreground hover:text-background transition-all shrink-0"
+                className="h-8 w-8 md:h-10 md:w-10 rounded-full border border-foreground/20 flex items-center justify-center hover:bg-foreground hover:text-background transition-all shrink-0"
                 aria-label="Read full letter"
               >
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
               </button>
             </div>
           </motion.div>
