@@ -157,10 +157,11 @@
 .cambra-step-number {
   font-family: 'Space Grotesk', 'Inter', sans-serif;
   font-weight: 900;
-  font-size: clamp(6rem, 18vw, 11rem);
-  line-height: 0.95;
+  font-size: clamp(5rem, 14vw, 9rem);
+  line-height: 1;
   letter-spacing: -0.07em;
-  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0) 100%);
+  padding-bottom: 0.1em;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.55) 80%, rgba(255,255,255,0.35) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
