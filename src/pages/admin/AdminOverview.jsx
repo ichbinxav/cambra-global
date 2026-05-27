@@ -333,40 +333,55 @@ export default function AdminOverview() {
 
       {/* 4 + 5 + 6 + 7 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold">Pipeline in Motion</h3>
+        <div className="relative rounded-2xl bg-card/95 backdrop-blur-sm border border-border/60 p-5 overflow-hidden shadow-[0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+          <div className="pointer-events-none absolute -top-20 -right-20 w-52 h-52 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.18), transparent)" }} />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold tracking-tight">Pipeline in Motion</h3>
+            </div>
+            <PipelineMini data={pipelineData} totalApps={appsFiltered.length} />
           </div>
-          <PipelineMini data={pipelineData} totalApps={appsFiltered.length} />
         </div>
 
-        <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
-          <h3 className="text-sm font-semibold mb-2">Top Opportunities</h3>
-          <TopOpportunities items={topOpp} />
+        <div className="relative rounded-2xl bg-card/95 backdrop-blur-sm border border-border/60 p-5 overflow-hidden shadow-[0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+          <div className="pointer-events-none absolute -top-20 -right-20 w-52 h-52 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.18), transparent)" }} />
+          <div className="relative">
+            <h3 className="text-sm font-bold tracking-tight mb-3">Top Opportunities</h3>
+            <TopOpportunities items={topOpp} />
+          </div>
         </div>
 
-        <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
-          <h3 className="text-sm font-semibold mb-2">Partner Performance</h3>
-          <ProviderPerformance rows={providerRows} />
+        <div className="relative rounded-2xl bg-card/95 backdrop-blur-sm border border-border/60 p-5 overflow-hidden shadow-[0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+          <div className="pointer-events-none absolute -top-20 -right-20 w-52 h-52 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(34,197,94,0.18), transparent)" }} />
+          <div className="relative">
+            <h3 className="text-sm font-bold tracking-tight mb-3">Partner Performance</h3>
+            <ProviderPerformance rows={providerRows} />
+          </div>
         </div>
 
-        <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
-          <h3 className="text-sm font-semibold mb-2">Brand Health</h3>
-          <BrandHealthTable
-            brands={brands}
-            apps={apps}
-            activations={activations}
-            tasks={tasks}
-            results={results}
-            limit={3}
-          />
+        <div className="relative rounded-2xl bg-card/95 backdrop-blur-sm border border-border/60 p-5 overflow-hidden shadow-[0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+          <div className="pointer-events-none absolute -top-20 -right-20 w-52 h-52 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.18), transparent)" }} />
+          <div className="relative">
+            <h3 className="text-sm font-bold tracking-tight mb-3">Brand Health</h3>
+            <BrandHealthTable
+              brands={brands}
+              apps={apps}
+              activations={activations}
+              tasks={tasks}
+              results={results}
+              limit={3}
+            />
+          </div>
         </div>
       </div>
 
       {/* 8. REVENUE & BILLING */}
-      <div className="rounded-2xl bg-card/50 border border-border/40 p-4">
-        <h3 className="text-sm font-semibold mb-2">Revenue Flow</h3>
-        <RevenueBilling data={revenueBilling} />
+      <div className="relative rounded-2xl bg-card/95 backdrop-blur-sm border border-border/60 p-5 overflow-hidden shadow-[0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+        <div className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(245,158,11,0.18), transparent)" }} />
+        <div className="relative">
+          <h3 className="text-sm font-bold tracking-tight mb-3">Revenue Flow</h3>
+          <RevenueBilling data={revenueBilling} />
+        </div>
       </div>
 
       {/* 9. LIVE ACTIVITY */}

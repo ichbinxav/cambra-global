@@ -190,19 +190,23 @@ export default function Dashboard() {
         {econ && (
           <div>
             {/* lazy import avoided; small component inline to keep simple */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-              <div className="p-4 rounded-xl glass ring-1 ring-blue-500/10 hover:translate-y-0.5 transition-transform">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Identified savings</p>
-                <p className="text-xl font-black tabular-nums text-chart-1">€{Math.round(econ.identified).toLocaleString()}/yr</p>
-              </div>
-              <div className="p-4 rounded-xl glass ring-1 ring-purple-500/10 hover:translate-y-0.5 transition-transform">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Activated savings</p>
-                <p className="text-xl font-black tabular-nums text-chart-3">€{Math.round(econ.activated).toLocaleString()}/yr</p>
-              </div>
-              <div className="p-4 rounded-xl glass ring-1 ring-green-500/10 hover:translate-y-0.5 transition-transform">
-                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1">Realized savings</p>
-                <p className="text-xl font-black tabular-nums text-chart-2">€{Math.round(econ.realized).toLocaleString()}/yr</p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              {[
+                { label: "Identified savings", value: econ.identified, glow: "rgba(31,78,216,0.35)", ring: "ring-blue-500/15" },
+                { label: "Activated savings", value: econ.activated, glow: "rgba(168,85,247,0.30)", ring: "ring-purple-500/15" },
+                { label: "Realized savings", value: econ.realized, glow: "rgba(44,167,193,0.35)", ring: "ring-green-500/15" },
+              ].map((s) => (
+                <div key={s.label} className={`group relative p-5 rounded-2xl glass ring-1 ${s.ring} overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-16px_rgba(0,0,0,0.18)]`}>
+                  <div className="pointer-events-none absolute -top-16 -right-16 w-44 h-44 rounded-full blur-3xl opacity-40 group-hover:opacity-70 transition-opacity"
+                       style={{ background: `radial-gradient(closest-side, ${s.glow}, transparent)` }} />
+                  <div className="relative">
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold mb-2">{s.label}</p>
+                    <p className="text-2xl font-black tabular-nums tracking-tight gradient-text">
+                      €{Math.round(s.value).toLocaleString()}<span className="text-muted-foreground/50 text-base font-bold">/yr</span>
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -298,24 +302,37 @@ export default function Dashboard() {
           <InfrastructureStatus latest={latest} />
 
           {/* Recommendations */}
-          <div className="rounded-2xl bg-card/50 border border-border/40 p-4 mt-3">
-            <h3 className="text-sm font-semibold mb-2">Recommendations</h3>
-            <RecommendationList />
+          <div className="relative rounded-2xl bg-card/95 backdrop-blur-sm border border-border/60 p-5 mt-3 overflow-hidden shadow-[0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+            <div className="pointer-events-none absolute -top-20 -right-20 w-52 h-52 rounded-full blur-3xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.18), transparent)" }} />
+            <div className="relative">
+              <h3 className="text-sm font-bold tracking-tight mb-3">Recommendations</h3>
+              <RecommendationList />
+            </div>
           </div>
 
           {/* ── QUICK ACTIONS ── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { title: "Run new analysis", desc: "Update your infra score", path: "/Analyzer", icon: TrendingDown, accent: true },
-              { title: "Complete onboarding", desc: "Add banking, insurance & telecom data", path: "/Onboarding", icon: Zap },
-              { title: "Connect your tools", desc: "Precision data across all verticals", path: "/ConnectTools", icon: ShieldCheck },
+              { title: "Complete onboarding", desc: "Add banking, insurance & telecom data", path: "/Onboarding", icon: Zap, glow: "rgba(168,85,247,0.25)" },
+              { title: "Connect your tools", desc: "Precision data across all verticals", path: "/ConnectTools", icon: ShieldCheck, glow: "rgba(44,167,193,0.25)" },
             ].map((action, i) => (
               <Link key={i} to={action.path}>
-                <div className={`group p-5 rounded-2xl border transition-all cursor-pointer ${action.accent ? "border-foreground/8 bg-foreground text-background" : "border-border/50 bg-card hover:border-border"}`}>
-                  <action.icon size={14} className={`mb-3 ${action.accent ? "opacity-40" : "text-muted-foreground/40"}`} />
-                  <p className={`font-semibold text-sm mb-0.5 ${action.accent ? "text-background" : ""}`}>{action.title}</p>
-                  <p className={`text-xs ${action.accent ? "text-background/40" : "text-muted-foreground/60"}`}>{action.desc}</p>
-                  <ArrowRight size={12} className={`mt-3 group-hover:translate-x-1 transition-transform ${action.accent ? "text-background/30" : "text-muted-foreground/25"}`} />
+                <div className={`group relative p-5 rounded-2xl border transition-all cursor-pointer overflow-hidden ${action.accent ? "border-foreground/10 bg-foreground text-background shadow-[0_18px_40px_-20px_rgba(0,0,0,0.5)]" : "border-border/60 bg-card/95 backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-16px_rgba(0,0,0,0.12)]"}`}>
+                  {action.accent ? (
+                    <>
+                      <div className="pointer-events-none absolute -top-16 -left-12 w-44 h-44 rounded-full blur-3xl opacity-60" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.6), transparent)" }} />
+                      <div className="pointer-events-none absolute -bottom-16 -right-12 w-40 h-40 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.55), transparent)" }} />
+                    </>
+                  ) : (
+                    <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-70 transition-opacity" style={{ background: `radial-gradient(closest-side, ${action.glow}, transparent)` }} />
+                  )}
+                  <div className="relative">
+                    <action.icon size={14} className={`mb-3 ${action.accent ? "opacity-60" : "text-muted-foreground/50"}`} />
+                    <p className={`font-bold text-sm mb-0.5 ${action.accent ? "text-background" : ""}`}>{action.title}</p>
+                    <p className={`text-xs ${action.accent ? "text-background/50" : "text-muted-foreground/65"}`}>{action.desc}</p>
+                    <ArrowRight size={12} className={`mt-3 group-hover:translate-x-1 transition-transform ${action.accent ? "text-background/40" : "text-muted-foreground/30"}`} />
+                  </div>
                 </div>
               </Link>
             ))}
