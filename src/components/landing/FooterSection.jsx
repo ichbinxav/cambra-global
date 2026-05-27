@@ -33,11 +33,11 @@ export default function FooterSection() {
   return (
     <>
       {/* Final CTA — IMPACT */}
-      <section ref={ref} className="px-4 md:px-6 py-12 md:py-20 bg-background">
-        <div
-          className="relative overflow-hidden cambra-card text-background max-w-6xl mx-auto flex items-center justify-center min-h-[80vh]"
-          style={{ borderRadius: "1.75rem" }}
-        >
+      <section
+        ref={ref}
+        className="relative overflow-hidden bg-foreground text-background"
+        style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
         {/* Animated grid backdrop */}
         <motion.div
           className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -266,7 +266,6 @@ export default function FooterSection() {
             100% { background-position: -200% 50%; }
           }
         `}</style>
-        </div>
       </section>
 
       {/* Footer strip */}
