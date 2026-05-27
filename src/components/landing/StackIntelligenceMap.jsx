@@ -90,57 +90,116 @@ export default function StackIntelligenceMap() {
         <div className="grid lg:grid-cols-[1.35fr_1fr] gap-6 items-stretch">
           {/* The radial map */}
           <div className="rounded-2xl border border-white/10 bg-white/[0.025] backdrop-blur-md p-6 md:p-8 flex items-center justify-center min-h-[480px] relative overflow-hidden">
-            {/* Scan rings */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              {[0.4, 0.7, 1.0].map((s, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute rounded-full border border-white/[0.06]"
-                  style={{ width: RADIUS * 2 * s, height: RADIUS * 2 * s }}
-                  animate={{ opacity: [0.3, 0.6, 0.3] }}
-                  transition={{ duration: 3, repeat: Infinity, delay: i * 0.4 }}
-                />
-              ))}
-            </div>
-
             <svg
               viewBox={`-${RADIUS + NODE_R + 20} -${RADIUS + NODE_R + 20} ${(RADIUS + NODE_R + 20) * 2} ${(RADIUS + NODE_R + 20) * 2}`}
               className="w-full max-w-[440px] h-auto relative z-10"
             >
-              {/* Connection lines */}
+              <defs>
+                {/* Scan arc gradient — fades to transparent so no text overlap */}
+                <linearGradient id="scan-arc-grad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor={focusState.color} stopOpacity="0" />
+                  <stop offset="70%" stopColor={focusState.color} stopOpacity="0.35" />
+                  <stop offset="100%" stopColor={focusState.color} stopOpacity="0.7" />
+                </linearGradient>
+                {/* Expanding pulse ring */}
+                <radialGradient id="pulse-ring">
+                  <stop offset="85%" stopColor={focusState.color} stopOpacity="0.12" />
+                  <stop offset="100%" stopColor={focusState.color} stopOpacity="0" />
+                </radialGradient>
+              </defs>
+
+              {/* Background orbit rings — behind everything */}
+              {[64, 112, RADIUS].map((r, i) => (
+                <circle key={`ring-${i}`} cx={0} cy={0} r={r}
+                  fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={0.5}
+                  strokeDasharray="3 6" />
+              ))}
+
+              {/* Expanding scan pulse — behind nodes, no text overlap */}
+              <motion.circle
+                cx={0} cy={0} r={RADIUS}
+                fill="none" stroke={focusState.color}
+                strokeWidth={1.5}
+                animate={{ r: [40, RADIUS + 30], opacity: [0.5, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut" }}
+              />
+              <motion.circle
+                cx={0} cy={0} r={RADIUS}
+                fill="none" stroke={focusState.color}
+                strokeWidth={1}
+                animate={{ r: [40, RADIUS + 30], opacity: [0.3, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut", delay: 1.2 }}
+              />
+
+              {/* Rotating scan arc — subtle glow arc, no line over nodes */}
+              <motion.circle
+                cx={0} cy={0} r={RADIUS - 15}
+                fill="none"
+                stroke="url(#scan-arc-grad)"
+                strokeWidth={2}
+                strokeDasharray={`${Math.PI * (RADIUS - 15) * 0.25} ${Math.PI * (RADIUS - 15) * 1.75}`}
+                strokeLinecap="round"
+                style={{ transformOrigin: "0px 0px" }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+              />
+
+              {/* Connection lines from center to nodes */}
               {LAYERS.map((layer, i) => {
                 const { x, y } = polar(layer.angle, RADIUS);
                 const isActive = i === focusIdx;
+                const color = STATE[layer.state].color;
                 return (
-                  <motion.line
-                    key={`line-${layer.id}`}
-                    x1={0} y1={0} x2={x} y2={y}
-                    stroke={isActive ? STATE[layer.state].color : "rgba(255,255,255,0.08)"}
-                    strokeWidth={isActive ? 1.5 : 0.6}
-                    animate={{ strokeOpacity: isActive ? 1 : 0.4 }}
-                    transition={{ duration: 0.4 }}
-                  />
+                  <g key={`line-${layer.id}`}>
+                    {/* Data pulse traveling along line */}
+                    {isActive && (
+                      <motion.circle
+                        r={2}
+                        fill={color}
+                        animate={{
+                          cx: [0, x],
+                          cy: [0, y],
+                          opacity: [1, 0.3],
+                        }}
+                        transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut" }}
+                      />
+                    )}
+                    <motion.line
+                      x1={0} y1={0} x2={x} y2={y}
+                      stroke={isActive ? color : "rgba(255,255,255,0.06)"}
+                      strokeWidth={isActive ? 1.5 : 0.5}
+                      animate={{ strokeOpacity: isActive ? 0.8 : 0.4 }}
+                      transition={{ duration: 0.4 }}
+                    />
+                  </g>
                 );
               })}
 
-              {/* Center engine */}
-              <circle cx={0} cy={0} r={32} fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.18)" strokeWidth={1} />
+              {/* Center engine — always on top of lines */}
+              <circle cx={0} cy={0} r={34} fill="rgba(10,16,36,0.9)" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
               <motion.circle
-                cx={0} cy={0} r={32}
+                cx={0} cy={0} r={34}
                 fill="none"
                 stroke={focusState.color}
                 strokeWidth={1.5}
-                animate={{ opacity: [0.4, 0.9, 0.4] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                animate={{ opacity: [0.3, 0.8, 0.3] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
               />
-              <text x={0} y={-3} textAnchor="middle" className="fill-white font-mono" style={{ fontSize: 9, letterSpacing: "0.15em" }}>
+              {/* Inner glow */}
+              <motion.circle
+                cx={0} cy={0} r={22}
+                fill={focusState.color}
+                animate={{ opacity: [0.04, 0.12, 0.04] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+              />
+              <text x={0} y={-4} textAnchor="middle" className="fill-white font-mono" style={{ fontSize: 9, letterSpacing: "0.15em", fontWeight: 700 }}>
                 CAMBRA
               </text>
-              <text x={0} y={9} textAnchor="middle" className="fill-white/40 font-mono" style={{ fontSize: 7 }}>
+              <text x={0} y={8} textAnchor="middle" className="fill-white/40 font-mono" style={{ fontSize: 7 }}>
                 ENGINE
               </text>
 
-              {/* Layer nodes */}
+              {/* Layer nodes — TOPMOST layer, nothing overlaps these */}
               {LAYERS.map((layer, i) => {
                 const { x, y } = polar(layer.angle, RADIUS);
                 const isActive = i === focusIdx;
@@ -152,22 +211,36 @@ export default function StackIntelligenceMap() {
                     onMouseLeave={() => setHoveredId(null)}
                     style={{ cursor: "pointer" }}
                   >
+                    {/* Soft halo */}
                     {isActive && (
-                      <motion.circle
-                        cx={x} cy={y} r={NODE_R}
-                        fill="none" stroke={color} strokeWidth={1}
-                        animate={{ r: [NODE_R, NODE_R + 14], opacity: [0.6, 0] }}
-                        transition={{ duration: 1.6, repeat: Infinity }}
-                      />
+                      <>
+                        <motion.circle
+                          cx={x} cy={y} r={NODE_R + 6}
+                          fill={color} opacity={0.08}
+                          style={{ filter: "blur(8px)" }}
+                        />
+                        <motion.circle
+                          cx={x} cy={y} r={NODE_R}
+                          fill="none" stroke={color} strokeWidth={1}
+                          animate={{ r: [NODE_R, NODE_R + 16], opacity: [0.5, 0] }}
+                          transition={{ duration: 1.8, repeat: Infinity }}
+                        />
+                      </>
                     )}
+                    {/* Node bg — opaque so nothing bleeds through */}
+                    <circle
+                      cx={x} cy={y} r={NODE_R}
+                      fill="hsl(220, 45%, 7%)"
+                    />
                     <motion.circle
                       cx={x} cy={y} r={NODE_R}
-                      fill={isActive ? color : "rgba(255,255,255,0.03)"}
-                      fillOpacity={isActive ? 0.18 : 1}
-                      stroke={isActive ? color : "rgba(255,255,255,0.18)"}
+                      fill={isActive ? color : "transparent"}
+                      fillOpacity={isActive ? 0.15 : 0}
+                      stroke={isActive ? color : "rgba(255,255,255,0.15)"}
                       strokeWidth={isActive ? 1.5 : 1}
-                      animate={{ scale: isActive ? 1.08 : 1 }}
+                      animate={{ scale: isActive ? 1.06 : 1 }}
                       transition={{ duration: 0.4 }}
+                      style={{ transformOrigin: `${x}px ${y}px` }}
                     />
                     <text x={x} y={y - 2} textAnchor="middle"
                           className="fill-white font-semibold pointer-events-none"
@@ -177,7 +250,7 @@ export default function StackIntelligenceMap() {
                     <text x={x} y={y + 10} textAnchor="middle"
                           className="font-mono pointer-events-none"
                           style={{ fontSize: 8, fill: isActive ? color : "rgba(255,255,255,0.4)" }}>
-                      {layer.drift === 0 ? "ok" : formatDrift(layer)}
+                      {layer.drift === 0 ? "✓ ok" : formatDrift(layer)}
                     </text>
                   </g>
                 );
