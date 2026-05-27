@@ -83,6 +83,42 @@ export default function StackIntelligenceMap() {
           <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed">
             Continuously benchmarked against brands your exact size and country.
           </p>
+
+          {/* How to read this map — legend */}
+          <div className="mt-8 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-5 md:p-6 max-w-3xl">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">How to read this map</span>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="h-2 w-2 rounded-full bg-cambra-cyan" />
+                  <span className="text-xs font-bold text-foreground">Each node</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  One cost layer of your stack — Payments, Shipping, SaaS, Banking, FX, In-store, Insurance, Telecom.
+                </p>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="h-2 w-2 rounded-full bg-cambra-lilac" />
+                  <span className="text-xs font-bold text-foreground">The number below</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Drift vs peer benchmark (e.g. <span className="font-mono text-foreground">+0.3pp</span> = you overpay by 0.3 percentage points).
+                </p>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="h-2 w-2 rounded-full bg-cambra-mint" />
+                  <span className="text-xs font-bold text-foreground">The center</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  CAMBRA scans all 8 layers continuously and quantifies recoverable margin in real time.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Map + Live feed */}
