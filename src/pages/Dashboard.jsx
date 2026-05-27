@@ -16,6 +16,9 @@ import GMVMetrics from "@/components/dashboard/GMVMetrics";
 import { CreditCard, Truck, Package, Store, ShieldCheck } from "lucide-react";
 import RecommendationList from "@/components/recommendations/RecommendationList";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
+import LiveSystemHeader from "@/components/dashboard/LiveSystemHeader";
+import DriftAlertStrip from "@/components/dashboard/DriftAlertStrip";
+import IntelligenceWidget from "@/components/dashboard/IntelligenceWidget";
 
 
 
@@ -146,16 +149,18 @@ export default function Dashboard() {
   if (loading) return (<DashboardSkeleton />);
 
   return (
-    <div className={`space-y-4 pb-10 ${!subscribed ? 'lock-blur' : ''}`}>
+    <>
+      <LiveSystemHeader />
+      <div className={`space-y-4 pb-10 px-6 ${!subscribed ? 'lock-blur' : ''}`}>
 
-      {/* ── HEADER ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-black tracking-[-0.03em]">
-            {user?.full_name ? `${user.full_name.split(" ")[0]}.` : "Dashboard"}
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Infrastructure operating system · 8 verticals</p>
-        </div>
+        {/* ── HEADER ── */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-4">
+          <div>
+            <h1 className="text-2xl font-black tracking-[-0.03em]">
+              {user?.full_name ? `${user.full_name.split(" ")[0]}.` : "Dashboard"}
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5">8 operational layers · Continuous monitoring</p>
+          </div>
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <Link to="/Analyzer">
             <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-foreground text-background shadow-md hover:shadow-lg">
@@ -230,6 +235,8 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
+          <DriftAlertStrip />
+
           {/* ── ACCURACY BANNER ── */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl border border-chart-3/20 bg-orange-500/[0.04]">
             <div className="flex items-center gap-2 flex-1">
@@ -270,13 +277,13 @@ export default function Dashboard() {
           {/* ── CUMULATIVE SAVINGS — historical impact ── */}
           <CumulativeSavingsChart results={results} />
 
-          {/* ── SCORE + DEALS ROW ── */}
+          {/* ── SCORE + INTELLIGENCE WIDGET ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <InfraScore score={score} resultId={latest.id} />
             {chartData.length > 1 ? (
               <SavingsTrend chartData={chartData} />
             ) : (
-              <DealsOverview userDeals={userDeals} />
+              <IntelligenceWidget />
             )}
           </div>
 
@@ -313,6 +320,7 @@ export default function Dashboard() {
           </div>
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 }
