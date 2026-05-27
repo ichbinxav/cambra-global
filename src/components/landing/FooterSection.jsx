@@ -206,6 +206,7 @@ export default function FooterSection() {
                 <div className="h-14 sm:h-16 px-8 sm:px-10 rounded-full border border-background/25 bg-background/[0.04] backdrop-blur-md text-background font-bold text-base sm:text-lg inline-flex items-center justify-center gap-2 hover:bg-background/[0.1] hover:border-background/40 transition-all w-full sm:w-auto">
                   <Activity className="h-4 w-4 text-cambra-mint" />
                   See live engine
+                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
               </motion.div>
             </Link>
