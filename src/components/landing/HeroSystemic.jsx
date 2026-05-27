@@ -134,7 +134,7 @@ export default function HeroSystemic() {
                 <span
                   className="bg-clip-text text-transparent"
                   style={{
-                    backgroundImage: "linear-gradient(180deg, hsl(222 60% 5%) 0%, hsl(var(--cambra-navy)) 55%, hsl(var(--cambra-blue)) 100%)",
+                    backgroundImage: "linear-gradient(180deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 55%, hsl(var(--cambra-cyan)) 100%)",
                     backgroundSize: "200% 100%",
                     WebkitBackgroundClip: "text",
                   }}
@@ -182,7 +182,7 @@ export default function HeroSystemic() {
                 whileTap={{ scale: 0.97 }}
                 className="relative h-12 rounded-full px-7 text-sm font-bold text-white inline-flex items-center justify-center gap-2 overflow-hidden group border border-white/10"
                 style={{
-                  background: "linear-gradient(180deg, hsl(222 55% 9%) 0%, hsl(222 60% 6%) 100%)"
+                  background: "linear-gradient(180deg, hsl(222 65% 4%) 0%, hsl(222 70% 2%) 100%)"
                 }}
               >
                 {/* Shimmer sweep */}
