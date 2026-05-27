@@ -9,7 +9,6 @@ import { base44 } from "@/api/base44Client";
 import DataIngestionStep from "@/components/analyzer/DataIngestionStep";
 import AnalyzerHero from "@/components/analyzer/AnalyzerHero";
 import AuditModulesGrid from "@/components/analyzer/AuditModulesGrid";
-import HowItWorksSection from "@/components/analyzer/HowItWorksSection";
 import CopilotPanel from "@/components/analyzer/CopilotPanel";
 import SmartNumberField from "@/components/inputs/SmartNumberField.jsx";
 import Navbar from "@/components/landing/Navbar";
@@ -777,7 +776,6 @@ export default function Analyzer() {
                 onUploadDocuments={() => openQuestionnaire("upload")}
               />
               <AuditModulesGrid onSelectModule={handleModuleSelect} />
-              <HowItWorksSection />
             </div>
             <CopilotPanel onSelectPrompt={handleCopilotPrompt} />
           </div>
