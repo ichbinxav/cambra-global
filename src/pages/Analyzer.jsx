@@ -773,7 +773,7 @@ export default function Analyzer() {
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="space-y-8">
               <AnalyzerHero
-                onStartFullAudit={() => openQuestionnaire("payments")}
+                onStartFullAudit={() => openQuestionnaire("")}
                 onUploadDocuments={() => openQuestionnaire("upload")}
               />
               <AuditModulesGrid onSelectModule={handleModuleSelect} />
