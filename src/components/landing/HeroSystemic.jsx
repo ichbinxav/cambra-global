@@ -69,11 +69,11 @@ export default function HeroSystemic() {
       {/* Animated backdrop */}
       <motion.div className="absolute inset-0 pointer-events-none" style={{ y: bgY }}>
         <div
-          className="absolute inset-0 dot-grid"
+          className="absolute inset-0"
           style={{
             opacity: 1,
             backgroundImage:
-              "linear-gradient(hsl(0 0% 0% / 0.05) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 0% / 0.05) 1px, transparent 1px)",
+              "linear-gradient(hsl(217 60% 40% / 0.10) 1px, transparent 1px), linear-gradient(90deg, hsl(217 60% 40% / 0.10) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
             WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 95%)",
             maskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 95%)",
