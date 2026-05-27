@@ -7,7 +7,7 @@ import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useAuth } from "@/lib/AuthContext";
 
 const NAV_PUBLIC = [
-  { label: "Inicio", href: "/" },
+  { label: "Homepage", href: "/" },
   { label: "Analyzer", href: "/Analyzer" },
   { label: "Insights", href: "/Insights" },
   { label: "Pricing", href: "/Pricing" },
@@ -17,7 +17,7 @@ const NAV_PUBLIC = [
 ];
 
 const NAV_MEMBER = [
-  { label: "Inicio", href: "/" },
+  { label: "Homepage", href: "/" },
   { label: "Dashboard", href: "/Dashboard" },
   { label: "Analyzer", href: "/Analyzer" },
   { label: "Onboarding", href: "/Onboarding" },
