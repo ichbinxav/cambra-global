@@ -51,8 +51,9 @@ export default function PricingSection() {
           {/* Intelligence Card */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, margin: "-100px" }}
             className="group relative rounded-2xl overflow-hidden border border-border/50 bg-card/80 backdrop-blur-md p-5 sm:p-8 hover:-translate-y-1 transition-transform duration-300"
           >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -96,8 +97,9 @@ export default function PricingSection() {
           {/* Recovery Card */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, margin: "-100px" }}
             className="group relative rounded-2xl overflow-hidden border border-white/12 p-5 sm:p-8 hover:-translate-y-1 transition-transform duration-300"
             style={{
               background: "linear-gradient(135deg, rgba(31,78,216,0.24) 0%, rgba(44,167,193,0.12) 100%), linear-gradient(180deg, hsl(222 60% 8%) 0%, hsl(222 65% 5%) 100%)",
