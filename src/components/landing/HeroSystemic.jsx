@@ -89,6 +89,12 @@ export default function HeroSystemic() {
         />
       </motion.div>
 
+      {/* Bottom fade to white — smooth blend with next section */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none z-[5]"
+        style={{ background: "linear-gradient(to bottom, transparent 0%, hsl(var(--background)) 85%)" }}
+      />
+
       <motion.div
         style={{ opacity: heroOpacity, scale: heroScale }}
         className="relative z-10 w-full max-w-6xl mx-auto px-5 py-10 md:py-14"
