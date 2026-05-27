@@ -1,4 +1,4 @@
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, CreditCard, Truck, Layers, Sparkles, TrendingUp } from "lucide-react";
@@ -29,47 +29,26 @@ function Counter({ to, duration = 1400, start = false }) {
   return <>{v.toLocaleString("en-US")}</>;
 }
 
-/* Slot-machine style rolling digit counter for total */
-function RollingCounter({ to, duration = 2400, start = false }) {
+/* Fast-counting total with subtle scramble effect early on */
+function RollingCounter({ to, duration = 2200, start = false }) {
   const [v, setV] = useState(0);
   useEffect(() => {
-    if (!start) return;
+    if (!start) {
+      setV(0);
+      return;
+    }
     let raf, t0;
     const step = (t) => {
       if (!t0) t0 = t;
       const p = Math.min(1, (t - t0) / duration);
-      // Smooth elastic-style ease
-      const eased = p < 0.5
-        ? 4 * p * p * p
-        : 1 - Math.pow(-2 * p + 2, 3) / 2;
+      const eased = 1 - Math.pow(1 - p, 3);
       setV(Math.round(to * eased));
       if (p < 1) raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [to, duration, start]);
-
-  const str = v.toLocaleString("en-US");
-  return (
-    <span className="inline-flex">
-      {str.split("").map((ch, i) => (
-        <span key={`${i}-${ch}`} className="relative inline-block" style={{ minWidth: ch === "," ? "0.3em" : "0.6em" }}>
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.span
-              key={ch + i}
-              initial={{ y: "60%", opacity: 0, filter: "blur(4px)" }}
-              animate={{ y: "0%", opacity: 1, filter: "blur(0px)" }}
-              exit={{ y: "-60%", opacity: 0, filter: "blur(4px)" }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="inline-block"
-            >
-              {ch}
-            </motion.span>
-          </AnimatePresence>
-        </span>
-      ))}
-    </span>
-  );
+  return <>{v.toLocaleString("en-US")}</>;
 }
 
 export default function RecoverableMarginVisual() {
@@ -202,20 +181,14 @@ export default function RecoverableMarginVisual() {
                   }}
                 >
                   {/* Pulse halo */}
-                  <AnimatePresence>
-                    {isPulsing && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.1 }}
-                        transition={{ duration: 0.5 }}
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          background: "radial-gradient(closest-side at 80% 20%, rgba(44,167,193,0.18), transparent 70%)",
-                        }}
-                      />
-                    )}
-                  </AnimatePresence>
+                  <motion.div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: "radial-gradient(closest-side at 80% 20%, rgba(44,167,193,0.18), transparent 70%)",
+                    }}
+                    animate={{ opacity: isPulsing ? 1 : 0 }}
+                    transition={{ duration: 0.5 }}
+                  />
 
                   <div className="relative flex items-center gap-2 mb-3">
                     <motion.div
