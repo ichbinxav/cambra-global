@@ -168,11 +168,8 @@ export default function MeetTheFounder() {
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-border/40">
-                  <p
-                    className="text-3xl md:text-4xl text-foreground"
-                    style={{ fontFamily: "'Caveat', 'Brush Script MT', cursive" }}
-                  >
-                    — Xavier M. Contero
+                  <p className="text-xl font-black tracking-[-0.03em] text-foreground">
+                    Xavier M. Contero
                   </p>
                   <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground/50 mt-2">
                     Founder, CAMBRA
