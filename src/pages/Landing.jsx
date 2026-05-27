@@ -2,7 +2,7 @@ import HeroSystemic from "@/components/landing/HeroSystemic.jsx";
 import HowItWorksSimple from "@/components/landing/HowItWorksSimple.jsx";
 import StackIntelligenceMap from "@/components/landing/StackIntelligenceMap.jsx";
 import ConnectToolsSection from "@/components/landing/ConnectToolsSection.jsx";
-import PricingSection from "@/components/landing/PricingSection";
+import PricingSection from "@/components/landing/PricingSection.jsx";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import MeetTheFounder from "@/components/landing/MeetTheFounder.jsx";
 import FooterSection from "@/components/landing/FooterSection";

@@ -42,7 +42,7 @@ import AdminControl from '@/pages/admin/AdminControl';
 import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
 import AdminRecommendations from '@/pages/admin/AdminRecommendations';
 import AuthRedirect from '@/pages/AuthRedirect';
-import Pricing from '@/pages/Pricing';
+import Pricing from '@/pages/Pricing.jsx';
 import HowItWorks from '@/pages/HowItWorks';
 import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
