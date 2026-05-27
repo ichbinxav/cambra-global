@@ -30,13 +30,23 @@ const STEPS = [
   },
   {
     n: "03",
-    tag: "RECOVER",
-    title: "You take the margin back.",
-    body: "We renegotiate or swap what's overpriced. You only pay if we save you money. No subscription. No retainer.",
-    meta: "Success-fee only · aligned incentives",
+    tag: "BENCHMARK",
+    title: "Benchmark against the network.",
+    body: "Your numbers are compared against operators of similar scale — surfacing exact savings opportunities.",
+    meta: "Peer benchmarks · infrastructure score",
+    icon: GitCompare,
+    accent: "#1F4ED8",
+    cta: { label: "See your score", href: "/Dashboard" },
+  },
+  {
+    n: "04",
+    tag: "UNLOCK",
+    title: "Unlock savings.",
+    body: "Move into stronger commercial conditions through CAMBRA's network — performance-based, no upfront fee.",
+    meta: "Aligned incentives · success-fee only",
     icon: TrendingUp,
     accent: "#8B5CF6",
-    cta: { label: "See your savings", href: "/Dashboard" },
+    cta: { label: "Activate deals", href: "/Dashboard" },
   },
 ];
 
@@ -76,7 +86,7 @@ export default function HowItWorksSimple() {
         </div>
 
         {/* Steps — grid of navy cards */}
-        <div className="grid md:grid-cols-3 gap-5 md:gap-6">
+        <div className="grid md:grid-cols-4 gap-5 md:gap-6">
           {STEPS.map((s, i) => {
             const Icon = s.icon;
             return (
@@ -85,7 +95,7 @@ export default function HowItWorksSimple() {
                 initial={{ opacity: 0, y: 24 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                className="cambra-card p-7 md:p-8 flex flex-col"
+                className="cambra-card p-7 md:p-8 flex flex-col relative"
               >
                 {/* Header row: tag pill + icon */}
                 <div className="flex items-center justify-between mb-6">
@@ -135,19 +145,19 @@ export default function HowItWorksSimple() {
                   {s.meta}
                 </div>
 
-                {/* Step CTA */}
+                {/* Step CTA — top right */}
                 <Link
                   to={s.cta.href}
-                  className="group/cta mt-5 inline-flex items-center justify-between gap-2 px-4 py-3 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/25 transition-all backdrop-blur-sm"
+                  className="absolute top-6 right-6 group/cta flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white/[0.12] hover:border-white/30 transition-all backdrop-blur-sm"
                 >
-                  <span className="text-[13px] font-bold text-white tracking-tight">
+                  <span className="text-[11px] font-bold text-white tracking-tight whitespace-nowrap">
                     {s.cta.label}
                   </span>
                   <span
-                    className="h-7 w-7 rounded-full flex items-center justify-center transition-transform group-hover/cta:translate-x-0.5"
+                    className="h-6 w-6 rounded-full flex items-center justify-center transition-transform group-hover/cta:translate-x-0.5"
                     style={{ background: s.accent }}
                   >
-                    <ArrowRight className="h-3.5 w-3.5 text-white" />
+                    <ArrowRight className="h-3 w-3 text-white" />
                   </span>
                 </Link>
               </motion.div>
