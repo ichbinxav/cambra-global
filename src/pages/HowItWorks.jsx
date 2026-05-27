@@ -11,6 +11,7 @@ const STEPS = [
     title: "Connect your stack",
     detail: "Link payments, shipping, accounting and SaaS tools — or upload statements. Read-only, encrypted, never shared.",
     points: ["OAuth integrations", "PDF/CSV ingestion", "Manual fallback"],
+    cta: { label: "Connect your tools", href: "/ConnectTools" },
   },
   {
     n: "02",
@@ -18,6 +19,7 @@ const STEPS = [
     title: "We scan your infrastructure",
     detail: "CAMBRA maps your real rates, volumes and costs across 8 operational layers — automatically.",
     points: ["Effective payment rates", "Carrier benchmarks", "SaaS spend audit"],
+    cta: { label: "Run the analyzer", href: "/Analyzer" },
   },
   {
     n: "03",
@@ -25,13 +27,15 @@ const STEPS = [
     title: "Benchmark against the network",
     detail: "Your numbers are compared against operators of similar scale — surfacing exact savings opportunities.",
     points: ["Peer benchmarks", "Infrastructure score", "Margin leak alerts"],
+    cta: { label: "See your score", href: "/Dashboard" },
   },
   {
     n: "04",
     icon: Sparkles,
-    title: "Activate better terms",
+    title: "Unlock savings",
     detail: "Move into stronger commercial conditions through CAMBRA's network — performance-based, no upfront fee.",
     points: ["Negotiated terms", "Recovery verification", "Aligned incentives"],
+    cta: { label: "Activate deals", href: "/Dashboard" },
   },
 ];
 
@@ -78,8 +82,21 @@ export default function HowItWorks() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-80px" }}
                   transition={{ duration: 0.5, delay: i * 0.05 }}
-                  className="cambra-card p-8 sm:p-10"
+                  className="cambra-card p-8 sm:p-10 relative"
                 >
+                  {/* CTA top-right */}
+                  <Link
+                    to={step.cta.href}
+                    className="group/cta absolute top-6 right-6 sm:top-8 sm:right-8 flex items-center gap-2 px-4 py-2.5 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white/[0.12] hover:border-white/30 transition-all backdrop-blur-sm z-10"
+                  >
+                    <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight whitespace-nowrap">
+                      {step.cta.label}
+                    </span>
+                    <span className="h-6 w-6 rounded-full flex items-center justify-center bg-cambra-mint transition-transform group-hover/cta:translate-x-0.5">
+                      <ArrowRight className="h-3 w-3 text-cambra-navy-deep" />
+                    </span>
+                  </Link>
+
                   <div className="grid md:grid-cols-[auto_1fr] gap-6 sm:gap-10 items-end">
                     {/* Giant cinematic number */}
                     <div className="cambra-step-number">
