@@ -37,7 +37,7 @@ export default function HowItWorksSimple() {
   const spineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <section ref={ref} className="relative py-28 md:py-36 px-5 bg-neon-1 text-neon-9 overflow-hidden">
+    <section ref={ref} className="relative py-16 md:py-20 px-5 bg-neon-1 text-neon-9 overflow-hidden">
       {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div
@@ -58,7 +58,7 @@ export default function HowItWorksSimple() {
 
       <div className="relative max-w-5xl mx-auto">
         {/* Header */}
-        <div className="mb-16 md:mb-24 max-w-3xl">
+        <div className="mb-10 md:mb-14 max-w-3xl">
           <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm">
             <Zap className="h-3 w-3 text-cambra-mint" />
             <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-white/60">

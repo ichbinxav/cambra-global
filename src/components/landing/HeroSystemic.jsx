@@ -39,14 +39,14 @@ export default function HeroSystemic() {
   }, []);
 
   return (
-    <section ref={ref} className="relative min-h-[92vh] flex items-center overflow-hidden pt-14 bg-background">
+    <section ref={ref} className="relative min-h-[92vh] flex items-center overflow-hidden pt-6 bg-background">
       <motion.div className="absolute inset-0 pointer-events-none" style={{ y: bgY }}>
         <div className="absolute inset-0 dot-grid opacity-60" />
         <div className="absolute -top-32 -left-32 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.25]" />
         <div className="absolute -bottom-32 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.22]" />
       </motion.div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-16 md:py-20">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-16 items-center">
 
           {/* LEFT — clear promise */}

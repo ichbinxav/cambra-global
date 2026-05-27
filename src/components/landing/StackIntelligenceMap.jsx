@@ -61,7 +61,7 @@ export default function StackIntelligenceMap() {
   const NODE_R = 26;
 
   return (
-    <section className="relative pt-32 md:pt-40 pb-24 md:pb-32 bg-neon-1 text-neon-9 overflow-hidden">
+    <section className="relative pt-16 md:pt-20 pb-16 md:pb-20 bg-neon-1 text-neon-9 overflow-hidden">
       {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60rem] h-[60rem] rounded-full blur-[140px] opacity-50"
