@@ -135,8 +135,10 @@ export default function Network() {
           {filtered.map((brand) => (
             <div
               key={brand.id}
-              className="group p-6 rounded-2xl border border-border/50 bg-card/60 hover:border-border hover:bg-card transition-all"
+              className="group relative p-6 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-[0_22px_48px_-22px_rgba(0,0,0,0.18)] transition-all overflow-hidden"
             >
+              <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-70 transition-opacity" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.25), transparent)" }} />
+              <div className="relative">
               {/* Logo + category */}
               <div className="flex items-start justify-between mb-5">
                 <div className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center text-base font-black text-foreground/60 shrink-0">
@@ -176,6 +178,7 @@ export default function Network() {
                     {brand.annual_revenue.replace(/_/g, " ").replace("under", "<").replace("plus", "+")}
                   </span>
                 )}
+              </div>
               </div>
             </div>
           ))}

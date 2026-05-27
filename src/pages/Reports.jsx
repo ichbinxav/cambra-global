@@ -89,11 +89,14 @@ export default function Reports() {
           {/* Chart */}
           {chartData.length > 0 && (
             <motion.div
-              className="p-7 rounded-2xl border border-border/50 bg-card/60 mb-6"
+              className="relative p-7 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm mb-6 overflow-hidden shadow-[0_18px_48px_-24px_rgba(0,0,0,0.18)]"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
+              <div className="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.20), transparent)" }} />
+              <div className="pointer-events-none absolute -bottom-24 -left-24 w-72 h-72 rounded-full blur-3xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.18), transparent)" }} />
+              <div className="relative">
               <div className="mb-6">
                 <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-1">Savings history</p>
                 <p className="text-sm font-semibold">Identified (Analyzer) savings by category (€)</p>
@@ -114,17 +117,20 @@ export default function Reports() {
                   <Bar dataKey="SaaS" fill="hsl(260,60%,45%)" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
             </motion.div>
           )}
 
            {/* Verification checklist */}
            {!vLoading && (
              <motion.div
-               className="p-7 rounded-2xl border border-border/50 bg-card/60 mb-6"
+               className="relative p-7 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm mb-6 overflow-hidden shadow-[0_18px_48px_-24px_rgba(0,0,0,0.18)]"
                initial={{ opacity: 0, y: 12 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.15 }}
              >
+               <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(34,197,94,0.20), transparent)" }} />
+               <div className="relative">
                <div className="mb-4 flex items-center justify-between">
                  <div>
                    <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-1">Verification</p>
@@ -161,18 +167,21 @@ export default function Reports() {
                  })()}
                </ul>
                {!brand && (
-                 <p className="text-xs text-muted-foreground mt-3">Complete onboarding to enable verification tracking.</p>
+                <p className="text-xs text-muted-foreground mt-3">Complete onboarding to enable verification tracking.</p>
                )}
-             </motion.div>
-           )}
+               </div>
+               </motion.div>
+               )}
 
-           {lastReport && (
-             <motion.div
-               className="p-7 rounded-2xl border border-border/50 bg-card/60 mb-6"
+               {lastReport && (
+               <motion.div
+               className="relative p-7 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm mb-6 overflow-hidden shadow-[0_18px_48px_-24px_rgba(0,0,0,0.18)]"
                initial={{ opacity: 0, y: 12 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.18 }}
-             >
+               >
+               <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(251,146,60,0.20), transparent)" }} />
+               <div className="relative">
                <div className="mb-4">
                  <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 mb-1">TPE report</p>
                  <p className="text-sm font-semibold">In-store terminal benchmark and savings opportunity</p>
@@ -208,17 +217,19 @@ export default function Reports() {
                      </div>
                    </div>
                  );
-               })()}
-             </motion.div>
-           )}
+                 })()}
+                 </div>
+                 </motion.div>
+                 )}
 
-           {/* History list */}
-          <motion.div
-            className="rounded-2xl border border-border/50 overflow-hidden bg-card/60"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+                 {/* History list */}
+                 <motion.div
+                 className="relative rounded-2xl border border-border/60 overflow-hidden bg-card/95 backdrop-blur-sm shadow-[0_18px_48px_-24px_rgba(0,0,0,0.18)]"
+                 initial={{ opacity: 0, y: 12 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.2 }}
+                 >
+                 <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.18), transparent)" }} />
             <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between">
               <p className="text-xs font-semibold tracking-tight">Analysis history</p>
               <span className="text-[10px] text-muted-foreground/50">{results.length} reports</span>

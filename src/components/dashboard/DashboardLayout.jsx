@@ -161,11 +161,13 @@ export default function DashboardLayout() {
 
       {/* Main */}
       <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 bg-background xl:pr-[392px] overflow-hidden">
-        {/* Ambient backdrop */}
+        {/* Ambient backdrop — wow */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 dot-grid opacity-40" />
-          <div className="absolute -top-32 right-1/4 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.14]" />
-          <div className="absolute top-1/3 -left-32 w-[30rem] h-[30rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.12]" />
+          <div className="absolute inset-0 dot-grid opacity-60" />
+          <div className="absolute -top-40 right-1/4 w-[44rem] h-[44rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.28]" />
+          <div className="absolute top-1/3 -left-40 w-[38rem] h-[38rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.22]" />
+          <div className="absolute bottom-0 right-0 w-[34rem] h-[34rem] rounded-full blur-3xl opacity-[0.18]"
+               style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.45), transparent)" }} />
         </div>
         <div className="relative max-w-5xl mx-auto p-6 lg:p-10">
           <Outlet />

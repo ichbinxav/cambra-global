@@ -82,12 +82,18 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-[70] w-56 bg-foreground text-background flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
-        <div className="px-5 py-5 border-b border-background/10">
+      <aside className={`fixed inset-y-0 left-0 z-[70] w-56 bg-foreground text-background flex flex-col transition-transform duration-200 overflow-hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
+        {/* Ambient inner glows */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-24 -left-16 w-72 h-72 rounded-full blur-3xl opacity-60" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.55), transparent 60%)" }} />
+          <div className="absolute -bottom-32 -right-12 w-72 h-72 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.50), transparent 60%)" }} />
+          <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+        </div>
+        <div className="relative px-5 py-5 border-b border-background/10">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-black tracking-tight">THE NoDE</p>
-              <p className="text-[10px] text-background/30 mt-0.5">Admin System</p>
+              <p className="text-sm font-black tracking-tight" style={{ background: "linear-gradient(135deg, #fff 0%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>CAMBRA</p>
+              <p className="text-[10px] text-background/40 mt-0.5 tracking-[0.18em] uppercase">Admin · Live</p>
             </div>
             <button
               type="button"
@@ -100,25 +106,31 @@ export default function AdminLayout() {
           </div>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {NAV.map(item => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                isActive(item.path, item.exact)
-                  ? "bg-background/10 text-background"
-                  : "text-background/40 hover:text-background hover:bg-background/5"
-              }`}
-            >
-              <item.icon size={13} />
-              {item.label}
-            </Link>
-          ))}
+        <nav className="relative flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {NAV.map(item => {
+            const active = isActive(item.path, item.exact);
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setSidebarOpen(false)}
+                className={`relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all overflow-hidden ${
+                  active
+                    ? "bg-background/[0.08] text-background shadow-[0_1px_0_rgba(255,255,255,0.08)_inset]"
+                    : "text-background/45 hover:text-background hover:bg-background/[0.04]"
+                }`}
+              >
+                {active && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-r" style={{ background: "linear-gradient(180deg, #1F4ED8, #2CA7C1)", boxShadow: "0 0 10px rgba(44,167,193,0.7)" }} />
+                )}
+                <item.icon size={13} />
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="px-3 py-4 border-t border-background/10">
+        <div className="relative px-3 py-4 border-t border-background/10">
           {user && (
             <div className="px-3 py-2 mb-2">
               <p className="text-[11px] font-semibold text-background/70 truncate">{user.full_name}</p>
@@ -172,11 +184,13 @@ export default function AdminLayout() {
         </header>
 
         <main className="relative flex-1 overflow-hidden">
-          {/* Ambient backdrop */}
+          {/* Ambient backdrop — wow */}
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-0 dot-grid opacity-40" />
-            <div className="absolute -top-32 right-1/4 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.12]" />
-            <div className="absolute top-1/3 -left-32 w-[30rem] h-[30rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.10]" />
+            <div className="absolute inset-0 dot-grid opacity-60" />
+            <div className="absolute -top-40 right-1/4 w-[44rem] h-[44rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.26]" />
+            <div className="absolute top-1/3 -left-40 w-[38rem] h-[38rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.22]" />
+            <div className="absolute bottom-0 right-0 w-[34rem] h-[34rem] rounded-full blur-3xl opacity-[0.18]"
+                 style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.45), transparent)" }} />
           </div>
           <div className="relative p-6 max-w-[1400px] mx-auto w-full">
             <Outlet />
