@@ -33,7 +33,6 @@ export default function ConnectToolsSection() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
             </span>
-            <Zap size={10} className="opacity-60" />
             <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Recommended · Highest accuracy</span>
           </motion.div>
 

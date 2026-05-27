@@ -51,14 +51,12 @@ export default function HeroSystemic() {
 
           {/* LEFT — clear promise */}
           <div className="text-left">
-            <div className="inline-flex items-center gap-2 mb-7 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+            <div className="flex items-center gap-2 mb-7 w-fit px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
               <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cambra-mint opacity-75" />
+                <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
               </span>
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
-                Live · 8 cost layers
-              </span>
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Live · 8 cost layers</span>
             </div>
 
             <h1 className="font-display text-[clamp(2.2rem,5.8vw,5rem)] font-black tracking-[-0.05em] leading-[0.9] mb-5">

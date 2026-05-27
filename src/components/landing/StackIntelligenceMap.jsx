@@ -69,11 +69,12 @@ export default function StackIntelligenceMap() {
       <div className="relative max-w-6xl mx-auto">
         {/* Header — matches landing pattern */}
         <div className="mb-12 md:mb-16 max-w-4xl">
-          <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-cambra-cyan animate-pulse" />
-            <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-muted-foreground">
-              Stack Intelligence
+          <div className="flex items-center gap-2 mb-6 w-fit px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
             </span>
+            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Stack Intelligence</span>
           </div>
           <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92]">
             Every cost, in one place.<br />
