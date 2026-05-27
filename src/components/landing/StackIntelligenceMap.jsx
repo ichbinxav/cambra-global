@@ -151,9 +151,10 @@ export default function StackIntelligenceMap() {
                 const color = STATE[layer.state].color;
                 return (
                   <g key={`line-${layer.id}`}>
-                    {/* Data pulse traveling along line */}
+                    {/* Data pulse traveling along line — keyed by focus so it fully unmounts when inactive */}
                     {isActive && (
                       <motion.circle
+                        key={`pulse-${layer.id}-${focusIdx}`}
                         r={2}
                         fill={color}
                         animate={{
@@ -164,12 +165,11 @@ export default function StackIntelligenceMap() {
                         transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut" }}
                       />
                     )}
-                    <motion.line
+                    <line
                       x1={0} y1={0} x2={x} y2={y}
                       stroke={isActive ? color : "rgba(255,255,255,0.06)"}
                       strokeWidth={isActive ? 1.5 : 0.5}
-                      animate={{ strokeOpacity: isActive ? 0.8 : 0.4 }}
-                      transition={{ duration: 0.4 }}
+                      strokeOpacity={isActive ? 0.8 : 0.4}
                     />
                   </g>
                 );
