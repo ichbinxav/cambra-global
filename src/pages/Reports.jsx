@@ -30,7 +30,7 @@ export default function Reports() {
         const authed = await base44.auth.isAuthenticated();
         if (!authed) { setVLoading(false); return; }
         const me = await base44.auth.me();
-        const brands = await base44.entities.Brand.filter({ created_by: me.email }, '-created_date', 1);
+        const brands = await base44.entities.Brand.filter({ created_by_id: me.id }, '-created_date', 1);
         const b = brands?.[0] || null;
         setBrand(b);
         if (b) {

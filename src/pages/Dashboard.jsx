@@ -41,9 +41,9 @@ export default function Dashboard() {
       setUserEmail(u.email);
 
       const [r, b, p, uds] = await Promise.all([
-        base44.entities.AnalyzerResult.filter({ created_by: u.email }, "-created_date", 10),
-        base44.entities.Brand.filter({ created_by: u.email }),
-        base44.entities.PaymentsProfile.filter({ created_by: u.email }, "-created_date", 1),
+        base44.entities.AnalyzerResult.filter({ created_by_id: u.id }, "-created_date", 10),
+        base44.entities.Brand.filter({ created_by_id: u.id }),
+        base44.entities.PaymentsProfile.filter({ created_by_id: u.id }, "-created_date", 1),
         base44.entities.UserDeal.filter({ user_email: u.email }),
       ]);
       setResults(r);
@@ -90,8 +90,9 @@ export default function Dashboard() {
     if (!userEmail) return;
 
     const refresh = async () => {
+      const me = await base44.auth.me();
       const [r, uds] = await Promise.all([
-        base44.entities.AnalyzerResult.filter({ created_by: userEmail }, "-created_date", 10),
+        base44.entities.AnalyzerResult.filter({ created_by_id: me.id }, "-created_date", 10),
         base44.entities.UserDeal.filter({ user_email: userEmail }),
       ]);
       setResults(r);

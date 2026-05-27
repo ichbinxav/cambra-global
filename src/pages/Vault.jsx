@@ -16,8 +16,8 @@ export default function Vault() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
-  const [category, setCategory] = useState('');
-  const [status, setStatus] = useState('');
+  const [category, setCategory] = useState('all');
+  const [status, setStatus] = useState('all');
   const [selected, setSelected] = useState(null);
   const fileRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -25,7 +25,7 @@ export default function Vault() {
 
   const load = async () => {
     setLoading(true);
-    const res = await base44.functions.invoke('listDocuments', { q, category: category || undefined, review_status: status || undefined, include_links: true });
+    const res = await base44.functions.invoke('listDocuments', { q, category: category === 'all' ? undefined : category, review_status: status === 'all' ? undefined : status, include_links: true });
     setItems(res.data?.items || []);
     setLoading(false);
   };
@@ -86,16 +86,16 @@ export default function Vault() {
       <div className="flex items-center gap-2 flex-wrap">
         <Input placeholder="Buscar…" value={q} onChange={e=>setQ(e.target.value)} className="w-52" />
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-44"><SelectValue placeholder="Categoría" /></SelectTrigger>
+          <SelectTrigger className="w-44"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value={null}>Todas</SelectItem>
+            <SelectItem value="all">All categories</SelectItem>
             {CATEGORIES.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Estado" /></SelectTrigger>
+          <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value={null}>Todos</SelectItem>
+            <SelectItem value="all">All statuses</SelectItem>
             {STATUSES.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
           </SelectContent>
         </Select>

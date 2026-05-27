@@ -13,7 +13,7 @@ export default function Invoices() {
       const authed = await base44.auth.isAuthenticated();
       if (!authed) { setItems([]); setLoading(false); return; }
       const me = await base44.auth.me();
-      const brands = await base44.entities.Brand.filter({ created_by: me.email }, '-created_date', 1);
+      const brands = await base44.entities.Brand.filter({ created_by_id: me.id }, '-created_date', 1);
       const brand = brands?.[0];
       const invs = brand ? await base44.entities.Invoice.filter({ brand_id: brand.id }, '-issued_at', 200) : [];
       setItems(invs || []);

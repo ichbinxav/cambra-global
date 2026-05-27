@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +26,6 @@ export default function Account() {
   const [brands, setBrands] = useState([]);
   const [paymentsProfiles, setPaymentsProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   const makeAdmin = async () => {
     const res = await base44.functions.invoke('promoteMeToAdmin', {});
@@ -37,16 +35,6 @@ export default function Account() {
       toast.success('Ahora tienes rol administrador');
     } else {
       toast.error(res?.data?.error || 'No se pudo otorgar el rol admin');
-    }
-  };
-
-  const createProvider = async () => {
-    const res = await base44.functions.invoke('createMyProvider', {});
-    if (res?.data?.provider) {
-      toast.success(res?.data?.existed ? 'Ya tienes un proveedor vinculado' : 'Proveedor creado');
-      navigate('/ProviderPortal');
-    } else {
-      toast.error(res?.data?.error || 'No se pudo crear el proveedor');
     }
   };
 
