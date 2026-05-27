@@ -35,14 +35,14 @@ export default function FooterSection() {
             transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.5rem,7vw,6rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5"
           >
-            Drift stops<br />compounding here.
+            Stop leaving<br />margin on the table.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-lg opacity-40 mb-10 max-w-md mx-auto leading-relaxed"
           >
-            Eight cost layers. One engine. Peer medians, watched continuously.
+            €10K–€100K annual recovery. Verified. Immediate. Aligned incentives.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}}

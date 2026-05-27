@@ -57,8 +57,8 @@ export default function OperationalTension() {
               transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="font-display text-[clamp(2rem,5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.9] mb-6"
             >
-              Most operational cost<br />
-              <span className="text-saas-gradient">is never audited.</span>
+              Your stack<br />
+              <span className="text-saas-gradient">is leaving money on the table.</span>
             </motion.h2>
 
             <motion.p
@@ -66,9 +66,9 @@ export default function OperationalTension() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="text-base text-foreground/55 leading-relaxed max-w-md mb-6"
             >
-              You measure CAC. You measure margin. You measure conversion.
+              You've optimized acquisition. You've optimized product. You've optimized operations.
               <br /><br />
-              The cost layer beneath your business drifts silently. No one watches it.
+              But eight cost layers run beneath every transaction — unoptimized, unbenchmarked, unmonitored.
             </motion.p>
 
             <motion.div

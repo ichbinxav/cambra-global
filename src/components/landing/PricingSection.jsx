@@ -33,7 +33,7 @@ export default function PricingSection() {
               Aligned with your margin.
             </h2>
             <p className="text-muted-foreground/65 text-base leading-relaxed mb-8 max-w-sm">
-              The audit is free. The engine runs continuously. CAMBRA takes a success fee on verified margin recovery — nothing else.
+              Run an audit free. CAMBRA watches continuously. We take a cut of margin we recover — align incentives.
             </p>
 
             {/* Typical findings */}

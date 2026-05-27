@@ -2,10 +2,10 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
 const QUOTES = [
-  { quote: "Found €18k in duplicate SaaS spend.",      role: "CFO",          tier: "DTC skincare · €4M" },
-  { quote: "We'd never benchmarked our PSP stack.",    role: "Founder",      tier: "Activewear · €2.1M" },
-  { quote: "0.6pp PSP delta. Real money, every month.", role: "Head of Ops",  tier: "Home goods · €1.6M" },
-  { quote: "Two redundant ESPs. Killed one in a week.", role: "COO",          tier: "Coffee brand · €3.2M" },
+  { quote: "€18k in duplicate SaaS. Gone.",            role: "CFO",          tier: "DTC skincare · €4M" },
+  { quote: "Never benchmarked PSP. Now we own it.",    role: "Founder",      tier: "Activewear · €2.1M" },
+  { quote: "0.6pp delta. €42K/year. Just sitting there.", role: "Head of Ops",  tier: "Home goods · €1.6M" },
+  { quote: "Two redundant tools. Cut one. No one noticed.", role: "COO",          tier: "Coffee brand · €3.2M" },
 ];
 
 export default function TestimonialsSection() {

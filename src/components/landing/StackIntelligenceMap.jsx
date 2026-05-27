@@ -82,11 +82,11 @@ export default function StackIntelligenceMap() {
             </span>
           </div>
           <h2 className="font-display text-[clamp(2rem,5vw,3.6rem)] font-black tracking-[-0.04em] leading-[0.92] max-w-3xl mx-auto">
-            You benchmark growth.<br />
-            <span className="text-saas-gradient">Not your stack.</span>
+            Eight layers.<br />
+            <span className="text-saas-gradient">Infinite margin.</span>
           </h2>
           <p className="mt-4 text-sm md:text-base text-white/55 max-w-xl mx-auto leading-relaxed">
-            8 operational layers, continuously compared against peer medians at your tier.
+            PSP. Shipping. SaaS. Banking. FX. TPE. Insurance. Telecom. Every one benchmarked, live.
           </p>
         </div>
 

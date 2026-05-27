@@ -64,12 +64,12 @@ export default function HeroSystemic() {
 
             {/* Editorial headline */}
             <h1 className="font-display text-[clamp(2.4rem,6.4vw,5.6rem)] font-black tracking-[-0.05em] leading-[0.88] mb-6">
-              You benchmark growth.{" "}
-              <span className="text-saas-gradient">Not your stack.</span>
+              You optimize growth.{" "}
+              <span className="text-saas-gradient">Margin optimizes itself here.</span>
             </h1>
 
             <p className="text-[clamp(0.95rem,1.6vw,1.15rem)] text-foreground/60 mb-8 max-w-[560px] leading-[1.55]">
-              PSP, shipping, SaaS, banking, FX, TPE, insurance, telecom — eight cost layers under every operator. Most have never been audited. CAMBRA watches all of them, continuously.
+              Eight cost layers. Eight separate benchmarks. Eight separate savings opportunities. CAMBRA finds them all.
             </p>
 
             {/* CTAs */}
