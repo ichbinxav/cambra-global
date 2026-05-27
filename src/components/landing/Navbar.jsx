@@ -122,27 +122,43 @@ export default function Navbar() {
               {isAuthenticated ? "Workspace" : "Platform"}
             </p>
             <div className="space-y-0.5">
+              {!isAuthenticated && (
+                <Link
+                  to="/"
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-secondary/60 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-secondary text-muted-foreground">
+                    <ArrowRight size={14} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">HomePage</p>
+                    <p className="text-[11px] text-muted-foreground">Back to landing</p>
+                  </div>
+                </Link>
+              )}
+              </div>
+              <div className="space-y-0.5">
               {NAV.map(item => {
-                const active = location.pathname === item.href;
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                      active ? "bg-secondary" : "hover:bg-secondary/60"
-                    }`}
-                  >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${active ? "bg-foreground text-background" : "bg-secondary text-muted-foreground"}`}>
-                      <Icon size={14} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                      {item.desc && <p className="text-[11px] text-muted-foreground">{item.desc}</p>}
-                    </div>
-                  </Link>
-                );
-              })}
+              const active = location.pathname === item.href;
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                    active ? "bg-secondary" : "hover:bg-secondary/60"
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${active ? "bg-foreground text-background" : "bg-secondary text-muted-foreground"}`}>
+                    <Icon size={14} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                    {item.desc && <p className="text-[11px] text-muted-foreground">{item.desc}</p>}
+                  </div>
+                </Link>
+              );
+            })}
             </div>
           </div>
 
