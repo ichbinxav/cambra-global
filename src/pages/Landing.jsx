@@ -1,7 +1,6 @@
 import HeroSystemic from "@/components/landing/HeroSystemic.jsx";
-import InfrastructureHeatmap from "@/components/landing/InfrastructureHeatmap.jsx";
-import CredibilitySection from "@/components/landing/CredibilitySection";
-import ThreeLayersSection from "@/components/landing/ThreeLayersSection";
+import OperationalTension from "@/components/landing/OperationalTension.jsx";
+import StackIntelligenceMap from "@/components/landing/StackIntelligenceMap.jsx";
 import PricingSection from "@/components/landing/PricingSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import FooterSection from "@/components/landing/FooterSection";
@@ -16,23 +15,20 @@ export default function Landing() {
         {/* 1 — Systemic hero with live signal terminal */}
         <HeroSystemic />
 
-        {/* 2 — Credibility strip (peer brands / press) */}
-        <CredibilitySection />
+        {/* 2 — Economic tension: dense facts, sharp positioning */}
+        <OperationalTension />
 
-        {/* 3 — THE iconic moment: live infrastructure heatmap */}
-        <InfrastructureHeatmap />
-
-        {/* 4 — Three-layer mechanism (audit → benchmark → act) */}
+        {/* 3 — THE iconic visual: living stack intelligence map */}
         <div id="how">
-          <ThreeLayersSection />
+          <StackIntelligenceMap />
         </div>
 
-        {/* 5 — Pricing */}
+        {/* 4 — Pricing */}
         <div id="pricing">
           <PricingSection />
         </div>
 
-        {/* 6 — Operator quotes (short, cold, specific) */}
+        {/* 5 — Operator findings (short, cold, specific) */}
         <TestimonialsSection />
       </main>
 

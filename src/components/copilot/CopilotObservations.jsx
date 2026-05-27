@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sparkles, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
 /**
@@ -15,34 +15,30 @@ import { useLocation } from "react-router-dom";
 
 const OBSERVATIONS_BY_PATH = {
   "/": [
-    "Scanning peer infrastructure benchmarks…",
-    "Median PSP rate for €1–5M brands: 1.4%.",
-    "Most brands operate 2.3× more SaaS tools than peers.",
-    "Infrastructure drift compounds at ~6% / year.",
+    "2 redundant SaaS tools detected.",
+    "Stripe fees above peer median.",
+    "Drift detected · payments layer.",
+    "FX exposure unbenchmarked.",
   ],
   "/Analyzer": [
-    "Upload your PSP statement to sharpen benchmark.",
-    "Each layer audited improves benchmark confidence.",
-    "Brands at your tier typically reveal 4.2 inefficiencies.",
-    "Estimated overpayment detected.",
+    "0.6pp PSP delta likely.",
+    "Each layer sharpens benchmark confidence.",
+    "Upload one statement to lock numbers.",
   ],
   "/Dashboard": [
-    "Benchmark confidence increased.",
-    "New inefficiency detected in shipping layer.",
-    "Your SaaS stack appears fragmented.",
-    "3 providers benchmarked this week.",
+    "Drift detected · shipping layer.",
+    "SaaS stack fragmented.",
+    "Benchmark refreshed.",
   ],
   "/Results": [
-    "Compiling peer-tier benchmark…",
-    "Margin leakage isolated across 4 layers.",
-    "Stripe fees above peer median.",
-    "Activate a deal to recover detected drift.",
+    "Margin leakage isolated · 4 layers.",
+    "PSP above peer median.",
+    "Recoverable margin quantified.",
   ],
 };
 
 const DEFAULT_OBS = [
-  "Continuous infrastructure intelligence · active.",
-  "Benchmarking quietly in the background.",
+  "Drift scan · active.",
   "Peer medians refreshed.",
 ];
 
@@ -63,19 +59,19 @@ export default function CopilotObservations() {
     (p) => location.pathname === p || location.pathname.toLowerCase() === p.toLowerCase()
   );
 
-  // Reset on path change
+  // Show after delay, then auto-fade after a while to feel ambient
   useEffect(() => {
     setDismissed(false);
     setIdx(0);
     setVisible(false);
-    const showT = setTimeout(() => setVisible(true), 1800);
+    const showT = setTimeout(() => setVisible(true), 3500);
     return () => clearTimeout(showT);
   }, [location.pathname]);
 
-  // Rotate observations
+  // Rotate observations slowly
   useEffect(() => {
     if (!visible || dismissed) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % observations.length), 5200);
+    const t = setInterval(() => setIdx((i) => (i + 1) % observations.length), 7000);
     return () => clearInterval(t);
   }, [visible, dismissed, observations.length]);
 
@@ -84,62 +80,44 @@ export default function CopilotObservations() {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: 14, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 14, scale: 0.96 }}
-        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed bottom-5 right-5 z-[85] max-w-[320px] hidden sm:block"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 0.92, y: 0 }}
+        exit={{ opacity: 0, y: 8 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        whileHover={{ opacity: 1 }}
+        className="fixed bottom-6 right-6 z-[85] max-w-[260px] hidden sm:block group"
         role="status"
         aria-live="polite"
       >
-        <div className="rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-[0_18px_50px_rgba(0,0,0,0.14)] overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-border/40 flex items-center justify-between bg-secondary/30">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cambra-mint opacity-75" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-              </span>
-              <span className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/70 font-mono">
-                Intelligence Agent
-              </span>
-            </div>
-            <button
-              onClick={() => setDismissed(true)}
-              className="text-muted-foreground/50 hover:text-foreground transition p-0.5"
-              aria-label="Dismiss observation"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
+        <div className="relative flex items-center gap-2.5 px-3 py-2 rounded-full border border-border/40 bg-background/70 backdrop-blur-xl hover:bg-background/95 hover:border-border/70 transition-all">
+          {/* Ambient pulse */}
+          <span className="relative flex h-1.5 w-1.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cambra-mint opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+          </span>
 
-          <div className="p-4 flex items-start gap-3">
-            <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-background shrink-0">
-              <Sparkles className="h-3.5 w-3.5" />
-            </div>
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={idx}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.28 }}
-                className="text-[13px] leading-snug text-foreground/90 font-medium"
-              >
-                {observations[idx]}
-              </motion.p>
-            </AnimatePresence>
-          </div>
-
-          {/* Tick progress */}
-          <div className="h-0.5 bg-border/30 relative overflow-hidden">
-            <motion.div
+          {/* Rotating whisper */}
+          <AnimatePresence mode="wait">
+            <motion.p
               key={idx}
-              initial={{ x: "-100%" }}
-              animate={{ x: "0%" }}
-              transition={{ duration: 5.2, ease: "linear" }}
-              className="absolute inset-0 bg-saas-gradient"
-            />
-          </div>
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.32 }}
+              className="text-[11px] font-mono text-foreground/70 leading-snug whitespace-nowrap"
+            >
+              {observations[idx]}
+            </motion.p>
+          </AnimatePresence>
+
+          {/* Dismiss — only visible on hover */}
+          <button
+            onClick={() => setDismissed(true)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/50 hover:text-foreground p-0.5 shrink-0"
+            aria-label="Dismiss"
+          >
+            <X className="h-3 w-3" />
+          </button>
         </div>
       </motion.div>
     </AnimatePresence>
