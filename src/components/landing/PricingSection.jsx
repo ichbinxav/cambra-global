@@ -54,11 +54,11 @@ export default function PricingSection() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             viewport={{ once: true, margin: "-100px" }}
-            className="group relative rounded-2xl overflow-hidden border border-border/50 bg-card/80 backdrop-blur-md p-5 sm:p-8 hover:-translate-y-1 transition-transform duration-300"
+            className="group relative rounded-2xl overflow-hidden border border-cambra-blue/40 bg-gradient-to-br from-cambra-blue/[0.08] via-card/80 to-card/95 backdrop-blur-md p-5 sm:p-8 hover:-translate-y-1 transition-transform duration-300"
           >
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-cambra-cyan/[0.05] to-transparent" />
-              <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl bg-ambient-mint opacity-10" />
+            <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-cambra-cyan/[0.08] to-transparent" />
+              <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl bg-ambient-mint opacity-15" />
             </div>
             
             <div className="relative text-left flex flex-col h-full">
@@ -73,21 +73,21 @@ export default function PricingSection() {
               </div>
               <p className="text-sm text-muted-foreground/60 mb-8 min-h-[2.5rem]">For early operators</p>
               
-              <ul className="space-y-3.5">
-                <li className="flex items-start gap-3 text-sm text-foreground/75 font-medium">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-mint shrink-0" />
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2.5 text-xs text-foreground/70 font-medium">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-mint shrink-0" />
                   <span>Infrastructure audit & scoring</span>
                 </li>
-                <li className="flex items-start gap-3 text-sm text-foreground/75 font-medium">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-mint shrink-0" />
+                <li className="flex items-start gap-2.5 text-xs text-foreground/70 font-medium">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-mint shrink-0" />
                   <span>Real network benchmarks</span>
                 </li>
-                <li className="flex items-start gap-3 text-sm text-foreground/75 font-medium">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-mint shrink-0" />
+                <li className="flex items-start gap-2.5 text-xs text-foreground/70 font-medium">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-mint shrink-0" />
                   <span>Dashboard & reporting</span>
                 </li>
-                <li className="flex items-start gap-3 text-sm text-foreground/75 font-medium">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-mint shrink-0" />
+                <li className="flex items-start gap-2.5 text-xs text-foreground/70 font-medium">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-mint shrink-0" />
                   <span>AI-powered recommendations</span>
                 </li>
               </ul>
@@ -135,21 +135,21 @@ export default function PricingSection() {
               <div className="h-4 mb-2" />
               <p className="text-sm text-white/50 mb-8 min-h-[2.5rem]">Only on verified savings recovered</p>
               
-              <ul className="space-y-3.5">
-                <li className="flex items-start gap-3 text-sm text-white/75 font-medium">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-cyan shrink-0" />
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2.5 text-xs text-white/70 font-medium">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-cyan shrink-0" />
                   <span>Provider negotiation</span>
                 </li>
-                <li className="flex items-start gap-3 text-sm text-white/75 font-medium">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-cyan shrink-0" />
+                <li className="flex items-start gap-2.5 text-xs text-white/70 font-medium">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-cyan shrink-0" />
                   <span>Savings verification</span>
                 </li>
-                <li className="flex items-start gap-3 text-sm text-white/75 font-medium">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-cyan shrink-0" />
+                <li className="flex items-start gap-2.5 text-xs text-white/70 font-medium">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-cyan shrink-0" />
                   <span>Migration support</span>
                 </li>
-                <li className="flex items-start gap-3 text-sm text-white/75 font-medium">
-                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-cyan shrink-0" />
+                <li className="flex items-start gap-2.5 text-xs text-white/70 font-medium">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-cyan shrink-0" />
                   <span>We win when you do</span>
                 </li>
               </ul>
