@@ -1,6 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { ArrowDownRight, Zap, Scan, GitCompare, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowDownRight, ArrowRight, Zap, Scan, GitCompare, TrendingUp } from "lucide-react";
 
 /**
  * HowItWorksSimple — Hero-style section (light bg, like rest of landing),
@@ -15,6 +16,7 @@ const STEPS = [
     meta: "8 cost layers · 15 min refresh",
     icon: Scan,
     accent: "#2CA7C1",
+    cta: { label: "Connect your tools", href: "/ConnectTools" },
   },
   {
     n: "02",
@@ -24,6 +26,7 @@ const STEPS = [
     meta: "Continuous · per-tier · per-region",
     icon: GitCompare,
     accent: "#1F4ED8",
+    cta: { label: "Run the analyzer", href: "/Analyzer" },
   },
   {
     n: "03",
@@ -33,6 +36,7 @@ const STEPS = [
     meta: "Success-fee only · aligned incentives",
     icon: TrendingUp,
     accent: "#8B5CF6",
+    cta: { label: "See your savings", href: "/Dashboard" },
   },
 ];
 
@@ -130,6 +134,22 @@ export default function HowItWorksSimple() {
                   <ArrowDownRight className="h-3 w-3" style={{ color: s.accent }} />
                   {s.meta}
                 </div>
+
+                {/* Step CTA */}
+                <Link
+                  to={s.cta.href}
+                  className="group/cta mt-5 inline-flex items-center justify-between gap-2 px-4 py-3 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/25 transition-all backdrop-blur-sm"
+                >
+                  <span className="text-[13px] font-bold text-white tracking-tight">
+                    {s.cta.label}
+                  </span>
+                  <span
+                    className="h-7 w-7 rounded-full flex items-center justify-center transition-transform group-hover/cta:translate-x-0.5"
+                    style={{ background: s.accent }}
+                  >
+                    <ArrowRight className="h-3.5 w-3.5 text-white" />
+                  </span>
+                </Link>
               </motion.div>
             );
           })}
