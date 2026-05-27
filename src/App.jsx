@@ -56,6 +56,7 @@ import BrandProfile from '@/pages/BrandProfile';
 import BrandGlyph from '@/components/shared/BrandGlyph';
 import CopilotPanel from '@/components/copilot/CopilotPanel.jsx';
 import CopilotObservations from '@/components/copilot/CopilotObservations.jsx';
+import ScrollToTop from '@/components/shared/ScrollToTop.jsx';
 
 
 
@@ -254,6 +255,7 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
+            <ScrollToTop />
             <AuthenticatedApp />
             <CopilotPanel />
             <CopilotObservations />
