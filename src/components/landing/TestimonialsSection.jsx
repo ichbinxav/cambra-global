@@ -120,18 +120,18 @@ export default function TestimonialsSection() {
                   </div>
                 </div>
 
-                {/* Metrics — inline horizontal */}
-                <div className="flex md:flex-col items-center md:items-end justify-between gap-4 md:gap-3 p-5 md:p-6 bg-secondary/40 md:border-l border-t md:border-t-0 border-border/40 md:min-w-[200px]">
+                {/* Metrics — navy card style */}
+                <div className="cambra-card flex md:flex-col items-center md:items-end justify-between gap-4 md:gap-3 p-5 md:p-6 md:border-l-0 md:min-w-[220px]">
                   <div className="flex items-baseline gap-1.5 md:order-1">
-                    <span className="text-sm font-medium text-foreground/50 line-through decoration-1">{t.before}</span>
-                    <span className="text-muted-foreground/40 text-xs">→</span>
-                    <span className="text-base font-black text-foreground">{t.after}</span>
+                    <span className="text-sm font-medium text-white/50 line-through decoration-1">{t.before}</span>
+                    <span className="text-white/40 text-xs">→</span>
+                    <span className="text-base font-black text-white">{t.after}</span>
                   </div>
                   <div className="flex items-baseline gap-1.5 md:order-2">
-                    <span className="text-2xl md:text-3xl font-black tracking-tighter text-saas-gradient tabular-nums leading-none">
+                    <span className="text-2xl md:text-3xl font-black tracking-tighter text-white tabular-nums leading-none">
                       €{(t.recovery / 1000).toFixed(t.recovery % 1000 === 0 ? 0 : 1)}K
                     </span>
-                    <span className="text-[10px] font-mono text-muted-foreground/50">/ yr</span>
+                    <span className="text-[10px] font-mono text-white/50">/ yr</span>
                   </div>
                 </div>
               </div>
