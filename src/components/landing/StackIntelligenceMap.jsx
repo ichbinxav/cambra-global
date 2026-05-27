@@ -115,21 +115,7 @@ export default function StackIntelligenceMap() {
                   strokeDasharray="3 6" />
               ))}
 
-              {/* Expanding scan pulse — behind nodes, no text overlap */}
-              <motion.circle
-                cx={0} cy={0} r={RADIUS}
-                fill="none" stroke={focusState.color}
-                strokeWidth={1.5}
-                animate={{ r: [40, RADIUS + 30], opacity: [0.5, 0] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut" }}
-              />
-              <motion.circle
-                cx={0} cy={0} r={RADIUS}
-                fill="none" stroke={focusState.color}
-                strokeWidth={1}
-                animate={{ r: [40, RADIUS + 30], opacity: [0.3, 0] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut", delay: 1.2 }}
-              />
+
 
               {/* Scan hand — synced to active node via SVG transform attribute (works in all browsers) */}
               <g
@@ -183,14 +169,7 @@ export default function StackIntelligenceMap() {
                     onMouseLeave={() => setHoveredId(null)}
                     style={{ cursor: "pointer" }}
                   >
-                    {/* Soft halo — contained to the node, no expanding ring that reaches neighbors */}
-                    {isActive && (
-                      <circle
-                        cx={x} cy={y} r={NODE_R + 4}
-                        fill={color} opacity={0.08}
-                        style={{ filter: "blur(6px)" }}
-                      />
-                    )}
+
                     {/* Node bg — opaque so nothing bleeds through */}
                     <circle
                       cx={x} cy={y} r={NODE_R}
@@ -223,8 +202,7 @@ export default function StackIntelligenceMap() {
 
             <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-[9px] font-mono uppercase tracking-[0.18em] text-white/35">
               <span>infrastructure for independent commerce</span>
-              <span className="flex items-center gap-1.5 text-white/60">
-                <span className="h-1 w-1 rounded-full bg-cambra-mint animate-pulse" />
+              <span className="text-white/60">
                 estimated savings with cambra · €{(TOTAL_RECOVERY / 1000).toFixed(1)}K/yr
               </span>
             </div>
