@@ -42,9 +42,12 @@ export default function MeetTheFounder() {
 
       <div className="max-w-5xl mx-auto relative">
         <div className="mb-12 md:mb-16">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-4 font-mono">
-            Meet the founder
-          </p>
+          <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+              Meet the founder
+            </span>
+          </div>
           <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92] max-w-4xl">
             A note from <span className="text-saas-gradient">the founder</span>.
           </h2>
