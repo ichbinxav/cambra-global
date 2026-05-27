@@ -116,9 +116,9 @@ export default function PricingSection() {
 
             {/* CTA */}
             <div className="px-7 pb-7">
-              <Link to="/Analyzer">
+              <Link to="/Pricing">
                 <Button className="w-full h-12 rounded-xl text-sm font-bold gap-2 bg-white text-neon-1 hover:bg-white/90">
-                  Run free audit <ArrowRight className="h-4 w-4" />
+                  Discover pricing <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <p className="text-[10px] text-white/40 text-center mt-3 font-mono">
