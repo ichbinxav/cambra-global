@@ -83,20 +83,13 @@ export default function MeetTheFounder() {
               </p>
             </div>
 
-            <div className="flex items-center justify-between gap-2 mt-3 md:mt-4">
+            <div className="flex items-center justify-between gap-3 mt-4 md:mt-6">
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] md:text-sm font-bold text-white truncate">Xavier M. Contero</p>
-                <p className="text-[8px] md:text-[10px] font-mono uppercase tracking-[0.2em] text-white/50 mt-0.5">
-                  Founder
-                </p>
               </div>
-              <button
-                onClick={() => setOpen(true)}
-                className="h-8 w-8 md:h-10 md:w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-cambra-navy transition-all shrink-0 text-white"
-                aria-label="Read full letter"
-              >
-                <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
-              </button>
+              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm shrink-0">
+                <span className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.2em] text-white/75">Founder</span>
+              </div>
             </div>
           </motion.div>
         </div>
