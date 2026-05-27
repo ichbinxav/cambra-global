@@ -78,7 +78,7 @@ export default function PricingSection() {
               <p className="text-xs text-background/60 italic">
                 <span className="line-through">€60</span> for early brand partners
               </p>
-              <p className="text-sm opacity-40 leading-relaxed">Success fee on verified margin recovery only. No subscription. No procurement contracts.</p>
+              <p className="text-sm opacity-40 leading-relaxed">Success fee on verified margin recovery only. No subscription.</p>
             </div>
 
             {/* What's included */}
