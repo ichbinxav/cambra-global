@@ -75,6 +75,9 @@ export default function PricingSection() {
                 <span className="text-5xl font-black">€0</span>
                 <span className="text-sm opacity-40">/ audit · / monitoring</span>
               </div>
+              <p className="text-xs text-background/60 italic">
+                <span className="line-through">€60</span> for early brand partners
+              </p>
               <p className="text-sm opacity-40 leading-relaxed">Success fee on verified margin recovery only. No subscription. No procurement contracts.</p>
             </div>
 
