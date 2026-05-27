@@ -14,6 +14,8 @@ import { computeInfraScore, calculateSavings } from "@/lib/scoreEngine";
 import NormalizedBarChart from "@/components/charts/NormalizedBarChart";
 import { Download } from "lucide-react";
 import { jsPDF } from "jspdf";
+import ExportMenu from "@/components/results/ExportMenu";
+import { buildResultsCsv, downloadCsv } from "@/lib/exportResults";
 
 /* ── static data ─────────────────────────────────────────────── */
 const BREAKDOWN_META = [
@@ -239,7 +241,20 @@ export default function Results() {
     // Timestamp
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, y);
 
-    doc.save('thenode-results.pdf');
+    doc.save('cambra-results.pdf');
+  };
+
+  const handleExportExcel = async () => {
+    if (!result) { alert('No analysis data to export.'); return; }
+    const authed = await base44.auth.isAuthenticated();
+    if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
+    const me = await base44.auth.me();
+    const brands = await base44.entities.Brand.filter({ created_by_id: me.id });
+    const brand = brands[0] || null;
+
+    const csv = buildResultsCsv({ brand, result, input, scoreReport, resultWithTpe });
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCsv(`cambra-results-${stamp}.csv`, csv);
   };
 
   return (
@@ -258,9 +273,7 @@ export default function Results() {
             </Button>
           </Link>
           {subscribed ? (
-            <Button onClick={handleExportPdf} variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5">
-              <Download size={11} /> Export PDF
-            </Button>
+            <ExportMenu onExportPdf={handleExportPdf} onExportExcel={handleExportExcel} />
           ) : (
             <Link to="/Onboarding">
               <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5 bg-saas-gradient text-white">
