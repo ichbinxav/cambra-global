@@ -191,10 +191,10 @@ export default function StackIntelligenceMap() {
                 transition={{ duration: 2.5, repeat: Infinity }}
               />
               <image 
-                x={-20} y={-20} width={40} height={40}
+                x={-48} y={-48} width={96} height={96}
                 href="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d63322635_image.png"
                 preserveAspectRatio="xMidYMid meet"
-                opacity={0.95}
+                opacity={1}
               />
 
               {LAYERS.map((layer, i) => {
