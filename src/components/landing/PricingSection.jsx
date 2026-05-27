@@ -28,7 +28,13 @@ export default function PricingSection() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-4 font-mono">Pricing · Aligned incentives</p>
+            <div className="flex items-center gap-2 mb-5 w-fit px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-lilac opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-lilac" />
+              </span>
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Pricing · Aligned incentives</span>
+            </div>
             <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5">
               <span className="text-saas-gradient">Aligned</span> with your margin.
             </h2>
