@@ -22,7 +22,7 @@ export default function SaasModule(){
 
   useEffect(()=>{ (async()=>{
     const me = await base44.auth.me();
-    const [b] = await base44.entities.Brand.filter({ created_by: me.email }, '-created_date', 1);
+    const [b] = await base44.entities.Brand.filter({ created_by_id: me.id }, '-created_date', 1);
     setBrandId(b?.id);
     if (!b?.id) return;
     const [sa] = await base44.entities.SaaSProfile.filter({ brand_id: b.id }, '-updated_date', 1);
