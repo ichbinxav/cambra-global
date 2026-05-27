@@ -142,24 +142,31 @@ export default function HowItWorksSimple() {
           })}
         </div>
 
-        {/* Bottom recovery chips */}
+        {/* Bottom recovery bullets */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-10 flex flex-wrap items-center gap-2"
+          className="mt-16 max-w-4xl"
         >
-          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/60 mr-2">
+          <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/60 mb-4">
             What you get →
-          </span>
-          {["Guaranteed infrastructure inefficiencies detected", "Business insights", "Zero upfront", "Success-fee only", "Live benchmarks", "Instant access"].map((chip) => (
-            <span
-              key={chip}
-              className="px-3 py-1.5 text-[11px] font-medium rounded-full border border-border/60 bg-background/60 backdrop-blur-sm text-foreground/75"
-            >
-              {chip}
-            </span>
-          ))}
+          </p>
+          <ul className="space-y-2.5">
+            {[
+              "Guaranteed infrastructure inefficiencies detected",
+              "Business insights",
+              "Zero upfront",
+              "Success-fee only",
+              "Live benchmarks",
+              "Instant access"
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-3">
+                <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint mt-1.5 flex-shrink-0" />
+                <span className="text-sm text-foreground/75 font-medium">{item}</span>
+              </li>
+            ))}
+          </ul>
         </motion.div>
       </div>
     </section>
