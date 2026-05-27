@@ -20,14 +20,14 @@ export default function ConnectToolsSection() {
         <div className="absolute -bottom-32 right-1/4 w-[32rem] h-[32rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.12]" />
       </div>
 
-      <div className="relative max-w-3xl mx-auto">
+      <div className="relative max-w-4xl">
         {/* Header */}
-        <div className="text-center mb-8 md:mb-10">
+        <div className="mb-8 md:mb-10">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm"
+            className="flex items-center gap-2 mb-5 w-fit px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm"
           >
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
@@ -41,7 +41,7 @@ export default function ConnectToolsSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="font-display text-[clamp(2.4rem,6vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-6"
+            className="font-display text-[clamp(2.4rem,6vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-6 text-left"
           >
             <span className="text-foreground">Connect your </span>
             <span className="text-saas-gradient">tools.</span>
@@ -51,7 +51,7 @@ export default function ConnectToolsSection() {
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-10"
+            className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mb-10"
           >
             Read-only connections to Stripe, Shopify, your carriers and accounting tools. <span className="text-foreground font-semibold">~98% accuracy</span>, real numbers, zero write access.
           </motion.p>
