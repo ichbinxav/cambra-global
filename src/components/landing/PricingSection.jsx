@@ -63,27 +63,37 @@ export default function PricingSection() {
             initial={{ opacity: 0, x: 30, y: 10 }}
             animate={inView ? { opacity: 1, x: 0, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-2xl border border-border/50 bg-card overflow-hidden shadow-lg"
+            className="cambra-card overflow-hidden"
           >
             {/* Card header */}
-            <div className="px-7 py-6 border-b border-border/40 bg-foreground text-background">
+            <div className="px-7 py-6 border-b border-white/10">
               <div className="flex items-center gap-2 mb-4">
-                <Zap className="h-3.5 w-3.5 opacity-40" />
-                <span className="text-[10px] font-bold tracking-[0.14em] uppercase opacity-40">CAMBRA · Engine</span>
+                <Zap className="h-3.5 w-3.5 text-white/60" />
+                <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-white/60">CAMBRA · Engine</span>
               </div>
               <div className="flex items-baseline gap-3 mb-2">
-                <span className="text-5xl font-black">€0</span>
-                <span className="text-sm opacity-40">/ audit · / monitoring</span>
+                <span 
+                  className="text-5xl font-black"
+                  style={{
+                    background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text"
+                  }}
+                >
+                  €0
+                </span>
+                <span className="text-sm text-white/60">/ audit · / monitoring</span>
               </div>
-              <p className="text-xs text-background/60 italic">
+              <p className="text-xs text-white/50 italic mb-2">
                 <span className="line-through">€60</span> for early brand partners
               </p>
-              <p className="text-sm opacity-40 leading-relaxed">Success fee on verified margin recovery only. No subscription.</p>
+              <p className="text-sm text-white/65 leading-relaxed">Success fee on verified margin recovery only. No subscription.</p>
             </div>
 
             {/* What's included */}
             <div className="px-7 py-6 space-y-2.5">
-              <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/35 mb-3">Everything included</p>
+              <p className="text-[10px] uppercase tracking-[0.22em] text-white/50 mb-3">Everything included</p>
               {INCLUDED.map((item, i) => (
                 <motion.div
                   key={i}
@@ -92,8 +102,8 @@ export default function PricingSection() {
                   transition={{ delay: 0.3 + i * 0.04 }}
                   className="flex items-center gap-2.5"
                 >
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                  <span className="text-sm text-foreground/70">{item}</span>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-cambra-cyan shrink-0" />
+                  <span className="text-sm text-white/75">{item}</span>
                 </motion.div>
               ))}
             </div>
@@ -101,11 +111,11 @@ export default function PricingSection() {
             {/* CTA */}
             <div className="px-7 pb-7">
               <Link to="/Analyzer">
-                <Button className="w-full h-12 rounded-xl text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90">
+                <Button className="w-full h-12 rounded-xl text-sm font-bold gap-2 bg-white text-neon-1 hover:bg-white/90">
                   Run free audit <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <p className="text-[10px] text-muted-foreground/30 text-center mt-3 font-mono">
+              <p className="text-[10px] text-white/40 text-center mt-3 font-mono">
                 ~3 min · No card · Monitoring included
               </p>
             </div>
