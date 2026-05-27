@@ -87,7 +87,7 @@ export default function FooterSection() {
         </div>
 
         {/* CONTENT */}
-        <div className="relative z-10 max-w-4xl mx-auto px-5 py-24 text-center w-full">
+        <div className="relative z-10 max-w-6xl mx-auto px-5 py-24 text-left w-full">
           {/* Static eyebrow pill */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -129,7 +129,7 @@ export default function FooterSection() {
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.5 }}
-            className="text-base md:text-xl text-background/55 mb-12 max-w-xl mx-auto leading-[1.55] font-light"
+            className="text-base md:text-xl text-background/55 mb-12 max-w-xl leading-[1.55] font-light"
           >
             <span className="text-background/85 font-medium">€10K–€100K</span> annual recovery.
             Verified. Immediate. Aligned incentives.
@@ -140,7 +140,7 @@ export default function FooterSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.6 }}
-            className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-8"
+            className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-8"
           >
             <Link to="/Analyzer" className="w-full sm:w-auto group">
               <motion.div
@@ -190,7 +190,7 @@ export default function FooterSection() {
             initial={{ opacity: 0 }}
             animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.9 }}
-            className="flex items-center justify-center gap-3 text-[11px] font-mono tracking-[0.15em] uppercase text-background/30"
+            className="flex items-center gap-3 text-[11px] font-mono tracking-[0.15em] uppercase text-background/30"
           >
             <span>3 minutes</span>
             <span className="h-1 w-1 rounded-full bg-background/20" />
@@ -204,7 +204,7 @@ export default function FooterSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 1 }}
-            className="mt-16 pt-10 border-t border-background/10 grid grid-cols-3 gap-4 max-w-2xl mx-auto"
+            className="mt-16 pt-10 border-t border-background/10 grid grid-cols-3 gap-4 max-w-2xl"
           >
             {[
               { v: "€24.6K", l: "Median yearly recovery" },
@@ -216,7 +216,7 @@ export default function FooterSection() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 1.1 + i * 0.1 }}
-                className="text-center"
+                className="text-left"
               >
                 <div className="text-2xl md:text-3xl font-black tracking-[-0.03em] text-background tabular-nums">
                   {stat.v}
