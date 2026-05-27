@@ -87,10 +87,25 @@ export default function StackIntelligenceMap() {
         {/* Map + Live feed */}
         <div className="grid lg:grid-cols-[1.35fr_1fr] gap-5 md:gap-6 items-stretch">
           {/* The radial map — in cambra-card */}
-          <div className="cambra-card p-6 md:p-8 flex items-center justify-center min-h-[480px] relative overflow-hidden">
+          <div className="cambra-card p-5 sm:p-6 md:p-8 flex flex-col relative overflow-hidden min-h-[420px] md:min-h-[520px]">
+            {/* Top meta row */}
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-cambra-cyan animate-pulse" />
+                <span className="text-[9px] font-mono tracking-[0.22em] uppercase text-white/70">
+                  Live scan
+                </span>
+              </div>
+              <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-white/40 hidden sm:inline">
+                8 layers · radial intelligence
+              </span>
+            </div>
+
+            {/* Map area — centered, fills card */}
+            <div className="flex-1 flex items-center justify-center relative z-10 py-4">
             <svg
               viewBox={`-${RADIUS + NODE_R + 20} -${RADIUS + NODE_R + 20} ${(RADIUS + NODE_R + 20) * 2} ${(RADIUS + NODE_R + 20) * 2}`}
-              className="w-full max-w-[440px] h-auto relative z-10"
+              className="w-full max-w-[560px] h-auto"
             >
               <defs>
                 <linearGradient id="scan-arc-grad" x1="0" y1="0" x2="1" y2="0">
@@ -183,11 +198,18 @@ export default function StackIntelligenceMap() {
                 );
               })}
             </svg>
+            </div>
 
-            <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-[9px] font-mono uppercase tracking-[0.18em] text-white/35">
-              <span>infrastructure for independent commerce</span>
-              <span className="text-white/60">
-                estimated savings with cambra · €{(TOTAL_RECOVERY / 1000).toFixed(1)}K/yr
+            {/* Bottom meta row — responsive, no overlap */}
+            <div className="relative z-10 pt-4 mt-2 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <span className="text-[9px] font-mono uppercase tracking-[0.18em] text-white/40">
+                infrastructure for independent commerce
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.18em]">
+                <span className="text-white/45">est. savings</span>
+                <span className="text-saas-gradient font-bold tabular-nums">
+                  €{(TOTAL_RECOVERY / 1000).toFixed(1)}K/yr
+                </span>
               </span>
             </div>
           </div>
