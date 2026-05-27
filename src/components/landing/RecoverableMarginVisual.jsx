@@ -174,21 +174,16 @@ export default function RecoverableMarginVisual() {
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
                   transition={{ duration: 0.6, delay: 0.25 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative rounded-2xl border bg-white/[0.03] backdrop-blur-sm p-4 sm:p-5 overflow-hidden"
+                  className="relative rounded-2xl bg-white/[0.03] backdrop-blur-sm p-4 sm:p-5"
                   style={{
-                    borderColor: isPulsing ? "rgba(44,167,193,0.45)" : "rgba(255,255,255,0.1)",
-                    transition: "border-color 600ms ease",
+                    border: "1px solid",
+                    borderColor: isPulsing ? "rgba(44,167,193,0.7)" : "rgba(255,255,255,0.1)",
+                    boxShadow: isPulsing
+                      ? "0 0 0 1px rgba(44,167,193,0.35), 0 0 24px -2px rgba(44,167,193,0.45)"
+                      : "0 0 0 0 rgba(44,167,193,0)",
+                    transition: "border-color 600ms ease, box-shadow 600ms ease",
                   }}
                 >
-                  {/* Pulse halo */}
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: "radial-gradient(closest-side at 80% 20%, rgba(44,167,193,0.18), transparent 70%)",
-                    }}
-                    animate={{ opacity: isPulsing ? 1 : 0 }}
-                    transition={{ duration: 0.5 }}
-                  />
 
                   <div className="relative flex items-center gap-2 mb-3">
                     <motion.div
