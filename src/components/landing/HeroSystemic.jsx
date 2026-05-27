@@ -59,7 +59,7 @@ export default function HeroSystemic() {
   }, [revealedRows]);
 
   return (
-    <section ref={ref} className="relative min-h-[100vh] flex items-center overflow-hidden pt-8 bg-background">
+    <section ref={ref} className="relative min-h-[100vh] flex items-center overflow-hidden pt-16 md:pt-24 bg-background">
       {/* Animated backdrop */}
       <motion.div className="absolute inset-0 pointer-events-none" style={{ y: bgY }}>
         <div
@@ -103,8 +103,8 @@ export default function HeroSystemic() {
         style={{ background: "linear-gradient(to bottom, transparent 0%, hsl(var(--background)) 90%)" }}
       />
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-10 md:py-14">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-14 items-center">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-16 md:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-16 items-center">
 
           {/* LEFT — cinematic claim */}
           <div className="text-left">

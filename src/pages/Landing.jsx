@@ -7,6 +7,7 @@ import MeetTheFounder from "@/components/landing/MeetTheFounder.jsx";
 import FooterSection from "@/components/landing/FooterSection";
 import Navbar from "@/components/landing/Navbar";
 import SectionTransition from "@/components/landing/SectionTransition.jsx";
+import TrustStripSection from "@/components/landing/TrustStripSection.jsx";
 
 export default function Landing() {
   return (
@@ -21,6 +22,11 @@ export default function Landing() {
 
         {/* 2 — Potential recoverable margin (money visual under hero) */}
         <RecoverableMarginVisual />
+
+        <SectionTransition />
+
+        {/* 2b — Trust strip: tool logos + connect/accuracy/security pillars */}
+        <TrustStripSection />
 
         <SectionTransition />
 
