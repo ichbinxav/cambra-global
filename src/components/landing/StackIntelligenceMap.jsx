@@ -144,36 +144,34 @@ export default function StackIntelligenceMap() {
                 transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
               />
 
-              {/* Connection lines from center to nodes */}
+              {/* Connection lines from center to nodes — render only the active one with color */}
               {LAYERS.map((layer, i) => {
                 const { x, y } = polar(layer.angle, RADIUS);
                 const isActive = i === focusIdx;
-                const color = STATE[layer.state].color;
                 return (
-                  <g key={`line-${layer.id}`}>
-                    {/* Data pulse traveling along line — keyed by focus so it fully unmounts when inactive */}
-                    {isActive && (
-                      <motion.circle
-                        key={`pulse-${layer.id}-${focusIdx}`}
-                        r={2}
-                        fill={color}
-                        animate={{
-                          cx: [0, x],
-                          cy: [0, y],
-                          opacity: [1, 0.3],
-                        }}
-                        transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut" }}
-                      />
-                    )}
-                    <line
-                      x1={0} y1={0} x2={x} y2={y}
-                      stroke={isActive ? color : "rgba(255,255,255,0.06)"}
-                      strokeWidth={isActive ? 1.5 : 0.5}
-                      strokeOpacity={isActive ? 0.8 : 0.4}
-                    />
-                  </g>
+                  <line
+                    key={`line-${layer.id}`}
+                    x1={0} y1={0} x2={x} y2={y}
+                    stroke={isActive ? STATE[layer.state].color : "rgba(255,255,255,0.06)"}
+                    strokeWidth={isActive ? 1.5 : 0.5}
+                    strokeOpacity={isActive ? 0.8 : 0.4}
+                  />
                 );
               })}
+
+              {/* Single data pulse for the active connection — uses native SVG animation, fully unmounts on focus change */}
+              {(() => {
+                const layer = LAYERS[focusIdx];
+                const { x, y } = polar(layer.angle, RADIUS);
+                const color = STATE[layer.state].color;
+                return (
+                  <circle key={`pulse-${layer.id}`} r={2} fill={color} cx={0} cy={0}>
+                    <animate attributeName="cx" from="0" to={x} dur="1.2s" repeatCount="indefinite" />
+                    <animate attributeName="cy" from="0" to={y} dur="1.2s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="1;0.3" dur="1.2s" repeatCount="indefinite" />
+                  </circle>
+                );
+              })()}
 
               {/* Center engine — always on top of lines */}
               <circle cx={0} cy={0} r={34} fill="rgba(10,16,36,0.9)" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
