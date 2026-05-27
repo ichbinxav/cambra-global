@@ -61,17 +61,17 @@ export default function PricingSection() {
               <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl bg-ambient-mint opacity-10" />
             </div>
             
-            <div className="relative text-left">
-              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-border/40 bg-background/60">
+            <div className="relative text-left flex flex-col h-full">
+              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-border/40 bg-background/60 w-fit h-7">
                 <span className="h-2 w-2 rounded-full bg-cambra-mint" />
-                <p className="text-[9px] font-bold tracking-[0.24em] uppercase text-muted-foreground/70">Infrastructure</p>
+                <p className="text-[9px] font-bold tracking-[0.24em] uppercase text-muted-foreground/70 whitespace-nowrap">Infrastructure</p>
               </div>
               
-              <p className="text-4xl md:text-5xl font-black tracking-tight mb-2 text-foreground">Free</p>
-              <div className="flex items-baseline gap-2 mb-8">
+              <p className="text-4xl md:text-5xl font-black tracking-tight mb-2 text-foreground leading-none">Free</p>
+              <div className="flex items-baseline gap-2 mb-2 h-4">
                 <span className="text-xs text-muted-foreground/60 line-through tabular-nums">€60/month</span>
               </div>
-              <p className="text-sm text-muted-foreground/60 mb-8">For early operators</p>
+              <p className="text-sm text-muted-foreground/60 mb-8 min-h-[2.5rem]">For early operators</p>
               
               <ul className="space-y-3.5">
                 <li className="flex items-start gap-3 text-sm text-foreground/75 font-medium">
@@ -115,16 +115,16 @@ export default function PricingSection() {
               />
             </div>
             
-            <div className="relative text-left">
-              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-white/20 bg-white/[0.05]">
+            <div className="relative text-left flex flex-col h-full">
+              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-white/20 bg-white/[0.05] w-fit h-7">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-cambra-cyan" />
                 </span>
-                <p className="text-[9px] font-bold tracking-[0.24em] uppercase text-white/60">Recovery Model</p>
+                <p className="text-[9px] font-bold tracking-[0.24em] uppercase text-white/60 whitespace-nowrap">Recovery Model</p>
               </div>
               
-              <p className="text-4xl md:text-5xl font-black tracking-tight mb-2">
+              <p className="text-4xl md:text-5xl font-black tracking-tight mb-2 leading-none">
                 <span style={{
                   background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #2CA7C1 100%)",
                   WebkitBackgroundClip: "text",
@@ -132,7 +132,8 @@ export default function PricingSection() {
                   backgroundClip: "text"
                 }}>25%</span>
               </p>
-              <p className="text-sm text-white/50 mb-8">Only on verified savings recovered</p>
+              <div className="h-4 mb-2" />
+              <p className="text-sm text-white/50 mb-8 min-h-[2.5rem]">Only on verified savings recovered</p>
               
               <ul className="space-y-3.5">
                 <li className="flex items-start gap-3 text-sm text-white/75 font-medium">
