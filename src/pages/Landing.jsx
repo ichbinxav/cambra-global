@@ -1,7 +1,6 @@
 import HeroSystemic from "@/components/landing/HeroSystemic.jsx";
+import RecoverableMarginVisual from "@/components/landing/RecoverableMarginVisual.jsx";
 import HowItWorksSimple from "@/components/landing/HowItWorksSimple.jsx";
-import StackIntelligenceMap from "@/components/landing/StackIntelligenceMap.jsx";
-import ConnectToolsSection from "@/components/landing/ConnectToolsSection.jsx";
 import PricingSection from "@/components/landing/PricingSection.jsx";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import MeetTheFounder from "@/components/landing/MeetTheFounder.jsx";
@@ -14,29 +13,26 @@ export default function Landing() {
       <Navbar />
 
       <main>
-        {/* 1 — Plain-English hero */}
+        {/* 1 — Hidden margin leaks (hero) */}
         <HeroSystemic />
 
-        {/* 2 — Three simple steps */}
-         <div id="how">
-           <HowItWorksSimple />
-         </div>
+        {/* 2 — Potential recoverable margin (money visual under hero) */}
+        <RecoverableMarginVisual />
 
-         {/* 3 — Connect your tools (priority path for accuracy) */}
-         <ConnectToolsSection />
+        {/* 3 — Free audit + benchmarks (the 4 steps) */}
+        <div id="how">
+          <HowItWorksSimple />
+        </div>
 
-         {/* 4 — Pricing */}
-         <div id="pricing">
-           <PricingSection />
-         </div>
+        {/* 4 — Intelligence first, Recovery second (alignment model) */}
+        <div id="pricing">
+          <PricingSection />
+        </div>
 
-         {/* 5 — Living stack map */}
-         <StackIntelligenceMap />
+        {/* 5 — Operator findings */}
+        <TestimonialsSection />
 
-         {/* 6 — Operator findings (short, cold, specific) */}
-         <TestimonialsSection />
-
-        {/* 7 — Meet the founder */}
+        {/* Founder */}
         <MeetTheFounder />
       </main>
 

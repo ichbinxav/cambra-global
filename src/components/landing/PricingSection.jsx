@@ -24,7 +24,7 @@ export default function PricingSection() {
           >
             <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
             <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
-              Access & Recovery
+              Economic alignment
             </span>
           </motion.div>
 
@@ -34,7 +34,7 @@ export default function PricingSection() {
             transition={{ duration: 0.6, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
             className="font-display text-[clamp(2rem,5vw,3.2rem)] font-black tracking-[-0.04em] leading-[1]"
           >
-            Aligned with your <span className="text-saas-gradient">margin.</span>
+            Intelligence first. <span className="text-saas-gradient">Recovery second.</span>
           </motion.h2>
 
           <motion.p
@@ -43,7 +43,7 @@ export default function PricingSection() {
             transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
             className="mt-5 text-sm md:text-base text-foreground/65 max-w-xl mx-auto leading-relaxed"
           >
-            Infrastructure intelligence is free for early operators. An optional recovery layer participates only in verified savings.
+            Not a SaaS plan — an alignment model. We only participate when we help you recover real margin.
           </motion.p>
         </div>
 
@@ -132,8 +132,8 @@ export default function PricingSection() {
                   backgroundClip: "text"
                 }}>25%</span>
               </p>
-              <div className="h-4 mb-2" />
-              <p className="text-sm text-white/50 mb-8 min-h-[2.5rem]">Only on verified savings recovered</p>
+              <p className="text-xs text-white/70 mb-2 font-medium">of verified savings recovered</p>
+              <p className="text-[11px] text-white/45 mb-8 leading-snug min-h-[2.5rem]">No upfront fee. CAMBRA only participates in savings we help unlock.</p>
               
               <ul className="space-y-3">
                 <li className="flex items-start gap-2.5 text-xs text-white/70 font-medium">
