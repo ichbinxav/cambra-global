@@ -193,7 +193,7 @@ export default function StackIntelligenceMap() {
               {/* CAMBRA C — official isometric mark */}
               <image
                 href="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/46f76fcd1_2167CAF5-0F1E-4BC6-8640-B22A50794E4E.png"
-                x="-32" y="-32" width="64" height="64"
+                x="-56" y="-56" width="112" height="112"
                 preserveAspectRatio="xMidYMid meet"
                 style={{ mixBlendMode: "screen" }}
               />
