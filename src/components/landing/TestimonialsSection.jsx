@@ -98,11 +98,7 @@ export default function TestimonialsSection() {
                 <div className="flex-1 p-5 md:p-6 min-w-0 bg-gradient-to-br from-blue-50 to-cyan-50/40">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50">
-                      {t.layer}
-                    </span>
-                    <span className="h-0.5 w-0.5 rounded-full bg-muted-foreground/30" />
-                    <span className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50">
-                      {t.company}
+                      {t.layer}, {t.company}
                     </span>
                   </div>
 
