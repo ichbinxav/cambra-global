@@ -131,18 +131,7 @@ export default function StackIntelligenceMap() {
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut", delay: 1.2 }}
               />
 
-              {/* Rotating scan arc — subtle glow arc, no line over nodes */}
-              <motion.circle
-                cx={0} cy={0} r={RADIUS - 15}
-                fill="none"
-                stroke="url(#scan-arc-grad)"
-                strokeWidth={2}
-                strokeDasharray={`${Math.PI * (RADIUS - 15) * 0.25} ${Math.PI * (RADIUS - 15) * 1.75}`}
-                strokeLinecap="round"
-                style={{ transformOrigin: "0px 0px" }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-              />
+              {/* Rotating scan arc removed — was visually creating a line between adjacent nodes */}
 
               {/* Connection lines removed — clean radial map without center-to-node links */}
 
