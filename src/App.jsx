@@ -16,7 +16,6 @@ import Results from '@/pages/Results';
 import Dashboard from '@/pages/Dashboard';
 import Reports from '@/pages/Reports';
 import Network from '@/pages/Network';
-import Deals from '@/pages/Deals';
 import Insights from '@/pages/Insights';
 import InsightDetail from '@/pages/InsightDetail';
 import Account from '@/pages/Account';
@@ -41,16 +40,12 @@ import AdminIntegrations from '@/pages/admin/AdminIntegrations';
 import AdminControl from '@/pages/admin/AdminControl';
 import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
 import AdminRecommendations from '@/pages/admin/AdminRecommendations';
-import ProviderPortal from '@/pages/ProviderPortal';
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing';
 import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
 import Help from '@/pages/Help';
 import HelpCategory from '@/pages/HelpCategory';
-import ActivateDeal from '@/pages/deals/ActivateDeal';
-import AuthorizeDeal from '@/pages/deals/AuthorizeDeal';
-import MigrationHub from '@/pages/deals/MigrationHub';
 import Snapshot from '@/pages/Snapshot';
 import AdminInvoices from '@/pages/admin/AdminInvoices';
 import Invoices from '@/pages/Invoices';
@@ -204,9 +199,6 @@ const AuthenticatedApp = () => {
         <Route path="/help/:slug" element={<HelpCategory />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
-        <Route path="/deal/activate" element={<ProtectedRoute><ActivateDeal /></ProtectedRoute>} />
-        <Route path="/deal/authorize/:dealId" element={<ProtectedRoute><AuthorizeDeal /></ProtectedRoute>} />
-        <Route path="/deal/migration/:dealId" element={<ProtectedRoute><MigrationHub /></ProtectedRoute>} />
 
 
 
@@ -219,7 +211,6 @@ const AuthenticatedApp = () => {
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Reports" element={<Reports />} />
           <Route path="/Network" element={<Network />} />
-          <Route path="/Deals" element={<Deals />} />
           <Route path="/Insights" element={<Insights />} />
           <Route path="/InsightDetail" element={<InsightDetail />} />
           <Route path="/Account" element={<Account />} />
@@ -245,8 +236,6 @@ const AuthenticatedApp = () => {
           <Route path="/admin/activation/:id" element={<AdminActivationDetail />} />
           <Route path="/admin/invoices" element={<AdminInvoices />} />
         </Route>
-        <Route path="/ProviderPortal" element={<ProtectedRoute><ProviderPortal /></ProtectedRoute>} />
-
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </>

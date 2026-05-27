@@ -5,7 +5,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import DealsOverview from "@/components/deals/DealsOverview.jsx";
 import MetricCard from "@/components/dashboard/MetricCard";
 import HeroSavings from "@/components/dashboard/HeroSavings";
 import InfraScore from "@/components/dashboard/InfraScore";
@@ -287,11 +286,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* ── DEALS OVERVIEW (when chart is shown instead) ── */}
-          {chartData.length > 1 && (
-            <DealsOverview userDeals={userDeals} />
-          )}
-
           <InfrastructureStatus latest={latest} />
 
           {/* Recommendations */}
@@ -306,7 +300,6 @@ export default function Dashboard() {
               { title: "Run new analysis", desc: "Update your infra score", path: "/Analyzer", icon: TrendingDown, accent: true },
               { title: "Complete onboarding", desc: "Add banking, insurance & telecom data", path: "/Onboarding", icon: Zap },
               { title: "Connect your tools", desc: "Precision data across all verticals", path: "/ConnectTools", icon: ShieldCheck },
-              { title: "Explore deals", desc: "Activate savings across all categories", path: "/Deals", icon: BookOpen },
             ].map((action, i) => (
               <Link key={i} to={action.path}>
                 <div className={`group p-5 rounded-2xl border transition-all cursor-pointer ${action.accent ? "border-foreground/8 bg-foreground text-background" : "border-border/50 bg-card hover:border-border"}`}>

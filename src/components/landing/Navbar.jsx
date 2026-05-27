@@ -19,7 +19,6 @@ const NAV_MEMBER = [
   { label: "Dashboard", href: "/Dashboard" },
   { label: "Analyzer", href: "/Analyzer" },
   { label: "Onboarding", href: "/Onboarding" },
-  { label: "Deals", href: "/Deals" },
   { label: "Network", href: "/Network" },
   { label: "Insights", href: "/Insights" },
 ];
