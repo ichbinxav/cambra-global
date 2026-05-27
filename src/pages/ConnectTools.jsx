@@ -221,7 +221,7 @@ export default function ConnectTools() {
     <div className="relative min-h-screen bg-white font-inter flex flex-col">
       <Navbar />
 
-      <div className="relative flex-1 max-w-3xl mx-auto w-full px-5 py-8 space-y-6 mt-16">
+      <div className="relative flex-1 max-w-3xl mx-auto w-full px-5 pt-20 pb-12 space-y-6 mt-14">
 
         {/* ── HERO — light, uniform ── */}
         <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-white p-7 sm:p-10">
