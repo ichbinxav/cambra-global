@@ -92,7 +92,7 @@ export default function HeroSystemic() {
               </a>
               <a
                 href="#how"
-                className="h-12 rounded-full px-6 text-sm font-semibold border border-border/60 bg-background/60 backdrop-blur-sm text-foreground/85 hover:border-foreground/40 hover:text-foreground transition inline-flex items-center justify-center gap-2"
+                className="h-12 rounded-full px-6 text-sm font-semibold border border-border/60 bg-background/60 backdrop-blur-sm text-foreground hover:border-foreground/40 hover:text-foreground transition inline-flex items-center justify-center gap-2"
               >
                 How it works
               </a>
