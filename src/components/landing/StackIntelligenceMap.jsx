@@ -58,7 +58,7 @@ export default function StackIntelligenceMap() {
   const focus = LAYERS[focusIdx >= 0 ? focusIdx : activeIdx];
   const focusState = STATE[focus.state];
   const RADIUS = 160;
-  const NODE_R = 26;
+  const NODE_R = 36;
 
   return (
     <section className="relative pt-16 md:pt-20 pb-16 md:pb-20 bg-neon-1 text-neon-9 overflow-hidden">
@@ -208,12 +208,12 @@ export default function StackIntelligenceMap() {
                     />
                     <text x={x} y={y - 2} textAnchor="middle"
                           className="fill-white font-semibold pointer-events-none"
-                          style={{ fontSize: 10 }}>
+                          style={{ fontSize: 12, fontWeight: 700 }}>
                       {layer.label}
                     </text>
-                    <text x={x} y={y + 10} textAnchor="middle"
+                    <text x={x} y={y + 12} textAnchor="middle"
                           className="font-mono pointer-events-none"
-                          style={{ fontSize: 8, fill: isActive ? color : "rgba(255,255,255,0.4)" }}>
+                          style={{ fontSize: 10, fill: isActive ? color : "rgba(255,255,255,0.5)", fontWeight: 500 }}>
                       {layer.drift === 0 ? "✓ ok" : formatDrift(layer)}
                     </text>
                   </g>
