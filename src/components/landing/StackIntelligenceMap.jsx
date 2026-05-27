@@ -190,15 +190,13 @@ export default function StackIntelligenceMap() {
                 animate={{ opacity: [0.04, 0.12, 0.04] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               />
-              {/* CAMBRA C — geometric isometric mark, vector */}
-              <g transform="translate(-22, -26) scale(1.1)">
-                {/* Left vertical bar */}
-                <polygon points="6,8 14,12 14,40 6,36" fill="white" />
-                {/* Top arm */}
-                <polygon points="14,12 38,4 46,8 22,16" fill="white" />
-                {/* Bottom arm */}
-                <polygon points="14,40 38,32 46,36 22,44" fill="white" />
-              </g>
+              {/* CAMBRA C — official isometric mark */}
+              <image
+                href="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/46f76fcd1_2167CAF5-0F1E-4BC6-8640-B22A50794E4E.png"
+                x="-32" y="-32" width="64" height="64"
+                preserveAspectRatio="xMidYMid meet"
+                style={{ mixBlendMode: "screen" }}
+              />
 
               {LAYERS.map((layer, i) => {
                 const { x, y } = polar(layer.angle, RADIUS);
