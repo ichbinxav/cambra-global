@@ -99,9 +99,9 @@ export default function HowItWorks() {
                     </Link>
                   </div>
 
-                  <div className="grid md:grid-cols-[auto_1fr] gap-6 sm:gap-10 items-end">
-                    {/* Giant cinematic number */}
-                    <div className="cambra-step-number">
+                  <div>
+                    {/* Giant cinematic number — on top */}
+                    <div className="cambra-step-number mb-4">
                       {step.n}
                     </div>
 
