@@ -73,63 +73,45 @@ export default function TestimonialsSection() {
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="rounded-2xl border border-border/40 bg-card overflow-hidden"
             >
-              <div className="grid md:grid-cols-[1.4fr_1fr]">
-                {/* LEFT — Quote */}
-                <div className="p-6 md:p-7">
-                  {/* Layer tag */}
-                  <p className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50 mb-4">
-                    {t.layer} optimization
-                  </p>
+              <div className="flex flex-col md:flex-row md:items-stretch">
+                {/* Quote + author */}
+                <div className="flex-1 p-5 md:p-6 min-w-0">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50">
+                      {t.layer}
+                    </span>
+                    <span className="h-0.5 w-0.5 rounded-full bg-muted-foreground/30" />
+                    <span className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50">
+                      {t.company}
+                    </span>
+                  </div>
 
-                  {/* Quote text */}
-                  <blockquote className="text-base md:text-lg font-medium leading-[1.35] tracking-tight text-foreground mb-6">
+                  <blockquote className="text-base md:text-[17px] font-medium leading-[1.35] tracking-tight text-foreground mb-3">
                     "{t.quote}"
                   </blockquote>
 
-                  {/* Author */}
-                  <div className="flex items-center gap-2.5 pt-5 border-t border-border/30">
-                    <div className="h-9 w-9 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-bold text-foreground/60 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-full bg-foreground/10 flex items-center justify-center text-[10px] font-bold text-foreground/60 shrink-0">
                       {t.initials}
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">{t.role}</p>
-                      <p className="text-[10px] text-muted-foreground/50 font-mono">
-                        {t.company}
-                      </p>
-                    </div>
+                    <p className="text-[11px] text-muted-foreground/60 font-mono">
+                      {t.role} · {t.tier}
+                    </p>
                   </div>
                 </div>
 
-                {/* RIGHT — Impact metrics */}
-                <div className="p-6 md:p-7 bg-secondary/40 border-l border-border/40 flex flex-col justify-between">
-                  {/* Before / After */}
-                  <div>
-                    <p className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50 mb-3">
-                      The change
-                    </p>
-                    <div className="flex items-end gap-3">
-                      <div>
-                        <p className="text-[8px] uppercase tracking-widest font-mono text-muted-foreground/40 mb-1">Before</p>
-                        <p className="text-sm font-medium text-foreground/50 line-through decoration-1">{t.before}</p>
-                      </div>
-                      <div className="text-muted-foreground/40 text-xs">→</div>
-                      <div>
-                        <p className="text-[8px] uppercase tracking-widest font-mono text-muted-foreground/40 mb-1">After</p>
-                        <p className="text-lg font-black text-foreground">{t.after}</p>
-                      </div>
-                    </div>
+                {/* Metrics — inline horizontal */}
+                <div className="flex md:flex-col items-center md:items-end justify-between gap-4 md:gap-3 p-5 md:p-6 bg-secondary/40 md:border-l border-t md:border-t-0 border-border/40 md:min-w-[200px]">
+                  <div className="flex items-baseline gap-1.5 md:order-1">
+                    <span className="text-sm font-medium text-foreground/50 line-through decoration-1">{t.before}</span>
+                    <span className="text-muted-foreground/40 text-xs">→</span>
+                    <span className="text-base font-black text-foreground">{t.after}</span>
                   </div>
-
-                  {/* Recovery amount */}
-                  <div>
-                    <p className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50 mb-2">
-                      Recovery / year
-                    </p>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl md:text-4xl font-black tracking-tighter text-saas-gradient tabular-nums">
-                        €{(t.recovery / 1000).toFixed(t.recovery % 1000 === 0 ? 0 : 1)}K
-                      </span>
-                    </div>
+                  <div className="flex items-baseline gap-1.5 md:order-2">
+                    <span className="text-2xl md:text-3xl font-black tracking-tighter text-saas-gradient tabular-nums leading-none">
+                      €{(t.recovery / 1000).toFixed(t.recovery % 1000 === 0 ? 0 : 1)}K
+                    </span>
+                    <span className="text-[10px] font-mono text-muted-foreground/50">/ yr</span>
                   </div>
                 </div>
               </div>
