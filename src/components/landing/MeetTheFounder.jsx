@@ -62,7 +62,7 @@ export default function MeetTheFounder() {
               <img
                 src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/f1e34eda8_0347F92E-E1B9-4977-A6B1-85897923556A.jpeg"
                 alt="Xavier M. Contero, Founder of CAMBRA"
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-contain"
               />
             </div>
           </motion.div>
