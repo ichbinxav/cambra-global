@@ -1,73 +1,98 @@
-import React from "react";
+import React, { useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import { TrendingDown } from "lucide-react";
+
+const DRAINS = [
+  { label: "Payments", marker: "Silent drain", body: "Most businesses pay 2.4–3.2% on transactions. Benchmark: 1.4%. On €2M revenue, that's €20,000 in silent leakage annually.", color: "#EF4444", value: "€20K/yr" },
+  { label: "Logistics", marker: "Above market", body: "Without volume leverage, shipping rates are set by individual negotiation. The collective benchmark is 15–22% below single-account rates.", color: "#F97316", value: "15–22%" },
+  { label: "SaaS Stack", marker: "Fragmented spend", body: "The average operator runs 6–11 SaaS tools. Benchmarking consistently finds 2–3 redundant or overpriced subscriptions per stack.", color: "#8B5CF6", value: "2–3 tools" },
+  { label: "Banking & FX", marker: "Unbenchmarked", body: "Business banking fees, FX spreads and card processing costs are rarely audited. Yet they compound silently across every transaction.", color: "#06B6D4", value: "0.8–1.4%" },
+];
 
 export default function ProblemSection_Public() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+
   return (
-    <section className="py-12 border-t border-border/40 bg-gradient-to-b from-background to-secondary/30">
-      <div className="max-w-6xl mx-auto px-5 grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-8 lg:gap-10 items-start">
-        <div className="lg:sticky lg:top-24">
-          <p className="text-[11px] tracking-[0.28em] uppercase text-muted-foreground/60 font-semibold mb-3">The problem</p>
-          <h3 className="text-3xl md:text-5xl font-black tracking-[-0.04em] leading-[0.92] mb-4">Operating without scale is expensive</h3>
-          <p className="text-lg text-foreground/70 leading-relaxed max-w-xl">Most indie brands overpay across payments, shipping, insurance and SaaS. CAMBRA unlocks enterprise terms through collective scale.</p>
+    <section className="py-16 border-t border-border/40 bg-gradient-to-b from-background via-secondary/10 to-background">
+      <div className="max-w-6xl mx-auto px-5">
+        {/* Header */}
+        <div ref={ref} className="max-w-3xl mx-auto text-center mb-12">
+          <motion.p
+            initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}}
+            className="text-[10px] tracking-[0.28em] uppercase text-muted-foreground/40 mb-4"
+          >The infrastructure tax</motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[clamp(2rem,5vw,3.8rem)] font-black tracking-[-0.04em] leading-[0.92] mb-5"
+          >
+            Operational inefficiency compounds faster than inflation.
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-muted-foreground/60 leading-relaxed"
+          >
+            It's not one problem. It's four invisible taxes — each small enough to ignore individually, catastrophic when summed across your entire infrastructure stack.
+          </motion.p>
+        </div>
 
-          <div className="mt-6 space-y-3">
-            {[
-              "Payments: online fees + TPE often sit above benchmark",
-              "Shipping: 10–25% above collective rates",
-              "Insurance: rarely benchmarked, often overpriced",
-              "SaaS: up to 30% wasted spend",
-            ].map((item) => (
-              <div key={item} className="flex items-center gap-3 rounded-2xl border border-border/50 bg-card/70 px-4 py-3 shadow-sm">
-                <div className="h-2.5 w-2.5 rounded-full bg-neon-6 shrink-0" />
-                <p className="text-sm md:text-[15px] font-medium text-foreground/90">{item}</p>
+        {/* Drain grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+          {DRAINS.map((item, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.1 + i * 0.08 }}
+              className="group p-5 rounded-2xl border border-border/40 bg-card relative overflow-hidden"
+              whileHover={{ y: -3 }}
+            >
+              <div
+                className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl"
+                style={{ background: `linear-gradient(90deg, ${item.color}, transparent)` }}
+              />
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <span className="text-sm font-bold">{item.label}</span>
+                  <span
+                    className="ml-2 text-[9px] font-semibold px-2 py-0.5 rounded-full"
+                    style={{ background: `${item.color}12`, color: item.color }}
+                  >
+                    {item.marker}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-sm font-black" style={{ color: item.color }}>
+                  <TrendingDown className="h-3.5 w-3.5" />
+                  {item.value}
+                </div>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <a href="/Analyzer" className="h-12 px-6 rounded-full bg-foreground text-background text-sm font-bold inline-flex items-center justify-center shadow-sm">Run the Analyzer →</a>
-            <a href="/Onboarding" className="h-12 px-6 rounded-full border border-foreground text-foreground text-sm font-semibold inline-flex items-center justify-center bg-background/80 backdrop-blur-sm">Join CAMBRA →</a>
-          </div>
+              <p className="text-sm text-muted-foreground/65 leading-relaxed">{item.body}</p>
+            </motion.div>
+          ))}
         </div>
 
-        <div className="rounded-[2rem] border border-border/60 bg-card/80 backdrop-blur-sm p-4 sm:p-5 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.18)]">
-          <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-neon-6/15 bg-neon-6/5 px-4 py-3">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/50">Without collective leverage</p>
-              <p className="text-sm font-semibold text-foreground">Typical cost profile for independent brands</p>
-            </div>
-            <div className="hidden sm:flex h-10 w-10 items-center justify-center rounded-2xl bg-background border border-border/60 text-neon-6 text-lg font-black">!</div>
+        {/* Bottom card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.5 }}
+          className="rounded-2xl bg-foreground text-background p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6"
+        >
+          <div className="max-w-xl text-center md:text-left">
+            <p className="text-[10px] uppercase tracking-[0.22em] opacity-30 mb-2">The CAMBRA finding</p>
+            <p className="text-xl md:text-2xl font-bold leading-snug opacity-90">
+              Businesses audited by CAMBRA identify an average of <span className="font-black opacity-100">€29,000/year</span> in recoverable infrastructure margin.
+            </p>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">Payments</div>
-              <div className="mt-3 text-3xl font-black text-neon-6">3.1%</div>
-              <div className="mt-1 text-[12px] text-muted-foreground/70">online + TPE</div>
-            </div>
-            <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">Cost / parcel</div>
-              <div className="mt-3 text-3xl font-black text-neon-7">€7.60</div>
-              <div className="mt-1 text-[12px] text-muted-foreground/70">Shipping</div>
-            </div>
-            <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">Insurance</div>
-              <div className="mt-3 text-3xl font-black text-neon-5">€8.4K</div>
-              <div className="mt-1 text-[12px] text-muted-foreground/70">Typical annual cost</div>
-            </div>
-            <div className="rounded-2xl border border-border/50 bg-background p-4 text-center shadow-sm">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground/50">SaaS waste</div>
-              <div className="mt-3 text-3xl font-black text-neon-6">30%</div>
-              <div className="mt-1 text-[12px] text-muted-foreground/70">Tools</div>
-            </div>
-          </div>
-
-          <div className="mt-4 rounded-2xl bg-foreground text-background px-4 py-4">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-background/40">Why it matters</p>
-            <p className="mt-2 text-base font-semibold leading-snug">Small inefficiencies compound into major margin loss across the whole stack.</p>
-          </div>
-
-          <p className="mt-4 text-xs text-muted-foreground/70">Benchmarks vary by revenue tier and geography; the Analyzer adapts targets accordingly.</p>
-        </div>
+          <a
+            href="/Analyzer"
+            className="shrink-0 h-12 px-7 rounded-full bg-background text-foreground text-sm font-bold inline-flex items-center gap-2 hover:opacity-90 transition"
+          >
+            See what you're losing →
+          </a>
+        </motion.div>
       </div>
     </section>
   );

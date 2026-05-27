@@ -12,59 +12,64 @@ export default function FooterSection() {
   return (
     <>
       {/* Final CTA */}
-      <section ref={ref} className="py-20 px-5 bg-foreground text-background relative overflow-hidden">
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center text-[50vw] font-thin text-background/[0.02] select-none pointer-events-none leading-none"
-          animate={{ rotate: [0, 360] }}
-          transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
-        >✱</motion.div>
+      <section ref={ref} className="py-24 px-5 bg-foreground text-background relative overflow-hidden">
         <div
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          className="absolute inset-0 opacity-[0.025] pointer-events-none"
           style={{
             backgroundImage: "linear-gradient(hsl(var(--background)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--background)) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
           }}
         />
+        {/* Ambient glows */}
+        <div className="absolute top-0 left-[30%] w-[400px] h-[400px] rounded-full blur-[100px] opacity-10" style={{ background: "radial-gradient(closest-side, #635BFF, transparent)" }} />
+        <div className="absolute bottom-0 right-[20%] w-[300px] h-[300px] rounded-full blur-[80px] opacity-10" style={{ background: "radial-gradient(closest-side, #06B6D4, transparent)" }} />
+
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <motion.p
-            initial={false} animate={inView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5 }}
-            className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8">Find your unfair advantage</motion.p>
+            className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8"
+          >Stop the silent margin drain</motion.p>
           <motion.h2
-            initial={false} animate={inView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[clamp(2.5rem,7vw,7rem)] font-black tracking-[-0.04em] leading-[0.88] mb-4"
+            className="text-[clamp(2.5rem,7vw,6rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5"
           >
-            Stop overpaying for your infrastructure.
+            Audit your infrastructure today.
           </motion.h2>
           <motion.p
-            initial={false} animate={inView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-base opacity-40 mb-10 max-w-sm mx-auto"
+            className="text-lg opacity-40 mb-10 max-w-sm mx-auto leading-relaxed"
           >
-            Brands typically identify €29,000/year in optimization potential. Most improvements activate within minutes.
+            The average business leaking €29,000/year in recoverable margin has been doing so for years. The audit takes 3 minutes.
           </motion.p>
           <motion.div
-            initial={false} animate={inView ? { opacity: 1, y: 0 } : {}}
+            initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.45 }}
             className="flex flex-col sm:flex-row gap-3 justify-center"
           >
             <Link to="/Analyzer" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                <Button size="lg" className="w-full h-14 rounded-full px-10 text-base font-bold gap-2 bg-saas-gradient text-white shadow-lg shadow-blue-500/20 ring-1 ring-white/10 hover:shadow-blue-500/40">
-                  Calculate your savings
+                <Button size="lg" className="w-full h-14 rounded-full px-10 text-base font-bold gap-2 bg-background text-foreground hover:opacity-90">
+                  Run Infrastructure Audit
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </motion.div>
             </Link>
-            <Link to="/Analyzer" className="w-full sm:w-auto">
+            <Link to="/Analyzer?preview=1" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-                <Button size="lg" className="w-full h-14 rounded-full px-10 text-base font-bold bg-background text-foreground border border-background/20 hover:bg-background/90">
-                  Run the analyzer
+                <Button size="lg" variant="outline" className="w-full h-14 rounded-full px-10 text-base font-bold border-background/20 text-background hover:bg-background/10">
+                  View audit preview
                 </Button>
               </motion.div>
             </Link>
           </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.6 }}
+            className="text-[11px] opacity-20 mt-6"
+          >Takes less than 3 minutes · No credit card required</motion.p>
         </div>
       </section>
 
@@ -73,10 +78,10 @@ export default function FooterSection() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-5">
             <BrandLogoWordmark className="h-4" />
-            <span className="text-xs text-muted-foreground/40">CAMBRA, the operating layer behind independent brands</span>
+            <span className="text-xs text-muted-foreground/35">Infrastructure Audit & Intelligence Platform</span>
           </div>
-          <div className="flex items-center gap-5 text-xs text-muted-foreground/50">
-            <span>© {new Date().getFullYear()} CAMBRA Collective</span>
+          <div className="flex items-center gap-5 text-xs text-muted-foreground/40">
+            <span>© {new Date().getFullYear()} CAMBRA</span>
             <Link to="/Privacy" className="hover:text-foreground transition-colors">Privacy</Link>
             <Link to="/Terms" className="hover:text-foreground transition-colors">Terms</Link>
           </div>
