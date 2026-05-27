@@ -182,21 +182,13 @@ export default function StackIntelligenceMap() {
                     onMouseLeave={() => setHoveredId(null)}
                     style={{ cursor: "pointer" }}
                   >
-                    {/* Soft halo */}
+                    {/* Soft halo — contained to the node, no expanding ring that reaches neighbors */}
                     {isActive && (
-                      <>
-                        <motion.circle
-                          cx={x} cy={y} r={NODE_R + 6}
-                          fill={color} opacity={0.08}
-                          style={{ filter: "blur(8px)" }}
-                        />
-                        <motion.circle
-                          cx={x} cy={y} r={NODE_R}
-                          fill="none" stroke={color} strokeWidth={1}
-                          animate={{ r: [NODE_R, NODE_R + 16], opacity: [0.5, 0] }}
-                          transition={{ duration: 1.8, repeat: Infinity }}
-                        />
-                      </>
+                      <circle
+                        cx={x} cy={y} r={NODE_R + 4}
+                        fill={color} opacity={0.08}
+                        style={{ filter: "blur(6px)" }}
+                      />
                     )}
                     {/* Node bg — opaque so nothing bleeds through */}
                     <circle
