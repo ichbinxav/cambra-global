@@ -60,9 +60,9 @@ export default function HowItWorksSection() {
               </div>
 
               <div className="relative flex items-start justify-between gap-3">
-                <div className="font-display font-black leading-[0.85] tracking-[-0.06em] select-none text-[3.5rem]"
+                <div className="font-display font-black leading-[0.8] tracking-[-0.08em] select-none text-[5.5rem]"
                   style={{
-                    background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 65%, rgba(255,255,255,0) 100%)",
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.25) 60%, rgba(255,255,255,0) 100%)",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",
