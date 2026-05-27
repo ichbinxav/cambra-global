@@ -157,8 +157,8 @@
 .cambra-step-number {
   font-family: 'Space Grotesk', 'Inter', sans-serif;
   font-weight: 900;
-  font-size: clamp(7rem, 20vw, 14rem);
-  line-height: 0.82;
+  font-size: clamp(6rem, 18vw, 11rem);
+  line-height: 0.95;
   letter-spacing: -0.07em;
   background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 55%, rgba(255,255,255,0) 100%);
   -webkit-background-clip: text;
