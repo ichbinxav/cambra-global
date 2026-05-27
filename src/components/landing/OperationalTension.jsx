@@ -4,18 +4,35 @@ import { CreditCard, LayoutGrid, Package, ArrowLeftRight, Landmark, Radar } from
 
 /**
  * OperationalTension — Engine + orbital layers diagram.
- * Compact, scannable, "wow". Each layer is a node orbiting the CAMBRA engine.
+ * Fully responsive SVG-based diagram. Nodes never overflow.
  */
 
 const RECOVERIES = [
-  { Icon: CreditCard,     layer: "Payments",  finding: "−0.3pp",       amount: 11400, accent: "text-blue-500",    dot: "bg-blue-500" },
-  { Icon: LayoutGrid,     layer: "SaaS",      finding: "2 dupes",      amount: 8200,  accent: "text-cyan-500",    dot: "bg-cyan-500" },
-  { Icon: Package,        layer: "Shipping",  finding: "−€0.40/order", amount: 6900,  accent: "text-violet-500",  dot: "bg-violet-500" },
-  { Icon: ArrowLeftRight, layer: "FX",        finding: "−0.4pp",       amount: 4100,  accent: "text-emerald-500", dot: "bg-emerald-500" },
-  { Icon: Landmark,       layer: "Banking",   finding: "−€18/mo",      amount: 220,   accent: "text-amber-500",   dot: "bg-amber-500" },
+  { Icon: CreditCard,     layer: "Payments",  finding: "−0.3pp",       amount: 11400, accent: "text-blue-500",    stroke: "#3b82f6" },
+  { Icon: LayoutGrid,     layer: "SaaS",      finding: "2 dupes",      amount: 8200,  accent: "text-cyan-500",    stroke: "#06b6d4" },
+  { Icon: Package,        layer: "Shipping",  finding: "−€0.40/order", amount: 6900,  accent: "text-violet-500",  stroke: "#8b5cf6" },
+  { Icon: ArrowLeftRight, layer: "FX",        finding: "−0.4pp",       amount: 4100,  accent: "text-emerald-500", stroke: "#10b981" },
+  { Icon: Landmark,       layer: "Banking",   finding: "−€18/mo",      amount: 220,   accent: "text-amber-500",   stroke: "#f59e0b" },
 ];
 
 const TOTAL = RECOVERIES.reduce((s, r) => s + r.amount, 0);
+
+// SVG geometry
+const VB_W = 400;
+const VB_H = 320;
+const CX = 200;
+const CY = 160;
+const ORBIT_R = 115;
+
+// Pre-compute node positions on the orbit (pentagon, top first)
+const NODES = RECOVERIES.map((r, i) => {
+  const angle = (i / RECOVERIES.length) * 2 * Math.PI - Math.PI / 2;
+  return {
+    ...r,
+    x: CX + Math.cos(angle) * ORBIT_R,
+    y: CY + Math.sin(angle) * ORBIT_R,
+  };
+});
 
 export default function OperationalTension() {
   const ref = useRef(null);
@@ -86,100 +103,131 @@ export default function OperationalTension() {
               </div>
             </div>
 
-            {/* Orbital diagram */}
-            <div className="relative h-[260px] md:h-[280px] bg-gradient-to-br from-blue-500/[0.03] to-cyan-500/[0.03]">
-              {/* Orbit rings */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 280" preserveAspectRatio="xMidYMid meet">
-                <circle cx="200" cy="140" r="70"  fill="none" stroke="currentColor" strokeWidth="0.5" className="text-border/40" strokeDasharray="2 4" />
-                <circle cx="200" cy="140" r="110" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-border/30" strokeDasharray="2 4" />
-                {/* Scan sweep */}
-                <motion.line
-                  x1="200" y1="140" x2="200" y2="30"
-                  stroke="url(#sweep)" strokeWidth="1.5"
-                  style={{ transformOrigin: "200px 140px" }}
-                  animate={inView ? { rotate: 360 } : {}}
-                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                />
+            {/* SVG diagram — fully scalable, never overflows */}
+            <div className="relative bg-gradient-to-br from-blue-500/[0.03] to-cyan-500/[0.03]">
+              <svg
+                viewBox={`0 0 ${VB_W} ${VB_H}`}
+                className="w-full h-auto block"
+                preserveAspectRatio="xMidYMid meet"
+              >
                 <defs>
                   <linearGradient id="sweep" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="hsl(var(--neon-7))" stopOpacity="0" />
-                    <stop offset="100%" stopColor="hsl(var(--neon-7))" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="hsl(var(--neon-7))" stopOpacity="0.9" />
+                  </linearGradient>
+                  <linearGradient id="engine" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#0A1024" />
+                    <stop offset="55%" stopColor="#1F4ED8" />
+                    <stop offset="100%" stopColor="#2CA7C1" />
                   </linearGradient>
                 </defs>
-              </svg>
 
-              {/* Center engine */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={inView ? { scale: 1 } : {}}
-                transition={{ duration: 0.6, delay: 0.4, type: "spring" }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
-              >
-                <div className="relative">
-                  <div className="absolute inset-0 rounded-full bg-saas-gradient blur-xl opacity-50 animate-pulse" />
-                  <div className="relative h-16 w-16 md:h-[72px] md:w-[72px] rounded-full bg-saas-gradient flex flex-col items-center justify-center shadow-lg">
-                    <span className="text-[8px] font-mono tracking-[0.18em] text-white/70 uppercase">Engine</span>
-                    <span className="text-[11px] font-black text-white tracking-tight">CAMBRA</span>
-                  </div>
-                </div>
-              </motion.div>
+                {/* Orbit rings */}
+                <circle cx={CX} cy={CY} r={70}      fill="none" stroke="currentColor" strokeWidth="0.5" className="text-border/40" strokeDasharray="2 4" />
+                <circle cx={CX} cy={CY} r={ORBIT_R} fill="none" stroke="currentColor" strokeWidth="0.5" className="text-border/30" strokeDasharray="2 4" />
 
-              {/* Orbital nodes */}
-              {RECOVERIES.map((r, i) => {
-                // 5 nodes positioned on outer orbit
-                const angle = (i / RECOVERIES.length) * 2 * Math.PI - Math.PI / 2;
-                const radius = 110;
-                const cx = 50 + (Math.cos(angle) * radius) / 4; // % positioning
-                const cy = 50 + (Math.sin(angle) * radius * 280) / (400 * 140); // adjust for aspect
+                {/* Scan sweep */}
+                <motion.line
+                  x1={CX} y1={CY} x2={CX} y2={CY - 130}
+                  stroke="url(#sweep)" strokeWidth="2"
+                  style={{ transformOrigin: `${CX}px ${CY}px` }}
+                  animate={inView ? { rotate: 360 } : {}}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                />
 
-                // Use simpler absolute % positions for a 5-point star around center
-                const positions = [
-                  { top: "10%",  left: "50%" },  // top
-                  { top: "38%",  left: "88%" },  // top-right
-                  { top: "82%",  left: "72%" },  // bottom-right
-                  { top: "82%",  left: "28%" },  // bottom-left
-                  { top: "38%",  left: "12%" },  // top-left
-                ];
+                {/* Center engine — glow */}
+                <motion.circle
+                  cx={CX} cy={CY} r={42}
+                  fill="url(#engine)"
+                  opacity="0.25"
+                  initial={{ scale: 0 }}
+                  animate={inView ? { scale: [1, 1.15, 1] } : {}}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ transformOrigin: `${CX}px ${CY}px`, filter: "blur(8px)" }}
+                />
+                {/* Center engine — core */}
+                <motion.g
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={inView ? { scale: 1, opacity: 1 } : {}}
+                  transition={{ duration: 0.6, delay: 0.4, type: "spring" }}
+                  style={{ transformOrigin: `${CX}px ${CY}px` }}
+                >
+                  <circle cx={CX} cy={CY} r={32} fill="url(#engine)" />
+                  <text x={CX} y={CY - 4} textAnchor="middle" fill="rgba(255,255,255,0.65)"
+                        style={{ fontFamily: "var(--font-inter)", fontSize: 7, letterSpacing: "0.18em", fontWeight: 500 }}>
+                    ENGINE
+                  </text>
+                  <text x={CX} y={CY + 8} textAnchor="middle" fill="#fff"
+                        style={{ fontFamily: "var(--font-inter)", fontSize: 11, fontWeight: 900, letterSpacing: "-0.02em" }}>
+                    CAMBRA
+                  </text>
+                </motion.g>
 
-                return (
-                  <motion.div
-                    key={r.layer}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={inView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ duration: 0.5, delay: 0.6 + i * 0.1, type: "spring" }}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 z-10 group"
-                    style={positions[i]}
-                  >
-                    <div className="flex flex-col items-center gap-1.5">
-                      <div className="relative">
-                        <div className={`absolute inset-0 rounded-full ${r.dot} opacity-20 blur-md group-hover:opacity-40 transition-opacity`} />
-                        <div className="relative h-11 w-11 rounded-full bg-card border border-border/60 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:border-foreground/30 transition-all">
-                          <r.Icon className={`h-4 w-4 ${r.accent}`} strokeWidth={2} />
+                {/* Orbital nodes */}
+                {NODES.map((n, i) => {
+                  const labelBelow = n.y > CY - 20; // labels below circle except top
+                  const labelY = labelBelow ? n.y + 32 : n.y - 20;
+                  return (
+                    <motion.g
+                      key={n.layer}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={inView ? { opacity: 1, scale: 1 } : {}}
+                      transition={{ duration: 0.5, delay: 0.6 + i * 0.1, type: "spring" }}
+                      style={{ transformOrigin: `${n.x}px ${n.y}px` }}
+                    >
+                      {/* Soft glow under node */}
+                      <circle cx={n.x} cy={n.y} r={16} fill={n.stroke} opacity="0.15" style={{ filter: "blur(6px)" }} />
+
+                      {/* Ping ring */}
+                      <motion.circle
+                        cx={n.x} cy={n.y} r={14}
+                        fill="none" stroke={n.stroke} strokeWidth="1.5"
+                        animate={inView ? { r: [14, 22], opacity: [0.6, 0] } : {}}
+                        transition={{ duration: 2, repeat: Infinity, delay: i * 0.4, ease: "easeOut" }}
+                      />
+
+                      {/* Node circle */}
+                      <circle
+                        cx={n.x} cy={n.y} r={14}
+                        className="fill-card"
+                        stroke={n.stroke} strokeWidth="1.25"
+                      />
+
+                      {/* Icon — rendered via foreignObject so we keep lucide */}
+                      <foreignObject x={n.x - 8} y={n.y - 8} width="16" height="16">
+                        <div className={`w-4 h-4 ${n.accent} flex items-center justify-center`}>
+                          <n.Icon className="w-4 h-4" strokeWidth={2} />
                         </div>
-                        {/* Ping */}
-                        <motion.div
-                          className={`absolute inset-0 rounded-full border-2 ${r.dot.replace('bg-', 'border-')}`}
-                          animate={inView ? { scale: [1, 1.6], opacity: [0.6, 0] } : {}}
-                          transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
-                        />
-                      </div>
-                      <div className="text-center">
-                        <div className="text-[10px] font-bold text-foreground leading-none mb-0.5">{r.layer}</div>
-                        <div className={`text-[9px] font-mono tabular-nums ${r.accent} leading-none`}>{r.finding}</div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+                      </foreignObject>
+
+                      {/* Label */}
+                      <text
+                        x={n.x} y={labelY}
+                        textAnchor="middle"
+                        className="fill-foreground"
+                        style={{ fontFamily: "var(--font-inter)", fontSize: 9, fontWeight: 700 }}
+                      >
+                        {n.layer}
+                      </text>
+                      <text
+                        x={n.x} y={labelY + 10}
+                        textAnchor="middle"
+                        fill={n.stroke}
+                        style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: 8, fontWeight: 500 }}
+                      >
+                        {n.finding}
+                      </text>
+                    </motion.g>
+                  );
+                })}
+              </svg>
             </div>
 
             {/* Bottom — total recovery */}
             <div className="px-4 py-3 border-t border-border/40 bg-secondary/30 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] uppercase tracking-[0.2em] font-mono text-muted-foreground/50">
-                  Annual recovery
-                </span>
-              </div>
+              <span className="text-[9px] uppercase tracking-[0.2em] font-mono text-muted-foreground/50">
+                Annual recovery
+              </span>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-black tracking-tight text-saas-gradient tabular-nums leading-none">
                   ~€{(TOTAL / 1000).toFixed(1)}K
