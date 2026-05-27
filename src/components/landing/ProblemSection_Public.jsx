@@ -28,14 +28,14 @@ export default function ProblemSection_Public() {
             transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2rem,5vw,3.8rem)] font-black tracking-[-0.04em] leading-[0.92] mb-5"
           >
-            Operational inefficiency compounds faster than inflation.
+            Inefficiency compounds<br/>faster than inflation.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}}
             transition={{ delay: 0.2 }}
             className="text-lg text-muted-foreground/60 leading-relaxed"
           >
-            It's not one problem. It's eight invisible infrastructure layers — each silently eroding margin, compounding quarter after quarter, completely unbenchmarked.
+            Eight invisible layers. All eroding margin. None benchmarked.
           </motion.p>
         </div>
 
@@ -84,7 +84,7 @@ export default function ProblemSection_Public() {
           <div className="max-w-xl text-center md:text-left">
             <p className="text-[10px] uppercase tracking-[0.22em] opacity-30 mb-2">The CAMBRA finding</p>
             <p className="text-xl md:text-2xl font-bold leading-snug opacity-90">
-              Businesses audited by CAMBRA identify an average of <span className="font-black opacity-100">€29,000/year</span> in recoverable infrastructure margin.
+              Average audit finds <span className="font-black opacity-100">€29,000/year</span> in recoverable margin.
             </p>
           </div>
           <a

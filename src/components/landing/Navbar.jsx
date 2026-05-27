@@ -7,18 +7,19 @@ import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useAuth } from "@/lib/AuthContext";
 
 const NAV_PUBLIC = [
-  { label: "How it works", href: "#how-it-works" },
   { label: "Analyzer", href: "/Analyzer" },
+  { label: "How it works", href: "#how-it-works" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Join CAMBRA", href: "/Onboarding" },
+  { label: "Insights", href: "/Insights" },
 ];
 
 const NAV_MEMBER = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Analyzer", href: "/Analyzer" },
-  { label: "Insights", href: "/Insights" },
-  { label: "Network", href: "/Network" },
   { label: "Dashboard", href: "/Dashboard" },
+  { label: "Analyzer", href: "/Analyzer" },
+  { label: "Onboarding", href: "/Onboarding" },
+  { label: "Deals", href: "/Deals" },
+  { label: "Network", href: "/Network" },
+  { label: "Insights", href: "/Insights" },
 ];
 
 export default function Navbar() {
@@ -77,8 +78,8 @@ export default function Navbar() {
               </a>
               <Link to="/Analyzer">
                 <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm bg-foreground text-background hover:opacity-90">
-                                Explore platform
-                              </Button>
+                  Run audit
+                </Button>
               </Link>
             </>
           )}
@@ -109,15 +110,20 @@ export default function Navbar() {
             )
           ))}
           <div className="pt-4 flex flex-col gap-2">
-            <Link to="/Analyzer" onClick={() => setOpen(false)}>
-              <Button className="w-full h-12 rounded-full text-sm font-bold">Run the Analyzer</Button>
-            </Link>
             {isAuthenticated ? (
-              <Link to="/Dashboard" onClick={() => setOpen(false)}>
-                <Button variant="outline" className="w-full h-12 rounded-full text-sm">Dashboard</Button>
-              </Link>
+              <>
+                <Link to="/Dashboard" onClick={() => setOpen(false)}>
+                  <Button className="w-full h-12 rounded-full text-sm font-bold">Open dashboard</Button>
+                </Link>
+                <Link to="/Analyzer" onClick={() => setOpen(false)}>
+                  <Button variant="outline" className="w-full h-12 rounded-full text-sm">Run audit</Button>
+                </Link>
+              </>
             ) : (
               <>
+                <Link to="/Analyzer" onClick={() => setOpen(false)}>
+                  <Button className="w-full h-12 rounded-full text-sm font-bold">Run audit</Button>
+                </Link>
                 <a
                   href="/auth/start"
                   target="_blank"
@@ -125,11 +131,8 @@ export default function Navbar() {
                   onClick={() => setOpen(false)}
                   className="w-full h-12 rounded-full text-sm border border-border/70 hover:bg-secondary transition-colors font-medium flex items-center justify-center"
                 >
-                  Sign in with Google / Apple
+                  Sign in
                 </a>
-                <Link to="/Onboarding" onClick={() => setOpen(false)}>
-                  <Button variant="outline" className="w-full h-12 rounded-full text-sm">Join CAMBRA</Button>
-                </Link>
               </>
             )}
           </div>

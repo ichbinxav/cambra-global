@@ -76,7 +76,7 @@ export default function HeroSection_Public() {
 
             {/* Subheadline */}
             <motion.p variants={fadeUp} className="text-[clamp(1rem,2.2vw,1.35rem)] font-medium text-foreground/65 mb-8 max-w-[620px] mx-auto lg:mx-0 leading-[1.5] text-center lg:text-left">
-              CAMBRA audits the full operational infrastructure behind your business — payments, logistics, SaaS, banking, insurance, telecom, finance ops and HR systems — and surfaces every margin leak.
+              Audit your operational infrastructure across 8 verticals. Surface every margin leak.
             </motion.p>
 
             {/* CTAs */}

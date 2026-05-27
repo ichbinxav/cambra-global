@@ -33,14 +33,14 @@ export default function ValuePropositionSection() {
               transition={{ duration: 0.6 }}
               className="text-[clamp(2rem,4.5vw,3.4rem)] font-black tracking-[-0.04em] leading-[0.92] mb-5"
             >
-              Most businesses are leaking margin across 8 infrastructure layers — simultaneously, silently, and completely unbenchmarked.
+              8 infrastructure layers.<br/>All leaking margin.<br/>All unbenchmarked.
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.15 }}
               className="text-base text-muted-foreground/70 leading-relaxed mb-8 max-w-lg"
             >
-              The problem isn't a single overpayment. It's the silent accumulation of sub-optimal rates across payments, banking, logistics, SaaS, insurance, telecom, finance ops and HR infrastructure — compounding quarter after quarter.
+              Not one overpayment. The silent accumulation — compounding every quarter.
             </motion.p>
             <motion.a
               href="/Analyzer"

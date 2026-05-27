@@ -60,7 +60,7 @@ export default function AnalyzerCTA_Public() {
             transition={{ delay: 0.15 }}
             className="text-base text-muted-foreground/65 mb-7 max-w-xl leading-relaxed"
           >
-            Three audit methods — interactive flow, document upload, or direct integrations. CAMBRA benchmarks your payments, logistics, SaaS, banking and more against real operational data.
+            Interactive flow, document upload, or direct integrations. Benchmarked against real operational data.
           </motion.p>
 
           {/* Scanning animation */}

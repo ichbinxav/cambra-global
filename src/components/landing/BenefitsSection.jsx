@@ -86,14 +86,14 @@ export default function BenefitsSection() {
             transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.9] mb-4"
           >
-            The intelligence layer your business was missing.
+            The intelligence layer<br/>you were missing.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }} animate={headInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.25 }}
             className="text-base text-muted-foreground/60 leading-relaxed"
           >
-            Most businesses optimize marketing and product obsessively. Almost none audit the full operational infrastructure behind them — payments, banking, logistics, SaaS, insurance, telecom, finance ops, HR. CAMBRA fixes that.
+            Product and marketing get all the optimization. Infrastructure gets none. CAMBRA fixes that.
           </motion.p>
         </div>
 
@@ -107,7 +107,7 @@ export default function BenefitsSection() {
         <div className="py-14 border-y border-border/40 text-center">
           <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground/35 mb-5">The CAMBRA thesis</p>
           <h3 className="text-[clamp(1.8rem,4vw,3.2rem)] font-black tracking-[-0.04em] leading-[0.9] max-w-3xl mx-auto">
-            "Most businesses optimize product and marketing obsessively — while 8 layers of operational infrastructure silently erode their margin."
+            "Product and marketing get optimized obsessively. 8 layers of infrastructure quietly erode the margin."
           </h3>
         </div>
       </div>
