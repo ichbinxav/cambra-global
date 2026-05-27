@@ -97,7 +97,7 @@ export default function FooterSection() {
           >
             <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
             <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-background/60">
-              Margin recovery engine
+              Join Cambra to unlock savings
             </span>
           </motion.div>
 
