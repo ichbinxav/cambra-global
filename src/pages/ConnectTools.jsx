@@ -223,16 +223,16 @@ export default function ConnectTools() {
 
       <div className="relative flex-1 max-w-3xl mx-auto w-full px-5 pt-20 pb-12 space-y-6 mt-14">
 
-        {/* ── HERO — light, uniform ── */}
-        <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-white p-7 sm:p-10">
-          <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-border/60 bg-white">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-foreground opacity-30" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foreground" />
-            </span>
-            <Plug size={10} className="text-muted-foreground" />
-            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">{hero.eyebrow}</span>
-          </div>
+        {/* ── HERO — light blue gradient ── */}
+         <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-blue-50 to-cyan-50/40 p-7 sm:p-10">
+          <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-border/60 bg-white/60">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-foreground opacity-30" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foreground" />
+              </span>
+              <Plug size={10} className="text-muted-foreground" />
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">{hero.eyebrow}</span>
+            </div>
           <h1 className="font-display text-[clamp(2.2rem,5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.92] mb-3 text-foreground">
             {hero.title}
           </h1>
@@ -255,22 +255,22 @@ export default function ConnectTools() {
           </div>
         </div>
 
-        {/* Mode switcher — light, uniform */}
-        <div className="grid grid-cols-3 gap-3">
-          {MODES.map(m => {
-            const active = activeMode === m.id;
-            return (
-              <button
-                key={m.id}
-                onClick={() => setActiveMode(m.id)}
-                className={`group relative p-5 rounded-2xl border text-left transition-all duration-200 ${active ? "border-foreground bg-foreground text-background" : "border-border/60 bg-white hover:border-foreground/40 text-foreground hover:-translate-y-0.5"}`}
-              >
+        {/* Mode switcher — navy cards */}
+         <div className="grid grid-cols-3 gap-3">
+           {MODES.map(m => {
+             const active = activeMode === m.id;
+             return (
+               <button
+                 key={m.id}
+                 onClick={() => setActiveMode(m.id)}
+                 className={`group relative p-5 rounded-2xl border text-left transition-all duration-200 ${active ? "border-cambra-navy bg-cambra-navy text-white" : "border-cambra-navy/30 bg-cambra-navy/10 hover:border-cambra-navy/50 text-cambra-navy hover:-translate-y-0.5"}`}
+               >
                 <div className="relative">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${active ? "bg-background/10" : "bg-secondary"}`}>
-                    <m.icon size={16} className={active ? "text-background" : "text-muted-foreground"} />
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${active ? "bg-white/10" : "bg-white/20"}`}>
+                    <m.icon size={16} className={active ? "text-white" : "text-cambra-navy/70"} />
                   </div>
-                  <p className={`text-xs font-bold mb-0.5 ${active ? "text-background" : "text-foreground"}`}>{m.label}</p>
-                  <p className={`text-[10px] ${active ? "text-background/60" : "text-muted-foreground"}`}>{m.sub}</p>
+                  <p className={`text-xs font-bold mb-0.5 ${active ? "text-white" : "text-cambra-navy"}`}>{m.label}</p>
+                  <p className={`text-[10px] ${active ? "text-white/60" : "text-cambra-navy/60"}`}>{m.sub}</p>
                 </div>
               </button>
             );
