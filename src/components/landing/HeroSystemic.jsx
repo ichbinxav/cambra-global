@@ -67,7 +67,7 @@ export default function HeroSystemic() {
           style={{
             opacity: 1,
             backgroundImage:
-              "linear-gradient(hsl(0 0% 0% / 0.08) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 0% / 0.08) 1px, transparent 1px)",
+              "linear-gradient(hsl(0 0% 0% / 0.05) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 0% / 0.05) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
             WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 95%)",
             maskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 95%)",
