@@ -35,7 +35,7 @@ const STEPS = [
     title: "Unlock your savings",
     detail: "Move into stronger commercial conditions through CAMBRA's network — performance-based, no upfront fee.",
     points: ["Negotiated terms", "Recovery verification", "Aligned incentives"],
-    cta: { label: "Activate deals", href: "/Dashboard" },
+    cta: { label: "Unlock your savings", href: "/Dashboard" },
   },
 ];
 
