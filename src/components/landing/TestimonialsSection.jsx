@@ -48,16 +48,16 @@ export default function TestimonialsSection() {
   const t = TESTIMONIALS[idx];
 
   return (
-    <section ref={ref} className="py-16 md:py-20 px-5 border-t border-border/40 bg-background relative overflow-hidden">
+    <section ref={ref} className="py-10 md:py-12 px-5 border-t border-border/40 bg-background relative overflow-hidden">
       <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto relative">
         {/* Header */}
-        <div className="mb-12">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-3 font-mono">
+        <div className="mb-8">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-2 font-mono">
             Real findings
           </p>
-          <h2 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-black tracking-[-0.04em] leading-[0.95] text-foreground">
+          <h2 className="font-display text-[clamp(1.5rem,3.5vw,2.4rem)] font-black tracking-[-0.04em] leading-[0.95] text-foreground">
             What brands actually recovered.
           </h2>
         </div>
@@ -75,25 +75,25 @@ export default function TestimonialsSection() {
             >
               <div className="grid md:grid-cols-[1.4fr_1fr]">
                 {/* LEFT — Quote */}
-                <div className="p-8 md:p-10 lg:p-12">
+                <div className="p-6 md:p-7">
                   {/* Layer tag */}
-                  <p className="text-[10px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50 mb-6">
+                  <p className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50 mb-4">
                     {t.layer} optimization
                   </p>
 
                   {/* Quote text */}
-                  <blockquote className="text-lg md:text-xl lg:text-2xl font-medium leading-[1.4] tracking-tight text-foreground mb-10">
+                  <blockquote className="text-base md:text-lg font-medium leading-[1.35] tracking-tight text-foreground mb-6">
                     "{t.quote}"
                   </blockquote>
 
                   {/* Author */}
-                  <div className="flex items-center gap-3 pt-8 border-t border-border/30">
-                    <div className="h-10 w-10 rounded-full bg-foreground/10 flex items-center justify-center text-sm font-bold text-foreground/60 shrink-0">
+                  <div className="flex items-center gap-2.5 pt-5 border-t border-border/30">
+                    <div className="h-9 w-9 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-bold text-foreground/60 shrink-0">
                       {t.initials}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">{t.role}</p>
-                      <p className="text-xs text-muted-foreground/50 font-mono">
+                      <p className="text-xs font-semibold text-foreground">{t.role}</p>
+                      <p className="text-[10px] text-muted-foreground/50 font-mono">
                         {t.company}
                       </p>
                     </div>
@@ -101,31 +101,31 @@ export default function TestimonialsSection() {
                 </div>
 
                 {/* RIGHT — Impact metrics */}
-                <div className="p-8 md:p-10 lg:p-12 bg-secondary/40 border-l border-border/40 flex flex-col justify-between">
+                <div className="p-6 md:p-7 bg-secondary/40 border-l border-border/40 flex flex-col justify-between">
                   {/* Before / After */}
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50 mb-5">
+                    <p className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50 mb-3">
                       The change
                     </p>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <div>
-                        <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground/40 mb-1">Before</p>
-                        <p className="text-base font-medium text-foreground/50 line-through decoration-1">{t.before}</p>
+                        <p className="text-[8px] uppercase tracking-widest font-mono text-muted-foreground/40 mb-0.5">Before</p>
+                        <p className="text-sm font-medium text-foreground/50 line-through decoration-1">{t.before}</p>
                       </div>
                       <div>
-                        <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground/40 mb-1">After</p>
-                        <p className="text-xl font-black text-foreground">{t.after}</p>
+                        <p className="text-[8px] uppercase tracking-widest font-mono text-muted-foreground/40 mb-0.5">After</p>
+                        <p className="text-lg font-black text-foreground">{t.after}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Recovery amount */}
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50 mb-3">
+                    <p className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50 mb-2">
                       Recovery / year
                     </p>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-4xl md:text-5xl font-black tracking-tighter text-saas-gradient tabular-nums">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl md:text-4xl font-black tracking-tighter text-saas-gradient tabular-nums">
                         €{(t.recovery / 1000).toFixed(t.recovery % 1000 === 0 ? 0 : 1)}K
                       </span>
                     </div>
@@ -136,7 +136,7 @@ export default function TestimonialsSection() {
           </AnimatePresence>
 
           {/* Nav */}
-          <div className="flex items-center justify-between mt-8">
+          <div className="flex items-center justify-between mt-6">
             <div className="flex items-center gap-2">
               {TESTIMONIALS.map((_, i) => (
                 <button
