@@ -19,23 +19,6 @@ const PLANS = [
     ctaHref: "/Analyzer",
     variant: "outline",
   },
-  {
-    name: "Premium",
-    price: "Custom",
-    desc: "For brands ready to activate deals",
-    features: [
-      "Everything in Free Audit",
-      "Deal negotiation support",
-      "Network access & volume pricing",
-      "Implementation tracking",
-      "Dedicated account manager",
-      "Monthly optimization reports",
-    ],
-    cta: "Get Started",
-    ctaHref: "/Onboarding",
-    variant: "default",
-    highlight: true,
-  },
 ];
 
 export default function Pricing() {
@@ -67,7 +50,7 @@ export default function Pricing() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 gap-6 max-w-sm mx-auto">
             {PLANS.map((plan, i) => (
               <div
                 key={i}
