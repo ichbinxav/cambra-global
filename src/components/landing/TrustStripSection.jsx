@@ -101,38 +101,37 @@ export default function TrustStripSection() {
           ))}
         </motion.div>
 
-        {/* Pillars — premium cards */}
+        {/* Pillars — navy cambra cards, vertical stack */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ duration: 0.7, delay: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 pt-12 border-t border-border/40"
+          className="space-y-3 pt-10"
         >
           {PILLARS.map((p, i) => (
             <motion.div
               key={p.eyebrow}
-              initial={{ opacity: 0, y: 16 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.55 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative rounded-2xl border border-border/50 bg-gradient-to-br from-card/80 via-card/70 to-card/60 backdrop-blur-md p-6 sm:p-7 hover:border-border/80 hover:shadow-lg transition-all duration-300 overflow-hidden"
+              initial={{ opacity: 0, x: -16 }}
+              animate={inView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.55 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className="cambra-card p-5 sm:p-6 hover:shadow-lg transition-shadow duration-300"
             >
-              {/* Hover glow */}
-              <div className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: "radial-gradient(circle at top right, rgba(44,167,193,0.15), transparent)" }} />
-              
-              <div className="relative z-1 flex items-center gap-3 mb-5">
-                <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-gradient-to-br from-secondary/80 to-secondary/60 border border-border/50 group-hover:from-secondary group-hover:to-secondary/70 transition-colors">
-                  <p.Icon className="h-4.5 w-4.5 text-cambra-blue" strokeWidth={2} />
+              <div className="flex items-start gap-4">
+                <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-white/[0.08] border border-white/15 flex-shrink-0 mt-0.5">
+                  <p.Icon className="h-4.5 w-4.5 text-cambra-cyan" strokeWidth={2} />
                 </div>
-                <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground/70 group-hover:text-muted-foreground transition-colors">
-                  {p.eyebrow}
-                </span>
+                <div className="min-w-0">
+                  <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/50 cc-eyebrow block mb-2">
+                    {p.eyebrow}
+                  </span>
+                  <h3 className="font-display text-lg sm:text-xl font-black tracking-[-0.025em] mb-1.5 text-white">
+                    {p.title}
+                  </h3>
+                  <p className="text-[13px] text-white/65 leading-[1.55]">
+                    {p.detail}
+                  </p>
+                </div>
               </div>
-              <h3 className="relative z-1 font-display text-xl font-black tracking-[-0.025em] mb-2 group-hover:text-foreground transition-colors">
-                {p.title}
-              </h3>
-              <p className="relative z-1 text-[13px] text-foreground/65 group-hover:text-foreground/75 leading-[1.6] transition-colors">
-                {p.detail}
-              </p>
             </motion.div>
           ))}
         </motion.div>
