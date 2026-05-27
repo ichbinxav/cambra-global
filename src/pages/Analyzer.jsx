@@ -790,13 +790,23 @@ export default function Analyzer() {
   const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background font-inter">
+    <div className="relative min-h-screen flex flex-col bg-background font-inter overflow-hidden">
       <Navbar />
-      <div className="fixed top-14 left-0 right-0 z-50 h-[3px] bg-border/30">
-        <div className="h-full bg-foreground transition-all duration-500" style={{ width: `${progress}%` }} />
+
+      {/* Ambient background */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 dot-grid opacity-40" />
+        <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.15]" />
+        <div className="absolute top-1/2 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.12]" />
       </div>
 
-      <div className="sticky top-14 z-40 flex items-center justify-between px-5 py-4 border-b border-border/40 bg-background/98 backdrop-blur-xl">
+      {/* Gradient progress bar */}
+      <div className="fixed top-14 left-0 right-0 z-50 h-[3px] bg-border/30">
+        <div className="h-full transition-all duration-500"
+             style={{ width: `${progress}%`, background: "linear-gradient(90deg, #1F4ED8 0%, #2CA7C1 100%)", boxShadow: "0 0 12px rgba(44,167,193,0.6)" }} />
+      </div>
+
+      <div className="sticky top-14 z-40 flex items-center justify-between px-5 py-4 border-b border-border/40 bg-background/95 backdrop-blur-xl">
         <span className="text-sm font-black tracking-tight">CAMBRA</span>
         <div className="flex items-center gap-3">
           <span className="text-xs text-muted-foreground/50 hidden sm:block">~2 minutes</span>
@@ -804,7 +814,20 @@ export default function Analyzer() {
             {STEPS.map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 rounded-full transition-all ${i === step ? "w-6 bg-foreground" : i < step ? "w-1.5 bg-foreground/50" : "w-1.5 bg-border"}`}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === step
+                    ? "w-6"
+                    : i < step
+                    ? "w-1.5"
+                    : "w-1.5 bg-border"
+                }`}
+                style={
+                  i === step
+                    ? { background: "linear-gradient(90deg, #1F4ED8, #2CA7C1)", boxShadow: "0 0 8px rgba(44,167,193,0.5)" }
+                    : i < step
+                    ? { background: "#2CA7C1", opacity: 0.6 }
+                    : {}
+                }
               />
             ))}
           </div>
@@ -812,18 +835,38 @@ export default function Analyzer() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="relative flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-5 py-8 pb-36">
-          {/* Premium step header with gradient number */}
-          <div className="mb-10 relative rounded-2xl overflow-hidden p-6 sm:p-8 bg-gradient-to-br from-card/80 to-secondary/40 border border-border/60 backdrop-blur-sm">
-            <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-30"
-                 style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.25), transparent)" }} />
-            <div className="relative">
-              <div className="mb-4">
+          {/* Premium DARK step header — landing-grade */}
+          <div className="mb-10 relative rounded-3xl overflow-hidden border border-white/10 bg-[#06080F] text-white shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6)]">
+            {/* Ambient layers */}
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-40 -left-32 w-[28rem] h-[28rem] rounded-full blur-3xl"
+                   style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.5), transparent 60%)" }} />
+              <div className="absolute -bottom-32 -right-20 w-[24rem] h-[24rem] rounded-full blur-3xl"
+                   style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.4), transparent 60%)" }} />
+              <div className="absolute inset-0 opacity-[0.08]"
+                   style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "44px 44px" }} />
+              <div className="absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)" }} />
+            </div>
+
+            <div className="relative p-6 sm:p-8">
+              <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+                </span>
+                <StepIcon size={10} className="text-white/60" />
+                <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">
+                  Step {step + 1} of {STEPS.length}
+                </span>
+              </div>
+
+              <div className="mb-3">
                 <div
-                  className="font-display text-[5rem] sm:text-[6rem] font-black leading-[0.85] tracking-[-0.05em] tabular-nums select-none"
+                  className="font-display text-[5rem] sm:text-[6.5rem] font-black leading-[0.82] tracking-[-0.06em] tabular-nums select-none"
                   style={{
-                    background: "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%)",
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.15) 100%)",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",
@@ -832,15 +875,13 @@ export default function Analyzer() {
                   {String(step + 1).padStart(2, "0")}
                 </div>
               </div>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h2 className="text-xl sm:text-2xl font-black tracking-tight mb-2">{STEPS[step].title}</h2>
-                  <p className="text-sm text-muted-foreground/75">{STEPS[step].sub}</p>
-                </div>
-                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0 ml-4">
-                  <StepIcon size={16} className="text-muted-foreground/50" />
-                </div>
-              </div>
+
+              <h2 className="font-display text-2xl sm:text-3xl font-black tracking-[-0.03em] leading-[1] mb-3">
+                <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 60%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  {STEPS[step].title}
+                </span>
+              </h2>
+              <p className="text-sm text-white/60 leading-relaxed">{STEPS[step].sub}</p>
             </div>
           </div>
 
@@ -848,7 +889,7 @@ export default function Analyzer() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-4 border-t border-border/40 bg-background/98 backdrop-blur-xl">
+      <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-4 border-t border-border/40 bg-background/95 backdrop-blur-xl">
         <Button
           variant="ghost"
           onClick={() => {
@@ -869,7 +910,7 @@ export default function Analyzer() {
           <Button
             onClick={() => setStep(s => s + 1)}
             disabled={!canContinue()}
-            className="h-12 rounded-full px-6 sm:px-8 text-sm font-bold shadow-sm gap-2"
+            className="h-12 rounded-full px-6 sm:px-8 text-sm font-bold gap-2 bg-saas-gradient text-white hover:opacity-90 shadow-[0_0_24px_rgba(44,167,193,0.35)]"
           >
             Continue
             <ArrowRight className="h-4 w-4" />
@@ -878,11 +919,11 @@ export default function Analyzer() {
           <Button
             onClick={run}
             disabled={loading}
-            className="h-12 rounded-full px-8 text-sm font-bold shadow-sm gap-2"
+            className="h-12 rounded-full px-8 text-sm font-bold gap-2 bg-saas-gradient text-white hover:opacity-90 shadow-[0_0_32px_rgba(44,167,193,0.45)]"
           >
             {loading ? (
               <>
-                <div className="w-4 h-4 rounded-full border-2 border-background/30 border-t-background animate-spin" />
+                <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
                 Analyzing...
               </>
             ) : (
@@ -893,4 +934,4 @@ export default function Analyzer() {
       </div>
     </div>
   );
-}
+  }
