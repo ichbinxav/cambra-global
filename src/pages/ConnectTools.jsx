@@ -77,39 +77,33 @@ function UploadZone({ onUpload, uploadedFiles, onRemove }) {
   return (
     <div className="space-y-3">
       <div
-        className="group relative border-2 border-dashed border-white/[0.1] rounded-2xl p-10 text-center hover:border-white/25 bg-[#0b0d14] transition-all cursor-pointer overflow-hidden"
+        className="group relative border-2 border-dashed border-border rounded-2xl p-10 text-center hover:border-foreground/40 bg-white transition-all cursor-pointer"
         onClick={() => ref.current?.click()}
         onDragOver={e => e.preventDefault()}
         onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handle(f); }}
       >
-        {/* Ambient glow */}
-        <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full blur-3xl opacity-30 group-hover:opacity-60 transition-opacity duration-300" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.5), transparent)" }} />
-        <div className="pointer-events-none absolute -bottom-16 right-0 w-56 h-56 rounded-full blur-3xl opacity-25 group-hover:opacity-50 transition-opacity duration-300" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.4), transparent)" }} />
-
         {uploading ? (
-          <div className="relative space-y-3">
-            <div className="w-9 h-9 rounded-full border-2 border-white/20 border-t-white animate-spin mx-auto" />
-            <p className="text-sm text-white/60">Uploading...</p>
-            <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden max-w-[200px] mx-auto">
-              <div className="h-full transition-all duration-200 rounded-full" style={{ width: `${progress}%`, background: "linear-gradient(90deg, #1F4ED8, #2CA7C1)" }} />
+          <div className="space-y-3">
+            <div className="w-9 h-9 rounded-full border-2 border-border border-t-foreground animate-spin mx-auto" />
+            <p className="text-sm text-muted-foreground">Uploading...</p>
+            <div className="h-1.5 rounded-full bg-secondary overflow-hidden max-w-[200px] mx-auto">
+              <div className="h-full bg-foreground transition-all duration-200 rounded-full" style={{ width: `${progress}%` }} />
             </div>
           </div>
         ) : (
-          <div className="relative space-y-4">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-[0_0_32px_rgba(44,167,193,0.3)]"
-                 style={{ background: "linear-gradient(135deg, rgba(31,78,216,0.25), rgba(44,167,193,0.25))", border: "1px solid rgba(44,167,193,0.35)" }}>
-              <Upload size={24} className="text-white/80" />
+          <div className="space-y-4">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto bg-secondary border border-border/60">
+              <Upload size={24} className="text-foreground" />
             </div>
             <div>
-              <p className="text-base font-black mb-1.5 tracking-tight"
-                 style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              <p className="text-base font-black mb-1.5 tracking-tight text-foreground">
                 Drop your files here, or click to upload
               </p>
-              <p className="text-[11px] text-white/35">PDF, Excel, CSV, images · Max 20MB</p>
+              <p className="text-[11px] text-muted-foreground">PDF, Excel, CSV, images · Max 20MB</p>
             </div>
             <div className="flex flex-wrap justify-center gap-1.5 mt-3">
               {["Stripe statement", "Shopify export", "Carrier invoice", "SaaS billing"].map(t => (
-                <span key={t} className="text-[10px] px-2.5 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] text-white/40">{t}</span>
+                <span key={t} className="text-[10px] px-2.5 py-1 rounded-full border border-border/60 bg-white text-muted-foreground">{t}</span>
               ))}
             </div>
           </div>
@@ -120,17 +114,17 @@ function UploadZone({ onUpload, uploadedFiles, onRemove }) {
       {uploadedFiles.length > 0 && (
         <div className="space-y-2">
           {uploadedFiles.map((f, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.04]">
-              <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
-              <span className="text-sm flex-1 truncate font-medium text-white/85">
+            <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border/60 bg-white">
+              <CheckCircle2 size={14} className="text-foreground shrink-0" />
+              <span className="text-sm flex-1 truncate font-medium text-foreground">
                 {f.name}
                 {f.analysis?.detected && (
-                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full border border-white/[0.08] bg-white/[0.04] text-white/50">
+                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full border border-border/60 bg-secondary text-muted-foreground">
                     Procesado: {f.analysis.detected}
                   </span>
                 )}
               </span>
-              <button onClick={() => onRemove(i)} className="text-white/25 hover:text-white/60 transition-colors">
+              <button onClick={() => onRemove(i)} className="text-muted-foreground hover:text-foreground transition-colors">
                 <X size={13} />
               </button>
             </div>
@@ -318,15 +312,15 @@ export default function ConnectTools() {
               />
             </div>
 
-            {/* Search + filters — dark theme */}
+            {/* Search + filters — light theme */}
             <div className="flex gap-2 flex-col sm:flex-row">
               <div className="relative flex-1">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/25" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder="Search integrations..."
-                  className="pl-9 h-11 text-sm bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-white/20"
+                  className="pl-9 h-11 text-sm bg-white border-border/60"
                 />
               </div>
               <div className="flex gap-1.5 flex-wrap">
@@ -334,7 +328,7 @@ export default function ConnectTools() {
                   <button
                     key={c}
                     onClick={() => setCat(c)}
-                    className={`h-11 px-3.5 rounded-xl border text-xs font-medium transition-all whitespace-nowrap ${cat === c ? "border-white/30 bg-white text-black" : "border-white/[0.08] text-white/40 hover:border-white/20 hover:text-white/70"}`}
+                    className={`h-11 px-3.5 rounded-xl border text-xs font-medium transition-all whitespace-nowrap ${cat === c ? "border-foreground bg-foreground text-background" : "border-border/60 bg-white text-muted-foreground hover:border-foreground/40 hover:text-foreground"}`}
                   >
                     {c}
                   </button>
@@ -344,12 +338,12 @@ export default function ConnectTools() {
 
             {/* Connected summary */}
             {connectedTools.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                <span className="text-[11px] text-white/35 font-medium">Connected:</span>
+              <div className="flex items-center gap-2 flex-wrap p-3 rounded-xl bg-secondary border border-border/60">
+                <span className="text-[11px] text-muted-foreground font-medium">Connected:</span>
                 {connectedTools.map(t => (
-                  <span key={t} className="flex items-center gap-1 text-[11px] bg-white/[0.06] border border-white/[0.1] rounded-full px-2.5 py-1 font-semibold text-white/80">
+                  <span key={t} className="flex items-center gap-1 text-[11px] bg-white border border-border/60 rounded-full px-2.5 py-1 font-semibold text-foreground">
                     {t}
-                    <button onClick={() => toggleConnect(t)} className="text-white/20 hover:text-white/50 ml-0.5">
+                    <button onClick={() => toggleConnect(t)} className="text-muted-foreground hover:text-foreground ml-0.5">
                       <X size={10} />
                     </button>
                   </span>
@@ -372,36 +366,36 @@ export default function ConnectTools() {
               {!showCustom ? (
                 <button
                   onClick={() => setShowCustom(true)}
-                  className="w-full flex items-center gap-4 p-4 rounded-2xl border border-dashed border-white/[0.1] hover:border-white/25 bg-white/[0.02] transition-all text-left group"
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl border border-dashed border-border hover:border-foreground/40 bg-white transition-all text-left group"
                 >
-                  <div className="w-11 h-11 rounded-xl border-2 border-dashed border-white/15 flex items-center justify-center shrink-0 group-hover:border-white/30 transition-colors">
-                    <span className="text-white/30 text-xl leading-none group-hover:text-white/60 transition-colors">+</span>
+                  <div className="w-11 h-11 rounded-xl border-2 border-dashed border-border flex items-center justify-center shrink-0 group-hover:border-foreground/40 transition-colors">
+                    <span className="text-muted-foreground text-xl leading-none group-hover:text-foreground transition-colors">+</span>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white/60">Connect another tool</p>
-                    <p className="text-[11px] text-white/30">Request integration or upload files</p>
+                    <p className="text-sm font-semibold text-foreground">Connect another tool</p>
+                    <p className="text-[11px] text-muted-foreground">Request integration or upload files</p>
                   </div>
-                  <ChevronRight size={14} className="text-white/20 ml-auto shrink-0 group-hover:text-white/50 transition-colors" />
+                  <ChevronRight size={14} className="text-muted-foreground ml-auto shrink-0 group-hover:text-foreground transition-colors" />
                 </button>
               ) : (
-                <div className="p-4 rounded-2xl border border-white/[0.08] bg-[#0b0d14] space-y-3">
-                  <p className="text-sm font-semibold text-white/90">Which tool do you use?</p>
+                <div className="p-4 rounded-2xl border border-border/60 bg-white space-y-3">
+                  <p className="text-sm font-semibold text-foreground">Which tool do you use?</p>
                   <Input
                     value={customTool}
                     onChange={e => setCustomTool(e.target.value)}
                     placeholder="Search or enter your provider name"
-                    className="h-11 text-sm bg-white/[0.04] border-white/[0.08] text-white placeholder:text-white/25 focus-visible:ring-white/20"
+                    className="h-11 text-sm bg-white border-border/60"
                     autoFocus
                   />
-                  <p className="text-[11px] text-white/30">We'll add it to our roadmap. In the meantime, use the upload option below.</p>
+                  <p className="text-[11px] text-muted-foreground">We'll add it to our roadmap. In the meantime, use the upload option below.</p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setActiveMode('upload')}
-                      className="h-9 px-4 rounded-full border border-white/15 text-xs font-medium text-white/60 hover:text-white hover:border-white/30 transition-colors flex items-center gap-1.5"
+                      className="h-9 px-4 rounded-full border border-border/60 text-xs font-medium text-foreground hover:border-foreground/40 transition-colors flex items-center gap-1.5"
                     >
                       <Upload size={12} /> Upload files instead
                     </button>
-                    <button onClick={() => setShowCustom(false)} className="h-9 px-4 rounded-full text-xs text-white/40 hover:text-white/70 transition-colors">
+                    <button onClick={() => setShowCustom(false)} className="h-9 px-4 rounded-full text-xs text-muted-foreground hover:text-foreground transition-colors">
                       Cancel
                     </button>
                   </div>
@@ -419,23 +413,22 @@ export default function ConnectTools() {
               uploadedFiles={uploadedFiles}
               onRemove={removeFile}
             />
-            <div className="relative p-5 rounded-2xl bg-[#0b0d14] border border-white/[0.08] overflow-hidden">
-              <div className="pointer-events-none absolute -top-16 -right-12 w-40 h-40 rounded-full blur-3xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.3), transparent 60%)" }} />
-              <p className="relative text-xs font-bold mb-3 text-white/80 tracking-wide uppercase text-[10px]">What we extract from your files</p>
-              <div className="relative grid grid-cols-2 gap-y-2 gap-x-4">
+            <div className="relative p-5 rounded-2xl bg-white border border-border/60">
+              <p className="text-xs font-bold mb-3 text-foreground tracking-wide uppercase text-[10px]">What we extract from your files</p>
+              <div className="grid grid-cols-2 gap-y-2 gap-x-4">
                 {[
                   "Payment effective rates", "Monthly fee volumes",
                   "Carrier cost-per-shipment", "SaaS subscription totals",
                   "Provider names & plans", "Hidden fee patterns",
                 ].map(item => (
-                  <div key={item} className="flex items-center gap-2 text-[11px] text-white/55">
-                    <span className="w-1 h-1 rounded-full bg-cambra-mint shrink-0" />
+                  <div key={item} className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="w-1 h-1 rounded-full bg-foreground shrink-0" />
                     {item}
                   </div>
                 ))}
               </div>
             </div>
-            <div className="flex items-center justify-center gap-4 text-[10px] text-white/30">
+            <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground">
               <span>🔒 Encrypted</span>
               <span>👁 Read-only access</span>
               <span>🚫 Never shared</span>
@@ -444,77 +437,69 @@ export default function ConnectTools() {
             {/* Upsell to Connect for higher accuracy */}
             <button
               onClick={() => setActiveMode('connect')}
-              className="w-full group relative overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-[#0A1024] via-[#1F4ED8]/30 to-[#2CA7C1]/30 p-5 flex items-center gap-4 text-left transition-all hover:border-white/30 hover:shadow-[0_18px_48px_-16px_rgba(31,78,216,0.4)]"
+              className="w-full group relative rounded-2xl border border-border/60 bg-white p-5 flex items-center gap-4 text-left transition-all hover:border-foreground/40"
             >
-              <div className="pointer-events-none absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.4), transparent 60%)" }} />
-              <div className="relative w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, rgba(31,78,216,0.4), rgba(44,167,193,0.4))", border: "1px solid rgba(255,255,255,0.15)" }}>
-                <Plug size={18} className="text-white" />
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-secondary border border-border/60">
+                <Plug size={18} className="text-foreground" />
               </div>
-              <div className="relative flex-1">
-                <p className="text-sm font-bold text-white mb-0.5">Boost accuracy to <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>99%</span></p>
-                <p className="text-[11px] text-white/55">Connect your tools for live rates and volumes — no manual work.</p>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-foreground mb-0.5">Boost accuracy to 99%</p>
+                <p className="text-[11px] text-muted-foreground">Connect your tools for live rates and volumes — no manual work.</p>
               </div>
-              <ArrowRight size={16} className="relative text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              <ArrowRight size={16} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
             </button>
           </div>
         )}
 
-        {/* MODE: Manual — dark theme */}
+        {/* MODE: Manual — light theme */}
         {activeMode === "manual" && (
           <div className="space-y-4">
-            <div className="relative p-8 rounded-2xl border border-white/[0.08] bg-[#0b0d14] text-center space-y-4 overflow-hidden">
-              <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-3xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.3), transparent 60%)" }} />
-              <div className="pointer-events-none absolute -bottom-16 right-0 w-48 h-48 rounded-full blur-3xl opacity-30" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.35), transparent 60%)" }} />
-              <div className="relative">
-                <div className="text-5xl select-none mb-3"
-                     style={{ background: "linear-gradient(135deg, #ffffff 0%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>✱</div>
-                <p className="font-display font-black text-2xl mb-2 tracking-[-0.03em]"
-                   style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                  Use the structured Analyzer
-                </p>
-                <p className="text-sm text-white/50 max-w-xs mx-auto leading-relaxed mb-5">
-                  The Analyzer guides you through structured inputs for revenue, payments, shipping, and SaaS — step by step.
-                </p>
-                <Link to="/Analyzer">
-                  <Button className="h-11 rounded-full px-7 text-sm font-bold gap-2 bg-saas-gradient text-white hover:opacity-90 shadow-[0_0_32px_rgba(44,167,193,0.45)]">
-                    Open Analyzer <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
+            <div className="p-8 rounded-2xl border border-border/60 bg-white text-center space-y-4">
+              <div className="text-5xl select-none mb-3 text-foreground">✱</div>
+              <p className="font-display font-black text-2xl mb-2 tracking-[-0.03em] text-foreground">
+                Use the structured Analyzer
+              </p>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed mb-5">
+                The Analyzer guides you through structured inputs for revenue, payments, shipping, and SaaS — step by step.
+              </p>
+              <Link to="/Analyzer">
+                <Button className="h-11 rounded-full px-7 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90">
+                  Open Analyzer <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
             </div>
-            <p className="text-center text-[11px] text-white/30">
+            <p className="text-center text-[11px] text-muted-foreground">
               Manual inputs will be marked as estimated — you can connect tools later from your dashboard to refine your analysis.
             </p>
 
             {/* Upsell to Connect for higher accuracy */}
             <button
               onClick={() => setActiveMode('connect')}
-              className="w-full group relative overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-[#0A1024] via-[#1F4ED8]/30 to-[#2CA7C1]/30 p-5 flex items-center gap-4 text-left transition-all hover:border-white/30 hover:shadow-[0_18px_48px_-16px_rgba(31,78,216,0.4)]"
+              className="w-full group relative rounded-2xl border border-border/60 bg-white p-5 flex items-center gap-4 text-left transition-all hover:border-foreground/40"
             >
-              <div className="pointer-events-none absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.4), transparent 60%)" }} />
-              <div className="relative w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, rgba(31,78,216,0.4), rgba(44,167,193,0.4))", border: "1px solid rgba(255,255,255,0.15)" }}>
-                <Plug size={18} className="text-white" />
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-secondary border border-border/60">
+                <Plug size={18} className="text-foreground" />
               </div>
-              <div className="relative flex-1">
-                <p className="text-sm font-bold text-white mb-0.5">Connect tools for <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>99% accuracy</span></p>
-                <p className="text-[11px] text-white/55">Skip the typing — we pull real rates and volumes automatically.</p>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-foreground mb-0.5">Connect tools for 99% accuracy</p>
+                <p className="text-[11px] text-muted-foreground">Skip the typing — we pull real rates and volumes automatically.</p>
               </div>
-              <ArrowRight size={16} className="relative text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              <ArrowRight size={16} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
             </button>
           </div>
         )}
 
-        {/* Footer CTA — dark theme */}
+        {/* Footer CTA — light theme */}
         {(activeMode === "connect" || activeMode === "upload") && (
-          <div className="flex items-center justify-between pt-5 border-t border-white/[0.06]">
-            <p className="text-xs text-white/35">
+          <div className="flex items-center justify-between pt-5 border-t border-border/60">
+            <p className="text-xs text-muted-foreground">
               {connectedTools.length > 0 || uploadedFiles.length > 0
                 ? `${connectedTools.length + uploadedFiles.length} source${connectedTools.length + uploadedFiles.length > 1 ? "s" : ""} added`
                 : "No sources connected yet"}
             </p>
             <Button
               onClick={() => navigate("/Analyzer")}
-              className={`h-10 rounded-full px-7 text-sm font-bold gap-2 ${hasData ? "bg-saas-gradient text-white hover:opacity-90 shadow-[0_0_32px_rgba(44,167,193,0.45)]" : "border border-white/15 bg-white/[0.04] text-white/60 hover:text-white hover:border-white/30"}`}
+              className={`h-10 rounded-full px-7 text-sm font-bold gap-2 ${hasData ? "bg-foreground text-background hover:opacity-90" : "border border-border/60 bg-white text-foreground hover:border-foreground/40"}`}
             >
               {hasData ? "Run Analysis" : "Skip — enter manually"}
               <ArrowRight className="h-4 w-4" />

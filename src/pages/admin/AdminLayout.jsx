@@ -80,25 +80,19 @@ export default function AdminLayout() {
   const isActive = (path, exact) => exact ? location.pathname === path : location.pathname.startsWith(path);
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-[70] w-56 bg-foreground text-background flex flex-col transition-transform duration-200 overflow-hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
-        {/* Ambient inner glows */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-24 -left-16 w-72 h-72 rounded-full blur-3xl opacity-60" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.55), transparent 60%)" }} />
-          <div className="absolute -bottom-32 -right-12 w-72 h-72 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.50), transparent 60%)" }} />
-          <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
-        </div>
-        <div className="relative px-5 py-5 border-b border-background/10">
+    <div className="min-h-screen bg-white flex">
+      {/* Sidebar — light, uniform */}
+      <aside className={`fixed inset-y-0 left-0 z-[70] w-56 bg-white border-r border-border/60 flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
+        <div className="px-5 py-5 border-b border-border/60">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-black tracking-tight" style={{ background: "linear-gradient(135deg, #fff 0%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>CAMBRA</p>
-              <p className="text-[10px] text-background/40 mt-0.5 tracking-[0.18em] uppercase">Admin · Live</p>
+              <p className="text-sm font-black tracking-tight text-foreground">CAMBRA</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tracking-[0.18em] uppercase">Admin · Live</p>
             </div>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setSidebarOpen(false); }}
-              className="lg:hidden text-background/40 hover:text-background p-1.5 rounded-lg hover:bg-background/10 transition-colors"
+              className="lg:hidden text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors"
               style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
               <X size={18} />
@@ -106,7 +100,7 @@ export default function AdminLayout() {
           </div>
         </div>
 
-        <nav className="relative flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {NAV.map(item => {
             const active = isActive(item.path, item.exact);
             return (
@@ -114,15 +108,12 @@ export default function AdminLayout() {
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                className={`relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all overflow-hidden ${
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                   active
-                    ? "bg-background/[0.08] text-background shadow-[0_1px_0_rgba(255,255,255,0.08)_inset]"
-                    : "text-background/45 hover:text-background hover:bg-background/[0.04]"
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
               >
-                {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-r" style={{ background: "linear-gradient(180deg, #1F4ED8, #2CA7C1)", boxShadow: "0 0 10px rgba(44,167,193,0.7)" }} />
-                )}
                 <item.icon size={13} />
                 {item.label}
               </Link>
@@ -130,20 +121,20 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        <div className="relative px-3 py-4 border-t border-background/10">
+        <div className="px-3 py-4 border-t border-border/60">
           {user && (
             <div className="px-3 py-2 mb-2">
-              <p className="text-[11px] font-semibold text-background/70 truncate">{user.full_name}</p>
-              <p className="text-[10px] text-background/30 truncate">{user.email}</p>
+              <p className="text-[11px] font-semibold text-foreground truncate">{user.full_name}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
             </div>
           )}
           <button
             onClick={() => base44.auth.logout("/Landing")}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-background/40 hover:text-background hover:bg-background/5 transition-all"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
           >
             <LogOut size={13} /> Sign out
           </button>
-          <Link to="/Dashboard" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-background/40 hover:text-background hover:bg-background/5 transition-all">
+          <Link to="/Dashboard" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
             <ChevronRight size={13} /> Back to app
           </Link>
         </div>
@@ -152,50 +143,39 @@ export default function AdminLayout() {
       {/* Overlay */}
       {sidebarOpen && <div className="fixed inset-0 z-[60] bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Main */}
-      <div className="flex-1 lg:ml-56 min-h-screen flex flex-col" style={{ background: "#06080F" }}>
-        {/* Top bar — dark */}
-        <header className="sticky top-0 z-20 h-12 bg-[#06080F]/80 backdrop-blur-xl border-b border-white/10 flex items-center px-5 gap-3">
+      {/* Main — light */}
+      <div className="flex-1 lg:ml-56 min-h-screen flex flex-col bg-white">
+        {/* Top bar — light */}
+        <header className="sticky top-0 z-20 h-12 bg-white/95 backdrop-blur-xl border-b border-border/60 flex items-center px-5 gap-3">
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setSidebarOpen(true); }}
-            className="lg:hidden text-white/70 hover:text-white p-2 -ml-2 rounded-lg hover:bg-white/10 active:bg-white/10 transition-colors cursor-pointer"
+            className="lg:hidden text-muted-foreground hover:text-foreground p-2 -ml-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
             style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
           >
             <Menu size={20} />
           </button>
-          <div className="text-xs text-white/40 flex items-center gap-1.5">
+          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
             {location.pathname.split("/").filter(Boolean).map((seg, i, arr) => (
               <span key={i} className="flex items-center gap-1.5">
                 {i > 0 && <ChevronRight size={10} />}
-                <span className={i === arr.length - 1 ? "text-white font-semibold" : ""}>{seg}</span>
+                <span className={i === arr.length - 1 ? "text-foreground font-semibold" : ""}>{seg}</span>
               </span>
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
             <a
               href="/Dashboard"
-              className="h-8 px-3 rounded-lg border border-white/15 text-xs font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+              className="h-8 px-3 rounded-lg border border-border/60 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
             >
               Back to app
             </a>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/15 text-red-300 border border-red-500/30 font-semibold">Admin</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-foreground border border-border/60 font-semibold">Admin</span>
           </div>
         </header>
 
-        <main className="relative flex-1 overflow-hidden" style={{ background: "#06080F" }}>
-          {/* Ambient backdrop — wow (dark) */}
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-0 opacity-[0.08]"
-                 style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
-            <div className="absolute -top-40 right-1/4 w-[48rem] h-[48rem] rounded-full blur-3xl opacity-50"
-                 style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.55), transparent 60%)" }} />
-            <div className="absolute top-1/3 -left-40 w-[42rem] h-[42rem] rounded-full blur-3xl opacity-45"
-                 style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.45), transparent 60%)" }} />
-            <div className="absolute bottom-0 right-0 w-[38rem] h-[38rem] rounded-full blur-3xl opacity-35"
-                 style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.45), transparent 60%)" }} />
-          </div>
-          <div className="dark relative p-6 max-w-[1400px] mx-auto w-full text-white">
+        <main className="relative flex-1 bg-white">
+          <div className="relative p-6 max-w-[1400px] mx-auto w-full text-foreground">
             <Outlet />
           </div>
         </main>
