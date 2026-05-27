@@ -55,14 +55,14 @@ export default function IntegrationsSection() {
               transition={{ delay: 0.2 }}
               className="text-base text-muted-foreground/60 mb-8 max-w-lg leading-relaxed"
             >
-              The more infrastructure you connect, the sharper the intelligence. CAMBRA works with your existing stack via integrations, document uploads or interactive audit flows.
+              More connections = sharper intelligence. Works with your existing stack.
             </motion.p>
 
             <div className="space-y-3 mb-8">
               {[
-                { icon: Plug, label: "Connect directly", desc: "One-click integrations with Stripe, Shopify, accounting tools and more.", tag: "Most accurate", color: "#635BFF" },
-                { icon: Upload, label: "Upload documents", desc: "Invoices, PSP statements, SaaS receipts, contracts. AI extracts automatically.", tag: "Flexible", color: "#06B6D4" },
-                { icon: ScanLine, label: "Interactive audit", desc: "Visual card-based flow. No documents needed. Fast and highly visual.", tag: "< 3 min", color: "#8B5CF6" },
+                { icon: Plug, label: "Connect directly", desc: "One-click with Stripe, Shopify, accounting tools.", tag: "Most accurate", color: "#635BFF" },
+                { icon: Upload, label: "Upload documents", desc: "Invoices, statements, receipts. AI extracts automatically.", tag: "Flexible", color: "#06B6D4" },
+                { icon: ScanLine, label: "Interactive audit", desc: "Visual flow. No documents needed. < 3 min.", tag: "< 3 min", color: "#8B5CF6" },
               ].map((method, i) => (
                 <motion.div
                   key={i}

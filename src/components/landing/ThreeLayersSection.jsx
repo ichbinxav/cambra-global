@@ -7,7 +7,7 @@ const LAYERS = [
   {
     icon: Search,
     label: "Audit",
-    desc: "Full infrastructure mapping. Every cost layer, every provider, every inefficiency surfaced and benchmarked.",
+    desc: "Every cost layer, every inefficiency surfaced and benchmarked.",
     accent: "#635BFF",
     stat: "< 3 min",
     statLabel: "to complete",
@@ -15,7 +15,7 @@ const LAYERS = [
   {
     icon: Database,
     label: "Benchmark",
-    desc: "Your costs compared against real operational data from comparable businesses. You see exactly where you stand.",
+    desc: "Your costs vs real operational data. See exactly where you stand.",
     accent: "#06B6D4",
     stat: "94%",
     statLabel: "accuracy",
@@ -23,7 +23,7 @@ const LAYERS = [
   {
     icon: Brain,
     label: "Intelligence",
-    desc: "AI-powered recommendations. Specific, actionable, quantified. Not suggestions — strategic intelligence.",
+    desc: "Specific, actionable recommendations. Where margin is lost and how to recover it.",
     accent: "#8B5CF6",
     stat: "€29K",
     statLabel: "avg. recoverable",
@@ -106,7 +106,7 @@ export default function ThreeLayersSection() {
               Infrastructure intelligence.<br />Not just a dashboard.
             </h3>
             <p className="text-background/50 text-sm leading-relaxed">
-              CAMBRA maps the full operational reality behind your business — payments, logistics, SaaS, banking, insurance, telecom, finance ops and HR infrastructure — benchmarks every layer, and delivers specific intelligence about where margin is being lost and how to recover it.
+              Maps your 8-vertical infrastructure stack. Benchmarks every layer. Shows where margin leaks and how to fix it.
             </p>
           </div>
           <div className="flex flex-col gap-3 shrink-0">

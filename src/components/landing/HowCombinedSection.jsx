@@ -9,7 +9,7 @@ const METHODS = [
     num: "01",
     icon: ScanLine,
     title: "Interactive Audit",
-    desc: "Visual card-based flow. As you answer, your infrastructure map builds live — providers appear, systems connect, complexity becomes visible.",
+    desc: "Visual card-based flow. Your infrastructure map builds live as you answer.",
     tag: "< 3 min",
     accent: "#635BFF",
     detail: "Visual · Reactive · Addictive",
@@ -18,7 +18,7 @@ const METHODS = [
     num: "02",
     icon: FileSearch,
     title: "Document Upload",
-    desc: "Drop invoices, PSP statements, SaaS receipts or contracts. AI extracts and benchmarks your operational costs automatically.",
+    desc: "Drop invoices, statements, receipts. AI extracts and benchmarks costs automatically.",
     tag: "Instant",
     accent: "#06B6D4",
     detail: "Invoices · Statements · Contracts",
@@ -27,7 +27,7 @@ const METHODS = [
     num: "03",
     icon: Plug,
     title: "Connect Your Tools",
-    desc: "Connect Stripe, Shopify, QuickBooks, Sendcloud and more. CAMBRA maps your live infrastructure and runs benchmarks in real time.",
+    desc: "Connect Stripe, Shopify, QuickBooks, more. Real-time benchmarking of your live infrastructure.",
     tag: "Real-time",
     accent: "#8B5CF6",
     detail: "Shopify · Stripe · QuickBooks · more",
@@ -103,7 +103,7 @@ export default function HowCombinedSection() {
             transition={{ delay: 0.25 }}
             className="text-base text-muted-foreground/60 mt-4 max-w-xl mx-auto"
           >
-            Whether you prefer a guided flow, document upload or direct integrations — CAMBRA maps your entire operational stack.
+            Guided flow · Document upload · Direct integrations. Pick your method.
           </motion.p>
         </div>
 
