@@ -80,9 +80,9 @@ export default function HowItWorks() {
                   transition={{ duration: 0.5, delay: i * 0.05 }}
                   className="cambra-card p-8 sm:p-10"
                 >
-                  <div className="grid md:grid-cols-[auto_1fr] gap-6 sm:gap-10 items-start">
+                  <div className="grid md:grid-cols-[auto_1fr] gap-6 sm:gap-10 items-end">
                     {/* Giant cinematic number */}
-                    <div className="cambra-step-number leading-none">
+                    <div className="cambra-step-number">
                       {step.n}
                     </div>
 
