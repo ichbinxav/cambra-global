@@ -3,6 +3,7 @@ import HowItWorksSimple from "@/components/landing/HowItWorksSimple.jsx";
 import StackIntelligenceMap from "@/components/landing/StackIntelligenceMap.jsx";
 import PricingSection from "@/components/landing/PricingSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
+import MeetTheFounder from "@/components/landing/MeetTheFounder.jsx";
 import FooterSection from "@/components/landing/FooterSection";
 import Navbar from "@/components/landing/Navbar";
 
@@ -30,6 +31,9 @@ export default function Landing() {
 
         {/* 6 — Operator findings (short, cold, specific) */}
         <TestimonialsSection />
+
+        {/* 7 — Meet the founder */}
+        <MeetTheFounder />
       </main>
 
       <FooterSection />
