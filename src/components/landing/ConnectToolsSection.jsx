@@ -1,46 +1,88 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap } from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 
 export default function ConnectToolsSection() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section id="connect" className="relative overflow-hidden bg-[#06080F] text-white py-20 sm:py-24">
-      {/* Ambient layers */}
+    <section
+      ref={ref}
+      className="relative py-20 md:py-28 px-5 border-t border-border/40 bg-background overflow-hidden"
+    >
+      {/* Ambient (matches other landing sections) */}
+      <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 left-1/3 w-[36rem] h-[36rem] rounded-full blur-3xl"
-             style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.45), transparent 60%)" }} />
-        <div className="absolute -bottom-32 right-1/4 w-[32rem] h-[32rem] rounded-full blur-3xl"
-             style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.35), transparent 60%)" }} />
-        <div className="absolute inset-0 opacity-[0.05]"
-             style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+        <div className="absolute -top-32 left-1/3 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.15]" />
+        <div className="absolute -bottom-32 right-1/4 w-[32rem] h-[32rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.12]" />
       </div>
 
-      <div className="relative max-w-3xl mx-auto px-5 text-center">
-        <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-          </span>
-          <Zap size={10} className="opacity-70" />
-          <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">Recommended · Highest accuracy</span>
+      <div className="relative max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8 md:mb-10">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm"
+          >
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
+            </span>
+            <Zap size={10} className="opacity-60" />
+            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Recommended · Highest accuracy</span>
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="font-display text-[clamp(2.4rem,6vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-6"
+          >
+            <span className="text-foreground">Connect your </span>
+            <span className="text-saas-gradient">tools.</span>
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-10"
+          >
+            Read-only connections to Stripe, Shopify, your carriers and accounting tools. <span className="text-foreground font-semibold">~98% accuracy</span>, real numbers, zero write access.
+          </motion.p>
         </div>
 
-        <h2 className="font-display text-[clamp(2rem,4.8vw,3.4rem)] font-black tracking-[-0.045em] leading-[0.95] mb-5">
-          <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", filter: "drop-shadow(0 0 22px rgba(44,167,193,0.35))" }}>
-            Connect your tools.
-          </span>
-        </h2>
+        {/* Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="cambra-card p-8 md:p-12 flex flex-col items-center text-center"
+        >
+          <div className="mb-8">
+            <div className="inline-flex items-center justify-center h-12 w-12 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm mb-6">
+              <ArrowRight className="h-5 w-5 text-cambra-cyan" />
+            </div>
+            <p className="text-white/70 text-sm mb-6">
+              Secure read-only access to your real data.
+            </p>
+          </div>
 
-        <p className="text-base sm:text-lg text-white/65 leading-relaxed max-w-xl mx-auto mb-8">
-          Read-only connections to Stripe, Shopify, your carriers and accounting tools. <span className="text-white font-semibold">~98% accuracy</span>, real numbers, zero write access.
-        </p>
+          <Link to="/ConnectTools" className="w-full sm:w-auto">
+            <Button size="lg" className="h-12 rounded-full px-8 text-sm font-bold gap-2 bg-white text-neon-1 hover:bg-white/90 w-full sm:w-auto shadow-[0_0_32px_rgba(44,167,193,0.35)]">
+              Connect your tools <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
 
-        <Link to="/ConnectTools">
-          <Button size="lg" className="h-12 rounded-full px-7 text-sm font-bold gap-2 bg-white text-[#06080F] hover:bg-white/90 shadow-[0_0_40px_rgba(44,167,193,0.45)]">
-            Connect your tools <ArrowRight className="h-4 w-4" />
-          </Button>
-        </Link>
-        <p className="text-[11px] text-white/40 mt-4">2-minute connection · Disconnect any time</p>
+          <p className="text-[11px] text-white/50 mt-6 font-mono tracking-[0.15em] uppercase">
+            2-minute setup · Disconnect anytime
+          </p>
+        </motion.div>
       </div>
     </section>
   );
