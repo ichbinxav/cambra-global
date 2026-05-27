@@ -6,15 +6,15 @@ const TOOLS = [
   { name: "Stripe", url: "https://cdn.simpleicons.org/stripe/635BFF" },
   { name: "Shopify", url: "https://cdn.simpleicons.org/shopify/95BF47" },
   { name: "WooCommerce", url: "https://cdn.simpleicons.org/woocommerce/873EFF" },
-  { name: "Adyen", url: "https://cdn.simpleicons.org/adyen/0ABF53" },
   { name: "PayPal", url: "https://cdn.simpleicons.org/paypal/003087" },
   { name: "Xero", url: "https://cdn.simpleicons.org/xero/13B5EA" },
   { name: "QuickBooks", url: "https://cdn.simpleicons.org/quickbooks/2CA01C" },
-  { name: "DHL", url: "https://cdn.simpleicons.org/dhl/FFCC00" },
-  { name: "DPD", url: "https://cdn.simpleicons.org/dpd/DC0032" },
-  { name: "Sendcloud", url: "https://cdn.simpleicons.org/sendcloud/0061FE" },
-  { name: "Klaviyo", url: "https://cdn.simpleicons.org/klaviyo/000000" },
+  { name: "DHL", url: "https://cdn.simpleicons.org/dhl/D40511" },
+  { name: "FedEx", url: "https://cdn.simpleicons.org/fedex/4D148C" },
+  { name: "Klaviyo", url: "https://cdn.simpleicons.org/klaviyo/1E2C3B" },
   { name: "HubSpot", url: "https://cdn.simpleicons.org/hubspot/FF7A59" },
+  { name: "Mailchimp", url: "https://cdn.simpleicons.org/mailchimp/FFE01B" },
+  { name: "Slack", url: "https://cdn.simpleicons.org/slack/4A154B" },
 ];
 
 const PILLARS = [
@@ -90,7 +90,7 @@ export default function TrustStripSection() {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-6 sm:gap-8 max-w-5xl mx-auto items-center justify-items-center mb-16"
+          className="grid grid-cols-4 sm:grid-cols-6 gap-3 sm:gap-4 max-w-4xl mx-auto items-center justify-items-center mb-16"
         >
           {TOOLS.map((tool, i) => (
             <motion.div
@@ -98,15 +98,14 @@ export default function TrustStripSection() {
               initial={{ opacity: 0, scale: 0.85, y: 12 }}
               animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.25 + i * 0.04, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative flex items-center justify-center h-14 w-14 rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm hover:border-border/80 hover:scale-110 transition-all duration-300"
+              className="group relative flex items-center justify-center h-16 w-full rounded-xl border border-border/40 bg-card/60 backdrop-blur-sm hover:border-border/80 hover:bg-card transition-all duration-300"
               title={tool.name}
             >
-              {/* Glow on hover */}
-              <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-60 transition-opacity duration-300" style={{ background: "radial-gradient(circle, rgba(44,167,193,0.3), transparent)" }} />
+              <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: "radial-gradient(circle at center, rgba(44,167,193,0.12), transparent 70%)" }} />
               <img
                 src={tool.url}
                 alt={tool.name}
-                className="max-h-7 max-w-[70%] object-contain relative z-1"
+                className="h-7 w-7 object-contain relative z-[1] group-hover:scale-110 transition-transform duration-300"
                 loading="lazy"
               />
             </motion.div>
