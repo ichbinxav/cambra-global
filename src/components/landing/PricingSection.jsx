@@ -62,9 +62,9 @@ export default function PricingSection() {
             </div>
             
             <div className="relative text-left flex flex-col h-full">
-              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-border/40 bg-background/60 w-fit h-7">
-                <span className="h-2 w-2 rounded-full bg-cambra-mint" />
-                <p className="text-[9px] font-bold tracking-[0.24em] uppercase text-muted-foreground/70 whitespace-nowrap">Infrastructure</p>
+              <div className="inline-flex items-center gap-2 mb-6 w-fit">
+                <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+                <p className="text-[8px] font-bold tracking-[0.2em] uppercase text-muted-foreground/60 whitespace-nowrap">Infra Intelligence</p>
               </div>
               
               <p className="text-4xl md:text-5xl font-black tracking-tight mb-2 text-foreground leading-none">Free</p>
@@ -116,12 +116,12 @@ export default function PricingSection() {
             </div>
             
             <div className="relative text-left flex flex-col h-full">
-              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-white/20 bg-white/[0.05] w-fit h-7">
-                <span className="relative flex h-2 w-2">
+              <div className="inline-flex items-center gap-2 mb-6 w-fit">
+                <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-cambra-cyan" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
                 </span>
-                <p className="text-[9px] font-bold tracking-[0.24em] uppercase text-white/60 whitespace-nowrap">Recovery Model</p>
+                <p className="text-[8px] font-bold tracking-[0.2em] uppercase text-white/50 whitespace-nowrap">Recovery Model</p>
               </div>
               
               <p className="text-4xl md:text-5xl font-black tracking-tight mb-2 leading-none">
