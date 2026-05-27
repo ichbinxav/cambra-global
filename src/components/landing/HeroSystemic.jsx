@@ -39,28 +39,33 @@ export default function HeroSystemic() {
   }, []);
 
   return (
-    <section ref={ref} className="relative flex items-center overflow-hidden pt-20 pb-8 px-4 md:px-6 bg-background">
-      <div className="relative z-10 w-full max-w-6xl mx-auto">
-        <div className="cambra-card p-6 md:p-12 lg:p-16">
+    <section ref={ref} className="relative min-h-[92vh] flex items-center overflow-hidden pt-6 bg-background">
+      <motion.div className="absolute inset-0 pointer-events-none" style={{ y: bgY }}>
+        <div className="absolute inset-0 dot-grid opacity-60" />
+        <div className="absolute -top-32 -left-32 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.25]" />
+        <div className="absolute -bottom-32 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.22]" />
+      </motion.div>
+
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-16 items-center">
 
           {/* LEFT — clear promise */}
           <div className="text-left">
-            <div className="inline-flex items-center gap-2 mb-7 px-2.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 mb-7 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
               <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cambra-cyan opacity-75" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cambra-mint opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
               </span>
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/70">
+              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
                 Live · 8 cost layers
               </span>
             </div>
 
-            <h1 className="font-display text-[clamp(2.2rem,5.8vw,5rem)] font-black tracking-[-0.05em] leading-[0.9] mb-5 text-white">
+            <h1 className="font-display text-[clamp(2.2rem,5.8vw,5rem)] font-black tracking-[-0.05em] leading-[0.9] mb-5">
               We find the money <span className="text-saas-gradient">your stack is hiding.</span>
             </h1>
 
-            <p className="text-[clamp(0.95rem,1.6vw,1.15rem)] text-white/70 mb-7 max-w-[540px] leading-[1.55]">
+            <p className="text-[clamp(0.95rem,1.6vw,1.15rem)] text-foreground/65 mb-7 max-w-[540px] leading-[1.55]">
               CAMBRA audits every hidden cost in your business — payments, shipping, SaaS, banking and more — and shows you what you're overpaying vs. peers your size.
             </p>
 
@@ -69,7 +74,7 @@ export default function HeroSystemic() {
               {LAYER_CHIPS.map((chip) => (
                 <span
                   key={chip}
-                  className="px-2.5 py-1 text-[11px] font-medium rounded-full border border-white/12 bg-white/[0.04] backdrop-blur-sm text-white/75"
+                  className="px-2.5 py-1 text-[11px] font-medium rounded-full border border-border/50 bg-card/60 backdrop-blur-sm text-foreground/70"
                 >
                   {chip}
                 </span>
@@ -80,7 +85,7 @@ export default function HeroSystemic() {
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <a
                 href="/Analyzer"
-                className="h-12 rounded-full px-7 text-sm font-bold bg-white text-cambra-navy-deep ring-1 ring-white/10 hover:bg-white/90 transition inline-flex items-center justify-center gap-2"
+                className="h-12 rounded-full px-7 text-sm font-bold bg-foreground text-background ring-1 ring-foreground/10 hover:bg-foreground/90 transition inline-flex items-center justify-center gap-2"
               >
                 Run free audit
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -89,7 +94,7 @@ export default function HeroSystemic() {
                 href="/auth/start"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-12 rounded-full px-6 text-sm font-semibold border border-white/20 bg-white/[0.04] backdrop-blur-sm text-white hover:border-white/40 transition inline-flex items-center justify-center gap-2"
+                className="h-12 rounded-full px-6 text-sm font-semibold border border-border/60 bg-background/60 backdrop-blur-sm text-foreground hover:border-foreground/40 hover:text-foreground transition inline-flex items-center justify-center gap-2"
               >
                 Sign in
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -97,7 +102,7 @@ export default function HeroSystemic() {
             </div>
 
             {/* Ticker — what we found for other brands */}
-            <div className="h-5 flex items-center gap-2 text-[10px] text-white/55 font-mono">
+            <div className="h-5 flex items-center gap-2 text-[10px] text-muted-foreground/70 font-mono">
               <Activity className="h-3 w-3 text-cambra-mint" />
               <motion.span
                 key={tickerIdx}
@@ -174,11 +179,10 @@ export default function HeroSystemic() {
               </div>
             </div>
 
-            <p className="mt-3 text-center text-[10px] text-white/40 font-mono">
+            <p className="mt-3 text-center text-[10px] text-muted-foreground/40 font-mono">
               Sample · Your results will be tailored to your brand
             </p>
           </div>
-        </div>
         </div>
       </div>
     </section>
