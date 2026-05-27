@@ -109,7 +109,7 @@ export default function FooterSection() {
             className="font-display font-black tracking-[-0.05em] leading-[0.85] mb-6"
             style={{ fontSize: "clamp(2.8rem, 8.5vw, 7.5rem)" }}
           >
-            <span className="block">Stop leaving</span>
+            <span className="block">Turn operating costs</span>
             <span className="block relative">
               <span
                 className="bg-clip-text text-transparent"
@@ -120,7 +120,7 @@ export default function FooterSection() {
                   animation: "shimmer-bg 6s linear infinite",
                 }}
               >
-                margin on the table.
+                into recovered margin.
               </span>
             </span>
           </motion.h2>
