@@ -62,7 +62,17 @@ export default function HeroSystemic() {
     <section ref={ref} className="relative min-h-[100vh] flex items-center overflow-hidden pt-8 bg-background">
       {/* Animated backdrop */}
       <motion.div className="absolute inset-0 pointer-events-none" style={{ y: bgY }}>
-        <div className="absolute inset-0 dot-grid opacity-80" />
+        <div
+          className="absolute inset-0 dot-grid"
+          style={{
+            opacity: 1,
+            backgroundImage:
+              "linear-gradient(hsl(0 0% 0% / 0.08) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 0% / 0.08) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 95%)",
+            maskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 95%)",
+          }}
+        />
 
         {/* Pulsing ambient glows */}
         <motion.div
