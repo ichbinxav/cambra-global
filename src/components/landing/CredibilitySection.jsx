@@ -4,20 +4,20 @@ import { Eye, Cpu, TrendingDown } from "lucide-react";
 
 const BLOCKS = [
   {
-    title: "Audit-first intelligence",
-    text: "CAMBRA starts by mapping your operational infrastructure — every provider, every cost layer, every inefficiency — before surfacing any recommendation.",
+    title: "Continuous, not episodic.",
+    text: "Most audits are point-in-time. CAMBRA runs continuously — drift surfaces the moment it appears.",
     icon: Eye,
     accent: "#635BFF",
   },
   {
-    title: "Benchmark-driven analysis",
-    text: "Every finding is benchmarked against real data from comparable operators. You see exactly where you stand and what the gap costs you annually.",
+    title: "Peer-tier benchmarks.",
+    text: "Compared against operators at your revenue tier and geography. Not vague industry ranges.",
     icon: Cpu,
     accent: "#06B6D4",
   },
   {
-    title: "Margin leakage recovery",
-    text: "Infrastructure inefficiencies compound quietly. CAMBRA surfaces where overpayment is structural — payments, logistics, SaaS, banking, insurance, telecom, finance ops, HR infrastructure — and quantifies the recoverable margin.",
+    title: "Quantified, not vague.",
+    text: "Every drift expressed as a number. €0.80/order, 0.6pp PSP delta, 2 overlapping tools.",
     icon: TrendingDown,
     accent: "#8B5CF6",
   },

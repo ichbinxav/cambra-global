@@ -28,21 +28,21 @@ export default function FooterSection() {
           <motion.p
             initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5 }}
-            className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8"
-          >Stop the silent margin drain</motion.p>
+            className="text-[10px] tracking-[0.3em] uppercase opacity-25 mb-8 font-mono"
+          >Continuous · Quantified · Peer-benchmarked</motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.5rem,7vw,6rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5"
           >
-            Audit your infrastructure today.
+            Infrastructure drift<br />stops compounding here.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-lg opacity-40 mb-10 max-w-sm mx-auto leading-relaxed"
+            className="text-lg opacity-40 mb-10 max-w-md mx-auto leading-relaxed"
           >
-            The average business leaking €29,000/year in recoverable margin has been doing so for years. The audit takes 3 minutes.
+            Every operator runs an infrastructure stack. Almost none benchmark it. CAMBRA does — continuously.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -52,7 +52,7 @@ export default function FooterSection() {
             <Link to="/Analyzer" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" className="w-full h-14 rounded-full px-10 text-base font-bold gap-2 bg-background text-foreground hover:opacity-90">
-                  Run Infrastructure Audit
+                  Run audit
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </motion.div>
@@ -60,7 +60,7 @@ export default function FooterSection() {
             <Link to="/Analyzer?preview=1" className="w-full sm:w-auto">
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                 <Button size="lg" variant="outline" className="w-full h-14 rounded-full px-10 text-base font-bold border-background/20 text-background hover:bg-background/10">
-                  View audit preview
+                  See live engine
                 </Button>
               </motion.div>
             </Link>
@@ -78,7 +78,7 @@ export default function FooterSection() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-5">
             <BrandLogoWordmark className="h-4" />
-            <span className="text-xs text-muted-foreground/35">Infrastructure Audit & Intelligence Platform</span>
+            <span className="text-xs text-muted-foreground/35 font-mono">Infrastructure intelligence · operating system for margin</span>
           </div>
           <div className="flex items-center gap-5 text-xs text-muted-foreground/40">
             <span>© {new Date().getFullYear()} CAMBRA</span>

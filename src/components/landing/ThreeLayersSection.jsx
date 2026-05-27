@@ -7,26 +7,26 @@ const LAYERS = [
   {
     icon: Search,
     label: "Audit",
-    desc: "Every cost layer, every inefficiency surfaced and benchmarked.",
+    desc: "Every operational layer mapped. PSP, shipping, SaaS, banking, FX, insurance.",
     accent: "#635BFF",
-    stat: "< 3 min",
-    statLabel: "to complete",
+    stat: "8",
+    statLabel: "layers scanned",
   },
   {
     icon: Database,
     label: "Benchmark",
-    desc: "Your costs vs real operational data. See exactly where you stand.",
+    desc: "Continuous comparison against peer medians at your tier and geography.",
     accent: "#06B6D4",
-    stat: "94%",
-    statLabel: "accuracy",
+    stat: "Tier-aware",
+    statLabel: "peer median",
   },
   {
     icon: Brain,
-    label: "Intelligence",
-    desc: "Specific, actionable recommendations. Where margin is lost and how to recover it.",
+    label: "Act",
+    desc: "Drift converted to specific findings. Recoverable margin quantified by layer.",
     accent: "#8B5CF6",
-    stat: "€29K",
-    statLabel: "avg. recoverable",
+    stat: "Continuous",
+    statLabel: "monitoring",
   },
 ];
 
@@ -42,20 +42,20 @@ export default function ThreeLayersSection() {
           <motion.p
             initial={{ opacity: 0 }} animate={headInView ? { opacity: 1 } : {}}
             className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-4"
-          >How CAMBRA works</motion.p>
+          >Mechanism</motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.2rem,5vw,3.8rem)] font-black tracking-[-0.04em] leading-[0.92] mb-4"
           >
-            Audit. Benchmark. Act.
+            How the engine operates.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }} animate={headInView ? { opacity: 1 } : {}}
             transition={{ delay: 0.25 }}
             className="text-base text-muted-foreground/60 max-w-xl mx-auto"
           >
-            Three layers of infrastructure intelligence that compound into strategic clarity.
+            Three layers, continuously running underneath your operating model.
           </motion.p>
         </div>
 
@@ -101,23 +101,23 @@ export default function ThreeLayersSection() {
           className="rounded-2xl bg-foreground text-background p-8 lg:p-10 flex flex-col lg:flex-row items-center justify-between gap-8"
         >
           <div className="max-w-xl text-center lg:text-left">
-            <p className="text-[10px] uppercase tracking-[0.22em] opacity-30 mb-3">The CAMBRA intelligence layer</p>
+            <p className="text-[10px] uppercase tracking-[0.22em] opacity-30 mb-3 font-mono">The economic layer</p>
             <h3 className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-black tracking-[-0.04em] leading-[0.9] mb-3">
-              Infrastructure intelligence.<br />Not just a dashboard.
+              Not a dashboard.<br />An operating system.
             </h3>
             <p className="text-background/50 text-sm leading-relaxed">
-              Maps your entire infrastructure. Benchmarks every layer. Shows where margin leaks and how to fix it.
+              Infrastructure benchmarked, drift detected, recoverable margin isolated. Continuously.
             </p>
           </div>
           <div className="flex flex-col gap-3 shrink-0">
             <Link to="/Analyzer">
               <button className="h-12 px-7 rounded-full bg-background text-foreground text-sm font-bold inline-flex items-center gap-2 hover:opacity-90 transition w-full justify-center">
-                Run Infrastructure Audit <ArrowRight size={14} />
+                Run audit <ArrowRight size={14} />
               </button>
             </Link>
             <Link to="/Dashboard">
               <button className="h-12 px-7 rounded-full border border-background/20 text-background text-sm font-semibold inline-flex items-center gap-2 hover:bg-background/10 transition w-full justify-center">
-                View the dashboard
+                Open dashboard
               </button>
             </Link>
           </div>
