@@ -187,12 +187,12 @@ export default function StackIntelligenceMap() {
                     />
                     <text x={x} y={y - 3} textAnchor="middle"
                           className="fill-white font-semibold pointer-events-none"
-                          style={{ fontSize: 11, fontWeight: 700 }}>
+                          style={{ fontSize: 14, fontWeight: 700 }}>
                       {layer.label}
                     </text>
-                    <text x={x} y={y + 11} textAnchor="middle"
+                    <text x={x} y={y + 12} textAnchor="middle"
                           className="font-mono pointer-events-none"
-                          style={{ fontSize: 8, fill: isActive ? color : "rgba(255,255,255,0.5)", fontWeight: 500 }}>
+                          style={{ fontSize: 10, fill: isActive ? color : "rgba(255,255,255,0.5)", fontWeight: 500 }}>
                       {layer.drift === 0 ? "✓ ok" : formatDrift(layer)}
                     </text>
                   </g>
