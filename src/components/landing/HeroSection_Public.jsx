@@ -76,7 +76,7 @@ export default function HeroSection_Public() {
 
             {/* Subheadline */}
             <motion.p variants={fadeUp} className="text-[clamp(1rem,2.2vw,1.35rem)] font-medium text-foreground/65 mb-8 max-w-[620px] mx-auto lg:mx-0 leading-[1.5] text-center lg:text-left">
-              Audit your operational infrastructure across 8 verticals. Surface every margin leak.
+              Audit your entire infrastructure. Surface every margin leak.
             </motion.p>
 
             {/* CTAs */}
@@ -184,7 +184,7 @@ export default function HeroSection_Public() {
                   <p className="text-3xl font-black tracking-tight tabular-nums">
                     €{leakage.toLocaleString()}<span className="text-base font-normal opacity-40">/yr</span>
                   </p>
-                  <p className="text-[9px] opacity-25 mt-0.5">8 infrastructure verticals</p>
+                  <p className="text-[9px] opacity-25 mt-0.5">Your infrastructure verticals</p>
                 </div>
                 <a href="/Analyzer" className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5">
                   Audit <ArrowRight size={11} />

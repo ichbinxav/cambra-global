@@ -106,7 +106,7 @@ export default function ThreeLayersSection() {
               Infrastructure intelligence.<br />Not just a dashboard.
             </h3>
             <p className="text-background/50 text-sm leading-relaxed">
-              Maps your 8-vertical infrastructure stack. Benchmarks every layer. Shows where margin leaks and how to fix it.
+              Maps your entire infrastructure. Benchmarks every layer. Shows where margin leaks and how to fix it.
             </p>
           </div>
           <div className="flex flex-col gap-3 shrink-0">
