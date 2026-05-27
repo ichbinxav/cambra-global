@@ -7,6 +7,7 @@ const DRAINS = [
   { label: "Logistics", marker: "Above market", body: "Without volume leverage, shipping rates are set by individual negotiation. The collective benchmark is 15–22% below single-account rates.", color: "#F97316", value: "15–22%" },
   { label: "SaaS Stack", marker: "Fragmented spend", body: "The average operator runs 6–11 SaaS tools. Benchmarking consistently finds 2–3 redundant or overpriced subscriptions per stack.", color: "#8B5CF6", value: "2–3 tools" },
   { label: "Banking & FX", marker: "Unbenchmarked", body: "Business banking fees, FX spreads and card processing costs are rarely audited. Yet they compound silently across every transaction.", color: "#06B6D4", value: "0.8–1.4%" },
+  { label: "Insurance", marker: "Over-insured", body: "Most SMEs carry overlapping or outdated coverage. Broker commissions, unnecessary riders and auto-renewals inflate premiums 20–35% above market.", color: "#10B981", value: "20–35%" },
 ];
 
 export default function ProblemSection_Public() {
@@ -34,7 +35,7 @@ export default function ProblemSection_Public() {
             transition={{ delay: 0.2 }}
             className="text-lg text-muted-foreground/60 leading-relaxed"
           >
-            It's not one problem. It's four invisible taxes — each small enough to ignore individually, catastrophic when summed across your entire infrastructure stack.
+            It's not one problem. It's five invisible taxes — each small enough to ignore individually, catastrophic when summed across your entire infrastructure stack.
           </motion.p>
         </div>
 
