@@ -84,16 +84,16 @@ export default function HowItWorks() {
                   transition={{ duration: 0.5, delay: i * 0.05 }}
                   className="cambra-card p-8 sm:p-10 relative"
                 >
-                  {/* CTA top-right */}
+                  {/* CTA — mini pill top-right */}
                   <Link
                     to={step.cta.href}
-                    className="group/cta absolute top-6 right-6 sm:top-8 sm:right-8 flex items-center gap-2 px-4 py-2.5 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white/[0.12] hover:border-white/30 transition-all backdrop-blur-sm z-10"
+                    className="group/cta absolute top-4 right-4 sm:top-5 sm:right-5 inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full border border-white/15 bg-white/[0.06] hover:bg-white/[0.14] hover:border-white/30 transition-all backdrop-blur-sm z-10"
                   >
-                    <span className="text-[11px] sm:text-xs font-bold text-white tracking-tight whitespace-nowrap">
+                    <span className="text-[9px] sm:text-[10px] font-bold text-white tracking-[0.08em] uppercase whitespace-nowrap">
                       {step.cta.label}
                     </span>
-                    <span className="h-6 w-6 rounded-full flex items-center justify-center bg-cambra-mint transition-transform group-hover/cta:translate-x-0.5">
-                      <ArrowRight className="h-3 w-3 text-cambra-navy-deep" />
+                    <span className="h-4 w-4 rounded-full flex items-center justify-center bg-cambra-mint transition-transform group-hover/cta:translate-x-0.5">
+                      <ArrowRight className="h-2.5 w-2.5 text-cambra-navy-deep" strokeWidth={3} />
                     </span>
                   </Link>
 
