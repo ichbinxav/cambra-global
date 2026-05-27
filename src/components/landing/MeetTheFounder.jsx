@@ -1,6 +1,6 @@
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, X, Quote } from "lucide-react";
 
 /**
  * MeetTheFounder — short founder note with CTA to open the full letter in a modal.
@@ -50,8 +50,8 @@ export default function MeetTheFounder() {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-[240px_1fr] gap-6 md:gap-12 items-start">
-          {/* Photo — smaller */}
+        <div className="grid md:grid-cols-[240px_1fr] gap-6 md:gap-12 items-center">
+          {/* Photo */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -67,41 +67,38 @@ export default function MeetTheFounder() {
             </div>
           </motion.div>
 
-          {/* Short letter */}
+          {/* Short quote card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="relative"
+            className="relative rounded-2xl border border-border/40 bg-secondary/30 p-6 md:p-8"
           >
-            <div className="space-y-4 text-[15px] md:text-[17px] leading-[1.6] text-foreground/85 font-light">
-              <p>
-                After years working inside global companies, I realized independent brands were still operating without the infrastructure and leverage they deserved.
-              </p>
-              <p className="text-foreground font-medium">
-                That's why I started CAMBRA, join us.
-              </p>
-            </div>
+            <Quote className="h-10 w-10 md:h-12 md:w-12 text-saas-gradient mb-4 opacity-80" strokeWidth={1.5} />
+            
+            <p className="text-lg md:text-xl font-medium leading-snug text-foreground mb-5">
+              After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.
+            </p>
 
-            <div className="mt-6 pt-5 border-t border-border/40">
-              <p
-                className="text-2xl md:text-3xl text-foreground"
-                style={{ fontFamily: "'Caveat', 'Brush Script MT', cursive" }}
+            <p className="text-foreground/70 text-sm md:text-base font-light mb-6">
+              That's why I started CAMBRA.
+            </p>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-foreground">Xavier M. Contero</p>
+                <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground/50 mt-0.5">
+                  Founder, CAMBRA
+                </p>
+              </div>
+              <button
+                onClick={() => setOpen(true)}
+                className="h-10 w-10 rounded-full border border-foreground/20 flex items-center justify-center hover:bg-foreground hover:text-background transition-all shrink-0"
+                aria-label="Read full letter"
               >
-                — Xavier M. Contero
-              </p>
-              <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground/50 mt-1.5">
-                Founder, CAMBRA
-              </p>
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
-
-            <button
-              onClick={() => setOpen(true)}
-              className="mt-7 inline-flex items-center gap-2 h-10 px-5 rounded-full border border-foreground/20 text-sm font-bold text-foreground hover:bg-foreground hover:text-background transition-all"
-            >
-              Read the founder's letter
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
           </motion.div>
         </div>
       </div>
