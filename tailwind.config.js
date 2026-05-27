@@ -5,6 +5,8 @@ module.exports = {
   safelist: [
     "text-node-blue", "bg-node-blue", "bg-node-blue-subtle", "border-node-blue",
     "bg-blue-500", "bg-green-500", "bg-orange-500", "text-blue-500", "text-green-500",
+    "score-excellent", "score-good", "score-medium", "score-risk",
+    "bg-score-excellent-soft", "bg-score-good-soft", "bg-score-medium-soft", "bg-score-risk-soft",
   ],
   theme: {
     extend: {
@@ -30,11 +32,24 @@ module.exports = {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         chart: {
-          '1': 'hsl(var(--neon-6))',  // electric blue
-          '2': 'hsl(var(--neon-7))',  // cyan
-          '3': 'hsl(var(--neon-5))',  // royal blue
+          '1': 'hsl(var(--cambra-blue))',
+          '2': 'hsl(var(--cambra-cyan))',
+          '3': 'hsl(var(--cambra-navy))',
           '4': 'hsl(var(--muted-foreground))',
           '5': 'hsl(var(--border))',
+        },
+        cambra: {
+          navy: 'hsl(var(--cambra-navy))',
+          'navy-deep': 'hsl(var(--cambra-navy-deep))',
+          blue: 'hsl(var(--cambra-blue))',
+          cyan: 'hsl(var(--cambra-cyan))',
+          teal: 'hsl(var(--cambra-teal))',
+        },
+        score: {
+          excellent: 'hsl(var(--score-excellent))',
+          good: 'hsl(var(--score-good))',
+          medium: 'hsl(var(--score-medium))',
+          risk: 'hsl(var(--score-risk))',
         },
         neon: {
           '1': 'hsl(var(--neon-1))',

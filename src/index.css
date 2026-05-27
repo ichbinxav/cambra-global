@@ -8,43 +8,57 @@
   :root {
     --font-inter: 'Inter', 'Space Grotesk', system-ui, sans-serif;
 
-    --background: 0 0% 100%;
-    --foreground: 0 0% 4%;
-    --card: 0 0% 99%;
-    --card-foreground: 0 0% 4%;
+    /* CAMBRA OS — light base */
+    --background: 0 0% 99.5%;        /* off-white global base */
+    --foreground: 222 25% 8%;        /* near-black editorial */
+    --card: 0 0% 100%;
+    --card-foreground: 222 25% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 4%;
-    --primary: 0 0% 4%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 44%;
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 4%;
+    --popover-foreground: 222 25% 8%;
+    --primary: 222 47% 11%;          /* deep navy */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 25% 12%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 42%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 222 25% 8%;
     --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 4%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 222 47% 11%;
     --radius: 0.75rem;
 
-    /* Brand accents */
-    --node-blue: 217 100% 52%;
-    --node-blue-subtle: 217 100% 96%;
-    --node-green: 142 76% 36%;
-    --node-orange: 25 95% 53%;
+    /* CAMBRA infrastructure intelligence palette */
+    --cambra-navy: 222 47% 11%;
+    --cambra-navy-deep: 222 60% 6%;
+    --cambra-blue: 217 91% 50%;
+    --cambra-cyan: 188 95% 43%;
+    --cambra-teal: 178 78% 41%;
 
-    /* Neon palette — serious */
-    --neon-1: 220 45% 7%;
-    --neon-2: 220 45% 10%;
-    --neon-3: 220 45% 14%;
-    --neon-4: 220 50% 20%;
-    --neon-5: 221 60% 35%;
-    --neon-6: 221 65% 45%;
-    --neon-7: 200 60% 46%;
-    --neon-8: 200 55% 60%;
-    --neon-9: 200 45% 88%;
+    /* Score color logic — enterprise infra intelligence */
+    --score-excellent: 178 78% 41%;  /* cyan-teal */
+    --score-good: 217 91% 50%;        /* soft blue */
+    --score-medium: 38 92% 50%;       /* warm amber */
+    --score-risk: 14 86% 55%;         /* muted infra-red */
+
+    /* Legacy brand accents (kept for backward compat) */
+    --node-blue: 217 91% 50%;
+    --node-blue-subtle: 217 100% 96%;
+    --node-green: 178 78% 41%;
+    --node-orange: 38 92% 50%;
+
+    /* Neon palette → mapped to CAMBRA navy/blue/cyan */
+    --neon-1: 222 60% 6%;
+    --neon-2: 222 55% 9%;
+    --neon-3: 222 50% 13%;
+    --neon-4: 222 47% 19%;
+    --neon-5: 222 47% 30%;
+    --neon-6: 217 91% 50%;
+    --neon-7: 188 95% 43%;
+    --neon-8: 188 80% 60%;
+    --neon-9: 188 60% 88%;
   }
 
   .dark {
@@ -114,17 +128,65 @@
 .results-dark .card-dark { background: #1a1a1a; border: 1px solid #333; }
 
 /* CAMBRA surfaces + gradients */
-/* Stronger, higher-contrast gradient (less white/pastel) */
 .bg-saas-gradient { background: linear-gradient(135deg, #0A1024 0%, #1F4ED8 55%, #2CA7C1 100%); }
-.text-saas-gradient { color: hsl(var(--neon-6)); }
+.bg-cambra-navy { background: linear-gradient(135deg, hsl(var(--cambra-navy-deep)) 0%, hsl(var(--cambra-navy)) 100%); }
+.bg-cambra-dark-section {
+  background: linear-gradient(180deg, #06080F 0%, #0B1023 100%);
+  position: relative;
+}
+.bg-cambra-dark-section::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.text-saas-gradient { color: hsl(var(--cambra-blue)); }
 @supports (-webkit-background-clip: text) {
   .text-saas-gradient {
-    background: linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%);
+    background: linear-gradient(135deg, hsl(var(--cambra-blue)) 0%, hsl(var(--cambra-cyan)) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 }
+
+/* Editorial step number — giant cinematic */
+.cambra-step-number {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: clamp(4.5rem, 11vw, 8.5rem);
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(184,216,224,0.85) 50%, hsl(var(--cambra-cyan)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px rgba(44,167,193,0.25));
+}
+.cambra-step-number-light {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: clamp(4.5rem, 11vw, 8.5rem);
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  background: linear-gradient(180deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Score color utilities */
+.score-excellent { color: hsl(var(--score-excellent)); }
+.score-good { color: hsl(var(--score-good)); }
+.score-medium { color: hsl(var(--score-medium)); }
+.score-risk { color: hsl(var(--score-risk)); }
+.bg-score-excellent-soft { background: hsl(var(--score-excellent) / 0.10); }
+.bg-score-good-soft { background: hsl(var(--score-good) / 0.10); }
+.bg-score-medium-soft { background: hsl(var(--score-medium) / 0.12); }
+.bg-score-risk-soft { background: hsl(var(--score-risk) / 0.10); }
 .glass { background: hsl(var(--card) / 0.65); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid hsl(var(--border) / 0.6); }
 
 /* Ambient glows & patterns */
@@ -183,9 +245,28 @@
 .bg-cambra-plum { background-color: hsl(var(--neon-5)); }
 
 /* Map legacy utility colors to CAMBRA palette */
-.text-blue-600 { color: hsl(var(--neon-6)) !important; }
-.text-green-600 { color: hsl(var(--neon-7)) !important; }
-.text-orange-500 { color: hsl(var(--neon-5)) !important; }
+.text-blue-600 { color: hsl(var(--cambra-blue)) !important; }
+.text-green-600 { color: hsl(var(--score-excellent)) !important; }
+.text-orange-500 { color: hsl(var(--score-medium)) !important; }
+
+/* Global ambient page backdrop — ALWAYS subtle grid on white */
+.cambra-page-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(31,78,216,0.04), transparent 60%),
+    hsl(var(--background));
+}
+.cambra-page-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(hsl(222 25% 8% / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(222 25% 8% / 0.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse 100% 80% at 50% 30%, #000 40%, transparent 100%);
+}
 
 /* Letter spacing utilities */
 .tracking-editorial { letter-spacing: -0.04em; }

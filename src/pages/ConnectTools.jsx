@@ -224,67 +224,44 @@ export default function ConnectTools() {
   const hero = HERO_CONFIG[activeMode];
 
   return (
-    <div className="relative min-h-screen bg-[#04060C] font-inter flex flex-col overflow-hidden">
+    <div className="relative min-h-screen bg-white font-inter flex flex-col">
       <Navbar />
-      {/* Ambient backdrop — dark page */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
-        <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.25), transparent 60%)" }} />
-        <div className="absolute top-1/3 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.2), transparent 60%)" }} />
-        <div className="absolute bottom-0 left-0 w-[30rem] h-[30rem] rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.15), transparent 60%)" }} />
-      </div>
 
       <div className="relative flex-1 max-w-3xl mx-auto w-full px-5 py-8 space-y-6 mt-16">
 
-        {/* ── PREMIUM DARK HERO — dynamic per mode ── */}
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#06080F] text-white shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6)]">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-40 -left-32 w-[34rem] h-[34rem] rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.55), transparent 60%)" }} />
-            <div className="absolute -bottom-32 -right-20 w-[32rem] h-[32rem] rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.45), transparent 60%)" }} />
-            <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "44px 44px" }} />
-            <div className="absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)" }} />
+        {/* ── HERO — light, uniform ── */}
+        <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-white p-7 sm:p-10">
+          <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-border/60 bg-white">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-foreground opacity-30" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foreground" />
+            </span>
+            <Plug size={10} className="text-muted-foreground" />
+            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">{hero.eyebrow}</span>
           </div>
-          <div className="relative p-7 sm:p-10">
-            <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-              </span>
-              <Plug size={10} className="text-white/60" />
-              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">{hero.eyebrow}</span>
-            </div>
-            <h1 className="font-display text-[clamp(2.2rem,5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.92] mb-3">
-              <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", filter: "drop-shadow(0 0 22px rgba(44,167,193,0.35))" }}>
-                {hero.title}
-              </span>
-            </h1>
-            <p className="text-sm text-white/55 leading-relaxed max-w-lg">
-              {hero.subtitle}
-            </p>
-          </div>
+          <h1 className="font-display text-[clamp(2.2rem,5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.92] mb-3 text-foreground">
+            {hero.title}
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">
+            {hero.subtitle}
+          </p>
         </div>
 
-        {/* ── DYNAMIC STATS BAR — accuracy per mode ── */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#06080F]">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-20 left-1/4 w-64 h-64 rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.4), transparent 60%)" }} />
-            <div className="absolute -bottom-16 right-1/4 w-56 h-56 rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.35), transparent 60%)" }} />
-            <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "36px 36px" }} />
-          </div>
-          <div className="relative grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/[0.06]">
+        {/* ── STATS BAR — light, uniform ── */}
+        <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-white">
+          <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/60">
             {hero.stats.map((s, i) => (
               <div key={i} className="px-5 py-5 text-center">
-                <p className="font-display text-2xl sm:text-3xl font-black tracking-tight leading-none mb-1.5"
-                   style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", filter: "drop-shadow(0 0 18px rgba(44,167,193,0.3))" }}>
+                <p className="font-display text-2xl sm:text-3xl font-black tracking-tight leading-none mb-1.5 text-foreground">
                   {s.value}
                 </p>
-                <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-white/35">{s.label}</p>
+                <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-muted-foreground">{s.label}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Mode switcher — dark gradient cards */}
+        {/* Mode switcher — light, uniform */}
         <div className="grid grid-cols-3 gap-3">
           {MODES.map(m => {
             const active = activeMode === m.id;
@@ -292,21 +269,14 @@ export default function ConnectTools() {
               <button
                 key={m.id}
                 onClick={() => setActiveMode(m.id)}
-                className={`group relative p-5 rounded-2xl border text-left transition-all duration-200 overflow-hidden ${active ? "border-white/20 text-white shadow-[0_18px_48px_-16px_rgba(31,78,216,0.4)]" : "border-white/[0.08] bg-[#0b0d14] hover:border-white/[0.16] text-white/80 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.4)]"}`}
-                style={active ? { background: "linear-gradient(135deg, #0A1024, #1F4ED8 65%, #2CA7C1)" } : {}}
+                className={`group relative p-5 rounded-2xl border text-left transition-all duration-200 ${active ? "border-foreground bg-foreground text-background" : "border-border/60 bg-white hover:border-foreground/40 text-foreground hover:-translate-y-0.5"}`}
               >
-                {active && (
-                  <div className="pointer-events-none absolute inset-0 opacity-[0.12]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
-                )}
-                {!active && (
-                  <div className="pointer-events-none absolute -top-14 -right-14 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-50 transition-opacity duration-300" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.4), transparent)" }} />
-                )}
                 <div className="relative">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${active ? "bg-white/10" : "bg-white/[0.04] border border-white/[0.06]"}`}>
-                    <m.icon size={16} className={active ? "text-white/80" : "text-white/30"} />
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${active ? "bg-background/10" : "bg-secondary"}`}>
+                    <m.icon size={16} className={active ? "text-background" : "text-muted-foreground"} />
                   </div>
-                  <p className={`text-xs font-bold mb-0.5 ${active ? "text-white" : "text-white/70"}`}>{m.label}</p>
-                  <p className={`text-[10px] ${active ? "text-white/50" : "text-white/30"}`}>{m.sub}</p>
+                  <p className={`text-xs font-bold mb-0.5 ${active ? "text-background" : "text-foreground"}`}>{m.label}</p>
+                  <p className={`text-[10px] ${active ? "text-background/60" : "text-muted-foreground"}`}>{m.sub}</p>
                 </div>
               </button>
             );
