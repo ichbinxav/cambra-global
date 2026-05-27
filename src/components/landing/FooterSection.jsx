@@ -12,7 +12,7 @@ const LIVE_TICKER = [
   { brand: "Maison Or", amount: "€19,500", label: "Banking fees" },
 ];
 
-const MARQUEE_TEXT = "€10K · €25K · €50K · €100K · MARGIN RECOVERED · ";
+const MARQUEE_TEXT = "CAMBRA · CAMBRA · CAMBRA · CAMBRA · ";
 
 export default function FooterSection() {
   const ref = useRef(null);
