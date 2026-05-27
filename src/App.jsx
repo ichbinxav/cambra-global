@@ -46,6 +46,8 @@ import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing';
 import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
+import Help from '@/pages/Help';
+import HelpCategory from '@/pages/HelpCategory';
 import ActivateDeal from '@/pages/deals/ActivateDeal';
 import AuthorizeDeal from '@/pages/deals/AuthorizeDeal';
 import MigrationHub from '@/pages/deals/MigrationHub';
@@ -195,6 +197,9 @@ const AuthenticatedApp = () => {
         <Route path="/testimonials" element={<Navigate to="/Testimonials" replace />} />
         <Route path="/Contact" element={<Contact />} />
         <Route path="/contact" element={<Navigate to="/Contact" replace />} />
+        <Route path="/Help" element={<Help />} />
+        <Route path="/help" element={<Navigate to="/Help" replace />} />
+        <Route path="/Help/:slug" element={<HelpCategory />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
         <Route path="/deal/activate" element={<ProtectedRoute><ActivateDeal /></ProtectedRoute>} />
