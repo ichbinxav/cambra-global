@@ -258,10 +258,10 @@ export default function StackIntelligenceMap() {
             </svg>
 
             <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-[9px] font-mono uppercase tracking-[0.18em] text-white/35">
-              <span>scanning · 8 layers</span>
+              <span>8 cost layers · benchmarked</span>
               <span className="flex items-center gap-1.5">
                 <span className="h-1 w-1 rounded-full bg-cambra-mint animate-pulse" />
-                live engine
+                cost intelligence · active
               </span>
             </div>
           </div>
