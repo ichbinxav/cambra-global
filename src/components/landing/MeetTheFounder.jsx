@@ -50,21 +50,19 @@ export default function MeetTheFounder() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-6 items-stretch">
           {/* Photo */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="relative"
+            className="relative md:col-span-2"
           >
-            <div className="relative h-full w-full rounded-2xl overflow-hidden border border-border/40 bg-secondary/50">
-              <img
-                src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/f1e34eda8_0347F92E-E1B9-4977-A6B1-85897923556A.jpeg"
-                alt="Xavier M. Contero, Founder of CAMBRA"
-                className="absolute inset-0 w-full h-full object-contain"
-              />
-            </div>
+            <img
+              src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/f1e34eda8_0347F92E-E1B9-4977-A6B1-85897923556A.jpeg"
+              alt="Xavier M. Contero, Founder of CAMBRA"
+              className="w-full h-full object-cover rounded-[1.25rem] aspect-[4/5] md:aspect-auto"
+            />
           </motion.div>
 
           {/* Short quote card */}
@@ -72,7 +70,7 @@ export default function MeetTheFounder() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="cambra-card p-3 md:p-6 flex flex-col justify-between"
+            className="cambra-card p-5 md:p-8 flex flex-col justify-between md:col-span-3"
           >
             <Quote className="h-5 w-5 md:h-8 md:w-8 text-cambra-cyan mb-2 opacity-90" strokeWidth={1.5} />
             <div className="flex-1">
