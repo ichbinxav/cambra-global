@@ -16,11 +16,7 @@ const SIGNALS = [
 ];
 
 const TICKER = [
-  "Found €11,400 / yr on Stripe fees",
-  "Found 2 duplicate SaaS tools",
-  "Found €6,900 / yr on shipping",
-  "Found €4,100 / yr on FX spread",
-  "Found €2,200 / yr on TPE fees",
+  "Operating intelligence. Real margin impact.",
 ];
 
 const LAYER_CHIPS = ["Payments", "Shipping", "SaaS", "Banking", "FX", "In-store", "Insurance", "Telecom"];
