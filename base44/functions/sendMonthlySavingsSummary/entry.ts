@@ -40,8 +40,15 @@ Deno.serve(async (req) => {
     // Find target users
     let targets = [];
     if (requestedEmail) {
-      const list = await base44.asServiceRole.entities.User.filter({ email: requestedEmail });
-      targets = list;
+      // For single-user (test) sends, use the authenticated caller directly to avoid
+      // depending on filter-by-email reliability.
+      const me = await base44.auth.me();
+      if (me && (isAdminCaller || me.email === requestedEmail)) {
+        targets = [me];
+      } else {
+        const list = await base44.asServiceRole.entities.User.filter({ email: requestedEmail });
+        targets = list;
+      }
     } else {
       targets = await base44.asServiceRole.entities.User.filter({ monthly_email_summary: true });
     }
