@@ -247,7 +247,7 @@ export default function ConnectTools() {
             {hero.stats.map((s, i) => (
               <div key={i} className="px-5 py-5 text-center">
                 <p
-                  className="font-display text-3xl sm:text-4xl font-black tracking-tight leading-none mb-1.5"
+                  className="font-display text-2xl sm:text-3xl font-black tracking-tight leading-none mb-1.5 whitespace-nowrap"
                   style={{
                     background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #2CA7C1 100%)",
                     WebkitBackgroundClip: "text",
