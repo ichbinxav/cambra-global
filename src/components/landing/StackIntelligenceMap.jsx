@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
 /**
@@ -42,27 +42,12 @@ export default function StackIntelligenceMap() {
     return () => clearInterval(t);
   }, []);
 
-  const focusIdx = useMemo(() => {
-    if (hoveredId) {
-      const i = LAYERS.findIndex((l) => l.id === hoveredId);
-      return i >= 0 ? i : activeIdx;
-    }
-    return activeIdx;
-  }, [hoveredId, activeIdx]);
-
-  const focus = LAYERS[focusIdx];
+  const focusIdx = hoveredId
+    ? LAYERS.findIndex((l) => l.id === hoveredId)
+    : activeIdx;
+  const focus = LAYERS[focusIdx >= 0 ? focusIdx : activeIdx];
   const RADIUS = 160;
   const NODE_R = 26;
-
-  // Live findings feed (last 5 surfaced)
-  const feed = useMemo(() => {
-    const order = [];
-    for (let i = 0; i < 5; i++) {
-      const idx = (focusIdx - i + LAYERS.length) % LAYERS.length;
-      order.push({ ...LAYERS[idx], age: i });
-    }
-    return order;
-  }, [focusIdx]);
 
   return (
     <section className="relative py-24 md:py-32 bg-neon-1 text-neon-9 overflow-hidden">
@@ -219,49 +204,30 @@ export default function StackIntelligenceMap() {
             </div>
           </div>
 
-          {/* Live finding feed */}
+          {/* Static layers grid */}
           <div className="rounded-2xl border border-white/10 bg-white/[0.025] backdrop-blur-md p-5 flex flex-col">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint animate-pulse" />
-                <span className="text-[9px] uppercase tracking-[0.2em] text-white/50 font-mono">Signal stream</span>
-              </div>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-mono">Eight layers</span>
               <span className="text-[9px] font-mono text-white/30">{LAYERS.length}/8</span>
             </div>
 
-            <div className="flex-1 space-y-2 overflow-hidden">
-              <AnimatePresence initial={false}>
-                {feed.map((f, i) => (
-                  <motion.div
-                    key={`${f.id}-${focusIdx}`}
-                    initial={{ opacity: 0, x: -8, height: 0 }}
-                    animate={{
-                      opacity: 1 - i * 0.18,
-                      x: 0,
-                      height: "auto",
-                    }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="flex items-start gap-2.5 py-2 border-b border-white/[0.05] last:border-0"
-                  >
-                    <span
-                      className="mt-1 h-1.5 w-1.5 rounded-full shrink-0"
-                      style={{ background: STATE_COLOR[f.state] }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] uppercase tracking-[0.15em] font-mono text-white/40 mb-0.5">
-                        {f.label}
-                      </p>
-                      <p className="text-[11px] text-white/85 leading-snug">{f.finding}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+            <div className="flex-1 grid grid-cols-2 gap-2 mb-4">
+              {LAYERS.map((layer) => (
+                <div
+                  key={layer.id}
+                  className="p-2.5 rounded-lg border border-white/[0.1] bg-white/[0.03] hover:bg-white/[0.08] transition-colors cursor-pointer"
+                >
+                  <p className="text-[11px] font-semibold text-white/90 mb-0.5">{layer.label}</p>
+                  <p className="text-[10px] font-mono text-white/60">
+                    {layer.drift === 0 ? "✓ aligned" : `+${layer.drift}${layer.unit}`}
+                  </p>
+                </div>
+              ))}
             </div>
 
             <a
               href="/Analyzer"
-              className="mt-4 h-10 rounded-full text-xs font-bold tracking-[0.12em] uppercase bg-white text-neon-1 hover:bg-white/90 transition inline-flex items-center justify-center gap-2"
+              className="h-10 rounded-full text-xs font-bold tracking-[0.12em] uppercase bg-white text-neon-1 hover:bg-white/90 transition inline-flex items-center justify-center gap-2"
             >
               Benchmark my stack <ArrowRight className="h-3.5 w-3.5" />
             </a>
