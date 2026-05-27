@@ -42,9 +42,12 @@ export default function MeetTheFounder() {
 
       <div className="max-w-5xl mx-auto relative">
         <div className="mb-12 md:mb-16">
-          <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full bg-cambra-navy text-white shadow-sm">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75 animate-ping" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
+            </span>
+            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/90">
               Meet the founder
             </span>
           </div>
