@@ -72,7 +72,7 @@ export default function TrustStripSection() {
             transition={{ duration: 0.6 }}
             className="font-display text-[clamp(2.2rem,5.5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.95] mb-5"
           >
-            <span className="text-saas-gradient">Connect your tools.</span>
+            Your data. <span className="text-saas-gradient">Your control.</span>
           </motion.h2>
 
           <motion.p
