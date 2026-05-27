@@ -39,8 +39,6 @@ export default function HeroSystemic() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.8], [1, 0.96]);
 
   const [revealedRows, setRevealedRows] = useState(0);
   const [pulseIdx, setPulseIdx] = useState(0);
@@ -95,10 +93,7 @@ export default function HeroSystemic() {
         style={{ background: "linear-gradient(to bottom, transparent 0%, hsl(var(--background)) 85%)" }}
       />
 
-      <motion.div
-        style={{ opacity: heroOpacity, scale: heroScale }}
-        className="relative z-10 w-full max-w-6xl mx-auto px-5 py-10 md:py-14"
-      >
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-10 md:py-14">
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-14 items-center">
 
           {/* LEFT — cinematic claim */}
@@ -342,7 +337,7 @@ export default function HeroSystemic() {
             </p>
           </motion.div>
         </div>
-      </motion.div>
+      </div>
 
       <style>{`
         @keyframes shimmer-bg {
