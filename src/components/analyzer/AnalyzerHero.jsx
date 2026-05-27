@@ -16,7 +16,7 @@ export default function AnalyzerHero({ onStartFullAudit, onUploadDocuments }) {
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
           </span>
           <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
-            Analyzer Hub · 8 cost layers
+            Analyzer Hub
           </span>
         </div>
 
