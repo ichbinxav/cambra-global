@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Quote, TrendingDown, ArrowRight } from "lucide-react";
 
 const TESTIMONIALS = [
@@ -41,9 +41,25 @@ const TESTIMONIALS = [
 export default function TestimonialsSection() {
   const ref = useRef(null);
   const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   const next = () => setIdx((i) => (i + 1) % TESTIMONIALS.length);
   const prev = () => setIdx((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
+
+  // Auto-rotate every 4.5s, pause briefly on user interaction
+  useEffect(() => {
+    if (paused) return;
+    const timer = setInterval(() => {
+      setIdx((i) => (i + 1) % TESTIMONIALS.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [paused]);
+
+  const handleInteraction = (fn) => () => {
+    fn();
+    setPaused(true);
+    setTimeout(() => setPaused(false), 8000); // resume after 8s of inactivity
+  };
 
   const t = TESTIMONIALS[idx];
 
@@ -124,7 +140,7 @@ export default function TestimonialsSection() {
               {TESTIMONIALS.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => setIdx(i)}
+                  onClick={handleInteraction(() => setIdx(i))}
                   aria-label={`Testimonial ${i + 1}`}
                   className={`h-2 rounded-full transition-all ${
                     i === idx ? "w-8 bg-foreground" : "w-2 bg-border hover:bg-foreground/40"
@@ -138,14 +154,14 @@ export default function TestimonialsSection() {
 
             <div className="flex gap-2">
               <button
-                onClick={prev}
+                onClick={handleInteraction(prev)}
                 aria-label="Previous"
                 className="h-11 w-11 rounded-full border border-border/60 bg-background flex items-center justify-center hover:bg-foreground hover:text-background hover:border-foreground transition-all"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
-                onClick={next}
+                onClick={handleInteraction(next)}
                 aria-label="Next"
                 className="h-11 w-11 rounded-full border border-border/60 bg-background flex items-center justify-center hover:bg-foreground hover:text-background hover:border-foreground transition-all"
               >
