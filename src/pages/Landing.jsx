@@ -8,6 +8,7 @@ import FooterSection from "@/components/landing/FooterSection";
 import Navbar from "@/components/landing/Navbar";
 import SectionTransition from "@/components/landing/SectionTransition.jsx";
 import TrustStripSection from "@/components/landing/TrustStripSection.jsx";
+import AnalyzerProductSection from "@/components/landing/AnalyzerProductSection.jsx";
 
 export default function Landing() {
   return (
@@ -34,6 +35,11 @@ export default function Landing() {
         <div id="how">
           <HowItWorksSimple />
         </div>
+
+        <SectionTransition />
+
+        {/* 3b — The Analyzer (flagship product showcase) */}
+        <AnalyzerProductSection />
 
         <SectionTransition />
 
