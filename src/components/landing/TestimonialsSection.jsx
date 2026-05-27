@@ -32,7 +32,7 @@ export default function TestimonialsSection() {
   const prev = () => setIdx((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
 
   return (
-    <section className="py-20 px-5 border-t border-border/40 bg-secondary/10">
+    <section className="py-14 px-5 border-t border-border/40 bg-secondary/10">
       <div ref={ref} className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-10">

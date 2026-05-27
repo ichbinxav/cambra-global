@@ -1,32 +1,35 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { CreditCard, LayoutGrid, Package, ArrowLeftRight, Landmark } from "lucide-react";
+import { CreditCard, LayoutGrid, Package, ArrowLeftRight, Landmark, TrendingUp } from "lucide-react";
 
 /**
  * OperationalTension — plain-English premise + believable recovery examples.
  *
- * Left: sharp tension copy. Right: a vertical "field report" of realistic
- * findings with their native units. Distinct from Hero terminal.
+ * Left: sharp tension copy. Right: a visual "field report" with per-layer
+ * impact bars, color-coded categories, and a hero total.
  */
 
 const RECOVERIES = [
-  { Icon: CreditCard,     layer: "Payments",  finding: "0.3pp below Stripe default rate", recovered: "€11,400 / yr" },
-  { Icon: LayoutGrid,     layer: "SaaS",      finding: "Killed 2 duplicate ESPs",          recovered: "€8,200 / yr"  },
-  { Icon: Package,        layer: "Shipping",  finding: "Renegotiated €0.40 / order",       recovered: "€6,900 / yr"  },
-  { Icon: ArrowLeftRight, layer: "FX",        finding: "Spread tightened by 0.4pp",        recovered: "€4,100 / yr"  },
-  { Icon: Landmark,       layer: "Banking",   finding: "Fixed fees -€18 / month",          recovered: "€220 / yr"    },
+  { Icon: CreditCard,     layer: "Payments",  finding: "0.3pp below Stripe default", amount: 11400, color: "from-blue-500 to-blue-600",     accent: "text-blue-600",    bg: "bg-blue-500/10" },
+  { Icon: LayoutGrid,     layer: "SaaS",      finding: "Killed 2 duplicate ESPs",    amount: 8200,  color: "from-cyan-500 to-cyan-600",     accent: "text-cyan-600",    bg: "bg-cyan-500/10" },
+  { Icon: Package,        layer: "Shipping",  finding: "Renegotiated €0.40 / order", amount: 6900,  color: "from-violet-500 to-violet-600", accent: "text-violet-600",  bg: "bg-violet-500/10" },
+  { Icon: ArrowLeftRight, layer: "FX",        finding: "Spread tightened by 0.4pp",  amount: 4100,  color: "from-emerald-500 to-emerald-600", accent: "text-emerald-600", bg: "bg-emerald-500/10" },
+  { Icon: Landmark,       layer: "Banking",   finding: "Fixed fees -€18 / month",    amount: 220,   color: "from-amber-500 to-amber-600",   accent: "text-amber-600",   bg: "bg-amber-500/10" },
 ];
+
+const TOTAL = RECOVERIES.reduce((sum, r) => sum + r.amount, 0);
+const MAX = Math.max(...RECOVERIES.map(r => r.amount));
 
 export default function OperationalTension() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} className="py-24 md:py-28 border-y border-border/40 bg-background relative overflow-hidden">
+    <section ref={ref} className="py-16 md:py-20 border-y border-border/40 bg-background relative overflow-hidden">
       <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
 
       <div className="relative max-w-6xl mx-auto px-5">
-        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-20 items-center">
+        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-12 lg:gap-16 items-center">
           {/* LEFT — economic tension copy */}
           <div>
             <motion.p
@@ -61,18 +64,19 @@ export default function OperationalTension() {
               className="flex items-baseline gap-3 text-[11px] font-mono text-muted-foreground/50"
             >
               <span className="h-1 w-1 rounded-full bg-cambra-mint animate-pulse" />
-              Typical recovery: €15K–€35K / yr · €1–5M tier
+              Estimated recovery: €15K–€35K / yr · €1–5M tier
             </motion.div>
           </div>
 
-          {/* RIGHT — field report of recovered margin */}
+          {/* RIGHT — visual field report with impact bars */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden"
+            className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-sm overflow-hidden shadow-xl shadow-foreground/[0.03]"
           >
-            <div className="px-4 py-2.5 border-b border-border/50 bg-secondary/30 flex items-center justify-between">
+            {/* Header */}
+            <div className="px-5 py-3 border-b border-border/50 bg-secondary/20 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint animate-pulse" />
                 <span className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground/60 font-mono">
@@ -82,34 +86,72 @@ export default function OperationalTension() {
               <span className="text-[9px] font-mono text-muted-foreground/40">€1–5M tier</span>
             </div>
 
-            <div className="divide-y divide-border/30">
-              {RECOVERIES.map((r, i) => (
-                <motion.div
-                  key={r.layer}
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={inView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
-                  className="px-4 py-3.5 flex items-center gap-3 hover:bg-secondary/30 transition-colors"
-                >
-                  <div className="h-9 w-9 rounded-lg border border-border/50 bg-card flex items-center justify-center shrink-0">
-                    <r.Icon className="h-4 w-4 text-foreground/70" strokeWidth={1.8} />
+            {/* Hero total */}
+            <div className="px-5 py-5 border-b border-border/40 bg-gradient-to-br from-blue-500/[0.04] to-cyan-500/[0.04]">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.2em] font-mono text-muted-foreground/50 mb-1.5">
+                    Estimated annual recovery
+                  </p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl md:text-5xl font-black tracking-tight text-saas-gradient tabular-nums">
+                      ~€{(TOTAL / 1000).toFixed(1)}K
+                    </span>
+                    <span className="text-sm font-mono text-muted-foreground/50">/ yr</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] uppercase tracking-[0.18em] font-mono text-muted-foreground/40 mb-0.5">
-                      {r.layer}
-                    </p>
-                    <p className="text-sm text-foreground/75 truncate">{r.finding}</p>
-                  </div>
-                  <span className="text-base font-mono tabular-nums font-bold text-saas-gradient shrink-0">
-                    {r.recovered}
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  <TrendingUp className="h-3 w-3 text-emerald-600" strokeWidth={2.5} />
+                  <span className="text-[10px] font-mono font-bold text-emerald-600 uppercase tracking-wider">
+                    5 layers
                   </span>
-                </motion.div>
-              ))}
+                </div>
+              </div>
             </div>
 
-            <div className="px-4 py-2.5 bg-secondary/20 border-t border-border/30 flex items-center justify-between text-[9px] font-mono text-muted-foreground/40 uppercase tracking-[0.18em]">
-              <span>5 layers recovered</span>
-              <span className="text-foreground/70">~€30.8K / yr</span>
+            {/* Layers */}
+            <div className="p-3 space-y-1.5">
+              {RECOVERIES.map((r, i) => {
+                const widthPct = (r.amount / MAX) * 100;
+                return (
+                  <motion.div
+                    key={r.layer}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={inView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
+                    className="relative px-3 py-2.5 rounded-lg hover:bg-secondary/40 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3 relative z-10">
+                      <div className={`h-9 w-9 rounded-lg ${r.bg} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}>
+                        <r.Icon className={`h-4 w-4 ${r.accent}`} strokeWidth={2} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-[9px] uppercase tracking-[0.18em] font-mono font-bold ${r.accent}`}>
+                            {r.layer}
+                          </span>
+                        </div>
+                        <p className="text-[13px] text-foreground/75 truncate">{r.finding}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-base font-mono tabular-nums font-bold text-foreground">
+                          €{r.amount.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] font-mono text-muted-foreground/40 ml-0.5">/yr</span>
+                      </div>
+                    </div>
+                    {/* Impact bar */}
+                    <div className="mt-2 ml-12 h-1 rounded-full bg-border/30 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={inView ? { width: `${widthPct}%` } : {}}
+                        transition={{ duration: 0.8, delay: 0.5 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                        className={`h-full bg-gradient-to-r ${r.color} rounded-full`}
+                      />
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </motion.div>
         </div>
