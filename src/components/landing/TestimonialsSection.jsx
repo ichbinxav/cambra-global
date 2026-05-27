@@ -70,9 +70,13 @@ export default function TestimonialsSection() {
       <div className="max-w-6xl mx-auto relative">
         {/* Header */}
         <div className="mb-12">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-4 font-mono">
-            Real findings
-          </p>
+          <div className="flex items-center gap-2 mb-5 w-fit px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
+            </span>
+            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Real findings</span>
+          </div>
           <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92] text-foreground">
             What brands actually <span className="text-saas-gradient">recovered.</span>
           </h2>
