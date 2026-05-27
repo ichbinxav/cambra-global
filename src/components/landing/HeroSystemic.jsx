@@ -59,21 +59,15 @@ export default function HeroSystemic() {
   }, [revealedRows]);
 
   return (
-    <section
-      ref={ref}
-      className="relative min-h-[100vh] flex items-center overflow-hidden pt-8"
-      style={{
-        background: "linear-gradient(135deg, hsl(217 100% 96%) 0%, hsl(217 85% 92%) 100%)"
-      }}
-    >
+    <section ref={ref} className="relative min-h-[100vh] flex items-center overflow-hidden pt-8 bg-background">
       {/* Animated backdrop */}
       <motion.div className="absolute inset-0 pointer-events-none" style={{ y: bgY }}>
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 dot-grid"
           style={{
             opacity: 1,
             backgroundImage:
-              "linear-gradient(hsl(217 60% 40% / 0.10) 1px, transparent 1px), linear-gradient(90deg, hsl(217 60% 40% / 0.10) 1px, transparent 1px)",
+              "linear-gradient(hsl(0 0% 0% / 0.04) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 0% / 0.04) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
             WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 95%)",
             maskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 95%)",
