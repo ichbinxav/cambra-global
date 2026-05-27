@@ -131,16 +131,20 @@ export default function StackIntelligenceMap() {
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut", delay: 1.2 }}
               />
 
-              {/* Rotating scan hand — clock-like sweep from center (CSS animation, immune to re-renders) */}
-              <g style={{ transformOrigin: "0px 0px", animation: "scan-hand-spin 10s linear infinite" }}>
+              {/* Scan hand — synced to active node, color matches node state */}
+              <motion.g
+                animate={{ rotate: focus.angle }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                style={{ transformOrigin: "0px 0px" }}
+              >
                 <line
                   x1={0} y1={0} x2={RADIUS - NODE_R - 6} y2={0}
-                  stroke="rgba(255,255,255,0.55)"
+                  stroke={focusState.color}
                   strokeWidth={1.5}
                   strokeLinecap="round"
+                  opacity={0.75}
                 />
-              </g>
-              <style>{`@keyframes scan-hand-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+              </motion.g>
 
               {/* Connection lines removed — clean radial map without center-to-node links */}
 
