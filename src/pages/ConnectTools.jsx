@@ -241,15 +241,15 @@ export default function ConnectTools() {
           </p>
         </div>
 
-        {/* ── STATS BAR — navy gradient ── */}
-         <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-cambra-navy">
+        {/* ── STATS BAR — navy gradient con radial ── */}
+         <div className="relative overflow-hidden rounded-2xl border border-white/10" style={{background: 'radial-gradient(ellipse 150% 100% at 50% 50%, hsl(222 60% 10%), hsl(222 70% 4%), transparent 80%)'}}>
            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/10">
             {hero.stats.map((s, i) => (
               <div key={i} className="px-5 py-5 text-center">
-                <p className="font-display text-2xl sm:text-3xl font-black tracking-tight leading-none mb-1.5 text-white">
+                <p className="font-display text-3xl sm:text-4xl font-black tracking-tight leading-none mb-1.5" style={{color: 'rgba(255,255,255,0.95)', fontWeight: 900}}>
                   {s.value}
                 </p>
-                <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-white/60">{s.label}</p>
+                <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-white/50">{s.label}</p>
               </div>
             ))}
           </div>
