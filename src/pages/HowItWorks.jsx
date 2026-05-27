@@ -32,7 +32,7 @@ const STEPS = [
   {
     n: "04",
     icon: Sparkles,
-    title: "Unlock your savings",
+    title: "Activate better terms",
     detail: "Move into stronger commercial conditions through CAMBRA's network — performance-based, no upfront fee.",
     points: ["Negotiated terms", "Recovery verification", "Aligned incentives"],
     cta: { label: "Unlock your savings", href: "/Dashboard" },
