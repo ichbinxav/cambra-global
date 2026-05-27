@@ -18,23 +18,23 @@ export default function Landing() {
         <HeroSystemic />
 
         {/* 2 — Three simple steps */}
-        <div id="how">
-          <HowItWorksSimple />
-        </div>
+         <div id="how">
+           <HowItWorksSimple />
+         </div>
 
-        {/* 3 — Living stack map */}
-        <StackIntelligenceMap />
+         {/* 3 — Connect your tools (priority path for accuracy) */}
+         <ConnectToolsSection />
 
-        {/* 4 — Connect your tools (priority path for accuracy) */}
-        <ConnectToolsSection />
+         {/* 4 — Pricing */}
+         <div id="pricing">
+           <PricingSection />
+         </div>
 
-        {/* 5 — Pricing */}
-        <div id="pricing">
-          <PricingSection />
-        </div>
+         {/* 5 — Living stack map */}
+         <StackIntelligenceMap />
 
-        {/* 6 — Operator findings (short, cold, specific) */}
-        <TestimonialsSection />
+         {/* 6 — Operator findings (short, cold, specific) */}
+         <TestimonialsSection />
 
         {/* 7 — Meet the founder */}
         <MeetTheFounder />
