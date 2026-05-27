@@ -183,6 +183,12 @@ export default function Analyzer() {
 
   const run = async () => {
     setLoading(true);
+
+    const isAuthed = await base44.auth.isAuthenticated();
+    if (!isAuthed) {
+      base44.auth.redirectToLogin(window.location.pathname + window.location.search);
+      return;
+    }
     const provider = data.payment_provider === "Other" ? customPayment : data.payment_provider;
     const shipper = data.shipping_provider === "Other" ? customShipping : data.shipping_provider;
 
