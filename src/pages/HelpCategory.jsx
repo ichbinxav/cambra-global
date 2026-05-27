@@ -15,7 +15,17 @@ export default function HelpCategory() {
   const groups = getFAQsByCategory(slug);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const hash = window.location.hash?.slice(1);
+    if (hash) {
+      // Wait a tick for FAQs to render then scroll to anchor
+      setTimeout(() => {
+        const el = document.getElementById(hash);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        else window.scrollTo(0, 0);
+      }, 100);
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, [slug]);
 
   if (!category) return <Navigate to="/Help" replace />;

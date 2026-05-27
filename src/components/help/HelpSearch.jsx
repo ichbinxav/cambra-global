@@ -186,10 +186,11 @@ export default function HelpSearch({ open, onClose }) {
 
 function Highlight({ text, term }) {
   if (!term.trim()) return text;
-  const re = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "ig");
+  const safe = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(${safe})`, "i");
   const parts = String(text).split(re);
   return parts.map((p, i) =>
-    re.test(p) ? (
+    p.toLowerCase() === term.toLowerCase() ? (
       <mark key={i} className="bg-cambra-mint/20 text-foreground rounded px-0.5 font-semibold">
         {p}
       </mark>

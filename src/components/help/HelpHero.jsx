@@ -40,7 +40,7 @@ export default function HelpHero({ onSearchOpen }) {
           className="text-[clamp(2.5rem,6.5vw,5.5rem)] font-black tracking-[-0.045em] leading-[0.9] mb-5"
         >
           Questions, answers,{" "}
-          <span className="text-saas-gradient">and operating insights.</span>
+          <span className="text-saas-gradient inline-block">and operating insights.</span>
         </motion.h1>
 
         <motion.p
@@ -55,26 +55,28 @@ export default function HelpHero({ onSearchOpen }) {
         </motion.p>
 
         {/* Premium search bar */}
-        <motion.button
-          onClick={onSearchOpen}
+        <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.995 }}
-          className="group relative w-full max-w-2xl mx-auto block"
+          className="relative w-full max-w-2xl mx-auto"
         >
-          <div className="absolute -inset-px rounded-2xl bg-saas-gradient opacity-20 group-hover:opacity-40 blur-md transition-opacity" />
-          <div className="relative flex items-center gap-4 h-16 px-6 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-xl text-left">
+          <span aria-hidden className="absolute -inset-px rounded-2xl bg-saas-gradient opacity-20 group-hover:opacity-40 blur-md transition-opacity pointer-events-none" />
+          <motion.button
+            type="button"
+            onClick={onSearchOpen}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.995 }}
+            className="group relative w-full flex items-center gap-4 h-16 px-6 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-xl text-left"
+            aria-label="Open search"
+          >
             <Search className="w-5 h-5 text-muted-foreground/50 shrink-0" />
             <RotatingPlaceholder placeholders={PLACEHOLDERS} />
-            <div className="ml-auto flex items-center gap-1.5 shrink-0">
-              <kbd className="hidden sm:inline-flex items-center gap-1 h-7 px-2 rounded-md border border-border/60 bg-secondary/60 text-[10px] font-bold text-muted-foreground/70">
-                <Command className="w-3 h-3" /> K
-              </kbd>
-            </div>
-          </div>
-        </motion.button>
+            <span className="ml-auto hidden sm:inline-flex items-center gap-1 h-7 px-2 rounded-md border border-border/60 bg-secondary/60 text-[10px] font-bold text-muted-foreground/70 shrink-0">
+              <Command className="w-3 h-3" /> K
+            </span>
+          </motion.button>
+        </motion.div>
 
         {/* Trending searches */}
         <motion.div

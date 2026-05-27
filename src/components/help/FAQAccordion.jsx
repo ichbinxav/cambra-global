@@ -1,9 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, ThumbsUp, ThumbsDown } from "lucide-react";
 
 export default function FAQAccordion({ items, defaultOpenIndex = -1, categorySlug = "" }) {
   const [openIdx, setOpenIdx] = useState(defaultOpenIndex);
+
+  // Auto-open FAQ matching URL hash (deep-link from search)
+  useEffect(() => {
+    const hash = typeof window !== "undefined" ? window.location.hash?.slice(1) : "";
+    if (!hash || !categorySlug) return;
+    const match = hash.match(new RegExp(`^${categorySlug}-(\\d+)$`));
+    if (match) {
+      const idx = parseInt(match[1], 10);
+      if (idx >= 0 && idx < items.length) setOpenIdx(idx);
+    }
+  }, [categorySlug, items.length]);
 
   return (
     <div className="space-y-2">

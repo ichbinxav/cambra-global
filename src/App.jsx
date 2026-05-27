@@ -200,6 +200,7 @@ const AuthenticatedApp = () => {
         <Route path="/Help" element={<Help />} />
         <Route path="/help" element={<Navigate to="/Help" replace />} />
         <Route path="/Help/:slug" element={<HelpCategory />} />
+        <Route path="/help/:slug" element={<HelpCategory />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
         <Route path="/deal/activate" element={<ProtectedRoute><ActivateDeal /></ProtectedRoute>} />
