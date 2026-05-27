@@ -18,6 +18,7 @@ import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import LiveSystemHeader from "@/components/dashboard/LiveSystemHeader";
 import DriftAlertStrip from "@/components/dashboard/DriftAlertStrip";
 import IntelligenceWidget from "@/components/dashboard/IntelligenceWidget";
+import PageHero from "@/components/shared/PageHero";
 
 
 
@@ -150,40 +151,30 @@ export default function Dashboard() {
   return (
     <>
       <LiveSystemHeader />
-      <div className={`space-y-4 pb-10 px-6 ${!subscribed ? 'lock-blur' : ''}`}>
+      <div className={`space-y-4 pb-10 ${!subscribed ? 'lock-blur' : ''}`}>
 
-        {/* ── HEADER ── */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-4">
-          <div>
-            <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cambra-mint opacity-75" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-              </span>
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
-                Live · 8 operational layers
-              </span>
-            </div>
-            <h1 className="font-display text-3xl font-black tracking-[-0.04em] leading-[0.95]">
-              {user?.full_name ? `${user.full_name.split(" ")[0]}.` : "Dashboard"}
-            </h1>
-            <p className="text-xs text-foreground/65 mt-1">Continuous monitoring · Benchmarked against your peers</p>
-          </div>
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <Link to="/Analyzer">
-            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-foreground text-background shadow-md hover:shadow-lg">
-              New Analysis <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
-          {!subscribed && (
-            <Link to="/Onboarding">
-              <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-saas-gradient text-white shadow-md hover:opacity-90">
-                Unlock report — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span>
-              </Button>
-            </Link>
-          )}
-        </div>
-      </div>
+        {/* ── HERO HEADER — landing grade ── */}
+        <PageHero
+          eyebrow="Live · 8 operational layers"
+          title={`${user?.full_name ? user.full_name.split(" ")[0] : "Dashboard"}.`}
+          subtitle="Continuous monitoring · Benchmarked against your peers in real-time."
+          actions={
+            <>
+              <Link to="/Analyzer">
+                <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-white text-[#06080F] hover:bg-white/90 shadow-[0_0_24px_rgba(44,167,193,0.4)]">
+                  New Analysis <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+              {!subscribed && (
+                <Link to="/Onboarding">
+                  <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-saas-gradient text-white shadow-md hover:opacity-90">
+                    Unlock — <span className="mx-1 line-through opacity-80">€60</span> Free
+                  </Button>
+                </Link>
+              )}
+            </>
+          }
+        />
 
       {/* Economics strip */}
       <div className="mt-1">

@@ -153,46 +153,49 @@ export default function AdminLayout() {
       {sidebarOpen && <div className="fixed inset-0 z-[60] bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* Main */}
-      <div className="flex-1 lg:ml-56 min-h-screen flex flex-col">
-        {/* Top bar */}
-        <header className="sticky top-0 z-20 h-12 bg-background border-b border-border/40 flex items-center px-5 gap-3">
+      <div className="flex-1 lg:ml-56 min-h-screen flex flex-col" style={{ background: "#06080F" }}>
+        {/* Top bar — dark */}
+        <header className="sticky top-0 z-20 h-12 bg-[#06080F]/80 backdrop-blur-xl border-b border-white/10 flex items-center px-5 gap-3">
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setSidebarOpen(true); }}
-            className="lg:hidden text-muted-foreground hover:text-foreground p-2 -ml-2 rounded-lg hover:bg-secondary active:bg-secondary transition-colors cursor-pointer"
+            className="lg:hidden text-white/70 hover:text-white p-2 -ml-2 rounded-lg hover:bg-white/10 active:bg-white/10 transition-colors cursor-pointer"
             style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
           >
             <Menu size={20} />
           </button>
-          <div className="text-xs text-muted-foreground/50 flex items-center gap-1.5">
+          <div className="text-xs text-white/40 flex items-center gap-1.5">
             {location.pathname.split("/").filter(Boolean).map((seg, i, arr) => (
               <span key={i} className="flex items-center gap-1.5">
                 {i > 0 && <ChevronRight size={10} />}
-                <span className={i === arr.length - 1 ? "text-foreground font-medium" : ""}>{seg}</span>
+                <span className={i === arr.length - 1 ? "text-white font-semibold" : ""}>{seg}</span>
               </span>
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
             <a
               href="/Dashboard"
-              className="h-8 px-3 rounded-lg border border-border/40 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              className="h-8 px-3 rounded-lg border border-white/15 text-xs font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors"
             >
               Back to app
             </a>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 border border-red-500/20 font-semibold">Admin</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/15 text-red-300 border border-red-500/30 font-semibold">Admin</span>
           </div>
         </header>
 
-        <main className="relative flex-1 overflow-hidden">
-          {/* Ambient backdrop — wow */}
+        <main className="relative flex-1 overflow-hidden" style={{ background: "#06080F" }}>
+          {/* Ambient backdrop — wow (dark) */}
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-0 dot-grid opacity-60" />
-            <div className="absolute -top-40 right-1/4 w-[44rem] h-[44rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.26]" />
-            <div className="absolute top-1/3 -left-40 w-[38rem] h-[38rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.22]" />
-            <div className="absolute bottom-0 right-0 w-[34rem] h-[34rem] rounded-full blur-3xl opacity-[0.18]"
-                 style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.45), transparent)" }} />
+            <div className="absolute inset-0 opacity-[0.08]"
+                 style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+            <div className="absolute -top-40 right-1/4 w-[48rem] h-[48rem] rounded-full blur-3xl opacity-50"
+                 style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.55), transparent 60%)" }} />
+            <div className="absolute top-1/3 -left-40 w-[42rem] h-[42rem] rounded-full blur-3xl opacity-45"
+                 style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.45), transparent 60%)" }} />
+            <div className="absolute bottom-0 right-0 w-[38rem] h-[38rem] rounded-full blur-3xl opacity-35"
+                 style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.45), transparent 60%)" }} />
           </div>
-          <div className="relative p-6 max-w-[1400px] mx-auto w-full">
+          <div className="dark relative p-6 max-w-[1400px] mx-auto w-full text-white">
             <Outlet />
           </div>
         </main>

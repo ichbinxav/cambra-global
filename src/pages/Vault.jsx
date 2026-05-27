@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import PageHero from '@/components/shared/PageHero';
+import { FolderLock } from 'lucide-react';
 
 const CATEGORIES = [
   'invoices','statements','provider_proposals','contracts','signed_mandates','tax_docs','screenshots','benchmark_evidence','migration_docs','pricing_docs','internal_files'
@@ -63,26 +65,23 @@ export default function Vault() {
   };
 
   return (
-    <div className="p-5 space-y-5">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Documents · Organized</span>
+    <div className="space-y-5">
+      <PageHero
+        eyebrow="Documents · Organized"
+        title="Document Vault."
+        subtitle="Upload, organize, and link your business documents."
+        icon={FolderLock}
+        actions={
+          <div className="flex items-center gap-2">
+            <Select value={newCat} onValueChange={setNewCat}>
+              <SelectTrigger className="w-44 bg-white/10 border-white/20 text-white"><SelectValue placeholder="Category" /></SelectTrigger>
+              <SelectContent>{CATEGORIES.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}</SelectContent>
+            </Select>
+            <input ref={fileRef} type="file" onChange={onUpload} className="hidden" />
+            <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-10 rounded-full px-5 bg-white text-[#06080F] hover:bg-white/90 font-bold">{uploading ? 'Uploading…' : 'Upload file'}</Button>
           </div>
-          <h1 className="font-display text-2xl font-black tracking-[-0.04em]"><span className="text-saas-gradient">Document Vault.</span></h1>
-          <p className="text-xs text-foreground/65 mt-1">Sube, organiza y vincula documentos.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Select value={newCat} onValueChange={setNewCat}>
-            <SelectTrigger className="w-44"><SelectValue placeholder="Categoría" /></SelectTrigger>
-            <SelectContent>{CATEGORIES.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}</SelectContent>
-          </Select>
-          <input ref={fileRef} type="file" onChange={onUpload} className="hidden" />
-          <Button onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? 'Subiendo…' : 'Subir archivo'}</Button>
-          <Button variant="outline" onClick={load}>Refrescar</Button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="flex items-center gap-2 flex-wrap">
         <Input placeholder="Buscar…" value={q} onChange={e=>setQ(e.target.value)} className="w-52" />

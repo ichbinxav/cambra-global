@@ -91,10 +91,10 @@ export default function DashboardLayout() {
         </div>
       </aside>
 
-      {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 h-14 border-b border-border/40 bg-background/95 backdrop-blur-2xl">
-        <Link to="/" className="text-sm font-black tracking-tight">CAMBRA</Link>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(!sidebarOpen)}>
+      {/* Mobile header — dark */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 h-14 border-b border-white/10 bg-[#06080F]/90 backdrop-blur-2xl text-white">
+        <Link to="/" className="text-sm font-black tracking-tight" style={{ background: "linear-gradient(135deg, #fff 0%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>CAMBRA</Link>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-white/70 hover:bg-white/10 hover:text-white" onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
         </Button>
       </div>
@@ -159,17 +159,21 @@ export default function DashboardLayout() {
         )}
       </AnimatePresence>
 
-      {/* Main */}
-      <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 bg-background xl:pr-[392px] overflow-hidden">
-        {/* Ambient backdrop — wow */}
+      {/* Main — IMMERSIVE DARK */}
+      <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 xl:pr-[392px] overflow-hidden"
+            style={{ background: "#06080F" }}>
+        {/* Ambient backdrop — wow (dark mode) */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 dot-grid opacity-60" />
-          <div className="absolute -top-40 right-1/4 w-[44rem] h-[44rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.28]" />
-          <div className="absolute top-1/3 -left-40 w-[38rem] h-[38rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.22]" />
-          <div className="absolute bottom-0 right-0 w-[34rem] h-[34rem] rounded-full blur-3xl opacity-[0.18]"
-               style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.45), transparent)" }} />
+          <div className="absolute inset-0 opacity-[0.08]"
+               style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+          <div className="absolute -top-40 right-1/4 w-[48rem] h-[48rem] rounded-full blur-3xl opacity-50"
+               style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.55), transparent 60%)" }} />
+          <div className="absolute top-1/3 -left-40 w-[42rem] h-[42rem] rounded-full blur-3xl opacity-45"
+               style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.45), transparent 60%)" }} />
+          <div className="absolute bottom-0 right-0 w-[38rem] h-[38rem] rounded-full blur-3xl opacity-35"
+               style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.45), transparent 60%)" }} />
         </div>
-        <div className="relative max-w-5xl mx-auto p-6 lg:p-10">
+        <div className="dark relative max-w-5xl mx-auto p-6 lg:p-10 text-white">
           <Outlet />
         </div>
       </main>

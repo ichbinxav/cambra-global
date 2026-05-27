@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { ArrowRight, TrendingUp, ArrowUpRight, CheckCircle2, Circle, AlertCircle } from "lucide-react";
 import { getBenchmarks } from "@/lib/scoreEngine";
 import { Button } from "@/components/ui/button";
+import PageHero from "@/components/shared/PageHero";
 
 export default function Reports() {
   const [results, setResults] = useState([]);
@@ -56,21 +57,19 @@ export default function Reports() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-      <div className="flex items-start justify-between mb-12">
-        <div>
-          <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Analytics · Savings history</span>
-          </div>
-          <h1 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-black tracking-[-0.045em] leading-[0.92]"><span className="text-saas-gradient">Reports.</span></h1>
-          <p className="text-foreground/65 text-sm mt-3">Your analysis history and savings trends.</p>
-        </div>
-        <Link to="/Analyzer">
-          <Button size="sm" className="h-8 rounded-full px-4 text-xs font-semibold shadow-sm">
-            New Analysis <ArrowRight className="ml-1.5 h-3 w-3" />
-          </Button>
-        </Link>
-      </div>
+      <PageHero
+        eyebrow="Analytics · Savings history"
+        title="Reports."
+        subtitle="Your analysis history and savings trends, mapped continuously."
+        icon={TrendingUp}
+        actions={
+          <Link to="/Analyzer">
+            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-1.5 shadow-[0_0_24px_rgba(44,167,193,0.4)]">
+              New Analysis <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        }
+      />
 
       {loading ? (
         <div className="flex items-center justify-center py-40">

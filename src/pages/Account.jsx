@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { LogOut, User, Building2, Shield, Store, Mail } from "lucide-react";
+import { LogOut, User, Building2, Shield, Store, Mail, Settings } from "lucide-react";
 import MonthlyEmailPreference from "@/components/account/MonthlyEmailPreference";
+import PageHero from "@/components/shared/PageHero";
 
 const Section = ({ icon: IconComp, title, children }) => (
   <div className="p-7 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
@@ -85,18 +86,12 @@ export default function Account() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-      <div className="mb-10">
-        <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-          <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
-            Settings · Profile & brand
-          </span>
-        </div>
-        <h1 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-black tracking-[-0.045em] leading-[0.92]">
-          <span className="text-saas-gradient">Account.</span>
-        </h1>
-        <p className="text-foreground/65 text-sm mt-3">Manage your profile and brand settings.</p>
-      </div>
+      <PageHero
+        eyebrow="Settings · Profile & brand"
+        title="Account."
+        subtitle="Manage your profile, brand and integrations."
+        icon={Settings}
+      />
 
       <div className="max-w-lg space-y-4">
         <Section icon={User} title="Profile">

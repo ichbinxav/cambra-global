@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import PageHero from '@/components/shared/PageHero';
+import { Receipt } from 'lucide-react';
 
 export default function Invoices() {
   const [items, setItems] = useState([]);
@@ -23,13 +25,12 @@ export default function Invoices() {
 
   return (
     <div className="space-y-5">
-      <div className="mb-2">
-        <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-          <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Billing</span>
-        </div>
-        <h1 className="font-display text-2xl font-black tracking-[-0.04em]"><span className="text-saas-gradient">My Invoices.</span></h1>
-      </div>
+      <PageHero
+        eyebrow="Billing · CAMBRA"
+        title="My Invoices."
+        subtitle="Track invoices and payment status across activations."
+        icon={Receipt}
+      />
       <div className="rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm overflow-auto shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
         <table className="min-w-[700px] w-full text-sm">
           <thead className="bg-secondary/40">

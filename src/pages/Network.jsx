@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Globe, MapPin } from "lucide-react";
+import { Search, Globe, MapPin, Users } from "lucide-react";
+import PageHero from "@/components/shared/PageHero";
 
 const CATEGORIES = [
   { value: "all", label: "All categories" },
@@ -79,14 +80,12 @@ export default function Network() {
 
   return (
     <div>
-      <div className="mb-8">
-        <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-          <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Members · Independent operators</span>
-        </div>
-        <h1 className="font-display text-[clamp(2rem,4.5vw,3.2rem)] font-black tracking-[-0.045em] leading-[0.92]"><span className="text-saas-gradient">Network.</span></h1>
-        <p className="text-foreground/65 text-sm mt-3">Independent brands building smarter businesses through CAMBRA.</p>
-      </div>
+      <PageHero
+        eyebrow="Members · Independent operators"
+        title="Network."
+        subtitle="Independent brands building smarter businesses through CAMBRA."
+        icon={Users}
+      />
 
       {!subscribed && (
         <div className="mb-6 p-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.06] flex flex-col sm:flex-row items-start sm:items-center gap-3">
