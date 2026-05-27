@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
-import { LogOut, User, Building2, Shield, Store } from "lucide-react";
+import { LogOut, User, Building2, Shield, Store, Mail } from "lucide-react";
+import MonthlyEmailPreference from "@/components/account/MonthlyEmailPreference";
 
 const Section = ({ icon: IconComp, title, children }) => (
   <div className="p-7 rounded-2xl border border-border/50 bg-card/60">
@@ -157,6 +158,10 @@ export default function Account() {
             </div>
           </Section>
         )}
+
+        <Section icon={Mail} title="Email notifications">
+          <MonthlyEmailPreference user={user} onUpdate={setUser} />
+        </Section>
 
         <Section icon={Shield} title="Session">
           <p className="text-sm text-muted-foreground mb-5">

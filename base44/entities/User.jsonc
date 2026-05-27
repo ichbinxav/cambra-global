@@ -1,0 +1,22 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "description": "The role of the user in the app",
+      "enum": [
+        "admin",
+        "user"
+      ]
+    },
+    "monthly_email_summary": {
+      "type": "boolean",
+      "default": false,
+      "description": "Receive a monthly savings summary by email"
+    }
+  },
+  "required": [
+    "role"
+  ]
+}
