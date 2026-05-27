@@ -69,12 +69,12 @@ export default function TestimonialsSection() {
 
       <div className="max-w-6xl mx-auto relative">
         {/* Header */}
-        <div className="mb-8">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-2 font-mono">
+        <div className="mb-12">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-4 font-mono">
             Real findings
           </p>
-          <h2 className="font-display text-[clamp(1.5rem,3.5vw,2.4rem)] font-black tracking-[-0.04em] leading-[0.95] text-foreground">
-            What brands actually recovered.
+          <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92] text-foreground">
+            What brands actually <span className="text-saas-gradient">recovered.</span>
           </h2>
         </div>
 
