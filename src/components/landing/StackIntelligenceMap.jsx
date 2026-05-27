@@ -74,7 +74,7 @@ export default function StackIntelligenceMap() {
           <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint animate-pulse" />
             <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-white/60">
-              Stack Intelligence · Live
+              Stack Intelligence
             </span>
           </div>
           <h2 className="font-display text-[clamp(2rem,5vw,3.6rem)] font-black tracking-[-0.04em] leading-[0.92] max-w-3xl mx-auto">
