@@ -85,7 +85,7 @@ export default function CopilotObservations() {
         exit={{ opacity: 0, y: 8 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         whileHover={{ opacity: 1 }}
-        className="fixed bottom-6 right-6 z-[85] max-w-[260px] hidden sm:block group"
+        className="fixed bottom-20 left-4 z-[85] max-w-[260px] hidden lg:block group"
         role="status"
         aria-live="polite"
       >

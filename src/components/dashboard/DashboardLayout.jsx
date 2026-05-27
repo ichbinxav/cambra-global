@@ -165,7 +165,7 @@ export default function DashboardLayout() {
           <div className="absolute top-1/2 -left-32 w-[34rem] h-[34rem] rounded-full blur-3xl opacity-[0.10]"
                style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.35), transparent 60%)" }} />
         </div>
-        <div className="relative max-w-5xl mx-auto p-6 lg:p-10">
+        <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8">
           <Outlet />
         </div>
       </main>

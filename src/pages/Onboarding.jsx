@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import OnboardingLayout from '@/components/onboarding/OnboardingLayout';
-import OnboardingHero from '@/components/onboarding/OnboardingHero.jsx';
 import StepGrid from '@/components/onboarding/StepGrid.jsx';
 import PaymentsModule from '@/components/onboarding/PaymentsModule';
 import ShippingModule from '@/components/onboarding/ShippingModule';
@@ -44,8 +43,7 @@ export default function Onboarding(){
         <div className="relative">
         <OnboardingLayout activeTab={tab} onTabChange={(v)=>{ setTab(v); if(v!=='general') load(); }} statuses={statuses}>
           <TabsContent value="general">
-            <div className="space-y-6">
-              <OnboardingHero statuses={statuses} />
+            <div className="space-y-5">
               <StepGrid statuses={statuses} />
             </div>
           </TabsContent>

@@ -21,6 +21,7 @@ import InsightDetail from '@/pages/InsightDetail';
 import Account from '@/pages/Account';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
+import Cookies from '@/pages/Cookies';
 import ConnectTools from '@/pages/ConnectTools';
 import StripeAnalyzer from '@/pages/StripeAnalyzer';
 import DevExport from '@/pages/DevExport';
@@ -185,6 +186,8 @@ const AuthenticatedApp = () => {
         <Route path="/privacy" element={<Navigate to="/Privacy" replace />} />
         <Route path="/Terms" element={<Terms />} />
         <Route path="/terms" element={<Navigate to="/Terms" replace />} />
+        <Route path="/Cookies" element={<Cookies />} />
+        <Route path="/cookies" element={<Navigate to="/Cookies" replace />} />
         <Route path="/Snapshot" element={<Snapshot />} />
         <Route path="/snapshot" element={<Navigate to="/Snapshot" replace />} />
         <Route path="/Pricing" element={<Pricing />} />

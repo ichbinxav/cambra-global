@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/AuthContext";
 // CAMBRA OS navigation — grouped by intent
 const NAV_PUBLIC = [
   { label: "Analyzer", href: "/Analyzer", icon: Activity, desc: "Scan your infrastructure" },
-  { label: "Connect tools", href: "/ConnectTools", icon: Plug, desc: "Integrate data sources" },
+  { label: "How it works", href: "/ConnectTools", icon: Plug, desc: "Connect or upload data" },
   { label: "Insights", href: "/Insights", icon: BookOpen, desc: "Margin intelligence" },
   { label: "Pricing", href: "/Pricing", icon: Tag },
   { label: "Help", href: "/Help", icon: HelpCircle },

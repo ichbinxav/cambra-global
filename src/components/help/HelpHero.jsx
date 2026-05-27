@@ -4,10 +4,10 @@ import { Search, Command } from "lucide-react";
 const PLACEHOLDERS = [
   "How does CAMBRA estimate savings?",
   "What is the Infrastructure Score?",
-  "Can I upload invoices?",
-  "How accurate are benchmark estimates?",
-  "Do I need to switch providers?",
-  "How does CAMBRA make money?",
+  "Can I upload statements and invoices?",
+  "How accurate are benchmarks?",
+  "Is my data confidential?",
+  "How does CAMBRA's commercial model work?",
 ];
 
 export default function HelpHero({ onSearchOpen }) {

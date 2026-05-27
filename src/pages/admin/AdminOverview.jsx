@@ -288,7 +288,7 @@ export default function AdminOverview() {
     <div className="space-y-5">
       <CommandHero
         title="Command Center"
-        subtitle="Infrastructure Intelligence · THE NoDE"
+        subtitle="CAMBRA · Infrastructure intelligence"
         metrics={heroMetrics}
       />
 

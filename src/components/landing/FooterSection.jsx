@@ -279,6 +279,8 @@ export default function FooterSection() {
             <span>© {new Date().getFullYear()} CAMBRA</span>
             <Link to="/Privacy" className="hover:text-foreground transition-colors">Privacy</Link>
             <Link to="/Terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link to="/Cookies" className="hover:text-foreground transition-colors">Cookies</Link>
+            <Link to="/Contact" className="hover:text-foreground transition-colors">Contact</Link>
           </div>
         </div>
       </footer>

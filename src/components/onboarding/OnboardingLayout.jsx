@@ -20,25 +20,26 @@ export default function OnboardingLayout({ children, activeTab, onTabChange, sta
   ];
 
   return (
-    <div className="p-5 space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight">Infrastructure Profile</h1>
-          <p className="text-xs text-muted-foreground">Map your full operational stack across all 8 verticals for precise intelligence.</p>
-        </div>
-        <div className="w-56">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1"><span>Overall coverage</span><span>{overall}%</span></div>
-          <Progress value={overall} />
-        </div>
-      </div>
-
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-r from-chart-1/15 via-secondary/40 to-chart-2/15 p-4">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-chart-1" />
-            <p className="text-sm font-semibold">Profile your full infrastructure</p>
+    <div className="max-w-[1400px] mx-auto px-5 py-6 space-y-5">
+      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-white p-6 sm:p-8">
+        <div className="flex items-end justify-between gap-4 flex-wrap">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-white">
+              <Zap className="h-3 w-3 text-foreground" />
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Infrastructure profile · 8 layers</span>
+            </div>
+            <h1 className="font-display text-[clamp(2rem,4.5vw,3rem)] font-black tracking-[-0.04em] leading-[0.95] text-foreground">
+              Map your operating stack.
+            </h1>
+            <p className="text-sm text-muted-foreground mt-2 max-w-xl">Each vertical you complete sharpens benchmarks and unlocks deeper margin intelligence.</p>
           </div>
-          <p className="text-xs text-muted-foreground">Each vertical you complete unlocks deeper intelligence and benchmarks.</p>
+          <div className="w-full sm:w-56 shrink-0">
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
+              <span className="font-semibold">Overall coverage</span>
+              <span className="font-bold tabular-nums">{overall}%</span>
+            </div>
+            <Progress value={overall} />
+          </div>
         </div>
       </div>
 

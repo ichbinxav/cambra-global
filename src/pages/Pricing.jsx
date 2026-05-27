@@ -5,18 +5,35 @@ import { Button } from "@/components/ui/button";
 
 const PLANS = [
   {
-    name: "Free Audit",
-    price: "€0",
-    desc: "Perfect to discover your margin leaks",
+    name: "Founding partner",
+    price: "Free",
+    desc: "For early operators — full access while we build the network",
     features: [
-      "Complete infrastructure audit",
-      "8-layer benchmarking analysis",
-      "Estimated savings report",
-      "Infrastructure score",
-      "AI insights & recommendations",
+      "Complete infrastructure audit (8 layers)",
+      "Network-benchmarked savings report",
+      "Continuous infrastructure scoring",
+      "Margin intelligence & Copilot",
+      "Member directory & insights",
+      "Priority onboarding",
     ],
-    cta: "Start Free Audit",
+    cta: "Run free audit",
     ctaHref: "/Analyzer",
+    variant: "default",
+    highlight: true,
+  },
+  {
+    name: "Recovery",
+    price: "Performance",
+    desc: "When CAMBRA helps you recover margin — we share it",
+    features: [
+      "Everything in Founding partner",
+      "Negotiated infrastructure terms",
+      "Recovery verification & reporting",
+      "No upfront fee — aligned incentives",
+      "Cancel anytime, no lock-in",
+    ],
+    cta: "Talk to CAMBRA",
+    ctaHref: "/Contact",
     variant: "outline",
   },
 ];
@@ -43,20 +60,20 @@ export default function Pricing() {
             </div>
 
             <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5">
-              Transparent <span className="text-saas-gradient">pricing.</span>
+              Aligned <span className="text-saas-gradient">incentives.</span>
             </h1>
             <p className="text-base md:text-lg text-foreground/65 max-w-xl mx-auto leading-relaxed">
-              Start free. Scale with confidence. Only pay when you activate deals.
+              Start free. CAMBRA only earns when you recover margin — never before.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 max-w-sm mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto">
             {PLANS.map((plan, i) => (
               <div
                 key={i}
-                className={`relative overflow-hidden rounded-[1.75rem] border p-8 backdrop-blur-md transition shadow-[0_18px_50px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 hover:shadow-[0_22px_60px_rgba(0,0,0,0.09)] ${
+                className={`relative overflow-hidden rounded-3xl border p-7 backdrop-blur-md transition shadow-[0_18px_50px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 hover:shadow-[0_22px_60px_rgba(0,0,0,0.09)] ${
                   plan.highlight
-                    ? "border-foreground/20 bg-card ring-2 ring-foreground/10"
+                    ? "border-foreground bg-foreground text-background"
                     : "border-border/60 bg-card/95"
                 }`}
               >
@@ -65,7 +82,7 @@ export default function Pricing() {
                 )}
                 <div className="relative">
                   <h3 className="font-display text-2xl font-black tracking-[-0.03em] mb-1">{plan.name}</h3>
-                  <p className="text-sm text-foreground/65 mb-6">{plan.desc}</p>
+                  <p className={`text-sm mb-6 ${plan.highlight ? 'text-background/60' : 'text-foreground/65'}`}>{plan.desc}</p>
                   <div className="mb-8">
                     <span className="font-display text-4xl font-black tracking-tight">{plan.price}</span>
                   </div>
@@ -73,14 +90,17 @@ export default function Pricing() {
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((f, j) => (
                       <li key={j} className="flex items-start gap-3">
-                        <Check className="w-4 h-4 text-cambra-mint shrink-0 mt-0.5" />
-                        <span className="text-sm text-foreground/80">{f}</span>
+                        <Check className={`w-4 h-4 shrink-0 mt-0.5 ${plan.highlight ? 'text-background' : 'text-foreground'}`} />
+                        <span className={`text-sm ${plan.highlight ? 'text-background/85' : 'text-foreground/80'}`}>{f}</span>
                       </li>
                     ))}
                   </ul>
 
                   <Link to={plan.ctaHref} className="w-full">
-                    <Button variant={plan.variant} className="w-full h-12 rounded-full font-bold gap-2">
+                    <Button
+                      variant={plan.variant}
+                      className={`w-full h-12 rounded-full font-bold gap-2 ${plan.highlight ? 'bg-background text-foreground hover:bg-background/90' : ''}`}
+                    >
                       {plan.cta} <ArrowRight className="w-4 h-4" />
                     </Button>
                   </Link>
@@ -100,15 +120,19 @@ export default function Pricing() {
               <div className="space-y-4 text-sm">
                 <div>
                   <p className="font-semibold mb-1">Is the audit really free?</p>
-                  <p className="text-foreground/65">Yes, completely. No credit card required. You get a full benchmarking report.</p>
+                  <p className="text-foreground/65">Yes — no credit card, no commitment. You get the full infrastructure audit and benchmarking report.</p>
                 </div>
                 <div>
                   <p className="font-semibold mb-1">When do I pay?</p>
-                  <p className="text-foreground/65">Only if you activate deals through CAMBRA. We share a percentage of the savings we help you recover.</p>
+                  <p className="text-foreground/65">Only on recovered margin. CAMBRA takes a share of the savings we help you unlock — never an upfront fee.</p>
                 </div>
                 <div>
                   <p className="font-semibold mb-1">Can I cancel anytime?</p>
-                  <p className="text-foreground/65">Of course. No lock-in contracts. Cancel or pause deals whenever you want.</p>
+                  <p className="text-foreground/65">Yes. No lock-in. Pause or terminate at any time from Account settings.</p>
+                </div>
+                <div>
+                  <p className="font-semibold mb-1">Is my data confidential?</p>
+                  <p className="text-foreground/65">Always. Data is encrypted, never sold, and only used to power your own intelligence. See Privacy Policy.</p>
                 </div>
               </div>
             </div>

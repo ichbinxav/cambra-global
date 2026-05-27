@@ -64,7 +64,7 @@ export default function Reports() {
         icon={TrendingUp}
         actions={
           <Link to="/Analyzer">
-            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-1.5 shadow-[0_0_24px_rgba(44,167,193,0.4)]">
+            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold bg-foreground text-background hover:opacity-90 gap-1.5">
               New Analysis <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
@@ -110,10 +110,10 @@ export default function Reports() {
                     formatter={v => [`€${v?.toLocaleString()}/yr`]}
                   />
                   <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
-                  <Bar dataKey="Online Payments" fill="hsl(215,100%,50%)" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="In-Store / TPE" fill="hsl(25,95%,53%)" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="Shipping" fill="hsl(142,76%,36%)" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="SaaS" fill="hsl(260,60%,45%)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Online Payments" fill="hsl(var(--cambra-blue))" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="In-Store / TPE" fill="hsl(var(--score-medium))" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Shipping" fill="hsl(var(--cambra-cyan))" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="SaaS" fill="hsl(var(--cambra-navy))" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               </div>

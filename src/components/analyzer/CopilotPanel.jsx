@@ -13,13 +13,16 @@ export default function CopilotPanel({ onSelectPrompt }) {
       <div className="pointer-events-none absolute -top-24 -right-24 w-56 h-56 rounded-full blur-3xl bg-ambient-mint opacity-[0.18]" />
 
       <div className="relative">
-        <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full border border-border/50 bg-background/70 backdrop-blur-sm">
-          <span className="h-1 w-1 rounded-full bg-cambra-mint" />
+        <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-foreground opacity-30" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foreground" />
+          </span>
           <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">CAMBRA Copilot</p>
         </div>
-        <h3 className="mt-4 font-display text-2xl font-black tracking-[-0.03em] text-foreground">Not sure where to start?</h3>
+        <h3 className="mt-4 font-display text-2xl font-black tracking-[-0.03em] text-foreground">Where should you start?</h3>
         <p className="mt-4 text-sm leading-6 text-foreground/65">
-          Start with Payments if you process high GMV. Start with Shipping if fulfillment is your biggest cost.
+          High GMV brands typically start with <span className="font-semibold text-foreground">Payments</span>. Logistics-heavy operators start with <span className="font-semibold text-foreground">Shipping</span>.
         </p>
         <div className="mt-6 space-y-2.5">
           {PROMPTS.map((prompt) => (

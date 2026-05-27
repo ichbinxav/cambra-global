@@ -7,10 +7,10 @@ import { ArrowRight, Clock, Sparkles, TrendingUp, BookOpen } from "lucide-react"
 import PageHero from "@/components/shared/PageHero";
 
 const CATEGORIES = {
-  payments: { label: "Payments", color: "#635BFF" },
+  payments: { label: "Payments", color: "#1F4ED8" },
   margins: { label: "Margins", color: "#2CA7C1" },
-  scaling: { label: "Scaling", color: "#1F4ED8" },
-  infrastructure: { label: "Infrastructure", color: "#8B5CF6" },
+  scaling: { label: "Scaling", color: "#0EA5E9" },
+  infrastructure: { label: "Infrastructure", color: "#0F172A" },
 };
 
 export default function Insights() {
@@ -58,17 +58,16 @@ export default function Insights() {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
       <PageHero
-        eyebrow="Research · For lifestyle commerce"
+        eyebrow="Research · Margin intelligence"
         title="Insights."
-        gradient="cyan"
-        subtitle="Intelligence for independent brands. Trends, benchmarks and research curated for operators."
+        subtitle="Intelligence for independent operators. Benchmarks, research and infrastructure analysis."
         icon={Sparkles}
         actions={
-          <div className="hidden sm:flex items-center gap-4 text-xs text-white/55">
+          <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <BookOpen size={11} /> {insights.length} articles
             </div>
-            <div className="w-px h-3 bg-white/15" />
+            <div className="w-px h-3 bg-border" />
             <div className="flex items-center gap-1.5">
               <TrendingUp size={11} /> Updated weekly
             </div>

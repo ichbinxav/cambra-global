@@ -27,7 +27,7 @@ function MetricBlock({ label, value, helper, accent, gradient }) {
   );
 }
 
-export default function CommandHero({ title = "Command Center", subtitle = "Infrastructure Intelligence · CAMBRA", metrics = [] }) {
+export default function CommandHero({ title = "Command Center", subtitle = "CAMBRA · Infrastructure intelligence", metrics = [] }) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-foreground text-background shadow-[0_24px_80px_-20px_rgba(0,0,0,0.5)]">
       {/* Inner halos like landing */}

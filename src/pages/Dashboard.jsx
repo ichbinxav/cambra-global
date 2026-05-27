@@ -162,14 +162,14 @@ export default function Dashboard() {
           actions={
             <>
               <Link to="/Analyzer">
-                <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-white text-[#06080F] hover:bg-white/90 shadow-[0_0_24px_rgba(44,167,193,0.4)]">
+                <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-foreground text-background hover:opacity-90">
                   New Analysis <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
               {!subscribed && (
                 <Link to="/Onboarding">
-                  <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-saas-gradient text-white shadow-md hover:opacity-90">
-                    Unlock — <span className="mx-1 line-through opacity-80">€60</span> Free
+                  <Button size="sm" variant="outline" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 border-border">
+                    Unlock — <span className="mx-1 line-through opacity-60">€60</span> Free
                   </Button>
                 </Link>
               )}

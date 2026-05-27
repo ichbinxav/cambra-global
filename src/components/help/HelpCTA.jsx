@@ -13,19 +13,19 @@ const ACTIONS = [
   {
     icon: Upload,
     title: "Upload invoices",
-    description: "Let CAMBRA extract real economics from your statements.",
+    description: "CAMBRA extracts real infrastructure economics from your statements.",
     href: "/ConnectTools?mode=upload",
   },
   {
     icon: Plug,
     title: "Connect tools",
-    description: "Read-only access for the sharpest possible benchmarks.",
+    description: "Read-only integrations for the sharpest possible benchmarks.",
     href: "/ConnectTools?mode=connect",
   },
   {
     icon: MessageSquare,
     title: "Talk to CAMBRA",
-    description: "Book onboarding or escalate a technical question.",
+    description: "Book onboarding or escalate an operational question.",
     href: "/Contact",
   },
 ];

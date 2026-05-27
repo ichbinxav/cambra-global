@@ -10,8 +10,8 @@ import MonthlyEmailPreference from "@/components/account/MonthlyEmailPreference"
 import PageHero from "@/components/shared/PageHero";
 
 const Section = ({ icon: IconComp, title, children }) => (
-  <div className="p-7 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm shadow-[0_8px_24px_rgba(0,0,0,0.04)]">
-    <div className="flex items-center gap-2 mb-6">
+  <div className="p-6 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm">
+    <div className="flex items-center gap-2 mb-5">
       <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
         <IconComp size={13} className="text-muted-foreground" />
       </div>
@@ -81,7 +81,7 @@ export default function Account() {
         icon={Settings}
       />
 
-      <div className="max-w-lg space-y-4">
+      <div className="max-w-2xl space-y-3">
         <Section icon={User} title="Profile">
           <div className="space-y-4">
             <div>

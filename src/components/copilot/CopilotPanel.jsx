@@ -52,7 +52,7 @@ function FloatingPill({ open, setOpen }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2 }}
       onClick={() => setOpen(!open)}
-      className="fixed bottom-24 left-3 z-[90] inline-flex h-12 items-center gap-2 rounded-full border border-border/70 bg-card/95 px-4 text-sm font-semibold text-foreground shadow-[0_18px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl hover:bg-card sm:bottom-5 sm:left-5"
+      className="fixed bottom-20 right-4 z-[90] inline-flex h-11 items-center gap-2 rounded-full border border-border/70 bg-card/95 px-3.5 text-sm font-semibold text-foreground shadow-[0_18px_50px_rgba(0,0,0,0.14)] backdrop-blur-xl hover:bg-card sm:bottom-5 sm:right-5"
     >
       <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-border/60 bg-background">
         <img
@@ -184,7 +184,7 @@ export default function CopilotPanel() {
               animate={{ opacity: 1, x: 0, y: 0 }}
               exit={{ opacity: 0, x: -24, y: 8 }}
               transition={{ duration: 0.22 }}
-              className="fixed bottom-28 left-4 z-[80] flex max-h-[72vh] w-[calc(100vw-2rem)] max-w-[380px] flex-col overflow-hidden rounded-[1.75rem] border border-border/60 bg-card/95 shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:bottom-24 sm:left-5 sm:max-h-[78vh]"
+              className="fixed bottom-24 right-4 z-[80] flex max-h-[72vh] w-[calc(100vw-2rem)] max-w-[380px] flex-col overflow-hidden rounded-[1.75rem] border border-border/60 bg-card/95 shadow-[0_24px_70px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:bottom-24 sm:right-5 sm:max-h-[78vh]"
             >
               <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
                 <div>

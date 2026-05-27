@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Phone, MessageSquare, ArrowRight } from "lucide-react";
+import { Mail, MessageSquare, ArrowRight } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
 
 export default function Contact() {
@@ -47,11 +47,10 @@ export default function Contact() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
             {[
-              { icon: Mail, label: "Email", value: "support@cambra.io", href: "mailto:support@cambra.io" },
-              { icon: Phone, label: "Phone", value: "+33 (0) 1 23 45 67 89", href: "tel:+33123456789" },
-              { icon: MessageSquare, label: "Chat", value: "Live support available", href: "#" },
+              { icon: Mail, label: "General", value: "support@cambra.io", href: "mailto:support@cambra.io" },
+              { icon: MessageSquare, label: "Operators", value: "operators@cambra.io", href: "mailto:operators@cambra.io" },
             ].map((c, i) => (
               <a
                 key={i}

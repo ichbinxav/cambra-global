@@ -41,17 +41,17 @@ const BREAKDOWN_META = [
       : "Insurance benchmark review available" },
 ];
 
-const DEALS = [
-  { title: "Network payment rate", desc: "1.4% effective fee — pre-negotiated at collective volume", saving: "Up to −52%", cat: "Payments", textColor: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac" },
-  { title: "Collective shipping contracts", desc: "Enterprise carrier rates without enterprise volume", saving: "−18% avg.", cat: "Shipping", textColor: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint" },
-  { title: "SaaS group licenses", desc: "Shared contracts on Klaviyo, Gorgias, Shopify and more", saving: "Up to −30%", cat: "SaaS", textColor: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum" },
-  { title: "Insurance optimization", desc: "Benchmark essential coverage and request an optimized quote through Cambra.", saving: "Better economics", cat: "Insurance", textColor: "text-chart-1", bg: "bg-blue-500/[0.05] border-blue-500/20" },
+const UNLOCKS = [
+  { title: "Improve payment economics", desc: "Network-benchmarked effective rate · ~1.4% target", saving: "Up to −52%", cat: "Payments", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
+  { title: "Unlock collective shipping terms", desc: "Carrier rates benchmarked against high-volume operators", saving: "−18% avg.", cat: "Shipping", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
+  { title: "Consolidate SaaS infrastructure", desc: "Group licensing on Klaviyo, Gorgias, Shopify and others", saving: "Up to −30%", cat: "SaaS", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
+  { title: "Optimize insurance coverage", desc: "Benchmark essential coverage and recover annual margin", saving: "Better economics", cat: "Insurance", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
 ];
 
 const RECS = [
-  { cat: "Payments", action: "Switch to network payment rate", saving: "Recover €X/yr", icon: CreditCard, points: 12 },
-  { cat: "Shipping", action: "Access collective shipping contracts", saving: "−18% average cost", icon: Truck, points: 8 },
-  { cat: "SaaS", action: "Consolidate tools via group licenses", saving: "Save up to 30%", icon: Package, points: 7 },
+  { cat: "Payments", action: "Improve payment infrastructure terms", saving: "Recover €X/yr", icon: CreditCard, points: 12 },
+  { cat: "Shipping", action: "Access network-benchmarked shipping rates", saving: "−18% average cost", icon: Truck, points: 8 },
+  { cat: "SaaS", action: "Consolidate stack via group licensing", saving: "Save up to 30%", icon: Package, points: 7 },
 ];
 
 /* ── sub-components ──────────────────────────────────────────── */
@@ -337,51 +337,34 @@ export default function Results() {
           </div>
         </div>
 
-        {/* Summary cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {/* 1. Efficiency Score */}
+        {/* Summary strip — compact, no duplication */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <div className="p-5 rounded-2xl border border-border/50 bg-card">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Cost Efficiency</p>
-            <div className="flex items-center gap-4">
-              <div className="relative w-20 h-20">
-                <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="34" fill="none" stroke="#333" strokeWidth="6" />
-                  <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round"
-                    className={score < 50 ? 'text-destructive' : (score > 80 ? 'text-chart-2' : 'text-chart-3')}
-                    strokeDasharray={2 * Math.PI * 34} strokeDashoffset={2 * Math.PI * 34 * (1 - score / 100)} />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-black" style={{ color: score < 50 ? '#ef4444' : (score > 80 ? '#22c55e' : '#f59e0b') }}>
-                    {score}
-                  </span>
-                  <span className="text-[9px] text-muted-foreground/50">/100</span>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground/70 max-w-[180px]">Overall infrastructure efficiency.</p>
-            </div>
-          </div>
-
-          {/* 2. Capital Liberado */}
-          <div className="p-5 rounded-2xl border border-border/50 bg-card">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Released Capital</p>
-            <div className="text-4xl font-black tracking-tight">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Released capital</p>
+            <div className="text-3xl font-black tracking-tight">
               <span className="tabular-nums"><AnimatedCounter value={result.total_savings} prefix="€" duration={2} /></span>
-              <span className="text-base text-muted-foreground/40 font-normal">/yr</span>
+              <span className="text-sm text-muted-foreground/40 font-normal">/yr</span>
             </div>
           </div>
 
-          {/* 3. Benchmark */}
           <div className="p-5 rounded-2xl border border-border/50 bg-card">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Benchmark</p>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Infrastructure score</p>
+            <div className="text-3xl font-black tracking-tight tabular-nums" style={{ color: scoreColor }}>
+              {score}<span className="text-sm text-muted-foreground/40 font-normal">/100</span>
+            </div>
+          </div>
+
+          <div className="p-5 rounded-2xl border border-border/50 bg-card col-span-2 md:col-span-1">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 mb-2">Network benchmark</p>
             {(() => {
               const gmvAnnual = input?.monthly_revenue ? input.monthly_revenue * 12 : null;
               const pct = gmvAnnual && gmvAnnual > 0 ? Math.round((result.total_savings / gmvAnnual) * 100) : null;
               return (
-                <p className="text-sm text-foreground">
+                <p className="text-sm text-foreground leading-snug">
                   {pct !== null ? (
-                    <>Your brand is spending <span className="font-bold">{pct}%</span> more than CAMBRA network average.</>
+                    <>Currently <span className="font-bold">{pct}%</span> above CAMBRA network median.</>
                   ) : (
-                    <span className="text-muted-foreground/60">Not enough data for the benchmark.</span>
+                    <span className="text-muted-foreground/60">Not enough data yet.</span>
                   )}
                 </p>
               );
@@ -468,12 +451,12 @@ export default function Results() {
                     €{(resultWithTpe[item.key] || 0).toLocaleString()}
                   </p>
                   <p className="text-[10px] text-muted-foreground/40">/year</p>
-                  <a
-                    href={`/deal/activate?vertical=${item.label.toLowerCase().includes('payment') || item.label.toLowerCase().includes('tpe') ? 'payments' : (item.label.toLowerCase().includes('shipping') ? 'shipping' : 'saas')}&resultId=${result.id}`}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 mt-2 rounded-full border text-[11px] hover:opacity-80"
+                  <Link
+                    to="/Onboarding"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 mt-2 rounded-full border border-border/60 text-[11px] hover:bg-secondary/60 transition-colors"
                   >
-                    Activate this deal
-                  </a>
+                    Unlock terms
+                  </Link>
                 </div>
               </div>
             ))}
@@ -575,23 +558,23 @@ export default function Results() {
           </div>
         </div>
 
-        {/* ═══ 7. DEALS ════════════════════════════════════════════ */}
+        {/* ═══ 7. UNLOCK INFRASTRUCTURE TERMS ══════════════════════ */}
         <div>
-          <SectionLabel>Available deals via CAMBRA</SectionLabel>
+          <SectionLabel>Unlock better infrastructure terms</SectionLabel>
           <div className="space-y-3">
-            {DEALS.map((deal, i) => (
-              <div key={i} className={`p-5 rounded-xl border flex items-center gap-4 ${deal.bg}`}>
+            {UNLOCKS.map((item, i) => (
+              <div key={i} className={`p-5 rounded-xl border flex items-center gap-4 ${item.bg}`}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <p className="text-sm font-semibold">{deal.title}</p>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full bg-background/70 ${deal.textColor}`}>{deal.cat}</span>
+                    <p className="text-sm font-semibold">{item.title}</p>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-background/70 text-muted-foreground border border-border/60">{item.cat}</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground/55">{deal.desc}</p>
+                  <p className="text-[11px] text-muted-foreground/55">{item.desc}</p>
                 </div>
                 <div className="shrink-0 text-right">
-                  <p className={`text-base font-black ${deal.textColor} mb-1`}>{deal.saving}</p>
+                  <p className={`text-base font-black ${item.textColor} mb-1`}>{item.saving}</p>
                   <Link to="/Onboarding">
-                    <button className={`text-[11px] font-bold flex items-center justify-end gap-1 px-3 py-1.5 rounded-full border ${deal.bg} ${deal.textColor} hover:opacity-80 transition-opacity`}>
+                    <button className="text-[11px] font-bold flex items-center justify-end gap-1 px-3 py-1.5 rounded-full border border-foreground bg-foreground text-background hover:opacity-90 transition-opacity">
                       Unlock <ArrowRight size={9} />
                     </button>
                   </Link>
@@ -642,8 +625,8 @@ export default function Results() {
         </div>
 
         {/* Disclaimer */}
-        <div className="mt-10 pt-6 border-t border-[#333] text-center">
-          <p className="text-[11px] text-muted-foreground/60">This analysis is an estimate based on the current aggregated volume of CAMBRA network.</p>
+        <div className="mt-10 pt-6 border-t border-border/40 text-center">
+          <p className="text-[11px] text-muted-foreground/60">This analysis is an estimate based on the current aggregated dataset of the CAMBRA network.</p>
         </div>
 
       </div>
