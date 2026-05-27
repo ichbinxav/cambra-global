@@ -75,7 +75,16 @@ export default function FooterSection() {
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute bottom-[10%] right-[10%] w-[420px] h-[420px] rounded-full blur-[110px] pointer-events-none"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none"
+          style={{
+            background: "radial-gradient(closest-side, rgba(31,78,216,0.6), transparent)",
+            opacity: glowOpacity,
+          }}
+          animate={{ scale: [1.1, 1, 1.1] }}
+          transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none"
           style={{
             background: "radial-gradient(closest-side, #2CA7C1, transparent)",
             opacity: glowOpacity,
