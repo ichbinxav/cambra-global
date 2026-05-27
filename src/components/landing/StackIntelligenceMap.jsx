@@ -131,11 +131,10 @@ export default function StackIntelligenceMap() {
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut", delay: 1.2 }}
               />
 
-              {/* Scan hand — synced to active node, color matches node state */}
-              <motion.g
-                animate={{ rotate: focus.angle }}
-                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                style={{ transformOrigin: "0px 0px" }}
+              {/* Scan hand — synced to active node via SVG transform attribute (works in all browsers) */}
+              <g
+                transform={`rotate(${focus.angle})`}
+                style={{ transition: "transform 1.2s cubic-bezier(0.22, 1, 0.36, 1)" }}
               >
                 <line
                   x1={0} y1={0} x2={RADIUS - NODE_R - 6} y2={0}
@@ -144,7 +143,7 @@ export default function StackIntelligenceMap() {
                   strokeLinecap="round"
                   opacity={0.75}
                 />
-              </motion.g>
+              </g>
 
               {/* Connection lines removed — clean radial map without center-to-node links */}
 
