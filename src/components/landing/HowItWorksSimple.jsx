@@ -37,7 +37,7 @@ export default function HowItWorksSimple() {
   const spineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <section ref={ref} className="relative py-16 md:py-20 px-5 bg-neon-1 text-neon-9 overflow-hidden">
+    <section ref={ref} className="relative py-10 md:py-14 px-5 bg-neon-1 text-neon-9 overflow-hidden">
       {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div
@@ -58,7 +58,7 @@ export default function HowItWorksSimple() {
 
       <div className="relative max-w-5xl mx-auto">
         {/* Header */}
-        <div className="mb-10 md:mb-14 max-w-3xl">
+        <div className="mb-6 md:mb-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm">
             <Zap className="h-3 w-3 text-cambra-mint" />
             <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-white/60">
@@ -110,7 +110,7 @@ export default function HowItWorksSimple() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-[160px_1fr] gap-6 md:gap-12 py-10 md:py-16 border-b border-white/[0.06] last:border-0">
+              <div className="grid md:grid-cols-[160px_1fr] gap-4 md:gap-12 py-6 md:py-10 border-b border-white/[0.06] last:border-0">
                 {/* Oversized numeral */}
                 <div className="relative">
                   <div className="flex md:block items-baseline gap-4">
@@ -157,12 +157,12 @@ export default function HowItWorksSimple() {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-8 flex flex-wrap items-center gap-2"
+          className="mt-4 flex flex-wrap items-center gap-2"
         >
           <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/35 mr-2">
             What you get →
           </span>
-          {["Guaranteed infrastructure inefficiencies detected", "Zero upfront", "Success-fee only", "Live benchmarks", "Instant access"].map((chip) => (
+          {["Guaranteed infrastructure inefficiencies detected", "Business insights", "Zero upfront", "Success-fee only", "Live benchmarks", "Instant access"].map((chip) => (
             <span
               key={chip}
               className="px-3 py-1.5 text-[11px] font-medium rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm text-white/80"
