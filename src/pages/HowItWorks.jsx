@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 const STEPS = [
   {
     n: "01",
+    eyebrow: "ingest",
     icon: Plug,
     title: "Connect your stack",
     detail: "Link payments, shipping, accounting and SaaS tools — or upload statements. Read-only, encrypted, never shared.",
@@ -15,6 +16,7 @@ const STEPS = [
   },
   {
     n: "02",
+    eyebrow: "analyze",
     icon: Activity,
     title: "We scan your infrastructure",
     detail: "CAMBRA maps your real rates, volumes and costs across 8 operational layers — automatically.",
@@ -23,6 +25,7 @@ const STEPS = [
   },
   {
     n: "03",
+    eyebrow: "compare",
     icon: BarChart3,
     title: "Benchmark against the network",
     detail: "Your numbers are compared against operators of similar scale — surfacing exact savings opportunities.",
@@ -31,6 +34,7 @@ const STEPS = [
   },
   {
     n: "04",
+    eyebrow: "save",
     icon: Sparkles,
     title: "Activate better terms",
     detail: "Move into stronger commercial conditions through CAMBRA's network — performance-based, no upfront fee.",
@@ -110,7 +114,7 @@ export default function HowItWorks() {
                       <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
                         <Icon size={11} className="text-cambra-mint" />
                         <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">
-                          Step {step.n}
+                          {step.eyebrow}
                         </span>
                       </div>
 
