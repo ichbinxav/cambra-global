@@ -87,8 +87,8 @@ export default function HowItWorks() {
                   {/* CTA — mini pill top-right */}
                   <Link
                     to={step.cta.href}
-                    style={{ zIndex: 20 }}
-                    className="group/cta absolute top-4 right-4 sm:top-5 sm:right-5 inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full border border-white/20 bg-cambra-navy-deep/80 hover:bg-cambra-navy-deep hover:border-white/40 transition-all backdrop-blur-md"
+                    style={{ zIndex: 20, top: '1rem', right: '1rem', left: 'auto' }}
+                    className="group/cta absolute inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full border border-white/20 bg-cambra-navy-deep/80 hover:bg-cambra-navy-deep hover:border-white/40 transition-all backdrop-blur-md"
                   >
                     <span className="text-[9px] sm:text-[10px] font-bold text-white tracking-[0.08em] uppercase whitespace-nowrap">
                       {step.cta.label}
