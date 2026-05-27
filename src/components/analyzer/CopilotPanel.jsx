@@ -9,7 +9,7 @@ const PROMPTS = [
 
 export default function CopilotPanel({ onSelectPrompt }) {
   return (
-    <aside className="sticky top-24 rounded-[1.75rem] border border-border/60 bg-card/95 backdrop-blur-md p-6 shadow-[0_18px_50px_rgba(0,0,0,0.06)] overflow-hidden">
+    <aside className="sticky top-24 rounded-[1.75rem] border border-border/60 bg-gradient-to-br from-blue-50 to-cyan-50/40 backdrop-blur-md p-6 shadow-[0_18px_50px_rgba(0,0,0,0.06)] overflow-hidden">
       <div className="pointer-events-none absolute -top-24 -right-24 w-56 h-56 rounded-full blur-3xl bg-ambient-mint opacity-[0.18]" />
 
       <div className="relative">
