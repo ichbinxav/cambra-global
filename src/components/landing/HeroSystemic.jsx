@@ -58,18 +58,18 @@ export default function HeroSystemic() {
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
               </span>
               <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
-                Infrastructure Intelligence · Live
+                Engine · Live
               </span>
             </div>
 
             {/* Editorial headline */}
             <h1 className="font-display text-[clamp(2.4rem,6.4vw,5.6rem)] font-black tracking-[-0.05em] leading-[0.88] mb-6">
-              Continuous infrastructure intelligence{" "}
-              <span className="text-saas-gradient">for modern commerce.</span>
+              You benchmark growth.{" "}
+              <span className="text-saas-gradient">Not your stack.</span>
             </h1>
 
             <p className="text-[clamp(0.95rem,1.6vw,1.15rem)] text-foreground/60 mb-8 max-w-[560px] leading-[1.55]">
-              The economic layer behind every operator. CAMBRA benchmarks your payments, logistics, SaaS and banking stack against peer medians — continuously, quietly, precisely.
+              PSP, shipping, SaaS, banking, FX, TPE, insurance, telecom — eight cost layers under every operator. Most have never been audited. CAMBRA watches all of them, continuously.
             </p>
 
             {/* CTAs */}

@@ -5,12 +5,11 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
 const INCLUDED = [
-  "Continuous infrastructure benchmarking",
-  "8 operational layers monitored",
-  "Peer-tier and geography-aware medians",
-  "Live drift detection & alerts",
-  "Intelligence Agent · proactive findings",
-  "Recoverable margin quantification",
+  "8 cost layers monitored continuously",
+  "Peer medians at your tier & geography",
+  "Live drift detection",
+  "Quiet operational assistant",
+  "Recoverable margin, quantified",
   "Document vault & evidence trail",
   "Provider migration support",
 ];
@@ -69,7 +68,7 @@ export default function PricingSection() {
             <div className="px-7 py-6 border-b border-border/40 bg-foreground text-background">
               <div className="flex items-center gap-2 mb-4">
                 <Zap className="h-3.5 w-3.5 opacity-40" />
-                <span className="text-[10px] font-bold tracking-[0.14em] uppercase opacity-40">CAMBRA · Infrastructure Intelligence</span>
+                <span className="text-[10px] font-bold tracking-[0.14em] uppercase opacity-40">CAMBRA · Engine</span>
               </div>
               <div className="flex items-baseline gap-3 mb-2">
                 <span className="text-5xl font-black">€0</span>
@@ -103,7 +102,7 @@ export default function PricingSection() {
                 </Button>
               </Link>
               <p className="text-[10px] text-muted-foreground/30 text-center mt-3 font-mono">
-                ~3 min · No card · Continuous monitoring included
+                ~3 min · No card · Monitoring included
               </p>
             </div>
           </motion.div>

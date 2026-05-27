@@ -35,14 +35,14 @@ export default function FooterSection() {
             transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2.5rem,7vw,6rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5"
           >
-            Infrastructure drift<br />stops compounding here.
+            Drift stops<br />compounding here.
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }} animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-lg opacity-40 mb-10 max-w-md mx-auto leading-relaxed"
           >
-            Every operator runs an infrastructure stack. Almost none benchmark it. CAMBRA does — continuously.
+            Eight cost layers. One engine. Peer medians, watched continuously.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -78,7 +78,7 @@ export default function FooterSection() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-5">
             <BrandLogoWordmark className="h-4" />
-            <span className="text-xs text-muted-foreground/35 font-mono">Infrastructure intelligence · operating system for margin</span>
+            <span className="text-xs text-muted-foreground/35 font-mono">The operating system for margin</span>
           </div>
           <div className="flex items-center gap-5 text-xs text-muted-foreground/40">
             <span>© {new Date().getFullYear()} CAMBRA</span>
