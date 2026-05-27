@@ -50,7 +50,7 @@ export default function MeetTheFounder() {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-[240px_1fr] gap-6 md:gap-12 items-center">
+        <div className="grid grid-cols-[160px_1fr] md:grid-cols-[240px_1fr] gap-4 md:gap-12 items-start md:items-center">
           {/* Photo */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -74,23 +74,23 @@ export default function MeetTheFounder() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="relative rounded-2xl border border-border/40 bg-secondary/30 p-6 md:p-8"
+            className="relative rounded-2xl border border-border/40 bg-secondary/30 p-4 md:p-8"
           >
             <Quote className="hidden md:block h-10 w-10 md:h-12 md:w-12 text-saas-gradient mb-4 opacity-80" strokeWidth={1.5} />
             
-            <p className="text-lg md:text-xl font-medium leading-snug text-foreground mb-5">
+            <p className="text-sm md:text-xl font-medium leading-snug text-foreground mb-3 md:mb-5">
               After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.
             </p>
 
-            <p className="text-foreground/70 text-sm md:text-base font-light mb-6">
+            <p className="text-foreground/70 text-xs md:text-base font-light mb-4 md:mb-6">
               That's why I started CAMBRA.
             </p>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-foreground">Xavier M. Contero</p>
-                <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground/50 mt-0.5">
-                  Founder, CAMBRA
+            <div className="flex items-start md:items-center justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs md:text-sm font-bold text-foreground truncate">Xavier M. Contero</p>
+                <p className="text-[9px] md:text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground/50 mt-0.5">
+                  Founder
                 </p>
               </div>
               <button
