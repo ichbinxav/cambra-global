@@ -39,7 +39,7 @@ export default function HowItWorksSimple() {
             How it works
           </p>
           <h2 className="font-display text-[clamp(1.8rem,4vw,2.8rem)] font-black tracking-[-0.04em] leading-[0.95]">
-            Three steps. <span className="text-muted-foreground/50">No procurement contracts.</span>
+            <span className="text-saas-gradient">Three steps.</span> No procurement contracts.
           </h2>
         </div>
 

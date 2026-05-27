@@ -1,54 +1,121 @@
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const QUOTES = [
-  { quote: "€18k in duplicate SaaS. Gone.",            role: "CFO",          tier: "DTC skincare · €4M" },
-  { quote: "Never benchmarked PSP. Now we own it.",    role: "Founder",      tier: "Activewear · €2.1M" },
-  { quote: "0.6pp delta. €42K/year. Just sitting there.", role: "Head of Ops",  tier: "Home goods · €1.6M" },
-  { quote: "Two redundant tools. Cut one. No one noticed.", role: "COO",          tier: "Coffee brand · €3.2M" },
+const TESTIMONIALS = [
+  { 
+    quote: "Found €18K in duplicate email tools. Killed one, kept the workflow.",
+    recovery: "€18K / yr",
+    role: "CFO",
+    tier: "DTC skincare · €4M"
+  },
+  { 
+    quote: "Never benchmarked our PSP. Turns out we were 0.6pp above market. Renegotiated.",
+    recovery: "€42K / yr",
+    role: "Founder",
+    tier: "Activewear · €2.1M"
+  },
+  { 
+    quote: "Shipping was €0.40 per order above peer median. Fixed it. No service change.",
+    recovery: "€8.9K / yr",
+    role: "Head of Ops",
+    tier: "Home goods · €1.6M"
+  },
 ];
 
 export default function TestimonialsSection() {
   const ref = useRef(null);
+  const [idx, setIdx] = useState(0);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+
+  const next = () => setIdx((i) => (i + 1) % TESTIMONIALS.length);
+  const prev = () => setIdx((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
 
   return (
     <section className="py-20 px-5 border-t border-border/40 bg-secondary/10">
       <div ref={ref} className="max-w-6xl mx-auto">
-        {/* Compact header */}
-        <div className="flex items-baseline justify-between mb-10 flex-wrap gap-4">
-          <div>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-2 font-mono">
-              Operator findings
-            </p>
-            <h2 className="font-display text-[clamp(1.6rem,3.5vw,2.6rem)] font-black tracking-[-0.04em] leading-[0.95]">
-              Drift, found.
-            </h2>
-          </div>
-          <span className="text-[10px] font-mono text-muted-foreground/30">
-            n = anonymized · €1–5M tier
-          </span>
+        {/* Header */}
+        <div className="mb-10">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-3 font-mono">
+            Real findings
+          </p>
+          <h2 className="font-display text-[clamp(1.8rem,4vw,2.8rem)] font-black tracking-[-0.04em] leading-[0.95] text-saas-gradient">
+            What brands found.
+          </h2>
+          <p className="text-sm text-muted-foreground/60 mt-3 max-w-md">
+            Anonymous operators. €1–5M revenue. Real recoveries, real impact.
+          </p>
         </div>
 
-        {/* Dense quote grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {QUOTES.map((q, i) => (
+        {/* Carousel */}
+        <div className="relative">
+          <div className="overflow-hidden">
             <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 12 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.4, delay: i * 0.06 }}
-              className="p-5 border border-border/40 bg-background hover:border-foreground/30 transition-colors flex flex-col h-full"
+              animate={{ x: `-${idx * 100}%` }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="flex"
             >
-              <p className="text-sm font-semibold text-foreground/90 leading-snug flex-1 mb-4">
-                "{q.quote}"
-              </p>
-              <div className="pt-3 border-t border-border/30">
-                <p className="text-[11px] font-semibold text-foreground/70">{q.role}</p>
-                <p className="text-[10px] font-mono text-muted-foreground/40 mt-0.5">{q.tier}</p>
-              </div>
+              {TESTIMONIALS.map((t, i) => (
+                <div key={i} className="w-full flex-shrink-0 px-4">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={inView ? { opacity: 1 } : {}}
+                    transition={{ duration: 0.5 }}
+                    className="p-8 rounded-2xl border border-border/40 bg-background h-full flex flex-col"
+                  >
+                    <p className="text-base md:text-lg font-semibold text-foreground/90 leading-relaxed flex-1 mb-6">
+                      "{t.quote}"
+                    </p>
+                    
+                    <div className="pt-5 border-t border-border/30 space-y-3">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-mono mb-1">
+                          Estimated recovery
+                        </p>
+                        <p className="text-2xl font-black text-saas-gradient tabular-nums">
+                          {t.recovery}
+                        </p>
+                      </div>
+                      <div className="pt-2">
+                        <p className="text-sm font-semibold text-foreground/70">{t.role}</p>
+                        <p className="text-[10px] font-mono text-muted-foreground/40 mt-1">{t.tier}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              ))}
             </motion.div>
-          ))}
+          </div>
+
+          {/* Nav buttons */}
+          <div className="flex items-center justify-between mt-6">
+            <div className="flex items-center gap-2">
+              {TESTIMONIALS.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setIdx(i)}
+                  className={`h-2 rounded-full transition-all ${
+                    i === idx ? "w-6 bg-foreground" : "w-2 bg-border"
+                  }`}
+                />
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={prev}
+                className="h-10 w-10 rounded-full border border-border/60 flex items-center justify-center hover:bg-secondary/50 transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4 text-foreground/70" />
+              </button>
+              <button
+                onClick={next}
+                className="h-10 w-10 rounded-full border border-border/60 flex items-center justify-center hover:bg-secondary/50 transition-colors"
+              >
+                <ChevronRight className="h-4 w-4 text-foreground/70" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

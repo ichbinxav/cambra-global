@@ -30,7 +30,7 @@ export default function PricingSection() {
           >
             <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-4 font-mono">Pricing · Aligned incentives</p>
             <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black tracking-[-0.04em] leading-[0.88] mb-5">
-              Aligned with your margin.
+              <span className="text-saas-gradient">Aligned</span> with your margin.
             </h2>
             <p className="text-muted-foreground/65 text-base leading-relaxed mb-8 max-w-sm">
               Run an audit free. CAMBRA watches continuously. We take a cut of margin we recover — align incentives.

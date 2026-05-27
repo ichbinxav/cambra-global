@@ -7,11 +7,11 @@ export default function HeroSavings({ latest, score }) {
   return (
     <div className="rounded-2xl border border-foreground/8 bg-foreground text-background overflow-hidden">
       <div className="p-7 sm:p-8">
-        <p className="text-[10px] tracking-[0.3em] uppercase opacity-35 mb-3">Optimization potential identified</p>
-        <div className="text-[clamp(3.5rem,11vw,6rem)] font-black tracking-[-0.055em] leading-none mb-1 no-blur">
+        <p className="text-[10px] tracking-[0.3em] uppercase opacity-35 mb-2">Estimated annual savings</p>
+        <div className="text-[clamp(4rem,13vw,6.5rem)] font-black tracking-[-0.055em] leading-none mb-2 no-blur">
           <span className="tabular-nums"><AnimatedCounter value={latest.total_savings} prefix="€" duration={1.8} /></span>
         </div>
-        <p className="text-sm opacity-40 mb-6">per year left unoptimized across your infrastructure</p>
+        <p className="text-xs opacity-35 mb-6">left unoptimized across your infrastructure</p>
 
         <div className="grid grid-cols-3 gap-3 mb-6 pb-6 border-b border-background/10">
           {[

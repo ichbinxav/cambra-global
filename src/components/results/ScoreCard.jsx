@@ -115,7 +115,7 @@ export default function ScoreCard({ scoreReport }) {
           {/* Potential score */}
           <div className="flex items-center gap-3 p-3.5 rounded-xl border border-border/40 bg-secondary/40 mb-4">
             <div>
-              <p className="text-[10px] text-muted-foreground/50 mb-0.5">Potential after optimization</p>
+              <p className="text-[10px] text-muted-foreground/50 mb-0.5">Estimated potential after optimization</p>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-black text-green-600">{potentialTotal}</span>
                 <span className="text-sm text-muted-foreground/50">/ 100</span>

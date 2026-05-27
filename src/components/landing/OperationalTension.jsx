@@ -41,8 +41,8 @@ export default function OperationalTension() {
               transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="font-display text-[clamp(2rem,5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.9] mb-6"
             >
-              You're overpaying.<br />
-              <span className="text-saas-gradient">You just don't know where.</span>
+              <span className="text-saas-gradient">You're overpaying.</span><br />
+              You just don't know where.
             </motion.h2>
 
             <motion.p
