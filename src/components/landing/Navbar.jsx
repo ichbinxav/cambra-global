@@ -7,17 +7,18 @@ import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useAuth } from "@/lib/AuthContext";
 
 const NAV_PUBLIC = [
-  { label: "How it works", href: "#how" },
+  { label: "How it works", href: "#how-it-works" },
   { label: "Analyzer", href: "/Analyzer" },
+  { label: "Pricing", href: "#pricing" },
   { label: "Join CAMBRA", href: "/Onboarding" },
 ];
 
 const NAV_MEMBER = [
-  { label: "How it works", href: "#how" },
+  { label: "How it works", href: "#how-it-works" },
   { label: "Analyzer", href: "/Analyzer" },
   { label: "Insights", href: "/Insights" },
   { label: "Network", href: "/Network" },
-  { label: "Join CAMBRA", href: "/Onboarding" },
+  { label: "Dashboard", href: "/Dashboard" },
 ];
 
 export default function Navbar() {

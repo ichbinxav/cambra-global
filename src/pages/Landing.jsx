@@ -23,13 +23,17 @@ export default function Landing() {
         <CredibilitySection />
         <ValuePropositionSection />
         <FeatureDuoSection />
-        <div id="audit">
+        <div id="how-it-works">
           <HowCombinedSection />
         </div>
-        <ThreeLayersSection />
+        <div id="how">
+          <ThreeLayersSection />
+        </div>
         <ProblemSection_Public />
         <AnalyzerCTA_Public />
-        <PricingSection />
+        <div id="pricing">
+          <PricingSection />
+        </div>
         <IntegrationsSection />
         <BenefitsSection />
         <TestimonialsSection />
