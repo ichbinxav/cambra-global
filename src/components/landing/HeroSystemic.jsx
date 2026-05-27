@@ -180,7 +180,8 @@ export default function HeroSystemic() {
                 href="/Analyzer"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="relative h-12 rounded-full px-7 text-sm font-bold bg-foreground text-background inline-flex items-center justify-center gap-2 overflow-hidden group"
+                className="relative h-12 rounded-full px-7 text-sm font-bold text-white inline-flex items-center justify-center gap-2 overflow-hidden group"
+                style={{ background: "linear-gradient(135deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 100%)" }}
               >
                 {/* Shimmer sweep */}
                 <motion.span
