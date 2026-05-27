@@ -67,6 +67,9 @@ export default function PricingSection() {
               </div>
               
               <p className="text-4xl md:text-5xl font-black tracking-tight mb-2 text-foreground">Free</p>
+              <div className="flex items-baseline gap-2 mb-8">
+                <span className="text-xs text-muted-foreground/60 line-through tabular-nums">€60/month</span>
+              </div>
               <p className="text-sm text-muted-foreground/60 mb-8">For early operators</p>
               
               <ul className="space-y-3.5">
