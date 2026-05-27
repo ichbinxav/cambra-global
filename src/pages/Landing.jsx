@@ -1,4 +1,5 @@
 import HeroSystemic from "@/components/landing/HeroSystemic.jsx";
+import HowItWorksSimple from "@/components/landing/HowItWorksSimple.jsx";
 import OperationalTension from "@/components/landing/OperationalTension.jsx";
 import StackIntelligenceMap from "@/components/landing/StackIntelligenceMap.jsx";
 import PricingSection from "@/components/landing/PricingSection";
@@ -12,23 +13,26 @@ export default function Landing() {
       <Navbar />
 
       <main>
-        {/* 1 — Systemic hero with live signal terminal */}
+        {/* 1 — Plain-English hero */}
         <HeroSystemic />
 
-        {/* 2 — Economic tension: dense facts, sharp positioning */}
-        <OperationalTension />
-
-        {/* 3 — THE iconic visual: living stack intelligence map */}
+        {/* 2 — Three simple steps */}
         <div id="how">
-          <StackIntelligenceMap />
+          <HowItWorksSimple />
         </div>
 
-        {/* 4 — Pricing */}
+        {/* 3 — Why CAMBRA exists + recovery examples */}
+        <OperationalTension />
+
+        {/* 4 — Living stack map */}
+        <StackIntelligenceMap />
+
+        {/* 5 — Pricing */}
         <div id="pricing">
           <PricingSection />
         </div>
 
-        {/* 5 — Operator findings (short, cold, specific) */}
+        {/* 6 — Operator findings (short, cold, specific) */}
         <TestimonialsSection />
       </main>
 

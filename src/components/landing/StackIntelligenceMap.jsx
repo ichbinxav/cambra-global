@@ -11,14 +11,14 @@ import { ArrowRight } from "lucide-react";
  */
 
 const LAYERS = [
-  { id: "psp",    label: "💳 PSP",       angle: 270, drift: +0.3,  unit: "pp",     finding: "💳 PSP +0.3pp vs peer median",          state: "drift" },
-  { id: "ship",   label: "📦 Ship",      angle: 315, drift: +0.40, unit: "€/order",finding: "📦 Shipping +€0.40 / order",            state: "drift" },
-  { id: "saas",   label: "🧰 SaaS",      angle: 360, drift: +2,    unit: "dupes",  finding: "🧰 2 duplicate SaaS tools",             state: "alert" },
-  { id: "bank",   label: "🏦 Bank",      angle: 45,  drift: +18,   unit: "€/mo",   finding: "🏦 Fixed bank fees +€18 / mo",          state: "mild" },
-  { id: "fx",     label: "💱 FX",        angle: 90,  drift: +0.4,  unit: "pp",     finding: "💱 FX spread +0.4pp",                   state: "drift" },
-  { id: "tpe",    label: "🛒 TPE",       angle: 135, drift: +0.2,  unit: "pp",     finding: "🛒 TPE all-in +0.2pp",                  state: "mild" },
-  { id: "ins",    label: "🛡️ Ins",      angle: 180, drift: +6,    unit: "bps",    finding: "🛡️ RC Pro +6 bps",                     state: "mild" },
-  { id: "tel",    label: "📞 Telecom",   angle: 225, drift: 0,     unit: "—",      finding: "📞 Telecom aligned with peer",          state: "ok" },
+  { id: "psp",    label: "Payments", angle: 270, drift: +0.3,  unit: "pp",     finding: "Payment fees +0.3pp vs peer median",   state: "drift" },
+  { id: "ship",   label: "Shipping", angle: 315, drift: +0.40, unit: "€/order",finding: "Shipping +€0.40 per order",            state: "drift" },
+  { id: "saas",   label: "SaaS",     angle: 360, drift: +2,    unit: "dupes",  finding: "2 duplicate SaaS tools detected",      state: "alert" },
+  { id: "bank",   label: "Banking",  angle: 45,  drift: +18,   unit: "€/mo",   finding: "Fixed bank fees +€18 / month",         state: "mild" },
+  { id: "fx",     label: "FX",       angle: 90,  drift: +0.4,  unit: "pp",     finding: "FX spread +0.4pp above peer",          state: "drift" },
+  { id: "tpe",    label: "In-store", angle: 135, drift: +0.2,  unit: "pp",     finding: "In-store fees +0.2pp all-in",          state: "mild" },
+  { id: "ins",    label: "Insurance",angle: 180, drift: +6,    unit: "bps",    finding: "Insurance +6 bps above tier",          state: "mild" },
+  { id: "tel",    label: "Telecom",  angle: 225, drift: 0,     unit: "—",      finding: "Telecom matches peer median",          state: "ok" },
 ];
 
 const STATE_COLOR = {
@@ -67,11 +67,11 @@ export default function StackIntelligenceMap() {
             </span>
           </div>
           <h2 className="font-display text-[clamp(2rem,5vw,3.6rem)] font-black tracking-[-0.04em] leading-[0.92] max-w-3xl mx-auto">
-            One engine.<br />
-            <span className="text-saas-gradient">Eight margin levers.</span>
+            Every cost, in one place.<br />
+            <span className="text-saas-gradient">Eight layers. One screen.</span>
           </h2>
           <p className="mt-4 text-sm md:text-base text-white/55 max-w-xl mx-auto leading-relaxed">
-            Hover a node. See the lever, the delta, the recovery — live.
+            Each layer is benchmarked live against brands like yours. Green is fair. Red is overpaid.
           </p>
         </div>
 

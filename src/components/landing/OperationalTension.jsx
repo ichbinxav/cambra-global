@@ -1,20 +1,20 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { CreditCard, LayoutGrid, Package, ArrowLeftRight, Landmark } from "lucide-react";
 
 /**
- * OperationalTension — economic tension + believable typical findings.
+ * OperationalTension — plain-English premise + believable recovery examples.
  *
  * Left: sharp tension copy. Right: a vertical "field report" of realistic
- * findings with their native units and emojis. Distinct from Hero terminal
- * (which shows live drift) — this shows recovered margin, anonymized.
+ * findings with their native units. Distinct from Hero terminal.
  */
 
 const RECOVERIES = [
-  { emoji: "💳", layer: "PSP",       finding: "0.3pp below Stripe default rate", recovered: "€11,400 / yr" },
-  { emoji: "🧰", layer: "SaaS",      finding: "Killed 2 duplicate ESPs",          recovered: "€8,200 / yr"  },
-  { emoji: "📦", layer: "Shipping",  finding: "Renegotiated €0.40 / order",       recovered: "€6,900 / yr"  },
-  { emoji: "💱", layer: "FX",        finding: "Spread tightened by 0.4pp",        recovered: "€4,100 / yr"  },
-  { emoji: "🏦", layer: "Banking",   finding: "Fixed fees -€18 / month",          recovered: "€220 / yr"    },
+  { Icon: CreditCard,     layer: "Payments",  finding: "0.3pp below Stripe default rate", recovered: "€11,400 / yr" },
+  { Icon: LayoutGrid,     layer: "SaaS",      finding: "Killed 2 duplicate ESPs",          recovered: "€8,200 / yr"  },
+  { Icon: Package,        layer: "Shipping",  finding: "Renegotiated €0.40 / order",       recovered: "€6,900 / yr"  },
+  { Icon: ArrowLeftRight, layer: "FX",        finding: "Spread tightened by 0.4pp",        recovered: "€4,100 / yr"  },
+  { Icon: Landmark,       layer: "Banking",   finding: "Fixed fees -€18 / month",          recovered: "€220 / yr"    },
 ];
 
 export default function OperationalTension() {
@@ -41,8 +41,8 @@ export default function OperationalTension() {
               transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="font-display text-[clamp(2rem,5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.9] mb-6"
             >
-              Your stack<br />
-              <span className="text-saas-gradient">is leaving money on the table.</span>
+              You're overpaying.<br />
+              <span className="text-saas-gradient">You just don't know where.</span>
             </motion.h2>
 
             <motion.p
@@ -50,9 +50,9 @@ export default function OperationalTension() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="text-base text-foreground/55 leading-relaxed max-w-md mb-6"
             >
-              You've optimized acquisition, product, operations.
+              Every brand pays Stripe, ships orders, runs SaaS tools.
               <br /><br />
-              The cost stack underneath has never been audited — and it's where the next 1–2 points of margin live.
+              Nobody checks if the prices are fair. We do — against brands your exact size, in your country.
             </motion.p>
 
             <motion.div
@@ -91,7 +91,9 @@ export default function OperationalTension() {
                   transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
                   className="px-4 py-3.5 flex items-center gap-3 hover:bg-secondary/30 transition-colors"
                 >
-                  <span className="text-xl shrink-0">{r.emoji}</span>
+                  <div className="h-9 w-9 rounded-lg border border-border/50 bg-card flex items-center justify-center shrink-0">
+                    <r.Icon className="h-4 w-4 text-foreground/70" strokeWidth={1.8} />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] uppercase tracking-[0.18em] font-mono text-muted-foreground/40 mb-0.5">
                       {r.layer}
