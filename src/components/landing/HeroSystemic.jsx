@@ -123,33 +123,33 @@ export default function HeroSystemic() {
             </motion.div>
 
             {/* Headline — staggered words, tighter & sharper */}
-            <h1 className="font-display text-[clamp(2.6rem,6.8vw,5.8rem)] font-black tracking-[-0.05em] leading-[0.86] mb-6">
-              <motion.span
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                className="block"
-              >
-                We find the margin
-              </motion.span>
-              <motion.span
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="block relative"
-              >
-                <span
-                  className="bg-clip-text text-transparent"
-                  style={{
-                    backgroundImage: "linear-gradient(180deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 55%, hsl(var(--cambra-cyan)) 100%)",
-                    backgroundSize: "200% 100%",
-                    WebkitBackgroundClip: "text",
-                  }}
-                >
-                  your stack is hiding.
-                </span>
-              </motion.span>
-            </h1>
+             <h1 className="font-display text-[clamp(2.6rem,6.8vw,5.8rem)] font-black tracking-[-0.05em] leading-[0.86] mb-6">
+               <motion.span
+                 initial={{ opacity: 0, y: 24 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                 className="block"
+               >
+                 Benchmark your stack.
+               </motion.span>
+               <motion.span
+                 initial={{ opacity: 0, y: 24 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                 className="block relative"
+               >
+                 <span
+                   className="bg-clip-text text-transparent"
+                   style={{
+                     backgroundImage: "linear-gradient(180deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 55%, hsl(var(--cambra-cyan)) 100%)",
+                     backgroundSize: "200% 100%",
+                     WebkitBackgroundClip: "text",
+                   }}
+                 >
+                   Recover hidden margin.
+                 </span>
+               </motion.span>
+             </h1>
 
             {/* Sub — tightened, value prop clear in 3 seconds */}
             <motion.p
