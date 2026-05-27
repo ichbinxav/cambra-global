@@ -217,7 +217,7 @@ export default function HeroSystemic() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 1.3 }}
-              className="flex items-center gap-3 text-[10px] text-muted-foreground/70 font-mono"
+              className="flex items-center gap-3 text-[10px] text-foreground/70 font-mono"
             >
               <Activity className="h-3 w-3 text-cambra-mint" />
               <span>3 min setup</span>
