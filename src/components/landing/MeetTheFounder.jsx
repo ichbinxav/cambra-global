@@ -62,22 +62,33 @@ export default function MeetTheFounder() {
           >
             <div className="space-y-5 text-[15px] md:text-base leading-[1.7] text-foreground/80 font-light">
               <p>
-                I started CAMBRA because I watched too many great independent brands
-                quietly bleed margin to infrastructure they never had time to question.
+                After years working inside global companies, I realized something strange:
+              </p>
+              <p className="text-foreground font-medium">
+                Independent brands were building incredible businesses; yet still operating without the infrastructure, leverage, and conditions usually reserved for much larger companies.
               </p>
               <p>
-                Payment fees drifted up. SaaS stacked. Shipping rates stayed locked
-                while peer brands negotiated better. Nobody was watching the layers
-                that compound — the boring ones, the ones that decide whether you
-                survive the next year.
+                Too many founders were negotiating alone.
+                Overpaying silently.
+                Solving the same operational problems over and over again.
               </p>
               <p>
-                CAMBRA exists to do that work for you. Continuously. Quietly. Against
-                the brands that look exactly like yours. We only win when you recover
-                margin — that's the whole deal.
+                Payments. Shipping. Software. Operations…
+                Everyone rebuilding the same infrastructure from scratch.
               </p>
               <p>
-                If you build something independent, we're on your side.
+                So I started CAMBRA.
+              </p>
+              <p>
+                Not as another tool. Not as an agency.
+                But as infrastructure for independent commerce.
+              </p>
+              <p>
+                We're still early and always building.
+                But our path is becoming very clear.
+              </p>
+              <p>
+                Join us.
               </p>
             </div>
 
@@ -86,7 +97,7 @@ export default function MeetTheFounder() {
                 className="text-2xl md:text-3xl text-foreground"
                 style={{ fontFamily: "'Caveat', 'Brush Script MT', cursive" }}
               >
-                — Founder
+                — Xavier M. Contero
               </p>
               <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground/50 mt-2">
                 Founder & CEO · CAMBRA
