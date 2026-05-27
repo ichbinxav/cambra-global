@@ -39,7 +39,7 @@ export default function HowItWorksSimple() {
             How it works
           </p>
           <h2 className="font-display text-[clamp(1.8rem,4vw,2.8rem)] font-black tracking-[-0.04em] leading-[0.95]">
-            <span className="text-saas-gradient">Recover margin.</span> Three steps.
+            <span className="text-saas-gradient">Three steps</span> away to recover your margin.
           </h2>
         </div>
 
