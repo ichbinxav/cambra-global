@@ -180,6 +180,49 @@ export default function ConnectTools() {
     { id: "manual", icon: Pencil, label: "Enter manually", sub: "Always available" },
   ];
 
+  const HERO_CONFIG = {
+    connect: {
+      eyebrow: "Open integration system",
+      title: "Connect your tools.",
+      subtitle: "Direct integrations pull real rates and volumes — automatically. The most precise way to map your infrastructure.",
+      accuracy: "99%",
+      accuracyLabel: "Accuracy",
+      stats: [
+        { value: "99%", label: "Accuracy" },
+        { value: "Real-time", label: "Data freshness" },
+        { value: "22+", label: "Integrations" },
+        { value: "OAuth", label: "Secure access" },
+      ],
+    },
+    upload: {
+      eyebrow: "AI-powered ingestion",
+      title: "Upload your files.",
+      subtitle: "Drop statements, invoices or exports — our AI extracts rates, volumes and costs in seconds. Great when direct integration isn't available.",
+      accuracy: "92%",
+      accuracyLabel: "Accuracy",
+      stats: [
+        { value: "92%", label: "Accuracy" },
+        { value: "<30s", label: "Processing" },
+        { value: "PDF/CSV/XLS", label: "Formats" },
+        { value: "AI-extracted", label: "Method" },
+      ],
+    },
+    manual: {
+      eyebrow: "Fallback mode",
+      title: "Enter manually.",
+      subtitle: "Always available — answer a few questions and we'll generate an estimate. Connect tools later to refine your analysis.",
+      accuracy: "~75%",
+      accuracyLabel: "Estimate confidence",
+      stats: [
+        { value: "~75%", label: "Confidence" },
+        { value: "5 min", label: "Setup time" },
+        { value: "Guided", label: "Step-by-step" },
+        { value: "Estimated", label: "Result quality" },
+      ],
+    },
+  };
+  const hero = HERO_CONFIG[activeMode];
+
   return (
     <div className="relative min-h-screen bg-[#04060C] font-inter flex flex-col overflow-hidden">
       <Navbar />
@@ -193,7 +236,7 @@ export default function ConnectTools() {
 
       <div className="relative flex-1 max-w-3xl mx-auto w-full px-5 py-8 space-y-6 mt-16">
 
-        {/* ── PREMIUM DARK HERO — landing grade ── */}
+        {/* ── PREMIUM DARK HERO — dynamic per mode ── */}
         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#06080F] text-white shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6)]">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute -top-40 -left-32 w-[34rem] h-[34rem] rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.55), transparent 60%)" }} />
@@ -208,21 +251,38 @@ export default function ConnectTools() {
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
               </span>
               <Plug size={10} className="text-white/60" />
-              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">Open integration system</span>
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">{hero.eyebrow}</span>
             </div>
             <h1 className="font-display text-[clamp(2.2rem,5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.92] mb-3">
               <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", filter: "drop-shadow(0 0 22px rgba(44,167,193,0.35))" }}>
-                Connect your tools.
+                {hero.title}
               </span>
             </h1>
             <p className="text-sm text-white/55 leading-relaxed max-w-lg">
-              The more you connect, the more precise your infrastructure intelligence. Use direct integrations for best results — or upload files and enter data manually if needed.
+              {hero.subtitle}
             </p>
           </div>
         </div>
 
-        {/* ── STATS BAR — big gradient numbers ── */}
-        <ConnectStatsBar connectedCount={connectedTools.length} uploadedCount={uploadedFiles.length} />
+        {/* ── DYNAMIC STATS BAR — accuracy per mode ── */}
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#06080F]">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-20 left-1/4 w-64 h-64 rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.4), transparent 60%)" }} />
+            <div className="absolute -bottom-16 right-1/4 w-56 h-56 rounded-full blur-3xl" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.35), transparent 60%)" }} />
+            <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "36px 36px" }} />
+          </div>
+          <div className="relative grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/[0.06]">
+            {hero.stats.map((s, i) => (
+              <div key={i} className="px-5 py-5 text-center">
+                <p className="font-display text-2xl sm:text-3xl font-black tracking-tight leading-none mb-1.5"
+                   style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", filter: "drop-shadow(0 0 18px rgba(44,167,193,0.3))" }}>
+                  {s.value}
+                </p>
+                <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-white/35">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Mode switcher — dark gradient cards */}
         <div className="grid grid-cols-3 gap-3">
@@ -256,16 +316,6 @@ export default function ConnectTools() {
         {/* MODE: Connect */}
         {activeMode === "connect" && (
           <div className="space-y-4">
-            {/* Info strip — dark gradient border */}
-            <div className="relative p-3.5 rounded-xl text-xs text-white/50 overflow-hidden bg-white/[0.03]">
-              <div className="pointer-events-none absolute inset-0 rounded-xl" style={{ padding: "1px", background: "linear-gradient(135deg, rgba(44,167,193,0.5), rgba(31,78,216,0.3), transparent 70%)", WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)", WebkitMaskComposite: "xor", maskComposite: "exclude" }} />
-              <div className="pointer-events-none absolute -top-12 -left-12 w-32 h-32 rounded-full blur-2xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.4), transparent)" }} />
-              <div className="relative flex items-center gap-2.5">
-                <CheckCircle2 size={13} className="text-cambra-mint shrink-0" />
-                Connect your tools for a more accurate analysis — we pull real rates and volumes automatically.
-              </div>
-            </div>
-
             {/* Direct connections (OAuth) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <ConnectorTile
@@ -394,14 +444,6 @@ export default function ConnectTools() {
         {/* MODE: Upload — dark theme */}
         {activeMode === "upload" && (
           <div className="space-y-4">
-            <div className="relative p-3.5 rounded-xl text-xs text-white/50 overflow-hidden bg-white/[0.03]">
-              <div className="pointer-events-none absolute inset-0 rounded-xl" style={{ padding: "1px", background: "linear-gradient(135deg, rgba(31,78,216,0.5), rgba(44,167,193,0.3), transparent 70%)", WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)", WebkitMaskComposite: "xor", maskComposite: "exclude" }} />
-              <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full blur-2xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.4), transparent)" }} />
-              <div className="relative flex items-center gap-2.5">
-                <Upload size={13} className="text-cambra-lilac shrink-0" />
-                Upload your files if your provider is not yet supported. We extract rates, volumes, and costs automatically using AI.
-              </div>
-            </div>
             <UploadZone
               onUpload={f => setUploadedFiles(prev => [...prev, f])}
               uploadedFiles={uploadedFiles}
@@ -428,16 +470,28 @@ export default function ConnectTools() {
               <span>👁 Read-only access</span>
               <span>🚫 Never shared</span>
             </div>
+
+            {/* Upsell to Connect for higher accuracy */}
+            <button
+              onClick={() => setActiveMode('connect')}
+              className="w-full group relative overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-[#0A1024] via-[#1F4ED8]/30 to-[#2CA7C1]/30 p-5 flex items-center gap-4 text-left transition-all hover:border-white/30 hover:shadow-[0_18px_48px_-16px_rgba(31,78,216,0.4)]"
+            >
+              <div className="pointer-events-none absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.4), transparent 60%)" }} />
+              <div className="relative w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, rgba(31,78,216,0.4), rgba(44,167,193,0.4))", border: "1px solid rgba(255,255,255,0.15)" }}>
+                <Plug size={18} className="text-white" />
+              </div>
+              <div className="relative flex-1">
+                <p className="text-sm font-bold text-white mb-0.5">Boost accuracy to <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>99%</span></p>
+                <p className="text-[11px] text-white/55">Connect your tools for live rates and volumes — no manual work.</p>
+              </div>
+              <ArrowRight size={16} className="relative text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
+            </button>
           </div>
         )}
 
         {/* MODE: Manual — dark theme */}
         {activeMode === "manual" && (
           <div className="space-y-4">
-            <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-orange-500/[0.06] border border-orange-500/20 text-xs text-white/55">
-              <Pencil size={13} className="text-orange-400 shrink-0" />
-              Enter your details manually if needed — always available as a fallback. We'll generate an estimate based on your inputs.
-            </div>
             <div className="relative p-8 rounded-2xl border border-white/[0.08] bg-[#0b0d14] text-center space-y-4 overflow-hidden">
               <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-3xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.3), transparent 60%)" }} />
               <div className="pointer-events-none absolute -bottom-16 right-0 w-48 h-48 rounded-full blur-3xl opacity-30" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.35), transparent 60%)" }} />
@@ -461,6 +515,22 @@ export default function ConnectTools() {
             <p className="text-center text-[11px] text-white/30">
               Manual inputs will be marked as estimated — you can connect tools later from your dashboard to refine your analysis.
             </p>
+
+            {/* Upsell to Connect for higher accuracy */}
+            <button
+              onClick={() => setActiveMode('connect')}
+              className="w-full group relative overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-[#0A1024] via-[#1F4ED8]/30 to-[#2CA7C1]/30 p-5 flex items-center gap-4 text-left transition-all hover:border-white/30 hover:shadow-[0_18px_48px_-16px_rgba(31,78,216,0.4)]"
+            >
+              <div className="pointer-events-none absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.4), transparent 60%)" }} />
+              <div className="relative w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, rgba(31,78,216,0.4), rgba(44,167,193,0.4))", border: "1px solid rgba(255,255,255,0.15)" }}>
+                <Plug size={18} className="text-white" />
+              </div>
+              <div className="relative flex-1">
+                <p className="text-sm font-bold text-white mb-0.5">Connect tools for <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>99% accuracy</span></p>
+                <p className="text-[11px] text-white/55">Skip the typing — we pull real rates and volumes automatically.</p>
+              </div>
+              <ArrowRight size={16} className="relative text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
+            </button>
           </div>
         )}
 

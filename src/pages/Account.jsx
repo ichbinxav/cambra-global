@@ -166,7 +166,7 @@ export default function Account() {
             className="h-9 rounded-full px-5 text-xs font-medium gap-2 border-border/60"
           >
             <LogOut size={12} />
-            Sign out of THE NoDE
+            Sign out of CAMBRA
           </Button>
         </Section>
       </div>
