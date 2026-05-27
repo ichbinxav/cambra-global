@@ -1,10 +1,10 @@
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { ArrowDownRight, Zap } from "lucide-react";
+import { ArrowDownRight, Zap, Scan, GitCompare, TrendingUp } from "lucide-react";
 
 /**
- * HowItWorksSimple — editorial, tense, alive.
- * Dark surface, oversized numerals, asymmetric rows, scroll-linked spine.
+ * HowItWorksSimple — Hero-style section (light bg, like rest of landing),
+ * with each step rendered as a navy cambra-card.
  */
 const STEPS = [
   {
@@ -13,6 +13,8 @@ const STEPS = [
     title: "We scan your stack.",
     body: "Connect your tools or drop an invoice. We read every real cost across 8 layers — payments, shipping, SaaS, banking, FX, in-store, insurance, telecom.",
     meta: "8 cost layers · 15 min refresh",
+    icon: Scan,
+    accent: "#2CA7C1",
   },
   {
     n: "02",
@@ -20,6 +22,8 @@ const STEPS = [
     title: "We compare you to peers.",
     body: "Brands your size, in your country. Every line item, side by side. The drift you can't see alone becomes obvious.",
     meta: "Continuous · per-tier · per-region",
+    icon: GitCompare,
+    accent: "#1F4ED8",
   },
   {
     n: "03",
@@ -27,129 +31,107 @@ const STEPS = [
     title: "You take the margin back.",
     body: "We renegotiate or swap what's overpriced. You only pay if we save you money. No subscription. No retainer.",
     meta: "Success-fee only · aligned incentives",
+    icon: TrendingUp,
+    accent: "#8B5CF6",
   },
 ];
 
 export default function HowItWorksSimple() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.8", "end 0.2"] });
-  const spineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <section ref={ref} className="relative py-10 md:py-14 px-5 bg-neon-1 text-neon-9 overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute top-1/3 -left-32 w-[40rem] h-[40rem] rounded-full blur-[140px] opacity-40"
-          style={{ background: "radial-gradient(circle, rgba(31,78,216,0.35), transparent 60%)" }}
-        />
-        <div
-          className="absolute bottom-0 -right-32 w-[36rem] h-[36rem] rounded-full blur-[140px] opacity-30"
-          style={{ background: "radial-gradient(circle, rgba(44,167,193,0.3), transparent 60%)" }}
-        />
-        <div className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
-            backgroundSize: "64px 64px",
-          }}
-        />
+    <section
+      ref={ref}
+      className="relative py-20 md:py-28 px-5 border-t border-border/40 bg-background overflow-hidden"
+    >
+      {/* Ambient (matches other landing sections) */}
+      <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-32 left-1/4 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.15]" />
+        <div className="absolute bottom-0 -right-32 w-[32rem] h-[32rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.12]" />
       </div>
 
-      <div className="relative max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="mb-6 md:mb-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm">
-            <Zap className="h-3 w-3 text-cambra-mint" />
-            <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-white/60">
+      <div className="relative max-w-6xl mx-auto">
+        {/* Header — matches MeetTheFounder / landing hero pattern */}
+        <div className="mb-12 md:mb-16 max-w-4xl">
+          <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
+            <Zap className="h-3 w-3 text-cambra-cyan" />
+            <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-muted-foreground">
               How it works
             </span>
           </div>
-          <h2 className="font-display text-[clamp(2rem,5.5vw,4.2rem)] font-black tracking-[-0.05em] leading-[0.88]">
+          <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92]">
             Three moves.<br />
             <span className="text-saas-gradient">Margin back on the table.</span>
           </h2>
-          <p className="mt-6 text-base md:text-lg text-white/55 max-w-xl leading-relaxed">
+          <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed">
             No dashboards to learn. No long onboarding. We do the heavy work — you keep the margin.
           </p>
         </div>
 
-        {/* Steps — asymmetric rows with animated spine */}
-        <div className="relative">
-          {/* Vertical spine (desktop) */}
-          <div className="absolute left-[80px] top-0 bottom-0 w-px hidden md:block">
-            <div className="absolute inset-0 bg-white/10" />
-            <motion.div
-              className="absolute top-0 left-0 right-0 bg-gradient-to-b from-cambra-mint via-cambra-lilac to-transparent"
-              style={{ height: spineHeight }}
-            />
-          </div>
-
-          {STEPS.map((s, i) => (
-            <motion.div
-              key={s.n}
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] }}
-              className="relative group"
-            >
-              {/* Connector dot on spine */}
-              <div className="absolute left-[80px] top-12 -translate-x-1/2 hidden md:block z-10">
-                <div className="relative h-3 w-3">
-                  <div className="absolute inset-0 rounded-full bg-neon-1 border border-white/30" />
-                  <motion.div
-                    className="absolute inset-0 rounded-full"
-                    style={{ background: i === 0 ? "#2CA7C1" : i === 1 ? "#1F4ED8" : "#8B5CF6" }}
-                    animate={{ scale: [1, 1.6, 1], opacity: [0.4, 0, 0.4] }}
-                    transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.4 }}
-                  />
-                  <div
-                    className="absolute inset-[3px] rounded-full"
-                    style={{ background: i === 0 ? "#2CA7C1" : i === 1 ? "#1F4ED8" : "#8B5CF6" }}
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-[160px_1fr] gap-4 md:gap-12 py-6 md:py-10 border-b border-white/[0.06] last:border-0">
-                {/* Oversized numeral */}
-                <div className="relative">
-                  <div className="flex md:block items-baseline gap-4">
-                    <div
-                      className="font-display text-[6rem] md:text-[8rem] font-black leading-[0.8] tracking-[-0.06em] tabular-nums select-none"
-                      style={{
-                        background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.15) 100%)",
-                        WebkitBackgroundClip: "text",
-                        backgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                      }}
-                    >
-                      {s.n}
-                    </div>
-                    <span className="md:hidden text-[10px] font-mono tracking-[0.25em] text-white/40">
+        {/* Steps — grid of navy cards */}
+        <div className="grid md:grid-cols-3 gap-5 md:gap-6">
+          {STEPS.map((s, i) => {
+            const Icon = s.icon;
+            return (
+              <motion.div
+                key={s.n}
+                initial={{ opacity: 0, y: 24 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                className="cambra-card p-7 md:p-8 flex flex-col"
+              >
+                {/* Header row: tag pill + icon */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ background: s.accent }}
+                    />
+                    <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-white/70">
                       {s.tag}
                     </span>
                   </div>
-                  <span className="hidden md:inline-block mt-2 text-[10px] font-mono tracking-[0.25em] text-white/40">
-                    {s.tag}
-                  </span>
-                </div>
-
-                {/* Content */}
-                <div className="relative">
-                  <h3 className="font-display text-[clamp(1.5rem,3vw,2.4rem)] font-black tracking-[-0.03em] leading-[1] mb-4 text-white group-hover:translate-x-1 transition-transform duration-500">
-                    {s.title}
-                  </h3>
-                  <p className="text-[15px] md:text-base text-white/65 leading-[1.6] max-w-xl mb-5">
-                    {s.body}
-                  </p>
-                  <div className="inline-flex items-center gap-2 text-[10px] font-mono tracking-[0.2em] uppercase text-white/45">
-                    <ArrowDownRight className="h-3 w-3 text-cambra-mint" />
-                    {s.meta}
+                  <div
+                    className="h-9 w-9 rounded-xl flex items-center justify-center border border-white/10"
+                    style={{ background: `${s.accent}1a` }}
+                  >
+                    <Icon className="h-4 w-4" style={{ color: s.accent }} />
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+
+                {/* Oversized numeral */}
+                <div
+                  className="font-display text-[5.5rem] md:text-[6.5rem] font-black leading-[0.8] tracking-[-0.06em] tabular-nums select-none mb-4"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.15) 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  {s.n}
+                </div>
+
+                {/* Title */}
+                <h3 className="font-display text-2xl md:text-[1.75rem] font-black tracking-[-0.03em] leading-[1.05] mb-3 text-white">
+                  {s.title}
+                </h3>
+
+                {/* Body */}
+                <p className="text-[14px] md:text-[15px] text-white/65 leading-[1.6] mb-6 flex-1">
+                  {s.body}
+                </p>
+
+                {/* Meta */}
+                <div className="inline-flex items-center gap-2 text-[10px] font-mono tracking-[0.2em] uppercase text-white/50 pt-4 border-t border-white/10">
+                  <ArrowDownRight className="h-3 w-3" style={{ color: s.accent }} />
+                  {s.meta}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Bottom recovery chips */}
@@ -157,15 +139,15 @@ export default function HowItWorksSimple() {
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-4 flex flex-wrap items-center gap-2"
+          className="mt-10 flex flex-wrap items-center gap-2"
         >
-          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-white/35 mr-2">
+          <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground/60 mr-2">
             What you get →
           </span>
           {["Guaranteed infrastructure inefficiencies detected", "Business insights", "Zero upfront", "Success-fee only", "Live benchmarks", "Instant access"].map((chip) => (
             <span
               key={chip}
-              className="px-3 py-1.5 text-[11px] font-medium rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm text-white/80"
+              className="px-3 py-1.5 text-[11px] font-medium rounded-full border border-border/60 bg-background/60 backdrop-blur-sm text-foreground/75"
             >
               {chip}
             </span>
