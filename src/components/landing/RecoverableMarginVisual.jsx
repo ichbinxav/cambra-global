@@ -1,7 +1,7 @@
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, CreditCard, Truck, Layers } from "lucide-react";
+import { ArrowRight, CreditCard, Truck, Layers, Sparkles, TrendingUp } from "lucide-react";
 
 const ITEMS = [
   { id: "payments", label: "Payments", value: 11400, Icon: CreditCard, detail: "PSP fees +0.3pp above peer median" },
@@ -10,25 +10,89 @@ const ITEMS = [
 ];
 const TOTAL = ITEMS.reduce((s, i) => s + i.value, 0);
 
-function Counter({ to, duration = 1200 }) {
+/* Smooth animated counter with easing */
+function Counter({ to, duration = 1400, start = false }) {
   const [v, setV] = useState(0);
   useEffect(() => {
-    let raf, start;
+    if (!start) return;
+    let raf, t0;
     const step = (t) => {
-      if (!start) start = t;
-      const p = Math.min(1, (t - start) / duration);
-      setV(Math.round(to * (1 - Math.pow(1 - p, 3))));
+      if (!t0) t0 = t;
+      const p = Math.min(1, (t - t0) / duration);
+      const eased = 1 - Math.pow(1 - p, 4); // ease-out quartic
+      setV(Math.round(to * eased));
       if (p < 1) raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [to, duration]);
+  }, [to, duration, start]);
   return <>{v.toLocaleString("en-US")}</>;
+}
+
+/* Slot-machine style rolling digit counter for total */
+function RollingCounter({ to, duration = 2400, start = false }) {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    let raf, t0;
+    const step = (t) => {
+      if (!t0) t0 = t;
+      const p = Math.min(1, (t - t0) / duration);
+      // Smooth elastic-style ease
+      const eased = p < 0.5
+        ? 4 * p * p * p
+        : 1 - Math.pow(-2 * p + 2, 3) / 2;
+      setV(Math.round(to * eased));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [to, duration, start]);
+
+  const str = v.toLocaleString("en-US");
+  return (
+    <span className="inline-flex">
+      {str.split("").map((ch, i) => (
+        <span key={`${i}-${ch}`} className="relative inline-block" style={{ minWidth: ch === "," ? "0.3em" : "0.6em" }}>
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.span
+              key={ch + i}
+              initial={{ y: "60%", opacity: 0, filter: "blur(4px)" }}
+              animate={{ y: "0%", opacity: 1, filter: "blur(0px)" }}
+              exit={{ y: "-60%", opacity: 0, filter: "blur(4px)" }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-block"
+            >
+              {ch}
+            </motion.span>
+          </AnimatePresence>
+        </span>
+      ))}
+    </span>
+  );
 }
 
 export default function RecoverableMarginVisual() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+  const [pulseIdx, setPulseIdx] = useState(-1);
+  const [totalStarted, setTotalStarted] = useState(false);
+
+  // Sequential pulse highlight on items
+  useEffect(() => {
+    if (!inView) return;
+    let idx = 0;
+    const interval = setInterval(() => {
+      setPulseIdx(idx % ITEMS.length);
+      idx++;
+    }, 900);
+    // Start total counter after items have rolled
+    const totalTimer = setTimeout(() => setTotalStarted(true), 800);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(totalTimer);
+    };
+  }, [inView]);
 
   return (
     <section
@@ -47,7 +111,10 @@ export default function RecoverableMarginVisual() {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 mb-5"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
+            </span>
             <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">
               Potential recoverable margin
             </span>
@@ -85,6 +152,7 @@ export default function RecoverableMarginVisual() {
               "0 1px 0 hsl(0 0% 100% / 0.06) inset, 0 30px 80px -28px rgba(0,0,0,0.7)",
           }}
         >
+          {/* Animated grid */}
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.5]"
             style={{
@@ -96,65 +164,140 @@ export default function RecoverableMarginVisual() {
             }}
           />
 
-          <div className="relative grid md:grid-cols-3 gap-3 sm:gap-4 mb-6 md:mb-8">
-            {ITEMS.map((it, i) => (
-              <motion.div
-                key={it.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.25 + i * 0.08 }}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-4 sm:p-5"
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-white/[0.05] border border-white/10">
-                    <it.Icon className="h-3.5 w-3.5 text-cambra-cyan" strokeWidth={2} />
+          {/* Floating ambient glows */}
+          <motion.div
+            className="pointer-events-none absolute -top-32 -right-24 w-96 h-96 rounded-full blur-[100px]"
+            style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.40), transparent)" }}
+            animate={{ opacity: [0.4, 0.7, 0.4], scale: [1, 1.15, 1] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="pointer-events-none absolute -bottom-32 -left-24 w-80 h-80 rounded-full blur-[100px]"
+            style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.40), transparent)" }}
+            animate={{ opacity: [0.3, 0.6, 0.3], scale: [1.1, 1, 1.1] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          />
+
+          {/* Scan line */}
+          <motion.div
+            className="pointer-events-none absolute left-0 right-0 h-px z-[1]"
+            style={{ background: "linear-gradient(90deg, transparent, rgba(44,167,193,0.5), transparent)" }}
+            animate={{ y: ["-5%", "105%"] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+          />
+
+          <div className="relative grid md:grid-cols-3 gap-3 sm:gap-4 mb-6 md:mb-8 z-10">
+            {ITEMS.map((it, i) => {
+              const isPulsing = pulseIdx === i;
+              return (
+                <motion.div
+                  key={it.id}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                  transition={{ duration: 0.6, delay: 0.25 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative rounded-2xl border bg-white/[0.03] backdrop-blur-sm p-4 sm:p-5 overflow-hidden"
+                  style={{
+                    borderColor: isPulsing ? "rgba(44,167,193,0.45)" : "rgba(255,255,255,0.1)",
+                    transition: "border-color 600ms ease",
+                  }}
+                >
+                  {/* Pulse halo */}
+                  <AnimatePresence>
+                    {isPulsing && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.1 }}
+                        transition={{ duration: 0.5 }}
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: "radial-gradient(closest-side at 80% 20%, rgba(44,167,193,0.18), transparent 70%)",
+                        }}
+                      />
+                    )}
+                  </AnimatePresence>
+
+                  <div className="relative flex items-center gap-2 mb-3">
+                    <motion.div
+                      className="h-7 w-7 rounded-lg flex items-center justify-center bg-white/[0.05] border border-white/10"
+                      animate={isPulsing ? { scale: [1, 1.12, 1] } : {}}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <it.Icon className="h-3.5 w-3.5 text-cambra-cyan" strokeWidth={2} />
+                    </motion.div>
+                    <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/55">
+                      {it.label}
+                    </span>
                   </div>
-                  <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/55">
-                    {it.label}
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-1 mb-1.5">
-                  <span className="text-2xl sm:text-3xl font-black tabular-nums text-white tracking-tight">
-                    €<Counter to={it.value} />
-                  </span>
-                  <span className="text-[10px] font-mono text-white/40">/yr</span>
-                </div>
-                <p className="text-[11px] text-white/55 leading-snug">{it.detail}</p>
-              </motion.div>
-            ))}
+                  <div className="relative flex items-baseline gap-1 mb-1.5">
+                    <span className="text-2xl sm:text-3xl font-black tabular-nums text-white tracking-tight">
+                      €<Counter to={it.value} duration={1300 + i * 200} start={inView} />
+                    </span>
+                    <span className="text-[10px] font-mono text-white/40">/yr</span>
+                  </div>
+                  <p className="relative text-[11px] text-white/55 leading-snug">{it.detail}</p>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Total */}
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.55 }}
-            className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pt-6 border-t border-white/10"
+            transition={{ duration: 0.7, delay: 0.7 }}
+            className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pt-6 border-t border-white/10 z-10"
           >
-            <div>
-              <div className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/45 mb-2">
-                Total annual savings
+            {/* Subtle pulse glow behind total number */}
+            <motion.div
+              className="pointer-events-none absolute -left-6 -bottom-4 w-72 h-32 rounded-full blur-3xl"
+              style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.4), transparent)" }}
+              animate={{ opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
+
+            <div className="relative">
+              <div className="flex items-center gap-1.5 mb-2">
+                <TrendingUp className="h-3 w-3 text-cambra-cyan" strokeWidth={2.5} />
+                <div className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/55">
+                  Total annual savings
+                </div>
               </div>
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-2 flex-wrap">
                 <span
-                  className="font-display text-[clamp(2.6rem,6vw,4rem)] font-black tracking-[-0.04em] leading-none tabular-nums"
+                  className="font-display text-[clamp(2.8rem,7vw,4.4rem)] font-black tracking-[-0.045em] leading-none tabular-nums relative"
                   style={{
                     background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #2CA7C1 100%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
+                    filter: "drop-shadow(0 0 24px rgba(44,167,193,0.35))",
                   }}
                 >
-                  €<Counter to={TOTAL} duration={1600} />
+                  €<RollingCounter to={TOTAL} duration={2400} start={totalStarted} />
                 </span>
                 <span className="text-xs font-mono text-white/40">/ year · estimate</span>
               </div>
             </div>
 
-            <Link to="/Analyzer" className="shrink-0">
-              <button className="h-11 px-5 rounded-full bg-white text-[#06080F] text-sm font-bold inline-flex items-center justify-center gap-2 hover:bg-white/90 transition">
-                See your number <ArrowRight className="h-4 w-4" />
-              </button>
+            <Link to="/Analyzer" className="shrink-0 relative">
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                className="relative h-11 px-5 rounded-full bg-white text-[#06080F] text-sm font-bold inline-flex items-center justify-center gap-2 hover:bg-white/95 transition overflow-hidden"
+              >
+                {/* Shimmer sweep */}
+                <motion.span
+                  aria-hidden
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: "linear-gradient(110deg, transparent 35%, rgba(44,167,193,0.35) 50%, transparent 65%)" }}
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }}
+                />
+                <Sparkles className="relative h-3.5 w-3.5" />
+                <span className="relative">See your number</span>
+                <ArrowRight className="relative h-4 w-4" />
+              </motion.button>
             </Link>
           </motion.div>
         </motion.div>
