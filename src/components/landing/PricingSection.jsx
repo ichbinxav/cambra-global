@@ -3,13 +3,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Zap } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { Link } from "react-router-dom";
 
 const INCLUDED = [
   "8 cost layers monitored continuously",
   "Peer medians at your tier & geography",
   "Live drift detection",
-  "Quiet operational assistant",
+  "Business insights & benchmarks",
   "Recoverable margin, quantified",
   "Document vault & evidence trail",
   "Provider migration support",
