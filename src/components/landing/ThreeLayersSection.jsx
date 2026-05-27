@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
-import { Activity, Layers, Target, ArrowRight } from "lucide-react";
+import { Search, Database, Brain, ArrowRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
 const LAYERS = [
   {
-    icon: Activity,
+    icon: Search,
     label: "Audit",
     desc: "Full infrastructure mapping. Every cost layer, every provider, every inefficiency surfaced and benchmarked.",
     accent: "#635BFF",
@@ -13,7 +13,7 @@ const LAYERS = [
     statLabel: "to complete",
   },
   {
-    icon: Layers,
+    icon: Database,
     label: "Benchmark",
     desc: "Your costs compared against real operational data from comparable businesses. You see exactly where you stand.",
     accent: "#06B6D4",
@@ -21,7 +21,7 @@ const LAYERS = [
     statLabel: "accuracy",
   },
   {
-    icon: Target,
+    icon: Brain,
     label: "Intelligence",
     desc: "AI-powered recommendations. Specific, actionable, quantified. Not suggestions — strategic intelligence.",
     accent: "#8B5CF6",

@@ -1,11 +1,11 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { LineChart, Brain, ArrowRight } from "lucide-react";
+import { Zap, Brain, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const FEATURES = [
   {
-    icon: LineChart,
+    icon: Zap,
     title: "Infrastructure Intelligence",
     body: "Benchmark your entire operational stack against real data from comparable operators. Identify where you are overpaying and by exactly how much.",
     accent: "#635BFF",

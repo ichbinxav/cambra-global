@@ -1,4 +1,4 @@
-import { TrendingUp, BarChart2, Cpu, Clock, Shield, Zap } from "lucide-react";
+import { TrendingUp, BarChart2, Brain, Clock, Shield, Zap } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
@@ -16,7 +16,7 @@ const BENEFITS = [
     accent: "#06B6D4",
   },
   {
-    icon: Cpu,
+    icon: Brain,
     title: "AI-native intelligence",
     body: "Not a report. A living intelligence system that explains findings, recommends actions and evolves with your business.",
     accent: "#8B5CF6",
