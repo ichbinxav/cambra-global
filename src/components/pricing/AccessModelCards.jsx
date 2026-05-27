@@ -126,8 +126,15 @@ export default function AccessModelCards() {
                 <ArrowRight className="relative h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" />
               </button>
             </Link>
-            <p className="text-[11px] text-muted-foreground/60 text-center mt-3 font-mono tracking-[0.1em]">
-              ~3 min · No card · Read-only
+            <p className="text-xs text-foreground/75 text-center mt-3 font-semibold tracking-[0.08em] flex items-center justify-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-cambra-blue" strokeWidth={2} />
+                <span>3 min setup</span>
+              </span>
+              <span className="text-foreground/40">•</span>
+              <span>No card</span>
+              <span className="text-foreground/40">•</span>
+              <span>Read-only</span>
             </p>
           </div>
         </div>
