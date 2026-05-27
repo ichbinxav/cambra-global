@@ -41,11 +41,11 @@ export default function MeetTheFounder() {
       <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
 
       <div className="max-w-5xl mx-auto relative">
-        <div className="mb-10 md:mb-14">
-          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-3 font-mono">
+        <div className="mb-12 md:mb-16">
+          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-4 font-mono">
             Meet the founder
           </p>
-          <h2 className="font-display text-[clamp(1.8rem,4vw,2.8rem)] font-black tracking-[-0.04em] leading-[0.95] max-w-2xl">
+          <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92] max-w-4xl">
             A note from <span className="text-saas-gradient">the founder</span>.
           </h2>
         </div>
