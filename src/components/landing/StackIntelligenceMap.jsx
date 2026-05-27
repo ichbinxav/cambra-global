@@ -223,9 +223,9 @@ export default function StackIntelligenceMap() {
 
             <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-[9px] font-mono uppercase tracking-[0.18em] text-white/35">
               <span>infrastructure for independent commerce</span>
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 text-white/60">
                 <span className="h-1 w-1 rounded-full bg-cambra-mint animate-pulse" />
-                live · 8 cost layers
+                estimated savings with cambra · €{(TOTAL_RECOVERY / 1000).toFixed(1)}K/yr
               </span>
             </div>
           </div>
