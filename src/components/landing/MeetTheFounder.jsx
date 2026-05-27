@@ -65,6 +65,8 @@ export default function MeetTheFounder() {
                 className="w-full h-full object-cover"
               />
             </div>
+            {/* Quote mark on photo (mobile) */}
+            <Quote className="h-8 w-8 md:hidden text-saas-gradient absolute -top-2 -right-2 opacity-80" strokeWidth={1.5} />
           </motion.div>
 
           {/* Short quote card */}
@@ -74,7 +76,7 @@ export default function MeetTheFounder() {
             transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="relative rounded-2xl border border-border/40 bg-secondary/30 p-6 md:p-8"
           >
-            <Quote className="h-10 w-10 md:h-12 md:w-12 text-saas-gradient mb-4 opacity-80" strokeWidth={1.5} />
+            <Quote className="hidden md:block h-10 w-10 md:h-12 md:w-12 text-saas-gradient mb-4 opacity-80" strokeWidth={1.5} />
             
             <p className="text-lg md:text-xl font-medium leading-snug text-foreground mb-5">
               After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.
