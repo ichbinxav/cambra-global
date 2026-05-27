@@ -190,11 +190,12 @@ export default function StackIntelligenceMap() {
                 animate={{ opacity: [0.04, 0.12, 0.04] }}
                 transition={{ duration: 2.5, repeat: Infinity }}
               />
-              <g transform="translate(-16, -18) scale(0.65)">
-                <polygon points="20,10 28,14 28,44 20,48" fill="white" />
-                <polygon points="32,12 48,22 40,28 24,18" fill="white" />
-                <polygon points="24,38 40,48 48,42 32,32" fill="white" />
-              </g>
+              <image 
+                x={-20} y={-20} width={40} height={40}
+                href="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d63322635_image.png"
+                preserveAspectRatio="xMidYMid meet"
+                opacity={0.95}
+              />
 
               {LAYERS.map((layer, i) => {
                 const { x, y } = polar(layer.angle, RADIUS);
