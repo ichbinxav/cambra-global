@@ -1,20 +1,20 @@
 /**
- * THE NoDE — Infrastructure Score Engine v2
+ * CAMBRA — Infrastructure Score Engine v3
  *
- * Tier-based, geo-aware, dynamic benchmark logic.
- * All benchmarks derived from real industry ranges — no arbitrary values.
+ * Coherent, tier-aware, geography-aware benchmark logic.
+ * Every saving and score is derived from the SAME calculation path.
  *
- * Dimensions:
- *   1. Cost Efficiency      (40%)
- *   2. Stack Optimization   (20%)
- *   3. Provider Quality     (15%)
- *   4. Geo & Structural Fit (10%)
- *   5. Data Completeness    (15%)
+ * Principles:
+ *  • One source of truth: calculateSavings() — score is derived from it.
+ *  • All savings are clamped ≥ 0 and capped to realistic maxima.
+ *  • No double-counting (TPE is part of payments, not added twice).
+ *  • Benchmarks come from getBenchmarks(monthly_revenue, country).
+ *  • Score is the inverse of "leakage % of GMV", bounded [0, 100].
  */
 
 // ─── Revenue tier detection ──────────────────────────────────────────────────
-// Tiers: micro (<€30K/mo), small (€30–100K), mid (€100–500K), large (>€500K)
-function getRevenueTier(monthlyRevenue) {
+// micro: <€30K/mo · small: €30–100K · mid: €100–500K · large: >€500K
+function getRevenueTier(monthlyRevenue = 0) {
   if (monthlyRevenue >= 500000) return "large";
   if (monthlyRevenue >= 100000) return "mid";
   if (monthlyRevenue >= 30000) return "small";
@@ -34,44 +34,44 @@ function isEU(country) {
   return EU_COUNTRIES.includes(country);
 }
 
-// ─── Dynamic benchmarks (tier + geo aware) ───────────────────────────────────
-// Based on real market data ranges (Stripe published rates, Eurosender data, SaaS spend surveys)
-export function getBenchmarks(monthlyRevenue = 50000, country = "") {
+// ─── Benchmarks (tier + geo aware) ───────────────────────────────────────────
+// Sources: Stripe published rates, Adyen interchange++ ranges, Eurosender
+// carrier pricing data, Gartner/Paddle SaaS spend ratios.
+export function getBenchmarks(monthlyRevenue = 0, country = "") {
   const tier = getRevenueTier(monthlyRevenue);
   const eu = isEU(country);
 
-  // Payment benchmark: larger brands negotiate better rates
-  // EU brands benefit from lower interchange caps (PSD2 regulation)
+  // Online card acceptance, blended effective rate (%)
+  // EU benefits from PSD2 interchange caps (0.2% debit / 0.3% credit)
   const paymentBenchmarks = {
-    micro: { rate: eu ? 1.8 : 2.2, range: eu ? [1.8, 2.4] : [2.2, 2.9] },
-    small: { rate: eu ? 1.6 : 1.9, range: eu ? [1.6, 2.2] : [1.9, 2.5] },
-    mid:   { rate: eu ? 1.4 : 1.6, range: eu ? [1.4, 2.0] : [1.6, 2.2] },
-    large: { rate: eu ? 1.2 : 1.4, range: eu ? [1.2, 1.8] : [1.4, 2.0] },
+    micro: { rate: eu ? 1.9 : 2.4, range: eu ? [1.7, 2.2] : [2.2, 2.9] },
+    small: { rate: eu ? 1.7 : 2.1, range: eu ? [1.5, 1.9] : [1.9, 2.4] },
+    mid:   { rate: eu ? 1.5 : 1.8, range: eu ? [1.3, 1.7] : [1.6, 2.1] },
+    large: { rate: eu ? 1.3 : 1.6, range: eu ? [1.1, 1.5] : [1.4, 1.9] },
   };
 
+  // In-store all-in effective rate (% of in-store GMV) including terminal rental + fixed fees
   const tpeBenchmarks = {
-    micro: { rate: eu ? 1.2 : 1.5, range: eu ? [1.2, 1.7] : [1.5, 2.0] },
-    small: { rate: eu ? 1.0 : 1.3, range: eu ? [1.0, 1.5] : [1.3, 1.8] },
-    mid:   { rate: eu ? 0.9 : 1.1, range: eu ? [0.9, 1.3] : [1.1, 1.5] },
-    large: { rate: eu ? 0.8 : 1.0, range: eu ? [0.8, 1.2] : [1.0, 1.4] },
+    micro: { rate: eu ? 1.4 : 1.7, range: eu ? [1.2, 1.7] : [1.5, 2.0] },
+    small: { rate: eu ? 1.2 : 1.5, range: eu ? [1.0, 1.4] : [1.3, 1.8] },
+    mid:   { rate: eu ? 1.0 : 1.3, range: eu ? [0.9, 1.2] : [1.1, 1.5] },
+    large: { rate: eu ? 0.9 : 1.1, range: eu ? [0.8, 1.0] : [1.0, 1.3] },
   };
 
-  // Shipping benchmark: per-shipment cost, based on volume tier
-  // EU benefits from dense carrier networks
+  // Average outbound shipment cost (EUR)
   const shippingBenchmarks = {
-    micro: { perUnit: eu ? 5.80 : 7.20, range: [eu ? 5.80 : 7.20, eu ? 8.00 : 9.50] },
-    small: { perUnit: eu ? 5.20 : 6.50, range: [eu ? 5.20 : 6.50, eu ? 7.50 : 9.00] },
-    mid:   { perUnit: eu ? 4.60 : 5.80, range: [eu ? 4.60 : 5.80, eu ? 6.50 : 8.00] },
-    large: { perUnit: eu ? 3.90 : 4.80, range: [eu ? 3.90 : 4.80, eu ? 5.50 : 7.00] },
+    micro: { perUnit: eu ? 5.80 : 7.20, range: eu ? [5.80, 7.50] : [7.20, 9.20] },
+    small: { perUnit: eu ? 5.20 : 6.50, range: eu ? [5.20, 6.80] : [6.50, 8.40] },
+    mid:   { perUnit: eu ? 4.60 : 5.80, range: eu ? [4.60, 6.00] : [5.80, 7.60] },
+    large: { perUnit: eu ? 3.90 : 4.80, range: eu ? [3.90, 5.20] : [4.80, 6.80] },
   };
 
-  // SaaS benchmark: % of monthly revenue — well-optimized brands
-  // Based on Gartner + Paddle surveys on SaaS spend vs GMV
+  // SaaS spend as % of monthly revenue (well-optimized brands)
   const saasBenchmarks = {
-    micro: { pct: 0.06, range: [0.04, 0.09] },   // micro brands spend more relative
-    small: { pct: 0.04, range: [0.03, 0.06] },
-    mid:   { pct: 0.025, range: [0.02, 0.04] },
-    large: { pct: 0.015, range: [0.01, 0.025] },
+    micro: { pct: 0.060, range: [0.040, 0.090] },
+    small: { pct: 0.040, range: [0.030, 0.060] },
+    mid:   { pct: 0.025, range: [0.020, 0.040] },
+    large: { pct: 0.015, range: [0.010, 0.025] },
   };
 
   return {
@@ -84,221 +84,262 @@ export function getBenchmarks(monthlyRevenue = 50000, country = "") {
   };
 }
 
-// ─── Savings calculation (used in Analyzer + Results) ────────────────────────
-export function calculateSavings(input) {
+// ─── Insurance benchmark (function of structure, not tier) ───────────────────
+function getInsuranceBenchmark(input) {
   const {
-    monthly_revenue = 0,
-    avg_order_value = 0,
-    total_saas_spend = 0,
-    monthly_shipping_cost = 0,
-    monthly_shipments = 0,
-    country,
-    intl_pct = 0,
-    in_store_gmv = 0,
-    tpe_transaction_fee_pct = 0,
-    monthly_terminal_rental = 0,
-    fixed_banking_fees = 0,
-    maintenance_fees = 0,
-    annual_insurance_cost = 0,
     insurance_rc_pro = "not_sure",
     insurance_has_employees = "no",
     insurance_mutuelle = "no_employees",
     insurance_has_physical_assets = "no",
   } = input || {};
 
-  // Annualized GMV and transactions
-  const annualGMV = Math.max(0, (monthly_revenue || 0) * 12);
-  const aov = Math.max(1, avg_order_value || 1);
+  // Base annual premium for a small commerce brand
+  const base = (insurance_has_employees === "yes" || insurance_has_physical_assets === "yes") ? 3200 : 1200;
+
+  // Coverage complexity load
+  const load =
+    (insurance_rc_pro === "yes" ? 500 : 0) +
+    (insurance_mutuelle === "yes" ? 1200 : 0) +
+    (insurance_has_physical_assets === "yes" ? 1500 : 0);
+
+  const low = Math.round(base + load * 0.8);
+  const high = Math.round(base + load * 1.15);
+  const mid = Math.round((low + high) / 2);
+  return { low, mid, high };
+}
+
+// ─── SAVINGS CALCULATION (single source of truth) ────────────────────────────
+export function calculateSavings(input = {}) {
+  const {
+    monthly_revenue = 0,
+    avg_order_value = 0,
+    total_saas_spend = 0,
+    monthly_shipping_cost = 0,
+    monthly_shipments = 0,
+    country = "",
+    payment_fee_pct = 0,
+    in_store_gmv = 0,
+    tpe_transaction_fee_pct = 0,
+    monthly_terminal_rental = 0,
+    fixed_banking_fees = 0,
+    maintenance_fees = 0,
+    annual_insurance_cost = 0,
+  } = input;
+
+  const monthlyGMV = Math.max(0, Number(monthly_revenue) || 0);
+  const annualGMV = monthlyGMV * 12;
+  const aov = Math.max(1, Number(avg_order_value) || 1);
   const annualTransactions = Math.floor(annualGMV / aov);
 
-  const benchmarks = getBenchmarks(monthly_revenue, country);
+  const benchmarks = getBenchmarks(monthlyGMV, country);
 
-  // Payments savings
-  const currentPaymentRate = Math.max(0, Number(input?.payment_fee_pct || 0));
-  const targetPaymentRate = benchmarks.payment.rate;
-  const ahorro_variable = annualGMV * Math.max(0, (currentPaymentRate - targetPaymentRate) / 100);
-  const averageTicketDelta = Math.max(0, 0.10 - 0.05);
-  const ahorro_fijo = annualTransactions * averageTicketDelta;
-  const intlBonus = annualGMV * (Math.max(0, Math.min(100, intl_pct)) / 100) * 0.001;
+  // ── Online payments ────────────────────────────────────────────────────────
+  const currentPayRate = Math.max(0, Number(payment_fee_pct) || 0);
+  const targetPayRate = benchmarks.payment.rate;
+  const payGapPct = Math.max(0, currentPayRate - targetPayRate);
+  // Cap at 3 percentage points (anything above is likely data error)
+  const cappedPayGap = Math.min(payGapPct, 3.0);
+  const onlinePaymentSavings = Math.round(annualGMV * (cappedPayGap / 100));
 
-  const annualInStoreGmv = Math.max(0, (in_store_gmv || 0) * 12);
-  const tpeBenchmarks = benchmarks.tpe;
-  const tpeVariableAnnual = annualInStoreGmv * ((tpe_transaction_fee_pct || 0) / 100);
-  const tpeFixedAnnual = ((monthly_terminal_rental || 0) + (fixed_banking_fees || 0) + (maintenance_fees || 0)) * 12;
-  const tpeEffectiveRate = annualInStoreGmv > 0 ? ((tpeVariableAnnual + tpeFixedAnnual) / annualInStoreGmv) * 100 : 0;
-  const tpeSavings = Math.max(0, Math.round(annualInStoreGmv * ((tpeEffectiveRate - tpeBenchmarks.rate) / 100)));
+  // ── In-store / TPE payments ────────────────────────────────────────────────
+  const annualInStoreGMV = Math.max(0, Number(in_store_gmv) || 0) * 12;
+  const tpeVarAnnual = annualInStoreGMV * (Math.max(0, Number(tpe_transaction_fee_pct) || 0) / 100);
+  const tpeFixedAnnual = (
+    Math.max(0, Number(monthly_terminal_rental) || 0) +
+    Math.max(0, Number(fixed_banking_fees) || 0) +
+    Math.max(0, Number(maintenance_fees) || 0)
+  ) * 12;
+  const tpeEffectiveRate = annualInStoreGMV > 0 ? ((tpeVarAnnual + tpeFixedAnnual) / annualInStoreGMV) * 100 : 0;
+  const tpeGapPct = Math.max(0, tpeEffectiveRate - benchmarks.tpe.rate);
+  const cappedTpeGap = Math.min(tpeGapPct, 3.0);
+  const tpeSavings = Math.round(annualInStoreGMV * (cappedTpeGap / 100));
 
-  const paymentSavings = Math.round(ahorro_variable + ahorro_fijo + intlBonus + tpeSavings);
+  // Total payments savings = online + in-store (no double counting)
+  const paymentSavings = onlinePaymentSavings + tpeSavings;
 
-  // SaaS savings: 20% on excess above 2% of GMV + 10% direct network discount
-  const saasAnnual = (total_saas_spend || 0) * 12;
-  const saasThreshold = annualGMV * 0.02;
-  const saasExcess = Math.max(0, saasAnnual - saasThreshold);
-  const saasSavings = Math.round(saasExcess * 0.20 + saasAnnual * 0.10);
+  // ── Shipping ───────────────────────────────────────────────────────────────
+  const shipCount = Math.max(1, Number(monthly_shipments) || 1);
+  const shipSpend = Math.max(0, Number(monthly_shipping_cost) || 0);
+  const costPerShipment = shipSpend / shipCount;
+  const shipGap = Math.max(0, costPerShipment - benchmarks.shipping.perUnit);
+  // Cap shipping savings at 40% of current shipping spend (realistic ceiling)
+  const rawShippingSavings = shipGap * shipCount * 12;
+  const shippingSavings = Math.round(Math.min(rawShippingSavings, shipSpend * 12 * 0.4));
 
-  const shipCount = Math.max(monthly_shipments || 1, 1);
-  const costPerShipment = (monthly_shipping_cost || 0) / shipCount;
-  const shippingSavings = Math.max(0, Math.round((costPerShipment - benchmarks.shipping.perUnit) * shipCount * 12));
+  // ── SaaS ───────────────────────────────────────────────────────────────────
+  // Benchmark-driven (not arbitrary 2%): excess above tier benchmark % of GMV
+  const saasMonthly = Math.max(0, Number(total_saas_spend) || 0);
+  const saasAnnual = saasMonthly * 12;
+  const saasBenchmarkMonthly = monthlyGMV * benchmarks.saas.pct;
+  const saasBenchmarkAnnual = saasBenchmarkMonthly * 12;
+  const saasExcessAnnual = Math.max(0, saasAnnual - saasBenchmarkAnnual);
+  // Savings = 60% of excess (realistic — some tools are necessary)
+  // Cap at 35% of current spend
+  const rawSaasSavings = saasExcessAnnual * 0.60;
+  const saasSavings = Math.round(Math.min(rawSaasSavings, saasAnnual * 0.35));
 
-  const insuranceBenchmarkBase = insurance_has_employees === "yes" || insurance_has_physical_assets === "yes" ? 3200 : 1200;
-  const insuranceComplexityLoad = (insurance_rc_pro === "yes" ? 500 : 0) + (insurance_mutuelle === "yes" ? 1200 : 0) + (insurance_has_physical_assets === "yes" ? 1500 : 0);
-  const insuranceBenchmarkLow = insuranceBenchmarkBase + insuranceComplexityLoad * 0.8;
-  const insuranceBenchmarkHigh = insuranceBenchmarkBase + insuranceComplexityLoad * 1.15;
-  const insuranceBenchmarkMid = (insuranceBenchmarkLow + insuranceBenchmarkHigh) / 2;
-  const insuranceSavings = Math.max(0, Math.round((annual_insurance_cost || 0) - insuranceBenchmarkMid));
+  // ── Insurance ──────────────────────────────────────────────────────────────
+  const insBench = getInsuranceBenchmark(input);
+  const currentInsurance = Math.max(0, Number(annual_insurance_cost) || 0);
+  const rawInsuranceSavings = currentInsurance > insBench.high ? currentInsurance - insBench.mid : 0;
+  // Cap at 30% of current premium
+  const insuranceSavings = Math.round(Math.min(rawInsuranceSavings, currentInsurance * 0.30));
 
-  const totalSavings = Math.round(paymentSavings + shippingSavings + saasSavings + insuranceSavings);
+  // ── Total (cap at 8% of annual GMV — realistic max for infra optimization) ─
+  const rawTotal = paymentSavings + shippingSavings + saasSavings + insuranceSavings;
+  const totalCap = annualGMV > 0 ? annualGMV * 0.08 : Infinity;
+  const totalSavings = Math.round(Math.min(rawTotal, totalCap));
+
+  // If we capped, scale components proportionally for display coherence
+  let scaledPayment = paymentSavings;
+  let scaledShipping = shippingSavings;
+  let scaledSaas = saasSavings;
+  let scaledInsurance = insuranceSavings;
+  if (rawTotal > totalCap && rawTotal > 0) {
+    const k = totalCap / rawTotal;
+    scaledPayment = Math.round(paymentSavings * k);
+    scaledShipping = Math.round(shippingSavings * k);
+    scaledSaas = Math.round(saasSavings * k);
+    scaledInsurance = Math.round(insuranceSavings * k);
+  }
 
   return {
-    paymentSavings,
-    shippingSavings,
-    saasSavings,
-    insuranceSavings,
+    paymentSavings: scaledPayment,
+    shippingSavings: scaledShipping,
+    saasSavings: scaledSaas,
+    insuranceSavings: scaledInsurance,
     totalSavings,
-    benchmarks: null,
-    optimalShippingCost: 0,
-    optimalSaasCost: 0,
+    benchmarks,
     details: {
       annual_gmv: annualGMV,
       avg_order_value: aov,
       annual_transactions: annualTransactions,
-      payment_current_rate: currentPaymentRate,
-      payment_optimal_rate: targetPaymentRate,
+      // Payments
+      payment_current_rate: currentPayRate,
+      payment_optimal_rate: targetPayRate,
+      payment_gap_pct: payGapPct,
+      online_payment_savings: onlinePaymentSavings,
+      // TPE
       tpe_effective_rate: tpeEffectiveRate,
-      tpe_optimal_rate: tpeBenchmarks.rate,
+      tpe_optimal_rate: benchmarks.tpe.rate,
       tpe_savings: tpeSavings,
+      // Shipping
       shipping_current_avg: costPerShipment,
       shipping_optimal_avg: benchmarks.shipping.perUnit,
-      saas_current_total: total_saas_spend || 0,
-      saas_optimal_total: saasThreshold / 12,
-      insurance_current_total: annual_insurance_cost || 0,
-      insurance_benchmark_low: Math.round(insuranceBenchmarkLow),
-      insurance_benchmark_high: Math.round(insuranceBenchmarkHigh),
-      insurance_benchmark_mid: Math.round(insuranceBenchmarkMid),
-      insurance_savings: insuranceSavings,
-      insurance_coverage_quality: annual_insurance_cost > 0 ? (annual_insurance_cost < insuranceBenchmarkLow ? "At risk" : annual_insurance_cost > insuranceBenchmarkHigh ? "Better" : "Similar") : "Similar",
-      insurance_status: annual_insurance_cost > 0 ? (insuranceSavings > 0 ? "Review recommended" : "Optimized") : "Not analyzed",
-      intl_pct: intl_pct || 0,
+      // SaaS
+      saas_current_total: saasMonthly,
+      saas_optimal_total: saasBenchmarkMonthly,
+      saas_excess_annual: saasExcessAnnual,
+      // Insurance
+      insurance_current_total: currentInsurance,
+      insurance_benchmark_low: insBench.low,
+      insurance_benchmark_high: insBench.high,
+      insurance_benchmark_mid: insBench.mid,
+      insurance_savings: scaledInsurance,
+      insurance_coverage_quality: currentInsurance > 0
+        ? (currentInsurance < insBench.low ? "At risk" : currentInsurance > insBench.high ? "Over-paying" : "Aligned")
+        : "Not analyzed",
+      insurance_status: currentInsurance > 0
+        ? (scaledInsurance > 0 ? "Review recommended" : "Optimized")
+        : "Not analyzed",
     },
   };
 }
 
-// ─── Tier-1 providers ────────────────────────────────────────────────────────
+// ─── Tier-1 provider lists ───────────────────────────────────────────────────
 const TIER1_PAYMENT = ["adyen", "checkout.com", "stripe", "mollie", "braintree"];
 const TIER1_SHIPPING = ["dhl", "fedex", "ups", "sendcloud", "dpd"];
 
-// ─── Dimension scores ────────────────────────────────────────────────────────
-function scoreCostEfficiency(input, benchmarks) {
-  const { payment_fee_pct, monthly_shipping_cost, monthly_shipments, total_saas_spend, monthly_revenue } = input;
-  const shipCount = Math.max(monthly_shipments || 1, 1);
-  const costPerShipment = (monthly_shipping_cost || 0) / shipCount;
-
-  // Payment: 100 at benchmark, 0 at 3× benchmark
-  const payMax = benchmarks.payment.rate * 3;
-  const payScore = Math.max(0, Math.min(100, 100 - ((payment_fee_pct - benchmarks.payment.rate) / (payMax - benchmarks.payment.rate)) * 100));
-
-  // Shipping: 100 at benchmark, 0 at 2× benchmark
-  const shipMax = benchmarks.shipping.perUnit * 2;
-  const shipScore = Math.max(0, Math.min(100, 100 - ((costPerShipment - benchmarks.shipping.perUnit) / (shipMax - benchmarks.shipping.perUnit)) * 100));
-
-  // SaaS: 100 at benchmark, 0 at 3× benchmark
-  const saasRatio = monthly_revenue > 0 ? (total_saas_spend || 0) / monthly_revenue : 0;
-  const saasMax = benchmarks.saas.pct * 3;
-  const saasScore = Math.max(0, Math.min(100, 100 - ((saasRatio - benchmarks.saas.pct) / Math.max(saasMax - benchmarks.saas.pct, 0.01)) * 100));
-
-  return Math.round(payScore * 0.50 + shipScore * 0.30 + saasScore * 0.20);
+// ─── Dimension scoring (per category, 0–100) ─────────────────────────────────
+function scorePayments(input, benchmarks) {
+  const rate = Math.max(0, Number(input.payment_fee_pct) || 0);
+  if (rate <= 0) return 50;
+  const target = benchmarks.payment.rate;
+  // 100 at target, 0 at 2× target
+  const score = 100 - ((rate - target) / target) * 100;
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
 
-function scoreStackOptimization(input, benchmarks) {
-  const { total_saas_spend, monthly_revenue } = input;
-  const ratio = monthly_revenue > 0 ? (total_saas_spend || 0) / monthly_revenue : 0;
-  const benchmarkRatio = benchmarks.saas.pct;
+function scoreShipping(input, benchmarks) {
+  const count = Math.max(1, Number(input.monthly_shipments) || 1);
+  const spend = Math.max(0, Number(input.monthly_shipping_cost) || 0);
+  if (spend <= 0) return 50;
+  const perUnit = spend / count;
+  const target = benchmarks.shipping.perUnit;
+  const score = 100 - ((perUnit - target) / target) * 100;
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
 
-  // Score relative to the tier benchmark
-  const factor = ratio / Math.max(benchmarkRatio, 0.001);
-  if (factor <= 1.0) return 95;
-  if (factor <= 1.3) return 80;
-  if (factor <= 1.8) return 62;
-  if (factor <= 2.5) return 42;
-  return 22;
+function scoreSaaS(input, benchmarks) {
+  const rev = Math.max(0, Number(input.monthly_revenue) || 0);
+  const saas = Math.max(0, Number(input.total_saas_spend) || 0);
+  if (rev <= 0 || saas <= 0) return 50;
+  const ratio = saas / rev;
+  const target = benchmarks.saas.pct;
+  const score = 100 - ((ratio - target) / target) * 100;
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 function scoreProviderQuality(input) {
-  const { payment_provider, shipping_provider, payment_fee_pct } = input;
-  let score = 50;
-
-  if (payment_provider && TIER1_PAYMENT.some(p => payment_provider.toLowerCase().includes(p))) score += 20;
-  if (shipping_provider && TIER1_SHIPPING.some(p => shipping_provider.toLowerCase().includes(p))) score += 15;
-
-  // Even on tier-1, if rate is high → room to renegotiate
-  if (payment_fee_pct > 2.5) score -= 15;
-  if (payment_fee_pct <= 1.8) score += 10;
-
-  return Math.max(0, Math.min(100, score));
-}
-
-function scoreGeoFit(input) {
-  const { dtc_pct, marketplace_pct, wholesale_pct, monthly_revenue } = input;
-  let score = 65;
-
-  if (dtc_pct >= 50 && monthly_revenue >= 100000) score += 15;
-  if (dtc_pct >= 70) score += 10;
-  if (marketplace_pct >= 60) score -= 20;
-  if (wholesale_pct >= 60) score -= 10;
-
-  return Math.max(0, Math.min(100, score));
+  const { payment_provider = "", shipping_provider = "", payment_fee_pct = 0 } = input;
+  let s = 60;
+  if (payment_provider && TIER1_PAYMENT.some(p => payment_provider.toLowerCase().includes(p))) s += 15;
+  if (shipping_provider && TIER1_SHIPPING.some(p => shipping_provider.toLowerCase().includes(p))) s += 10;
+  if (payment_fee_pct > 2.5) s -= 15;
+  if (payment_fee_pct > 0 && payment_fee_pct <= 1.8) s += 10;
+  return Math.max(0, Math.min(100, s));
 }
 
 function scoreDataCompleteness(dataQuality) {
   if (dataQuality === "connected") return 95;
   if (dataQuality === "partial") return 65;
-  return 35;
+  return 40;
 }
 
-function generateImpacts(input, scores, benchmarks) {
+// ─── Impact narrative ────────────────────────────────────────────────────────
+function generateImpacts(input, benchmarks, savings) {
   const impacts = [];
-  const { payment_fee_pct, monthly_shipping_cost, monthly_shipments, total_saas_spend, monthly_revenue } = input;
-  const shipCount = Math.max(monthly_shipments || 1, 1);
-  const costPerShipment = (monthly_shipping_cost || 0) / shipCount;
-  const saasRatio = monthly_revenue > 0 ? (total_saas_spend || 0) / monthly_revenue : 0;
+  const rate = Number(input.payment_fee_pct) || 0;
+  const target = benchmarks.payment.rate;
 
-  if ((payment_fee_pct || 2.9) > benchmarks.payment.rate + 0.3) {
-    const pctAbove = ((payment_fee_pct || 2.9) - benchmarks.payment.rate).toFixed(1);
+  if (rate > target + 0.2 && savings.paymentSavings > 0) {
     impacts.push({
       category: "Payments",
-      issue: `Your rate (${(payment_fee_pct || 2.9).toFixed(1)}%) is ${pctAbove}% above the network benchmark of ${benchmarks.payment.rate}%`,
-      pointsGain: Math.min(18, Math.round(parseFloat(pctAbove) * 5)),
-      action: "Unlock network payment rate",
-      severity: parseFloat(pctAbove) > 1.0 ? "high" : "medium",
+      issue: `Effective rate ${rate.toFixed(2)}% vs network target ${target.toFixed(2)}%`,
+      pointsGain: Math.min(20, Math.round((rate - target) * 8)),
+      action: "Renegotiate via the network",
+      severity: (rate - target) > 0.8 ? "high" : "medium",
     });
   }
 
-  if (costPerShipment > benchmarks.shipping.perUnit * 1.15) {
+  if (savings.shippingSavings > 0) {
+    const perUnit = (input.monthly_shipping_cost || 0) / Math.max(1, input.monthly_shipments || 1);
     impacts.push({
       category: "Shipping",
-      issue: `€${costPerShipment.toFixed(2)}/shipment vs €${benchmarks.shipping.perUnit.toFixed(2)} network target — efficiency gap identified`,
-      pointsGain: 8,
+      issue: `€${perUnit.toFixed(2)}/shipment vs €${benchmarks.shipping.perUnit.toFixed(2)} target`,
+      pointsGain: 10,
       action: "Activate collective shipping contracts",
       severity: "medium",
     });
   }
 
-  if (saasRatio > benchmarks.saas.pct * 1.2) {
+  if (savings.saasSavings > 0) {
+    const ratio = (input.monthly_revenue || 0) > 0 ? (input.total_saas_spend || 0) / input.monthly_revenue : 0;
     impacts.push({
       category: "SaaS",
-      issue: `Stack spend at ${(saasRatio * 100).toFixed(1)}% of revenue — network range: ${(benchmarks.saas.range[0] * 100).toFixed(1)}–${(benchmarks.saas.range[1] * 100).toFixed(1)}%`,
+      issue: `Stack at ${(ratio * 100).toFixed(1)}% of revenue · target ${(benchmarks.saas.pct * 100).toFixed(1)}%`,
       pointsGain: 7,
-      action: "Reduce stack cost via group licenses",
+      action: "Audit redundant tools / group licenses",
       severity: "medium",
     });
   }
 
-  if (scores.dataCompleteness < 60) {
+  if (savings.insuranceSavings > 0) {
     impacts.push({
-      category: "Data quality",
-      issue: "Analysis based on estimated inputs — precision improves significantly with connected tools",
-      pointsGain: 6,
-      action: "Connect your data for precise insights",
+      category: "Insurance",
+      issue: "Premium above benchmark range for your coverage profile",
+      pointsGain: 5,
+      action: "Compare quotes via the network",
       severity: "low",
     });
   }
@@ -306,59 +347,66 @@ function generateImpacts(input, scores, benchmarks) {
   return impacts;
 }
 
-// ─── MAIN EXPORT ─────────────────────────────────────────────────────────────
-export function computeInfraScore(input, dataQuality = "manual") {
-  const { monthly_revenue = 0, avg_order_value = 0, total_saas_spend = 0, intl_pct = 0, country = "", payment_fee_pct = 0 } = input || {};
-  const annualGMV = Math.max(0, (monthly_revenue || 0) * 12);
+// ─── MAIN EXPORT: Infrastructure Score ───────────────────────────────────────
+export function computeInfraScore(input = {}, dataQuality = "manual") {
+  const monthlyGMV = Math.max(0, Number(input.monthly_revenue) || 0);
+  const annualGMV = monthlyGMV * 12;
 
-  // If we can't compute GMV, return a neutral score
+  // Neutral score if no GMV
   if (annualGMV <= 0) {
     return {
       total: 50,
       potentialTotal: 65,
-      label: "Optimization opportunity detected",
+      label: "Provide revenue to compute score",
       scoreColor: "#f97316",
-      accuracyLabel: dataQuality === "connected" ? "High — real data" : dataQuality === "partial" ? "Medium — partial data" : "Estimated — connect tools to refine",
+      accuracyLabel: dataQuality === "connected" ? "High — real data" : "Estimated — connect tools to refine",
       dataQuality,
       benchmarks: null,
       dimensions: [
-        { key: "efficiency", label: "Efficiency", weight: "100%", score: 50, desc: "Preliminary score" },
+        { key: "overall", label: "Overall", weight: "100%", score: 50, desc: "Insufficient data" },
       ],
       impacts: [],
     };
   }
 
-  const benchmarks = getBenchmarks(monthly_revenue, country);
-  const aov = Math.max(1, avg_order_value || 1);
-  const annualTransactions = Math.floor(annualGMV / aov);
+  const benchmarks = getBenchmarks(monthlyGMV, input.country);
+  const savings = calculateSavings(input);
 
-  const currentPaymentRate = Math.max(0, Number(payment_fee_pct || 0));
-  const targetPaymentRate = benchmarks.payment.rate;
-  const ahorro_variable = annualGMV * Math.max(0, (currentPaymentRate - targetPaymentRate) / 100);
-  const ahorro_fijo = annualTransactions * Math.max(0, 0.10 - 0.05);
-  const intlBonus = annualGMV * (Math.max(0, Math.min(100, intl_pct)) / 100) * 0.001;
+  // Dimension scores
+  const dimPayments = scorePayments(input, benchmarks);
+  const dimShipping = scoreShipping(input, benchmarks);
+  const dimSaaS = scoreSaaS(input, benchmarks);
+  const dimProvider = scoreProviderQuality(input);
+  const dimData = scoreDataCompleteness(dataQuality);
 
-  const saasAnnual = (total_saas_spend || 0) * 12;
-  const saasThreshold = annualGMV * 0.02;
-  const saasExcess = Math.max(0, saasAnnual - saasThreshold);
-  const saasSavings = saasExcess * 0.20 + saasAnnual * 0.10;
+  // Weighted total (sums to 100%)
+  const weighted =
+    dimPayments * 0.35 +
+    dimShipping * 0.25 +
+    dimSaaS * 0.15 +
+    dimProvider * 0.10 +
+    dimData * 0.15;
 
-  const totalSavings = Math.max(0, ahorro_variable + ahorro_fijo + intlBonus + saasSavings);
+  // Also apply a leakage penalty — leakage as % of GMV
+  const leakagePct = savings.totalSavings / annualGMV; // 0..0.08 capped
+  const leakagePenalty = leakagePct * 200; // up to 16 points
 
-  // New scoring model
-  let total = 100 - ((totalSavings / annualGMV) * 500);
-  total = Math.max(0, Math.min(100, Math.round(total)));
+  let total = Math.round(weighted - leakagePenalty);
+  total = Math.max(0, Math.min(100, total));
 
-  const potentialTotal = Math.min(100, total + 15);
+  const potentialTotal = Math.min(100, total + Math.round(leakagePenalty));
 
   const label =
-    total >= 80 ? "Strong" :
-    total >= 60 ? "Efficient" :
-    total >= 40 ? "Optimization opportunity detected" :
+    total >= 80 ? "Strong infrastructure" :
+    total >= 60 ? "Healthy with opportunities" :
+    total >= 40 ? "Optimization opportunity" :
     "High optimization potential";
 
-  const scoreColor = total < 50 ? "#ef4444" : (total > 80 ? "#22c55e" : "#f59e0b");
-  const accuracyLabel = dataQuality === "connected" ? "High — real data" : dataQuality === "partial" ? "Medium — partial data" : "Estimated — connect tools to refine";
+  const scoreColor = total >= 80 ? "#22c55e" : total >= 50 ? "#f59e0b" : "#ef4444";
+  const accuracyLabel =
+    dataQuality === "connected" ? "High — real data" :
+    dataQuality === "partial" ? "Medium — partial data" :
+    "Estimated — connect tools to refine";
 
   return {
     total,
@@ -367,12 +415,15 @@ export function computeInfraScore(input, dataQuality = "manual") {
     scoreColor,
     accuracyLabel,
     dataQuality,
-    benchmarks: null,
+    benchmarks,
+    savings,
     dimensions: [
-      { key: "paymentsEfficiency", label: "Payments", weight: "—", score: Math.max(0, Math.min(100, Math.round((ahorro_variable + ahorro_fijo + intlBonus) / Math.max(annualGMV * 0.03, 1) * 100))), desc: "Impacto de pagos" },
-      { key: "saasEfficiency", label: "SaaS", weight: "—", score: Math.max(0, Math.min(100, Math.round(100 - (saasExcess / Math.max(saasThreshold || 1, 1)) * 50))), desc: "Gasto vs umbral" },
-      { key: "overall", label: "Overall", weight: "—", score: total, desc: "Puntuación global" },
+      { key: "payments", label: "Payments", weight: "35%", score: dimPayments, desc: "Effective rate vs network target" },
+      { key: "shipping", label: "Shipping", weight: "25%", score: dimShipping, desc: "Cost/shipment vs benchmark" },
+      { key: "saas", label: "SaaS", weight: "15%", score: dimSaaS, desc: "Stack spend vs revenue benchmark" },
+      { key: "provider", label: "Providers", weight: "10%", score: dimProvider, desc: "Tier-1 stack & negotiation" },
+      { key: "data", label: "Data quality", weight: "15%", score: dimData, desc: "Connected vs estimated" },
     ],
-    impacts: [],
+    impacts: generateImpacts(input, benchmarks, savings),
   };
 }
