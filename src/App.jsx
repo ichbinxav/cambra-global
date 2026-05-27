@@ -43,6 +43,7 @@ import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
 import AdminRecommendations from '@/pages/admin/AdminRecommendations';
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing';
+import HowItWorks from '@/pages/HowItWorks';
 import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
 import Help from '@/pages/Help';
@@ -192,6 +193,8 @@ const AuthenticatedApp = () => {
         <Route path="/snapshot" element={<Navigate to="/Snapshot" replace />} />
         <Route path="/Pricing" element={<Pricing />} />
         <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
+        <Route path="/HowItWorks" element={<HowItWorks />} />
+        <Route path="/howitworks" element={<Navigate to="/HowItWorks" replace />} />
         <Route path="/Testimonials" element={<Testimonials />} />
         <Route path="/testimonials" element={<Navigate to="/Testimonials" replace />} />
         <Route path="/Contact" element={<Contact />} />

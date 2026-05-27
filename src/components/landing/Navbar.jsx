@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ArrowRight, Activity, Plug, BookOpen, Tag, HelpCircle, Mail, LayoutDashboard, BarChart3, Users, Settings, Shield } from "lucide-react";
+import { Menu, X, ArrowRight, Activity, Plug, BookOpen, Tag, HelpCircle, Mail, LayoutDashboard, BarChart3, Users, Settings, Shield, Sparkles } from "lucide-react";
 import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useAuth } from "@/lib/AuthContext";
 
 // CAMBRA OS navigation — grouped by intent
 const NAV_PUBLIC = [
   { label: "Analyzer", href: "/Analyzer", icon: Activity, desc: "Scan your infrastructure" },
+  { label: "How it works", href: "/HowItWorks", icon: Sparkles, desc: "The 4-step audit" },
   { label: "Connect your tools", href: "/ConnectTools", icon: Plug, desc: "Connect or upload data" },
   { label: "Insights", href: "/Insights", icon: BookOpen, desc: "Margin intelligence" },
   { label: "Pricing", href: "/Pricing", icon: Tag },

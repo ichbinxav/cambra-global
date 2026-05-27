@@ -836,7 +836,7 @@ export default function Analyzer() {
       </div>
 
       <div className="relative flex-1 overflow-y-auto">
-        <div className="max-w-lg mx-auto px-5 py-8 pb-36">
+        <div className="max-w-lg mx-auto px-5 pt-12 pb-36">
           {/* Premium DARK step header — landing-grade */}
           <div className="mb-10 relative rounded-3xl overflow-hidden border border-white/10 bg-[#06080F] text-white shadow-[0_24px_80px_-24px_rgba(0,0,0,0.6)]">
             {/* Ambient layers */}
