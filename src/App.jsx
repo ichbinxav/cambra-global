@@ -58,6 +58,7 @@ import Vault from '@/pages/Vault';
 import BrandProfile from '@/pages/BrandProfile';
 import BrandGlyph from '@/components/shared/BrandGlyph';
 import CopilotPanel from '@/components/copilot/CopilotPanel.jsx';
+import CopilotObservations from '@/components/copilot/CopilotObservations.jsx';
 
 
 
@@ -260,6 +261,7 @@ function App() {
           <Router>
             <AuthenticatedApp />
             <CopilotPanel />
+            <CopilotObservations />
           </Router>
           <Toaster />
         </QueryClientProvider>

@@ -1,16 +1,10 @@
-import HeroSection_Public from "@/components/landing/HeroSection_Public.jsx";
-import ThreeLayersSection from "@/components/landing/ThreeLayersSection";
-import ProblemSection_Public from "@/components/landing/ProblemSection_Public.jsx";
-import HowCombinedSection from "@/components/landing/HowCombinedSection.jsx";
-import IntegrationsSection from "@/components/landing/IntegrationsSection";
-import BenefitsSection from "@/components/landing/BenefitsSection";
-import TestimonialsSection from "@/components/landing/TestimonialsSection";
-import PricingSection from "@/components/landing/PricingSection";
+import HeroSystemic from "@/components/landing/HeroSystemic.jsx";
+import InfrastructureHeatmap from "@/components/landing/InfrastructureHeatmap.jsx";
 import CredibilitySection from "@/components/landing/CredibilitySection";
-import ValuePropositionSection from "@/components/landing/ValuePropositionSection";
-import FeatureDuoSection from "@/components/landing/FeatureDuoSection";
+import ThreeLayersSection from "@/components/landing/ThreeLayersSection";
+import PricingSection from "@/components/landing/PricingSection";
+import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import FooterSection from "@/components/landing/FooterSection";
-import AnalyzerCTA_Public from "@/components/landing/AnalyzerCTA_Public.jsx";
 import Navbar from "@/components/landing/Navbar";
 
 export default function Landing() {
@@ -19,23 +13,26 @@ export default function Landing() {
       <Navbar />
 
       <main>
-        <HeroSection_Public />
+        {/* 1 — Systemic hero with live signal terminal */}
+        <HeroSystemic />
+
+        {/* 2 — Credibility strip (peer brands / press) */}
         <CredibilitySection />
-        <ValuePropositionSection />
-        <FeatureDuoSection />
-        <div id="how-it-works">
-          <HowCombinedSection />
-        </div>
+
+        {/* 3 — THE iconic moment: live infrastructure heatmap */}
+        <InfrastructureHeatmap />
+
+        {/* 4 — Three-layer mechanism (audit → benchmark → act) */}
         <div id="how">
           <ThreeLayersSection />
         </div>
-        <ProblemSection_Public />
-        <AnalyzerCTA_Public />
+
+        {/* 5 — Pricing */}
         <div id="pricing">
           <PricingSection />
         </div>
-        <IntegrationsSection />
-        <BenefitsSection />
+
+        {/* 6 — Operator quotes (short, cold, specific) */}
         <TestimonialsSection />
       </main>
 

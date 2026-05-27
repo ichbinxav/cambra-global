@@ -4,27 +4,27 @@ import { Activity, TrendingDown, AlertCircle } from "lucide-react";
 
 const TESTIMONIALS = [
   {
-    quote: "The audit surfaced €38,000 in payment infrastructure inefficiency we hadn't quantified. It took 8 minutes to understand what had been compounding for 3 years.",
-    name: "Founder",
-    company: "Contemporary skincare brand",
-    finding: "€38K/yr",
+    quote: "Found €18k in duplicate SaaS spend.",
+    name: "CFO",
+    company: "DTC skincare · €4M/yr",
+    finding: "0.6% PSP delta",
     category: "Payments",
     color: "#635BFF",
   },
   {
-    quote: "CAMBRA identified €24,000 in hidden infrastructure costs across our SaaS stack and logistics. Changed how we think about our entire P&L structure.",
-    name: "CEO",
-    company: "Premium activewear brand",
-    finding: "€24K/yr",
-    category: "SaaS + Logistics",
+    quote: "We'd never benchmarked our PSP stack.",
+    name: "Founder",
+    company: "Premium activewear · €2.1M/yr",
+    finding: "€0.80/order",
+    category: "Shipping",
     color: "#06B6D4",
   },
   {
-    quote: "The benchmark intelligence was the most valuable part. Seeing exactly where we stood against comparable operators — specific numbers, not vague ranges.",
-    name: "Operations Director",
-    company: "Design-led home fragrance",
-    finding: "€19K/yr",
-    category: "Full stack",
+    quote: "Infrastructure was quietly eating margin.",
+    name: "Head of Ops",
+    company: "Home fragrance · €1.6M/yr",
+    finding: "2 overlapping tools",
+    category: "SaaS",
     color: "#8B5CF6",
   },
 ];
@@ -58,7 +58,7 @@ function TestimonialCard({ t, index }) {
           style={{ background: `${t.color}12`, color: t.color }}
         >{t.category}</span>
       </div>
-      <p className="text-sm text-muted-foreground/70 leading-relaxed flex-1 mb-5">"{t.quote}"</p>
+      <p className="text-base font-semibold text-foreground/90 leading-snug flex-1 mb-5">"{t.quote}"</p>
       <div>
         <p className="text-xs font-semibold">{t.name}</p>
         <p className="text-[10px] text-muted-foreground/40">{t.company}</p>
@@ -81,13 +81,13 @@ export default function TestimonialsSection() {
           <motion.p
             initial={{ opacity: 0 }} animate={headInView ? { opacity: 1 } : {}}
             className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-4"
-          >Audit results</motion.p>
+          >Operator findings</motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 20 }} animate={headInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.75, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="text-[clamp(2rem,5vw,3.8rem)] font-black tracking-[-0.04em] leading-[0.92]"
           >
-            What operators discovered.
+            Quietly compounding.
           </motion.h2>
         </div>
 
