@@ -18,7 +18,7 @@ export default function CopilotPanel({ onSelectPrompt }) {
             <span className="absolute inline-flex h-full w-full rounded-full bg-foreground opacity-30" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foreground" />
           </span>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Analyzer Hub · 8 Cost Layers</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Analyzer Hub</p>
         </div>
         <h3 className="mt-4 font-display text-2xl font-black tracking-[-0.03em] text-foreground">Where should you start?</h3>
         <p className="mt-4 text-sm leading-6 text-foreground/65">
