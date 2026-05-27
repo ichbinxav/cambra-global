@@ -55,8 +55,8 @@ const MODULES = [
 export default function AuditModulesGrid({ onSelectModule }) {
   return (
     <section className="grid gap-5 md:grid-cols-2">
-      {MODULES.map((module) => (
-        <AuditModuleCard key={module.key} {...module} onClick={() => onSelectModule(module.key)} />
+      {MODULES.map((module, index) => (
+        <AuditModuleCard key={module.key} {...module} number={String(index + 1).padStart(2, "0")} onClick={() => onSelectModule(module.key)} />
       ))}
     </section>
   );
