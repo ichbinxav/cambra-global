@@ -47,33 +47,44 @@ export default function PricingSection() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Intelligence Card */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm p-6"
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="group relative rounded-2xl overflow-hidden border border-border/50 bg-card/80 backdrop-blur-md p-8 hover:-translate-y-1 transition-transform duration-300"
           >
-            <div className="text-left">
-              <p className="text-xs font-bold tracking-[0.2em] uppercase text-muted-foreground/70 mb-3">Intelligence</p>
-              <p className="text-2xl font-black tracking-tight mb-4">Free</p>
-              <ul className="space-y-2.5">
-                <li className="flex items-start gap-2.5 text-sm text-foreground/75">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-mint shrink-0" />
-                  Infrastructure audit & scoring
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-cambra-cyan/[0.05] to-transparent" />
+              <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl bg-ambient-mint opacity-10" />
+            </div>
+            
+            <div className="relative text-left">
+              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-border/40 bg-background/60">
+                <span className="h-2 w-2 rounded-full bg-cambra-mint" />
+                <p className="text-[9px] font-bold tracking-[0.24em] uppercase text-muted-foreground/70">Infrastructure</p>
+              </div>
+              
+              <p className="text-4xl md:text-5xl font-black tracking-tight mb-2 text-foreground">Free</p>
+              <p className="text-sm text-muted-foreground/60 mb-8">For early operators</p>
+              
+              <ul className="space-y-3.5">
+                <li className="flex items-start gap-3 text-sm text-foreground/75 font-medium">
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-mint shrink-0" />
+                  <span>Infrastructure audit & scoring</span>
                 </li>
-                <li className="flex items-start gap-2.5 text-sm text-foreground/75">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-mint shrink-0" />
-                  Real network benchmarks
+                <li className="flex items-start gap-3 text-sm text-foreground/75 font-medium">
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-mint shrink-0" />
+                  <span>Real network benchmarks</span>
                 </li>
-                <li className="flex items-start gap-2.5 text-sm text-foreground/75">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-mint shrink-0" />
-                  Dashboard & reporting
+                <li className="flex items-start gap-3 text-sm text-foreground/75 font-medium">
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-mint shrink-0" />
+                  <span>Dashboard & reporting</span>
                 </li>
-                <li className="flex items-start gap-2.5 text-sm text-foreground/75">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-mint shrink-0" />
-                  AI recommendations
+                <li className="flex items-start gap-3 text-sm text-foreground/75 font-medium">
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-mint shrink-0" />
+                  <span>AI-powered recommendations</span>
                 </li>
               </ul>
             </div>
@@ -81,34 +92,59 @@ export default function PricingSection() {
 
           {/* Recovery Card */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-xl border border-white/10 bg-gradient-to-br from-neon-2 to-neon-1 p-6"
+            transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="group relative rounded-2xl overflow-hidden border border-white/12 p-8 hover:-translate-y-1 transition-transform duration-300"
             style={{
-              background: "linear-gradient(135deg, hsl(222 55% 11%) 0%, hsl(222 60% 8%) 100%)",
-              boxShadow: "0 0 30px rgba(31,78,216,0.15), 0 1px 0 hsl(0 0% 100% / 0.06) inset"
+              background: "linear-gradient(135deg, rgba(31,78,216,0.24) 0%, rgba(44,167,193,0.12) 100%), linear-gradient(180deg, hsl(222 60% 8%) 0%, hsl(222 65% 5%) 100%)",
+              boxShadow: "0 0 40px rgba(31,78,216,0.2), 0 1px 0 hsl(0 0% 100% / 0.08) inset, 0 24px 64px -28px rgba(0,0,0,0.6)"
             }}
           >
-            <div className="text-left text-white">
-              <p className="text-xs font-bold tracking-[0.2em] uppercase text-white/55 mb-3">Recovery Model</p>
-              <p className="text-2xl font-black tracking-tight mb-4">25% of verified savings</p>
-              <ul className="space-y-2.5">
-                <li className="flex items-start gap-2.5 text-sm text-white/80">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-cyan shrink-0" />
-                  Provider negotiation
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              <motion.div
+                className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl"
+                style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.40), transparent)" }}
+                animate={{ opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+            
+            <div className="relative text-left">
+              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-white/20 bg-white/[0.05]">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-cambra-cyan" />
+                </span>
+                <p className="text-[9px] font-bold tracking-[0.24em] uppercase text-white/60">Recovery Model</p>
+              </div>
+              
+              <p className="text-4xl md:text-5xl font-black tracking-tight mb-2">
+                <span style={{
+                  background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #2CA7C1 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text"
+                }}>25%</span>
+              </p>
+              <p className="text-sm text-white/50 mb-8">Only on verified savings recovered</p>
+              
+              <ul className="space-y-3.5">
+                <li className="flex items-start gap-3 text-sm text-white/75 font-medium">
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-cyan shrink-0" />
+                  <span>Provider negotiation</span>
                 </li>
-                <li className="flex items-start gap-2.5 text-sm text-white/80">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-cyan shrink-0" />
-                  Savings verification
+                <li className="flex items-start gap-3 text-sm text-white/75 font-medium">
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-cyan shrink-0" />
+                  <span>Savings verification</span>
                 </li>
-                <li className="flex items-start gap-2.5 text-sm text-white/80">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-cyan shrink-0" />
-                  Migration support
+                <li className="flex items-start gap-3 text-sm text-white/75 font-medium">
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-cyan shrink-0" />
+                  <span>Migration support</span>
                 </li>
-                <li className="flex items-start gap-2.5 text-sm text-white/80">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cambra-cyan shrink-0" />
-                  Only when you win
+                <li className="flex items-start gap-3 text-sm text-white/75 font-medium">
+                  <span className="mt-1.5 h-2 w-2 rounded-full bg-cambra-cyan shrink-0" />
+                  <span>We win when you do</span>
                 </li>
               </ul>
             </div>
