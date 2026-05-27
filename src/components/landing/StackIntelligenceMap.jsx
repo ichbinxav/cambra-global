@@ -144,32 +144,39 @@ export default function StackIntelligenceMap() {
                 transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
               />
 
-              {/* Connection lines from center to nodes — render only the active one with color */}
-              {LAYERS.map((layer, i) => {
+              {/* ALL connection lines inactive first — uniform base layer */}
+              {LAYERS.map((layer) => {
                 const { x, y } = polar(layer.angle, RADIUS);
-                const isActive = i === focusIdx;
                 return (
                   <line
-                    key={`line-${layer.id}`}
+                    key={`line-base-${layer.id}`}
                     x1={0} y1={0} x2={x} y2={y}
-                    stroke={isActive ? STATE[layer.state].color : "rgba(255,255,255,0.06)"}
-                    strokeWidth={isActive ? 1.5 : 0.5}
-                    strokeOpacity={isActive ? 0.8 : 0.4}
+                    stroke="rgba(255,255,255,0.06)"
+                    strokeWidth={0.5}
+                    strokeOpacity={0.4}
                   />
                 );
               })}
 
-              {/* Single data pulse for the active connection — uses native SVG animation, fully unmounts on focus change */}
+              {/* ONLY the active line on top — keyed by focusIdx so it fully remounts */}
               {(() => {
                 const layer = LAYERS[focusIdx];
                 const { x, y } = polar(layer.angle, RADIUS);
                 const color = STATE[layer.state].color;
                 return (
-                  <circle key={`pulse-${layer.id}`} r={2} fill={color} cx={0} cy={0}>
-                    <animate attributeName="cx" from="0" to={x} dur="1.2s" repeatCount="indefinite" />
-                    <animate attributeName="cy" from="0" to={y} dur="1.2s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="1;0.3" dur="1.2s" repeatCount="indefinite" />
-                  </circle>
+                  <g key={`active-${focusIdx}`}>
+                    <line
+                      x1={0} y1={0} x2={x} y2={y}
+                      stroke={color}
+                      strokeWidth={1.5}
+                      strokeOpacity={0.8}
+                    />
+                    <circle r={2} fill={color} cx={0} cy={0}>
+                      <animate attributeName="cx" from="0" to={x} dur="1.2s" repeatCount="indefinite" />
+                      <animate attributeName="cy" from="0" to={y} dur="1.2s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" values="1;0.3" dur="1.2s" repeatCount="indefinite" />
+                    </circle>
+                  </g>
                 );
               })()}
 
