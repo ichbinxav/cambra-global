@@ -158,9 +158,10 @@
   font-family: 'Space Grotesk', 'Inter', sans-serif;
   font-weight: 900;
   font-size: clamp(5rem, 14vw, 9rem);
-  line-height: 1;
+  line-height: 1.15;
   letter-spacing: -0.07em;
-  padding-bottom: 0.1em;
+  padding-top: 0.12em;
+  padding-bottom: 0.12em;
   background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.55) 80%, rgba(255,255,255,0.35) 100%);
   -webkit-background-clip: text;
   background-clip: text;
