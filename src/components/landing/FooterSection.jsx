@@ -109,7 +109,7 @@ export default function FooterSection() {
             className="font-display font-black tracking-[-0.05em] leading-[0.85] mb-6"
             style={{ fontSize: "clamp(2.8rem, 8.5vw, 7.5rem)" }}
           >
-            <span className="block">Turn operating costs</span>
+            <span className="block">Stop leaving</span>
             <span className="block relative">
               <span
                 className="bg-clip-text text-transparent"
@@ -120,7 +120,7 @@ export default function FooterSection() {
                   animation: "shimmer-bg 6s linear infinite",
                 }}
               >
-                into recovered margin.
+                margin on the table.
               </span>
             </span>
           </motion.h2>
@@ -131,6 +131,7 @@ export default function FooterSection() {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="text-base md:text-xl text-background/55 mb-12 max-w-xl leading-[1.55] font-light"
           >
+            Turn operating costs into recovered margin.{" "}
             <span className="text-background/85 font-medium">€10K–€100K</span> annual recovery.
             Verified. Immediate. Aligned incentives.
           </motion.p>
