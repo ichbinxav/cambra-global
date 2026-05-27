@@ -133,7 +133,7 @@ export default function HeroSystemic() {
                 <span
                   className="bg-clip-text text-transparent"
                   style={{
-                    backgroundImage: "linear-gradient(110deg, #1F4ED8 0%, #2CA7C1 35%, #1F4ED8 70%, #2CA7C1 100%)",
+                    backgroundImage: "linear-gradient(110deg, rgba(31,78,216,0.6) 0%, rgba(44,167,193,0.6) 35%, rgba(31,78,216,0.6) 70%, rgba(44,167,193,0.6) 100%)",
                     backgroundSize: "200% 100%",
                     WebkitBackgroundClip: "text",
                     animation: "shimmer-bg 6s linear infinite",
@@ -149,7 +149,7 @@ export default function HeroSystemic() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.55 }}
-              className="text-[clamp(0.95rem,1.55vw,1.15rem)] text-foreground/65 mb-6 max-w-[540px] leading-[1.55]"
+              className="text-[clamp(0.95rem,1.55vw,1.15rem)] text-foreground/80 mb-6 max-w-[540px] leading-[1.55]"
             >
               CAMBRA audits every hidden cost in your business — payments, shipping, SaaS, banking and more — and shows you what you're overpaying vs. peers your size.
             </motion.p>
