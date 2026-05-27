@@ -62,20 +62,15 @@ export default function ConnectToolsSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="cambra-card p-8 md:p-12 flex flex-col items-center text-center"
+          className="cambra-card p-6 md:p-8 flex flex-col items-center text-center"
         >
-          <div className="mb-8">
-            <div className="inline-flex items-center justify-center h-12 w-12 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm mb-6">
-              <ArrowRight className="h-5 w-5 text-cambra-cyan" />
-            </div>
-            <p className="text-white/70 text-sm mb-6">
-              Secure read-only access to your real data.
-            </p>
-          </div>
+          <p className="text-white/70 text-sm mb-6">
+            Secure read-only access to your real data.
+          </p>
 
           <Link to="/ConnectTools" className="w-full sm:w-auto">
-            <Button size="lg" className="h-12 rounded-full px-8 text-sm font-bold gap-2 bg-white text-neon-1 hover:bg-white/90 w-full sm:w-auto shadow-[0_0_32px_rgba(44,167,193,0.35)]">
-              Connect your tools <ArrowRight className="h-4 w-4" />
+            <Button size="lg" className="h-12 rounded-full px-8 text-sm font-bold bg-white text-neon-1 hover:bg-white/90 w-full sm:w-auto shadow-[0_0_32px_rgba(44,167,193,0.35)]">
+              Connect your tools
             </Button>
           </Link>
 
