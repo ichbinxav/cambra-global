@@ -36,11 +36,10 @@ export default function MeetTheFounder() {
     <section
       id="founder"
       ref={ref}
-      className="py-20 md:py-28 px-5 border-t border-border/40 bg-background relative overflow-hidden"
+      className="py-20 md:py-28 px-5 bg-background relative overflow-hidden"
     >
-      <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
-
       <div className="max-w-5xl mx-auto relative">
+        <div className="cambra-card p-6 md:p-12">
         <div className="mb-12 md:mb-16">
           <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-4 font-mono">
             Meet the founder
@@ -99,6 +98,7 @@ export default function MeetTheFounder() {
               </button>
             </div>
           </motion.div>
+        </div>
         </div>
       </div>
 
