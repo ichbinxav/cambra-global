@@ -42,15 +42,9 @@ export default function MeetTheFounder() {
 
       <div className="max-w-5xl mx-auto relative">
         <div className="mb-12 md:mb-16">
-          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full bg-cambra-navy text-white shadow-sm">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75 animate-ping" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
-            </span>
-            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/90">
-              Meet the founder
-            </span>
-          </div>
+          <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/40 mb-4 font-mono">
+            Meet the founder
+          </p>
           <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92] max-w-4xl">
             A note from <span className="text-saas-gradient">the founder</span>.
           </h2>
@@ -78,29 +72,29 @@ export default function MeetTheFounder() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="relative rounded-2xl border border-border/40 bg-secondary/30 p-3 md:p-6 flex flex-col justify-between"
+            className="cambra-card p-3 md:p-6 flex flex-col justify-between"
           >
-            <Quote className="h-5 w-5 md:h-8 md:w-8 text-saas-gradient mb-2 opacity-80" strokeWidth={1.5} />
+            <Quote className="h-5 w-5 md:h-8 md:w-8 text-cambra-cyan mb-2 opacity-90" strokeWidth={1.5} />
             <div className="flex-1">
-              <p className="text-[11px] md:text-base font-medium leading-snug text-foreground mb-1.5 md:mb-3">
+              <p className="text-[11px] md:text-base font-medium leading-snug text-white mb-1.5 md:mb-3">
                 After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.
               </p>
 
-              <p className="text-foreground/70 text-[10px] md:text-sm font-light">
+              <p className="text-white/65 text-[10px] md:text-sm font-light">
                 That's why I started CAMBRA.
               </p>
             </div>
 
             <div className="flex items-center justify-between gap-2 mt-3 md:mt-4">
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] md:text-sm font-bold text-foreground truncate">Xavier M. Contero</p>
-                <p className="text-[8px] md:text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/50 mt-0.5">
+                <p className="text-[10px] md:text-sm font-bold text-white truncate">Xavier M. Contero</p>
+                <p className="text-[8px] md:text-[10px] font-mono uppercase tracking-[0.2em] text-white/50 mt-0.5">
                   Founder
                 </p>
               </div>
               <button
                 onClick={() => setOpen(true)}
-                className="h-8 w-8 md:h-10 md:w-10 rounded-full border border-foreground/20 flex items-center justify-center hover:bg-foreground hover:text-background transition-all shrink-0"
+                className="h-8 w-8 md:h-10 md:w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-cambra-navy transition-all shrink-0 text-white"
                 aria-label="Read full letter"
               >
                 <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
