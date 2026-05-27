@@ -120,17 +120,9 @@ export default function HowItWorks() {
                         </span>
                       </h2>
 
-                      <p className="text-sm sm:text-base text-white/70 leading-relaxed mb-5 max-w-2xl">
+                      <p className="text-sm sm:text-base text-white/70 leading-relaxed max-w-2xl">
                         {step.detail}
                       </p>
-
-                      <div className="flex flex-wrap gap-2">
-                        {step.points.map(p => (
-                          <span key={p} className="text-[11px] font-semibold tracking-wide px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-white/80">
-                            {p}
-                          </span>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 </motion.article>
