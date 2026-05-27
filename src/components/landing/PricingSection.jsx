@@ -67,8 +67,8 @@ export default function PricingSection() {
           >
             {/* Card header */}
             <div className="px-7 py-6 border-b border-white/10">
-              <div className="flex items-center gap-2 mb-4">
-                <Zap className="h-3.5 w-3.5 text-white/60" />
+              <div className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
+                <Zap className="h-3 w-3 text-white/60" />
                 <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-white/60">CAMBRA · Engine</span>
               </div>
               <div className="flex items-baseline gap-3 mb-2">
