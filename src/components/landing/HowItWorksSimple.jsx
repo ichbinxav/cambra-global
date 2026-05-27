@@ -87,10 +87,10 @@ export default function HowItWorksSimple() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: i * 0.05 }}
-                className="cambra-card p-8 sm:p-10"
+                className="cambra-card p-6 sm:p-8"
               >
                 {/* CTA row — pill anchored to the right */}
-                <div className="flex justify-end mb-4" style={{ position: 'relative', zIndex: 20 }}>
+                <div className="flex justify-end mb-3" style={{ position: 'relative', zIndex: 20 }}>
                   <Link
                     to={step.cta.href}
                     className="group/cta inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full border border-white/20 bg-cambra-navy-deep/80 hover:bg-cambra-navy-deep hover:border-white/40 transition-all backdrop-blur-md"
@@ -106,20 +106,20 @@ export default function HowItWorksSimple() {
 
                 <div>
                   {/* Giant cinematic number — on top */}
-                  <div className="cambra-step-number mb-4">
+                  <div className="cambra-step-number mb-3">
                     {step.n}
                   </div>
 
                   {/* Content */}
                   <div className="min-w-0">
-                    <div className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
+                    <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
                       <Icon size={11} className="text-cambra-mint" />
                       <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">
                         Step {step.n}
                       </span>
                     </div>
 
-                    <h3 className="font-display text-2xl sm:text-3xl md:text-4xl font-black tracking-[-0.035em] leading-[1] mb-4">
+                    <h3 className="font-display text-2xl sm:text-3xl md:text-4xl font-black tracking-[-0.035em] leading-[1] mb-3">
                       <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                         {step.title}
                       </span>
