@@ -131,7 +131,17 @@ export default function StackIntelligenceMap() {
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut", delay: 1.2 }}
               />
 
-              {/* Rotating scan arc removed — was visually creating a line between adjacent nodes */}
+              {/* Rotating scan hand — clock-like sweep from center */}
+              <motion.line
+                x1={0} y1={0} x2={RADIUS - NODE_R - 6} y2={0}
+                stroke={focusState.color}
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                opacity={0.55}
+                style={{ transformOrigin: "0px 0px" }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+              />
 
               {/* Connection lines removed — clean radial map without center-to-node links */}
 
