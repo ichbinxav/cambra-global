@@ -62,7 +62,7 @@ export default function HeroSystemic() {
     <section ref={ref} className="relative min-h-[100vh] flex items-center overflow-hidden pt-8 bg-background">
       {/* Animated backdrop */}
       <motion.div className="absolute inset-0 pointer-events-none" style={{ y: bgY }}>
-        <div className="absolute inset-0 dot-grid opacity-60" />
+        <div className="absolute inset-0 dot-grid opacity-80" />
 
         {/* Pulsing ambient glows */}
         <motion.div
@@ -89,8 +89,8 @@ export default function HeroSystemic() {
 
       {/* Bottom fade to white — smooth blend with next section */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none z-[5]"
-        style={{ background: "linear-gradient(to bottom, transparent 0%, hsl(var(--background)) 85%)" }}
+        className="absolute bottom-0 left-0 right-0 h-64 pointer-events-none z-[5]"
+        style={{ background: "linear-gradient(to bottom, transparent 0%, hsl(var(--background)) 90%)" }}
       />
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-5 py-10 md:py-14">
@@ -134,7 +134,7 @@ export default function HeroSystemic() {
                 <span
                   className="bg-clip-text text-transparent"
                   style={{
-                    backgroundImage: "linear-gradient(180deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 55%, hsl(var(--cambra-cyan)) 100%)",
+                    backgroundImage: "linear-gradient(180deg, hsl(222 60% 5%) 0%, hsl(var(--cambra-navy)) 55%, hsl(var(--cambra-blue)) 100%)",
                     backgroundSize: "200% 100%",
                     WebkitBackgroundClip: "text",
                   }}
