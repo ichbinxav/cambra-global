@@ -133,15 +133,16 @@ export default function StackIntelligenceMap() {
 
               {/* Rotating scan hand — clock-like sweep from center */}
               <motion.g
+                key="scan-hand"
+                initial={{ rotate: 0 }}
                 animate={{ rotate: 360 }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 10, repeat: Infinity, ease: "linear", repeatType: "loop" }}
               >
                 <line
                   x1={0} y1={0} x2={RADIUS - NODE_R - 6} y2={0}
-                  stroke={focusState.color}
+                  stroke="rgba(255,255,255,0.55)"
                   strokeWidth={1.5}
                   strokeLinecap="round"
-                  opacity={0.55}
                 />
               </motion.g>
 
