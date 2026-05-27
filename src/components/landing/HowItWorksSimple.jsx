@@ -43,25 +43,33 @@ export default function HowItWorksSimple() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {STEPS.map((s, i) => (
-            <motion.div
-              key={s.n}
-              initial={{ opacity: 0, y: 16 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="p-6 rounded-2xl border border-border/40 bg-card hover:border-foreground/30 transition-colors group"
-            >
-              <div className="flex items-center justify-between mb-5">
-                <span className="text-[10px] font-mono text-muted-foreground/40 tracking-widest">{s.n}</span>
-                <div className="h-9 w-9 rounded-lg bg-foreground/[0.04] border border-border/40 flex items-center justify-center group-hover:bg-foreground/[0.08] transition-colors">
-                  <s.icon className="h-4 w-4 text-foreground/70" strokeWidth={1.8} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {STEPS.map((s, i) => {
+            const colors = ["text-saas-gradient", "text-chart-2", "text-chart-1"];
+            const bgColors = ["bg-blue-500/[0.08]", "bg-cyan-500/[0.08]", "bg-blue-500/[0.08]"];
+            const borderColors = ["border-blue-500/30", "border-cyan-500/30", "border-blue-500/30"];
+            return (
+              <motion.div
+                key={s.n}
+                initial={{ opacity: 0, y: 16 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className={`p-8 rounded-2xl border ${borderColors[i]} ${bgColors[i]} hover:border-foreground/40 transition-all group relative overflow-hidden`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-foreground/[0.02] to-transparent pointer-events-none" />
+                <div className="relative z-10">
+                  <div className="flex items-start justify-between mb-6">
+                    <span className={`text-6xl font-black ${colors[i]} opacity-20 leading-none`}>{s.n}</span>
+                    <div className={`h-16 w-16 rounded-xl ${bgColors[i]} border ${borderColors[i]} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                      <s.icon className={`h-7 w-7 ${colors[i]}`} strokeWidth={1.5} />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold tracking-tight mb-3">{s.title}</h3>
+                  <p className="text-sm text-muted-foreground/75 leading-relaxed">{s.body}</p>
                 </div>
-              </div>
-              <h3 className="text-lg font-bold tracking-tight mb-2">{s.title}</h3>
-              <p className="text-sm text-muted-foreground/75 leading-relaxed">{s.body}</p>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Quick chips row */}
