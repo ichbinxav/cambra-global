@@ -163,16 +163,10 @@ export default function HelpSearch({ open, onClose }) {
 
                 {/* Footer */}
                 <div className="flex items-center justify-between px-5 h-10 border-t border-border/40 bg-secondary/40 text-[10px] text-muted-foreground/50">
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1">
-                      <kbd className="px-1.5 py-0.5 rounded border border-border/60 bg-background font-bold">↵</kbd>
-                      open
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <kbd className="px-1.5 py-0.5 rounded border border-border/60 bg-background font-bold">esc</kbd>
-                      close
-                    </span>
-                  </div>
+                  <span className="flex items-center gap-1">
+                    <kbd className="px-1.5 py-0.5 rounded border border-border/60 bg-background font-bold">esc</kbd>
+                    to close
+                  </span>
                   <span>Powered by CAMBRA Intelligence</span>
                 </div>
               </div>

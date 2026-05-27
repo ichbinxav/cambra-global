@@ -59,7 +59,7 @@ export default function HelpHero({ onSearchOpen }) {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
-          className="relative w-full max-w-2xl mx-auto"
+          className="group relative w-full max-w-2xl mx-auto"
         >
           <span aria-hidden className="absolute -inset-px rounded-2xl bg-saas-gradient opacity-20 group-hover:opacity-40 blur-md transition-opacity pointer-events-none" />
           <motion.button
@@ -67,7 +67,7 @@ export default function HelpHero({ onSearchOpen }) {
             onClick={onSearchOpen}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.995 }}
-            className="group relative w-full flex items-center gap-4 h-16 px-6 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-xl text-left"
+            className="relative w-full flex items-center gap-4 h-16 px-6 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-xl text-left"
             aria-label="Open search"
           >
             <Search className="w-5 h-5 text-muted-foreground/50 shrink-0" />
