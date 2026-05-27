@@ -8,20 +8,19 @@ import { ArrowRight, Activity } from "lucide-react";
  */
 
 const SIGNALS = [
-  { t: "PSP effective rate", delta: "+0.6%", state: "drift", value: "2.0%", peer: "1.4%" },
-  { t: "Shipping cost / order", delta: "+€0.80", state: "drift", value: "€6.20", peer: "€5.40" },
-  { t: "SaaS overlap", delta: "2 tools", state: "alert", value: "Klaviyo · Sendinblue", peer: "1 ESP" },
-  { t: "FX exposure", delta: "Unbenchmarked", state: "neutral", value: "—", peer: "—" },
-  { t: "TPE all-in", delta: "+0.4%", state: "drift", value: "1.8%", peer: "1.4%" },
+  { t: "💳 PSP effective rate", delta: "+0.3pp", state: "drift", value: "1.7%", peer: "1.4%" },
+  { t: "📦 Shipping / order", delta: "+€0.40", state: "drift", value: "€5.80", peer: "€5.40" },
+  { t: "🧰 SaaS overlap", delta: "2 duplicates", state: "alert", value: "Klaviyo · Sendinblue", peer: "1 ESP" },
+  { t: "💱 FX spread", delta: "+0.4pp", state: "drift", value: "1.3%", peer: "0.9%" },
+  { t: "🛒 TPE all-in", delta: "+0.2pp", state: "drift", value: "1.6%", peer: "1.4%" },
 ];
 
 const TICKER = [
-  "Currently benchmarking payments…",
-  "2 redundant SaaS tools detected.",
-  "Stripe fees above peer median.",
-  "FX exposure unbenchmarked.",
-  "Infrastructure drift increasing.",
-  "Shipping cost per order +14% vs peer.",
+  "💳 PSP +0.3pp vs peer median",
+  "🧰 2 duplicate SaaS tools",
+  "📦 Shipping +€0.40 / order",
+  "💱 FX spread +0.4pp",
+  "🛒 TPE +0.2pp all-in",
 ];
 
 export default function HeroSystemic() {
@@ -69,7 +68,7 @@ export default function HeroSystemic() {
             </h1>
 
             <p className="text-[clamp(0.95rem,1.6vw,1.15rem)] text-foreground/60 mb-8 max-w-[560px] leading-[1.55]">
-              Eight cost layers. Eight separate benchmarks. Eight separate savings opportunities. CAMBRA finds them all.
+              The cost stack underneath every transaction — benchmarked, live, against operators at your tier.
             </p>
 
             {/* CTAs */}

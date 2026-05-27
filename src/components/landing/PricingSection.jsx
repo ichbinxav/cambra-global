@@ -36,24 +36,25 @@ export default function PricingSection() {
               Run an audit free. CAMBRA watches continuously. We take a cut of margin we recover — align incentives.
             </p>
 
-            {/* Typical findings */}
-            <div className="space-y-2">
-              <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/40 mb-2 font-mono">Typical findings · €1–5M tier</p>
-              {[
-                { label: "PSP effective rate", val: "0.6pp drift", color: "#635BFF" },
-                { label: "Shipping per order", val: "€0.80 above peer", color: "#06B6D4" },
-                { label: "SaaS overlap", val: "2 redundant tools", color: "#8B5CF6" },
-                { label: "TPE all-in", val: "0.4pp drift", color: "#F97316" },
-                { label: "FX spread", val: "0.7pp drift", color: "#10B981" },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="px-4 py-3 rounded-xl border border-border/40 bg-card flex items-center justify-between"
-                >
-                  <span className="text-sm font-medium text-foreground/80">{item.label}</span>
-                  <span className="text-xs font-mono tabular-nums font-bold" style={{ color: item.color }}>{item.val}</span>
-                </div>
-              ))}
+            {/* Recovery brackets — realistic, not exaggerated */}
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground/40 mb-3 font-mono">Typical annual recovery</p>
+              <div className="rounded-xl border border-border/40 bg-card overflow-hidden divide-y divide-border/40">
+                {[
+                  { tier: "€500K – €1M",  range: "€4K – €12K"  },
+                  { tier: "€1M – €5M",    range: "€15K – €35K" },
+                  { tier: "€5M – €20M",   range: "€40K – €120K"},
+                  { tier: "€20M+",        range: "€100K+"      },
+                ].map((b, i) => (
+                  <div key={i} className="px-4 py-3 flex items-center justify-between">
+                    <span className="text-sm text-foreground/70 font-mono">{b.tier}</span>
+                    <span className="text-sm font-bold tabular-nums">{b.range}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground/40 mt-2 font-mono">
+                Net of CAMBRA's success fee. Aligned incentives.
+              </p>
             </div>
           </motion.div>
 

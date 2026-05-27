@@ -11,14 +11,14 @@ import { ArrowRight } from "lucide-react";
  */
 
 const LAYERS = [
-  { id: "psp",    label: "PSP",       angle: 270, drift: +0.6,  unit: "pp",     finding: "Stripe effective rate 0.6pp above peer median", state: "drift" },
-  { id: "ship",   label: "Shipping",  angle: 315, drift: +0.12, unit: "€/order",finding: "€0.12 per order above tier benchmark",          state: "drift" },
-  { id: "saas",   label: "SaaS",      angle: 360, drift: +2,    unit: "tools",  finding: "2 overlapping SaaS tools detected",             state: "alert" },
-  { id: "bank",   label: "Banking",   angle: 45,  drift: +20,   unit: "€/mo",   finding: "Fixed banking fees 2.1× peer median",           state: "drift" },
-  { id: "fx",     label: "FX",        angle: 90,  drift: +0.7,  unit: "pp",     finding: "Cross-border FX spread unbenchmarked",          state: "alert" },
-  { id: "tpe",    label: "TPE",       angle: 135, drift: +0.4,  unit: "pp",     finding: "In-store TPE all-in 0.4pp above peer",          state: "drift" },
-  { id: "ins",    label: "Insurance", angle: 180, drift: +8,    unit: "bps",    finding: "RC Pro spend 8 bps above tier",                 state: "mild" },
-  { id: "tel",    label: "Telecom",   angle: 225, drift: 0,     unit: "—",      finding: "Telecom aligned with peer median",              state: "ok" },
+  { id: "psp",    label: "💳 PSP",       angle: 270, drift: +0.3,  unit: "pp",     finding: "💳 PSP +0.3pp vs peer median",          state: "drift" },
+  { id: "ship",   label: "📦 Ship",      angle: 315, drift: +0.40, unit: "€/order",finding: "📦 Shipping +€0.40 / order",            state: "drift" },
+  { id: "saas",   label: "🧰 SaaS",      angle: 360, drift: +2,    unit: "dupes",  finding: "🧰 2 duplicate SaaS tools",             state: "alert" },
+  { id: "bank",   label: "🏦 Bank",      angle: 45,  drift: +18,   unit: "€/mo",   finding: "🏦 Fixed bank fees +€18 / mo",          state: "mild" },
+  { id: "fx",     label: "💱 FX",        angle: 90,  drift: +0.4,  unit: "pp",     finding: "💱 FX spread +0.4pp",                   state: "drift" },
+  { id: "tpe",    label: "🛒 TPE",       angle: 135, drift: +0.2,  unit: "pp",     finding: "🛒 TPE all-in +0.2pp",                  state: "mild" },
+  { id: "ins",    label: "🛡️ Ins",      angle: 180, drift: +6,    unit: "bps",    finding: "🛡️ RC Pro +6 bps",                     state: "mild" },
+  { id: "tel",    label: "📞 Telecom",   angle: 225, drift: 0,     unit: "—",      finding: "📞 Telecom aligned with peer",          state: "ok" },
 ];
 
 const STATE_COLOR = {
@@ -82,11 +82,11 @@ export default function StackIntelligenceMap() {
             </span>
           </div>
           <h2 className="font-display text-[clamp(2rem,5vw,3.6rem)] font-black tracking-[-0.04em] leading-[0.92] max-w-3xl mx-auto">
-            Eight layers.<br />
-            <span className="text-saas-gradient">Infinite margin.</span>
+            One engine.<br />
+            <span className="text-saas-gradient">Eight margin levers.</span>
           </h2>
           <p className="mt-4 text-sm md:text-base text-white/55 max-w-xl mx-auto leading-relaxed">
-            PSP. Shipping. SaaS. Banking. FX. TPE. Insurance. Telecom. Every one benchmarked, live.
+            Hover a node. See the lever, the delta, the recovery — live.
           </p>
         </div>
 
@@ -194,7 +194,15 @@ export default function StackIntelligenceMap() {
                       className="font-mono pointer-events-none"
                       style={{ fontSize: 8, fill: isActive ? color : "rgba(255,255,255,0.4)" }}
                     >
-                      {layer.drift === 0 ? "ok" : `+${layer.drift}${layer.unit === "€/order" || layer.unit === "€/mo" ? "" : layer.unit}`}
+                      {layer.drift === 0
+                        ? "ok"
+                        : layer.unit === "€/order"
+                          ? `+€${layer.drift.toFixed(2)}`
+                          : layer.unit === "€/mo"
+                            ? `+€${layer.drift}/mo`
+                            : layer.unit === "dupes"
+                              ? `${layer.drift} dupes`
+                              : `+${layer.drift}${layer.unit}`}
                     </text>
                   </g>
                 );
@@ -203,7 +211,7 @@ export default function StackIntelligenceMap() {
 
             {/* Bottom meta */}
             <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-[9px] font-mono uppercase tracking-[0.18em] text-white/35">
-              <span>8 layers · scanning</span>
+              <span>scanning</span>
               <span className="flex items-center gap-1.5">
                 <span className="h-1 w-1 rounded-full bg-cambra-mint animate-pulse" />
                 live engine
@@ -216,7 +224,7 @@ export default function StackIntelligenceMap() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint animate-pulse" />
-                <span className="text-[9px] uppercase tracking-[0.2em] text-white/50 font-mono">Live findings</span>
+                <span className="text-[9px] uppercase tracking-[0.2em] text-white/50 font-mono">Signal stream</span>
               </div>
               <span className="text-[9px] font-mono text-white/30">{LAYERS.length}/8</span>
             </div>
