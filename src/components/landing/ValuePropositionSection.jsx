@@ -6,7 +6,11 @@ const CATEGORIES = [
   { name: "Payments", status: "Inefficient", pct: 78, color: "#EF4444", sub: "2.8% avg vs 1.4% benchmark" },
   { name: "Logistics", status: "Warning", pct: 55, color: "#F97316", sub: "€0.80–1.20/parcel above market" },
   { name: "SaaS Stack", status: "Fragmented", pct: 42, color: "#8B5CF6", sub: "Avg 3.2 redundant tools detected" },
-  { name: "Banking", status: "Inefficient", pct: 61, color: "#EF4444", sub: "Non-benchmarked FX & fees" },
+  { name: "Banking & FX", status: "Inefficient", pct: 61, color: "#EF4444", sub: "Non-benchmarked FX & fees" },
+  { name: "Insurance", status: "Fragmented", pct: 48, color: "#10B981", sub: "Coverage overlap & over-insurance detected" },
+  { name: "Telecom", status: "Warning", pct: 52, color: "#06B6D4", sub: "Connectivity costs above market rate" },
+  { name: "Finance Ops", status: "Fragmented", pct: 45, color: "#F59E0B", sub: "Tooling overlap & complexity increasing" },
+  { name: "HR Infra", status: "Warning", pct: 50, color: "#EC4899", sub: "Benefits stack fragmentation detected" },
 ];
 
 export default function ValuePropositionSection() {
@@ -29,14 +33,14 @@ export default function ValuePropositionSection() {
               transition={{ duration: 0.6 }}
               className="text-[clamp(2rem,4.5vw,3.4rem)] font-black tracking-[-0.04em] leading-[0.92] mb-5"
             >
-              Most businesses are quietly leaking margin through infrastructure inefficiency.
+              Most businesses are leaking margin across 8 infrastructure layers — simultaneously, silently, and completely unbenchmarked.
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.15 }}
               className="text-base text-muted-foreground/70 leading-relaxed mb-8 max-w-lg"
             >
-              The problem isn't a single overpayment. It's the silent accumulation of sub-optimal rates, fragmented stacks and unbenchmarked costs — compounding quarter after quarter.
+              The problem isn't a single overpayment. It's the silent accumulation of sub-optimal rates across payments, banking, logistics, SaaS, insurance, telecom, finance ops and HR infrastructure — compounding quarter after quarter.
             </motion.p>
             <motion.a
               href="/Analyzer"

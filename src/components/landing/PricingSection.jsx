@@ -50,6 +50,10 @@ export default function PricingSection() {
                   { label: "Logistics", val: "−18%", color: "#06B6D4" },
                   { label: "SaaS", val: "−30%", color: "#8B5CF6" },
                   { label: "Banking", val: "−22%", color: "#F97316" },
+                  { label: "Insurance", val: "−28%", color: "#10B981" },
+                  { label: "Telecom", val: "−15%", color: "#EC4899" },
+                  { label: "Finance Ops", val: "−20%", color: "#F59E0B" },
+                  { label: "HR Infra", val: "−12%", color: "#6366F1" },
                 ].map((item, i) => (
                   <div
                     key={i}

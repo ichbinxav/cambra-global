@@ -93,7 +93,7 @@ export default function BenefitsSection() {
             transition={{ delay: 0.25 }}
             className="text-base text-muted-foreground/60 leading-relaxed"
           >
-            Most businesses optimize marketing and product obsessively. Almost none audit their operational infrastructure. CAMBRA fixes that.
+            Most businesses optimize marketing and product obsessively. Almost none audit the full operational infrastructure behind them — payments, banking, logistics, SaaS, insurance, telecom, finance ops, HR. CAMBRA fixes that.
           </motion.p>
         </div>
 
@@ -107,7 +107,7 @@ export default function BenefitsSection() {
         <div className="py-14 border-y border-border/40 text-center">
           <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground/35 mb-5">The CAMBRA thesis</p>
           <h3 className="text-[clamp(1.8rem,4vw,3.2rem)] font-black tracking-[-0.04em] leading-[0.9] max-w-3xl mx-auto">
-            "Most businesses optimize everything except the silent costs that compound beneath the surface."
+            "Most businesses optimize product and marketing obsessively — while 8 layers of operational infrastructure silently erode their margin."
           </h3>
         </div>
       </div>

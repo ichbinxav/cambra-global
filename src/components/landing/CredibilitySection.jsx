@@ -17,7 +17,7 @@ const BLOCKS = [
   },
   {
     title: "Margin leakage recovery",
-    text: "Infrastructure inefficiencies compound quietly. CAMBRA surfaces where overpayment is structural — payments, logistics, SaaS, banking — and quantifies the recoverable margin.",
+    text: "Infrastructure inefficiencies compound quietly. CAMBRA surfaces where overpayment is structural — payments, logistics, SaaS, banking, insurance, telecom, finance ops, HR infrastructure — and quantifies the recoverable margin.",
     icon: TrendingDown,
     accent: "#8B5CF6",
   },

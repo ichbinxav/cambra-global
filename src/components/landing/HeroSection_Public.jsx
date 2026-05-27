@@ -23,6 +23,7 @@ const SAVINGS = [
   { label: "Payments", amount: "€12,400", pct: "2.8% → 1.4%", color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac", icon: CreditCard },
   { label: "Logistics", amount: "€8,200", pct: "+22% above benchmark", color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint", icon: Truck },
   { label: "SaaS Stack", amount: "€5,800", pct: "3 redundant tools", color: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum", icon: Package },
+  { label: "Banking & Insurance", amount: "€3,200", pct: "FX + coverage overlap", color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint", icon: CreditCard },
 ];
 
 const fadeUp = { hidden: { opacity: 0, y: 40 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } } };
@@ -75,7 +76,7 @@ export default function HeroSection_Public() {
 
             {/* Subheadline */}
             <motion.p variants={fadeUp} className="text-[clamp(1rem,2.2vw,1.35rem)] font-medium text-foreground/65 mb-8 max-w-[620px] mx-auto lg:mx-0 leading-[1.5] text-center lg:text-left">
-              CAMBRA audits your operational infrastructure and identifies where your business is overpaying across payments, shipping, SaaS, telecom, banking and operational systems.
+              CAMBRA audits the full operational infrastructure behind your business — payments, logistics, SaaS, banking, insurance, telecom, finance ops and HR systems — and surfaces every margin leak.
             </motion.p>
 
             {/* CTAs */}
@@ -183,6 +184,7 @@ export default function HeroSection_Public() {
                   <p className="text-3xl font-black tracking-tight tabular-nums">
                     €{leakage.toLocaleString()}<span className="text-base font-normal opacity-40">/yr</span>
                   </p>
+                  <p className="text-[9px] opacity-25 mt-0.5">8 infrastructure verticals</p>
                 </div>
                 <a href="/Analyzer" className="h-9 px-4 rounded-full bg-background/10 hover:bg-background/20 text-background text-xs font-bold transition-colors border border-background/15 flex items-center gap-1.5">
                   Audit <ArrowRight size={11} />

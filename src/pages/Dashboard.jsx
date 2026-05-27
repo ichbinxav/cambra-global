@@ -153,7 +153,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-black tracking-[-0.03em]">
             {user?.full_name ? `${user.full_name.split(" ")[0]}.` : "Dashboard"}
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Infrastructure command center</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Infrastructure operating system · 8 verticals</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           <Link to="/Analyzer">
@@ -257,6 +257,12 @@ export default function Dashboard() {
             <MetricCard label="SaaS" value={latest.saas_savings} icon={Package} color="text-orange-500" border="border-orange-500/15" bg="bg-orange-500/[0.05]" note="stack efficiency" />
             <MetricCard label="Insurance" value={latest.details?.insurance_savings || 0} icon={ShieldCheck} color="text-chart-1" border="border-chart-1/20" bg="bg-blue-500/[0.05]" note={(latest.details?.insurance_status || "Not analyzed").toLowerCase()} />
           </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <MetricCard label="Banking & FX" value={latest.details?.banking_savings || 0} icon={CreditCard} color="text-amber-500" border="border-amber-500/20" bg="bg-amber-500/[0.05]" note="banking efficiency" />
+            <MetricCard label="Telecom" value={latest.details?.telecom_savings || 0} icon={Package} color="text-cyan-500" border="border-cyan-500/20" bg="bg-cyan-500/[0.05]" note="connectivity costs" />
+            <MetricCard label="Finance Ops" value={latest.details?.finance_ops_savings || 0} icon={Package} color="text-yellow-500" border="border-yellow-500/20" bg="bg-yellow-500/[0.05]" note="tooling efficiency" />
+            <MetricCard label="HR Infra" value={latest.details?.hr_savings || 0} icon={Users} color="text-pink-500" border="border-pink-500/20" bg="bg-pink-500/[0.05]" note="benefits stack" />
+          </div>
 
           <GMVMetrics gmvTotal={gmvTotal} gmvAverage={gmvAverage} />
 
@@ -286,10 +292,10 @@ export default function Dashboard() {
           {/* ── QUICK ACTIONS ── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { title: "Run new analysis", desc: "Update your score", path: "/Analyzer", icon: TrendingDown, accent: true },
-              { title: "Upload insurance contract", desc: "Deeper insurance review", path: "/ConnectTools", icon: ShieldCheck },
-              { title: "Request Cambra benchmark", desc: "Benchmark your coverage", path: "/Deals", icon: Users },
-              { title: "Activate insurance optimization", desc: "Request optimized quote", path: "/Deals", icon: BookOpen },
+              { title: "Run new analysis", desc: "Update your infra score", path: "/Analyzer", icon: TrendingDown, accent: true },
+              { title: "Complete onboarding", desc: "Add banking, insurance & telecom data", path: "/Onboarding", icon: Zap },
+              { title: "Connect your tools", desc: "Precision data across all verticals", path: "/ConnectTools", icon: ShieldCheck },
+              { title: "Explore deals", desc: "Activate savings across all categories", path: "/Deals", icon: BookOpen },
             ].map((action, i) => (
               <Link key={i} to={action.path}>
                 <div className={`group p-5 rounded-2xl border transition-all cursor-pointer ${action.accent ? "border-foreground/8 bg-foreground text-background" : "border-border/50 bg-card hover:border-border"}`}>

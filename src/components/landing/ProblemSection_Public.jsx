@@ -35,7 +35,7 @@ export default function ProblemSection_Public() {
             transition={{ delay: 0.2 }}
             className="text-lg text-muted-foreground/60 leading-relaxed"
           >
-            It's not one problem. It's five invisible taxes — each small enough to ignore individually, catastrophic when summed across your entire infrastructure stack.
+            It's not one problem. It's eight invisible infrastructure layers — each silently eroding margin, compounding quarter after quarter, completely unbenchmarked.
           </motion.p>
         </div>
 

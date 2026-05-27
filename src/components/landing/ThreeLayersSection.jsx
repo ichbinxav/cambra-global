@@ -106,7 +106,7 @@ export default function ThreeLayersSection() {
               Infrastructure intelligence.<br />Not just a dashboard.
             </h3>
             <p className="text-background/50 text-sm leading-relaxed">
-              CAMBRA doesn't just show you numbers. It maps your operational reality, benchmarks it against comparable businesses, and delivers specific intelligence about where margin is being lost and how to recover it.
+              CAMBRA maps the full operational reality behind your business — payments, logistics, SaaS, banking, insurance, telecom, finance ops and HR infrastructure — benchmarks every layer, and delivers specific intelligence about where margin is being lost and how to recover it.
             </p>
           </div>
           <div className="flex flex-col gap-3 shrink-0">
