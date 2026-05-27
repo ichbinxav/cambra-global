@@ -2,15 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, TrendingUp, Activity } from "lucide-react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
-import { useRef, useEffect, useState } from "react";
-
-const LIVE_TICKER = [
-  { brand: "Studio Mara", amount: "€42,800", label: "PSP renegotiation" },
-  { brand: "Noma Brand", amount: "€11,400", label: "SaaS dedup" },
-  { brand: "Lumen Co", amount: "€67,200", label: "Shipping rates" },
-  { brand: "Atelier Vrai", amount: "€28,900", label: "FX spread" },
-  { brand: "Maison Or", amount: "€19,500", label: "Banking fees" },
-];
+import { useRef } from "react";
 
 const MARQUEE_TEXT = "CAMBRA · CAMBRA · CAMBRA · CAMBRA · ";
 
@@ -20,15 +12,6 @@ export default function FooterSection() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const parallaxY = useTransform(scrollYProgress, [0, 1], ["0%", "-20%"]);
   const glowOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.15, 0.35, 0.15]);
-
-  const [tickerIdx, setTickerIdx] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => setTickerIdx((i) => (i + 1) % LIVE_TICKER.length), 2200);
-    return () => clearInterval(t);
-  }, []);
-
-  const current = LIVE_TICKER[tickerIdx];
 
   return (
     <>
@@ -105,31 +88,17 @@ export default function FooterSection() {
 
         {/* CONTENT */}
         <div className="relative z-10 max-w-4xl mx-auto px-5 py-24 text-center w-full">
-          {/* Live ticker pill */}
+          {/* Static eyebrow pill */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2.5 mb-10 px-3.5 py-2 rounded-full border border-background/15 bg-background/[0.04] backdrop-blur-md"
           >
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cambra-mint opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-cambra-mint" />
-            </span>
+            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
             <span className="text-[10px] font-mono tracking-[0.22em] uppercase text-background/60">
-              Live recovery feed
+              Margin recovery engine
             </span>
-            <span className="h-3 w-px bg-background/15" />
-            <motion.div
-              key={current.brand}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-center gap-2"
-            >
-              <span className="text-[11px] font-bold text-background tabular-nums">{current.amount}</span>
-              <span className="text-[10px] font-mono text-background/45">· {current.label}</span>
-            </motion.div>
           </motion.div>
 
           {/* Massive headline with shimmer */}
