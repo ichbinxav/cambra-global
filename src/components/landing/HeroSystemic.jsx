@@ -70,7 +70,7 @@ export default function HeroSystemic() {
             </p>
 
             {/* Layer chips — what we watch */}
-            <div className="flex flex-wrap gap-1.5 mb-8 max-w-[540px]">
+            <div className="flex flex-wrap gap-1.5 mb-6 max-w-[540px]">
               {LAYER_CHIPS.map((chip) => (
                 <span
                   key={chip}
@@ -82,12 +82,12 @@ export default function HeroSystemic() {
             </div>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <a
                 href="/Analyzer"
                 className="h-12 rounded-full px-7 text-sm font-bold bg-foreground text-background ring-1 ring-foreground/10 hover:bg-foreground/90 transition inline-flex items-center justify-center gap-2"
               >
-                Start free audit
+                Run free audit
                 <ArrowRight className="h-3.5 w-3.5" />
               </a>
               <a
@@ -101,7 +101,7 @@ export default function HeroSystemic() {
             </div>
 
             {/* Ticker — what we found for other brands */}
-            <div className="h-6 flex items-center gap-2 text-[11px] text-muted-foreground/70 font-mono">
+            <div className="h-5 flex items-center gap-2 text-[10px] text-muted-foreground/70 font-mono">
               <Activity className="h-3 w-3 text-cambra-mint" />
               <motion.span
                 key={tickerIdx}

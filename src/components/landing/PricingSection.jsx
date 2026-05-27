@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Zap } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { Link } from "react-router-dom";
 
 const INCLUDED = [
   "8 cost layers monitored continuously",
@@ -102,7 +103,7 @@ export default function PricingSection() {
             <div className="px-7 pb-7">
               <Link to="/Analyzer">
                 <Button className="w-full h-12 rounded-xl text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90">
-                  Run audit <ArrowRight className="h-4 w-4" />
+                  Run free audit <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <p className="text-[10px] text-muted-foreground/30 text-center mt-3 font-mono">

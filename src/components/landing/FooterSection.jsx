@@ -195,7 +195,7 @@ export default function FooterSection() {
                     transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
                   />
                   <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-saas-gradient relative z-10" />
-                  <span className="relative z-10">Run audit</span>
+                  <span className="relative z-10">Run free audit</span>
                   <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
                 </div>
               </motion.div>

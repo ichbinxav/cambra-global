@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useAuth } from "@/lib/AuthContext";
@@ -80,8 +80,8 @@ export default function Navbar() {
                 Sign in
               </a>
               <Link to="/Analyzer">
-                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm bg-foreground text-background hover:opacity-90">
-                  Run audit
+                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm bg-foreground text-background hover:opacity-90 inline-flex items-center justify-center gap-2">
+                  Run free audit <ArrowRight className="h-3 w-3" />
                 </Button>
               </Link>
             </>
@@ -125,7 +125,9 @@ export default function Navbar() {
             ) : (
               <>
                 <Link to="/Analyzer" onClick={() => setOpen(false)}>
-                  <Button className="w-full h-12 rounded-full text-sm font-bold">Run audit</Button>
+                  <Button className="w-full h-12 rounded-full text-sm font-bold inline-flex items-center justify-center gap-2">
+                    Run free audit <ArrowRight className="h-4 w-4" />
+                  </Button>
                 </Link>
                 <a
                   href="/auth/start"
