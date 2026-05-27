@@ -145,7 +145,7 @@ export default function OperationalTension() {
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   style={{ transformOrigin: `${CX}px ${CY}px`, filter: "blur(8px)" }}
                 />
-                {/* Center engine — core */}
+                {/* Center engine — core with CAMBRA logo */}
                 <motion.g
                   initial={{ scale: 0, opacity: 0 }}
                   animate={inView ? { scale: 1, opacity: 1 } : {}}
@@ -153,14 +153,15 @@ export default function OperationalTension() {
                   style={{ transformOrigin: `${CX}px ${CY}px` }}
                 >
                   <circle cx={CX} cy={CY} r={32} fill="url(#engine)" />
-                  <text x={CX} y={CY - 4} textAnchor="middle" fill="rgba(255,255,255,0.65)"
-                        style={{ fontFamily: "var(--font-inter)", fontSize: 7, letterSpacing: "0.18em", fontWeight: 500 }}>
-                    ENGINE
-                  </text>
-                  <text x={CX} y={CY + 8} textAnchor="middle" fill="#fff"
-                        style={{ fontFamily: "var(--font-inter)", fontSize: 11, fontWeight: 900, letterSpacing: "-0.02em" }}>
-                    CAMBRA
-                  </text>
+                  {/* CAMBRA Logo SVG */}
+                  <g transform={`translate(${CX - 10}, ${CY - 10}) scale(0.5)`}>
+                    {/* Left vertical */}
+                    <polygon points="20,10 28,14 28,44 20,48" fill="white" />
+                    {/* Top right */}
+                    <polygon points="32,12 48,22 40,28 24,18" fill="white" />
+                    {/* Bottom right */}
+                    <polygon points="24,38 40,48 48,42 32,32" fill="white" />
+                  </g>
                 </motion.g>
 
                 {/* Orbital nodes */}
