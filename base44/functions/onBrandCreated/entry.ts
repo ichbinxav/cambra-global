@@ -15,17 +15,17 @@ Deno.serve(async (req) => {
   if (!userEmail) return Response.json({ ok: true });
 
   await base44.asServiceRole.integrations.Core.SendEmail({
-    from_name: "THE NoDE",
+    from_name: "CAMBRA",
     to: userEmail,
-    subject: "Welcome to THE NoDE — your infrastructure advantage starts here",
+    subject: "Welcome to CAMBRA — your infrastructure intelligence starts here",
     body: `
       <div style="font-family: -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 32px; color: #111;">
-        <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">THE NoDE</p>
+        <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">CAMBRA</p>
         <h1 style="font-size: 32px; font-weight: 900; letter-spacing: -0.04em; line-height: 1; margin-bottom: 12px;">
           Welcome, ${brandName}.
         </h1>
         <p style="color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">
-          You've joined THE NoDE — a collective of independent brands pooling infrastructure leverage to access conditions normally reserved for much larger operators.
+          You've joined CAMBRA — the infrastructure audit and intelligence platform for independent brands.
         </p>
 
         <div style="background: #111; color: #fff; border-radius: 16px; padding: 28px; margin-bottom: 32px;">
@@ -35,12 +35,12 @@ Deno.serve(async (req) => {
             <p style="font-size: 13px; color: rgba(255,255,255,0.5);">Benchmark your payments, shipping, and SaaS against real network rates.</p>
           </div>
           <div style="margin-bottom: 12px;">
-            <p style="font-weight: 700; margin-bottom: 4px;">Network Deals</p>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.5);">Pre-negotiated conditions on Stripe, DHL, Klaviyo and more.</p>
+            <p style="font-weight: 700; margin-bottom: 4px;">AI Copilot</p>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5);">Ongoing infrastructure intelligence and optimization recommendations.</p>
           </div>
           <div>
             <p style="font-weight: 700; margin-bottom: 4px;">Member Network</p>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.5);">Connect with 1,000+ independent brands across Europe.</p>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5);">Connect with independent brands across Europe.</p>
           </div>
         </div>
 
@@ -48,12 +48,12 @@ Deno.serve(async (req) => {
           Start with the Analyzer — it takes 2 minutes and identifies exactly where your infrastructure is costing you more than it should.
         </p>
 
-        <a href="https://thenode.co/Analyzer" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
+        <a href="https://cambra.co/Analyzer" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
           Run the Analyzer →
         </a>
 
         <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #eee;">
-          <p style="font-size: 11px; color: #ccc;">THE NoDE · Infrastructure leverage for independent brands</p>
+          <p style="font-size: 11px; color: #ccc;">CAMBRA · Infrastructure Audit & Intelligence Platform</p>
         </div>
       </div>
     `,

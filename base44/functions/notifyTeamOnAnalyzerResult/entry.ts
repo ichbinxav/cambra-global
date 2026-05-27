@@ -24,8 +24,8 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.integrations.Core.SendEmail({
       to,
-      subject: 'Your THE NoDE analysis is ready',
-      body: `Your analysis has been created.\n\nIdentified annual savings: €${Number(total).toLocaleString()}\n\nOpen your dashboard to see details.\n\n— THE NoDE`
+      subject: 'Your CAMBRA analysis is ready',
+      body: `Your analysis has been created.\n\nIdentified annual savings: €${Number(total).toLocaleString()}\n\nOpen your dashboard to see details.\n\n— CAMBRA`
     });
 
     return Response.json({ ok: true });

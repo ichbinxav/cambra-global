@@ -89,12 +89,12 @@ Deno.serve(async (req) => {
 
   // 4. Send activation email to user
   await base44.asServiceRole.integrations.Core.SendEmail({
-    from_name: "THE NoDE",
+    from_name: "CAMBRA",
     to: app.user_email,
     subject: `Deal activated — ${app.deal_name}`,
     body: `
       <div style="font-family: -apple-system, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 32px; color: #111;">
-        <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">THE NoDE · Deal Update</p>
+        <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">CAMBRA · Deal Update</p>
         <h1 style="font-size: 26px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">Your deal is active.</h1>
         <p style="color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
           <strong style="color:#111;">${app.deal_name}</strong> with <strong style="color:#111;">${app.provider}</strong> has been activated.
@@ -107,11 +107,11 @@ Deno.serve(async (req) => {
         <p style="font-size: 13px; color: #666; line-height: 1.6;">
           Your new rates are now in effect. Track your contract and savings in your dashboard.
         </p>
-        <a href="https://thenode.co/Deals" style="display: inline-block; margin-top: 20px; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 24px; border-radius: 100px;">
-          View my contracts →
+        <a href="https://cambra.co/Dashboard" style="display: inline-block; margin-top: 20px; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 24px; border-radius: 100px;">
+          View my dashboard →
         </a>
         <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
-          <p style="font-size: 11px; color: #ccc;">THE NoDE · Infrastructure leverage for independent brands</p>
+          <p style="font-size: 11px; color: #ccc;">CAMBRA · Infrastructure Audit & Intelligence Platform</p>
         </div>
       </div>
     `,

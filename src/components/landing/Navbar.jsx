@@ -15,7 +15,6 @@ const NAV_PUBLIC = [
 const NAV_MEMBER = [
   { label: "How it works", href: "#how" },
   { label: "Analyzer", href: "/Analyzer" },
-  { label: "Deals", href: "/Deals" },
   { label: "Insights", href: "/Insights" },
   { label: "Network", href: "/Network" },
   { label: "Join CAMBRA", href: "/Onboarding" },

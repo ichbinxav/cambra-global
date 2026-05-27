@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BarChart3, Users, Zap, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Plug, Home, ShieldCheck, Building2 } from "lucide-react";
+import { LayoutDashboard, BarChart3, Users, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Plug, Home, ShieldCheck, Building2 } from "lucide-react";
 import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
@@ -11,7 +11,6 @@ const NAV_ITEMS = [
   { path: "/Dashboard", label: "Overview", icon: LayoutDashboard },
   { path: "/Reports", label: "Reports", icon: BarChart3 },
   { path: "/Network", label: "Network", icon: Users },
-  { path: "/Deals", label: "Deals", icon: Zap },
   { path: "/Insights", label: "Insights", icon: FileText },
   { path: "/Onboarding", label: "Onboarding", icon: Building2 },
   { path: "/ConnectTools", label: "Data sources", icon: Plug },
@@ -75,14 +74,7 @@ export default function DashboardLayout() {
               </div>
             </Link>
           )}
-          {(isProvider || isAdmin) && (
-            <Link to="/ProviderPortal">
-              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-chart-1 hover:bg-chart-1/10 transition-colors font-semibold">
-                <Building2 size={14} />
-                Provider Portal
-              </div>
-            </Link>
-          )}
+
           <Link to="/Landing">
             <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors">
               <Home size={14} />
@@ -149,14 +141,7 @@ export default function DashboardLayout() {
                     </div>
                   </Link>
                 )}
-                {(isProvider || isAdmin) && (
-                  <Link to="/ProviderPortal" onClick={() => setSidebarOpen(false)}>
-                    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-chart-1 font-semibold">
-                      <Building2 size={16} />
-                      Provider Portal
-                    </div>
-                  </Link>
-                )}
+
                 <Link to="/Landing" onClick={() => setSidebarOpen(false)}>
                   <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-muted-foreground">
                     <Home size={16} /> Go to homepage

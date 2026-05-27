@@ -38,24 +38,24 @@ Deno.serve(async (req) => {
       if (!total) continue;
 
       await base44.asServiceRole.integrations.Core.SendEmail({
-        from_name: "THE NoDE",
+        from_name: "CAMBRA",
         to: result.created_by,
-        subject: `${total}/yr still unoptimized — activate your first deal`,
+        subject: `${total}/yr still unoptimized — join CAMBRA to unlock savings`,
         body: `
           <div style="font-family: -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 32px; color: #111;">
-            <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">THE NoDE</p>
+            <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">CAMBRA</p>
             <h1 style="font-size: 26px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">Your ${total}/yr is still on the table.</h1>
             <p style="color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">
-              Two days ago, your Analyzer identified <strong>${total}/yr</strong> in infrastructure optimization potential. You haven't activated any network deals yet.
+              Two days ago, your Analyzer identified <strong>${total}/yr</strong> in infrastructure optimization potential.
             </p>
             <p style="color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 32px;">
-              Most members activate their first deal in under 3 minutes. Preferred conditions are applied within 5 business days.
+              Join CAMBRA to unlock your savings and access preferred infrastructure conditions.
             </p>
-            <a href="https://thenode.co/Deals" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
-              Activate your first deal →
+            <a href="https://cambra.co/Onboarding" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
+              Join CAMBRA to unlock savings →
             </a>
             <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #eee;">
-              <p style="font-size: 11px; color: #ccc;">THE NoDE · Infrastructure leverage for independent brands</p>
+              <p style="font-size: 11px; color: #ccc;">CAMBRA · Infrastructure Audit & Intelligence Platform</p>
             </div>
           </div>
         `,
@@ -81,15 +81,15 @@ Deno.serve(async (req) => {
     for (const deal of expiring) {
       const endFormatted = new Date(deal.end_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
       await base44.asServiceRole.integrations.Core.SendEmail({
-        from_name: "THE NoDE",
+        from_name: "CAMBRA",
         to: deal.user_email,
         subject: `Your ${deal.provider} contract expires ${endFormatted} — renew now`,
         body: `
           <div style="font-family: -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 32px; color: #111;">
-            <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">THE NoDE · Contracts</p>
+            <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">CAMBRA · Contracts</p>
             <h1 style="font-size: 26px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">Your contract is expiring.</h1>
             <p style="color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">
-              Your preferred <strong>${deal.provider}</strong> conditions via THE NoDE expire on <strong>${endFormatted}</strong>. Renew now to keep your rates.
+              Your preferred <strong>${deal.provider}</strong> conditions via CAMBRA expire on <strong>${endFormatted}</strong>. Renew now to keep your rates.
             </p>
             <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 20px; margin-bottom: 32px;">
               <p style="font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: #9a3412; margin-bottom: 12px;">Contract details</p>
@@ -98,11 +98,11 @@ Deno.serve(async (req) => {
               ${deal.estimated_savings ? `<p style="color: #16a34a; font-weight: 700;">€${deal.estimated_savings.toLocaleString()}/yr estimated benefit</p>` : ""}
               <p style="color: #ea580c; font-size: 13px; font-weight: 600; margin-top: 8px;">Expires: ${endFormatted}</p>
             </div>
-            <a href="https://thenode.co/Deals" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
+            <a href="https://cambra.co/Dashboard" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
               Renew contract →
             </a>
             <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #eee;">
-              <p style="font-size: 11px; color: #ccc;">THE NoDE · Infrastructure leverage for independent brands</p>
+              <p style="font-size: 11px; color: #ccc;">CAMBRA · Infrastructure Audit & Intelligence Platform</p>
             </div>
           </div>
         `,
@@ -128,12 +128,12 @@ Deno.serve(async (req) => {
       const totalSavings = active.reduce((sum, d) => sum + (d.estimated_savings || 0), 0);
 
       await base44.asServiceRole.integrations.Core.SendEmail({
-        from_name: "THE NoDE",
+        from_name: "CAMBRA",
         to: email,
-        subject: `Your THE NoDE summary — ${active.length} active deal${active.length !== 1 ? "s" : ""}, €${totalSavings.toLocaleString()}/yr`,
+        subject: `Your CAMBRA summary — ${active.length} active deal${active.length !== 1 ? "s" : ""}, €${totalSavings.toLocaleString()}/yr`,
         body: `
           <div style="font-family: -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 32px; color: #111;">
-            <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">THE NoDE · Monthly Summary</p>
+            <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">CAMBRA · Monthly Summary</p>
             <h1 style="font-size: 26px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px;">Your infrastructure this month.</h1>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 32px;">
@@ -166,12 +166,12 @@ Deno.serve(async (req) => {
               </div>`).join("")}
             </div>` : ""}
 
-            <a href="https://thenode.co/Deals" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
-              ${active.length === 0 ? "Activate your first deal →" : "View all deals →"}
+            <a href="https://cambra.co/Dashboard" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
+              ${active.length === 0 ? "Join CAMBRA to unlock savings →" : "View your dashboard →"}
             </a>
 
             <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #eee;">
-              <p style="font-size: 11px; color: #ccc;">THE NoDE · Infrastructure leverage for independent brands · You're receiving this as a network member.</p>
+              <p style="font-size: 11px; color: #ccc;">CAMBRA · Infrastructure Audit & Intelligence Platform · You're receiving this as a member.</p>
             </div>
           </div>
         `,
