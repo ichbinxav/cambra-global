@@ -252,7 +252,7 @@ export default function HeroSystemic() {
                       sample brand · €2M revenue
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 -mt-8">
                     <motion.span
                       className="h-1.5 w-1.5 rounded-full bg-cambra-mint"
                       animate={{ opacity: [1, 0.3, 1] }}
