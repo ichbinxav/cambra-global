@@ -76,7 +76,7 @@ export default function RecoverableMarginVisual() {
   return (
     <section
       ref={ref}
-      className="relative py-16 md:py-24 px-5 border-t border-border/40 bg-background overflow-hidden"
+      className="relative py-12 md:py-16 px-5 border-t border-border/40 bg-background overflow-hidden"
     >
       <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
       <div className="pointer-events-none absolute -top-32 left-1/3 w-[34rem] h-[34rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.14]" />

@@ -43,7 +43,7 @@ export default function TrustStripSection() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section ref={ref} className="relative py-20 md:py-28 px-5 border-t border-border/40 bg-background overflow-hidden">
+    <section ref={ref} className="relative py-12 md:py-16 px-5 border-t border-border/40 bg-background overflow-hidden">
       {/* Ambient backdrop — stronger glows */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.18]" />

@@ -64,7 +64,7 @@ export default function TestimonialsSection() {
   const t = TESTIMONIALS[idx];
 
   return (
-    <section ref={ref} className="py-10 md:py-12 px-5 border-t border-border/40 bg-background relative overflow-hidden">
+    <section ref={ref} className="py-12 md:py-16 px-5 border-t border-border/40 bg-background relative overflow-hidden">
       <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto relative">

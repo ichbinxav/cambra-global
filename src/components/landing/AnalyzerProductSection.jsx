@@ -22,7 +22,7 @@ export default function AnalyzerProductSection() {
   return (
     <section
       ref={ref}
-      className="relative py-20 md:py-28 px-5 border-t border-border/40 bg-background overflow-hidden"
+      className="relative py-12 md:py-16 px-5 border-t border-border/40 bg-background overflow-hidden"
     >
       {/* Ambient backdrop */}
       <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
