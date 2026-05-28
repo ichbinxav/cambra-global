@@ -69,7 +69,7 @@ export default function TestimonialsSection() {
 
       <div className="max-w-6xl mx-auto relative">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-6 w-fit mx-auto px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
@@ -99,7 +99,7 @@ export default function TestimonialsSection() {
               <div className="flex flex-col md:flex-row md:items-stretch">
                 {/* Quote + author — NAVY GRADIENT (impact + sofisticado) */}
                 <div
-                  className="flex-1 p-6 md:p-8 min-w-0 relative overflow-hidden"
+                  className="flex-1 p-4 md:p-6 min-w-0 relative overflow-hidden"
                   style={{
                     background:
                       "radial-gradient(120% 80% at 0% 0%, rgba(31,78,216,0.22) 0%, transparent 55%), radial-gradient(100% 100% at 100% 100%, rgba(44,167,193,0.16) 0%, transparent 60%), linear-gradient(180deg, hsl(222 60% 7%) 0%, hsl(222 65% 4%) 100%)",
@@ -159,7 +159,7 @@ export default function TestimonialsSection() {
 
                 {/* Metrics — LIGHT GRADIENT (clarito sofisticado) */}
                 <div
-                  className="flex flex-col items-stretch justify-between gap-4 p-6 md:p-8 md:min-w-[300px] relative overflow-hidden"
+                  className="flex flex-col items-stretch justify-between gap-3 p-4 md:p-6 md:min-w-[280px] relative overflow-hidden"
                   style={{
                     background:
                       "radial-gradient(120% 80% at 100% 0%, rgba(44,167,193,0.10) 0%, transparent 60%), radial-gradient(100% 100% at 0% 100%, rgba(31,78,216,0.06) 0%, transparent 60%), linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%)",
@@ -169,7 +169,7 @@ export default function TestimonialsSection() {
                   {/* Subtle dot grid */}
                   <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
 
-                  <div className="relative z-10 space-y-5">
+                  <div className="relative z-10 space-y-3">
                     {/* Before */}
                     <div>
                       <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-muted-foreground/55 mb-1.5">Before</div>
@@ -230,7 +230,7 @@ export default function TestimonialsSection() {
           </AnimatePresence>
 
           {/* Nav */}
-          <div className="flex items-center justify-between mt-6">
+          <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-2">
               {TESTIMONIALS.map((_, i) => (
                 <button
