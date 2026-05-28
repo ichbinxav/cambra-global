@@ -161,20 +161,7 @@ export default function HeroSystemic() {
               CAMBRA identifies hidden operational inefficiencies — payments, shipping, SaaS — and surfaces the recoverable margin your peers don't pay.
             </motion.p>
 
-            {/* Layer chips — staggered */}
-            <div className="flex flex-wrap gap-1.5 mb-7 max-w-[540px]">
-              {LAYER_CHIPS.map((chip, i) => (
-                <motion.span
-                  key={chip}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.35, delay: 0.7 + i * 0.04 }}
-                  className="px-2.5 py-1 text-[11px] font-medium rounded-full border border-border/50 bg-card/60 backdrop-blur-sm text-foreground/70"
-                >
-                  {chip}
-                </motion.span>
-              ))}
-            </div>
+
 
             {/* CTAs */}
             <motion.div
