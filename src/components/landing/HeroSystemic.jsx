@@ -220,10 +220,6 @@ export default function HeroSystemic() {
             >
               <Activity className="h-3 w-3 text-cambra-mint" />
               <span>Your audit in 3 minutes</span>
-              <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-              <span>No card</span>
-              <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-              <span>Read-only</span>
             </motion.div>
           </div>
 
