@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, ArrowRight, Activity, Plug, BookOpen, Tag, HelpCircle, Mail, LayoutDashboard, BarChart3, Users, Settings, Shield, Sparkles } from "lucide-react";
 import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useAuth } from "@/lib/AuthContext";
+import MobileNavMenu from "@/components/landing/MobileNavMenu";
 
 // CAMBRA OS navigation — grouped by intent
 const NAV_PUBLIC = [
@@ -114,100 +115,8 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu — CAMBRA OS style */}
-      {open && (
-        <div className="md:hidden absolute inset-x-0 top-14 bg-white border-b border-border/60 shadow-lg max-h-[calc(100vh-3.5rem)] overflow-y-auto">
-          <div className="px-5 py-4">
-            <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground/70 mb-3">
-              {isAuthenticated ? "Workspace" : "Platform"}
-            </p>
-            <div className="space-y-0.5">
-              {!isAuthenticated && (
-                <Link
-                  to="/"
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-secondary/60 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-secondary text-muted-foreground">
-                    <ArrowRight size={14} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">HomePage</p>
-                    <p className="text-[11px] text-muted-foreground">Back to landing</p>
-                  </div>
-                </Link>
-              )}
-              </div>
-              <div className="space-y-0.5">
-              {NAV.map(item => {
-              const active = location.pathname === item.href;
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                    active ? "bg-secondary" : "hover:bg-secondary/60"
-                  }`}
-                >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${active ? "bg-foreground text-background" : "bg-secondary text-muted-foreground"}`}>
-                    <Icon size={14} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                    {item.desc && <p className="text-[11px] text-muted-foreground">{item.desc}</p>}
-                  </div>
-                </Link>
-              );
-            })}
-            </div>
-          </div>
-
-          {isAuthenticated && isAdmin && (
-            <>
-              <div className="h-px bg-border/60" />
-              <div className="px-5 py-4">
-                <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground/70 mb-3">Operator</p>
-                <Link to="/admin" className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-secondary/60 transition-colors">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-foreground text-background">
-                    <Shield size={14} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold">Admin Console</p>
-                    <p className="text-[11px] text-muted-foreground">Infrastructure command center</p>
-                  </div>
-                </Link>
-              </div>
-            </>
-          )}
-
-          <div className="h-px bg-border/60" />
-          <div className="px-5 py-4 space-y-2">
-            {isAuthenticated ? (
-              <Link to="/Analyzer" className="block">
-                <Button className="w-full h-11 rounded-full text-sm font-bold bg-foreground text-background hover:bg-foreground/90 inline-flex items-center justify-center gap-2">
-                  Run new audit <ArrowRight size={14} />
-                </Button>
-              </Link>
-            ) : (
-              <>
-                <Link to="/Analyzer" className="block">
-                  <Button className="w-full h-11 rounded-full text-sm font-bold bg-foreground text-background hover:bg-foreground/90 inline-flex items-center justify-center gap-2">
-                    Run free audit <ArrowRight size={14} />
-                  </Button>
-                </Link>
-                <a
-                  href="/auth/start"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full h-11 rounded-full text-sm font-medium border border-border hover:bg-secondary/60 transition-colors flex items-center justify-center"
-                >
-                  Sign in
-                </a>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Mobile menu — premium fintech dropdown */}
+      <MobileNavMenu open={open} isAuthenticated={isAuthenticated} isAdmin={isAdmin} />
     </header>
   );
 }
