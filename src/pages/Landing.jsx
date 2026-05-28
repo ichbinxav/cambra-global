@@ -24,12 +24,8 @@ export default function Landing() {
         {/* 2 — Potential recoverable margin (money visual under hero) */}
         <RecoverableMarginVisual />
 
-        <SectionTransition />
-
         {/* 2b — Trust strip: tool logos + connect/accuracy/security pillars */}
         <TrustStripSection />
-
-        <SectionTransition />
 
         {/* 3 — Free audit + benchmarks (the 4 steps) */}
         <div id="how">
@@ -52,8 +48,6 @@ export default function Landing() {
 
         {/* 5 — Operator findings */}
         <TestimonialsSection />
-
-        <SectionTransition />
 
         {/* Founder */}
         <MeetTheFounder />
