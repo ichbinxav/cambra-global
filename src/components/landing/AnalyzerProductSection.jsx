@@ -175,14 +175,14 @@ export default function AnalyzerProductSection() {
             >
               <div className="relative rounded-2xl border border-white/12 bg-white/[0.03] backdrop-blur-sm p-6 sm:p-7 overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
-                  <div>
-                    <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-white/45 mb-1">
+                <div className="flex items-start justify-between mb-6 pb-4 border-b border-white/10 gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-white/45 mb-1 whitespace-nowrap">
                       Analyzer output · sample
                     </div>
                     <div className="text-sm font-bold text-white">Your brand · €2M revenue</div>
                   </div>
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-cambra-mint/30 bg-cambra-mint/10">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-cambra-mint/30 bg-cambra-mint/10 shrink-0 -mt-1">
                     <CheckCircle2 className="h-3 w-3 text-cambra-mint" strokeWidth={2.5} />
                     <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-cambra-mint">Complete</span>
                   </div>
