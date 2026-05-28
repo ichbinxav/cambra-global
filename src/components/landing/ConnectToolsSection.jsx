@@ -56,11 +56,44 @@ export default function ConnectToolsSection() {
           </motion.p>
         </div>
 
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+          {[
+            { value: "98%", label: "Accuracy" },
+            { value: "Real-time", label: "Data freshness" },
+            { value: "22+", label: "Integrations" },
+            { value: "OAuth", label: "Secure access" },
+          ].map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 12 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.25 + i * 0.08 }}
+              className="cambra-card cambra-card--soft p-5 text-center"
+            >
+              <p
+                className="text-2xl md:text-3xl font-black tracking-tight mb-2 whitespace-nowrap"
+                style={{
+                  background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #2CA7C1 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                {stat.value}
+              </p>
+              <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-white/50">
+                {stat.label}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+
         {/* Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.7, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
           className="cambra-card p-6 md:p-8 flex flex-col items-center text-center"
         >
           <p className="text-white/70 text-sm mb-6">
