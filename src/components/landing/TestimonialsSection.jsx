@@ -157,39 +157,36 @@ export default function TestimonialsSection() {
                   </div>
                 </div>
 
-                {/* Metrics — LIGHT GRADIENT (clarito sofisticado) */}
+                {/* Metrics — LIGHT BLUE GRADIENT (more saturated, before/after horizontal) */}
                 <div
-                  className="flex flex-col items-stretch justify-between gap-3 p-4 md:p-6 md:min-w-[280px] relative overflow-hidden"
+                  className="flex flex-col p-4 md:p-6 md:min-w-[360px] relative overflow-hidden"
                   style={{
                     background:
-                      "radial-gradient(120% 80% at 100% 0%, rgba(44,167,193,0.10) 0%, transparent 60%), radial-gradient(100% 100% at 0% 100%, rgba(31,78,216,0.06) 0%, transparent 60%), linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%)",
+                      "radial-gradient(140% 100% at 100% 0%, rgba(44,167,193,0.28) 0%, transparent 60%), radial-gradient(120% 100% at 0% 100%, rgba(31,78,216,0.20) 0%, transparent 60%), linear-gradient(135deg, #E8F4FB 0%, #D6EAF7 50%, #C5DDF2 100%)",
                     borderLeft: "1px solid hsl(var(--border) / 0.5)",
                   }}
                 >
                   {/* Subtle dot grid */}
                   <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
 
-                  <div className="relative z-10 space-y-3">
+                  {/* Before + Arrow + After — horizontal */}
+                  <div className="relative z-10 grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
                     {/* Before */}
-                    <div>
+                    <div className="min-w-0">
                       <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-muted-foreground/55 mb-1.5">Before</div>
-                      <div className="text-xl font-black text-foreground/35 line-through decoration-foreground/20 tabular-nums tracking-tight">{t.before}</div>
+                      <div className="text-lg md:text-xl font-black text-foreground/35 line-through decoration-foreground/20 tabular-nums tracking-tight truncate">{t.before}</div>
                     </div>
 
-                    {/* Divider with arrow */}
-                    <div className="flex items-center">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-                      <div className="h-7 w-7 rounded-full bg-foreground flex items-center justify-center mx-2 shadow-sm">
-                        <ArrowRight className="h-3 w-3 text-background" strokeWidth={2.5} />
-                      </div>
-                      <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border to-transparent" />
+                    {/* Arrow */}
+                    <div className="h-8 w-8 rounded-full bg-foreground flex items-center justify-center shadow-sm shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5 text-background" strokeWidth={2.5} />
                     </div>
 
                     {/* After */}
-                    <div>
+                    <div className="min-w-0">
                       <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-cambra-blue mb-1.5">After</div>
                       <div
-                        className="text-3xl font-black tabular-nums tracking-[-0.025em] leading-none"
+                        className="text-2xl md:text-3xl font-black tabular-nums tracking-[-0.025em] leading-none truncate"
                         style={{
                           background: "linear-gradient(135deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 60%, hsl(var(--cambra-cyan)) 100%)",
                           WebkitBackgroundClip: "text",
@@ -202,15 +199,15 @@ export default function TestimonialsSection() {
                     </div>
                   </div>
 
-                  {/* Recovery */}
-                  <div className="relative z-10 pt-5 border-t border-border/50">
+                  {/* Annual savings — bottom, full width */}
+                  <div className="relative z-10 mt-5 pt-5 border-t border-foreground/10">
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <TrendingDown className="h-3 w-3 text-cambra-cyan rotate-180" strokeWidth={2.5} />
                       <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-muted-foreground/55">Annual savings</div>
                     </div>
                     <div className="flex items-baseline gap-1.5">
                       <span
-                        className="text-4xl font-black tracking-[-0.035em] tabular-nums leading-none"
+                        className="text-4xl md:text-5xl font-black tracking-[-0.035em] tabular-nums leading-none"
                         style={{
                           background: "linear-gradient(135deg, hsl(var(--cambra-blue)) 0%, hsl(var(--cambra-cyan)) 100%)",
                           WebkitBackgroundClip: "text",
