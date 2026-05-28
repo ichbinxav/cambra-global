@@ -87,7 +87,7 @@ export default function FooterSection() {
         </div>
 
         {/* CONTENT */}
-        <div className="relative z-10 max-w-6xl mx-auto px-5 py-24 text-left w-full">
+        <div className="relative z-10 max-w-6xl mx-auto px-5 py-24 text-center w-full">
           {/* Static eyebrow pill */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -140,7 +140,7 @@ export default function FooterSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.6 }}
-            className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-8"
+            className="flex flex-col sm:flex-row gap-3 items-center justify-center mb-8"
           >
             <Link to="/Analyzer" className="w-full sm:w-auto group">
               <motion.div
@@ -204,7 +204,7 @@ export default function FooterSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 1 }}
-            className="mt-16 pt-10 border-t border-background/10 grid grid-cols-3 gap-4 max-w-2xl"
+            className="mt-16 pt-10 border-t border-background/10 grid grid-cols-3 gap-4 max-w-2xl mx-auto"
           >
             {[
               { v: "€24.6K", l: "Median yearly recovery" },
@@ -216,8 +216,8 @@ export default function FooterSection() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 1.1 + i * 0.1 }}
-                className="text-left"
-              >
+                className="text-center"
+                >
                 <div className="text-2xl md:text-3xl font-black tracking-[-0.03em] text-background tabular-nums">
                   {stat.v}
                 </div>

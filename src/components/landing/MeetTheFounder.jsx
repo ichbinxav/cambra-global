@@ -41,15 +41,15 @@ export default function MeetTheFounder() {
       <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
 
       <div className="max-w-5xl mx-auto relative">
-        <div className="mb-12 md:mb-16">
-          <div className="flex items-center gap-2 mb-5 w-fit px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
+        <div className="mb-12 md:mb-16 text-center">
+          <div className="flex items-center gap-2 mb-5 w-fit mx-auto px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
             </span>
             <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Meet the founder</span>
           </div>
-          <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92] max-w-4xl">
+          <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92] max-w-4xl mx-auto">
             A note from <span className="text-saas-gradient">the founder</span>.
           </h2>
         </div>
