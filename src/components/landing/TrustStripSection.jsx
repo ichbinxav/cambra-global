@@ -8,12 +8,12 @@ const TOOLS = [
   { name: "WooCommerce", url: "https://cdn.simpleicons.org/woocommerce/873EFF" },
   { name: "PayPal", url: "https://cdn.simpleicons.org/paypal/003087" },
   { name: "Xero", url: "https://cdn.simpleicons.org/xero/13B5EA" },
-  { name: "QuickBooks", url: "https://cdn.simpleicons.org/quickbooks/2CA01C" },
+  { name: "QuickBooks", url: "https://cdn.simpleicons.org/intuit/236CFF" },
+  { name: "Pennylane", url: "https://www.google.com/s2/favicons?domain=pennylane.com&sz=64" },
   { name: "DHL", url: "https://cdn.simpleicons.org/dhl/D40511" },
   { name: "FedEx", url: "https://cdn.simpleicons.org/fedex/4D148C" },
   { name: "Klaviyo", url: "https://cdn.simpleicons.org/klaviyo/1E2C3B" },
   { name: "HubSpot", url: "https://cdn.simpleicons.org/hubspot/FF7A59" },
-  { name: "Mailchimp", url: "https://cdn.simpleicons.org/mailchimp/FFE01B" },
   { name: "Slack", url: "https://cdn.simpleicons.org/slack/4A154B" },
 ];
 
@@ -107,7 +107,16 @@ export default function TrustStripSection() {
                 alt={tool.name}
                 className="h-7 w-7 object-contain relative z-[1] group-hover:scale-110 transition-transform duration-300"
                 loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.nextSibling.style.display = "block";
+                }}
               />
+              <span
+                className="hidden text-[10px] font-bold tracking-tight text-foreground/70 relative z-[1]"
+              >
+                {tool.name}
+              </span>
             </motion.div>
           ))}
         </motion.div>
