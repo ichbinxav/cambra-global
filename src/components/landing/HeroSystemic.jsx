@@ -219,7 +219,7 @@ export default function HeroSystemic() {
               className="flex items-center gap-3 text-[10px] text-foreground/70 font-mono"
             >
               <Activity className="h-3 w-3 text-cambra-mint" />
-              <span>3 min setup</span>
+              <span>Your audit in 3 minutes</span>
               <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
               <span>No card</span>
               <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
