@@ -37,10 +37,13 @@ export default function AnalyzerProductSection() {
           initial={{ opacity: 0, y: -8 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
-          className="flex items-center justify-center gap-2 mb-6 w-fit mx-auto px-3 py-1.5 rounded-full border border-cambra-cyan/30 bg-cambra-cyan/[0.04] backdrop-blur-sm"
+          className="flex items-center justify-center gap-2 mb-6 w-fit mx-auto px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm"
         >
-          <Sparkles className="h-3 w-3 text-cambra-cyan" strokeWidth={2.5} />
-          <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-cambra-cyan">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
+          </span>
+          <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">
             The Analyzer · Our flagship
           </span>
         </motion.div>

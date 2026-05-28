@@ -58,9 +58,12 @@ export default function TrustStripSection() {
             initial={{ opacity: 0, y: -8 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="flex items-center justify-center mb-6 w-fit mx-auto px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm"
+            className="flex items-center justify-center gap-2 mb-6 w-fit mx-auto px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm"
           >
-            <Plug className="h-3.5 w-3.5 text-cambra-mint mr-2" strokeWidth={2} />
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
+            </span>
             <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">
               Connect your tools
             </span>
