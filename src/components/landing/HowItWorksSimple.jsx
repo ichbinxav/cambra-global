@@ -53,7 +53,7 @@ export default function HowItWorksSimple() {
   return (
     <section
       ref={ref}
-      className="relative py-20 md:py-28 px-5 border-t border-border/40 bg-background overflow-hidden"
+      className="relative py-12 md:py-16 px-5 border-t border-border/40 bg-background overflow-hidden"
     >
       {/* Ambient (matches other landing sections) */}
       <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
@@ -64,19 +64,18 @@ export default function HowItWorksSimple() {
 
       <div className="relative max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-12 md:mb-16 max-w-4xl">
-          <div className="flex items-center gap-2 mb-6 w-fit px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
+        <div className="text-center mb-12 md:mb-16">
+          <div className="flex items-center justify-center gap-2 mb-6 w-fit mx-auto px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
             </span>
             <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">How it works · 4 steps</span>
           </div>
-          <h2 className="font-display text-[clamp(2.4rem,6vw,4.2rem)] font-black tracking-[-0.045em] leading-[0.92]">
-            From cost data to<br />
-            <span className="text-saas-gradient">recovered margin.</span>
+          <h2 className="font-display text-[clamp(2.2rem,5.5vw,3.8rem)] font-black tracking-[-0.045em] leading-[0.95] mb-5">
+            From cost data to <span className="text-saas-gradient">recovered margin.</span>
           </h2>
-          <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed">
+          <p className="text-base md:text-lg text-foreground/65 max-w-xl mx-auto leading-[1.55]">
             No dashboards to learn. No long onboarding. We do the heavy work — you keep the margin.
           </p>
         </div>
