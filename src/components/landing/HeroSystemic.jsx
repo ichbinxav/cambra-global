@@ -119,7 +119,7 @@ export default function HeroSystemic() {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
               </span>
-              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Infrastructure · for independent commerce</span>
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Infrastructure intelligence · for independent commerce</span>
             </motion.div>
 
             {/* Headline — staggered words, tighter & sharper */}
