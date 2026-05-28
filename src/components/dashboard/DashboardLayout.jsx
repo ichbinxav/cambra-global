@@ -29,31 +29,50 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen flex bg-background font-inter">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-56 border-r border-border/30 shrink-0 bg-card/95 backdrop-blur-xl shadow-sm">
-        <div className="px-5 h-14 flex items-center border-b border-border/40">
+      {/* Desktop Sidebar — premium fintech */}
+      <aside className="hidden lg:flex flex-col w-56 border-r border-border/40 shrink-0 bg-card/98 backdrop-blur-xl relative">
+        {/* Subtle radial accent at top */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-0 left-0 right-0 h-40"
+          style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(31,78,216,0.06), transparent 70%)" }}
+        />
+
+        <div className="relative px-5 h-14 flex items-center border-b border-border/40">
           <Link to="/" className="group flex items-center gap-2" aria-label="CAMBRA home">
             <BrandGlyph className="h-5 w-5" />
-            <span className="sr-only">CAMBRA</span>
-            <ArrowUpRight size={11} className="text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+            <span className="text-[13px] font-black tracking-[-0.02em] text-foreground">CAMBRA</span>
+            <ArrowUpRight size={10} className="text-muted-foreground/35 group-hover:text-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </Link>
         </div>
 
-        <nav className="flex-1 p-3 space-y-0.5">
+        {/* Status pill */}
+        <div className="relative px-3 pt-3 pb-2">
+          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border border-border/60 bg-background/60 backdrop-blur-sm">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
+            </span>
+            <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-muted-foreground">Network live</span>
+          </div>
+        </div>
+
+        <nav className="relative flex-1 p-3 pt-2 space-y-0.5">
+          <p className="px-3 mb-1.5 text-[9px] font-bold tracking-[0.24em] uppercase text-muted-foreground/45">Workspace</p>
           {NAV_ITEMS.map(item => {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path}>
                 <motion.div
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] transition-all ${
                     active
-                      ? "bg-foreground text-background font-semibold"
+                      ? "bg-foreground text-background font-bold shadow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
                   }`}
                   whileHover={active ? {} : { x: 2 }}
                   transition={{ type: "spring", stiffness: 500, damping: 40 }}
                 >
-                  <item.icon size={14} />
+                  <item.icon size={14} strokeWidth={active ? 2.4 : 1.8} />
                   {item.label}
                 </motion.div>
               </Link>

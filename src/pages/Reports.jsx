@@ -4,10 +4,11 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
-import { ArrowRight, TrendingUp, ArrowUpRight, CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { ArrowRight, TrendingUp, ArrowUpRight, CheckCircle2, Circle, AlertCircle, Sparkles } from "lucide-react";
 import { getBenchmarks } from "@/lib/scoreEngine";
 import { Button } from "@/components/ui/button";
 import PageHero from "@/components/shared/PageHero";
+import ReportsKPIStrip from "@/components/reports/ReportsKPIStrip";
 
 export default function Reports() {
   const [results, setResults] = useState([]);
@@ -58,14 +59,14 @@ export default function Reports() {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
       <PageHero
-        eyebrow="Analytics · Savings history"
+        eyebrow="Margin intelligence · History"
         title="Reports."
-        subtitle="Your analysis history and savings trends, mapped continuously."
+        subtitle="Every scan, every benchmark, every recovered euro — mapped continuously across your stack."
         icon={TrendingUp}
         actions={
           <Link to="/Analyzer">
-            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold bg-foreground text-background hover:opacity-90 gap-1.5">
-              New Analysis <ArrowRight className="h-3.5 w-3.5" />
+            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-1.5">
+              <Sparkles className="h-3.5 w-3.5" /> New scan <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
         }
@@ -76,15 +77,36 @@ export default function Reports() {
           <motion.div className="text-2xl text-muted-foreground/25" animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}>✱</motion.div>
         </div>
       ) : results.length === 0 ? (
-        <div className="text-center py-36 border border-dashed border-border/50 rounded-2xl">
-          <TrendingUp size={28} className="mx-auto mb-4 text-muted-foreground/25" />
-          <p className="text-muted-foreground text-sm mb-6">No reports yet. Run the Analyzer to get started.</p>
-          <Link to="/Analyzer">
-            <Button className="rounded-full px-8 text-sm font-semibold shadow-sm">Run Analyzer →</Button>
-          </Link>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative rounded-2xl border border-white/[0.08] overflow-hidden p-12 sm:p-16 text-center"
+          style={{
+            background:
+              "radial-gradient(120% 80% at 0% 0%, rgba(31,78,216,0.18) 0%, transparent 55%), linear-gradient(180deg, hsl(222 60% 7%) 0%, hsl(222 65% 4%) 100%)",
+          }}
+        >
+          <div className="absolute inset-0 dot-grid opacity-[0.08] pointer-events-none" />
+          <div className="relative">
+            <div className="h-14 w-14 rounded-2xl border border-white/[0.10] bg-white/[0.04] flex items-center justify-center mx-auto mb-5">
+              <TrendingUp className="h-6 w-6 text-cambra-cyan" strokeWidth={1.6} />
+            </div>
+            <h3 className="text-xl font-black text-white tracking-tight mb-2">No reports yet</h3>
+            <p className="text-sm text-white/55 mb-6 max-w-sm mx-auto">
+              Run your first infrastructure audit to see margin recovery opportunities mapped here.
+            </p>
+            <Link to="/Analyzer">
+              <Button className="rounded-full px-7 h-11 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2">
+                <Sparkles className="h-3.5 w-3.5" /> Run Analyzer <ArrowRight className="h-3.5 w-3.5" />
+              </Button>
+            </Link>
+          </div>
+        </motion.div>
       ) : (
         <>
+          {/* KPI strip */}
+          <ReportsKPIStrip results={results} />
+
           {/* Chart */}
           {chartData.length > 0 && (
             <motion.div
@@ -94,9 +116,16 @@ export default function Reports() {
               transition={{ delay: 0.1 }}
             >
               <div className="relative">
-              <div className="mb-6">
-                <p className="cc-eyebrow mb-1">Savings history</p>
-                <p className="text-sm font-semibold text-white">Identified savings by category (€)</p>
+              <div className="mb-6 flex items-end justify-between gap-4">
+                <div>
+                  <p className="cc-eyebrow mb-1.5">Savings history</p>
+                  <p className="text-base font-black text-white tracking-tight">Identified savings by category</p>
+                  <p className="text-[11px] text-white/45 font-mono mt-0.5">Annualized · grouped by infrastructure layer</p>
+                </div>
+                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.10] bg-white/[0.04]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
+                  <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-white/65">Live</span>
+                </div>
               </div>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={chartData} barCategoryGap="35%">
@@ -224,38 +253,48 @@ export default function Reports() {
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ delay: 0.2 }}
                  >
-                 <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between relative">
-                 <p className="text-xs font-semibold tracking-tight text-white">Analysis history</p>
-                 <span className="text-[10px] text-white/50">{results.length} reports</span>
+                 <div className="px-6 py-5 border-b border-white/[0.08] flex items-center justify-between relative">
+                   <div>
+                     <p className="cc-eyebrow mb-1">Audit history</p>
+                     <p className="text-base font-black text-white tracking-tight">Analysis timeline</p>
+                   </div>
+                   <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-white/50">{results.length} {results.length === 1 ? "report" : "reports"}</span>
                  </div>
-                 <div className="divide-y divide-white/8 relative">
-                 {results.map((r, i) => (
+                 <div className="divide-y divide-white/[0.06] relative">
+                 {results.map((r, i) => {
+                   const score = r.infra_score || 0;
+                   const scoreColor = score >= 75 ? "text-[#52EBA4] bg-[#52EBA4]/10 border-[#52EBA4]/25" : score >= 50 ? "text-[#7BD9F0] bg-[#7BD9F0]/10 border-[#7BD9F0]/25" : score >= 30 ? "text-[#FFB05A] bg-[#FFB05A]/10 border-[#FFB05A]/25" : "text-[#FF7A6E] bg-[#FF7A6E]/10 border-[#FF7A6E]/25";
+                   return (
                  <Link key={r.id} to={`/Results?id=${r.id}`}>
                  <motion.div
-                   className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.04] transition-colors group"
+                   className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.04] transition-colors group cursor-pointer"
                    initial={{ opacity: 0, x: -8 }}
                    animate={{ opacity: 1, x: 0 }}
                    transition={{ delay: 0.1 + i * 0.04 }}
                  >
-                   <div className="flex items-center gap-4">
-                     <div className="w-8 h-8 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center text-xs font-bold text-white">
-                       {i + 1}
+                   <div className="flex items-center gap-4 min-w-0">
+                     <div className="w-9 h-9 rounded-xl bg-white/[0.05] border border-white/[0.10] flex items-center justify-center text-[11px] font-mono font-bold text-white/70 shrink-0">
+                       {String(results.length - i).padStart(2, "0")}
                      </div>
-                     <div>
-                       <p className="text-sm font-medium text-white">{format(new Date(r.created_date), "MMMM d, yyyy")}</p>
-                       <p className="text-xs text-white/55">Score: {r.infra_score}/100</p>
+                     <div className="min-w-0">
+                       <p className="text-sm font-bold text-white truncate">{format(new Date(r.created_date), "MMMM d, yyyy")}</p>
+                       <p className="text-[11px] text-white/45 font-mono mt-0.5">{format(new Date(r.created_date), "HH:mm")} · scan complete</p>
                      </div>
                    </div>
-                   <div className="flex items-center gap-4">
+                   <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                     <span className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold tabular-nums ${scoreColor}`}>
+                       {score}<span className="opacity-60">/100</span>
+                     </span>
                      <div className="text-right">
-                       <p className="text-sm font-bold tracking-tight text-white">€{r.total_savings?.toLocaleString()}/yr</p>
-                       <p className="text-[10px] text-white/55">optimization potential</p>
+                       <p className="text-sm font-black tabular-nums tracking-tight text-white">€{r.total_savings?.toLocaleString()}<span className="text-white/40 font-normal">/yr</span></p>
+                       <p className="text-[10px] text-white/45 font-mono">recovery potential</p>
                      </div>
-                     <ArrowUpRight size={14} className="text-white/40 group-hover:text-white transition-colors" />
+                     <ArrowUpRight size={14} className="text-white/30 group-hover:text-cambra-cyan group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                    </div>
                  </motion.div>
                  </Link>
-                 ))}
+                 );
+                 })}
                  </div>
                  </motion.div>
         </>
