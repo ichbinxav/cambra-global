@@ -200,7 +200,7 @@ export default function AnalyzerProductSection() {
                     >
                       <span className="text-[11px] font-medium text-white/60">{kpi.label}</span>
                       <div className="flex items-baseline gap-1">
-                        <span className={`text-2xl font-black tabular-nums tracking-tight ${kpi.color === "cambra-cyan" ? "text-cambra-cyan" : kpi.color === "score-medium" ? "text-amber-400" : "text-white"}`}>
+                        <span className="text-2xl font-black tabular-nums tracking-tight text-white">
                           {kpi.value}
                         </span>
                         <span className="text-[10px] font-mono text-white/40">{kpi.trend}</span>
