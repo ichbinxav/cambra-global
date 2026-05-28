@@ -9,6 +9,7 @@ import Navbar from "@/components/landing/Navbar";
 import SectionTransition from "@/components/landing/SectionTransition.jsx";
 import TrustStripSection from "@/components/landing/TrustStripSection.jsx";
 import AnalyzerProductSection from "@/components/landing/AnalyzerProductSection.jsx";
+import ConnectToolsSection from "@/components/landing/ConnectToolsSection.jsx";
 
 export default function Landing() {
   return (
@@ -36,6 +37,11 @@ export default function Landing() {
 
         {/* 3b — The Analyzer (flagship product showcase) */}
         <AnalyzerProductSection />
+
+        <SectionTransition />
+
+        {/* 3c — Connect tools (stats + CTA) */}
+        <ConnectToolsSection />
 
         <SectionTransition />
 
