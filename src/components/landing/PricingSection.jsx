@@ -15,7 +15,7 @@ export default function PricingSection() {
       <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto">
-        <div className="text-center mb-12">
+        <div className="text-right mb-12">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -44,7 +44,7 @@ export default function PricingSection() {
             initial={{ opacity: 0, y: 12 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-5 text-sm md:text-base text-foreground/65 max-w-xl mx-auto leading-relaxed"
+            className="mt-5 text-sm md:text-base text-foreground/65 max-w-xl ml-auto leading-relaxed"
           >
             Not a SaaS plan — an alignment model. We only participate when we help you recover real margin.
           </motion.p>
@@ -164,7 +164,7 @@ export default function PricingSection() {
           initial={{ opacity: 0, y: 12 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center"
+          className="text-right"
         >
           <Link to="/Pricing">
             <button className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-full font-semibold text-sm bg-foreground text-background hover:opacity-90 transition">
