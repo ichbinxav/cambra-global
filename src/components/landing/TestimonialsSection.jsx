@@ -90,62 +90,141 @@ export default function TestimonialsSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-2xl border border-border/40 bg-card overflow-hidden"
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="rounded-2xl border border-white/10 overflow-hidden relative"
+              style={{
+                boxShadow: "0 30px 80px -28px rgba(0,0,0,0.45), 0 8px 28px -14px rgba(31,78,216,0.18)"
+              }}
             >
               <div className="flex flex-col md:flex-row md:items-stretch">
-                {/* Quote + author */}
-                <div className="flex-1 p-5 md:p-6 min-w-0 bg-gradient-to-br from-blue-50 to-cyan-50/40">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[9px] uppercase tracking-[0.22em] font-mono text-muted-foreground/50">
-                      {t.layer}, {t.company}
-                    </span>
-                  </div>
+                {/* Quote + author — NAVY GRADIENT (impact + sofisticado) */}
+                <div
+                  className="flex-1 p-6 md:p-8 min-w-0 relative overflow-hidden"
+                  style={{
+                    background:
+                      "radial-gradient(120% 80% at 0% 0%, rgba(31,78,216,0.22) 0%, transparent 55%), radial-gradient(100% 100% at 100% 100%, rgba(44,167,193,0.16) 0%, transparent 60%), linear-gradient(180deg, hsl(222 60% 7%) 0%, hsl(222 65% 4%) 100%)",
+                  }}
+                >
+                  {/* Tech grid overlay */}
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-[0.5]"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
+                      backgroundSize: "44px 44px",
+                      maskImage: "radial-gradient(ellipse 90% 90% at 30% 0%, #000 30%, transparent 75%)",
+                      WebkitMaskImage: "radial-gradient(ellipse 90% 90% at 30% 0%, #000 30%, transparent 75%)",
+                    }}
+                  />
+                  {/* Floating cyan glow */}
+                  <motion.div
+                    className="pointer-events-none absolute -top-24 -right-16 w-72 h-72 rounded-full blur-[80px]"
+                    style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.35), transparent)" }}
+                    animate={{ opacity: [0.4, 0.7, 0.4], scale: [1, 1.1, 1] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  />
 
-                  <blockquote className="text-base md:text-[17px] font-medium leading-[1.35] tracking-tight text-foreground mb-3">
-                    "{t.quote}"
-                  </blockquote>
-
-                  <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full bg-foreground/10 flex items-center justify-center text-[10px] font-bold text-foreground/60 shrink-0">
-                      {t.initials}
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-5">
+                      <Quote className="h-3 w-3 text-cambra-cyan" strokeWidth={2.5} />
+                      <span className="text-[9px] uppercase tracking-[0.22em] font-mono text-white/45">
+                        {t.layer} · {t.company}
+                      </span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground/60 font-mono">
-                      {t.role} · {t.tier}
-                    </p>
+
+                    <blockquote className="text-lg md:text-xl font-semibold leading-[1.35] tracking-[-0.015em] text-white mb-6">
+                      <span
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #ffffff 0%, #E8F4F6 60%, #B8D8E0 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                        }}
+                      >
+                        "{t.quote}"
+                      </span>
+                    </blockquote>
+
+                    <div className="flex items-center gap-2.5 pt-4 border-t border-white/10">
+                      <div className="h-7 w-7 rounded-full bg-white/[0.08] border border-white/15 flex items-center justify-center text-[10px] font-bold text-white/80 shrink-0">
+                        {t.initials}
+                      </div>
+                      <p className="text-[11px] text-white/55 font-mono">
+                        {t.role} · {t.tier}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Metrics — navy card style */}
-                <div className="cambra-card flex flex-col items-stretch justify-between gap-4 p-5 md:p-6 md:border-l-0 md:min-w-[280px]">
-                   {/* Before & After */}
-                   <div className="space-y-3">
-                     <div>
-                       <div className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/40 mb-1.5">Before</div>
-                       <div className="text-lg font-black text-white/50 line-through decoration-white/30">{t.before}</div>
-                     </div>
-                     <div className="flex items-center justify-center">
-                       <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/20" />
-                       <ArrowRight className="h-3.5 w-3.5 text-cambra-mint mx-2" />
-                       <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/20" />
-                     </div>
-                     <div>
-                       <div className="text-[9px] font-bold tracking-[0.2em] uppercase text-cambra-cyan mb-1.5">After</div>
-                       <div className="text-2xl font-black text-white">{t.after}</div>
-                     </div>
-                   </div>
+                {/* Metrics — LIGHT GRADIENT (clarito sofisticado) */}
+                <div
+                  className="flex flex-col items-stretch justify-between gap-4 p-6 md:p-8 md:min-w-[300px] relative overflow-hidden"
+                  style={{
+                    background:
+                      "radial-gradient(120% 80% at 100% 0%, rgba(44,167,193,0.10) 0%, transparent 60%), radial-gradient(100% 100% at 0% 100%, rgba(31,78,216,0.06) 0%, transparent 60%), linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%)",
+                    borderLeft: "1px solid hsl(var(--border) / 0.5)",
+                  }}
+                >
+                  {/* Subtle dot grid */}
+                  <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
 
-                   {/* Recovery */}
-                   <div className="pt-3 border-t border-white/10">
-                     <div className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/40 mb-1.5">Annual savings</div>
-                     <div className="flex items-baseline gap-1">
-                       <span className="text-3xl font-black tracking-tighter text-cambra-cyan tabular-nums leading-none">
-                         €{(t.recovery / 1000).toFixed(t.recovery % 1000 === 0 ? 0 : 1)}K
-                       </span>
-                       <span className="text-[9px] font-mono text-white/40">/year</span>
-                     </div>
-                   </div>
-                 </div>
+                  <div className="relative z-10 space-y-5">
+                    {/* Before */}
+                    <div>
+                      <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-muted-foreground/55 mb-1.5">Before</div>
+                      <div className="text-xl font-black text-foreground/35 line-through decoration-foreground/20 tabular-nums tracking-tight">{t.before}</div>
+                    </div>
+
+                    {/* Divider with arrow */}
+                    <div className="flex items-center">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+                      <div className="h-7 w-7 rounded-full bg-foreground flex items-center justify-center mx-2 shadow-sm">
+                        <ArrowRight className="h-3 w-3 text-background" strokeWidth={2.5} />
+                      </div>
+                      <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border to-transparent" />
+                    </div>
+
+                    {/* After */}
+                    <div>
+                      <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-cambra-blue mb-1.5">After</div>
+                      <div
+                        className="text-3xl font-black tabular-nums tracking-[-0.025em] leading-none"
+                        style={{
+                          background: "linear-gradient(135deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 60%, hsl(var(--cambra-cyan)) 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                        }}
+                      >
+                        {t.after}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recovery */}
+                  <div className="relative z-10 pt-5 border-t border-border/50">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <TrendingDown className="h-3 w-3 text-cambra-cyan rotate-180" strokeWidth={2.5} />
+                      <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-muted-foreground/55">Annual savings</div>
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span
+                        className="text-4xl font-black tracking-[-0.035em] tabular-nums leading-none"
+                        style={{
+                          background: "linear-gradient(135deg, hsl(var(--cambra-blue)) 0%, hsl(var(--cambra-cyan)) 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                          filter: "drop-shadow(0 0 16px rgba(44,167,193,0.25))",
+                        }}
+                      >
+                        €{(t.recovery / 1000).toFixed(t.recovery % 1000 === 0 ? 0 : 1)}K
+                      </span>
+                      <span className="text-[10px] font-mono text-muted-foreground/50">/year</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </AnimatePresence>
