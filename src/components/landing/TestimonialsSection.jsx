@@ -157,24 +157,24 @@ export default function TestimonialsSection() {
                   </div>
                 </div>
 
-                {/* Metrics — LIGHT BLUE GRADIENT (more saturated, before/after horizontal) */}
+                {/* Metrics — LIGHT BLUE GRADIENT (softer, symmetric layout) */}
                 <div
                   className="flex flex-col p-4 md:p-6 md:min-w-[360px] relative overflow-hidden"
                   style={{
                     background:
-                      "radial-gradient(140% 100% at 100% 0%, rgba(44,167,193,0.28) 0%, transparent 60%), radial-gradient(120% 100% at 0% 100%, rgba(31,78,216,0.20) 0%, transparent 60%), linear-gradient(135deg, #E8F4FB 0%, #D6EAF7 50%, #C5DDF2 100%)",
+                      "radial-gradient(140% 100% at 100% 0%, rgba(44,167,193,0.12) 0%, transparent 60%), radial-gradient(120% 100% at 0% 100%, rgba(31,78,216,0.08) 0%, transparent 60%), linear-gradient(135deg, #F4F9FC 0%, #ECF3F9 50%, #E3EDF5 100%)",
                     borderLeft: "1px solid hsl(var(--border) / 0.5)",
                   }}
                 >
                   {/* Subtle dot grid */}
                   <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
 
-                  {/* Before + Arrow + After — horizontal */}
+                  {/* Before + Arrow + After — symmetric horizontal */}
                   <div className="relative z-10 grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
                     {/* Before */}
-                    <div className="min-w-0">
+                    <div className="min-w-0 text-center">
                       <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-muted-foreground/55 mb-1.5">Before</div>
-                      <div className="text-lg md:text-xl font-black text-foreground/35 line-through decoration-foreground/20 tabular-nums tracking-tight truncate">{t.before}</div>
+                      <div className="text-xl md:text-2xl font-black text-foreground/35 line-through decoration-foreground/20 tabular-nums tracking-tight truncate">{t.before}</div>
                     </div>
 
                     {/* Arrow */}
@@ -183,10 +183,10 @@ export default function TestimonialsSection() {
                     </div>
 
                     {/* After */}
-                    <div className="min-w-0">
+                    <div className="min-w-0 text-center">
                       <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-cambra-blue mb-1.5">After</div>
                       <div
-                        className="text-2xl md:text-3xl font-black tabular-nums tracking-[-0.025em] leading-none truncate"
+                        className="text-xl md:text-2xl font-black tabular-nums tracking-[-0.025em] leading-none truncate"
                         style={{
                           background: "linear-gradient(135deg, hsl(var(--cambra-navy)) 0%, hsl(var(--cambra-blue)) 60%, hsl(var(--cambra-cyan)) 100%)",
                           WebkitBackgroundClip: "text",
@@ -199,13 +199,13 @@ export default function TestimonialsSection() {
                     </div>
                   </div>
 
-                  {/* Annual savings — bottom, full width */}
-                  <div className="relative z-10 mt-5 pt-5 border-t border-foreground/10">
-                    <div className="flex items-center gap-1.5 mb-1.5">
+                  {/* Annual savings — bottom centered */}
+                  <div className="relative z-10 mt-5 pt-5 border-t border-foreground/10 text-center">
+                    <div className="flex items-center justify-center gap-1.5 mb-1.5">
                       <TrendingDown className="h-3 w-3 text-cambra-cyan rotate-180" strokeWidth={2.5} />
                       <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-muted-foreground/55">Annual savings</div>
                     </div>
-                    <div className="flex items-baseline gap-1.5">
+                    <div className="flex items-baseline justify-center gap-1.5">
                       <span
                         className="text-4xl md:text-5xl font-black tracking-[-0.035em] tabular-nums leading-none"
                         style={{
