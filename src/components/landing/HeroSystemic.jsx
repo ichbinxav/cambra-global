@@ -9,9 +9,10 @@ import { ArrowRight, Activity, CreditCard, Package, LayoutGrid, Sparkles, Trendi
  */
 
 const SIGNALS = [
-  { id: "payments", Icon: CreditCard, t: "Payments (Stripe + TPV)", delta: "+0.3pp",       state: "drift", value: "1.7%",  peer: "1.4%",  saving: 9200 },
-  { id: "logistics",Icon: Package,    t: "Logistics (carrier + 3PL)", delta: "+€0.40",     state: "drift", value: "€5.80", peer: "€5.40", saving: 7400 },
-  { id: "saas",     Icon: LayoutGrid, t: "Commerce SaaS overlap",   delta: "2 duplicates", state: "alert", value: "Dup.",  peer: "1 ESP", saving: 8000 },
+  { id: "payments",   Icon: CreditCard, t: "Payments (Stripe + TPV)",       delta: "+0.3pp",       state: "drift", value: "1.7%",  peer: "1.4%",  saving: 9200 },
+  { id: "carrier",    Icon: Package,    t: "Logistics · Carrier overcharges", delta: "+€0.40 / parcel", state: "drift", value: "€5.80", peer: "€5.40", saving: 4200 },
+  { id: "fulfillment",Icon: Package,    t: "Logistics · 3PL storage",         delta: "+12% pallet·mo",  state: "drift", value: "€68",   peer: "€60",   saving: 3200 },
+  { id: "saas",       Icon: LayoutGrid, t: "Commerce SaaS overlap",          delta: "2 duplicates", state: "alert", value: "Dup.",  peer: "1 ESP", saving: 8000 },
 ];
 
 const LAYER_CHIPS = ["Payments", "Logistics", "Commerce SaaS"];

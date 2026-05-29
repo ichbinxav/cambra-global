@@ -1,12 +1,34 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, CreditCard, Truck, Layers, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowRight, CreditCard, Truck, Layers, Sparkles, TrendingUp, Warehouse } from "lucide-react";
 
 const ITEMS = [
-  { id: "payments",  label: "Payments",      value: 11400, Icon: CreditCard, detail: "Stripe + TPV fees +0.3pp above peer median" },
-  { id: "logistics", label: "Logistics",     value: 6900,  Icon: Truck,      detail: "Carrier + 3PL +€0.40 / parcel vs peer" },
-  { id: "saas",      label: "Commerce SaaS", value: 8200,  Icon: Layers,     detail: "Shopify apps & Klaviyo duplicates detected" },
+  {
+    id: "payments",
+    label: "Payments",
+    value: 11400,
+    Icon: CreditCard,
+    detail: "Stripe + TPV fees +0.3pp above peer median",
+  },
+  {
+    id: "logistics",
+    label: "Logistics",
+    value: 6900,
+    Icon: Truck,
+    detail: "Two distinct leak points inside this pillar:",
+    subLeaks: [
+      { Icon: Truck,     label: "Carrier overcharges",        delta: "+€0.40 / parcel", note: "DHL/FedEx/UPS rates above peer median" },
+      { Icon: Warehouse, label: "3PL storage inefficiencies", delta: "+12% / pallet·mo", note: "Pick·pack & storage fees vs 3PL benchmark" },
+    ],
+  },
+  {
+    id: "saas",
+    label: "Commerce SaaS",
+    value: 8200,
+    Icon: Layers,
+    detail: "Shopify apps & Klaviyo duplicates detected",
+  },
 ];
 const TOTAL = ITEMS.reduce((s, i) => s + i.value, 0);
 
@@ -114,7 +136,7 @@ export default function RecoverableMarginVisual() {
             transition={{ duration: 0.6, delay: 0.12 }}
             className="text-base md:text-lg text-foreground/65 max-w-lg mx-auto leading-[1.55]"
           >
-            A typical operator your size carries recoverable margin hidden across three operational pillars: Payments, Logistics & Commerce SaaS.
+            A typical operator your size carries recoverable margin hidden across three pillars: Payments, Logistics (carriers + 3PL) & Commerce SaaS.
           </motion.p>
         </div>
 
@@ -174,7 +196,7 @@ export default function RecoverableMarginVisual() {
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
                   transition={{ duration: 0.6, delay: 0.25 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative rounded-2xl bg-white/[0.03] backdrop-blur-sm p-5 sm:p-6"
+                  className="relative rounded-2xl bg-white/[0.03] backdrop-blur-sm p-5 sm:p-6 flex flex-col"
                   style={{
                     border: "1px solid",
                     borderColor: isPulsing ? "rgba(44,167,193,0.7)" : "rgba(255,255,255,0.1)",
@@ -195,6 +217,11 @@ export default function RecoverableMarginVisual() {
                     <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/60">
                       {it.label}
                     </span>
+                    {it.subLeaks && (
+                      <span className="ml-auto text-[8px] font-mono tracking-[0.18em] uppercase text-cambra-cyan/80 border border-cambra-cyan/30 bg-cambra-cyan/[0.08] px-1.5 py-0.5 rounded-full">
+                        2 sub-leaks
+                      </span>
+                    )}
                   </div>
                   <div className="relative flex items-baseline gap-1.5 mb-2.5">
                     <span className="text-[28px] sm:text-[32px] font-black tabular-nums text-white tracking-[-0.02em] leading-none">
@@ -203,6 +230,25 @@ export default function RecoverableMarginVisual() {
                     <span className="text-[11px] font-mono text-white/40">/yr</span>
                   </div>
                   <p className="relative text-[12px] text-white/60 leading-[1.5]">{it.detail}</p>
+
+                  {it.subLeaks && (
+                    <div className="relative mt-3 pt-3 border-t border-white/8 space-y-2">
+                      {it.subLeaks.map((sub) => (
+                        <div key={sub.label} className="flex items-start gap-2">
+                          <div className="h-5 w-5 rounded-md flex items-center justify-center bg-white/[0.04] border border-white/10 shrink-0 mt-0.5">
+                            <sub.Icon className="h-2.5 w-2.5 text-cambra-cyan" strokeWidth={2} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-baseline justify-between gap-1.5">
+                              <span className="text-[11px] font-bold text-white/85 truncate">{sub.label}</span>
+                              <span className="text-[9px] font-mono tabular-nums text-cambra-cyan/90 shrink-0">{sub.delta}</span>
+                            </div>
+                            <p className="text-[10px] text-white/45 leading-snug">{sub.note}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               );
             })}
