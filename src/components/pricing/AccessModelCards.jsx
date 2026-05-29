@@ -53,20 +53,23 @@ export default function AccessModelCards() {
         </div>
 
         <div className="relative flex flex-col flex-1">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 mb-7 w-fit px-3 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
+          {/* Step badge */}
+          <div className="flex items-center gap-2 mb-7">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-cambra-blue/30 bg-cambra-blue/[0.08]">
+              <span className="text-[9px] font-mono tracking-[0.2em] uppercase text-cambra-blue font-bold">Step 01</span>
+            </div>
             <Sparkles className="h-3 w-3 text-cambra-blue" strokeWidth={2.2} />
             <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">
-              Founding Access
+              Analyze
             </span>
           </div>
 
           {/* Title */}
           <h3 className="font-display text-[clamp(1.75rem,3.4vw,2.4rem)] font-black tracking-[-0.035em] leading-[1] mb-3 text-foreground">
-            Infrastructure <span className="text-saas-gradient">Intelligence</span>
+            See the leaks. <span className="text-saas-gradient">Free.</span>
           </h3>
           <p className="text-sm sm:text-[15px] text-foreground/65 leading-relaxed mb-8 max-w-md">
-            Audit your infrastructure, benchmark your costs, and identify hidden margin inefficiencies.
+            Run the full infrastructure audit, benchmark your costs, and quantify recoverable margin — no card, no commitment.
           </p>
 
           {/* Price block */}
@@ -187,15 +190,14 @@ export default function AccessModelCards() {
         </div>
 
         <div className="relative flex flex-col flex-1">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 mb-7 w-fit px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
-            </span>
+          {/* Step badge */}
+          <div className="flex items-center gap-2 mb-7">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-cambra-cyan/30 bg-cambra-cyan/[0.10]">
+              <span className="text-[9px] font-mono tracking-[0.2em] uppercase text-cambra-cyan font-bold">Step 02</span>
+            </div>
             <Activity className="h-3 w-3 text-white/60" strokeWidth={2.2} />
             <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">
-              Performance Model
+              Recover
             </span>
           </div>
 
@@ -209,11 +211,11 @@ export default function AccessModelCards() {
                 backgroundClip: "text",
               }}
             >
-              Unlock Recovery
+              Fix them. Together.
             </span>
           </h3>
           <p className="text-sm sm:text-[15px] text-white/65 leading-relaxed mb-8 max-w-md">
-            CAMBRA actively helps recover savings and negotiate better infrastructure conditions.
+            After Step 01, CAMBRA helps you recover the margin we found — negotiation, migration and verification, end-to-end.
           </p>
 
           {/* Price block */}
