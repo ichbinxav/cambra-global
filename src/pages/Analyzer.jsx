@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { ArrowRight, ArrowLeft, Upload, X, CheckCircle2, CreditCard, Truck, Package, BarChart3, Building2, MapPin, Store, Shield } from "lucide-react";
+import { ArrowRight, ArrowLeft, Upload, CreditCard, Truck, Package, BarChart3, Building2, MapPin, Store } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import DataIngestionStep from "@/components/analyzer/DataIngestionStep";
 import AnalyzerHero from "@/components/analyzer/AnalyzerHero";
@@ -34,34 +34,28 @@ const STEPS = [
     icon: Package,
   },
   {
-    title: "Payments",
-    sub: "We compare your current payment costs against the network benchmark of 1.4%.",
-    why: "Payment fees are often the single largest hidden infrastructure cost.",
+    title: "Payments — Online",
+    sub: "We compare your Stripe / PayPal effective fees against the network benchmark of 1.4%.",
+    why: "Online payment fees are often the single largest hidden infrastructure cost.",
     icon: CreditCard,
   },
   {
-    title: "Shipping",
-    sub: "We benchmark your shipping rates against collective volume pricing.",
-    why: "Network volume unlocks carrier rates unavailable to individual brands.",
-    icon: Truck,
-  },
-  {
-    title: "TPE / Card terminals",
-    sub: "We review in-store card terminals, rental costs, banking fees and effective in-store payment rate.",
-    why: "Physical terminals often hide fixed fees and contracts that can be renegotiated through collective buying.",
+    title: "Payments — TPV / Dataphone",
+    sub: "We review in-store card terminals, rental costs and effective physical payment rate.",
+    why: "TPV / dataphones hide fixed fees and contracts that can be renegotiated through collective buying.",
     icon: Store,
   },
   {
-    title: "SaaS & Tools",
-    sub: "We identify redundant or overpriced tools against network group licenses.",
-    why: "Brands typically overspend on SaaS by 30% — mostly on redundant tools.",
-    icon: Package,
+    title: "Logistics — Carriers & 3PL",
+    sub: "We benchmark your carrier (DHL, FedEx) and 3PL / fulfillment rates against collective volume pricing.",
+    why: "Network volume unlocks carrier and warehouse rates unavailable to individual brands.",
+    icon: Truck,
   },
   {
-    title: "Insurance Audit",
-    sub: "Benchmark essential insurance costs without turning this into a complex insurance process.",
-    why: "Insurance is infrastructure. Most independent brands never benchmark it.",
-    icon: Shield,
+    title: "Commerce SaaS",
+    sub: "We identify redundant or overpriced commerce software (Shopify, Klaviyo, apps & plugins).",
+    why: "Brands typically overspend on commerce SaaS by 30% — mostly on duplicated apps.",
+    icon: Package,
   },
   {
     title: "Connect your data",
@@ -118,7 +112,6 @@ export default function Analyzer() {
     shipping_provider: "", monthly_shipping_cost: 3000, monthly_shipments: 400,
     tpe_provider: "", terminal_count: 2, monthly_terminal_rental: 40, tpe_transaction_fee_pct: 1.4, in_store_gmv: 15000, in_store_avg_ticket: 45, card_mix_pct: 85, fixed_banking_fees: 15, maintenance_fees: 0, contract_duration_months: 24,
     total_saas_spend: 1500,
-    insurance_rc_pro: "not_sure", insurance_has_employees: "no", insurance_mutuelle: "no_employees", insurance_has_physical_assets: "no", insurance_provider: "", annual_insurance_cost: 0,
   });
   const set = (k, v) => setData(d => ({ ...d, [k]: v }));
 
@@ -126,11 +119,10 @@ export default function Analyzer() {
     if (mode !== "questionnaire") return;
 
     if (selectedModule === "payments") setStep(3);
-    else if (selectedModule === "shipping") setStep(4);
-    else if (selectedModule === "tpe") setStep(5);
+    else if (selectedModule === "tpe") setStep(4);
+    else if (selectedModule === "logistics" || selectedModule === "shipping") setStep(5);
     else if (selectedModule === "saas") setStep(6);
-    else if (selectedModule === "insurance") setStep(7);
-    else if (selectedModule === "upload") setStep(8);
+    else if (selectedModule === "upload") setStep(7);
     else setStep(0);
   }, [mode, selectedModule]);
 
@@ -154,8 +146,8 @@ export default function Analyzer() {
       openQuestionnaire("payments");
       return;
     }
-    if (prompt === "Review my shipping costs") {
-      openQuestionnaire("shipping");
+    if (prompt === "Review my shipping costs" || prompt === "Review my logistics costs") {
+      openQuestionnaire("logistics");
       return;
     }
     if (prompt === "Analyze my card terminals") {
@@ -217,12 +209,6 @@ export default function Analyzer() {
       dtc_pct: data.dtc_pct,
       marketplace_pct: data.marketplace_pct,
       wholesale_pct: data.wholesale_pct,
-      insurance_rc_pro: data.insurance_rc_pro,
-      insurance_has_employees: data.insurance_has_employees,
-      insurance_mutuelle: data.insurance_mutuelle,
-      insurance_has_physical_assets: data.insurance_has_physical_assets,
-      insurance_provider: data.insurance_provider,
-      annual_insurance_cost: data.annual_insurance_cost,
     };
 
     // Unified savings calculation (tier + geo aware)
@@ -243,9 +229,6 @@ export default function Analyzer() {
       in_store_gmv: data.in_store_gmv, in_store_avg_ticket: data.in_store_avg_ticket,
       card_mix_pct: data.card_mix_pct, fixed_banking_fees: data.fixed_banking_fees,
       maintenance_fees: data.maintenance_fees, contract_duration_months: data.contract_duration_months,
-      insurance_rc_pro: data.insurance_rc_pro, insurance_has_employees: data.insurance_has_employees,
-      insurance_mutuelle: data.insurance_mutuelle, insurance_has_physical_assets: data.insurance_has_physical_assets,
-      insurance_provider: data.insurance_provider, annual_insurance_cost: data.annual_insurance_cost,
     });
     const result = await base44.entities.AnalyzerResult.create({
       input_id: input.id,
@@ -469,10 +452,10 @@ export default function Analyzer() {
         </div>
       );
 
-      case 4: return (
+      case 5: return (
         <div className="space-y-6">
           <div>
-            <Label className="text-sm font-medium mb-3 block">Your shipping provider</Label>
+            <Label className="text-sm font-medium mb-3 block">Your carrier / 3PL provider</Label>
             <ProviderGrid
               options={SHIPPING_PROVIDERS}
               selected={data.shipping_provider}
@@ -525,10 +508,10 @@ export default function Analyzer() {
         </div>
       );
 
-      case 5: return (
+      case 4: return (
         <div className="space-y-6">
           <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
-            Tell us only the basics about your card terminals in store. If you don’t know an exact number, a rough estimate is totally fine.
+            Tell us only the basics about your TPV / dataphones in store. If you don't know an exact number, a rough estimate is totally fine.
           </div>
           <div>
             <Label className="text-sm font-medium mb-3 block">Who gives you the card machines?</Label>
@@ -618,7 +601,7 @@ export default function Analyzer() {
       case 6: return (
         <div className="space-y-6">
           <SmartNumberField
-            label="Total monthly SaaS spend"
+            label="Total monthly Commerce SaaS spend"
             value={data.total_saas_spend}
             onChange={v => set("total_saas_spend", Math.round(v))}
             min={0}
@@ -626,7 +609,7 @@ export default function Analyzer() {
             prefix="€"
           />
           <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">What we check:</strong> E-commerce platforms (Shopify, etc.), email (Klaviyo, etc.), support (Gorgias, Zendesk), analytics, and more. Brands typically overspend by <strong className="text-foreground">30%</strong>.
+            <strong className="text-foreground">What we check:</strong> Commerce platforms (Shopify, WooCommerce), email (Klaviyo), apps & plugins, and duplicated commerce tools. Brands typically overspend by <strong className="text-foreground">30%</strong>.
           </div>
           {(() => {
             const bm = getBenchmarks(data.monthly_revenue, data.country);
@@ -657,88 +640,6 @@ export default function Analyzer() {
       );
 
       case 7: return (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Do you have Professional Liability Insurance / RC Pro?</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: "yes", label: "Yes" },
-                { value: "no", label: "No" },
-                { value: "not_sure", label: "Not sure" },
-              ].map((option) => (
-                <button key={option.value} onClick={() => set("insurance_rc_pro", option.value)} className={`py-3 px-4 rounded-xl border text-sm font-medium text-left transition-all min-h-[48px] ${data.insurance_rc_pro === option.value ? "border-foreground bg-foreground text-background" : "border-border/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground"}`}>
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Do you have employees?</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { value: "yes", label: "Yes" },
-                { value: "no", label: "No" },
-              ].map((option) => (
-                <button key={option.value} onClick={() => set("insurance_has_employees", option.value)} className={`py-3 px-4 rounded-xl border text-sm font-medium text-left transition-all min-h-[48px] ${data.insurance_has_employees === option.value ? "border-foreground bg-foreground text-background" : "border-border/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground"}`}>
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Do you provide Employee Health Insurance / Mutuelle?</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { value: "yes", label: "Yes" },
-                { value: "no", label: "No" },
-                { value: "not_sure", label: "Not sure" },
-                { value: "no_employees", label: "No employees" },
-              ].map((option) => (
-                <button key={option.value} onClick={() => set("insurance_mutuelle", option.value)} className={`py-3 px-4 rounded-xl border text-sm font-medium text-left transition-all min-h-[48px] ${data.insurance_mutuelle === option.value ? "border-foreground bg-foreground text-background" : "border-border/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground"}`}>
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Do you have a physical store, office, warehouse, or stock?</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { value: "yes", label: "Yes" },
-                { value: "no", label: "No" },
-              ].map((option) => (
-                <button key={option.value} onClick={() => set("insurance_has_physical_assets", option.value)} className={`py-3 px-4 rounded-xl border text-sm font-medium text-left transition-all min-h-[48px] ${data.insurance_has_physical_assets === option.value ? "border-foreground bg-foreground text-background" : "border-border/60 text-muted-foreground hover:border-foreground/40 hover:text-foreground"}`}>
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Current insurance provider (optional)</Label>
-            <Input value={data.insurance_provider} onChange={e => set("insurance_provider", e.target.value)} placeholder="e.g. AXA, Alan, Allianz" className="h-12 text-sm border-border/60" />
-          </div>
-
-          <SmartNumberField
-            label="Estimated annual insurance cost"
-            value={data.annual_insurance_cost}
-            onChange={v => set("annual_insurance_cost", Math.round(v))}
-            min={0}
-            max={100000}
-            prefix="€"
-            scale="log"
-          />
-
-          <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
-            Insurance is infrastructure. Most independent brands never benchmark their coverage.
-          </div>
-        </div>
-      );
-
-      case 8: return (
         <DataIngestionStep
           uploadedFile={uploadedFile}
           setUploadedFile={setUploadedFile}

@@ -5,11 +5,6 @@ import StepGrid from '@/components/onboarding/StepGrid.jsx';
 import PaymentsModule from '@/components/onboarding/PaymentsModule';
 import ShippingModule from '@/components/onboarding/ShippingModule';
 import SaasModule from '@/components/onboarding/SaasModule';
-import BankingModule from '@/components/onboarding/BankingModule';
-import InsuranceModule from '@/components/onboarding/InsuranceModule';
-import TelecomModule from '@/components/onboarding/TelecomModule';
-import FinanceOpsModule from '@/components/onboarding/FinanceOpsModule';
-import HRInfraModule from '@/components/onboarding/HRInfraModule';
 import { base44 } from '@/api/base44Client';
 import Navbar from '@/components/landing/Navbar';
 
@@ -52,7 +47,7 @@ export default function Onboarding(){
               <PaymentsModule />
             </div>
           </TabsContent>
-          <TabsContent value="shipping">
+          <TabsContent value="logistics">
             <div className="space-y-6">
               <ShippingModule />
             </div>
@@ -60,31 +55,6 @@ export default function Onboarding(){
           <TabsContent value="saas">
             <div className="space-y-6">
               <SaasModule />
-            </div>
-          </TabsContent>
-          <TabsContent value="banking">
-            <div className="space-y-6">
-              <BankingModule />
-            </div>
-          </TabsContent>
-          <TabsContent value="insurance">
-            <div className="space-y-6">
-              <InsuranceModule />
-            </div>
-          </TabsContent>
-          <TabsContent value="telecom">
-            <div className="space-y-6">
-              <TelecomModule />
-            </div>
-          </TabsContent>
-          <TabsContent value="finance">
-            <div className="space-y-6">
-              <FinanceOpsModule />
-            </div>
-          </TabsContent>
-          <TabsContent value="hr">
-            <div className="space-y-6">
-              <HRInfraModule />
             </div>
           </TabsContent>
         </OnboardingLayout>

@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Quote, TrendingDown, ArrowRight } from "luci
 const TESTIMONIALS = [
   {
     quote: "€18K back in the bank — same team, same workflow, one less subscription. Feels great.",
-    layer: "SaaS",
+    layer: "Commerce SaaS",
     before: "2 ESPs",
     after: "1 ESP",
     recovery: 18000,
@@ -26,8 +26,8 @@ const TESTIMONIALS = [
     initials: "JL",
   },
   {
-    quote: "Shipping costs quietly fixed. Customers never noticed — our P&L definitely did.",
-    layer: "Shipping",
+    quote: "Logistics costs quietly fixed — carrier + 3PL. Customers never noticed — our P&L definitely did.",
+    layer: "Logistics",
     before: "€7.20/order",
     after: "€6.80/order",
     recovery: 8900,

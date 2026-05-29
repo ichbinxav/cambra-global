@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { ArrowRight, Activity, CreditCard, Package, LayoutGrid, ArrowLeftRight, Store, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowRight, Activity, CreditCard, Package, LayoutGrid, Sparkles, TrendingUp } from "lucide-react";
 
 /**
  * HeroSystemic — Cinematic hero.
  * Big claim + animated counter + live "what we found" terminal with sequential reveals.
+ * 3-Pillar Framework: Payments · Logistics · Commerce SaaS
  */
 
 const SIGNALS = [
-  { id: "psp",  Icon: CreditCard,     t: "Payment fees",      delta: "+0.3pp",       state: "drift", value: "1.7%",  peer: "1.4%",  saving: 4200 },
-  { id: "ship", Icon: Package,        t: "Shipping / order",  delta: "+€0.40",       state: "drift", value: "€5.80", peer: "€5.40", saving: 6800 },
-  { id: "saas", Icon: LayoutGrid,     t: "SaaS overlap",      delta: "2 duplicates", state: "alert", value: "Dup.",  peer: "1 ESP", saving: 7200 },
-  { id: "fx",   Icon: ArrowLeftRight, t: "FX spread",         delta: "+0.4pp",       state: "drift", value: "1.3%",  peer: "0.9%",  saving: 3400 },
-  { id: "tpe",  Icon: Store,          t: "In-store fees",     delta: "+0.2pp",       state: "drift", value: "1.6%",  peer: "1.4%",  saving: 3000 },
+  { id: "payments", Icon: CreditCard, t: "Payments (Stripe + TPV)", delta: "+0.3pp",       state: "drift", value: "1.7%",  peer: "1.4%",  saving: 9200 },
+  { id: "logistics",Icon: Package,    t: "Logistics (carrier + 3PL)", delta: "+€0.40",     state: "drift", value: "€5.80", peer: "€5.40", saving: 7400 },
+  { id: "saas",     Icon: LayoutGrid, t: "Commerce SaaS overlap",   delta: "2 duplicates", state: "alert", value: "Dup.",  peer: "1 ESP", saving: 8000 },
 ];
 
-const LAYER_CHIPS = ["Payments", "Shipping", "SaaS", "Banking", "FX", "In-store", "Insurance", "Telecom"];
+const LAYER_CHIPS = ["Payments", "Logistics", "Commerce SaaS"];
 
 // Animated counter
 function Counter({ to, duration = 2 }) {
@@ -158,7 +157,7 @@ export default function HeroSystemic() {
               transition={{ duration: 0.7, delay: 0.5 }}
               className="text-[clamp(1rem,1.6vw,1.2rem)] text-foreground/75 mb-7 max-w-[520px] leading-[1.5]"
             >
-              CAMBRA identifies hidden operational inefficiencies — payments, shipping, SaaS — and surfaces the recoverable margin your peers don't pay.
+              CAMBRA identifies hidden operational inefficiencies across 3 pillars — Payments, Logistics & Commerce SaaS — and surfaces the recoverable margin your peers don't pay.
             </motion.p>
 
 
@@ -313,6 +312,7 @@ export default function HeroSystemic() {
                       </div>
                       <div className="text-lg font-black tracking-tight tabular-nums text-foreground">
                         €<Counter to={24600} duration={2.4} />
+
                       </div>
                     </div>
                   </div>

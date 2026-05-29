@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CreditCard, Truck, Layers, Sparkles, TrendingUp } from "lucide-react";
 
 const ITEMS = [
-  { id: "payments", label: "Payments", value: 11400, Icon: CreditCard, detail: "PSP fees +0.3pp above peer median" },
-  { id: "shipping", label: "Shipping", value: 6900,  Icon: Truck,      detail: "+€0.40 / parcel vs peer" },
-  { id: "saas",     label: "SaaS",     value: 8200,  Icon: Layers,     detail: "Duplicate subscriptions detected" },
+  { id: "payments",  label: "Payments",      value: 11400, Icon: CreditCard, detail: "Stripe + TPV fees +0.3pp above peer median" },
+  { id: "logistics", label: "Logistics",     value: 6900,  Icon: Truck,      detail: "Carrier + 3PL +€0.40 / parcel vs peer" },
+  { id: "saas",      label: "Commerce SaaS", value: 8200,  Icon: Layers,     detail: "Shopify apps & Klaviyo duplicates detected" },
 ];
 const TOTAL = ITEMS.reduce((s, i) => s + i.value, 0);
 
@@ -114,7 +114,7 @@ export default function RecoverableMarginVisual() {
             transition={{ duration: 0.6, delay: 0.12 }}
             className="text-base md:text-lg text-foreground/65 max-w-lg mx-auto leading-[1.55]"
           >
-            A typical operator your size carries recoverable margin hidden across three operational layers.
+            A typical operator your size carries recoverable margin hidden across three operational pillars: Payments, Logistics & Commerce SaaS.
           </motion.p>
         </div>
 

@@ -208,7 +208,7 @@ export default function FooterSection() {
           >
             {[
               { v: "€24.6K", l: "Median yearly recovery" },
-              { v: "8", l: "Cost layers benchmarked" },
+              { v: "3", l: "Pillars benchmarked" },
               { v: "0%", l: "Upfront fee" },
             ].map((stat, i) => (
               <motion.div

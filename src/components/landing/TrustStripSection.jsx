@@ -4,24 +4,27 @@ import { Link } from "react-router-dom";
 import { Plug, ShieldCheck, Target, Activity, Gauge, ArrowRight, Sparkles } from "lucide-react";
 
 const TOOLS = [
+  // Payments (Stripe/PayPal + TPV)
   { name: "Stripe", url: "https://cdn.simpleicons.org/stripe/635BFF" },
-  { name: "Shopify", url: "https://cdn.simpleicons.org/shopify/95BF47" },
-  { name: "WooCommerce", url: "https://cdn.simpleicons.org/woocommerce/873EFF" },
   { name: "PayPal", url: "https://cdn.simpleicons.org/paypal/003087" },
-  { name: "Xero", url: "https://cdn.simpleicons.org/xero/13B5EA" },
-  { name: "QuickBooks", url: "https://cdn.simpleicons.org/intuit/236CFF" },
-  { name: "Pennylane", url: "https://www.google.com/s2/favicons?domain=pennylane.com&sz=64" },
+  { name: "Adyen", url: "https://cdn.simpleicons.org/adyen/0ABF53" },
+  { name: "SumUp", url: "https://cdn.simpleicons.org/sumup/00D639" },
+  // Logistics (Carriers + 3PL)
   { name: "DHL", url: "https://cdn.simpleicons.org/dhl/D40511" },
   { name: "FedEx", url: "https://cdn.simpleicons.org/fedex/4D148C" },
+  { name: "UPS", url: "https://cdn.simpleicons.org/ups/351C15" },
+  { name: "Sendcloud", url: "https://www.google.com/s2/favicons?domain=sendcloud.com&sz=64" },
+  // Commerce SaaS
+  { name: "Shopify", url: "https://cdn.simpleicons.org/shopify/95BF47" },
+  { name: "WooCommerce", url: "https://cdn.simpleicons.org/woocommerce/873EFF" },
   { name: "Klaviyo", url: "https://cdn.simpleicons.org/klaviyo/1E2C3B" },
-  { name: "HubSpot", url: "https://cdn.simpleicons.org/hubspot/FF7A59" },
-  { name: "Slack", url: "https://cdn.simpleicons.org/slack/4A154B" },
+  { name: "Gorgias", url: "https://www.google.com/s2/favicons?domain=gorgias.com&sz=64" },
 ];
 
 const STATS = [
   { value: "98", suffix: "%", label: "Accuracy", sub: "vs. raw statements", Icon: Gauge },
   { value: "<3", suffix: "s", label: "Data freshness", sub: "real-time sync", Icon: Activity },
-  { value: "22", suffix: "+", label: "Integrations", sub: "PSPs · carriers · ERPs", Icon: Plug },
+  { value: "12", suffix: "+", label: "Integrations", sub: "PSPs · carriers · commerce", Icon: Plug },
   { value: "OAuth", suffix: "", label: "Secure access", sub: "read-only · revocable", Icon: ShieldCheck },
 ];
 
@@ -30,7 +33,7 @@ const PILLARS = [
     Icon: Plug,
     eyebrow: "Connect your tools",
     title: "OAuth + statements",
-    detail: "Stripe, Shopify, Xero, carriers — or just upload a PDF. Setup in 3 minutes.",
+    detail: "Payments (Stripe/TPV), Logistics (DHL, 3PL) and Commerce SaaS (Shopify, Klaviyo) — or upload a PDF. Setup in 3 minutes.",
   },
   {
     Icon: Target,

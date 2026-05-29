@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, Activity, FileSearch, Gauge, Zap, CheckCircle2 } from "lucide-react";
 
 const FEATURES = [
-  { Icon: FileSearch, label: "Auto-detects inefficiencies", detail: "Across payments, shipping, SaaS, FX, banking & more" },
+  { Icon: FileSearch, label: "Auto-detects inefficiencies", detail: "Across Payments, Logistics & Commerce SaaS" },
   { Icon: Gauge,      label: "Real peer benchmarks",       detail: "Compared to operators of similar GMV & category" },
   { Icon: Zap,        label: "Live in 3 minutes",          detail: "Connect tools or upload statements — read-only" },
 ];
@@ -12,7 +12,7 @@ const FEATURES = [
 const SAMPLE_OUTPUT = [
   { label: "Infrastructure Score", value: "62", trend: "/100", color: "score-medium" },
   { label: "Recoverable margin", value: "€24.6K", trend: "/yr", color: "cambra-cyan" },
-  { label: "Drift signals", value: "5", trend: "layers", color: "score-medium" },
+  { label: "Drift signals", value: "3", trend: "pillars", color: "score-medium" },
 ];
 
 export default function AnalyzerProductSection() {
@@ -215,7 +215,7 @@ export default function AnalyzerProductSection() {
                     Layers scanned
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {["Payments", "Shipping", "SaaS", "FX", "Banking", "In-store", "Insurance", "Telecom"].map((l, i) => (
+                    {["Payments", "Logistics", "Commerce SaaS"].map((l, i) => (
                       <motion.span
                         key={l}
                         initial={{ opacity: 0, scale: 0.85 }}

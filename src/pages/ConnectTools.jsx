@@ -14,31 +14,28 @@ import Navbar from "@/components/landing/Navbar";
 import ConnectStatsBar from "@/components/connect/ConnectStatsBar.jsx";
 import DarkConnectorCard from "@/components/connect/DarkConnectorCard.jsx";
 
-const CATEGORIES = ["All", "Payments", "Commerce", "Accounting", "Shipping", "SaaS"];
+const CATEGORIES = ["All", "Payments", "Logistics", "Commerce SaaS"];
 
 const CONNECTORS = [
-  { name: "Stripe", cat: "Payments", color: "#635BFF", desc: "Payment processing fees & rates", status: "live" },
-  { name: "Shopify", cat: "Commerce", color: "#96BF48", desc: "GMV, orders, and app spend", status: "live" },
-  { name: "Adyen", cat: "Payments", color: "#0ABF53", desc: "Enterprise payment rates & volume", status: "live" },
-  { name: "QuickBooks", cat: "Accounting", color: "#2CA01C", desc: "P&L, costs, and vendor spend", status: "live" },
-  { name: "Xero", cat: "Accounting", color: "#13B5EA", desc: "Financial data & cost breakdown", status: "live" },
-  { name: "Pennylane", cat: "Accounting", color: "#6C3CE1", desc: "French accounting & expense data", status: "live" },
-  { name: "Holded", cat: "Accounting", color: "#0052CC", desc: "Spanish ERP & accounting", status: "live" },
-  { name: "DHL", cat: "Shipping", color: "#FFCC00", desc: "Shipping rates & volume data", status: "live" },
-  { name: "UPS", cat: "Shipping", color: "#351C15", desc: "Carrier contracts & shipment data", status: "live" },
-  { name: "Sendcloud", cat: "Shipping", color: "#0066FF", desc: "Multi-carrier shipping platform", status: "live" },
-  { name: "Klaviyo", cat: "SaaS", color: "#000000", desc: "Email & SMS marketing spend", status: "live" },
-  { name: "Gorgias", cat: "SaaS", color: "#FF4F00", desc: "Customer support costs", status: "live" },
-  { name: "Mollie", cat: "Payments", color: "#FF4444", desc: "European payment processing", status: "live" },
+  { name: "Stripe", cat: "Payments", color: "#635BFF", desc: "Online payment processing fees & rates", status: "live" },
   { name: "PayPal", cat: "Payments", color: "#003087", desc: "Checkout & payment fees", status: "live" },
-  { name: "FedEx", cat: "Shipping", color: "#FF6600", desc: "Express & freight shipping", status: "live" },
-  { name: "DPD", cat: "Shipping", color: "#DC1E35", desc: "European parcel delivery", status: "live" },
-  { name: "WooCommerce", cat: "Commerce", color: "#7F54B3", desc: "WordPress store revenue & costs", status: "soon" },
-  { name: "Wix", cat: "Commerce", color: "#FAAD00", desc: "Wix store data & fees", status: "soon" },
-  { name: "Sage", cat: "Accounting", color: "#00DC00", desc: "Accounting & ERP data", status: "soon" },
-  { name: "Zendesk", cat: "SaaS", color: "#03363D", desc: "Support platform costs", status: "soon" },
-  { name: "Colissimo", cat: "Shipping", color: "#FFCD00", desc: "French postal service", status: "soon" },
-  { name: "PostNL", cat: "Shipping", color: "#FF6200", desc: "Dutch & Belgian carrier", status: "soon" },
+  { name: "Adyen", cat: "Payments", color: "#0ABF53", desc: "Enterprise payment rates & volume", status: "live" },
+  { name: "Mollie", cat: "Payments", color: "#FF4444", desc: "European payment processing", status: "live" },
+  { name: "SumUp TPV", cat: "Payments", color: "#00D639", desc: "Physical dataphone fees & rentals", status: "live" },
+  { name: "Redsys TPV", cat: "Payments", color: "#D6001C", desc: "In-store card terminal rates", status: "soon" },
+  { name: "DHL", cat: "Logistics", color: "#FFCC00", desc: "Carrier rates & volume data", status: "live" },
+  { name: "FedEx", cat: "Logistics", color: "#FF6600", desc: "Express & freight shipping", status: "live" },
+  { name: "UPS", cat: "Logistics", color: "#351C15", desc: "Carrier contracts & shipment data", status: "live" },
+  { name: "Sendcloud", cat: "Logistics", color: "#0066FF", desc: "Multi-carrier shipping platform", status: "live" },
+  { name: "DPD", cat: "Logistics", color: "#DC1E35", desc: "European parcel delivery", status: "live" },
+  { name: "ShipBob 3PL", cat: "Logistics", color: "#FF4F00", desc: "3PL fulfillment & warehouse costs", status: "live" },
+  { name: "Byrd 3PL", cat: "Logistics", color: "#1E2C3B", desc: "European 3PL & fulfillment data", status: "soon" },
+  { name: "Shopify", cat: "Commerce SaaS", color: "#96BF48", desc: "GMV, orders, and commerce app spend", status: "live" },
+  { name: "WooCommerce", cat: "Commerce SaaS", color: "#7F54B3", desc: "WordPress store revenue & costs", status: "soon" },
+  { name: "Wix", cat: "Commerce SaaS", color: "#FAAD00", desc: "Wix store data & fees", status: "soon" },
+  { name: "Klaviyo", cat: "Commerce SaaS", color: "#000000", desc: "Email & SMS marketing spend", status: "live" },
+  { name: "Gorgias", cat: "Commerce SaaS", color: "#FF4F00", desc: "Commerce support app costs", status: "live" },
+  { name: "Recharge", cat: "Commerce SaaS", color: "#3E2A6E", desc: "Subscription commerce app fees", status: "soon" },
 ];
 
 function ConnectorAvatar({ name, color, size = "md" }) {
@@ -102,7 +99,7 @@ function UploadZone({ onUpload, uploadedFiles, onRemove }) {
               <p className="text-[11px] text-muted-foreground">PDF, Excel, CSV, images · Max 20MB</p>
             </div>
             <div className="flex flex-wrap justify-center gap-1.5 mt-3">
-              {["Stripe statement", "Shopify export", "Carrier invoice", "SaaS billing"].map(t => (
+              {["Stripe / TPV statement", "Carrier / 3PL invoice", "Shopify / Klaviyo billing"].map(t => (
                 <span key={t} className="text-[10px] px-2.5 py-1 rounded-full border border-border/60 bg-white text-muted-foreground">{t}</span>
               ))}
             </div>
@@ -463,9 +460,9 @@ export default function ConnectTools() {
               <p className="text-xs font-bold mb-3 text-foreground tracking-wide uppercase text-[10px]">What we extract from your files</p>
               <div className="grid grid-cols-2 gap-y-2 gap-x-4">
                 {[
-                  "Payment effective rates", "Monthly fee volumes",
-                  "Carrier cost-per-shipment", "SaaS subscription totals",
-                  "Provider names & plans", "Hidden fee patterns",
+                  "Payment effective rates (Stripe + TPV)", "Monthly PSP fee volumes",
+                  "Carrier cost-per-shipment", "3PL & fulfillment fees",
+                  "Commerce SaaS subscription totals", "Hidden fee patterns",
                 ].map(item => (
                   <div key={item} className="flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span className="w-1 h-1 rounded-full bg-foreground shrink-0" />
@@ -506,7 +503,7 @@ export default function ConnectTools() {
                 Use the structured Analyzer
               </p>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed mb-5">
-                The Analyzer guides you through structured inputs for revenue, payments, shipping, and SaaS — step by step.
+                The Analyzer guides you through structured inputs across the 3 pillars — Payments, Logistics & Commerce SaaS — step by step.
               </p>
               <Link to="/Analyzer">
                 <Button className="h-11 rounded-full px-7 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90">

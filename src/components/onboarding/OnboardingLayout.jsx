@@ -1,22 +1,17 @@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Building2, CreditCard, Truck, Package, Zap, Banknote, ShieldCheck, Wifi, Calculator, Users } from 'lucide-react';
+import { Building2, CreditCard, Truck, Package, Zap } from 'lucide-react';
 
 export default function OnboardingLayout({ children, activeTab, onTabChange, statuses }){
-  const total = ['payments','shipping','saas','banking','insurance','telecom','finance','hr'];
+  const total = ['payments','logistics','saas'];
   const done = total.filter(v => (statuses?.[v]?.completeness||0) >= 70).length;
   const overall = Math.round((done/total.length)*100);
 
   const tabs = [
     { value: 'general', label: 'General', icon: Building2, color: 'text-muted-foreground' },
     { value: 'payments', label: 'Payments', icon: CreditCard, color: 'text-chart-1' },
-    { value: 'shipping', label: 'Shipping', icon: Truck, color: 'text-chart-2' },
-    { value: 'saas', label: 'SaaS', icon: Package, color: 'text-chart-3' },
-    { value: 'banking', label: 'Banking', icon: Banknote, color: 'text-amber-500' },
-    { value: 'insurance', label: 'Insurance', icon: ShieldCheck, color: 'text-green-600' },
-    { value: 'telecom', label: 'Telecom', icon: Wifi, color: 'text-cyan-500' },
-    { value: 'finance', label: 'Finance Ops', icon: Calculator, color: 'text-yellow-500' },
-    { value: 'hr', label: 'HR Infra', icon: Users, color: 'text-pink-500' },
+    { value: 'logistics', label: 'Logistics', icon: Truck, color: 'text-chart-2' },
+    { value: 'saas', label: 'Commerce SaaS', icon: Package, color: 'text-chart-3' },
   ];
 
   return (
@@ -26,12 +21,12 @@ export default function OnboardingLayout({ children, activeTab, onTabChange, sta
           <div className="min-w-0">
             <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-white">
               <Zap className="h-3 w-3 text-foreground" />
-              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Infrastructure profile · 8 layers</span>
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Infrastructure profile · 3 pillars</span>
             </div>
             <h1 className="font-display text-[clamp(2rem,4.5vw,3rem)] font-black tracking-[-0.04em] leading-[0.95] text-foreground">
               Map your operating stack.
             </h1>
-            <p className="text-sm text-muted-foreground mt-2 max-w-xl">Each vertical you complete sharpens benchmarks and unlocks deeper margin intelligence.</p>
+            <p className="text-sm text-muted-foreground mt-2 max-w-xl">Each pillar you complete sharpens benchmarks and unlocks deeper margin intelligence across Payments, Logistics & Commerce SaaS.</p>
           </div>
           <div className="w-full sm:w-56 shrink-0">
             <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">

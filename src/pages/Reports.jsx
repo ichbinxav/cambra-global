@@ -50,10 +50,9 @@ export default function Reports() {
 
   const chartData = results.slice().reverse().map(r => ({
     date: format(new Date(r.created_date), "MMM d"),
-    "Online Payments": Math.max(0, (r.payment_savings || 0) - (r.details?.tpe_savings || 0)),
-    "In-Store / TPE": r.details?.tpe_savings || 0,
-    Shipping: r.shipping_savings || 0,
-    SaaS: r.saas_savings || 0,
+    Payments: r.payment_savings || 0,
+    Logistics: r.shipping_savings || 0,
+    "Commerce SaaS": r.saas_savings || 0,
   }));
 
   return (
@@ -119,8 +118,8 @@ export default function Reports() {
               <div className="mb-6 flex items-end justify-between gap-4">
                 <div>
                   <p className="cc-eyebrow mb-1.5">Savings history</p>
-                  <p className="text-base font-black text-white tracking-tight">Identified savings by category</p>
-                  <p className="text-[11px] text-white/45 font-mono mt-0.5">Annualized · grouped by infrastructure layer</p>
+                  <p className="text-base font-black text-white tracking-tight">Identified savings by pillar</p>
+                  <p className="text-[11px] text-white/45 font-mono mt-0.5">Annualized · grouped by 3-pillar framework</p>
                 </div>
                 <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.10] bg-white/[0.04]">
                   <span className="h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
@@ -137,10 +136,9 @@ export default function Reports() {
                     formatter={v => [`€${v?.toLocaleString()}/yr`]}
                   />
                   <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16, color: "rgba(255,255,255,0.7)" }} />
-                  <Bar dataKey="Online Payments" fill="#7AA8FF" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="In-Store / TPE" fill="#FFB05A" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="Shipping" fill="#7BD9F0" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="SaaS" fill="#52EBA4" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Payments" fill="#7AA8FF" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Logistics" fill="#7BD9F0" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Commerce SaaS" fill="#52EBA4" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               </div>
