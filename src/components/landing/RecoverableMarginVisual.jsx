@@ -1,7 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, CreditCard, Truck, Layers, Sparkles, TrendingUp, Warehouse } from "lucide-react";
+import { ArrowRight, CreditCard, Truck, Layers, Sparkles, TrendingUp, Warehouse, Globe, Smartphone } from "lucide-react";
 
 const ITEMS = [
   {
@@ -9,7 +9,11 @@ const ITEMS = [
     label: "Payments",
     value: 11400,
     Icon: CreditCard,
-    detail: "Stripe + TPV fees +0.3pp above peer median",
+    detail: "Two distinct leak points inside this pillar:",
+    subLeaks: [
+      { Icon: Globe,      label: "Online PSP inefficiencies",     delta: "+0.3pp / txn",  note: "Stripe/PayPal gateway fees & intl. card markups" },
+      { Icon: Smartphone, label: "Physical TPV/Dataphone anomalies", delta: "+€0.18 / txn", note: "POS terminal fees above interchange caps" },
+    ],
   },
   {
     id: "logistics",
@@ -136,7 +140,7 @@ export default function RecoverableMarginVisual() {
             transition={{ duration: 0.6, delay: 0.12 }}
             className="text-base md:text-lg text-foreground/65 max-w-lg mx-auto leading-[1.55]"
           >
-            A typical operator your size carries recoverable margin hidden across three pillars: Payments, Logistics (carriers + 3PL) & Commerce SaaS.
+            A typical operator your size carries recoverable margin hidden across three pillars: Payments (online + TPV), Logistics (carriers + 3PL) & Commerce SaaS.
           </motion.p>
         </div>
 

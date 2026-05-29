@@ -215,7 +215,7 @@ export default function AnalyzerProductSection() {
                     Pillars scanned
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {["Payments", "Logistics · Carriers", "Logistics · 3PL", "Commerce SaaS"].map((l, i) => (
+                    {["Payments · Online", "Payments · TPV", "Logistics · Carriers", "Logistics · 3PL", "Commerce SaaS"].map((l, i) => (
                       <motion.span
                         key={l}
                         initial={{ opacity: 0, scale: 0.85 }}
