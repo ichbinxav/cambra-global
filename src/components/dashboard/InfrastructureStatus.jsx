@@ -1,4 +1,4 @@
-import { Plug, CreditCard, Truck, Package, AlertTriangle, Building2, ShieldCheck, Wifi, Calculator, Users } from "lucide-react";
+import { Plug, CreditCard, Truck, Package, AlertTriangle, Store } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const STATUS_BADGE = {
@@ -10,14 +10,11 @@ const STATUS_BADGE = {
 
 export default function InfrastructureStatus({ latest }) {
   const rows = [
-    { label: "Payments", value: latest.details?.payment_current_rate ? `${latest.details.payment_current_rate.toFixed(1)}% fee rate` : "Using estimate", status: "warn", icon: CreditCard },
-    { label: "Shipping", value: latest.details?.shipping_current_avg ? `€${latest.details.shipping_current_avg.toFixed(2)}/shipment` : "Rate not connected", status: "warn", icon: Truck },
-    { label: "SaaS Stack", value: latest.details?.saas_current_total ? `€${latest.details.saas_current_total.toLocaleString()}/mo` : "Tools not listed", status: "neutral", icon: Package },
-    { label: "Banking & FX", value: latest.details?.banking_provider || "Not profiled", status: "neutral", icon: Building2 },
-    { label: "Insurance", value: latest.details?.insurance_status || "Not profiled", status: latest.details?.insurance_savings > 0 ? "warn" : "neutral", icon: ShieldCheck },
-    { label: "Telecom", value: latest.details?.telecom_provider || "Not profiled", status: "neutral", icon: Wifi },
-    { label: "Finance Ops", value: latest.details?.finance_ops_tool || "Not profiled", status: latest.details?.finance_ops_savings > 0 ? "warn" : "neutral", icon: Calculator },
-    { label: "HR Infra", value: latest.details?.hr_tool || "Not profiled", status: "neutral", icon: Users },
+    { label: "Payments — Online", value: latest.details?.payment_current_rate ? `${latest.details.payment_current_rate.toFixed(1)}% fee rate` : "Using estimate", status: "warn", icon: CreditCard },
+    { label: "Payments — TPV", value: latest.details?.tpe_effective_rate ? `${latest.details.tpe_effective_rate.toFixed(2)}% all-in rate` : "Not profiled", status: latest.details?.tpe_savings > 0 ? "warn" : "neutral", icon: Store },
+    { label: "Logistics — Carrier", value: latest.details?.shipping_current_avg ? `€${latest.details.shipping_current_avg.toFixed(2)}/shipment` : "Rate not connected", status: "warn", icon: Truck },
+    { label: "Logistics — 3PL", value: latest.details?.three_pl_provider || "Not profiled", status: "neutral", icon: Package },
+    { label: "Commerce SaaS", value: latest.details?.saas_current_total ? `€${latest.details.saas_current_total.toLocaleString()}/mo` : "Tools not listed", status: "neutral", icon: Package },
   ];
 
   return (
@@ -25,7 +22,7 @@ export default function InfrastructureStatus({ latest }) {
       <div className="px-6 py-4 border-b border-border/30 flex items-center justify-between">
         <div>
           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50">Infrastructure map</p>
-          <p className="text-[10px] text-muted-foreground/30 mt-0.5">8 operational verticals</p>
+          <p className="text-[10px] text-muted-foreground/30 mt-0.5">3-pillar framework</p>
         </div>
         <Link to="/ConnectTools">
           <button className="text-[11px] font-semibold text-muted-foreground/50 hover:text-foreground transition-colors flex items-center gap-1">

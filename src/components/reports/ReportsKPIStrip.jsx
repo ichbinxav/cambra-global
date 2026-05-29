@@ -38,9 +38,9 @@ export default function ReportsKPIStrip({ results }) {
       accent: "from-[#7AA8FF] to-[#1F4ED8]",
     },
     {
-      label: "Layers benchmarked",
-      value: latest ? `${layers}` : "—",
-      hint: "Drift detected",
+      label: "Pillars benchmarked",
+      value: latest ? `${layers}/3` : "—",
+      hint: "Payments · Logistics · SaaS",
       Icon: Layers,
       accent: "from-[#FFB05A] to-[#FF7A45]",
     },

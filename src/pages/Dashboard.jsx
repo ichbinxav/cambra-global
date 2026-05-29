@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRight, TrendingDown, Users, BookOpen, AlertTriangle, Zap
+  ArrowRight, TrendingDown, AlertTriangle, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
@@ -12,7 +12,7 @@ import SavingsTrend from "@/components/dashboard/SavingsTrend";
 import CumulativeSavingsChart from "@/components/dashboard/CumulativeSavingsChart";
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import GMVMetrics from "@/components/dashboard/GMVMetrics";
-import { CreditCard, Truck, Package, Store, ShieldCheck } from "lucide-react";
+import { CreditCard, Truck, Package, Store, ShieldCheck } from "lucide-react"; // ShieldCheck kept for quick actions only
 import RecommendationList from "@/components/recommendations/RecommendationList";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import LiveSystemHeader from "@/components/dashboard/LiveSystemHeader";
@@ -156,7 +156,7 @@ export default function Dashboard() {
 
         {/* ── HERO HEADER — landing grade ── */}
         <PageHero
-          eyebrow="Live · 8 operational layers"
+          eyebrow="Live · 3-pillar framework"
           title={`${user?.full_name ? user.full_name.split(" ")[0] : "Dashboard"}.`}
           subtitle="Continuous monitoring · Benchmarked against your peers in real-time."
           actions={
@@ -264,16 +264,9 @@ export default function Dashboard() {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <MetricCard label="Shipping" value={latest.shipping_savings} icon={Truck} color="text-chart-2" border="border-chart-2/20" bg="bg-green-500/[0.05]" note="shipping efficiency" />
-            <MetricCard label="SaaS" value={latest.saas_savings} icon={Package} color="text-orange-500" border="border-orange-500/15" bg="bg-orange-500/[0.05]" note="stack efficiency" />
-            <MetricCard label="Insurance" value={latest.details?.insurance_savings || 0} icon={ShieldCheck} color="text-chart-1" border="border-chart-1/20" bg="bg-blue-500/[0.05]" note={(latest.details?.insurance_status || "Not analyzed").toLowerCase()} />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <MetricCard label="Banking & FX" value={latest.details?.banking_savings || 0} icon={CreditCard} color="text-amber-500" border="border-amber-500/20" bg="bg-amber-500/[0.05]" note="banking efficiency" />
-            <MetricCard label="Telecom" value={latest.details?.telecom_savings || 0} icon={Package} color="text-cyan-500" border="border-cyan-500/20" bg="bg-cyan-500/[0.05]" note="connectivity costs" />
-            <MetricCard label="Finance Ops" value={latest.details?.finance_ops_savings || 0} icon={Package} color="text-yellow-500" border="border-yellow-500/20" bg="bg-yellow-500/[0.05]" note="tooling efficiency" />
-            <MetricCard label="HR Infra" value={latest.details?.hr_savings || 0} icon={Users} color="text-pink-500" border="border-pink-500/20" bg="bg-pink-500/[0.05]" note="benefits stack" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <MetricCard label="Logistics" value={latest.shipping_savings} icon={Truck} color="text-chart-2" border="border-chart-2/20" bg="bg-green-500/[0.05]" note="carrier + 3PL efficiency" />
+            <MetricCard label="Commerce SaaS" value={latest.saas_savings} icon={Package} color="text-orange-500" border="border-orange-500/15" bg="bg-orange-500/[0.05]" note="stack efficiency" />
           </div>
 
           <GMVMetrics gmvTotal={gmvTotal} gmvAverage={gmvAverage} />
@@ -306,8 +299,8 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { title: "Run new analysis", desc: "Update your infra score", path: "/Analyzer", icon: TrendingDown, accent: true },
-              { title: "Complete onboarding", desc: "Add banking, insurance & telecom data", path: "/Onboarding", icon: Zap, glow: "rgba(168,85,247,0.25)" },
-              { title: "Connect your tools", desc: "Precision data across all verticals", path: "/ConnectTools", icon: ShieldCheck, glow: "rgba(44,167,193,0.25)" },
+              { title: "Complete onboarding", desc: "Map Payments, Logistics & Commerce SaaS", path: "/Onboarding", icon: Zap, glow: "rgba(168,85,247,0.25)" },
+              { title: "Connect your tools", desc: "Precision data across all 3 pillars", path: "/ConnectTools", icon: ShieldCheck, glow: "rgba(44,167,193,0.25)" },
             ].map((action, i) => (
               <Link key={i} to={action.path}>
                 <div className={`group relative p-5 rounded-2xl border transition-all cursor-pointer overflow-hidden ${action.accent ? "border-foreground/10 bg-foreground text-background shadow-[0_18px_40px_-20px_rgba(0,0,0,0.5)]" : "border-border/60 bg-card/95 backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-16px_rgba(0,0,0,0.12)]"}`}>

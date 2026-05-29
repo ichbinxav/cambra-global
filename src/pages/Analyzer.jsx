@@ -34,27 +34,27 @@ const STEPS = [
     icon: Package,
   },
   {
-    title: "Payments — Online",
+    title: "Pillar 1 · Payments — Online",
     sub: "We compare your Stripe / PayPal effective fees against the network benchmark of 1.4%.",
     why: "Online payment fees are often the single largest hidden infrastructure cost.",
     icon: CreditCard,
   },
   {
-    title: "Payments — TPV / Dataphone",
+    title: "Pillar 1 · Payments — TPV",
     sub: "We review in-store card terminals, rental costs and effective physical payment rate.",
-    why: "TPV / dataphones hide fixed fees and contracts that can be renegotiated through collective buying.",
+    why: "TPV / dataphones hide fixed fees that can be renegotiated through collective buying.",
     icon: Store,
   },
   {
-    title: "Logistics — Carriers & 3PL",
+    title: "Pillar 2 · Logistics (Carrier + 3PL)",
     sub: "We benchmark your carrier (DHL, FedEx) and 3PL / fulfillment rates against collective volume pricing.",
     why: "Network volume unlocks carrier and warehouse rates unavailable to individual brands.",
     icon: Truck,
   },
   {
-    title: "Commerce SaaS",
+    title: "Pillar 3 · Commerce SaaS",
     sub: "We identify redundant or overpriced commerce software (Shopify, Klaviyo, apps & plugins).",
-    why: "Brands typically overspend on commerce SaaS by 30% — mostly on duplicated apps.",
+    why: "Brands typically overspend on Commerce SaaS by 30% — mostly on duplicated apps.",
     icon: Package,
   },
   {

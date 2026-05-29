@@ -212,7 +212,7 @@ export default function AnalyzerProductSection() {
                 {/* Layer chips */}
                 <div>
                   <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-white/45 mb-2.5">
-                    Layers scanned
+                    Pillars scanned
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {["Payments", "Logistics", "Commerce SaaS"].map((l, i) => (

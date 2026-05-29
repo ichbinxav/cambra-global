@@ -1,7 +1,7 @@
 const PROMPTS = [
   "Find my biggest overpay",
   "Analyze my payment fees",
-  "Review my shipping costs",
+  "Review my logistics costs",
   "Analyze my card terminals",
   "Explain an invoice",
   "Compare providers",
@@ -22,7 +22,7 @@ export default function CopilotPanel({ onSelectPrompt }) {
         </div>
         <h3 className="mt-4 font-display text-2xl font-black tracking-[-0.03em] text-foreground">Where should you start?</h3>
         <p className="mt-4 text-sm leading-6 text-foreground/65">
-          High GMV brands typically start with <span className="font-semibold text-foreground">Payments</span>. Logistics-heavy operators start with <span className="font-semibold text-foreground">Shipping</span>.
+          High GMV brands typically start with <span className="font-semibold text-foreground">Payments</span>. Logistics-heavy operators start with <span className="font-semibold text-foreground">Logistics</span>.
         </p>
         <div className="mt-6 space-y-2.5">
           {PROMPTS.map((prompt) => (

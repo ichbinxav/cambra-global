@@ -5,17 +5,17 @@ import { useRef } from "react";
 
 const CONNECTORS = [
   { name: "Stripe", cat: "Payments", color: "#635BFF" },
-  { name: "Shopify", cat: "Commerce", color: "#96BF48" },
+  { name: "PayPal", cat: "Payments", color: "#003087" },
   { name: "Adyen", cat: "Payments", color: "#0ABF53" },
-  { name: "QuickBooks", cat: "Accounting", color: "#2CA01C" },
-  { name: "Pennylane", cat: "Accounting", color: "#6C3CE1" },
+  { name: "SumUp", cat: "Payments", color: "#00D639" },
   { name: "DHL", cat: "Logistics", color: "#D40511" },
+  { name: "FedEx", cat: "Logistics", color: "#4D148C" },
   { name: "Sendcloud", cat: "Logistics", color: "#0066FF" },
-  { name: "Revolut", cat: "Banking", color: "#191C1F" },
-  { name: "Qonto", cat: "Banking", color: "#FF5B00" },
-  { name: "Klaviyo", cat: "SaaS", color: "#1a1a1a" },
-  { name: "Airtable", cat: "SaaS", color: "#FCB400" },
-  { name: "Packlink", cat: "Logistics", color: "#00BF6F" },
+  { name: "ShipBob", cat: "Logistics", color: "#FF4F00" },
+  { name: "Shopify", cat: "Commerce SaaS", color: "#96BF48" },
+  { name: "WooCommerce", cat: "Commerce SaaS", color: "#873EFF" },
+  { name: "Klaviyo", cat: "Commerce SaaS", color: "#1a1a1a" },
+  { name: "Gorgias", cat: "Commerce SaaS", color: "#FF4F00" },
 ];
 
 function ConnectorAvatar({ name, color }) {

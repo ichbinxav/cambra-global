@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight, CreditCard, Truck, Package, TrendingDown, Zap,
-  Shield, AlertTriangle, CheckCircle2, ChevronRight, Lock, Store, ShieldCheck
+  Shield, AlertTriangle, Lock, Store
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
@@ -27,31 +27,26 @@ const BREAKDOWN_META = [
     detail: r => r.details?.tpe_effective_rate
       ? `${r.details.tpe_effective_rate.toFixed(2)}% current → ${r.details.tpe_optimal_rate?.toFixed(2) ?? "1.0"}% collective TPE benchmark`
       : "Terminal cost optimization available" },
-  { key: "shipping_savings", label: "Shipping", icon: Truck, color: "#2FC9A6", bg: "bg-cambra-mint-soft border-cambra-mint", textColor: "text-cambra-mint",
+  { key: "shipping_savings", label: "Logistics (Carrier + 3PL)", icon: Truck, color: "#2FC9A6", bg: "bg-cambra-mint-soft border-cambra-mint", textColor: "text-cambra-mint",
     detail: r => r.details?.shipping_current_avg
       ? `€${r.details.shipping_current_avg.toFixed(2)}/shipment → €${r.details.shipping_optimal_avg?.toFixed(2) ?? "5.20"} collective rate`
       : "Volume-based cost reduction available" },
-  { key: "saas_savings", label: "SaaS & Tools", icon: Package, color: "#5B3A83", bg: "bg-cambra-plum-soft border-cambra-plum", textColor: "text-cambra-plum",
+  { key: "saas_savings", label: "Commerce SaaS", icon: Package, color: "#5B3A83", bg: "bg-cambra-plum-soft border-cambra-plum", textColor: "text-cambra-plum",
     detail: r => r.details?.saas_current_total
       ? `€${r.details.saas_current_total.toLocaleString()}/mo current → €${r.details.saas_optimal_total?.toLocaleString() ?? "—"} via group licenses`
       : "Stack consolidation efficiency available" },
-  { key: "insurance_savings", label: "Insurance", icon: ShieldCheck, color: "#1f4ed8", bg: "bg-blue-500/[0.05] border-blue-500/20", textColor: "text-chart-1",
-    detail: r => r.details?.insurance_current_total
-      ? `€${r.details.insurance_current_total.toLocaleString()}/yr current → €${r.details.insurance_benchmark_low?.toLocaleString() ?? "—"}–€${r.details.insurance_benchmark_high?.toLocaleString() ?? "—"} Cambra benchmark`
-      : "Insurance benchmark review available" },
 ];
 
 const UNLOCKS = [
   { title: "Improve payment economics", desc: "Network-benchmarked effective rate · ~1.4% target", saving: "Up to −52%", cat: "Payments", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
-  { title: "Unlock collective shipping terms", desc: "Carrier rates benchmarked against high-volume operators", saving: "−18% avg.", cat: "Shipping", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
-  { title: "Consolidate SaaS infrastructure", desc: "Group licensing on Klaviyo, Gorgias, Shopify and others", saving: "Up to −30%", cat: "SaaS", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
-  { title: "Optimize insurance coverage", desc: "Benchmark essential coverage and recover annual margin", saving: "Better economics", cat: "Insurance", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
+  { title: "Unlock collective logistics terms", desc: "Carrier + 3PL rates benchmarked against high-volume operators", saving: "−18% avg.", cat: "Logistics", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
+  { title: "Consolidate Commerce SaaS stack", desc: "Group licensing on Klaviyo, Gorgias, Shopify and others", saving: "Up to −30%", cat: "Commerce SaaS", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
 ];
 
 const RECS = [
   { cat: "Payments", action: "Improve payment infrastructure terms", saving: "Recover €X/yr", icon: CreditCard, points: 12 },
-  { cat: "Shipping", action: "Access network-benchmarked shipping rates", saving: "−18% average cost", icon: Truck, points: 8 },
-  { cat: "SaaS", action: "Consolidate stack via group licensing", saving: "Save up to 30%", icon: Package, points: 7 },
+  { cat: "Logistics", action: "Access network-benchmarked carrier + 3PL rates", saving: "−18% average cost", icon: Truck, points: 8 },
+  { cat: "Commerce SaaS", action: "Consolidate stack via group licensing", saving: "Save up to 30%", icon: Package, points: 7 },
 ];
 
 /* ── sub-components ──────────────────────────────────────────── */
@@ -167,7 +162,6 @@ export default function Results() {
     ...result,
     online_payment_savings: onlinePaymentSavings,
     tpe_savings: result.details?.tpe_savings || 0,
-    insurance_savings: result.details?.insurance_savings || 0,
   };
 
   const chartData = BREAKDOWN_META.map(m => ({
