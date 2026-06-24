@@ -225,12 +225,82 @@ export default function HeroSystemic() {
             </motion.div>
           </div>
 
-          {/* RIGHT — cinematic live terminal */}
+          {/* RIGHT — cinematic product mockups (2 stacked images) */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="hidden lg:block"
+            className="hidden lg:block relative h-[640px]"
+          >
+            {/* Ambient glow behind images */}
+            <motion.div
+              className="absolute inset-0 -z-10 rounded-3xl blur-3xl"
+              style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.35), transparent 65%)" }}
+              animate={{ opacity: [0.5, 0.8, 0.5] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            />
+
+            {/* IMAGE 1 — Dashboard mockup (back, slightly rotated) */}
+            <motion.div
+              initial={{ opacity: 0, y: 30, rotate: -3 }}
+              animate={{ opacity: 1, y: 0, rotate: -3 }}
+              transition={{ duration: 1, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute top-0 left-0 w-[88%] rounded-2xl overflow-hidden border border-white/10 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.6)]"
+              style={{ transformOrigin: "top left" }}
+            >
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <img
+                  src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/96e7abc8f_generated_image.png"
+                  alt="CAMBRA dashboard preview"
+                  className="w-full h-auto block"
+                />
+              </motion.div>
+            </motion.div>
+
+            {/* IMAGE 2 — Analyzer terminal mockup (front, opposite rotation) */}
+            <motion.div
+              initial={{ opacity: 0, y: 30, rotate: 4 }}
+              animate={{ opacity: 1, y: 0, rotate: 4 }}
+              transition={{ duration: 1, delay: 0.85, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute bottom-0 right-0 w-[78%] rounded-2xl overflow-hidden border border-white/15 shadow-[0_40px_80px_-20px_rgba(31,78,216,0.45)]"
+              style={{ transformOrigin: "bottom right" }}
+            >
+              <motion.div
+                animate={{ y: [0, 8, 0] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              >
+                <img
+                  src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/cc72cd770_generated_image.png"
+                  alt="CAMBRA analyzer terminal preview"
+                  className="w-full h-auto block"
+                />
+              </motion.div>
+
+              {/* Live pulse badge on top */}
+              <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15">
+                <motion.span
+                  className="h-1.5 w-1.5 rounded-full bg-cambra-mint"
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+                <span className="text-[8px] font-bold tracking-[0.18em] uppercase text-white/80">Live</span>
+              </div>
+            </motion.div>
+
+            <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-center text-[10px] text-muted-foreground/40 font-mono whitespace-nowrap">
+              Sample · Your results will be tailored to your brand
+            </p>
+          </motion.div>
+
+          {/* Hidden legacy block kept below to preserve scroll-related structure (no longer rendered) */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0 }}
+            className="hidden"
           >
             {/* Terminal frame */}
             <div className="relative rounded-2xl border border-border/60 bg-card/95 backdrop-blur-md overflow-hidden shadow-[0_24px_80px_-20px_rgba(31,78,216,0.25)]">
