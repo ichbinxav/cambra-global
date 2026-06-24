@@ -19,6 +19,7 @@ import LiveSystemHeader from "@/components/dashboard/LiveSystemHeader";
 import DriftAlertStrip from "@/components/dashboard/DriftAlertStrip";
 import IntelligenceWidget from "@/components/dashboard/IntelligenceWidget";
 import PageHero from "@/components/shared/PageHero";
+import DriftMonitor from "@/components/dashboard/DriftMonitor";
 
 
 
@@ -283,6 +284,9 @@ export default function Dashboard() {
               <IntelligenceWidget />
             )}
           </div>
+
+          {/* ── DRIFT MONITOR — multi-pillar degradation tracking ── */}
+          <DriftMonitor results={results} />
 
           <InfrastructureStatus latest={latest} />
 
