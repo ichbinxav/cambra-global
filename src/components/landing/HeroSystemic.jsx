@@ -230,7 +230,7 @@ export default function HeroSystemic() {
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="hidden lg:block relative h-[640px]"
+            className="relative w-full aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] mt-8 lg:mt-0"
           >
             {/* Ambient glow behind images */}
             <motion.div
@@ -256,6 +256,7 @@ export default function HeroSystemic() {
                   src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/96e7abc8f_generated_image.png"
                   alt="CAMBRA dashboard preview"
                   className="w-full h-auto block"
+                  loading="eager"
                 />
               </motion.div>
             </motion.div>
@@ -276,6 +277,7 @@ export default function HeroSystemic() {
                   src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/cc72cd770_generated_image.png"
                   alt="CAMBRA analyzer terminal preview"
                   className="w-full h-auto block"
+                  loading="eager"
                 />
               </motion.div>
 
@@ -295,12 +297,12 @@ export default function HeroSystemic() {
             </p>
           </motion.div>
 
-          {/* Hidden legacy block kept below to preserve scroll-related structure (no longer rendered) */}
+          {/* Legacy block removed — clean structure */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0 }}
-            transition={{ duration: 0 }}
+            initial={false}
+            animate={false}
             className="hidden"
+            style={{ display: "none" }}
           >
             {/* Terminal frame */}
             <div className="relative rounded-2xl border border-border/60 bg-card/95 backdrop-blur-md overflow-hidden shadow-[0_24px_80px_-20px_rgba(31,78,216,0.25)]">
