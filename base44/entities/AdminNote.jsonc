@@ -1,0 +1,29 @@
+{
+  "name": "AdminNote",
+  "type": "object",
+  "properties": {
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "user",
+        "brand",
+        "deal_application",
+        "provider"
+      ]
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "target_type",
+    "target_id",
+    "note"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "name": "UserDeal",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "deal_id": {
+      "type": "string"
+    },
+    "deal_name": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas",
+        "insurance",
+        "banking",
+        "logistics"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "waitlist",
+        "pending",
+        "active",
+        "expired"
+      ],
+      "default": "waitlist"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "estimated_savings": {
+      "type": "number",
+      "description": "Annual savings in EUR"
+    },
+    "is_real_savings": {
+      "type": "boolean",
+      "default": false,
+      "description": "True = real, False = estimated"
+    }
+  },
+  "required": [
+    "user_email",
+    "deal_id",
+    "deal_name",
+    "provider",
+    "category",
+    "status"
+  ]
+}

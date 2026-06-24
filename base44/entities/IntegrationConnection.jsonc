@@ -1,0 +1,64 @@
+{
+  "name": "IntegrationConnection",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "integration_type": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "shopify",
+        "woocommerce",
+        "xero",
+        "quickbooks",
+        "dhl",
+        "dpd",
+        "sendcloud",
+        "klaviyo",
+        "other"
+      ]
+    },
+    "integration_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "connected",
+        "error",
+        "disconnected",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "last_sync": {
+      "type": "string"
+    },
+    "data_freshness_hours": {
+      "type": "number"
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "is_read_only": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_email",
+    "integration_type",
+    "status"
+  ]
+}

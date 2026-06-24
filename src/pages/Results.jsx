@@ -16,6 +16,8 @@ import { Download } from "lucide-react";
 import { jsPDF } from "jspdf";
 import ExportMenu from "@/components/results/ExportMenu";
 import { buildResultsCsv, downloadCsv } from "@/lib/exportResults";
+import SavingsAdjustSlider from "@/components/results/SavingsAdjustSlider";
+import NetworkDataBadge from "@/components/shared/NetworkDataBadge";
 
 /* ── static data ─────────────────────────────────────────────── */
 const BREAKDOWN_META = [
@@ -297,8 +299,9 @@ export default function Results() {
           </div>
 
           {/* Accuracy badge */}
-          <div className="flex justify-center mb-5">
+          <div className="flex justify-center items-center gap-2 mb-5 flex-wrap">
             <AccuracyBadge isEstimated={isEstimated} />
+            <NetworkDataBadge tone="light" />
           </div>
 
           <p className="text-sm text-muted-foreground mb-3">Optimization potential identified across your infrastructure</p>
@@ -469,6 +472,14 @@ export default function Results() {
           </div>
         </div>
 
+
+        {/* ═══ 4B. RECALIBRATE SLIDER ══════════════════════════════ */}
+        {subscribed && input?.monthly_revenue && (
+          <SavingsAdjustSlider
+            baseSavings={result.total_savings || 0}
+            baseRevenue={input.monthly_revenue}
+          />
+        )}
 
         {/* ═══ 5. BENCHMARK COMPARISON ══════════════════════════════ */}
         <div className="relative">

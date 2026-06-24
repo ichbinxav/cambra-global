@@ -1,0 +1,104 @@
+{
+  "name": "DealApplication",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "deal_id": {
+      "type": "string"
+    },
+    "deal_name": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas",
+        "insurance",
+        "banking",
+        "logistics"
+      ]
+    },
+    "deal_mode": {
+      "type": "string",
+      "enum": [
+        "negotiated",
+        "instant"
+      ],
+      "default": "negotiated"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "in_review",
+        "provider_contacted",
+        "offer_ready",
+        "activated",
+        "rejected",
+        "closed"
+      ],
+      "default": "submitted"
+    },
+    "estimated_savings": {
+      "type": "number"
+    },
+    "actual_savings": {
+      "type": "number"
+    },
+    "provider_response": {
+      "type": "string"
+    },
+    "internal_notes": {
+      "type": "string"
+    },
+    "contract_link": {
+      "type": "string"
+    },
+    "offer_file_url": {
+      "type": "string"
+    },
+    "previous_fee_pct": {
+      "type": "number"
+    },
+    "new_fee_pct": {
+      "type": "number"
+    },
+    "gmv_estimate": {
+      "type": "number"
+    },
+    "activity_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "by": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "user_email",
+    "deal_id",
+    "deal_name",
+    "provider",
+    "status"
+  ]
+}

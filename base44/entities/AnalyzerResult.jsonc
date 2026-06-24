@@ -1,0 +1,61 @@
+{
+  "name": "AnalyzerResult",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "input_id": {
+      "type": "string"
+    },
+    "payment_savings": {
+      "type": "number"
+    },
+    "shipping_savings": {
+      "type": "number"
+    },
+    "saas_savings": {
+      "type": "number"
+    },
+    "total_savings": {
+      "type": "number"
+    },
+    "infra_score": {
+      "type": "number",
+      "description": "Infrastructure score 0-100"
+    },
+    "payment_benchmark": {
+      "type": "number"
+    },
+    "shipping_benchmark": {
+      "type": "number"
+    },
+    "saas_benchmark": {
+      "type": "number"
+    },
+    "details": {
+      "type": "object",
+      "properties": {
+        "payment_current_rate": {
+          "type": "number"
+        },
+        "payment_optimal_rate": {
+          "type": "number"
+        },
+        "shipping_current_avg": {
+          "type": "number"
+        },
+        "shipping_optimal_avg": {
+          "type": "number"
+        },
+        "saas_current_total": {
+          "type": "number"
+        },
+        "saas_optimal_total": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  "required": []
+}

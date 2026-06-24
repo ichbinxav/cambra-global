@@ -1,0 +1,45 @@
+{
+  "name": "Benchmark",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas"
+      ]
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "micro",
+        "small",
+        "mid",
+        "large"
+      ]
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "EU",
+        "Global"
+      ]
+    },
+    "value": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "category",
+    "tier",
+    "region",
+    "value"
+  ]
+}

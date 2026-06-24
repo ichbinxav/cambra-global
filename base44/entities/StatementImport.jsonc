@@ -1,0 +1,64 @@
+{
+  "name": "StatementImport",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas"
+      ]
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "parser": {
+      "type": "string",
+      "enum": [
+        "csv",
+        "xlsx",
+        "api",
+        "json",
+        "other"
+      ],
+      "default": "csv"
+    },
+    "parsed_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "success",
+        "error"
+      ],
+      "default": "pending"
+    },
+    "row_count": {
+      "type": "number"
+    },
+    "checksum": {
+      "type": "string"
+    },
+    "mapping_name": {
+      "type": "string"
+    },
+    "imported_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata_json": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "file_url",
+    "parser",
+    "parsed_status"
+  ]
+}

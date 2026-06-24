@@ -1,0 +1,69 @@
+{
+  "name": "AnalyzerInput",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string",
+      "description": "Associated brand ID"
+    },
+    "monthly_revenue": {
+      "type": "number"
+    },
+    "monthly_transactions": {
+      "type": "number"
+    },
+    "avg_order_value": {
+      "type": "number"
+    },
+    "channel_mix": {
+      "type": "object",
+      "properties": {
+        "dtc_pct": {
+          "type": "number"
+        },
+        "marketplace_pct": {
+          "type": "number"
+        },
+        "wholesale_pct": {
+          "type": "number"
+        },
+        "retail_pct": {
+          "type": "number"
+        }
+      }
+    },
+    "payment_provider": {
+      "type": "string"
+    },
+    "payment_fee_pct": {
+      "type": "number"
+    },
+    "shipping_provider": {
+      "type": "string"
+    },
+    "monthly_shipping_cost": {
+      "type": "number"
+    },
+    "monthly_shipments": {
+      "type": "number"
+    },
+    "saas_tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "monthly_cost": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "total_saas_spend": {
+      "type": "number"
+    }
+  },
+  "required": []
+}

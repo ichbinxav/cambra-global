@@ -381,7 +381,7 @@ export default function Analyzer() {
       case 2: return (
         <div className="space-y-6">
           <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
-            DTC-heavy brands typically save most on payments. Wholesale-heavy brands save most on shipping and logistics.
+            DTC-heavy brands typically save most on payments. Wholesale-heavy brands save most on shipping and logistics. If you set <strong className="text-foreground">Retail / Physical = 0%</strong>, we'll automatically skip the in-store TPV step.
           </div>
           {[
             { k: "dtc_pct", l: "DTC / Website" },
@@ -708,7 +708,11 @@ export default function Analyzer() {
       <div className="sticky top-14 z-40 flex items-center justify-between px-5 py-4 border-b border-border/40 bg-background/95 backdrop-blur-xl">
         <span className="text-sm font-black tracking-tight">CAMBRA</span>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground/50 hidden sm:block">~2 minutes</span>
+          <span className="text-xs text-muted-foreground/50 hidden sm:block">
+            {data.category
+              ? `Most ${data.category} brands finish in ~90s`
+              : "~2 minutes"}
+          </span>
           <div className="flex items-center gap-1.5">
             {STEPS.map((_, i) => (
               <div
@@ -807,7 +811,15 @@ export default function Analyzer() {
 
         {step < STEPS.length - 1 ? (
           <Button
-            onClick={() => setStep(s => s + 1)}
+            onClick={() => {
+              // Smart-skip: skip TPV step (4) if user has no physical retail
+              const next = s => {
+                const candidate = s + 1;
+                if (candidate === 4 && (!data.retail_pct || data.retail_pct === 0)) return 5;
+                return candidate;
+              };
+              setStep(s => next(s));
+            }}
             disabled={!canContinue()}
             className="h-12 rounded-full px-6 sm:px-8 text-sm font-bold gap-2 bg-saas-gradient text-white hover:opacity-90 shadow-[0_0_24px_rgba(44,167,193,0.35)]"
           >

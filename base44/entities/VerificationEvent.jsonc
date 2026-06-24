@@ -1,0 +1,48 @@
+{
+  "name": "VerificationEvent",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "evidence",
+        "baseline",
+        "report"
+      ]
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "auto_flagged",
+        "moved_to_under_review",
+        "accepted",
+        "rejected",
+        "baseline_locked",
+        "snapshot_generated"
+      ]
+    },
+    "actor_email": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata_json": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "action",
+    "occurred_at"
+  ]
+}

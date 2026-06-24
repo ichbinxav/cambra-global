@@ -94,6 +94,35 @@
     },
     "notes": {
       "type": "string"
+    },
+    "baseline_id": {
+      "type": "string"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "estimated",
+        "proposed",
+        "evidence_submitted",
+        "under_review",
+        "verified",
+        "realized",
+        "invoiced",
+        "paid"
+      ],
+      "default": "estimated"
+    },
+    "effective_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "effective_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "evidence_count": {
+      "type": "number",
+      "default": 0
     }
   },
   "required": [

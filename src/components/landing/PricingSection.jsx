@@ -142,10 +142,10 @@ export default function PricingSection() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
             viewport={{ once: true, margin: "-100px" }}
-            className="group relative rounded-2xl overflow-hidden border border-white/12 p-5 sm:p-7 flex flex-col"
+            className="group relative rounded-2xl overflow-hidden border border-cambra-cyan/25 p-5 sm:p-7 flex flex-col md:scale-[1.02] md:-translate-y-1"
             style={{
-              background: "linear-gradient(135deg, rgba(31,78,216,0.24) 0%, rgba(44,167,193,0.12) 100%), linear-gradient(180deg, hsl(222 60% 8%) 0%, hsl(222 65% 5%) 100%)",
-              boxShadow: "0 0 40px rgba(31,78,216,0.2), 0 1px 0 hsl(0 0% 100% / 0.08) inset, 0 24px 64px -28px rgba(0,0,0,0.6)"
+              background: "linear-gradient(135deg, rgba(31,78,216,0.28) 0%, rgba(44,167,193,0.16) 100%), linear-gradient(180deg, hsl(222 60% 8%) 0%, hsl(222 65% 5%) 100%)",
+              boxShadow: "0 0 60px rgba(44,167,193,0.32), 0 0 0 1px rgba(44,167,193,0.15), 0 1px 0 hsl(0 0% 100% / 0.10) inset, 0 32px 80px -28px rgba(0,0,0,0.7)"
             }}
           >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
@@ -160,8 +160,12 @@ export default function PricingSection() {
             <div className="relative flex flex-col h-full">
               {/* Step header */}
               <div className="flex items-start justify-between mb-5">
-                <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full border border-cambra-cyan/30 bg-cambra-cyan/[0.08]">
-                  <span className="text-[9px] font-mono tracking-[0.2em] uppercase text-cambra-cyan font-bold">Step 02</span>
+                <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full border border-cambra-cyan/40 bg-cambra-cyan/[0.12]">
+                  <span className="relative flex h-1 w-1">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                    <span className="relative inline-flex h-1 w-1 rounded-full bg-cambra-cyan" />
+                  </span>
+                  <span className="text-[9px] font-mono tracking-[0.2em] uppercase text-cambra-cyan font-bold">Step 02 · Where value lives</span>
                 </div>
                 <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/50 whitespace-nowrap">Recover</span>
               </div>

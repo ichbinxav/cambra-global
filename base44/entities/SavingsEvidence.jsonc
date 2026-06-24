@@ -1,0 +1,107 @@
+{
+  "name": "SavingsEvidence",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "deal_activation_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "baseline_id": {
+      "type": "string"
+    },
+    "report_id": {
+      "type": "string"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "api",
+        "file_upload",
+        "provider_statement",
+        "bank_statement",
+        "manual"
+      ]
+    },
+    "evidence_type": {
+      "type": "string",
+      "enum": [
+        "invoice_pdf",
+        "statement_csv",
+        "api_metric",
+        "rate_card",
+        "contract",
+        "other"
+      ]
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "value_type": {
+      "type": "string",
+      "enum": [
+        "gmv",
+        "fees",
+        "shipments",
+        "rate",
+        "cost",
+        "other"
+      ]
+    },
+    "before_value": {
+      "type": "number"
+    },
+    "after_value": {
+      "type": "number"
+    },
+    "delta_value": {
+      "type": "number"
+    },
+    "methodology_used": {
+      "type": "string"
+    },
+    "confidence_level": {
+      "type": "number"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "under_review",
+        "accepted",
+        "rejected"
+      ],
+      "default": "submitted"
+    },
+    "reviewer_email": {
+      "type": "string"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "checksum": {
+      "type": "string"
+    },
+    "metadata_json": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "source_type",
+    "evidence_type",
+    "verification_status"
+  ]
+}

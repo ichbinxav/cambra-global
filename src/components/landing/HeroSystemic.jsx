@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { ArrowRight, Activity, CreditCard, Package, LayoutGrid, Sparkles, TrendingUp } from "lucide-react";
+import NetworkDataBadge from "@/components/shared/NetworkDataBadge";
 
 /**
  * HeroSystemic — Cinematic hero.
@@ -252,6 +253,7 @@ export default function HeroSystemic() {
                     <span className="ml-2 text-[10px] font-mono tracking-wider text-muted-foreground/70">
                       sample brand · €2M revenue
                     </span>
+                    <NetworkDataBadge tone="light" className="ml-2" />
                   </div>
                   <div className="flex items-center gap-1.5 -mt-8">
                     <motion.span

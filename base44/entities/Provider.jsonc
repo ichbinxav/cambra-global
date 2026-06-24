@@ -1,0 +1,54 @@
+{
+  "name": "Provider",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas",
+        "insurance",
+        "banking",
+        "logistics"
+      ]
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "account_manager": {
+      "type": "string"
+    },
+    "api_status": {
+      "type": "string",
+      "enum": [
+        "connected",
+        "not_connected",
+        "error"
+      ],
+      "default": "not_connected"
+    },
+    "contract_type": {
+      "type": "string"
+    },
+    "revenue_share_pct": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "deal_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ]
+}

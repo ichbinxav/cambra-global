@@ -1,0 +1,71 @@
+{
+  "name": "ProviderLead",
+  "type": "object",
+  "properties": {
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "deal_application_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "deal_id": {
+      "type": "string"
+    },
+    "deal_name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "estimated_gmv": {
+      "type": "number"
+    },
+    "estimated_savings": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "viewed",
+        "in_progress",
+        "offer_sent",
+        "accepted",
+        "rejected"
+      ],
+      "default": "new"
+    },
+    "provider_notes": {
+      "type": "string"
+    },
+    "optimized_terms": {
+      "type": "string"
+    },
+    "offer_file_url": {
+      "type": "string"
+    },
+    "offer_link": {
+      "type": "string"
+    },
+    "responded_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "provider_id",
+    "user_email",
+    "deal_id",
+    "deal_name",
+    "status"
+  ]
+}
