@@ -104,8 +104,11 @@ export default function Dashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const u = await base44.auth.me();
+        // Auth is no longer enforced at the route level — degrade gracefully
+        // when the user is not signed in instead of crashing on u.id.
+        const u = await base44.auth.me().catch(() => null);
         setUser(u);
+        if (!u) { setLoading(false); return; }
 
         const brands = await base44.entities.Brand.filter({ created_by_id: u.id }, "-created_date", 1);
         const b = brands[0] || null;
