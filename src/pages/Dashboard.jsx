@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRight, CheckCircle2, Sparkles,
+  ArrowRight, CheckCircle2, Sparkles, RefreshCw,
   CreditCard, Truck, Package, Plug, Building2, Store, Mail, Headphones, Users, Wifi, Layers,
   TrendingUp as TrendingUpIcon,
 } from "lucide-react";
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
+import { useToast } from "@/components/shared/Toast.jsx";
+import { useNavigate } from "react-router-dom";
 
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import LastScanBar from "@/components/dashboard/LastScanBar";
@@ -69,6 +71,8 @@ function nodeBadge(node, t) {
 /* ── main ────────────────────────────────────────────────────── */
 export default function Dashboard() {
   const { t, lang } = useTranslation();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const formatEur = (n) => formatEurLocal(n, lang);
   const [user, setUser] = useState(null);
   const [brand, setBrand] = useState(null);
@@ -77,6 +81,24 @@ export default function Dashboard() {
   const [graphNodes, setGraphNodes] = useState([]);
   const [hasLiveDeal, setHasLiveDeal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [rescanning, setRescanning] = useState(false);
+
+  const handleRescan = async () => {
+    if (!brand || rescanning) return;
+    setRescanning(true);
+    toast.info(t("scanning_toast"));
+    try {
+      await base44.functions.invoke("discoverCompanyInfrastructure", {
+        brand_id: brand.id,
+        website_url: brand.website,
+      });
+      toast.success(t("scan_complete_toast"));
+    } catch (e) {
+      toast.error(t("sync_error"));
+    } finally {
+      setRescanning(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -346,6 +368,49 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Quick action strip — State B only (analysis exists, Stripe not connected) */}
+      {!stripeConnected && (
+        <div className="flex flex-wrap gap-2 mb-2">
+          <button
+            type="button"
+            onClick={() => navigate("/ConnectTools")}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all hover:translate-y-[-1px]"
+            style={{
+              background: "rgba(59,130,246,0.10)",
+              border: "1px solid rgba(59,130,246,0.30)",
+              color: "#93c5fd",
+            }}
+          >
+            <Plug size={12} /> {t("quick_connect_stripe")}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(`/Results?id=${latest.id}`)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all hover:translate-y-[-1px]"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              color: "rgba(255,255,255,0.80)",
+            }}
+          >
+            {t("quick_view_results")} <ArrowRight size={12} />
+          </button>
+          <button
+            type="button"
+            onClick={handleRescan}
+            disabled={rescanning || !brand}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all hover:translate-y-[-1px] disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.10)",
+              color: "rgba(255,255,255,0.45)",
+            }}
+          >
+            <RefreshCw size={12} className={rescanning ? "animate-spin" : ""} /> {t("quick_rescan")}
+          </button>
+        </div>
+      )}
+
       {/* Quick stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {[
@@ -463,65 +528,7 @@ export default function Dashboard() {
       {/* ── M8 — AI Insights (unchanged) ── */}
       <AIInsightsPanel />
 
-      {/* Quick action strip — Connect Stripe (if not yet) / View results / Re-scan */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {!stripeConnected && (
-          <Link to="/ConnectTools">
-            <div
-              className="p-4 rounded-2xl transition-all min-h-[44px] hover:border-white/20 flex items-center gap-3"
-              style={{
-                background: "rgba(34,211,238,0.06)",
-                border: "1px solid rgba(34,211,238,0.20)",
-              }}
-            >
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: "rgba(34,211,238,0.10)", border: "1px solid rgba(34,211,238,0.25)" }}>
-                <Plug size={14} className="text-cyan-300" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-white truncate">{t("connect_stripe_cta")}</p>
-                <p className="text-[11px] text-white/55 truncate">{t("hero_confidence_estimated")}</p>
-              </div>
-            </div>
-          </Link>
-        )}
-        <Link to={`/Results?id=${latest.id}`}>
-          <div
-            className="p-4 rounded-2xl transition-all min-h-[44px] hover:border-white/20 flex items-center gap-3"
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: "rgba(96,165,250,0.10)", border: "1px solid rgba(96,165,250,0.25)" }}>
-              <ArrowRight size={14} className="text-blue-300" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white truncate">{t("nav_results")}</p>
-              <p className="text-[11px] text-white/55 truncate">{t("from_latest_analysis")}</p>
-            </div>
-          </div>
-        </Link>
-        <Link to="/Analyzer">
-          <div
-            className="p-4 rounded-2xl transition-all min-h-[44px] hover:border-white/20 flex items-center gap-3"
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)" }}>
-              <Sparkles size={14} className="text-white/80" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white truncate">{t("rescan")}</p>
-              <p className="text-[11px] text-white/55 truncate">{t("nav_analyzer")}</p>
-            </div>
-          </div>
-        </Link>
-      </div>
+
     </div>
   );
 }

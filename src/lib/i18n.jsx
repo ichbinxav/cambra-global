@@ -466,6 +466,13 @@ const DICT = {
     cookie_modal_title:     "Cookie preferences",
     cookie_modal_sub:       "CAMBRA is committed to your privacy. Choose which cookies you allow.",
     cookie_always_on:       "Always on",
+
+    /* Dashboard quick action strip (State B) */
+    quick_connect_stripe:   "Connect Stripe →",
+    quick_view_results:     "View results →",
+    quick_rescan:           "Re-scan",
+    scanning_toast:         "Scanning your infrastructure…",
+    scan_complete_toast:    "Scan complete",
   },
 
   fr: {
@@ -863,6 +870,13 @@ const DICT = {
     cookie_modal_title:     "Préférences cookies",
     cookie_modal_sub:       "CAMBRA s'engage à respecter votre vie privée. Choisissez les cookies que vous autorisez.",
     cookie_always_on:       "Toujours activé",
+
+    /* Dashboard quick action strip (State B) */
+    quick_connect_stripe:   "Connecter Stripe →",
+    quick_view_results:     "Voir les résultats →",
+    quick_rescan:           "Rescanner",
+    scanning_toast:         "Analyse de votre infrastructure…",
+    scan_complete_toast:    "Scan terminé",
   },
 
   es: {
@@ -1260,6 +1274,13 @@ const DICT = {
     cookie_modal_title:     "Preferencias de cookies",
     cookie_modal_sub:       "CAMBRA se compromete con tu privacidad. Elige qué cookies permites.",
     cookie_always_on:       "Siempre activado",
+
+    /* Dashboard quick action strip (State B) */
+    quick_connect_stripe:   "Conectar Stripe →",
+    quick_view_results:     "Ver resultados →",
+    quick_rescan:           "Volver a analizar",
+    scanning_toast:         "Analizando tu infraestructura…",
+    scan_complete_toast:    "Análisis completado",
   },
 };
 
