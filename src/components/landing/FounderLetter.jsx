@@ -55,10 +55,10 @@ export default function FounderLetter() {
           </span>
         </div>
 
-        {/* Two-column: photo left · letter right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+        {/* Two-column: photo left · letter right — side-by-side on mobile too */}
+        <div className="grid grid-cols-12 gap-4 sm:gap-8 lg:gap-16 items-start">
           {/* LEFT — PHOTO */}
-          <div className="lg:col-span-5 lg:sticky lg:top-28">
+          <div className="col-span-4 lg:col-span-5 lg:sticky lg:top-28">
             <div
               className="relative rounded-2xl overflow-hidden"
               style={{
@@ -82,12 +82,12 @@ export default function FounderLetter() {
                     "linear-gradient(180deg, transparent 55%, rgba(8,10,18,0.85) 100%)",
                 }}
               />
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <p className="text-white text-[14px] font-bold tracking-tight">
+              <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5">
+                <p className="text-white text-[11px] sm:text-[14px] font-bold tracking-tight">
                   Xavier M. Contero
                 </p>
                 <p
-                  className="text-[10px] uppercase tracking-[0.24em] font-bold mt-1"
+                  className="text-[8px] sm:text-[10px] uppercase tracking-[0.20em] sm:tracking-[0.24em] font-bold mt-1"
                   style={{ color: "rgba(255,255,255,0.55)" }}
                 >
                   Founder · CAMBRA · Paris
@@ -97,7 +97,7 @@ export default function FounderLetter() {
           </div>
 
           {/* RIGHT — LETTER */}
-          <div className="lg:col-span-7">
+          <div className="col-span-8 lg:col-span-7">
             <h2
               className="text-white mb-10"
               style={{
@@ -160,31 +160,16 @@ export default function FounderLetter() {
               className="mt-10 pt-6 flex items-center justify-between"
               style={{ borderTop: "1px solid rgba(255,255,255,0.10)" }}
             >
-              <div className="flex items-center gap-5">
-                <span
-                  className="text-white"
-                  style={{
-                    fontFamily: '"Caveat", "Brush Script MT", "Segoe Script", cursive',
-                    fontSize: 40,
-                    lineHeight: 1,
-                    transform: "rotate(-3deg)",
-                    display: "inline-block",
-                    textShadow: "0 0 24px rgba(34,211,238,0.25)",
-                  }}
+              <div>
+                <p className="text-white text-[13px] font-bold tracking-tight">
+                  Xavier M. Contero
+                </p>
+                <p
+                  className="text-[10px] uppercase tracking-[0.24em] font-bold mt-1"
+                  style={{ color: "rgba(255,255,255,0.45)" }}
                 >
-                  Xavier
-                </span>
-                <div>
-                  <p className="text-white text-[13px] font-bold tracking-tight">
-                    Xavier M. Contero
-                  </p>
-                  <p
-                    className="text-[10px] uppercase tracking-[0.24em] font-bold mt-1"
-                    style={{ color: "rgba(255,255,255,0.45)" }}
-                  >
-                    Founder · CAMBRA
-                  </p>
-                </div>
+                  Founder · CAMBRA
+                </p>
               </div>
 
               <button
