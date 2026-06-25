@@ -1,61 +1,109 @@
 # CAMBRA — Infrastructure Intelligence Platform
 
-CAMBRA is a buy-side infrastructure operating system for independent European brands. It benchmarks payment fees, shipping costs and SaaS spend against anonymized peer data, identifies savings opportunities and tracks verified monthly savings.
+The economic operating system for independent commerce.
 
-## What CAMBRA does
+CAMBRA gives independent brands the infrastructure leverage usually reserved
+for large enterprises: real-time benchmarks, automated cost recovery, and a
+unified view of every system that runs the business (payments, shipping,
+SaaS, banking, telecom, HR).
 
-- **Infrastructure Discovery** — detects tools automatically from website and payment data
-- **Benchmark Engine** — compares costs against anonymized European brand cohorts (minimum 5 brands per cohort)
-- **Savings Analyzer** — 3-step frictionless flow: brand info → stack review → Stripe connect
-- **Monthly Savings Measurement** — real measurement against frozen baseline using Stripe data
-- **AI Agents** — payments, shipping and SaaS agents with mandatory human approval
-- **Connect Everything** — 60-integration catalog, Stripe live, others coming soon
-- **Infrastructure Graph** — visual map of every tool with inferred costs
+We don't sell software — we sell **recovered margin**.
+The diagnostic is free. We earn only on verified savings.
 
-## Tech stack
+---
 
-- **Frontend:** React + Vite + Tailwind CSS + shadcn/ui
-- **Backend:** Base44 (Deno functions)
-- **Auth:** Base44 built-in auth + OAuth
-- **Database:** Base44 entities with RLS per brand
-- **i18n:** English / French / Spanish
+## Three pillars
 
-## Local setup
+1. **Payments / TPV** — fee benchmarking, PSP renegotiation, terminal contract
+   audits.
+2. **Logistics / 3PL** — carrier mix optimisation, contract re-bidding,
+   surcharge recovery.
+3. **Commerce SaaS** — stack consolidation, license renegotiation, duplicate
+   tooling cleanup.
+
+All three feed a single **Infrastructure Score** and a unified savings model
+backed by a network benchmark (n ≥ 5 cohorts).
+
+---
+
+## Stack
+
+- **Frontend** — React 18 + Vite + Tailwind + shadcn/ui
+- **Backend** — Base44 BaaS (entities, functions, automations)
+- **Functions runtime** — Deno Deploy
+- **AI** — OpenAI (GPT family) via `InvokeLLM`
+- **Payments** — Stripe (TPV/PSP intelligence + checkout)
+
+---
+
+## Local development
 
 ```bash
+# Install
 npm install
+
+# Dev server
 npm run dev
+
+# Production build
+npm run build
+
+# Tests (Vitest)
+npx vitest run
 ```
 
-## Environment variables
+Environment variables — copy `.env.example` to `.env.local` and fill in the
+Base44 values from your workspace dashboard.
 
-Copy .env.example to .env and fill in values.
-Backend secrets (APP_DOMAIN, STRIPE_*, BENCHMARK_ANON_SALT) are in Base44 secrets — never in .env.
+---
 
-## Validation
+## Repository layout
 
-```bash
-npm run build       # must pass
-npm run lint        # must pass
-npm run typecheck   # must pass (UI wrappers may be narrowly excluded)
-npx vitest run      # 33 tests
-npm audit --omit=dev
+```
+src/
+  pages/            Route components
+  components/       Reusable UI + feature components
+  entities/         JSON schemas (Base44 entities)
+  functions/        Deno Deploy backend functions
+  agents/           AI agent configs
+  lib/              Shared utilities (auth, i18n, scoring)
 ```
 
-## Base44 functions (25 total)
+Each backend function is a standalone `Deno.serve(...)` handler — no shared
+local imports between functions. Cross-function calls go through
+`base44.functions.invoke()`.
 
-onAnalyzerCompleted, benchmarkLearningEngine, generateMonthlySavingsReport, inferVendorsFromBankData, stripeOAuthConnect, stripeDataSync, stripeDisconnect, discoverCompanyInfrastructure, buildInfrastructureGraph, getInfrastructureGraph, runContinuousDiscovery, runPaymentsAgent, runShippingAgent, runRecommendationAgent, approveAgentRun, and 10 supporting functions.
+---
 
-## Security
+## CI
 
-- **Tenant isolation:** all queries scoped to brand_id or created_by
-- **Benchmark privacy:** raw data admin-only, public API aggregated only (min 5 brands per cohort)
-- **OAuth:** tokens without organization_id are user-scoped by user_email, never platform-level
-- **API v1 / MCP:** assertTenant enforces org + user fallback with explicit deny-by-default
-- **Stripe:** no raw tokens stored, only stripe_account_id + opaque reference
-- **AI Agents:** requires_approval: true hardcoded
-- **Typecheck:** src/components/ui excluded (shadcn auto-generated wrappers)
+GitHub Actions runs on every push and PR:
 
-## Deployment
+- `npm ci`
+- `npm run build`
+- `npx vitest run`
 
-Deploy via Base44 dashboard. Frontend builds automatically when repo is connected.
+See `.github/workflows/validate.yml`.
+
+---
+
+## Security & privacy
+
+- No raw OAuth tokens or API keys ever land in entity fields — only opaque
+  references (`credential_ref`).
+- Per-brand RLS on every user-scoped entity.
+- Benchmark cohorts are anonymised and only become public at n ≥ 5.
+- Webhook endpoints validate provider signatures (Stripe `constructEventAsync`,
+  shared-secret for others).
+
+Sensitive operations (admin maintenance, scheduled jobs) verify
+`user.role === 'admin'` server-side.
+
+---
+
+## Status
+
+Private beta. Live in 🇫🇷 🇪🇸 🇮🇪 with onboarding for independent commerce brands
+between €30K–€500K monthly revenue.
+
+For support, contact the team through the in-app **Help** page.
