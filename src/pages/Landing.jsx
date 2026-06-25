@@ -649,7 +649,7 @@ export default function Landing() {
       <LandingNavbar />
       <main className="relative">
         <Hero />
-        <IntegrationsLogos />
+        <StatsGrid />
         <ProblemSectionWow />
         <OneScanSection />
         <HowItWorksSection />

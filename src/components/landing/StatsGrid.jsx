@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Plug } from "lucide-react";
+import IntegrationsLogos from "@/components/landing/IntegrationsLogos";
 
 /**
  * 4-stat grid card — dark navy, gradient numbers.
@@ -38,6 +39,18 @@ function Stat({ value, label }) {
       >
         {label}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Inline marquee — reuses IntegrationsLogos but strips its own outer padding
+ * so it sits flush inside the StatsGrid section.
+ */
+function IntegrationsLogosInline() {
+  return (
+    <div className="[&>section]:!py-0">
+      <IntegrationsLogos />
     </div>
   );
 }
@@ -85,6 +98,11 @@ export default function StatsGrid() {
           <p className="mt-4 text-[14px] max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.6 }}>
             Stripe, Shopify, DHL, Klaviyo, Notion and dozens more — securely connected via OAuth so we can benchmark every cost line in real time.
           </p>
+        </div>
+
+        {/* Live marquee of integration logos */}
+        <div className="mb-10 sm:mb-14 -mx-6 sm:-mx-10">
+          <IntegrationsLogosInline />
         </div>
 
         <div
