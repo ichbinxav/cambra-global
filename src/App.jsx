@@ -5,49 +5,6 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import { useState, useEffect, lazy, Suspense } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
-// TEMP DEBUG — diagnostic overlay for the Safari/iOS black-screen issue.
-// Remove once confirmed fixed.
-function DebugOverlay() {
-  const { isAuthenticated, isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
-  const path = typeof window !== "undefined" ? window.location.pathname : "";
-  const hasToken = typeof window !== "undefined" && (() => {
-    try { return !!window.localStorage.getItem("base44_access_token"); } catch { return false; }
-  })();
-  const rootChildren = typeof document !== "undefined"
-    ? (document.getElementById("root")?.children.length ?? 0)
-    : 0;
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: 8,
-        left: 8,
-        right: 8,
-        zIndex: 99999,
-        background: "rgba(0,0,0,0.92)",
-        border: "1px solid #22d3ee",
-        borderRadius: 12,
-        padding: 12,
-        fontSize: 11,
-        fontFamily: "ui-monospace, monospace",
-        color: "#fff",
-        lineHeight: 1.6,
-        pointerEvents: "none",
-        maxWidth: 520,
-        marginInline: "auto",
-      }}
-    >
-      <div style={{ color: "#22d3ee", fontWeight: 700, marginBottom: 4 }}>🔍 CAMBRA DEBUG</div>
-      <div>path: {path}</div>
-      <div>isAuthenticated: {String(isAuthenticated)}</div>
-      <div>isLoadingAuth: {String(isLoadingAuth)}</div>
-      <div>isLoadingPublicSettings: {String(isLoadingPublicSettings)}</div>
-      <div>authError: {authError ? authError.type : "null"}</div>
-      <div>hasToken: {String(hasToken)}</div>
-      <div>root children: {rootChildren}</div>
-    </div>
-  );
-}
 import { LanguageProvider } from '@/lib/i18n.jsx';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
@@ -407,7 +364,6 @@ function App() {
                 <CopilotPanel />
                 <CopilotObservations />
                 <CookieConsent />
-                <DebugOverlay />
               </Router>
               <Toaster />
             </QueryClientProvider>

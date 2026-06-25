@@ -39,7 +39,7 @@ export default function AnimatedCounter({
     );
     io.observe(el);
     // Safari/iOS fallback: force visible after 300ms if observer never fires.
-    const fallback = setTimeout(() => setInView(true), 300);
+    const fallback = setTimeout(() => setInView(true), 250);
     return () => { io.disconnect(); clearTimeout(fallback); };
   }, []);
 

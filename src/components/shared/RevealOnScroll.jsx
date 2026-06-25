@@ -16,7 +16,7 @@ export default function RevealOnScroll({
   // that mounts already inside the viewport (common on authenticated routes),
   // force visibility after a short delay so content can never get stuck at opacity:0.
   useEffect(() => {
-    const timer = setTimeout(() => setForceVisible(true), 200);
+    const timer = setTimeout(() => setForceVisible(true), 150);
     return () => clearTimeout(timer);
   }, []);
 
@@ -32,7 +32,7 @@ export default function RevealOnScroll({
       opacity: 1,
       y: 0,
       x: 0,
-      transition: { duration: 0.75, delay, ease: [0.22, 1, 0.36, 1] },
+      transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] },
     },
   };
 
