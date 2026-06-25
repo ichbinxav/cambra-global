@@ -9,11 +9,22 @@ Deno.serve(async (req) => {
     assert(me, 'Unauthorized');
 
     const body = await req.json().catch(() => ({}));
-    const { vertical, resultId, provider_id: providerId } = body || {};
+    const { vertical, resultId, provider_id: providerId, brand_id: requestedBrandId } = body || {};
     assert(vertical, 'vertical required');
 
-    const brands = await base44.entities.Brand.filter({ created_by: me.email }, '-created_date', 1);
-    const brand = brands?.[0];
+    // FIX 6 — prefer explicit brand_id with ownership check; fall back to user's latest brand
+    let brand = null;
+    if (requestedBrandId) {
+      const owned = await base44.entities.Brand.filter({ created_by: me.email, id: requestedBrandId });
+      if (!owned.length) {
+        return Response.json({ error: 'Brand not found or access denied' }, { status: 403 });
+      }
+      brand = owned[0];
+    } else {
+      // TODO: require explicit brand_id selection for multi-brand users
+      const brands = await base44.entities.Brand.filter({ created_by: me.email }, '-created_date', 1);
+      brand = brands?.[0];
+    }
     assert(brand, 'No brand found for current user');
 
     let result = null; let input = null;

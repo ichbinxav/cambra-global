@@ -70,6 +70,30 @@ const SHIPPING_PROVIDERS = ["DHL", "UPS", "FedEx", "DPD", "PostNL", "Royal Mail"
 const TPE_PROVIDERS = ["Ingenico", "Worldline", "SumUp", "Zettle", "Square", "myPOS", "Adyen", "Stripe Terminal", "Verifone", "Nexi"];
 const CATEGORIES = ["Fashion", "Beauty", "Wellness", "Lifestyle", "Food & Beverage", "Home", "Tech", "Other"];
 
+// FIX 7 — explicit mapping from display label to stored category slug.
+// Replaces previous (data.category || "other").toLowerCase().replace(/[^a-z]/g, "_")
+// which produced unstable / wrong slugs for multi-word labels.
+const CATEGORY_MAP = {
+  "Fashion": "fashion",
+  "Beauty": "beauty",
+  "Wellness": "health",
+  "Lifestyle": "home_living",
+  "Food & Beverage": "food_bev",
+  "Home": "home_living",
+  "Tech": "electronics",
+  "Electronics": "electronics",
+  "Home & Living": "home_living",
+  "Sports & Outdoors": "sports",
+  "Health & Wellness": "health",
+  "Toys & Kids": "toys",
+  "Pets": "pets",
+  "Jewelry & Accessories": "jewelry",
+  "Books & Media": "media",
+  "Automotive": "automotive",
+  "B2B / Wholesale": "b2b",
+  "Other": "other",
+};
+
 const COUNTRIES = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria",
   "Azerbaijan", "Bahrain", "Bangladesh", "Belarus", "Belgium", "Bolivia", "Bosnia and Herzegovina",
@@ -146,9 +170,10 @@ export default function Analyzer() {
       if (existing.length) {
         brandId = existing[0].id;
       } else if (data.brand_name) {
+        // FIX 7 — explicit category mapping (no regex transformation)
         const created = await base44.entities.Brand.create({
           name: data.brand_name,
-          category: (data.category || "other").toLowerCase().replace(/[^a-z]/g, "_") || "other",
+          category: CATEGORY_MAP[data.category] || "other",
           country: data.country || "",
           channels: ["dtc"],
         }).catch(() => null);
@@ -339,9 +364,10 @@ export default function Analyzer() {
       if (existing.length) {
         brandId = existing[0].id;
       } else if (data.brand_name) {
+        // FIX 7 — explicit category mapping (no regex transformation)
         const newBrand = await base44.entities.Brand.create({
           name: data.brand_name,
-          category: (data.category || "other").toLowerCase().replace(/[^a-z]/g, "_") || "other",
+          category: CATEGORY_MAP[data.category] || "other",
           country: data.country,
           channels: ["dtc"],
         });

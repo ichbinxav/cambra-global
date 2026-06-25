@@ -32,6 +32,26 @@
         }
       }
     },
+    "dtc_pct": {
+      "type": "number",
+      "description": "% of sales via direct-to-consumer"
+    },
+    "marketplace_pct": {
+      "type": "number",
+      "description": "% of sales via marketplaces"
+    },
+    "wholesale_pct": {
+      "type": "number",
+      "description": "% of sales via wholesale"
+    },
+    "retail_pct": {
+      "type": "number",
+      "description": "% of sales via physical retail"
+    },
+    "intl_pct": {
+      "type": "number",
+      "description": "% of international orders"
+    },
     "payment_provider": {
       "type": "string"
     },
@@ -63,6 +83,46 @@
     },
     "total_saas_spend": {
       "type": "number"
+    },
+    "tpe_provider": {
+      "type": "string",
+      "description": "In-store card terminal / TPV provider"
+    },
+    "terminal_count": {
+      "type": "number",
+      "description": "Number of TPV terminals"
+    },
+    "monthly_terminal_rental": {
+      "type": "number",
+      "description": "Monthly rental fees for terminals (EUR)"
+    },
+    "tpe_transaction_fee_pct": {
+      "type": "number",
+      "description": "Per-transaction TPV fee %"
+    },
+    "in_store_gmv": {
+      "type": "number",
+      "description": "Monthly in-store GMV (EUR)"
+    },
+    "in_store_avg_ticket": {
+      "type": "number",
+      "description": "Average in-store ticket value (EUR)"
+    },
+    "card_mix_pct": {
+      "type": "number",
+      "description": "% of in-store sales paid by card"
+    },
+    "fixed_banking_fees": {
+      "type": "number",
+      "description": "Fixed monthly banking fees (EUR)"
+    },
+    "maintenance_fees": {
+      "type": "number",
+      "description": "Maintenance / extra fixed terminal fees (EUR)"
+    },
+    "contract_duration_months": {
+      "type": "number",
+      "description": "Contract duration in months (TPV / acquirer)"
     },
     "country": {
       "type": "string"

@@ -1,5 +1,9 @@
 // CAMBRA External API v1 — production router
 // =============================================================================
+// TENANT ISOLATION: All endpoints must filter by organization_id or created_by.
+// Never use asServiceRole.list() without explicit tenant filter.
+// See assertTenant() and tenantFilter() helpers defined below.
+// =============================================================================
 // Versioned at /api/v1/. Modular by resource. Consistent JSON envelope on every
 // response: { data, meta, error?, request_id }. Auth via API key OR OAuth 2.0
 // bearer token. Rate-limited per principal. Full audit log per request.
@@ -233,6 +237,17 @@ function tenantFilter(principal, extra = {}) {
   return { ...extra, organization_id: orgId };
 }
 
+// FIX 13 — fallback filter for entities that don't carry organization_id but
+// do have created_by. Returns { created_by: <principal user email> } when an
+// org-scoped principal exists; an empty object for platform-level principals.
+function tenantFilterByCreatedBy(principal, extra = {}) {
+  const orgId = principal.raw?.organization_id;
+  if (!orgId) return extra; // platform-level
+  const userEmail = principal.user_email || principal.raw?.user_email || principal.raw?.owner_email;
+  if (!userEmail) return { ...extra, _impossible_tenant_match: "__no_user__" }; // deny-by-default
+  return { ...extra, created_by: userEmail };
+}
+
 // Validate that a single fetched resource belongs to the principal's org.
 function assertTenant(principal, resource) {
   const orgId = principal.raw?.organization_id;
@@ -320,9 +335,13 @@ const RESOURCES = {
   // ---------- DOCUMENTS ----------
   "GET /v1/documents": {
     scope: "read:documents",
-    handler: async (base44, { query }) => {
+    handler: async (base44, { query, principal }) => {
       const limit = Math.min(parseInt(query.limit || "50", 10), 200);
-      const items = await base44.asServiceRole.entities.Document.list("-created_date", limit);
+      // FIX 13 — tenant isolation: Document has no organization_id; scope by created_by
+      const filter = tenantFilterByCreatedBy(principal);
+      const items = Object.keys(filter).length
+        ? await base44.asServiceRole.entities.Document.filter(filter, "-created_date", limit)
+        : await base44.asServiceRole.entities.Document.list("-created_date", limit);
       return { data: items, meta: { count: items.length } };
     },
   },
@@ -340,9 +359,13 @@ const RESOURCES = {
   // ---------- SAVINGS ----------
   "GET /v1/savings": {
     scope: "read:savings",
-    handler: async (base44, { query }) => {
+    handler: async (base44, { query, principal }) => {
       const limit = Math.min(parseInt(query.limit || "50", 10), 200);
-      const items = await base44.asServiceRole.entities.BrandSavings.list("-computed_at", limit);
+      // FIX 13 — tenant isolation: BrandSavings has no organization_id; scope by created_by
+      const filter = tenantFilterByCreatedBy(principal);
+      const items = Object.keys(filter).length
+        ? await base44.asServiceRole.entities.BrandSavings.filter(filter, "-computed_at", limit)
+        : await base44.asServiceRole.entities.BrandSavings.list("-computed_at", limit);
       return {
         data: items.map((s) => ({
           id: s.id,
@@ -361,9 +384,13 @@ const RESOURCES = {
   // ---------- TRACKERS (DealActivation) ----------
   "GET /v1/trackers": {
     scope: "read:trackers",
-    handler: async (base44, { query }) => {
+    handler: async (base44, { query, principal }) => {
       const limit = Math.min(parseInt(query.limit || "50", 10), 200);
-      const items = await base44.asServiceRole.entities.DealActivation.list("-created_date", limit);
+      // FIX 13 — tenant isolation: DealActivation has no organization_id; scope by created_by
+      const filter = tenantFilterByCreatedBy(principal);
+      const items = Object.keys(filter).length
+        ? await base44.asServiceRole.entities.DealActivation.filter(filter, "-created_date", limit)
+        : await base44.asServiceRole.entities.DealActivation.list("-created_date", limit);
       return { data: items.map(serializeTracker), meta: { count: items.length } };
     },
   },
@@ -404,11 +431,21 @@ const RESOURCES = {
   // ---------- KPIS ----------
   "GET /v1/kpis": {
     scope: "read:kpis",
-    handler: async (base44) => {
+    handler: async (base44, { principal }) => {
+      // FIX 13 — tenant isolation: org-scoped principals see only their tenant
+      const brandFilter = tenantFilter(principal);
+      const createdByFilter = tenantFilterByCreatedBy(principal);
       const [brands, analyses, activations] = await Promise.all([
-        base44.asServiceRole.entities.Brand.list("-created_date", 1000),
-        base44.asServiceRole.entities.AnalyzerResult.list("-created_date", 1000),
-        base44.asServiceRole.entities.DealActivation.list("-created_date", 1000).catch(() => []),
+        Object.keys(brandFilter).length
+          ? base44.asServiceRole.entities.Brand.filter(brandFilter, "-created_date", 1000)
+          : base44.asServiceRole.entities.Brand.list("-created_date", 1000),
+        Object.keys(createdByFilter).length
+          ? base44.asServiceRole.entities.AnalyzerResult.filter(createdByFilter, "-created_date", 1000)
+          : base44.asServiceRole.entities.AnalyzerResult.list("-created_date", 1000),
+        (Object.keys(createdByFilter).length
+          ? base44.asServiceRole.entities.DealActivation.filter(createdByFilter, "-created_date", 1000)
+          : base44.asServiceRole.entities.DealActivation.list("-created_date", 1000)
+        ).catch(() => []),
       ]);
       const totalIdentified = analyses.reduce((s, a) => s + (a.total_savings || 0), 0);
       const totalActivated = activations.reduce((s, a) => s + (a.activated_savings_yearly || 0), 0);
@@ -442,8 +479,12 @@ const RESOURCES = {
   // ---------- INTEGRATIONS ----------
   "GET /v1/integrations": {
     scope: "read:integrations",
-    handler: async (base44) => {
-      const items = await base44.asServiceRole.entities.IntegrationConnection.list("-created_date", 200);
+    handler: async (base44, { principal }) => {
+      // FIX 13 — tenant isolation: IntegrationConnection scoped by created_by
+      const filter = tenantFilterByCreatedBy(principal);
+      const items = Object.keys(filter).length
+        ? await base44.asServiceRole.entities.IntegrationConnection.filter(filter, "-created_date", 200)
+        : await base44.asServiceRole.entities.IntegrationConnection.list("-created_date", 200);
       return {
         data: items.map((c) => ({
           id: c.id,
@@ -461,12 +502,14 @@ const RESOURCES = {
   // ---------- AI ACTIONS ----------
   "POST /v1/ai/summarize-brand": {
     scope: "read:brands",
-    handler: async (base44, { body }) => {
+    handler: async (base44, { body, principal }) => {
       if (!body.brand_id) throw new Error("brand_id is required");
       const [brand, analyses] = await Promise.all([
         base44.asServiceRole.entities.Brand.get(body.brand_id),
         base44.asServiceRole.entities.AnalyzerResult.filter({ brand_id: body.brand_id }, "-created_date", 5),
       ]);
+      // FIX 13 — verify the requested brand belongs to the principal's tenant before responding
+      assertTenant(principal, brand);
       const latest = analyses[0];
       return {
         data: {
@@ -481,11 +524,19 @@ const RESOURCES = {
   },
   "POST /v1/ai/weekly-briefing": {
     scope: "read:kpis",
-    handler: async (base44, { principal }) => {
+    handler: async (base44, { body, principal }) => {
+      // FIX 13 — when caller passes a brand_id, verify it belongs to the principal's tenant
+      if (body?.brand_id) {
+        const brand = await base44.asServiceRole.entities.Brand.get(body.brand_id).catch(() => null);
+        assertTenant(principal, brand);
+      }
       const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      // FIX 13 — tenant isolation: scope analyses by created_by, brands by organization_id
+      const brandFilter = tenantFilter(principal, { created_date: { $gte: since } });
+      const createdByFilter = tenantFilterByCreatedBy(principal, { created_date: { $gte: since } });
       const [newAnalyses, newBrands] = await Promise.all([
-        base44.asServiceRole.entities.AnalyzerResult.filter({ created_date: { $gte: since } }, "-created_date", 200).catch(() => []),
-        base44.asServiceRole.entities.Brand.filter({ created_date: { $gte: since } }, "-created_date", 200).catch(() => []),
+        base44.asServiceRole.entities.AnalyzerResult.filter(createdByFilter, "-created_date", 200).catch(() => []),
+        base44.asServiceRole.entities.Brand.filter(brandFilter, "-created_date", 200).catch(() => []),
       ]);
       const savingsThisWeek = newAnalyses.reduce((s, a) => s + (a.total_savings || 0), 0);
       const briefing = {

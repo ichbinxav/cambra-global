@@ -197,6 +197,9 @@ const AuthenticatedApp = () => {
         <Route path="/cookies" element={<Navigate to="/Cookies" replace />} />
         <Route path="/Snapshot" element={<Snapshot />} />
         <Route path="/snapshot" element={<Navigate to="/Snapshot" replace />} />
+        {/* FIX 1 — /Deals is referenced in emails, recs and CTAs; redirect to UnlockSavings */}
+        <Route path="/Deals" element={<Navigate to="/UnlockSavings" replace />} />
+        <Route path="/deals" element={<Navigate to="/UnlockSavings" replace />} />
         <Route path="/Pricing" element={<Pricing />} />
         <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
         <Route path="/Developers" element={<Developers />} />

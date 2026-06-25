@@ -29,9 +29,22 @@ export default function StripeAnalyzer() {
           <span className="text-muted-foreground/30">/</span>
           <span className="text-sm text-muted-foreground/60">Stripe Analyzer</span>
         </div>
-        <div className="flex items-center gap-2 text-[10px] text-muted-foreground/40">
-          <Lock size={11} />
-          <span>Secure, read-only access</span>
+        <div className="flex items-center gap-2 text-[10px] text-amber-600 font-bold">
+          <AlertTriangle size={11} />
+          <span>DEMO MODE</span>
+        </div>
+      </div>
+
+      {/* FIX 3 — DEMO banner: this page does NOT use a real Stripe connection */}
+      <div className="bg-amber-50 border-b border-amber-200 px-5 py-3">
+        <div className="max-w-2xl mx-auto flex items-start gap-2.5 text-[12px] text-amber-900">
+          <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600" />
+          <p className="leading-relaxed">
+            <strong>This is a demo preview.</strong> The numbers below are illustrative.
+            Connect your real Stripe account via{" "}
+            <Link to="/ConnectTools" className="underline font-bold">Connect Tools</Link>{" "}
+            to see your actual data.
+          </p>
         </div>
       </div>
 
@@ -54,8 +67,8 @@ export default function StripeAnalyzer() {
                     <span style={{ color: "#635BFF" }}>ST</span>
                   </div>
                   <div>
-                    <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/50">Payments · Live connection</p>
-                    <h1 className="text-xl font-black tracking-tight">Connect Stripe</h1>
+                    <p className="text-[10px] tracking-[0.3em] uppercase text-amber-600 font-bold">Demo preview</p>
+                    <h1 className="text-xl font-black tracking-tight">Stripe Analyzer (Demo)</h1>
                   </div>
                 </div>
 
@@ -63,7 +76,7 @@ export default function StripeAnalyzer() {
                   See your real<br />payment fees.
                 </h2>
                 <p className="text-muted-foreground text-sm leading-relaxed max-w-md">
-                  We pull your last 30 days of transactions, calculate your effective fee rate, and compare it against the CAMBRA network benchmark for your revenue tier and country.
+                  This demo shows what a Stripe analysis looks like with sample numbers. For real data from your account, connect via <Link to="/ConnectTools" className="underline font-semibold">Connect Tools</Link>.
                 </p>
               </div>
 
@@ -90,12 +103,12 @@ export default function StripeAnalyzer() {
                 </div>
               </div>
 
-              {/* Security guarantees */}
+              {/* Demo notes — replaces previous "Security guarantees" copy that implied real data */}
               <div className="space-y-2">
                 {[
-                  { icon: Lock, text: "Read-only access — we never modify your data" },
-                  { icon: Shield, text: "Tokens stored server-side, never exposed to browser" },
-                  { icon: CheckCircle2, text: "Instant analysis based on your real transactions" },
+                  { icon: AlertTriangle, text: "Demo mode — numbers are illustrative, not from your account" },
+                  { icon: Shield, text: "For real data: Connect Tools → Stripe (read-only OAuth)" },
+                  { icon: CheckCircle2, text: "Instant preview of the analysis layout and outputs" },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 text-xs text-muted-foreground/60">
                     <item.icon size={11} className="text-green-500 shrink-0" />
@@ -113,11 +126,11 @@ export default function StripeAnalyzer() {
                   style={{ background: "#635BFF" }}
                 >
                   <CreditCard size={16} />
-                  Connect Stripe Account
+                  Run demo preview
                   <ArrowRight size={14} />
                 </Button>
-                <p className="text-center text-[11px] text-muted-foreground/40">
-                  Uses Stripe OAuth · Secure redirect · No card required
+                <p className="text-center text-[11px] text-amber-700">
+                  Demo mode — connect via <Link to="/ConnectTools" className="underline font-bold">Connect Tools</Link> for real data
                 </p>
               </div>
 

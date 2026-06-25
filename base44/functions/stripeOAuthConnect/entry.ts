@@ -27,15 +27,25 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { code } = body;
+    const { code, brand_id: requestedBrandId } = body;
     if (!code) return Response.json({ ok: false, error: 'Missing code' }, { status: 400 });
 
-    // Resolve user's brand
-    const brands = await base44.entities.Brand.list('-created_date', 1).catch(() => []);
-    if (!brands.length) {
-      return Response.json({ ok: false, error: 'No brand found for user' }, { status: 400 });
+    // FIX 6 — require explicit brand_id and verify ownership; fall back to user's latest brand only when not provided
+    let brandId = null;
+    if (requestedBrandId) {
+      const owned = await base44.entities.Brand.filter({ created_by: user.email, id: requestedBrandId });
+      if (!owned.length) {
+        return Response.json({ ok: false, error: 'Brand not found or access denied' }, { status: 403 });
+      }
+      brandId = requestedBrandId;
+    } else {
+      // TODO: require explicit brand_id selection for multi-brand users
+      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch(() => []);
+      if (!brands.length) {
+        return Response.json({ ok: false, error: 'No brand found for user' }, { status: 400 });
+      }
+      brandId = brands[0].id;
     }
-    const brandId = brands[0].id;
 
     // Exchange code for token (Stripe OAuth)
     const tokenRes = await fetch('https://connect.stripe.com/oauth/token', {

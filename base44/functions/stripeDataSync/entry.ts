@@ -26,20 +26,21 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     let { brand_id } = body;
+    const isAdmin = user.role === 'admin';
 
-    // Resolve brand_id from user if not provided
+    // FIX 6 — require explicit brand_id; fall back to user's latest brand only when not provided
     if (!brand_id) {
-      const brands = await base44.entities.Brand.list('-created_date', 1).catch(() => []);
-      if (!brands.length) return Response.json({ ok: false, error: 'No brand found' }, { status: 400 });
+      // TODO: require explicit brand_id selection for multi-brand users
+      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch(() => []);
+      if (!brands.length) return Response.json({ ok: false, error: 'brand_id is required' }, { status: 400 });
       brand_id = brands[0].id;
     }
 
-    // Verify brand ownership (admins allowed via service role pathway)
-    const isAdmin = user.role === 'admin';
+    // Verify brand ownership (admins bypass)
     if (!isAdmin) {
-      const userBrands = await base44.entities.Brand.filter({ id: brand_id }).catch(() => []);
+      const userBrands = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch(() => []);
       if (!userBrands.length) {
-        return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+        return Response.json({ ok: false, error: 'Brand not found or access denied' }, { status: 403 });
       }
     }
 

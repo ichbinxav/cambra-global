@@ -173,17 +173,18 @@ export default function ConnectTools() {
     { id: "manual", icon: Pencil, label: "Enter manually", sub: "Always available" },
   ];
 
+  // FIX 11 — replaced unverifiable percentage accuracy claims with qualitative confidence labels.
   const HERO_CONFIG = {
     connect: {
        eyebrow: "Open integration system",
        title: "Connect your tools.",
        subtitle: "Direct integrations pull real rates and volumes — automatically. The most precise way to map your infrastructure.",
-       accuracy: "98%",
-       accuracyLabel: "Accuracy",
+       accuracy: "High",
+       accuracyLabel: "Confidence",
        stats: [
-         { value: "98%", label: "Accuracy" },
-        { value: "Real-time", label: "Data freshness" },
-        { value: "22+", label: "Integrations" },
+         { value: "High", label: "Confidence" },
+        { value: "Connected", label: "Data status" },
+        { value: "Growing", label: "Integration catalog" },
         { value: "OAuth", label: "Secure access" },
       ],
     },
@@ -191,10 +192,10 @@ export default function ConnectTools() {
        eyebrow: "AI-powered ingestion",
        title: "Upload your files.",
        subtitle: "Drop statements, invoices or exports — our AI extracts rates, volumes and costs in seconds. Great when direct integration isn't available.",
-       accuracy: "79%",
-       accuracyLabel: "Accuracy",
+       accuracy: "Medium",
+       accuracyLabel: "Confidence",
        stats: [
-         { value: "79%", label: "Accuracy" },
+         { value: "Medium", label: "Confidence" },
         { value: "<30s", label: "Processing" },
         { value: "PDF/CSV/XLS", label: "Formats" },
         { value: "AI-extracted", label: "Method" },
@@ -204,10 +205,10 @@ export default function ConnectTools() {
        eyebrow: "Fallback mode",
        title: "Enter manually.",
        subtitle: "Always available — answer a few questions and we'll generate an estimate. Connect tools later to refine your analysis.",
-       accuracy: "66%",
+       accuracy: "Estimated",
        accuracyLabel: "Estimate confidence",
        stats: [
-         { value: "66%", label: "Confidence" },
+         { value: "Estimated", label: "Confidence" },
         { value: "5 min", label: "Setup time" },
         { value: "Guided", label: "Step-by-step" },
         { value: "Estimated", label: "Result quality" },
@@ -502,7 +503,7 @@ export default function ConnectTools() {
                 <Plug size={18} className="text-foreground" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-bold text-foreground mb-0.5">Boost accuracy to 99%</p>
+                <p className="text-sm font-bold text-foreground mb-0.5">Boost to highest confidence</p>
                 <p className="text-[11px] text-muted-foreground">Connect your tools for live rates and volumes — no manual work.</p>
               </div>
               <ArrowRight size={16} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
@@ -540,7 +541,7 @@ export default function ConnectTools() {
                 <Plug size={18} className="text-foreground" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-bold text-foreground mb-0.5">Connect tools for 99% accuracy</p>
+                <p className="text-sm font-bold text-foreground mb-0.5">Connect tools for highest confidence</p>
                 <p className="text-[11px] text-muted-foreground">Skip the typing — we pull real rates and volumes automatically.</p>
               </div>
               <ArrowRight size={16} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />

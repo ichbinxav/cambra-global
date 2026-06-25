@@ -16,6 +16,8 @@ export default function StripeConnectCard() {
   const loadConnection = async () => {
     setLoading(true);
     try {
+      // FIX 9 — RLS already scopes this to created_by (the current user).
+      // For multi-brand users we should also pass brand_id once the card receives one as a prop.
       const list = await base44.entities.StripeConnection.filter(
         { connection_status: "connected" },
         "-last_sync_at",
@@ -32,11 +34,19 @@ export default function StripeConnectCard() {
   useEffect(() => {
     loadConnection();
 
-    // Handle OAuth callback (?code=...)
+    // FIX 4 — Handle OAuth callback (?code=...) with CSRF state validation
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
-    const state = params.get("state");
-    if (code && state === "cambra_stripe") {
+    const returnedState = params.get("state");
+    if (code) {
+      const savedState = sessionStorage.getItem("stripe_oauth_state");
+      if (!returnedState || returnedState !== savedState) {
+        setError("OAuth state mismatch — possible CSRF attack. Please try again.");
+        // Clean URL so the error doesn't reappear on refresh
+        window.history.replaceState({}, "", window.location.pathname);
+        return;
+      }
+      sessionStorage.removeItem("stripe_oauth_state");
       handleOAuthCallback(code);
     }
   }, []);
@@ -69,13 +79,18 @@ export default function StripeConnectCard() {
       setSetupRequired(true);
       return;
     }
+    // FIX 4 — random per-session state for CSRF protection
+    const state = (window.crypto && window.crypto.randomUUID)
+      ? window.crypto.randomUUID()
+      : `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem("stripe_oauth_state", state);
     const redirectUri = `${window.location.origin}/ConnectTools`;
     const url =
       `https://connect.stripe.com/oauth/authorize` +
       `?response_type=code` +
       `&client_id=${encodeURIComponent(clientId)}` +
       `&scope=read_only` +
-      `&state=cambra_stripe` +
+      `&state=${encodeURIComponent(state)}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}`;
     window.location.href = url;
   };

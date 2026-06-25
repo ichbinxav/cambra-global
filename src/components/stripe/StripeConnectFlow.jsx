@@ -3,13 +3,14 @@ import { motion } from "framer-motion";
 import { CheckCircle2, CreditCard, BarChart3, Zap } from "lucide-react";
 
 const STEPS = [
-  { label: "Authenticating with Stripe", sub: "Secure OAuth handshake", icon: CreditCard, duration: 1400 },
-  { label: "Fetching transaction data", sub: "Last 30 days · All charges", icon: BarChart3, duration: 1800 },
-  { label: "Calculating effective fees", sub: "Volume, fees, net totals", icon: Zap, duration: 1200 },
+  { label: "Simulating OAuth handshake (DEMO)", sub: "Demo mode — no real account", icon: CreditCard, duration: 1400 },
+  { label: "Generating sample transaction data", sub: "Illustrative — not your data", icon: BarChart3, duration: 1800 },
+  { label: "Calculating sample fees", sub: "Volume, fees, net totals", icon: Zap, duration: 1200 },
   { label: "Running benchmark analysis", sub: "Comparing against network", icon: CheckCircle2, duration: 900 },
 ];
 
-// Mock Stripe data — replace with real API call when secrets are set
+// DEMO ONLY: hardcoded sample data — never use in production decisions.
+// To get real data, connect via /ConnectTools → Stripe OAuth.
 function generateMockData() {
   const volume = 87340; // monthly volume in EUR
   const transactions = 1240;
@@ -82,14 +83,18 @@ export default function StripeConnectFlow({ onComplete }) {
 
   return (
     <div className="space-y-8">
+      {/* DEMO indicator banner */}
+      <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-[11px] text-amber-900 font-semibold text-center">
+        ⚠ DEMO MODE — sample numbers, not from a real Stripe account
+      </div>
       {/* Header */}
       <div className="text-center">
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-lg mx-auto mb-5"
           style={{ background: "#635BFF18", border: "1px solid #635BFF30" }}>
           <span style={{ color: "#635BFF" }}>ST</span>
         </div>
-        <h2 className="text-2xl font-black tracking-[-0.03em] mb-2">Analyzing your Stripe account</h2>
-        <p className="text-sm text-muted-foreground">This takes about 5 seconds</p>
+        <h2 className="text-2xl font-black tracking-[-0.03em] mb-2">Generating demo preview</h2>
+        <p className="text-sm text-muted-foreground">Sample analysis · About 5 seconds</p>
       </div>
 
       {/* Steps */}
@@ -139,9 +144,9 @@ export default function StripeConnectFlow({ onComplete }) {
         })}
       </div>
 
-      {/* Security note */}
-      <p className="text-center text-[11px] text-muted-foreground/35">
-        🔒 Read-only access · We never modify your data · Instant results
+      {/* Demo note */}
+      <p className="text-center text-[11px] text-amber-700">
+        Demo mode — for real data, connect via Connect Tools
       </p>
     </div>
   );

@@ -12,10 +12,14 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // FIX 5 — admin-only: this updates realized savings across activations and must never run for regular users
+    if (user.role !== 'admin') return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
 
     const { brandId } = await req.json().catch(() => ({}));
+    // FIX 5 — never allow an empty filter; that would touch every brand's activations at once
+    if (!brandId) return Response.json({ error: 'brand_id is required' }, { status: 400 });
 
-    const filter = brandId ? { brand_id: brandId } : {};
+    const filter = { brand_id: brandId };
     const activations = await base44.asServiceRole.entities.DealActivation.filter(filter);
 
     let updated = 0;

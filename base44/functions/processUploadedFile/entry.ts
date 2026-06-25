@@ -131,12 +131,22 @@ Deno.serve(async (req) => {
     let detected = (best?.score || 0) > 0 ? best.key : 'unknown';
     let aggregates = {};
 
-    // Find user's brand
+    // FIX 6 — prefer explicit brand_id from request; verify ownership if provided.
+    // Fall back to user's latest brand only when caller didn't pass one (single-brand legacy flow).
     let brandId = null;
     try {
-      const me = await base44.auth.me();
-      const list = await base44.entities.Brand.filter({ created_by: me.email }, '-created_date', 1);
-      if (Array.isArray(list) && list[0]?.id) brandId = list[0].id;
+      const { brand_id: requestedBrandId } = await req.clone().json().catch(() => ({}));
+      if (requestedBrandId) {
+        const owned = await base44.entities.Brand.filter({ created_by: user.email, id: requestedBrandId });
+        if (!owned.length) {
+          return Response.json({ error: 'Brand not found or access denied' }, { status: 403 });
+        }
+        brandId = requestedBrandId;
+      } else {
+        // TODO: require explicit brand_id selection for multi-brand users
+        const list = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1);
+        if (Array.isArray(list) && list[0]?.id) brandId = list[0].id;
+      }
     } catch (_) {}
 
     // Compute aggregates and update profiles/inputs
@@ -146,7 +156,10 @@ Deno.serve(async (req) => {
       const total = sum(best.data, ['gross_amount', 'amount']);
       const fees = sum(best.data, ['fee_amount', 'fee']);
       const pct = total > 0 ? (fees / total) * 100 : 0;
-      const provider = (best.data.find(r => r.provider)?.provider) || (file_name||'').toLowerCase().includes('stripe') ? 'Stripe' : undefined;
+      // FIX 8 — operator precedence bug: original (A || B) ? 'Stripe' : undefined
+      // silently overrode any detected provider with 'Stripe'. Split into explicit steps.
+      const detectedProvider = best.data.find(r => r.provider)?.provider;
+      const provider = detectedProvider || ((file_name || '').toLowerCase().includes('stripe') ? 'Stripe' : undefined);
       aggregates = { payments: { total_volume_eur: total, fee_pct: Number(pct.toFixed(2)), provider: provider || null } };
 
       if (brandId && (total > 0 || pct > 0)) {
