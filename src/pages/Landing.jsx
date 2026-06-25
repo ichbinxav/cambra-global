@@ -1,9 +1,12 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, FileText } from "lucide-react";
+import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, FileText, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
+import AuroraBackground from "@/components/landing/AuroraBackground";
+import AnimatedSection from "@/components/landing/AnimatedSection";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
 const LANDING_JSON_LD = {
@@ -93,67 +96,131 @@ function LandingNavbar() {
 function Hero() {
   const { t } = useTranslation();
   return (
-    <section className="relative flex items-center" style={{ minHeight: "100vh", background: "#0a0a0a", color: "#ffffff" }}>
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-          maskImage: "radial-gradient(ellipse 90% 70% at 50% 40%, #000 30%, transparent 80%)",
-          WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 40%, #000 30%, transparent 80%)",
-        }}
-      />
-      <div
+    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", background: "#0a0a0a", color: "#ffffff" }}>
+      {/* Cinematic ambient layers */}
+      <AuroraBackground intensity={1} />
+
+      {/* Spotlight halo behind headline */}
+      <motion.div
         aria-hidden
         className="absolute pointer-events-none"
         style={{
-          width: 600, height: 600, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-          background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
-          filter: "blur(60px)",
+          width: 720, height: 720, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+          background: "radial-gradient(circle, rgba(59,130,246,0.22) 0%, transparent 70%)",
+          filter: "blur(70px)",
         }}
+        animate={{ scale: [1, 1.08, 1], opacity: [0.85, 1, 0.85] }}
+        transition={{ duration: 7, ease: "easeInOut", repeat: Infinity }}
       />
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-10 py-32">
-        <div
+        <motion.div
           className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-8 text-[11px] uppercase tracking-[0.22em]"
-          style={{ border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.75)" }}
+          style={{
+            border: "1px solid rgba(96,165,250,0.30)",
+            color: "rgba(255,255,255,0.85)",
+            background: "rgba(59,130,246,0.06)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            boxShadow: "0 0 24px rgba(59,130,246,0.18)",
+          }}
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
+          </span>
           {t("badge")}
-        </div>
+        </motion.div>
 
-        <h1 className="text-hero animate-fade-up text-white max-w-5xl">
+        <motion.h1
+          className="text-hero text-white max-w-5xl"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+          style={{
+            textShadow: "0 0 60px rgba(59,130,246,0.18)",
+          }}
+        >
           {t("hero_headline")}
-        </h1>
+        </motion.h1>
 
-        <p
-          className="mt-8 animate-fade-up"
+        <motion.p
+          className="mt-8"
           style={{ maxWidth: 520, color: "rgba(255,255,255,0.55)", fontSize: 18, lineHeight: 1.6 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
         >
           {t("hero_sub")}
-        </p>
+        </motion.p>
 
-        <div className="mt-10 flex flex-wrap items-center gap-3 animate-fade-up">
-          <Link
-            to="/Analyzer"
-            className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] hover:opacity-90 transition-opacity"
-          >
-            {t("hero_cta_primary")}
-          </Link>
-          <a
+        <motion.div
+          className="mt-10 flex flex-wrap items-center gap-3"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+        >
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+            <Link
+              to="/Analyzer"
+              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] transition-shadow"
+              style={{
+                boxShadow:
+                  "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
+              }}
+            >
+              {t("hero_cta_primary")}
+              <ArrowRight size={16} />
+            </Link>
+          </motion.div>
+          <motion.a
+            whileHover={{ scale: 1.03, borderColor: "rgba(255,255,255,0.5)", color: "rgba(255,255,255,0.95)" }}
             href="#how"
-            className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium transition-colors"
-            style={{ border: "1px solid rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.70)" }}
+            className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium"
+            style={{
+              border: "1px solid rgba(255,255,255,0.20)",
+              color: "rgba(255,255,255,0.70)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              background: "rgba(255,255,255,0.02)",
+            }}
           >
             {t("hero_cta_secondary")}
-          </a>
-        </div>
+          </motion.a>
+        </motion.div>
 
-        <p className="mt-5 text-[12px]" style={{ color: "rgba(255,255,255,0.30)" }}>
+        <motion.p
+          className="mt-5 text-[12px]"
+          style={{ color: "rgba(255,255,255,0.30)" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.6 }}
+        >
           {t("hero_footnote")}
-        </p>
+        </motion.p>
+
+        {/* Scroll-down cue */}
+        <motion.div
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.8 }}
+          aria-hidden
+        >
+          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "rgba(255,255,255,0.35)" }}>
+            Scroll
+          </span>
+          <motion.div
+            className="w-px h-10"
+            style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.4), transparent)" }}
+            animate={{ scaleY: [1, 0.4, 1], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 2.2, ease: "easeInOut", repeat: Infinity }}
+            initial={{ originY: 0 }}
+          />
+        </motion.div>
       </div>
     </section>
   );
@@ -168,26 +235,58 @@ function ProblemSection() {
   ];
 
   return (
-    <section style={{ background: "#0a0a0a" }} className="py-24 sm:py-32">
-      <div className="max-w-6xl mx-auto px-6 sm:px-10">
-        <SectionLabel className="mb-6">{t("problem_label")}</SectionLabel>
-        <h2 className="text-display text-white max-w-3xl mb-16">{t("problem_headline")}</h2>
+    <section style={{ background: "#0a0a0a" }} className="relative py-24 sm:py-32 overflow-hidden">
+      {/* ambient red wash for the "problem" mood */}
+      <div
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          width: 600, height: 600, left: "10%", top: "20%",
+          background: "radial-gradient(circle, rgba(239,68,68,0.10) 0%, transparent 70%)",
+          filter: "blur(80px)",
+        }}
+      />
+      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
+        <AnimatedSection>
+          <SectionLabel className="mb-6">{t("problem_label")}</SectionLabel>
+          <h2 className="text-display text-white max-w-3xl mb-16">{t("problem_headline")}</h2>
+        </AnimatedSection>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {cards.map((c, i) => (
-            <div key={i} className="surface surface-hover p-6">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+            <AnimatedSection key={i} delay={i * 0.1}>
+              <motion.div
+                whileHover={{ y: -6 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="surface p-6 relative group h-full"
+                style={{ background: "rgba(255,255,255,0.025)" }}
               >
-                <c.icon size={16} className="text-white/70" aria-hidden="true" />
-              </div>
-              <p className="text-white font-bold text-[15px] mb-1">{c.title}</p>
-              <p className="text-[13px] mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>{c.body}</p>
-              <p className="text-mono text-[12px] font-bold" style={{ color: "rgba(239,68,68,0.85)" }}>
-                {c.stat}
-              </p>
-            </div>
+                {/* hover halo */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 50% 0%, rgba(239,68,68,0.16), transparent 60%)",
+                  }}
+                />
+                <div
+                  className="relative w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                  style={{
+                    background: "rgba(239,68,68,0.08)",
+                    border: "1px solid rgba(239,68,68,0.18)",
+                    boxShadow: "0 0 24px rgba(239,68,68,0.12)",
+                  }}
+                >
+                  <c.icon size={16} className="text-red-300" aria-hidden="true" />
+                </div>
+                <p className="relative text-white font-bold text-[15px] mb-1">{c.title}</p>
+                <p className="relative text-[13px] mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>{c.body}</p>
+                <p className="relative text-mono text-[12px] font-bold" style={{ color: "rgba(239,68,68,0.95)" }}>
+                  {c.stat}
+                </p>
+              </motion.div>
+            </AnimatedSection>
           ))}
         </div>
       </div>
@@ -204,34 +303,89 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section id="how" style={{ background: "#0a0a0a" }} className="py-24 sm:py-32">
-      <div className="max-w-6xl mx-auto px-6 sm:px-10">
-        <SectionLabel className="mb-6">{t("how_label")}</SectionLabel>
-        <h2 className="text-display text-white max-w-3xl mb-16">{t("how_label")}</h2>
+    <section id="how" style={{ background: "#0a0a0a" }} className="relative py-24 sm:py-32 overflow-hidden">
+      {/* ambient blue wash */}
+      <div
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          width: 700, height: 700, right: "-10%", top: "10%",
+          background: "radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)",
+          filter: "blur(90px)",
+        }}
+      />
+      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
+        <AnimatedSection>
+          <SectionLabel className="mb-6">{t("how_label")}</SectionLabel>
+          <h2 className="text-display text-white max-w-3xl mb-16">{t("how_label")}</h2>
+        </AnimatedSection>
 
-        <div className="space-y-3">
-          {steps.map((s) => (
-            <div key={s.n} className="surface surface-hover relative overflow-hidden p-8 sm:p-10">
-              <span
-                aria-hidden
-                className="absolute -top-6 right-6 text-mono select-none"
-                style={{
-                  fontSize: "clamp(96px, 14vw, 180px)",
-                  fontWeight: 900,
-                  letterSpacing: "-0.05em",
-                  lineHeight: 1,
-                  color: "rgba(255,255,255,0.04)",
-                }}
+        <div className="relative space-y-3">
+          {/* Animated connector line behind the steps */}
+          <motion.div
+            aria-hidden
+            className="absolute left-8 top-0 bottom-0 w-px hidden sm:block"
+            style={{
+              background:
+                "linear-gradient(180deg, transparent, rgba(96,165,250,0.4), rgba(44,167,193,0.3), transparent)",
+              boxShadow: "0 0 16px rgba(96,165,250,0.3)",
+            }}
+            initial={{ scaleY: 0, originY: 0 }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          />
+
+          {steps.map((s, i) => (
+            <AnimatedSection key={s.n} delay={i * 0.15}>
+              <motion.div
+                whileHover={{ scale: 1.005, borderColor: "rgba(96,165,250,0.25)" }}
+                transition={{ duration: 0.3 }}
+                className="surface relative overflow-hidden p-8 sm:p-10 group"
+                style={{ background: "rgba(255,255,255,0.025)" }}
               >
-                {s.n}
-              </span>
+                {/* hover glow halo */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 20% 50%, rgba(59,130,246,0.10), transparent 60%)",
+                  }}
+                />
+                {/* Giant number — gradient */}
+                <span
+                  aria-hidden
+                  className="absolute -top-6 right-6 text-mono select-none"
+                  style={{
+                    fontSize: "clamp(96px, 14vw, 180px)",
+                    fontWeight: 900,
+                    letterSpacing: "-0.05em",
+                    lineHeight: 1,
+                    background:
+                      "linear-gradient(180deg, rgba(96,165,250,0.18), rgba(255,255,255,0.02) 70%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  {s.n}
+                </span>
 
-              <div className="relative z-10 max-w-xl">
-                <SectionLabel className="mb-3">Step {s.n}</SectionLabel>
-                <h3 className="text-title text-white mb-3">{s.title}</h3>
-                <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.55)" }}>{s.desc}</p>
-              </div>
-            </div>
+                <div className="relative z-10 max-w-xl">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span
+                      className="relative inline-flex w-2 h-2 rounded-full"
+                      style={{ background: "#60a5fa", boxShadow: "0 0 12px rgba(96,165,250,0.8)" }}
+                      aria-hidden
+                    />
+                    <SectionLabel>Step {s.n}</SectionLabel>
+                  </div>
+                  <h3 className="text-title text-white mb-3">{s.title}</h3>
+                  <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.55)" }}>{s.desc}</p>
+                </div>
+              </motion.div>
+            </AnimatedSection>
           ))}
         </div>
       </div>
@@ -248,22 +402,53 @@ function BenchmarkSection() {
   ];
 
   return (
-    <section style={{ background: "#0a0a0a" }} className="py-24 sm:py-32">
-      <div className="max-w-6xl mx-auto px-6 sm:px-10">
-        <SectionLabel className="mb-6">{t("benchmark_label")}</SectionLabel>
-        <h2 className="text-display text-white max-w-3xl mb-12">{t("benchmark_headline")}</h2>
+    <section style={{ background: "#0a0a0a" }} className="relative py-24 sm:py-32 overflow-hidden">
+      <div
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          width: 700, height: 700, left: "-10%", bottom: "5%",
+          background: "radial-gradient(circle, rgba(44,167,193,0.10) 0%, transparent 70%)",
+          filter: "blur(90px)",
+        }}
+      />
+      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
+        <AnimatedSection>
+          <SectionLabel className="mb-6">{t("benchmark_label")}</SectionLabel>
+          <h2 className="text-display text-white max-w-3xl mb-12">{t("benchmark_headline")}</h2>
+        </AnimatedSection>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {stats.map((s, i) => (
-            <div key={i} className="surface p-6 flex items-start gap-3">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+            <AnimatedSection key={i} delay={i * 0.12}>
+              <motion.div
+                whileHover={{ y: -4, borderColor: "rgba(96,165,250,0.30)" }}
+                transition={{ duration: 0.3 }}
+                className="surface p-6 flex items-start gap-3 relative group h-full"
+                style={{ background: "rgba(255,255,255,0.025)" }}
               >
-                <s.icon size={15} className="text-white/70" aria-hidden="true" />
-              </div>
-              <p className="text-[14px] text-white/85 leading-relaxed">{s.text}</p>
-            </div>
+                <div
+                  aria-hidden
+                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 0% 0%, rgba(44,167,193,0.16), transparent 70%)",
+                  }}
+                />
+                <motion.div
+                  whileHover={{ rotate: 8, scale: 1.05 }}
+                  className="relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                  style={{
+                    background: "rgba(96,165,250,0.08)",
+                    border: "1px solid rgba(96,165,250,0.20)",
+                    boxShadow: "0 0 20px rgba(96,165,250,0.12)",
+                  }}
+                >
+                  <s.icon size={15} className="text-blue-300" aria-hidden="true" />
+                </motion.div>
+                <p className="relative text-[14px] text-white/85 leading-relaxed">{s.text}</p>
+              </motion.div>
+            </AnimatedSection>
           ))}
         </div>
 
@@ -291,28 +476,60 @@ function PricingCTASection() {
         }}
       />
 
+      {/* Animated breathing glow */}
+      <motion.div
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          width: 500, height: 500, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+          background: "radial-gradient(circle, rgba(96,165,250,0.20) 0%, transparent 70%)",
+          filter: "blur(60px)",
+        }}
+        animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
+        transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
+      />
+
       <div className="relative z-10 max-w-3xl mx-auto px-6 sm:px-10 text-center">
-        <SectionLabel className="mb-6">{t("pricing_model")}</SectionLabel>
-        <h2 className="text-display text-white mb-8">{t("pricing_headline")}</h2>
+        <AnimatedSection>
+          <SectionLabel className="mb-6">{t("pricing_model")}</SectionLabel>
+          <h2 className="text-display text-white mb-8">{t("pricing_headline")}</h2>
+        </AnimatedSection>
 
         <ul className="space-y-2.5 text-[14px] mb-10 text-left w-full sm:w-auto sm:inline-block">
           {lines.map((l, i) => (
-            <li key={i} className="flex items-center gap-3 text-white/75">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
+            <motion.li
+              key={i}
+              className="flex items-center gap-3 text-white/75"
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"
+                style={{ boxShadow: "0 0 10px rgba(96,165,250,0.8)" }}
+              />
               {l}
-            </li>
+            </motion.li>
           ))}
         </ul>
 
-        <div>
-          <Link
-            to="/Analyzer"
-            className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] hover:opacity-90 transition-opacity"
-            aria-label={t("pricing_cta")}
-          >
-            {t("pricing_cta")} <ArrowRight size={16} aria-hidden="true" />
-          </Link>
-        </div>
+        <AnimatedSection delay={0.2}>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="inline-block">
+            <Link
+              to="/Analyzer"
+              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px]"
+              aria-label={t("pricing_cta")}
+              style={{
+                boxShadow:
+                  "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
+              }}
+            >
+              <Sparkles size={14} />
+              {t("pricing_cta")} <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </motion.div>
+        </AnimatedSection>
 
         <p className="mt-6 text-[12px]" style={{ color: "rgba(255,255,255,0.35)" }}>
           {t("pricing_trust")}
