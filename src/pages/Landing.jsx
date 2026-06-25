@@ -5,8 +5,8 @@ import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
-import AuroraBackground from "@/components/landing/AuroraBackground.jsx";
-import AnimatedSection from "@/components/landing/AnimatedSection.jsx";
+import AuroraBackground from "@/components/landing/AuroraBackground";
+import AnimatedSection from "@/components/landing/AnimatedSection";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
 const LANDING_JSON_LD = {
