@@ -20,6 +20,7 @@ import PageHero from "@/components/shared/PageHero";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import { useTranslation } from "@/lib/i18n.jsx";
 import CambraCTA from "@/components/shared/CambraCTA";
+import RouteProbe from "@/components/dev/RouteProbe";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function formatEurLocal(n, lang) {
@@ -145,7 +146,12 @@ export default function Dashboard() {
     })();
   }, []);
 
-  if (loading) return <DashboardSkeleton />;
+  if (loading) return (
+    <>
+      <RouteProbe label="Dashboard" state={{ branch: "loading" }} />
+      <DashboardSkeleton />
+    </>
+  );
 
   const firstName = user?.full_name ? user.full_name.split(" ")[0] : t("dashboard_word");
   const stripeConnected = !!stripeConn;
@@ -154,6 +160,7 @@ export default function Dashboard() {
   if (!latest) {
     return (
       <div className="pb-10">
+        <RouteProbe label="Dashboard" state={{ branch: "stateA-noResult", user: user?.email || "none" }} />
         <div className="min-h-[60vh] flex items-center justify-center px-4 py-12">
           <div
             className="w-full max-w-xl rounded-3xl p-8 sm:p-10 text-center"
@@ -250,6 +257,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 pb-10">
+      <RouteProbe label="Dashboard" state={{ branch: "stateB/C-main", stripeConnected, hasGraph: graphNodes.length }} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-2">
         <div>

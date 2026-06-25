@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import ErrorBoundary from "@/components/shared/ErrorBoundary.jsx";
+import RouteProbe from "@/components/dev/RouteProbe";
 
 // MVP navigation — focused, minimal. Advanced API/OAuth/Webhook screens are admin-only.
 const NAV_ITEMS = [
@@ -228,6 +229,7 @@ export default function DashboardLayout({ children }) {
           }}
         />
         <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8 min-h-[60vh]">
+          <RouteProbe label="DashboardLayout" state={{ path: location.pathname, role: user?.role || "anon" }} />
           <ErrorBoundary>
             {children ?? <Outlet />}
           </ErrorBoundary>

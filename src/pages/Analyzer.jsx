@@ -23,6 +23,7 @@ import {
   computeInfraScore, calculateSavings, getBenchmarks,
   ENGINE_VERSION, validateAnalyzerInput,
 } from "@/lib/scoreEngine";
+import RouteProbe from "@/components/dev/RouteProbe";
 
 // ─── Category mapping (i18n keys → internal slugs) ─────────────────────────
 const CATEGORY_OPTIONS = [
@@ -604,11 +605,14 @@ export default function Analyzer() {
   if (running) {
     const monthlyRev = midpointForRange(revenueRange);
     return (
-      <AnalysisProgress
-        country={country || t("your_region")}
-        tier={tierLabelForRevenue(monthlyRev, country)}
-        done={analysisDone}
-      />
+      <>
+        <RouteProbe label="Analyzer" state={{ branch: "running", done: analysisDone }} />
+        <AnalysisProgress
+          country={country || t("your_region")}
+          tier={tierLabelForRevenue(monthlyRev, country)}
+          done={analysisDone}
+        />
+      </>
     );
   }
 
@@ -624,6 +628,7 @@ export default function Analyzer() {
           "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
       }}
     >
+      <RouteProbe label="Analyzer" state={{ branch: "main", step, memoryLoaded, brandId: brandId || "none" }} />
 
       {/* Fixed ambient grid + halos */}
       <div

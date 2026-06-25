@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Zap, ArrowRight, CheckCircle2, Lock, FileSignature, Loader2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/components/shared/Toast.jsx";
+import RouteProbe from "@/components/dev/RouteProbe";
 
 /**
  * Unlock Savings — converts an estimated savings opportunity into a real
@@ -85,7 +86,12 @@ export default function UnlockSavings() {
   };
 
   if (loading) {
-    return <div className="p-6 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading opportunities…</div>;
+    return (
+      <div className="p-6 flex items-center gap-2 text-sm text-muted-foreground">
+        <RouteProbe label="UnlockSavings" state={{ branch: "loading" }} />
+        <Loader2 className="h-4 w-4 animate-spin" /> Loading opportunities…
+      </div>
+    );
   }
 
   const opportunities = [];
@@ -100,6 +106,7 @@ export default function UnlockSavings() {
 
   return (
     <div className="space-y-6 max-w-5xl">
+      <RouteProbe label="UnlockSavings" state={{ branch: "main", opportunities: opportunities.length }} />
       <div>
         <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-border/60 bg-background/70 mb-3">
           <Zap className="h-3 w-3 text-cambra-cyan" />

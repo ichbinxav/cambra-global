@@ -13,6 +13,7 @@ import RecommendedActionsLocked from "@/components/results/RecommendedActionsLoc
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
+import RouteProbe from "@/components/dev/RouteProbe";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function formatEurLocal(n, lang) {
@@ -164,6 +165,7 @@ export default function Results() {
   // FIX 28 — Results skeleton: hero shimmer + 3 card shimmers + map shimmer
   if (loading) return (
     <div className="min-h-screen bg-background">
+      <RouteProbe label="Results" state={{ branch: "loading", needsAuth, hasResult: !!result }} />
       <div className="relative max-w-4xl mx-auto px-5 py-10 pb-24 space-y-10">
         {/* Hero shimmer */}
         <section className="text-center" aria-busy="true" aria-label={t("progress_mapping")}>
@@ -196,6 +198,7 @@ export default function Results() {
 
   if (needsAuth) return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <RouteProbe label="Results" state={{ branch: "needsAuth" }} />
       <div className="text-center max-w-sm">
         <h1 className="text-lg font-bold mb-2">{t("sign_in_required")}</h1>
         <p className="text-sm text-muted-foreground mb-4">{t("sign_in_sub")}</p>
@@ -206,6 +209,7 @@ export default function Results() {
 
   if (!result) return (
     <div className="min-h-screen flex items-center justify-center bg-background px-5">
+      <RouteProbe label="Results" state={{ branch: "noResult" }} />
       <div className="text-center">
         <p className="text-muted-foreground mb-4 text-sm">{t("no_results")}</p>
         <Link to="/Analyzer"><Button variant="outline" className="rounded-full px-6 text-sm h-11">{t("run_the_analyzer")}</Button></Link>
@@ -294,6 +298,7 @@ export default function Results() {
   /* ── render ──────────────────────────────────────────────── */
   return (
     <div className="relative min-h-screen font-inter bg-background text-foreground overflow-x-hidden">
+      <RouteProbe label="Results" state={{ branch: "main", id: result.id }} />
       {/* ambient */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 dot-grid opacity-40" />
