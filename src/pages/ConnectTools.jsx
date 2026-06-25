@@ -1,572 +1,291 @@
-import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-
-import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  Search, ArrowLeft, Upload, Pencil, CheckCircle2, X, ArrowRight,
-  Plug, ExternalLink, Zap, ChevronRight
+  ArrowRight, CheckCircle2, Plug, RefreshCw, Sparkles, Clock,
+  CreditCard, Truck, Package, Building2, Mail, Headphones, Users, Wifi, Store, Layers,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import ConnectorTile from "@/components/connect/ConnectorTile.jsx";
-import { CONNECTORS as CONNECTOR_IDS } from "@/lib/connectors.config.js";
 import Navbar from "@/components/landing/Navbar";
-import ConnectStatsBar from "@/components/connect/ConnectStatsBar.jsx";
-import DarkConnectorCard from "@/components/connect/DarkConnectorCard.jsx";
 import StripeConnectCard from "@/components/connect/StripeConnectCard.jsx";
-import IntegrationCatalogGrid from "@/components/connect/IntegrationCatalogGrid.jsx";
 
-const CATEGORIES = ["All", "Payments", "Logistics", "Commerce SaaS"];
-
-const CONNECTORS = [
-  { name: "Stripe", cat: "Payments", color: "#635BFF", desc: "Online payment processing fees & rates", status: "live" },
-  { name: "PayPal", cat: "Payments", color: "#003087", desc: "Checkout & payment fees", status: "live" },
-  { name: "Adyen", cat: "Payments", color: "#0ABF53", desc: "Enterprise payment rates & volume", status: "live" },
-  { name: "Mollie", cat: "Payments", color: "#FF4444", desc: "European payment processing", status: "live" },
-  { name: "SumUp TPV", cat: "Payments", color: "#00D639", desc: "Physical dataphone fees & rentals", status: "live" },
-  { name: "Redsys TPV", cat: "Payments", color: "#D6001C", desc: "In-store card terminal rates", status: "soon" },
-  { name: "DHL", cat: "Logistics", color: "#FFCC00", desc: "Carrier rates & volume data", status: "live" },
-  { name: "FedEx", cat: "Logistics", color: "#FF6600", desc: "Express & freight shipping", status: "live" },
-  { name: "UPS", cat: "Logistics", color: "#351C15", desc: "Carrier contracts & shipment data", status: "live" },
-  { name: "Sendcloud", cat: "Logistics", color: "#0066FF", desc: "Multi-carrier shipping platform", status: "live" },
-  { name: "DPD", cat: "Logistics", color: "#DC1E35", desc: "European parcel delivery", status: "live" },
-  { name: "ShipBob 3PL", cat: "Logistics", color: "#FF4F00", desc: "3PL fulfillment & warehouse costs", status: "live" },
-  { name: "Byrd 3PL", cat: "Logistics", color: "#1E2C3B", desc: "European 3PL & fulfillment data", status: "soon" },
-  { name: "Shopify", cat: "Commerce SaaS", color: "#96BF48", desc: "GMV, orders, and commerce app spend", status: "live" },
-  { name: "WooCommerce", cat: "Commerce SaaS", color: "#7F54B3", desc: "WordPress store revenue & costs", status: "soon" },
-  { name: "Wix", cat: "Commerce SaaS", color: "#FAAD00", desc: "Wix store data & fees", status: "soon" },
-  { name: "Klaviyo", cat: "Commerce SaaS", color: "#000000", desc: "Email & SMS marketing spend", status: "live" },
-  { name: "Gorgias", cat: "Commerce SaaS", color: "#FF4F00", desc: "Commerce support app costs", status: "live" },
-  { name: "Recharge", cat: "Commerce SaaS", color: "#3E2A6E", desc: "Subscription commerce app fees", status: "soon" },
+/* ── helpers ─────────────────────────────────────────────────── */
+const CATEGORY_ORDER = [
+  "payments", "commerce", "banking", "shipping",
+  "marketing", "finance", "support", "hr", "telecom",
 ];
 
-function ConnectorAvatar({ name, color, size = "md" }) {
-  const s = size === "lg" ? "w-12 h-12 text-sm" : "w-10 h-10 text-[11px]";
-  return (
-    <div
-      className={`${s} rounded-xl flex items-center justify-center font-black shrink-0`}
-      style={{ background: color + "18", border: `1px solid ${color}30` }}
-    >
-      <span style={{ color }}>{name.slice(0, 2).toUpperCase()}</span>
-    </div>
-  );
+const CATEGORY_META = {
+  payments:  { label: "Payments",  icon: CreditCard },
+  commerce:  { label: "Commerce",  icon: Store },
+  banking:   { label: "Banking",   icon: Building2 },
+  shipping:  { label: "Shipping",  icon: Truck },
+  marketing: { label: "Marketing", icon: Mail },
+  finance:   { label: "Finance",   icon: Layers },
+  support:   { label: "Support",   icon: Headphones },
+  hr:        { label: "HR",        icon: Users },
+  telecom:   { label: "Telecom",   icon: Wifi },
+};
+
+function timeAgo(iso) {
+  if (!iso) return "never";
+  const ms = Date.now() - new Date(iso).getTime();
+  if (ms < 60_000) return "just now";
+  const m = Math.floor(ms / 60_000);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
 }
 
-function UploadZone({ onUpload, uploadedFiles, onRemove }) {
-  const ref = useRef(null);
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-
-  const handle = async (file) => {
-    setUploading(true);
-    setProgress(0);
-    const interval = setInterval(() => setProgress(p => Math.min(p + 20, 90)), 180);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    let analysis = null;
-    try {
-      const res = await base44.functions.invoke('processUploadedFile', { file_url, file_name: file.name });
-      analysis = res?.data || null;
-    } catch (_) {}
-    clearInterval(interval);
-    setProgress(100);
-    setUploading(false);
-    onUpload({ name: file.name, url: file_url, analysis });
-  };
-
+function CardSkeleton() {
   return (
-    <div className="space-y-3">
-      <div
-        className="group relative border-2 border-dashed border-border rounded-2xl p-10 text-center hover:border-foreground/40 bg-white transition-all cursor-pointer"
-        onClick={() => ref.current?.click()}
-        onDragOver={e => e.preventDefault()}
-        onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handle(f); }}
-      >
-        {uploading ? (
-          <div className="space-y-3">
-            <div className="w-9 h-9 rounded-full border-2 border-border border-t-foreground animate-spin mx-auto" />
-            <p className="text-sm text-muted-foreground">Uploading...</p>
-            <div className="h-1.5 rounded-full bg-secondary overflow-hidden max-w-[200px] mx-auto">
-              <div className="h-full bg-foreground transition-all duration-200 rounded-full" style={{ width: `${progress}%` }} />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto bg-secondary border border-border/60">
-              <Upload size={24} className="text-foreground" />
-            </div>
-            <div>
-              <p className="text-base font-black mb-1.5 tracking-tight text-foreground">
-                Drop your files here, or click to upload
-              </p>
-              <p className="text-[11px] text-muted-foreground">PDF, Excel, CSV, images · Max 20MB</p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-1.5 mt-3">
-              {["Stripe / TPV statement", "Carrier / 3PL invoice", "Shopify / Klaviyo billing"].map(t => (
-                <span key={t} className="text-[10px] px-2.5 py-1 rounded-full border border-border/60 bg-white text-muted-foreground">{t}</span>
-              ))}
-            </div>
-          </div>
-        )}
-        <input ref={ref} type="file" className="hidden" accept=".pdf,.xls,.xlsx,.csv,.png,.jpg,.jpeg" onChange={e => { const f = e.target.files?.[0]; if (f) handle(f); }} />
-      </div>
-
-      {uploadedFiles.length > 0 && (
-        <div className="space-y-2">
-          {uploadedFiles.map((f, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border/60 bg-white">
-              <CheckCircle2 size={14} className="text-foreground shrink-0" />
-              <span className="text-sm flex-1 truncate font-medium text-foreground">
-                {f.name}
-                {f.analysis?.detected && (
-                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full border border-border/60 bg-secondary text-muted-foreground">
-                    Procesado: {f.analysis.detected}
-                  </span>
-                )}
-              </span>
-              <button onClick={() => onRemove(i)} className="text-muted-foreground hover:text-foreground transition-colors">
-                <X size={13} />
-              </button>
-            </div>
-          ))}
+    <div className="p-4 rounded-2xl border border-border/60 bg-card animate-pulse">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-secondary" />
+        <div className="flex-1 space-y-2">
+          <div className="h-3 w-32 bg-secondary rounded" />
+          <div className="h-2.5 w-48 bg-secondary/60 rounded" />
         </div>
-      )}
+        <div className="h-7 w-20 bg-secondary rounded-full" />
+      </div>
     </div>
   );
 }
 
-export default function ConnectTools() {
-  const [query, setQuery] = useState("");
-  const [cat, setCat] = useState("All");
-  const [activeMode, setActiveMode] = useState("connect");
-  const [connectedTools, setConnectedTools] = useState([]);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [customTool, setCustomTool] = useState("");
-  const [showCustom, setShowCustom] = useState(false);
-  const navigate = useNavigate();
+/* ── status badge ────────────────────────────────────────────── */
+function StatusBadge({ integration, stripeConnected }) {
+  const status = integration.display_status;
+  if (status === "connected") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border-emerald-500/25">
+        <CheckCircle2 size={9} /> Connected
+      </span>
+    );
+  }
+  if (integration.inferred_from_payments && stripeConnected) {
+    const cost = Number(integration.inferred_monthly_cost || 0);
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-purple-500/10 text-purple-600 border-purple-500/25">
+        <Sparkles size={9} /> Found in Stripe{cost > 0 ? ` — €${Math.round(cost).toLocaleString()}/mo` : ""}
+      </span>
+    );
+  }
+  if (status === "detected") {
+    const pct = integration.confidence_score != null ? Math.round(Number(integration.confidence_score) * 100) : null;
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-blue-500/10 text-blue-600 border-blue-500/25">
+        Detected{pct != null ? ` · ${pct}%` : ""}
+      </span>
+    );
+  }
+  if (status === "available") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-secondary text-muted-foreground border-border/60">
+        Available
+      </span>
+    );
+  }
+  // coming_soon / planned
+  return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-secondary text-muted-foreground/60 border-border/40">
+      <Clock size={9} /> Coming soon
+    </span>
+  );
+}
 
-  // Set initial mode from URL (?mode=connect|upload|manual)
+function ActionCTA({ integration, stripeConnected }) {
+  const status = integration.display_status;
+  if (status === "connected") {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-muted-foreground hidden sm:inline">
+          Last sync {timeAgo(integration.last_verified_at)}
+        </span>
+        <button className="inline-flex items-center gap-1 h-8 px-3 rounded-full border border-border/60 text-[11px] font-bold text-foreground hover:border-foreground/40 transition-colors min-h-[44px] sm:min-h-0">
+          <RefreshCw size={10} /> Sync now
+        </button>
+      </div>
+    );
+  }
+  if (status === "detected" || (integration.inferred_from_payments && stripeConnected)) {
+    return (
+      <button className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 min-h-[44px] sm:min-h-0">
+        Connect to verify <ArrowRight size={10} />
+      </button>
+    );
+  }
+  if (status === "available") {
+    return (
+      <button className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 min-h-[44px] sm:min-h-0">
+        Connect <ArrowRight size={10} />
+      </button>
+    );
+  }
+  // coming_soon → no CTA
+  return null;
+}
+
+/* ── integration card ────────────────────────────────────────── */
+function IntegrationCard({ integration, stripeConnected }) {
+  const FallbackIcon = (CATEGORY_META[integration.category] || { icon: Layers }).icon;
+  return (
+    <div className="p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-colors">
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="w-10 h-10 rounded-xl border border-border/60 bg-secondary flex items-center justify-center shrink-0 overflow-hidden">
+          {integration.logo_url ? (
+            <img src={integration.logo_url} alt={integration.name} className="w-6 h-6 object-contain" />
+          ) : (
+            <FallbackIcon size={15} className="text-foreground" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold truncate">{integration.name}</p>
+          {integration.value_unlock && (
+            <p className="text-[11px] text-muted-foreground truncate">{integration.value_unlock}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <StatusBadge integration={integration} stripeConnected={stripeConnected} />
+          <ActionCTA integration={integration} stripeConnected={stripeConnected} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── main ────────────────────────────────────────────────────── */
+export default function ConnectTools() {
+  const [grouped, setGrouped] = useState({});
+  const [allIntegrations, setAllIntegrations] = useState([]);
+  const [stripeConnected, setStripeConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const m = urlParams.get('mode');
-    if (m && ['connect','upload','manual'].includes(m)) setActiveMode(m);
+    (async () => {
+      try {
+        // Get brand
+        const me = await base44.auth.me().catch(() => null);
+        if (!me) { setLoading(false); return; }
+        const brands = await base44.entities.Brand.filter({ created_by_id: me.id }, "-created_date", 1).catch(() => []);
+        const brandId = brands[0]?.id;
+
+        if (!brandId) { setLoading(false); return; }
+
+        // Check Stripe
+        try {
+          const sc = await base44.entities.StripeConnection
+            .filter({ brand_id: brandId, connection_status: "connected" }, "-last_sync_at", 1);
+          setStripeConnected(sc.length > 0);
+        } catch (_) {}
+
+        // Get grouped integration status
+        const res = await base44.functions.invoke("getIntegrationStatus", { brand_id: brandId });
+        const payload = res?.data || res;
+        if (payload?.ok) {
+          setGrouped(payload.grouped || {});
+          setAllIntegrations(payload.integrations || []);
+        }
+      } catch (err) {
+        console.warn("ConnectTools load error:", err?.message || err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const filtered = CONNECTORS.filter(c => {
-    const matchCat = cat === "All" || c.cat === cat;
-    const matchQ = c.name.toLowerCase().includes(query.toLowerCase()) || c.cat.toLowerCase().includes(query.toLowerCase());
-    return matchCat && matchQ;
-  });
-
-  const toggleConnect = (name) => {
-    setConnectedTools(prev =>
-      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
-    );
-  };
-
-  const removeFile = (i) => setUploadedFiles(f => f.filter((_, idx) => idx !== i));
-
-  const hasData = connectedTools.length > 0 || uploadedFiles.length > 0 || customTool.trim().length > 0;
-
-  const MODES = [
-    { id: "connect", icon: Plug, label: "Connect tools", sub: "Most accurate" },
-    { id: "upload", icon: Upload, label: "Upload files", sub: "Flexible" },
-    { id: "manual", icon: Pencil, label: "Enter manually", sub: "Always available" },
-  ];
-
-  // FIX 11 — replaced unverifiable percentage accuracy claims with qualitative confidence labels.
-  const HERO_CONFIG = {
-    connect: {
-       eyebrow: "Open integration system",
-       title: "Connect your tools.",
-       subtitle: "Direct integrations pull real rates and volumes — automatically. The most precise way to map your infrastructure.",
-       accuracy: "High",
-       accuracyLabel: "Confidence",
-       stats: [
-         { value: "High", label: "Confidence" },
-        { value: "Connected", label: "Data status" },
-        { value: "Growing", label: "Integration catalog" },
-        { value: "OAuth", label: "Secure access" },
-      ],
-    },
-    upload: {
-       eyebrow: "AI-powered ingestion",
-       title: "Upload your files.",
-       subtitle: "Drop statements, invoices or exports — our AI extracts rates, volumes and costs in seconds. Great when direct integration isn't available.",
-       accuracy: "Medium",
-       accuracyLabel: "Confidence",
-       stats: [
-         { value: "Medium", label: "Confidence" },
-        { value: "<30s", label: "Processing" },
-        { value: "PDF/CSV/XLS", label: "Formats" },
-        { value: "AI-extracted", label: "Method" },
-      ],
-    },
-    manual: {
-       eyebrow: "Fallback mode",
-       title: "Enter manually.",
-       subtitle: "Always available — answer a few questions and we'll generate an estimate. Connect tools later to refine your analysis.",
-       accuracy: "Estimated",
-       accuracyLabel: "Estimate confidence",
-       stats: [
-         { value: "Estimated", label: "Confidence" },
-        { value: "5 min", label: "Setup time" },
-        { value: "Guided", label: "Step-by-step" },
-        { value: "Estimated", label: "Result quality" },
-      ],
-    },
-  };
-  const hero = HERO_CONFIG[activeMode];
+  // Summary counts
+  const flatList = Object.values(grouped).flat();
+  const sourceList = flatList.length ? flatList : allIntegrations;
+  const detectedCount = sourceList.filter(i => i.is_detected || i.display_status === "detected").length;
+  const connectedCount = sourceList.filter(i => i.is_connected || i.display_status === "connected").length;
+  const availableCount = sourceList.filter(i => i.display_status === "available").length;
 
   return (
-    <div className="relative min-h-screen bg-white font-inter flex flex-col">
+    <div className="relative min-h-screen bg-background font-inter flex flex-col overflow-x-hidden">
       <Navbar />
 
-      <div className="relative flex-1 max-w-3xl mx-auto w-full px-5 pt-20 pb-12 space-y-6 mt-14">
+      <div className="relative flex-1 max-w-4xl mx-auto w-full px-5 pt-20 pb-12 mt-14 space-y-6">
 
-        {/* ── HERO — premium navy ── */}
-        <div
-          className="relative overflow-hidden rounded-3xl border border-white/[0.08] p-8 sm:p-12"
-          style={{
-            background:
-              "radial-gradient(120% 80% at 0% 0%, rgba(31,78,216,0.24) 0%, transparent 55%), radial-gradient(100% 100% at 100% 100%, rgba(44,167,193,0.18) 0%, transparent 60%), linear-gradient(180deg, hsl(222 60% 7%) 0%, hsl(222 65% 4%) 100%)",
-            boxShadow: "0 1px 0 hsl(0 0% 100% / 0.06) inset, 0 30px 80px -28px rgba(0,0,0,0.6)",
-          }}
-        >
-          {/* Grid texture */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.5]"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-              backgroundSize: "44px 44px",
-              maskImage: "radial-gradient(ellipse 90% 90% at 50% 0%, #000 30%, transparent 75%)",
-              WebkitMaskImage: "radial-gradient(ellipse 90% 90% at 50% 0%, #000 30%, transparent 75%)",
-            }}
-          />
-          {/* Floating cyan glow */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -top-24 -right-16 w-72 h-72 rounded-full blur-[80px] opacity-60"
-            style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.4), transparent)" }}
-          />
+        {/* Header */}
+        <div>
+          <h1 className="font-display text-2xl sm:text-3xl font-black tracking-[-0.03em]">Connect your tools</h1>
+          <p className="text-sm text-muted-foreground mt-1">Every connection improves your benchmark accuracy.</p>
+        </div>
 
-          <div className="relative">
-            <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-white/[0.10] bg-white/[0.04] backdrop-blur-sm">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
-              </span>
-              <Plug size={10} className="text-white/60" />
-              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">{hero.eyebrow}</span>
-            </div>
-            <h1 className="font-display text-[clamp(2.2rem,5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.92] mb-4">
-              <span
-                style={{
-                  background: "linear-gradient(135deg, #ffffff 0%, #E8F4F6 55%, #B8D8E0 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                {hero.title}
-              </span>
-            </h1>
-            <p className="text-sm sm:text-base text-white/65 leading-relaxed max-w-xl">
-              {hero.subtitle}
-            </p>
+        {/* Summary bar */}
+        <div className="px-4 py-3 rounded-2xl border border-border/60 bg-secondary/30 flex flex-wrap items-center gap-x-6 gap-y-1.5 text-xs">
+          <span className="font-semibold">
+            <span className="tabular-nums font-black">{detectedCount}</span>
+            <span className="text-muted-foreground ml-1">tools detected</span>
+          </span>
+          <span className="font-semibold">
+            <span className="tabular-nums font-black text-emerald-600">{connectedCount}</span>
+            <span className="text-muted-foreground ml-1">connected</span>
+          </span>
+          <span className="font-semibold">
+            <span className="tabular-nums font-black">{availableCount}</span>
+            <span className="text-muted-foreground ml-1">available to connect</span>
+          </span>
+        </div>
+
+        {/* Stripe — always first */}
+        <div>
+          <StripeConnectCard />
+        </div>
+
+        {/* Loading */}
+        {loading && (
+          <div className="space-y-3">
+            {[0, 1, 2, 3].map(i => <CardSkeleton key={i} />)}
           </div>
-        </div>
+        )}
 
-        {/* ── STATS BAR — cambra-card con números en gradiente ── */}
-        <div className="cambra-card overflow-hidden">
-          <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/[0.06]">
-            {hero.stats.map((s, i) => (
-              <div key={i} className="px-5 py-5 text-center">
-                <p
-                  className="font-display text-2xl sm:text-3xl font-black tracking-tight leading-none mb-1.5 whitespace-nowrap"
-                  style={{
-                    background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #2CA7C1 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                    filter: "drop-shadow(0 0 18px rgba(44,167,193,0.3))",
-                  }}
-                >
-                  {s.value}
-                </p>
-                <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-white/50">{s.label}</p>
+        {/* Grouped categories */}
+        {!loading && CATEGORY_ORDER.map(catKey => {
+          const items = (grouped[catKey] || [])
+            // skip Stripe in payments — it's shown above
+            .filter(it => !(catKey === "payments" && it.integration_id === "stripe"));
+
+          if (items.length === 0) return null;
+
+          const meta = CATEGORY_META[catKey] || { label: catKey, icon: Layers };
+          const Icon = meta.icon;
+
+          return (
+            <section key={catKey} className="space-y-2.5">
+              <div className="sticky top-14 z-10 -mx-5 px-5 py-2.5 bg-background/95 backdrop-blur-md border-b border-border/30 flex items-center gap-2">
+                <Icon size={13} className="text-muted-foreground" />
+                <h2 className="text-sm font-black tracking-tight">{meta.label}</h2>
+                <span className="text-xs text-muted-foreground/60 tabular-nums">({items.length})</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Mode switcher — navy cards */}
-         <div className="grid grid-cols-3 gap-3">
-           {MODES.map(m => {
-             const active = activeMode === m.id;
-             return (
-               <button
-                 key={m.id}
-                 onClick={() => setActiveMode(m.id)}
-                 className={`group relative p-5 rounded-2xl border text-left transition-all duration-200 ${active ? "border-cambra-navy bg-cambra-navy text-white" : "border-cambra-navy/30 bg-cambra-navy/10 hover:border-cambra-navy/50 text-cambra-navy hover:-translate-y-0.5"}`}
-               >
-                <div className="relative">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${active ? "bg-white/10" : "bg-white/20"}`}>
-                    <m.icon size={16} className={active ? "text-white" : "text-cambra-navy/70"} />
-                  </div>
-                  <p className={`text-xs font-bold mb-0.5 ${active ? "text-white" : "text-cambra-navy"}`}>{m.label}</p>
-                  <p className={`text-[10px] ${active ? "text-white/60" : "text-cambra-navy/60"}`}>{m.sub}</p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* MODE: Connect */}
-        {activeMode === "connect" && (
-          <div className="space-y-4">
-            {/* Header — M5 */}
-            <div className="px-1">
-              <h2 className="text-xl font-black tracking-tight text-foreground">Connect your infrastructure</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Every connection improves your benchmark accuracy and savings confidence.
-              </p>
-            </div>
-
-            {/* Stripe — live data connection (M3) */}
-            <StripeConnectCard />
-
-            {/* M5 — Dynamic catalog (grouped by category) */}
-            <IntegrationCatalogGrid hideStripe={true} />
-
-            {/* Direct connections (OAuth) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <ConnectorTile
-                title="Google Drive"
-                note="Read-only access to files for Analyzer"
-                connectorId={CONNECTOR_IDS.drive}
-                functionName="driveConnectionCheck"
-                connectorKey="drive"
-              />
-              <ConnectorTile
-                title="Google Sheets"
-                note="Read-only access to spreadsheets"
-                connectorId={CONNECTOR_IDS.sheets}
-                functionName="sheetsConnectionCheck"
-                connectorKey="sheets"
-              />
-              <ConnectorTile
-                title="Gmail"
-                note="Read-only labels/messages for ingestion"
-                connectorId={CONNECTOR_IDS.gmail}
-                functionName="gmailConnectionCheck"
-                connectorKey="gmail"
-              />
-              <ConnectorTile
-                title="Slack"
-                note="Read-only to list basic channels (optional)"
-                connectorId={CONNECTOR_IDS.slack}
-                functionName="slackConnectionCheck"
-                connectorKey="slack"
-              />
-            </div>
-
-            {/* Search + filters — light theme */}
-            <div className="flex gap-2 flex-col sm:flex-row">
-              <div className="relative flex-1">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  placeholder="Search integrations..."
-                  className="pl-9 h-11 text-sm bg-white border-border/60"
-                />
-              </div>
-              <div className="flex gap-1.5 flex-wrap">
-                {CATEGORIES.map(c => (
-                  <button
-                    key={c}
-                    onClick={() => setCat(c)}
-                    className={`h-11 px-3.5 rounded-xl border text-xs font-medium transition-all whitespace-nowrap ${cat === c ? "border-foreground bg-foreground text-background" : "border-border/60 bg-white text-muted-foreground hover:border-foreground/40 hover:text-foreground"}`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Connected summary */}
-            {connectedTools.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap p-3 rounded-xl bg-secondary border border-border/60">
-                <span className="text-[11px] text-muted-foreground font-medium">Connected:</span>
-                {connectedTools.map(t => (
-                  <span key={t} className="flex items-center gap-1 text-[11px] bg-white border border-border/60 rounded-full px-2.5 py-1 font-semibold text-foreground">
-                    {t}
-                    <button onClick={() => toggleConnect(t)} className="text-muted-foreground hover:text-foreground ml-0.5">
-                      <X size={10} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Connector list — dark gradient cards */}
-            <div className="space-y-2">
-              {filtered.map((c, i) => (
-                <DarkConnectorCard
-                  key={i}
-                  connector={c}
-                  connected={connectedTools.includes(c.name)}
-                  onToggle={toggleConnect}
-                />
-              ))}
-
-              {/* Generic connector */}
-              {!showCustom ? (
-                <button
-                  onClick={() => setShowCustom(true)}
-                  className="w-full flex items-center gap-4 p-4 rounded-2xl border border-dashed border-border hover:border-foreground/40 bg-white transition-all text-left group"
-                >
-                  <div className="w-11 h-11 rounded-xl border-2 border-dashed border-border flex items-center justify-center shrink-0 group-hover:border-foreground/40 transition-colors">
-                    <span className="text-muted-foreground text-xl leading-none group-hover:text-foreground transition-colors">+</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">Connect another tool</p>
-                    <p className="text-[11px] text-muted-foreground">Request integration or upload files</p>
-                  </div>
-                  <ChevronRight size={14} className="text-muted-foreground ml-auto shrink-0 group-hover:text-foreground transition-colors" />
-                </button>
-              ) : (
-                <div className="p-4 rounded-2xl border border-border/60 bg-white space-y-3">
-                  <p className="text-sm font-semibold text-foreground">Which tool do you use?</p>
-                  <Input
-                    value={customTool}
-                    onChange={e => setCustomTool(e.target.value)}
-                    placeholder="Search or enter your provider name"
-                    className="h-11 text-sm bg-white border-border/60"
-                    autoFocus
+              <div className="space-y-2">
+                {items.map(it => (
+                  <IntegrationCard
+                    key={it.integration_id}
+                    integration={it}
+                    stripeConnected={stripeConnected}
                   />
-                  <p className="text-[11px] text-muted-foreground">We'll add it to our roadmap. In the meantime, use the upload option below.</p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setActiveMode('upload')}
-                      className="h-9 px-4 rounded-full border border-border/60 text-xs font-medium text-foreground hover:border-foreground/40 transition-colors flex items-center gap-1.5"
-                    >
-                      <Upload size={12} /> Upload files instead
-                    </button>
-                    <button onClick={() => setShowCustom(false)} className="h-9 px-4 rounded-full text-xs text-muted-foreground hover:text-foreground transition-colors">
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* MODE: Upload — dark theme */}
-        {activeMode === "upload" && (
-          <div className="space-y-4">
-            <UploadZone
-              onUpload={f => setUploadedFiles(prev => [...prev, f])}
-              uploadedFiles={uploadedFiles}
-              onRemove={removeFile}
-            />
-            <div className="relative p-5 rounded-2xl bg-white border border-border/60">
-              <p className="text-xs font-bold mb-3 text-foreground tracking-wide uppercase text-[10px]">What we extract from your files</p>
-              <div className="grid grid-cols-2 gap-y-2 gap-x-4">
-                {[
-                  "Payment effective rates (Stripe + TPV)", "Monthly PSP fee volumes",
-                  "Carrier cost-per-shipment", "3PL & fulfillment fees",
-                  "Commerce SaaS subscription totals", "Hidden fee patterns",
-                ].map(item => (
-                  <div key={item} className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <span className="w-1 h-1 rounded-full bg-foreground shrink-0" />
-                    {item}
-                  </div>
                 ))}
               </div>
-            </div>
-            <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground">
-              <span>🔒 Encrypted</span>
-              <span>👁 Read-only access</span>
-              <span>🚫 Never shared</span>
-            </div>
+            </section>
+          );
+        })}
 
-            {/* Upsell to Connect for higher accuracy */}
-            <button
-              onClick={() => setActiveMode('connect')}
-              className="w-full group relative rounded-2xl border border-border/60 bg-white p-5 flex items-center gap-4 text-left transition-all hover:border-foreground/40"
-            >
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-secondary border border-border/60">
-                <Plug size={18} className="text-foreground" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-foreground mb-0.5">Boost to highest confidence</p>
-                <p className="text-[11px] text-muted-foreground">Connect your tools for live rates and volumes — no manual work.</p>
-              </div>
-              <ArrowRight size={16} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
-            </button>
-          </div>
-        )}
-
-        {/* MODE: Manual — light theme */}
-        {activeMode === "manual" && (
-          <div className="space-y-4">
-            <div className="p-8 rounded-2xl border border-border/60 bg-white text-center space-y-4">
-              <div className="text-5xl select-none mb-3 text-foreground">✱</div>
-              <p className="font-display font-black text-2xl mb-2 tracking-[-0.03em] text-foreground">
-                Use the structured Analyzer
-              </p>
-              <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed mb-5">
-                The Analyzer guides you through structured inputs across the 3 pillars — Payments, Logistics & Commerce SaaS — step by step.
-              </p>
-              <Link to="/Analyzer">
-                <Button className="h-11 rounded-full px-7 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90">
-                  Open Analyzer <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-            <p className="text-center text-[11px] text-muted-foreground">
-              Manual inputs will be marked as estimated — you can connect tools later from your dashboard to refine your analysis.
-            </p>
-
-            {/* Upsell to Connect for higher accuracy */}
-            <button
-              onClick={() => setActiveMode('connect')}
-              className="w-full group relative rounded-2xl border border-border/60 bg-white p-5 flex items-center gap-4 text-left transition-all hover:border-foreground/40"
-            >
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-secondary border border-border/60">
-                <Plug size={18} className="text-foreground" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-foreground mb-0.5">Connect tools for highest confidence</p>
-                <p className="text-[11px] text-muted-foreground">Skip the typing — we pull real rates and volumes automatically.</p>
-              </div>
-              <ArrowRight size={16} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
-            </button>
-          </div>
-        )}
-
-        {/* Footer CTA — light theme */}
-        {(activeMode === "connect" || activeMode === "upload") && (
-          <div className="flex items-center justify-between pt-5 border-t border-border/60">
+        {/* Footer */}
+        {!loading && (
+          <div className="pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              {connectedTools.length > 0 || uploadedFiles.length > 0
-                ? `${connectedTools.length + uploadedFiles.length} source${connectedTools.length + uploadedFiles.length > 1 ? "s" : ""} added`
-                : "No sources connected yet"}
+              Need a tool that's not here?
             </p>
-            <Button
-              onClick={() => navigate("/Analyzer")}
-              className={`h-10 rounded-full px-7 text-sm font-bold gap-2 ${hasData ? "bg-foreground text-background hover:opacity-90" : "border border-border/60 bg-white text-foreground hover:border-foreground/40"}`}
-            >
-              {hasData ? "Run Analysis" : "Skip — enter manually"}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+            <Link to="/Analyzer">
+              <Button className="h-10 rounded-full px-5 text-sm font-bold gap-2 min-h-[44px] sm:min-h-0">
+                Run analysis <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         )}
-
       </div>
     </div>
   );

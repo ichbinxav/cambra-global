@@ -6,7 +6,7 @@ import { CheckCircle2, RefreshCw, LogOut, Clock } from "lucide-react";
  * M3 — Stripe Connect card.
  * Three states: not_connected · connected · coming_soon (env vars missing).
  */
-export default function StripeConnectCard() {
+export default function StripeConnectCard({ redirectAfter } = {}) {
   const [connection, setConnection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -84,7 +84,10 @@ export default function StripeConnectCard() {
       ? window.crypto.randomUUID()
       : `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     sessionStorage.setItem("stripe_oauth_state", state);
-    const redirectUri = `${window.location.origin}/ConnectTools`;
+    // redirectAfter lets callers (e.g. Analyzer Step 3) bring the user back to
+    // their own page after Stripe OAuth instead of the default /ConnectTools.
+    const redirectPath = redirectAfter || "/ConnectTools";
+    const redirectUri = `${window.location.origin}${redirectPath}`;
     const url =
       `https://connect.stripe.com/oauth/authorize` +
       `?response_type=code` +

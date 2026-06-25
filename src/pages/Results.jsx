@@ -1,86 +1,84 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowRight, CreditCard, Truck, Package, TrendingDown, Zap,
-  Shield, AlertTriangle, Lock, Store
+  ArrowRight, CreditCard, Truck, Package, CheckCircle2, Sparkles,
+  Share2, ChevronDown, ChevronUp, Plug, Building2, Store, Mail,
+  Headphones, Users, Wifi, Layers, AlertTriangle,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import AnimatedCounter from "@/components/shared/AnimatedCounter";
-import ScoreCard from "@/components/results/ScoreCard";
-import IntelligencePanel from "@/components/results/IntelligencePanel";
+import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 
-import { computeInfraScore, calculateSavings } from "@/lib/scoreEngine";
-import NormalizedBarChart from "@/components/charts/NormalizedBarChart";
-import { Download } from "lucide-react";
-import { jsPDF } from "jspdf";
-import ExportMenu from "@/components/results/ExportMenu";
-import { buildResultsCsv, downloadCsv } from "@/lib/exportResults";
-import SavingsAdjustSlider from "@/components/results/SavingsAdjustSlider";
-import NetworkDataBadge from "@/components/shared/NetworkDataBadge";
-
-/* ── static data ─────────────────────────────────────────────── */
-const BREAKDOWN_META = [
-  { key: "online_payment_savings", label: "Online Payments", icon: CreditCard, color: "#7C6CFF", bg: "bg-cambra-lilac-soft border-cambra-lilac", textColor: "text-cambra-lilac",
-    detail: r => r.details?.payment_current_rate
-      ? `${r.details.payment_current_rate.toFixed(1)}% current → ${r.details.payment_optimal_rate?.toFixed(1) ?? "1.4"}% network target`
-      : "Efficiency improvement available" },
-  { key: "tpe_savings", label: "In-Store / TPE", icon: Store, color: "#f59e0b", bg: "bg-orange-500/[0.05] border-orange-500/20", textColor: "text-orange-500",
-    detail: r => r.details?.tpe_effective_rate
-      ? `${r.details.tpe_effective_rate.toFixed(2)}% current → ${r.details.tpe_optimal_rate?.toFixed(2) ?? "1.0"}% collective TPE benchmark`
-      : "Terminal cost optimization available" },
-  { key: "shipping_savings", label: "Logistics (Carrier + 3PL)", icon: Truck, color: "#2FC9A6", bg: "bg-cambra-mint-soft border-cambra-mint", textColor: "text-cambra-mint",
-    detail: r => r.details?.shipping_current_avg
-      ? `€${r.details.shipping_current_avg.toFixed(2)}/shipment → €${r.details.shipping_optimal_avg?.toFixed(2) ?? "5.20"} collective rate`
-      : "Volume-based cost reduction available" },
-  { key: "saas_savings", label: "Commerce SaaS", icon: Package, color: "#5B3A83", bg: "bg-cambra-plum-soft border-cambra-plum", textColor: "text-cambra-plum",
-    detail: r => r.details?.saas_current_total
-      ? `€${r.details.saas_current_total.toLocaleString()}/mo current → €${r.details.saas_optimal_total?.toLocaleString() ?? "—"} via group licenses`
-      : "Stack consolidation efficiency available" },
-];
-
-const UNLOCKS = [
-  { title: "Improve payment economics", desc: "Network-benchmarked effective rate · tier-aware target", saving: "Up to −52%", cat: "Payments", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
-  { title: "Unlock collective logistics terms", desc: "Carrier + 3PL rates benchmarked against high-volume operators", saving: "−18% avg.", cat: "Logistics", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
-  { title: "Consolidate Commerce SaaS stack", desc: "Group licensing on Klaviyo, Gorgias, Shopify and others", saving: "Up to −30%", cat: "Commerce SaaS", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
-];
-
-const RECS = [
-  { cat: "Payments", action: "Improve payment infrastructure terms", saving: "Recover €X/yr", icon: CreditCard, points: 12 },
-  { cat: "Logistics", action: "Access network-benchmarked carrier + 3PL rates", saving: "−18% average cost", icon: Truck, points: 8 },
-  { cat: "Commerce SaaS", action: "Consolidate stack via group licensing", saving: "Save up to 30%", icon: Package, points: 7 },
-];
-
-/* ── sub-components ──────────────────────────────────────────── */
-function SectionLabel({ children }) {
-  return (
-    <div className="flex items-center gap-3 mb-4">
-      <span className="w-5 h-px bg-border" />
-      <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground/45 font-medium">{children}</p>
-    </div>
-  );
+/* ── helpers ─────────────────────────────────────────────────── */
+function formatEur(n) {
+  const v = Math.max(0, Math.round(Number(n) || 0));
+  return `€${v.toLocaleString()}`;
 }
 
-function AccuracyBadge({ isEstimated }) {
-  return (
-    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold ${
-      isEstimated ? "bg-orange-500/[0.07] border-chart-3/20 text-chart-3" : "bg-chart-2/10 border-green-500/20 text-chart-2"
-    }`}>
-      <div className={`w-1.5 h-1.5 rounded-full ${isEstimated ? "bg-orange-400" : "bg-green-500"}`} />
-      {isEstimated ? "Estimated analysis" : "Real data connected"}
-    </div>
-  );
+function getRevenueTier(monthlyRevenue = 0) {
+  if (monthlyRevenue >= 500000) return "large";
+  if (monthlyRevenue >= 100000) return "mid";
+  if (monthlyRevenue >= 30000) return "small";
+  return "micro";
+}
+
+function tierLabel(tier) {
+  return { micro: "micro", small: "small", mid: "mid-market", large: "large" }[tier] || "small";
+}
+
+/* node_type → category bucket + icon */
+const NODE_CATEGORY = {
+  payment_provider:   { key: "Payments",  icon: CreditCard },
+  commerce_platform:  { key: "Commerce",  icon: Store },
+  shipping_carrier:   { key: "Shipping",  icon: Truck },
+  logistics:          { key: "Shipping",  icon: Truck },
+  marketing:          { key: "Marketing", icon: Mail },
+  saas_tool:          { key: "SaaS",      icon: Package },
+  analytics:          { key: "SaaS",      icon: Package },
+  support:            { key: "Support",   icon: Headphones },
+  bank:               { key: "Banking",   icon: Building2 },
+  insurance:          { key: "Banking",   icon: Building2 },
+  telecom:            { key: "Telecom",   icon: Wifi },
+  hr_tool:            { key: "HR",        icon: Users },
+};
+const CATEGORY_ORDER = ["Payments", "Commerce", "Shipping", "Marketing", "SaaS", "Banking", "Support", "HR", "Telecom"];
+
+function nodeBadge(node) {
+  const status = node.status || "detected";
+  const cc = node.cost_confidence || "estimated";
+  if (status === "verified" || cc === "verified") {
+    return { label: "Verified", cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25" };
+  }
+  if (status === "connected" || cc === "connected") {
+    return { label: "Connected", cls: "bg-blue-500/10 text-blue-600 border-blue-500/25" };
+  }
+  if (status === "detected") {
+    return { label: "Detected", cls: "bg-purple-500/10 text-purple-600 border-purple-500/25" };
+  }
+  return { label: "Estimated", cls: "bg-amber-500/10 text-amber-600 border-amber-500/25" };
+}
+
+function dataSourceLabel(node) {
+  const ds = node.data_source || "";
+  if (ds === "stripe_inference") return "via Stripe";
+  if (ds === "oauth") return "via connected account";
+  if (ds === "discovery") return "via website";
+  if (ds === "manual") return "manual";
+  return "estimated";
 }
 
 /* ── main ────────────────────────────────────────────────────── */
 export default function Results() {
   const [result, setResult] = useState(null);
   const [input, setInput] = useState(null);
+  const [stripeConn, setStripeConn] = useState(null);
+  const [benchmarks, setBenchmarks] = useState({ payments: null, shipping: null, saas: null });
+  const [graphNodes, setGraphNodes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [scoreReport, setScoreReport] = useState(null);
-  const [subscribed, setSubscribed] = useState(false);
   const [needsAuth, setNeedsAuth] = useState(false);
-  const [intelligence, setIntelligence] = useState(null);
+  const [showHow, setShowHow] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const verticalsRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -89,48 +87,63 @@ export default function Results() {
       if (!authed) { setNeedsAuth(true); setLoading(false); return; }
       const me = await base44.auth.me();
 
-      // Fetch by URL id first; if missing or not found yet, fallback to latest result for this user
+      // Load AnalyzerResult
       let res = [];
-      if (urlId) {
-        res = await base44.entities.AnalyzerResult.filter({ id: urlId });
-      }
-      if (!res.length) {
-        res = await base44.entities.AnalyzerResult.filter({ created_by_id: me.id }, "-created_date", 1);
-      }
+      if (urlId) res = await base44.entities.AnalyzerResult.filter({ id: urlId });
+      if (!res.length) res = await base44.entities.AnalyzerResult.filter({ created_by_id: me.id }, "-created_date", 1);
       if (!res.length) { setLoading(false); setResult(null); return; }
-
       const r = res[0];
       if (r.created_by_id && r.created_by_id !== me.id) { setLoading(false); setResult(null); return; }
-
       setResult(r);
+
+      // Load AnalyzerInput
+      let inputRow = null;
       if (r.input_id) {
         const inputs = await base44.entities.AnalyzerInput.filter({ id: r.input_id });
-        if (inputs.length) {
-          setInput(inputs[0]);
-          setScoreReport(computeInfraScore(inputs[0], "manual"));
-          const recalculated = calculateSavings(inputs[0]);
-          setResult(prev => prev ? { ...prev, details: { ...recalculated.details, ...(prev.details || {}) }, payment_savings: recalculated.paymentSavings, shipping_savings: recalculated.shippingSavings, saas_savings: recalculated.saasSavings, total_savings: recalculated.totalSavings } : prev);
-          const intel = await base44.functions.invoke('computeIntelligenceForBrand', { resultId: r.id });
-          setIntelligence(intel.data?.intelligence || null);
-        }
+        inputRow = inputs[0] || null;
+        setInput(inputRow);
       }
+
+      // Load StripeConnection for this brand
+      if (r.brand_id) {
+        try {
+          const sc = await base44.entities.StripeConnection
+            .filter({ brand_id: r.brand_id, connection_status: "connected" }, "-last_sync_at", 1);
+          setStripeConn(sc[0] || null);
+        } catch (_) { /* RLS may block — treat as not connected */ }
+      }
+
+      // Load benchmarks per vertical
+      const monthlyRev = Number(inputRow?.monthly_revenue || 0);
+      const tier = getRevenueTier(monthlyRev);
+      const country = inputRow?.country || "";
+      const fetchBm = async (vertical) => {
+        try {
+          const resp = await base44.functions.invoke("getBenchmarkForReport", { vertical, revenue_tier: tier, country });
+          return resp?.data || resp || null;
+        } catch (_) { return null; }
+      };
+      const [bmPay, bmShip, bmSaas] = await Promise.all([fetchBm("payments"), fetchBm("shipping"), fetchBm("saas")]);
+      setBenchmarks({ payments: bmPay, shipping: bmShip, saas: bmSaas });
+
+      // Load Infrastructure graph
+      if (r.brand_id) {
+        try {
+          const g = await base44.functions.invoke("getInfrastructureGraph", { brand_id: r.brand_id });
+          const payload = g?.data || g;
+          if (payload?.ok) setGraphNodes(payload.nodes || []);
+        } catch (_) { /* non-blocking */ }
+      }
+
       setLoading(false);
     })();
-
-    // Check subscription status (non-blocking)
-    base44.auth.isAuthenticated().then(async (authed) => {
-      if (!authed) { setSubscribed(false); return; }
-      const me = await base44.auth.me();
-      const subs = await base44.entities.Subscription.filter({ user_email: me.email, status: 'active' }, '-created_date', 1);
-      setSubscribed(subs.length > 0);
-    });
   }, []);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4">
         <div className="w-10 h-10 rounded-full border-2 border-border border-t-foreground animate-spin mx-auto" />
-        <p className="text-sm text-muted-foreground">Computing your infrastructure score…</p>
+        <p className="text-sm text-muted-foreground">Loading your report…</p>
       </div>
     </div>
   );
@@ -154,487 +167,401 @@ export default function Results() {
     </div>
   );
 
-  const score = scoreReport?.total ?? result.infra_score ?? 0;
-  const scoreColor = scoreReport?.scoreColor ?? (score >= 80 ? "#2FC9A6" : score >= 60 ? "#5B3A83" : "#7C6CFF");
-  const scoreLabel = scoreReport?.label ?? (score >= 60 ? "Efficient" : score >= 40 ? "Optimization opportunity detected" : "High optimization potential");
-  const isEstimated = !scoreReport || scoreReport.dataQuality === "manual";
+  /* ── derived values ──────────────────────────────────────── */
+  const stripeConnected = !!stripeConn;
+  const monthlyRev = Number(input?.monthly_revenue || 0);
+  const tier = getRevenueTier(monthlyRev);
+  const country = input?.country || "";
 
-  const onlinePaymentSavings = Math.max(0, (result.payment_savings || 0) - (result.details?.tpe_savings || 0));
-  const resultWithTpe = {
-    ...result,
-    online_payment_savings: onlinePaymentSavings,
-    tpe_savings: result.details?.tpe_savings || 0,
+  // Hero confidence
+  const verticalConfidences = {
+    payments: stripeConnected ? "verified" : "estimated",
+    shipping: "estimated",
+    saas: "estimated",
   };
+  const allVerified = Object.values(verticalConfidences).every(v => v === "verified");
+  const someVerified = Object.values(verticalConfidences).some(v => v === "verified");
+  const heroConfidence = allVerified ? "verified" : someVerified ? "mixed" : "estimated";
 
-  const chartData = BREAKDOWN_META.map(m => ({
-    name: m.label, value: resultWithTpe[m.key] || 0, fill: m.color,
-  }));
+  // Per-card values
+  const payCurrent = result.details?.payment_current_rate ?? null;
+  const payBmNetwork = benchmarks.payments;
+  const payBmIsNetwork = payBmNetwork?.source === "network" && Number(payBmNetwork?.n || 0) >= 5;
+  const payBmValue = payBmNetwork?.median ?? result.details?.payment_optimal_rate ?? null;
 
-  const recs = scoreReport?.impacts?.length
-    ? scoreReport.impacts.map((imp, i) => ({ ...RECS[i] ?? RECS[0], action: imp.action, points: imp.pointsGain, cat: imp.category }))
-    : RECS.map(r => ({ ...r, saving: r.saving.replace("€X", `€${Math.round((result.total_savings || 0) / 3).toLocaleString()}`) }));
+  const shipCurrent = result.details?.shipping_current_avg ?? null;
+  const shipBmNetwork = benchmarks.shipping;
+  const shipBmIsNetwork = shipBmNetwork?.source === "network" && Number(shipBmNetwork?.n || 0) >= 5;
+  const shipBmValue = shipBmNetwork?.median ?? result.details?.shipping_optimal_avg ?? null;
 
-  const handleSubscribe = async () => {
-    const authed = await base44.auth.isAuthenticated();
-    if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
-    const res = await base44.functions.invoke('startSubscription', {});
-    const status = res?.data?.status;
-    if (status === 'activated_free' || status === 'already_active') {
-      setSubscribed(true);
-      alert('Access activated — early partners free for life.');
-    } else if (status === 'requires_checkout') {
-      alert("Free seats are over. We'll enable the paid plan (€60/mo) soon.");
-    } else if (res?.data?.error) {
-      alert(res.data.error);
+  const saasSpend = result.details?.saas_current_total ?? null;
+  const saasPctOfRevenue = monthlyRev > 0 && saasSpend != null
+    ? (saasSpend / monthlyRev) * 100
+    : null;
+  const detectedSaasCount = graphNodes.filter(n => n.node_type === "saas_tool" || n.node_type === "analytics").length;
+
+  // Nodes grouped by category
+  const groupedNodes = {};
+  for (const n of graphNodes) {
+    const meta = NODE_CATEGORY[n.node_type] || { key: "Other", icon: Layers };
+    if (!groupedNodes[meta.key]) groupedNodes[meta.key] = { icon: meta.icon, items: [] };
+    groupedNodes[meta.key].items.push(n);
+  }
+
+  // Hero subtitle pieces
+  const verticalNs = [benchmarks.payments, benchmarks.shipping, benchmarks.saas]
+    .filter(b => b?.source === "network" && Number(b?.n || 0) >= 5)
+    .map(b => Number(b.n));
+  const maxN = verticalNs.length ? Math.max(...verticalNs) : 0;
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      setToastMsg("Link copied");
+      setTimeout(() => setToastMsg(""), 2500);
+    } catch (_) {
+      setToastMsg("Copy failed");
+      setTimeout(() => setToastMsg(""), 2500);
     }
   };
 
-  const handleExportPdf = async () => {
-    // Ensure we have analysis data
-    if (!result) { alert('No analysis data to export.'); return; }
-
-    // Require authentication and a registered brand before exporting
-    const authed = await base44.auth.isAuthenticated();
-    if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
-    const me = await base44.auth.me();
-    const brands = await base44.entities.Brand.filter({ created_by_id: me.id });
-    if (!brands.length) {
-      alert('Please register your brand first (Account > Brand) before exporting the report.');
-      return;
-    }
-    const brand = brands[0];
-
-    // Gather benchmark comparisons
-    const payCurr = result.details?.payment_current_rate ?? null;
-    const payOpt = result.details?.payment_optimal_rate ?? null;
-    const shipCurr = result.details?.shipping_current_avg ?? null;
-    const shipOpt = result.details?.shipping_optimal_avg ?? null;
-    const monthlyRevenue = input?.monthly_revenue ?? null;
-    const saasCurrentPct = monthlyRevenue ? ((input.total_saas_spend / monthlyRevenue) * 100) : null;
-    const saasOptPct = (monthlyRevenue && result.details?.saas_optimal_total)
-      ? ((result.details.saas_optimal_total / monthlyRevenue) * 100) : null;
-
-    // Create PDF
-    const doc = new jsPDF();
-    doc.setFontSize(18); doc.text('CAMBRA — Results Summary', 20, 20);
-
-    let y = 28;
-    doc.setFontSize(12);
-    if (brand?.name) { doc.text(`Brand: ${brand.name}`, 20, y); y += 8; }
-
-    const total = result.total_savings || 0;
-    const scoreVal = score;
-    doc.text(`Total annual savings: €${total.toLocaleString()}`, 20, y); y += 8;
-    doc.text(`Infrastructure Score: ${scoreVal}/100`, 20, y); y += 12;
-
-    // Benchmarks section
-    doc.setFontSize(14); doc.text('Key benchmark comparisons', 20, y); y += 8; doc.setFontSize(12);
-    doc.text(`Payment fee: ${payCurr !== null ? payCurr.toFixed(1)+'%' : 'N/A'} vs target ${payOpt !== null ? payOpt.toFixed(1)+'%' : 'N/A'}`, 20, y); y += 6;
-    doc.text(`TPE fee: ${result.details?.tpe_effective_rate !== undefined ? result.details.tpe_effective_rate.toFixed(2)+'%' : 'N/A'} vs target ${result.details?.tpe_optimal_rate !== undefined ? result.details.tpe_optimal_rate.toFixed(2)+'%' : 'N/A'}`, 20, y); y += 6;
-    doc.text(`Cost/shipment: ${shipCurr !== null ? '€'+shipCurr.toFixed(2) : 'N/A'} vs target ${shipOpt !== null ? '€'+shipOpt.toFixed(2) : 'N/A'}`, 20, y); y += 6;
-    doc.text(`SaaS / revenue: ${saasCurrentPct !== null ? saasCurrentPct.toFixed(1)+'%' : 'N/A'} vs target ${saasOptPct !== null ? saasOptPct.toFixed(1)+'%' : 'N/A'}`, 20, y); y += 12;
-
-    // Timestamp
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, y);
-
-    doc.save('cambra-results.pdf');
+  const scrollToVerticals = () => {
+    verticalsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleExportExcel = async () => {
-    if (!result) { alert('No analysis data to export.'); return; }
-    const authed = await base44.auth.isAuthenticated();
-    if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
-    const me = await base44.auth.me();
-    const brands = await base44.entities.Brand.filter({ created_by_id: me.id });
-    const brand = brands[0] || null;
+  const heroBadge = heroConfidence === "verified"
+    ? { label: "Verified", cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25", dot: "bg-emerald-500" }
+    : heroConfidence === "mixed"
+    ? { label: "Mixed", cls: "bg-blue-500/10 text-blue-600 border-blue-500/25", dot: "bg-blue-500" }
+    : { label: "Estimated", cls: "bg-amber-500/10 text-amber-600 border-amber-500/25", dot: "bg-amber-500" };
 
-    const csv = buildResultsCsv({ brand, result, input, scoreReport, resultWithTpe });
-    const stamp = new Date().toISOString().slice(0, 10);
-    downloadCsv(`cambra-results-${stamp}.csv`, csv);
-  };
+  const calcDate = result.created_date ? new Date(result.created_date) : null;
 
+  /* ── render ──────────────────────────────────────────────── */
   return (
-    <div className="relative min-h-screen font-inter bg-background text-foreground overflow-hidden">
-      {/* Ambient backdrop */}
+    <div className="relative min-h-screen font-inter bg-background text-foreground overflow-x-hidden">
+      {/* ambient */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 dot-grid opacity-40" />
-        <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.18]" />
-        <div className="absolute top-1/3 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.14]" />
+        <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.16]" />
       </div>
 
-      {/* ── Sticky top bar ── */}
+      {/* top bar */}
       <div className="relative sticky top-0 z-20 border-b border-border/40 px-5 py-3.5 flex items-center justify-between bg-background/97 backdrop-blur-2xl">
-        <Link to="/" aria-label="CAMBRA home"><span className="sr-only">CAMBRA</span></Link>
+        <Link to="/" className="text-sm font-black tracking-tight">CAMBRA</Link>
         <div className="flex items-center gap-2">
-          <Link to="/Reports">
-            <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground rounded-full px-3 hidden sm:flex">History</Button>
-          </Link>
-          <Link to="/ConnectTools">
-            <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5">
-              <Zap size={11} /> Connect tools
-            </Button>
-          </Link>
-          {subscribed ? (
-            <ExportMenu onExportPdf={handleExportPdf} onExportExcel={handleExportExcel} />
-          ) : (
-            <Link to="/Onboarding">
-              <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-3 border-border/60 gap-1.5 bg-saas-gradient text-white">
-                <Lock size={11} /> Unlock report — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span>
-              </Button>
-            </Link>
-          )}
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
+          >
+            <Share2 size={11} /> Share
+          </button>
           <Link to="/Dashboard">
             <Button size="sm" className="h-8 rounded-full text-xs px-4 font-semibold">Dashboard</Button>
           </Link>
         </div>
       </div>
 
-      <div className={`relative max-w-3xl mx-auto px-5 py-10 pb-24 space-y-12 ${!subscribed ? 'lock-blur' : ''}`}>
+      <div className="relative max-w-4xl mx-auto px-5 py-10 pb-24 space-y-14">
 
-        {/* ═══ 1. MAIN RESULT ═══════════════════════════════════════ */}
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-            <p className="text-[10px] tracking-[0.3em] uppercase text-muted-foreground font-semibold">Infrastructure analysis complete</p>
+        {/* ═══ HERO ════════════════════════════════════════════ */}
+        <section className="text-center">
+          <div className={`inline-flex items-center gap-1.5 mb-5 px-3 py-1.5 rounded-full border text-[11px] font-bold ${heroBadge.cls}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${heroBadge.dot}`} />
+            {heroBadge.label}
           </div>
 
-          {/* Accuracy badge */}
-          <div className="flex justify-center items-center gap-2 mb-5 flex-wrap">
-            <AccuracyBadge isEstimated={isEstimated} />
-            <NetworkDataBadge tone="light" />
+          <p className="text-sm text-muted-foreground mb-3">Identified across your infrastructure</p>
+
+          <div className="font-black tracking-[-0.055em] leading-none mb-3 tabular-nums" style={{ fontSize: "clamp(3.5rem, 14vw, 8rem)" }}>
+            {formatEur(result.total_savings)}<span className="text-[0.35em] font-bold text-muted-foreground/40 ml-2">/yr</span>
           </div>
 
-          <p className="text-sm text-muted-foreground mb-3">Optimization potential identified across your infrastructure</p>
+          <p className="text-muted-foreground/70 text-base mb-7">
+            Across payments, shipping and SaaS
+          </p>
 
-          {/* THE BIG NUMBER */}
-          <div className="text-[clamp(5rem,18vw,10rem)] font-black tracking-[-0.055em] leading-none mb-2 no-blur">
-            <AnimatedCounter value={result.total_savings} prefix="€" duration={2} />
+          <Button
+            onClick={scrollToVerticals}
+            size="lg"
+            className="h-12 rounded-full px-7 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90 min-h-[44px]"
+          >
+            See how to recover this <ArrowRight className="h-4 w-4" />
+          </Button>
+        </section>
+
+        {/* ═══ VERTICAL CARDS ════════════════════════════════════ */}
+        <section ref={verticalsRef} className="space-y-3">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-black tracking-tight">Vertical breakdown</h2>
           </div>
-          <p className="text-muted-foreground/50 text-base mb-2">per year across your infrastructure</p>
-          <p className="text-muted-foreground/35 text-sm mb-7">Value currently left unoptimized. Most brands your size improve this within the first cycle.</p>
 
-          {!subscribed && (
-            <div className="mt-2">
-              <Link to="/Onboarding">
-                <Button className="rounded-full px-6 text-sm gap-1.5 bg-saas-gradient text-white">
-                  Unlock report — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-bold">Free</span>
-                </Button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Payments card */}
+            <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
+                  <CreditCard size={14} className="text-foreground" />
+                </div>
+                <h3 className="text-sm font-bold">Payments</h3>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">Your rate</span>
+                  <span className="text-sm font-bold tabular-nums">
+                    {payCurrent != null ? `${payCurrent.toFixed(2)}%` : "—"}
+                  </span>
+                </div>
+                {payBmValue != null && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">
+                      {payBmIsNetwork ? "Network benchmark" : "Reference rate"}
+                    </span>
+                    <span className="text-sm font-bold tabular-nums text-cambra-mint">
+                      {Number(payBmValue).toFixed(2)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-border/40">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold mb-1">Opportunity</p>
+                <p className="text-2xl font-black tabular-nums">{formatEur(result.payment_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/yr</span></p>
+              </div>
+
+              <UpgradeToVerified
+                vertical="payments"
+                currentConfidence={stripeConnected ? "verified" : "estimated"}
+                isConnected={stripeConnected}
+                onConnect={() => { window.location.href = "/ConnectTools"; }}
+                compact
+              />
+            </div>
+
+            {/* Shipping card */}
+            <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
+                  <Truck size={14} className="text-foreground" />
+                </div>
+                <h3 className="text-sm font-bold">Shipping</h3>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">Your cost</span>
+                  <span className="text-sm font-bold tabular-nums">
+                    {shipCurrent != null ? `€${Number(shipCurrent).toFixed(2)} / shipment` : "—"}
+                  </span>
+                </div>
+                {shipBmValue != null && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">
+                      {shipBmIsNetwork ? "Network benchmark" : "Reference rate"}
+                    </span>
+                    <span className="text-sm font-bold tabular-nums text-cambra-mint">
+                      €{Number(shipBmValue).toFixed(2)} / shipment
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-border/40">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold mb-1">Opportunity</p>
+                <p className="text-2xl font-black tabular-nums">{formatEur(result.shipping_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/yr</span></p>
+              </div>
+
+              <UpgradeToVerified
+                vertical="shipping"
+                currentConfidence="estimated"
+                isConnected={false}
+                onConnect={() => { window.location.href = "/ConnectTools"; }}
+                compact
+              />
+            </div>
+
+            {/* SaaS card */}
+            <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
+                  <Package size={14} className="text-foreground" />
+                </div>
+                <h3 className="text-sm font-bold">SaaS &amp; Tools</h3>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">Your spend</span>
+                  <span className="text-sm font-bold tabular-nums">
+                    {saasSpend != null ? `€${Math.round(saasSpend).toLocaleString()} / mo` : "—"}
+                  </span>
+                </div>
+                {saasPctOfRevenue != null && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">% of revenue</span>
+                    <span className="text-sm font-bold tabular-nums">{saasPctOfRevenue.toFixed(1)}%</span>
+                  </div>
+                )}
+                {detectedSaasCount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">Detected tools</span>
+                    <span className="text-sm font-bold tabular-nums">{detectedSaasCount}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-border/40">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold mb-1">Opportunity</p>
+                <p className="text-2xl font-black tabular-nums">{formatEur(result.saas_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/yr</span></p>
+              </div>
+
+              <Link
+                to="/ConnectTools"
+                className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold hover:opacity-90 min-h-[44px] sm:min-h-0"
+              >
+                <Plug size={11} /> Review detected tools
               </Link>
             </div>
+          </div>
+        </section>
+
+        {/* ═══ INFRASTRUCTURE MAP ════════════════════════════════ */}
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-lg font-black tracking-tight">Your infrastructure</h2>
+            <p className="text-sm text-muted-foreground/70">Tools detected across your stack</p>
+          </div>
+
+          {graphNodes.length === 0 ? (
+            <div className="p-6 rounded-2xl border border-dashed border-border/60 bg-secondary/20 text-center">
+              <p className="text-sm text-muted-foreground mb-3">Connect your tools to map your infrastructure</p>
+              <Link to="/ConnectTools">
+                <Button variant="outline" className="rounded-full px-5 text-xs h-9 min-h-[44px] sm:min-h-0">Connect tools</Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {CATEGORY_ORDER.filter(cat => groupedNodes[cat]).map(cat => {
+                const Icon = groupedNodes[cat].icon;
+                const items = groupedNodes[cat].items;
+                return (
+                  <div key={cat} className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+                    <div className="px-4 py-2.5 border-b border-border/40 bg-secondary/30 flex items-center gap-2">
+                      <Icon size={12} className="text-muted-foreground" />
+                      <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground">{cat}</span>
+                      <span className="text-[10px] text-muted-foreground/50">({items.length})</span>
+                    </div>
+                    <div className="divide-y divide-border/30">
+                      {items.map(n => {
+                        const b = nodeBadge(n);
+                        return (
+                          <div key={n.id} className="px-4 py-3 flex items-center gap-3 flex-wrap">
+                            <p className="text-sm font-semibold flex-1 min-w-0 truncate">{n.provider_name}</p>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${b.cls}`}>
+                              {b.label}
+                            </span>
+                            {Number(n.monthly_cost) > 0 && (
+                              <span className="text-xs font-bold tabular-nums whitespace-nowrap">
+                                €{Math.round(Number(n.monthly_cost)).toLocaleString()}/mo
+                              </span>
+                            )}
+                            <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap">{dataSourceLabel(n)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
+        </section>
 
-          {/* Score pill */}
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <div className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-border/50 bg-card">
-              <Shield size={12} className="text-muted-foreground/35" />
-              <span className="text-sm font-bold">Infrastructure Score</span>
-              <span className="text-sm font-black tabular-nums" style={{ color: scoreColor }}>{score}/100</span>
-              <span className="text-xs text-muted-foreground/40">· {scoreLabel}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Summary strip — navy cards, CAMBRA identity */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <div className="cambra-card cambra-card--soft p-5">
-            <p className="cc-eyebrow mb-2">Released capital</p>
-            <div className="text-3xl font-black tracking-tight text-white">
-              <span className="tabular-nums"><AnimatedCounter value={result.total_savings} prefix="€" duration={2} /></span>
-              <span className="text-sm text-white/40 font-normal">/yr</span>
-            </div>
-          </div>
-
-          <div className="cambra-card cambra-card--soft p-5">
-            <p className="cc-eyebrow mb-2">Infrastructure score</p>
-            <div className="text-3xl font-black tracking-tight tabular-nums" style={{ color: score >= 80 ? "#52EBA4" : score >= 60 ? "#FFB05A" : "#7AA8FF" }}>
-              {score}<span className="text-sm text-white/40 font-normal">/100</span>
-            </div>
-          </div>
-
-          <div className="cambra-card cambra-card--soft p-5 col-span-2 md:col-span-1">
-            <p className="cc-eyebrow mb-2">Network benchmark</p>
-            {(() => {
-              const gmvAnnual = input?.monthly_revenue ? input.monthly_revenue * 12 : null;
-              const pct = gmvAnnual && gmvAnnual > 0 ? Math.round((result.total_savings / gmvAnnual) * 100) : null;
-              return (
-                <p className="text-sm text-white/85 leading-snug">
-                  {pct !== null ? (
-                    <>Currently <span className="font-bold text-white">{pct}%</span> above CAMBRA network median.</>
-                  ) : (
-                    <span className="text-white/55">Not enough data yet.</span>
-                  )}
-                </p>
-              );
-            })()}
-          </div>
-        </div>
-
-        {/* ═══ 2. ACCURACY NOTICE ══════════════════════════════════ */}
-        {isEstimated && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl border border-cambra-plum bg-cambra-plum-soft">
-            <AlertTriangle size={16} className="text-cambra-plum shrink-0 mt-0.5 sm:mt-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold">Using estimated data</p>
-              <p className="text-xs text-muted-foreground/60 mt-0.5">This analysis uses your manual inputs. Connect your tools or upload statements to unlock precise, verified savings figures.</p>
-              <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground/40">
-                <span>🔒 Encrypted</span>
-                <span>👁 Read-only access</span>
-                <span>🚫 Never shared</span>
+        {/* ═══ HOW WE CALCULATED THIS ════════════════════════════ */}
+        <section className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+          <button
+            onClick={() => setShowHow(s => !s)}
+            className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-secondary/30 transition-colors min-h-[44px]"
+          >
+            <span className="text-sm font-bold">How we calculated this</span>
+            {showHow ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+          {showHow && (
+            <div className="px-5 pb-5 space-y-4 text-xs text-muted-foreground">
+              {result.methodology && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70 mb-1">Methodology</p>
+                  <p className="leading-relaxed">{result.methodology}</p>
+                </div>
+              )}
+              {Array.isArray(result.assumptions) && result.assumptions.length > 0 && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70 mb-1">Assumptions</p>
+                  <ul className="list-disc pl-5 space-y-1 leading-relaxed">
+                    {result.assumptions.map((a, i) => <li key={i}>{a}</li>)}
+                  </ul>
+                </div>
+              )}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-border/30">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">Score engine</p>
+                  <p className="text-foreground tabular-nums">v{result.score_engine_version || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">Savings model</p>
+                  <p className="text-foreground tabular-nums">v{result.savings_model_version || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">Benchmarks</p>
+                  <p className="text-foreground tabular-nums">v{result.benchmark_version || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">Calculated</p>
+                  <p className="text-foreground">{calcDate ? calcDate.toLocaleDateString() : "—"}</p>
+                </div>
               </div>
+            </div>
+          )}
+        </section>
+
+        {/* ═══ BOTTOM ACTIONS + TRUST ════════════════════════════ */}
+        <section className="space-y-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold mb-0.5">Connect more tools to improve accuracy</p>
+              <p className="text-xs text-muted-foreground">Every connection refines your benchmark.</p>
             </div>
             <Link to="/ConnectTools" className="shrink-0">
-              <button className="h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5 whitespace-nowrap">
-                <Zap size={11} /> Connect your data
-              </button>
-            </Link>
-          </div>
-        )}
-
-        {/* ═══ 3A. INTELLIGENCE ═════════════════════════════════════ */}
-        {intelligence && (
-          <IntelligencePanel intelligence={intelligence} />
-        )}
-
-        {/* ═══ 3. INFRASTRUCTURE SCORE ══════════════════════════════ */}
-        <div>
-          <SectionLabel>Infrastructure Score</SectionLabel>
-          {scoreReport ? (
-            <ScoreCard scoreReport={scoreReport} />
-          ) : (
-            <div className="p-7 rounded-2xl border border-border/50 bg-card flex items-center gap-6">
-              <div className="relative w-20 h-20 shrink-0">
-                <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="34" fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
-                  <circle cx="40" cy="40" r="34" fill="none" stroke={scoreColor} strokeWidth="6" strokeLinecap="round"
-                    strokeDasharray={2 * Math.PI * 34} strokeDashoffset={2 * Math.PI * 34 * (1 - score / 100)}
-                    style={{ transition: "stroke-dashoffset 1.5s ease-out" }} />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-black" style={{ color: scoreColor }}>{score}</span>
-                  <span className="text-[9px] text-muted-foreground/40">/100</span>
-                </div>
-              </div>
-              <div>
-                <p className="font-bold text-xl mb-1">{scoreLabel}</p>
-                <p className="text-sm text-muted-foreground">Connect your tools to unlock a precise multi-dimensional score.</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ═══ 4. TOP SAVINGS OPPORTUNITIES ════════════════════════ */}
-        <div className="relative">
-          <SectionLabel>Top savings opportunities</SectionLabel>
-
-          {/* Visual bar chart */}
-          <div className="mb-4 p-5 rounded-2xl border border-border/50 bg-card overflow-hidden">
-            <p className="text-[10px] text-muted-foreground/40 uppercase tracking-[0.15em] mb-4">Annual savings by category</p>
-            <NormalizedBarChart data={chartData} className="h-28 sm:h-32 md:h-36" hideLabels={!subscribed} />
-          </div>
-
-          {/* Cards */}
-          <div className="space-y-2.5">
-            {BREAKDOWN_META.map(item => (
-              <div key={item.key} className={`flex items-center gap-4 p-5 rounded-xl border ${item.bg}`}>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item.bg}`}>
-                  <item.icon size={15} className={item.textColor} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{item.label}</p>
-                  <p className="text-[11px] text-muted-foreground/50 sensitive">{item.detail(resultWithTpe)}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className={`text-2xl font-black tabular-nums ${item.textColor}`}>
-                    €{(resultWithTpe[item.key] || 0).toLocaleString()}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground/40">/year</p>
-                  <Link
-                    to="/Onboarding"
-                    className="inline-flex items-center gap-1 px-3 py-1.5 mt-2 rounded-full border border-border/60 text-[11px] hover:bg-secondary/60 transition-colors"
-                  >
-                    Unlock terms
-                  </Link>
-                </div>
-              </div>
-            ))}
-
-            {/* Total row */}
-            <div className="flex items-center justify-between p-5 rounded-xl bg-foreground text-background">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] opacity-35 mb-0.5">Total annual potential</p>
-                <p className="text-2xl font-black tracking-tight tabular-nums">
-                  €{(result.total_savings || 0).toLocaleString()}
-                  <span className="text-base font-normal opacity-35 ml-1">/yr</span>
-                </p>
-              </div>
-              <TrendingDown size={22} className="opacity-15" />
-            </div>
-          </div>
-        </div>
-
-
-        {/* ═══ 4B. RECALIBRATE SLIDER ══════════════════════════════ */}
-        {subscribed && input?.monthly_revenue && (
-          <SavingsAdjustSlider
-            baseSavings={result.total_savings || 0}
-            baseRevenue={input.monthly_revenue}
-          />
-        )}
-
-        {/* ═══ 5. BENCHMARK COMPARISON ══════════════════════════════ */}
-        <div className="relative">
-          <SectionLabel>Benchmark comparison</SectionLabel>
-          <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-            <div className="grid grid-cols-4 px-6 py-2.5 bg-secondary/50 border-b border-border/30">
-              {["Metric", "Yours", "Network avg", "Gap"].map((h, i) => (
-                <span key={i} className={`text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 ${i > 0 ? "text-center" : ""} ${i === 3 ? "text-right" : ""}`}>{h}</span>
-              ))}
-            </div>
-            {[
-              {
-                metric: "Payment fee", bad: (result.details?.payment_current_rate ?? 2.9) > (result.details?.payment_optimal_rate ?? 1.4),
-                yours: `${(result.details?.payment_current_rate ?? 2.9).toFixed(1)}%`,
-                network: `${(result.details?.payment_optimal_rate ?? 1.4).toFixed(1)}%`,
-                gap: result.details?.payment_current_rate && result.details?.payment_optimal_rate
-                  ? `−${(result.details.payment_current_rate - result.details.payment_optimal_rate).toFixed(1)}%`
-                  : "Potential gap",
-              },
-              {
-                metric: "TPE rate", bad: (result.details?.tpe_effective_rate ?? 0) > (result.details?.tpe_optimal_rate ?? 1.0),
-                yours: `${(result.details?.tpe_effective_rate ?? 0).toFixed(2)}%`,
-                network: `${(result.details?.tpe_optimal_rate ?? 1.0).toFixed(2)}%`,
-                gap: result.details?.tpe_effective_rate && result.details?.tpe_optimal_rate
-                  ? `−${(result.details.tpe_effective_rate - result.details.tpe_optimal_rate).toFixed(2)}%`
-                  : "Potential gap",
-              },
-              {
-                metric: "Cost/shipment", bad: (result.details?.shipping_current_avg ?? 7.5) > (result.details?.shipping_optimal_avg ?? 5.2),
-                yours: `€${(result.details?.shipping_current_avg ?? 7.5).toFixed(2)}`,
-                network: `€${(result.details?.shipping_optimal_avg ?? 5.2).toFixed(2)}`,
-                gap: result.details?.shipping_current_avg && result.details?.shipping_optimal_avg
-                  ? `−€${(result.details.shipping_current_avg - result.details.shipping_optimal_avg).toFixed(2)}`
-                  : "Potential gap",
-              },
-              {
-                metric: "SaaS / revenue", bad: true,
-                yours: input?.monthly_revenue ? `${((input.total_saas_spend / input.monthly_revenue) * 100).toFixed(1)}%` : "~5%",
-                network: result.details?.saas_optimal_total && input?.monthly_revenue
-                  ? `${((result.details.saas_optimal_total / input.monthly_revenue) * 100).toFixed(1)}%`
-                  : "2.5%",
-                gap: "Efficiency gap",
-              },
-              {
-                metric: "Infrastructure score", bad: score < 72,
-                yours: `${score}/100`, network: "72/100",
-                gap: score >= 72 ? "Above avg ↑" : `−${72 - score} pts`,
-              },
-            ].map((row, i) => (
-              <div key={i} className="grid grid-cols-4 px-6 py-4 border-b border-border/15 last:border-0 items-center">
-                <span className="text-xs text-muted-foreground/60">{row.metric}</span>
-                <span className="text-xs font-bold tabular-nums text-center">{row.yours}</span>
-                <span className="text-xs text-muted-foreground/35 tabular-nums text-center">{row.network}</span>
-                <span className={`text-xs font-bold text-right tabular-nums ${row.bad ? "text-cambra-plum" : "text-cambra-mint"}`}>{row.gap}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ═══ 6. RECOMMENDATIONS ══════════════════════════════════ */}
-        <div className="relative">
-          <SectionLabel>Recommended actions</SectionLabel>
-          <div className="space-y-2">
-            {recs.map((item, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-border transition-colors group">
-                <div className="w-8 h-8 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                  <item.icon size={13} className="text-muted-foreground/50" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-muted-foreground/40 mb-0.5">{item.cat}</p>
-                  <p className="text-sm font-semibold">{item.action}</p>
-                </div>
-                <div className="text-right shrink-0 space-y-1">
-                  <p className="text-xs font-semibold text-chart-2">{item.saving}</p>
-                  <p className="text-[10px] font-bold text-chart-2/60 bg-chart-2/10 border border-chart-2/20 px-2 py-0.5 rounded-full">
-                    +{item.points} pts
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ═══ 7. UNLOCK INFRASTRUCTURE TERMS ══════════════════════ */}
-        <div>
-          <SectionLabel>Unlock better infrastructure terms</SectionLabel>
-          <div className="space-y-3">
-            {UNLOCKS.map((item, i) => (
-              <div key={i} className={`p-5 rounded-xl border flex items-center gap-4 ${item.bg}`}>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <p className="text-sm font-semibold">{item.title}</p>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-background/70 text-muted-foreground border border-border/60">{item.cat}</span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground/55">{item.desc}</p>
-                </div>
-                <div className="shrink-0 text-right">
-                  <p className={`text-base font-black ${item.textColor} mb-1`}>{item.saving}</p>
-                  <Link to="/Onboarding">
-                    <button className="text-[11px] font-bold flex items-center justify-end gap-1 px-3 py-1.5 rounded-full border border-foreground bg-foreground text-background hover:opacity-90 transition-opacity">
-                      Unlock <ArrowRight size={9} />
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ═══ ACCURACY FOOTER ══════════════════════════════════════ */}
-        <div className="p-6 rounded-2xl border border-border/40 bg-secondary/15">
-          <div className="flex items-start gap-3 mb-4">
-            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${isEstimated ? "bg-orange-400" : "bg-green-500"}`} />
-            <div>
-              <p className="text-sm font-semibold">{scoreReport?.accuracyLabel ?? "Estimated — connect tools to refine"}</p>
-              <p className="text-xs text-muted-foreground/55 mt-1 leading-relaxed">
-                This report uses manual inputs. Connect your tools or upload statements to unlock a verified Infrastructure Score with precise savings figures.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link to="/ConnectTools">
-              <button className="h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold flex items-center gap-1.5">
-                <Zap size={11} /> Connect your data
-              </button>
-            </Link>
-            <Link to="/Analyzer">
-              <button className="h-9 px-4 rounded-full border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Re-run analysis
-              </button>
-            </Link>
-          </div>
-        </div>
-
-        {/* ═══ FINAL CTA ════════════════════════════════════════════ */}
-        <div className="text-center pt-2">
-          <h3 className="text-2xl font-black tracking-[-0.03em] mb-2">Ready to recover this?</h3>
-          <p className="text-muted-foreground text-sm mb-7 max-w-sm mx-auto">
-            Join CAMBRA network and start fixing your infrastructure today.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/Onboarding" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full rounded-full px-10 text-sm font-bold gap-2 shadow-sm">
-                Join & unlock — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span> <ArrowRight className="h-4 w-4" />
+              <Button className="rounded-full px-5 text-xs h-10 font-bold gap-1.5 min-h-[44px] sm:min-h-0">
+                <Plug size={11} /> Connect tools <ArrowRight size={11} />
               </Button>
             </Link>
           </div>
-        </div>
 
-        {/* Disclaimer */}
-        <div className="mt-10 pt-6 border-t border-border/40 text-center">
-          <p className="text-[11px] text-muted-foreground/60">This analysis is an estimate based on the current aggregated dataset of the CAMBRA network.</p>
-        </div>
-
+          <div className="text-center space-y-2">
+            {country && (
+              <p className="text-[11px] text-muted-foreground/70">
+                Analysis based on {country} {tierLabel(tier)} benchmarks
+              </p>
+            )}
+            <p className="text-[11px] text-muted-foreground/70">Data is private and never shared</p>
+            {maxN >= 5 && (
+              <p className="text-[11px] text-muted-foreground/70">
+                Benchmarked against {maxN} anonymized brands
+              </p>
+            )}
+          </div>
+        </section>
       </div>
+
+      {/* toast */}
+      {toastMsg && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-foreground text-background text-xs font-bold shadow-lg flex items-center gap-2">
+          <CheckCircle2 size={12} /> {toastMsg}
+        </div>
+      )}
     </div>
   );
 }

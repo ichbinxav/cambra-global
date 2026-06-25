@@ -1,346 +1,287 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRight, TrendingDown, AlertTriangle, Zap
+  ArrowRight, CheckCircle2, AlertTriangle, Sparkles,
+  CreditCard, Truck, Package, Plug, Building2, Store, Mail, Headphones, Users, Wifi, Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import MetricCard from "@/components/dashboard/MetricCard";
-import HeroSavings from "@/components/dashboard/HeroSavings";
-import InfraScore from "@/components/dashboard/InfraScore";
-import SavingsTrend from "@/components/dashboard/SavingsTrend";
-import CumulativeSavingsChart from "@/components/dashboard/CumulativeSavingsChart";
+import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
+
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
-import InfrastructureGraphPanel from "@/components/dashboard/InfrastructureGraphPanel";
 import LastScanBar from "@/components/dashboard/LastScanBar";
 import AIInsightsPanel from "@/components/dashboard/AIInsightsPanel";
-import GMVMetrics from "@/components/dashboard/GMVMetrics";
-import { CreditCard, Truck, Package, Store, ShieldCheck } from "lucide-react"; // ShieldCheck kept for quick actions only
-import RecommendationList from "@/components/recommendations/RecommendationList";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
-import LiveSystemHeader from "@/components/dashboard/LiveSystemHeader";
-import DriftAlertStrip from "@/components/dashboard/DriftAlertStrip";
-import IntelligenceWidget from "@/components/dashboard/IntelligenceWidget";
 import PageHero from "@/components/shared/PageHero";
-import DriftMonitor from "@/components/dashboard/DriftMonitor";
 
+/* ── helpers ─────────────────────────────────────────────────── */
+function formatEur(n) {
+  const v = Math.max(0, Math.round(Number(n) || 0));
+  return `€${v.toLocaleString()}`;
+}
 
+const NODE_CATEGORY = {
+  payment_provider:   { key: "Payments",  icon: CreditCard },
+  commerce_platform:  { key: "Commerce",  icon: Store },
+  shipping_carrier:   { key: "Shipping",  icon: Truck },
+  logistics:          { key: "Shipping",  icon: Truck },
+  marketing:          { key: "Marketing", icon: Mail },
+  saas_tool:          { key: "SaaS",      icon: Package },
+  analytics:          { key: "SaaS",      icon: Package },
+  support:            { key: "Support",   icon: Headphones },
+  bank:               { key: "Banking",   icon: Building2 },
+  insurance:          { key: "Banking",   icon: Building2 },
+  telecom:            { key: "Telecom",   icon: Wifi },
+  hr_tool:            { key: "HR",        icon: Users },
+};
+const CATEGORY_ORDER = ["Payments", "Commerce", "Shipping", "Marketing", "SaaS", "Banking", "Support", "HR", "Telecom"];
 
+function nodeBadge(node) {
+  const status = node.status || "detected";
+  const cc = node.cost_confidence || "estimated";
+  if (status === "verified" || cc === "verified") return { label: "Verified", cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25" };
+  if (status === "connected" || cc === "connected") return { label: "Connected", cls: "bg-blue-500/10 text-blue-600 border-blue-500/25" };
+  if (status === "detected") return { label: "Detected", cls: "bg-purple-500/10 text-purple-600 border-purple-500/25" };
+  return { label: "Estimated", cls: "bg-amber-500/10 text-amber-600 border-amber-500/25" };
+}
+
+/* ── main ────────────────────────────────────────────────────── */
 export default function Dashboard() {
-  const [results, setResults] = useState([]);
-  const [brands, setBrands] = useState([]);
-  const [paymentsProfiles, setPaymentsProfiles] = useState([]);
   const [user, setUser] = useState(null);
-  const [userDeals, setUserDeals] = useState([]);
+  const [brand, setBrand] = useState(null);
+  const [latest, setLatest] = useState(null);
+  const [stripeConn, setStripeConn] = useState(null);
+  const [graphNodes, setGraphNodes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [subscribed, setSubscribed] = useState(false);
-  const [userEmail, setUserEmail] = useState(null);
-  const [econ, setEcon] = useState({ identified: 0, activated: 0, realized: 0 });
 
-  // Initial load — fetch user once, then data
   useEffect(() => {
-    const init = async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      setUserEmail(u.email);
-
-      const [r, b, p, uds] = await Promise.all([
-        base44.entities.AnalyzerResult.filter({ created_by_id: u.id }, "-created_date", 10),
-        base44.entities.Brand.filter({ created_by_id: u.id }),
-        base44.entities.PaymentsProfile.filter({ created_by_id: u.id }, "-created_date", 1),
-        base44.entities.UserDeal.filter({ user_email: u.email }),
-      ]);
-      setResults(r);
-      setBrands(b);
-      setPaymentsProfiles(p);
-      setUserDeals(uds);
-      // After basics, if brand exists fetch economics
-      if (b?.length) {
-        try {
-          const res = await base44.functions.invoke('getBrandSavings', { brandId: b[0].id });
-          const d = res?.data || {};
-          setEcon({
-            identified: Number(d?.identified?.yearly || 0),
-            activated: Number(d?.activated?.yearly || 0),
-            realized: Number(d?.realized?.yearly || 0),
-          });
-        } catch (e) { console.warn('getBrandSavings failed', e?.message || e); }
-      }
-      setLoading(false);
-    };
-
-    init().catch(err => {
-      console.error('Dashboard init error:', err);
-      setLoading(false);
-    });
-  }, []);
-
-  // Check subscription status (non-blocking)
-  useEffect(() => {
-    const check = async () => {
+    (async () => {
       try {
-        const authed = await base44.auth.isAuthenticated();
-        if (!authed) { setSubscribed(false); return; }
-        const me = await base44.auth.me();
-        const subs = await base44.entities.Subscription.filter({ user_email: me.email, status: 'active' }, '-created_date', 1);
-        setSubscribed(subs.length > 0);
-      } catch {}
-    };
-    check();
+        const u = await base44.auth.me();
+        setUser(u);
+
+        const brands = await base44.entities.Brand.filter({ created_by_id: u.id }, "-created_date", 1);
+        const b = brands[0] || null;
+        setBrand(b);
+
+        const results = await base44.entities.AnalyzerResult
+          .filter({ created_by_id: u.id }, "-created_date", 1);
+        setLatest(results[0] || null);
+
+        if (b) {
+          try {
+            const sc = await base44.entities.StripeConnection
+              .filter({ brand_id: b.id, connection_status: "connected" }, "-last_sync_at", 1);
+            setStripeConn(sc[0] || null);
+          } catch (_) {}
+
+          try {
+            const g = await base44.functions.invoke("getInfrastructureGraph", { brand_id: b.id });
+            const payload = g?.data || g;
+            if (payload?.ok) setGraphNodes(payload.nodes || []);
+          } catch (_) {}
+        }
+      } catch (err) {
+        console.warn("Dashboard init error:", err?.message || err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  // Subscribe to real-time updates once we have the user email
-  useEffect(() => {
-    if (!userEmail) return;
+  if (loading) return <DashboardSkeleton />;
 
-    const refresh = async () => {
-      const me = await base44.auth.me();
-      const [r, uds] = await Promise.all([
-        base44.entities.AnalyzerResult.filter({ created_by_id: me.id }, "-created_date", 10),
-        base44.entities.UserDeal.filter({ user_email: userEmail }),
-      ]);
-      setResults(r);
-      setUserDeals(uds);
-    };
+  const firstName = user?.full_name ? user.full_name.split(" ")[0] : "Dashboard";
+  const stripeConnected = !!stripeConn;
 
-    const subs = [];
-    try {
-      const unsub1 = base44.entities.UserDeal.subscribe(() => refresh());
-      const unsub2 = base44.entities.AnalyzerResult.subscribe(() => refresh());
-      if (unsub1) subs.push(unsub1);
-      if (unsub2) subs.push(unsub2);
-    } catch (err) {
-      console.warn('Subscription error:', err);
-    }
-
-    return () => subs.forEach(unsub => unsub?.());
-  }, [userEmail]);
-
-  const latest = results[0];
-  const latestPaymentsProfile = paymentsProfiles[0];
-  const tpeEstimated = latest?.details?.tpe_savings || latestPaymentsProfile?.tpe_estimated_annual_savings || 0;
-  const onlinePayments = Math.max(0, (latest?.payment_savings || 0) - tpeEstimated);
-  const totalPaymentSavings = onlinePayments + tpeEstimated;
-  const paymentCards = useMemo(() => ([
-    { label: "Online Payments", value: onlinePayments, icon: CreditCard, color: "text-chart-1", border: "border-chart-1/20", bg: "bg-blue-500/[0.05]", note: "online PSP" },
-    { label: "In-Store / TPE", value: tpeEstimated, icon: Store, color: "text-chart-3", border: "border-chart-3/20", bg: "bg-orange-500/[0.05]", note: "terminals & fees" },
-    { label: "Total Payments", value: totalPaymentSavings, icon: CreditCard, color: "text-foreground", border: "border-border/40", bg: "bg-secondary/40", note: "combined savings" },
-  ]), [onlinePayments, tpeEstimated, totalPaymentSavings]);
-
-  const handleSubscribe = async () => {
-    const authed = await base44.auth.isAuthenticated();
-    if (!authed) { base44.auth.redirectToLogin(window.location.href); return; }
-    const res = await base44.functions.invoke('startSubscription', {});
-    const status = res?.data?.status;
-    if (status === 'activated_free' || status === 'already_active') {
-      setSubscribed(true);
-      alert('Access activated — early partners free for life.');
-    } else if (status === 'requires_checkout') {
-      alert("Free seats are over. We'll enable the paid plan (€60/mo) soon.");
-    } else if (res?.data?.error) {
-      alert(res.data.error);
-    }
-  };
-  const chartData = results.slice().reverse().map((r, i) => ({ i, value: r.total_savings || 0 }));
-  const score = latest?.infra_score || 0;
-  
-  // GMV calculations from AnalyzerInput monthly_revenue
-  const gmvTotal = results.reduce((sum, r) => {
-    const monthlyRevenue = r.details?.annual_gmv ? r.details.annual_gmv / 12 : 0;
-    return sum + (monthlyRevenue * 12);
-  }, 0);
-  const gmvAverage = results.length > 0 ? gmvTotal / Math.max(results.length, 1) : 0;
-
-  if (loading) return (<DashboardSkeleton />);
-
-  return (
-    <>
-      <LiveSystemHeader />
-      <div className={`space-y-4 pb-10 ${!subscribed ? 'lock-blur' : ''}`}>
-
-        {/* ── HERO HEADER — landing grade ── */}
-        <PageHero
-          eyebrow="Live · 3-pillar framework"
-          title={`${user?.full_name ? user.full_name.split(" ")[0] : "Dashboard"}.`}
-          subtitle="Continuous monitoring · Benchmarked against your peers in real-time."
-          actions={
-            <>
-              <Link to="/Analyzer">
-                <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-foreground text-background hover:opacity-90">
-                  New Analysis <ArrowRight className="h-3.5 w-3.5" />
-                </Button>
-              </Link>
-              {!subscribed && (
-                <Link to="/Onboarding">
-                  <Button size="sm" variant="outline" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 border-border">
-                    Unlock — <span className="mx-1 line-through opacity-60">€60</span> Free
-                  </Button>
-                </Link>
-              )}
-            </>
-          }
-        />
-
-      {/* Economics strip */}
-      <div className="mt-1">
-        {econ && (
-          <div>
-            {/* lazy import avoided; small component inline to keep simple */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-              {[
-                { label: "Identified savings", value: econ.identified, glow: "rgba(31,78,216,0.35)", ring: "ring-blue-500/15" },
-                { label: "Activated savings", value: econ.activated, glow: "rgba(168,85,247,0.30)", ring: "ring-purple-500/15" },
-                { label: "Realized savings", value: econ.realized, glow: "rgba(44,167,193,0.35)", ring: "ring-green-500/15" },
-              ].map((s) => (
-                <div key={s.label} className={`group relative p-5 rounded-2xl glass ring-1 ${s.ring} overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-16px_rgba(0,0,0,0.18)]`}>
-                  <div className="pointer-events-none absolute -top-16 -right-16 w-44 h-44 rounded-full blur-3xl opacity-40 group-hover:opacity-70 transition-opacity"
-                       style={{ background: `radial-gradient(closest-side, ${s.glow}, transparent)` }} />
-                  <div className="relative">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold mb-2">{s.label}</p>
-                    <p className="text-2xl font-black tabular-nums tracking-tight gradient-text">
-                      €{Math.round(s.value).toLocaleString()}<span className="text-muted-foreground/50 text-base font-bold">/yr</span>
-                    </p>
-                  </div>
-                </div>
+  /* ───── STATE A: no AnalyzerResult yet ───── */
+  if (!latest) {
+    return (
+      <div className="pb-10">
+        <div className="min-h-[60vh] flex items-center justify-center px-4 py-12">
+          <div className="w-full max-w-xl rounded-3xl border border-border/60 bg-card p-8 sm:p-10 text-center shadow-[0_8px_40px_-16px_rgba(0,0,0,0.12)]">
+            <div className="w-14 h-14 rounded-2xl bg-secondary border border-border/60 flex items-center justify-center mx-auto mb-6">
+              <Sparkles size={20} className="text-foreground" />
+            </div>
+            <h1 className="font-display text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">
+              Map your infrastructure in 3 minutes
+            </h1>
+            <p className="text-sm text-muted-foreground mb-7 max-w-md mx-auto leading-relaxed">
+              Enter your website and we'll detect your tools, benchmark your costs and find your savings.
+            </p>
+            <Link to="/Analyzer">
+              <Button size="lg" className="h-12 rounded-full px-7 text-sm font-bold gap-2 min-h-[44px]">
+                Start analysis <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <div className="flex flex-wrap justify-center gap-2 mt-7">
+              {["Automatic detection", "Benchmark comparison", "Savings calculation"].map(p => (
+                <span key={p} className="text-[11px] px-3 py-1.5 rounded-full border border-border/60 bg-secondary/40 text-muted-foreground font-medium">
+                  {p}
+                </span>
               ))}
             </div>
           </div>
-        )}
-      </div>
-
-      {!latest ? (
-        /* ── EMPTY STATE ── */
-        <div className="space-y-3">
-          {/* Accuracy banner */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl border border-chart-3/20 bg-orange-500/[0.04]">
-            <AlertTriangle size={16} className="text-orange-500 shrink-0 mt-0.5 sm:mt-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold">Using estimated data</p>
-              <p className="text-xs text-muted-foreground/60 mt-0.5">Connect your tools or upload a statement to unlock precise insights and verified savings figures.</p>
-            </div>
-            <div className="flex gap-2 shrink-0 flex-wrap">
-              <Link to="/ConnectTools">
-                <button className="h-8 px-4 rounded-full bg-foreground text-background text-xs font-bold">Connect tools</button>
-              </Link>
-              <Link to="/ConnectTools">
-                <button className="h-8 px-4 rounded-full border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Upload data</button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="text-center py-20 border border-dashed border-border/40 rounded-2xl bg-secondary/10">
-            <div className="text-5xl mb-5 select-none opacity-10">✱</div>
-            <h3 className="text-xl font-bold tracking-tight mb-2">No analysis yet</h3>
-            <p className="text-sm text-muted-foreground mb-8 max-w-xs mx-auto">
-              Run the 2-minute Analyzer to identify your infrastructure optimization potential.
-            </p>
-            <Link to="/Analyzer">
-              <Button className="rounded-full px-8 text-sm font-bold gap-2">
-                Run the Analyzer <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
         </div>
-      ) : (
-        <>
-          <DriftAlertStrip />
+      </div>
+    );
+  }
 
-          {/* ── ACCURACY BANNER ── */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-xl border border-chart-3/20 bg-orange-500/[0.04]">
-            <div className="flex items-center gap-2 flex-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0" />
-              <p className="text-xs font-semibold text-chart-3">Using estimated data</p>
-              <span className="text-xs text-muted-foreground/50 hidden sm:block">— Connect your tools to unlock precise insights</span>
+  /* ───── STATE B / C: result exists ───── */
+  const heroBadge = stripeConnected
+    ? { label: "Verified", cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25", dot: "bg-emerald-500" }
+    : { label: "Estimated", cls: "bg-amber-500/10 text-amber-600 border-amber-500/25", dot: "bg-amber-500" };
+
+  const heroSubtitle = stripeConnected
+    ? "Based on your real Stripe data."
+    : "Connect Stripe to verify these figures and unlock your full benchmark profile.";
+
+  // Group nodes by category
+  const grouped = {};
+  for (const n of graphNodes) {
+    const meta = NODE_CATEGORY[n.node_type] || { key: "Other", icon: Layers };
+    if (!grouped[meta.key]) grouped[meta.key] = { icon: meta.icon, items: [] };
+    grouped[meta.key].items.push(n);
+  }
+
+  return (
+    <div className="space-y-6 pb-10">
+      {/* Header */}
+      <PageHero
+        eyebrow={stripeConnected ? "Verified · live data" : "Estimated · connect to verify"}
+        title={`${firstName}.`}
+        subtitle="Your infrastructure command center."
+        actions={
+          <Link to="/Analyzer">
+            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-foreground text-background hover:opacity-90">
+              New analysis <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        }
+      />
+
+      {/* ── SAVINGS HERO ── */}
+      <div className="rounded-3xl border border-border/60 bg-card p-6 sm:p-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+          <div className="flex-1 min-w-0">
+            <div className={`inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded-full border text-[11px] font-bold ${heroBadge.cls}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${heroBadge.dot}`} />
+              {heroBadge.label}
             </div>
-            <Link to="/ConnectTools">
-              <button className="h-7 px-3 rounded-full border border-chart-3/30 text-[11px] font-semibold text-chart-3 hover:bg-chart-3/10 transition-colors flex items-center gap-1.5">
-                <Zap size={10} /> Connect your data
-              </button>
-            </Link>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold mb-1">Identified savings</p>
+            <p className="font-display font-black tabular-nums tracking-[-0.04em] leading-none" style={{ fontSize: "clamp(2.5rem, 8vw, 4.5rem)" }}>
+              {formatEur(latest.total_savings)}<span className="text-[0.35em] font-bold text-muted-foreground/40 ml-2">/yr</span>
+            </p>
+            <p className="text-sm text-muted-foreground/80 mt-3 max-w-md">{heroSubtitle}</p>
           </div>
 
-          <HeroSavings latest={latest} score={score} />
-
-          {/* ── SAVINGS OPPORTUNITIES & GMV ── */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {paymentCards.map((card) => (
-              <MetricCard key={card.label} label={card.label} value={card.value} icon={card.icon} color={card.color} border={card.border} bg={card.bg} note={card.note} />
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <MetricCard label="Logistics" value={latest.shipping_savings} icon={Truck} color="text-chart-2" border="border-chart-2/20" bg="bg-green-500/[0.05]" note="carrier + 3PL efficiency" />
-            <MetricCard label="Commerce SaaS" value={latest.saas_savings} icon={Package} color="text-orange-500" border="border-orange-500/15" bg="bg-orange-500/[0.05]" note="stack efficiency" />
-          </div>
-
-          <GMVMetrics gmvTotal={gmvTotal} gmvAverage={gmvAverage} />
-
-          {/* ── CUMULATIVE SAVINGS — historical impact ── */}
-          <CumulativeSavingsChart results={results} />
-
-          {/* ── SCORE + INTELLIGENCE WIDGET ── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <InfraScore score={score} resultId={latest.id} />
-            {chartData.length > 1 ? (
-              <SavingsTrend chartData={chartData} />
+          <div className="shrink-0 w-full sm:w-auto sm:max-w-xs">
+            {stripeConnected ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 text-emerald-600 text-xs font-bold">
+                <CheckCircle2 size={11} /> Verified with Stripe
+              </div>
             ) : (
-              <IntelligenceWidget />
+              <UpgradeToVerified
+                vertical="payments"
+                currentConfidence="estimated"
+                isConnected={false}
+                onConnect={() => { window.location.href = "/ConnectTools"; }}
+              />
             )}
           </div>
+        </div>
+      </div>
 
-          {/* ── DRIFT MONITOR — multi-pillar degradation tracking ── */}
-          <DriftMonitor results={results} />
-
-          <InfrastructureStatus latest={latest} />
-
-          {/* M7 — Last scan indicator + re-scan */}
-          <LastScanBar />
-
-          {/* M6 — Infrastructure Graph */}
-          <InfrastructureGraphPanel />
-
-          {/* M8 — AI Insights (last 3 agent runs) */}
-          <AIInsightsPanel />
-
-          {/* Recommendations */}
-          <div className="relative rounded-2xl bg-card/95 backdrop-blur-sm border border-border/60 p-5 mt-3 overflow-hidden shadow-[0_8px_24px_-12px_rgba(0,0,0,0.08)]">
-            <div className="pointer-events-none absolute -top-20 -right-20 w-52 h-52 rounded-full blur-3xl opacity-40" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.18), transparent)" }} />
-            <div className="relative">
-              <h3 className="text-sm font-bold tracking-tight mb-3">Recommendations</h3>
-              <RecommendationList />
+      {/* Quick stats strip — 3 verticals */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {[
+          { label: "Payments opportunity", value: latest.payment_savings, icon: CreditCard },
+          { label: "Shipping opportunity", value: latest.shipping_savings, icon: Truck },
+          { label: "SaaS opportunity", value: latest.saas_savings, icon: Package },
+        ].map(s => (
+          <div key={s.label} className="rounded-2xl border border-border/60 bg-card p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-secondary border border-border/60 flex items-center justify-center">
+                <s.icon size={13} className="text-foreground" />
+              </div>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold">{s.label}</p>
             </div>
+            <p className="text-2xl font-black tabular-nums">
+              {formatEur(s.value)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/yr</span>
+            </p>
           </div>
+        ))}
+      </div>
 
-          {/* ── QUICK ACTIONS ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { title: "Run new analysis", desc: "Update your infra score", path: "/Analyzer", icon: TrendingDown, accent: true },
-              { title: "Complete onboarding", desc: "Map Payments, Logistics & Commerce SaaS", path: "/Onboarding", icon: Zap, glow: "rgba(168,85,247,0.25)" },
-              { title: "Connect your tools", desc: "Precision data across all 3 pillars", path: "/ConnectTools", icon: ShieldCheck, glow: "rgba(44,167,193,0.25)" },
-            ].map((action, i) => (
-              <Link key={i} to={action.path}>
-                <div className={`group relative p-5 rounded-2xl border transition-all cursor-pointer overflow-hidden ${action.accent ? "border-foreground/10 bg-foreground text-background shadow-[0_18px_40px_-20px_rgba(0,0,0,0.5)]" : "border-border/60 bg-card/95 backdrop-blur-sm hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-16px_rgba(0,0,0,0.12)]"}`}>
-                  {action.accent ? (
-                    <>
-                      <div className="pointer-events-none absolute -top-16 -left-12 w-44 h-44 rounded-full blur-3xl opacity-60" style={{ background: "radial-gradient(closest-side, rgba(31,78,216,0.6), transparent)" }} />
-                      <div className="pointer-events-none absolute -bottom-16 -right-12 w-40 h-40 rounded-full blur-3xl opacity-50" style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.55), transparent)" }} />
-                    </>
-                  ) : (
-                    <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-70 transition-opacity" style={{ background: `radial-gradient(closest-side, ${action.glow}, transparent)` }} />
-                  )}
-                  <div className="relative">
-                    <action.icon size={14} className={`mb-3 ${action.accent ? "opacity-60" : "text-muted-foreground/50"}`} />
-                    <p className={`font-bold text-sm mb-0.5 ${action.accent ? "text-background" : ""}`}>{action.title}</p>
-                    <p className={`text-xs ${action.accent ? "text-background/50" : "text-muted-foreground/65"}`}>{action.desc}</p>
-                    <ArrowRight size={12} className={`mt-3 group-hover:translate-x-1 transition-transform ${action.accent ? "text-background/40" : "text-muted-foreground/30"}`} />
+      {/* ── INFRASTRUCTURE NODES — grouped ── */}
+      {graphNodes.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-black tracking-tight">Your infrastructure</h2>
+            <Link to="/ConnectTools" className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1">
+              <Plug size={10} /> Connect more
+            </Link>
+          </div>
+          <div className="space-y-3 max-h-[28rem] sm:max-h-none overflow-y-auto sm:overflow-visible">
+            {CATEGORY_ORDER.filter(cat => grouped[cat]).map(cat => {
+              const Icon = grouped[cat].icon;
+              const items = grouped[cat].items;
+              return (
+                <div key={cat} className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+                  <div className="px-4 py-2.5 border-b border-border/40 bg-secondary/30 flex items-center gap-2">
+                    <Icon size={12} className="text-muted-foreground" />
+                    <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground">{cat}</span>
+                    <span className="text-[10px] text-muted-foreground/50">({items.length})</span>
+                  </div>
+                  <div className="divide-y divide-border/30">
+                    {items.map(n => {
+                      const b = nodeBadge(n);
+                      return (
+                        <div key={n.id} className="px-4 py-3 flex items-center gap-3 flex-wrap">
+                          <p className="text-sm font-semibold flex-1 min-w-0 truncate">{n.provider_name}</p>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold ${b.cls}`}>
+                            {b.label}
+                          </span>
+                          {Number(n.monthly_cost) > 0 && (
+                            <span className="text-xs font-bold tabular-nums whitespace-nowrap">
+                              €{Math.round(Number(n.monthly_cost)).toLocaleString()}/mo
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
-        </>
+        </div>
       )}
+
+      {/* ── M6 — Infrastructure status (unchanged) ── */}
+      <InfrastructureStatus latest={latest} />
+
+      {/* ── M7 — Last scan + re-scan (unchanged) ── */}
+      <LastScanBar />
+
+      {/* ── M8 — AI Insights (unchanged) ── */}
+      <AIInsightsPanel />
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Link to="/Analyzer">
+          <div className="p-5 rounded-2xl border border-border/60 bg-card hover:border-foreground/40 transition-colors min-h-[44px]">
+            <p className="text-sm font-bold mb-0.5">Run new analysis</p>
+            <p className="text-xs text-muted-foreground">Update your infrastructure score</p>
+          </div>
+        </Link>
+        <Link to="/ConnectTools">
+          <div className="p-5 rounded-2xl border border-border/60 bg-card hover:border-foreground/40 transition-colors min-h-[44px]">
+            <p className="text-sm font-bold mb-0.5">Connect your tools</p>
+            <p className="text-xs text-muted-foreground">Verify your data across all verticals</p>
+          </div>
+        </Link>
       </div>
-    </>
+    </div>
   );
 }
