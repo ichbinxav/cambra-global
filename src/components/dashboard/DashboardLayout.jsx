@@ -29,12 +29,7 @@ export default function DashboardLayout() {
 
   return (
     <div
-      className="min-h-screen flex font-inter"
-      style={{
-        color: "#ffffff",
-        background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
-      }}
+      className="min-h-screen flex font-inter bg-background text-foreground"
     >
       {/* Desktop Sidebar — premium dark editorial */}
       <aside
@@ -202,27 +197,8 @@ export default function DashboardLayout() {
         </div>
       )}
 
-      {/* Main content — dark editorial */}
-      <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 overflow-hidden">
-        {/* Ambient backdrop */}
-        <div className="pointer-events-none absolute inset-0">
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-              backgroundSize: "56px 56px",
-              opacity: 0.3,
-              maskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
-              WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
-            }}
-          />
-          <div className="absolute -top-40 right-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl"
-               style={{ background: "radial-gradient(closest-side, rgba(59,130,246,0.16), transparent 65%)" }} />
-          <div className="absolute top-1/2 -left-32 w-[34rem] h-[34rem] rounded-full blur-3xl"
-               style={{ background: "radial-gradient(closest-side, rgba(34,211,238,0.14), transparent 65%)" }} />
-        </div>
+      {/* Main content — light surface, so internal pages stay readable */}
+      <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 bg-background text-foreground">
         <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8">
           <Outlet />
         </div>
