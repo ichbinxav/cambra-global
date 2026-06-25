@@ -249,3 +249,70 @@ describe('Single source of truth — BrandSavings divergence guard', () => {
     expect(bs.saas_savings).toBe(ar.saas_savings);
   });
 });
+
+import { ENGINE_VERSION, validateAnalyzerInput } from './scoreEngine.js';
+
+describe('ENGINE_VERSION — versioning constants', () => {
+  it('ENGINE_VERSION object exists and has all three required keys', () => {
+    expect(ENGINE_VERSION).toBeDefined();
+    expect(typeof ENGINE_VERSION.score).toBe('string');
+    expect(typeof ENGINE_VERSION.savings).toBe('string');
+    expect(typeof ENGINE_VERSION.benchmark).toBe('string');
+  });
+  it('all version strings are non-empty', () => {
+    expect(ENGINE_VERSION.score.length).toBeGreaterThan(0);
+    expect(ENGINE_VERSION.savings.length).toBeGreaterThan(0);
+    expect(ENGINE_VERSION.benchmark.length).toBeGreaterThan(0);
+  });
+});
+
+describe('validateAnalyzerInput — valid inputs pass', () => {
+  it('typical valid input returns valid=true', () => {
+    const r = validateAnalyzerInput({ monthly_revenue: 80000, avg_order_value: 55, payment_fee_pct: 2.4 });
+    expect(r.valid).toBe(true);
+    expect(r.errors).toHaveLength(0);
+  });
+  it('zero monthly_revenue is valid', () => {
+    expect(validateAnalyzerInput({ monthly_revenue: 0 }).valid).toBe(true);
+  });
+  it('optional fields absent is valid', () => {
+    expect(validateAnalyzerInput({ monthly_revenue: 50000 }).valid).toBe(true);
+  });
+});
+
+describe('validateAnalyzerInput — invalid inputs are rejected', () => {
+  it('negative monthly_revenue fails', () => {
+    expect(validateAnalyzerInput({ monthly_revenue: -1000 }).valid).toBe(false);
+  });
+  it('missing monthly_revenue fails', () => {
+    const r = validateAnalyzerInput({});
+    expect(r.valid).toBe(false);
+    expect(r.errors.some(e => e.toLowerCase().includes('revenue'))).toBe(true);
+  });
+  it('payment_fee_pct > 15 fails', () => {
+    expect(validateAnalyzerInput({ monthly_revenue: 50000, payment_fee_pct: 16 }).valid).toBe(false);
+  });
+  it('payment_fee_pct < 0 fails', () => {
+    expect(validateAnalyzerInput({ monthly_revenue: 50000, payment_fee_pct: -0.1 }).valid).toBe(false);
+  });
+  it('NaN monthly_revenue fails', () => {
+    expect(validateAnalyzerInput({ monthly_revenue: NaN }).valid).toBe(false);
+  });
+  it('Infinity monthly_revenue fails', () => {
+    expect(validateAnalyzerInput({ monthly_revenue: Infinity }).valid).toBe(false);
+  });
+  it('avg_order_value of 0 fails', () => {
+    expect(validateAnalyzerInput({ monthly_revenue: 50000, avg_order_value: 0 }).valid).toBe(false);
+  });
+  it('negative monthly_shipments fails', () => {
+    expect(validateAnalyzerInput({ monthly_revenue: 50000, monthly_shipments: -10 }).valid).toBe(false);
+  });
+  it('negative total_saas_spend fails', () => {
+    expect(validateAnalyzerInput({ monthly_revenue: 50000, total_saas_spend: -500 }).valid).toBe(false);
+  });
+  it('multiple invalid fields returns multiple errors', () => {
+    const r = validateAnalyzerInput({ monthly_revenue: -1, payment_fee_pct: 99, avg_order_value: -5 });
+    expect(r.valid).toBe(false);
+    expect(r.errors.length).toBeGreaterThanOrEqual(3);
+  });
+});
