@@ -15,7 +15,6 @@ import { useToast } from "@/components/shared/Toast.jsx";
 import RevenueRangePicker, { midpointForRange } from "@/components/analyzer/RevenueRangePicker";
 import DetectedToolsGrid from "@/components/analyzer/DetectedToolsGrid";
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
-import AnalyzerAuthGate from "@/components/analyzer/AnalyzerAuthGate";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 import StepIndicator from "@/components/analyzer/StepIndicator";
 import WhatHappensNext from "@/components/analyzer/WhatHappensNext";
@@ -101,10 +100,9 @@ export default function Analyzer() {
   const urlParams = new URLSearchParams(window.location.search);
   const resumeParam = urlParams.get("resume") === "true";
 
-  // Auth gate — analyzer is only available to signed-in users so we always
-  // have an email, the audit is saved, and the user can resume from any device.
-  const [authChecked, setAuthChecked] = useState(false);
-  const [isAuthed, setIsAuthed] = useState(false);
+  // Auth is guaranteed by <ProtectedRoute> in App.jsx — if we render, the user
+  // is signed in. No duplicate auth check here (was causing a black flicker
+  // between mount and the internal isAuthenticated() resolving).
 
   // Step machinery
   const [step, setStep] = useState(1);
@@ -170,29 +168,8 @@ export default function Analyzer() {
 
   const tools = buildToolList();
 
-  // ── Auth check on mount — gate the analyzer behind sign-in ──
+  // ── Resume offer detection ──
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const ok = await base44.auth.isAuthenticated();
-        if (!cancelled) {
-          setIsAuthed(!!ok);
-          setAuthChecked(true);
-        }
-      } catch {
-        if (!cancelled) {
-          setIsAuthed(false);
-          setAuthChecked(true);
-        }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
-
-  // ── Resume offer detection ── (only after auth confirmed)
-  useEffect(() => {
-    if (!isAuthed) return;
     if (memoryLoaded) return;
     let cancelled = false;
 
@@ -229,7 +206,7 @@ export default function Analyzer() {
 
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthed]);
+  }, []);
 
   const applyResumeState = (resume, skipPrompt = false) => {
     try {
@@ -622,21 +599,6 @@ export default function Analyzer() {
     toast.success(t("progress_ready"));
     setTimeout(() => navigate(`/Results?id=${result.id}`), 700);
   };
-
-  // ── Auth gate — block the whole flow until the user is signed in. ──
-  // Shows a small loading state while we check, then either the gate or the flow.
-  if (!authChecked) {
-    return (
-      <div
-        className="fixed inset-0 flex items-center justify-center"
-        style={{ background: "#0a0a0a", color: "#fff" }}
-        aria-busy="true"
-      >
-        <Loader2 size={20} className="animate-spin text-white/70" />
-      </div>
-    );
-  }
-  if (!isAuthed) return <AnalyzerAuthGate />;
 
   // ── If running, render full-screen progress overlay ──
   if (running) {
