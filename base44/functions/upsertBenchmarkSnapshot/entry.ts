@@ -1,3 +1,6 @@
+// DEPRECATED as of M2. Replaced by benchmarkLearningEngine + scheduledBenchmarkRecompute.
+// Do not call this function. It is kept only for reference during the migration period.
+// Will be deleted in M3.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 function mean(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }

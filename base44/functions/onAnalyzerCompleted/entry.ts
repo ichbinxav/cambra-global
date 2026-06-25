@@ -44,6 +44,14 @@ Deno.serve(async (req) => {
     console.warn('BrandSavings persist failed:', e?.message || e);
   }
 
+  // ——— M2: Benchmark Learning Engine (non-blocking) ———
+  // Feeds the network learning loop. Failure here must NEVER interrupt the email/user flow.
+  try {
+    await base44.asServiceRole.functions.invoke('benchmarkLearningEngine', { resultId: data.id });
+  } catch (e) {
+    console.warn('benchmarkLearningEngine failed (non-blocking):', e?.message || e);
+  }
+
   const appDomain = Deno.env.get('APP_DOMAIN') || 'cambra.global';
 
   await base44.asServiceRole.integrations.Core.SendEmail({
