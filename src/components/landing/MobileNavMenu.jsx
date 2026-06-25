@@ -63,15 +63,27 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
   if (!open) return null;
 
   return (
-    <div
-      className="md:hidden absolute inset-x-0 top-14 overflow-y-auto overflow-x-hidden border-b border-white/[0.08] animate-fade-up"
-      style={{
-        maxHeight: "calc(100vh - 3.5rem)",
-        background:
-          "radial-gradient(120% 60% at 50% 0%, rgba(31,78,216,0.18) 0%, transparent 55%), radial-gradient(80% 50% at 100% 100%, rgba(44,167,193,0.12) 0%, transparent 60%), linear-gradient(180deg, hsl(222 65% 5%) 0%, hsl(222 70% 3%) 100%)",
-        boxShadow: "0 30px 80px -30px rgba(0,0,0,0.6)",
-      }}
-    >
+    <>
+      {/* Backdrop — dims the page behind the menu */}
+      <div
+        className="md:hidden fixed inset-0 top-14 z-40 bg-black/40 animate-fade-in-fast"
+        aria-hidden
+      />
+      <div
+        className="md:hidden fixed left-0 right-0 top-14 z-50 overflow-y-auto overflow-x-hidden border-b border-white/[0.08] animate-slide-down"
+        style={{
+          maxHeight: "calc(100vh - 3.5rem)",
+          background:
+            "radial-gradient(120% 60% at 50% 0%, rgba(31,78,216,0.18) 0%, transparent 55%), radial-gradient(80% 50% at 100% 100%, rgba(44,167,193,0.12) 0%, transparent 60%), linear-gradient(180deg, hsl(222 65% 5%) 0%, hsl(222 70% 3%) 100%)",
+          boxShadow: "0 30px 80px -30px rgba(0,0,0,0.6)",
+        }}
+      >
+      <style>{`
+        @keyframes mobileNavFadeInFast { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes mobileNavSlideDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-fast { animation: mobileNavFadeInFast 180ms ease-out; }
+        .animate-slide-down { animation: mobileNavSlideDown 240ms cubic-bezier(0.22, 1, 0.36, 1); }
+      `}</style>
       <div className="relative">
         <div className="px-5 pt-5 pb-4">
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-white/[0.08] bg-white/[0.03]">
@@ -155,6 +167,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
