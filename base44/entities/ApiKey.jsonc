@@ -1,0 +1,125 @@
+{
+  "name": "ApiKey",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Friendly name (e.g. 'Claude Production', 'Make.com Zap')"
+    },
+    "tool_name": {
+      "type": "string",
+      "enum": [
+        "claude",
+        "chatgpt",
+        "make",
+        "n8n",
+        "zapier",
+        "custom",
+        "other"
+      ],
+      "default": "custom",
+      "description": "Tool / integration consuming this key"
+    },
+    "key_prefix": {
+      "type": "string",
+      "description": "First 8 chars of the key, shown in UI (e.g. cmb_live_)"
+    },
+    "key_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the full key. Never store the raw key."
+    },
+    "key_last4": {
+      "type": "string",
+      "description": "Last 4 chars of the key, shown in UI"
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "read:kpis",
+          "read:brands",
+          "read:analyses",
+          "write:reports",
+          "trigger:analysis",
+          "update:trackers"
+        ]
+      },
+      "default": [],
+      "description": "Permission scopes granted to this key"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Admin who created the key"
+    },
+    "last_used_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_used_ip": {
+      "type": "string"
+    },
+    "usage_count": {
+      "type": "number",
+      "default": 0
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional expiration"
+    },
+    "revoked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revoked_by": {
+      "type": "string"
+    },
+    "auth_type": {
+      "type": "string",
+      "enum": [
+        "api_key",
+        "oauth"
+      ],
+      "default": "api_key",
+      "description": "Reserved for future OAuth support"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "key_prefix",
+    "key_hash",
+    "key_last4",
+    "scopes"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -38,6 +38,7 @@ import AdminRevenue from '@/pages/admin/AdminRevenue';
 import AdminBenchmarks from '@/pages/admin/AdminBenchmarks';
 import AdminContracts from '@/pages/admin/AdminContracts';
 import AdminIntegrations from '@/pages/admin/AdminIntegrations';
+import AdminApiIntegrations from '@/pages/admin/AdminApiIntegrations';
 import AdminControl from '@/pages/admin/AdminControl';
 import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
 import AdminRecommendations from '@/pages/admin/AdminRecommendations';
@@ -237,6 +238,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/benchmarks" element={<AdminBenchmarks />} />
           <Route path="/admin/contracts" element={<AdminContracts />} />
           <Route path="/admin/integrations" element={<AdminIntegrations />} />
+          <Route path="/admin/api-integrations" element={<AdminApiIntegrations />} />
           <Route path="/admin/control" element={<AdminControl />} />
           <Route path="/admin/recommendations" element={<AdminRecommendations />} />
           <Route path="/admin/activation" element={<AdminActivationDetail />} />

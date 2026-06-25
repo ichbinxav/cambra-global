@@ -20,6 +20,7 @@ const NAV = [
   { path: "/admin/benchmarks", label: "Benchmarks", icon: Sliders },
   { path: "/admin/recommendations", label: "Recommendations", icon: Lightbulb },
   { path: "/admin/integrations", label: "Integrations", icon: Plug },
+  { path: "/admin/api-integrations", label: "API & Webhooks", icon: Plug },
 ];
 
 export default function AdminLayout() {

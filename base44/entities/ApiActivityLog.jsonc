@@ -1,0 +1,85 @@
+{
+  "name": "ApiActivityLog",
+  "type": "object",
+  "properties": {
+    "api_key_id": {
+      "type": "string"
+    },
+    "api_key_name": {
+      "type": "string"
+    },
+    "key_prefix": {
+      "type": "string"
+    },
+    "tool_name": {
+      "type": "string"
+    },
+    "endpoint": {
+      "type": "string",
+      "description": "e.g. GET /brands, POST /analysis/run"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "GET",
+        "POST",
+        "PATCH",
+        "PUT",
+        "DELETE"
+      ]
+    },
+    "scope_used": {
+      "type": "string"
+    },
+    "status_code": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "error",
+        "unauthorized",
+        "forbidden",
+        "not_found"
+      ],
+      "default": "success"
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "payload_summary": {
+      "type": "object",
+      "description": "Sanitized summary of request (no secrets)"
+    }
+  },
+  "required": [
+    "endpoint",
+    "method",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

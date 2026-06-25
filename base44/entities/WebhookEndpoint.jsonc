@@ -1,0 +1,88 @@
+{
+  "name": "WebhookEndpoint",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string",
+      "description": "HTTPS endpoint to POST events to"
+    },
+    "secret": {
+      "type": "string",
+      "description": "Shared secret used to sign payloads (HMAC SHA-256)"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "new_brand_created",
+          "new_document_uploaded",
+          "analysis_completed",
+          "savings_unlocked"
+        ]
+      },
+      "default": []
+    },
+    "tool_name": {
+      "type": "string",
+      "enum": [
+        "claude",
+        "chatgpt",
+        "make",
+        "n8n",
+        "zapier",
+        "custom",
+        "other"
+      ],
+      "default": "custom"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "disabled"
+      ],
+      "default": "active"
+    },
+    "owner_email": {
+      "type": "string"
+    },
+    "last_delivery_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_delivery_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "pending"
+      ]
+    },
+    "failure_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "url",
+    "events"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

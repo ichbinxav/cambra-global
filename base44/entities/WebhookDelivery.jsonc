@@ -1,0 +1,63 @@
+{
+  "name": "WebhookDelivery",
+  "type": "object",
+  "properties": {
+    "webhook_id": {
+      "type": "string"
+    },
+    "webhook_name": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "target_url": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "response_code": {
+      "type": "number"
+    },
+    "response_body": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "attempt": {
+      "type": "number",
+      "default": 1
+    },
+    "error_message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_type",
+    "target_url",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
