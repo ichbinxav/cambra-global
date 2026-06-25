@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, BarChart3, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Home, ShieldCheck, Zap, FolderOpen, TrendingUp } from "lucide-react";
 import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
@@ -82,23 +81,17 @@ export default function DashboardLayout() {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path}>
-                <motion.div
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] transition-all ${
+                <div
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] transition-colors ${
                     active
                       ? "bg-white text-black font-bold"
-                      : "text-white/55 hover:text-white"
+                      : "text-white/55 hover:text-white hover:bg-white/[0.04]"
                   }`}
-                  style={
-                    active
-                      ? { boxShadow: "0 0 24px rgba(34,211,238,0.25)" }
-                      : { background: "transparent" }
-                  }
-                  whileHover={active ? {} : { x: 2, backgroundColor: "rgba(255,255,255,0.04)" }}
-                  transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                  style={active ? { boxShadow: "0 0 24px rgba(34,211,238,0.25)" } : undefined}
                 >
                   <item.icon size={14} strokeWidth={active ? 2.4 : 1.8} />
                   {item.label}
-                </motion.div>
+                </div>
               </Link>
             );
           })}
@@ -146,26 +139,29 @@ export default function DashboardLayout() {
         </Button>
       </div>
 
-      <AnimatePresence mode="wait">
-        {sidebarOpen && (
-          <div key="mobile-menu" className="lg:hidden">
-            <motion.div
-              className="fixed inset-0 z-30 bg-black/20"
-              onClick={() => setSidebarOpen(false)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            />
-            <motion.div
-              className="fixed inset-0 z-40 pt-14 overflow-y-auto"
-              style={{ background: "#0a0a0a" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <nav className="p-4 space-y-0.5">
+      {sidebarOpen && (
+        <div className="lg:hidden">
+          <div
+            className="fixed inset-0 z-30 bg-black/50 animate-fade-in"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden
+          />
+          <div
+            className="fixed top-14 right-0 bottom-0 z-40 w-[82%] max-w-[320px] overflow-y-auto animate-slide-in-right"
+            style={{
+              background:
+                "linear-gradient(180deg, #0b0e1a 0%, #0a0d18 55%, #0b1020 100%)",
+              borderLeft: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "-20px 0 60px -20px rgba(0,0,0,0.6)",
+            }}
+          >
+            <style>{`
+              @keyframes cambra-fade-in { from { opacity: 0; } to { opacity: 1; } }
+              @keyframes cambra-slide-in-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
+              .animate-fade-in { animation: cambra-fade-in 200ms ease-out; }
+              .animate-slide-in-right { animation: cambra-slide-in-right 240ms cubic-bezier(0.22, 1, 0.36, 1); }
+            `}</style>
+            <nav className="p-4 space-y-0.5">
                 {NAV_ITEMS.map(item => {
                   const active = location.pathname === item.path;
                   return (
@@ -202,10 +198,9 @@ export default function DashboardLayout() {
                   <LogOut size={16} /> Sign out
                 </button>
               </div>
-            </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
       {/* Main content — dark editorial */}
       <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 overflow-hidden">
