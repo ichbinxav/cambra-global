@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
+import RecommendedActionsLocked from "@/components/results/RecommendedActionsLocked";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
 
@@ -466,6 +467,15 @@ export default function Results() {
             </div>
           </div>
         </section>
+
+        {/* ═══ RECOMMENDED ACTIONS (tease & lock) ═════════════════ */}
+        <RecommendedActionsLocked
+          paymentSavings={result.payment_savings}
+          shippingSavings={result.shipping_savings}
+          saasSavings={result.saas_savings}
+          formatEur={formatEur}
+          bookingUrl="/Contact"
+        />
 
         {/* ═══ INFRASTRUCTURE MAP ════════════════════════════════ */}
         <section className="space-y-3">
