@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { ArrowRight, Zap } from "lucide-react";
 import { motion, useInView, animate } from "framer-motion";
 

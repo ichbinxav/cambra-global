@@ -1,4 +1,4 @@
-import { Activity, Zap, TrendingUp } from 'lucide-react';
+import { Zap, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function IntelligenceWidget() {

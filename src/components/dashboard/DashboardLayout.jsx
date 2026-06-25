@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BarChart3, Users, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Plug, Home, ShieldCheck, Building2, Zap, FolderOpen, TrendingUp } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Home, ShieldCheck, Zap, FolderOpen, TrendingUp } from "lucide-react";
 import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";

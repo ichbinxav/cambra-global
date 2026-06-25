@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import BrandGlyph from "@/components/shared/BrandGlyph";
 import { useTranslation } from "@/lib/i18n.jsx";

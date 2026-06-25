@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 import CountrySelect from '@/components/inputs/CountrySelect';
 import CategorySelect from '@/components/inputs/CategorySelect';
-import { Building2, Mail, Globe, MapPin, Tag, Instagram, Linkedin, Twitter, Youtube, Music2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Building2, Mail, Globe, Instagram, Linkedin, Twitter, Youtube, Music2, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function CompanyBlock({ onCreated, autoRedirect = true } = {}){
   const [brand, setBrand] = useState(null);

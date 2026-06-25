@@ -1,6 +1,6 @@
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { ArrowRight, X, Quote } from "lucide-react";
+import { X, Quote } from "lucide-react";
 
 /**
  * MeetTheFounder — short founder note with CTA to open the full letter in a modal.

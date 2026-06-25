@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, TrendingUp, Activity } from "lucide-react";
+import { ArrowRight, Sparkles, Activity } from "lucide-react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useRef } from "react";

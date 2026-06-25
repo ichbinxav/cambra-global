@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Upload, Plug, Pencil, CheckCircle2, X, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const MODES = [
   {

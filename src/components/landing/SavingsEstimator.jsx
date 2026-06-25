@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function SavingsEstimator() {
   const [monthlyRevenue, setMonthlyRevenue] = useState(50000);

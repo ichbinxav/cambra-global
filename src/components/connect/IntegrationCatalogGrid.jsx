@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Check, Sparkles, Plug, Clock, ArrowRight } from "lucide-react";
+import { Loader2, Check, Sparkles, Plug, Clock } from "lucide-react";
 
 /**
  * M5 — IntegrationCatalogGrid

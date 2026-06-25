@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { getToolMeta, getCategoryAccent } from "@/lib/iconSystem";
 
 /**

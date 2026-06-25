@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { ArrowRight, AlertTriangle, TrendingDown, Zap, Activity, CreditCard, Truck, Package } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, TrendingDown, Zap, CreditCard, Truck, Package } from "lucide-react";
 import { motion, useScroll, useTransform, animate } from "framer-motion";
 
 // Animated counter hook

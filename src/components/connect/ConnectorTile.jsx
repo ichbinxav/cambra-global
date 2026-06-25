@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
-import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, XCircle } from 'lucide-react';
 import ToolLogo from '@/components/shared/ToolLogo';
 
 const KEY_TO_TOOL = {

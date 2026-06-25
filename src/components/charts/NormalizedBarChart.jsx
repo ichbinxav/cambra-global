@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, YAxis, Cell } from "recharts";
 
 function percentile(values, p) {
