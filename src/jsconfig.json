@@ -27,7 +27,6 @@
     "build",
     "src/vite-plugins",
     "src/components/ui",
-    "src/components/ui/**",
     "src/api",
     "src/lib"
   ]
