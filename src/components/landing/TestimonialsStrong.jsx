@@ -2,7 +2,7 @@ import React from "react";
 import { Quote } from "lucide-react";
 
 /**
- * 3 strong testimonials — photo + quote + EUR figure.
+ * 3 testimonials — photo + quote + EUR figure.
  * Dark editorial cards, fully self-contained.
  */
 const TESTIMONIALS = [
@@ -14,8 +14,8 @@ const TESTIMONIALS = [
       "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=faces&q=80",
     quote:
       "We were bleeding 1.4% on every transaction and didn't even know. CAMBRA found it, fixed it, and the savings showed up next month.",
-    figure: "+€42,800",
-    figureLabel: "saved · 12 months",
+    figure: "+€8,400",
+    figureLabel: "saved · 3 months",
     vertical: "Payments",
   },
   {
@@ -26,8 +26,8 @@ const TESTIMONIALS = [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces&q=80",
     quote:
       "Three carriers, four contracts, zero leverage. CAMBRA renegotiated everything against the network. We cut shipping 23% in a quarter.",
-    figure: "+€31,200",
-    figureLabel: "saved · 12 months",
+    figure: "+€6,200",
+    figureLabel: "saved · 3 months",
     vertical: "Shipping",
   },
   {
@@ -37,9 +37,9 @@ const TESTIMONIALS = [
     photo:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces&q=80",
     quote:
-      "I stopped chasing SaaS receipts. CAMBRA mapped our stack, killed 7 redundant tools and benchmarked the rest. It pays for itself, literally.",
-    figure: "+€18,400",
-    figureLabel: "saved · 12 months",
+      "We had 14 SaaS tools and no clue what we actually used. CAMBRA mapped everything, killed 7 redundant tools and renegotiated the rest.",
+    figure: "+€3,800",
+    figureLabel: "saved · 3 months",
     vertical: "SaaS",
   },
 ];
@@ -161,7 +161,7 @@ export default function TestimonialsStrong() {
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <div className="mb-14 max-w-3xl">
           <span className="text-[11px] uppercase tracking-[0.22em] font-bold text-white/45">
-            Receipts, not promises
+            Brands like yours
           </span>
           <h2
             className="text-white mt-4"
@@ -175,7 +175,7 @@ export default function TestimonialsStrong() {
             Real brands. Real money back.
           </h2>
           <p className="mt-5 text-white/55 text-[16px] leading-relaxed max-w-2xl">
-            Every figure below is verified savings recovered through the CAMBRA network — not estimates, not projections.
+            A few of the independent brands already recovering margin through the CAMBRA network.
           </p>
         </div>
 
