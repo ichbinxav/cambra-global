@@ -3,25 +3,25 @@ import React from "react";
 /**
  * CAMBRA ErrorBoundary — catches render-time errors so one page crash does not
  * take down the whole app. Used at the App root and around major routes.
+ *
+ * Fallback is intentionally HIGH-VISIBILITY (fixed position, high z-index,
+ * white text on dark) so a swallowed crash can never produce a silent black
+ * screen — the user always sees the error + a Reload action.
  */
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, errorMessage: "", errorStack: "" };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
-    return {
-      hasError: true,
-      errorMessage: error?.message || String(error),
-      errorStack: error?.stack || "",
-    };
+    return { hasError: true, error };
   }
 
   componentDidCatch(error, info) {
     // eslint-disable-next-line no-console
-    console.error("CAMBRA ErrorBoundary:", error, info?.componentStack);
-    this.setState({ componentStack: info?.componentStack || "" });
+    console.error("🔴 CAMBRA ErrorBoundary CAUGHT:", error, info?.componentStack);
+    this.setState({ errorInfo: info });
   }
 
   handleReload = () => {
@@ -31,37 +31,84 @@ class ErrorBoundary extends React.Component {
   render() {
     if (!this.state.hasError) return this.props.children;
 
+    const err = this.state.error;
+    const message = String(err?.message || err || "Unknown error");
+    const stack = (err?.stack || "").split("\n").slice(0, 8).join("\n");
+
     return (
       <div
         role="alert"
-        className="min-h-[60vh] flex items-center justify-center px-6 py-12"
-        style={{ background: "#0a0a0a", color: "#ffffff" }}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 9999,
+          background: "#0a0a0a",
+          color: "#ffffff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+          fontFamily: "Inter, system-ui, sans-serif",
+        }}
       >
-        <div className="max-w-sm w-full text-center">
+        <div style={{ maxWidth: 520, width: "100%", textAlign: "center" }}>
           <div
             aria-hidden="true"
-            className="mx-auto mb-5 w-12 h-12 rounded-2xl flex items-center justify-center"
-            style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)" }}
-          >
-            <span style={{ fontSize: 22 }}>!</span>
-          </div>
-          <h1 className="text-xl font-black tracking-[-0.02em] mb-2">Something went wrong</h1>
-          <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.65)" }}>
-            We hit an unexpected error. This has been logged. Refresh to continue.
+            style={{
+              margin: "0 auto 20px",
+              width: 48,
+              height: 48,
+              borderRadius: 16,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(239,68,68,0.12)",
+              border: "1px solid rgba(239,68,68,0.3)",
+              fontSize: 22,
+              fontWeight: 800,
+            }}
+          >!</div>
+          <h1 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8, letterSpacing: "-0.02em" }}>
+            Something broke on this page
+          </h1>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", marginBottom: 16 }}>
+            We hit an unexpected error. The details below help us fix it.
           </p>
-          {this.state.errorMessage && (
-            <div
-              className="text-left text-xs font-mono p-3 rounded-lg mb-4 overflow-auto max-h-48"
-              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "rgba(255,200,200,0.95)" }}
-            >
-              {this.state.errorMessage}
-            </div>
-          )}
+          <pre
+            style={{
+              fontSize: 11,
+              fontFamily: "ui-monospace, SF Mono, monospace",
+              color: "#fca5a5",
+              textAlign: "left",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              overflow: "auto",
+              maxHeight: 260,
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.25)",
+              padding: 12,
+              borderRadius: 8,
+              marginBottom: 16,
+            }}
+          >
+            {message}
+            {stack ? `\n\n${stack}` : ""}
+          </pre>
           <button
             onClick={this.handleReload}
-            className="inline-flex items-center justify-center h-10 px-6 rounded-full bg-white text-black text-sm font-bold hover:opacity-90"
+            style={{
+              height: 40,
+              padding: "0 24px",
+              borderRadius: 999,
+              background: "#ffffff",
+              color: "#000000",
+              fontWeight: 700,
+              fontSize: 13,
+              border: "none",
+              cursor: "pointer",
+            }}
           >
-            Refresh page
+            Reload page
           </button>
         </div>
       </div>

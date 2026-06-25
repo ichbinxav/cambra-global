@@ -41,6 +41,16 @@ export const AuthProvider = ({ children }) => {
       setAuthError(null);
       return;
     }
+
+    // FIX 3 — Safety timeout: guarantee loading states never hang forever.
+    // If anything takes more than 8s, force-resolve so the UI can render
+    // (ProtectedRoute will then redirect to LoginGate if still unauth).
+    const safetyTimer = setTimeout(() => {
+      console.warn("⏱ AuthContext safety timeout fired — forcing loading flags off");
+      setIsLoadingPublicSettings(false);
+      setIsLoadingAuth(false);
+    }, 8000);
+
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
@@ -112,6 +122,8 @@ export const AuthProvider = ({ children }) => {
       });
       setIsLoadingPublicSettings(false);
       setIsLoadingAuth(false);
+    } finally {
+      clearTimeout(safetyTimer);
     }
   };
 
