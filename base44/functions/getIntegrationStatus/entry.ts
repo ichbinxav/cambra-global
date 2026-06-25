@@ -4,11 +4,33 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  * M5 — getIntegrationStatus
  *
  * Returns full integration picture for a brand:
- *   catalog × detected × connected → unified `display_status`.
+ *   catalog × detected × connected × stripe-inferred → unified `display_status`.
  *
  * Payload: { brand_id? } — falls back to user's latest brand.
- * Returns: { ok, integrations: [...] }
+ * Returns: { ok, brand_id, grouped: {<category>:[...]}, integrations: [...] }
+ *
+ * `integrations` (flat) is preserved for backwards compatibility.
+ * `grouped` is the new shape: items grouped by category, sorted within each
+ * group by display_status priority (connected → detected → available → coming_soon)
+ * then by catalog priority ascending.
  */
+
+const STATUS_ORDER = { connected: 0, detected: 1, available: 2, coming_soon: 3 };
+
+// Mapping from IntegrationCatalog.integration_id → expected vendor name in
+// InfrastructureNode.provider_name (used by inferVendorsFromBankData).
+// Best-effort: matches the canonical lowercase id against a list of likely
+// names. If no exact match, we fall back to a case-insensitive name compare.
+function nodeMatchesIntegration(node, integration) {
+  const providerName = String(node.provider_name || '').toLowerCase().trim();
+  const integrationId = String(integration.integration_id || '').toLowerCase().trim();
+  const integrationName = String(integration.name || '').toLowerCase().trim();
+  if (!providerName) return false;
+  return providerName === integrationId
+      || providerName === integrationName
+      || providerName.replace(/\s+/g, '') === integrationId.replace(/[-_\s]+/g, '');
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -19,38 +41,31 @@ Deno.serve(async (req) => {
     let { brand_id } = body;
 
     if (!brand_id) {
-      const brands = await base44.entities.Brand.list('-created_date', 1).catch(() => []);
+      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch(() => []);
       brand_id = brands[0]?.id || null;
     }
 
     // Ownership check (admin bypass)
     const isAdmin = user.role === 'admin';
     if (brand_id && !isAdmin) {
-      const owned = await base44.entities.Brand.filter({ id: brand_id }).catch(() => []);
+      const owned = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch(() => []);
       if (!owned.length) {
         return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
       }
     }
 
+    const svc = base44.asServiceRole;
+
     // Catalog (publicly readable)
-    const catalog = await base44.asServiceRole.entities.IntegrationCatalog
-      .list('priority', 100)
-      .catch(() => []);
+    const catalog = await svc.entities.IntegrationCatalog.list('priority', 100).catch(() => []);
 
-    // Detected + sessions for this brand
-    const detected = brand_id
-      ? await base44.asServiceRole.entities.DetectedIntegration.filter({ brand_id }).catch(() => [])
-      : [];
-    const sessions = brand_id
-      ? await base44.asServiceRole.entities.ConnectionSession.filter({ brand_id }, '-created_date', 200).catch(() => [])
-      : [];
-
-    // Stripe live connections (M3)
-    const stripeConn = brand_id
-      ? await base44.asServiceRole.entities.StripeConnection
-          .filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1)
-          .catch(() => [])
-      : [];
+    // Per-brand signals
+    const [detected, sessions, stripeConn, infraNodes] = await Promise.all([
+      brand_id ? svc.entities.DetectedIntegration.filter({ brand_id }).catch(() => []) : [],
+      brand_id ? svc.entities.ConnectionSession.filter({ brand_id }, '-created_date', 200).catch(() => []) : [],
+      brand_id ? svc.entities.StripeConnection.filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []) : [],
+      brand_id ? svc.entities.InfrastructureNode.filter({ brand_id }).catch(() => []) : [],
+    ]);
 
     const detectedMap = new Map(detected.map(d => [d.integration_id, d]));
     const latestSessionMap = new Map();
@@ -58,23 +73,38 @@ Deno.serve(async (req) => {
       if (!latestSessionMap.has(s.integration_id)) latestSessionMap.set(s.integration_id, s);
     }
 
+    // Stripe-inferred nodes: data_source === 'stripe_inference'
+    const stripeInferredNodes = infraNodes.filter(n => n.data_source === 'stripe_inference');
+
     const integrations = catalog.map(c => {
       const d = detectedMap.get(c.integration_id);
       const session = latestSessionMap.get(c.integration_id);
 
-      // Stripe special-case: live OAuth connection from M3
+      // Stripe live connection (M3)
       const isStripeConnected = c.integration_id === 'stripe' && stripeConn.length > 0;
+
+      // Stripe-inferred match: did vendor inference detect this catalog item?
+      const inferredNode = stripeInferredNodes.find(n => nodeMatchesIntegration(n, c)) || null;
+      const inferredFromPayments = !!inferredNode;
+      const inferredMonthlyCost = inferredNode?.monthly_cost ?? null;
 
       let display_status;
       if (isStripeConnected || (d && (d.status === 'connected' || d.status === 'verified'))) {
         display_status = 'connected';
       } else if (d && (d.status === 'detected' || d.status === 'connectable')) {
         display_status = 'detected';
+      } else if (inferredFromPayments) {
+        // Inferred from Stripe payments counts as "detected" for the UI
+        display_status = 'detected';
       } else if (c.status === 'coming_soon' || c.status === 'planned') {
         display_status = 'coming_soon';
       } else {
         display_status = 'available';
       }
+
+      const confidence_score = isStripeConnected
+        ? 1.0
+        : (d?.confidence_score ?? (inferredFromPayments ? 0.85 : null));
 
       return {
         integration_id: c.integration_id,
@@ -85,20 +115,40 @@ Deno.serve(async (req) => {
         auth_type: c.auth_type,
         depth: c.depth,
         catalog_status: c.status,
-        priority: c.priority,
+        priority: c.priority ?? 99,
         value_unlock: c.value_unlock || '',
         docs_url: c.docs_url || '',
         display_status,
-        confidence_score: d?.confidence_score ?? null,
-        detection_source: d?.detection_source || null,
+        confidence_score,
+        detection_source: d?.detection_source || (inferredFromPayments ? 'stripe_inference' : null),
         connected_at: isStripeConnected ? stripeConn[0].last_sync_at : (d?.connected_at || null),
-        last_verified_at: d?.last_verified_at || null,
+        last_verified_at: d?.last_verified_at || inferredNode?.last_verified_at || null,
         latest_session_id: session?.id || null,
         latest_session_status: session?.status || null,
+        is_detected: display_status === 'detected',
+        is_connected: display_status === 'connected',
+        inferred_from_payments: inferredFromPayments,
+        inferred_monthly_cost: inferredMonthlyCost,
       };
     });
 
-    return Response.json({ ok: true, brand_id, integrations });
+    // Group by category and sort
+    const grouped = {};
+    for (const item of integrations) {
+      const cat = item.category || 'other';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(item);
+    }
+    for (const cat of Object.keys(grouped)) {
+      grouped[cat].sort((a, b) => {
+        const sa = STATUS_ORDER[a.display_status] ?? 9;
+        const sb = STATUS_ORDER[b.display_status] ?? 9;
+        if (sa !== sb) return sa - sb;
+        return (a.priority ?? 99) - (b.priority ?? 99);
+      });
+    }
+
+    return Response.json({ ok: true, brand_id, grouped, integrations });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }

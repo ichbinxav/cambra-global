@@ -52,6 +52,65 @@ const SIGNALS = [
   { tool: 'SendCloud',   category: 'shipping',          pattern: /sendcloud\.(com|sc)/i,                                     method: 'script_tag', evidence_type: 'script_tag', score: 0.85 },
   { tool: 'Packlink',    category: 'shipping',          pattern: /packlink\.com/i,                                           method: 'script_tag', evidence_type: 'script_tag', score: 0.85 },
   { tool: 'DHL',         category: 'shipping',          pattern: /dhl\.com\/[a-z-]*\/shipping|dhl-widget/i,                  method: 'script_or_body', evidence_type: 'script_tag', score: 0.65 },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Extended detectors — added in vendor-intelligence pass.
+  // Score convention: script_tag=0.90, meta_tag=0.70, body_text=0.50
+  // ────────────────────────────────────────────────────────────────────────
+
+  // payments (extended)
+  { tool: 'Adyen',       category: 'payment_provider',  pattern: /adyen\.com|checkoutshopperapi\.adyen\.com/i,               method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'PayPal',      category: 'payment_provider',  pattern: /paypal\.com\/sdk|paypalobjects\.com/i,                     method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Mollie',      category: 'payment_provider',  pattern: /js\.mollie\.com/i,                                         method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'SumUp',       category: 'payment_provider',  pattern: /sumup\.com/i,                                              method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Zettle',      category: 'payment_provider',  pattern: /zettle\.com|izettle\.com/i,                                method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Lyra',        category: 'payment_provider',  pattern: /lyra\.com|payzen\.eu/i,                                    method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Monetico',    category: 'payment_provider',  pattern: /monetico-paiement\.fr/i,                                   method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+
+  // commerce_platform (extended)
+  { tool: 'WooCommerce', category: 'commerce_platform', pattern: /woocommerce/i,                                             method: 'meta_or_body', evidence_type: 'meta_tag', score: 0.70 },
+  { tool: 'PrestaShop',  category: 'commerce_platform', pattern: /prestashop/i,                                              method: 'meta_or_body', evidence_type: 'meta_tag', score: 0.70 },
+  { tool: 'Magento',     category: 'commerce_platform', pattern: /magento|mage\//i,                                          method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'BigCommerce', category: 'commerce_platform', pattern: /bigcommerce\.com/i,                                        method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+
+  // shipping (extended)
+  { tool: 'Colissimo',     category: 'shipping',  pattern: /colissimo\.fr/i,                  method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Chronopost',    category: 'shipping',  pattern: /chronopost\.fr/i,                 method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Mondial Relay', category: 'shipping',  pattern: /mondialrelay/i,                   method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'DPD',           category: 'shipping',  pattern: /dpd\.com|dpd\.fr/i,               method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'GLS',           category: 'shipping',  pattern: /gls-group/i,                      method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'MRW',           category: 'shipping',  pattern: /mrw\.es/i,                        method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Byrd',          category: 'shipping',  pattern: /getbyrd\.com/i,                   method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Cubyn',         category: 'shipping',  pattern: /cubyn\.com/i,                     method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+
+  // marketing (extended)
+  { tool: 'Mailchimp',  category: 'marketing', pattern: /chimpstatic\.com/i,                  method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Brevo',      category: 'marketing', pattern: /sibautomation\.com|brevo\.com/i,     method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Google Ads', category: 'marketing', pattern: /googleadservices\.com/i,             method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Attentive',  category: 'marketing', pattern: /attentivemobile\.com/i,              method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Postscript', category: 'marketing', pattern: /postscript\.io/i,                    method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+
+  // support (extended)
+  { tool: 'Zendesk',   category: 'support', pattern: /zdassets\.com/i,                        method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Freshdesk', category: 'support', pattern: /freshwidget\.com/i,                     method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Intercom',  category: 'support', pattern: /intercomcdn\.com/i,                     method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Re:amaze',  category: 'support', pattern: /reamaze\.com/i,                         method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+
+  // banking
+  { tool: 'Qonto',    category: 'finance', pattern: /qonto\.com/i,                            method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Revolut',  category: 'finance', pattern: /revolut\.com/i,                          method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Wise',     category: 'finance', pattern: /wise\.com/i,                             method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Shine',    category: 'finance', pattern: /shine\.fr/i,                             method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'N26',      category: 'finance', pattern: /n26\.com/i,                              method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Spendesk', category: 'finance', pattern: /spendesk\.com/i,                         method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+
+  // hr
+  { tool: 'Factorial', category: 'hr', pattern: /factorialhr\.com/i,                          method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Personio',  category: 'hr', pattern: /personio\.de|personio\.com/i,                method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Deel',      category: 'hr', pattern: /letsdeel\.com/i,                             method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+
+  // telecom
+  { tool: 'Aircall', category: 'other', pattern: /aircall\.io/i,                              method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
 ];
 
 function normalizeUrl(raw) {

@@ -9,6 +9,17 @@
     "monthly_revenue": {
       "type": "number"
     },
+    "monthly_revenue_range": {
+      "type": "string",
+      "enum": [
+        "under_10k",
+        "10k_50k",
+        "50k_100k",
+        "100k_500k",
+        "over_500k"
+      ],
+      "description": "Range bucket used by the 3-step Analyzer flow"
+    },
     "monthly_transactions": {
       "type": "number"
     },
@@ -66,6 +77,10 @@
     },
     "monthly_shipments": {
       "type": "number"
+    },
+    "banking_monthly_fees": {
+      "type": "number",
+      "description": "Monthly banking fees declared in Step 2"
     },
     "saas_tools": {
       "type": "array",
@@ -129,6 +144,38 @@
     },
     "category": {
       "type": "string"
+    },
+    "confirmed_tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Provider names the user confirmed in Step 2 of the frictionless Analyzer"
+    },
+    "dismissed_tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Provider names the user dismissed in Step 2 of the frictionless Analyzer"
+    },
+    "manually_added_tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "monthly_cost": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Tools the user added manually in Step 2"
     },
     "data_source": {
       "type": "string",

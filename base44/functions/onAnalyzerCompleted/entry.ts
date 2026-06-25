@@ -77,6 +77,18 @@ Deno.serve(async (req) => {
     console.warn('runContinuousDiscovery failed (non-blocking):', e?.message || e);
   }
 
+  // ——— Vendor inference from payment data (non-blocking) ———
+  // Scans Stripe descriptors for known vendor names (Klaviyo, Sendcloud, etc.)
+  // and upserts DiscoveryFindings + InfrastructureNodes.
+  // Returns gracefully if no StripeConnection exists.
+  try {
+    if (data.brand_id) {
+      await base44.asServiceRole.functions.invoke('inferVendorsFromBankData', { brand_id: data.brand_id });
+    }
+  } catch (e) {
+    console.warn('inferVendorsFromBankData failed (non-blocking):', e?.message || e);
+  }
+
   // ——— M8: Recommendation Agent (non-blocking) ———
   // Synthesizes signals into a prioritized recommendation list. Awaits human approval.
   // Failure here must NEVER interrupt the email/user flow.

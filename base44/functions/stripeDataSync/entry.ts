@@ -140,6 +140,15 @@ Deno.serve(async (req) => {
       connection_status: 'connected',
     });
 
+    // ── Vendor inference from payment data (non-blocking) ──
+    // After sync, scan descriptors for known vendors (Klaviyo, Sendcloud, etc.)
+    // and upsert DiscoveryFindings + InfrastructureNodes.
+    try {
+      await base44.asServiceRole.functions.invoke('inferVendorsFromBankData', { brand_id });
+    } catch (e) {
+      console.warn('inferVendorsFromBankData failed (non-blocking):', e?.message || e);
+    }
+
     return Response.json({
       ok: true,
       data: {

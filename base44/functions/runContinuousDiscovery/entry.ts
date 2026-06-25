@@ -10,6 +10,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  *   2. Refresh infrastructure graph (buildInfrastructureGraph).
  *   3. Refresh benchmarks via benchmarkLearningEngine on the latest result (<90d).
  *   4. Detect stack changes vs previous run — mark missing nodes as inactive.
+ *   5. Infer vendors from Stripe payment data (inferVendorsFromBankData).
  *
  * Auth: caller must own the brand. Admin & service role bypass ownership check.
  */
@@ -176,11 +177,25 @@ Deno.serve(async (req) => {
     stepErrors.push('step4_stack_changes: ' + (e?.message || String(e)));
   }
 
+  // ── STEP 5: Infer vendors from Stripe payment data ───────────
+  // Non-blocking — gracefully returns reason if no StripeConnection.
+  try {
+    const inferRes = await base44.functions.invoke('inferVendorsFromBankData', { brand_id })
+      .catch((e) => { throw new Error('inferVendorsFromBankData: ' + (e?.message || e)); });
+    const ip = inferRes?.data || inferRes;
+    if (ip?.ok) {
+      nodes_updated += Number(ip.nodes_created || 0) + Number(ip.nodes_updated || 0);
+      changes_detected += Number(ip.nodes_created || 0);
+    }
+  } catch (e) {
+    stepErrors.push('step5_vendor_inference: ' + (e?.message || String(e)));
+  }
+
   // Finalize run
   const completedAt = new Date().toISOString();
   const finalStatus = stepErrors.length === 0
     ? 'completed'
-    : (stepErrors.length >= 4 ? 'failed' : 'partial');
+    : (stepErrors.length >= 5 ? 'failed' : 'partial');
 
   await svc.entities.ContinuousDiscoveryRun.update(run.id, {
     status: finalStatus,
