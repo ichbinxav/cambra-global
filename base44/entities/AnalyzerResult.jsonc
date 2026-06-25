@@ -2,6 +2,18 @@
   "name": "AnalyzerResult",
   "type": "object",
   "properties": {
+    "score_engine_version": {
+      "type": "string",
+      "description": "Version of the score engine used to compute infra_score."
+    },
+    "savings_model_version": {
+      "type": "string",
+      "description": "Version of the savings model used to compute all savings fields."
+    },
+    "benchmark_version": {
+      "type": "string",
+      "description": "Version of the benchmark table values applied."
+    },
     "brand_id": {
       "type": "string"
     },
