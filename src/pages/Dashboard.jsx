@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRight, CheckCircle2, AlertTriangle, Sparkles,
+  ArrowRight, CheckCircle2, Sparkles,
   CreditCard, Truck, Package, Plug, Building2, Store, Mail, Headphones, Users, Wifi, Layers,
   TrendingUp as TrendingUpIcon,
 } from "lucide-react";
@@ -463,29 +463,62 @@ export default function Dashboard() {
       {/* ── M8 — AI Insights (unchanged) ── */}
       <AIInsightsPanel />
 
-      {/* Quick actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Link to="/Analyzer">
+      {/* Quick action strip — Connect Stripe (if not yet) / View results / Re-scan */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {!stripeConnected && (
+          <Link to="/ConnectTools">
+            <div
+              className="p-4 rounded-2xl transition-all min-h-[44px] hover:border-white/20 flex items-center gap-3"
+              style={{
+                background: "rgba(34,211,238,0.06)",
+                border: "1px solid rgba(34,211,238,0.20)",
+              }}
+            >
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: "rgba(34,211,238,0.10)", border: "1px solid rgba(34,211,238,0.25)" }}>
+                <Plug size={14} className="text-cyan-300" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-white truncate">{t("connect_stripe_cta")}</p>
+                <p className="text-[11px] text-white/55 truncate">{t("hero_confidence_estimated")}</p>
+              </div>
+            </div>
+          </Link>
+        )}
+        <Link to={`/Results?id=${latest.id}`}>
           <div
-            className="p-5 rounded-2xl transition-all min-h-[44px] hover:border-white/20"
+            className="p-4 rounded-2xl transition-all min-h-[44px] hover:border-white/20 flex items-center gap-3"
             style={{
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(255,255,255,0.08)",
             }}
           >
-            <p className="text-sm font-bold mb-0.5 text-white">{t("nav_analyzer")}</p>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(96,165,250,0.10)", border: "1px solid rgba(96,165,250,0.25)" }}>
+              <ArrowRight size={14} className="text-blue-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white truncate">{t("nav_results")}</p>
+              <p className="text-[11px] text-white/55 truncate">{t("from_latest_analysis")}</p>
+            </div>
           </div>
         </Link>
-        <Link to="/ConnectTools">
+        <Link to="/Analyzer">
           <div
-            className="p-5 rounded-2xl transition-all min-h-[44px] hover:border-white/20"
+            className="p-4 rounded-2xl transition-all min-h-[44px] hover:border-white/20 flex items-center gap-3"
             style={{
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(255,255,255,0.08)",
             }}
           >
-            <p className="text-sm font-bold mb-0.5 text-white">{t("nav_connect")}</p>
-            <p className="text-xs text-white/55">{t("ct_page_sub")}</p>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)" }}>
+              <Sparkles size={14} className="text-white/80" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white truncate">{t("rescan")}</p>
+              <p className="text-[11px] text-white/55 truncate">{t("nav_analyzer")}</p>
+            </div>
           </div>
         </Link>
       </div>
