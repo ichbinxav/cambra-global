@@ -96,7 +96,7 @@ export default function StopLeavingMarginCTA() {
         <div className="mt-10 flex flex-col gap-3 max-w-md">
           <Link
             to="/Analyzer"
-            className="group inline-flex items-center justify-center gap-3 rounded-full px-7 py-4.5 font-bold text-[15px] transition-transform hover:scale-[1.02]"
+            className="group inline-flex items-center justify-center gap-3 rounded-full font-bold text-[15px] transition-transform hover:scale-[1.02]"
             style={{
               background: "#ffffff",
               color: "#0a0f1e",
