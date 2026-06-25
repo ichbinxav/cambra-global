@@ -646,14 +646,13 @@ export default function Landing() {
       <LandingNavbar />
       <main className="relative">
         <Hero />
+        <StatsGrid />
         <ProblemSection />
         <HowItWorksSection />
         <div id="testimonials">
           <TestimonialsStrong />
         </div>
         <FounderLetter />
-        <StatsGrid />
-        <BenchmarkSection />
         <PricingDual />
         <StopLeavingMarginCTA />
       </main>
