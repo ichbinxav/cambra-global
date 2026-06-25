@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Copy, Check, Terminal, Sparkles, Shield, Activity, Code, Key } from "lucide-react";
-import Navbar from "@/components/landing/Navbar";
+import MarketingNavbar from "@/components/landing/MarketingNavbar";
 
 function CopyBlock({ children, label = "Copy" }) {
   const [copied, setCopied] = useState(false);
@@ -49,11 +49,29 @@ const TOOLS = [
 
 export default function DevelopersMCP() {
   return (
-    <div className="min-h-screen bg-background cambra-page-bg">
-      <Navbar />
+    <div
+      className="min-h-screen font-inter relative text-white"
+      style={{
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+      }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          opacity: 0.35,
+          maskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+        }}
+      />
+      <MarketingNavbar />
 
-      <div className="relative max-w-5xl mx-auto px-5 py-16 md:py-24">
-        <Link to="/Developers" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground mb-8">
+      <div className="relative max-w-5xl mx-auto px-6 sm:px-10 pt-24 pb-20">
+        <Link to="/Developers" className="inline-flex items-center gap-2 text-xs text-white/60 hover:text-white mb-8">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Developers
         </Link>
 
@@ -64,7 +82,7 @@ export default function DevelopersMCP() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-mint opacity-75 animate-ping" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-mint" />
             </span>
-            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">MCP server · production</span>
+            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/55">MCP server · production</span>
           </div>
           <h1 className="font-display text-4xl md:text-6xl font-black tracking-[-0.03em] leading-[0.92] mb-5">
             Connect Claude to <span className="gradient-text">CAMBRA</span>
@@ -75,16 +93,16 @@ export default function DevelopersMCP() {
         </div>
 
         {/* Endpoint card */}
-        <div className="rounded-2xl border border-border/60 bg-card p-6 mb-12">
-          <div className="flex items-center gap-2 mb-3 text-[10px] font-bold tracking-[0.18em] uppercase text-muted-foreground">
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-6 mb-12">
+          <div className="flex items-center gap-2 mb-3 text-[10px] font-bold tracking-[0.18em] uppercase text-white/55">
             <Terminal className="h-3.5 w-3.5" /> Endpoint
           </div>
           <CopyBlock>{MCP_URL}</CopyBlock>
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div><div className="text-muted-foreground/60 text-[10px] uppercase tracking-wider">Protocol</div><div className="font-bold mt-0.5">MCP 2024-11-05</div></div>
-            <div><div className="text-muted-foreground/60 text-[10px] uppercase tracking-wider">Transport</div><div className="font-bold mt-0.5">HTTP / JSON-RPC</div></div>
-            <div><div className="text-muted-foreground/60 text-[10px] uppercase tracking-wider">Auth</div><div className="font-bold mt-0.5">Bearer token</div></div>
-            <div><div className="text-muted-foreground/60 text-[10px] uppercase tracking-wider">Rate limit</div><div className="font-bold mt-0.5">120 req/min</div></div>
+            <div><div className="text-white/55/60 text-[10px] uppercase tracking-wider">Protocol</div><div className="font-bold mt-0.5">MCP 2024-11-05</div></div>
+            <div><div className="text-white/55/60 text-[10px] uppercase tracking-wider">Transport</div><div className="font-bold mt-0.5">HTTP / JSON-RPC</div></div>
+            <div><div className="text-white/55/60 text-[10px] uppercase tracking-wider">Auth</div><div className="font-bold mt-0.5">Bearer token</div></div>
+            <div><div className="text-white/55/60 text-[10px] uppercase tracking-wider">Rate limit</div><div className="font-bold mt-0.5">120 req/min</div></div>
           </div>
         </div>
 
@@ -93,32 +111,32 @@ export default function DevelopersMCP() {
           <h2 className="font-display text-2xl font-black tracking-[-0.02em] mb-2 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-cambra-blue" /> Claude Desktop
           </h2>
-          <p className="text-sm text-muted-foreground mb-5">Native MCP support. Edit your Claude Desktop config file and restart.</p>
+          <p className="text-sm text-white/55 mb-5">Native MCP support. Edit your Claude Desktop config file and restart.</p>
 
           <div className="space-y-4">
             <div>
-              <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-muted-foreground mb-2">1 · Get your API key</div>
+              <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-white/55 mb-2">1 · Get your API key</div>
               <p className="text-sm text-foreground/70 mb-2">
                 Go to <Link to="/admin/api-integrations" className="underline font-semibold">Admin → API Integrations</Link> and create a key with the scopes you need (e.g. <code className="text-xs bg-secondary px-1 rounded">read:brands</code>, <code className="text-xs bg-secondary px-1 rounded">read:analyses</code>, <code className="text-xs bg-secondary px-1 rounded">read:kpis</code>). Tool name = <strong>Claude</strong>.
               </p>
             </div>
 
             <div>
-              <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-muted-foreground mb-2">2 · Open the Claude config</div>
+              <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-white/55 mb-2">2 · Open the Claude config</div>
               <div className="grid sm:grid-cols-2 gap-3 text-xs">
-                <div className="rounded-lg border border-border/60 bg-card p-3">
+                <div className="rounded-lg border border-white/[0.08] bg-white/[0.025] p-3">
                   <div className="font-bold mb-1">macOS</div>
-                  <code className="text-[11px] text-muted-foreground">~/Library/Application Support/Claude/claude_desktop_config.json</code>
+                  <code className="text-[11px] text-white/55">~/Library/Application Support/Claude/claude_desktop_config.json</code>
                 </div>
-                <div className="rounded-lg border border-border/60 bg-card p-3">
+                <div className="rounded-lg border border-white/[0.08] bg-white/[0.025] p-3">
                   <div className="font-bold mb-1">Windows</div>
-                  <code className="text-[11px] text-muted-foreground">%APPDATA%\Claude\claude_desktop_config.json</code>
+                  <code className="text-[11px] text-white/55">%APPDATA%\Claude\claude_desktop_config.json</code>
                 </div>
               </div>
             </div>
 
             <div>
-              <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-muted-foreground mb-2">3 · Add the CAMBRA server</div>
+              <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-white/55 mb-2">3 · Add the CAMBRA server</div>
               <CopyBlock>{`{
   "mcpServers": {
     "cambra": {
@@ -133,13 +151,13 @@ export default function DevelopersMCP() {
     }
   }
 }`}</CopyBlock>
-              <p className="text-[11px] text-muted-foreground mt-2">
+              <p className="text-[11px] text-white/55 mt-2">
                 Replace <code className="bg-secondary px-1 rounded">cmb_live_YOUR_KEY_HERE</code> with the key you created in step 1.
               </p>
             </div>
 
             <div>
-              <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-muted-foreground mb-2">4 · Restart Claude Desktop</div>
+              <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-white/55 mb-2">4 · Restart Claude Desktop</div>
               <p className="text-sm text-foreground/70">
                 You'll see <strong>cambra</strong> appear in the tools menu (⚒). Try: <em>"Use cambra to give me this week's CAMBRA briefing"</em>.
               </p>
@@ -152,7 +170,7 @@ export default function DevelopersMCP() {
           <h2 className="font-display text-2xl font-black tracking-[-0.02em] mb-2 flex items-center gap-2">
             <Code className="h-5 w-5 text-cambra-cyan" /> Claude.ai (web)
           </h2>
-          <p className="text-sm text-muted-foreground mb-5">Add CAMBRA as a custom connector inside any Claude project.</p>
+          <p className="text-sm text-white/55 mb-5">Add CAMBRA as a custom connector inside any Claude project.</p>
           <ol className="space-y-3 text-sm text-foreground/80 list-decimal pl-5">
             <li>Open a Claude <strong>Project</strong> → <strong>Settings</strong> → <strong>Connectors</strong>.</li>
             <li>Choose <strong>Add custom connector</strong> → <strong>MCP</strong>.</li>
@@ -167,11 +185,11 @@ export default function DevelopersMCP() {
           <h2 className="font-display text-2xl font-black tracking-[-0.02em] mb-2 flex items-center gap-2">
             <Activity className="h-5 w-5 text-cambra-blue" /> Tools exposed ({TOOLS.length})
           </h2>
-          <p className="text-sm text-muted-foreground mb-5">Each tool is gated by an OAuth-style scope on your API key.</p>
+          <p className="text-sm text-white/55 mb-5">Each tool is gated by an OAuth-style scope on your API key.</p>
           <div className="rounded-xl border border-border/60 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-secondary/50">
-                <tr className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr className="text-[10px] uppercase tracking-wider text-white/55">
                   <th className="text-left py-2.5 px-4 font-bold">Tool</th>
                   <th className="text-left py-2.5 px-4 font-bold">Required scope</th>
                   <th className="text-left py-2.5 px-4 font-bold">Description</th>
@@ -182,7 +200,7 @@ export default function DevelopersMCP() {
                   <tr key={t.name} className="border-t border-border/40">
                     <td className="py-2.5 px-4 font-mono text-xs font-bold">{t.name}</td>
                     <td className="py-2.5 px-4"><code className="text-[11px] bg-cambra-blue/10 text-cambra-blue px-1.5 py-0.5 rounded">{t.scope}</code></td>
-                    <td className="py-2.5 px-4 text-xs text-muted-foreground">{t.desc}</td>
+                    <td className="py-2.5 px-4 text-xs text-white/55">{t.desc}</td>
                   </tr>
                 ))}
               </tbody>
@@ -192,17 +210,17 @@ export default function DevelopersMCP() {
 
         {/* RESOURCES & PROMPTS */}
         <section className="mb-14 grid md:grid-cols-2 gap-5">
-          <div className="rounded-xl border border-border/60 bg-card p-5">
+          <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-5">
             <h3 className="text-sm font-bold mb-1">Resources</h3>
-            <p className="text-[11px] text-muted-foreground mb-3">Pull addressable read-only context.</p>
+            <p className="text-[11px] text-white/55 mb-3">Pull addressable read-only context.</p>
             <ul className="space-y-2 text-xs">
               <li><code className="font-mono bg-secondary px-1.5 py-0.5 rounded">cambra://kpis/platform</code> — live platform KPIs</li>
               <li><code className="font-mono bg-secondary px-1.5 py-0.5 rounded">cambra://briefing/weekly</code> — last-7-days briefing</li>
             </ul>
           </div>
-          <div className="rounded-xl border border-border/60 bg-card p-5">
+          <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-5">
             <h3 className="text-sm font-bold mb-1">Prompts</h3>
-            <p className="text-[11px] text-muted-foreground mb-3">Pre-baked Claude workflows.</p>
+            <p className="text-[11px] text-white/55 mb-3">Pre-baked Claude workflows.</p>
             <ul className="space-y-2 text-xs">
               <li><code className="font-mono bg-secondary px-1.5 py-0.5 rounded">audit_brand</code> — full brand infrastructure audit</li>
               <li><code className="font-mono bg-secondary px-1.5 py-0.5 rounded">weekly_review</code> — executive weekly review</li>
@@ -215,7 +233,7 @@ export default function DevelopersMCP() {
           <h2 className="font-display text-2xl font-black tracking-[-0.02em] mb-2 flex items-center gap-2">
             <Terminal className="h-5 w-5 text-foreground" /> Test from your terminal
           </h2>
-          <p className="text-sm text-muted-foreground mb-5">No client required — JSON-RPC over HTTP.</p>
+          <p className="text-sm text-white/55 mb-5">No client required — JSON-RPC over HTTP.</p>
           <CopyBlock>{`# 1 · Discover tools (no auth required)
 curl -s ${MCP_URL} \\
   -H "Content-Type: application/json" \\
@@ -249,7 +267,7 @@ curl -s ${MCP_URL} \\
 
         {/* FOOTER CTA */}
         <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-secondary/40 to-card p-6 text-center">
-          <p className="text-sm text-muted-foreground mb-3">Need a key, want to test, or have questions?</p>
+          <p className="text-sm text-white/55 mb-3">Need a key, want to test, or have questions?</p>
           <div className="flex flex-wrap gap-2 justify-center">
             <Link to="/admin/api-integrations" className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold">Create API key</Link>
             <Link to="/Developers" className="inline-flex items-center gap-2 h-9 px-4 rounded-full border border-border text-xs font-bold">Full API reference</Link>

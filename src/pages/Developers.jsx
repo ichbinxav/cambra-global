@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import Navbar from "@/components/landing/Navbar";
-import { Sparkles, Key, Lock, Webhook, Zap, BookOpen, Bot, Shield, Activity } from "lucide-react";
+import MarketingPageShell from "@/components/landing/MarketingPageShell";
+import { Key, Lock, Webhook, Zap, BookOpen, Bot, Shield, Activity } from "lucide-react";
 
 /**
  * Public Developers page — Stripe/Shopify-style entry point.
@@ -11,7 +11,6 @@ export default function Developers() {
   const openapiUrl = `${origin}/functions/apiOpenApiSpec`;
 
   useEffect(() => {
-    // Load Swagger UI bundle from jsdelivr
     const cssId = "swagger-ui-css";
     if (!document.getElementById(cssId)) {
       const link = document.createElement("link");
@@ -52,91 +51,109 @@ export default function Developers() {
     { Icon: Zap,     title: "Versioned & extensible",     desc: "Modular /v1/ resources, ready for partners & embedded agents." },
   ];
 
+  const surfaceCard = {
+    background: "rgba(255,255,255,0.025)",
+    border: "1px solid rgba(255,255,255,0.08)",
+  };
+  const codeStyle = {
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    color: "rgba(255,255,255,0.85)",
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
-
-      {/* Hero */}
-      <section className="relative pt-32 pb-16 px-5 overflow-hidden border-b border-border/40">
-        <div className="absolute inset-0 dot-grid opacity-40 pointer-events-none" />
-        <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.18] pointer-events-none" />
-        <div className="relative max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border border-border/60 bg-background/70 backdrop-blur-sm">
-            <Sparkles className="h-3 w-3 text-cambra-cyan" />
-            <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">CAMBRA API · v1</span>
-          </div>
-          <h1 className="font-display text-[clamp(2.4rem,6vw,4.5rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5">
-            Build on the <span className="text-saas-gradient">infrastructure of commerce.</span>
-          </h1>
-          <p className="text-base md:text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed mb-8">
-            A production-grade REST API with OpenAPI 3.1, OAuth 2.0 and signed webhooks. Designed from day one for AI assistants, automation tools and enterprise integrations.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <a href={openapiUrl} target="_blank" rel="noopener noreferrer"
-              className="h-12 px-6 rounded-full bg-foreground text-background text-sm font-bold inline-flex items-center gap-2 hover:opacity-90 transition">
-              <BookOpen className="h-4 w-4" /> View OpenAPI spec
-            </a>
-            <a href="/auth/start" target="_blank" rel="noopener noreferrer"
-              className="h-12 px-6 rounded-full border border-border/60 text-sm font-semibold inline-flex items-center gap-2 hover:bg-secondary transition">
-              <Key className="h-4 w-4" /> Get API key
-            </a>
-          </div>
+    <MarketingPageShell
+      eyebrow="CAMBRA API · v1"
+      title="Build on the"
+      titleAccent="infrastructure of commerce."
+      subtitle="A production-grade REST API with OpenAPI 3.1, OAuth 2.0 and signed webhooks. Designed from day one for AI assistants, automation tools and enterprise integrations."
+      heroActions={
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <a
+            href={openapiUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-12 px-6 rounded-full text-sm font-bold inline-flex items-center gap-2 transition-all hover:translate-y-[-1px]"
+            style={{
+              background: "#ffffff",
+              color: "#06080F",
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(34,211,238,0.45)",
+            }}
+          >
+            <BookOpen className="h-4 w-4" /> View OpenAPI spec
+          </a>
+          <a
+            href="/auth/start"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-12 px-6 rounded-full text-sm font-semibold inline-flex items-center gap-2 transition-colors"
+            style={{ border: "1px solid rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.85)" }}
+          >
+            <Key className="h-4 w-4" /> Get API key
+          </a>
         </div>
-      </section>
-
+      }
+    >
       {/* Feature grid */}
-      <section className="py-16 px-5 border-b border-border/40">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {features.map((f) => (
-              <div key={f.title} className="rounded-2xl border border-border/60 bg-card p-5">
-                <div className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center mb-3">
-                  <f.Icon className="h-4 w-4 text-cambra-blue" />
-                </div>
-                <div className="text-sm font-bold mb-1.5">{f.title}</div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+      <section className="mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {features.map((f) => (
+            <div key={f.title} className="rounded-2xl p-5" style={surfaceCard}>
+              <div
+                className="h-9 w-9 rounded-xl flex items-center justify-center mb-3"
+                style={{ background: "rgba(96,165,250,0.10)", border: "1px solid rgba(96,165,250,0.20)" }}
+              >
+                <f.Icon className="h-4 w-4 text-cyan-300" />
               </div>
-            ))}
-          </div>
+              <div className="text-sm font-bold mb-1.5 text-white">{f.title}</div>
+              <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>
+                {f.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Integration cards */}
-      <section className="py-16 px-5 border-b border-border/40">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="font-display text-3xl font-black tracking-[-0.03em] mb-2">Connect in minutes</h2>
-          <p className="text-sm text-muted-foreground mb-8">Same API powers every integration. Pick your tool.</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-2xl border border-border/60 bg-card p-5">
-              <div className="text-xs font-bold tracking-[0.18em] uppercase text-muted-foreground mb-2">ChatGPT</div>
-              <div className="text-sm font-bold mb-1.5">Custom GPT / Actions</div>
-              <p className="text-xs text-muted-foreground mb-3">Import OpenAPI URL directly into ChatGPT Actions.</p>
-              <code className="block text-[10px] font-mono p-2 rounded bg-secondary truncate">{openapiUrl}</code>
+      <section className="mb-16">
+        <h2
+          className="mb-2 text-white"
+          style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: 28, fontWeight: 900, letterSpacing: "-0.03em" }}
+        >
+          Connect in minutes
+        </h2>
+        <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.55)" }}>
+          Same API powers every integration. Pick your tool.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { label: "ChatGPT", title: "Custom GPT / Actions", desc: "Import OpenAPI URL directly into ChatGPT Actions.", code: openapiUrl },
+            { label: "Claude", title: "Remote MCP Server", desc: "Add as an MCP server with your API key as Bearer.", code: `${origin}/functions/mcpServer` },
+            { label: "Automation", title: "Make · n8n · Zapier", desc: "Standard REST with Bearer auth and JSON envelope.", code: `${origin}/functions/apiV1` },
+          ].map(card => (
+            <div key={card.label} className="rounded-2xl p-5" style={surfaceCard}>
+              <div className="text-xs font-bold tracking-[0.18em] uppercase mb-2 text-cyan-300/80">{card.label}</div>
+              <div className="text-sm font-bold mb-1.5 text-white">{card.title}</div>
+              <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.6)" }}>{card.desc}</p>
+              <code className="block text-[10px] font-mono p-2 rounded truncate" style={codeStyle}>{card.code}</code>
             </div>
-            <div className="rounded-2xl border border-border/60 bg-card p-5">
-              <div className="text-xs font-bold tracking-[0.18em] uppercase text-muted-foreground mb-2">Claude</div>
-              <div className="text-sm font-bold mb-1.5">Remote MCP Server</div>
-              <p className="text-xs text-muted-foreground mb-3">Add as an MCP server with your API key as Bearer.</p>
-              <code className="block text-[10px] font-mono p-2 rounded bg-secondary truncate">{origin}/functions/mcpServer</code>
-            </div>
-            <div className="rounded-2xl border border-border/60 bg-card p-5">
-              <div className="text-xs font-bold tracking-[0.18em] uppercase text-muted-foreground mb-2">Automation</div>
-              <div className="text-sm font-bold mb-1.5">Make · n8n · Zapier</div>
-              <p className="text-xs text-muted-foreground mb-3">Standard REST with Bearer auth and JSON envelope.</p>
-              <code className="block text-[10px] font-mono p-2 rounded bg-secondary truncate">{origin}/functions/apiV1</code>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
       {/* Swagger UI */}
-      <section className="py-16 px-5">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="font-display text-3xl font-black tracking-[-0.03em] mb-2">API Reference</h2>
-          <p className="text-sm text-muted-foreground mb-6">Interactive Swagger UI. Try requests live with your API key.</p>
-          <div id="swagger-ui" className="rounded-2xl border border-border/60 bg-card p-2 overflow-hidden" />
-        </div>
+      <section>
+        <h2
+          className="mb-2 text-white"
+          style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: 28, fontWeight: 900, letterSpacing: "-0.03em" }}
+        >
+          API Reference
+        </h2>
+        <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.55)" }}>
+          Interactive Swagger UI. Try requests live with your API key.
+        </p>
+        <div id="swagger-ui" className="rounded-2xl p-2 overflow-hidden bg-white" />
       </section>
-    </div>
+    </MarketingPageShell>
   );
 }

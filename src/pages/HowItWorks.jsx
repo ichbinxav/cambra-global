@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { ArrowRight, Activity, Plug, BarChart3, Sparkles } from "lucide-react";
-import Navbar from "@/components/landing/Navbar";
-import { Button } from "@/components/ui/button";
+import MarketingPageShell from "@/components/landing/MarketingPageShell";
+import CambraCTA, { CambraTrustRow } from "@/components/shared/CambraCTA";
 
 const STEPS = [
   {
@@ -11,7 +10,6 @@ const STEPS = [
     icon: Plug,
     title: "Connect your stack",
     detail: "Link Payments, Logistics & Commerce SaaS tools — or upload statements. Read-only, encrypted, never shared.",
-    points: ["OAuth integrations", "PDF/CSV ingestion", "Manual fallback"],
     cta: { label: "Connect your tools", href: "/ConnectTools" },
   },
   {
@@ -20,7 +18,6 @@ const STEPS = [
     icon: Activity,
     title: "We scan your infrastructure",
     detail: "CAMBRA maps your real rates, volumes and costs across 3 operational pillars — automatically.",
-    points: ["Effective payment rates", "Carrier & 3PL benchmarks", "Commerce SaaS spend audit"],
     cta: { label: "Run the analyzer", href: "/Analyzer" },
   },
   {
@@ -29,7 +26,6 @@ const STEPS = [
     icon: BarChart3,
     title: "Benchmark against the network",
     detail: "Your numbers are compared against operators of similar scale — surfacing exact savings opportunities.",
-    points: ["Peer benchmarks", "Infrastructure score", "Margin leak alerts"],
     cta: { label: "See your score", href: "/Dashboard" },
   },
   {
@@ -38,118 +34,103 @@ const STEPS = [
     icon: Sparkles,
     title: "Activate better terms",
     detail: "Move into stronger commercial conditions through CAMBRA's network — performance-based, no upfront fee.",
-    points: ["Negotiated terms", "Recovery verification", "Aligned incentives"],
     cta: { label: "Unlock your savings", href: "/Dashboard" },
   },
 ];
 
 export default function HowItWorks() {
   return (
-    <div className="relative min-h-screen bg-background font-inter overflow-hidden">
-      <Navbar />
-
-      {/* Ambient backdrop */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 dot-grid opacity-50" />
-        <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.20]" />
-        <div className="absolute top-1/3 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.18]" />
-      </div>
-
-      <div className="relative pt-24 pb-20">
-        <div className="max-w-6xl mx-auto px-5">
-
-          {/* Hero */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
-                How it works · 4 steps
+    <MarketingPageShell
+      eyebrow="How it works · 4 steps"
+      title="From cost data to"
+      titleAccent="recovered margin."
+      subtitle="A structured infrastructure audit — built for independent operators. No upfront fees, no lock-in."
+    >
+      <div className="space-y-5">
+        {STEPS.map((step, i) => {
+          const Icon = step.icon;
+          return (
+            <article
+              key={step.n}
+              className="relative overflow-hidden p-8 sm:p-12 rounded-2xl animate-fade-up"
+              style={{
+                animationDelay: `${i * 80}ms`,
+                background: "rgba(255,255,255,0.025)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              {/* Giant step number watermark */}
+              <span
+                aria-hidden
+                className="absolute -top-6 right-6 select-none"
+                style={{
+                  fontSize: "clamp(96px, 14vw, 180px)",
+                  fontWeight: 900,
+                  letterSpacing: "-0.05em",
+                  lineHeight: 1,
+                  background:
+                    "linear-gradient(180deg, rgba(96,165,250,0.18), rgba(255,255,255,0.02) 70%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                }}
+              >
+                {step.n}
               </span>
-            </div>
 
-            <h1 className="font-display text-[clamp(2.4rem,6vw,4.4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5">
-              From cost data to <span className="text-saas-gradient">recovered margin.</span>
-            </h1>
-            <p className="text-base md:text-lg text-foreground/65 max-w-2xl mx-auto leading-relaxed">
-              A structured infrastructure audit — built for independent operators. No upfront fees, no lock-in.
-            </p>
-          </div>
-
-          {/* Steps — large cinematic */}
-          <div className="space-y-6">
-            {STEPS.map((step, i) => {
-              const Icon = step.icon;
-              return (
-                <motion.article
-                  key={step.n}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-80px" }}
-                  transition={{ duration: 0.5, delay: i * 0.05 }}
-                  className="cambra-card p-8 sm:p-12"
+              <div className="relative max-w-2xl">
+                <div
+                  className="inline-flex items-center gap-2 mb-4 px-2.5 py-1.5 rounded-full"
+                  style={{
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background: "rgba(255,255,255,0.04)",
+                  }}
                 >
-                  <div className="flex items-start justify-between gap-4 mb-8">
-                    {/* Giant cinematic number — on top */}
-                    <div className="cambra-step-number">
-                      {step.n}
-                    </div>
+                  <Icon size={11} className="text-cyan-300" />
+                  <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">
+                    {step.eyebrow}
+                  </span>
+                </div>
 
-                    {/* CTA row — aligned with number */}
-                    <Link
-                      to={step.cta.href}
-                      className="group/cta inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full border border-white/20 bg-cambra-navy-deep/80 hover:bg-cambra-navy-deep hover:border-white/40 transition-all backdrop-blur-md mt-1 flex-shrink-0"
-                      style={{ position: 'relative', zIndex: 20 }}
-                    >
-                      <span className="text-[9px] sm:text-[10px] font-bold text-white tracking-[0.08em] uppercase whitespace-nowrap">
-                        {step.cta.label}
-                      </span>
-                      <span className="h-4 w-4 rounded-full flex items-center justify-center bg-cambra-mint transition-transform group-hover/cta:translate-x-0.5">
-                        <ArrowRight className="h-2.5 w-2.5 text-cambra-navy-deep" strokeWidth={3} />
-                      </span>
-                    </Link>
-                  </div>
+                <h2
+                  className="mb-4"
+                  style={{
+                    fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                    fontSize: "clamp(28px, 4vw, 44px)",
+                    fontWeight: 900,
+                    letterSpacing: "-0.035em",
+                    lineHeight: 1,
+                    background:
+                      "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #22d3ee 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  {step.title}
+                </h2>
 
-                  <div>
+                <p className="text-[14px] sm:text-[15px] leading-relaxed mb-6" style={{ color: "rgba(255,255,255,0.65)" }}>
+                  {step.detail}
+                </p>
 
-                    {/* Content */}
-                    <div className="min-w-0">
-                      <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
-                        <Icon size={11} className="text-cambra-mint" />
-                        <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">
-                          {step.eyebrow}
-                        </span>
-                      </div>
-
-                      <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-black tracking-[-0.035em] leading-[1] mb-3">
-                        <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                          {step.title}
-                        </span>
-                      </h2>
-
-                      <p className="text-sm sm:text-base text-white/70 leading-relaxed max-w-2xl">
-                        {step.detail}
-                      </p>
-                    </div>
-                  </div>
-                </motion.article>
-              );
-            })}
-          </div>
-
-          {/* CTA */}
-          <div className="mt-16 text-center">
-            <Link to="/Analyzer">
-              <Button className="h-12 rounded-full px-8 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90">
-                Run your free audit <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <p className="text-xs text-muted-foreground mt-4">
-              Free forever for early operators · No credit card required
-            </p>
-          </div>
-
-        </div>
+                <Link
+                  to={step.cta.href}
+                  className="inline-flex items-center gap-1.5 text-[12px] font-bold tracking-[0.08em] uppercase text-cyan-300 hover:text-cyan-200 transition-colors"
+                >
+                  {step.cta.label} <ArrowRight size={12} />
+                </Link>
+              </div>
+            </article>
+          );
+        })}
       </div>
-    </div>
+
+      <div className="mt-16 flex flex-col items-center gap-4">
+        <CambraCTA intent="audit" size="lg" />
+        <CambraTrustRow align="center" />
+      </div>
+    </MarketingPageShell>
   );
 }
