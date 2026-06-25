@@ -192,22 +192,22 @@ const AuthenticatedApp = () => {
   if (!isPublicLanding && (isLoadingPublicSettings || isLoadingAuth)) {
     return (
       <div
-        className="fixed inset-0 flex flex-col items-center justify-center"
+        className="fixed inset-0 flex flex-col items-center justify-center gap-4"
         style={{ background: "#0a0a0a" }}
         role="status"
         aria-live="polite"
       >
-        <div className="relative h-10 w-10">
-          <span
-            className="absolute inset-0 rounded-full"
-            style={{
-              border: "2px solid rgba(255,255,255,0.12)",
-              borderTopColor: "#22d3ee",
-              animation: "cambra-spin 0.8s linear infinite",
-            }}
-          />
-        </div>
-        <p className="mt-4 text-[12px] font-bold tracking-[0.22em] uppercase text-white/70">Loading</p>
+        <div
+          className="h-10 w-10 rounded-full"
+          style={{
+            border: "3px solid rgba(255,255,255,0.15)",
+            borderTopColor: "#22d3ee",
+            animation: "cambra-spin 0.8s linear infinite",
+          }}
+        />
+        <p className="text-[12px] font-bold tracking-[0.22em] uppercase text-white/70">
+          Loading {isLoadingPublicSettings ? "settings" : "session"}…
+        </p>
         <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -215,6 +215,45 @@ const AuthenticatedApp = () => {
 
   if (!isPublicLanding && authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
+    // auth_required → redirect to LoginGate so the user can sign in.
+    if (authError.type === 'auth_required') {
+      try {
+        const currentPath = window.location.pathname + window.location.search + window.location.hash;
+        if (currentPath && currentPath !== '/LoginGate') {
+          sessionStorage.setItem('cambra_redirect_after_login', currentPath);
+        }
+      } catch (e) { /* noop */ }
+      const next = encodeURIComponent(window.location.pathname + window.location.search);
+      return <Navigate to={`/LoginGate?next=${next}`} replace />;
+    }
+    // Any other auth error → show inline error instead of black screen.
+    return (
+      <div
+        role="alert"
+        className="fixed inset-0 flex items-center justify-center px-6"
+        style={{ background: "#0a0a0a", color: "#ffffff" }}
+      >
+        <div className="max-w-sm w-full text-center">
+          <div
+            aria-hidden="true"
+            className="mx-auto mb-5 w-12 h-12 rounded-2xl flex items-center justify-center"
+            style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)" }}
+          >
+            <span style={{ fontSize: 22 }}>!</span>
+          </div>
+          <h1 className="text-xl font-black tracking-[-0.02em] mb-2">Couldn’t load the app</h1>
+          <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.65)" }}>
+            {authError.message || "Something went wrong while loading your session."}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center justify-center h-10 px-6 rounded-full bg-white text-black text-sm font-bold hover:opacity-90"
+          >
+            Refresh page
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
