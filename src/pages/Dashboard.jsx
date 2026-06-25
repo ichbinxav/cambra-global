@@ -19,6 +19,7 @@ import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import PageHero from "@/components/shared/PageHero";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import { useTranslation } from "@/lib/i18n.jsx";
+import CambraCTA from "@/components/shared/CambraCTA";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function formatEurLocal(n, lang) {
@@ -186,17 +187,7 @@ export default function Dashboard() {
             <p className="text-sm text-white/55 mb-7 max-w-md mx-auto leading-relaxed">
               {t("state_a_sub")}
             </p>
-            <Link to="/Analyzer">
-              <Button
-                size="lg"
-                className="h-12 rounded-full px-7 text-sm font-bold gap-2 min-h-[44px] bg-white text-black hover:bg-white/90"
-                style={{
-                  boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.22)",
-                }}
-              >
-                {t("state_a_cta")} <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+            <CambraCTA intent="audit" size="lg" />
           </div>
         </div>
 
@@ -285,17 +276,7 @@ export default function Dashboard() {
           </h1>
           <p className="text-[14px] text-white/55 mt-2">{t("your_infrastructure")}</p>
         </div>
-        <Link to="/Analyzer">
-          <Button
-            size="sm"
-            className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-white text-black hover:bg-white/90"
-            style={{
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 8px 24px -10px rgba(59,130,246,0.55), 0 0 20px rgba(59,130,246,0.2)",
-            }}
-          >
-            {t("nav_analyzer")} <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </Link>
+        <CambraCTA intent="audit" size="sm">{t("nav_analyzer")}</CambraCTA>
       </div>
 
       {/* ── SAVINGS HERO ── */}

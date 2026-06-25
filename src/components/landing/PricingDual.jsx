@@ -1,6 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { ArrowUpRight, Check } from "lucide-react";
+import { Check } from "lucide-react";
+import CambraCTA from "@/components/shared/CambraCTA";
 
 /**
  * Pricing — sleek edition.
@@ -132,28 +132,16 @@ function Tier({
       </ul>
 
       {/* CTA */}
-      <Link
-        to="/Analyzer"
-        className="mt-7 inline-flex w-full items-center justify-center gap-1.5 rounded-full px-4 h-11 font-bold text-[13px] transition-all hover:translate-y-[-1px]"
-        style={
-          ctaPrimary
-            ? {
-                background: "#ffffff",
-                color: "#0a0f1e",
-                boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.1), 0 18px 40px -16px rgba(34,211,238,0.45)",
-              }
-            : {
-                background: "rgba(255,255,255,0.04)",
-                color: "#ffffff",
-                border: "1px solid rgba(255,255,255,0.14)",
-                backdropFilter: "blur(8px)",
-              }
-        }
-      >
-        {ctaText}
-        <ArrowUpRight size={14} strokeWidth={2.5} />
-      </Link>
+      <div className="mt-7">
+        <CambraCTA
+          intent="audit"
+          size="md"
+          variant={ctaPrimary ? "primary" : "secondary"}
+          className="w-full"
+        >
+          {ctaText}
+        </CambraCTA>
+      </div>
     </div>
   );
 }
@@ -280,7 +268,7 @@ export default function PricingDual() {
               strike="€60/mo"
               caption="For early operators"
               features={FREE_FEATURES}
-              ctaText="Run audit"
+              ctaText="Run free audit"
               ctaPrimary={false}
             />
             <Tier
@@ -291,7 +279,7 @@ export default function PricingDual() {
               priceGradient
               caption="Only on verified savings"
               features={RECOVERY_FEATURES}
-              ctaText="Start recovering"
+              ctaText="Run free audit"
               ctaPrimary={true}
             />
           </div>

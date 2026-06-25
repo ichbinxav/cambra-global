@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, FileText, Sparkles, ShieldCheck, Menu, X } from "lucide-react";
+import CambraCTA, { CambraTrustRow } from "@/components/shared/CambraCTA";
 import { useState } from "react";
 import SectionLabel from "@/components/shared/SectionLabel";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
@@ -94,12 +95,7 @@ function LandingNavbar() {
         {/* Desktop right side */}
         <div className="hidden md:flex items-center gap-3">
           <LanguageSwitcher variant="dark" />
-          <Link
-            to="/Analyzer"
-            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-bold bg-white text-black hover:opacity-90 transition-opacity"
-          >
-            {t("nav_get_started")}
-          </Link>
+          <CambraCTA intent="audit" size="sm" />
         </div>
 
         {/* Mobile right side — hamburger only (CTA lives in Hero + drawer) */}
@@ -137,16 +133,9 @@ function LandingNavbar() {
             }}
           >
             <nav className="px-6 py-6 flex flex-col gap-1">
-              <Link
-                to="/Analyzer"
-                onClick={() => setMobileOpen(false)}
-                className="mb-4 inline-flex items-center justify-center gap-2 rounded-full bg-white text-black px-5 py-3.5 font-bold text-[14px]"
-                style={{ boxShadow: "0 18px 40px -16px rgba(34,211,238,0.5)" }}
-              >
-                <Sparkles size={14} />
-                {t("nav_get_started")}
-                <ArrowRight size={14} />
-              </Link>
+              <div className="mb-4" onClick={() => setMobileOpen(false)}>
+                <CambraCTA intent="audit" size="md" className="w-full" />
+              </div>
               <a
                 href="#how"
                 onClick={() => setMobileOpen(false)}
@@ -277,23 +266,13 @@ function Hero() {
             className="mt-10 flex flex-wrap items-center gap-3 animate-fade-up"
             style={{ animationDelay: "400ms" }}
           >
-            <Link
-              to="/Analyzer"
-              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] transition-transform hover:scale-[1.04] active:scale-[0.97]"
-              style={{
-                boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
-              }}
-            >
-              Find what you're losing — 3 min
-              <ArrowRight size={16} />
-            </Link>
+            <CambraCTA intent="audit" size="lg" />
             <a
               href="#testimonials"
-              className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium transition-all hover:scale-[1.03] hover:text-white"
+              className="inline-flex items-center rounded-full h-[52px] px-7 text-[14px] font-semibold transition-all hover:text-white"
               style={{
                 border: "1px solid rgba(255,255,255,0.20)",
-                color: "rgba(255,255,255,0.70)",
+                color: "rgba(255,255,255,0.75)",
                 backdropFilter: "blur(8px)",
                 WebkitBackdropFilter: "blur(8px)",
                 background: "rgba(255,255,255,0.02)",
@@ -303,9 +282,15 @@ function Hero() {
             </a>
           </div>
 
-          {/* Trust row */}
+          {/* Trust row — canonical microcopy */}
+          <CambraTrustRow
+            className="mt-6 animate-fade-up"
+            items={["3 min", "No card", "EU brands only"]}
+          />
+
+          {/* Secondary trust row */}
           <div
-            className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px] animate-fade-up"
+            className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] animate-fade-up"
             style={{ color: "rgba(255,255,255,0.45)", animationDelay: "600ms" }}
           >
             <span className="inline-flex items-center gap-1.5">
@@ -315,10 +300,6 @@ function Hero() {
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck size={13} className="text-cyan-300/80" />
               Bank-level data security
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} className="text-cyan-300/80" />
-              EU brands only
             </span>
           </div>
         </div>
@@ -637,25 +618,11 @@ function PricingCTASection() {
         </ul>
 
         <AnimatedSection delay={0.2}>
-          <div className="inline-block">
-            <Link
-              to="/Analyzer"
-              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] transition-transform hover:scale-[1.04] active:scale-[0.97]"
-              aria-label={t("pricing_cta")}
-              style={{
-                boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
-              }}
-            >
-              <Sparkles size={14} />
-              {t("pricing_cta")} <ArrowRight size={16} aria-hidden="true" />
-            </Link>
+          <div className="inline-flex flex-col items-center gap-4">
+            <CambraCTA intent="audit" size="lg" />
+            <CambraTrustRow align="center" />
           </div>
         </AnimatedSection>
-
-        <p className="mt-6 text-[12px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-          {t("pricing_trust")}
-        </p>
       </div>
     </section>
   );

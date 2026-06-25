@@ -1,7 +1,7 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, Plug } from "lucide-react";
+import { Plug } from "lucide-react";
 import IntegrationsLogos from "@/components/landing/IntegrationsLogos";
+import CambraCTA, { CambraTrustRow } from "@/components/shared/CambraCTA";
 
 /**
  * 4-stat grid card — dark navy, gradient numbers.
@@ -157,22 +157,12 @@ export default function StatsGrid() {
         </div>
 
         {/* CTA */}
-        <div className="text-center mt-10 sm:mt-12">
-          <Link
-            to="/ConnectTools"
-            className="inline-flex items-center gap-2 rounded-full bg-white text-black px-7 py-3.5 font-bold text-[14px] transition-shadow"
-            style={{
-              boxShadow:
-                "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(34,211,238,0.5), 0 0 32px rgba(34,211,238,0.2)",
-            }}
-          >
-            <Plug size={14} />
-            Connect your tools
-            <ArrowRight size={16} />
-          </Link>
-          <p className="mt-4 text-[11px] uppercase tracking-[0.22em] font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Bank-level encryption · Read-only access · Revoke anytime
-          </p>
+        <div className="mt-10 sm:mt-12 flex flex-col items-center gap-4">
+          <CambraCTA intent="connect" size="lg" />
+          <CambraTrustRow
+            align="center"
+            items={["Bank-level encryption", "Read-only", "Revoke anytime"]}
+          />
         </div>
       </div>
     </section>
