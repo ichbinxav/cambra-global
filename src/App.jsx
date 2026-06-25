@@ -69,19 +69,25 @@ import ScrollToTop from '@/components/shared/ScrollToTop.jsx';
 import ErrorBoundary from '@/components/shared/ErrorBoundary.jsx';
 import { ToastProvider } from '@/components/shared/Toast.jsx';
 
-// FIX 13 — Dark-style fallback shown while lazy chunks load
+// Dark-style fallback shown while lazy chunks load
 function LazyFallback() {
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center"
+      className="fixed inset-0 flex flex-col items-center justify-center"
       style={{ background: "#0a0a0a" }}
       role="status"
       aria-live="polite"
     >
-      <div className="h-10 w-10 text-white/90" style={{ animation: 'spin 4s linear infinite' }}>
-        <BrandGlyph className="h-10 w-10" />
-      </div>
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <span
+        className="h-10 w-10 rounded-full"
+        style={{
+          border: "2px solid rgba(255,255,255,0.12)",
+          borderTopColor: "#22d3ee",
+          animation: "cambra-spin 0.8s linear infinite",
+        }}
+      />
+      <p className="mt-4 text-[11px] font-bold tracking-[0.22em] uppercase text-white/60">Loading</p>
+      <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
@@ -95,11 +101,20 @@ const ProtectedRoute = ({ children }) => {
 
   if (isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="h-8 w-8" style={{ animation: 'spin 4s linear infinite' }}>
-          <BrandGlyph className="h-8 w-8" />
-        </div>
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <div
+        className="fixed inset-0 flex items-center justify-center"
+        style={{ background: "#0a0a0a" }}
+        role="status"
+      >
+        <span
+          className="h-8 w-8 rounded-full"
+          style={{
+            border: "2px solid rgba(255,255,255,0.12)",
+            borderTopColor: "#22d3ee",
+            animation: "cambra-spin 0.8s linear infinite",
+          }}
+        />
+        <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -134,11 +149,20 @@ const AdminRoute = ({ children }) => {
 
   if (isLoadingAuth || loadingUser) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="h-8 w-8" style={{ animation: 'spin 4s linear infinite' }}>
-          <BrandGlyph className="h-8 w-8" />
-        </div>
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <div
+        className="fixed inset-0 flex items-center justify-center"
+        style={{ background: "#0a0a0a" }}
+        role="status"
+      >
+        <span
+          className="h-8 w-8 rounded-full"
+          style={{
+            border: "2px solid rgba(255,255,255,0.12)",
+            borderTopColor: "#22d3ee",
+            animation: "cambra-spin 0.8s linear infinite",
+          }}
+        />
+        <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -167,12 +191,24 @@ const AuthenticatedApp = () => {
 
   if (!isPublicLanding && (isLoadingPublicSettings || isLoadingAuth)) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-background" role="status" aria-live="polite">
-        <div className="h-12 w-12 text-foreground/90" style={{ animation: 'spin 4s linear infinite' }}>
-          <BrandGlyph className="h-12 w-12" />
+      <div
+        className="fixed inset-0 flex flex-col items-center justify-center"
+        style={{ background: "#0a0a0a" }}
+        role="status"
+        aria-live="polite"
+      >
+        <div className="relative h-10 w-10">
+          <span
+            className="absolute inset-0 rounded-full"
+            style={{
+              border: "2px solid rgba(255,255,255,0.12)",
+              borderTopColor: "#22d3ee",
+              animation: "cambra-spin 0.8s linear infinite",
+            }}
+          />
         </div>
-        <p className="mt-3 text-sm text-foreground/70">Loading…</p>
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        <p className="mt-4 text-[12px] font-bold tracking-[0.22em] uppercase text-white/70">Loading</p>
+        <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -228,14 +264,14 @@ const AuthenticatedApp = () => {
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
-        {/* Protected routes WITH dashboard chrome — Analyzer / Results / ConnectTools
-            now live inside the dashboard sidebar so navigation persists and the
-            page no longer feels like it "goes black" when entering the audit flow. */}
+        {/* Protected routes WITHOUT dashboard chrome — full-screen audit flow */}
+        <Route path="/Analyzer" element={<ProtectedRoute>{withBoundary(<Analyzer />)}</ProtectedRoute>} />
+        <Route path="/Results" element={<ProtectedRoute>{withBoundary(<Results />)}</ProtectedRoute>} />
+        <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />
+
+        {/* Protected routes WITH dashboard chrome */}
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="/Dashboard" element={withBoundary(<Dashboard />)} />
-          <Route path="/Analyzer" element={withBoundary(<Analyzer />)} />
-          <Route path="/Results" element={withBoundary(<Results />)} />
-          <Route path="/ConnectTools" element={withBoundary(<ConnectTools />)} />
           <Route path="/Reports" element={withBoundary(<Reports />)} />
           <Route path="/Network" element={withBoundary(<Network />)} />
           <Route path="/Insights" element={withBoundary(<Insights />)} />

@@ -8,6 +8,7 @@ import {
   ArrowRight, ArrowLeft, Loader2, AlertTriangle, MapPin,
   ShieldCheck, Sparkles, ChevronDown, ChevronUp, Plus, Store,
 } from "lucide-react";
+import Navbar from "@/components/landing/Navbar";
 import StripeConnectCard from "@/components/connect/StripeConnectCard";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
@@ -653,9 +654,43 @@ export default function Analyzer() {
   const progressPct = (step / 3) * 100;
 
   return (
-    <div className="relative font-inter text-white -m-5 lg:-m-8">
-      {/* Gradient progress bar — top of the Analyzer surface */}
-      <div className="sticky top-0 z-30 h-[2px]" style={{ background: "rgba(255,255,255,0.06)" }}>
+    <div
+      className="relative min-h-screen flex flex-col font-inter overflow-x-hidden"
+      style={{
+        color: "#ffffff",
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
+      }}
+    >
+      {/* Fixed ambient grid + halos */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          opacity: 0.3,
+          maskImage:
+            "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed z-0"
+        style={{
+          width: 700, height: 700, left: "50%", top: 80, transform: "translateX(-50%)",
+          background: "radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)",
+          filter: "blur(80px)",
+        }}
+      />
+
+      <Navbar />
+
+      {/* Gradient progress bar under navbar */}
+      <div className="fixed top-14 left-0 right-0 z-50 h-[2px]" style={{ background: "rgba(255,255,255,0.06)" }}>
         <div
           className="h-full transition-all duration-500"
           style={{
@@ -666,9 +701,9 @@ export default function Analyzer() {
         />
       </div>
 
-      {/* Step indicator — glass, sticky under the layout header */}
+      {/* Step indicator — glass */}
       <div
-        className="sticky top-[2px] z-20 flex items-center justify-between px-5 py-3"
+        className="sticky top-14 z-40 flex items-center justify-between px-5 py-3"
         style={{
           background: "rgba(10,10,10,0.7)",
           backdropFilter: "blur(20px)",
@@ -689,7 +724,7 @@ export default function Analyzer() {
         </div>
       </div>
 
-      <main className="relative z-10 max-w-lg mx-auto w-full px-5 pt-10 pb-32">
+      <main className="relative z-10 flex-1 max-w-lg mx-auto w-full px-5 pt-10 pb-36">
         {/* Resume offer */}
         {resumeOffer && step === 1 && (
           <div
@@ -1164,9 +1199,9 @@ export default function Analyzer() {
         )}
       </main>
 
-      {/* Footer actions — glass, sticky at the bottom of the Analyzer surface */}
+      {/* Footer actions — glass */}
       <div
-        className="sticky bottom-0 z-30 flex items-center justify-between px-5 py-3"
+        className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-3"
         style={{
           background: "rgba(10,10,10,0.78)",
           backdropFilter: "blur(20px)",
