@@ -113,13 +113,13 @@ export default function SavingsCurveChart({
   return (
     <div ref={wrapRef} className={`relative ${className}`}>
       {/* ===== Counter overlay ===== */}
-      <div className="relative z-10 mb-1 select-none">
-        <div className="flex items-center gap-2 mb-2">
+      <div className="relative z-10 mb-3 select-none">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
           <span
             className="text-[10px] uppercase tracking-[0.24em] font-bold"
             style={{ color: "rgba(255,255,255,0.50)" }}
           >
-            Cumulative savings · 12 mo
+            Avg. brand recovers · 12 mo
           </span>
           <span
             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums"
@@ -135,19 +135,19 @@ export default function SavingsCurveChart({
           </span>
         </div>
 
-        <div className="flex items-end gap-3">
+        <div className="flex items-end gap-3 flex-wrap">
           <span
             className="font-black tabular-nums"
             style={{
-              fontSize: "clamp(40px, 6vw, 64px)",
-              letterSpacing: "-0.045em",
-              lineHeight: 1,
+              fontSize: "clamp(48px, 7.5vw, 80px)",
+              letterSpacing: "-0.05em",
+              lineHeight: 0.95,
               background:
                 "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #22d3ee 100%)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              filter: "drop-shadow(0 0 24px rgba(34,211,238,0.45))",
+              filter: "drop-shadow(0 0 28px rgba(34,211,238,0.5))",
             }}
           >
             {formatted}
@@ -164,6 +164,65 @@ export default function SavingsCurveChart({
               recovered
             </span>
           )}
+        </div>
+
+        {/* WOW stats strip — three quick proof points */}
+        <div
+          className="mt-4 grid grid-cols-3 gap-2 rounded-xl p-3"
+          style={{
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <div>
+            <div
+              className="font-black tabular-nums text-white"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(16px, 2.2vw, 22px)",
+                letterSpacing: "-0.03em",
+                lineHeight: 1,
+              }}
+            >
+              €10.6k
+            </div>
+            <div className="text-[9px] uppercase tracking-[0.18em] font-bold mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+              /month
+            </div>
+          </div>
+          <div style={{ borderLeft: "1px solid rgba(255,255,255,0.08)" }} className="pl-3">
+            <div
+              className="font-black tabular-nums"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(16px, 2.2vw, 22px)",
+                letterSpacing: "-0.03em",
+                lineHeight: 1,
+                color: "rgb(134,239,172)",
+              }}
+            >
+              23%
+            </div>
+            <div className="text-[9px] uppercase tracking-[0.18em] font-bold mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+              cost cut
+            </div>
+          </div>
+          <div style={{ borderLeft: "1px solid rgba(255,255,255,0.08)" }} className="pl-3">
+            <div
+              className="font-black tabular-nums text-white"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(16px, 2.2vw, 22px)",
+                letterSpacing: "-0.03em",
+                lineHeight: 1,
+              }}
+            >
+              3 min
+            </div>
+            <div className="text-[9px] uppercase tracking-[0.18em] font-bold mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+              to audit
+            </div>
+          </div>
         </div>
       </div>
 

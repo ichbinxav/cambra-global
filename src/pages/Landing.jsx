@@ -13,6 +13,7 @@ import FounderLetter from "@/components/landing/FounderLetter";
 import StatsGrid from "@/components/landing/StatsGrid";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
+import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
 const LANDING_JSON_LD = {
@@ -647,7 +648,7 @@ export default function Landing() {
       <main className="relative">
         <Hero />
         <StatsGrid />
-        <ProblemSection />
+        <ProblemSectionWow />
         <HowItWorksSection />
         <div id="testimonials">
           <TestimonialsStrong />
