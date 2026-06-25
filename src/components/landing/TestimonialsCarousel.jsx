@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { ChevronLeft, ChevronRight, Quote, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ITEMS = [
@@ -50,7 +50,7 @@ export default function TestimonialsCarousel() {
   const next = () => setIdx((i) => (i + 1) % total);
 
   return (
-    <section id="testimonials" className="relative py-16 sm:py-20 overflow-hidden">
+    <section id="testimonials" className="relative py-16 sm:py-24 overflow-hidden">
       <div className="relative max-w-2xl mx-auto px-6 sm:px-10">
         {/* eyebrow */}
         <div className="text-center mb-4">
@@ -94,7 +94,7 @@ export default function TestimonialsCarousel() {
           </span>
         </h2>
 
-        {/* Card */}
+        {/* Unified dark card — no split */}
         <AnimatePresence mode="wait">
           <motion.div
             key={idx}
@@ -102,124 +102,128 @@ export default function TestimonialsCarousel() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -16 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-2xl overflow-hidden"
+            className="relative rounded-2xl overflow-hidden p-6 sm:p-7"
             style={{
+              background: "linear-gradient(180deg, #0b1020 0%, #07090f 100%)",
               border: "1px solid rgba(255,255,255,0.10)",
               boxShadow: "0 20px 50px -20px rgba(0,0,0,0.5)",
             }}
           >
-            {/* dark top */}
+            {/* corner glow */}
             <div
-              className="p-5 sm:p-6"
+              aria-hidden
+              className="absolute pointer-events-none"
               style={{
-                background: "linear-gradient(180deg, #0b1020 0%, #07090f 100%)",
+                width: 300, height: 300, right: "-20%", top: "-30%",
+                background: "radial-gradient(circle, rgba(34,211,238,0.18) 0%, transparent 70%)",
+                filter: "blur(50px)",
+              }}
+            />
+
+            {/* category */}
+            <div className="relative flex items-center gap-2 mb-4">
+              <Quote size={13} style={{ color: "#22d3ee" }} />
+              <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-cyan-300">
+                {item.category}
+              </span>
+              <span className="text-white/30">·</span>
+              <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-white/55">
+                {item.vertical}
+              </span>
+            </div>
+
+            {/* quote */}
+            <p
+              className="relative text-white mb-5"
+              style={{
+                fontSize: "clamp(14px, 1.6vw, 17px)",
+                lineHeight: 1.45,
+                fontWeight: 500,
+                letterSpacing: "-0.005em",
               }}
             >
-              <div className="flex items-center gap-2 mb-3">
-                <Quote size={13} style={{ color: "#22d3ee" }} />
-                <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-cyan-300">
-                  {item.category}
-                </span>
-                <span className="text-white/30">·</span>
-                <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-white/55">
-                  {item.vertical}
-                </span>
-              </div>
+              "{item.quote}"
+            </p>
 
-              <p
-                className="text-white mb-4"
-                style={{
-                  fontSize: "clamp(14px, 1.5vw, 16px)",
-                  lineHeight: 1.45,
-                  fontWeight: 500,
-                  letterSpacing: "-0.005em",
-                }}
-              >
-                "{item.quote}"
-              </p>
-
-              <div className="flex items-center gap-2.5">
-                <img
-                  src={item.photo}
-                  alt={item.name}
-                  className="w-9 h-9 rounded-full object-cover shrink-0"
-                  style={{
-                    border: "1px solid rgba(255,255,255,0.15)",
-                  }}
-                />
-                <div className="min-w-0">
-                  <p className="text-white text-[12px] font-bold tracking-tight truncate">
-                    {item.name}
-                  </p>
-                  <p className="text-[10px] text-white/55 truncate">
-                    {item.role} <span className="text-white/30">·</span> {item.revenue}
-                  </p>
-                </div>
+            {/* author */}
+            <div className="relative flex items-center gap-2.5 mb-5">
+              <img
+                src={item.photo}
+                alt={item.name}
+                className="w-9 h-9 rounded-full object-cover shrink-0"
+                style={{ border: "1px solid rgba(255,255,255,0.15)" }}
+              />
+              <div className="min-w-0">
+                <p className="text-white text-[12px] font-bold tracking-tight truncate">
+                  {item.name}
+                </p>
+                <p className="text-[10px] text-white/55 truncate">
+                  {item.role} <span className="text-white/30">·</span> {item.revenue}
+                </p>
               </div>
             </div>
 
-            {/* light bottom — before / after / savings */}
-            <div
-              className="p-5 sm:p-6"
-              style={{
-                background: "linear-gradient(180deg, #f1f5fb 0%, #e8eef7 100%)",
-              }}
-            >
-              <div className="grid grid-cols-3 items-center gap-3">
-                <div className="text-center">
-                  <p className="text-[9px] uppercase tracking-[0.22em] font-bold text-slate-500 mb-1">
-                    Before
-                  </p>
-                  <p
-                    className="font-black tabular-nums text-slate-400"
-                    style={{
-                      fontSize: "clamp(16px, 2.2vw, 20px)",
-                      letterSpacing: "-0.02em",
-                      lineHeight: 1,
-                      textDecoration: "line-through",
-                    }}
-                  >
-                    {item.before}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-[9px] uppercase tracking-[0.22em] font-bold text-cyan-600 mb-1">
-                    After
-                  </p>
-                  <p
-                    className="font-black tabular-nums"
-                    style={{
-                      fontSize: "clamp(16px, 2.2vw, 20px)",
-                      letterSpacing: "-0.02em",
-                      lineHeight: 1,
-                      color: "#0284c7",
-                    }}
-                  >
-                    {item.after}
-                  </p>
-                </div>
-                <div className="text-center" style={{ borderLeft: "1px solid rgba(15,23,42,0.10)" }}>
-                  <p className="text-[9px] uppercase tracking-[0.22em] font-bold text-cyan-600 mb-1">
+            {/* divider */}
+            <div className="relative my-5 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+
+            {/* before / after / saved — all on dark */}
+            <div className="relative grid grid-cols-3 items-center gap-3">
+              <div className="text-center">
+                <p className="text-[9px] uppercase tracking-[0.22em] font-bold text-white/40 mb-1">
+                  Before
+                </p>
+                <p
+                  className="font-black tabular-nums text-white/50"
+                  style={{
+                    fontSize: "clamp(16px, 2.2vw, 20px)",
+                    letterSpacing: "-0.02em",
+                    lineHeight: 1,
+                    textDecoration: "line-through",
+                  }}
+                >
+                  {item.before}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-[9px] uppercase tracking-[0.22em] font-bold text-cyan-300/80 mb-1">
+                  After
+                </p>
+                <p
+                  className="font-black tabular-nums text-cyan-300"
+                  style={{
+                    fontSize: "clamp(16px, 2.2vw, 20px)",
+                    letterSpacing: "-0.02em",
+                    lineHeight: 1,
+                  }}
+                >
+                  {item.after}
+                </p>
+              </div>
+              <div className="text-center" style={{ borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
+                <div className="inline-flex items-center gap-1 mb-1">
+                  <TrendingUp size={9} className="text-cyan-300" />
+                  <p className="text-[9px] uppercase tracking-[0.22em] font-bold text-cyan-300/80">
                     Saved
                   </p>
-                  <p
-                    className="font-black tabular-nums"
-                    style={{
-                      fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-                      fontSize: "clamp(20px, 2.8vw, 26px)",
-                      letterSpacing: "-0.03em",
-                      lineHeight: 0.95,
-                      background:
-                        "linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                    }}
-                  >
-                    {item.savings}
-                  </p>
-                  <p className="text-[9px] text-slate-500 mt-0.5">/year</p>
                 </div>
+                <p
+                  className="font-black tabular-nums"
+                  style={{
+                    fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                    fontSize: "clamp(20px, 2.8vw, 26px)",
+                    letterSpacing: "-0.03em",
+                    lineHeight: 0.95,
+                    background:
+                      "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #22d3ee 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    filter: "drop-shadow(0 0 16px rgba(34,211,238,0.35))",
+                  }}
+                >
+                  {item.savings}
+                </p>
+                <p className="text-[9px] text-white/40 mt-0.5">/year</p>
               </div>
             </div>
           </motion.div>
