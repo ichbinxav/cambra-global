@@ -24,7 +24,7 @@ const STEPS = [
     bg: "bg-green-500/[0.07] border-green-500/20",
     title: "Unlock network rates",
     desc: "Access deals at collective scale — payment rates, shipping contracts, SaaS licenses.",
-    time: "1 click", stat: "1.4%", statLabel: "payment rate",
+    time: "1 click", stat: "Tier", statLabel: "payment benchmark",
   },
   {
     num: "04", icon: BarChart2, color: "text-purple-500",

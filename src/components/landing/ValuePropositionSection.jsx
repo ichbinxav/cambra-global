@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { AlertCircle } from "lucide-react";
 
 const CATEGORIES = [
-  { name: "Payments", status: "Inefficient", pct: 78, color: "#EF4444", sub: "2.8% avg vs 1.4% benchmark" },
+  { name: "Payments", status: "Inefficient", pct: 78, color: "#EF4444", sub: "2.8% avg vs tier benchmark" },
   { name: "Logistics", status: "Warning", pct: 55, color: "#F97316", sub: "€0.80–1.20/parcel above market" },
   { name: "SaaS Stack", status: "Fragmented", pct: 42, color: "#8B5CF6", sub: "Avg 3.2 redundant tools detected" },
   { name: "Banking & FX", status: "Inefficient", pct: 61, color: "#EF4444", sub: "Non-benchmarked FX & fees" },

@@ -10,7 +10,7 @@ import NetworkDataBadge from "@/components/shared/NetworkDataBadge";
  */
 
 const SIGNALS = [
-  { id: "psp",         Icon: CreditCard, t: "Payments · Online PSP",           delta: "+0.3pp / txn",    state: "drift", value: "1.7%",  peer: "1.4%",  saving: 6200 },
+  { id: "psp",         Icon: CreditCard, t: "Payments · Online PSP",           delta: "+0.3pp / txn",    state: "drift", value: "1.7%",  peer: "tier",  saving: 6200 },
   { id: "tpv",         Icon: CreditCard, t: "Payments · Physical TPV",         delta: "+€0.18 / txn",    state: "drift", value: "€0.92", peer: "€0.74", saving: 3000 },
   { id: "carrier",     Icon: Package,    t: "Logistics · Carrier overcharges", delta: "+€0.40 / parcel", state: "drift", value: "€5.80", peer: "€5.40", saving: 4200 },
   { id: "fulfillment", Icon: Package,    t: "Logistics · 3PL storage",         delta: "+12% pallet·mo",  state: "drift", value: "€68",   peer: "€60",   saving: 3200 },

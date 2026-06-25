@@ -20,7 +20,7 @@ function useCounter(target, duration = 1.8, delay = 0) {
 }
 
 const SAVINGS = [
-  { label: "Payments", amount: "€12,400", pct: "2.8% → 1.4%", color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac", icon: CreditCard },
+  { label: "Payments", amount: "€12,400", pct: "2.8% → tier benchmark", color: "text-cambra-lilac", bg: "bg-cambra-lilac-soft border-cambra-lilac", icon: CreditCard },
   { label: "Logistics", amount: "€8,200", pct: "+22% above benchmark", color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint", icon: Truck },
   { label: "SaaS Stack", amount: "€5,800", pct: "3 redundant tools", color: "text-cambra-plum", bg: "bg-cambra-plum-soft border-cambra-plum", icon: Package },
   { label: "Banking & Insurance", amount: "€3,200", pct: "FX + coverage overlap", color: "text-cambra-mint", bg: "bg-cambra-mint-soft border-cambra-mint", icon: CreditCard },

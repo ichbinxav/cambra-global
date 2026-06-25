@@ -6,7 +6,7 @@ export default function SavingsEstimator() {
   const [monthlySaaS, setMonthlySaaS] = useState(2500);
 
   // Assumptions aligned with Analyzer defaults:
-  // Payments: 2.9% → 1.4% (delta 1.5%) on revenue
+  // Payments: 2.9% → tier benchmark (typical delta ~1.5pp) on revenue
   // Shipping: -18% on declared shipping spend
   // SaaS: -30% on declared SaaS spend
   const estimate = useMemo(() => {

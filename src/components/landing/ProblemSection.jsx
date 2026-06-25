@@ -10,7 +10,7 @@ const PROBLEMS = [
     icon: CreditCard,
     metric: "2.9%",
     label: "Avg. payment fee",
-    benchmark: "Network: 1.4%",
+    benchmark: "Network: tier benchmark",
     delta: "You overpay by 107%",
     annual: "€18K–€38K/yr lost",
     color: "text-blue-600",

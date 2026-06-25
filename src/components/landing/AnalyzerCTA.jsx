@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 
 const rows = [
-  { icon: CreditCard, label: "Payment fees", current: "2.9%", network: "1.4%", saving: "€8,400/yr", color: "text-cambra-lilac" },
+  { icon: CreditCard, label: "Payment fees", current: "2.9%", network: "Tier", saving: "€8,400/yr", color: "text-cambra-lilac" },
   { icon: Truck, label: "Shipping rates", current: "Base retail", network: "−18%", saving: "€5,200/yr", color: "text-cambra-mint" },
   { icon: Package, label: "SaaS stack", current: "€2,500/mo", network: "€1,750/mo", saving: "€9,000/yr", color: "text-cambra-plum" },
 ];

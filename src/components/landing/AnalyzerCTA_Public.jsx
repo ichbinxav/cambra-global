@@ -127,7 +127,7 @@ export default function AnalyzerCTA_Public() {
             <span className="text-[9px] text-muted-foreground/25">€1.8M/yr revenue</span>
           </div>
           <div className="p-4 space-y-4">
-            <LiveBenchmarkBar label="Payments (online)" value={72} benchmark="1.4%" color="#EF4444" inView={inView} delay={0.3} />
+            <LiveBenchmarkBar label="Payments (online)" value={72} benchmark="tier" color="#EF4444" inView={inView} delay={0.3} />
             <LiveBenchmarkBar label="Logistics" value={58} benchmark="€5.80" color="#F97316" inView={inView} delay={0.45} />
             <LiveBenchmarkBar label="SaaS Stack" value={65} benchmark="€12K/yr" color="#8B5CF6" inView={inView} delay={0.6} />
             <LiveBenchmarkBar label="Banking & FX" value={48} benchmark="0.3%" color="#06B6D4" inView={inView} delay={0.75} />

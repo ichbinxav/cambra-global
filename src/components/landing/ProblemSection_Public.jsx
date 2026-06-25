@@ -3,10 +3,10 @@ import { motion, useInView } from "framer-motion";
 import { TrendingDown } from "lucide-react";
 
 const DRAINS = [
-  { label: "Payments", marker: "Silent drain", body: "Most businesses pay 2.4–3.2% on transactions. Benchmark: 1.4%. On €2M revenue, that's €20,000 in silent leakage annually.", color: "#EF4444", value: "€20K/yr" },
+  { label: "Payments", marker: "Silent drain", body: "Most businesses pay 2.4–3.2% on transactions. Benchmark depends on revenue tier and country. On €2M revenue, that's €20,000 in silent leakage annually.", color: "#EF4444", value: "€20K/yr" },
   { label: "Logistics", marker: "Above market", body: "Without volume leverage, shipping rates are set by individual negotiation. The collective benchmark is 15–22% below single-account rates.", color: "#F97316", value: "15–22%" },
   { label: "SaaS Stack", marker: "Fragmented spend", body: "The average operator runs 6–11 SaaS tools. Benchmarking consistently finds 2–3 redundant or overpriced subscriptions per stack.", color: "#8B5CF6", value: "2–3 tools" },
-  { label: "Banking & FX", marker: "Unbenchmarked", body: "Business banking fees, FX spreads and card processing costs are rarely audited. Yet they compound silently across every transaction.", color: "#06B6D4", value: "0.8–1.4%" },
+  { label: "Banking & FX", marker: "Unbenchmarked", body: "Business banking fees, FX spreads and card processing costs are rarely audited. Yet they compound silently across every transaction.", color: "#06B6D4", value: "0.8–1.5%" },
   { label: "Insurance", marker: "Over-insured", body: "Most SMEs carry overlapping or outdated coverage. Broker commissions, unnecessary riders and auto-renewals inflate premiums 20–35% above market.", color: "#10B981", value: "20–35%" },
 ];
 

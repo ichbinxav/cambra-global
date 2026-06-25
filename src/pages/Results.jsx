@@ -40,7 +40,7 @@ const BREAKDOWN_META = [
 ];
 
 const UNLOCKS = [
-  { title: "Improve payment economics", desc: "Network-benchmarked effective rate · ~1.4% target", saving: "Up to −52%", cat: "Payments", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
+  { title: "Improve payment economics", desc: "Network-benchmarked effective rate · tier-aware target", saving: "Up to −52%", cat: "Payments", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
   { title: "Unlock collective logistics terms", desc: "Carrier + 3PL rates benchmarked against high-volume operators", saving: "−18% avg.", cat: "Logistics", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
   { title: "Consolidate Commerce SaaS stack", desc: "Group licensing on Klaviyo, Gorgias, Shopify and others", saving: "Up to −30%", cat: "Commerce SaaS", textColor: "text-foreground", bg: "bg-secondary/40 border-border/60" },
 ];
