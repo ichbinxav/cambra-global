@@ -153,7 +153,7 @@ function Hero() {
               textShadow: "0 0 60px rgba(59,130,246,0.18)",
             }}
           >
-            You're overpaying.
+            Stop overpaying.
             <br />
             <span
               style={{
