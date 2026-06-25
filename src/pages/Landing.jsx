@@ -178,7 +178,7 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
           >
-            CAMBRA benchmarks your payments, shipping and SaaS against a network of independent brands — and recovers what you're losing. <span className="text-white">Free until we save you money.</span>
+            Most independent brands overpay <span className="text-white">15–30%</span> on payments, shipping and SaaS. CAMBRA benchmarks every line against our network and recovers what's yours. <span className="text-white">You keep 75%. We only get paid when you do.</span>
           </motion.p>
 
           <motion.div
@@ -196,7 +196,7 @@ function Hero() {
                     "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
                 }}
               >
-                See what you're losing — Free
+                Find what you're losing — 3 min
                 <ArrowRight size={16} />
               </Link>
             </motion.div>
@@ -212,7 +212,7 @@ function Hero() {
                 background: "rgba(255,255,255,0.02)",
               }}
             >
-              See the receipts
+              See a sample report
             </motion.a>
           </motion.div>
 
