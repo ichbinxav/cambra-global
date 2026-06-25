@@ -46,6 +46,8 @@ import AdminControl from '@/pages/admin/AdminControl';
 import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
 import AdminRecommendations from '@/pages/admin/AdminRecommendations';
 import AuthRedirect from '@/pages/AuthRedirect';
+import LoginGate from '@/pages/LoginGate';
+import CookieConsent from '@/components/shared/CookieConsent';
 import Pricing from '@/pages/Pricing.jsx';
 import Developers from '@/pages/Developers.jsx';
 import DevelopersMCP from '@/pages/DevelopersMCP.jsx';
@@ -102,22 +104,15 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
-          <h1 className="text-lg font-bold mb-2">Sign-in required</h1>
-          <p className="text-sm text-muted-foreground mb-4">Open the login window and return automatically.</p>
-          <a
-            href="/auth/start"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold"
-          >
-            Sign in
-          </a>
-        </div>
-      </div>
-    );
+    // Persist the originally requested URL so LoginGate / AuthRedirect can restore it.
+    try {
+      const currentPath = window.location.pathname + window.location.search + window.location.hash;
+      if (currentPath && currentPath !== '/LoginGate') {
+        sessionStorage.setItem('cambra_redirect_after_login', currentPath);
+      }
+    } catch (e) { /* noop */ }
+    const next = encodeURIComponent(window.location.pathname + window.location.search);
+    return <Navigate to={`/LoginGate?next=${next}`} replace />;
   }
 
   return children;
@@ -196,14 +191,13 @@ const AuthenticatedApp = () => {
         <Route path="/onboarding" element={<Navigate to="/Onboarding" replace />} />
         <Route path="/BrandProfile" element={withBoundary(<BrandProfile />)} />
         <Route path="/brandprofile" element={<Navigate to="/BrandProfile" replace />} />
-        <Route path="/Analyzer" element={withBoundary(<Analyzer />)} />
-        <Route path="/ConnectTools" element={withBoundary(<ConnectTools />)} />
-        <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
+        <Route path="/LoginGate" element={withBoundary(<LoginGate />)} />
+        <Route path="/logingate" element={<Navigate to="/LoginGate" replace />} />
         <Route path="/StripeAnalyzer" element={withBoundary(<StripeAnalyzer />)} />
         <Route path="/stripeanalyzer" element={<Navigate to="/StripeAnalyzer" replace />} />
-        <Route path="/Results" element={withBoundary(<Results />)} />
         <Route path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
         <Route path="/results" element={<Navigate to="/Results" replace />} />
+        <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
         <Route path="/Privacy" element={withBoundary(<Privacy />)} />
         <Route path="/privacy" element={<Navigate to="/Privacy" replace />} />
         <Route path="/Terms" element={withBoundary(<Terms />)} />
@@ -233,6 +227,12 @@ const AuthenticatedApp = () => {
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
+        {/* Protected routes WITHOUT dashboard chrome (analyzer / connect flow) */}
+        <Route path="/Analyzer" element={<ProtectedRoute>{withBoundary(<Analyzer />)}</ProtectedRoute>} />
+        <Route path="/Results" element={<ProtectedRoute>{withBoundary(<Results />)}</ProtectedRoute>} />
+        <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />
+
+        {/* Protected routes WITH dashboard chrome */}
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="/Dashboard" element={withBoundary(<Dashboard />)} />
           <Route path="/Reports" element={withBoundary(<Reports />)} />
@@ -283,6 +283,7 @@ function App() {
                 <AuthenticatedApp />
                 <CopilotPanel />
                 <CopilotObservations />
+                <CookieConsent />
               </Router>
               <Toaster />
             </QueryClientProvider>

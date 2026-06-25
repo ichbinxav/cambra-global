@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   ArrowRight, CheckCircle2, AlertTriangle, Sparkles,
   CreditCard, Truck, Package, Plug, Building2, Store, Mail, Headphones, Users, Wifi, Layers,
+  TrendingUp as TrendingUpIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
@@ -173,17 +174,40 @@ export default function Dashboard() {
                 {t("state_a_cta")} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <div className="flex flex-wrap justify-center gap-2 mt-7">
-              {[t("auto_detection"), t("bench_comparison"), t("savings_calc")].map(p => (
-                <span
-                  key={p}
-                  className="text-[11px] px-3 py-1.5 rounded-full text-white/55 font-medium"
-                  style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
+          </div>
+        </div>
+
+        {/* Feature hint cards */}
+        <div className="max-w-3xl mx-auto px-4 pb-6 -mt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { icon: Plug, title: t("auto_detection"), desc: t("ct_page_sub") },
+              { icon: Layers, title: t("bench_comparison"), desc: t("benchmarked_against", { n: "100+", country: "EU" }) },
+              { icon: TrendingUpIcon, title: t("savings_calc"), desc: t("measured_cumulative") },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div
+                key={title}
+                className="rounded-2xl p-4 sm:p-5 text-left"
+                style={{
+                  background: "rgba(255,255,255,0.025)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                }}
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center mb-3"
+                  style={{
+                    background: "rgba(34,211,238,0.08)",
+                    border: "1px solid rgba(34,211,238,0.20)",
+                  }}
                 >
-                  {p}
-                </span>
-              ))}
-            </div>
+                  <Icon size={14} className="text-cyan-300" />
+                </div>
+                <p className="text-[13px] font-bold text-white mb-1">{title}</p>
+                <p className="text-[11px] text-white/55 leading-snug line-clamp-2">{desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

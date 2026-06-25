@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, Quote, TrendingUp } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const ITEMS = [
   {
@@ -95,14 +94,10 @@ export default function TestimonialsCarousel() {
         </h2>
 
         {/* Unified dark card — no split */}
-        <AnimatePresence mode="wait">
-          <motion.div
+        <div className="animate-fade-up">
+          <div
             key={idx}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="relative rounded-2xl overflow-hidden p-6 sm:p-7"
+            className="relative rounded-2xl overflow-hidden p-6 sm:p-7 animate-fade-up"
             style={{
               background: "linear-gradient(180deg, #0b1020 0%, #07090f 100%)",
               border: "1px solid rgba(255,255,255,0.10)",
@@ -226,8 +221,8 @@ export default function TestimonialsCarousel() {
                 <p className="text-[9px] text-white/40 mt-0.5">/year</p>
               </div>
             </div>
-          </motion.div>
-        </AnimatePresence>
+          </div>
+        </div>
 
         {/* Controls */}
         <div className="mt-4 flex items-center justify-between">

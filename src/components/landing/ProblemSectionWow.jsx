@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { TrendingDown, Truck, Layers, AlertTriangle } from "lucide-react";
 import SectionLabel from "@/components/shared/SectionLabel";
 import AnimatedSection from "@/components/landing/AnimatedSection";
@@ -78,15 +77,11 @@ function Card({ item, index }) {
   const barFill = inView ? item.overpayPct : 0;
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.7, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -4 }}
-      className="relative rounded-2xl p-6 sm:p-7 h-full group overflow-hidden"
+      className="relative rounded-2xl p-6 sm:p-7 h-full group overflow-hidden animate-fade-up transition-transform hover:-translate-y-1"
       style={{
+        animationDelay: `${index * 120}ms`,
         background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)",
         border: "1px solid rgba(255,255,255,0.10)",
         boxShadow: "0 20px 50px -25px rgba(0,0,0,0.5)",
@@ -171,21 +166,20 @@ function Card({ item, index }) {
           className="h-1.5 rounded-full overflow-hidden"
           style={{ background: "rgba(255,255,255,0.06)" }}
         >
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${barFill}%` }}
-            transition={{ duration: 1.4, delay: 0.4 + index * 0.15, ease: [0.22, 1, 0.36, 1] }}
+          <div
             className="h-full rounded-full"
             style={{
               background: item.accent,
               opacity: 0.7,
+              width: `${barFill}%`,
+              transition: `width 1.4s cubic-bezier(0.22, 1, 0.36, 1) ${400 + index * 150}ms`,
             }}
           />
         </div>
       </div>
 
       <p className="relative text-[13px] text-white/55 leading-relaxed">{item.body}</p>
-    </motion.div>
+    </div>
   );
 }
 
@@ -256,31 +250,33 @@ export default function ProblemSectionWow() {
         </div>
 
         {/* Cinematic total reveal */}
-        <motion.div
+        <div
           ref={totalRef}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-10 rounded-2xl p-6 sm:p-8 overflow-hidden"
+          className="relative mt-10 rounded-2xl p-6 sm:p-8 overflow-hidden animate-fade-up"
           style={{
+            animationDelay: "300ms",
             background: "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(236,72,153,0.04) 100%)",
             border: "1px solid rgba(239,68,68,0.20)",
             boxShadow: "0 20px 60px -30px rgba(239,68,68,0.4)",
           }}
         >
-          {/* pulsing glow */}
-          <motion.div
+          {/* pulsing glow — pure CSS */}
+          <div
             aria-hidden
-            className="absolute pointer-events-none"
+            className="absolute pointer-events-none cambra-pulse-glow"
             style={{
               width: 400, height: 400, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
               background: "radial-gradient(circle, rgba(239,68,68,0.15) 0%, transparent 70%)",
               filter: "blur(60px)",
             }}
-            animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.9, 0.5] }}
-            transition={{ duration: 4, ease: "easeInOut", repeat: Infinity }}
           />
+          <style>{`
+            @keyframes cambraPulseGlow {
+              0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+              50%      { opacity: 0.9; transform: translate(-50%, -50%) scale(1.15); }
+            }
+            .cambra-pulse-glow { animation: cambraPulseGlow 4s ease-in-out infinite; }
+          `}</style>
 
           <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -327,7 +323,7 @@ export default function ProblemSectionWow() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
