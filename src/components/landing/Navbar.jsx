@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ArrowRight, Plug, BookOpen, Tag, HelpCircle, Mail, LayoutDashboard, BarChart3, Users, Settings, Shield, Sparkles, Activity } from "lucide-react";
 import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useAuth } from "@/lib/AuthContext";
-import MobileNavMenu from "@/components/landing/MobileNavMenu";
+import MobileNavMenu from "@/components/landing/MobileNavMenu.jsx";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
 
