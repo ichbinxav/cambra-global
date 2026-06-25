@@ -30,11 +30,11 @@
     },
     "estimated_current_cost_monthly": {
       "type": "number",
-      "description": "Legacy field \u2014 kept for backward compatibility with existing records. Not written by current code."
+      "description": "Legacy field. Not written by current code."
     },
     "estimated_optimized_cost_monthly": {
       "type": "number",
-      "description": "Legacy field \u2014 kept for backward compatibility with existing records. Not written by current code."
+      "description": "Legacy field. Not written by current code."
     },
     "computed_at": {
       "type": "string",
