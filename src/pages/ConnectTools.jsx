@@ -13,6 +13,7 @@ import { CONNECTORS as CONNECTOR_IDS } from "@/lib/connectors.config.js";
 import Navbar from "@/components/landing/Navbar";
 import ConnectStatsBar from "@/components/connect/ConnectStatsBar.jsx";
 import DarkConnectorCard from "@/components/connect/DarkConnectorCard.jsx";
+import StripeConnectCard from "@/components/connect/StripeConnectCard.jsx";
 
 const CATEGORIES = ["All", "Payments", "Logistics", "Commerce SaaS"];
 
@@ -323,6 +324,9 @@ export default function ConnectTools() {
         {/* MODE: Connect */}
         {activeMode === "connect" && (
           <div className="space-y-4">
+            {/* Stripe — live data connection (M3) */}
+            <StripeConnectCard />
+
             {/* Direct connections (OAuth) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <ConnectorTile

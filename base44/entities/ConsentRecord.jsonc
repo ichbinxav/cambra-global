@@ -1,0 +1,73 @@
+{
+  "name": "ConsentRecord",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string",
+      "description": "Brand this consent belongs to."
+    },
+    "provider": {
+      "type": "string",
+      "description": "External provider (e.g. 'stripe')."
+    },
+    "scope": {
+      "type": "string",
+      "description": "Human-readable description of what access was granted (e.g. 'read_only')."
+    },
+    "granted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revoked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked",
+        "expired"
+      ],
+      "default": "active"
+    },
+    "access_token_ref": {
+      "type": "string",
+      "description": "Opaque reference ID for the access token \u2014 NEVER the raw token."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Provider-specific connection metadata. NEVER contains raw credentials."
+    }
+  },
+  "required": [
+    "brand_id",
+    "provider"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    }
+  }
+}

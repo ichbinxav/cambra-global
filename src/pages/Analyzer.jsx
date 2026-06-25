@@ -185,11 +185,28 @@ export default function Analyzer() {
 
     const tpeProvider = data.tpe_provider === "Other" ? customTpe : data.tpe_provider;
 
+    // M3 — Upgrade payment_fee_pct from live Stripe connection if available
+    let stripeConnected = false;
+    let stripePaymentFeePct = null;
+    try {
+      const existingBrand = await base44.entities.Brand.list("-created_date", 1).catch(() => []);
+      const currentBrandId = existingBrand[0]?.id;
+      if (currentBrandId) {
+        const stripeConn = await base44.entities.StripeConnection
+          .filter({ brand_id: currentBrandId, connection_status: "connected" }, "-last_sync_at", 1)
+          .catch(() => []);
+        if (stripeConn.length && stripeConn[0].effective_fee_pct > 0) {
+          stripeConnected = true;
+          stripePaymentFeePct = stripeConn[0].effective_fee_pct;
+        }
+      }
+    } catch (_) { /* non-fatal */ }
+
     const inputData = {
       monthly_revenue: data.monthly_revenue,
       avg_order_value: data.avg_order_value,
       intl_pct: data.intl_pct,
-      payment_fee_pct: data.payment_fee_pct,
+      payment_fee_pct: stripeConnected ? stripePaymentFeePct : data.payment_fee_pct,
       monthly_shipping_cost: data.monthly_shipping_cost,
       monthly_shipments: data.monthly_shipments,
       total_saas_spend: data.total_saas_spend,
@@ -273,7 +290,7 @@ export default function Analyzer() {
       if (uploadedFile) filled += 2; // weight upload
       return Math.min(100, Math.round((filled / total) * 100));
     })();
-    const confidence = completeness >= 80 ? "high" : completeness >= 50 ? "medium" : "low";
+    const confidence = stripeConnected ? "high" : (completeness >= 80 ? "high" : completeness >= 50 ? "medium" : "low");
 
     const result = await base44.entities.AnalyzerResult.create({
       brand_id: brandId,
@@ -296,6 +313,7 @@ export default function Analyzer() {
         "All-in effective rate used for TPV (variable + fixed amortized)",
         "Estimates do not account for contractual lock-ins or termination fees",
         `Score engine: v${ENGINE_VERSION.score} · Savings model: v${ENGINE_VERSION.savings} · Benchmarks: v${ENGINE_VERSION.benchmark}`,
+        ...(stripeConnected ? ["Payment fee rate sourced from live Stripe connection — not manual input"] : []),
       ],
       benchmark_source: "network_internal",
       verification_status: "pending_verification",

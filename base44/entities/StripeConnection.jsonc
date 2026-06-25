@@ -1,0 +1,101 @@
+{
+  "name": "StripeConnection",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string",
+      "description": "Brand this Stripe connection belongs to."
+    },
+    "stripe_account_id": {
+      "type": "string",
+      "description": "Stripe account ID, e.g. acct_xxx. NOT a credential."
+    },
+    "connection_status": {
+      "type": "string",
+      "enum": [
+        "connected",
+        "disconnected",
+        "error"
+      ],
+      "default": "connected"
+    },
+    "last_sync_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "monthly_volume": {
+      "type": "number",
+      "description": "Last 30d total successful charge volume."
+    },
+    "effective_fee_pct": {
+      "type": "number",
+      "description": "Computed effective rate = total_fees / monthly_volume * 100."
+    },
+    "total_fees_monthly": {
+      "type": "number"
+    },
+    "total_transactions": {
+      "type": "number"
+    },
+    "avg_order_value": {
+      "type": "number"
+    },
+    "fee_breakdown": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "pct": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Breakdown by fee type from Stripe balance transactions."
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR"
+    },
+    "data_as_of": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the Stripe data was last fetched."
+    },
+    "confidence_level": {
+      "type": "string",
+      "enum": [
+        "connected",
+        "verified"
+      ],
+      "default": "connected"
+    }
+  },
+  "required": [
+    "brand_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
