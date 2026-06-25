@@ -27,7 +27,7 @@ export default function AnimatedCounter({
   const [inView, setInView] = useState(false);
   const ref = useRef(null);
 
-  // Visibility detection
+  // Visibility detection — with Safari/iOS fallback timer so we never stay invisible.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -38,7 +38,9 @@ export default function AnimatedCounter({
       { threshold: 0.25 }
     );
     io.observe(el);
-    return () => io.disconnect();
+    // Safari/iOS fallback: force visible after 300ms if observer never fires.
+    const fallback = setTimeout(() => setInView(true), 300);
+    return () => { io.disconnect(); clearTimeout(fallback); };
   }, []);
 
   // Count up

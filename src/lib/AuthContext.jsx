@@ -51,6 +51,29 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
     }, 8000);
 
+    // FIX B2 — Re-read access_token from the URL at auth-check time. Safari/iOS
+    // sometimes lands here before app-params.js could persist the token (private
+    // mode, slow storage init). Read it live, persist it, clean the URL.
+    let liveToken = appParams.token;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get("access_token");
+      if (urlToken) {
+        liveToken = urlToken;
+        try { window.localStorage.setItem("base44_access_token", urlToken); } catch { /* ignore */ }
+        urlParams.delete("access_token");
+        const newUrl = window.location.pathname +
+          (urlParams.toString() ? "?" + urlParams.toString() : "") +
+          window.location.hash;
+        window.history.replaceState({}, document.title, newUrl);
+      } else if (!liveToken) {
+        try {
+          const stored = window.localStorage.getItem("base44_access_token");
+          if (stored) liveToken = stored;
+        } catch { /* ignore */ }
+      }
+    } catch { /* ignore */ }
+
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
@@ -61,7 +84,7 @@ export const AuthProvider = ({ children }) => {
         const res = await fetch(`/api/apps/public/prod/public-settings/by-id/${appParams.appId}`, {
           headers: {
             'X-App-Id': appParams.appId,
-            ...(appParams.token ? { 'Authorization': `Bearer ${appParams.token}` } : {})
+            ...(liveToken ? { 'Authorization': `Bearer ${liveToken}` } : {})
           },
           credentials: 'include'
         });
@@ -76,7 +99,7 @@ export const AuthProvider = ({ children }) => {
         setAppPublicSettings(publicSettings);
         
         // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token) {
+        if (liveToken) {
           await checkUserAuth();
         } else {
           setIsLoadingAuth(false);

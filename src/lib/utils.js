@@ -12,5 +12,8 @@ export const isIframe = typeof window !== 'undefined' && window.self !== window.
 export const isBot = (() => {
   if (typeof navigator === 'undefined') return true; // headless render → treat as bot
   const ua = (navigator.userAgent || '').toLowerCase();
-  return /googlebot|google-inspectiontool|googleweblight|adsbot-google|pagespeed|chrome-lighthouse|lighthouse|headlesschrome|rendertron|puppeteer|playwright|bingbot|slurp|duckduckbot|baiduspider|yandex|semrush|ahrefs|crawler|crawl|spider|facebookexternalhit|twitterbot|linkedinbot|embedly|quora link preview|pinterest|vkshare|bitlybot|whatsapp|telegrambot|discordbot|urlinspector|python-requests|postmanruntime|curl|wget|httpclient/.test(ua) || navigator.webdriver === true;
+  // Genuine crawlers / automation only — do NOT match in-app browsers
+  // (whatsapp, telegram, instagram, facebookexternalhit, linkedinbot, etc.)
+  // which real human users open the app from on mobile.
+  return /googlebot|google-inspectiontool|googleweblight|adsbot-google|pagespeed|chrome-lighthouse|lighthouse|headlesschrome|rendertron|puppeteer|playwright|bingbot|slurp|duckduckbot|baiduspider|yandex|semrush|ahrefs|crawler|crawl|spider|urlinspector|python-requests|postmanruntime|curl|wget|httpclient/.test(ua) || navigator.webdriver === true;
 })();

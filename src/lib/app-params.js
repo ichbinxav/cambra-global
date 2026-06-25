@@ -1,6 +1,19 @@
 const isNode = typeof window === 'undefined';
 const windowObj = isNode ? { localStorage: new Map() } : window;
-const storage = windowObj.localStorage;
+
+// Safe storage wrapper — Safari private mode and some iOS in-app browsers
+// throw on localStorage access. Never let storage errors crash auth init.
+const safeStorage = {
+	getItem(key) {
+		try { return windowObj.localStorage.getItem(key); } catch { return null; }
+	},
+	setItem(key, val) {
+		try { windowObj.localStorage.setItem(key, val); } catch { /* ignore */ }
+	},
+	removeItem(key) {
+		try { windowObj.localStorage.removeItem(key); } catch { /* ignore */ }
+	},
+};
 
 const toSnakeCase = (str) => {
 	return str.replace(/([A-Z])/g, '_$1').toLowerCase();
@@ -20,14 +33,14 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 		window.history.replaceState({}, document.title, newUrl);
 	}
 	if (searchParam) {
-		storage.setItem(storageKey, searchParam);
+		safeStorage.setItem(storageKey, searchParam);
 		return searchParam;
 	}
 	if (defaultValue) {
-		storage.setItem(storageKey, defaultValue);
+		safeStorage.setItem(storageKey, defaultValue);
 		return defaultValue;
 	}
-	const storedValue = storage.getItem(storageKey);
+	const storedValue = safeStorage.getItem(storageKey);
 	if (storedValue) {
 		return storedValue;
 	}
@@ -36,8 +49,8 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 
 const getAppParams = () => {
 	if (getAppParamValue("clear_access_token") === 'true') {
-		storage.removeItem('base44_access_token');
-		storage.removeItem('token');
+		safeStorage.removeItem('base44_access_token');
+		safeStorage.removeItem('token');
 	}
 	return {
 		appId: getAppParamValue("app_id", { defaultValue: import.meta.env.VITE_BASE44_APP_ID }),
