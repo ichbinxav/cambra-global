@@ -102,23 +102,17 @@ function LandingNavbar() {
           </Link>
         </div>
 
-        {/* Mobile right side — hamburger + compact CTA */}
+        {/* Mobile right side — hamburger only (CTA lives in Hero + drawer) */}
         <div className="flex md:hidden items-center gap-2">
-          <Link
-            to="/Analyzer"
-            className="inline-flex items-center rounded-full px-3.5 py-1.5 text-[12px] font-bold bg-white text-black hover:opacity-90"
-          >
-            {t("nav_get_started")}
-          </Link>
           <button
             type="button"
             onClick={() => setMobileOpen(v => !v)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
-            className="inline-flex items-center justify-center h-9 w-9 rounded-full text-white"
+            className="inline-flex items-center justify-center h-10 w-10 rounded-full text-white"
             style={{ border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.04)" }}
           >
-            {mobileOpen ? <X size={16} /> : <Menu size={16} />}
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </nav>
@@ -143,6 +137,16 @@ function LandingNavbar() {
             }}
           >
             <nav className="px-6 py-6 flex flex-col gap-1">
+              <Link
+                to="/Analyzer"
+                onClick={() => setMobileOpen(false)}
+                className="mb-4 inline-flex items-center justify-center gap-2 rounded-full bg-white text-black px-5 py-3.5 font-bold text-[14px]"
+                style={{ boxShadow: "0 18px 40px -16px rgba(34,211,238,0.5)" }}
+              >
+                <Sparkles size={14} />
+                {t("nav_get_started")}
+                <ArrowRight size={14} />
+              </Link>
               <a
                 href="#how"
                 onClick={() => setMobileOpen(false)}
