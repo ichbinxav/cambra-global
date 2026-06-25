@@ -599,6 +599,31 @@ export default function Analyzer() {
     setTimeout(() => navigate(`/Results?id=${result.id}`), 700);
   };
 
+  // CANARY — if you can read this banner in the app preview, the Analyzer
+  // module imported and rendered all hooks successfully. If you don't see it,
+  // the failure is in module-level imports (a sibling file throws at import).
+  if (typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("canary") === "1") {
+    return (
+      <div style={{
+        padding: 32,
+        background: "#fff7ed",
+        border: "2px solid #fb923c",
+        borderRadius: 12,
+        color: "#0a0a0a",
+        fontFamily: "system-ui",
+      }}>
+        <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}>
+          ✅ Analyzer canary OK
+        </h1>
+        <p style={{ fontSize: 14, color: "#525252" }}>
+          The Analyzer module loaded and all hooks ran successfully.
+          Remove ?canary=1 from the URL to see the real form.
+        </p>
+      </div>
+    );
+  }
+
   // ── If running, render full-screen progress overlay ──
   if (running) {
     const monthlyRev = midpointForRange(revenueRange);
