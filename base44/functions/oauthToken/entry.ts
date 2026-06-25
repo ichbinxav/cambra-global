@@ -128,7 +128,10 @@ Deno.serve(async (req) => {
       access_token_last4: accessToken.slice(-4),
       refresh_token_hash: await sha256Hex(refreshToken),
       refresh_token_last4: refreshToken.slice(-4),
-      client_id, user_email: ac.user_email, scopes: ac.scopes,
+      client_id,
+      user_email: ac.user_email,
+      organization_id: ac.organization_id || null, // FIX 2 — carry tenant scope from auth code
+      scopes: ac.scopes,
       access_token_expires_at: new Date(now + ACCESS_TTL_SECONDS * 1000).toISOString(),
       refresh_token_expires_at: new Date(now + REFRESH_TTL_SECONDS * 1000).toISOString(),
       status: "active",
@@ -161,7 +164,10 @@ Deno.serve(async (req) => {
       access_token_last4: accessToken.slice(-4),
       refresh_token_hash: await sha256Hex(refreshTokenNew),
       refresh_token_last4: refreshTokenNew.slice(-4),
-      client_id, user_email: tok.user_email, scopes: tok.scopes,
+      client_id,
+      user_email: tok.user_email,
+      organization_id: tok.organization_id || null, // FIX 2 — preserve tenant scope on refresh
+      scopes: tok.scopes,
       access_token_expires_at: new Date(now + ACCESS_TTL_SECONDS * 1000).toISOString(),
       refresh_token_expires_at: new Date(now + REFRESH_TTL_SECONDS * 1000).toISOString(),
       status: "active",

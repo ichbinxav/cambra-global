@@ -22,6 +22,10 @@
     "user_email": {
       "type": "string"
     },
+    "organization_id": {
+      "type": "string",
+      "description": "Tenant scope. If null, this token is user-scoped (by user_email) \u2014 NEVER platform-level."
+    },
     "scopes": {
       "type": "array",
       "items": {

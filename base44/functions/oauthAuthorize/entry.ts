@@ -83,6 +83,16 @@ Deno.serve(async (req) => {
     return Response.redirect(new URL(loginUrl, url.origin), 302);
   }
 
+  // FIX 2 — resolve the user's organization membership (best-effort).
+  // Persisted on the AuthorizationCode and then carried into the issued OAuthToken.
+  let organization_id = null;
+  try {
+    const members = await base44.asServiceRole.entities.OrganizationMember
+      .filter({ user_email: user.email, status: "active" }, "-created_date", 1)
+      .catch(() => []);
+    if (members?.[0]?.organization_id) organization_id = members[0].organization_id;
+  } catch { /* org lookup is best-effort */ }
+
   const requestedScopes = scope.split(/[\s,]+/).filter(Boolean);
   const invalidScopes = requestedScopes.filter((s) => !app.allowed_scopes.includes(s));
   if (invalidScopes.length) return new Response(`invalid_scope: ${invalidScopes.join(", ")}`, { status: 400 });
@@ -100,6 +110,7 @@ Deno.serve(async (req) => {
       code_hash: await sha256Hex(code),
       client_id,
       user_email: user.email,
+      organization_id, // FIX 2
       redirect_uri,
       scopes: requestedScopes,
       code_challenge,
@@ -117,7 +128,8 @@ Deno.serve(async (req) => {
   if (app.is_first_party) {
     const code = randomToken("cmb_ac_");
     await base44.asServiceRole.entities.OAuthAuthorizationCode.create({
-      code_hash: await sha256Hex(code), client_id, user_email: user.email, redirect_uri,
+      code_hash: await sha256Hex(code), client_id, user_email: user.email, organization_id,
+      redirect_uri,
       scopes: requestedScopes, code_challenge, code_challenge_method,
       expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(), used: false,
     });

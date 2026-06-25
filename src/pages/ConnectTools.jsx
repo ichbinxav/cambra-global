@@ -16,16 +16,17 @@ const CATEGORY_ORDER = [
   "marketing", "finance", "support", "hr", "telecom",
 ];
 
+// Maps category keys to their i18n keys and icons. Labels resolved via t() at render.
 const CATEGORY_META = {
-  payments:  { label: "Payments",  icon: CreditCard },
-  commerce:  { label: "Commerce",  icon: Store },
-  banking:   { label: "Banking",   icon: Building2 },
-  shipping:  { label: "Shipping",  icon: Truck },
-  marketing: { label: "Marketing", icon: Mail },
-  finance:   { label: "Finance",   icon: Layers },
-  support:   { label: "Support",   icon: Headphones },
-  hr:        { label: "HR",        icon: Users },
-  telecom:   { label: "Telecom",   icon: Wifi },
+  payments:  { labelKey: "payments_title",  fallback: "Payments",  icon: CreditCard },
+  commerce:  { labelKey: "stripe_section",  fallback: "Commerce",  icon: Store },
+  banking:   { labelKey: "field_banking_fees_label", fallback: "Banking", icon: Building2 },
+  shipping:  { labelKey: "shipping_title",  fallback: "Shipping",  icon: Truck },
+  marketing: { labelKey: "saas_title",      fallback: "Marketing", icon: Mail },
+  finance:   { labelKey: "saas_title",      fallback: "Finance",   icon: Layers },
+  support:   { labelKey: "saas_title",      fallback: "Support",   icon: Headphones },
+  hr:        { labelKey: "saas_title",      fallback: "HR",        icon: Users },
+  telecom:   { labelKey: "saas_title",      fallback: "Telecom",   icon: Wifi },
 };
 
 function timeAgo(iso) {
@@ -249,14 +250,15 @@ export default function ConnectTools() {
 
           if (items.length === 0) return null;
 
-          const meta = CATEGORY_META[catKey] || { label: catKey, icon: Layers };
+          const meta = CATEGORY_META[catKey] || { labelKey: null, fallback: catKey, icon: Layers };
           const Icon = meta.icon;
+          const label = meta.labelKey ? t(meta.labelKey) : meta.fallback;
 
           return (
             <section key={catKey} className="space-y-2.5">
               <div className="sticky top-14 z-10 -mx-5 px-5 py-2.5 bg-background/95 backdrop-blur-md border-b border-border/30 flex items-center gap-2">
-                <Icon size={13} className="text-muted-foreground" />
-                <h2 className="text-sm font-black tracking-tight">{meta.label}</h2>
+                <Icon size={13} className="text-muted-foreground" aria-hidden="true" />
+                <h2 className="text-sm font-black tracking-tight">{label}</h2>
                 <span className="text-xs text-muted-foreground/60 tabular-nums">({items.length})</span>
               </div>
               <div className="space-y-2">

@@ -7,153 +7,45 @@
     <link rel="apple-touch-icon" href="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png" sizes="180x180" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" />
-    <title>CAMBRA — The operating layer behind independent brands</title>
-    <meta name="description" content="CAMBRA helps independent brands improve operating margins through collective infrastructure, benchmarks, provider access, and smarter operating economics." />
-    <!-- Social preview -->
-    <meta property="og:title" content="CAMBRA — The operating layer behind independent brands" />
-    <meta property="og:description" content="Benchmark your operating costs, access collective infrastructure deals and improve margins across payments, shipping, software and suppliers." />
-    <meta property="og:image" content="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png" />
+
+    <title>CAMBRA — Infrastructure Cost Intelligence</title>
+    <meta name="description" content="CAMBRA benchmarks your payment fees, shipping costs and SaaS spend against 400+ European brands." />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="CAMBRA — Infrastructure Cost Intelligence" />
+    <meta property="og:description" content="Find where you overpay and recover margin automatically." />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png" />
     <meta property="og:site_name" content="CAMBRA" />
     <meta property="og:url" content="https://cambra.global/" />
 
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="CAMBRA — The operating layer behind independent brands" />
-    <meta name="twitter:description" content="Benchmark your operating costs, access collective infrastructure deals and improve margins across payments, shipping, software and suppliers." />
+    <meta name="twitter:title" content="CAMBRA — Infrastructure Cost Intelligence" />
+    <meta name="twitter:description" content="Find where you overpay and recover margin automatically." />
     <meta name="twitter:image" content="https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png" />
-    <meta name="twitter:url" content="https://cambra.global/" />
 
     <!-- Crawling & theme -->
-    <link rel="canonical" href="https://cambra.global/" />
+    <link rel="canonical" href="https://cambra.global" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#0A1024" />
-    
+
     <!-- JSON-LD Schema for SEO -->
     <script type="application/ld+json">{
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "CAMBRA",
-      "brand": "CAMBRA",
-      "legalName": "CAMBRA Collective"
-    }</script>
-    <script type="application/ld+json">{
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "CAMBRA",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web"
+      "url": "https://cambra.global",
+      "legalName": "CAMBRA Global"
     }</script>
   </head>
   <body>
-    <div id="root">
-  <!-- Full static landing prerender; React will replace on hydration -->
-  <div id="prerender-landing" style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;color:#0a0a0a">
-    <style>
-      .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
-      .nav{position:fixed;top:0;left:0;right:0;height:56px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;z-index:10}
-      .nav a{color:#111827;text-decoration:none;font-weight:600;font-size:14px;margin:0 10px}
-      .hero{padding:88px 0 32px;margin-top:56px}
-      .h1{font-size:52px;line-height:1.05;margin:0 0 12px;font-weight:900;letter-spacing:-0.02em}
-      .grad{background:linear-gradient(135deg,#1F4ED8,#2CA7C1);-webkit-background-clip:text;background-clip:text;color:transparent}
-      .lead{font-size:18px;color:#4b5563;max-width:760px}
-      .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
-      .btn{display:inline-block;padding:12px 18px;border-radius:999px;font-weight:800;text-decoration:none}
-      .btn-primary{background:#0a0a0a;color:#fff}
-      .btn-outline{border:1px solid #0a0a0a;color:#0a0a0a}
-      .bullets{margin:16px 0 0;padding:0;list-style:none;max-width:760px}
-      .bullets li{margin:6px 0;padding-left:22px;position:relative;color:#111827}
-      .bullets li:before{content:"✓";position:absolute;left:0;color:#2CA7C1;font-weight:bold}
-      section{padding:28px 0;border-top:1px solid #e5e7eb}
-      h2{font-size:34px;line-height:1.1;margin:0 0 8px;font-weight:900;letter-spacing:-0.02em}
-      .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-      .card{border:1px solid #e5e7eb;border-radius:14px;padding:16px;background:#fff}
-      .foot{padding:28px 0;border-top:1px solid #e5e7eb;color:#4b5563;font-size:14px}
-      @media (max-width:640px){.h1{font-size:38px}}
-    </style>
-
-    <!-- Navbar -->
-    <div class="nav">
-      <div class="wrap" style="display:flex;align-items:center;justify-content:space-between">
-        <a href="/" aria-label="CAMBRA" style="font-weight:900;letter-spacing:0.08em">CAMBRA</a>
-        <nav>
-          <a href="#how">Cómo funciona</a>
-          <a href="/Analyzer">Analyzer</a>
-          <a href="/Onboarding">Unirse</a>
-        </nav>
-      </div>
-    </div>
-
-    <!-- Hero -->
-    <div class="hero">
-      <div class="wrap">
-        <h1 class="h1">Independent brands. <span class="grad">Collective leverage.</span></h1>
-        <p class="lead">CAMBRA ayuda a marcas independientes a mejorar sus márgenes operativos con mejores condiciones en pagos, logística y SaaS mediante escala colectiva.</p>
-        <ul class="bullets">
-          <li>Accede a tarifas que no puedes conseguir solo</li>
-          <li>Detecta al instante dónde estás sobrepagando</li>
-          <li>Reduce costes de infraestructura en todo tu stack</li>
-        </ul>
-        <div class="cta">
-          <a class="btn btn-primary" href="/Onboarding">Join the Founding Brands →</a>
-          <a class="btn btn-outline" href="/Analyzer">Run the Cost Analyzer →</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Credibility -->
-    <section>
-      <div class="wrap cols">
-        <div class="card"><strong>Para comercio independiente</strong><br/>Moda, belleza, wellness y lifestyle; online y retail.</div>
-        <div class="card"><strong>Enfocado en costes reales</strong><br/>Pagos, envíos y SaaS primero.</div>
-        <div class="card"><strong>Escala colectiva</strong><br/>Condiciones que superan negociaciones individuales.</div>
-      </div>
-    </section>
-
-    <!-- Propuesta de valor -->
-    <section>
-      <div class="wrap">
-        <h2>Reduce costes operativos con infraestructura colectiva</h2>
-        <p class="lead">Agregamos marcas, identificamos fugas y activamos mejores términos con mínimo cambio operativo.</p>
-        <div class="cols" style="margin-top:10px">
-          <div class="card">Ver dónde sobrepagas</div>
-          <div class="card">Acceso inmediato a mejores tarifas</div>
-          <div class="card">Pagas solo cuando hay ahorro real</div>
-          <div class="card">Mejora de margen sin crecer ventas</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Cómo funciona (ancla #how) -->
-    <section id="how">
-      <div class="wrap cols">
-        <div class="card"><strong>1) Analiza</strong><br/>Sube datos o conecta herramientas y comparamos con benchmarks.</div>
-        <div class="card"><strong>2) Activa</strong><br/>Desbloquea términos estructurales con proveedores.</div>
-        <div class="card"><strong>3) Ahorra</strong><br/>Seguimiento mensual y verificación del ahorro.</div>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="foot">
-      <div class="wrap" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <div>© CAMBRA · Infraestructura para marcas independientes</div>
-        <div>
-          <a href="/Privacy" style="margin-right:12px;color:#111827">Privacidad</a>
-          <a href="/Terms" style="color:#111827">Términos</a>
-        </div>
-      </div>
-    </footer>
-  </div>
-</div>
+    <div id="root"></div>
     <noscript>
-      <style>
-        .noscript-hero{max-width:960px;margin:80px auto 40px;padding:0 20px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;color:#0a0a0a}
-        .noscript-cta{display:inline-block;margin-top:14px;padding:10px 16px;border-radius:999px;background:#0a0a0a;color:#fff;font-weight:700;text-decoration:none}
-        .noscript-sub{color:#666;margin-top:8px}
-      </style>
-      <div class="noscript-hero">
-        <h1>Turn your infrastructure into your leverage.</h1>
-        <p class="noscript-sub">CAMBRA aggregates independent brands into one infrastructure layer to unlock enterprise‑level pricing and terms across payments, shipping and SaaS.</p>
-        <a class="noscript-cta" href="/Analyzer">Run your cost analysis →</a>
+      <div style="max-width:960px;margin:80px auto 40px;padding:0 20px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;color:#0a0a0a">
+        <h1>CAMBRA — Infrastructure Cost Intelligence</h1>
+        <p style="color:#666;margin-top:8px">Benchmarks your payment fees, shipping costs and SaaS spend against 400+ European brands. Find where you overpay and recover margin automatically.</p>
+        <a style="display:inline-block;margin-top:14px;padding:10px 16px;border-radius:999px;background:#0a0a0a;color:#fff;font-weight:700;text-decoration:none" href="/Analyzer">Run your free analysis →</a>
       </div>
     </noscript>
     <script type="module" src="/src/main.jsx"></script>

@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { LanguageProvider } from '@/lib/i18n.jsx';
@@ -12,8 +12,10 @@ import { base44 } from '@/api/base44Client';
 import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding.jsx';
 import Analyzer from '@/pages/Analyzer';
-import Results from '@/pages/Results';
-import Dashboard from '@/pages/Dashboard';
+// FIX 13 — Lazy load heavy pages (Results, Dashboard, ConnectTools + heavy admin pages)
+const Results       = lazy(() => import('@/pages/Results'));
+const Dashboard     = lazy(() => import('@/pages/Dashboard'));
+const ConnectTools  = lazy(() => import('@/pages/ConnectTools'));
 import Reports from '@/pages/Reports';
 import Network from '@/pages/Network';
 import Insights from '@/pages/Insights';
@@ -24,20 +26,19 @@ import RecoveryTracker from '@/pages/RecoveryTracker';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import Cookies from '@/pages/Cookies';
-import ConnectTools from '@/pages/ConnectTools';
 import StripeAnalyzer from '@/pages/StripeAnalyzer';
 import DevExport from '@/pages/DevExport';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import AdminLayout from '@/pages/admin/AdminLayout';
-import AdminOverview from '@/pages/admin/AdminOverview';
+const AdminOverview   = lazy(() => import('@/pages/admin/AdminOverview'));
+const AdminRevenue    = lazy(() => import('@/pages/admin/AdminRevenue'));
+const AdminBenchmarks = lazy(() => import('@/pages/admin/AdminBenchmarks'));
 import AdminUsers from '@/pages/admin/AdminUsers';
 import AdminUserDetail from '@/pages/admin/AdminUserDetail';
 import AdminApplications from '@/pages/admin/AdminApplications';
 import AdminPipeline from '@/pages/admin/AdminPipeline';
 import AdminDeals from '@/pages/admin/AdminDeals';
 import AdminProviders from '@/pages/admin/AdminProviders';
-import AdminRevenue from '@/pages/admin/AdminRevenue';
-import AdminBenchmarks from '@/pages/admin/AdminBenchmarks';
 import AdminContracts from '@/pages/admin/AdminContracts';
 import AdminIntegrations from '@/pages/admin/AdminIntegrations';
 import AdminApiIntegrations from '@/pages/admin/AdminApiIntegrations';
@@ -62,12 +63,29 @@ import BrandGlyph from '@/components/shared/BrandGlyph';
 import CopilotPanel from '@/components/copilot/CopilotPanel.jsx';
 import CopilotObservations from '@/components/copilot/CopilotObservations.jsx';
 import ScrollToTop from '@/components/shared/ScrollToTop.jsx';
+import ErrorBoundary from '@/components/shared/ErrorBoundary.jsx';
+import { ToastProvider } from '@/components/shared/Toast.jsx';
 
+// FIX 13 — Dark-style fallback shown while lazy chunks load
+function LazyFallback() {
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center"
+      style={{ background: "#0a0a0a" }}
+      role="status"
+      aria-live="polite"
+    >
+      <div className="h-10 w-10 text-white/90" style={{ animation: 'spin 4s linear infinite' }}>
+        <BrandGlyph className="h-10 w-10" />
+      </div>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
 
-
-
-
-
+// Wrap a route element in a per-route ErrorBoundary so one page crash does not
+// take down the whole app.
+const withBoundary = (element) => <ErrorBoundary>{element}</ErrorBoundary>;
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoadingAuth } = useAuth();
@@ -165,119 +183,112 @@ const AuthenticatedApp = () => {
 
   if (!isPublicLanding && authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
-    // Don't redirect for auth_required — let the app show public pages
   }
 
-  // redacted debug log removed for security
   return (
-    <>
+    <Suspense fallback={<LazyFallback />}>
       <Routes>
-        {/* Public-first landing — always accessible without auth */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/Landing" element={<Landing />} />
+        {/* Public */}
+        <Route path="/" element={withBoundary(<Landing />)} />
+        <Route path="/Landing" element={withBoundary(<Landing />)} />
         <Route path="/landing" element={<Navigate to="/Landing" replace />} />
-        <Route path="/Onboarding" element={<Onboarding />} />
+        <Route path="/Onboarding" element={withBoundary(<Onboarding />)} />
         <Route path="/onboarding" element={<Navigate to="/Onboarding" replace />} />
-        <Route path="/BrandProfile" element={<BrandProfile />} />
+        <Route path="/BrandProfile" element={withBoundary(<BrandProfile />)} />
         <Route path="/brandprofile" element={<Navigate to="/BrandProfile" replace />} />
-        <Route path="/Analyzer" element={<Analyzer />} />
-        <Route path="/ConnectTools" element={<ConnectTools />} />
+        <Route path="/Analyzer" element={withBoundary(<Analyzer />)} />
+        <Route path="/ConnectTools" element={withBoundary(<ConnectTools />)} />
         <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
-        <Route path="/StripeAnalyzer" element={<StripeAnalyzer />} />
+        <Route path="/StripeAnalyzer" element={withBoundary(<StripeAnalyzer />)} />
         <Route path="/stripeanalyzer" element={<Navigate to="/StripeAnalyzer" replace />} />
-        <Route path="/Results" element={<Results />} />
-        {/* Aliases (lowercase) to avoid Not Found when typed */}
+        <Route path="/Results" element={withBoundary(<Results />)} />
         <Route path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
         <Route path="/results" element={<Navigate to="/Results" replace />} />
-        <Route path="/Privacy" element={<Privacy />} />
+        <Route path="/Privacy" element={withBoundary(<Privacy />)} />
         <Route path="/privacy" element={<Navigate to="/Privacy" replace />} />
-        <Route path="/Terms" element={<Terms />} />
+        <Route path="/Terms" element={withBoundary(<Terms />)} />
         <Route path="/terms" element={<Navigate to="/Terms" replace />} />
-        <Route path="/Cookies" element={<Cookies />} />
+        <Route path="/Cookies" element={withBoundary(<Cookies />)} />
         <Route path="/cookies" element={<Navigate to="/Cookies" replace />} />
-        <Route path="/Snapshot" element={<Snapshot />} />
+        <Route path="/Snapshot" element={withBoundary(<Snapshot />)} />
         <Route path="/snapshot" element={<Navigate to="/Snapshot" replace />} />
-        {/* FIX 1 — /Deals is referenced in emails, recs and CTAs; redirect to UnlockSavings */}
         <Route path="/Deals" element={<Navigate to="/UnlockSavings" replace />} />
         <Route path="/deals" element={<Navigate to="/UnlockSavings" replace />} />
-        <Route path="/Pricing" element={<Pricing />} />
+        <Route path="/Pricing" element={withBoundary(<Pricing />)} />
         <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
-        <Route path="/Developers" element={<Developers />} />
+        <Route path="/Developers" element={withBoundary(<Developers />)} />
         <Route path="/developers" element={<Navigate to="/Developers" replace />} />
-        <Route path="/Developers/MCP" element={<DevelopersMCP />} />
+        <Route path="/Developers/MCP" element={withBoundary(<DevelopersMCP />)} />
         <Route path="/developers/mcp" element={<Navigate to="/Developers/MCP" replace />} />
-        <Route path="/HowItWorks" element={<HowItWorks />} />
+        <Route path="/HowItWorks" element={withBoundary(<HowItWorks />)} />
         <Route path="/howitworks" element={<Navigate to="/HowItWorks" replace />} />
-        <Route path="/Testimonials" element={<Testimonials />} />
+        <Route path="/Testimonials" element={withBoundary(<Testimonials />)} />
         <Route path="/testimonials" element={<Navigate to="/Testimonials" replace />} />
-        <Route path="/Contact" element={<Contact />} />
+        <Route path="/Contact" element={withBoundary(<Contact />)} />
         <Route path="/contact" element={<Navigate to="/Contact" replace />} />
-        <Route path="/Help" element={<Help />} />
+        <Route path="/Help" element={withBoundary(<Help />)} />
         <Route path="/help" element={<Navigate to="/Help" replace />} />
-        <Route path="/Help/:slug" element={<HelpCategory />} />
-        <Route path="/help/:slug" element={<HelpCategory />} />
+        <Route path="/Help/:slug" element={withBoundary(<HelpCategory />)} />
+        <Route path="/help/:slug" element={withBoundary(<HelpCategory />)} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
-
-
-
-
-
-
-
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-          <Route path="/Dashboard" element={<Dashboard />} />
-          <Route path="/Reports" element={<Reports />} />
-          <Route path="/Network" element={<Network />} />
-          <Route path="/Insights" element={<Insights />} />
-          <Route path="/InsightDetail" element={<InsightDetail />} />
-          <Route path="/Account" element={<Account />} />
-          <Route path="/UnlockSavings" element={<UnlockSavings />} />
-          <Route path="/RecoveryTracker" element={<RecoveryTracker />} />
-          <Route path="/Invoices" element={<Invoices />} />
-          <Route path="/Vault" element={<Vault />} />
+          <Route path="/Dashboard" element={withBoundary(<Dashboard />)} />
+          <Route path="/Reports" element={withBoundary(<Reports />)} />
+          <Route path="/Network" element={withBoundary(<Network />)} />
+          <Route path="/Insights" element={withBoundary(<Insights />)} />
+          <Route path="/InsightDetail" element={withBoundary(<InsightDetail />)} />
+          <Route path="/Account" element={withBoundary(<Account />)} />
+          <Route path="/UnlockSavings" element={withBoundary(<UnlockSavings />)} />
+          <Route path="/RecoveryTracker" element={withBoundary(<RecoveryTracker />)} />
+          <Route path="/Invoices" element={withBoundary(<Invoices />)} />
+          <Route path="/Vault" element={withBoundary(<Vault />)} />
         </Route>
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
-          <Route path="/admin" element={<AdminOverview />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/users/:id" element={<AdminUserDetail />} />
-          <Route path="/admin/applications" element={<AdminApplications />} />
-          <Route path="/admin/pipeline" element={<AdminPipeline />} />
-          <Route path="/admin/deals" element={<AdminDeals />} />
-          <Route path="/admin/providers" element={<AdminProviders />} />
-          <Route path="/admin/revenue" element={<AdminRevenue />} />
-          <Route path="/admin/benchmarks" element={<AdminBenchmarks />} />
-          <Route path="/admin/contracts" element={<AdminContracts />} />
-          <Route path="/admin/integrations" element={<AdminIntegrations />} />
-          <Route path="/admin/api-integrations" element={<AdminApiIntegrations />} />
-          <Route path="/admin/control" element={<AdminControl />} />
-          <Route path="/admin/recommendations" element={<AdminRecommendations />} />
-          <Route path="/admin/activation" element={<AdminActivationDetail />} />
-          <Route path="/admin/activation/:id" element={<AdminActivationDetail />} />
-          <Route path="/admin/invoices" element={<AdminInvoices />} />
+          <Route path="/admin" element={withBoundary(<AdminOverview />)} />
+          <Route path="/admin/users" element={withBoundary(<AdminUsers />)} />
+          <Route path="/admin/users/:id" element={withBoundary(<AdminUserDetail />)} />
+          <Route path="/admin/applications" element={withBoundary(<AdminApplications />)} />
+          <Route path="/admin/pipeline" element={withBoundary(<AdminPipeline />)} />
+          <Route path="/admin/deals" element={withBoundary(<AdminDeals />)} />
+          <Route path="/admin/providers" element={withBoundary(<AdminProviders />)} />
+          <Route path="/admin/revenue" element={withBoundary(<AdminRevenue />)} />
+          <Route path="/admin/benchmarks" element={withBoundary(<AdminBenchmarks />)} />
+          <Route path="/admin/contracts" element={withBoundary(<AdminContracts />)} />
+          <Route path="/admin/integrations" element={withBoundary(<AdminIntegrations />)} />
+          <Route path="/admin/api-integrations" element={withBoundary(<AdminApiIntegrations />)} />
+          <Route path="/admin/control" element={withBoundary(<AdminControl />)} />
+          <Route path="/admin/recommendations" element={withBoundary(<AdminRecommendations />)} />
+          <Route path="/admin/activation" element={withBoundary(<AdminActivationDetail />)} />
+          <Route path="/admin/activation/:id" element={withBoundary(<AdminActivationDetail />)} />
+          <Route path="/admin/invoices" element={withBoundary(<AdminInvoices />)} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
-    </>
+    </Suspense>
   );
 };
 
 function App() {
   return (
     <LanguageProvider>
-      <AuthProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router>
-            <ScrollToTop />
-            <AuthenticatedApp />
-            <CopilotPanel />
-            <CopilotObservations />
-          </Router>
-          <Toaster />
-        </QueryClientProvider>
-      </AuthProvider>
+      <ErrorBoundary>
+        <ToastProvider>
+          <AuthProvider>
+            <QueryClientProvider client={queryClientInstance}>
+              <Router>
+                <ScrollToTop />
+                <AuthenticatedApp />
+                <CopilotPanel />
+                <CopilotObservations />
+              </Router>
+              <Toaster />
+            </QueryClientProvider>
+          </AuthProvider>
+        </ToastProvider>
+      </ErrorBoundary>
     </LanguageProvider>
   );
 }

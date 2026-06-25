@@ -9,6 +9,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { useToast } from "@/components/shared/Toast.jsx";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function formatEurLocal(n, lang) {
@@ -76,6 +77,7 @@ function dataSourceLabel(node, t) {
 /* ── main ────────────────────────────────────────────────────── */
 export default function Results() {
   const { t, lang } = useTranslation();
+  const { toast } = useToast();
   const formatEur = (n) => formatEurLocal(n, lang);
   const [result, setResult] = useState(null);
   const [input, setInput] = useState(null);
@@ -147,11 +149,35 @@ export default function Results() {
     })();
   }, []);
 
+  // FIX 28 — Results skeleton: hero shimmer + 3 card shimmers + map shimmer
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center space-y-4">
-        <div className="w-10 h-10 rounded-full border-2 border-border border-t-foreground animate-spin mx-auto" />
-        <p className="text-sm text-muted-foreground">{t("progress_mapping")}</p>
+    <div className="min-h-screen bg-background">
+      <div className="relative max-w-4xl mx-auto px-5 py-10 pb-24 space-y-10">
+        {/* Hero shimmer */}
+        <section className="text-center" aria-busy="true" aria-label={t("progress_mapping")}>
+          <div className="mx-auto mb-5 h-6 w-28 rounded-full shimmer" />
+          <div className="mx-auto mb-3 h-4 w-44 rounded shimmer" />
+          <div className="mx-auto mb-4 h-[5rem] sm:h-[8rem] w-[18rem] sm:w-[24rem] rounded-2xl shimmer" />
+          <div className="mx-auto h-12 w-48 rounded-full shimmer" />
+        </section>
+        {/* Three card shimmers */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="p-5 rounded-2xl border border-border/40 space-y-3">
+              <div className="h-9 w-9 rounded-xl shimmer" />
+              <div className="h-3 w-24 rounded shimmer" />
+              <div className="h-3 w-32 rounded shimmer" />
+              <div className="h-7 w-28 rounded shimmer" />
+            </div>
+          ))}
+        </div>
+        {/* Infrastructure list shimmer */}
+        <div className="space-y-2">
+          <div className="h-4 w-40 rounded shimmer" />
+          {[0, 1, 2, 3].map(i => (
+            <div key={i} className="h-12 rounded-xl shimmer" />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -226,9 +252,12 @@ export default function Results() {
     const url = window.location.href;
     try {
       await navigator.clipboard.writeText(url);
+      // FIX 27 — surface "Link copied" via global toast system
+      toast.success(t("link_copied"));
       setToastMsg(t("link_copied"));
       setTimeout(() => setToastMsg(""), 2500);
     } catch (_) {
+      toast.error(t("copy_failed"));
       setToastMsg(t("copy_failed"));
       setTimeout(() => setToastMsg(""), 2500);
     }

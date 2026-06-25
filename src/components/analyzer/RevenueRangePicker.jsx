@@ -20,13 +20,18 @@ export function midpointForRange(key) {
 export default function RevenueRangePicker({ value, onChange }) {
   const { t } = useTranslation();
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+    // FIX 19: grid stays 2-col on mobile (375px), 5-col on >= sm, and each tile
+    // remains ≥44px tap target.
+    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
       {REVENUE_RANGES.map(r => {
         const active = value === r.key;
         return (
           <button
             key={r.key}
             type="button"
+            role="radio"
+            aria-checked={active}
+            aria-label={t(r.i18n)}
             onClick={() => onChange(r.key)}
             className={`min-h-[56px] px-3 py-3 rounded-xl border text-sm font-semibold text-center transition-all ${
               active

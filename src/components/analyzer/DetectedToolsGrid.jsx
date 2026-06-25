@@ -107,29 +107,34 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
                     </div>
                   </div>
 
+                  {/* FIX 19 — switch role with aria-checked + descriptive aria-label per tool */}
                   <button
                     type="button"
+                    role="switch"
+                    aria-checked={isDismissed}
+                    aria-label={`Dismiss ${t.provider_or_tool}`}
                     onClick={() => onToggle(key, "dismiss")}
-                    className={`w-11 h-11 rounded-full border flex items-center justify-center transition-colors ${
+                    className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border flex items-center justify-center transition-colors ${
                       isDismissed
                         ? "border-red-300 bg-red-50 text-red-600"
                         : "border-border/60 bg-white text-muted-foreground hover:border-red-300 hover:text-red-600"
                     }`}
-                    aria-label="Dismiss"
                   >
-                    <X size={16} />
+                    <X size={16} aria-hidden="true" />
                   </button>
                   <button
                     type="button"
+                    role="switch"
+                    aria-checked={isConfirmed}
+                    aria-label={`Confirm ${t.provider_or_tool}`}
                     onClick={() => onToggle(key, "confirm")}
-                    className={`w-11 h-11 rounded-full border flex items-center justify-center transition-colors ${
+                    className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border flex items-center justify-center transition-colors ${
                       isConfirmed
                         ? "border-emerald-400 bg-emerald-500 text-white"
                         : "border-border/60 bg-white text-muted-foreground hover:border-emerald-400 hover:text-emerald-600"
                     }`}
-                    aria-label="Confirm"
                   >
-                    <Check size={16} />
+                    <Check size={16} aria-hidden="true" />
                   </button>
                 </div>
               );

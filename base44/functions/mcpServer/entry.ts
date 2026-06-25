@@ -57,18 +57,39 @@ function money(amount, { period = "yearly", confidence = 0.85, source = "cambra-
   };
 }
 
-// Tenant isolation helpers — identical semantics to apiV1
+// Tenant isolation helpers — DENY BY DEFAULT (FIX 4)
+// Mirrors apiV1: OAuth tokens without organization_id are NEVER platform-level.
+function isPlatformPrincipal(principal) {
+  return principal.type === "api_key" && !principal.raw?.organization_id;
+}
 function tenantFilter(principal, extra = {}) {
   const orgId = principal.raw?.organization_id;
-  return orgId ? { ...extra, organization_id: orgId } : extra;
+  if (orgId) return { ...extra, organization_id: orgId };
+  if (isPlatformPrincipal(principal)) return extra;
+  const userEmail = principal.user_email || principal.raw?.user_email;
+  if (!userEmail) return { ...extra, _impossible_tenant_match: "__no_identity__" };
+  return { ...extra, created_by: userEmail };
+}
+function tenantFilterByCreatedBy(principal, extra = {}) {
+  if (isPlatformPrincipal(principal)) return extra;
+  const userEmail = principal.user_email || principal.raw?.user_email;
+  if (!userEmail) return { ...extra, _impossible_tenant_match: "__no_identity__" };
+  return { ...extra, created_by: userEmail };
 }
 function assertTenant(principal, resource) {
+  if (!resource) return null;
   const orgId = principal.raw?.organization_id;
-  if (!orgId || !resource) return resource;
-  if (resource.organization_id && resource.organization_id !== orgId) {
+  if (orgId) {
+    if (resource.organization_id && resource.organization_id === orgId) return resource;
     const e = new Error("not_found"); e.code = "not_found"; throw e;
   }
-  return resource;
+  if (isPlatformPrincipal(principal)) return resource;
+  const userEmail = principal.user_email || principal.raw?.user_email;
+  if (!userEmail) {
+    const e = new Error("not_found"); e.code = "not_found"; throw e;
+  }
+  if (resource.created_by && resource.created_by === userEmail) return resource;
+  const e = new Error("not_found"); e.code = "not_found"; throw e;
 }
 
 // -----------------------------------------------------------------------------
@@ -254,11 +275,12 @@ const TOOLS = [
     description: "AI summary of a brand: latest infrastructure analysis, recoverable margin across payments / logistics / SaaS, and infrastructure score.",
     inputSchema: { type: "object", properties: { brand_id: { type: "string" } }, required: ["brand_id"] },
     scope: "read:brands",
-    handler: async (base44, args) => {
+    handler: async (base44, args, principal) => {
       const [brand, analyses] = await Promise.all([
         base44.asServiceRole.entities.Brand.get(args.brand_id),
         base44.asServiceRole.entities.AnalyzerResult.filter({ brand_id: args.brand_id }, "-created_date", 5),
       ]);
+      assertTenant(principal, brand); // FIX 4
       const latest = analyses[0];
       return {
         brand: serializeBrand(brand),
@@ -276,11 +298,15 @@ const TOOLS = [
     description: "List the latest infrastructure analyses with savings breakdown.",
     inputSchema: { type: "object", properties: { limit: { type: "number", default: 50 }, brand_id: { type: "string" } } },
     scope: "read:analyses",
-    handler: async (base44, args) => {
+    handler: async (base44, args, principal) => {
       const limit = Math.min(args.limit || 50, 200);
-      const items = args.brand_id
-        ? await base44.asServiceRole.entities.AnalyzerResult.filter({ brand_id: args.brand_id }, "-created_date", limit)
-        : await base44.asServiceRole.entities.AnalyzerResult.list("-created_date", limit);
+      // FIX 4 — tenant scope by created_by/org; if brand_id provided, also verify ownership
+      if (args.brand_id) {
+        const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch(() => null);
+        assertTenant(principal, brand);
+      }
+      const filter = tenantFilterByCreatedBy(principal, args.brand_id ? { brand_id: args.brand_id } : {});
+      const items = await base44.asServiceRole.entities.AnalyzerResult.filter(filter, "-created_date", limit);
       return { analyses: items.map(serializeAnalysis), count: items.length };
     },
   },
@@ -289,7 +315,10 @@ const TOOLS = [
     description: "Get one analysis by id (includes infra score, payment/shipping/SaaS breakdown).",
     inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     scope: "read:analyses",
-    handler: async (base44, args) => serializeAnalysis(await base44.asServiceRole.entities.AnalyzerResult.get(args.id)),
+    handler: async (base44, args, principal) => {
+      const a = await base44.asServiceRole.entities.AnalyzerResult.get(args.id).catch(() => null);
+      return serializeAnalysis(assertTenant(principal, a));
+    },
   },
   {
     name: "trigger_analysis",
@@ -309,7 +338,10 @@ const TOOLS = [
       required: ["brand_id"],
     },
     scope: "trigger:analysis",
-    handler: async (base44, args) => {
+    handler: async (base44, args, principal) => {
+      // FIX 4 — verify brand ownership before creating analyzer input
+      const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch(() => null);
+      assertTenant(principal, brand);
       const input = await base44.asServiceRole.entities.AnalyzerInput.create({ ...args });
       return { triggered: true, input_id: input.id, brand_id: args.brand_id, status: "queued" };
     },
@@ -321,11 +353,15 @@ const TOOLS = [
     description: "List per-brand savings (monthly / yearly current vs optimized cost).",
     inputSchema: { type: "object", properties: { limit: { type: "number", default: 50 }, brand_id: { type: "string" } } },
     scope: "read:savings",
-    handler: async (base44, args) => {
+    handler: async (base44, args, principal) => {
       const limit = Math.min(args.limit || 50, 200);
-      const items = args.brand_id
-        ? await base44.asServiceRole.entities.BrandSavings.filter({ brand_id: args.brand_id }, "-computed_at", limit)
-        : await base44.asServiceRole.entities.BrandSavings.list("-computed_at", limit);
+      // FIX 4 — tenant isolation
+      if (args.brand_id) {
+        const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch(() => null);
+        assertTenant(principal, brand);
+      }
+      const filter = tenantFilterByCreatedBy(principal, args.brand_id ? { brand_id: args.brand_id } : {});
+      const items = await base44.asServiceRole.entities.BrandSavings.filter(filter, "-computed_at", limit);
       return {
         savings: items.map((s) => ({
           id: s.id, brand_id: s.brand_id,
@@ -346,11 +382,15 @@ const TOOLS = [
     description: "List deal activation trackers (projected vs realized savings, status).",
     inputSchema: { type: "object", properties: { limit: { type: "number", default: 50 }, brand_id: { type: "string" } } },
     scope: "read:trackers",
-    handler: async (base44, args) => {
+    handler: async (base44, args, principal) => {
       const limit = Math.min(args.limit || 50, 200);
-      const items = args.brand_id
-        ? await base44.asServiceRole.entities.DealActivation.filter({ brand_id: args.brand_id }, "-created_date", limit)
-        : await base44.asServiceRole.entities.DealActivation.list("-created_date", limit);
+      // FIX 4 — tenant isolation
+      if (args.brand_id) {
+        const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch(() => null);
+        assertTenant(principal, brand);
+      }
+      const filter = tenantFilterByCreatedBy(principal, args.brand_id ? { brand_id: args.brand_id } : {});
+      const items = await base44.asServiceRole.entities.DealActivation.filter(filter, "-created_date", limit);
       return { trackers: items.map(serializeTracker), count: items.length };
     },
   },
@@ -369,7 +409,10 @@ const TOOLS = [
       required: ["id"],
     },
     scope: "update:trackers",
-    handler: async (base44, args) => {
+    handler: async (base44, args, principal) => {
+      // FIX 4 — load first, assert ownership, only then update
+      const existing = await base44.asServiceRole.entities.DealActivation.get(args.id).catch(() => null);
+      assertTenant(principal, existing);
       const allowed = ["status", "realized_savings_monthly", "realized_savings_yearly", "activated_savings_yearly"];
       const updates = { last_updated: new Date().toISOString() };
       for (const k of allowed) if (args[k] !== undefined) updates[k] = args[k];
@@ -395,8 +438,9 @@ const TOOLS = [
     description: "List uploaded documents (invoices, statements, contracts).",
     inputSchema: { type: "object", properties: { limit: { type: "number", default: 50 } } },
     scope: "read:documents",
-    handler: async (base44, args) => {
-      const items = await base44.asServiceRole.entities.Document.list("-created_date", Math.min(args.limit || 50, 200));
+    handler: async (base44, args, principal) => {
+      const filter = tenantFilterByCreatedBy(principal);
+      const items = await base44.asServiceRole.entities.Document.filter(filter, "-created_date", Math.min(args.limit || 50, 200));
       return { documents: items, count: items.length };
     },
   },
@@ -426,11 +470,14 @@ const TOOLS = [
     description: "Aggregated platform KPIs: brands, analyses, activations, total identified savings, total activated savings.",
     inputSchema: { type: "object", properties: {} },
     scope: "read:kpis",
-    handler: async (base44) => {
+    handler: async (base44, _args, principal) => {
+      // FIX 4 — KPIs are tenant-scoped
+      const brandFilter = tenantFilter(principal);
+      const byCreated = tenantFilterByCreatedBy(principal);
       const [brands, analyses, activations] = await Promise.all([
-        base44.asServiceRole.entities.Brand.list("-created_date", 1000),
-        base44.asServiceRole.entities.AnalyzerResult.list("-created_date", 1000),
-        base44.asServiceRole.entities.DealActivation.list("-created_date", 1000).catch(() => []),
+        base44.asServiceRole.entities.Brand.filter(brandFilter, "-created_date", 1000),
+        base44.asServiceRole.entities.AnalyzerResult.filter(byCreated, "-created_date", 1000),
+        base44.asServiceRole.entities.DealActivation.filter(byCreated, "-created_date", 1000).catch(() => []),
       ]);
       return {
         brands_count: brands.length,
@@ -449,9 +496,12 @@ const TOOLS = [
     scope: "read:kpis",
     handler: async (base44, _args, principal) => {
       const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      // FIX 4 — tenant scope
+      const brandF = tenantFilter(principal, { created_date: { $gte: since } });
+      const byCreated = tenantFilterByCreatedBy(principal, { created_date: { $gte: since } });
       const [newAnalyses, newBrands] = await Promise.all([
-        base44.asServiceRole.entities.AnalyzerResult.filter({ created_date: { $gte: since } }, "-created_date", 200).catch(() => []),
-        base44.asServiceRole.entities.Brand.filter({ created_date: { $gte: since } }, "-created_date", 200).catch(() => []),
+        base44.asServiceRole.entities.AnalyzerResult.filter(byCreated, "-created_date", 200).catch(() => []),
+        base44.asServiceRole.entities.Brand.filter(brandF, "-created_date", 200).catch(() => []),
       ]);
       const total = newAnalyses.reduce((s, a) => s + (a.total_savings || 0), 0);
       const briefing = {
@@ -478,8 +528,9 @@ const TOOLS = [
     description: "List third-party integrations connected to CAMBRA (Stripe, Shopify, carriers…).",
     inputSchema: { type: "object", properties: {} },
     scope: "read:integrations",
-    handler: async (base44) => {
-      const items = await base44.asServiceRole.entities.IntegrationConnection.list("-created_date", 200);
+    handler: async (base44, _args, principal) => {
+      const filter = tenantFilterByCreatedBy(principal); // FIX 4
+      const items = await base44.asServiceRole.entities.IntegrationConnection.filter(filter, "-created_date", 200);
       return {
         integrations: items.map((c) => ({ id: c.id, type: c.integration_type, name: c.integration_name, status: c.status, last_sync: c.last_sync, data_freshness_hours: c.data_freshness_hours })),
         count: items.length,

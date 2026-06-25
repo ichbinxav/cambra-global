@@ -227,39 +227,54 @@ async function logActivity(base44, ctx) {
 }
 
 // -----------------------------------------------------------------------------
-// Tenant isolation — every list query is automatically scoped to the principal's
-// organization when the key/token carries one. Platform-level keys (no org_id)
-// see everything (admin scope required for write actions).
+// Tenant isolation — DENY BY DEFAULT (FIX 2 / FIX 3 / FIX 4)
+//
+// Rules:
+//   - API keys may carry organization_id; absence = platform-level (admin scope still required for writes).
+//   - OAuth tokens with organization_id → scope by organization_id.
+//   - OAuth tokens WITHOUT organization_id but WITH user_email → scope by created_by/user_email.
+//   - OAuth tokens with NEITHER → return an impossible filter (deny by default).
+//   - OAuth tokens are NEVER treated as platform-level just because organization_id is missing.
 // -----------------------------------------------------------------------------
-function tenantFilter(principal, extra = {}) {
-  const orgId = principal.raw?.organization_id;
-  if (!orgId) return extra; // platform-level
-  return { ...extra, organization_id: orgId };
+function isPlatformPrincipal(principal) {
+  // Only API keys without an org may be "platform-level" — never OAuth tokens.
+  return principal.type === "api_key" && !principal.raw?.organization_id;
 }
 
-// FIX 13 — fallback filter for entities that don't carry organization_id but
-// do have created_by. Returns { created_by: <principal user email> } when an
-// org-scoped principal exists; an empty object for platform-level principals.
-function tenantFilterByCreatedBy(principal, extra = {}) {
+function tenantFilter(principal, extra = {}) {
   const orgId = principal.raw?.organization_id;
-  if (!orgId) return extra; // platform-level
-  const userEmail = principal.user_email || principal.raw?.user_email || principal.raw?.owner_email;
-  if (!userEmail) return { ...extra, _impossible_tenant_match: "__no_user__" }; // deny-by-default
+  if (orgId) return { ...extra, organization_id: orgId };
+  if (isPlatformPrincipal(principal)) return extra; // platform API key — admin scope still required for writes
+  // OAuth without org_id → fall through to created_by below; if neither works, deny.
+  const userEmail = principal.user_email || principal.raw?.user_email;
+  if (!userEmail) return { ...extra, _impossible_tenant_match: "__no_identity__" };
   return { ...extra, created_by: userEmail };
 }
 
-// Validate that a single fetched resource belongs to the principal's org.
+function tenantFilterByCreatedBy(principal, extra = {}) {
+  if (isPlatformPrincipal(principal)) return extra;
+  const userEmail = principal.user_email || principal.raw?.user_email || principal.raw?.owner_email;
+  if (!userEmail) return { ...extra, _impossible_tenant_match: "__no_identity__" }; // deny-by-default
+  return { ...extra, created_by: userEmail };
+}
+
+// Validate that a single fetched resource belongs to the principal's tenant.
+// Throws not_found if it doesn't (so cross-tenant probing leaks nothing).
 function assertTenant(principal, resource) {
-  const orgId = principal.raw?.organization_id;
-  if (!orgId) return resource; // platform-level
   if (!resource) return null;
-  if (resource.organization_id && resource.organization_id !== orgId) {
-    const err = new Error("not_found");
-    err.code = "not_found";
-    err.status = 404;
-    throw err;
+  const orgId = principal.raw?.organization_id;
+  if (orgId) {
+    if (resource.organization_id && resource.organization_id === orgId) return resource;
+    const err = new Error("not_found"); err.code = "not_found"; err.status = 404; throw err;
   }
-  return resource;
+  if (isPlatformPrincipal(principal)) return resource;
+  // OAuth without org_id — fall back to created_by match
+  const userEmail = principal.user_email || principal.raw?.user_email;
+  if (!userEmail) {
+    const err = new Error("not_found"); err.code = "not_found"; err.status = 404; throw err;
+  }
+  if (resource.created_by && resource.created_by === userEmail) return resource;
+  const err = new Error("not_found"); err.code = "not_found"; err.status = 404; throw err;
 }
 
 // -----------------------------------------------------------------------------
@@ -317,7 +332,13 @@ const RESOURCES = {
   },
   "POST /v1/analyses/run": {
     scope: "trigger:analysis",
-    handler: async (base44, { body }) => {
+    handler: async (base44, { body, principal }) => {
+      if (!body.brand_id) {
+        const e = new Error("brand_id is required"); e.code = "invalid_request"; e.status = 400; throw e;
+      }
+      // FIX 3 — assert the caller owns this brand before creating the input
+      const brand = await base44.asServiceRole.entities.Brand.get(body.brand_id).catch(() => null);
+      assertTenant(principal, brand);
       const input = await base44.asServiceRole.entities.AnalyzerInput.create({
         brand_id: body.brand_id,
         monthly_revenue: body.monthly_revenue,
@@ -396,7 +417,10 @@ const RESOURCES = {
   },
   "PATCH /v1/trackers/:id": {
     scope: "update:trackers",
-    handler: async (base44, { params, body }) => {
+    handler: async (base44, { params, body, principal }) => {
+      // FIX 3 — load first, assert ownership, only then update
+      const existing = await base44.asServiceRole.entities.DealActivation.get(params.id).catch(() => null);
+      assertTenant(principal, existing);
       const allowed = ["status", "realized_savings_monthly", "realized_savings_yearly", "activated_savings_yearly"];
       const update = {};
       for (const k of allowed) if (body[k] !== undefined) update[k] = body[k];
@@ -409,20 +433,35 @@ const RESOURCES = {
   // ---------- REPORTS ----------
   "GET /v1/reports": {
     scope: "read:reports",
-    handler: async (base44, { query }) => {
+    handler: async (base44, { query, principal }) => {
       const limit = Math.min(parseInt(query.limit || "50", 10), 200);
-      const items = await base44.asServiceRole.entities.Document.filter({ source_type: "report" }, "-created_date", limit).catch(() => []);
+      // FIX 3 — tenant isolation: scope reports by organization_id or created_by; deny by default
+      const filter = tenantFilterByCreatedBy(principal, { source_type: "report" });
+      const items = await base44.asServiceRole.entities.Document.filter(filter, "-created_date", limit).catch(() => []);
       return { data: items, meta: { count: items.length } };
     },
   },
   "POST /v1/reports": {
     scope: "write:reports",
     handler: async (base44, { body, principal }) => {
-      if (!body.title) throw new Error("title is required");
+      if (!body.title) {
+        const e = new Error("title is required"); e.code = "invalid_request"; e.status = 400; throw e;
+      }
+      // FIX 3 — persist tenant/user ownership on the created report
+      const userEmail = principal.user_email || principal.raw?.user_email;
+      const orgId = principal.raw?.organization_id;
       const doc = await base44.asServiceRole.entities.Document.create({
         title: body.title,
         source_type: "report",
-        metadata_json: { ...(body.metadata || {}), content: body.content, created_by_principal: principal.name },
+        organization_id: orgId || undefined,
+        owner_email: userEmail || undefined,
+        metadata_json: {
+          ...(body.metadata || {}),
+          content: body.content,
+          created_by_principal: principal.name,
+          ...(orgId ? { organization_id: orgId } : {}),
+          ...(userEmail ? { owner_email: userEmail } : {}),
+        },
       });
       return { data: { id: doc.id, title: doc.title, created_at: doc.created_date } };
     },

@@ -70,7 +70,7 @@ const DICT = {
     /* landing — hero */
     badge:                "Infrastructure Cost Intelligence",
     hero_headline:        "Your infrastructure is costing you more than it should.",
-    hero_sub:             "CAMBRA benchmarks your payment fees, shipping costs and SaaS spend against anonymized European brands — and shows you exactly where you're overpaying. Most brands recover €10,000–€40,000/yr.",
+    hero_sub:             "CAMBRA benchmarks your payment fees, shipping costs and SaaS spend against anonymized data from independent European brands — and shows you exactly where you're overpaying. Most brands identify €10,000–€40,000/yr in recoverable costs.",
     hero_cta_primary:     "Run free analysis →",
     hero_cta_secondary:   "See how it works",
     hero_footnote:        "No credit card. No commitment. You pay 25% of verified savings only.",
@@ -103,7 +103,7 @@ const DICT = {
     benchmark_payments:   "Average 1.7% optimised payment rate for EU small brands",
     benchmark_shipping:   "Average €4.80/pkg for brands shipping 500+ orders/mo",
     benchmark_saas:       "Average 2.8% of revenue on software tools",
-    benchmark_footnote:   "All benchmarks are anonymized and aggregated. Individual company data is never exposed.",
+    benchmark_footnote:   "All benchmarks are anonymized and aggregated across brands. No individual company data is ever exposed. Minimum 5 brands per cohort.",
 
     /* landing — pricing/cta */
     pricing_headline:     "Start for free. Pay only when you save.",
@@ -111,7 +111,7 @@ const DICT = {
     pricing_line1:        "Free infrastructure analysis",
     pricing_line2:        "Free benchmark report",
     pricing_line3:        "Free recommendations",
-    pricing_line4:        "25% of verified monthly savings — nothing upfront",
+    pricing_line4:        "25% of verified monthly savings — billed only when savings are confirmed. Nothing upfront, nothing if you don't save.",
     pricing_cta:          "Get your free analysis →",
     pricing_trust:        "Trusted by independent brands across France, Spain and the UK.",
 
@@ -213,7 +213,7 @@ const DICT = {
 
     /* dashboard */
     state_a_title:        "Map your infrastructure in 3 minutes",
-    state_a_sub:          "Enter your website. We detect your payment providers, shipping carriers and SaaS tools automatically — then benchmark your costs against European brands at your revenue tier.",
+    state_a_sub:          "Enter your website. CAMBRA automatically detects your payment providers, shipping carriers and SaaS tools — then benchmarks your costs against anonymized data from European brands at your revenue tier.",
     state_a_cta:          "Start free analysis →",
     state_b_badge:        "Estimated",
     state_b_sub:          "Based on your inputs and {country} {tier} benchmarks. Connect Stripe to verify with real data.",
@@ -407,7 +407,7 @@ const DICT = {
 
     badge:                "Intelligence des Coûts d'Infrastructure",
     hero_headline:        "Votre infrastructure vous coûte bien plus qu'elle ne le devrait.",
-    hero_sub:             "CAMBRA compare vos frais de paiement, coûts d'expédition et dépenses SaaS avec des marques européennes anonymisées — et vous montre exactement où vous payez trop. La plupart des marques récupèrent entre 10 000 € et 40 000 €/an.",
+    hero_sub:             "CAMBRA compare vos frais de paiement, coûts d'expédition et dépenses SaaS avec des données anonymisées de marques indépendantes européennes — et vous montre exactement où vous payez trop. La plupart des marques identifient entre 10 000 € et 40 000 €/an de coûts récupérables.",
     hero_cta_primary:     "Analyser gratuitement →",
     hero_cta_secondary:   "Voir comment ça marche",
     hero_footnote:        "Sans carte bancaire. Sans engagement. Vous payez 25% des économies vérifiées uniquement.",
@@ -437,14 +437,14 @@ const DICT = {
     benchmark_payments:   "Taux de paiement optimisé moyen de 1,7% pour les petites marques européennes",
     benchmark_shipping:   "Moyenne de 4,80€/colis pour les marques expédiant 500+ commandes/mois",
     benchmark_saas:       "Moyenne de 2,8% du CA en outils logiciels",
-    benchmark_footnote:   "Tous les benchmarks sont anonymisés et agrégés. Les données individuelles ne sont jamais exposées.",
+    benchmark_footnote:   "Tous les benchmarks sont anonymisés et agrégés entre marques. Aucune donnée individuelle n'est jamais exposée. Minimum 5 marques par cohorte.",
 
     pricing_headline:     "Commencez gratuitement. Payez uniquement sur les économies réalisées.",
     pricing_model:        "Honoraires au succès uniquement",
     pricing_line1:        "Analyse d'infrastructure gratuite",
     pricing_line2:        "Rapport de benchmark gratuit",
     pricing_line3:        "Recommandations gratuites",
-    pricing_line4:        "25% des économies mensuelles vérifiées — rien en avance",
+    pricing_line4:        "25% des économies mensuelles vérifiées — facturé uniquement lorsque les économies sont confirmées. Rien en avance, rien si vous n'économisez pas.",
     pricing_cta:          "Obtenir votre analyse gratuite →",
     pricing_trust:        "Utilisé par des marques indépendantes en France, Espagne et au Royaume-Uni.",
 
@@ -539,7 +539,7 @@ const DICT = {
     based_on:                     "Analyse basée sur les benchmarks {country} {tier}",
 
     state_a_title:        "Cartographiez votre infrastructure en 3 minutes",
-    state_a_sub:          "Entrez votre site web. Nous détectons automatiquement vos prestataires de paiement, transporteurs et outils SaaS — puis comparons vos coûts avec des marques européennes à votre niveau de CA.",
+    state_a_sub:          "Entrez votre site web. CAMBRA détecte automatiquement vos prestataires de paiement, transporteurs et outils SaaS — puis compare vos coûts avec des données anonymisées de marques européennes à votre niveau de CA.",
     state_a_cta:          "Lancer l'analyse gratuite →",
     state_b_badge:        "Estimé",
     state_b_sub:          "Basé sur vos données et les benchmarks {country} {tier}. Connectez Stripe pour vérifier avec de vraies données.",
@@ -724,7 +724,7 @@ const DICT = {
 
     badge:                "Inteligencia de Costes de Infraestructura",
     hero_headline:        "Tu infraestructura te está costando más de lo que debería.",
-    hero_sub:             "CAMBRA compara tus comisiones de pago, costes de envío y gasto en SaaS con marcas europeas anonimizadas — y te muestra exactamente dónde estás pagando de más. La mayoría de marcas recupera entre 10.000 € y 40.000 €/año.",
+    hero_sub:             "CAMBRA compara tus comisiones de pago, costes de envío y gasto en SaaS con datos anonimizados de marcas independientes europeas — y te muestra exactamente dónde estás pagando de más. La mayoría de marcas identifica entre 10.000 € y 40.000 €/año en costes recuperables.",
     hero_cta_primary:     "Analizar gratis →",
     hero_cta_secondary:   "Ver cómo funciona",
     hero_footnote:        "Sin tarjeta de crédito. Sin compromiso. Solo pagas el 25% de los ahorros verificados.",
@@ -754,14 +754,14 @@ const DICT = {
     benchmark_payments:   "Tasa de pago optimizada media del 1,7% para pequeñas marcas europeas",
     benchmark_shipping:   "Media de 4,80€/paquete para marcas con 500+ envíos/mes",
     benchmark_saas:       "Media del 2,8% de la facturación en herramientas de software",
-    benchmark_footnote:   "Todos los benchmarks son anonimizados y agregados. Los datos individuales nunca se exponen.",
+    benchmark_footnote:   "Todos los benchmarks son anonimizados y agregados entre marcas. Ningún dato individual se expone jamás. Mínimo 5 marcas por cohorte.",
 
     pricing_headline:     "Empieza gratis. Paga solo cuando ahorres.",
     pricing_model:        "Solo honorarios de éxito",
     pricing_line1:        "Análisis de infraestructura gratuito",
     pricing_line2:        "Informe de benchmark gratuito",
     pricing_line3:        "Recomendaciones gratuitas",
-    pricing_line4:        "25% de los ahorros mensuales verificados — nada por adelantado",
+    pricing_line4:        "25% de los ahorros mensuales verificados — facturado solo cuando los ahorros se confirman. Nada por adelantado, nada si no ahorras.",
     pricing_cta:          "Obtener tu análisis gratuito →",
     pricing_trust:        "Utilizado por marcas independientes en Francia, España y el Reino Unido.",
 
@@ -856,7 +856,7 @@ const DICT = {
     based_on:                     "Análisis basado en benchmarks {country} {tier}",
 
     state_a_title:        "Mapea tu infraestructura en 3 minutos",
-    state_a_sub:          "Introduce tu web. Detectamos automáticamente tus proveedores de pago, transportistas y herramientas SaaS — y comparamos tus costes con marcas europeas en tu nivel de facturación.",
+    state_a_sub:          "Introduce tu web. CAMBRA detecta automáticamente tus proveedores de pago, transportistas y herramientas SaaS — y compara tus costes con datos anonimizados de marcas europeas en tu nivel de facturación.",
     state_a_cta:          "Iniciar análisis gratuito →",
     state_b_badge:        "Estimado",
     state_b_sub:          "Basado en tus datos y benchmarks {country} {tier}. Conecta Stripe para verificar con datos reales.",

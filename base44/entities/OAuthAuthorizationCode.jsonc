@@ -12,6 +12,10 @@
     "user_email": {
       "type": "string"
     },
+    "organization_id": {
+      "type": "string",
+      "description": "Tenant scope copied to the issued OAuthToken. Null = no tenant resolved."
+    },
     "redirect_uri": {
       "type": "string"
     },

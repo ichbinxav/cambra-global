@@ -21,7 +21,7 @@ export default function LanguageSwitcher({ className = "", variant = "dark" }) {
     <div
       className={`inline-flex items-center gap-0.5 rounded-full p-0.5 ${wrapperBase} ${className}`}
       role="group"
-      aria-label="Language"
+      aria-label="Select language"
     >
       {LANGUAGES.map((l) => {
         const active = l.code === lang;
@@ -31,6 +31,7 @@ export default function LanguageSwitcher({ className = "", variant = "dark" }) {
             type="button"
             onClick={() => setLang(l.code)}
             aria-pressed={active}
+            aria-label={`Switch language to ${l.label}`}
             className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider transition-colors border border-transparent ${
               active ? activeStyle : inactiveText
             }`}

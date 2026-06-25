@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { CheckCircle2, RefreshCw, LogOut, Clock } from "lucide-react";
+import { useToast } from "@/components/shared/Toast.jsx";
 
 /**
  * M3 — Stripe Connect card.
  * Three states: not_connected · connected · coming_soon (env vars missing).
  */
 export default function StripeConnectCard({ redirectAfter } = {}) {
+  const { toast } = useToast();
   const [connection, setConnection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -60,14 +62,19 @@ export default function StripeConnectCard({ redirectAfter } = {}) {
       if (data?.setup_required) {
         setSetupRequired(true);
       } else if (data?.ok) {
-        // Clean URL
+        // FIX 27 — Stripe connection success → success toast
+        toast.success("Stripe connected", "Live payment data is now available.");
         window.history.replaceState({}, "", window.location.pathname);
         await loadConnection();
       } else {
-        setError(data?.error || "Connection failed");
+        const msg = data?.error || "Connection failed";
+        setError(msg);
+        toast.error("Stripe connection failed", msg);
       }
     } catch (e) {
-      setError(e.message || "Connection failed");
+      const msg = e.message || "Connection failed";
+      setError(msg);
+      toast.error("Stripe connection failed", msg);
     } finally {
       setBusy(false);
     }

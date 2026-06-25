@@ -11,6 +11,7 @@ import {
 import Navbar from "@/components/landing/Navbar";
 import StripeConnectCard from "@/components/connect/StripeConnectCard";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { useToast } from "@/components/shared/Toast.jsx";
 import RevenueRangePicker, { midpointForRange } from "@/components/analyzer/RevenueRangePicker";
 import DetectedToolsGrid from "@/components/analyzer/DetectedToolsGrid";
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
@@ -66,6 +67,22 @@ function autoSuggestBrandName(websiteUrl) {
   }
 }
 
+// FIX 1 — Normalize a website URL to a comparable domain string. Used to find
+// or create the correct Brand for this analysis without ever falling back to
+// "latest brand for this user".
+function normalizeDomain(input) {
+  if (!input || typeof input !== "string") return "";
+  let s = input.trim().toLowerCase();
+  if (!s.includes("://")) s = `https://${s}`;
+  try {
+    const u = new URL(s);
+    let host = u.hostname.replace(/^www\./, "");
+    return host || "";
+  } catch {
+    return "";
+  }
+}
+
 function tierLabelForRevenue(monthlyRevenue, country) {
   const b = getBenchmarks(monthlyRevenue, country);
   const tierMap = { micro: "micro", small: "small", mid: "mid", large: "large" };
@@ -76,6 +93,7 @@ function tierLabelForRevenue(monthlyRevenue, country) {
 export default function Analyzer() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const urlParams = new URLSearchParams(window.location.search);
   const resumeParam = urlParams.get("resume") === "true";
 
@@ -256,20 +274,36 @@ export default function Analyzer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [websiteUrl]);
 
-  // ── Ensure a Brand exists (needed for discovery + memory writes) ──
+  // ── FIX 1 — Ensure a Brand exists for THIS website, not "the user's latest brand".
+  // Resolution order, scoped to the current user:
+  //   1. If brandId is already set, use it.
+  //   2. Find an existing Brand whose normalized website matches the form domain.
+  //   3. Otherwise create a new Brand with this website attached.
+  // Cross-domain analyses can therefore never attach to an unrelated previous brand.
   const ensureBrand = async () => {
     if (brandId) return brandId;
     if (!brandName || !brandName.trim()) return null;
+
+    const targetDomain = normalizeDomain(websiteUrl);
     try {
-      // Try to reuse the user's latest brand
       const me = await base44.auth.me();
-      const existing = await base44.entities.Brand.filter({ created_by: me.email }, "-created_date", 1).catch(() => []);
-      if (existing.length) {
-        setBrandId(existing[0].id);
-        return existing[0].id;
+      const ownBrands = await base44.entities.Brand
+        .filter({ created_by: me.email }, "-created_date", 50)
+        .catch(() => []);
+
+      // Step 2 — exact domain match wins
+      if (targetDomain) {
+        const match = ownBrands.find(b => normalizeDomain(b.website) === targetDomain);
+        if (match) {
+          setBrandId(match.id);
+          return match.id;
+        }
       }
+
+      // Step 3 — create a fresh brand for this website
       const created = await base44.entities.Brand.create({
         name: brandName.trim(),
+        website: websiteUrl ? (websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`) : undefined,
         category: CATEGORY_MAP[category] || "other",
         country: country || "",
         channels: ["dtc"],
@@ -323,10 +357,18 @@ export default function Analyzer() {
     }
   };
 
+  // FIX 15 — 300ms minimum debounce on website discovery (non-blocking).
   const handleWebsiteBlur = () => {
     if (discoveryTimer.current) clearTimeout(discoveryTimer.current);
-    discoveryTimer.current = setTimeout(() => triggerDiscovery(websiteUrl), 200);
+    const trimmed = (websiteUrl || "").trim();
+    if (!trimmed || trimmed.length < 4) return;
+    discoveryTimer.current = setTimeout(() => triggerDiscovery(trimmed), 300);
   };
+
+  // FIX 15 — clear pending discovery debounce on unmount
+  useEffect(() => {
+    return () => { if (discoveryTimer.current) clearTimeout(discoveryTimer.current); };
+  }, []);
 
   // ── Toggle a tool's confirmed/dismissed state ──
   const handleToggleTool = (key, action) => {
@@ -549,7 +591,8 @@ export default function Analyzer() {
 
     setAnalysisDone(true);
 
-    // Hold the success state for one tick of progress, then navigate
+    // FIX 27 — toast on analysis complete + navigation to Results
+    toast.success(t("progress_ready"));
     setTimeout(() => navigate(`/Results?id=${result.id}`), 700);
   };
 
@@ -625,10 +668,14 @@ export default function Analyzer() {
           </div>
         )}
 
-        {/* Inline error banner */}
+        {/* Inline error banner — FIX 19: alert role for SR announcement */}
         {errorBanner && (
-          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-2.5">
-            <AlertTriangle size={14} className="text-red-600 mt-0.5 shrink-0" />
+          <div
+            role="alert"
+            aria-live="polite"
+            className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-2.5"
+          >
+            <AlertTriangle size={14} className="text-red-600 mt-0.5 shrink-0" aria-hidden="true" />
             <p className="text-[12px] text-red-700 leading-relaxed whitespace-pre-line">{errorBanner}</p>
           </div>
         )}
@@ -641,14 +688,16 @@ export default function Analyzer() {
 
             <div className="space-y-5">
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">{t("field_website")}</Label>
+                <Label htmlFor="az-website" className="text-sm font-medium">{t("field_website")}</Label>
                 <Input
+                  id="az-website"
                   value={websiteUrl}
                   onChange={e => setWebsiteUrl(e.target.value)}
                   onBlur={handleWebsiteBlur}
                   placeholder="yourbrand.com"
                   className="h-12 text-sm border-border/60"
                   inputMode="url"
+                  aria-required="true"
                 />
                 {discovery.status === "running" && (
                   <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -667,43 +716,51 @@ export default function Analyzer() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">{t("field_brand_name")}</Label>
+                <Label htmlFor="az-brand" className="text-sm font-medium">{t("field_brand_name")}</Label>
                 <Input
+                  id="az-brand"
                   value={brandName}
                   onChange={e => setBrandName(e.target.value)}
                   placeholder={t("your_brand_placeholder")}
                   className="h-12 text-sm border-border/60"
+                  aria-required="true"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">{t("field_country")}</Label>
+                <Label htmlFor="az-country" className="text-sm font-medium">{t("field_country")}</Label>
                 <div className="relative">
                   <select
+                    id="az-country"
                     value={country}
                     onChange={e => setCountry(e.target.value)}
+                    aria-required="true"
                     className="w-full h-12 pl-9 pr-3 rounded-md border border-border/60 bg-white text-sm appearance-none text-foreground"
                   >
                     <option value="">{t("select_country")}</option>
                     {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
-                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
+                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" aria-hidden="true" />
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" aria-hidden="true" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">{t("field_revenue")}</Label>
-                <RevenueRangePicker value={revenueRange} onChange={setRevenueRange} />
+                <Label id="az-revenue-label" className="text-sm font-medium">{t("field_revenue")}</Label>
+                <div role="radiogroup" aria-labelledby="az-revenue-label" aria-required="true">
+                  <RevenueRangePicker value={revenueRange} onChange={setRevenueRange} />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">{t("field_category")}</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <Label id="az-category-label" className="text-sm font-medium">{t("field_category")}</Label>
+                <div role="radiogroup" aria-labelledby="az-category-label" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {CATEGORY_OPTIONS.map(c => (
                     <button
                       key={c.key}
                       type="button"
+                      role="radio"
+                      aria-checked={category === c.key}
                       onClick={() => setCategory(c.key)}
                       className={`min-h-[44px] px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
                         category === c.key

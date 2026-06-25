@@ -1,9 +1,52 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, FileText } from "lucide-react";
 import SectionLabel from "@/components/shared/SectionLabel";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
+
+/* FIX 12 — JSON-LD structured data for SoftwareApplication */
+const LANDING_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CAMBRA",
+  "description": "Infrastructure cost intelligence platform for independent European brands. Benchmarks payment fees, shipping costs and SaaS spend.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR",
+    "description": "Free analysis. 25% success fee on verified savings only."
+  },
+  "featureList": [
+    "Payment fee benchmarking",
+    "Shipping cost analysis",
+    "SaaS spend audit",
+    "Infrastructure graph",
+    "Stripe integration",
+    "AI-powered recommendations"
+  ],
+  "audience": {
+    "@type": "BusinessAudience",
+    "audienceType": "Independent ecommerce brands"
+  }
+};
+
+function useJsonLd(data) {
+  useEffect(() => {
+    const id = "cambra-landing-jsonld";
+    let el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement("script");
+      el.type = "application/ld+json";
+      el.id = id;
+      document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(data);
+    return () => { /* keep across SPA navigation */ };
+  }, [data]);
+}
 
 /* ──────────────────────────────────────────────────────────
    CAMBRA Landing — editorial redesign · EN / FR / ES
@@ -11,6 +54,8 @@ import { useTranslation } from "@/lib/i18n.jsx";
 
 function LandingNavbar() {
   const { t } = useTranslation();
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useJsonLd(LANDING_JSON_LD);
   return (
     <nav
       className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 sm:px-10"
@@ -135,7 +180,7 @@ function ProblemSection() {
                 className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
               >
-                <c.icon size={16} className="text-white/70" />
+                <c.icon size={16} className="text-white/70" aria-hidden="true" />
               </div>
               <p className="text-white font-bold text-[15px] mb-1">{c.title}</p>
               <p className="text-[13px] mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>{c.body}</p>
@@ -162,7 +207,7 @@ function HowItWorksSection() {
     <section id="how" style={{ background: "#0a0a0a" }} className="py-24 sm:py-32">
       <div className="max-w-6xl mx-auto px-6 sm:px-10">
         <SectionLabel className="mb-6">{t("how_label")}</SectionLabel>
-        <h2 className="text-display text-white max-w-3xl mb-16">{t("step1_title")}.</h2>
+        <h2 className="text-display text-white max-w-3xl mb-16">{t("how_label")}</h2>
 
         <div className="space-y-3">
           {steps.map((s) => (
@@ -215,7 +260,7 @@ function BenchmarkSection() {
                 className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
               >
-                <s.icon size={15} className="text-white/70" />
+                <s.icon size={15} className="text-white/70" aria-hidden="true" />
               </div>
               <p className="text-[14px] text-white/85 leading-relaxed">{s.text}</p>
             </div>
@@ -263,8 +308,9 @@ function PricingCTASection() {
           <Link
             to="/Analyzer"
             className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] hover:opacity-90 transition-opacity"
+            aria-label={t("pricing_cta")}
           >
-            {t("pricing_cta")} <ArrowRight size={16} />
+            {t("pricing_cta")} <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </div>
 
