@@ -52,6 +52,17 @@ Deno.serve(async (req) => {
     console.warn('benchmarkLearningEngine failed (non-blocking):', e?.message || e);
   }
 
+  // ——— M6: Infrastructure Graph (non-blocking) ———
+  // Builds/updates the per-brand infrastructure graph from all signals.
+  // Failure here must NEVER interrupt the email/user flow.
+  try {
+    if (data.brand_id) {
+      await base44.asServiceRole.functions.invoke('buildInfrastructureGraph', { brand_id: data.brand_id });
+    }
+  } catch (e) {
+    console.warn('buildInfrastructureGraph failed (non-blocking):', e?.message || e);
+  }
+
   const appDomain = Deno.env.get('APP_DOMAIN') || 'cambra.global';
 
   await base44.asServiceRole.integrations.Core.SendEmail({

@@ -11,6 +11,7 @@ import InfraScore from "@/components/dashboard/InfraScore";
 import SavingsTrend from "@/components/dashboard/SavingsTrend";
 import CumulativeSavingsChart from "@/components/dashboard/CumulativeSavingsChart";
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
+import InfrastructureGraphPanel from "@/components/dashboard/InfrastructureGraphPanel";
 import GMVMetrics from "@/components/dashboard/GMVMetrics";
 import { CreditCard, Truck, Package, Store, ShieldCheck } from "lucide-react"; // ShieldCheck kept for quick actions only
 import RecommendationList from "@/components/recommendations/RecommendationList";
@@ -289,6 +290,9 @@ export default function Dashboard() {
           <DriftMonitor results={results} />
 
           <InfrastructureStatus latest={latest} />
+
+          {/* M6 — Infrastructure Graph */}
+          <InfrastructureGraphPanel />
 
           {/* Recommendations */}
           <div className="relative rounded-2xl bg-card/95 backdrop-blur-sm border border-border/60 p-5 mt-3 overflow-hidden shadow-[0_8px_24px_-12px_rgba(0,0,0,0.08)]">

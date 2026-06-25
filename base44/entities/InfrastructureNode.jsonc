@@ -1,0 +1,111 @@
+{
+  "name": "InfrastructureNode",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "node_type": {
+      "type": "string",
+      "enum": [
+        "payment_provider",
+        "shipping_carrier",
+        "commerce_platform",
+        "saas_tool",
+        "bank",
+        "insurance",
+        "telecom",
+        "hr_tool",
+        "analytics",
+        "marketing",
+        "support",
+        "logistics"
+      ]
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "e.g. 'Stripe', 'Shopify', 'DHL'"
+    },
+    "integration_id": {
+      "type": "string",
+      "description": "References IntegrationCatalog.integration_id if applicable"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "connected",
+        "verified",
+        "inactive"
+      ],
+      "default": "detected"
+    },
+    "confidence_score": {
+      "type": "number",
+      "description": "0.0 to 1.0"
+    },
+    "monthly_cost": {
+      "type": "number",
+      "description": "Estimated or verified monthly cost"
+    },
+    "cost_confidence": {
+      "type": "string",
+      "enum": [
+        "estimated",
+        "connected",
+        "verified"
+      ],
+      "default": "estimated"
+    },
+    "effective_rate": {
+      "type": "number",
+      "description": "For payment providers \u2014 effective fee rate %"
+    },
+    "data_source": {
+      "type": "string",
+      "enum": [
+        "discovery",
+        "manual",
+        "oauth",
+        "document",
+        "admin"
+      ]
+    },
+    "first_detected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Provider-specific data. NEVER contains raw credentials."
+    }
+  },
+  "required": [
+    "brand_id",
+    "node_type",
+    "provider_name"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

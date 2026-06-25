@@ -1,0 +1,69 @@
+{
+  "name": "InfrastructureEdge",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "from_node_id": {
+      "type": "string",
+      "description": "InfrastructureNode id"
+    },
+    "to_node_id": {
+      "type": "string",
+      "description": "InfrastructureNode id"
+    },
+    "relationship": {
+      "type": "string",
+      "enum": [
+        "processes_payments_via",
+        "ships_via",
+        "sells_on",
+        "markets_via",
+        "tracks_via",
+        "supports_via",
+        "manages_hr_via",
+        "banks_via",
+        "insures_via"
+      ]
+    },
+    "strength": {
+      "type": "number",
+      "description": "0.0 to 1.0 \u2014 confidence in this relationship"
+    },
+    "data_source": {
+      "type": "string",
+      "enum": [
+        "discovery",
+        "manual",
+        "oauth",
+        "document",
+        "admin"
+      ]
+    }
+  },
+  "required": [
+    "brand_id",
+    "from_node_id",
+    "to_node_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
