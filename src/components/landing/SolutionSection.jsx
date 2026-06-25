@@ -1,21 +1,8 @@
 import { Link } from "react-router-dom";
 import { Search, Zap, TrendingUp, ArrowRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
-
-// Safari/iOS fallback hook: pairs useInView with a short timer that forces
-// visibility if the IntersectionObserver never fires (common when the element
-// mounts already inside the viewport).
-function useInViewWithFallback(ref, opts, delay = 200) {
-  const inViewObs = useInView(ref, opts);
-  const [forced, setForced] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setForced(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
-  return inViewObs || forced;
-}
 
 const PILLARS = [
   {
@@ -43,7 +30,7 @@ const PILLARS = [
 
 function PillarCard({ p, index }) {
   const ref = useRef(null);
-  const inView = useInViewWithFallback(ref, { once: true, margin: "-60px" });
+  const inView = useInView(ref, { once: true, margin: "-60px" });
   return (
     <motion.div
       key={index}
@@ -86,9 +73,9 @@ function PillarCard({ p, index }) {
 export default function SolutionSection() {
   const { isAuthenticated } = useAuth();
   const headRef = useRef(null);
-  const headInView = useInViewWithFallback(headRef, { once: true, margin: "-80px" });
+  const headInView = useInView(headRef, { once: true, margin: "-80px" });
   const flowRef = useRef(null);
-  const flowInView = useInViewWithFallback(flowRef, { once: true, margin: "-60px" });
+  const flowInView = useInView(flowRef, { once: true, margin: "-60px" });
 
   return (
     <section className="py-24 px-5 border-t border-border/40 bg-secondary/10">
@@ -170,7 +157,7 @@ export default function SolutionSection() {
           className="text-center mt-10"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
           {isAuthenticated ? (

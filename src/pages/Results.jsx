@@ -5,12 +5,10 @@ import {
   ArrowRight, CreditCard, Truck, Package, CheckCircle2,
   Share2, Plug, Building2, Store, Mail,
   Headphones, Users, Wifi, Layers,
-  ChevronDown, ChevronUp, ShieldCheck, TrendingDown, TrendingUp,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 import RecommendedActionsLocked from "@/components/results/RecommendedActionsLocked";
-import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
 
@@ -90,17 +88,7 @@ export default function Results() {
   const [loading, setLoading] = useState(true);
   const [needsAuth, setNeedsAuth] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
-  const [methodOpen, setMethodOpen] = useState(false);
   const verticalsRef = useRef(null);
-
-  const localeForLang = { en: "en-IE", fr: "fr-FR", es: "es-ES" }[lang] || "en-IE";
-  const eurFmt = (n) => {
-    try {
-      return new Intl.NumberFormat(localeForLang, {
-        style: "currency", currency: "EUR", maximumFractionDigits: 0,
-      }).format(Math.max(0, Math.round(Number(n) || 0)));
-    } catch { return `€${Math.round(n || 0).toLocaleString()}`; }
-  };
 
   useEffect(() => {
     (async () => {
@@ -161,13 +149,8 @@ export default function Results() {
     })();
   }, []);
 
-  // Loading — plain visible state, no shimmer over dark bg
+  // FIX 28 — Results skeleton: hero shimmer + 3 card shimmers + map shimmer
   if (loading) return (
-    <div style={{ padding: 24, color: "#666", fontSize: 14 }}>Loading…</div>
-  );
-
-  // (unreachable placeholder kept so the original shimmer JSX below is dropped)
-  if (false) return (
     <div className="min-h-screen bg-background">
       <div className="relative max-w-4xl mx-auto px-5 py-10 pb-24 space-y-10">
         {/* Hero shimmer */}
@@ -200,8 +183,8 @@ export default function Results() {
   );
 
   if (needsAuth) return (
-    <div style={{ padding: 24, textAlign: "center" }}>
-      <div className="text-center max-w-sm" style={{ margin: "0 auto" }}>
+    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <div className="text-center max-w-sm">
         <h1 className="text-lg font-bold mb-2">{t("sign_in_required")}</h1>
         <p className="text-sm text-muted-foreground mb-4">{t("sign_in_sub")}</p>
         <a href="/auth/start" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold">{t("sign_in")}</a>
@@ -210,8 +193,8 @@ export default function Results() {
   );
 
   if (!result) return (
-    <div style={{ padding: 24, textAlign: "center" }}>
-      <div className="text-center" style={{ margin: "0 auto" }}>
+    <div className="min-h-screen flex items-center justify-center bg-background px-5">
+      <div className="text-center">
         <p className="text-muted-foreground mb-4 text-sm">{t("no_results")}</p>
         <Link to="/Analyzer"><Button variant="outline" className="rounded-full px-6 text-sm h-11">{t("run_the_analyzer")}</Button></Link>
       </div>
@@ -298,24 +281,30 @@ export default function Results() {
 
   /* ── render ──────────────────────────────────────────────── */
   return (
-    <div className="font-inter" style={{ background: "#ffffff", color: "#0a0a0a" }}>
-      {/* Inline share row — normal flow */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
-        <button
-          type="button"
-          onClick={handleShare}
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "6px 12px", borderRadius: 999,
-            border: "1px solid #e5e5e5", background: "#fff",
-            fontSize: 12, fontWeight: 500, color: "#666", cursor: "pointer",
-          }}
-        >
-          <Share2 size={11} /> {t("share")}
-        </button>
+    <div className="relative min-h-screen font-inter bg-background text-foreground overflow-x-hidden">
+      {/* ambient */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 dot-grid opacity-40" />
+        <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.16]" />
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-14">
+      {/* top bar */}
+      <div className="relative sticky top-0 z-20 border-b border-border/40 px-5 py-3.5 flex items-center justify-between bg-background/97 backdrop-blur-2xl">
+        <Link to="/" className="text-sm font-black tracking-tight">CAMBRA</Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
+          >
+            <Share2 size={11} /> {t("share")}
+          </button>
+          <Link to="/Dashboard">
+            <Button size="sm" className="h-8 rounded-full text-xs px-4 font-semibold">{t("nav_dashboard")}</Button>
+          </Link>
+        </div>
+      </div>
+
+      <div className="relative max-w-4xl mx-auto px-5 py-10 pb-24 space-y-14">
 
         {/* ═══ HERO ════════════════════════════════════════════ */}
         <section className="text-center">
@@ -327,12 +316,7 @@ export default function Results() {
           <p className="text-sm text-muted-foreground mb-3">{t("analysis_label")}</p>
 
           <div className="font-black tracking-[-0.055em] leading-none mb-3 tabular-nums" style={{ fontSize: "clamp(3.5rem, 14vw, 8rem)" }}>
-            <AnimatedCounter
-              value={Number(result.total_savings) || 0}
-              format={(n) => eurFmt(n)}
-              duration={1.8}
-            />
-            <span className="text-[0.35em] font-bold text-muted-foreground/40 ml-2">{t("hero_identified")}</span>
+            {formatEur(result.total_savings)}<span className="text-[0.35em] font-bold text-muted-foreground/40 ml-2">{t("hero_identified")}</span>
           </div>
 
           <p className="text-muted-foreground/70 text-base mb-7">
@@ -346,17 +330,6 @@ export default function Results() {
           >
             {t("hero_see_how")} <ArrowRight className="h-4 w-4" />
           </Button>
-
-          {/* Scroll hint */}
-          <button
-            type="button"
-            onClick={scrollToVerticals}
-            aria-label="See breakdown"
-            className="mt-6 inline-flex flex-col items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors mx-auto"
-          >
-            <span className="font-mono uppercase tracking-[0.18em]">See breakdown</span>
-            <ChevronDown size={14} className="animate-bounce" />
-          </button>
         </section>
 
         {/* ═══ VERTICAL CARDS ════════════════════════════════════ */}
@@ -367,29 +340,12 @@ export default function Results() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Payments card */}
-            <div
-              className="p-5 rounded-2xl border border-border/60 bg-card space-y-4"
-              style={{ borderLeft: "4px solid #3b82f6" }}
-            >
+            <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
                   <CreditCard size={14} className="text-foreground" />
                 </div>
                 <h3 className="text-sm font-bold">{t("payments_title")}</h3>
-                {payCurrent != null && payBmValue != null && (
-                  <span
-                    className="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
-                    style={
-                      payCurrent > payBmValue
-                        ? { background: "rgba(239,68,68,0.10)", color: "#dc2626", border: "1px solid rgba(239,68,68,0.30)" }
-                        : { background: "rgba(16,185,129,0.10)", color: "#059669", border: "1px solid rgba(16,185,129,0.30)" }
-                    }
-                  >
-                    {payCurrent > payBmValue
-                      ? <><TrendingUp size={9} /> {t("overpaying")}</>
-                      : <><TrendingDown size={9} /> {t("at_benchmark")}</>}
-                  </span>
-                )}
               </div>
 
               <div className="space-y-2">
@@ -426,29 +382,12 @@ export default function Results() {
             </div>
 
             {/* Shipping card */}
-            <div
-              className="p-5 rounded-2xl border border-border/60 bg-card space-y-4"
-              style={{ borderLeft: "4px solid #10b981" }}
-            >
+            <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
                   <Truck size={14} className="text-foreground" />
                 </div>
                 <h3 className="text-sm font-bold">{t("shipping_title")}</h3>
-                {shipCurrent != null && shipBmValue != null && (
-                  <span
-                    className="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
-                    style={
-                      shipCurrent > shipBmValue
-                        ? { background: "rgba(239,68,68,0.10)", color: "#dc2626", border: "1px solid rgba(239,68,68,0.30)" }
-                        : { background: "rgba(16,185,129,0.10)", color: "#059669", border: "1px solid rgba(16,185,129,0.30)" }
-                    }
-                  >
-                    {shipCurrent > shipBmValue
-                      ? <><TrendingUp size={9} /> {t("overpaying")}</>
-                      : <><TrendingDown size={9} /> {t("at_benchmark")}</>}
-                  </span>
-                )}
               </div>
 
               <div className="space-y-2">
@@ -485,10 +424,7 @@ export default function Results() {
             </div>
 
             {/* SaaS card */}
-            <div
-              className="p-5 rounded-2xl border border-border/60 bg-card space-y-4"
-              style={{ borderLeft: "4px solid #f59e0b" }}
-            >
+            <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
                   <Package size={14} className="text-foreground" />
@@ -604,62 +540,6 @@ export default function Results() {
                 <Plug size={11} /> {t("nav_connect")} <ArrowRight size={11} />
               </Button>
             </Link>
-          </div>
-
-          {/* "How we calculated this" — collapsible */}
-          <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setMethodOpen((o) => !o)}
-              aria-expanded={methodOpen}
-              className="w-full flex items-center justify-between gap-2 px-4 py-3 min-h-[44px] text-left hover:bg-secondary/30 transition-colors"
-            >
-              <span className="text-xs font-bold">{t("how_we_calculated")}</span>
-              {methodOpen ? (
-                <ChevronUp size={14} className="text-muted-foreground" />
-              ) : (
-                <ChevronDown size={14} className="text-muted-foreground" />
-              )}
-            </button>
-            {methodOpen && (
-              <div className="px-4 pb-4 pt-1 space-y-2 animate-fade-up">
-                <p className="text-[12px] text-muted-foreground leading-relaxed">
-                  {t("how_we_calculated_desc")}
-                </p>
-                {result?.methodology && (
-                  <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
-                    {result.methodology}
-                  </p>
-                )}
-                {Array.isArray(result?.assumptions) && result.assumptions.length > 0 && (
-                  <ul className="space-y-1 text-[11px] text-muted-foreground/80 mt-2">
-                    {result.assumptions.map((a, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-foreground/40 mt-0.5">·</span>
-                        <span>{a}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Trust + GDPR */}
-          <div
-            className="rounded-2xl p-4 flex items-start gap-3"
-            style={{ background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.20)" }}
-          >
-            <ShieldCheck size={14} className="text-emerald-600 mt-0.5 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-bold text-foreground">{t("gdpr_note")}</p>
-              <Link
-                to="/Privacy"
-                className="inline-block mt-1 text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 transition-colors"
-              >
-                {t("read_policy")}
-              </Link>
-            </div>
           </div>
 
           <div className="text-center space-y-2">

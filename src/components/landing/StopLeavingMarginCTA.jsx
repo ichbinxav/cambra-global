@@ -1,5 +1,6 @@
 import React from "react";
-import CambraCTA, { CambraTrustRow } from "@/components/shared/CambraCTA";
+import { Link } from "react-router-dom";
+import { ArrowRight, Sparkles, Activity } from "lucide-react";
 
 /**
  * Final CTA block — "Stop leaving margin on the table".
@@ -91,10 +92,49 @@ export default function StopLeavingMarginCTA() {
           Turn operating costs into recovered margin. Verified. Immediate. Aligned incentives.
         </p>
 
-        {/* Single canonical CTA */}
-        <div className="mt-10 flex flex-col gap-5 items-start">
-          <CambraCTA intent="audit" size="lg" />
-          <CambraTrustRow />
+        {/* Buttons */}
+        <div className="mt-10 flex flex-col gap-3 max-w-md">
+          <Link
+            to="/Analyzer"
+            className="group inline-flex items-center justify-center gap-3 rounded-full font-bold text-[15px] transition-transform hover:scale-[1.02]"
+            style={{
+              background: "#ffffff",
+              color: "#0a0f1e",
+              padding: "18px 28px",
+              boxShadow:
+                "0 0 0 1px rgba(255,255,255,0.1), 0 24px 60px -20px rgba(34,211,238,0.55), 0 0 50px rgba(34,211,238,0.20)",
+            }}
+          >
+            <Sparkles size={16} className="text-blue-600" />
+            Run free audit
+            <ArrowRight size={16} />
+          </Link>
+
+          <Link
+            to="/Analyzer"
+            className="inline-flex items-center justify-center gap-3 rounded-full font-bold text-[15px] transition-colors hover:bg-white/[0.04]"
+            style={{
+              padding: "18px 28px",
+              border: "1px solid rgba(255,255,255,0.20)",
+              color: "rgba(255,255,255,0.95)",
+            }}
+          >
+            <Activity size={16} className="text-cyan-400" />
+            Join CAMBRA
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        {/* Trust row */}
+        <div
+          className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] uppercase tracking-[0.22em] font-bold"
+          style={{ color: "rgba(255,255,255,0.40)" }}
+        >
+          <span>3 minutes</span>
+          <span className="text-cyan-400">•</span>
+          <span>No credit card</span>
+          <span className="text-cyan-400">•</span>
+          <span>Free audit</span>
         </div>
       </div>
     </section>

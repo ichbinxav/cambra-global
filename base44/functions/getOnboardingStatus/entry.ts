@@ -8,17 +8,7 @@ Deno.serve(async (req) => {
 
     const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1);
     const brand = brands?.[0];
-    // No brand yet (new user) — return empty statuses instead of 400 so the frontend renders cleanly.
-    if (!brand) {
-      return Response.json({
-        brand_id: null,
-        statuses: {
-          payments: { completeness: 0, readiness: 0, missing_fields: [] },
-          shipping: { completeness: 0, readiness: 0, missing_fields: [] },
-          saas:     { completeness: 0, readiness: 0, missing_fields: [] },
-        },
-      });
-    }
+    if (!brand) return Response.json({ error: 'No brand' }, { status: 400 });
 
     const sr = base44.asServiceRole;
     const [pp] = await sr.entities.PaymentsProfile.filter({ brand_id: brand.id }, '-updated_date', 1);

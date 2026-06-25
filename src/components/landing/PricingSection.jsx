@@ -1,19 +1,11 @@
 import { motion, useInView } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowDown } from "lucide-react";
 
 export default function PricingSection() {
   const ref = useRef(null);
-  const inViewObs = useInView(ref, { once: true, margin: "-100px" });
-  // Safari/iOS fallback: never let content stay invisible if the observer
-  // doesn't fire for an element mounted already in-viewport.
-  const [forceVisible, setForceVisible] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setForceVisible(true), 200);
-    return () => clearTimeout(t);
-  }, []);
-  const inView = inViewObs || forceVisible;
+  const inView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
     <section
@@ -66,7 +58,7 @@ export default function PricingSection() {
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            viewport={{ once: true, amount: 0, margin: "-100px" }}
+            viewport={{ once: true, margin: "-100px" }}
             className="group relative rounded-2xl overflow-hidden border border-cambra-blue/30 bg-gradient-to-br from-cambra-blue/[0.06] via-card/80 to-card/95 backdrop-blur-md p-5 sm:p-7 flex flex-col"
           >
             <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -127,7 +119,7 @@ export default function PricingSection() {
             initial={{ opacity: 0, scale: 0.6 }}
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            viewport={{ once: true, amount: 0, margin: "-100px" }}
+            viewport={{ once: true, margin: "-100px" }}
             className="flex md:flex-col items-center justify-center gap-2 py-2 md:py-0 md:px-1"
           >
             <div className="md:hidden flex flex-col items-center gap-1.5">
@@ -149,7 +141,7 @@ export default function PricingSection() {
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            viewport={{ once: true, amount: 0, margin: "-100px" }}
+            viewport={{ once: true, margin: "-100px" }}
             className="group relative rounded-2xl overflow-hidden border border-cambra-cyan/25 p-5 sm:p-7 flex flex-col md:scale-[1.02] md:-translate-y-1"
             style={{
               background: "linear-gradient(135deg, rgba(31,78,216,0.28) 0%, rgba(44,167,193,0.16) 100%), linear-gradient(180deg, hsl(222 60% 8%) 0%, hsl(222 65% 5%) 100%)",

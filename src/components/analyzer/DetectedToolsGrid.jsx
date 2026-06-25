@@ -64,8 +64,7 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
         {[0, 1, 2, 3].map(i => (
           <div
             key={i}
-            className="flex items-center gap-3 px-3 py-3 rounded-xl min-h-[64px]"
-            style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
+            className="flex items-center gap-3 px-3 py-3 rounded-xl border border-border/60 bg-white min-h-[64px]"
           >
             <div className="flex-1 min-w-0 space-y-2">
               <div className="h-3 w-32 rounded shimmer" />
@@ -91,11 +90,8 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
 
   if (!orderedBuckets.length) {
     return (
-      <div
-        className="rounded-2xl p-6 text-center transition-opacity duration-300"
-        style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.025)" }}
-      >
-        <p className="text-sm font-semibold text-white">
+      <div className="rounded-2xl border border-border/60 bg-secondary/30 p-6 text-center transition-opacity duration-300">
+        <p className="text-sm font-semibold text-foreground">
           {i18n("discovery_empty")}
         </p>
       </div>
@@ -106,7 +102,7 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
     <div className="space-y-5 transition-opacity duration-300 opacity-100">
       {orderedBuckets.map(bucket => (
         <div key={bucket.key}>
-          <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-white/50 mb-2 px-1">
+          <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-muted-foreground/70 mb-2 px-1">
             {bucket.label}
           </p>
           <div className="space-y-2">
@@ -121,44 +117,21 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
               return (
                 <div
                   key={key + i}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl border transition-all min-h-[64px]"
-                  style={
+                  className={`flex items-center gap-3 px-3 py-3 rounded-xl border transition-all min-h-[64px] ${
                     isConfirmed
-                      ? {
-                          borderColor: "rgba(52,211,153,0.40)",
-                          background: "rgba(52,211,153,0.06)",
-                          boxShadow: "0 0 16px rgba(52,211,153,0.18)",
-                        }
+                      ? "border-foreground/30 bg-white"
                       : isDismissed
-                      ? {
-                          borderColor: "rgba(239,68,68,0.30)",
-                          background: "rgba(239,68,68,0.04)",
-                          opacity: 0.5,
-                        }
-                      : {
-                          borderColor: "rgba(255,255,255,0.12)",
-                          background: "rgba(255,255,255,0.03)",
-                        }
-                  }
+                      ? "border-border/30 bg-secondary/40 opacity-60"
+                      : "border-border/60 bg-white"
+                  }`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-bold text-white">{t.provider_or_tool}</p>
-                      <span
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-white/65"
-                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)" }}
-                      >
+                      <p className="text-sm font-bold text-foreground">{t.provider_or_tool}</p>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-secondary border border-border/50 text-[10px] font-semibold text-muted-foreground">
                         <SrcIcon size={9} /> {src.label}
                       </span>
-                      <span
-                        className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold"
-                        style={(() => {
-                          const lvl = String(conf.label).toLowerCase();
-                          if (lvl === "high")   return { background: "rgba(52,211,153,0.10)",  color: "#34d399", border: "1px solid rgba(52,211,153,0.28)" };
-                          if (lvl === "medium") return { background: "rgba(34,211,238,0.10)",  color: "#22d3ee", border: "1px solid rgba(34,211,238,0.28)" };
-                          return { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.55)", border: "1px solid rgba(255,255,255,0.10)" };
-                        })()}
-                      >
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${conf.bg} ${conf.color} ${conf.border}`}>
                         {conf.label}
                       </span>
                     </div>
@@ -171,12 +144,11 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
                     aria-checked={isDismissed}
                     aria-label={`Dismiss ${t.provider_or_tool}`}
                     onClick={() => onToggle(key, "dismiss")}
-                    className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center transition-colors"
-                    style={
+                    className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border flex items-center justify-center transition-colors ${
                       isDismissed
-                        ? { background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.45)", color: "#fca5a5" }
-                        : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.55)" }
-                    }
+                        ? "border-red-300 bg-red-50 text-red-600"
+                        : "border-border/60 bg-white text-muted-foreground hover:border-red-300 hover:text-red-600"
+                    }`}
                   >
                     <X size={16} aria-hidden="true" />
                   </button>
@@ -186,12 +158,11 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
                     aria-checked={isConfirmed}
                     aria-label={`Confirm ${t.provider_or_tool}`}
                     onClick={() => onToggle(key, "confirm")}
-                    className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center transition-colors"
-                    style={
+                    className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border flex items-center justify-center transition-colors ${
                       isConfirmed
-                        ? { background: "#10b981", border: "1px solid #34d399", color: "#fff", boxShadow: "0 0 16px rgba(16,185,129,0.45)" }
-                        : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.55)" }
-                    }
+                        ? "border-emerald-400 bg-emerald-500 text-white"
+                        : "border-border/60 bg-white text-muted-foreground hover:border-emerald-400 hover:text-emerald-600"
+                    }`}
                   >
                     <Check size={16} aria-hidden="true" />
                   </button>

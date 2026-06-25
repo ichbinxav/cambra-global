@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
 
 /**
@@ -24,7 +25,13 @@ export default function FounderLetter() {
 
       <div className="relative max-w-4xl mx-auto px-6 sm:px-10">
         {/* Eyebrow pill */}
-        <div className="flex justify-center mb-6 animate-fade-up">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="flex justify-center mb-6"
+        >
           <span
             className="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
             style={{
@@ -40,11 +47,15 @@ export default function FounderLetter() {
               Meet the founder
             </span>
           </span>
-        </div>
+        </motion.div>
 
         {/* Headline */}
-        <h2
-          className="text-center text-white mb-12 sm:mb-16 animate-fade-up"
+        <motion.h2
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="text-center text-white mb-12 sm:mb-16"
           style={{
             fontFamily: "'Space Grotesk', 'Inter', sans-serif",
             fontSize: "clamp(36px, 5.5vw, 60px)",
@@ -65,10 +76,16 @@ export default function FounderLetter() {
             the founder
           </span>
           <span className="text-white">.</span>
-        </h2>
+        </motion.h2>
 
         {/* Two columns */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 animate-fade-up">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="grid grid-cols-2 gap-3 sm:gap-4"
+        >
           {/* LEFT — portrait card */}
           <div
             className="relative rounded-2xl overflow-hidden min-h-[220px] sm:min-h-[340px]"
@@ -168,7 +185,7 @@ export default function FounderLetter() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

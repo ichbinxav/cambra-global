@@ -21,29 +21,26 @@ export const DURATION = {
 };
 
 // Primitives
-// SAFETY: every preset starts with opacity:1. Motion is an enhancement, never a
-// gate to visibility. If framer-motion fails to run (Safari edge cases,
-// hydration errors), the element stays on screen instead of going invisible.
 export const fadeIn = {
-  initial: { opacity: 1 },
+  initial: { opacity: 0 },
   animate: { opacity: 1 },
   transition: { duration: DURATION.base, ease: EASE },
 };
 
 export const slideUp = {
-  initial: { opacity: 1, y: 0 },
+  initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: DURATION.base, ease: EASE },
 };
 
 export const slideUpSm = {
-  initial: { opacity: 1, y: 0 },
+  initial: { opacity: 0, y: 6 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: DURATION.fast, ease: EASE },
 };
 
 export const scaleIn = {
-  initial: { opacity: 1, scale: 1 },
+  initial: { opacity: 0, scale: 0.97 },
   animate: { opacity: 1, scale: 1 },
   transition: { duration: DURATION.base, ease: EASE },
 };
@@ -63,9 +60,8 @@ export const hoverLift = {
 };
 
 // Page transition (use on top-level page wrappers in inner app)
-// Base visible — same safety rule as above.
 export const pageEnter = {
-  initial: { opacity: 1, y: 0 },
+  initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -4 },
   transition: { duration: DURATION.base, ease: EASE },

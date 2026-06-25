@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, Quote, TrendingUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ITEMS = [
   {
@@ -42,42 +43,15 @@ const ITEMS = [
 
 export default function TestimonialsCarousel() {
   const [idx, setIdx] = useState(0);
-  const [paused, setPaused] = useState(false);
   const total = ITEMS.length;
   const item = ITEMS[idx];
-  const containerRef = useRef(null);
 
   const prev = () => setIdx((i) => (i - 1 + total) % total);
   const next = () => setIdx((i) => (i + 1) % total);
 
-  // Auto-rotate every 6s. Pauses on hover, when tab is hidden,
-  // or if the user prefers reduced motion.
-  useEffect(() => {
-    if (paused) return;
-    const prefersReduced =
-      typeof window !== "undefined" &&
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
-
-    const id = setInterval(() => {
-      if (document.visibilityState === "visible") {
-        setIdx((i) => (i + 1) % total);
-      }
-    }, 6000);
-    return () => clearInterval(id);
-  }, [paused, total]);
-
   return (
     <section id="testimonials" className="relative py-12 sm:py-16 overflow-hidden">
-      <div
-        ref={containerRef}
-        className="relative max-w-2xl mx-auto px-6 sm:px-10"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocusCapture={() => setPaused(true)}
-        onBlurCapture={() => setPaused(false)}
-      >
+      <div className="relative max-w-2xl mx-auto px-6 sm:px-10">
         {/* eyebrow */}
         <div className="text-center mb-4">
           <span
@@ -121,10 +95,14 @@ export default function TestimonialsCarousel() {
         </h2>
 
         {/* Unified dark card — no split */}
-        <div className="animate-fade-up">
-          <div
+        <AnimatePresence mode="wait">
+          <motion.div
             key={idx}
-            className="relative rounded-2xl overflow-hidden p-6 sm:p-7 animate-fade-up"
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="relative rounded-2xl overflow-hidden p-6 sm:p-7"
             style={{
               background: "linear-gradient(180deg, #0b1020 0%, #07090f 100%)",
               border: "1px solid rgba(255,255,255,0.10)",
@@ -248,8 +226,8 @@ export default function TestimonialsCarousel() {
                 <p className="text-[9px] text-white/40 mt-0.5">/year</p>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Controls */}
         <div className="mt-4 flex items-center justify-between">

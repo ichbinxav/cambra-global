@@ -35,7 +35,7 @@ export default function ForLifestyleSection() {
                 className="px-5 py-2.5 rounded-full border border-border/50 text-sm text-muted-foreground/70 hover:border-foreground/20 hover:text-foreground transition-all"
                 initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0 }}
+                viewport={{ once: true }}
                 transition={{ delay: i * 0.06 }}
                 whileHover={{ scale: 1.03 }}
               >

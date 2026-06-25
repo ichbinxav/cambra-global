@@ -41,39 +41,6 @@ export const AuthProvider = ({ children }) => {
       setAuthError(null);
       return;
     }
-
-    // FIX 3 — Safety timeout: guarantee loading states never hang forever.
-    // If anything takes more than 8s, force-resolve so the UI can render
-    // (ProtectedRoute will then redirect to LoginGate if still unauth).
-    const safetyTimer = setTimeout(() => {
-      console.warn("⏱ AuthContext safety timeout fired — forcing loading flags off");
-      setIsLoadingPublicSettings(false);
-      setIsLoadingAuth(false);
-    }, 8000);
-
-    // FIX B2 — Re-read access_token from the URL at auth-check time. Safari/iOS
-    // sometimes lands here before app-params.js could persist the token (private
-    // mode, slow storage init). Read it live, persist it, clean the URL.
-    let liveToken = appParams.token;
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlToken = urlParams.get("access_token");
-      if (urlToken) {
-        liveToken = urlToken;
-        try { window.localStorage.setItem("base44_access_token", urlToken); } catch { /* ignore */ }
-        urlParams.delete("access_token");
-        const newUrl = window.location.pathname +
-          (urlParams.toString() ? "?" + urlParams.toString() : "") +
-          window.location.hash;
-        window.history.replaceState({}, document.title, newUrl);
-      } else if (!liveToken) {
-        try {
-          const stored = window.localStorage.getItem("base44_access_token");
-          if (stored) liveToken = stored;
-        } catch { /* ignore */ }
-      }
-    } catch { /* ignore */ }
-
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
@@ -84,7 +51,7 @@ export const AuthProvider = ({ children }) => {
         const res = await fetch(`/api/apps/public/prod/public-settings/by-id/${appParams.appId}`, {
           headers: {
             'X-App-Id': appParams.appId,
-            ...(liveToken ? { 'Authorization': `Bearer ${liveToken}` } : {})
+            ...(appParams.token ? { 'Authorization': `Bearer ${appParams.token}` } : {})
           },
           credentials: 'include'
         });
@@ -99,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         setAppPublicSettings(publicSettings);
         
         // If we got the app public settings successfully, check if user is authenticated
-        if (liveToken) {
+        if (appParams.token) {
           await checkUserAuth();
         } else {
           setIsLoadingAuth(false);
@@ -145,8 +112,6 @@ export const AuthProvider = ({ children }) => {
       });
       setIsLoadingPublicSettings(false);
       setIsLoadingAuth(false);
-    } finally {
-      clearTimeout(safetyTimer);
     }
   };
 

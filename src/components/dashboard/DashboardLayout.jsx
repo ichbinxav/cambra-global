@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, BarChart3, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Home, ShieldCheck, Zap, FolderOpen, TrendingUp } from "lucide-react";
 import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import ErrorBoundary from "@/components/shared/ErrorBoundary.jsx";
 
 // MVP navigation — focused, minimal. Advanced API/OAuth/Webhook screens are admin-only.
 const NAV_ITEMS = [
@@ -18,7 +18,7 @@ const NAV_ITEMS = [
   { path: "/Account", label: "Account", icon: Settings },
 ];
 
-export default function DashboardLayout({ children }) {
+export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
@@ -30,8 +30,12 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div
-      className="flex font-inter text-white"
-      style={{ background: "#0a0a0a", minHeight: "100dvh", opacity: 1, visibility: "visible" }}
+      className="min-h-screen flex font-inter"
+      style={{
+        color: "#ffffff",
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
+      }}
     >
       {/* Desktop Sidebar — premium dark editorial */}
       <aside
@@ -78,17 +82,23 @@ export default function DashboardLayout({ children }) {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path}>
-                <div
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] transition-colors ${
+                <motion.div
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] transition-all ${
                     active
                       ? "bg-white text-black font-bold"
-                      : "text-white/55 hover:text-white hover:bg-white/[0.04]"
+                      : "text-white/55 hover:text-white"
                   }`}
-                  style={active ? { boxShadow: "0 0 24px rgba(34,211,238,0.25)" } : undefined}
+                  style={
+                    active
+                      ? { boxShadow: "0 0 24px rgba(34,211,238,0.25)" }
+                      : { background: "transparent" }
+                  }
+                  whileHover={active ? {} : { x: 2, backgroundColor: "rgba(255,255,255,0.04)" }}
+                  transition={{ type: "spring", stiffness: 500, damping: 40 }}
                 >
                   <item.icon size={14} strokeWidth={active ? 2.4 : 1.8} />
                   {item.label}
-                </div>
+                </motion.div>
               </Link>
             );
           })}
@@ -136,29 +146,26 @@ export default function DashboardLayout({ children }) {
         </Button>
       </div>
 
-      {sidebarOpen && (
-        <div className="lg:hidden">
-          <div
-            className="fixed inset-0 z-30 bg-black/50 animate-fade-in"
-            onClick={() => setSidebarOpen(false)}
-            aria-hidden
-          />
-          <div
-            className="fixed top-14 right-0 bottom-0 z-40 w-[82%] max-w-[320px] overflow-y-auto animate-slide-in-right"
-            style={{
-              background:
-                "linear-gradient(180deg, #0b0e1a 0%, #0a0d18 55%, #0b1020 100%)",
-              borderLeft: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "-20px 0 60px -20px rgba(0,0,0,0.6)",
-            }}
-          >
-            <style>{`
-              @keyframes cambra-fade-in { from { opacity: 0; } to { opacity: 1; } }
-              @keyframes cambra-slide-in-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
-              .animate-fade-in { animation: cambra-fade-in 200ms ease-out; }
-              .animate-slide-in-right { animation: cambra-slide-in-right 240ms cubic-bezier(0.22, 1, 0.36, 1); }
-            `}</style>
-            <nav className="p-4 space-y-0.5">
+      <AnimatePresence mode="wait">
+        {sidebarOpen && (
+          <div key="mobile-menu" className="lg:hidden">
+            <motion.div
+              className="fixed inset-0 z-30 bg-black/20"
+              onClick={() => setSidebarOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+            <motion.div
+              className="fixed inset-0 z-40 pt-14 overflow-y-auto"
+              style={{ background: "#0a0a0a" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <nav className="p-4 space-y-0.5">
                 {NAV_ITEMS.map(item => {
                   const active = location.pathname === item.path;
                   return (
@@ -195,42 +202,34 @@ export default function DashboardLayout({ children }) {
                   <LogOut size={16} /> Sign out
                 </button>
               </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
-      {/* Main content — unified dark editorial surface (matches landing identity) */}
-      <main
-        className="relative flex-1 min-w-0 pt-14 lg:pt-0 text-white"
-        style={{ background: "#0a0a0a", opacity: 1, visibility: "visible", minHeight: "100dvh" }}
-      >
-        {/* Ambient backdrop — subtle grid + radial glow, consistent with landing */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-            backgroundSize: "56px 56px",
-            maskImage:
-              "radial-gradient(ellipse 100% 70% at 50% 0%, #000 30%, transparent 80%)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 100% 70% at 50% 0%, #000 30%, transparent 80%)",
-          }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute top-0 left-1/4 w-[40rem] h-[40rem] -translate-y-1/2"
-          style={{
-            background:
-              "radial-gradient(closest-side, rgba(34,211,238,0.10), transparent 70%)",
-            filter: "blur(40px)",
-          }}
-        />
-        <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8 min-h-[60vh]">
-          <ErrorBoundary>
-            {children ?? <Outlet />}
-          </ErrorBoundary>
+      {/* Main content — dark editorial */}
+      <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 overflow-hidden">
+        {/* Ambient backdrop */}
+        <div className="pointer-events-none absolute inset-0">
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+              backgroundSize: "56px 56px",
+              opacity: 0.3,
+              maskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
+              WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
+            }}
+          />
+          <div className="absolute -top-40 right-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl"
+               style={{ background: "radial-gradient(closest-side, rgba(59,130,246,0.16), transparent 65%)" }} />
+          <div className="absolute top-1/2 -left-32 w-[34rem] h-[34rem] rounded-full blur-3xl"
+               style={{ background: "radial-gradient(closest-side, rgba(34,211,238,0.14), transparent 65%)" }} />
+        </div>
+        <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8">
+          <Outlet />
         </div>
       </main>
     </div>

@@ -85,11 +85,7 @@ export default function UnlockSavings() {
   };
 
   if (loading) {
-    return (
-      <div style={{ padding: 24, color: "#666", fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
-        <Loader2 className="h-4 w-4 animate-spin" /> Loading opportunities…
-      </div>
-    );
+    return <div className="p-6 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading opportunities…</div>;
   }
 
   const opportunities = [];
@@ -103,7 +99,7 @@ export default function UnlockSavings() {
     activations.some(a => a.vertical === vertical && (a.brand_id === results.find(r => r.id === resultId)?.brand_id));
 
   return (
-    <div className="space-y-6 max-w-5xl" style={{ color: "#0a0a0a" }}>
+    <div className="space-y-6 max-w-5xl">
       <div>
         <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-border/60 bg-background/70 mb-3">
           <Zap className="h-3 w-3 text-cambra-cyan" />

@@ -8,26 +8,26 @@
   :root {
     --font-inter: 'Inter', 'Space Grotesk', system-ui, sans-serif;
 
-    /* CAMBRA OS — UNIFIED DARK EDITORIAL (single identity across landing + app) */
-    --background: 0 0% 4%;             /* #0a0a0a */
-    --foreground: 0 0% 98%;
-    --card: 0 0% 7%;                   /* elevated dark surface */
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;               /* white pills */
-    --primary-foreground: 0 0% 4%;
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 0 0% 12%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 72% 55%;
+    /* CAMBRA OS — light base */
+    --background: 0 0% 99.5%;        /* off-white global base */
+    --foreground: 222 25% 8%;        /* near-black editorial */
+    --card: 0 0% 100%;
+    --card-foreground: 222 25% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 25% 8%;
+    --primary: 222 47% 11%;          /* deep navy */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 25% 12%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 42%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 222 25% 8%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 14%;
-    --input: 0 0% 14%;
-    --ring: 188 95% 50%;               /* cyan focus ring */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 222 47% 11%;
     --radius: 0.75rem;
 
     /* CAMBRA infrastructure intelligence palette */
@@ -250,10 +250,10 @@
 .text-green-600 { color: hsl(var(--score-excellent)) !important; }
 .text-orange-500 { color: hsl(var(--score-medium)) !important; }
 
-/* Global ambient page backdrop — subtle grid on dark editorial base */
+/* Global ambient page backdrop — ALWAYS subtle grid on white */
 .cambra-page-bg {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(34,211,238,0.10), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(31,78,216,0.04), transparent 60%),
     hsl(var(--background));
 }
 .cambra-page-bg::before {
@@ -262,12 +262,11 @@
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    linear-gradient(hsl(222 25% 8% / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(222 25% 8% / 0.025) 1px, transparent 1px);
   background-size: 56px 56px;
   z-index: 0;
   mask-image: radial-gradient(ellipse 100% 80% at 50% 30%, #000 40%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 100% 80% at 50% 30%, #000 40%, transparent 100%);
 }
 
 /* Letter spacing utilities */
@@ -805,9 +804,9 @@ p { line-height: 1.6; }
    CAMBRA Design System — editorial utilities
    ────────────────────────────────────────────────────────────── */
 
-/* Body defaults — dark editorial baseline (single identity across landing + app).
-   Since --background is now also dark (#0a0a0a), bg-background utility classes
-   across the app automatically inherit this same color — no more light/dark clash. */
+/* Body defaults — dark editorial baseline.
+   Page wrappers (e.g. .bg-background) still override per-page,
+   so only sections that don't set their own bg inherit this. */
 body {
   background: #0a0a0a;
   color: #ffffff;
@@ -868,20 +867,7 @@ body {
 }
 
 /* Animations */
-/* Safari/iOS-safe fade-up:
-   Base state is VISIBLE (opacity:1). The animation only runs when motion is
-   allowed AND the browser actually executes it. If the animation fails to
-   run (Safari/iOS edge cases, backdrop-filter contexts, etc.), the element
-   stays visible — never permanently invisible. */
-.animate-fade-up { opacity: 1; }
-@media (prefers-reduced-motion: no-preference) {
-  .animate-fade-up { animation: cambraFadeUp 400ms ease-out both; }
-}
-@keyframes cambraFadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-/* Legacy alias — kept so any inline style referencing the old keyframe still resolves */
+.animate-fade-up { animation: fadeUp 400ms ease-out forwards; }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -898,8 +884,3 @@ body {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-
-/* ===== AUTHENTICATED SHELL SAFETY ===== */
-#root { min-height: 100dvh; }
-#root > * { opacity: 1 !important; visibility: visible !important; }
-main { opacity: 1 !important; visibility: visible !important; }

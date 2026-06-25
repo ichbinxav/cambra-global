@@ -8,16 +8,15 @@ import {
   ArrowRight, ArrowLeft, Loader2, AlertTriangle, MapPin,
   ShieldCheck, Sparkles, ChevronDown, ChevronUp, Plus, Store,
 } from "lucide-react";
+import Navbar from "@/components/landing/Navbar";
 import StripeConnectCard from "@/components/connect/StripeConnectCard";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
 import RevenueRangePicker, { midpointForRange } from "@/components/analyzer/RevenueRangePicker";
 import DetectedToolsGrid from "@/components/analyzer/DetectedToolsGrid";
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
+import AnalyzerAuthGate from "@/components/analyzer/AnalyzerAuthGate";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
-import StepIndicator from "@/components/analyzer/StepIndicator";
-import WhatHappensNext from "@/components/analyzer/WhatHappensNext";
-import ConfidenceIndicator from "@/components/analyzer/ConfidenceIndicator";
 import {
   computeInfraScore, calculateSavings, getBenchmarks,
   ENGINE_VERSION, validateAnalyzerInput,
@@ -99,9 +98,10 @@ export default function Analyzer() {
   const urlParams = new URLSearchParams(window.location.search);
   const resumeParam = urlParams.get("resume") === "true";
 
-  // Auth is guaranteed by <ProtectedRoute> in App.jsx — if we render, the user
-  // is signed in. No duplicate auth check here (was causing a black flicker
-  // between mount and the internal isAuthenticated() resolving).
+  // Auth gate — analyzer is only available to signed-in users so we always
+  // have an email, the audit is saved, and the user can resume from any device.
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
 
   // Step machinery
   const [step, setStep] = useState(1);
@@ -167,8 +167,29 @@ export default function Analyzer() {
 
   const tools = buildToolList();
 
-  // ── Resume offer detection ──
+  // ── Auth check on mount — gate the analyzer behind sign-in ──
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const ok = await base44.auth.isAuthenticated();
+        if (!cancelled) {
+          setIsAuthed(!!ok);
+          setAuthChecked(true);
+        }
+      } catch {
+        if (!cancelled) {
+          setIsAuthed(false);
+          setAuthChecked(true);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // ── Resume offer detection ── (only after auth confirmed)
+  useEffect(() => {
+    if (!isAuthed) return;
     if (memoryLoaded) return;
     let cancelled = false;
 
@@ -205,7 +226,7 @@ export default function Analyzer() {
 
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAuthed]);
 
   const applyResumeState = (resume, skipPrompt = false) => {
     try {
@@ -599,30 +620,20 @@ export default function Analyzer() {
     setTimeout(() => navigate(`/Results?id=${result.id}`), 700);
   };
 
-  // CANARY — if you can read this banner in the app preview, the Analyzer
-  // module imported and rendered all hooks successfully. If you don't see it,
-  // the failure is in module-level imports (a sibling file throws at import).
-  if (typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("canary") === "1") {
+  // ── Auth gate — block the whole flow until the user is signed in. ──
+  // Shows a small loading state while we check, then either the gate or the flow.
+  if (!authChecked) {
     return (
-      <div style={{
-        padding: 32,
-        background: "#fff7ed",
-        border: "2px solid #fb923c",
-        borderRadius: 12,
-        color: "#0a0a0a",
-        fontFamily: "system-ui",
-      }}>
-        <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}>
-          ✅ Analyzer canary OK
-        </h1>
-        <p style={{ fontSize: 14, color: "#525252" }}>
-          The Analyzer module loaded and all hooks ran successfully.
-          Remove ?canary=1 from the URL to see the real form.
-        </p>
+      <div
+        className="fixed inset-0 flex items-center justify-center"
+        style={{ background: "#0a0a0a", color: "#fff" }}
+        aria-busy="true"
+      >
+        <Loader2 size={20} className="animate-spin text-white/70" />
       </div>
     );
   }
+  if (!isAuthed) return <AnalyzerAuthGate />;
 
   // ── If running, render full-screen progress overlay ──
   if (running) {
@@ -641,37 +652,76 @@ export default function Analyzer() {
 
   return (
     <div
-      className="font-inter"
+      className="relative min-h-screen flex flex-col font-inter overflow-x-hidden"
       style={{
-        color: "#0a0a0a",
-        background: "#ffffff",
+        color: "#ffffff",
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
       }}
     >
-      {/* Plain inline step indicator — normal document flow */}
+      {/* Fixed ambient grid + halos */}
       <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "8px 0 16px",
-          borderBottom: "1px solid #e5e5e5",
-          marginBottom: 24,
-          flexWrap: "wrap",
-          gap: 8,
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          opacity: 0.3,
+          maskImage:
+            "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed z-0"
+        style={{
+          width: 700, height: 700, left: "50%", top: 80, transform: "translateX(-50%)",
+          background: "radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)",
+          filter: "blur(80px)",
+        }}
+      />
+
+      <Navbar />
+
+      {/* Gradient progress bar under navbar */}
+      <div className="fixed top-14 left-0 right-0 z-50 h-[2px]" style={{ background: "rgba(255,255,255,0.06)" }}>
+        <div
+          className="h-full transition-all duration-500"
+          style={{
+            width: `${progressPct}%`,
+            background: "linear-gradient(90deg, #3b82f6 0%, #22d3ee 100%)",
+            boxShadow: "0 0 16px rgba(34,211,238,0.6)",
+          }}
+        />
+      </div>
+
+      {/* Step indicator — glass */}
+      <div
+        className="sticky top-14 z-40 flex items-center justify-between px-5 py-3"
+        style={{
+          background: "rgba(10,10,10,0.7)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}
       >
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#666" }}>
-          Live audit · Step {step} of 3
+        <span className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+          </span>
+          Live audit
         </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 160, height: 4, background: "#eee", borderRadius: 2, overflow: "hidden" }}>
-            <div style={{ width: `${progressPct}%`, height: "100%", background: "#0a0a0a" }} />
-          </div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#0a0a0a", fontVariantNumeric: "tabular-nums" }}>{step}/3</span>
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] text-white/40">~2 minutes</span>
+          <span className="text-xs font-bold tabular-nums text-white/70">{step}/3</span>
         </div>
       </div>
 
-      <main className="font-inter" style={{ maxWidth: 560, margin: "0 auto", color: "#0a0a0a" }}>
+      <main className="relative z-10 flex-1 max-w-lg mx-auto w-full px-5 pt-10 pb-36">
         {/* Resume offer */}
         {resumeOffer && step === 1 && (
           <div
@@ -687,7 +737,7 @@ export default function Analyzer() {
               <Sparkles size={16} className="text-cyan-300 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-white">{t("welcome_back")}</p>
-                <p className="text-[12px] text-neutral-600 mt-0.5">
+                <p className="text-[12px] text-white/55 mt-0.5">
                   {t("continue_where", { step: resumeOffer.step })}
                   {Array.isArray(resumeOffer.detectedTools) && resumeOffer.detectedTools.length > 0 &&
                     t("tools_detected_extra", { n: resumeOffer.detectedTools.length })}.
@@ -701,7 +751,7 @@ export default function Analyzer() {
                   </button>
                   <button
                     onClick={dismissResume}
-                    className="h-9 px-4 rounded-full text-xs font-medium text-neutral-600 hover:text-neutral-900"
+                    className="h-9 px-4 rounded-full text-xs font-medium text-white/60 hover:text-white"
                     style={{ border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.03)" }}
                   >
                     {t("start_fresh")}
@@ -737,10 +787,10 @@ export default function Analyzer() {
                 background: "rgba(255,255,255,0.03)",
               }}
             >
-              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-neutral-600">Step 01 · Brand</span>
+              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 01 · Brand</span>
             </div>
             <h1
-              className="text-neutral-900 mb-3"
+              className="text-white mb-3"
               style={{
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "clamp(28px, 4vw, 36px)",
@@ -751,27 +801,27 @@ export default function Analyzer() {
             >
               {t("az_step1_title")}
             </h1>
-            <p className="text-[14px] text-neutral-600 mb-7">{t("az_step1_sub")}</p>
+            <p className="text-[14px] text-white/55 mb-7">{t("az_step1_sub")}</p>
 
             <div className="space-y-5">
               <div className="space-y-1.5">
-                <Label htmlFor="az-website" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-neutral-600">{t("field_website")}</Label>
+                <Label htmlFor="az-website" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_website")}</Label>
                 <Input
                   id="az-website"
                   value={websiteUrl}
                   onChange={e => setWebsiteUrl(e.target.value)}
                   onBlur={handleWebsiteBlur}
                   placeholder="yourbrand.com"
-                  className="h-12 text-sm text-neutral-900 placeholder:text-neutral-400"
+                  className="h-12 text-sm text-white placeholder:text-white/30"
                   style={{
-                    background: "#fafafa",
-                    border: "1px solid #e5e5e5",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.12)",
                   }}
                   inputMode="url"
                   aria-required="true"
                 />
                 {discovery.status === "running" && (
-                  <div className="flex items-center gap-1.5 text-[11px] text-neutral-600">
+                  <div className="flex items-center gap-1.5 text-[11px] text-white/55">
                     <Loader2 size={11} className="animate-spin text-cyan-400" />
                     {t("analyzing_your_infra")}
                   </div>
@@ -782,57 +832,57 @@ export default function Analyzer() {
                   </p>
                 )}
                 {discovery.status === "completed" && discovery.findings.length === 0 && websiteUrl && (
-                  <p className="text-[11px] text-neutral-500">{t("no_public_signals")}</p>
+                  <p className="text-[11px] text-white/40">{t("no_public_signals")}</p>
                 )}
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="az-brand" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-neutral-600">{t("field_brand_name")}</Label>
+                <Label htmlFor="az-brand" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_brand_name")}</Label>
                 <Input
                   id="az-brand"
                   value={brandName}
                   onChange={e => setBrandName(e.target.value)}
                   placeholder={t("your_brand_placeholder")}
-                  className="h-12 text-sm text-neutral-900 placeholder:text-neutral-400"
+                  className="h-12 text-sm text-white placeholder:text-white/30"
                   style={{
-                    background: "#fafafa",
-                    border: "1px solid #e5e5e5",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.12)",
                   }}
                   aria-required="true"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="az-country" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-neutral-600">{t("field_country")}</Label>
+                <Label htmlFor="az-country" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_country")}</Label>
                 <div className="relative">
                   <select
                     id="az-country"
                     value={country}
                     onChange={e => setCountry(e.target.value)}
                     aria-required="true"
-                    className="w-full h-12 pl-9 pr-3 rounded-md text-sm appearance-none text-neutral-900"
+                    className="w-full h-12 pl-9 pr-3 rounded-md text-sm appearance-none text-white"
                     style={{
-                      background: "#fafafa",
-                      border: "1px solid #e5e5e5",
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.12)",
                     }}
                   >
-                    <option value="">{t("select_country")}</option>
-                    {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="" style={{ background: "#0a0a0a" }}>{t("select_country")}</option>
+                    {COUNTRIES.map(c => <option key={c} value={c} style={{ background: "#0a0a0a" }}>{c}</option>)}
                   </select>
-                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" aria-hidden="true" />
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" aria-hidden="true" />
+                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" aria-hidden="true" />
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" aria-hidden="true" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label id="az-revenue-label" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-neutral-600">{t("field_revenue")}</Label>
+                <Label id="az-revenue-label" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_revenue")}</Label>
                 <div role="radiogroup" aria-labelledby="az-revenue-label" aria-required="true">
                   <RevenueRangePicker value={revenueRange} onChange={setRevenueRange} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label id="az-category-label" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-neutral-600">{t("field_category")}</Label>
+                <Label id="az-category-label" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_category")}</Label>
                 <div role="radiogroup" aria-labelledby="az-category-label" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {CATEGORY_OPTIONS.map(c => (
                     <button
@@ -843,13 +893,13 @@ export default function Analyzer() {
                       onClick={() => setCategory(c.key)}
                       className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                         category === c.key
-                          ? "bg-neutral-900 text-white"
-                          : "text-neutral-700 hover:text-neutral-900"
+                          ? "bg-white text-black"
+                          : "text-white/80 hover:text-white"
                       }`}
                       style={
                         category === c.key
-                          ? { border: "1px solid #0a0a0a" }
-                          : { border: "1px solid #e5e5e5", background: "#fafafa" }
+                          ? { border: "1px solid rgba(255,255,255,0.95)" }
+                          : { border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }
                       }
                     >
                       {t(c.i18n)}
@@ -858,8 +908,6 @@ export default function Analyzer() {
                 </div>
               </div>
             </div>
-
-            <WhatHappensNext />
           </div>
         )}
 
@@ -869,10 +917,10 @@ export default function Analyzer() {
             <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
               style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
             >
-              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-neutral-600">Step 02 · Infrastructure</span>
+              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 02 · Infrastructure</span>
             </div>
             <h1
-              className="text-neutral-900 mb-3"
+              className="text-white mb-3"
               style={{
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "clamp(28px, 4vw, 36px)",
@@ -883,7 +931,7 @@ export default function Analyzer() {
             >
               {t("az_step2_title")}
             </h1>
-            <p className="text-[14px] text-neutral-600 mb-7">{t("az_step2_sub")}</p>
+            <p className="text-[14px] text-white/55 mb-7">{t("az_step2_sub")}</p>
 
             <DetectedToolsGrid
               tools={tools}
@@ -893,31 +941,12 @@ export default function Analyzer() {
               discovering={discovery.status === "running"}
             />
 
-            {/* Confidence indicator — surfaces signal strength to the user */}
-            <div className="mt-5 flex items-center justify-between gap-3 flex-wrap">
-              <ConfidenceIndicator
-                level={(() => {
-                  const confirmedCount = confirmedTools.size;
-                  const manualFilled = (manual.payment_provider ? 1 : 0)
-                    + (manual.shipping_provider ? 1 : 0)
-                    + (manual.total_saas_spend > 0 ? 1 : 0);
-                  const score = confirmedCount + manualFilled;
-                  if (score >= 5) return "high";
-                  if (score >= 2) return "medium";
-                  return "low";
-                })()}
-              />
-              <span className="text-[10px] text-neutral-500 font-mono">
-                {confirmedTools.size} {confirmedTools.size === 1 ? "tool" : "tools"} confirmed
-              </span>
-            </div>
-
             {/* Manual section */}
             <div className="mt-6">
               <button
                 type="button"
                 onClick={() => setManualOpen(o => !o)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[48px] text-neutral-800 hover:text-white transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[48px] text-white/85 hover:text-white transition-colors"
                 style={{
                   border: "1px solid rgba(255,255,255,0.12)",
                   background: "rgba(255,255,255,0.03)",
@@ -938,7 +967,7 @@ export default function Analyzer() {
                   }}
                 >
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600">{t("field_payment_provider")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_payment_provider")}</Label>
                     <select
                       value={manual.payment_provider}
                       onChange={e => setManual(m => ({ ...m, payment_provider: e.target.value }))}
@@ -947,18 +976,18 @@ export default function Analyzer() {
                       <option value="">{t("select_provider")}</option>
                       {PAYMENT_PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
-                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600 pt-2 block">{t("field_payment_fee")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("field_payment_fee")}</Label>
                     <Input
                       type="number" step="0.01" min={0} max={15} inputMode="decimal"
                       value={manual.payment_fee_pct || ""}
                       onChange={e => setManual(m => ({ ...m, payment_fee_pct: Number(e.target.value) }))}
                       placeholder="e.g. 2.9"
-                      className="h-11 text-sm text-white placeholder:text-neutral-400" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                      className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600">{t("field_shipping_provider")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_shipping_provider")}</Label>
                     <select
                       value={manual.shipping_provider}
                       onChange={e => setManual(m => ({ ...m, shipping_provider: e.target.value }))}
@@ -967,26 +996,26 @@ export default function Analyzer() {
                       <option value="">{t("select_carrier")}</option>
                       {SHIPPING_PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
-                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600 pt-2 block">{t("field_shipments")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("field_shipments")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.monthly_shipments || ""}
                       onChange={e => setManual(m => ({ ...m, monthly_shipments: Number(e.target.value) }))}
                       placeholder="e.g. 400"
-                      className="h-11 text-sm text-white placeholder:text-neutral-400" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                      className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     />
-                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600 pt-2 block">{t("field_shipping_cost")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("field_shipping_cost")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.monthly_shipping_cost || ""}
                       onChange={e => setManual(m => ({ ...m, monthly_shipping_cost: Number(e.target.value) }))}
                       placeholder="e.g. 3000"
-                      className="h-11 text-sm text-white placeholder:text-neutral-400" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                      className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600">{t("field_saas_tools")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_saas_tools")}</Label>
                     <div className="grid grid-cols-2 gap-2">
                       {COMMON_SAAS_TOOLS.map(toolName => {
                         const active = manual.saas_tools_selected.includes(toolName);
@@ -1001,7 +1030,7 @@ export default function Analyzer() {
                                 : [...m.saas_tools_selected, toolName],
                             }))}
                             className={`min-h-[44px] px-3 rounded-xl text-xs font-semibold transition-colors ${
-                                  active ? "bg-white text-black" : "text-neutral-700 hover:text-neutral-900"
+                                  active ? "bg-white text-black" : "text-white/80 hover:text-white"
                                 }`}
                                 style={
                                   active
@@ -1014,24 +1043,24 @@ export default function Analyzer() {
                         );
                       })}
                     </div>
-                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600 pt-2 block">{t("field_saas_spend")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("field_saas_spend")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.total_saas_spend || ""}
                       onChange={e => setManual(m => ({ ...m, total_saas_spend: Number(e.target.value) }))}
                       placeholder="e.g. 1500"
-                      className="h-11 text-sm text-white placeholder:text-neutral-400" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                      className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600">{t("field_banking_fees_label")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_banking_fees_label")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.banking_monthly_fees || ""}
                       onChange={e => setManual(m => ({ ...m, banking_monthly_fees: Number(e.target.value) }))}
                       placeholder="e.g. 40"
-                      className="h-11 text-sm text-white placeholder:text-neutral-400" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                      className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     />
                   </div>
 
@@ -1045,33 +1074,33 @@ export default function Analyzer() {
                       <span className="flex items-center gap-2 text-xs font-semibold">
                         <Store size={13} /> {t("physical_store_q")}
                       </span>
-                      <span className={`text-[11px] font-bold ${manual.has_physical_store ? "text-cyan-300" : "text-neutral-500"}`}>
+                      <span className={`text-[11px] font-bold ${manual.has_physical_store ? "text-cyan-300" : "text-white/45"}`}>
                         {manual.has_physical_store ? t("yes") : t("no")}
                       </span>
                     </button>
 
                     {manual.has_physical_store && (
                       <div className="space-y-1.5 px-1">
-                        <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600">{t("in_store_gmv_q")}</Label>
+                        <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("in_store_gmv_q")}</Label>
                         <Input
                           type="number" min={0} inputMode="numeric"
                           value={manual.in_store_gmv || ""}
                           onChange={e => setManual(m => ({ ...m, in_store_gmv: Number(e.target.value) }))}
-                          className="h-11 text-sm text-white placeholder:text-neutral-400" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                          className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                         />
-                        <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600 pt-2 block">{t("in_store_fee_q")}</Label>
+                        <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("in_store_fee_q")}</Label>
                         <Input
                           type="number" step="0.01" min={0} max={5} inputMode="decimal"
                           value={manual.tpe_transaction_fee_pct || ""}
                           onChange={e => setManual(m => ({ ...m, tpe_transaction_fee_pct: Number(e.target.value) }))}
-                          className="h-11 text-sm text-white placeholder:text-neutral-400" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                          className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                         />
-                        <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-600 pt-2 block">{t("terminal_rental_q")}</Label>
+                        <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("terminal_rental_q")}</Label>
                         <Input
                           type="number" min={0} inputMode="numeric"
                           value={manual.monthly_terminal_rental || ""}
                           onChange={e => setManual(m => ({ ...m, monthly_terminal_rental: Number(e.target.value) }))}
-                          className="h-11 text-sm text-white placeholder:text-neutral-400" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                          className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                         />
                       </div>
                     )}
@@ -1088,10 +1117,10 @@ export default function Analyzer() {
             <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
               style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
             >
-              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-neutral-600">Step 03 · Verify</span>
+              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 03 · Verify</span>
             </div>
             <h1
-              className="text-neutral-900 mb-3"
+              className="text-white mb-3"
               style={{
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "clamp(28px, 4vw, 36px)",
@@ -1102,20 +1131,20 @@ export default function Analyzer() {
             >
               {t("az_step3_title")}
             </h1>
-            <p className="text-[14px] text-neutral-600 mb-7">{t("az_step3_sub")}</p>
+            <p className="text-[14px] text-white/55 mb-7">{t("az_step3_sub")}</p>
 
             {stripeConnected ? (
               <div className="space-y-4">
                 <div
                   className="rounded-2xl p-6 text-center"
                   style={{
-                    background: "rgba(52,211,153,0.08)",
-                    border: "1px solid rgba(52,211,153,0.30)",
-                    boxShadow: "0 0 32px rgba(52,211,153,0.18)",
+                    background: "rgba(34,211,238,0.06)",
+                    border: "1px solid rgba(34,211,238,0.25)",
+                    boxShadow: "0 0 32px rgba(34,211,238,0.15)",
                   }}
                 >
-                  <ShieldCheck size={28} className="mx-auto mb-2 text-emerald-300" />
-                  <p className="text-sm font-black text-emerald-300">{t("az_step3_verified")}</p>
+                  <ShieldCheck size={28} className="mx-auto mb-2 text-cyan-300" />
+                  <p className="text-sm font-black text-white">{t("az_step3_verified")}</p>
                 </div>
                 <UpgradeToVerified vertical="payments" isConnected currentConfidence="verified" />
               </div>
@@ -1137,7 +1166,7 @@ export default function Analyzer() {
             <div className="mt-6 text-center">
               <button
                 onClick={runAnalysis}
-                className="text-xs font-semibold text-neutral-500 hover:text-white underline underline-offset-2 transition-colors"
+                className="text-xs font-semibold text-white/50 hover:text-white underline underline-offset-2 transition-colors"
               >
                 {stripeConnected ? t("confirm_cta") : t("az_step3_skip")}
               </button>
@@ -1146,19 +1175,14 @@ export default function Analyzer() {
         )}
       </main>
 
-      {/* Footer actions — normal flow, plain */}
+      {/* Footer actions — glass */}
       <div
+        className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-3"
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          padding: "16px 0",
-          borderTop: "1px solid #e5e5e5",
-          marginTop: 32,
-          maxWidth: 560,
-          marginLeft: "auto",
-          marginRight: "auto",
+          background: "rgba(10,10,10,0.78)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
         }}
       >
         <Button
@@ -1170,8 +1194,7 @@ export default function Analyzer() {
             }
             setStep(s => s - 1);
           }}
-          className="h-11 rounded-full px-4 text-sm font-medium text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
-          style={{ color: "#525252" }}
+          className="h-11 rounded-full px-4 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5"
         >
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t("back_label")}
@@ -1181,11 +1204,9 @@ export default function Analyzer() {
           <Button
             onClick={goStep2}
             disabled={!step1Valid}
-            className="h-11 rounded-full px-6 text-sm font-bold gap-2 disabled:opacity-40"
+            className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-white text-black hover:bg-white/90 disabled:opacity-40"
             style={{
-              background: "#0a0a0a",
-              color: "#ffffff",
-              boxShadow: "0 12px 32px -12px rgba(31,78,216,0.4)",
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.22)",
             }}
           >
             {t("continue_label")} <ArrowRight className="h-4 w-4" />
@@ -1194,11 +1215,9 @@ export default function Analyzer() {
         {step === 2 && (
           <Button
             onClick={goStep3}
-            className="h-11 rounded-full px-6 text-sm font-bold gap-2"
+            className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-white text-black hover:bg-white/90"
             style={{
-              background: "#0a0a0a",
-              color: "#ffffff",
-              boxShadow: "0 12px 32px -12px rgba(31,78,216,0.4)",
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.22)",
             }}
           >
             {t("continue_label")} <ArrowRight className="h-4 w-4" />

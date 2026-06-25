@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRight, CheckCircle2, Sparkles, RefreshCw,
+  ArrowRight, CheckCircle2, AlertTriangle, Sparkles,
   CreditCard, Truck, Package, Plug, Building2, Store, Mail, Headphones, Users, Wifi, Layers,
-  TrendingUp as TrendingUpIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
-import AnimatedCounter from "@/components/shared/AnimatedCounter";
-import { useToast } from "@/components/shared/Toast.jsx";
-import { useNavigate } from "react-router-dom";
 
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import LastScanBar from "@/components/dashboard/LastScanBar";
@@ -19,7 +15,6 @@ import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import PageHero from "@/components/shared/PageHero";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import { useTranslation } from "@/lib/i18n.jsx";
-import CambraCTA from "@/components/shared/CambraCTA";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function formatEurLocal(n, lang) {
@@ -72,8 +67,6 @@ function nodeBadge(node, t) {
 /* ── main ────────────────────────────────────────────────────── */
 export default function Dashboard() {
   const { t, lang } = useTranslation();
-  const { toast } = useToast();
-  const navigate = useNavigate();
   const formatEur = (n) => formatEurLocal(n, lang);
   const [user, setUser] = useState(null);
   const [brand, setBrand] = useState(null);
@@ -82,33 +75,12 @@ export default function Dashboard() {
   const [graphNodes, setGraphNodes] = useState([]);
   const [hasLiveDeal, setHasLiveDeal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [rescanning, setRescanning] = useState(false);
-
-  const handleRescan = async () => {
-    if (!brand || rescanning) return;
-    setRescanning(true);
-    toast.info(t("scanning_toast"));
-    try {
-      await base44.functions.invoke("discoverCompanyInfrastructure", {
-        brand_id: brand.id,
-        website_url: brand.website,
-      });
-      toast.success(t("scan_complete_toast"));
-    } catch (e) {
-      toast.error(t("sync_error"));
-    } finally {
-      setRescanning(false);
-    }
-  };
 
   useEffect(() => {
     (async () => {
       try {
-        // Auth is no longer enforced at the route level — degrade gracefully
-        // when the user is not signed in instead of crashing on u.id.
-        const u = await base44.auth.me().catch(() => null);
+        const u = await base44.auth.me();
         setUser(u);
-        if (!u) { setLoading(false); return; }
 
         const brands = await base44.entities.Brand.filter({ created_by_id: u.id }, "-created_date", 1);
         const b = brands[0] || null;
@@ -145,9 +117,7 @@ export default function Dashboard() {
     })();
   }, []);
 
-  if (loading) return (
-    <div style={{ padding: 24, color: "#666", fontSize: 14 }}>Loading…</div>
-  );
+  if (loading) return <DashboardSkeleton />;
 
   const firstName = user?.full_name ? user.full_name.split(" ")[0] : t("dashboard_word");
   const stripeConnected = !!stripeConn;
@@ -155,35 +125,31 @@ export default function Dashboard() {
   /* ───── STATE A: no AnalyzerResult yet ───── */
   if (!latest) {
     return (
-      <div style={{ paddingBottom: 40 }}>
-        <div style={{ display: "flex", justifyContent: "center", padding: "48px 16px" }}>
+      <div className="pb-10">
+        <div className="min-h-[60vh] flex items-center justify-center px-4 py-12">
           <div
+            className="w-full max-w-xl rounded-3xl p-8 sm:p-10 text-center"
             style={{
-              width: "100%",
-              maxWidth: 576,
-              borderRadius: 24,
-              padding: "40px 32px",
-              textAlign: "center",
-              background: "#ffffff",
-              border: "1px solid #e5e5e5",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              boxShadow: "0 30px 80px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(96,165,250,0.15)",
             }}
           >
             <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6"
               style={{
-                width: 56, height: 56, borderRadius: 16,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                margin: "0 auto 24px",
-                background: "#f0fafd",
-                border: "1px solid #c0e9f0",
+                background: "rgba(34,211,238,0.08)",
+                border: "1px solid rgba(34,211,238,0.25)",
+                boxShadow: "0 0 24px rgba(34,211,238,0.18)",
               }}
             >
-              <Sparkles size={20} style={{ color: "#0891b2" }} />
+              <Sparkles size={20} className="text-cyan-300" />
             </div>
             <h1
+              className="text-white mb-3"
               style={{
-                color: "#0a0a0a",
-                marginBottom: 12,
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "clamp(28px, 4vw, 36px)",
                 fontWeight: 900,
@@ -193,46 +159,31 @@ export default function Dashboard() {
             >
               {t("state_a_title")}
             </h1>
-            <p style={{ fontSize: 14, color: "#666", marginBottom: 28, maxWidth: 420, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>
+            <p className="text-sm text-white/55 mb-7 max-w-md mx-auto leading-relaxed">
               {t("state_a_sub")}
             </p>
-            <CambraCTA intent="audit" size="lg" />
-          </div>
-        </div>
-
-        {/* Feature hint cards — plain */}
-        <div style={{ maxWidth: 768, margin: "0 auto", padding: "0 16px 24px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-            {[
-              { icon: Plug, title: t("auto_detection"), desc: t("ct_page_sub") },
-              { icon: Layers, title: t("bench_comparison"), desc: t("benchmarked_against", { n: "100+", country: "EU" }) },
-              { icon: TrendingUpIcon, title: t("savings_calc"), desc: t("measured_cumulative") },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div
-                key={title}
+            <Link to="/Analyzer">
+              <Button
+                size="lg"
+                className="h-12 rounded-full px-7 text-sm font-bold gap-2 min-h-[44px] bg-white text-black hover:bg-white/90"
                 style={{
-                  borderRadius: 16,
-                  padding: 20,
-                  textAlign: "left",
-                  background: "#ffffff",
-                  border: "1px solid #e5e5e5",
+                  boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.22)",
                 }}
               >
-                <div
-                  style={{
-                    width: 32, height: 32, borderRadius: 8,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    marginBottom: 12,
-                    background: "#f0fafd",
-                    border: "1px solid #c0e9f0",
-                  }}
+                {t("state_a_cta")} <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <div className="flex flex-wrap justify-center gap-2 mt-7">
+              {[t("auto_detection"), t("bench_comparison"), t("savings_calc")].map(p => (
+                <span
+                  key={p}
+                  className="text-[11px] px-3 py-1.5 rounded-full text-white/55 font-medium"
+                  style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
                 >
-                  <Icon size={14} style={{ color: "#0891b2" }} />
-                </div>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#0a0a0a", marginBottom: 4 }}>{title}</p>
-                <p style={{ fontSize: 11, color: "#666", lineHeight: 1.4 }}>{desc}</p>
-              </div>
-            ))}
+                  {p}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -257,7 +208,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 pb-10" style={{ color: "#0a0a0a" }}>
+    <div className="space-y-6 pb-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-2">
         <div>
@@ -287,7 +238,17 @@ export default function Dashboard() {
           </h1>
           <p className="text-[14px] text-white/55 mt-2">{t("your_infrastructure")}</p>
         </div>
-        <CambraCTA intent="audit" size="sm">{t("nav_analyzer")}</CambraCTA>
+        <Link to="/Analyzer">
+          <Button
+            size="sm"
+            className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-white text-black hover:bg-white/90"
+            style={{
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 8px 24px -10px rgba(59,130,246,0.55), 0 0 20px rgba(59,130,246,0.2)",
+            }}
+          >
+            {t("nav_analyzer")} <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+        </Link>
       </div>
 
       {/* ── SAVINGS HERO ── */}
@@ -333,12 +294,7 @@ export default function Dashboard() {
                 filter: "drop-shadow(0 0 22px rgba(34,211,238,0.35))",
               }}
             >
-              <AnimatedCounter
-                value={Number(latest.total_savings) || 0}
-                format={(n) => formatEur(n)}
-                duration={1.8}
-              />
-              <span className="text-[0.35em] font-bold text-white/40 ml-2" style={{ WebkitTextFillColor: "rgba(255,255,255,0.4)" }}>/{t("per_yr_short")}</span>
+              {formatEur(latest.total_savings)}<span className="text-[0.35em] font-bold text-white/40 ml-2" style={{ WebkitTextFillColor: "rgba(255,255,255,0.4)" }}>/{t("per_yr_short")}</span>
             </p>
             <p className="text-sm text-white/60 mt-3 max-w-md">{heroSubtitle}</p>
           </div>
@@ -359,49 +315,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
-      {/* Quick action strip — State B only (analysis exists, Stripe not connected) */}
-      {!stripeConnected && (
-        <div className="flex flex-wrap gap-2 mb-2">
-          <button
-            type="button"
-            onClick={() => navigate("/ConnectTools")}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all hover:translate-y-[-1px]"
-            style={{
-              background: "rgba(59,130,246,0.10)",
-              border: "1px solid rgba(59,130,246,0.30)",
-              color: "#93c5fd",
-            }}
-          >
-            <Plug size={12} /> {t("quick_connect_stripe")}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate(`/Results?id=${latest.id}`)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all hover:translate-y-[-1px]"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              color: "rgba(255,255,255,0.80)",
-            }}
-          >
-            {t("quick_view_results")} <ArrowRight size={12} />
-          </button>
-          <button
-            type="button"
-            onClick={handleRescan}
-            disabled={rescanning || !brand}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all hover:translate-y-[-1px] disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.10)",
-              color: "rgba(255,255,255,0.45)",
-            }}
-          >
-            <RefreshCw size={12} className={rescanning ? "animate-spin" : ""} /> {t("quick_rescan")}
-          </button>
-        </div>
-      )}
 
       {/* Quick stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -520,7 +433,32 @@ export default function Dashboard() {
       {/* ── M8 — AI Insights (unchanged) ── */}
       <AIInsightsPanel />
 
-
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Link to="/Analyzer">
+          <div
+            className="p-5 rounded-2xl transition-all min-h-[44px] hover:border-white/20"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <p className="text-sm font-bold mb-0.5 text-white">{t("nav_analyzer")}</p>
+          </div>
+        </Link>
+        <Link to="/ConnectTools">
+          <div
+            className="p-5 rounded-2xl transition-all min-h-[44px] hover:border-white/20"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <p className="text-sm font-bold mb-0.5 text-white">{t("nav_connect")}</p>
+            <p className="text-xs text-white/55">{t("ct_page_sub")}</p>
+          </div>
+        </Link>
+      </div>
     </div>
   );
 }

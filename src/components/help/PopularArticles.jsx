@@ -27,7 +27,7 @@ export default function PopularArticles() {
                 key={item.slug}
                 initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0, margin: "-40px" }}
+                viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: 0.4, delay: i * 0.05 }}
               >
                 <Link

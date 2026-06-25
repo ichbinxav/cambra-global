@@ -12,15 +12,14 @@ import { base44 } from '@/api/base44Client';
 import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding.jsx';
 import Analyzer from '@/pages/Analyzer';
-import HealthCheck from '@/pages/HealthCheck';
 // FIX 13 — Lazy load heavy pages (Results, Dashboard, ConnectTools + heavy admin pages)
 const Results       = lazy(() => import('@/pages/Results'));
 const Dashboard     = lazy(() => import('@/pages/Dashboard'));
 const ConnectTools  = lazy(() => import('@/pages/ConnectTools'));
-const Reports       = lazy(() => import('@/pages/Reports'));
-const Network       = lazy(() => import('@/pages/Network'));
-const Insights      = lazy(() => import('@/pages/Insights'));
-const InsightDetail = lazy(() => import('@/pages/InsightDetail'));
+import Reports from '@/pages/Reports';
+import Network from '@/pages/Network';
+import Insights from '@/pages/Insights';
+import InsightDetail from '@/pages/InsightDetail';
 import Account from '@/pages/Account';
 import UnlockSavings from '@/pages/UnlockSavings';
 import RecoveryTracker from '@/pages/RecoveryTracker';
@@ -47,10 +46,6 @@ import AdminControl from '@/pages/admin/AdminControl';
 import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
 import AdminRecommendations from '@/pages/admin/AdminRecommendations';
 import AuthRedirect from '@/pages/AuthRedirect';
-import LoginGate from '@/pages/LoginGate';
-import CookieConsent from '@/components/shared/CookieConsent';
-import AdaptiveMarketingRoute from '@/components/shared/AdaptiveMarketingRoute';
-import AuthenticatedShell from '@/components/shell/AuthenticatedShell';
 import Pricing from '@/pages/Pricing.jsx';
 import Developers from '@/pages/Developers.jsx';
 import DevelopersMCP from '@/pages/DevelopersMCP.jsx';
@@ -71,27 +66,19 @@ import ScrollToTop from '@/components/shared/ScrollToTop.jsx';
 import ErrorBoundary from '@/components/shared/ErrorBoundary.jsx';
 import { ToastProvider } from '@/components/shared/Toast.jsx';
 
-// Dark-style fallback shown while lazy chunks load.
-// NOT fixed-position — it sits inline inside the routed area so DashboardLayout
-// chrome (sidebar/header) stays visible around it, instead of a full black screen.
+// FIX 13 — Dark-style fallback shown while lazy chunks load
 function LazyFallback() {
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center"
+      className="fixed inset-0 flex items-center justify-center"
       style={{ background: "#0a0a0a" }}
       role="status"
       aria-live="polite"
     >
-      <span
-        className="h-10 w-10 rounded-full"
-        style={{
-          border: "2px solid rgba(255,255,255,0.12)",
-          borderTopColor: "#22d3ee",
-          animation: "cambra-spin 0.8s linear infinite",
-        }}
-      />
-      <p className="mt-4 text-[11px] font-bold tracking-[0.22em] uppercase text-white/60">Loading</p>
-      <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
+      <div className="h-10 w-10 text-white/90" style={{ animation: 'spin 4s linear infinite' }}>
+        <BrandGlyph className="h-10 w-10" />
+      </div>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
@@ -101,9 +88,38 @@ function LazyFallback() {
 const withBoundary = (element) => <ErrorBoundary>{element}</ErrorBoundary>;
 
 const ProtectedRoute = ({ children }) => {
-  // TEMPORARY: auth wall disabled — render children directly so routes are
-  // publicly reachable. The LoginGate / AuthContext flow is preserved in the
-  // codebase; we just stop enforcing the redirect here for now.
+  const { isAuthenticated, isLoadingAuth } = useAuth();
+
+  if (isLoadingAuth) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="h-8 w-8" style={{ animation: 'spin 4s linear infinite' }}>
+          <BrandGlyph className="h-8 w-8" />
+        </div>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <h1 className="text-lg font-bold mb-2">Sign-in required</h1>
+          <p className="text-sm text-muted-foreground mb-4">Open the login window and return automatically.</p>
+          <a
+            href="/auth/start"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold"
+          >
+            Sign in
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return children;
 };
 
@@ -122,20 +138,11 @@ const AdminRoute = ({ children }) => {
 
   if (isLoadingAuth || loadingUser) {
     return (
-      <div
-        className="fixed inset-0 flex items-center justify-center"
-        style={{ background: "#0a0a0a" }}
-        role="status"
-      >
-        <span
-          className="h-8 w-8 rounded-full"
-          style={{
-            border: "2px solid rgba(255,255,255,0.12)",
-            borderTopColor: "#22d3ee",
-            animation: "cambra-spin 0.8s linear infinite",
-          }}
-        />
-        <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="h-8 w-8" style={{ animation: 'spin 4s linear infinite' }}>
+          <BrandGlyph className="h-8 w-8" />
+        </div>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -159,14 +166,29 @@ const AdminRoute = ({ children }) => {
 };
 
 const AuthenticatedApp = () => {
-  // TEMPORARY: do NOT block rendering on auth loading/errors. Routes are
-  // public for now — every page handles its own logged-out empty state.
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+  const isPublicLanding = typeof window !== "undefined" && (window.location.pathname === "/" || window.location.pathname === "/Landing" || window.location.pathname === "/landing");
+
+  if (!isPublicLanding && (isLoadingPublicSettings || isLoadingAuth)) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-background" role="status" aria-live="polite">
+        <div className="h-12 w-12 text-foreground/90" style={{ animation: 'spin 4s linear infinite' }}>
+          <BrandGlyph className="h-12 w-12" />
+        </div>
+        <p className="mt-3 text-sm text-foreground/70">Loading…</p>
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (!isPublicLanding && authError) {
+    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
+  }
+
   return (
     <Suspense fallback={<LazyFallback />}>
       <Routes>
         {/* Public */}
-        <Route path="/HealthCheck" element={<HealthCheck />} />
-        <Route path="/healthcheck" element={<HealthCheck />} />
         <Route path="/" element={withBoundary(<Landing />)} />
         <Route path="/Landing" element={withBoundary(<Landing />)} />
         <Route path="/landing" element={<Navigate to="/Landing" replace />} />
@@ -174,13 +196,14 @@ const AuthenticatedApp = () => {
         <Route path="/onboarding" element={<Navigate to="/Onboarding" replace />} />
         <Route path="/BrandProfile" element={withBoundary(<BrandProfile />)} />
         <Route path="/brandprofile" element={<Navigate to="/BrandProfile" replace />} />
-        <Route path="/LoginGate" element={withBoundary(<LoginGate />)} />
-        <Route path="/logingate" element={<Navigate to="/LoginGate" replace />} />
+        <Route path="/Analyzer" element={withBoundary(<Analyzer />)} />
+        <Route path="/ConnectTools" element={withBoundary(<ConnectTools />)} />
+        <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
         <Route path="/StripeAnalyzer" element={withBoundary(<StripeAnalyzer />)} />
         <Route path="/stripeanalyzer" element={<Navigate to="/StripeAnalyzer" replace />} />
+        <Route path="/Results" element={withBoundary(<Results />)} />
         <Route path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
         <Route path="/results" element={<Navigate to="/Results" replace />} />
-        <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
         <Route path="/Privacy" element={withBoundary(<Privacy />)} />
         <Route path="/privacy" element={<Navigate to="/Privacy" replace />} />
         <Route path="/Terms" element={withBoundary(<Terms />)} />
@@ -191,49 +214,37 @@ const AuthenticatedApp = () => {
         <Route path="/snapshot" element={<Navigate to="/Snapshot" replace />} />
         <Route path="/Deals" element={<Navigate to="/UnlockSavings" replace />} />
         <Route path="/deals" element={<Navigate to="/UnlockSavings" replace />} />
-        <Route path="/Pricing" element={<AdaptiveMarketingRoute>{withBoundary(<Pricing />)}</AdaptiveMarketingRoute>} />
+        <Route path="/Pricing" element={withBoundary(<Pricing />)} />
         <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
-        <Route path="/Developers" element={<AdaptiveMarketingRoute>{withBoundary(<Developers />)}</AdaptiveMarketingRoute>} />
+        <Route path="/Developers" element={withBoundary(<Developers />)} />
         <Route path="/developers" element={<Navigate to="/Developers" replace />} />
-        <Route path="/Developers/MCP" element={<AdaptiveMarketingRoute>{withBoundary(<DevelopersMCP />)}</AdaptiveMarketingRoute>} />
+        <Route path="/Developers/MCP" element={withBoundary(<DevelopersMCP />)} />
         <Route path="/developers/mcp" element={<Navigate to="/Developers/MCP" replace />} />
-        <Route path="/HowItWorks" element={<AdaptiveMarketingRoute>{withBoundary(<HowItWorks />)}</AdaptiveMarketingRoute>} />
+        <Route path="/HowItWorks" element={withBoundary(<HowItWorks />)} />
         <Route path="/howitworks" element={<Navigate to="/HowItWorks" replace />} />
-        <Route path="/Testimonials" element={<AdaptiveMarketingRoute>{withBoundary(<Testimonials />)}</AdaptiveMarketingRoute>} />
+        <Route path="/Testimonials" element={withBoundary(<Testimonials />)} />
         <Route path="/testimonials" element={<Navigate to="/Testimonials" replace />} />
-        <Route path="/Contact" element={<AdaptiveMarketingRoute>{withBoundary(<Contact />)}</AdaptiveMarketingRoute>} />
+        <Route path="/Contact" element={withBoundary(<Contact />)} />
         <Route path="/contact" element={<Navigate to="/Contact" replace />} />
-        <Route path="/Help" element={<AdaptiveMarketingRoute>{withBoundary(<Help />)}</AdaptiveMarketingRoute>} />
+        <Route path="/Help" element={withBoundary(<Help />)} />
         <Route path="/help" element={<Navigate to="/Help" replace />} />
-        <Route path="/Help/:slug" element={<AdaptiveMarketingRoute>{withBoundary(<HelpCategory />)}</AdaptiveMarketingRoute>} />
-        <Route path="/help/:slug" element={<AdaptiveMarketingRoute>{withBoundary(<HelpCategory />)}</AdaptiveMarketingRoute>} />
+        <Route path="/Help/:slug" element={withBoundary(<HelpCategory />)} />
+        <Route path="/help/:slug" element={withBoundary(<HelpCategory />)} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
-        {/* Surgical rebuild — the 4 black-screen routes use a plain, bulletproof
-            shell (white bg, normal flow, no effects). All page logic is preserved
-            in the page components themselves. */}
-        <Route path="/Analyzer"      element={<AuthenticatedShell>{withBoundary(<Analyzer />)}</AuthenticatedShell>} />
-        <Route path="/Dashboard"     element={<AuthenticatedShell>{withBoundary(<Dashboard />)}</AuthenticatedShell>} />
-        <Route path="/Results"       element={<AuthenticatedShell>{withBoundary(<Results />)}</AuthenticatedShell>} />
-        <Route path="/UnlockSavings" element={<AuthenticatedShell>{withBoundary(<UnlockSavings />)}</AuthenticatedShell>} />
-
-        {/* ConnectTools — same plain shell to keep cross-navigation consistent */}
-        <Route path="/ConnectTools"  element={<AuthenticatedShell>{withBoundary(<ConnectTools />)}</AuthenticatedShell>} />
-
-        {/* Remaining protected routes WITH dashboard chrome (unchanged) */}
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+          <Route path="/Dashboard" element={withBoundary(<Dashboard />)} />
           <Route path="/Reports" element={withBoundary(<Reports />)} />
           <Route path="/Network" element={withBoundary(<Network />)} />
           <Route path="/Insights" element={withBoundary(<Insights />)} />
           <Route path="/InsightDetail" element={withBoundary(<InsightDetail />)} />
           <Route path="/Account" element={withBoundary(<Account />)} />
+          <Route path="/UnlockSavings" element={withBoundary(<UnlockSavings />)} />
           <Route path="/RecoveryTracker" element={withBoundary(<RecoveryTracker />)} />
           <Route path="/Invoices" element={withBoundary(<Invoices />)} />
           <Route path="/Vault" element={withBoundary(<Vault />)} />
         </Route>
-
-
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
           <Route path="/admin" element={withBoundary(<AdminOverview />)} />
@@ -272,7 +283,6 @@ function App() {
                 <AuthenticatedApp />
                 <CopilotPanel />
                 <CopilotObservations />
-                <CookieConsent />
               </Router>
               <Toaster />
             </QueryClientProvider>
