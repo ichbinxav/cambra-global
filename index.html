@@ -8,6 +8,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" />
 
+    <!-- Anti-cache: forces Safari/iOS to always fetch the latest app shell so users
+         never see a stale version of CAMBRA. -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <title>CAMBRA — Infrastructure Cost Intelligence</title>
     <meta name="description" content="CAMBRA benchmarks your payment fees, shipping costs and SaaS spend against 400+ European brands." />
 
