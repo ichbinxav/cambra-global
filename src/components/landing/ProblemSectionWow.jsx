@@ -1,177 +1,211 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { TrendingDown, Truck, Layers, ArrowDownRight } from "lucide-react";
-import SectionLabel from "@/components/shared/SectionLabel";
-import AnimatedSection from "@/components/landing/AnimatedSection";
+import { TrendingDown, Truck, Layers, AlertTriangle } from "lucide-react";
 
 /**
- * Problem section — cinematic WOW redesign.
- * - Massive red gradient figures
- * - Animated downward arrows
- * - "Lost on average" emphasis
- * - Visible total bleed at the bottom
+ * Problem section — reinvented.
+ * Visual concept: a live "money leak" counter (€ ticking up every second),
+ * paired with a clean breakdown ledger underneath.
+ * Feels like a financial command-center, not stacked marketing cards.
  */
-const ITEMS = [
+
+const TOTAL_LOST_YEAR = 16200;            // €/yr aggregate
+const LOST_PER_SECOND = TOTAL_LOST_YEAR / (365 * 24 * 3600); // ≈ 0.000514 €/s
+const STARTING_OFFSET = 3120;             // demo: simulate as if running since Jan 1
+
+const LEAKS = [
   {
     icon: TrendingDown,
     category: "Payments",
-    amount: "€8,400",
-    period: "/year",
-    body: "Most brands pay 2.2–2.8% in payment fees. The optimised rate for your volume is often 1.4–1.8%.",
+    amount: 8400,
     you: "2.6%",
     network: "1.6%",
-    label: "Avg. fee",
+    delta: "−38%",
+    note: "Optimised rate for your volume is 1.4–1.8%.",
   },
   {
     icon: Truck,
     category: "Shipping",
-    amount: "€4,200",
-    period: "/year",
-    body: "Carriers charge 15–30% more to brands without collective negotiating power.",
+    amount: 4200,
     you: "€8.40",
     network: "€6.20",
-    label: "Per shipment",
+    delta: "−26%",
+    note: "Carriers charge brands without collective leverage 15–30% more.",
   },
   {
     icon: Layers,
     category: "SaaS & Tools",
-    amount: "€3,600",
-    period: "/year",
-    body: "The average independent brand pays for 4–6 overlapping or underused software tools.",
+    amount: 3600,
     you: "22 tools",
     network: "14 tools",
-    label: "Stack size",
+    delta: "−36%",
+    note: "Avg. independent brand pays for 4–6 overlapping tools.",
   },
 ];
 
-function ProblemCard({ item, index }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.7, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -6 }}
-      className="relative group overflow-hidden rounded-2xl p-7 sm:p-8"
-      style={{
-        background:
-          "linear-gradient(180deg, rgba(239,68,68,0.04) 0%, rgba(255,255,255,0.02) 60%, rgba(255,255,255,0.01) 100%)",
-        border: "1px solid rgba(239,68,68,0.15)",
-      }}
-    >
-      {/* glow halo */}
-      <div
-        aria-hidden
-        className="absolute inset-0 opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle at 100% 0%, rgba(239,68,68,0.20), transparent 55%)",
-        }}
-      />
-      {/* diagonal downward streak */}
-      <motion.div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          right: -40,
-          top: -40,
-          width: 200,
-          height: 200,
-          background:
-            "linear-gradient(135deg, rgba(239,68,68,0.18), transparent 60%)",
-          filter: "blur(40px)",
-        }}
-        animate={{ opacity: [0.5, 0.9, 0.5] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      />
+function formatEUR(n) {
+  return `€${Math.floor(n).toLocaleString("en-US")}`;
+}
 
-      {/* header */}
-      <div className="relative flex items-start justify-between mb-6">
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center"
-          style={{
-            background: "rgba(239,68,68,0.10)",
-            border: "1px solid rgba(239,68,68,0.30)",
-            boxShadow: "0 0 24px rgba(239,68,68,0.20)",
-          }}
-        >
-          <item.icon size={18} className="text-red-300" />
-        </div>
-        <motion.div
-          animate={{ y: [0, 4, 0] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <ArrowDownRight size={20} className="text-red-400/60" />
-        </motion.div>
+function LiveCounter() {
+  const [val, setVal] = useState(STARTING_OFFSET);
+  const ref = useRef(null);
+  const startRef = useRef(0);
+
+  useEffect(() => {
+    let raf;
+    let last = performance.now();
+    startRef.current = last;
+    const tick = (now) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      setVal((v) => v + LOST_PER_SECOND * dt * 60); // accelerated 60x for visible drama
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] font-bold text-red-300">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-400" />
+          </span>
+          Live · money leaving right now
+        </span>
       </div>
 
-      {/* category */}
-      <p
-        className="relative text-[10px] uppercase tracking-[0.24em] font-bold mb-3"
-        style={{ color: "rgba(255,255,255,0.55)" }}
-      >
-        {item.category}
-      </p>
-
-      {/* MASSIVE LOST FIGURE */}
-      <div className="relative flex items-baseline gap-1 mb-4">
+      <div className="flex items-baseline gap-3 flex-wrap">
         <span
           className="font-black tabular-nums"
           style={{
             fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(40px, 5.5vw, 64px)",
-            letterSpacing: "-0.05em",
-            lineHeight: 0.95,
+            fontSize: "clamp(56px, 11vw, 128px)",
+            letterSpacing: "-0.06em",
+            lineHeight: 0.9,
             background:
-              "linear-gradient(180deg, #fca5a5 0%, #ef4444 60%, #b91c1c 100%)",
+              "linear-gradient(180deg, #ffffff 0%, #fca5a5 55%, #ef4444 100%)",
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            filter: "drop-shadow(0 0 28px rgba(239,68,68,0.45))",
+            filter: "drop-shadow(0 0 38px rgba(239,68,68,0.55))",
           }}
         >
-          −{item.amount}
+          −{formatEUR(val)}
         </span>
-        <span className="text-[14px] font-bold text-red-300/80">{item.period}</span>
+        <span className="text-[12px] uppercase tracking-[0.22em] font-bold text-white/50 pb-2">
+          lost · YTD · avg brand
+        </span>
       </div>
 
-      <p
-        className="relative text-[10px] uppercase tracking-[0.22em] font-bold mb-5"
-        style={{ color: "rgba(239,68,68,0.85)" }}
-      >
-        Lost on average
+      <p className="mt-3 text-[13px] sm:text-[14px] text-white/55 max-w-md leading-relaxed">
+        While you scroll, the average independent brand is bleeding{" "}
+        <span className="text-red-300 font-bold">
+          €{(LOST_PER_SECOND * 60 * 60).toFixed(2)}
+        </span>{" "}
+        an hour into invisible overpayment.
       </p>
+    </div>
+  );
+}
 
-      <p
-        className="relative text-[13px] mb-5"
-        style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.55 }}
-      >
-        {item.body}
-      </p>
+function LeakRow({ leak, index, total }) {
+  const widthPct = (leak.amount / total) * 100;
 
-      {/* mini comparison row */}
-      <div
-        className="relative rounded-lg p-3 grid grid-cols-3 items-center"
-        style={{
-          background: "rgba(255,255,255,0.025)",
-          border: "1px solid rgba(255,255,255,0.06)",
-        }}
-      >
-        <div>
-          <p className="text-[8px] uppercase tracking-[0.22em] font-bold text-white/40 mb-1">You</p>
-          <p className="text-[14px] font-black tabular-nums text-red-300">{item.you}</p>
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -16 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      className="relative group py-5 sm:py-6"
+      style={{ borderTop: index === 0 ? "none" : "1px solid rgba(255,255,255,0.06)" }}
+    >
+      <div className="grid grid-cols-12 gap-4 items-center">
+        {/* icon + category */}
+        <div className="col-span-12 sm:col-span-4 flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.25)",
+            }}
+          >
+            <leak.icon size={16} className="text-red-300" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] uppercase tracking-[0.22em] font-bold text-white/55 mb-1">
+              {leak.category}
+            </p>
+            <p className="text-[12px] text-white/45 leading-tight truncate">{leak.note}</p>
+          </div>
         </div>
-        <div className="text-center text-[9px] uppercase tracking-[0.18em] font-bold text-white/35">
-          vs
+
+        {/* comparison */}
+        <div className="col-span-7 sm:col-span-5">
+          <div className="flex items-center gap-2 sm:gap-3 mb-1.5">
+            <div className="flex items-baseline gap-1">
+              <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-white/35">You</span>
+              <span className="text-[14px] font-black tabular-nums text-red-300">{leak.you}</span>
+            </div>
+            <span className="text-[9px] text-white/30 font-mono">→</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-white/35">Network</span>
+              <span className="text-[14px] font-black tabular-nums text-cyan-300">{leak.network}</span>
+            </div>
+            <span
+              className="ml-auto inline-flex items-center text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded"
+              style={{
+                background: "rgba(239,68,68,0.10)",
+                color: "rgb(252,165,165)",
+                border: "1px solid rgba(239,68,68,0.25)",
+              }}
+            >
+              {leak.delta}
+            </span>
+          </div>
+
+          {/* bleed bar */}
+          <div
+            className="relative h-1.5 rounded-full overflow-hidden"
+            style={{ background: "rgba(255,255,255,0.04)" }}
+          >
+            <motion.div
+              initial={{ width: 0 }}
+              whileInView={{ width: `${widthPct}%` }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, delay: 0.2 + index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-y-0 left-0"
+              style={{
+                background: "linear-gradient(90deg, #ef4444 0%, #b91c1c 100%)",
+                boxShadow: "0 0 12px rgba(239,68,68,0.55)",
+              }}
+            />
+          </div>
         </div>
-        <div className="text-right">
-          <p className="text-[8px] uppercase tracking-[0.22em] font-bold text-white/40 mb-1">Network</p>
-          <p className="text-[14px] font-black tabular-nums text-cyan-300">{item.network}</p>
+
+        {/* amount */}
+        <div className="col-span-5 sm:col-span-3 text-right">
+          <p
+            className="font-black tabular-nums"
+            style={{
+              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+              fontSize: "clamp(20px, 2.6vw, 28px)",
+              letterSpacing: "-0.03em",
+              lineHeight: 1,
+              color: "#fca5a5",
+            }}
+          >
+            −€{leak.amount.toLocaleString("en-US")}
+          </p>
+          <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-red-300/60 mt-1">
+            /year
+          </p>
         </div>
       </div>
-      <p className="relative text-[9px] uppercase tracking-[0.22em] font-bold text-white/30 mt-2 text-center">
-        {item.label}
-      </p>
     </motion.div>
   );
 }
@@ -184,81 +218,132 @@ export default function ProblemSectionWow() {
         aria-hidden
         className="absolute pointer-events-none"
         style={{
-          width: 700, height: 700, left: "10%", top: "20%",
-          background: "radial-gradient(circle, rgba(239,68,68,0.12) 0%, transparent 70%)",
-          filter: "blur(90px)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          width: 600, height: 600, right: "-5%", bottom: "10%",
-          background: "radial-gradient(circle, rgba(239,68,68,0.08) 0%, transparent 70%)",
-          filter: "blur(90px)",
+          width: 800, height: 800, left: "50%", top: "10%",
+          transform: "translateX(-50%)",
+          background: "radial-gradient(circle, rgba(239,68,68,0.14) 0%, transparent 65%)",
+          filter: "blur(100px)",
         }}
       />
 
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
-        <AnimatedSection>
-          <SectionLabel className="mb-6">The hidden cost problem</SectionLabel>
-          <h2
-            className="text-white max-w-3xl mb-4"
+      <div className="relative max-w-5xl mx-auto px-6 sm:px-10">
+        {/* eyebrow */}
+        <div className="mb-6">
+          <span
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
             style={{
-              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(36px, 5.5vw, 64px)",
-              fontWeight: 900,
-              letterSpacing: "-0.04em",
-              lineHeight: 1.02,
+              border: "1px solid rgba(239,68,68,0.25)",
+              background: "rgba(239,68,68,0.06)",
             }}
           >
-            Independent brands overpay by{" "}
-            <span
-              style={{
-                background:
-                  "linear-gradient(135deg, #fca5a5 0%, #ef4444 70%, #b91c1c 100%)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              20–40%
-            </span>{" "}
-            on infrastructure.{" "}
-            <span style={{ color: "rgba(255,255,255,0.55)" }}>Every month.</span>
-          </h2>
-        </AnimatedSection>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
-          {ITEMS.map((item, i) => (
-            <ProblemCard key={item.category} item={item} index={i} />
-          ))}
+            <AlertTriangle size={11} className="text-red-300" />
+            <span className="text-[10px] uppercase tracking-[0.24em] font-bold text-red-300">
+              The hidden cost problem
+            </span>
+          </span>
         </div>
 
-        {/* TOTAL BLEED bar — the wow finisher */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-12 rounded-2xl overflow-hidden p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        {/* Headline */}
+        <h2
+          className="text-white max-w-3xl mb-14 sm:mb-16"
           style={{
-            background:
-              "linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(127,29,29,0.20) 100%)",
-            border: "1px solid rgba(239,68,68,0.30)",
-            boxShadow: "0 30px 80px -30px rgba(239,68,68,0.35)",
+            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+            fontSize: "clamp(36px, 5.5vw, 64px)",
+            fontWeight: 900,
+            letterSpacing: "-0.04em",
+            lineHeight: 1.02,
           }}
         >
-          <div className="relative flex-1">
-            <p className="text-[10px] uppercase tracking-[0.24em] font-bold text-red-300/80 mb-2">
-              Total bleed · 12 months
-            </p>
-            <div className="flex items-baseline gap-3 flex-wrap">
+          Every minute you scroll,{" "}
+          <span
+            style={{
+              background: "linear-gradient(135deg, #fca5a5 0%, #ef4444 70%, #b91c1c 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            money is leaking
+          </span>{" "}
+          <span style={{ color: "rgba(255,255,255,0.55)" }}>from your business.</span>
+        </h2>
+
+        {/* MAIN PANEL — live counter + ledger */}
+        <div
+          className="relative rounded-3xl overflow-hidden p-6 sm:p-10"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(20,8,8,0.85) 0%, rgba(8,5,5,0.95) 100%)",
+            border: "1px solid rgba(239,68,68,0.22)",
+            boxShadow:
+              "0 40px 100px -30px rgba(0,0,0,0.7), 0 0 80px -30px rgba(239,68,68,0.25)",
+          }}
+        >
+          {/* grid pattern */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(239,68,68,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.05) 1px, transparent 1px)",
+              backgroundSize: "44px 44px",
+              maskImage:
+                "radial-gradient(ellipse 90% 70% at 50% 50%, #000 30%, transparent 80%)",
+              WebkitMaskImage:
+                "radial-gradient(ellipse 90% 70% at 50% 50%, #000 30%, transparent 80%)",
+              opacity: 0.5,
+            }}
+          />
+          {/* corner glow */}
+          <div
+            aria-hidden
+            className="absolute pointer-events-none"
+            style={{
+              width: 500, height: 500, right: "-20%", top: "-30%",
+              background: "radial-gradient(circle, rgba(239,68,68,0.22) 0%, transparent 70%)",
+              filter: "blur(60px)",
+            }}
+          />
+
+          {/* live counter */}
+          <div className="relative">
+            <LiveCounter />
+          </div>
+
+          {/* divider */}
+          <div className="relative my-8 sm:my-10 flex items-center gap-3">
+            <div className="flex-1" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
+            <span className="text-[9px] uppercase tracking-[0.28em] font-bold text-white/35">
+              Breakdown · Where the leak comes from
+            </span>
+            <div className="flex-1" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
+          </div>
+
+          {/* ledger */}
+          <div className="relative">
+            {LEAKS.map((leak, i) => (
+              <LeakRow key={leak.category} leak={leak} index={i} total={TOTAL_LOST_YEAR} />
+            ))}
+          </div>
+
+          {/* footer total */}
+          <div
+            className="relative mt-8 pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            style={{ borderTop: "1px solid rgba(239,68,68,0.20)" }}
+          >
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.24em] font-bold text-white/45 mb-1">
+                Total annual bleed
+              </p>
+              <p className="text-[12px] text-white/55 max-w-sm">
+                A hire you can't make. A campaign you can't run. A category you can't launch.
+              </p>
+            </div>
+            <div className="text-right">
               <span
                 className="font-black tabular-nums"
                 style={{
                   fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-                  fontSize: "clamp(44px, 7vw, 80px)",
+                  fontSize: "clamp(36px, 5vw, 56px)",
                   letterSpacing: "-0.05em",
                   lineHeight: 0.95,
                   background:
@@ -266,22 +351,17 @@ export default function ProblemSectionWow() {
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 28px rgba(239,68,68,0.45))",
+                  filter: "drop-shadow(0 0 24px rgba(239,68,68,0.45))",
                 }}
               >
-                €16,200
+                −€{TOTAL_LOST_YEAR.toLocaleString("en-US")}
               </span>
-              <span className="text-[13px] uppercase tracking-[0.2em] font-bold text-white/55">
-                /year lost
-              </span>
+              <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-red-300/70 mt-1">
+                /year · per brand
+              </p>
             </div>
           </div>
-          <div
-            className="text-[12px] sm:text-right text-white/65 max-w-xs leading-relaxed"
-          >
-            That's a hire you can't make, a campaign you can't run, a category you can't launch.
-          </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
