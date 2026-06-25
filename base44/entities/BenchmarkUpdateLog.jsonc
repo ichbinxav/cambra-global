@@ -1,0 +1,45 @@
+{
+  "name": "BenchmarkUpdateLog",
+  "type": "object",
+  "properties": {
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "scheduled",
+        "new_contribution"
+      ]
+    },
+    "cohorts_updated": {
+      "type": "number"
+    },
+    "contributions_processed": {
+      "type": "number"
+    },
+    "engine_version": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "trigger"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

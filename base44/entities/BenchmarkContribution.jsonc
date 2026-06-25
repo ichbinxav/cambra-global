@@ -1,0 +1,92 @@
+{
+  "name": "BenchmarkContribution",
+  "type": "object",
+  "properties": {
+    "source_anon_id": {
+      "type": "string",
+      "description": "SHA-256(BENCHMARK_ANON_SALT + brand_id). Stable pseudonym \u2014 NOT anonymous under GDPR while salt exists. Never expose to users."
+    },
+    "cohort_key": {
+      "type": "string",
+      "description": "Format: 'tier|country|vertical', e.g. 'small|France|payments'"
+    },
+    "vertical": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas",
+        "banking",
+        "insurance",
+        "telecom",
+        "finance_ops",
+        "hr"
+      ]
+    },
+    "metric_key": {
+      "type": "string",
+      "description": "e.g. 'payment_effective_rate', 'shipping_avg_cost_per_unit', 'saas_monthly_spend_pct_revenue'"
+    },
+    "metric_value": {
+      "type": "number"
+    },
+    "revenue_tier": {
+      "type": "string",
+      "enum": [
+        "micro",
+        "small",
+        "mid",
+        "large"
+      ]
+    },
+    "country": {
+      "type": "string"
+    },
+    "is_eu": {
+      "type": "boolean"
+    },
+    "engine_version": {
+      "type": "string",
+      "description": "ENGINE_VERSION.benchmark at time of contribution"
+    },
+    "contribution_hash": {
+      "type": "string",
+      "description": "SHA-256(source_anon_id + cohort_key + metric_key + month) for idempotent dedup"
+    },
+    "month": {
+      "type": "string",
+      "description": "YYYY-MM"
+    },
+    "flagged": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if outlier detection fired (modified Z-score > 3.5)"
+    },
+    "flag_reason": {
+      "type": "string"
+    },
+    "validated": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "source_anon_id",
+    "cohort_key",
+    "vertical",
+    "metric_key",
+    "metric_value"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

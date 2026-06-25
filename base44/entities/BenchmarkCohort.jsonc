@@ -1,0 +1,77 @@
+{
+  "name": "BenchmarkCohort",
+  "type": "object",
+  "properties": {
+    "cohort_key": {
+      "type": "string",
+      "description": "Format: 'tier|country|vertical'"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "metric_key": {
+      "type": "string"
+    },
+    "revenue_tier": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "is_eu": {
+      "type": "boolean"
+    },
+    "month": {
+      "type": "string",
+      "description": "YYYY-MM"
+    },
+    "n": {
+      "type": "number",
+      "description": "Sample size \u2014 number of validated, non-flagged contributions"
+    },
+    "median": {
+      "type": "number"
+    },
+    "p25": {
+      "type": "number"
+    },
+    "p75": {
+      "type": "number"
+    },
+    "avg": {
+      "type": "number"
+    },
+    "best_in_class": {
+      "type": "number",
+      "description": "p10 \u2014 top 10% performers"
+    },
+    "engine_version": {
+      "type": "string"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only when n >= 5. Frontend should NEVER see is_public=false cohorts."
+    },
+    "benchmark_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cohort_key",
+    "vertical",
+    "metric_key"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
