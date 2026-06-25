@@ -1,0 +1,75 @@
+{
+  "name": "CompanyMemory",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string",
+      "description": "Unique per brand. Enforced in application logic (one CompanyMemory row per brand_id)."
+    },
+    "website_url": {
+      "type": "string"
+    },
+    "email_domain": {
+      "type": "string"
+    },
+    "company_name_detected": {
+      "type": "string"
+    },
+    "country_detected": {
+      "type": "string"
+    },
+    "language_detected": {
+      "type": "string"
+    },
+    "currency_detected": {
+      "type": "string"
+    },
+    "commerce_platform_detected": {
+      "type": "string"
+    },
+    "latest_discovery_job_id": {
+      "type": "string"
+    },
+    "onboarding_progress_json": {
+      "type": "object",
+      "description": "Tracks which onboarding steps are complete."
+    },
+    "last_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resume_state_json": {
+      "type": "object",
+      "description": "Enough state to resume the Analyzer mid-flow."
+    }
+  },
+  "required": [
+    "brand_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    }
+  }
+}

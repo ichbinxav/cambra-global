@@ -1,0 +1,93 @@
+{
+  "name": "DiscoveryFinding",
+  "type": "object",
+  "properties": {
+    "discovery_job_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "commerce_platform",
+        "payment_provider",
+        "shipping",
+        "marketing",
+        "analytics",
+        "support",
+        "finance",
+        "hr",
+        "other"
+      ]
+    },
+    "provider_or_tool": {
+      "type": "string",
+      "description": "Detected provider/tool name, e.g. 'Shopify', 'Klaviyo', 'Stripe'"
+    },
+    "confidence_score": {
+      "type": "number",
+      "description": "0.0 to 1.0"
+    },
+    "evidence_type": {
+      "type": "string",
+      "enum": [
+        "script_tag",
+        "meta_tag",
+        "dns",
+        "header",
+        "user_declared",
+        "document",
+        "oauth"
+      ]
+    },
+    "evidence_value": {
+      "type": "string",
+      "description": "The detected signal (e.g. matched script URL). Never full HTML."
+    },
+    "detection_method": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "confirmed",
+        "rejected",
+        "stale"
+      ],
+      "default": "detected"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "discovery_job_id",
+    "brand_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

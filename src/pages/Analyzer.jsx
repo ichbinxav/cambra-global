@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { ArrowRight, ArrowLeft, Upload, CreditCard, Truck, Package, BarChart3, Building2, MapPin, Store } from "lucide-react";
+import { ArrowRight, ArrowLeft, Upload, CreditCard, Truck, Package, BarChart3, Building2, MapPin, Store, Sparkles, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import DataIngestionStep from "@/components/analyzer/DataIngestionStep";
 import AnalyzerHero from "@/components/analyzer/AnalyzerHero";
@@ -104,8 +104,13 @@ export default function Analyzer() {
   const [countryOpen, setCountryOpen] = useState(false);
   const fileRef = useRef(null);
 
+  // M4 — Discovery state
+  const [discovery, setDiscovery] = useState({ status: "idle", findings: [], jobId: null });
+  const discoveryTimer = useRef(null);
+  const lastDiscoveredUrl = useRef("");
+
   const [data, setData] = useState({
-    brand_name: "", category: "", country: "", sector: "",
+    brand_name: "", website_url: "", category: "", country: "", sector: "",
     monthly_revenue: 50000, monthly_transactions: 500, avg_order_value: 100,
     dtc_pct: 60, marketplace_pct: 20, wholesale_pct: 15, retail_pct: 5, intl_pct: 0,
     payment_provider: "", payment_fee_pct: 2.9,
@@ -125,6 +130,94 @@ export default function Analyzer() {
     else if (selectedModule === "upload") setStep(7);
     else setStep(0);
   }, [mode, selectedModule]);
+
+  // M4 — Discovery: trigger after user types website URL (debounced, non-blocking)
+  const triggerDiscovery = async (websiteUrl) => {
+    if (!websiteUrl || websiteUrl.length < 4) return;
+    if (websiteUrl === lastDiscoveredUrl.current) return;
+    lastDiscoveredUrl.current = websiteUrl;
+
+    setDiscovery({ status: "running", findings: [], jobId: null });
+
+    try {
+      // Resolve or create a Brand so discovery has a brand_id
+      let brandId = null;
+      const existing = await base44.entities.Brand.list("-created_date", 1).catch(() => []);
+      if (existing.length) {
+        brandId = existing[0].id;
+      } else if (data.brand_name) {
+        const created = await base44.entities.Brand.create({
+          name: data.brand_name,
+          category: (data.category || "other").toLowerCase().replace(/[^a-z]/g, "_") || "other",
+          country: data.country || "",
+          channels: ["dtc"],
+        }).catch(() => null);
+        brandId = created?.id || null;
+      }
+      if (!brandId) {
+        setDiscovery({ status: "idle", findings: [], jobId: null });
+        return;
+      }
+
+      const res = await base44.functions.invoke("discoverCompanyInfrastructure", {
+        website_url: websiteUrl,
+        brand_id: brandId,
+      });
+      const payload = res?.data || res;
+      if (!payload?.ok) {
+        // Non-blocking failure — flow continues normally
+        setDiscovery({ status: "failed", findings: [], jobId: payload?.job_id || null });
+        return;
+      }
+
+      const findings = payload.findings || [];
+      setDiscovery({ status: "completed", findings, jobId: payload.job_id });
+
+      // Pre-fill detected values (only if user hasn't already chosen)
+      setData(prev => {
+        const next = { ...prev };
+        const has = (cat, name) => findings.some(f => f.category === cat && f.provider_or_tool === name);
+        // Payment provider
+        if (!prev.payment_provider) {
+          if (has("payment_provider", "Stripe")) next.payment_provider = "Stripe";
+          else if (has("payment_provider", "PayPal")) next.payment_provider = "PayPal";
+          else if (has("payment_provider", "Adyen")) next.payment_provider = "Adyen";
+          else if (has("payment_provider", "Klarna")) next.payment_provider = "Klarna";
+          else if (has("payment_provider", "Mollie")) next.payment_provider = "Mollie";
+        }
+        // Hint via SaaS baseline if Klaviyo / commerce platform detected: nudge SaaS spend upward
+        const saasDetected = findings.filter(f => f.category === "marketing" || f.category === "commerce_platform").length;
+        if (saasDetected > 0 && prev.total_saas_spend === 1500) {
+          // Soft nudge — modest bump to reflect detected stack
+          next.total_saas_spend = Math.max(prev.total_saas_spend, 1500 + saasDetected * 150);
+        }
+        return next;
+      });
+    } catch (_) {
+      setDiscovery({ status: "failed", findings: [], jobId: null });
+    }
+  };
+
+  // Debounce website URL changes
+  useEffect(() => {
+    if (discoveryTimer.current) clearTimeout(discoveryTimer.current);
+    if (!data.website_url) return;
+    discoveryTimer.current = setTimeout(() => {
+      triggerDiscovery(data.website_url);
+    }, 900);
+    return () => clearTimeout(discoveryTimer.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.website_url]);
+
+  // Helper: is a tool/category detected?
+  const isDetected = (category, name) =>
+    discovery.findings.some(f => f.category === category && (!name || f.provider_or_tool === name));
+
+  const DetectedBadge = ({ label = "Detected" }) => (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cambra-mint-soft text-[10px] font-bold tracking-wide text-cambra-mint border border-cambra-mint/30">
+      <Sparkles size={9} /> {label}
+    </span>
+  );
 
   const openQuestionnaire = (module = "") => {
     setSelectedModule(module);
@@ -368,6 +461,40 @@ export default function Analyzer() {
           </div>
 
           <div className="space-y-2">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              Website
+              {discovery.status === "completed" && discovery.findings.length > 0 && (
+                <DetectedBadge label={`${discovery.findings.length} tool${discovery.findings.length > 1 ? "s" : ""} detected`} />
+              )}
+            </Label>
+            <Input
+              value={data.website_url}
+              onChange={e => set("website_url", e.target.value)}
+              placeholder="yourbrand.com"
+              className="h-12 text-sm border-border/60"
+            />
+            {discovery.status === "running" && (
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <Loader2 size={11} className="animate-spin text-cambra-mint" />
+                Analyzing your infrastructure…
+              </div>
+            )}
+            {discovery.status === "completed" && discovery.findings.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {discovery.findings.slice(0, 6).map((f, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary text-[10px] font-semibold text-foreground border border-border/60">
+                    <Sparkles size={9} className="text-cambra-mint" /> {f.provider_or_tool}
+                  </span>
+                ))}
+              </div>
+            )}
+            {discovery.status === "completed" && discovery.findings.length === 0 && data.website_url && (
+              <p className="text-[11px] text-muted-foreground/60">No public signals detected — you can add details manually below.</p>
+            )}
+            <p className="text-[11px] text-muted-foreground/50">We scan public signals only (no login required).</p>
+          </div>
+
+          <div className="space-y-2">
             <Label className="text-sm font-medium">Country</Label>
             <div className="relative">
               <button
@@ -488,7 +615,12 @@ export default function Analyzer() {
       case 3: return (
         <div className="space-y-6">
           <div>
-            <Label className="text-sm font-medium mb-3 block">Your payment provider</Label>
+            <Label className="text-sm font-medium mb-3 flex items-center gap-2">
+              Your payment provider
+              {data.payment_provider && isDetected("payment_provider", data.payment_provider) && (
+                <DetectedBadge />
+              )}
+            </Label>
             <ProviderGrid
               options={PAYMENT_PROVIDERS}
               selected={data.payment_provider}
@@ -682,6 +814,18 @@ export default function Analyzer() {
 
       case 6: return (
         <div className="space-y-6">
+          {(isDetected("commerce_platform") || isDetected("marketing")) && (
+            <div className="flex items-center gap-2 flex-wrap p-3 rounded-xl border border-cambra-mint/30 bg-cambra-mint-soft">
+              <DetectedBadge label="Stack detected" />
+              <span className="text-[11px] text-muted-foreground">
+                {discovery.findings
+                  .filter(f => f.category === "commerce_platform" || f.category === "marketing" || f.category === "analytics" || f.category === "support")
+                  .slice(0, 5)
+                  .map(f => f.provider_or_tool)
+                  .join(" · ")}
+              </span>
+            </div>
+          )}
           <SmartNumberField
             label="Total monthly Commerce SaaS spend"
             value={data.total_saas_spend}
