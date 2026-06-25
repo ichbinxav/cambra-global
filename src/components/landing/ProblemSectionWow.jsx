@@ -15,8 +15,8 @@ const ITEMS = [
     amount: 8400,
     overpayPct: 35, // % over the optimal rate
     body: "Most brands pay 2.2–2.8% in fees. Optimised rate for your volume: 1.4–1.8%.",
-    accent: "#ef4444",
-    glow: "rgba(239,68,68,0.18)",
+    accent: "rgba(239,68,68,0.65)",
+    glow: "rgba(239,68,68,0.08)",
   },
   {
     icon: Truck,
@@ -24,8 +24,8 @@ const ITEMS = [
     amount: 4200,
     overpayPct: 22,
     body: "Carriers charge brands without collective leverage 15–30% more.",
-    accent: "#f97316",
-    glow: "rgba(249,115,22,0.18)",
+    accent: "rgba(249,115,22,0.65)",
+    glow: "rgba(249,115,22,0.08)",
   },
   {
     icon: Layers,
@@ -33,8 +33,8 @@ const ITEMS = [
     amount: 3600,
     overpayPct: 28,
     body: "Avg. independent brand pays for 4–6 overlapping or underused tools.",
-    accent: "#ec4899",
-    glow: "rgba(236,72,153,0.18)",
+    accent: "rgba(236,72,153,0.65)",
+    glow: "rgba(236,72,153,0.08)",
   },
 ];
 
@@ -108,12 +108,11 @@ function Card({ item, index }) {
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
           style={{
-            background: `${item.accent}14`,
-            border: `1px solid ${item.accent}40`,
-            boxShadow: `0 0 18px ${item.accent}30`,
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <item.icon size={16} style={{ color: item.accent }} />
+          <item.icon size={16} style={{ color: item.accent, opacity: 0.8 }} />
         </div>
         <p className="text-[10px] uppercase tracking-[0.24em] font-bold text-white/60">
           {item.category}
@@ -129,11 +128,10 @@ function Card({ item, index }) {
             fontSize: "clamp(42px, 6vw, 60px)",
             letterSpacing: "-0.05em",
             lineHeight: 0.95,
-            background: `linear-gradient(135deg, #ffffff 0%, ${item.accent} 100%)`,
+            background: `linear-gradient(135deg, #ffffff 0%, ${item.accent} 120%)`,
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            filter: `drop-shadow(0 0 18px ${item.glow})`,
           }}
         >
           −€{counted.toLocaleString("en-US")}
@@ -150,7 +148,7 @@ function Card({ item, index }) {
         </p>
         <p
           className="text-[10px] uppercase tracking-[0.22em] font-bold mb-5"
-          style={{ color: item.accent, opacity: 0.85 }}
+          style={{ color: item.accent, opacity: 0.6 }}
         >
           Lost on average
         </p>
@@ -179,8 +177,8 @@ function Card({ item, index }) {
             transition={{ duration: 1.4, delay: 0.4 + index * 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="h-full rounded-full"
             style={{
-              background: `linear-gradient(90deg, ${item.accent}aa 0%, ${item.accent} 100%)`,
-              boxShadow: `0 0 12px ${item.accent}80`,
+              background: item.accent,
+              opacity: 0.7,
             }}
           />
         </div>
