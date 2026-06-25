@@ -40,7 +40,7 @@ export default function AnalysisProgress({ country = "", tier = "", done = false
             <BrandGlyph className="h-10 w-10" />
           </div>
           <h2 className="text-xl font-black tracking-[-0.03em] text-foreground">
-            {t("progress_mapping")}
+            {t("progress_title")}
           </h2>
         </div>
 

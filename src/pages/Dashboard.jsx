@@ -43,13 +43,13 @@ const NODE_CATEGORY = {
 };
 const CATEGORY_ORDER = ["Payments", "Commerce", "Shipping", "Marketing", "SaaS", "Banking", "Support", "HR", "Telecom"];
 
-function nodeBadge(node) {
+function nodeBadge(node, t) {
   const status = node.status || "detected";
   const cc = node.cost_confidence || "estimated";
-  if (status === "verified" || cc === "verified") return { label: "Verified", cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25" };
-  if (status === "connected" || cc === "connected") return { label: "Connected", cls: "bg-blue-500/10 text-blue-600 border-blue-500/25" };
-  if (status === "detected") return { label: "Detected", cls: "bg-purple-500/10 text-purple-600 border-purple-500/25" };
-  return { label: "Estimated", cls: "bg-amber-500/10 text-amber-600 border-amber-500/25" };
+  if (status === "verified" || cc === "verified") return { label: t("badge_verified"), cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25" };
+  if (status === "connected" || cc === "connected") return { label: t("badge_connected"), cls: "bg-blue-500/10 text-blue-600 border-blue-500/25" };
+  if (status === "detected") return { label: t("badge_detected"), cls: "bg-purple-500/10 text-purple-600 border-purple-500/25" };
+  return { label: t("badge_estimated"), cls: "bg-amber-500/10 text-amber-600 border-amber-500/25" };
 }
 
 /* ── main ────────────────────────────────────────────────────── */
@@ -107,7 +107,7 @@ export default function Dashboard() {
 
   if (loading) return <DashboardSkeleton />;
 
-  const firstName = user?.full_name ? user.full_name.split(" ")[0] : "Dashboard";
+  const firstName = user?.full_name ? user.full_name.split(" ")[0] : t("dashboard_word");
   const stripeConnected = !!stripeConn;
 
   /* ───── STATE A: no AnalyzerResult yet ───── */
@@ -131,7 +131,7 @@ export default function Dashboard() {
               </Button>
             </Link>
             <div className="flex flex-wrap justify-center gap-2 mt-7">
-              {["Automatic detection", "Benchmark comparison", "Savings calculation"].map(p => (
+              {[t("auto_detection"), t("bench_comparison"), t("savings_calc")].map(p => (
                 <span key={p} className="text-[11px] px-3 py-1.5 rounded-full border border-border/60 bg-secondary/40 text-muted-foreground font-medium">
                   {p}
                 </span>
@@ -186,7 +186,7 @@ export default function Dashboard() {
             </div>
             <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold mb-1">{t("identified_potential")}</p>
             <p className="font-display font-black tabular-nums tracking-[-0.04em] leading-none" style={{ fontSize: "clamp(2.5rem, 8vw, 4.5rem)" }}>
-              {formatEur(latest.total_savings)}<span className="text-[0.35em] font-bold text-muted-foreground/40 ml-2">/yr</span>
+              {formatEur(latest.total_savings)}<span className="text-[0.35em] font-bold text-muted-foreground/40 ml-2">/{t("per_yr_short")}</span>
             </p>
             <p className="text-sm text-muted-foreground/80 mt-3 max-w-md">{heroSubtitle}</p>
           </div>
@@ -223,7 +223,7 @@ export default function Dashboard() {
               <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold">{s.label}</p>
             </div>
             <p className="text-2xl font-black tabular-nums">
-              {formatEur(s.value)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/yr</span>
+              {formatEur(s.value)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/{t("per_yr_short")}</span>
             </p>
           </div>
         ))}
@@ -251,7 +251,7 @@ export default function Dashboard() {
                   </div>
                   <div className="divide-y divide-border/30">
                     {items.map(n => {
-                      const b = nodeBadge(n);
+                      const b = nodeBadge(n, t);
                       return (
                         <div key={n.id} className="px-4 py-3 flex items-center gap-3 flex-wrap">
                           <p className="text-sm font-semibold flex-1 min-w-0 truncate">{n.provider_name}</p>

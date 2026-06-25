@@ -49,28 +49,28 @@ const NODE_CATEGORY = {
 };
 const CATEGORY_ORDER = ["Payments", "Commerce", "Shipping", "Marketing", "SaaS", "Banking", "Support", "HR", "Telecom"];
 
-function nodeBadge(node) {
+function nodeBadge(node, t) {
   const status = node.status || "detected";
   const cc = node.cost_confidence || "estimated";
   if (status === "verified" || cc === "verified") {
-    return { label: "Verified", cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25" };
+    return { label: t("badge_verified"), cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25" };
   }
   if (status === "connected" || cc === "connected") {
-    return { label: "Connected", cls: "bg-blue-500/10 text-blue-600 border-blue-500/25" };
+    return { label: t("badge_connected"), cls: "bg-blue-500/10 text-blue-600 border-blue-500/25" };
   }
   if (status === "detected") {
-    return { label: "Detected", cls: "bg-purple-500/10 text-purple-600 border-purple-500/25" };
+    return { label: t("badge_detected"), cls: "bg-purple-500/10 text-purple-600 border-purple-500/25" };
   }
-  return { label: "Estimated", cls: "bg-amber-500/10 text-amber-600 border-amber-500/25" };
+  return { label: t("badge_estimated"), cls: "bg-amber-500/10 text-amber-600 border-amber-500/25" };
 }
 
-function dataSourceLabel(node) {
+function dataSourceLabel(node, t) {
   const ds = node.data_source || "";
-  if (ds === "stripe_inference") return "via Stripe";
-  if (ds === "oauth") return "via connected account";
-  if (ds === "discovery") return "via website";
-  if (ds === "manual") return "manual";
-  return "estimated";
+  if (ds === "stripe_inference") return t("via_stripe");
+  if (ds === "oauth") return t("via_oauth");
+  if (ds === "discovery") return t("via_website");
+  if (ds === "manual") return t("via_manual");
+  return t("via_estimated");
 }
 
 /* ── main ────────────────────────────────────────────────────── */
@@ -159,9 +159,9 @@ export default function Results() {
   if (needsAuth) return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <div className="text-center max-w-sm">
-        <h1 className="text-lg font-bold mb-2">Sign-in required</h1>
-        <p className="text-sm text-muted-foreground mb-4">Open the login window and return automatically.</p>
-        <a href="/auth/start" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold">Sign in</a>
+        <h1 className="text-lg font-bold mb-2">{t("sign_in_required")}</h1>
+        <p className="text-sm text-muted-foreground mb-4">{t("sign_in_sub")}</p>
+        <a href="/auth/start" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold">{t("sign_in")}</a>
       </div>
     </div>
   );
@@ -169,8 +169,8 @@ export default function Results() {
   if (!result) return (
     <div className="min-h-screen flex items-center justify-center bg-background px-5">
       <div className="text-center">
-        <p className="text-muted-foreground mb-4 text-sm">No results found.</p>
-        <Link to="/Analyzer"><Button variant="outline" className="rounded-full px-6 text-sm h-11">Run the Analyzer</Button></Link>
+        <p className="text-muted-foreground mb-4 text-sm">{t("no_results")}</p>
+        <Link to="/Analyzer"><Button variant="outline" className="rounded-full px-6 text-sm h-11">{t("run_the_analyzer")}</Button></Link>
       </div>
     </div>
   );
@@ -226,10 +226,10 @@ export default function Results() {
     const url = window.location.href;
     try {
       await navigator.clipboard.writeText(url);
-      setToastMsg(t("share"));
+      setToastMsg(t("link_copied"));
       setTimeout(() => setToastMsg(""), 2500);
     } catch (_) {
-      setToastMsg(t("share"));
+      setToastMsg(t("copy_failed"));
       setTimeout(() => setToastMsg(""), 2500);
     }
   };
@@ -317,7 +317,7 @@ export default function Results() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Your rate</span>
+                  <span className="text-[11px] text-muted-foreground">{t("your_rate")}</span>
                   <span className="text-sm font-bold tabular-nums">
                     {payCurrent != null ? `${payCurrent.toFixed(2)}%` : "—"}
                   </span>
@@ -325,7 +325,7 @@ export default function Results() {
                 {payBmValue != null && (
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] text-muted-foreground">
-                      {payBmIsNetwork ? "Network benchmark" : "Reference rate"}
+                      {payBmIsNetwork ? t("network_benchmark") : t("reference_rate")}
                     </span>
                     <span className="text-sm font-bold tabular-nums text-cambra-mint">
                       {Number(payBmValue).toFixed(2)}%
@@ -335,8 +335,8 @@ export default function Results() {
               </div>
 
               <div className="pt-3 border-t border-border/40">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold mb-1">Opportunity</p>
-                <p className="text-2xl font-black tabular-nums">{formatEur(result.payment_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/yr</span></p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold mb-1">{t("opportunity_label")}</p>
+                <p className="text-2xl font-black tabular-nums">{formatEur(result.payment_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/{t("per_yr_short")}</span></p>
               </div>
 
               <UpgradeToVerified
@@ -359,26 +359,26 @@ export default function Results() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Your cost</span>
+                  <span className="text-[11px] text-muted-foreground">{t("your_cost")}</span>
                   <span className="text-sm font-bold tabular-nums">
-                    {shipCurrent != null ? `€${Number(shipCurrent).toFixed(2)} / shipment` : "—"}
+                    {shipCurrent != null ? `${formatEur(shipCurrent)} / ${t("per_shipment_short")}` : "—"}
                   </span>
                 </div>
                 {shipBmValue != null && (
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] text-muted-foreground">
-                      {shipBmIsNetwork ? "Network benchmark" : "Reference rate"}
+                      {shipBmIsNetwork ? t("network_benchmark") : t("reference_rate")}
                     </span>
                     <span className="text-sm font-bold tabular-nums text-cambra-mint">
-                      €{Number(shipBmValue).toFixed(2)} / shipment
+                      {formatEur(shipBmValue)} / {t("per_shipment_short")}
                     </span>
                   </div>
                 )}
               </div>
 
               <div className="pt-3 border-t border-border/40">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold mb-1">Opportunity</p>
-                <p className="text-2xl font-black tabular-nums">{formatEur(result.shipping_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/yr</span></p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold mb-1">{t("opportunity_label")}</p>
+                <p className="text-2xl font-black tabular-nums">{formatEur(result.shipping_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/{t("per_yr_short")}</span></p>
               </div>
 
               <UpgradeToVerified
@@ -401,28 +401,28 @@ export default function Results() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Your spend</span>
+                  <span className="text-[11px] text-muted-foreground">{t("your_spend")}</span>
                   <span className="text-sm font-bold tabular-nums">
-                    {saasSpend != null ? `€${Math.round(saasSpend).toLocaleString()} / mo` : "—"}
+                    {saasSpend != null ? `${formatEur(saasSpend)} / ${t("per_mo_short")}` : "—"}
                   </span>
                 </div>
                 {saasPctOfRevenue != null && (
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">% of revenue</span>
+                    <span className="text-[11px] text-muted-foreground">{t("pct_of_revenue")}</span>
                     <span className="text-sm font-bold tabular-nums">{saasPctOfRevenue.toFixed(1)}%</span>
                   </div>
                 )}
                 {detectedSaasCount > 0 && (
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">Detected tools</span>
+                    <span className="text-[11px] text-muted-foreground">{t("detected_tools")}</span>
                     <span className="text-sm font-bold tabular-nums">{detectedSaasCount}</span>
                   </div>
                 )}
               </div>
 
               <div className="pt-3 border-t border-border/40">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold mb-1">Opportunity</p>
-                <p className="text-2xl font-black tabular-nums">{formatEur(result.saas_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/yr</span></p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold mb-1">{t("opportunity_label")}</p>
+                <p className="text-2xl font-black tabular-nums">{formatEur(result.saas_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/{t("per_yr_short")}</span></p>
               </div>
 
               <Link
@@ -463,7 +463,7 @@ export default function Results() {
                     </div>
                     <div className="divide-y divide-border/30">
                       {items.map(n => {
-                        const b = nodeBadge(n);
+                        const b = nodeBadge(n, t);
                         return (
                           <div key={n.id} className="px-4 py-3 flex items-center gap-3 flex-wrap">
                             <p className="text-sm font-semibold flex-1 min-w-0 truncate">{n.provider_name}</p>
@@ -472,10 +472,10 @@ export default function Results() {
                             </span>
                             {Number(n.monthly_cost) > 0 && (
                               <span className="text-xs font-bold tabular-nums whitespace-nowrap">
-                                €{Math.round(Number(n.monthly_cost)).toLocaleString()}/mo
+                                {formatEur(Number(n.monthly_cost))}/{t("per_mo_short")}
                               </span>
                             )}
-                            <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap">{dataSourceLabel(n)}</span>
+                            <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap">{dataSourceLabel(n, t)}</span>
                           </div>
                         );
                       })}
@@ -500,13 +500,13 @@ export default function Results() {
             <div className="px-5 pb-5 space-y-4 text-xs text-muted-foreground">
               {result.methodology && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70 mb-1">Methodology</p>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70 mb-1">{t("methodology_label")}</p>
                   <p className="leading-relaxed">{result.methodology}</p>
                 </div>
               )}
               {Array.isArray(result.assumptions) && result.assumptions.length > 0 && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70 mb-1">Assumptions</p>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70 mb-1">{t("assumptions_label")}</p>
                   <ul className="list-disc pl-5 space-y-1 leading-relaxed">
                     {result.assumptions.map((a, i) => <li key={i}>{a}</li>)}
                   </ul>
@@ -514,20 +514,20 @@ export default function Results() {
               )}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-border/30">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">Score engine</p>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">{t("score_engine_label")}</p>
                   <p className="text-foreground tabular-nums">v{result.score_engine_version || "—"}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">Savings model</p>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">{t("savings_model_label")}</p>
                   <p className="text-foreground tabular-nums">v{result.savings_model_version || "—"}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">Benchmarks</p>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">{t("benchmarks_label")}</p>
                   <p className="text-foreground tabular-nums">v{result.benchmark_version || "—"}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">Calculated</p>
-                  <p className="text-foreground">{calcDate ? calcDate.toLocaleDateString() : "—"}</p>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">{t("calculated_label")}</p>
+                  <p className="text-foreground">{calcDate ? calcDate.toLocaleDateString(({ en: "en-GB", fr: "fr-FR", es: "es-ES" })[lang] || "en-GB") : "—"}</p>
                 </div>
               </div>
             </div>

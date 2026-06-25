@@ -455,7 +455,7 @@ export default function Analyzer() {
     const inputData = buildInputPayload();
     const validation = validateAnalyzerInput(inputData);
     if (!validation.valid) {
-      setErrorBanner("Please fix the following:\n" + validation.errors.join("\n"));
+      setErrorBanner(t("please_fix") + "\n" + validation.errors.join("\n"));
       return;
     }
 
@@ -558,7 +558,7 @@ export default function Analyzer() {
     const monthlyRev = midpointForRange(revenueRange);
     return (
       <AnalysisProgress
-        country={country || "your region"}
+        country={country || t("your_region")}
         tier={tierLabelForRevenue(monthlyRev, country)}
         done={analysisDone}
       />
@@ -600,24 +600,24 @@ export default function Analyzer() {
             <div className="flex items-start gap-3">
               <Sparkles size={16} className="text-blue-600 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground">Welcome back.</p>
+                <p className="text-sm font-bold text-foreground">{t("welcome_back")}</p>
                 <p className="text-[12px] text-muted-foreground mt-0.5">
-                  Continue where you left off? Last step: {resumeOffer.step}
+                  {t("continue_where", { step: resumeOffer.step })}
                   {Array.isArray(resumeOffer.detectedTools) && resumeOffer.detectedTools.length > 0 &&
-                    ` · ${resumeOffer.detectedTools.length} tools detected`}.
+                    t("tools_detected_extra", { n: resumeOffer.detectedTools.length })}.
                 </p>
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => applyResumeState(resumeOffer, true)}
                     className="h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold inline-flex items-center gap-1.5"
                   >
-                    Continue <ArrowRight size={12} />
+                    {t("continue_label")} <ArrowRight size={12} />
                   </button>
                   <button
                     onClick={dismissResume}
                     className="h-9 px-4 rounded-full border border-border/60 bg-white text-xs font-medium text-muted-foreground hover:text-foreground"
                   >
-                    Start fresh
+                    {t("start_fresh")}
                   </button>
                 </div>
               </div>
@@ -653,16 +653,16 @@ export default function Analyzer() {
                 {discovery.status === "running" && (
                   <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                     <Loader2 size={11} className="animate-spin text-cambra-cyan" />
-                    Analyzing your infrastructure…
+                    {t("analyzing_your_infra")}
                   </div>
                 )}
                 {discovery.status === "completed" && discovery.findings.length > 0 && (
                   <p className="text-[11px] text-emerald-700 font-medium">
-                    Found {discovery.findings.length} tool{discovery.findings.length === 1 ? "" : "s"} on your site.
+                    {t("found_tools_on_site", { n: discovery.findings.length, plural: discovery.findings.length === 1 ? "" : "s" })}
                   </p>
                 )}
                 {discovery.status === "completed" && discovery.findings.length === 0 && websiteUrl && (
-                  <p className="text-[11px] text-muted-foreground">No public signals detected — you'll add tools manually in the next step.</p>
+                  <p className="text-[11px] text-muted-foreground">{t("no_public_signals")}</p>
                 )}
               </div>
 
@@ -671,7 +671,7 @@ export default function Analyzer() {
                 <Input
                   value={brandName}
                   onChange={e => setBrandName(e.target.value)}
-                  placeholder={t("field_brand_name")}
+                  placeholder={t("your_brand_placeholder")}
                   className="h-12 text-sm border-border/60"
                 />
               </div>
@@ -684,7 +684,7 @@ export default function Analyzer() {
                     onChange={e => setCountry(e.target.value)}
                     className="w-full h-12 pl-9 pr-3 rounded-md border border-border/60 bg-white text-sm appearance-none text-foreground"
                   >
-                    <option value="">Select your country</option>
+                    <option value="">{t("select_country")}</option>
                     {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                   <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
@@ -755,7 +755,7 @@ export default function Analyzer() {
                       onChange={e => setManual(m => ({ ...m, payment_provider: e.target.value }))}
                       className="w-full h-11 px-3 rounded-md border border-border/60 bg-white text-sm"
                     >
-                      <option value="">Select a provider</option>
+                      <option value="">{t("select_provider")}</option>
                       {PAYMENT_PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                     <Label className="text-xs font-semibold pt-2 block">{t("field_payment_fee")}</Label>
@@ -769,13 +769,13 @@ export default function Analyzer() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">How do you ship orders?</Label>
+                    <Label className="text-xs font-semibold">{t("field_shipping_provider")}</Label>
                     <select
                       value={manual.shipping_provider}
                       onChange={e => setManual(m => ({ ...m, shipping_provider: e.target.value }))}
                       className="w-full h-11 px-3 rounded-md border border-border/60 bg-white text-sm"
                     >
-                      <option value="">Select a carrier</option>
+                      <option value="">{t("select_carrier")}</option>
                       {SHIPPING_PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                     <Label className="text-xs font-semibold pt-2 block">{t("field_shipments")}</Label>
@@ -797,19 +797,19 @@ export default function Analyzer() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">What software tools do you use?</Label>
+                    <Label className="text-xs font-semibold">{t("field_saas_tools")}</Label>
                     <div className="grid grid-cols-2 gap-2">
-                      {COMMON_SAAS_TOOLS.map(t => {
-                        const active = manual.saas_tools_selected.includes(t);
+                      {COMMON_SAAS_TOOLS.map(toolName => {
+                        const active = manual.saas_tools_selected.includes(toolName);
                         return (
                           <button
-                            key={t}
+                            key={toolName}
                             type="button"
                             onClick={() => setManual(m => ({
                               ...m,
                               saas_tools_selected: active
-                                ? m.saas_tools_selected.filter(x => x !== t)
-                                : [...m.saas_tools_selected, t],
+                                ? m.saas_tools_selected.filter(x => x !== toolName)
+                                : [...m.saas_tools_selected, toolName],
                             }))}
                             className={`min-h-[44px] px-3 rounded-xl border text-xs font-semibold ${
                               active
@@ -817,7 +817,7 @@ export default function Analyzer() {
                                 : "border-border/60 bg-white text-foreground"
                             }`}
                           >
-                            {t}
+                            {toolName}
                           </button>
                         );
                       })}
@@ -833,7 +833,7 @@ export default function Analyzer() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Banking fees (monthly)</Label>
+                    <Label className="text-xs font-semibold">{t("field_banking_fees_label")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.banking_monthly_fees || ""}
@@ -850,30 +850,30 @@ export default function Analyzer() {
                       className="w-full flex items-center justify-between px-3 py-3 rounded-xl border border-border/60 bg-white min-h-[44px]"
                     >
                       <span className="flex items-center gap-2 text-xs font-semibold">
-                        <Store size={13} /> Do you have a physical store?
+                        <Store size={13} /> {t("physical_store_q")}
                       </span>
                       <span className={`text-[11px] font-bold ${manual.has_physical_store ? "text-emerald-600" : "text-muted-foreground"}`}>
-                        {manual.has_physical_store ? "Yes" : "No"}
+                        {manual.has_physical_store ? t("yes") : t("no")}
                       </span>
                     </button>
 
                     {manual.has_physical_store && (
                       <div className="space-y-1.5 px-1">
-                        <Label className="text-xs font-semibold">Monthly in-store GMV?</Label>
+                        <Label className="text-xs font-semibold">{t("in_store_gmv_q")}</Label>
                         <Input
                           type="number" min={0} inputMode="numeric"
                           value={manual.in_store_gmv || ""}
                           onChange={e => setManual(m => ({ ...m, in_store_gmv: Number(e.target.value) }))}
                           className="h-11 text-sm border-border/60"
                         />
-                        <Label className="text-xs font-semibold pt-2 block">In-store transaction fee %?</Label>
+                        <Label className="text-xs font-semibold pt-2 block">{t("in_store_fee_q")}</Label>
                         <Input
                           type="number" step="0.01" min={0} max={5} inputMode="decimal"
                           value={manual.tpe_transaction_fee_pct || ""}
                           onChange={e => setManual(m => ({ ...m, tpe_transaction_fee_pct: Number(e.target.value) }))}
                           className="h-11 text-sm border-border/60"
                         />
-                        <Label className="text-xs font-semibold pt-2 block">Monthly terminal rental?</Label>
+                        <Label className="text-xs font-semibold pt-2 block">{t("terminal_rental_q")}</Label>
                         <Input
                           type="number" min={0} inputMode="numeric"
                           value={manual.monthly_terminal_rental || ""}
@@ -944,7 +944,7 @@ export default function Analyzer() {
           className="h-11 rounded-full px-4 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Back
+          {t("back_label")}
         </Button>
 
         {step === 1 && (
@@ -953,7 +953,7 @@ export default function Analyzer() {
             disabled={!step1Valid}
             className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90 disabled:opacity-50"
           >
-            Continue <ArrowRight className="h-4 w-4" />
+            {t("continue_label")} <ArrowRight className="h-4 w-4" />
           </Button>
         )}
         {step === 2 && (
@@ -961,7 +961,7 @@ export default function Analyzer() {
             onClick={goStep3}
             className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90"
           >
-            Continue <ArrowRight className="h-4 w-4" />
+            {t("continue_label")} <ArrowRight className="h-4 w-4" />
           </Button>
         )}
         {step === 3 && (
@@ -969,7 +969,7 @@ export default function Analyzer() {
             onClick={runAnalysis}
             className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-saas-gradient text-white hover:opacity-90 shadow-[0_0_24px_rgba(44,167,193,0.35)]"
           >
-            Run analysis <ArrowRight className="h-4 w-4" />
+            {t("run_analysis_cta")} <ArrowRight className="h-4 w-4" />
           </Button>
         )}
       </div>

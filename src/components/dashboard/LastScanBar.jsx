@@ -1,24 +1,26 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { RefreshCw, Activity, Sparkles } from "lucide-react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * M7 — Last scan indicator + Re-scan trigger.
  * Mounted on Dashboard above the Infrastructure Graph panel.
  */
-function timeAgo(iso) {
-  if (!iso) return "never";
+function timeAgo(iso, t) {
+  if (!iso) return t("never_label");
   const ms = Date.now() - new Date(iso).getTime();
-  if (ms < 60_000) return "just now";
+  if (ms < 60_000) return t("just_now");
   const m = Math.floor(ms / 60_000);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return t("minutes_ago", { n: m });
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
+  if (h < 24) return t("hours_ago", { n: h });
   const d = Math.floor(h / 24);
-  return `${d}d ago`;
+  return t("days_ago", { n: d });
 }
 
 export default function LastScanBar() {
+  const { t } = useTranslation();
   const [run, setRun] = useState(null);
   const [brandId, setBrandId] = useState(null);
   const [scanning, setScanning] = useState(false);
@@ -71,12 +73,12 @@ export default function LastScanBar() {
           <Activity size={13} className="text-muted-foreground" />
         </div>
         <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold">Continuous discovery</p>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold">{t("continuous_discovery")}</p>
           <p className="text-sm font-semibold tracking-tight truncate">
-            {scanning ? "Scanning…" : `Last scan ${timeAgo(lastWhen)}`}
+            {scanning ? t("scanning") : t("last_scan_ago", { time: timeAgo(lastWhen, t) })}
             {!scanning && changes > 0 && (
               <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
-                <Sparkles size={10} /> {changes} change{changes === 1 ? "" : "s"} detected
+                <Sparkles size={10} /> {t("changes_detected_n", { n: changes, plural: changes === 1 ? "" : "s" })}
               </span>
             )}
           </p>
@@ -88,7 +90,7 @@ export default function LastScanBar() {
         className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full bg-foreground text-background text-xs font-bold disabled:opacity-50 transition-opacity"
       >
         <RefreshCw size={11} className={scanning ? "animate-spin" : ""} />
-        {scanning ? "Scanning…" : "Re-scan now"}
+        {scanning ? t("scanning") : t("rescan")}
       </button>
     </div>
   );
