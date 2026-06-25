@@ -1,103 +1,66 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+
+/**
+ * monthlySavingsJob
+ *
+ * Iterates all live DealActivations and invokes generateMonthlySavingsReport
+ * to produce a MonthlySavingsReport for the previous month per brand.
+ *
+ * Replaces the prior mathematical-ramp logic. Real measurement only.
+ */
+
+const ACTIVE_DEAL_STATUSES = ['live', 'authorized', 'migrating', 'monetizing'];
+
+function prevMonthYM() {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Allow scheduled/service calls; block non-admin interactive calls
-    const user = await base44.auth.me().catch(() => null);
-    if (user && user.role !== 'admin') {
+    let isServiceRole = false;
+    let user = null;
+    try { user = await base44.auth.me(); } catch (_) { isServiceRole = true; }
+    if (!isServiceRole && (!user || user.role !== 'admin')) {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const deals = await base44.asServiceRole.entities.DealActivation.filter({ status: 'live' });
-    const monthDate = new Date(); monthDate.setMonth(monthDate.getMonth()-1);
-    const ym = `${monthDate.getFullYear()}-${String(monthDate.getMonth()+1).padStart(2,'0')}`;
+    const month = prevMonthYM();
+    const deals = await base44.asServiceRole.entities.DealActivation.list('-activated_at', 1000).catch(() => []);
+    const liveDeals = deals.filter(d => ACTIVE_DEAL_STATUSES.includes(d.status));
 
-    for (const d of deals) {
-      const rules = await base44.asServiceRole.entities.BillingRule.filter({ deal_activation_id: d.id }, '-created_date', 1)
-        .then(r => r.length ? r : base44.asServiceRole.entities.BillingRule.filter({ deal_id: d.id }, '-created_date', 1));
-      const rule = rules[0] || { billing_model: 'monthly_success_fee', node_share_percent: d.node_share_percent || 25 };
+    // Group by brand (one report-run per brand handles all its verticals)
+    const brandIds = Array.from(new Set(liveDeals.map(d => d.brand_id).filter(Boolean)));
 
-      const baselines = await base44.asServiceRole.entities.Baseline.filter({ deal_activation_id: d.id }, '-created_date', 1)
-        .then(b => b.length ? b : base44.asServiceRole.entities.Baseline.filter({ deal_id: d.id }, '-created_date', 1));
-      const baseline = baselines[0];
-      if (!baseline) continue;
+    let processed = 0;
+    let skipped = 0;
+    const errors = [];
+    const results = [];
 
-      let gmvReal = 0;
-      if (d.brand_id) {
-        const ins = await base44.asServiceRole.entities.AnalyzerInput.filter({ brand_id: d.brand_id }, '-created_date', 1);
-        if (ins?.length) gmvReal = Number(ins[0].monthly_revenue || 0);
-      }
-
-      let baselineCost = 0; let actualCost = 0; let savings = 0; let nodeFee = 0; let confidence = 0.3;
-      if (d.vertical === 'payments') {
-        const details = baseline?.snapshot_json?.details || {};
-        const oldRate = Number(baseline.baseline_value);
-        const newRate = typeof details.payment_optimal_rate === 'number' ? Number(details.payment_optimal_rate) : oldRate;
-        baselineCost = gmvReal * (oldRate/100);
-        actualCost = gmvReal * (newRate/100);
-        savings = Math.max(0, baselineCost - actualCost);
-        nodeFee = Math.max(0, savings * (rule.node_share_percent/100));
-        confidence = gmvReal ? 0.6 : 0.3;
-      } else {
-        const oldCost = Number(baseline.baseline_value ?? 0);
-        const projected = Number(d.projected_savings_monthly || 0);
-        baselineCost = oldCost;
-        actualCost = Math.max(0, oldCost - projected);
-        savings = Math.max(0, baselineCost - actualCost);
-        nodeFee = savings * (rule.node_share_percent/100);
-        confidence = 0.4;
-      }
-
-      const status = savings > 0 ? 'calculated' : 'pending';
-
-      // Upsert report (idempotent)
-      let existingReports = await base44.asServiceRole.entities.MonthlySavingsReport.filter({ deal_activation_id: d.id, month: ym }, '-created_date', 1);
-      let reportRec = null;
-      const reportPayload = {
-        deal_activation_id: d.id,
-        brand_id: d.brand_id || '',
-        provider_id: d.provider_id || '',
-        month: ym,
-        gmv_real: gmvReal || 0,
-        baseline_cost: baselineCost || 0,
-        actual_cost: actualCost || 0,
-        savings: savings || 0,
-        node_fee: nodeFee || 0,
-        status,
-        confidence_score: confidence
-      };
-      if (existingReports.length) {
-        reportRec = await base44.asServiceRole.entities.MonthlySavingsReport.update(existingReports[0].id, reportPayload);
-      } else {
-        reportRec = await base44.asServiceRole.entities.MonthlySavingsReport.create(reportPayload);
-      }
-
-      // Create draft invoice if none exists (idempotent)
-      if (status === 'calculated') {
-        const existingInv = await base44.asServiceRole.entities.Invoice.filter({ deal_activation_id: d.id, month: ym }, '-created_date', 1);
-        if (!existingInv.length) {
-          await base44.asServiceRole.entities.Invoice.create({
-            deal_activation_id: d.id,
-            brand_id: d.brand_id || '',
-            provider_id: d.provider_id || '',
-            month: ym,
-            subtotal_amount: Math.max(0, nodeFee),
-            tax_amount: 0,
-            total_amount: Math.max(0, nodeFee),
-            amount_paid: 0,
-            balance_due: Math.max(0, nodeFee),
-            currency: 'EUR',
-            status: 'draft',
-            monthly_savings_report_id: reportRec.id,
-            billing_snapshot_json: { source: 'monthlySavingsJob' }
-          });
+    for (const brand_id of brandIds) {
+      try {
+        const res = await base44.functions.invoke('generateMonthlySavingsReport', { brand_id, month });
+        const payload = res?.data || res;
+        if (payload?.ok && Array.isArray(payload.reports)) {
+          processed += payload.reports.length;
+          skipped += (payload.errors || []).length;
+          results.push({ brand_id, reports: payload.reports.length, errors: (payload.errors || []).length });
+        } else {
+          skipped += 1;
+          errors.push({ brand_id, reason: payload?.reason || payload?.error || 'unknown' });
         }
+      } catch (e) {
+        errors.push({ brand_id, reason: e.message || String(e) });
       }
+      await sleep(200);
     }
 
-    return Response.json({ ok: true, processed: deals.length, month: ym });
+    return Response.json({ ok: true, month, brands: brandIds.length, processed, skipped, errors, results });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

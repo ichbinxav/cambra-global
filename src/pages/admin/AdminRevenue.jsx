@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import MonthlyReportsTable from "@/components/admin/MonthlyReportsTable";
 
 const COLORS = ["#3b82f6", "#22c55e", "#f97316", "#8b5cf6", "#f59e0b", "#06b6d4"];
 const REALIZED_STATUSES = ["invoiced", "paid"];
@@ -143,6 +144,9 @@ export default function AdminRevenue() {
           <div className="py-12 text-center text-sm text-muted-foreground">No active contracts yet</div>
         )}
       </div>
+
+      {/* Monthly Reports — verify / void / regenerate */}
+      <MonthlyReportsTable />
 
       {/* Notes */}
       <div className="p-4 rounded-xl border border-border/40 bg-secondary/20">

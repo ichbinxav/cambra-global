@@ -13,6 +13,7 @@ import LastScanBar from "@/components/dashboard/LastScanBar";
 import AIInsightsPanel from "@/components/dashboard/AIInsightsPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import PageHero from "@/components/shared/PageHero";
+import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function formatEur(n) {
@@ -52,6 +53,7 @@ export default function Dashboard() {
   const [latest, setLatest] = useState(null);
   const [stripeConn, setStripeConn] = useState(null);
   const [graphNodes, setGraphNodes] = useState([]);
+  const [hasLiveDeal, setHasLiveDeal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -79,6 +81,12 @@ export default function Dashboard() {
             const g = await base44.functions.invoke("getInfrastructureGraph", { brand_id: b.id });
             const payload = g?.data || g;
             if (payload?.ok) setGraphNodes(payload.nodes || []);
+          } catch (_) {}
+
+          try {
+            const acts = await base44.entities.DealActivation.filter({ brand_id: b.id });
+            const live = (acts || []).some(a => ["live", "authorized", "migrating", "monetizing"].includes(a.status));
+            setHasLiveDeal(live);
           } catch (_) {}
         }
       } catch (err) {
@@ -256,6 +264,14 @@ export default function Dashboard() {
             })}
           </div>
         </div>
+      )}
+
+      {/* ── Savings trend (State C only: Stripe connected OR live deal) ── */}
+      {(stripeConnected || hasLiveDeal) && brand && (
+        <SavingsTrendPanel
+          brandId={brand.id}
+          identifiedMonthly={(Number(latest.total_savings) || 0) / 12}
+        />
       )}
 
       {/* ── M6 — Infrastructure status (unchanged) ── */}
