@@ -8,7 +8,7 @@ import { Sparkles, Activity, ScanLine, Gauge } from "lucide-react";
  */
 export default function OneScanSection() {
   return (
-    <section className="relative py-24 sm:py-32 overflow-hidden">
+    <section className="relative py-12 sm:py-16 overflow-hidden">
       <div className="relative max-w-4xl mx-auto px-6 sm:px-10 text-center">
         {/* eyebrow */}
         <span

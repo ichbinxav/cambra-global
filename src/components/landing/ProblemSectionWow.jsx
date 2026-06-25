@@ -207,7 +207,7 @@ export default function ProblemSectionWow() {
   const totalCount = useCountUp(TOTAL, 2200, totalInView);
 
   return (
-    <section className="relative py-24 sm:py-32 overflow-hidden">
+    <section className="relative py-12 sm:py-16 overflow-hidden">
       {/* ambient red wash */}
       <div
         aria-hidden

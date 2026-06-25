@@ -57,7 +57,7 @@ function IntegrationsLogosInline() {
 
 export default function StatsGrid() {
   return (
-    <section className="relative py-20 sm:py-28">
+    <section className="relative py-12 sm:py-16">
       <div className="max-w-5xl mx-auto px-6 sm:px-10">
         {/* eyebrow + context */}
         <div className="text-center mb-10 sm:mb-14">

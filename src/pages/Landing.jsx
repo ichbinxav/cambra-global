@@ -289,7 +289,7 @@ function ProblemSection() {
   ];
 
   return (
-    <section className="relative py-24 sm:py-32 overflow-hidden">
+    <section className="relative py-12 sm:py-16 overflow-hidden">
       {/* ambient red wash for the "problem" mood */}
       <div
         aria-hidden
@@ -303,7 +303,7 @@ function ProblemSection() {
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
           <SectionLabel className="mb-6">{t("problem_label")}</SectionLabel>
-          <h2 className="text-display text-white max-w-3xl mb-16">{t("problem_headline")}</h2>
+          <h2 className="text-display text-white max-w-3xl mb-10">{t("problem_headline")}</h2>
         </AnimatedSection>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -357,7 +357,7 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section id="how" className="relative py-24 sm:py-32 overflow-hidden">
+    <section id="how" className="relative py-12 sm:py-16 overflow-hidden">
       {/* ambient blue wash */}
       <div
         aria-hidden
@@ -371,7 +371,7 @@ function HowItWorksSection() {
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
           <SectionLabel className="mb-6">{t("how_label")}</SectionLabel>
-          <h2 className="text-display text-white max-w-3xl mb-16">{t("how_label")}</h2>
+          <h2 className="text-display text-white max-w-3xl mb-10">{t("how_label")}</h2>
         </AnimatedSection>
 
         <div className="relative space-y-3">
@@ -456,7 +456,7 @@ function BenchmarkSection() {
   ];
 
   return (
-    <section className="relative py-24 sm:py-32 overflow-hidden">
+    <section className="relative py-12 sm:py-16 overflow-hidden">
       <div
         aria-hidden
         className="absolute pointer-events-none"
@@ -519,7 +519,7 @@ function PricingCTASection() {
   const lines = [t("pricing_line1"), t("pricing_line2"), t("pricing_line3"), t("pricing_line4")];
 
   return (
-    <section className="py-24 sm:py-32 relative overflow-hidden">
+    <section className="py-12 sm:py-16 relative overflow-hidden">
       <div
         aria-hidden
         className="absolute pointer-events-none"
@@ -649,10 +649,10 @@ export default function Landing() {
       <LandingNavbar />
       <main className="relative">
         <Hero />
-        <StatsGrid />
         <ProblemSectionWow />
         <OneScanSection />
         <HowItWorksSection />
+        <StatsGrid />
         <TestimonialsCarousel />
         <FounderLetter />
         <PricingDual />

@@ -8,7 +8,7 @@ import { ArrowRight, Sparkles, Activity } from "lucide-react";
  */
 export default function StopLeavingMarginCTA() {
   return (
-    <section className="relative py-28 sm:py-36 overflow-hidden">
+    <section className="relative py-14 sm:py-20 overflow-hidden">
       {/* ambient pulse */}
       <div
         aria-hidden

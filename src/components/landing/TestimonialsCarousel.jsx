@@ -50,7 +50,7 @@ export default function TestimonialsCarousel() {
   const next = () => setIdx((i) => (i + 1) % total);
 
   return (
-    <section id="testimonials" className="relative py-16 sm:py-24 overflow-hidden">
+    <section id="testimonials" className="relative py-12 sm:py-16 overflow-hidden">
       <div className="relative max-w-2xl mx-auto px-6 sm:px-10">
         {/* eyebrow */}
         <div className="text-center mb-4">

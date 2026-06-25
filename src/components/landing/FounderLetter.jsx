@@ -11,7 +11,7 @@ const FOUNDER_PHOTO =
 
 export default function FounderLetter() {
   return (
-    <section className="relative py-20 sm:py-28 overflow-hidden">
+    <section className="relative py-12 sm:py-16 overflow-hidden">
       {/* ambient halo */}
       <div
         aria-hidden
