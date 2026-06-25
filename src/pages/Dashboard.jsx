@@ -58,10 +58,10 @@ const CATEGORY_I18N_KEY = {
 function nodeBadge(node, t) {
   const status = node.status || "detected";
   const cc = node.cost_confidence || "estimated";
-  if (status === "verified" || cc === "verified") return { label: t("badge_verified"), cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25" };
-  if (status === "connected" || cc === "connected") return { label: t("badge_connected"), cls: "bg-blue-500/10 text-blue-600 border-blue-500/25" };
-  if (status === "detected") return { label: t("badge_detected"), cls: "bg-purple-500/10 text-purple-600 border-purple-500/25" };
-  return { label: t("badge_estimated"), cls: "bg-amber-500/10 text-amber-600 border-amber-500/25" };
+  if (status === "verified" || cc === "verified") return { label: t("badge_verified"), cls: "bg-emerald-400/10 text-emerald-300 border-emerald-400/25" };
+  if (status === "connected" || cc === "connected") return { label: t("badge_connected"), cls: "bg-cyan-400/10 text-cyan-300 border-cyan-400/25" };
+  if (status === "detected") return { label: t("badge_detected"), cls: "bg-blue-400/10 text-blue-300 border-blue-400/25" };
+  return { label: t("badge_estimated"), cls: "bg-amber-400/10 text-amber-300 border-amber-400/25" };
 }
 
 /* ── main ────────────────────────────────────────────────────── */
@@ -127,24 +127,59 @@ export default function Dashboard() {
     return (
       <div className="pb-10">
         <div className="min-h-[60vh] flex items-center justify-center px-4 py-12">
-          <div className="w-full max-w-xl rounded-3xl border border-border/60 bg-card p-8 sm:p-10 text-center shadow-[0_8px_40px_-16px_rgba(0,0,0,0.12)]">
-            <div className="w-14 h-14 rounded-2xl bg-secondary border border-border/60 flex items-center justify-center mx-auto mb-6">
-              <Sparkles size={20} className="text-foreground" />
+          <div
+            className="w-full max-w-xl rounded-3xl p-8 sm:p-10 text-center"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              boxShadow: "0 30px 80px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(96,165,250,0.15)",
+            }}
+          >
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6"
+              style={{
+                background: "rgba(34,211,238,0.08)",
+                border: "1px solid rgba(34,211,238,0.25)",
+                boxShadow: "0 0 24px rgba(34,211,238,0.18)",
+              }}
+            >
+              <Sparkles size={20} className="text-cyan-300" />
             </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">
+            <h1
+              className="text-white mb-3"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(28px, 4vw, 36px)",
+                fontWeight: 900,
+                letterSpacing: "-0.04em",
+                lineHeight: 1.02,
+              }}
+            >
               {t("state_a_title")}
             </h1>
-            <p className="text-sm text-muted-foreground mb-7 max-w-md mx-auto leading-relaxed">
+            <p className="text-sm text-white/55 mb-7 max-w-md mx-auto leading-relaxed">
               {t("state_a_sub")}
             </p>
             <Link to="/Analyzer">
-              <Button size="lg" className="h-12 rounded-full px-7 text-sm font-bold gap-2 min-h-[44px]">
+              <Button
+                size="lg"
+                className="h-12 rounded-full px-7 text-sm font-bold gap-2 min-h-[44px] bg-white text-black hover:bg-white/90"
+                style={{
+                  boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.22)",
+                }}
+              >
                 {t("state_a_cta")} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <div className="flex flex-wrap justify-center gap-2 mt-7">
               {[t("auto_detection"), t("bench_comparison"), t("savings_calc")].map(p => (
-                <span key={p} className="text-[11px] px-3 py-1.5 rounded-full border border-border/60 bg-secondary/40 text-muted-foreground font-medium">
+                <span
+                  key={p}
+                  className="text-[11px] px-3 py-1.5 rounded-full text-white/55 font-medium"
+                  style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
+                >
                   {p}
                 </span>
               ))}
@@ -157,8 +192,8 @@ export default function Dashboard() {
 
   /* ───── STATE B / C: result exists ───── */
   const heroBadge = stripeConnected
-    ? { label: t("state_c_badge"), cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25", dot: "bg-emerald-500" }
-    : { label: t("state_b_badge"), cls: "bg-amber-500/10 text-amber-600 border-amber-500/25", dot: "bg-amber-500" };
+    ? { label: t("state_c_badge"), cls: "bg-emerald-400/10 text-emerald-300 border-emerald-400/25", dot: "bg-emerald-400" }
+    : { label: t("state_b_badge"), cls: "bg-amber-400/10 text-amber-300 border-amber-400/25", dot: "bg-amber-400" };
 
   const heroSubtitle = stripeConnected
     ? t("hero_confidence_verified")
@@ -175,37 +210,98 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 pb-10">
       {/* Header */}
-      <PageHero
-        eyebrow={stripeConnected ? t("state_c_badge") : t("state_b_badge")}
-        title={`${firstName}.`}
-        subtitle={t("your_infrastructure")}
-        actions={
-          <Link to="/Analyzer">
-            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-foreground text-background hover:opacity-90">
-              {t("nav_analyzer")} <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        }
-      />
+      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-2">
+        <div>
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-4"
+            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+          >
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/65">
+              {stripeConnected ? t("state_c_badge") : t("state_b_badge")}
+            </span>
+          </div>
+          <h1
+            className="text-white"
+            style={{
+              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+              fontSize: "clamp(32px, 5vw, 48px)",
+              fontWeight: 900,
+              letterSpacing: "-0.04em",
+              lineHeight: 0.98,
+            }}
+          >
+            {firstName}.
+          </h1>
+          <p className="text-[14px] text-white/55 mt-2">{t("your_infrastructure")}</p>
+        </div>
+        <Link to="/Analyzer">
+          <Button
+            size="sm"
+            className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-white text-black hover:bg-white/90"
+            style={{
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 8px 24px -10px rgba(59,130,246,0.55), 0 0 20px rgba(59,130,246,0.2)",
+            }}
+          >
+            {t("nav_analyzer")} <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+        </Link>
+      </div>
 
       {/* ── SAVINGS HERO ── */}
-      <div className="rounded-3xl border border-border/60 bg-card p-6 sm:p-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+      <div
+        className="relative rounded-3xl p-6 sm:p-8 overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)",
+          border: "1px solid rgba(255,255,255,0.10)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          boxShadow: "0 30px 80px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(96,165,250,0.18)",
+        }}
+      >
+        {/* ambient halo */}
+        <div
+          aria-hidden
+          className="absolute pointer-events-none"
+          style={{
+            width: 500, height: 500, right: "-10%", top: "-30%",
+            background: "radial-gradient(circle, rgba(34,211,238,0.18) 0%, transparent 70%)",
+            filter: "blur(70px)",
+          }}
+        />
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
           <div className="flex-1 min-w-0">
-            <div className={`inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded-full border text-[11px] font-bold ${heroBadge.cls}`}>
+            <div className={`inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded-full border text-[10px] uppercase tracking-[0.18em] font-bold ${heroBadge.cls}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${heroBadge.dot}`} />
               {heroBadge.label}
             </div>
-            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold mb-1">{t("identified_potential")}</p>
-            <p className="font-display font-black tabular-nums tracking-[-0.04em] leading-none" style={{ fontSize: "clamp(2.5rem, 8vw, 4.5rem)" }}>
-              {formatEur(latest.total_savings)}<span className="text-[0.35em] font-bold text-muted-foreground/40 ml-2">/{t("per_yr_short")}</span>
+            <p className="text-[10px] uppercase tracking-[0.22em] text-white/45 font-bold mb-2">{t("identified_potential")}</p>
+            <p
+              className="tabular-nums leading-none"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(2.5rem, 8vw, 4.5rem)",
+                fontWeight: 900,
+                letterSpacing: "-0.05em",
+                background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #22d3ee 100%)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                filter: "drop-shadow(0 0 22px rgba(34,211,238,0.35))",
+              }}
+            >
+              {formatEur(latest.total_savings)}<span className="text-[0.35em] font-bold text-white/40 ml-2" style={{ WebkitTextFillColor: "rgba(255,255,255,0.4)" }}>/{t("per_yr_short")}</span>
             </p>
-            <p className="text-sm text-muted-foreground/80 mt-3 max-w-md">{heroSubtitle}</p>
+            <p className="text-sm text-white/60 mt-3 max-w-md">{heroSubtitle}</p>
           </div>
 
           <div className="shrink-0 w-full sm:w-auto sm:max-w-xs">
             {stripeConnected ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 text-emerald-600 text-xs font-bold">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 text-emerald-300 text-xs font-bold">
                 <CheckCircle2 size={11} /> {t("payments_verified")}
               </div>
             ) : (
@@ -220,22 +316,37 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* FIX 3C — Quick stats: 2 cols on mobile, 3 on desktop */}
+      {/* Quick stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {[
           { label: t("payments_title"), value: latest.payment_savings, icon: CreditCard },
           { label: t("shipping_title"), value: latest.shipping_savings, icon: Truck },
           { label: t("saas_title"),     value: latest.saas_savings,     icon: Package },
         ].map(s => (
-          <div key={s.label} className="rounded-2xl border border-border/60 bg-card p-5">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-secondary border border-border/60 flex items-center justify-center">
-                <s.icon size={13} className="text-foreground" />
+          <div
+            key={s.label}
+            className="rounded-2xl p-5 transition-all hover:border-white/20"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+            }}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{
+                  background: "rgba(59,130,246,0.08)",
+                  border: "1px solid rgba(96,165,250,0.20)",
+                }}
+              >
+                <s.icon size={13} className="text-blue-300" />
               </div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold">{s.label}</p>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-white/45 font-bold">{s.label}</p>
             </div>
-            <p className="text-2xl font-black tabular-nums">
-              {formatEur(s.value)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/{t("per_yr_short")}</span>
+            <p className="text-2xl font-black tabular-nums text-white" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", letterSpacing: "-0.03em" }}>
+              {formatEur(s.value)}<span className="text-xs text-white/40 font-normal ml-1">/{t("per_yr_short")}</span>
             </p>
           </div>
         ))}
@@ -245,8 +356,8 @@ export default function Dashboard() {
       {graphNodes.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-black tracking-tight">{t("your_infrastructure")}</h2>
-            <Link to="/ConnectTools" className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1">
+            <h2 className="text-base font-black tracking-tight text-white" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>{t("your_infrastructure")}</h2>
+            <Link to="/ConnectTools" className="text-[11px] font-semibold text-white/55 hover:text-white transition-colors inline-flex items-center gap-1">
               <Plug size={10} /> {t("connect_more")}
             </Link>
           </div>
@@ -255,25 +366,38 @@ export default function Dashboard() {
               const Icon = grouped[cat].icon;
               const items = grouped[cat].items;
               return (
-                <div key={cat} className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-                  <div className="px-4 py-2.5 border-b border-border/40 bg-secondary/30 flex items-center gap-2">
-                    <Icon size={12} className="text-muted-foreground" aria-hidden="true" />
-                    <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground">
+                <div
+                  key={cat}
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    background: "rgba(255,255,255,0.025)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div
+                    className="px-4 py-2.5 flex items-center gap-2"
+                    style={{
+                      borderBottom: "1px solid rgba(255,255,255,0.06)",
+                      background: "rgba(255,255,255,0.02)",
+                    }}
+                  >
+                    <Icon size={12} className="text-white/50" aria-hidden="true" />
+                    <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/55">
                       {t(CATEGORY_I18N_KEY[cat] || "cat_other")}
                     </span>
-                    <span className="text-[10px] text-muted-foreground/50">({items.length})</span>
+                    <span className="text-[10px] text-white/30">({items.length})</span>
                   </div>
-                  <div className="divide-y divide-border/30">
+                  <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
                     {items.map(n => {
                       const b = nodeBadge(n, t);
                       return (
-                        <div key={n.id} className="px-4 py-3 flex items-center gap-3 flex-wrap">
-                          <p className="text-sm font-semibold flex-1 min-w-0 truncate">{n.provider_name}</p>
+                        <div key={n.id} className="px-4 py-3 flex items-center gap-3 flex-wrap" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                          <p className="text-sm font-semibold flex-1 min-w-0 truncate text-white">{n.provider_name}</p>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold ${b.cls}`}>
                             {b.label}
                           </span>
                           {Number(n.monthly_cost) > 0 && (
-                            <span className="text-xs font-bold tabular-nums whitespace-nowrap">
+                            <span className="text-xs font-bold tabular-nums whitespace-nowrap text-white/80">
                               {formatEur(Number(n.monthly_cost))}/{t("per_mo_short")}
                             </span>
                           )}
@@ -312,14 +436,26 @@ export default function Dashboard() {
       {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Link to="/Analyzer">
-          <div className="p-5 rounded-2xl border border-border/60 bg-card hover:border-foreground/40 transition-colors min-h-[44px]">
-            <p className="text-sm font-bold mb-0.5">{t("nav_analyzer")}</p>
+          <div
+            className="p-5 rounded-2xl transition-all min-h-[44px] hover:border-white/20"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <p className="text-sm font-bold mb-0.5 text-white">{t("nav_analyzer")}</p>
           </div>
         </Link>
         <Link to="/ConnectTools">
-          <div className="p-5 rounded-2xl border border-border/60 bg-card hover:border-foreground/40 transition-colors min-h-[44px]">
-            <p className="text-sm font-bold mb-0.5">{t("nav_connect")}</p>
-            <p className="text-xs text-muted-foreground">{t("ct_page_sub")}</p>
+          <div
+            className="p-5 rounded-2xl transition-all min-h-[44px] hover:border-white/20"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <p className="text-sm font-bold mb-0.5 text-white">{t("nav_connect")}</p>
+            <p className="text-xs text-white/55">{t("ct_page_sub")}</p>
           </div>
         </Link>
       </div>

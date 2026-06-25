@@ -612,39 +612,93 @@ export default function Analyzer() {
   const progressPct = (step / 3) * 100;
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-background font-inter overflow-x-hidden">
+    <div
+      className="relative min-h-screen flex flex-col font-inter overflow-x-hidden"
+      style={{
+        color: "#ffffff",
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
+      }}
+    >
+      {/* Fixed ambient grid + halos */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          opacity: 0.3,
+          maskImage:
+            "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed z-0"
+        style={{
+          width: 700, height: 700, left: "50%", top: 80, transform: "translateX(-50%)",
+          background: "radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)",
+          filter: "blur(80px)",
+        }}
+      />
+
       <Navbar />
 
       {/* Gradient progress bar under navbar */}
-      <div className="fixed top-14 left-0 right-0 z-50 h-[3px] bg-border/30">
+      <div className="fixed top-14 left-0 right-0 z-50 h-[2px]" style={{ background: "rgba(255,255,255,0.06)" }}>
         <div
           className="h-full transition-all duration-500"
           style={{
             width: `${progressPct}%`,
-            background: "linear-gradient(90deg, #1F4ED8 0%, #2CA7C1 100%)",
-            boxShadow: "0 0 12px rgba(44,167,193,0.5)",
+            background: "linear-gradient(90deg, #3b82f6 0%, #22d3ee 100%)",
+            boxShadow: "0 0 16px rgba(34,211,238,0.6)",
           }}
         />
       </div>
 
-      {/* Step indicator */}
-      <div className="sticky top-14 z-40 flex items-center justify-between px-5 py-3 border-b border-border/40 bg-background/95 backdrop-blur-xl">
-        <span className="text-sm font-black tracking-tight">CAMBRA</span>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-muted-foreground/60">~2 minutes</span>
-          <span className="text-xs font-semibold tabular-nums text-muted-foreground">{step}/3</span>
+      {/* Step indicator — glass */}
+      <div
+        className="sticky top-14 z-40 flex items-center justify-between px-5 py-3"
+        style={{
+          background: "rgba(10,10,10,0.7)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <span className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+          </span>
+          Live audit
+        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] text-white/40">~2 minutes</span>
+          <span className="text-xs font-bold tabular-nums text-white/70">{step}/3</span>
         </div>
       </div>
 
-      <main className="relative flex-1 max-w-lg mx-auto w-full px-5 pt-8 pb-36">
+      <main className="relative z-10 flex-1 max-w-lg mx-auto w-full px-5 pt-10 pb-36">
         {/* Resume offer */}
         {resumeOffer && step === 1 && (
-          <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+          <div
+            className="mb-6 rounded-2xl p-4"
+            style={{
+              background: "rgba(59,130,246,0.06)",
+              border: "1px solid rgba(96,165,250,0.25)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+            }}
+          >
             <div className="flex items-start gap-3">
-              <Sparkles size={16} className="text-blue-600 mt-0.5 shrink-0" />
+              <Sparkles size={16} className="text-cyan-300 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground">{t("welcome_back")}</p>
-                <p className="text-[12px] text-muted-foreground mt-0.5">
+                <p className="text-sm font-bold text-white">{t("welcome_back")}</p>
+                <p className="text-[12px] text-white/55 mt-0.5">
                   {t("continue_where", { step: resumeOffer.step })}
                   {Array.isArray(resumeOffer.detectedTools) && resumeOffer.detectedTools.length > 0 &&
                     t("tools_detected_extra", { n: resumeOffer.detectedTools.length })}.
@@ -652,13 +706,14 @@ export default function Analyzer() {
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => applyResumeState(resumeOffer, true)}
-                    className="h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold inline-flex items-center gap-1.5"
+                    className="h-9 px-4 rounded-full bg-white text-black text-xs font-bold inline-flex items-center gap-1.5"
                   >
                     {t("continue_label")} <ArrowRight size={12} />
                   </button>
                   <button
                     onClick={dismissResume}
-                    className="h-9 px-4 rounded-full border border-border/60 bg-white text-xs font-medium text-muted-foreground hover:text-foreground"
+                    className="h-9 px-4 rounded-full text-xs font-medium text-white/60 hover:text-white"
+                    style={{ border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.03)" }}
                   >
                     {t("start_fresh")}
                   </button>
@@ -668,92 +723,127 @@ export default function Analyzer() {
           </div>
         )}
 
-        {/* Inline error banner — FIX 19: alert role for SR announcement */}
+        {/* Inline error banner */}
         {errorBanner && (
           <div
             role="alert"
             aria-live="polite"
-            className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-2.5"
+            className="mb-5 rounded-xl px-4 py-3 flex items-start gap-2.5"
+            style={{
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.25)",
+            }}
           >
-            <AlertTriangle size={14} className="text-red-600 mt-0.5 shrink-0" aria-hidden="true" />
-            <p className="text-[12px] text-red-700 leading-relaxed whitespace-pre-line">{errorBanner}</p>
+            <AlertTriangle size={14} className="text-red-300 mt-0.5 shrink-0" aria-hidden="true" />
+            <p className="text-[12px] text-red-200 leading-relaxed whitespace-pre-line">{errorBanner}</p>
           </div>
         )}
 
         {/* ──────────── STEP 1 ──────────── */}
         {step === 1 && (
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">{t("az_step1_title")}</h1>
-            <p className="text-sm text-muted-foreground mb-6">{t("az_step1_sub")}</p>
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
+              style={{
+                border: "1px solid rgba(255,255,255,0.12)",
+                background: "rgba(255,255,255,0.03)",
+              }}
+            >
+              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 01 · Brand</span>
+            </div>
+            <h1
+              className="text-white mb-3"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(28px, 4vw, 36px)",
+                fontWeight: 900,
+                letterSpacing: "-0.04em",
+                lineHeight: 1.02,
+              }}
+            >
+              {t("az_step1_title")}
+            </h1>
+            <p className="text-[14px] text-white/55 mb-7">{t("az_step1_sub")}</p>
 
             <div className="space-y-5">
               <div className="space-y-1.5">
-                <Label htmlFor="az-website" className="text-sm font-medium">{t("field_website")}</Label>
+                <Label htmlFor="az-website" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_website")}</Label>
                 <Input
                   id="az-website"
                   value={websiteUrl}
                   onChange={e => setWebsiteUrl(e.target.value)}
                   onBlur={handleWebsiteBlur}
                   placeholder="yourbrand.com"
-                  className="h-12 text-sm border-border/60"
+                  className="h-12 text-sm text-white placeholder:text-white/30"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
                   inputMode="url"
                   aria-required="true"
                 />
                 {discovery.status === "running" && (
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <Loader2 size={11} className="animate-spin text-cambra-cyan" />
+                  <div className="flex items-center gap-1.5 text-[11px] text-white/55">
+                    <Loader2 size={11} className="animate-spin text-cyan-400" />
                     {t("analyzing_your_infra")}
                   </div>
                 )}
                 {discovery.status === "completed" && discovery.findings.length > 0 && (
-                  <p className="text-[11px] text-emerald-700 font-medium">
+                  <p className="text-[11px] text-cyan-300 font-medium">
                     {t("found_tools_on_site", { n: discovery.findings.length, plural: discovery.findings.length === 1 ? "" : "s" })}
                   </p>
                 )}
                 {discovery.status === "completed" && discovery.findings.length === 0 && websiteUrl && (
-                  <p className="text-[11px] text-muted-foreground">{t("no_public_signals")}</p>
+                  <p className="text-[11px] text-white/40">{t("no_public_signals")}</p>
                 )}
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="az-brand" className="text-sm font-medium">{t("field_brand_name")}</Label>
+                <Label htmlFor="az-brand" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_brand_name")}</Label>
                 <Input
                   id="az-brand"
                   value={brandName}
                   onChange={e => setBrandName(e.target.value)}
                   placeholder={t("your_brand_placeholder")}
-                  className="h-12 text-sm border-border/60"
+                  className="h-12 text-sm text-white placeholder:text-white/30"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
                   aria-required="true"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="az-country" className="text-sm font-medium">{t("field_country")}</Label>
+                <Label htmlFor="az-country" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_country")}</Label>
                 <div className="relative">
                   <select
                     id="az-country"
                     value={country}
                     onChange={e => setCountry(e.target.value)}
                     aria-required="true"
-                    className="w-full h-12 pl-9 pr-3 rounded-md border border-border/60 bg-white text-sm appearance-none text-foreground"
+                    className="w-full h-12 pl-9 pr-3 rounded-md text-sm appearance-none text-white"
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                    }}
                   >
-                    <option value="">{t("select_country")}</option>
-                    {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="" style={{ background: "#0a0a0a" }}>{t("select_country")}</option>
+                    {COUNTRIES.map(c => <option key={c} value={c} style={{ background: "#0a0a0a" }}>{c}</option>)}
                   </select>
-                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" aria-hidden="true" />
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" aria-hidden="true" />
+                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" aria-hidden="true" />
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" aria-hidden="true" />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label id="az-revenue-label" className="text-sm font-medium">{t("field_revenue")}</Label>
+                <Label id="az-revenue-label" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_revenue")}</Label>
                 <div role="radiogroup" aria-labelledby="az-revenue-label" aria-required="true">
                   <RevenueRangePicker value={revenueRange} onChange={setRevenueRange} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label id="az-category-label" className="text-sm font-medium">{t("field_category")}</Label>
+                <Label id="az-category-label" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_category")}</Label>
                 <div role="radiogroup" aria-labelledby="az-category-label" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {CATEGORY_OPTIONS.map(c => (
                     <button
@@ -762,11 +852,16 @@ export default function Analyzer() {
                       role="radio"
                       aria-checked={category === c.key}
                       onClick={() => setCategory(c.key)}
-                      className={`min-h-[44px] px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
+                      className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                         category === c.key
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border/60 bg-white text-foreground hover:border-foreground/40"
+                          ? "bg-white text-black"
+                          : "text-white/80 hover:text-white"
                       }`}
+                      style={
+                        category === c.key
+                          ? { border: "1px solid rgba(255,255,255,0.95)" }
+                          : { border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }
+                      }
                     >
                       {t(c.i18n)}
                     </button>
@@ -780,8 +875,24 @@ export default function Analyzer() {
         {/* ──────────── STEP 2 ──────────── */}
         {step === 2 && (
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">{t("az_step2_title")}</h1>
-            <p className="text-sm text-muted-foreground mb-6">{t("az_step2_sub")}</p>
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
+              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+            >
+              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 02 · Infrastructure</span>
+            </div>
+            <h1
+              className="text-white mb-3"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(28px, 4vw, 36px)",
+                fontWeight: 900,
+                letterSpacing: "-0.04em",
+                lineHeight: 1.02,
+              }}
+            >
+              {t("az_step2_title")}
+            </h1>
+            <p className="text-[14px] text-white/55 mb-7">{t("az_step2_sub")}</p>
 
             <DetectedToolsGrid
               tools={tools}
@@ -796,7 +907,11 @@ export default function Analyzer() {
               <button
                 type="button"
                 onClick={() => setManualOpen(o => !o)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-border/60 bg-white min-h-[48px]"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[48px] text-white/85 hover:text-white transition-colors"
+                style={{
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.03)",
+                }}
               >
                 <span className="flex items-center gap-2 text-sm font-semibold">
                   <Plus size={14} /> {t("add_manually")}
@@ -805,57 +920,63 @@ export default function Analyzer() {
               </button>
 
               {manualOpen && (
-                <div className="mt-3 space-y-5 rounded-2xl border border-border/40 bg-secondary/30 p-4">
+                <div
+                  className="mt-3 space-y-5 rounded-2xl p-4"
+                  style={{
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.02)",
+                  }}
+                >
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">{t("field_payment_provider")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_payment_provider")}</Label>
                     <select
                       value={manual.payment_provider}
                       onChange={e => setManual(m => ({ ...m, payment_provider: e.target.value }))}
-                      className="w-full h-11 px-3 rounded-md border border-border/60 bg-white text-sm"
+                      className="w-full h-11 px-3 rounded-md text-sm text-white" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     >
                       <option value="">{t("select_provider")}</option>
                       {PAYMENT_PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
-                    <Label className="text-xs font-semibold pt-2 block">{t("field_payment_fee")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("field_payment_fee")}</Label>
                     <Input
                       type="number" step="0.01" min={0} max={15} inputMode="decimal"
                       value={manual.payment_fee_pct || ""}
                       onChange={e => setManual(m => ({ ...m, payment_fee_pct: Number(e.target.value) }))}
                       placeholder="e.g. 2.9"
-                      className="h-11 text-sm border-border/60"
+                      className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">{t("field_shipping_provider")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_shipping_provider")}</Label>
                     <select
                       value={manual.shipping_provider}
                       onChange={e => setManual(m => ({ ...m, shipping_provider: e.target.value }))}
-                      className="w-full h-11 px-3 rounded-md border border-border/60 bg-white text-sm"
+                      className="w-full h-11 px-3 rounded-md text-sm text-white" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     >
                       <option value="">{t("select_carrier")}</option>
                       {SHIPPING_PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
-                    <Label className="text-xs font-semibold pt-2 block">{t("field_shipments")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("field_shipments")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.monthly_shipments || ""}
                       onChange={e => setManual(m => ({ ...m, monthly_shipments: Number(e.target.value) }))}
                       placeholder="e.g. 400"
-                      className="h-11 text-sm border-border/60"
+                      className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     />
-                    <Label className="text-xs font-semibold pt-2 block">{t("field_shipping_cost")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("field_shipping_cost")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.monthly_shipping_cost || ""}
                       onChange={e => setManual(m => ({ ...m, monthly_shipping_cost: Number(e.target.value) }))}
                       placeholder="e.g. 3000"
-                      className="h-11 text-sm border-border/60"
+                      className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">{t("field_saas_tools")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_saas_tools")}</Label>
                     <div className="grid grid-cols-2 gap-2">
                       {COMMON_SAAS_TOOLS.map(toolName => {
                         const active = manual.saas_tools_selected.includes(toolName);
@@ -869,74 +990,78 @@ export default function Analyzer() {
                                 ? m.saas_tools_selected.filter(x => x !== toolName)
                                 : [...m.saas_tools_selected, toolName],
                             }))}
-                            className={`min-h-[44px] px-3 rounded-xl border text-xs font-semibold ${
-                              active
-                                ? "border-foreground bg-foreground text-background"
-                                : "border-border/60 bg-white text-foreground"
-                            }`}
+                            className={`min-h-[44px] px-3 rounded-xl text-xs font-semibold transition-colors ${
+                                  active ? "bg-white text-black" : "text-white/80 hover:text-white"
+                                }`}
+                                style={
+                                  active
+                                    ? { border: "1px solid rgba(255,255,255,0.95)" }
+                                    : { border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }
+                                }
                           >
                             {toolName}
                           </button>
                         );
                       })}
                     </div>
-                    <Label className="text-xs font-semibold pt-2 block">{t("field_saas_spend")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("field_saas_spend")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.total_saas_spend || ""}
                       onChange={e => setManual(m => ({ ...m, total_saas_spend: Number(e.target.value) }))}
                       placeholder="e.g. 1500"
-                      className="h-11 text-sm border-border/60"
+                      className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">{t("field_banking_fees_label")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_banking_fees_label")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.banking_monthly_fees || ""}
                       onChange={e => setManual(m => ({ ...m, banking_monthly_fees: Number(e.target.value) }))}
                       placeholder="e.g. 40"
-                      className="h-11 text-sm border-border/60"
+                      className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     />
                   </div>
 
-                  <div className="space-y-2 pt-2 border-t border-border/30">
+                  <div className="space-y-2 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
                     <button
                       type="button"
                       onClick={() => setManual(m => ({ ...m, has_physical_store: !m.has_physical_store }))}
-                      className="w-full flex items-center justify-between px-3 py-3 rounded-xl border border-border/60 bg-white min-h-[44px]"
+                      className="w-full flex items-center justify-between px-3 py-3 rounded-xl min-h-[44px] text-white"
+                      style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
                     >
                       <span className="flex items-center gap-2 text-xs font-semibold">
                         <Store size={13} /> {t("physical_store_q")}
                       </span>
-                      <span className={`text-[11px] font-bold ${manual.has_physical_store ? "text-emerald-600" : "text-muted-foreground"}`}>
+                      <span className={`text-[11px] font-bold ${manual.has_physical_store ? "text-cyan-300" : "text-white/45"}`}>
                         {manual.has_physical_store ? t("yes") : t("no")}
                       </span>
                     </button>
 
                     {manual.has_physical_store && (
                       <div className="space-y-1.5 px-1">
-                        <Label className="text-xs font-semibold">{t("in_store_gmv_q")}</Label>
+                        <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("in_store_gmv_q")}</Label>
                         <Input
                           type="number" min={0} inputMode="numeric"
                           value={manual.in_store_gmv || ""}
                           onChange={e => setManual(m => ({ ...m, in_store_gmv: Number(e.target.value) }))}
-                          className="h-11 text-sm border-border/60"
+                          className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                         />
-                        <Label className="text-xs font-semibold pt-2 block">{t("in_store_fee_q")}</Label>
+                        <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("in_store_fee_q")}</Label>
                         <Input
                           type="number" step="0.01" min={0} max={5} inputMode="decimal"
                           value={manual.tpe_transaction_fee_pct || ""}
                           onChange={e => setManual(m => ({ ...m, tpe_transaction_fee_pct: Number(e.target.value) }))}
-                          className="h-11 text-sm border-border/60"
+                          className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                         />
-                        <Label className="text-xs font-semibold pt-2 block">{t("terminal_rental_q")}</Label>
+                        <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("terminal_rental_q")}</Label>
                         <Input
                           type="number" min={0} inputMode="numeric"
                           value={manual.monthly_terminal_rental || ""}
                           onChange={e => setManual(m => ({ ...m, monthly_terminal_rental: Number(e.target.value) }))}
-                          className="h-11 text-sm border-border/60"
+                          className="h-11 text-sm text-white placeholder:text-white/30" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                         />
                       </div>
                     )}
@@ -950,14 +1075,37 @@ export default function Analyzer() {
         {/* ──────────── STEP 3 ──────────── */}
         {step === 3 && (
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">{t("az_step3_title")}</h1>
-            <p className="text-sm text-muted-foreground mb-6">{t("az_step3_sub")}</p>
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
+              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+            >
+              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 03 · Verify</span>
+            </div>
+            <h1
+              className="text-white mb-3"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(28px, 4vw, 36px)",
+                fontWeight: 900,
+                letterSpacing: "-0.04em",
+                lineHeight: 1.02,
+              }}
+            >
+              {t("az_step3_title")}
+            </h1>
+            <p className="text-[14px] text-white/55 mb-7">{t("az_step3_sub")}</p>
 
             {stripeConnected ? (
               <div className="space-y-4">
-                <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-5 text-center">
-                  <ShieldCheck size={28} className="mx-auto mb-2 text-emerald-600" />
-                  <p className="text-sm font-black text-emerald-800">{t("az_step3_verified")}</p>
+                <div
+                  className="rounded-2xl p-6 text-center"
+                  style={{
+                    background: "rgba(34,211,238,0.06)",
+                    border: "1px solid rgba(34,211,238,0.25)",
+                    boxShadow: "0 0 32px rgba(34,211,238,0.15)",
+                  }}
+                >
+                  <ShieldCheck size={28} className="mx-auto mb-2 text-cyan-300" />
+                  <p className="text-sm font-black text-white">{t("az_step3_verified")}</p>
                 </div>
                 <UpgradeToVerified vertical="payments" isConnected currentConfidence="verified" />
               </div>
@@ -979,7 +1127,7 @@ export default function Analyzer() {
             <div className="mt-6 text-center">
               <button
                 onClick={runAnalysis}
-                className="text-xs font-semibold text-muted-foreground hover:text-foreground underline underline-offset-2"
+                className="text-xs font-semibold text-white/50 hover:text-white underline underline-offset-2 transition-colors"
               >
                 {stripeConnected ? t("confirm_cta") : t("az_step3_skip")}
               </button>
@@ -988,8 +1136,16 @@ export default function Analyzer() {
         )}
       </main>
 
-      {/* Footer actions */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-3 border-t border-border/40 bg-background/95 backdrop-blur-xl">
+      {/* Footer actions — glass */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-3"
+        style={{
+          background: "rgba(10,10,10,0.78)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
         <Button
           variant="ghost"
           onClick={() => {
@@ -999,7 +1155,7 @@ export default function Analyzer() {
             }
             setStep(s => s - 1);
           }}
-          className="h-11 rounded-full px-4 text-sm font-medium text-muted-foreground hover:text-foreground"
+          className="h-11 rounded-full px-4 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5"
         >
           <ArrowLeft className="mr-1.5 h-4 w-4" />
           {t("back_label")}
@@ -1009,7 +1165,10 @@ export default function Analyzer() {
           <Button
             onClick={goStep2}
             disabled={!step1Valid}
-            className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90 disabled:opacity-50"
+            className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-white text-black hover:bg-white/90 disabled:opacity-40"
+            style={{
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.22)",
+            }}
           >
             {t("continue_label")} <ArrowRight className="h-4 w-4" />
           </Button>
@@ -1017,7 +1176,10 @@ export default function Analyzer() {
         {step === 2 && (
           <Button
             onClick={goStep3}
-            className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90"
+            className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-white text-black hover:bg-white/90"
+            style={{
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.22)",
+            }}
           >
             {t("continue_label")} <ArrowRight className="h-4 w-4" />
           </Button>
@@ -1025,7 +1187,11 @@ export default function Analyzer() {
         {step === 3 && (
           <Button
             onClick={runAnalysis}
-            className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-saas-gradient text-white hover:opacity-90 shadow-[0_0_24px_rgba(44,167,193,0.35)]"
+            className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90"
+            style={{
+              background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+              boxShadow: "0 0 32px rgba(34,211,238,0.45), 0 12px 32px -12px rgba(34,211,238,0.6)",
+            }}
           >
             {t("run_analysis_cta")} <ArrowRight className="h-4 w-4" />
           </Button>
