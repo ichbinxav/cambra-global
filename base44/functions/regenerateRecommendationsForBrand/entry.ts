@@ -61,9 +61,13 @@ Deno.serve(async (req) => {
     }
 
     // Cargar señales
-    const [brand, results, activations, reports, baselines, mandates, tasks, providers] = await Promise.all([
-      base44.asServiceRole.entities.Brand.get(brandId),
-      base44.asServiceRole.entities.AnalyzerResult.filter({}, '-created_date', 500), // filtraremos por created_by
+    const brand = await base44.asServiceRole.entities.Brand.get(brandId);
+    const brandEmail = brand?.created_by;
+
+    const [results, activations, reports, baselines, mandates, tasks, providers] = await Promise.all([
+      brandEmail
+        ? base44.asServiceRole.entities.AnalyzerResult.filter({ created_by: brandEmail }, '-created_date', 50)
+        : Promise.resolve([]),
       base44.asServiceRole.entities.DealActivation.filter({ brand_id: brandId }),
       base44.asServiceRole.entities.MonthlySavingsReport.filter({ brand_id: brandId }, '-month', 200),
       base44.asServiceRole.entities.Baseline.filter({ brand_id: brandId, is_current: true }, '-locked_at', 1),
@@ -75,9 +79,8 @@ Deno.serve(async (req) => {
     const latestBaseline = baselines?.[0] || null;
     const latestMandate = mandates?.[0] || null;
 
-    // Map AnalyzerResult por email del brand
-    const brandEmail = brand?.created_by;
-    const myResults = (results||[]).filter(r => r.created_by === brandEmail).sort((a,b)=> new Date(b.created_date)-new Date(a.created_date));
+    // Map AnalyzerResult — already filtered by created_by in the query above
+    const myResults = (results||[]).sort((a,b)=> new Date(b.created_date)-new Date(a.created_date));
     const latestResult = myResults?.[0] || null;
 
     // Señales verticales

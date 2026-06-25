@@ -12,7 +12,7 @@ import AuditModulesGrid from "@/components/analyzer/AuditModulesGrid";
 import CopilotPanel from "@/components/analyzer/CopilotPanel";
 import SmartNumberField from "@/components/inputs/SmartNumberField.jsx";
 import Navbar from "@/components/landing/Navbar";
-import { computeInfraScore, calculateSavings, getBenchmarks } from "@/lib/scoreEngine";
+import { computeInfraScore, calculateSavings, getBenchmarks, ENGINE_VERSION, validateAnalyzerInput } from "@/lib/scoreEngine";
 
 const STEPS = [
   {
@@ -54,7 +54,7 @@ const STEPS = [
   {
     title: "Pillar 3 · Commerce SaaS",
     sub: "We identify redundant or overpriced commerce software (Shopify, Klaviyo, apps & plugins).",
-    why: "Brands typically overspend on Commerce SaaS — mostly on duplicated and underused apps.",
+    why: "Many brands carry significant SaaS redundancy — mostly on duplicated and underused apps.",
     icon: Package,
   },
   {
@@ -211,6 +211,13 @@ export default function Analyzer() {
       wholesale_pct: data.wholesale_pct,
     };
 
+    const validation = validateAnalyzerInput(inputData);
+    if (!validation.valid) {
+      setLoading(false);
+      alert("Please fix the following before running the analysis:\n\n" + validation.errors.join("\n"));
+      return;
+    }
+
     // Unified savings calculation (tier + geo aware)
     const savings = calculateSavings(inputData);
     const scoreReport = computeInfraScore(inputData, "manual");
@@ -279,12 +286,16 @@ export default function Analyzer() {
       details: savings.details,
       confidence_level: confidence,
       data_completeness_score: completeness,
+      score_engine_version:   ENGINE_VERSION.score,
+      savings_model_version:  ENGINE_VERSION.savings,
+      benchmark_version:      ENGINE_VERSION.benchmark,
       methodology: "Manual / hybrid input compared to CAMBRA network benchmark (tier-aware, geo-adjusted). Savings = (current_rate − benchmark_rate) × annual_volume, capped at realistic recovery bands.",
       assumptions: [
         "Volume held constant across the year (no seasonality)",
         "Benchmarks applied per revenue tier and geography (EU/UK)",
         "All-in effective rate used for TPV (variable + fixed amortized)",
         "Estimates do not account for contractual lock-ins or termination fees",
+        `Score engine: v${ENGINE_VERSION.score} · Savings model: v${ENGINE_VERSION.savings} · Benchmarks: v${ENGINE_VERSION.benchmark}`,
       ],
       benchmark_source: "network_internal",
       verification_status: "pending_verification",

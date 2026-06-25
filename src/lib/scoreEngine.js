@@ -16,6 +16,69 @@
  *    Insurance Europe SME premium reports, BEREC telecom benchmarks.
  */
 
+// ─── Engine versioning ───────────────────────────────────────────────────────
+export const ENGINE_VERSION = {
+  score:     "1.0.0",
+  savings:   "1.0.0",
+  benchmark: "1.0.0",
+};
+
+// ─── Input validation ────────────────────────────────────────────────────────
+export function validateAnalyzerInput(input = {}) {
+  const errors = [];
+  const n = (v) => Number(v);
+
+  if (input.monthly_revenue === undefined || input.monthly_revenue === null || input.monthly_revenue === "") {
+    errors.push("Monthly revenue is required.");
+  } else if (!isFinite(n(input.monthly_revenue)) || isNaN(n(input.monthly_revenue))) {
+    errors.push("Monthly revenue must be a valid number.");
+  } else if (n(input.monthly_revenue) < 0) {
+    errors.push("Monthly revenue cannot be negative.");
+  }
+
+  if (input.payment_fee_pct !== undefined && input.payment_fee_pct !== null && input.payment_fee_pct !== "") {
+    if (!isFinite(n(input.payment_fee_pct)) || isNaN(n(input.payment_fee_pct))) {
+      errors.push("Payment fee % must be a valid number.");
+    } else if (n(input.payment_fee_pct) < 0 || n(input.payment_fee_pct) > 15) {
+      errors.push("Payment fee % must be between 0 and 15.");
+    }
+  }
+
+  if (input.monthly_shipments !== undefined && input.monthly_shipments !== null && input.monthly_shipments !== "") {
+    if (!isFinite(n(input.monthly_shipments)) || isNaN(n(input.monthly_shipments))) {
+      errors.push("Monthly shipments must be a valid number.");
+    } else if (n(input.monthly_shipments) < 0) {
+      errors.push("Monthly shipments cannot be negative.");
+    }
+  }
+
+  if (input.monthly_shipping_cost !== undefined && input.monthly_shipping_cost !== null && input.monthly_shipping_cost !== "") {
+    if (!isFinite(n(input.monthly_shipping_cost)) || isNaN(n(input.monthly_shipping_cost))) {
+      errors.push("Monthly shipping cost must be a valid number.");
+    } else if (n(input.monthly_shipping_cost) < 0) {
+      errors.push("Monthly shipping cost cannot be negative.");
+    }
+  }
+
+  if (input.total_saas_spend !== undefined && input.total_saas_spend !== null && input.total_saas_spend !== "") {
+    if (!isFinite(n(input.total_saas_spend)) || isNaN(n(input.total_saas_spend))) {
+      errors.push("Total SaaS spend must be a valid number.");
+    } else if (n(input.total_saas_spend) < 0) {
+      errors.push("Total SaaS spend cannot be negative.");
+    }
+  }
+
+  if (input.avg_order_value !== undefined && input.avg_order_value !== null && input.avg_order_value !== "") {
+    if (!isFinite(n(input.avg_order_value)) || isNaN(n(input.avg_order_value))) {
+      errors.push("Average order value must be a valid number.");
+    } else if (n(input.avg_order_value) <= 0) {
+      errors.push("Average order value must be greater than 0.");
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
 // ─── Revenue tier detection ──────────────────────────────────────────────────
 // micro: <€30K/mo · small: €30–100K · mid: €100–500K · large: >€500K
 function getRevenueTier(monthlyRevenue = 0) {

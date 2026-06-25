@@ -3,7 +3,7 @@ import { DEALS, PHASE_CONFIG } from "@/lib/deals.js";
 import { base44 } from "@/api/base44Client";
 import { CheckCircle2, Clock, AlertCircle, Edit2, X, Save } from "lucide-react";
 
-const PHASE_LABELS = { live: "Live", soon: "Q2 2026", planned: "Planned" };
+const PHASE_LABELS = { live: "Live", soon: "Coming soon", planned: "Planned" };
 
 export default function AdminDeals() {
   const [selected, setSelected] = useState(null);
