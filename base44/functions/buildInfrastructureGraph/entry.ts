@@ -45,8 +45,8 @@ const CATALOG_CAT_TO_NODE_TYPE = {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    // Auth: admin, brand owner, OR service role (no user attached → function-to-function call)
+    const user = await base44.auth.me().catch(() => null);
 
     const body = await req.json().catch(() => ({}));
     const { brand_id } = body;
@@ -54,12 +54,15 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: 'brand_id required' }, { status: 400 });
     }
 
-    // Ownership check (admin bypass)
-    const isAdmin = user.role === 'admin';
-    if (!isAdmin) {
-      const owned = await base44.entities.Brand.filter({ id: brand_id }).catch(() => []);
-      if (!owned.length) {
-        return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+    // If a real user is attached and is not admin, enforce ownership.
+    // No user attached = service-role / function-to-function — allowed.
+    if (user) {
+      const isAdmin = user.role === 'admin';
+      if (!isAdmin) {
+        const owned = await base44.entities.Brand.filter({ id: brand_id }).catch(() => []);
+        if (!owned.length) {
+          return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+        }
       }
     }
 

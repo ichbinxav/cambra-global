@@ -12,6 +12,7 @@ import SavingsTrend from "@/components/dashboard/SavingsTrend";
 import CumulativeSavingsChart from "@/components/dashboard/CumulativeSavingsChart";
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import InfrastructureGraphPanel from "@/components/dashboard/InfrastructureGraphPanel";
+import LastScanBar from "@/components/dashboard/LastScanBar";
 import GMVMetrics from "@/components/dashboard/GMVMetrics";
 import { CreditCard, Truck, Package, Store, ShieldCheck } from "lucide-react"; // ShieldCheck kept for quick actions only
 import RecommendationList from "@/components/recommendations/RecommendationList";
@@ -290,6 +291,9 @@ export default function Dashboard() {
           <DriftMonitor results={results} />
 
           <InfrastructureStatus latest={latest} />
+
+          {/* M7 — Last scan indicator + re-scan */}
+          <LastScanBar />
 
           {/* M6 — Infrastructure Graph */}
           <InfrastructureGraphPanel />

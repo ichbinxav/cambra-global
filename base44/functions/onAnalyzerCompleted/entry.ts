@@ -63,6 +63,20 @@ Deno.serve(async (req) => {
     console.warn('buildInfrastructureGraph failed (non-blocking):', e?.message || e);
   }
 
+  // ——— M7: Continuous Discovery (non-blocking) ———
+  // Runs the full continuous discovery cycle right after an analysis completes.
+  // Failure here must NEVER interrupt the email/user flow.
+  try {
+    if (data.brand_id) {
+      await base44.asServiceRole.functions.invoke('runContinuousDiscovery', {
+        brand_id: data.brand_id,
+        trigger: 'post_analyzer'
+      });
+    }
+  } catch (e) {
+    console.warn('runContinuousDiscovery failed (non-blocking):', e?.message || e);
+  }
+
   const appDomain = Deno.env.get('APP_DOMAIN') || 'cambra.global';
 
   await base44.asServiceRole.integrations.Core.SendEmail({

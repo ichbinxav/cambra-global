@@ -1,0 +1,80 @@
+{
+  "name": "ContinuousDiscoveryRun",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "manual",
+        "post_analyzer",
+        "post_connection"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "completed",
+        "failed",
+        "partial"
+      ],
+      "default": "running"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "changes_detected": {
+      "type": "number",
+      "default": 0,
+      "description": "How many new findings or stack changes were detected in this run."
+    },
+    "nodes_updated": {
+      "type": "number",
+      "default": 0,
+      "description": "Count of InfrastructureNodes created or updated by buildInfrastructureGraph."
+    },
+    "benchmarks_refreshed": {
+      "type": "number",
+      "default": 0,
+      "description": "1 if benchmarkLearningEngine ran successfully for the latest result, else 0."
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "engine_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "brand_id",
+    "trigger"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
