@@ -1,12 +1,15 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, FileText, Sparkles, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
 import AuroraBackground from "@/components/landing/AuroraBackground";
 import AnimatedSection from "@/components/landing/AnimatedSection";
+import SavingsCurveChart from "@/components/landing/SavingsCurveChart";
+import TestimonialsStrong from "@/components/landing/TestimonialsStrong";
+import FounderLetter from "@/components/landing/FounderLetter";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
 const LANDING_JSON_LD = {
@@ -96,7 +99,7 @@ function LandingNavbar() {
 function Hero() {
   const { t } = useTranslation();
   return (
-    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "#ffffff" }}>
+    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "#ffffff", paddingTop: 80 }}>
       {/* Cinematic ambient layers */}
       <AuroraBackground intensity={1} />
 
@@ -113,113 +116,160 @@ function Hero() {
         transition={{ duration: 7, ease: "easeInOut", repeat: Infinity }}
       />
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-10 py-32">
-        <motion.div
-          className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-8 text-[11px] uppercase tracking-[0.22em]"
-          style={{
-            border: "1px solid rgba(96,165,250,0.30)",
-            color: "rgba(255,255,255,0.85)",
-            background: "rgba(59,130,246,0.06)",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
-            boxShadow: "0 0 24px rgba(59,130,246,0.18)",
-          }}
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
-          </span>
-          {t("badge")}
-        </motion.div>
-
-        <motion.h1
-          className="text-hero text-white max-w-5xl"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          style={{
-            textShadow: "0 0 60px rgba(59,130,246,0.18)",
-          }}
-        >
-          {t("hero_headline")}
-        </motion.h1>
-
-        <motion.p
-          className="mt-8"
-          style={{ maxWidth: 520, color: "rgba(255,255,255,0.55)", fontSize: 18, lineHeight: 1.6 }}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
-        >
-          {t("hero_sub")}
-        </motion.p>
-
-        <motion.div
-          className="mt-10 flex flex-wrap items-center gap-3"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
-        >
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              to="/Analyzer"
-              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] transition-shadow"
-              style={{
-                boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
-              }}
-            >
-              {t("hero_cta_primary")}
-              <ArrowRight size={16} />
-            </Link>
-          </motion.div>
-          <motion.a
-            whileHover={{ scale: 1.03, borderColor: "rgba(255,255,255,0.5)", color: "rgba(255,255,255,0.95)" }}
-            href="#how"
-            className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium"
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 py-20 lg:py-28 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        {/* LEFT — aggressive copy */}
+        <div className="lg:col-span-7">
+          <motion.div
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-8 text-[11px] uppercase tracking-[0.22em]"
             style={{
-              border: "1px solid rgba(255,255,255,0.20)",
-              color: "rgba(255,255,255,0.70)",
+              border: "1px solid rgba(96,165,250,0.30)",
+              color: "rgba(255,255,255,0.85)",
+              background: "rgba(59,130,246,0.06)",
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
-              background: "rgba(255,255,255,0.02)",
+              boxShadow: "0 0 24px rgba(59,130,246,0.18)",
+            }}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
+            </span>
+            Pay only if we save you money
+          </motion.div>
+
+          <motion.h1
+            className="text-white"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+            style={{
+              fontSize: "clamp(44px, 7.5vw, 96px)",
+              fontWeight: 900,
+              letterSpacing: "-0.05em",
+              lineHeight: 0.94,
+              textShadow: "0 0 60px rgba(59,130,246,0.18)",
             }}
           >
-            {t("hero_cta_secondary")}
-          </motion.a>
-        </motion.div>
+            You're overpaying.
+            <br />
+            <span
+              style={{
+                background:
+                  "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #22d3ee 100%)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              We get it back.
+            </span>
+          </motion.h1>
 
-        <motion.p
-          className="mt-5 text-[12px]"
-          style={{ color: "rgba(255,255,255,0.30)" }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.6 }}
-        >
-          {t("hero_footnote")}
-        </motion.p>
+          <motion.p
+            className="mt-8 text-white/60"
+            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
+          >
+            CAMBRA benchmarks every euro you spend on payments, shipping and SaaS
+            against a network of independent brands — then recovers what you're
+            losing. <span className="text-white">Free until we save you money. 25% of what we recover.</span>
+          </motion.p>
 
-        {/* Scroll-down cue */}
-        <motion.div
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2, duration: 0.8 }}
-          aria-hidden
-        >
-          <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Scroll
-          </span>
           <motion.div
-            className="w-px h-10"
-            style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.4), transparent)" }}
-            animate={{ scaleY: [1, 0.4, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 2.2, ease: "easeInOut", repeat: Infinity }}
-            initial={{ originY: 0 }}
-          />
+            className="mt-10 flex flex-wrap items-center gap-3"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+          >
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+              <Link
+                to="/Analyzer"
+                className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] transition-shadow"
+                style={{
+                  boxShadow:
+                    "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
+                }}
+              >
+                See what you're losing — Free
+                <ArrowRight size={16} />
+              </Link>
+            </motion.div>
+            <motion.a
+              whileHover={{ scale: 1.03, borderColor: "rgba(255,255,255,0.5)", color: "rgba(255,255,255,0.95)" }}
+              href="#testimonials"
+              className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium"
+              style={{
+                border: "1px solid rgba(255,255,255,0.20)",
+                color: "rgba(255,255,255,0.70)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+                background: "rgba(255,255,255,0.02)",
+              }}
+            >
+              See the receipts
+            </motion.a>
+          </motion.div>
+
+          {/* Trust row */}
+          <motion.div
+            className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px]"
+            style={{ color: "rgba(255,255,255,0.45)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.6 }}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck size={13} className="text-cyan-300/80" />
+              No retainer · no contract
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck size={13} className="text-cyan-300/80" />
+              Bank-level data security
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck size={13} className="text-cyan-300/80" />
+              EU brands only
+            </span>
+          </motion.div>
+        </div>
+
+        {/* RIGHT — animated cumulative savings chart */}
+        <motion.div
+          className="lg:col-span-5"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
+        >
+          <div
+            className="relative p-6 sm:p-8 rounded-2xl overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              boxShadow:
+                "0 30px 80px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(96,165,250,0.18)",
+            }}
+          >
+            {/* corner badge */}
+            <div className="flex items-center justify-between mb-2">
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+                </span>
+                Live · network median
+              </span>
+              <span className="text-[10px] text-white/30 font-mono">Q3 2026</span>
+            </div>
+            <SavingsCurveChart className="mt-6" />
+          </div>
         </motion.div>
       </div>
     </section>
@@ -597,6 +647,10 @@ export default function Landing() {
         <Hero />
         <ProblemSection />
         <HowItWorksSection />
+        <div id="testimonials">
+          <TestimonialsStrong />
+        </div>
+        <FounderLetter />
         <BenchmarkSection />
         <PricingCTASection />
       </main>
