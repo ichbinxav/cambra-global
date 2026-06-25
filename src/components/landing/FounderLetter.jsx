@@ -8,7 +8,7 @@ import React from "react";
  * Replace FOUNDER_PHOTO with a real URL when available.
  */
 const FOUNDER_PHOTO =
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=800&fit=crop&crop=faces&q=85";
+  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d863d71f2_0347F92E-E1B9-4977-A6B1-85897923556A.jpeg";
 
 export default function FounderLetter() {
   return (
@@ -74,7 +74,7 @@ export default function FounderLetter() {
             >
               <img
                 src={FOUNDER_PHOTO}
-                alt="Xavi Martínez — Founder & CEO of CAMBRA"
+                alt="Xavier M. Contero — Founder & CEO of CAMBRA"
                 className="w-full h-auto block"
                 style={{ aspectRatio: "3 / 4", objectFit: "cover" }}
               />
@@ -90,7 +90,7 @@ export default function FounderLetter() {
               {/* caption inside photo */}
               <div className="absolute bottom-0 left-0 right-0 p-5">
                 <p className="text-white text-[13px] font-bold tracking-tight">
-                  Xavi Martínez
+                  Xavier M. Contero
                 </p>
                 <p className="text-white/65 text-[11px] uppercase tracking-[0.18em] mt-0.5">
                   Founder & CEO · CAMBRA
@@ -112,7 +112,7 @@ export default function FounderLetter() {
                   textShadow: "0 0 24px rgba(34,211,238,0.25)",
                 }}
               >
-                Xavi
+                Xavier
               </span>
               <span
                 className="text-[11px] uppercase tracking-[0.22em] text-white/40"
