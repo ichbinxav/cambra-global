@@ -1,0 +1,68 @@
+{
+  "name": "DetectedIntegration",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "integration_id": {
+      "type": "string",
+      "description": "References IntegrationCatalog.integration_id"
+    },
+    "detection_source": {
+      "type": "string",
+      "enum": [
+        "discovery",
+        "user_declared",
+        "oauth",
+        "document",
+        "admin"
+      ]
+    },
+    "confidence_score": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "connectable",
+        "connected",
+        "verified",
+        "coming_soon"
+      ],
+      "default": "detected"
+    },
+    "connected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "brand_id",
+    "integration_id"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

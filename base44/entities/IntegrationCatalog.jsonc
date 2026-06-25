@@ -1,0 +1,90 @@
+{
+  "name": "IntegrationCatalog",
+  "type": "object",
+  "properties": {
+    "integration_id": {
+      "type": "string",
+      "description": "Unique slug, e.g. 'shopify', 'stripe', 'klaviyo'"
+    },
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "commerce",
+        "payments",
+        "shipping",
+        "marketing",
+        "analytics",
+        "support",
+        "finance",
+        "hr",
+        "banking"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "auth_type": {
+      "type": "string",
+      "enum": [
+        "oauth",
+        "api_key",
+        "file_upload",
+        "manual"
+      ],
+      "default": "manual"
+    },
+    "oauth_scope": {
+      "type": "string",
+      "description": "Required scopes if oauth"
+    },
+    "depth": {
+      "type": "string",
+      "enum": [
+        "deep",
+        "standard",
+        "file_only",
+        "manual"
+      ],
+      "default": "manual"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "live",
+        "coming_soon",
+        "planned"
+      ],
+      "default": "planned"
+    },
+    "priority": {
+      "type": "number",
+      "default": 99,
+      "description": "Lower = higher priority"
+    },
+    "value_unlock": {
+      "type": "string",
+      "description": "One line describing what connecting this unlocks"
+    },
+    "docs_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "integration_id",
+    "name"
+  ],
+  "rls": {
+    "read": {},
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

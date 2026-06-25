@@ -14,6 +14,7 @@ import Navbar from "@/components/landing/Navbar";
 import ConnectStatsBar from "@/components/connect/ConnectStatsBar.jsx";
 import DarkConnectorCard from "@/components/connect/DarkConnectorCard.jsx";
 import StripeConnectCard from "@/components/connect/StripeConnectCard.jsx";
+import IntegrationCatalogGrid from "@/components/connect/IntegrationCatalogGrid.jsx";
 
 const CATEGORIES = ["All", "Payments", "Logistics", "Commerce SaaS"];
 
@@ -324,8 +325,19 @@ export default function ConnectTools() {
         {/* MODE: Connect */}
         {activeMode === "connect" && (
           <div className="space-y-4">
+            {/* Header — M5 */}
+            <div className="px-1">
+              <h2 className="text-xl font-black tracking-tight text-foreground">Connect your infrastructure</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Every connection improves your benchmark accuracy and savings confidence.
+              </p>
+            </div>
+
             {/* Stripe — live data connection (M3) */}
             <StripeConnectCard />
+
+            {/* M5 — Dynamic catalog (grouped by category) */}
+            <IntegrationCatalogGrid hideStripe={true} />
 
             {/* Direct connections (OAuth) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
