@@ -611,3 +611,83 @@ p { line-height: 1.6; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────
+   CAMBRA Design System — editorial utilities
+   ────────────────────────────────────────────────────────────── */
+
+/* Body defaults — dark editorial baseline.
+   Page wrappers (e.g. .bg-background) still override per-page,
+   so only sections that don't set their own bg inherit this. */
+body {
+  background: #0a0a0a;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Scrollbar (slimmer + lighter for dark surfaces) */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+/* Typography scale */
+.text-hero {
+  font-size: clamp(48px, 8vw, 120px);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+}
+.text-display {
+  font-size: clamp(32px, 5vw, 72px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.text-title {
+  font-size: clamp(20px, 3vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.text-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+.text-mono {
+  font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+  font-feature-settings: "tnum";
+}
+
+/* Surfaces */
+.surface {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+}
+.surface-hover { transition: all 200ms ease; }
+.surface-hover:hover {
+  border-color: rgba(255,255,255,0.15);
+  transform: scale(1.005);
+}
+
+/* Animations */
+.animate-fade-up { animation: fadeUp 400ms ease-out forwards; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.shimmer {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.03) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.03) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
