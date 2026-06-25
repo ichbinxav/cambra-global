@@ -164,7 +164,7 @@ function Hero() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              We get it back.
+              Recover the margin.
             </span>
           </motion.h1>
 
@@ -175,9 +175,7 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
           >
-            CAMBRA benchmarks every euro you spend on payments, shipping and SaaS
-            against a network of independent brands — then recovers what you're
-            losing. <span className="text-white">Free until we save you money. 25% of what we recover.</span>
+            CAMBRA benchmarks your payments, shipping and SaaS against a network of independent brands — and recovers what you're losing. <span className="text-white">Free until we save you money.</span>
           </motion.p>
 
           <motion.div
