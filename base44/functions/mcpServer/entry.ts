@@ -50,8 +50,25 @@ function jsonResp(body, status = 200) {
 // -----------------------------------------------------------------------------
 // Money envelope — every figure carries its provenance + confidence
 // -----------------------------------------------------------------------------
-function money(amount, { period = "yearly", confidence = 0.85, source = "cambra-analyzer", currency = "EUR" } = {}) {
-  return { amount: typeof amount === "number" ? Math.round(amount * 100) / 100 : null, currency, period, confidence, source };
+function money(amount, { period = "yearly", confidence = 0.85, source = "cambra-analyzer", currency = "EUR", assumptions = [] } = {}) {
+  return {
+    amount: typeof amount === "number" ? Math.round(amount * 100) / 100 : null,
+    currency, period, confidence, assumptions: Array.isArray(assumptions) ? assumptions : [], source,
+  };
+}
+
+// Tenant isolation helpers — identical semantics to apiV1
+function tenantFilter(principal, extra = {}) {
+  const orgId = principal.raw?.organization_id;
+  return orgId ? { ...extra, organization_id: orgId } : extra;
+}
+function assertTenant(principal, resource) {
+  const orgId = principal.raw?.organization_id;
+  if (!orgId || !resource) return resource;
+  if (resource.organization_id && resource.organization_id !== orgId) {
+    const e = new Error("not_found"); e.code = "not_found"; throw e;
+  }
+  return resource;
 }
 
 // -----------------------------------------------------------------------------
@@ -216,9 +233,12 @@ const TOOLS = [
     description: "List CAMBRA brands. Returns id, name, category, country, annual_revenue, sector.",
     inputSchema: { type: "object", properties: { limit: { type: "number", default: 50, description: "Max results, up to 200" } } },
     scope: "read:brands",
-    handler: async (base44, args) => {
+    handler: async (base44, args, principal) => {
       const limit = Math.min(args.limit || 50, 200);
-      const items = await base44.asServiceRole.entities.Brand.list("-created_date", limit);
+      const filter = tenantFilter(principal);
+      const items = Object.keys(filter).length
+        ? await base44.asServiceRole.entities.Brand.filter(filter, "-created_date", limit)
+        : await base44.asServiceRole.entities.Brand.list("-created_date", limit);
       return { brands: items.map(serializeBrand), count: items.length };
     },
   },
@@ -227,7 +247,7 @@ const TOOLS = [
     description: "Get a brand by id.",
     inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     scope: "read:brands",
-    handler: async (base44, args) => serializeBrand(await base44.asServiceRole.entities.Brand.get(args.id)),
+    handler: async (base44, args, principal) => serializeBrand(assertTenant(principal, await base44.asServiceRole.entities.Brand.get(args.id))),
   },
   {
     name: "summarize_brand",
@@ -558,9 +578,17 @@ Deno.serve(async (req) => {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
   const userAgent = req.headers.get("user-agent") || "claude-mcp";
 
+  // Enforce request size limit
+  const cl = parseInt(req.headers.get("content-length") || "0", 10);
+  if (cl > 256 * 1024) return jsonResp(rpcError(null, -32600, "Request too large (max 256 KB)"), 413);
+
   // Parse JSON-RPC body — support both single objects and batched arrays
   let body;
-  try { body = await req.json(); } catch { return jsonResp(rpcError(null, -32700, "Parse error"), 400); }
+  try {
+    const raw = await req.text();
+    if (raw.length > 256 * 1024) return jsonResp(rpcError(null, -32600, "Request too large (max 256 KB)"), 413);
+    body = JSON.parse(raw);
+  } catch { return jsonResp(rpcError(null, -32700, "Parse error"), 400); }
   const isBatch = Array.isArray(body);
   const requests = isBatch ? body : [body];
 

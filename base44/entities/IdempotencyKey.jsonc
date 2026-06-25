@@ -1,0 +1,52 @@
+{
+  "name": "IdempotencyKey",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Client-provided Idempotency-Key header value"
+    },
+    "principal_id": {
+      "type": "string",
+      "description": "API key id or OAuth token id that submitted the request"
+    },
+    "endpoint": {
+      "type": "string"
+    },
+    "method": {
+      "type": "string"
+    },
+    "request_hash": {
+      "type": "string",
+      "description": "SHA-256 of the canonical request (method + path + body)"
+    },
+    "response_status": {
+      "type": "number"
+    },
+    "response_body": {
+      "type": "object"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "key",
+    "principal_id",
+    "endpoint",
+    "method"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

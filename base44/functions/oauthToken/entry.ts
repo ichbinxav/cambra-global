@@ -42,18 +42,48 @@ function errorResponse(error, description, status = 400) {
   });
 }
 
+const MAX_BODY_BYTES = 16 * 1024; // 16 KB plenty for token requests
+
 async function parseBody(req) {
   const ct = req.headers.get("content-type") || "";
+  const cl = parseInt(req.headers.get("content-length") || "0", 10);
+  if (cl > MAX_BODY_BYTES) throw new Error("request_too_large");
   const text = await req.text();
+  if (text.length > MAX_BODY_BYTES) throw new Error("request_too_large");
   if (ct.includes("application/json")) return JSON.parse(text);
   return Object.fromEntries(new URLSearchParams(text));
 }
 
+// Constant-time string comparison to prevent timing attacks on client_secret
+function timingSafeEqual(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Authorization, Content-Type",
+        "Access-Control-Max-Age": "86400",
+      },
+    });
+  }
   if (req.method !== "POST") return errorResponse("invalid_request", "POST only", 405);
   const base44 = createClientFromRequest(req);
 
-  const body = await parseBody(req).catch(() => ({}));
+  let body;
+  try { body = await parseBody(req); }
+  catch (e) {
+    if (e.message === "request_too_large") return errorResponse("invalid_request", "Request body too large", 413);
+    body = {};
+  }
   const { grant_type, client_id, client_secret, redirect_uri, code, code_verifier, refresh_token, scope } = body;
 
   if (!grant_type) return errorResponse("invalid_request", "grant_type required");
@@ -63,11 +93,11 @@ Deno.serve(async (req) => {
   const app = apps?.[0];
   if (!app || app.status !== "active") return errorResponse("invalid_client", "Unknown or suspended client");
 
-  // Confidential clients must present client_secret
+  // Confidential clients must present client_secret (constant-time compare)
   if (app.type === "confidential") {
     if (!client_secret) return errorResponse("invalid_client", "client_secret required for confidential clients");
     const hash = await sha256Hex(client_secret);
-    if (hash !== app.client_secret_hash) return errorResponse("invalid_client", "Invalid client_secret");
+    if (!timingSafeEqual(hash, app.client_secret_hash || "")) return errorResponse("invalid_client", "Invalid client_secret");
   }
 
   // -------------------- authorization_code --------------------

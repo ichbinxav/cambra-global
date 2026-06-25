@@ -43,9 +43,13 @@ function uuid() {
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Request-Id",
+  "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Request-Id, Idempotency-Key",
+  "Access-Control-Expose-Headers": "X-Request-Id, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset",
   "Access-Control-Max-Age": "86400",
 };
+
+const MAX_REQUEST_BYTES = 256 * 1024; // 256 KB
+const IDEMPOTENCY_TTL_SECONDS = 60 * 60 * 24; // 24h
 
 function envelope({ data = null, meta = {}, error = null, requestId, status = 200, extraHeaders = {} }) {
   const body = { request_id: requestId, ...(error ? { error } : { data }), meta: { api_version: "v1", timestamp: new Date().toISOString(), ...meta } };
@@ -219,10 +223,38 @@ async function logActivity(base44, ctx) {
 }
 
 // -----------------------------------------------------------------------------
+// Tenant isolation — every list query is automatically scoped to the principal's
+// organization when the key/token carries one. Platform-level keys (no org_id)
+// see everything (admin scope required for write actions).
+// -----------------------------------------------------------------------------
+function tenantFilter(principal, extra = {}) {
+  const orgId = principal.raw?.organization_id;
+  if (!orgId) return extra; // platform-level
+  return { ...extra, organization_id: orgId };
+}
+
+// Validate that a single fetched resource belongs to the principal's org.
+function assertTenant(principal, resource) {
+  const orgId = principal.raw?.organization_id;
+  if (!orgId) return resource; // platform-level
+  if (!resource) return null;
+  if (resource.organization_id && resource.organization_id !== orgId) {
+    const err = new Error("not_found");
+    err.code = "not_found";
+    err.status = 404;
+    throw err;
+  }
+  return resource;
+}
+
+// -----------------------------------------------------------------------------
 // Financial envelope — consistent shape for any money figure
 // -----------------------------------------------------------------------------
 function money(amount, { period = "yearly", confidence = 0.85, assumptions = [], source = "cambra-analyzer", currency = "EUR" } = {}) {
-  return { amount: typeof amount === "number" ? Math.round(amount * 100) / 100 : null, currency, period, confidence, assumptions, source };
+  return {
+    amount: typeof amount === "number" ? Math.round(amount * 100) / 100 : null,
+    currency, period, confidence, assumptions: Array.isArray(assumptions) ? assumptions : [], source,
+  };
 }
 
 // -----------------------------------------------------------------------------
@@ -232,29 +264,41 @@ const RESOURCES = {
   // ---------- BRANDS ----------
   "GET /v1/brands": {
     scope: "read:brands",
-    handler: async (base44, { query }) => {
+    handler: async (base44, { query, principal }) => {
       const limit = Math.min(parseInt(query.limit || "50", 10), 200);
-      const items = await base44.asServiceRole.entities.Brand.list("-created_date", limit);
-      return { data: items.map(serializeBrand), meta: { count: items.length } };
+      const filter = tenantFilter(principal);
+      const items = Object.keys(filter).length
+        ? await base44.asServiceRole.entities.Brand.filter(filter, "-created_date", limit)
+        : await base44.asServiceRole.entities.Brand.list("-created_date", limit);
+      return { data: items.map(serializeBrand), meta: { count: items.length, limit, has_more: items.length === limit } };
     },
   },
   "GET /v1/brands/:id": {
     scope: "read:brands",
-    handler: async (base44, { params }) => ({ data: serializeBrand(await base44.asServiceRole.entities.Brand.get(params.id)) }),
+    handler: async (base44, { params, principal }) => {
+      const b = await base44.asServiceRole.entities.Brand.get(params.id);
+      return { data: serializeBrand(assertTenant(principal, b)) };
+    },
   },
 
   // ---------- ANALYSES ----------
   "GET /v1/analyses": {
     scope: "read:analyses",
-    handler: async (base44, { query }) => {
+    handler: async (base44, { query, principal }) => {
       const limit = Math.min(parseInt(query.limit || "50", 10), 200);
-      const items = await base44.asServiceRole.entities.AnalyzerResult.list("-created_date", limit);
-      return { data: items.map(serializeAnalysis), meta: { count: items.length } };
+      const filter = tenantFilter(principal, query.brand_id ? { brand_id: query.brand_id } : {});
+      const items = Object.keys(filter).length
+        ? await base44.asServiceRole.entities.AnalyzerResult.filter(filter, "-created_date", limit)
+        : await base44.asServiceRole.entities.AnalyzerResult.list("-created_date", limit);
+      return { data: items.map(serializeAnalysis), meta: { count: items.length, limit, has_more: items.length === limit } };
     },
   },
   "GET /v1/analyses/:id": {
     scope: "read:analyses",
-    handler: async (base44, { params }) => ({ data: serializeAnalysis(await base44.asServiceRole.entities.AnalyzerResult.get(params.id)) }),
+    handler: async (base44, { params, principal }) => {
+      const a = await base44.asServiceRole.entities.AnalyzerResult.get(params.id);
+      return { data: serializeAnalysis(assertTenant(principal, a)) };
+    },
   },
   "POST /v1/analyses/run": {
     scope: "trigger:analysis",
@@ -552,10 +596,21 @@ Deno.serve(async (req) => {
   const userAgent = req.headers.get("user-agent") || "";
 
   try {
+    // Enforce request size limit
+    const cl = parseInt(req.headers.get("content-length") || "0", 10);
+    if (cl > MAX_REQUEST_BYTES) {
+      return err({ code: "request_too_large", message: "Request body exceeds 256 KB limit", status: 413, requestId });
+    }
+
     // Body parsing — supports both { path, method, body } and direct routing via URL query
     let path, method, body, query = {};
+    const idempotencyKey = req.headers.get("idempotency-key") || req.headers.get("Idempotency-Key") || null;
     if (req.method === "POST") {
-      const payload = await req.json().catch(() => ({}));
+      const raw = await req.text();
+      if (raw.length > MAX_REQUEST_BYTES) {
+        return err({ code: "request_too_large", message: "Request body exceeds 256 KB limit", status: 413, requestId });
+      }
+      const payload = raw ? JSON.parse(raw) : {};
       path = payload.path || "/v1/users/me";
       method = (payload.method || "GET").toUpperCase();
       body = payload.body || {};
@@ -608,7 +663,45 @@ Deno.serve(async (req) => {
       return envelope({ error: { code: "forbidden", message: `Missing scope: ${matched.route.scope}` }, requestId, status: 403, extraHeaders: rlHeaders });
     }
 
-    // Execute
+    // Idempotency check — replay cached response for repeated POST/PATCH within 24h
+    if (idempotencyKey && (method === "POST" || method === "PATCH")) {
+      const requestHash = await sha256Hex(`${method}:${path}:${JSON.stringify(body || {})}`);
+      const cached = await base44.asServiceRole.entities.IdempotencyKey.filter({
+        key: idempotencyKey, principal_id: principal.id,
+      }).catch(() => []);
+      const existing = cached?.[0];
+      if (existing) {
+        if (existing.request_hash !== requestHash) {
+          return err({ code: "idempotency_conflict", message: "Idempotency-Key already used with a different request body", status: 409, requestId });
+        }
+        if (existing.expires_at && new Date(existing.expires_at) > new Date()) {
+          await logActivity(base44, { principal, endpoint: path, method, scope: matched.route.scope, status: "success", status_code: 200, ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId, payload_summary: { replayed: true } });
+          return envelope({ data: existing.response_body?.data, meta: { ...(existing.response_body?.meta || {}), replayed: true }, requestId, status: existing.response_status || 200, extraHeaders: { ...rlHeaders, "Idempotency-Replayed": "true" } });
+        }
+      }
+      // Execute then cache
+      const result = await matched.route.handler(base44, { params: matched.params, query, body, principal });
+      const responsePayload = { data: result.data, meta: result.meta || {} };
+      await base44.asServiceRole.entities.IdempotencyKey.create({
+        key: idempotencyKey,
+        principal_id: principal.id,
+        endpoint: path,
+        method,
+        request_hash: requestHash,
+        response_status: 200,
+        response_body: responsePayload,
+        expires_at: new Date(Date.now() + IDEMPOTENCY_TTL_SECONDS * 1000).toISOString(),
+      }).catch(() => null);
+      await trackUsage(base44, principal);
+      await logActivity(base44, {
+        principal, endpoint: path, method, scope: matched.route.scope, status: "success", status_code: 200,
+        ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId,
+        payload_summary: { params: matched.params, idempotency_key: idempotencyKey },
+      });
+      return envelope({ data: result.data, meta: result.meta || {}, requestId, status: 200, extraHeaders: rlHeaders });
+    }
+
+    // Execute (non-idempotent path)
     const result = await matched.route.handler(base44, { params: matched.params, query, body, principal });
     await trackUsage(base44, principal);
     await logActivity(base44, {
@@ -618,7 +711,11 @@ Deno.serve(async (req) => {
     });
     return envelope({ data: result.data, meta: result.meta || {}, requestId, status: 200, extraHeaders: rlHeaders });
   } catch (e) {
-    await logActivity(base44, { endpoint: "error", method: req.method, status: "error", status_code: 500, ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId, error_message: e.message });
-    return err({ code: "internal_error", message: e.message, status: 500, requestId });
+    const status = e.status || 500;
+    const code = e.code || "internal_error";
+    // Never leak internal stack traces in 5xx responses
+    const message = status >= 500 ? "An internal error occurred. Reference the request_id when contacting support." : e.message;
+    await logActivity(base44, { endpoint: "error", method: req.method, status: "error", status_code: status, ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId, error_message: e.message });
+    return err({ code, message, status, requestId });
   }
 });

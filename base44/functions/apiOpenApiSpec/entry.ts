@@ -26,24 +26,32 @@ Deno.serve(async (req) => {
 
   const moneySchema = {
     type: "object",
-    description: "CAMBRA money envelope: always includes currency, period, confidence and source.",
+    description: "CAMBRA money envelope: always includes currency, period, confidence, assumptions and source.",
     properties: {
-      amount: { type: "number", nullable: true },
+      amount: { type: "number", nullable: true, example: 24600 },
       currency: { type: "string", example: "EUR" },
-      period: { type: "string", enum: ["monthly", "weekly", "yearly", "one_time"] },
-      confidence: { type: "number", minimum: 0, maximum: 1 },
-      assumptions: { type: "array", items: { type: "string" } },
-      source: { type: "string" },
+      period: { type: "string", enum: ["monthly", "weekly", "yearly", "one_time"], example: "yearly" },
+      confidence: { type: "number", minimum: 0, maximum: 1, example: 0.85 },
+      assumptions: { type: "array", items: { type: "string" }, example: ["Based on Stripe statement Q1 2026"] },
+      source: { type: "string", example: "cambra-analyzer" },
     },
-    required: ["amount", "currency", "period", "confidence", "source"],
+    required: ["amount", "currency", "period", "confidence", "assumptions", "source"],
   };
+
+  const paginationParams = [
+    { name: "limit", in: "query", required: false, description: "Max results, 1–200. Default 50.", schema: { type: "integer", minimum: 1, maximum: 200, default: 50 } },
+  ];
+  const idempotencyHeader = { name: "Idempotency-Key", in: "header", required: false, description: "Client-generated UUID. Repeating the same key within 24h replays the cached response.", schema: { type: "string", format: "uuid" } };
 
   const envelopeMeta = {
     type: "object",
     properties: {
       api_version: { type: "string", example: "v1" },
       timestamp: { type: "string", format: "date-time" },
-      count: { type: "integer", nullable: true },
+      count: { type: "integer", nullable: true, example: 12 },
+      limit: { type: "integer", nullable: true, example: 50 },
+      has_more: { type: "boolean", nullable: true, example: false },
+      replayed: { type: "boolean", nullable: true, description: "true when this response was served from the idempotency cache" },
     },
   };
 
@@ -71,10 +79,14 @@ Deno.serve(async (req) => {
     security: [{ ApiKeyAuth: [] }, { OAuth2: scope ? [scope] : [] }],
     responses: {
       "200": { description: "OK", content: { "application/json": { schema: responseEnvelope(dataSchema) } } },
-      "401": { description: "Unauthorized", content: { "application/json": { schema: { type: "object", properties: { error: errorObj } } } } },
-      "403": { description: "Forbidden — missing scope" },
+      "400": { description: "Invalid request" },
+      "401": { description: "Unauthorized — missing or invalid bearer token", content: { "application/json": { schema: { type: "object", properties: { error: errorObj } } } } },
+      "403": { description: "Forbidden — missing scope or IP not in allowlist" },
       "404": { description: "Not found" },
-      "429": { description: "Rate limited" },
+      "409": { description: "Idempotency conflict — same key reused with different body" },
+      "413": { description: "Request too large (>256 KB)" },
+      "429": { description: "Rate limited (120/min by default)" },
+      "500": { description: "Internal error — quote the request_id when contacting support" },
     },
     ...extra,
   });
@@ -159,23 +171,23 @@ Deno.serve(async (req) => {
       },
     },
     paths: {
-      "/v1/brands":               { get: path("List brands",                  "read:brands",     "listBrands",     { type: "array", items: { $ref: "#/components/schemas/Brand" } }) },
+      "/v1/brands":               { get: path("List brands",                  "read:brands",     "listBrands",     { type: "array", items: { $ref: "#/components/schemas/Brand" } }, { parameters: paginationParams }) },
       "/v1/brands/{id}":          { get: path("Get brand",                    "read:brands",     "getBrand",       { $ref: "#/components/schemas/Brand" }, { parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }] }) },
-      "/v1/analyses":             { get: path("List analyses",                "read:analyses",   "listAnalyses",   { type: "array", items: { $ref: "#/components/schemas/Analysis" } }) },
+      "/v1/analyses":             { get: path("List analyses",                "read:analyses",   "listAnalyses",   { type: "array", items: { $ref: "#/components/schemas/Analysis" } }, { parameters: [...paginationParams, { name: "brand_id", in: "query", schema: { type: "string" } }] }) },
       "/v1/analyses/{id}":        { get: path("Get analysis",                 "read:analyses",   "getAnalysis",    { $ref: "#/components/schemas/Analysis" }, { parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }] }) },
-      "/v1/analyses/run":         { post: path("Trigger analysis",            "trigger:analysis","runAnalysis",    { type: "object" }) },
-      "/v1/documents":            { get: path("List documents",               "read:documents",  "listDocuments",  { type: "array", items: { type: "object" } }) },
-      "/v1/providers":            { get: path("List providers",               "read:providers",  "listProviders",  { type: "array", items: { type: "object" } }) },
-      "/v1/savings":              { get: path("List savings",                 "read:savings",    "listSavings",    { type: "array", items: { type: "object" } }) },
-      "/v1/trackers":             { get: path("List trackers",                "read:trackers",   "listTrackers",   { type: "array", items: { $ref: "#/components/schemas/Tracker" } }) },
-      "/v1/trackers/{id}":        { patch: path("Update tracker",             "update:trackers", "updateTracker",  { $ref: "#/components/schemas/Tracker" }, { parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }] }) },
-      "/v1/reports":              { get: path("List reports",                 "read:reports",    "listReports",    { type: "array", items: { type: "object" } }),
-                                    post: path("Create report",               "write:reports",   "createReport",   { type: "object" }) },
+      "/v1/analyses/run":         { post: path("Trigger analysis",            "trigger:analysis","runAnalysis",    { type: "object" }, { parameters: [idempotencyHeader] }) },
+      "/v1/documents":            { get: path("List documents",               "read:documents",  "listDocuments",  { type: "array", items: { type: "object" } }, { parameters: paginationParams }) },
+      "/v1/providers":            { get: path("List providers",               "read:providers",  "listProviders",  { type: "array", items: { type: "object" } }, { parameters: paginationParams }) },
+      "/v1/savings":              { get: path("List savings",                 "read:savings",    "listSavings",    { type: "array", items: { type: "object" } }, { parameters: paginationParams }) },
+      "/v1/trackers":             { get: path("List trackers",                "read:trackers",   "listTrackers",   { type: "array", items: { $ref: "#/components/schemas/Tracker" } }, { parameters: paginationParams }) },
+      "/v1/trackers/{id}":        { patch: path("Update tracker",             "update:trackers", "updateTracker",  { $ref: "#/components/schemas/Tracker" }, { parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }, idempotencyHeader] }) },
+      "/v1/reports":              { get: path("List reports",                 "read:reports",    "listReports",    { type: "array", items: { type: "object" } }, { parameters: paginationParams }),
+                                    post: path("Create report",               "write:reports",   "createReport",   { type: "object" }, { parameters: [idempotencyHeader] }) },
       "/v1/kpis":                 { get: path("Platform KPIs",                "read:kpis",       "getKpis",        { type: "object" }) },
       "/v1/users/me":             { get: path("Current principal",            null,              "getMe",          { type: "object" }) },
-      "/v1/integrations":         { get: path("List integrations",            "read:integrations","listIntegrations",{ type: "array", items: { type: "object" } }) },
-      "/v1/ai/summarize-brand":   { post: path("AI · summarize brand",        "read:brands",     "aiSummarizeBrand", { type: "object" }) },
-      "/v1/ai/weekly-briefing":   { post: path("AI · weekly briefing",        "read:kpis",       "aiWeeklyBriefing", { type: "object" }) },
+      "/v1/integrations":         { get: path("List integrations",            "read:integrations","listIntegrations",{ type: "array", items: { type: "object" } }, { parameters: paginationParams }) },
+      "/v1/ai/summarize-brand":   { post: path("AI · summarize brand",        "read:brands",     "aiSummarizeBrand", { type: "object" }, { parameters: [idempotencyHeader] }) },
+      "/v1/ai/weekly-briefing":   { post: path("AI · weekly briefing",        "read:kpis",       "aiWeeklyBriefing", { type: "object" }, { parameters: [idempotencyHeader] }) },
     },
   };
 

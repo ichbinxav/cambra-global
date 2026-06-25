@@ -20,6 +20,15 @@ function randomToken(prefix) {
   return `${prefix}${hex}`;
 }
 
+function escapeHtml(s) {
+  return String(s ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 function htmlPage(body) {
   return new Response(
     `<!doctype html><html><head><meta charset="utf-8"><title>CAMBRA · Authorize</title>
@@ -118,16 +127,16 @@ Deno.serve(async (req) => {
     return Response.redirect(back.toString(), 302);
   }
 
-  const scopeRows = requestedScopes.map((s) => `<div class="scope">${s}</div>`).join("");
-  const formAction = url.pathname + url.search;
+  const scopeRows = requestedScopes.map((s) => `<div class="scope">${escapeHtml(s)}</div>`).join("");
+  const formAction = escapeHtml(url.pathname + url.search);
   return htmlPage(`
     <div class="card">
-      <h1>Authorize ${app.name}</h1>
-      <p>${app.description || `${app.name} is requesting access to your CAMBRA account.`}</p>
+      <h1>Authorize ${escapeHtml(app.name)}</h1>
+      <p>${escapeHtml(app.description || `${app.name} is requesting access to your CAMBRA account.`)}</p>
       <div class="app">
         <div>
-          <div class="app-name">${app.name}</div>
-          <div class="app-meta">client_id: ${app.client_id}</div>
+          <div class="app-name">${escapeHtml(app.name)}</div>
+          <div class="app-meta">client_id: ${escapeHtml(app.client_id)}</div>
         </div>
       </div>
       <div class="scopes">
@@ -135,19 +144,19 @@ Deno.serve(async (req) => {
         ${scopeRows || '<div class="scope">basic profile</div>'}
       </div>
       <form method="POST" action="${formAction}">
-        <input type="hidden" name="client_id" value="${client_id}">
-        <input type="hidden" name="redirect_uri" value="${redirect_uri}">
-        <input type="hidden" name="scope" value="${scope}">
-        <input type="hidden" name="state" value="${state}">
-        <input type="hidden" name="response_type" value="${response_type}">
-        ${code_challenge ? `<input type="hidden" name="code_challenge" value="${code_challenge}">` : ""}
-        <input type="hidden" name="code_challenge_method" value="${code_challenge_method}">
+        <input type="hidden" name="client_id" value="${escapeHtml(client_id)}">
+        <input type="hidden" name="redirect_uri" value="${escapeHtml(redirect_uri)}">
+        <input type="hidden" name="scope" value="${escapeHtml(scope)}">
+        <input type="hidden" name="state" value="${escapeHtml(state)}">
+        <input type="hidden" name="response_type" value="${escapeHtml(response_type)}">
+        ${code_challenge ? `<input type="hidden" name="code_challenge" value="${escapeHtml(code_challenge)}">` : ""}
+        <input type="hidden" name="code_challenge_method" value="${escapeHtml(code_challenge_method)}">
         <div class="btns">
           <button type="submit" name="action" value="deny" class="deny">Deny</button>
           <button type="submit" name="action" value="approve" class="approve">Authorize</button>
         </div>
       </form>
-      <div class="footer">Signed in as ${user.email}</div>
+      <div class="footer">Signed in as ${escapeHtml(user.email)}</div>
     </div>
   `);
 });
