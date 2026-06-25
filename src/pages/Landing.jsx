@@ -1,16 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, TrendingDown, Package, Layers } from "lucide-react";
+import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, FileText } from "lucide-react";
 import SectionLabel from "@/components/shared/SectionLabel";
+import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /* ──────────────────────────────────────────────────────────
-   CAMBRA Landing — editorial redesign
-   Dark, fixed navbar · hero with grid + radial glow ·
-   problem · how it works · CTA · footer
+   CAMBRA Landing — editorial redesign · EN / FR / ES
    ────────────────────────────────────────────────────────── */
 
-/* ── Navbar ── */
 function LandingNavbar() {
+  const { t } = useTranslation();
   return (
     <nav
       className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 sm:px-10"
@@ -22,38 +22,33 @@ function LandingNavbar() {
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}
     >
-      <Link
-        to="/"
-        className="text-white"
-        style={{ fontWeight: 900, letterSpacing: "-0.04em", fontSize: 18 }}
-      >
+      <Link to="/" className="text-white" style={{ fontWeight: 900, letterSpacing: "-0.04em", fontSize: 18 }}>
         CAMBRA
       </Link>
 
       <div className="hidden md:flex items-center gap-8 text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>
-        <a href="#how" className="hover:text-white transition-colors">How it works</a>
-        <Link to="/Pricing" className="hover:text-white transition-colors">Pricing</Link>
-        <Link to="/Developers" className="hover:text-white transition-colors">Developers</Link>
+        <a href="#how" className="hover:text-white transition-colors">{t("nav_how")}</a>
+        <Link to="/Pricing" className="hover:text-white transition-colors">{t("nav_pricing")}</Link>
+        <Link to="/Developers" className="hover:text-white transition-colors">{t("nav_developers")}</Link>
       </div>
 
-      <Link
-        to="/Analyzer"
-        className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-bold bg-white text-black hover:opacity-90 transition-opacity"
-      >
-        Get started
-      </Link>
+      <div className="flex items-center gap-3">
+        <LanguageSwitcher variant="dark" />
+        <Link
+          to="/Analyzer"
+          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-bold bg-white text-black hover:opacity-90 transition-opacity"
+        >
+          {t("nav_get_started")}
+        </Link>
+      </div>
     </nav>
   );
 }
 
-/* ── Hero ── */
 function Hero() {
+  const { t } = useTranslation();
   return (
-    <section
-      className="relative flex items-center"
-      style={{ minHeight: "100vh", background: "#0a0a0a", color: "#ffffff" }}
-    >
-      {/* Subtle grid overlay */}
+    <section className="relative flex items-center" style={{ minHeight: "100vh", background: "#0a0a0a", color: "#ffffff" }}>
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
@@ -65,126 +60,87 @@ function Hero() {
           WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 40%, #000 30%, transparent 80%)",
         }}
       />
-
-      {/* Blue radial glow behind text */}
       <div
         aria-hidden
         className="absolute pointer-events-none"
         style={{
-          width: 600,
-          height: 600,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
+          width: 600, height: 600, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
           background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)",
           filter: "blur(60px)",
         }}
       />
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-10 py-32">
-        {/* Badge */}
         <div
           className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-8 text-[11px] uppercase tracking-[0.22em]"
-          style={{
-            border: "1px solid rgba(255,255,255,0.15)",
-            color: "rgba(255,255,255,0.75)",
-          }}
+          style={{ border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.75)" }}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-          Infrastructure Intelligence
+          {t("badge")}
         </div>
 
-        {/* Headline */}
         <h1 className="text-hero animate-fade-up text-white max-w-5xl">
-          Your infrastructure is leaking<br />money.
+          {t("hero_headline")}
         </h1>
 
-        {/* Subheadline */}
         <p
           className="mt-8 animate-fade-up"
-          style={{
-            maxWidth: 520,
-            color: "rgba(255,255,255,0.55)",
-            fontSize: 18,
-            lineHeight: 1.6,
-          }}
+          style={{ maxWidth: 520, color: "rgba(255,255,255,0.55)", fontSize: 18, lineHeight: 1.6 }}
         >
-          CAMBRA maps every tool in your stack, benchmarks your costs against the network,
-          and shows you exactly how much you can recover — without changing providers.
+          {t("hero_sub")}
         </p>
 
-        {/* CTAs */}
         <div className="mt-10 flex flex-wrap items-center gap-3 animate-fade-up">
           <Link
             to="/Analyzer"
             className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] hover:opacity-90 transition-opacity"
           >
-            Run free analysis <ArrowRight size={16} />
+            {t("hero_cta_primary")}
           </Link>
           <a
             href="#how"
             className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium transition-colors"
-            style={{
-              border: "1px solid rgba(255,255,255,0.20)",
-              color: "rgba(255,255,255,0.70)",
-            }}
+            style={{ border: "1px solid rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.70)" }}
           >
-            See how it works
+            {t("hero_cta_secondary")}
           </a>
         </div>
 
-        {/* Fine print */}
         <p className="mt-5 text-[12px]" style={{ color: "rgba(255,255,255,0.30)" }}>
-          No credit card. Pay only when you save.
+          {t("hero_footnote")}
         </p>
       </div>
     </section>
   );
 }
 
-/* ── Problem ── */
-const PROBLEMS = [
-  {
-    icon: TrendingDown,
-    headline: "Payments overpriced",
-    desc: "2.4% effective rate when 1.7% is achievable.",
-  },
-  {
-    icon: Package,
-    headline: "Shipping inflated",
-    desc: "€6.20/pkg when network average is €4.80.",
-  },
-  {
-    icon: Layers,
-    headline: "Tools overlapping",
-    desc: "3x overlapping tools draining budget.",
-  },
-];
-
 function ProblemSection() {
+  const { t } = useTranslation();
+  const cards = [
+    { icon: TrendingDown, title: t("problem_card1_title"), body: t("problem_card1_body"), stat: t("problem_card1_stat") },
+    { icon: Truck,        title: t("problem_card2_title"), body: t("problem_card2_body"), stat: t("problem_card2_stat") },
+    { icon: Layers,       title: t("problem_card3_title"), body: t("problem_card3_body"), stat: t("problem_card3_stat") },
+  ];
+
   return (
     <section style={{ background: "#0a0a0a" }} className="py-24 sm:py-32">
       <div className="max-w-6xl mx-auto px-6 sm:px-10">
-        <SectionLabel className="mb-6">The Problem</SectionLabel>
-        <h2 className="text-display text-white max-w-3xl mb-16">
-          Three silent leaks in every modern brand.
-        </h2>
+        <SectionLabel className="mb-6">{t("problem_label")}</SectionLabel>
+        <h2 className="text-display text-white max-w-3xl mb-16">{t("problem_headline")}</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {PROBLEMS.map((p, i) => (
+          {cards.map((c, i) => (
             <div key={i} className="surface surface-hover p-6">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
               >
-                <p.icon size={16} className="text-white/70" />
+                <c.icon size={16} className="text-white/70" />
               </div>
-              <p className="text-white font-bold text-[15px] mb-1">{p.headline}</p>
-              <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>
-                {p.desc}
+              <p className="text-white font-bold text-[15px] mb-1">{c.title}</p>
+              <p className="text-[13px] mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>{c.body}</p>
+              <p className="text-mono text-[12px] font-bold" style={{ color: "rgba(239,68,68,0.85)" }}>
+                {c.stat}
               </p>
             </div>
           ))}
@@ -194,29 +150,23 @@ function ProblemSection() {
   );
 }
 
-/* ── How it works ── */
-const STEPS = [
-  { n: "01", title: "Enter your website",   desc: "We start with what's public. No connections needed to begin." },
-  { n: "02", title: "We map your stack",    desc: "Payments, shipping, software, banking — every layer detected." },
-  { n: "03", title: "See your savings",     desc: "Benchmark-grade numbers in under 3 minutes. Verify when ready." },
-];
-
 function HowItWorksSection() {
+  const { t } = useTranslation();
+  const steps = [
+    { n: "01", title: t("step1_title"), desc: t("step1_desc") },
+    { n: "02", title: t("step2_title"), desc: t("step2_desc") },
+    { n: "03", title: t("step3_title"), desc: t("step3_desc") },
+  ];
+
   return (
     <section id="how" style={{ background: "#0a0a0a" }} className="py-24 sm:py-32">
       <div className="max-w-6xl mx-auto px-6 sm:px-10">
-        <SectionLabel className="mb-6">How CAMBRA works</SectionLabel>
-        <h2 className="text-display text-white max-w-3xl mb-16">
-          Three minutes from website to savings.
-        </h2>
+        <SectionLabel className="mb-6">{t("how_label")}</SectionLabel>
+        <h2 className="text-display text-white max-w-3xl mb-16">{t("step1_title")}.</h2>
 
         <div className="space-y-3">
-          {STEPS.map((s) => (
-            <div
-              key={s.n}
-              className="surface surface-hover relative overflow-hidden p-8 sm:p-10"
-            >
-              {/* Giant muted step number behind content */}
+          {steps.map((s) => (
+            <div key={s.n} className="surface surface-hover relative overflow-hidden p-8 sm:p-10">
               <span
                 aria-hidden
                 className="absolute -top-6 right-6 text-mono select-none"
@@ -234,9 +184,7 @@ function HowItWorksSection() {
               <div className="relative z-10 max-w-xl">
                 <SectionLabel className="mb-3">Step {s.n}</SectionLabel>
                 <h3 className="text-title text-white mb-3">{s.title}</h3>
-                <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.55)" }}>
-                  {s.desc}
-                </p>
+                <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.55)" }}>{s.desc}</p>
               </div>
             </div>
           ))}
@@ -246,68 +194,114 @@ function HowItWorksSection() {
   );
 }
 
-/* ── CTA ── */
-function CTASection() {
+function BenchmarkSection() {
+  const { t } = useTranslation();
+  const stats = [
+    { icon: BarChart3, text: t("benchmark_payments") },
+    { icon: Truck,     text: t("benchmark_shipping") },
+    { icon: Package,   text: t("benchmark_saas") },
+  ];
+
+  return (
+    <section style={{ background: "#0a0a0a" }} className="py-24 sm:py-32">
+      <div className="max-w-6xl mx-auto px-6 sm:px-10">
+        <SectionLabel className="mb-6">{t("benchmark_label")}</SectionLabel>
+        <h2 className="text-display text-white max-w-3xl mb-12">{t("benchmark_headline")}</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {stats.map((s, i) => (
+            <div key={i} className="surface p-6 flex items-start gap-3">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                <s.icon size={15} className="text-white/70" />
+              </div>
+              <p className="text-[14px] text-white/85 leading-relaxed">{s.text}</p>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-8 text-[12px]" style={{ color: "rgba(255,255,255,0.30)" }}>
+          {t("benchmark_footnote")}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function PricingCTASection() {
+  const { t } = useTranslation();
+  const lines = [t("pricing_line1"), t("pricing_line2"), t("pricing_line3"), t("pricing_line4")];
+
   return (
     <section style={{ background: "#0a0a0a" }} className="py-24 sm:py-32 relative overflow-hidden">
-      {/* Center blue glow */}
       <div
         aria-hidden
         className="absolute pointer-events-none"
         style={{
-          width: 700,
-          height: 700,
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
+          width: 700, height: 700, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
           background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
 
       <div className="relative z-10 max-w-3xl mx-auto px-6 sm:px-10 text-center">
-        <SectionLabel className="mb-6">Get started</SectionLabel>
-        <h2 className="text-display text-white mb-6">
-          Start for free.<br />Pay only when you save.
-        </h2>
-        <p className="text-[16px] mb-10" style={{ color: "rgba(255,255,255,0.55)" }}>
-          25% of verified savings. Nothing upfront.
-        </p>
+        <SectionLabel className="mb-6">{t("pricing_model")}</SectionLabel>
+        <h2 className="text-display text-white mb-8">{t("pricing_headline")}</h2>
 
-        <Link
-          to="/Analyzer"
-          className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] hover:opacity-90 transition-opacity"
-        >
-          Run free analysis <ArrowRight size={16} />
-        </Link>
+        <ul className="space-y-2.5 text-[14px] mb-10 inline-block text-left">
+          {lines.map((l, i) => (
+            <li key={i} className="flex items-center gap-3 text-white/75">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
+              {l}
+            </li>
+          ))}
+        </ul>
+
+        <div>
+          <Link
+            to="/Analyzer"
+            className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] hover:opacity-90 transition-opacity"
+          >
+            {t("pricing_cta")} <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        <p className="mt-6 text-[12px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+          {t("pricing_trust")}
+        </p>
       </div>
     </section>
   );
 }
 
-/* ── Footer ── */
 function LandingFooter() {
+  const { t } = useTranslation();
   return (
     <footer
       style={{ background: "#0a0a0a", borderTop: "1px solid rgba(255,255,255,0.06)" }}
       className="py-10"
     >
       <div className="max-w-6xl mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-          <span className="font-black text-white" style={{ letterSpacing: "-0.04em" }}>CAMBRA</span>
-          <span className="mx-2">·</span>
-          Infrastructure Intelligence
-        </p>
+        <div>
+          <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.45)" }}>
+            <span className="font-black text-white" style={{ letterSpacing: "-0.04em" }}>CAMBRA</span>
+            <span className="mx-2">·</span>
+            {t("footer_tagline")}
+          </p>
+          <p className="mt-2 text-[12px]" style={{ color: "rgba(255,255,255,0.30)" }}>{t("footer_legal")}</p>
+        </div>
         <div className="flex items-center gap-6 text-[13px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-          <Link to="/Privacy" className="hover:text-white transition-colors">Privacy</Link>
-          <Link to="/Terms" className="hover:text-white transition-colors">Terms</Link>
+          <Link to="/Privacy" className="hover:text-white transition-colors">{t("footer_privacy")}</Link>
+          <Link to="/Terms" className="hover:text-white transition-colors">{t("footer_terms")}</Link>
+          <Link to="/Contact" className="hover:text-white transition-colors">{t("footer_contact")}</Link>
         </div>
       </div>
     </footer>
   );
 }
 
-/* ── Page ── */
 export default function Landing() {
   return (
     <div className="min-h-screen font-inter" style={{ background: "#0a0a0a", color: "#ffffff" }}>
@@ -316,7 +310,8 @@ export default function Landing() {
         <Hero />
         <ProblemSection />
         <HowItWorksSection />
-        <CTASection />
+        <BenchmarkSection />
+        <PricingCTASection />
       </main>
       <LandingFooter />
     </div>

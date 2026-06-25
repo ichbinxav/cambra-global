@@ -8,6 +8,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import Navbar from "@/components/landing/Navbar";
 import StripeConnectCard from "@/components/connect/StripeConnectCard.jsx";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 const CATEGORY_ORDER = [
@@ -55,12 +56,12 @@ function CardSkeleton() {
 }
 
 /* ── status badge ────────────────────────────────────────────── */
-function StatusBadge({ integration, stripeConnected }) {
+function StatusBadge({ integration, stripeConnected, t, formatEur }) {
   const status = integration.display_status;
   if (status === "connected") {
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border-emerald-500/25">
-        <CheckCircle2 size={9} /> Connected
+        <CheckCircle2 size={9} /> {t("badge_connected")}
       </span>
     );
   }
@@ -68,7 +69,9 @@ function StatusBadge({ integration, stripeConnected }) {
     const cost = Number(integration.inferred_monthly_cost || 0);
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-purple-500/10 text-purple-600 border-purple-500/25">
-        <Sparkles size={9} /> Found in Stripe{cost > 0 ? ` — €${Math.round(cost).toLocaleString()}/mo` : ""}
+        <Sparkles size={9} /> {cost > 0
+          ? t("found_in_stripe", { amount: Math.round(cost).toLocaleString() })
+          : t("detected_source_stripe")}
       </span>
     );
   }
@@ -76,35 +79,34 @@ function StatusBadge({ integration, stripeConnected }) {
     const pct = integration.confidence_score != null ? Math.round(Number(integration.confidence_score) * 100) : null;
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-blue-500/10 text-blue-600 border-blue-500/25">
-        Detected{pct != null ? ` · ${pct}%` : ""}
+        {t("badge_detected")}{pct != null ? ` · ${pct}%` : ""}
       </span>
     );
   }
   if (status === "available") {
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-secondary text-muted-foreground border-border/60">
-        Available
+        {t("badge_available")}
       </span>
     );
   }
-  // coming_soon / planned
   return (
     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-secondary text-muted-foreground/60 border-border/40">
-      <Clock size={9} /> Coming soon
+      <Clock size={9} /> {t("badge_coming_soon")}
     </span>
   );
 }
 
-function ActionCTA({ integration, stripeConnected }) {
+function ActionCTA({ integration, stripeConnected, t }) {
   const status = integration.display_status;
   if (status === "connected") {
     return (
       <div className="flex items-center gap-2">
         <span className="text-[10px] text-muted-foreground hidden sm:inline">
-          Last sync {timeAgo(integration.last_verified_at)}
+          {t("last_sync", { time: timeAgo(integration.last_verified_at) })}
         </span>
         <button className="inline-flex items-center gap-1 h-8 px-3 rounded-full border border-border/60 text-[11px] font-bold text-foreground hover:border-foreground/40 transition-colors min-h-[44px] sm:min-h-0">
-          <RefreshCw size={10} /> Sync now
+          <RefreshCw size={10} /> {t("sync_now")}
         </button>
       </div>
     );
@@ -112,23 +114,22 @@ function ActionCTA({ integration, stripeConnected }) {
   if (status === "detected" || (integration.inferred_from_payments && stripeConnected)) {
     return (
       <button className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 min-h-[44px] sm:min-h-0">
-        Connect to verify <ArrowRight size={10} />
+        {t("connect_to_verify")} <ArrowRight size={10} />
       </button>
     );
   }
   if (status === "available") {
     return (
       <button className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 min-h-[44px] sm:min-h-0">
-        Connect <ArrowRight size={10} />
+        {t("nav_connect")} <ArrowRight size={10} />
       </button>
     );
   }
-  // coming_soon → no CTA
   return null;
 }
 
 /* ── integration card ────────────────────────────────────────── */
-function IntegrationCard({ integration, stripeConnected }) {
+function IntegrationCard({ integration, stripeConnected, t }) {
   const FallbackIcon = (CATEGORY_META[integration.category] || { icon: Layers }).icon;
   return (
     <div className="p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-colors">
@@ -147,8 +148,8 @@ function IntegrationCard({ integration, stripeConnected }) {
           )}
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          <StatusBadge integration={integration} stripeConnected={stripeConnected} />
-          <ActionCTA integration={integration} stripeConnected={stripeConnected} />
+          <StatusBadge integration={integration} stripeConnected={stripeConnected} t={t} />
+          <ActionCTA integration={integration} stripeConnected={stripeConnected} t={t} />
         </div>
       </div>
     </div>
@@ -157,6 +158,7 @@ function IntegrationCard({ integration, stripeConnected }) {
 
 /* ── main ────────────────────────────────────────────────────── */
 export default function ConnectTools() {
+  const { t } = useTranslation();
   const [grouped, setGrouped] = useState({});
   const [allIntegrations, setAllIntegrations] = useState([]);
   const [stripeConnected, setStripeConnected] = useState(false);
@@ -210,23 +212,20 @@ export default function ConnectTools() {
 
         {/* Header */}
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-black tracking-[-0.03em]">Connect your tools</h1>
-          <p className="text-sm text-muted-foreground mt-1">Every connection improves your benchmark accuracy.</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-black tracking-[-0.03em]">{t("ct_page_title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t("ct_page_sub")}</p>
         </div>
 
         {/* Summary bar */}
         <div className="px-4 py-3 rounded-2xl border border-border/60 bg-secondary/30 flex flex-wrap items-center gap-x-6 gap-y-1.5 text-xs">
           <span className="font-semibold">
-            <span className="tabular-nums font-black">{detectedCount}</span>
-            <span className="text-muted-foreground ml-1">tools detected</span>
+            <span className="text-muted-foreground">{t("summary_detected", { n: detectedCount })}</span>
           </span>
           <span className="font-semibold">
-            <span className="tabular-nums font-black text-emerald-600">{connectedCount}</span>
-            <span className="text-muted-foreground ml-1">connected</span>
+            <span className="text-emerald-600">{t("summary_connected", { n: connectedCount })}</span>
           </span>
           <span className="font-semibold">
-            <span className="tabular-nums font-black">{availableCount}</span>
-            <span className="text-muted-foreground ml-1">available to connect</span>
+            <span className="text-muted-foreground">{t("summary_available", { n: availableCount })}</span>
           </span>
         </div>
 
@@ -266,6 +265,7 @@ export default function ConnectTools() {
                     key={it.integration_id}
                     integration={it}
                     stripeConnected={stripeConnected}
+                    t={t}
                   />
                 ))}
               </div>
@@ -277,11 +277,11 @@ export default function ConnectTools() {
         {!loading && (
           <div className="pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              Need a tool that's not here?
+              {t("ct_page_sub")}
             </p>
             <Link to="/Analyzer">
               <Button className="h-10 rounded-full px-5 text-sm font-bold gap-2 min-h-[44px] sm:min-h-0">
-                Run analysis <ArrowRight className="h-4 w-4" />
+                {t("nav_analyzer")} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </div>

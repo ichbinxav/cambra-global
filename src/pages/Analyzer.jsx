@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
 import StripeConnectCard from "@/components/connect/StripeConnectCard";
+import { useTranslation } from "@/lib/i18n.jsx";
 import RevenueRangePicker, { midpointForRange } from "@/components/analyzer/RevenueRangePicker";
 import DetectedToolsGrid from "@/components/analyzer/DetectedToolsGrid";
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
@@ -19,20 +20,24 @@ import {
   ENGINE_VERSION, validateAnalyzerInput,
 } from "@/lib/scoreEngine";
 
-// ─── Category mapping (explicit, no regex) ─────────────────────────────────
+// ─── Category mapping (i18n keys → internal slugs) ─────────────────────────
 const CATEGORY_OPTIONS = [
-  "Fashion", "Beauty", "Food & Beverage", "Electronics", "Home & Living",
-  "Sports & Outdoors", "Health & Wellness", "Toys & Kids", "Pets",
-  "Jewelry & Accessories", "Books & Media", "Automotive", "B2B & Wholesale", "Other",
+  { key: "Fashion",                  i18n: "cat_fashion",     slug: "fashion" },
+  { key: "Beauty",                   i18n: "cat_beauty",      slug: "beauty" },
+  { key: "Food & Beverage",          i18n: "cat_food",        slug: "food_bev" },
+  { key: "Electronics",              i18n: "cat_electronics", slug: "electronics" },
+  { key: "Home & Living",            i18n: "cat_home",        slug: "home_living" },
+  { key: "Sports & Outdoors",        i18n: "cat_sports",      slug: "sports" },
+  { key: "Health & Wellness",        i18n: "cat_health",      slug: "health" },
+  { key: "Toys & Kids",              i18n: "cat_toys",        slug: "toys" },
+  { key: "Pets",                     i18n: "cat_pets",        slug: "pets" },
+  { key: "Jewelry & Accessories",    i18n: "cat_jewelry",     slug: "jewelry" },
+  { key: "Books & Media",            i18n: "cat_books",       slug: "media" },
+  { key: "Automotive",               i18n: "cat_automotive",  slug: "automotive" },
+  { key: "B2B & Wholesale",          i18n: "cat_b2b",         slug: "b2b" },
+  { key: "Other",                    i18n: "cat_other",       slug: "other" },
 ];
-const CATEGORY_MAP = {
-  "Fashion": "fashion", "Beauty": "beauty", "Food & Beverage": "food_bev",
-  "Electronics": "electronics", "Home & Living": "home_living",
-  "Sports & Outdoors": "sports", "Health & Wellness": "health",
-  "Toys & Kids": "toys", "Pets": "pets", "Jewelry & Accessories": "jewelry",
-  "Books & Media": "media", "Automotive": "automotive",
-  "B2B & Wholesale": "b2b", "Other": "other",
-};
+const CATEGORY_MAP = Object.fromEntries(CATEGORY_OPTIONS.map(c => [c.key, c.slug]));
 
 const COUNTRIES = [
   "France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Portugal",
@@ -70,6 +75,7 @@ function tierLabelForRevenue(monthlyRevenue, country) {
 // ─── Main component ────────────────────────────────────────────────────────
 export default function Analyzer() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const urlParams = new URLSearchParams(window.location.search);
   const resumeParam = urlParams.get("resume") === "true";
 
@@ -347,7 +353,12 @@ export default function Analyzer() {
   const goStep2 = async () => {
     setErrorBanner("");
     if (!step1Valid) {
-      setErrorBanner("Please complete brand name, website, country and monthly revenue.");
+      const missing = [];
+      if (!brandName.trim()) missing.push(t("error_brand_required"));
+      if (!websiteUrl.trim()) missing.push(t("error_website_required"));
+      if (!country) missing.push(t("error_country_required"));
+      if (!revenueRange) missing.push(t("error_revenue_required"));
+      setErrorBanner(missing.join("\n"));
       return;
     }
     await ensureBrand();
@@ -625,12 +636,12 @@ export default function Analyzer() {
         {/* ──────────── STEP 1 ──────────── */}
         {step === 1 && (
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">Tell us about your brand</h1>
-            <p className="text-sm text-muted-foreground mb-6">We'll map your infrastructure automatically.</p>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">{t("az_step1_title")}</h1>
+            <p className="text-sm text-muted-foreground mb-6">{t("az_step1_sub")}</p>
 
             <div className="space-y-5">
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Website</Label>
+                <Label className="text-sm font-medium">{t("field_website")}</Label>
                 <Input
                   value={websiteUrl}
                   onChange={e => setWebsiteUrl(e.target.value)}
@@ -656,20 +667,17 @@ export default function Analyzer() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Brand name</Label>
+                <Label className="text-sm font-medium">{t("field_brand_name")}</Label>
                 <Input
                   value={brandName}
                   onChange={e => setBrandName(e.target.value)}
-                  placeholder="Your brand name"
+                  placeholder={t("field_brand_name")}
                   className="h-12 text-sm border-border/60"
                 />
-                <p className="text-[11px] text-muted-foreground/60">
-                  Auto-suggested from your domain. You can change it.
-                </p>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Country</Label>
+                <Label className="text-sm font-medium">{t("field_country")}</Label>
                 <div className="relative">
                   <select
                     value={country}
@@ -685,27 +693,25 @@ export default function Analyzer() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Monthly revenue</Label>
+                <Label className="text-sm font-medium">{t("field_revenue")}</Label>
                 <RevenueRangePicker value={revenueRange} onChange={setRevenueRange} />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  Category <span className="text-[10px] text-muted-foreground/60 font-normal">(optional)</span>
-                </Label>
+                <Label className="text-sm font-medium">{t("field_category")}</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {CATEGORY_OPTIONS.map(c => (
                     <button
-                      key={c}
+                      key={c.key}
                       type="button"
-                      onClick={() => setCategory(c)}
+                      onClick={() => setCategory(c.key)}
                       className={`min-h-[44px] px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
-                        category === c
+                        category === c.key
                           ? "border-foreground bg-foreground text-background"
                           : "border-border/60 bg-white text-foreground hover:border-foreground/40"
                       }`}
                     >
-                      {c}
+                      {t(c.i18n)}
                     </button>
                   ))}
                 </div>
@@ -717,8 +723,8 @@ export default function Analyzer() {
         {/* ──────────── STEP 2 ──────────── */}
         {step === 2 && (
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">We found your stack</h1>
-            <p className="text-sm text-muted-foreground mb-6">Confirm what looks right. Add anything missing.</p>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">{t("az_step2_title")}</h1>
+            <p className="text-sm text-muted-foreground mb-6">{t("az_step2_sub")}</p>
 
             <DetectedToolsGrid
               tools={tools}
@@ -735,7 +741,7 @@ export default function Analyzer() {
                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-border/60 bg-white min-h-[48px]"
               >
                 <span className="flex items-center gap-2 text-sm font-semibold">
-                  <Plus size={14} /> Anything missing? Add manually
+                  <Plus size={14} /> {t("add_manually")}
                 </span>
                 {manualOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
@@ -743,7 +749,7 @@ export default function Analyzer() {
               {manualOpen && (
                 <div className="mt-3 space-y-5 rounded-2xl border border-border/40 bg-secondary/30 p-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Who processes your payments?</Label>
+                    <Label className="text-xs font-semibold">{t("field_payment_provider")}</Label>
                     <select
                       value={manual.payment_provider}
                       onChange={e => setManual(m => ({ ...m, payment_provider: e.target.value }))}
@@ -752,7 +758,7 @@ export default function Analyzer() {
                       <option value="">Select a provider</option>
                       {PAYMENT_PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
-                    <Label className="text-xs font-semibold pt-2 block">What % do you pay in fees?</Label>
+                    <Label className="text-xs font-semibold pt-2 block">{t("field_payment_fee")}</Label>
                     <Input
                       type="number" step="0.01" min={0} max={15} inputMode="decimal"
                       value={manual.payment_fee_pct || ""}
@@ -772,7 +778,7 @@ export default function Analyzer() {
                       <option value="">Select a carrier</option>
                       {SHIPPING_PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
-                    <Label className="text-xs font-semibold pt-2 block">How many orders/month?</Label>
+                    <Label className="text-xs font-semibold pt-2 block">{t("field_shipments")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.monthly_shipments || ""}
@@ -780,7 +786,7 @@ export default function Analyzer() {
                       placeholder="e.g. 400"
                       className="h-11 text-sm border-border/60"
                     />
-                    <Label className="text-xs font-semibold pt-2 block">Monthly shipping cost?</Label>
+                    <Label className="text-xs font-semibold pt-2 block">{t("field_shipping_cost")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.monthly_shipping_cost || ""}
@@ -816,7 +822,7 @@ export default function Analyzer() {
                         );
                       })}
                     </div>
-                    <Label className="text-xs font-semibold pt-2 block">Total monthly spend on software?</Label>
+                    <Label className="text-xs font-semibold pt-2 block">{t("field_saas_spend")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.total_saas_spend || ""}
@@ -886,19 +892,14 @@ export default function Analyzer() {
         {/* ──────────── STEP 3 ──────────── */}
         {step === 3 && (
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">Upgrade to verified</h1>
-            <p className="text-sm text-muted-foreground mb-6">
-              Connect Stripe to verify your payment costs and improve your benchmark.
-            </p>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] mb-2">{t("az_step3_title")}</h1>
+            <p className="text-sm text-muted-foreground mb-6">{t("az_step3_sub")}</p>
 
             {stripeConnected ? (
               <div className="space-y-4">
                 <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-5 text-center">
                   <ShieldCheck size={28} className="mx-auto mb-2 text-emerald-600" />
-                  <p className="text-sm font-black text-emerald-800">Payments upgraded to verified ✓</p>
-                  <p className="text-[12px] text-emerald-700 mt-1">
-                    Your benchmark is now based on real data.
-                  </p>
+                  <p className="text-sm font-black text-emerald-800">{t("az_step3_verified")}</p>
                 </div>
                 <UpgradeToVerified vertical="payments" isConnected currentConfidence="verified" />
               </div>
@@ -922,7 +923,7 @@ export default function Analyzer() {
                 onClick={runAnalysis}
                 className="text-xs font-semibold text-muted-foreground hover:text-foreground underline underline-offset-2"
               >
-                {stripeConnected ? "Continue to analysis →" : "Skip for now — use estimated figures"}
+                {stripeConnected ? t("confirm_cta") : t("az_step3_skip")}
               </button>
             </div>
           </div>

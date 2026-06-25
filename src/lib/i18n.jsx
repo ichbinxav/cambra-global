@@ -1,340 +1,826 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, createContext, useContext, useCallback, useMemo } from "react";
+
+/* ──────────────────────────────────────────────────────────────
+   CAMBRA i18n — EN / FR / ES with flat-key dictionaries.
+
+   API:
+     const { lang, setLang, t, formatCurrency, formatDate } = useTranslation();
+     t("hero_headline")                         → string
+     t("benchmarked_against", { n: 42 })        → replaces {n}
+     t(obj, "en")  // legacy 2-arg form for older components
+   ────────────────────────────────────────────────────────────── */
 
 export const LANGUAGES = [
-  { code: "en", label: "English", flag: "🇬🇧" },
-  { code: "fr", label: "Français", flag: "🇫🇷" },
-  { code: "es", label: "Español", flag: "🇪🇸" },
-  { code: "de", label: "Deutsch", flag: "🇩🇪" },
-  { code: "it", label: "Italiano", flag: "🇮🇹" },
-  { code: "nl", label: "Nederlands", flag: "🇳🇱" },
-  { code: "pt", label: "Português", flag: "🇵🇹" },
-  { code: "pl", label: "Polski", flag: "🇵🇱" },
-  { code: "sv", label: "Svenska", flag: "🇸🇪" },
-  { code: "da", label: "Dansk", flag: "🇩🇰" },
+  { code: "en", label: "English", short: "EN" },
+  { code: "fr", label: "Français", short: "FR" },
+  { code: "es", label: "Español", short: "ES" },
 ];
 
-export const translations = {
-  hero: {
-    tag: {
-      en: "For Lifestyle Commerce", fr: "Pour les marques lifestyle", es: "Para marcas de lifestyle",
-      de: "Für Lifestyle-Marken", it: "Per brand lifestyle", nl: "Voor lifestylemerken",
-      pt: "Para marcas lifestyle", pl: "Dla marek lifestyle", sv: "För livsstilsvarumärken", da: "For livsstilsbrands",
-    },
-    urgency: {
-      en: "Most brands operate below optimal infrastructure rates — and don't realize it.",
-      fr: "La plupart des marques opèrent en dessous de leurs conditions optimales — sans même s'en rendre compte.",
-      es: "La mayoría de las marcas operan por debajo de sus condiciones óptimas — sin siquiera saberlo.",
-      de: "Die meisten Marken arbeiten unter ihren optimalen Konditionen — ohne es zu merken.",
-      it: "La maggior parte dei brand opera al di sotto delle condizioni ottimali — senza rendersene conto.",
-      nl: "De meeste merken opereren onder hun optimale voorwaarden — zonder het te beseffen.",
-      pt: "A maioria das marcas opera abaixo das condições ideais — sem perceber.",
-      pl: "Większość marek działa poniżej optymalnych warunków — nawet o tym nie wiedząc.",
-      sv: "De flesta varumärken arbetar under sina optimala villkor — utan att inse det.",
-      da: "De fleste brands opererer under deres optimale vilkår — uden at vide det.",
-    },
-    headline: {
-      en: "Turn your infrastructure\ninto an advantage.", fr: "Faites de votre infrastructure\nun avantage.",
-      es: "Convierte tu infraestructura\nen una ventaja.", de: "Mach deine Infrastruktur\nzu deinem Vorteil.",
-      it: "Trasforma la tua infrastruttura\nin un vantaggio.", nl: "Maak van je infrastructuur\neen voordeel.",
-      pt: "Transforme a sua infraestrutura\nnum vantagem.", pl: "Zamień swoją infrastrukturę\nw przewagę.",
-      sv: "Gör din infrastruktur\ntill en fördel.", da: "Gør din infrastruktur\ntil en fordel.",
-    },
-    sub: {
-      en: "Unlock the rates your scale should give you.",
-      fr: "Accédez aux conditions que votre échelle devrait déjà vous offrir.",
-      es: "Accede a las condiciones que tu escala ya debería darte.",
-      de: "Erhalte die Konditionen, die deine Größe ermöglichen sollte.",
-      it: "Accedi alle condizioni che la tua scala dovrebbe garantire.",
-      nl: "Ontgrendel de tarieven die jouw schaal zou moeten opleveren.",
-      pt: "Desbloqueie as condições que o seu tamanho já deveria garantir.",
-      pl: "Uzyskaj warunki, które Twoja skala powinna zapewniać.",
-      sv: "Få tillgång till de villkor din storlek borde ge dig.",
-      da: "Få adgang til de vilkår din størrelse burde give dig.",
-    },
-    desc: {
-      en: "We aggregate independent brands into a single leverage bloc. You unlock better rates on payments, shipping, and SaaS — instantly. Our analyzer identifies exactly where value is left unoptimized, then you access the deals.",
-      fr: "Nous regroupons des marques indépendantes en un seul bloc de levier. Vous accédez immédiatement à de meilleures conditions sur les paiements, la livraison et le SaaS.",
-      es: "Agrupamos marcas independientes en un único bloque de negociación. Accedes a mejores condiciones en pagos, envíos y SaaS — al instante.",
-      de: "Wir bündeln unabhängige Marken zu einem einzigen Verhandlungsblock. Du erhältst sofort bessere Konditionen bei Zahlungen, Versand und SaaS.",
-      it: "Aggreghiamo brand indipendenti in un unico blocco negoziale. Ottieni subito condizioni migliori su pagamenti, spedizioni e SaaS.",
-      nl: "We bundelen onafhankelijke merken in één onderhandelingsblok. Je ontgrendelt direct betere tarieven op betalingen, verzending en SaaS.",
-      pt: "Agregamos marcas independentes num único bloco de negociação. Obtém condições melhores em pagamentos, envios e SaaS — instantaneamente.",
-      pl: "Łączymy niezależne marki w jeden blok negocjacyjny. Natychmiast odblokowujesz lepsze warunki na płatności, wysyłkę i SaaS.",
-      sv: "Vi samlar oberoende varumärken i ett enda förhandlingsblock. Du låser upp bättre villkor för betalningar, frakt och SaaS — omedelbart.",
-      da: "Vi samler uafhængige brands i én forhandlingsblok. Du låser op for bedre vilkår på betalinger, forsendelse og SaaS — øjeblikkeligt.",
-    },
-    pricingFree: {
-      en: "Free", fr: "Gratuit", es: "Gratis", de: "Kostenlos", it: "Gratis",
-      nl: "Gratis", pt: "Grátis", pl: "Bezpłatnie", sv: "Gratis", da: "Gratis",
-    },
-    pricingPartners: {
-      en: "Early partners only", fr: "Partenaires fondateurs uniquement", es: "Solo socios fundadores",
-      de: "Nur für frühe Partner", it: "Solo per i partner fondatori", nl: "Alleen vroege partners",
-      pt: "Apenas parceiros iniciais", pl: "Tylko pierwsi partnerzy", sv: "Endast tidiga partners", da: "Kun tidlige partnere",
-    },
-    pricingNote: {
-      en: "You only pay when your economics improve.", fr: "Vous ne payez que lorsque vos coûts s'améliorent.",
-      es: "Solo pagas cuando tus costes mejoran.", de: "Du zahlst nur, wenn sich deine Kosten verbessern.",
-      it: "Paghi solo quando i tuoi costi migliorano.", nl: "Je betaalt alleen als je kosten verbeteren.",
-      pt: "Só paga quando os seus custos melhorarem.", pl: "Płacisz tylko wtedy, gdy Twoje koszty się poprawiają.",
-      sv: "Du betalar bara när dina kostnader förbättras.", da: "Du betaler kun, når dine omkostninger forbedres.",
-    },
-    bullets: {
-      en: ["Access rates you can't unlock on your own", "Instantly see where you're overpaying", "Reduce infrastructure costs across your stack", "Turn collective scale into economic leverage"],
-      fr: ["Accédez à des conditions impossibles à obtenir seul", "Identifiez instantanément où vous payez trop", "Réduisez les coûts d'infrastructure sur l'ensemble de votre stack", "Transformez l'échelle collective en levier économique"],
-      es: ["Accede a condiciones que no puedes conseguir solo", "Detecta al instante dónde estás pagando de más", "Reduce los costes de infraestructura en todo tu stack", "Convierte la escala colectiva en ventaja económica"],
-      de: ["Zugang zu Konditionen, die du allein nicht erreichst", "Erkenne sofort, wo du zu viel zahlst", "Reduziere Infrastrukturkosten in deinem gesamten Stack", "Wandle kollektive Größe in wirtschaftlichen Vorteil um"],
-      it: ["Accedi a condizioni che non puoi ottenere da solo", "Individua subito dove stai pagando troppo", "Riduci i costi infrastrutturali su tutto il tuo stack", "Trasforma la scala collettiva in leva economica"],
-      nl: ["Krijg toegang tot tarieven die je zelf niet kunt bereiken", "Zie direct waar je te veel betaalt", "Verlaag infrastructuurkosten in je hele stack", "Maak van collectieve schaal economisch voordeel"],
-      pt: ["Aceda a condições que não conseguiria sozinho", "Veja instantaneamente onde está a pagar a mais", "Reduza custos de infraestrutura em toda a sua stack", "Transforme escala coletiva em alavancagem económica"],
-      pl: ["Uzyskaj warunki niedostępne samodzielnie", "Natychmiast zobacz, gdzie przepłacasz", "Obniż koszty infrastruktury w całym swoim stosie", "Zamień zbiorową skalę w dźwignię ekonomiczną"],
-      sv: ["Få tillgång till villkor du inte når själv", "Se direkt var du betalar för mycket", "Minska infrastrukturkostnader i hela din stack", "Förvandla kollektiv skala till ekonomisk hävstång"],
-      da: ["Få adgang til vilkår du ikke kan opnå alene", "Se med det samme hvor du betaler for meget", "Reducer infrastrukturomkostninger på tværs af din stack", "Gør kollektiv skala til økonomisk løftestang"],
-    },
-    ctaPrimary: {
-      en: "Calculate your savings", fr: "Calculez vos économies", es: "Calcula tu ahorro",
-      de: "Berechne deine Einsparungen", it: "Calcola il tuo risparmio", nl: "Bereken je besparingen",
-      pt: "Calcule sua economia", pl: "Oblicz swoje oszczędności", sv: "Beräkna dina besparingar", da: "Beregn dine besparelser",
-    },
-    ctaSecondary: {
-      en: "See your optimization potential", fr: "Découvrez votre potentiel d'optimisation", es: "Descubre tu potencial de optimización",
-      de: "Sieh dein Optimierungspotenzial", it: "Scopri il tuo potenziale di ottimizzazione", nl: "Bekijk je optimalisatiepotentieel",
-      pt: "Veja seu potencial de otimização", pl: "Zobacz swój potencjał optymalizacji", sv: "Se din optimeringspotential", da: "Se dit optimeringspotentiale",
-    },
-    microCopy: {
-      en: "2-minute analysis · No commitment · Read-only access",
-      fr: "Analyse de 2 minutes · Sans engagement · Accès lecture seule",
-      es: "Análisis de 2 minutos · Sin compromiso · Acceso de solo lectura",
-      de: "2-Minuten-Analyse · Keine Verpflichtung · Nur-Lese-Zugriff",
-      it: "Analisi in 2 minuti · Nessun impegno · Accesso in sola lettura",
-      nl: "2-minuten analyse · Geen verplichting · Alleen-lezen toegang",
-      pt: "Análise de 2 minutos · Sem compromisso · Acesso só de leitura",
-      pl: "Analiza 2 minuty · Bez zobowiązań · Dostęp tylko do odczytu",
-      sv: "2-minuters analys · Inget åtagande · Läsåtkomst",
-      da: "2-minutters analyse · Ingen forpligtelse · Skrivebeskyttet adgang",
-    },
-    identifyInstantly: {
-      en: "Identify your optimization potential instantly.", fr: "Identifiez instantanément votre potentiel d'optimisation.",
-      es: "Identifica tu potencial de optimización al instante.", de: "Erkenne dein Optimierungspotenzial sofort.",
-      it: "Individua il tuo potenziale di ottimizzazione all'istante.", nl: "Identificeer direct je optimalisatiepotentieel.",
-      pt: "Identifique o seu potencial de otimização instantaneamente.", pl: "Natychmiast zidentyfikuj swój potencjał optymalizacji.",
-      sv: "Identifiera din optimeringspotential omedelbart.", da: "Identificér dit optimeringspotentiale øjeblikkeligt.",
-    },
-    avgBenchmark: {
-      en: "Avg. optimization potential: €29,000/year · €3K–€72K range · Based on real network benchmarks",
-      fr: "Potentiel moyen : 29 000 €/an · Fourchette 3K–72K€ · Basé sur de vraies données réseau",
-      es: "Potencial medio: 29.000 €/año · Rango 3K–72K€ · Basado en benchmarks reales de la red",
-      de: "Durchschn. Optimierungspotenzial: 29.000 €/Jahr · 3K–72K€-Spanne · Basiert auf echten Netzwerkdaten",
-      it: "Potenziale medio: 29.000 €/anno · Gamma 3K–72K€ · Basato su benchmark reali della rete",
-      nl: "Gem. optimalisatiepotentieel: €29.000/jaar · €3K–€72K-bereik · Op basis van echte networkbenchmarks",
-      pt: "Potencial médio: 29.000 €/ano · Intervalo 3K–72K€ · Baseado em benchmarks reais da rede",
-      pl: "Śr. potencjał optymalizacji: 29 000 €/rok · Zakres 3K–72K€ · Na podstawie rzeczywistych benchmarków sieci",
-      sv: "Genomsn. optimeringspotential: 29 000 €/år · 3K–72K€-intervall · Baserat på verkliga nätverksbenchmarks",
-      da: "Gns. optimeringspotentiale: 29.000 €/år · 3K–72K€ interval · Baseret på reelle netværksbenchmarks",
-    },
-    overpaying: {
-      en: "Overpaying detected:", fr: "Surpaiement détecté :", es: "Pago excesivo detectado:",
-      de: "Überzahlung erkannt:", it: "Pagamento eccessivo rilevato:", nl: "Teveel betaald gedetecteerd:",
-      pt: "Pagamento excessivo detetado:", pl: "Wykryto przepłacanie:", sv: "Överbetalning upptäckt:", da: "Overbetalning opdaget:",
-    },
-    analyzerTitle: {
-      en: "Analyzer · Savings Report", fr: "Analyseur · Rapport d'économies", es: "Analizador · Informe de ahorro",
-      de: "Analyse · Einsparungsbericht", it: "Analizzatore · Report risparmi", nl: "Analyzer · Besparingsrapport",
-      pt: "Analisador · Relatório de economia", pl: "Analizator · Raport oszczędności", sv: "Analys · Besparingsrapport", da: "Analyse · Besparelsesrapport",
-    },
-    sampleBrand: {
-      en: "Sample brand · €500K/yr", fr: "Marque test · 500K€/an", es: "Marca de ejemplo · 500K€/año",
-      de: "Beispielmarke · 500K€/Jahr", it: "Brand campione · 500K€/anno", nl: "Voorbeeldmerk · €500K/jaar",
-      pt: "Marca exemplo · 500K€/ano", pl: "Przykładowa marka · 500K€/rok", sv: "Exempelvarumärke · 500K€/år", da: "Eksempelbrand · 500K€/år",
-    },
-    potentialSavings: {
-      en: "Potential savings unlocked", fr: "Économies potentielles débloquées", es: "Ahorro potencial desbloqueado",
-      de: "Potenzielle Einsparungen freigeschaltet", it: "Risparmio potenziale sbloccato", nl: "Potentiële besparingen ontgrendeld",
-      pt: "Poupanças potenciais desbloqueadas", pl: "Odblokowany potencjał oszczędności", sv: "Potentiella besparingar upplåsta", da: "Potentielle besparelser låst op",
-    },
-    analyze: {
-      en: "Analyze", fr: "Analyser", es: "Analizar", de: "Analysieren", it: "Analizza",
-      nl: "Analyseer", pt: "Analisar", pl: "Analizuj", sv: "Analysera", da: "Analysér",
-    },
-    infraScore: {
-      en: "Infrastructure Score:", fr: "Score d'infrastructure :", es: "Índice de infraestructura:",
-      de: "Infrastruktur-Score:", it: "Punteggio infrastruttura:", nl: "Infrastructuurscore:",
-      pt: "Score de infraestrutura:", pl: "Wynik infrastruktury:", sv: "Infrastrukturpoäng:", da: "Infrastruktur-score:",
-    },
-    infraPotential: {
-      en: "Your potential: 84/100 · See how", fr: "Votre potentiel : 84/100 · Voir comment",
-      es: "Tu potencial: 84/100 · Ver cómo", de: "Dein Potenzial: 84/100 · Wie geht das?",
-      it: "Il tuo potenziale: 84/100 · Scopri come", nl: "Jouw potentieel: 84/100 · Zie hoe",
-      pt: "O teu potencial: 84/100 · Ver como", pl: "Twój potencjał: 84/100 · Zobacz jak",
-      sv: "Din potential: 84/100 · Se hur", da: "Dit potentiale: 84/100 · Se hvordan",
-    },
-    dealsUnlocked: {
-      en: "Structural rates unlocked", fr: "Conditions structurelles débloquées", es: "Tarifas estructurales desbloqueadas",
-      de: "Strukturelle Konditionen freigeschaltet", it: "Tariffe strutturali sbloccate", nl: "Structurele tarieven ontgrendeld",
-      pt: "Tarifas estruturais desbloqueadas", pl: "Odblokowano stawki strukturalne", sv: "Strukturella tariffer upplåsta", da: "Strukturelle tariffer låst op",
-    },
-    dealsSubtext: {
-      en: "Rates you can't negotiate alone · Join to activate",
-      fr: "Des conditions que vous ne pouvez pas négocier seul · Rejoignez pour activer",
-      es: "Tarifas que no puedes negociar solo · Únete para activar",
-      de: "Konditionen, die du allein nicht verhandelst · Tritt bei, um zu aktivieren",
-      it: "Tariffe che non puoi negoziare da solo · Unisciti per attivare",
-      nl: "Tarieven die je zelf niet kunt onderhandelen · Sluit aan om te activeren",
-      pt: "Tarifas que não pode negociar sozinho · Junte-se para ativar",
-      pl: "Stawki, których nie możesz negocjować samodzielnie · Dołącz, aby aktywować",
-      sv: "Tariffer du inte kan förhandla själv · Gå med för att aktivera",
-      da: "Priser du ikke kan forhandle alene · Tilmeld dig for at aktivere",
-    },
-    join: {
-      en: "Join", fr: "Rejoindre", es: "Únete", de: "Beitreten", it: "Unisciti",
-      nl: "Aanmelden", pt: "Aderir", pl: "Dołącz", sv: "Gå med", da: "Tilmeld dig",
-    },
-    sampleNote: {
-      en: "Sample analysis · Independent brand · 2025", fr: "Analyse exemple · Marque indépendante · 2025",
-      es: "Análisis de muestra · Marca independiente · 2025", de: "Beispielanalyse · Unabhängige Marke · 2025",
-      it: "Analisi campione · Brand indipendente · 2025", nl: "Voorbeeldanalyse · Onafhankelijk merk · 2025",
-      pt: "Análise exemplo · Marca independente · 2025", pl: "Przykładowa analiza · Niezależna marka · 2025",
-      sv: "Exempelanalys · Oberoende varumärke · 2025", da: "Eksempelanalyse · Uafhængigt brand · 2025",
-    },
+const STORAGE_KEY = "cambra_lang";
+const LEGACY_KEYS = ["node_lang"];
+
+/* ── locale helpers ───────────────────────────────────────── */
+const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES" };
+const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES" };
+
+export function formatCurrency(amount, lang = "en") {
+  const locale = CURRENCY_LOCALES[lang] || CURRENCY_LOCALES.en;
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0,
+    }).format(Number(amount) || 0);
+  } catch {
+    return `€${Math.round(Number(amount) || 0).toLocaleString()}`;
+  }
+}
+
+export function formatDate(date, lang = "en") {
+  if (!date) return "";
+  const locale = DATE_LOCALES[lang] || DATE_LOCALES.en;
+  try {
+    return new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(new Date(date));
+  } catch {
+    return String(date);
+  }
+}
+
+/* ── dictionaries (flat keys) ─────────────────────────────── */
+const DICT = {
+  en: {
+    /* meta */
+    meta_title:       "CAMBRA — Infrastructure Cost Intelligence for Independent Brands",
+    meta_description: "CAMBRA benchmarks your payment fees, shipping costs and SaaS spend against 400+ European brands. Find where you overpay and recover margin automatically. Free analysis.",
+
+    /* navigation */
+    nav_dashboard:    "Dashboard",
+    nav_analyzer:     "Analyzer",
+    nav_results:      "Results",
+    nav_connect:      "Connect Tools",
+    nav_deals:        "Deals",
+    nav_reports:      "Reports",
+    nav_settings:     "Settings",
+    nav_signout:      "Sign out",
+    nav_how:          "How it works",
+    nav_pricing:      "Pricing",
+    nav_developers:   "Developers",
+    nav_get_started:  "Get started",
+
+    /* landing — hero */
+    badge:                "Infrastructure Cost Intelligence",
+    hero_headline:        "Your infrastructure is costing you more than it should.",
+    hero_sub:             "CAMBRA benchmarks your payment fees, shipping costs and SaaS spend against anonymized European brands — and shows you exactly where you're overpaying. Most brands recover €10,000–€40,000/yr.",
+    hero_cta_primary:     "Run free analysis →",
+    hero_cta_secondary:   "See how it works",
+    hero_footnote:        "No credit card. No commitment. You pay 25% of verified savings only.",
+
+    /* landing — problem */
+    problem_label:        "The hidden cost problem",
+    problem_headline:     "Independent brands overpay by 20–40% on infrastructure. Every month.",
+    problem_card1_title:  "Payments",
+    problem_card1_body:   "Most brands pay 2.2–2.8% in payment fees. The optimised rate for your volume is often 1.4–1.8%.",
+    problem_card1_stat:   "€8,400/yr lost on average",
+    problem_card2_title:  "Shipping",
+    problem_card2_body:   "Carriers charge 15–30% more to brands without collective negotiating power.",
+    problem_card2_stat:   "€4,200/yr lost on average",
+    problem_card3_title:  "SaaS & Tools",
+    problem_card3_body:   "The average independent brand pays for 3–4 overlapping or underused software tools.",
+    problem_card3_stat:   "€3,800/yr lost on average",
+
+    /* landing — how */
+    how_label:            "How it works",
+    step1_title:          "Enter your website",
+    step1_desc:           "We automatically detect your payment providers, shipping carriers, marketing tools and SaaS stack. No manual setup.",
+    step2_title:          "We benchmark your costs",
+    step2_desc:           "We compare your effective rates against anonymized data from European brands at the same revenue tier and geography.",
+    step3_title:          "You recover margin",
+    step3_desc:           "We show you the gap, the opportunity in euros per year, and how to close it. Most improvements are live within 5 business days.",
+
+    /* landing — benchmark */
+    benchmark_label:      "Backed by real data",
+    benchmark_headline:   "Built on anonymized data from European independent brands.",
+    benchmark_payments:   "Average 1.7% optimised payment rate for EU small brands",
+    benchmark_shipping:   "Average €4.80/pkg for brands shipping 500+ orders/mo",
+    benchmark_saas:       "Average 2.8% of revenue on software tools",
+    benchmark_footnote:   "All benchmarks are anonymized and aggregated. Individual company data is never exposed.",
+
+    /* landing — pricing/cta */
+    pricing_headline:     "Start for free. Pay only when you save.",
+    pricing_model:        "Success fee only",
+    pricing_line1:        "Free infrastructure analysis",
+    pricing_line2:        "Free benchmark report",
+    pricing_line3:        "Free recommendations",
+    pricing_line4:        "25% of verified monthly savings — nothing upfront",
+    pricing_cta:          "Get your free analysis →",
+    pricing_trust:        "Trusted by independent brands across France, Spain and the UK.",
+
+    /* footer */
+    footer_tagline:       "Infrastructure Intelligence for independent brands.",
+    footer_privacy:       "Privacy Policy",
+    footer_terms:         "Terms of Service",
+    footer_contact:       "Contact",
+    footer_legal:         "© 2025 CAMBRA. All rights reserved.",
+
+    /* analyzer — step 1 */
+    az_step1_title:       "Tell us about your brand",
+    az_step1_sub:         "We'll detect your infrastructure automatically — most brands are fully mapped in under 60 seconds.",
+    field_brand_name:     "Brand name",
+    field_website:        "Website URL",
+    field_country:        "Country",
+    field_revenue:        "Monthly revenue",
+    field_category:       "Category (optional)",
+    discovery_analyzing:  "Analysing {website}…",
+    discovery_found:      "Found {n} tools in {time}s",
+    revenue_under10k:     "Under €10k",
+    revenue_10_50k:       "€10k–€50k",
+    revenue_50_100k:      "€50k–€100k",
+    revenue_100_500k:     "€100k–€500k",
+    revenue_over500k:     "Over €500k",
+    resume_title:         "Welcome back.",
+    resume_sub:           "We found your previous session. Continue where you left off?",
+    resume_continue:      "Continue",
+    resume_fresh:         "Start fresh",
+
+    /* analyzer — step 2 */
+    az_step2_title:       "Here's what we found",
+    az_step2_sub:         "We detected these tools on your website and payment data. Confirm what's correct.",
+    detected_source_website: "Website",
+    detected_source_stripe:  "Stripe",
+    detected_source_saved:   "Saved",
+    detected_source_manual:  "Manual",
+    confidence_high:      "High confidence",
+    confidence_medium:    "Medium confidence",
+    confidence_low:       "Low confidence",
+    add_manually:         "Anything missing? Add manually →",
+    field_payment_provider: "Who processes your payments?",
+    field_payment_fee:    "What % do you pay in payment fees?",
+    field_shipments:      "How many orders do you ship per month?",
+    field_shipping_cost:  "Monthly shipping cost?",
+    field_saas_spend:     "How much do you spend on software tools monthly?",
+    confirm_cta:          "Confirm my stack →",
+
+    /* analyzer — step 3 */
+    az_step3_title:       "Upgrade to verified",
+    az_step3_sub:         "Connect Stripe to replace estimates with real payment data. Takes 30 seconds.",
+    az_step3_connect:     "Connect Stripe",
+    az_step3_skip:        "Continue with estimates — you can connect later",
+    az_step3_verified:    "Payments upgraded to verified ✓",
+
+    /* analyzer — progress */
+    progress_mapping:         "Mapping your infrastructure…",
+    progress_benchmarks:      "Loading benchmarks for {country} {tier}…",
+    progress_payments:        "Calculating payment savings…",
+    progress_shipping:        "Calculating shipping savings…",
+    progress_saas:            "Calculating SaaS savings…",
+    progress_recommendations: "Building your recommendations…",
+    progress_ready:           "Your report is ready ✓",
+
+    /* results */
+    analysis_label:               "Infrastructure Analysis",
+    hero_identified:              "/yr identified",
+    hero_see_how:                 "See how to recover this →",
+    hero_confidence_estimated:    "Estimated — connect Stripe to verify",
+    hero_confidence_verified:     "Verified — based on real Stripe data",
+    hero_confidence_mixed:        "Mixed — partially verified",
+    payments_title:               "Payments",
+    payments_your_rate:           "Your effective rate",
+    payments_benchmark:           "Network benchmark",
+    payments_reference:           "Reference rate",
+    payments_opportunity:         "/yr opportunity",
+    payments_cta:                 "Verify with Stripe →",
+    payments_verified:            "Verified with Stripe ✓",
+    shipping_title:               "Shipping",
+    shipping_your_cost:           "Your avg cost",
+    shipping_benchmark:           "Network benchmark",
+    shipping_per_shipment:        "/shipment",
+    shipping_opportunity:         "/yr opportunity",
+    shipping_cta:                 "Add shipping data",
+    saas_title:                   "SaaS & Tools",
+    saas_monthly:                 "Monthly spend",
+    saas_detected:                "{n} tools detected",
+    saas_opportunity:             "/yr opportunity",
+    saas_cta:                     "Review detected tools",
+    infrastructure_title:         "Your infrastructure",
+    infrastructure_sub:           "Tools detected across your stack",
+    infrastructure_empty:         "Connect your tools to map your infrastructure",
+    share:                        "Share this report",
+    connect_more:                 "Connect more tools to improve accuracy",
+    how_calculated:               "How we calculated this",
+    private_note:                 "Data is private and never shared",
+    benchmarked_against:          "Benchmarked against {n} anonymized brands in {country} at your revenue tier",
+    based_on:                     "Analysis based on {country} {tier} benchmarks",
+
+    /* dashboard */
+    state_a_title:        "Map your infrastructure in 3 minutes",
+    state_a_sub:          "Enter your website. We detect your payment providers, shipping carriers and SaaS tools automatically — then benchmark your costs against European brands at your revenue tier.",
+    state_a_cta:          "Start free analysis →",
+    state_b_badge:        "Estimated",
+    state_b_sub:          "Based on your inputs and {country} {tier} benchmarks. Connect Stripe to verify with real data.",
+    state_b_cta:          "Connect Stripe to verify →",
+    state_c_badge:        "Verified ✓",
+    state_c_sub:          "Based on your real Stripe data. Updated {date}.",
+    savings_to_date:      "Savings to date",
+    this_month:           "This month",
+    identified_potential: "Identified potential",
+    next_report:          "Next report: {date}",
+    your_infrastructure:  "Your infrastructure",
+    ai_insights:          "AI Insights",
+    recommendations_ready:"{n} recommendations ready",
+    review_approve:       "Review & Approve →",
+    last_scan:            "Last scan: {time}",
+    rescan:               "Re-scan now",
+    scanning:             "Scanning…",
+    no_trend_yet:         "Savings tracking will appear once your first monthly report is generated",
+
+    /* connect tools */
+    ct_page_title:        "Connect your infrastructure",
+    ct_page_sub:          "Every connection improves your benchmark accuracy and savings confidence.",
+    summary_detected:     "{n} tools detected",
+    summary_connected:    "{n} connected",
+    summary_available:    "{n} available",
+    found_in_stripe:      "Found in Stripe — €{amount}/mo",
+    detected_via:         "Detected via {source}",
+    connect_to_verify:    "Connect to verify →",
+    coming_soon:          "Coming soon",
+    last_sync:            "Last sync: {time}",
+    sync_now:             "Sync now",
+    stripe_section:       "Payments",
+
+    /* badges */
+    badge_verified:       "Verified",
+    badge_estimated:      "Estimated",
+    badge_mixed:          "Mixed",
+    badge_connected:      "Connected",
+    badge_detected:       "Detected",
+    badge_available:      "Available",
+    badge_coming_soon:    "Coming soon",
+    badge_high:           "High confidence",
+    badge_medium:         "Medium confidence",
+    badge_low:            "Low confidence",
+
+    /* categories */
+    cat_fashion:          "Fashion",
+    cat_beauty:           "Beauty",
+    cat_food:             "Food & Beverage",
+    cat_electronics:      "Electronics",
+    cat_home:             "Home & Living",
+    cat_sports:           "Sports & Outdoors",
+    cat_health:           "Health & Wellness",
+    cat_toys:             "Toys & Kids",
+    cat_pets:             "Pets",
+    cat_jewelry:          "Jewelry & Accessories",
+    cat_books:            "Books & Media",
+    cat_automotive:       "Automotive",
+    cat_b2b:              "B2B & Wholesale",
+    cat_other:            "Other",
+
+    /* validation errors */
+    error_revenue_required: "Monthly revenue is required.",
+    error_revenue_negative: "Monthly revenue cannot be negative.",
+    error_fee_range:        "Payment fee % must be between 0 and 15.",
+    error_invalid_number:   "Please enter a valid number.",
+    error_website_required: "Website URL is required.",
+    error_country_required: "Country is required.",
+    error_brand_required:   "Brand name is required.",
   },
-  footer: {
-    tagline: {
-      en: "Infrastructure leverage for independent brands",
-      fr: "Levier d'infrastructure pour les marques indépendantes",
-      es: "Apalancamiento de infraestructura para marcas independientes",
-      de: "Infrastruktur-Leverage für unabhängige Marken",
-      it: "Leva infrastrutturale per brand indipendenti",
-      nl: "Infrastructuurhefboom voor onafhankelijke merken",
-      pt: "Alavancagem de infraestrutura para marcas independentes",
-      pl: "Dźwignia infrastruktury dla niezależnych marek",
-      sv: "Infrastrukturhävstång för oberoende varumärken",
-      da: "Infrastrukturhåndtag for uafhængige brands",
-    },
-    headline: {
-      en: "Find your unfair advantage", fr: "Trouvez votre avantage décisif", es: "Encuentra tu ventaja injusta",
-      de: "Finde deinen unfairen Vorteil", it: "Trova il tuo vantaggio competitivo", nl: "Vind je oneerlijke voordeel",
-      pt: "Encontre sua vantagem competitiva", pl: "Znajdź swoją przewagę", sv: "Hitta din orättvisa fördel", da: "Find din uretfærdige fordel",
-    },
-    sub: {
-      en: "Stop overpaying for your infrastructure.", fr: "Arrêtez de payer trop cher votre infrastructure.",
-      es: "Deja de pagar de más por tu infraestructura.", de: "Hör auf, zu viel für deine Infrastruktur zu zahlen.",
-      it: "Smetti di pagare troppo per la tua infrastruttura.", nl: "Stop met te veel betalen voor je infrastructuur.",
-      pt: "Pare de pagar demais pela sua infraestrutura.", pl: "Przestań przepłacać za swoją infrastrukturę.",
-      sv: "Sluta betala för mycket för din infrastruktur.", da: "Stop med at betale for meget for din infrastruktur.",
-    },
-    ctaSavings: {
-      en: "Calculate your savings", fr: "Calculez vos économies", es: "Calcula tu ahorro",
-      de: "Berechne deine Einsparungen", it: "Calcola il tuo risparmio", nl: "Bereken je besparingen",
-      pt: "Calcule sua economia", pl: "Oblicz swoje oszczędności", sv: "Beräkna dina besparingar", da: "Beregn dine besparelser",
-    },
-    cta: {
-      en: "Run the analyzer", fr: "Lancer l'analyse", es: "Ejecutar el analizador",
-      de: "Analyse starten", it: "Avvia analisi", nl: "Start analyse",
-      pt: "Executar análise", pl: "Uruchom analizę", sv: "Starta analys", da: "Kør analyse",
-    },
-    desc: {
-      en: "Brands typically identify €29,000/year in optimization potential. Most improvements activate within minutes.",
-      fr: "Les marques identifient généralement 29 000 €/an de potentiel d'optimisation. La plupart des améliorations s'activent en quelques minutes.",
-      es: "Las marcas suelen identificar 29.000 €/año en potencial de optimización. La mayoría de las mejoras se activan en minutos.",
-      de: "Marken identifizieren typischerweise 29.000 €/Jahr an Optimierungspotenzial. Die meisten Verbesserungen werden in wenigen Minuten aktiviert.",
-      it: "I brand identificano tipicamente 29.000 €/anno di potenziale di ottimizzazione. La maggior parte dei miglioramenti si attiva in pochi minuti.",
-      nl: "Merken identificeren doorgaans €29.000/jaar aan optimalisatiepotentieel. De meeste verbeteringen activeren binnen minuten.",
-      pt: "As marcas identificam tipicamente 29.000 €/ano em potencial de otimização. A maioria das melhorias ativa em minutos.",
-      pl: "Marki zazwyczaj identyfikują 29 000 €/rok potencjału optymalizacji. Większość ulepszeń aktywuje się w ciągu kilku minut.",
-      sv: "Varumärken identifierar typiskt 29 000 €/år i optimeringspotential. De flesta förbättringar aktiveras inom minuter.",
-      da: "Brands identificerer typisk €29.000/år i optimeringspotentiale. De fleste forbedringer aktiveres inden for få minutter.",
-    },
-    privacy: {
-      en: "Privacy", fr: "Confidentialité", es: "Privacidad", de: "Datenschutz", it: "Privacy",
-      nl: "Privacy", pt: "Privacidade", pl: "Prywatność", sv: "Integritet", da: "Privatliv",
-    },
-    terms: {
-      en: "Terms", fr: "Conditions", es: "Términos", de: "Bedingungen", it: "Termini",
-      nl: "Voorwaarden", pt: "Termos", pl: "Warunki", sv: "Villkor", da: "Vilkår",
-    },
+
+  fr: {
+    meta_title:       "CAMBRA — Optimisation des Coûts d'Infrastructure pour Marques Indépendantes",
+    meta_description: "CAMBRA compare vos frais de paiement, coûts d'expédition et dépenses SaaS avec plus de 400 marques européennes. Identifiez où vous payez trop et récupérez vos marges. Analyse gratuite.",
+
+    nav_dashboard:    "Tableau de bord",
+    nav_analyzer:     "Analyseur",
+    nav_results:      "Résultats",
+    nav_connect:      "Connecter",
+    nav_deals:        "Deals",
+    nav_reports:      "Rapports",
+    nav_settings:     "Paramètres",
+    nav_signout:      "Se déconnecter",
+    nav_how:          "Comment ça marche",
+    nav_pricing:      "Tarifs",
+    nav_developers:   "Développeurs",
+    nav_get_started:  "Commencer",
+
+    badge:                "Intelligence des Coûts d'Infrastructure",
+    hero_headline:        "Votre infrastructure vous coûte bien plus qu'elle ne le devrait.",
+    hero_sub:             "CAMBRA compare vos frais de paiement, coûts d'expédition et dépenses SaaS avec des marques européennes anonymisées — et vous montre exactement où vous payez trop. La plupart des marques récupèrent entre 10 000 € et 40 000 €/an.",
+    hero_cta_primary:     "Analyser gratuitement →",
+    hero_cta_secondary:   "Voir comment ça marche",
+    hero_footnote:        "Sans carte bancaire. Sans engagement. Vous payez 25% des économies vérifiées uniquement.",
+
+    problem_label:        "Le problème des coûts cachés",
+    problem_headline:     "Les marques indépendantes paient 20 à 40 % de trop sur leur infrastructure. Chaque mois.",
+    problem_card1_title:  "Paiements",
+    problem_card1_body:   "La plupart des marques paient entre 2,2% et 2,8% de frais de paiement. Le taux optimisé pour votre volume est souvent entre 1,4% et 1,8%.",
+    problem_card1_stat:   "8 400 €/an perdus en moyenne",
+    problem_card2_title:  "Expédition",
+    problem_card2_body:   "Les transporteurs facturent 15 à 30 % de plus aux marques sans pouvoir de négociation collectif.",
+    problem_card2_stat:   "4 200 €/an perdus en moyenne",
+    problem_card3_title:  "SaaS & Outils",
+    problem_card3_body:   "La marque indépendante moyenne paye pour 3 à 4 outils logiciels redondants ou sous-utilisés.",
+    problem_card3_stat:   "3 800 €/an perdus en moyenne",
+
+    how_label:            "Comment ça marche",
+    step1_title:          "Entrez votre site web",
+    step1_desc:           "Nous détectons automatiquement vos prestataires de paiement, transporteurs, outils marketing et stack SaaS. Aucune configuration manuelle.",
+    step2_title:          "Nous comparons vos coûts",
+    step2_desc:           "Nous comparons vos taux effectifs avec des données anonymisées de marques européennes au même niveau de CA et dans la même zone géographique.",
+    step3_title:          "Vous récupérez vos marges",
+    step3_desc:           "Nous vous montrons l'écart, l'opportunité en euros par an, et comment la combler. La plupart des améliorations sont effectives en 5 jours ouvrés.",
+
+    benchmark_label:      "Basé sur des données réelles",
+    benchmark_headline:   "Construit sur des données anonymisées de marques indépendantes européennes.",
+    benchmark_payments:   "Taux de paiement optimisé moyen de 1,7% pour les petites marques européennes",
+    benchmark_shipping:   "Moyenne de 4,80€/colis pour les marques expédiant 500+ commandes/mois",
+    benchmark_saas:       "Moyenne de 2,8% du CA en outils logiciels",
+    benchmark_footnote:   "Tous les benchmarks sont anonymisés et agrégés. Les données individuelles ne sont jamais exposées.",
+
+    pricing_headline:     "Commencez gratuitement. Payez uniquement sur les économies réalisées.",
+    pricing_model:        "Honoraires au succès uniquement",
+    pricing_line1:        "Analyse d'infrastructure gratuite",
+    pricing_line2:        "Rapport de benchmark gratuit",
+    pricing_line3:        "Recommandations gratuites",
+    pricing_line4:        "25% des économies mensuelles vérifiées — rien en avance",
+    pricing_cta:          "Obtenir votre analyse gratuite →",
+    pricing_trust:        "Utilisé par des marques indépendantes en France, Espagne et au Royaume-Uni.",
+
+    footer_tagline:       "Intelligence d'infrastructure pour marques indépendantes.",
+    footer_privacy:       "Politique de confidentialité",
+    footer_terms:         "Conditions d'utilisation",
+    footer_contact:       "Contact",
+    footer_legal:         "© 2025 CAMBRA. Tous droits réservés.",
+
+    az_step1_title:       "Parlez-nous de votre marque",
+    az_step1_sub:         "Nous détecterons automatiquement votre infrastructure — la plupart des marques sont entièrement cartographiées en moins de 60 secondes.",
+    field_brand_name:     "Nom de la marque",
+    field_website:        "Site web",
+    field_country:        "Pays",
+    field_revenue:        "Chiffre d'affaires mensuel",
+    field_category:       "Catégorie (optionnel)",
+    discovery_analyzing:  "Analyse de {website}…",
+    discovery_found:      "{n} outils trouvés en {time}s",
+    revenue_under10k:     "Moins de 10k€",
+    revenue_10_50k:       "10k€–50k€",
+    revenue_50_100k:      "50k€–100k€",
+    revenue_100_500k:     "100k€–500k€",
+    revenue_over500k:     "Plus de 500k€",
+    resume_title:         "Bon retour.",
+    resume_sub:           "Nous avons retrouvé votre session précédente. Continuer où vous en étiez ?",
+    resume_continue:      "Continuer",
+    resume_fresh:         "Recommencer",
+
+    az_step2_title:       "Voici ce que nous avons trouvé",
+    az_step2_sub:         "Nous avons détecté ces outils sur votre site web et vos données de paiement. Confirmez ce qui est correct.",
+    detected_source_website: "Site web",
+    detected_source_stripe:  "Stripe",
+    detected_source_saved:   "Sauvegardé",
+    detected_source_manual:  "Manuel",
+    confidence_high:      "Haute confiance",
+    confidence_medium:    "Confiance moyenne",
+    confidence_low:       "Faible confiance",
+    add_manually:         "Il manque quelque chose ? Ajouter manuellement →",
+    field_payment_provider: "Qui traite vos paiements ?",
+    field_payment_fee:    "Quel % payez-vous en frais de paiement ?",
+    field_shipments:      "Combien de commandes expédiez-vous par mois ?",
+    field_shipping_cost:  "Coût d'expédition mensuel ?",
+    field_saas_spend:     "Combien dépensez-vous en outils logiciels par mois ?",
+    confirm_cta:          "Confirmer mon stack →",
+
+    az_step3_title:       "Passez en données vérifiées",
+    az_step3_sub:         "Connectez Stripe pour remplacer les estimations par de vraies données de paiement. 30 secondes.",
+    az_step3_connect:     "Connecter Stripe",
+    az_step3_skip:        "Continuer avec les estimations — vous pouvez connecter plus tard",
+    az_step3_verified:    "Paiements mis à jour en vérifié ✓",
+
+    progress_mapping:         "Cartographie de votre infrastructure…",
+    progress_benchmarks:      "Chargement des benchmarks pour {country} {tier}…",
+    progress_payments:        "Calcul des économies sur les paiements…",
+    progress_shipping:        "Calcul des économies sur l'expédition…",
+    progress_saas:            "Calcul des économies sur les outils SaaS…",
+    progress_recommendations: "Construction de vos recommandations…",
+    progress_ready:           "Votre rapport est prêt ✓",
+
+    analysis_label:               "Analyse d'infrastructure",
+    hero_identified:              "/an identifié",
+    hero_see_how:                 "Voir comment récupérer cela →",
+    hero_confidence_estimated:    "Estimé — connectez Stripe pour vérifier",
+    hero_confidence_verified:     "Vérifié — basé sur vos vraies données Stripe",
+    hero_confidence_mixed:        "Mixte — partiellement vérifié",
+    payments_title:               "Paiements",
+    payments_your_rate:           "Votre taux effectif",
+    payments_benchmark:           "Benchmark réseau",
+    payments_reference:           "Taux de référence",
+    payments_opportunity:         "/an d'opportunité",
+    payments_cta:                 "Vérifier avec Stripe →",
+    payments_verified:            "Vérifié avec Stripe ✓",
+    shipping_title:               "Expédition",
+    shipping_your_cost:           "Votre coût moyen",
+    shipping_benchmark:           "Benchmark réseau",
+    shipping_per_shipment:        "/envoi",
+    shipping_opportunity:         "/an d'opportunité",
+    shipping_cta:                 "Ajouter des données d'expédition",
+    saas_title:                   "SaaS & Outils",
+    saas_monthly:                 "Dépenses mensuelles",
+    saas_detected:                "{n} outils détectés",
+    saas_opportunity:             "/an d'opportunité",
+    saas_cta:                     "Examiner les outils détectés",
+    infrastructure_title:         "Votre infrastructure",
+    infrastructure_sub:           "Outils détectés dans votre stack",
+    infrastructure_empty:         "Connectez vos outils pour cartographier votre infrastructure",
+    share:                        "Partager ce rapport",
+    connect_more:                 "Connecter plus d'outils pour améliorer la précision",
+    how_calculated:               "Comment nous avons calculé cela",
+    private_note:                 "Vos données sont privées et ne sont jamais partagées",
+    benchmarked_against:          "Comparé à {n} marques anonymisées en {country} à votre niveau de CA",
+    based_on:                     "Analyse basée sur les benchmarks {country} {tier}",
+
+    state_a_title:        "Cartographiez votre infrastructure en 3 minutes",
+    state_a_sub:          "Entrez votre site web. Nous détectons automatiquement vos prestataires de paiement, transporteurs et outils SaaS — puis comparons vos coûts avec des marques européennes à votre niveau de CA.",
+    state_a_cta:          "Lancer l'analyse gratuite →",
+    state_b_badge:        "Estimé",
+    state_b_sub:          "Basé sur vos données et les benchmarks {country} {tier}. Connectez Stripe pour vérifier avec de vraies données.",
+    state_b_cta:          "Connecter Stripe pour vérifier →",
+    state_c_badge:        "Vérifié ✓",
+    state_c_sub:          "Basé sur vos vraies données Stripe. Mis à jour le {date}.",
+    savings_to_date:      "Économies à ce jour",
+    this_month:           "Ce mois",
+    identified_potential: "Potentiel identifié",
+    next_report:          "Prochain rapport : {date}",
+    your_infrastructure:  "Votre infrastructure",
+    ai_insights:          "Insights IA",
+    recommendations_ready:"{n} recommandations prêtes",
+    review_approve:       "Examiner et approuver →",
+    last_scan:            "Dernier scan : {time}",
+    rescan:               "Rescanner maintenant",
+    scanning:             "Scan en cours…",
+    no_trend_yet:         "Le suivi des économies apparaîtra dès que votre premier rapport mensuel sera généré",
+
+    ct_page_title:        "Connectez votre infrastructure",
+    ct_page_sub:          "Chaque connexion améliore la précision de votre benchmark et la confiance dans vos économies.",
+    summary_detected:     "{n} outils détectés",
+    summary_connected:    "{n} connecté(s)",
+    summary_available:    "{n} disponible(s)",
+    found_in_stripe:      "Trouvé dans Stripe — {amount} €/mois",
+    detected_via:         "Détecté via {source}",
+    connect_to_verify:    "Connecter pour vérifier →",
+    coming_soon:          "Bientôt disponible",
+    last_sync:            "Dernière sync : {time}",
+    sync_now:             "Synchroniser",
+    stripe_section:       "Paiements",
+
+    badge_verified:       "Vérifié",
+    badge_estimated:      "Estimé",
+    badge_mixed:          "Mixte",
+    badge_connected:      "Connecté",
+    badge_detected:       "Détecté",
+    badge_available:      "Disponible",
+    badge_coming_soon:    "Bientôt",
+    badge_high:           "Haute confiance",
+    badge_medium:         "Confiance moyenne",
+    badge_low:            "Faible confiance",
+
+    cat_fashion:          "Mode",
+    cat_beauty:           "Beauté",
+    cat_food:             "Alimentation & Boissons",
+    cat_electronics:      "Électronique",
+    cat_home:             "Maison & Déco",
+    cat_sports:           "Sport & Plein air",
+    cat_health:           "Santé & Bien-être",
+    cat_toys:             "Jouets & Enfants",
+    cat_pets:             "Animaux",
+    cat_jewelry:          "Bijoux & Accessoires",
+    cat_books:            "Livres & Médias",
+    cat_automotive:       "Automobile",
+    cat_b2b:              "B2B & Gros",
+    cat_other:            "Autre",
+
+    error_revenue_required: "Le chiffre d'affaires mensuel est requis.",
+    error_revenue_negative: "Le chiffre d'affaires mensuel ne peut pas être négatif.",
+    error_fee_range:        "Les frais de paiement doivent être compris entre 0 et 15%.",
+    error_invalid_number:   "Veuillez saisir un nombre valide.",
+    error_website_required: "L'URL du site web est requise.",
+    error_country_required: "Le pays est requis.",
+    error_brand_required:   "Le nom de la marque est requis.",
   },
-  analyzerCTA: {
-    label: {
-      en: "Infrastructure Analyzer", fr: "Analyseur d'infrastructure", es: "Analizador de infraestructura",
-      de: "Infrastruktur-Analyzer", it: "Analizzatore infrastruttura", nl: "Infrastructuur Analyzer",
-      pt: "Analisador de infraestrutura", pl: "Analizator infrastruktury", sv: "Infrastrukturanalysator", da: "Infrastrukturanalysator",
-    },
-    headline: {
-      en: "Identify exactly where\nvalue is left unoptimized.", fr: "Identifiez exactement où\nla valeur reste inexploitée.",
-      es: "Identifica exactamente dónde\nqueda valor sin optimizar.", de: "Erkenne genau, wo\nPotenzial ungenutzt bleibt.",
-      it: "Individua esattamente dove\nrimane valore non ottimizzato.", nl: "Identificeer precies waar\nwaarde onbenut blijft.",
-      pt: "Identifique exatamente onde\no valor fica por otimizar.", pl: "Zidentyfikuj dokładnie, gdzie\npozostaje nieoptymalizowana wartość.",
-      sv: "Identifiera exakt var\nvärde lämnas ooptimerat.", da: "Identificér præcis hvor\nværdi efterlades uoptimeret.",
-    },
-    desc: {
-      en: "Benchmark your payments, shipping, and SaaS stack against real network rates. See your optimization potential in 2 minutes.",
-      fr: "Comparez vos paiements, votre logistique et votre stack SaaS avec les tarifs réels du réseau. Voyez votre potentiel d'optimisation en 2 minutes.",
-      es: "Compara tus pagos, envíos y stack SaaS con las tarifas reales de la red. Ve tu potencial de optimización en 2 minutos.",
-      de: "Vergleiche deine Zahlungen, Versand und deinen SaaS-Stack mit echten Netzwerkraten. Sieh dein Optimierungspotenzial in 2 Minuten.",
-      it: "Confronta i tuoi pagamenti, la spedizione e il tuo stack SaaS con le tariffe reali della rete. Visualizza il tuo potenziale di ottimizzazione in 2 minuti.",
-      nl: "Vergelijk je betalingen, verzending en SaaS-stack met echte netwerktarieven. Zie je optimalisatiepotentieel in 2 minuten.",
-      pt: "Compare os seus pagamentos, envios e stack SaaS com tarifas reais da rede. Veja o seu potencial de otimização em 2 minutos.",
-      pl: "Porównaj swoje płatności, wysyłkę i stack SaaS z rzeczywistymi stawkami sieci. Zobacz swój potencjał optymalizacji w 2 minuty.",
-      sv: "Jämför dina betalningar, frakt och SaaS-stack mot verkliga nätverkspriser. Se din optimeringspotential på 2 minuter.",
-      da: "Sammenlign dine betalinger, forsendelse og SaaS-stack med reelle netværkspriser. Se dit optimeringspotentiale på 2 minutter.",
-    },
-    cta: {
-      en: "Run the Analyzer", fr: "Lancer l'Analyseur", es: "Ejecutar el Analizador",
-      de: "Analyzer starten", it: "Avvia l'Analizzatore", nl: "Start de Analyzer",
-      pt: "Executar o Analisador", pl: "Uruchom Analizator", sv: "Starta Analysatorn", da: "Kør Analysatoren",
-    },
-    microcopy: {
-      en: "2 minutes · Real benchmarks · No commitment", fr: "2 minutes · Benchmarks réels · Sans engagement",
-      es: "2 minutos · Benchmarks reales · Sin compromiso", de: "2 Minuten · Echte Benchmarks · Keine Verpflichtung",
-      it: "2 minuti · Benchmark reali · Nessun impegno", nl: "2 minuten · Echte benchmarks · Geen verplichting",
-      pt: "2 minutos · Benchmarks reais · Sem compromisso", pl: "2 minuty · Rzeczywiste benchmarki · Bez zobowiązań",
-      sv: "2 minuter · Riktiga benchmarks · Inget åtagande", da: "2 minutter · Reelle benchmarks · Ingen forpligtelse",
-    },
-    sample: {
-      en: "Sample analysis — €500K brand", fr: "Analyse exemple — marque à 500K€", es: "Análisis de muestra — marca de 500K€",
-      de: "Beispielanalyse — 500K€-Marke", it: "Analisi campione — brand da 500K€", nl: "Voorbeeldanalyse — €500K-merk",
-      pt: "Análise exemplo — marca de 500K€", pl: "Przykładowa analiza — marka 500K€", sv: "Exempelanalys — 500K€-varumärke", da: "Eksempelanalyse — 500K€-brand",
-    },
-    savingsPerYear: {
-      en: "Savings/yr", fr: "Économies/an", es: "Ahorro/año", de: "Einsparung/Jahr", it: "Risparmio/anno",
-      nl: "Besparing/jaar", pt: "Poupança/ano", pl: "Oszczędności/rok", sv: "Besparing/år", da: "Besparelse/år",
-    },
-    totalOptimization: {
-      en: "Optimization potential / year", fr: "Potentiel d'optimisation / an", es: "Potencial de optimización / año",
-      de: "Optimierungspotenzial / Jahr", it: "Potenziale di ottimizzazione / anno", nl: "Optimalisatiepotentieel / jaar",
-      pt: "Potencial de otimização / ano", pl: "Potencjał optymalizacji / rok", sv: "Optimeringspotential / år", da: "Optimeringspotentiale / år",
-    },
-    calcSavings: {
-      en: "Calculate my savings", fr: "Calculer mes économies", es: "Calcular mi ahorro",
-      de: "Meine Einsparungen berechnen", it: "Calcola il mio risparmio", nl: "Bereken mijn besparingen",
-      pt: "Calcular a minha economia", pl: "Oblicz moje oszczędności", sv: "Beräkna mina besparingar", da: "Beregn mine besparelser",
-    },
+
+  es: {
+    meta_title:       "CAMBRA — Inteligencia de Costes de Infraestructura para Marcas Independientes",
+    meta_description: "CAMBRA compara tus comisiones de pago, costes de envío y gasto en SaaS con más de 400 marcas europeas. Descubre dónde pagas de más y recupera tu margen automáticamente. Análisis gratuito.",
+
+    nav_dashboard:    "Panel",
+    nav_analyzer:     "Analizador",
+    nav_results:      "Resultados",
+    nav_connect:      "Conectar",
+    nav_deals:        "Deals",
+    nav_reports:      "Informes",
+    nav_settings:     "Ajustes",
+    nav_signout:      "Cerrar sesión",
+    nav_how:          "Cómo funciona",
+    nav_pricing:      "Precios",
+    nav_developers:   "Desarrolladores",
+    nav_get_started:  "Empezar",
+
+    badge:                "Inteligencia de Costes de Infraestructura",
+    hero_headline:        "Tu infraestructura te está costando más de lo que debería.",
+    hero_sub:             "CAMBRA compara tus comisiones de pago, costes de envío y gasto en SaaS con marcas europeas anonimizadas — y te muestra exactamente dónde estás pagando de más. La mayoría de marcas recupera entre 10.000 € y 40.000 €/año.",
+    hero_cta_primary:     "Analizar gratis →",
+    hero_cta_secondary:   "Ver cómo funciona",
+    hero_footnote:        "Sin tarjeta de crédito. Sin compromiso. Solo pagas el 25% de los ahorros verificados.",
+
+    problem_label:        "El problema de los costes ocultos",
+    problem_headline:     "Las marcas independientes pagan entre un 20% y un 40% de más en infraestructura. Cada mes.",
+    problem_card1_title:  "Pagos",
+    problem_card1_body:   "La mayoría de marcas paga entre el 2,2% y el 2,8% en comisiones de pago. La tarifa optimizada para tu volumen suele estar entre el 1,4% y el 1,8%.",
+    problem_card1_stat:   "8.400 €/año perdidos de media",
+    problem_card2_title:  "Envíos",
+    problem_card2_body:   "Los transportistas cobran entre un 15% y un 30% más a las marcas sin poder de negociación colectivo.",
+    problem_card2_stat:   "4.200 €/año perdidos de media",
+    problem_card3_title:  "SaaS y Herramientas",
+    problem_card3_body:   "La marca independiente media paga por 3 o 4 herramientas de software redundantes o infrautilizadas.",
+    problem_card3_stat:   "3.800 €/año perdidos de media",
+
+    how_label:            "Cómo funciona",
+    step1_title:          "Introduce tu web",
+    step1_desc:           "Detectamos automáticamente tus proveedores de pago, transportistas, herramientas de marketing y stack SaaS. Sin configuración manual.",
+    step2_title:          "Comparamos tus costes",
+    step2_desc:           "Comparamos tus tarifas efectivas con datos anonimizados de marcas europeas en el mismo nivel de facturación y geografía.",
+    step3_title:          "Recuperas tu margen",
+    step3_desc:           "Te mostramos la diferencia, la oportunidad en euros al año, y cómo cerrarla. La mayoría de mejoras están activas en 5 días laborables.",
+
+    benchmark_label:      "Basado en datos reales",
+    benchmark_headline:   "Construido sobre datos anonimizados de marcas independientes europeas.",
+    benchmark_payments:   "Tasa de pago optimizada media del 1,7% para pequeñas marcas europeas",
+    benchmark_shipping:   "Media de 4,80€/paquete para marcas con 500+ envíos/mes",
+    benchmark_saas:       "Media del 2,8% de la facturación en herramientas de software",
+    benchmark_footnote:   "Todos los benchmarks son anonimizados y agregados. Los datos individuales nunca se exponen.",
+
+    pricing_headline:     "Empieza gratis. Paga solo cuando ahorres.",
+    pricing_model:        "Solo honorarios de éxito",
+    pricing_line1:        "Análisis de infraestructura gratuito",
+    pricing_line2:        "Informe de benchmark gratuito",
+    pricing_line3:        "Recomendaciones gratuitas",
+    pricing_line4:        "25% de los ahorros mensuales verificados — nada por adelantado",
+    pricing_cta:          "Obtener tu análisis gratuito →",
+    pricing_trust:        "Utilizado por marcas independientes en Francia, España y el Reino Unido.",
+
+    footer_tagline:       "Inteligencia de infraestructura para marcas independientes.",
+    footer_privacy:       "Política de privacidad",
+    footer_terms:         "Términos de servicio",
+    footer_contact:       "Contacto",
+    footer_legal:         "© 2025 CAMBRA. Todos los derechos reservados.",
+
+    az_step1_title:       "Cuéntanos sobre tu marca",
+    az_step1_sub:         "Detectaremos tu infraestructura automáticamente — la mayoría de marcas quedan mapeadas en menos de 60 segundos.",
+    field_brand_name:     "Nombre de la marca",
+    field_website:        "URL del sitio web",
+    field_country:        "País",
+    field_revenue:        "Facturación mensual",
+    field_category:       "Categoría (opcional)",
+    discovery_analyzing:  "Analizando {website}…",
+    discovery_found:      "{n} herramientas encontradas en {time}s",
+    revenue_under10k:     "Menos de 10k€",
+    revenue_10_50k:       "10k€–50k€",
+    revenue_50_100k:      "50k€–100k€",
+    revenue_100_500k:     "100k€–500k€",
+    revenue_over500k:     "Más de 500k€",
+    resume_title:         "Bienvenido de nuevo.",
+    resume_sub:           "Encontramos tu sesión anterior. ¿Continuar donde lo dejaste?",
+    resume_continue:      "Continuar",
+    resume_fresh:         "Empezar de nuevo",
+
+    az_step2_title:       "Esto es lo que encontramos",
+    az_step2_sub:         "Detectamos estas herramientas en tu web y datos de pago. Confirma lo que es correcto.",
+    detected_source_website: "Web",
+    detected_source_stripe:  "Stripe",
+    detected_source_saved:   "Guardado",
+    detected_source_manual:  "Manual",
+    confidence_high:      "Alta confianza",
+    confidence_medium:    "Confianza media",
+    confidence_low:       "Baja confianza",
+    add_manually:         "¿Falta algo? Añadir manualmente →",
+    field_payment_provider: "¿Quién procesa tus pagos?",
+    field_payment_fee:    "¿Qué % pagas en comisiones de pago?",
+    field_shipments:      "¿Cuántos pedidos envías al mes?",
+    field_shipping_cost:  "¿Coste de envío mensual?",
+    field_saas_spend:     "¿Cuánto gastas en herramientas de software al mes?",
+    confirm_cta:          "Confirmar mi stack →",
+
+    az_step3_title:       "Pasa a datos verificados",
+    az_step3_sub:         "Conecta Stripe para sustituir las estimaciones por datos reales de pago. 30 segundos.",
+    az_step3_connect:     "Conectar Stripe",
+    az_step3_skip:        "Continuar con estimaciones — puedes conectar más tarde",
+    az_step3_verified:    "Pagos actualizados a verificado ✓",
+
+    progress_mapping:         "Mapeando tu infraestructura…",
+    progress_benchmarks:      "Cargando benchmarks para {country} {tier}…",
+    progress_payments:        "Calculando ahorros en pagos…",
+    progress_shipping:        "Calculando ahorros en envíos…",
+    progress_saas:            "Calculando ahorros en SaaS…",
+    progress_recommendations: "Construyendo tus recomendaciones…",
+    progress_ready:           "Tu informe está listo ✓",
+
+    analysis_label:               "Análisis de infraestructura",
+    hero_identified:              "/año identificado",
+    hero_see_how:                 "Ver cómo recuperar esto →",
+    hero_confidence_estimated:    "Estimado — conecta Stripe para verificar",
+    hero_confidence_verified:     "Verificado — basado en tus datos reales de Stripe",
+    hero_confidence_mixed:        "Mixto — parcialmente verificado",
+    payments_title:               "Pagos",
+    payments_your_rate:           "Tu tasa efectiva",
+    payments_benchmark:           "Benchmark de red",
+    payments_reference:           "Tasa de referencia",
+    payments_opportunity:         "/año de oportunidad",
+    payments_cta:                 "Verificar con Stripe →",
+    payments_verified:            "Verificado con Stripe ✓",
+    shipping_title:               "Envíos",
+    shipping_your_cost:           "Tu coste medio",
+    shipping_benchmark:           "Benchmark de red",
+    shipping_per_shipment:        "/envío",
+    shipping_opportunity:         "/año de oportunidad",
+    shipping_cta:                 "Añadir datos de envío",
+    saas_title:                   "SaaS y Herramientas",
+    saas_monthly:                 "Gasto mensual",
+    saas_detected:                "{n} herramientas detectadas",
+    saas_opportunity:             "/año de oportunidad",
+    saas_cta:                     "Revisar herramientas detectadas",
+    infrastructure_title:         "Tu infraestructura",
+    infrastructure_sub:           "Herramientas detectadas en tu stack",
+    infrastructure_empty:         "Conecta tus herramientas para mapear tu infraestructura",
+    share:                        "Compartir este informe",
+    connect_more:                 "Conectar más herramientas para mejorar la precisión",
+    how_calculated:               "Cómo lo hemos calculado",
+    private_note:                 "Tus datos son privados y nunca se comparten",
+    benchmarked_against:          "Comparado con {n} marcas anonimizadas en {country} en tu nivel de facturación",
+    based_on:                     "Análisis basado en benchmarks {country} {tier}",
+
+    state_a_title:        "Mapea tu infraestructura en 3 minutos",
+    state_a_sub:          "Introduce tu web. Detectamos automáticamente tus proveedores de pago, transportistas y herramientas SaaS — y comparamos tus costes con marcas europeas en tu nivel de facturación.",
+    state_a_cta:          "Iniciar análisis gratuito →",
+    state_b_badge:        "Estimado",
+    state_b_sub:          "Basado en tus datos y benchmarks {country} {tier}. Conecta Stripe para verificar con datos reales.",
+    state_b_cta:          "Conectar Stripe para verificar →",
+    state_c_badge:        "Verificado ✓",
+    state_c_sub:          "Basado en tus datos reales de Stripe. Actualizado el {date}.",
+    savings_to_date:      "Ahorros hasta la fecha",
+    this_month:           "Este mes",
+    identified_potential: "Potencial identificado",
+    next_report:          "Próximo informe: {date}",
+    your_infrastructure:  "Tu infraestructura",
+    ai_insights:          "Insights de IA",
+    recommendations_ready:"{n} recomendaciones listas",
+    review_approve:       "Revisar y aprobar →",
+    last_scan:            "Último análisis: {time}",
+    rescan:               "Volver a analizar",
+    scanning:             "Analizando…",
+    no_trend_yet:         "El seguimiento de ahorros aparecerá cuando se genere tu primer informe mensual",
+
+    ct_page_title:        "Conecta tu infraestructura",
+    ct_page_sub:          "Cada conexión mejora la precisión de tu benchmark y la confianza en tus ahorros.",
+    summary_detected:     "{n} herramientas detectadas",
+    summary_connected:    "{n} conectada(s)",
+    summary_available:    "{n} disponible(s)",
+    found_in_stripe:      "Encontrado en Stripe — {amount} €/mes",
+    detected_via:         "Detectado via {source}",
+    connect_to_verify:    "Conectar para verificar →",
+    coming_soon:          "Próximamente",
+    last_sync:            "Última sync: {time}",
+    sync_now:             "Sincronizar",
+    stripe_section:       "Pagos",
+
+    badge_verified:       "Verificado",
+    badge_estimated:      "Estimado",
+    badge_mixed:          "Mixto",
+    badge_connected:      "Conectado",
+    badge_detected:       "Detectado",
+    badge_available:      "Disponible",
+    badge_coming_soon:    "Próximamente",
+    badge_high:           "Alta confianza",
+    badge_medium:         "Confianza media",
+    badge_low:            "Baja confianza",
+
+    cat_fashion:          "Moda",
+    cat_beauty:           "Belleza",
+    cat_food:             "Alimentación & Bebidas",
+    cat_electronics:      "Electrónica",
+    cat_home:             "Hogar & Deco",
+    cat_sports:           "Deporte & Aventura",
+    cat_health:           "Salud & Bienestar",
+    cat_toys:             "Juguetes & Niños",
+    cat_pets:             "Mascotas",
+    cat_jewelry:          "Joyería & Accesorios",
+    cat_books:            "Libros & Medios",
+    cat_automotive:       "Automoción",
+    cat_b2b:              "B2B & Mayorista",
+    cat_other:            "Otro",
+
+    error_revenue_required: "La facturación mensual es obligatoria.",
+    error_revenue_negative: "La facturación mensual no puede ser negativa.",
+    error_fee_range:        "El % de comisión de pago debe estar entre 0 y 15.",
+    error_invalid_number:   "Por favor introduce un número válido.",
+    error_website_required: "La URL del sitio web es obligatoria.",
+    error_country_required: "El país es obligatorio.",
+    error_brand_required:   "El nombre de la marca es obligatorio.",
   },
 };
 
-const LanguageContext = createContext({ lang: "en", setLang: () => {} });
+/* ── Legacy nested-object translations (kept for older landing components) ── */
+export const translations = {
+  /* legacy passthrough — older components import { translations, t } from i18n
+     and call t(translations.xxx, lang). Empty object short-circuits via fallback. */
+};
+
+/* ── interpolation ────────────────────────────────────────── */
+function interpolate(str, params) {
+  if (!params || typeof str !== "string") return str;
+  return str.replace(/\{(\w+)\}/g, (_, k) => (params[k] !== undefined ? String(params[k]) : `{${k}}`));
+}
+
+/* ── Context ──────────────────────────────────────────────── */
+const LanguageContext = createContext({
+  lang: "en",
+  setLang: () => {},
+  t: (k) => k,
+  formatCurrency: (n) => formatCurrency(n, "en"),
+  formatDate: (d) => formatDate(d, "en"),
+});
+
+function readStoredLang() {
+  try {
+    const v = localStorage.getItem(STORAGE_KEY);
+    if (v && DICT[v]) return v;
+    for (const legacy of LEGACY_KEYS) {
+      const lv = localStorage.getItem(legacy);
+      if (lv && DICT[lv]) return lv;
+    }
+  } catch {}
+  return "en";
+}
+
+function updateMetaTags(lang) {
+  try {
+    const dict = DICT[lang] || DICT.en;
+    if (dict.meta_title) document.title = dict.meta_title;
+    let m = document.querySelector('meta[name="description"]');
+    if (!m) {
+      m = document.createElement("meta");
+      m.setAttribute("name", "description");
+      document.head.appendChild(m);
+    }
+    if (dict.meta_description) m.setAttribute("content", dict.meta_description);
+    document.documentElement.lang = lang;
+  } catch {}
+}
 
 export function LanguageProvider({ children }) {
-  const [lang] = useState('en');
+  const [lang, setLangState] = useState(() => readStoredLang());
 
-  useEffect(() => {
-    try {
-      localStorage.setItem("node_lang", "en");
-      document.documentElement.lang = "en";
-    } catch {}
+  const setLang = useCallback((next) => {
+    if (!DICT[next]) return;
+    setLangState(next);
+    try { localStorage.setItem(STORAGE_KEY, next); } catch {}
+    updateMetaTags(next);
   }, []);
 
-  return (
-    <LanguageContext.Provider value={{ lang, setLang: () => {} }}>
-      {children}
-    </LanguageContext.Provider>
-  );
+  useEffect(() => {
+    updateMetaTags(lang);
+  }, [lang]);
+
+  /* dual-mode t():
+     - t("key", { params })                  → flat lookup with interpolation
+     - t(obj, "en")                          → legacy nested-object lookup */
+  const t = useCallback((keyOrObj, paramsOrLang) => {
+    if (keyOrObj && typeof keyOrObj === "object") {
+      const requested = (typeof paramsOrLang === "string" && DICT[paramsOrLang]) ? paramsOrLang : lang;
+      return keyOrObj?.[requested] ?? keyOrObj?.en ?? "";
+    }
+    const key = String(keyOrObj);
+    const dict = DICT[lang] || DICT.en;
+    const raw = dict[key] ?? DICT.en[key] ?? key;
+    return interpolate(raw, typeof paramsOrLang === "object" ? paramsOrLang : null);
+  }, [lang]);
+
+  const value = useMemo(() => ({
+    lang,
+    setLang,
+    t,
+    formatCurrency: (n) => formatCurrency(n, lang),
+    formatDate:     (d) => formatDate(d, lang),
+  }), [lang, setLang, t]);
+
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }
 
-export function useLanguage() {
-  return useContext(LanguageContext);
-}
+export function useLanguage()    { return useContext(LanguageContext); }
+export function useTranslation() { return useContext(LanguageContext); }
 
-export function t(obj, lang) {
-  return obj?.[lang] ?? obj?.["en"] ?? "";
+/* Standalone t() for non-React callers (rare): falls back to English only. */
+export function t(keyOrObj, paramsOrLang) {
+  if (keyOrObj && typeof keyOrObj === "object") {
+    const requested = (typeof paramsOrLang === "string" && DICT[paramsOrLang]) ? paramsOrLang : "en";
+    return keyOrObj?.[requested] ?? keyOrObj?.en ?? "";
+  }
+  const key  = String(keyOrObj);
+  const raw  = DICT.en[key] ?? key;
+  return interpolate(raw, typeof paramsOrLang === "object" ? paramsOrLang : null);
 }

@@ -3,10 +3,12 @@ import { ArrowRight, Sparkles, TrendingUp, Activity } from "lucide-react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useRef } from "react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 const MARQUEE_TEXT = "CAMBRA · CAMBRA · CAMBRA · CAMBRA · ";
 
 export default function FooterSection() {
+  const { t } = useTranslation();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
@@ -242,14 +244,14 @@ export default function FooterSection() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-5">
             <BrandLogoWordmark className="h-4" />
-            <span className="text-xs text-muted-foreground/35 font-mono">The operating system for margin</span>
+            <span className="text-xs text-muted-foreground/35 font-mono">{t("footer_tagline")}</span>
           </div>
           <div className="flex items-center gap-5 text-xs text-muted-foreground/40">
             <span>© {new Date().getFullYear()} CAMBRA</span>
-            <Link to="/Privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link to="/Terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link to="/Privacy" className="hover:text-foreground transition-colors">{t("footer_privacy")}</Link>
+            <Link to="/Terms" className="hover:text-foreground transition-colors">{t("footer_terms")}</Link>
             <Link to="/Cookies" className="hover:text-foreground transition-colors">Cookies</Link>
-            <Link to="/Contact" className="hover:text-foreground transition-colors">Contact</Link>
+            <Link to="/Contact" className="hover:text-foreground transition-colors">{t("footer_contact")}</Link>
           </div>
         </div>
       </footer>

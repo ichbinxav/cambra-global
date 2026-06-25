@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import BrandGlyph from "@/components/shared/BrandGlyph";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * AnalysisProgress — full-screen animated progress shown after Step 3.
@@ -8,27 +9,26 @@ import BrandGlyph from "@/components/shared/BrandGlyph";
  */
 const STEP_DELAY_MS = 600;
 
-export default function AnalysisProgress({ country = "your region", tier = "your tier", done = false }) {
+export default function AnalysisProgress({ country = "", tier = "", done = false }) {
+  const { t } = useTranslation();
+  const safeCountry = country || t("nav_country") || "—";
   const steps = [
-    "Mapping your infrastructure…",
-    `Loading benchmarks for ${country} ${tier}…`,
-    "Calculating payment savings…",
-    "Calculating shipping savings…",
-    "Calculating SaaS savings…",
-    "Building your recommendations…",
-    "Your report is ready ✓",
+    t("progress_mapping"),
+    t("progress_benchmarks", { country: country || "—", tier: tier || "—" }),
+    t("progress_payments"),
+    t("progress_shipping"),
+    t("progress_saas"),
+    t("progress_recommendations"),
+    t("progress_ready"),
   ];
 
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    if (done) {
-      setCurrent(steps.length);
-      return;
-    }
+    if (done) { setCurrent(steps.length); return; }
     if (current >= steps.length - 1) return;
-    const t = setTimeout(() => setCurrent(c => c + 1), STEP_DELAY_MS);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setCurrent(c => c + 1), STEP_DELAY_MS);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, done]);
 
@@ -40,7 +40,7 @@ export default function AnalysisProgress({ country = "your region", tier = "your
             <BrandGlyph className="h-10 w-10" />
           </div>
           <h2 className="text-xl font-black tracking-[-0.03em] text-foreground">
-            Analyzing your infrastructure
+            {t("progress_mapping")}
           </h2>
         </div>
 
@@ -72,11 +72,7 @@ export default function AnalysisProgress({ country = "your region", tier = "your
                     <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
                   )}
                 </div>
-                <span
-                  className={`text-sm font-medium ${
-                    isDone || isActive ? "text-foreground" : "text-muted-foreground/50"
-                  }`}
-                >
+                <span className={`text-sm font-medium ${isDone || isActive ? "text-foreground" : "text-muted-foreground/50"}`}>
                   {s}
                 </span>
               </li>

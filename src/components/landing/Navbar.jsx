@@ -5,6 +5,8 @@ import { Menu, X, ArrowRight, Activity, Plug, BookOpen, Tag, HelpCircle, Mail, L
 import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useAuth } from "@/lib/AuthContext";
 import MobileNavMenu from "@/components/landing/MobileNavMenu";
+import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 // CAMBRA OS navigation — grouped by intent
 const NAV_PUBLIC = [
@@ -30,8 +32,21 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
+  const { t } = useTranslation();
   const NAV = isAuthenticated ? NAV_MEMBER : NAV_PUBLIC;
   const isAdmin = user?.role === "admin";
+
+  // Translation map for visible navbar labels
+  const labelKey = {
+    Analyzer: "nav_analyzer",
+    "How it works": "nav_how",
+    "Connect your tools": "nav_connect",
+    Pricing: "nav_pricing",
+    Dashboard: "nav_dashboard",
+    Reports: "nav_reports",
+    Account: "nav_settings",
+  };
+  const trLabel = (lbl) => (labelKey[lbl] ? t(labelKey[lbl]) : lbl);
 
   useEffect(() => {
     setOpen(false);
@@ -60,7 +75,7 @@ export default function Navbar() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {item.label}
+                {trLabel(item.label)}
                 {active && (
                   <span className="absolute left-3 right-3 -bottom-[14px] h-[2px] bg-foreground rounded-full" />
                 )}
@@ -71,6 +86,7 @@ export default function Navbar() {
 
         {/* Desktop CTAs */}
         <div className="hidden md:flex items-center gap-2">
+          <LanguageSwitcher variant="light" className="mr-1" />
           {isAuthenticated ? (
             <>
               {isAdmin && (
@@ -82,7 +98,7 @@ export default function Navbar() {
               )}
               <Link to="/Dashboard">
                 <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm bg-foreground text-background hover:bg-foreground/90">
-                  Dashboard
+                  {t("nav_dashboard")}
                 </Button>
               </Link>
             </>
@@ -98,7 +114,7 @@ export default function Navbar() {
               </a>
               <Link to="/Analyzer">
                 <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm bg-foreground text-background hover:bg-foreground/90 inline-flex items-center justify-center gap-2">
-                  Run free audit <ArrowRight className="h-3 w-3" />
+                  {t("nav_get_started")} <ArrowRight className="h-3 w-3" />
                 </Button>
               </Link>
             </>

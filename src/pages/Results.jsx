@@ -8,11 +8,17 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /* ── helpers ─────────────────────────────────────────────────── */
-function formatEur(n) {
+function formatEurLocal(n, lang) {
   const v = Math.max(0, Math.round(Number(n) || 0));
-  return `€${v.toLocaleString()}`;
+  const locale = { en: "en-IE", fr: "fr-FR", es: "es-ES" }[lang] || "en-IE";
+  try {
+    return new Intl.NumberFormat(locale, { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
+  } catch {
+    return `€${v.toLocaleString()}`;
+  }
 }
 
 function getRevenueTier(monthlyRevenue = 0) {
@@ -69,6 +75,8 @@ function dataSourceLabel(node) {
 
 /* ── main ────────────────────────────────────────────────────── */
 export default function Results() {
+  const { t, lang } = useTranslation();
+  const formatEur = (n) => formatEurLocal(n, lang);
   const [result, setResult] = useState(null);
   const [input, setInput] = useState(null);
   const [stripeConn, setStripeConn] = useState(null);
@@ -143,7 +151,7 @@ export default function Results() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4">
         <div className="w-10 h-10 rounded-full border-2 border-border border-t-foreground animate-spin mx-auto" />
-        <p className="text-sm text-muted-foreground">Loading your report…</p>
+        <p className="text-sm text-muted-foreground">{t("progress_mapping")}</p>
       </div>
     </div>
   );
@@ -218,10 +226,10 @@ export default function Results() {
     const url = window.location.href;
     try {
       await navigator.clipboard.writeText(url);
-      setToastMsg("Link copied");
+      setToastMsg(t("share"));
       setTimeout(() => setToastMsg(""), 2500);
     } catch (_) {
-      setToastMsg("Copy failed");
+      setToastMsg(t("share"));
       setTimeout(() => setToastMsg(""), 2500);
     }
   };
@@ -231,10 +239,10 @@ export default function Results() {
   };
 
   const heroBadge = heroConfidence === "verified"
-    ? { label: "Verified", cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25", dot: "bg-emerald-500" }
+    ? { label: t("badge_verified"), cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25", dot: "bg-emerald-500" }
     : heroConfidence === "mixed"
-    ? { label: "Mixed", cls: "bg-blue-500/10 text-blue-600 border-blue-500/25", dot: "bg-blue-500" }
-    : { label: "Estimated", cls: "bg-amber-500/10 text-amber-600 border-amber-500/25", dot: "bg-amber-500" };
+    ? { label: t("badge_mixed"),    cls: "bg-blue-500/10 text-blue-600 border-blue-500/25",          dot: "bg-blue-500" }
+    : { label: t("badge_estimated"), cls: "bg-amber-500/10 text-amber-600 border-amber-500/25",      dot: "bg-amber-500" };
 
   const calcDate = result.created_date ? new Date(result.created_date) : null;
 
@@ -255,10 +263,10 @@ export default function Results() {
             onClick={handleShare}
             className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
           >
-            <Share2 size={11} /> Share
+            <Share2 size={11} /> {t("share")}
           </button>
           <Link to="/Dashboard">
-            <Button size="sm" className="h-8 rounded-full text-xs px-4 font-semibold">Dashboard</Button>
+            <Button size="sm" className="h-8 rounded-full text-xs px-4 font-semibold">{t("nav_dashboard")}</Button>
           </Link>
         </div>
       </div>
@@ -272,14 +280,14 @@ export default function Results() {
             {heroBadge.label}
           </div>
 
-          <p className="text-sm text-muted-foreground mb-3">Identified across your infrastructure</p>
+          <p className="text-sm text-muted-foreground mb-3">{t("analysis_label")}</p>
 
           <div className="font-black tracking-[-0.055em] leading-none mb-3 tabular-nums" style={{ fontSize: "clamp(3.5rem, 14vw, 8rem)" }}>
-            {formatEur(result.total_savings)}<span className="text-[0.35em] font-bold text-muted-foreground/40 ml-2">/yr</span>
+            {formatEur(result.total_savings)}<span className="text-[0.35em] font-bold text-muted-foreground/40 ml-2">{t("hero_identified")}</span>
           </div>
 
           <p className="text-muted-foreground/70 text-base mb-7">
-            Across payments, shipping and SaaS
+            {t("infrastructure_sub")}
           </p>
 
           <Button
@@ -287,14 +295,14 @@ export default function Results() {
             size="lg"
             className="h-12 rounded-full px-7 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90 min-h-[44px]"
           >
-            See how to recover this <ArrowRight className="h-4 w-4" />
+            {t("hero_see_how")} <ArrowRight className="h-4 w-4" />
           </Button>
         </section>
 
         {/* ═══ VERTICAL CARDS ════════════════════════════════════ */}
         <section ref={verticalsRef} className="space-y-3">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-black tracking-tight">Vertical breakdown</h2>
+            <h2 className="text-lg font-black tracking-tight">{t("infrastructure_title")}</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -304,7 +312,7 @@ export default function Results() {
                 <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
                   <CreditCard size={14} className="text-foreground" />
                 </div>
-                <h3 className="text-sm font-bold">Payments</h3>
+                <h3 className="text-sm font-bold">{t("payments_title")}</h3>
               </div>
 
               <div className="space-y-2">
@@ -346,7 +354,7 @@ export default function Results() {
                 <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
                   <Truck size={14} className="text-foreground" />
                 </div>
-                <h3 className="text-sm font-bold">Shipping</h3>
+                <h3 className="text-sm font-bold">{t("shipping_title")}</h3>
               </div>
 
               <div className="space-y-2">
@@ -388,7 +396,7 @@ export default function Results() {
                 <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
                   <Package size={14} className="text-foreground" />
                 </div>
-                <h3 className="text-sm font-bold">SaaS &amp; Tools</h3>
+                <h3 className="text-sm font-bold">{t("saas_title")}</h3>
               </div>
 
               <div className="space-y-2">
@@ -421,7 +429,7 @@ export default function Results() {
                 to="/ConnectTools"
                 className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold hover:opacity-90 min-h-[44px] sm:min-h-0"
               >
-                <Plug size={11} /> Review detected tools
+                <Plug size={11} /> {t("saas_cta")}
               </Link>
             </div>
           </div>
@@ -430,15 +438,15 @@ export default function Results() {
         {/* ═══ INFRASTRUCTURE MAP ════════════════════════════════ */}
         <section className="space-y-3">
           <div>
-            <h2 className="text-lg font-black tracking-tight">Your infrastructure</h2>
-            <p className="text-sm text-muted-foreground/70">Tools detected across your stack</p>
+            <h2 className="text-lg font-black tracking-tight">{t("infrastructure_title")}</h2>
+            <p className="text-sm text-muted-foreground/70">{t("infrastructure_sub")}</p>
           </div>
 
           {graphNodes.length === 0 ? (
             <div className="p-6 rounded-2xl border border-dashed border-border/60 bg-secondary/20 text-center">
-              <p className="text-sm text-muted-foreground mb-3">Connect your tools to map your infrastructure</p>
+              <p className="text-sm text-muted-foreground mb-3">{t("infrastructure_empty")}</p>
               <Link to="/ConnectTools">
-                <Button variant="outline" className="rounded-full px-5 text-xs h-9 min-h-[44px] sm:min-h-0">Connect tools</Button>
+                <Button variant="outline" className="rounded-full px-5 text-xs h-9 min-h-[44px] sm:min-h-0">{t("nav_connect")}</Button>
               </Link>
             </div>
           ) : (
@@ -485,7 +493,7 @@ export default function Results() {
             onClick={() => setShowHow(s => !s)}
             className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-secondary/30 transition-colors min-h-[44px]"
           >
-            <span className="text-sm font-bold">How we calculated this</span>
+            <span className="text-sm font-bold">{t("how_calculated")}</span>
             {showHow ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
           {showHow && (
@@ -530,12 +538,11 @@ export default function Results() {
         <section className="space-y-4">
           <div className="rounded-2xl border border-border/50 bg-card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-bold mb-0.5">Connect more tools to improve accuracy</p>
-              <p className="text-xs text-muted-foreground">Every connection refines your benchmark.</p>
+              <p className="text-sm font-bold mb-0.5">{t("connect_more")}</p>
             </div>
             <Link to="/ConnectTools" className="shrink-0">
               <Button className="rounded-full px-5 text-xs h-10 font-bold gap-1.5 min-h-[44px] sm:min-h-0">
-                <Plug size={11} /> Connect tools <ArrowRight size={11} />
+                <Plug size={11} /> {t("nav_connect")} <ArrowRight size={11} />
               </Button>
             </Link>
           </div>
@@ -543,13 +550,13 @@ export default function Results() {
           <div className="text-center space-y-2">
             {country && (
               <p className="text-[11px] text-muted-foreground/70">
-                Analysis based on {country} {tierLabel(tier)} benchmarks
+                {t("based_on", { country, tier: tierLabel(tier) })}
               </p>
             )}
-            <p className="text-[11px] text-muted-foreground/70">Data is private and never shared</p>
+            <p className="text-[11px] text-muted-foreground/70">{t("private_note")}</p>
             {maxN >= 5 && (
               <p className="text-[11px] text-muted-foreground/70">
-                Benchmarked against {maxN} anonymized brands
+                {t("benchmarked_against", { n: maxN, country })}
               </p>
             )}
           </div>
