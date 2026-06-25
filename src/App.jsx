@@ -228,14 +228,14 @@ const AuthenticatedApp = () => {
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
-        {/* Protected routes WITHOUT dashboard chrome (analyzer / connect flow) */}
-        <Route path="/Analyzer" element={<ProtectedRoute>{withBoundary(<Analyzer />)}</ProtectedRoute>} />
-        <Route path="/Results" element={<ProtectedRoute>{withBoundary(<Results />)}</ProtectedRoute>} />
-        <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />
-
-        {/* Protected routes WITH dashboard chrome */}
+        {/* Protected routes WITH dashboard chrome — Analyzer / Results / ConnectTools
+            now live inside the dashboard sidebar so navigation persists and the
+            page no longer feels like it "goes black" when entering the audit flow. */}
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="/Dashboard" element={withBoundary(<Dashboard />)} />
+          <Route path="/Analyzer" element={withBoundary(<Analyzer />)} />
+          <Route path="/Results" element={withBoundary(<Results />)} />
+          <Route path="/ConnectTools" element={withBoundary(<ConnectTools />)} />
           <Route path="/Reports" element={withBoundary(<Reports />)} />
           <Route path="/Network" element={withBoundary(<Network />)} />
           <Route path="/Insights" element={withBoundary(<Insights />)} />
