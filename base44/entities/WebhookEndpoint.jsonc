@@ -2,6 +2,10 @@
   "name": "WebhookEndpoint",
   "type": "object",
   "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Owning organization for multi-tenancy."
+    },
     "name": {
       "type": "string"
     },
@@ -21,7 +25,9 @@
           "new_brand_created",
           "new_document_uploaded",
           "analysis_completed",
-          "savings_unlocked"
+          "savings_unlocked",
+          "report_created",
+          "integration_connected"
         ]
       },
       "default": []
@@ -66,6 +72,11 @@
     "failure_count": {
       "type": "number",
       "default": 0
+    },
+    "auto_disabled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Set when too many consecutive failures cause auto-disable."
     }
   },
   "required": [

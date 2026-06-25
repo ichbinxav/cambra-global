@@ -1,0 +1,90 @@
+{
+  "name": "Organization",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-safe identifier (e.g. acme-corp)"
+    },
+    "owner_email": {
+      "type": "string"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "starter",
+        "growth",
+        "enterprise"
+      ],
+      "default": "free"
+    },
+    "billing_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "past_due",
+        "canceled",
+        "trial"
+      ],
+      "default": "trial"
+    },
+    "monthly_api_quota": {
+      "type": "number",
+      "default": 10000,
+      "description": "Included API requests per month before overage charges"
+    },
+    "overage_price_per_1k": {
+      "type": "number",
+      "default": 0.5,
+      "description": "EUR charged per 1,000 requests above quota"
+    },
+    "rate_limit_per_minute": {
+      "type": "number",
+      "default": 120
+    },
+    "stripe_customer_id": {
+      "type": "string"
+    },
+    "stripe_subscription_id": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "primary_color": {
+      "type": "string"
+    },
+    "trial_ends_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "suspended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "name",
+    "slug",
+    "owner_email"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

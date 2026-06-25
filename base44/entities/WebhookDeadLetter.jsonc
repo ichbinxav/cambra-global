@@ -1,0 +1,74 @@
+{
+  "name": "WebhookDeadLetter",
+  "type": "object",
+  "properties": {
+    "webhook_id": {
+      "type": "string"
+    },
+    "webhook_name": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "target_url": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "last_response_code": {
+      "type": "number"
+    },
+    "last_response_body": {
+      "type": "string"
+    },
+    "last_error_message": {
+      "type": "string"
+    },
+    "total_attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "next_retry_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_retry",
+        "exhausted",
+        "resolved",
+        "abandoned"
+      ],
+      "default": "pending_retry"
+    },
+    "first_failed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "webhook_id",
+    "event_type",
+    "target_url",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

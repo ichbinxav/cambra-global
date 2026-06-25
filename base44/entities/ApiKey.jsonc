@@ -2,6 +2,10 @@
   "name": "ApiKey",
   "type": "object",
   "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "Owning organization for multi-tenancy. Null = platform-level key."
+    },
     "name": {
       "type": "string",
       "description": "Friendly name (e.g. 'Claude Production', 'Make.com Zap')"
@@ -17,36 +21,46 @@
         "custom",
         "other"
       ],
-      "default": "custom",
-      "description": "Tool / integration consuming this key"
+      "default": "custom"
     },
     "key_prefix": {
       "type": "string",
-      "description": "First 8 chars of the key, shown in UI (e.g. cmb_live_)"
+      "description": "First 8 chars of the key, shown in UI"
     },
     "key_hash": {
       "type": "string",
       "description": "SHA-256 hash of the full key. Never store the raw key."
     },
     "key_last4": {
-      "type": "string",
-      "description": "Last 4 chars of the key, shown in UI"
+      "type": "string"
     },
     "scopes": {
       "type": "array",
       "items": {
         "type": "string",
         "enum": [
+          "read",
+          "write",
+          "admin",
           "read:kpis",
           "read:brands",
           "read:analyses",
+          "read:documents",
+          "read:providers",
+          "read:savings",
+          "read:trackers",
+          "read:reports",
+          "read:integrations",
           "write:reports",
+          "write:documents",
+          "write:trackers",
           "trigger:analysis",
-          "update:trackers"
+          "update:trackers",
+          "manage:integrations",
+          "manage:webhooks"
         ]
       },
-      "default": [],
-      "description": "Permission scopes granted to this key"
+      "default": []
     },
     "status": {
       "type": "string",
@@ -57,8 +71,7 @@
       "default": "active"
     },
     "owner_email": {
-      "type": "string",
-      "description": "Admin who created the key"
+      "type": "string"
     },
     "last_used_at": {
       "type": "string",
@@ -71,10 +84,21 @@
       "type": "number",
       "default": 0
     },
+    "rate_limit_per_minute": {
+      "type": "number",
+      "description": "Per-key override. Falls back to organization default (120/min)."
+    },
+    "ip_allowlist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "If non-empty, only requests from these IPs / CIDR ranges are allowed."
+    },
     "expires_at": {
       "type": "string",
-      "format": "date-time",
-      "description": "Optional expiration"
+      "format": "date-time"
     },
     "revoked_at": {
       "type": "string",
@@ -89,8 +113,7 @@
         "api_key",
         "oauth"
       ],
-      "default": "api_key",
-      "description": "Reserved for future OAuth support"
+      "default": "api_key"
     },
     "notes": {
       "type": "string"

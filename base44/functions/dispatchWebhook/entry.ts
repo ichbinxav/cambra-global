@@ -90,10 +90,31 @@ Deno.serve(async (req) => {
         error_message: finalResult.error_message,
       });
 
+      // Send failures to Dead Letter Queue for scheduled background retry
+      if (!finalResult.ok) {
+        await base44.asServiceRole.entities.WebhookDeadLetter.create({
+          webhook_id: ep.id,
+          webhook_name: ep.name,
+          event_type,
+          target_url: ep.url,
+          payload,
+          last_response_code: finalResult.response_code,
+          last_response_body: finalResult.response_body,
+          last_error_message: finalResult.error_message,
+          total_attempts: attempt,
+          next_retry_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // first DLQ retry in 5 min
+          status: "pending_retry",
+          first_failed_at: new Date().toISOString(),
+        });
+      }
+
+      const newFailureCount = status === "failed" ? (ep.failure_count || 0) + 1 : 0;
+      const autoDisable = newFailureCount >= 10; // 10 consecutive failures auto-disables
       await base44.asServiceRole.entities.WebhookEndpoint.update(ep.id, {
         last_delivery_at: new Date().toISOString(),
         last_delivery_status: status,
-        failure_count: status === "failed" ? (ep.failure_count || 0) + 1 : 0,
+        failure_count: newFailureCount,
+        ...(autoDisable ? { status: "disabled", auto_disabled_at: new Date().toISOString() } : {}),
       });
 
       results.push({ id: ep.id, status, response_code: finalResult.response_code, attempts: attempt });

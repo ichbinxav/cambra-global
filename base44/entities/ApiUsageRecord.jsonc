@@ -1,0 +1,59 @@
+{
+  "name": "ApiUsageRecord",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string"
+    },
+    "period_month": {
+      "type": "string",
+      "description": "YYYY-MM bucket (e.g. 2026-06)"
+    },
+    "request_count": {
+      "type": "number",
+      "default": 0
+    },
+    "included_quota": {
+      "type": "number"
+    },
+    "overage_count": {
+      "type": "number",
+      "default": 0
+    },
+    "overage_amount_eur": {
+      "type": "number",
+      "default": 0
+    },
+    "billed": {
+      "type": "boolean",
+      "default": false
+    },
+    "billed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "stripe_invoice_id": {
+      "type": "string"
+    },
+    "last_updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "organization_id",
+    "period_month"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

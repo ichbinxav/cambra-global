@@ -112,6 +112,53 @@ function hasScope(principal, required) {
   return false;
 }
 
+// IP allowlist — supports plain IPs and /24 /16 CIDRs
+function ipMatches(ip, allowed) {
+  if (!ip) return false;
+  if (allowed === ip) return true;
+  if (allowed.endsWith("/24")) return ip.split(".").slice(0, 3).join(".") === allowed.slice(0, -3).split(".").slice(0, 3).join(".");
+  if (allowed.endsWith("/16")) return ip.split(".").slice(0, 2).join(".") === allowed.slice(0, -3).split(".").slice(0, 2).join(".");
+  return false;
+}
+function checkIpAllowlist(principal, ip) {
+  const list = principal.raw?.ip_allowlist;
+  if (!list || list.length === 0) return true; // no allowlist = allow all
+  return list.some((entry) => ipMatches(ip, entry));
+}
+
+// Track API usage per organization for billing
+async function trackUsage(base44, principal) {
+  const orgId = principal.raw?.organization_id;
+  if (!orgId) return;
+  const periodMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+  const matches = await base44.asServiceRole.entities.ApiUsageRecord.filter({ organization_id: orgId, period_month: periodMonth });
+  const record = matches?.[0];
+  if (!record) {
+    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch(() => null);
+    await base44.asServiceRole.entities.ApiUsageRecord.create({
+      organization_id: orgId,
+      period_month: periodMonth,
+      request_count: 1,
+      included_quota: org?.monthly_api_quota || 10000,
+      overage_count: 0,
+      overage_amount_eur: 0,
+      last_updated_at: new Date().toISOString(),
+    });
+  } else {
+    const newCount = (record.request_count || 0) + 1;
+    const quota = record.included_quota || 10000;
+    const overage = Math.max(0, newCount - quota);
+    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch(() => null);
+    const overagePrice = (org?.overage_price_per_1k || 0.5) * (overage / 1000);
+    await base44.asServiceRole.entities.ApiUsageRecord.update(record.id, {
+      request_count: newCount,
+      overage_count: overage,
+      overage_amount_eur: Math.round(overagePrice * 100) / 100,
+      last_updated_at: new Date().toISOString(),
+    });
+  }
+}
+
 // -----------------------------------------------------------------------------
 // Rate limiting — 120 req / 60s window per principal (configurable on the key)
 // -----------------------------------------------------------------------------
@@ -530,6 +577,12 @@ Deno.serve(async (req) => {
     }
     const principal = authRes.principal;
 
+    // IP allowlist check (per-key)
+    if (!checkIpAllowlist(principal, ip)) {
+      await logActivity(base44, { principal, endpoint: path, method, status: "forbidden", status_code: 403, ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId, error_message: "ip_not_allowed" });
+      return err({ code: "ip_not_allowed", message: "Request IP is not in the key's allowlist", status: 403, requestId });
+    }
+
     // Rate limit
     const rl = await rateLimit(base44, principal);
     if (!rl.ok) {
@@ -557,6 +610,7 @@ Deno.serve(async (req) => {
 
     // Execute
     const result = await matched.route.handler(base44, { params: matched.params, query, body, principal });
+    await trackUsage(base44, principal);
     await logActivity(base44, {
       principal, endpoint: path, method, scope: matched.route.scope, status: "success", status_code: 200,
       ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId,
