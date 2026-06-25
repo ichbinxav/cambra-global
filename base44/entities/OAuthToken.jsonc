@@ -1,0 +1,91 @@
+{
+  "name": "OAuthToken",
+  "type": "object",
+  "properties": {
+    "access_token_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of access token (cmb_at_...)"
+    },
+    "access_token_last4": {
+      "type": "string"
+    },
+    "refresh_token_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of refresh token (cmb_rt_...)"
+    },
+    "refresh_token_last4": {
+      "type": "string"
+    },
+    "client_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "access_token_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "refresh_token_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked",
+        "expired"
+      ],
+      "default": "active"
+    },
+    "last_used_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_used_ip": {
+      "type": "string"
+    },
+    "revoked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revoked_by": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "client_id",
+    "user_email",
+    "scopes"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.user_email": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

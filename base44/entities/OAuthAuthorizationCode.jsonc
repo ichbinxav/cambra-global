@@ -1,0 +1,65 @@
+{
+  "name": "OAuthAuthorizationCode",
+  "type": "object",
+  "properties": {
+    "code_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the auth code"
+    },
+    "client_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "redirect_uri": {
+      "type": "string"
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "code_challenge": {
+      "type": "string",
+      "description": "PKCE code_challenge"
+    },
+    "code_challenge_method": {
+      "type": "string",
+      "enum": [
+        "S256",
+        "plain"
+      ],
+      "default": "S256"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "used": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "code_hash",
+    "client_id",
+    "user_email",
+    "redirect_uri",
+    "expires_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

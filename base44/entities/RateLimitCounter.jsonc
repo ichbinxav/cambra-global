@@ -1,0 +1,48 @@
+{
+  "name": "RateLimitCounter",
+  "type": "object",
+  "properties": {
+    "principal_id": {
+      "type": "string",
+      "description": "API key id or OAuth token id used as the rate-limit subject"
+    },
+    "principal_type": {
+      "type": "string",
+      "enum": [
+        "api_key",
+        "oauth_token",
+        "ip"
+      ],
+      "default": "api_key"
+    },
+    "window_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start of the current 60-second window"
+    },
+    "count": {
+      "type": "number",
+      "default": 0
+    },
+    "limit_per_minute": {
+      "type": "number",
+      "default": 120
+    }
+  },
+  "required": [
+    "principal_id",
+    "window_start"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Key, Webhook, Activity, Plug, BookOpen } from "lucide-react";
+import { Plus, Key, Webhook, Activity, Plug, BookOpen, Lock } from "lucide-react";
 import ApiKeyDialog from "@/components/admin/integrations/ApiKeyDialog";
 import ApiKeysTable from "@/components/admin/integrations/ApiKeysTable";
 import WebhooksTable from "@/components/admin/integrations/WebhooksTable";
 import ActivityLogTable from "@/components/admin/integrations/ActivityLogTable";
 import DeveloperDocsPanel from "@/components/admin/integrations/DeveloperDocsPanel";
+import OAuthAppsPanel from "@/components/admin/integrations/OAuthAppsPanel";
 
 export default function AdminApiIntegrations() {
   const [keys, setKeys] = useState([]);
@@ -65,6 +66,7 @@ export default function AdminApiIntegrations() {
         <TabsList>
           <TabsTrigger value="keys" className="gap-2"><Key className="h-3.5 w-3.5" /> API keys</TabsTrigger>
           <TabsTrigger value="webhooks" className="gap-2"><Webhook className="h-3.5 w-3.5" /> Webhooks</TabsTrigger>
+          <TabsTrigger value="oauth" className="gap-2"><Lock className="h-3.5 w-3.5" /> OAuth Apps</TabsTrigger>
           <TabsTrigger value="activity" className="gap-2"><Activity className="h-3.5 w-3.5" /> Activity</TabsTrigger>
           <TabsTrigger value="docs" className="gap-2"><BookOpen className="h-3.5 w-3.5" /> Docs</TabsTrigger>
         </TabsList>
@@ -79,6 +81,10 @@ export default function AdminApiIntegrations() {
 
         <TabsContent value="activity" className="mt-6">
           <ActivityLogTable logs={logs} />
+        </TabsContent>
+
+        <TabsContent value="oauth" className="mt-6">
+          <OAuthAppsPanel />
         </TabsContent>
 
         <TabsContent value="docs" className="mt-6">

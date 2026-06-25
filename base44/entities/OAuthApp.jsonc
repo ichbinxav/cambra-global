@@ -1,0 +1,116 @@
+{
+  "name": "OAuthApp",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "App name shown to end-users on consent screen"
+    },
+    "description": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "homepage_url": {
+      "type": "string"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Public client identifier (prefix cmb_oauth_)"
+    },
+    "client_secret_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the client secret. Never store raw."
+    },
+    "client_secret_last4": {
+      "type": "string"
+    },
+    "redirect_uris": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "allowed_scopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "read",
+          "write",
+          "admin",
+          "read:brands",
+          "read:analyses",
+          "read:documents",
+          "read:providers",
+          "read:kpis",
+          "read:savings",
+          "read:trackers",
+          "read:reports",
+          "read:users",
+          "read:integrations",
+          "write:reports",
+          "write:documents",
+          "write:trackers",
+          "trigger:analysis",
+          "update:trackers",
+          "manage:integrations",
+          "manage:webhooks"
+        ]
+      },
+      "default": []
+    },
+    "owner_email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "confidential",
+        "public"
+      ],
+      "default": "confidential",
+      "description": "Public clients (PKCE-only) cannot keep a secret"
+    },
+    "pkce_required": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_first_party": {
+      "type": "boolean",
+      "default": false,
+      "description": "First-party apps skip the consent screen"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "client_id",
+    "redirect_uris"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

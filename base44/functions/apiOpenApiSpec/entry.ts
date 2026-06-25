@@ -1,201 +1,181 @@
-// Public OpenAPI 3.1 spec for CAMBRA External API v1.
-// Designed for direct import into ChatGPT Actions / Custom GPTs.
+// Public OpenAPI 3.1 spec for CAMBRA External API v1
+// Designed for direct import into ChatGPT Actions / Swagger UI / Postman.
 Deno.serve(async (req) => {
   const url = new URL(req.url);
-  const baseUrl = `${url.origin}${url.pathname.replace(/\/apiOpenApiSpec$/, "")}`;
   const apiServer = `${url.origin}/functions/apiV1`;
+  const oauthAuthorize = `${url.origin}/functions/oauthAuthorize`;
+  const oauthToken = `${url.origin}/functions/oauthToken`;
+
+  const scopes = {
+    "read": "Read access to all CAMBRA resources",
+    "write": "Write access to all CAMBRA resources",
+    "admin": "Full administrative access",
+    "read:brands": "List & read brands",
+    "read:analyses": "List & read analyzer results",
+    "read:documents": "List & read documents",
+    "read:providers": "List & read providers",
+    "read:kpis": "Read aggregated KPIs",
+    "read:savings": "Read savings figures",
+    "read:trackers": "Read deal activation trackers",
+    "read:reports": "List & read reports",
+    "read:integrations": "List integrations",
+    "write:reports": "Create reports",
+    "trigger:analysis": "Trigger a new analyzer run",
+    "update:trackers": "Update savings activation trackers",
+  };
+
+  const moneySchema = {
+    type: "object",
+    description: "CAMBRA money envelope: always includes currency, period, confidence and source.",
+    properties: {
+      amount: { type: "number", nullable: true },
+      currency: { type: "string", example: "EUR" },
+      period: { type: "string", enum: ["monthly", "weekly", "yearly", "one_time"] },
+      confidence: { type: "number", minimum: 0, maximum: 1 },
+      assumptions: { type: "array", items: { type: "string" } },
+      source: { type: "string" },
+    },
+    required: ["amount", "currency", "period", "confidence", "source"],
+  };
+
+  const envelopeMeta = {
+    type: "object",
+    properties: {
+      api_version: { type: "string", example: "v1" },
+      timestamp: { type: "string", format: "date-time" },
+      count: { type: "integer", nullable: true },
+    },
+  };
+
+  const errorObj = {
+    type: "object",
+    properties: {
+      code: { type: "string", example: "unauthorized" },
+      message: { type: "string" },
+      details: { type: "object", nullable: true, additionalProperties: true },
+    },
+  };
+
+  const responseEnvelope = (dataSchema) => ({
+    type: "object",
+    properties: {
+      request_id: { type: "string", format: "uuid" },
+      data: dataSchema,
+      meta: envelopeMeta,
+    },
+  });
+
+  const path = (summary, scope, operationId, dataSchema, extra = {}) => ({
+    summary,
+    operationId,
+    security: [{ ApiKeyAuth: [] }, { OAuth2: scope ? [scope] : [] }],
+    responses: {
+      "200": { description: "OK", content: { "application/json": { schema: responseEnvelope(dataSchema) } } },
+      "401": { description: "Unauthorized", content: { "application/json": { schema: { type: "object", properties: { error: errorObj } } } } },
+      "403": { description: "Forbidden — missing scope" },
+      "404": { description: "Not found" },
+      "429": { description: "Rate limited" },
+    },
+    ...extra,
+  });
 
   const spec = {
     openapi: "3.1.0",
     info: {
-      title: "CAMBRA External API",
-      description:
-        "Secure API to read, trigger, and update CAMBRA infrastructure intelligence. Designed for AI assistants and automation tools (ChatGPT, Claude, Make, n8n, Zapier).",
+      title: "CAMBRA API",
       version: "1.0.0",
-      contact: { name: "CAMBRA", url: baseUrl },
+      description: [
+        "Production CAMBRA API for AI assistants, automation tools and enterprise integrations.",
+        "",
+        "**Authentication:** Bearer token — either an API key (`cmb_live_...`) or an OAuth 2.0 access token (`cmb_at_...`).",
+        "",
+        "**Versioning:** all endpoints live under `/v1/`. Older paths without the version prefix are rewritten on the fly for backward compatibility.",
+        "",
+        "**Response envelope:** every response includes `request_id`, `meta.api_version`, `meta.timestamp` and either `data` or `error`.",
+        "",
+        "**Rate limit:** 120 requests / minute / principal (configurable per key).",
+      ].join("\n"),
+      contact: { name: "CAMBRA Developer Relations", url: url.origin + "/developers" },
+      license: { name: "Proprietary" },
     },
-    servers: [{ url: apiServer, description: "Production" }],
+    servers: [{ url: apiServer, description: "Production v1" }],
     security: [{ ApiKeyAuth: [] }],
+    tags: [
+      { name: "Brands" }, { name: "Analyses" }, { name: "Documents" }, { name: "Providers" },
+      { name: "Savings" }, { name: "Trackers" }, { name: "Reports" }, { name: "KPIs" },
+      { name: "Users" }, { name: "Integrations" }, { name: "AI Actions" },
+    ],
     components: {
       securitySchemes: {
-        ApiKeyAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "API Key",
-          description: "Use your CAMBRA API key as a Bearer token. Format: `cmb_live_...`",
+        ApiKeyAuth: { type: "http", scheme: "bearer", bearerFormat: "API Key", description: "Use a CAMBRA API key as Bearer token. Format: `cmb_live_...`" },
+        OAuth2: {
+          type: "oauth2",
+          flows: {
+            authorizationCode: {
+              authorizationUrl: oauthAuthorize,
+              tokenUrl: oauthToken,
+              scopes,
+            },
+          },
         },
       },
       schemas: {
+        Money: moneySchema,
+        Error: errorObj,
         Brand: {
           type: "object",
           properties: {
-            id: { type: "string" },
-            name: { type: "string" },
-            category: { type: "string" },
-            country: { type: "string" },
-            annual_revenue: { type: "string" },
+            id: { type: "string" }, name: { type: "string" }, category: { type: "string" },
+            country: { type: "string" }, annual_revenue: { type: "string" }, sector: { type: "string" },
+            created_at: { type: "string", format: "date-time" },
           },
         },
         Analysis: {
           type: "object",
           properties: {
-            id: { type: "string" },
-            brand_id: { type: "string" },
-            total_savings: { type: "number" },
+            id: { type: "string" }, brand_id: { type: "string" }, input_id: { type: "string" },
             infra_score: { type: "number" },
-            payment_savings: { type: "number" },
-            shipping_savings: { type: "number" },
-            saas_savings: { type: "number" },
+            total_savings: { $ref: "#/components/schemas/Money" },
+            breakdown: {
+              type: "object",
+              properties: {
+                payments: { type: "object", properties: { savings: { $ref: "#/components/schemas/Money" }, benchmark: { type: "number" } } },
+                shipping: { type: "object", properties: { savings: { $ref: "#/components/schemas/Money" }, benchmark: { type: "number" } } },
+                saas:     { type: "object", properties: { savings: { $ref: "#/components/schemas/Money" }, benchmark: { type: "number" } } },
+              },
+            },
+            created_at: { type: "string", format: "date-time" },
           },
         },
-        Kpis: {
+        Tracker: {
           type: "object",
           properties: {
-            brands_count: { type: "integer" },
-            analyses_count: { type: "integer" },
-            activations_count: { type: "integer" },
-            total_savings_identified: { type: "number" },
-            total_activated_savings_yearly: { type: "number" },
-            generated_at: { type: "string", format: "date-time" },
+            id: { type: "string" }, brand_id: { type: "string" }, provider_id: { type: "string" },
+            vertical: { type: "string" }, status: { type: "string" }, deal_name: { type: "string" },
+            projected_savings_yearly: { $ref: "#/components/schemas/Money" },
+            realized_savings_yearly: { $ref: "#/components/schemas/Money" },
           },
-        },
-        Error: {
-          type: "object",
-          properties: { error: { type: "string" } },
         },
       },
     },
     paths: {
-      "/?path=/brands&method=GET": {
-        get: {
-          operationId: "listBrands",
-          summary: "List brands",
-          description: "Returns up to 100 brands. Requires `read:brands`.",
-          responses: {
-            "200": {
-              description: "OK",
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "object",
-                    properties: { items: { type: "array", items: { $ref: "#/components/schemas/Brand" } } },
-                  },
-                },
-              },
-            },
-            "401": { description: "Unauthorized", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
-          },
-        },
-      },
-      "/?path=/brands/{id}&method=GET": {
-        get: {
-          operationId: "getBrand",
-          summary: "Get brand by ID",
-          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
-          responses: { "200": { description: "OK", content: { "application/json": { schema: { $ref: "#/components/schemas/Brand" } } } } },
-        },
-      },
-      "/?path=/analyses&method=GET": {
-        get: {
-          operationId: "listAnalyses",
-          summary: "List analyses",
-          description: "Requires `read:analyses`.",
-          responses: { "200": { description: "OK" } },
-        },
-      },
-      "/?path=/analyses/{id}&method=GET": {
-        get: {
-          operationId: "getAnalysis",
-          summary: "Get analysis by ID",
-          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
-          responses: { "200": { description: "OK", content: { "application/json": { schema: { $ref: "#/components/schemas/Analysis" } } } } },
-        },
-      },
-      "/?path=/kpis&method=GET": {
-        get: {
-          operationId: "getKpis",
-          summary: "Platform KPIs",
-          description: "Aggregated KPIs across brands, analyses, activations. Requires `read:kpis`.",
-          responses: { "200": { description: "OK", content: { "application/json": { schema: { $ref: "#/components/schemas/Kpis" } } } } },
-        },
-      },
-      "/?path=/reports&method=POST": {
-        post: {
-          operationId: "createReport",
-          summary: "Create a report",
-          description: "Stores a report document in CAMBRA. Requires `write:reports`.",
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    title: { type: "string" },
-                    content: { type: "string" },
-                    metadata: { type: "object", additionalProperties: true },
-                  },
-                  required: ["title"],
-                },
-              },
-            },
-          },
-          responses: { "200": { description: "OK" } },
-        },
-      },
-      "/?path=/analysis/run&method=POST": {
-        post: {
-          operationId: "runAnalysis",
-          summary: "Trigger an analysis run",
-          description: "Triggers an analyzer run on the provided brand inputs. Requires `trigger:analysis`.",
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    brand_id: { type: "string" },
-                    monthly_revenue: { type: "number" },
-                    monthly_transactions: { type: "number" },
-                    avg_order_value: { type: "number" },
-                    payment_fee_pct: { type: "number" },
-                    monthly_shipping_cost: { type: "number" },
-                    monthly_shipments: { type: "number" },
-                    total_saas_spend: { type: "number" },
-                  },
-                },
-              },
-            },
-          },
-          responses: { "200": { description: "OK" } },
-        },
-      },
-      "/?path=/trackers/{id}&method=PATCH": {
-        patch: {
-          operationId: "updateTracker",
-          summary: "Update a savings tracker",
-          description: "Updates a DealActivation savings tracker. Requires `update:trackers`.",
-          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    status: { type: "string" },
-                    realized_savings_monthly: { type: "number" },
-                    realized_savings_yearly: { type: "number" },
-                    activated_savings_yearly: { type: "number" },
-                  },
-                },
-              },
-            },
-          },
-          responses: { "200": { description: "OK" } },
-        },
-      },
+      "/v1/brands":               { get: path("List brands",                  "read:brands",     "listBrands",     { type: "array", items: { $ref: "#/components/schemas/Brand" } }) },
+      "/v1/brands/{id}":          { get: path("Get brand",                    "read:brands",     "getBrand",       { $ref: "#/components/schemas/Brand" }, { parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }] }) },
+      "/v1/analyses":             { get: path("List analyses",                "read:analyses",   "listAnalyses",   { type: "array", items: { $ref: "#/components/schemas/Analysis" } }) },
+      "/v1/analyses/{id}":        { get: path("Get analysis",                 "read:analyses",   "getAnalysis",    { $ref: "#/components/schemas/Analysis" }, { parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }] }) },
+      "/v1/analyses/run":         { post: path("Trigger analysis",            "trigger:analysis","runAnalysis",    { type: "object" }) },
+      "/v1/documents":            { get: path("List documents",               "read:documents",  "listDocuments",  { type: "array", items: { type: "object" } }) },
+      "/v1/providers":            { get: path("List providers",               "read:providers",  "listProviders",  { type: "array", items: { type: "object" } }) },
+      "/v1/savings":              { get: path("List savings",                 "read:savings",    "listSavings",    { type: "array", items: { type: "object" } }) },
+      "/v1/trackers":             { get: path("List trackers",                "read:trackers",   "listTrackers",   { type: "array", items: { $ref: "#/components/schemas/Tracker" } }) },
+      "/v1/trackers/{id}":        { patch: path("Update tracker",             "update:trackers", "updateTracker",  { $ref: "#/components/schemas/Tracker" }, { parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }] }) },
+      "/v1/reports":              { get: path("List reports",                 "read:reports",    "listReports",    { type: "array", items: { type: "object" } }),
+                                    post: path("Create report",               "write:reports",   "createReport",   { type: "object" }) },
+      "/v1/kpis":                 { get: path("Platform KPIs",                "read:kpis",       "getKpis",        { type: "object" }) },
+      "/v1/users/me":             { get: path("Current principal",            null,              "getMe",          { type: "object" }) },
+      "/v1/integrations":         { get: path("List integrations",            "read:integrations","listIntegrations",{ type: "array", items: { type: "object" } }) },
+      "/v1/ai/summarize-brand":   { post: path("AI · summarize brand",        "read:brands",     "aiSummarizeBrand", { type: "object" }) },
+      "/v1/ai/weekly-briefing":   { post: path("AI · weekly briefing",        "read:kpis",       "aiWeeklyBriefing", { type: "object" }) },
     },
   };
 
