@@ -9,9 +9,9 @@ const SUGGESTED = [
   "How does the network work?",
 ];
 
-const SYSTEM_CONTEXT = `You are THE NoDE assistant — an intelligent, concise, and premium AI assistant for THE NoDE platform.
+const SYSTEM_CONTEXT = `You are the CAMBRA assistant — an intelligent, concise, and premium AI assistant for the CAMBRA platform.
 
-THE NoDE is an economic infrastructure network for independent brands in the lifestyle commerce space. It connects independent businesses to unlock better infrastructure, economics, and collective leverage across payments, shipping, and SaaS.
+CAMBRA is an Infrastructure Intelligence Platform for independent brands in the lifestyle commerce space. It helps independent businesses discover where they are overpaying, benchmark their costs against comparable companies, and recover margin across payments, shipping, SaaS, and more.
 
 You help users:
 - Understand their infrastructure score
@@ -25,7 +25,7 @@ Keep responses short, clear, and premium. Never be casual or use filler language
 export default function AIChatBot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "Hello. I'm the THE NoDE assistant. Ask me anything about your infrastructure, analysis, or how the network works." }
+    { role: "assistant", content: "Hello. I'm the CAMBRA assistant. Ask me anything about your infrastructure, analysis, or how the network works." }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -83,7 +83,7 @@ export default function AIChatBot() {
               <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between bg-background">
                 <div className="flex items-center gap-2.5">
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse-slow" />
-                  <span className="text-sm font-semibold">THE NoDE Assistant</span>
+                  <span className="text-sm font-semibold">CAMBRA Assistant</span>
                 </div>
                 <button onClick={() => setOpen(false)} className="text-muted-foreground/40 hover:text-muted-foreground transition-colors">
                   <X size={14} />

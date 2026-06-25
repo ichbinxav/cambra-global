@@ -34,8 +34,8 @@ export default function LeadModal() {
 
       await base44.integrations.Core.SendEmail({
         to: email,
-        subject: 'THE NoDE — Request received',
-        body: 'Thanks! We\'ll email your benchmark summary shortly.\n\n— THE NoDE Team'
+        subject: 'CAMBRA — Request received',
+        body: 'Thanks! We\'ll email your benchmark summary shortly.\n\n— The CAMBRA Team'
       });
 
       setStep('thanks');
@@ -57,8 +57,8 @@ export default function LeadModal() {
       if (optedIn && email) {
         await base44.integrations.Core.SendEmail({
           to: email,
-          subject: 'THE NoDE — Detailed benchmark',
-          body: 'We will send you the detailed sector benchmark shortly.\n\n— THE NoDE Team'
+          subject: 'CAMBRA — Detailed benchmark',
+          body: 'We will send you the detailed sector benchmark shortly.\n\n— The CAMBRA Team'
         });
       }
       setOpen(false);
@@ -83,7 +83,7 @@ export default function LeadModal() {
         {step === 'form' ? (
           <>
             <DialogHeader>
-              <DialogTitle>Unlock THE NoDE rates</DialogTitle>
+              <DialogTitle>Unlock CAMBRA network rates</DialogTitle>
               <DialogDescription>
                 Leave your email or WhatsApp and we’ll help you activate these rates.
               </DialogDescription>

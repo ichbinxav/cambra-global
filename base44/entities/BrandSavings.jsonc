@@ -8,17 +8,33 @@
     "result_id": {
       "type": "string"
     },
-    "estimated_current_cost_monthly": {
-      "type": "number"
-    },
-    "estimated_optimized_cost_monthly": {
-      "type": "number"
-    },
     "estimated_savings_monthly": {
-      "type": "number"
+      "type": "number",
+      "description": "Monthly savings from AnalyzerResult.total_savings / 12. Single source of truth."
     },
     "estimated_savings_yearly": {
-      "type": "number"
+      "type": "number",
+      "description": "Annual savings read directly from AnalyzerResult.total_savings. Single source of truth."
+    },
+    "payment_savings": {
+      "type": "number",
+      "description": "From AnalyzerResult.payment_savings. Vertical breakdown."
+    },
+    "shipping_savings": {
+      "type": "number",
+      "description": "From AnalyzerResult.shipping_savings. Vertical breakdown."
+    },
+    "saas_savings": {
+      "type": "number",
+      "description": "From AnalyzerResult.saas_savings. Vertical breakdown."
+    },
+    "estimated_current_cost_monthly": {
+      "type": "number",
+      "description": "Legacy field \u2014 kept for backward compatibility with existing records. Not written by current code."
+    },
+    "estimated_optimized_cost_monthly": {
+      "type": "number",
+      "description": "Legacy field \u2014 kept for backward compatibility with existing records. Not written by current code."
     },
     "computed_at": {
       "type": "string",

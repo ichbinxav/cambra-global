@@ -92,7 +92,7 @@ export default function StripeResults({ data }) {
         <div className="flex-1">
           <p className={`text-sm font-black ${status.color}`}>{status.label}</p>
           <p className="text-xs text-muted-foreground/60 mt-0.5">
-            Your effective fee is <strong className="text-foreground">{data.effective_fee_pct}%</strong> vs THE NoDE benchmark of <strong className="text-foreground">{data.benchmark_fee_pct}%</strong>
+            Your effective fee is <strong className="text-foreground">{data.effective_fee_pct}%</strong> vs CAMBRA network benchmark of <strong className="text-foreground">{data.benchmark_fee_pct}%</strong>
           </p>
         </div>
         <div className="text-right shrink-0">
@@ -125,7 +125,7 @@ export default function StripeResults({ data }) {
         <div className="p-5 space-y-4">
           {[
             { label: "Your rate", pct: data.effective_fee_pct, max: 4, color: "#ef4444", barW: (data.effective_fee_pct / 4) * 100 },
-            { label: "THE NoDE network", pct: data.benchmark_fee_pct, max: 4, color: "#22c55e", barW: (data.benchmark_fee_pct / 4) * 100 },
+            { label: "CAMBRA network benchmark", pct: data.benchmark_fee_pct, max: 4, color: "#22c55e", barW: (data.benchmark_fee_pct / 4) * 100 },
           ].map((row, i) => (
             <div key={i}>
               <div className="flex justify-between mb-1.5">
@@ -160,10 +160,10 @@ export default function StripeResults({ data }) {
           <p className="text-2xl font-black mb-1">{data.infra_score}/100</p>
           <p className="text-xs text-muted-foreground/55 leading-relaxed">
             {data.infra_score < 55
-              ? "Significant optimization potential. Join THE NoDE to access 1.4% network rate."
+              ? "Significant optimization potential. Connect Stripe to CAMBRA to verify your network benchmark rate."
               : data.infra_score < 75
-              ? "Above average but room for improvement. Network rate would unlock more savings."
-              : "Well-optimized. Fine-tune via THE NoDE for maximum efficiency."}
+              ? "Above average but room for improvement. Connecting more data will refine your benchmark."
+              : "Well-optimized. Connect your tools to CAMBRA for maximum accuracy and savings verification."}
           </p>
         </div>
       </div>
@@ -207,13 +207,13 @@ export default function StripeResults({ data }) {
           You are paying {(data.effective_fee_pct - data.benchmark_fee_pct).toFixed(1)}% above benchmark.
         </h3>
         <p className="text-sm text-background/55 leading-relaxed mb-5">
-          You could reduce your payment fees by switching to the THE NoDE network rate of 1.4%. At your current volume,
+          You could reduce your payment fees by reaching the CAMBRA network benchmark rate. At your current volume,
           that's <strong className="text-background">€{data.monthly_savings_potential.toLocaleString()}/month</strong> back into your margins.
         </p>
         <div className="flex flex-col sm:flex-row gap-2">
           <Link to="/Onboarding">
             <Button className="h-11 rounded-xl px-6 text-sm font-bold gap-2 bg-background text-foreground hover:bg-background/90">
-              Activate 1.4% rate <ArrowRight size={13} />
+              Start saving <ArrowRight size={13} />
             </Button>
           </Link>
           <Link to="/Deals">

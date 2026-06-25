@@ -14,6 +14,8 @@ Deno.serve(async (req) => {
 
   if (!userEmail) return Response.json({ ok: true });
 
+  const appDomain = Deno.env.get('APP_DOMAIN') || 'cambra.global';
+
   await base44.asServiceRole.integrations.Core.SendEmail({
     from_name: "CAMBRA",
     to: userEmail,
@@ -48,7 +50,7 @@ Deno.serve(async (req) => {
           Start with the Analyzer — it takes 2 minutes and identifies exactly where your infrastructure is costing you more than it should.
         </p>
 
-        <a href="https://cambra.co/Analyzer" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
+        <a href="https://${appDomain}/Analyzer" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
           Run the Analyzer →
         </a>
 

@@ -85,8 +85,8 @@ export default function AdminDeals() {
                     <p className="text-xs font-semibold line-through text-muted-foreground/40">{selected.normal_rate}</p>
                   </div>
                   <div className="flex justify-between">
-                    <p className="text-xs text-muted-foreground/50">Via THE NoDE</p>
-                    <p className="text-xs font-bold">{selected.node_rate}</p>
+                    <p className="text-xs text-muted-foreground/50">Via CAMBRA</p>
+                    <p className="text-xs font-bold">{selected.network_rate}</p>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-border/30">
                     <p className="text-xs text-muted-foreground/50">Est. savings</p>

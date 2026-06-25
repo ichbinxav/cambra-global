@@ -1,0 +1,66 @@
+{
+  "name": "ComplianceReview",
+  "type": "object",
+  "properties": {
+    "review_id": {
+      "type": "string",
+      "description": "Unique identifier for this review run"
+    },
+    "object_type": {
+      "type": "string",
+      "enum": [
+        "marketing_claim",
+        "provider_deal",
+        "benchmark",
+        "integration",
+        "ai_action",
+        "report",
+        "recommendation"
+      ]
+    },
+    "object_id": {
+      "type": "string",
+      "description": "ID of the object being reviewed"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "flagged",
+        "blocked",
+        "requires_human_review",
+        "approved",
+        "rejected"
+      ],
+      "default": "passed"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "ComplianceIssue IDs attached to this review"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "object_type",
+    "object_id",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

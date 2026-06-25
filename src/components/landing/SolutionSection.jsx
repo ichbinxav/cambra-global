@@ -18,7 +18,7 @@ const PILLARS = [
     bg: "bg-orange-500/[0.07] border-orange-500/20",
     title: "Unlock network rates",
     desc: "Access pre-negotiated deals secured across 1,000+ brands at collective volume.",
-    stat: "1.4%", statLabel: "payment rate", note: "Unavailable to individual brands",
+    stat: "Tiered", statLabel: "network benchmark", note: "Unavailable to individual brands",
   },
   {
     num: "03", icon: TrendingUp, color: "text-green-600",
@@ -55,7 +55,7 @@ function PillarCard({ p, index }) {
       <h3 className="text-lg font-bold tracking-tight mb-2">{p.title}</h3>
       <p className="text-sm text-muted-foreground/70 leading-relaxed flex-1 mb-5">{p.desc}</p>
 
-      <div className="pt-5 border-t border-border/30 flex items_end justify-between">
+      <div className="pt-5 border-t border-border/30 flex items-end justify-between">
         <div>
           <motion.p
             className={`text-2xl font-black tracking-tight ${p.color}`}
@@ -118,7 +118,7 @@ export default function SolutionSection() {
             {[
               { label: "Your tools", sub: "Stripe · DHL · Shopify" },
               null,
-              { label: "THE NoDE", sub: "Analysis engine", highlight: true },
+              { label: "CAMBRA", sub: "Analysis engine", highlight: true },
               null,
               { label: "Savings", sub: "€18K–72K/yr" },
             ].map((item, i) =>

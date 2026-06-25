@@ -1,0 +1,55 @@
+{
+  "name": "ComplianceIssue",
+  "type": "object",
+  "properties": {
+    "review_id": {
+      "type": "string",
+      "description": "The ComplianceReview this issue belongs to"
+    },
+    "rule_id": {
+      "type": "string",
+      "description": "The ComplianceRule that was violated"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "high"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "blocking": {
+      "type": "boolean",
+      "default": true
+    },
+    "resolved": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "review_id",
+    "rule_id",
+    "title"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

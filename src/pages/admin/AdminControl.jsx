@@ -58,7 +58,7 @@ export default function AdminControl() {
           {label:'Identified /yr', val: `€${Number(summary?.totals?.identified_yearly||0).toLocaleString()}`},
           {label:'Activated /yr', val: `€${totals.projected.toLocaleString()}`},
           {label:'Realized total', val:`€${totals.realSavings.toLocaleString()}`},
-          {label:'THE NoDE revenue', val:`€${Number(summary?.totals?.node_revenue_total||0).toLocaleString()}`},
+          {label:'CAMBRA revenue', val:`€${Number(summary?.totals?.node_revenue_total||0).toLocaleString()}`},
           {label:'MRR (last month)', val:`€${totals.nodeMRR.toLocaleString()}`},
           {label:'Invoices issued', val:`€${Number(summary?.totals?.invoices_issued_total||0).toLocaleString()}`},
           {label:'Invoices paid', val:`€${Number(summary?.totals?.invoices_paid_total||0).toLocaleString()}`},

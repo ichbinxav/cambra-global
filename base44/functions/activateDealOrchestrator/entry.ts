@@ -32,27 +32,37 @@ Deno.serve(async (req) => {
     }
     assert(result, 'Analyzer result missing');
 
-    // Compute summary
+    // Compute summary — all values MUST come from AnalyzerResult.details (scoreEngine output).
+    // Never fall back to a hardcoded rate: if details are missing, the result is invalid for activation.
+    // Note: Number(undefined) = NaN. isFinite() rejects NaN, Infinity and undefined-derived values.
+    assert(result?.details && typeof result.details === 'object',
+      'AnalyzerResult has no details object — re-run the Analyzer before activating');
+
     const monthlyRevenue = Number(input?.monthly_revenue || 0);
     let currentMonthly = 0, projectedMonthly = 0, providerFrom = 'Current', providerTo = 'Network';
     if (vertical === 'payments') {
-      const curr = Number(result?.details?.payment_current_rate ?? 2.9);
-      const next = Number(result?.details?.payment_optimal_rate ?? 1.4);
+      const curr = Number(result.details.payment_current_rate);
+      const next = Number(result.details.payment_optimal_rate);
+      assert(isFinite(curr) && curr >= 0, 'Missing or invalid payment_current_rate in analyzer result — cannot freeze baseline');
+      assert(isFinite(next) && next > 0,  'Missing or invalid payment_optimal_rate in analyzer result — cannot freeze baseline');
       currentMonthly = monthlyRevenue * (curr/100);
       projectedMonthly = monthlyRevenue * (next/100);
       providerFrom = input?.payment_provider || 'Current PSP';
       providerTo = 'Network PSP';
     } else if (vertical === 'shipping') {
-      const perCurr = Number(result?.details?.shipping_current_avg ?? 7.5);
-      const perNext = Number(result?.details?.shipping_optimal_avg ?? 5.2);
+      const perCurr = Number(result.details.shipping_current_avg);
+      const perNext = Number(result.details.shipping_optimal_avg);
+      assert(isFinite(perCurr) && perCurr > 0, 'Missing or invalid shipping_current_avg in analyzer result — cannot freeze baseline');
+      assert(isFinite(perNext) && perNext > 0, 'Missing or invalid shipping_optimal_avg in analyzer result — cannot freeze baseline');
       const shipments = Number(input?.monthly_shipments ?? Math.max(1, Math.round((input?.monthly_shipping_cost || 0) / perCurr)));
       currentMonthly = perCurr * shipments;
       projectedMonthly = perNext * shipments;
       providerFrom = input?.shipping_provider || 'Current carrier';
       providerTo = 'Network carrier';
     } else {
-      currentMonthly = Number(input?.total_saas_spend ?? 2500);
-      projectedMonthly = Number(result?.details?.saas_optimal_total ?? currentMonthly * 0.7);
+      currentMonthly = Number(input?.total_saas_spend || 0);
+      projectedMonthly = Number(result.details.saas_optimal_total ?? currentMonthly * 0.7);
+      assert(isFinite(currentMonthly) && currentMonthly > 0, 'Missing total_saas_spend — cannot freeze baseline');
       providerFrom = 'Current tools';
       providerTo = 'Group licenses';
     }
@@ -75,11 +85,11 @@ Deno.serve(async (req) => {
       last_updated: new Date().toISOString()
     });
 
-    // Freeze Baseline
+    // Freeze Baseline — values come from AnalyzerResult.details only (all asserted above)
     const baselineType = vertical === 'payments' ? 'rate' : 'cost';
     const baselineValue = vertical === 'payments'
-      ? Number(result?.details?.payment_current_rate ?? 2.9)
-      : (vertical === 'shipping' ? Number(result?.details?.shipping_current_avg ?? 7.5) : Number(input?.total_saas_spend ?? 2500));
+      ? Number(result.details.payment_current_rate)
+      : (vertical === 'shipping' ? Number(result.details.shipping_current_avg) : Number(input?.total_saas_spend || 0));
 
     await base44.entities.Baseline.create({
       deal_activation_id: activation.id,

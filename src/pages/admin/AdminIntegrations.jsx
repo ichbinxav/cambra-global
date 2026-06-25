@@ -77,7 +77,7 @@ export default function AdminIntegrations() {
       {/* Security notice */}
       <div className="flex items-center gap-3 p-3.5 rounded-xl border border-border/40 bg-secondary/30">
         <Shield size={13} className="text-muted-foreground/50 shrink-0" />
-        <p className="text-[11px] text-muted-foreground/60">All connections are read-only. THE NoDE never modifies user data. Tokens are encrypted and stored server-side only.</p>
+        <p className="text-[11px] text-muted-foreground/60">All connections are read-only. CAMBRA never modifies user data. Tokens are encrypted and stored server-side only.</p>
       </div>
 
       {/* Direct connections (OAuth) — always on top */}

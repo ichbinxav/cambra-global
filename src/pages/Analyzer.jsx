@@ -35,7 +35,7 @@ const STEPS = [
   },
   {
     title: "Pillar 1 · Payments — Online",
-    sub: "We compare your Stripe / PayPal effective fees against the network benchmark of 1.4%.",
+    sub: "We compare your Stripe / PayPal effective fees against the benchmark rate for your revenue tier and country.",
     why: "Online payment fees are often the single largest hidden infrastructure cost.",
     icon: CreditCard,
   },
@@ -54,7 +54,7 @@ const STEPS = [
   {
     title: "Pillar 3 · Commerce SaaS",
     sub: "We identify redundant or overpriced commerce software (Shopify, Klaviyo, apps & plugins).",
-    why: "Brands typically overspend on Commerce SaaS by 30% — mostly on duplicated apps.",
+    why: "Brands typically overspend on Commerce SaaS — mostly on duplicated and underused apps.",
     icon: Package,
   },
   {
@@ -662,7 +662,7 @@ export default function Analyzer() {
             prefix="€"
           />
           <div className="p-4 rounded-xl bg-secondary/50 border border-border/40 text-[12px] text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">What we check:</strong> Commerce platforms (Shopify, WooCommerce), email (Klaviyo), apps & plugins, and duplicated commerce tools. Brands typically overspend by <strong className="text-foreground">30%</strong>.
+            <strong className="text-foreground">What we check:</strong> Commerce platforms (Shopify, WooCommerce), email (Klaviyo), apps & plugins, and duplicated commerce tools. Many brands carry significant SaaS redundancy.
           </div>
           {(() => {
             const bm = getBenchmarks(data.monthly_revenue, data.country);

@@ -25,7 +25,7 @@ export default function StripeAnalyzer() {
           <Link to="/ConnectTools" className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft size={16} />
           </Link>
-          <span className="text-sm font-black tracking-tight">THE NoDE</span>
+          <span className="text-sm font-black tracking-tight">CAMBRA</span>
           <span className="text-muted-foreground/30">/</span>
           <span className="text-sm text-muted-foreground/60">Stripe Analyzer</span>
         </div>
@@ -63,7 +63,7 @@ export default function StripeAnalyzer() {
                   See your real<br />payment fees.
                 </h2>
                 <p className="text-muted-foreground text-sm leading-relaxed max-w-md">
-                  We pull your last 30 days of transactions, calculate your effective fee rate, and compare it against the THE NoDE network benchmark of <strong className="text-foreground">1.4%</strong>.
+                  We pull your last 30 days of transactions, calculate your effective fee rate, and compare it against the CAMBRA network benchmark for your revenue tier and country.
                 </p>
               </div>
 

@@ -72,7 +72,7 @@ export default function AdminContracts() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-black tracking-[-0.03em]">Contract Tracking</h1>
-        <p className="text-xs text-muted-foreground/50 mt-0.5">Centralized visibility — THE NoDE does not own contracts</p>
+        <p className="text-xs text-muted-foreground/50 mt-0.5">Centralized visibility — CAMBRA does not own contracts</p>
       </div>
 
       {/* KPIs */}
@@ -86,7 +86,7 @@ export default function AdminContracts() {
           <p className="text-2xl font-black text-blue-600">{formatSavings(totalValue)}/yr</p>
         </div>
         <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
-          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Estimated THE NoDE revenue (config-based)</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 mb-1">Estimated CAMBRA revenue (config-based)</p>
           <p className="text-2xl font-black text-amber-600">{formatSavings(nodeRevenue)}/yr</p>
         </div>
       </div>

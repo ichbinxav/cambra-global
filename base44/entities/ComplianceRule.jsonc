@@ -1,0 +1,64 @@
+{
+  "name": "ComplianceRule",
+  "type": "object",
+  "properties": {
+    "rule_id": {
+      "type": "string",
+      "description": "Stable unique identifier for the rule, e.g. 'no_guaranteed_savings'"
+    },
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "claims",
+        "provider_deal",
+        "benchmark",
+        "oauth",
+        "ai_action",
+        "data_processing",
+        "security"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "high"
+    },
+    "blocking": {
+      "type": "boolean",
+      "default": true,
+      "description": "If true, a violation blocks the object from going live."
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "rule_id",
+    "title",
+    "category"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
