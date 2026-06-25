@@ -12,6 +12,7 @@ import { base44 } from '@/api/base44Client';
 import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding.jsx';
 import Analyzer from '@/pages/Analyzer';
+import HealthCheck from '@/pages/HealthCheck';
 // FIX 13 — Lazy load heavy pages (Results, Dashboard, ConnectTools + heavy admin pages)
 const Results       = lazy(() => import('@/pages/Results'));
 const Dashboard     = lazy(() => import('@/pages/Dashboard'));
@@ -164,6 +165,8 @@ const AuthenticatedApp = () => {
     <Suspense fallback={<LazyFallback />}>
       <Routes>
         {/* Public */}
+        <Route path="/HealthCheck" element={<HealthCheck />} />
+        <Route path="/healthcheck" element={<HealthCheck />} />
         <Route path="/" element={withBoundary(<Landing />)} />
         <Route path="/Landing" element={withBoundary(<Landing />)} />
         <Route path="/landing" element={<Navigate to="/Landing" replace />} />
