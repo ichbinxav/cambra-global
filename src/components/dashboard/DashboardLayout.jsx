@@ -29,7 +29,8 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div
-      className="min-h-screen flex font-inter bg-background text-foreground"
+      className="min-h-screen flex font-inter text-white"
+      style={{ background: "#0a0a0a" }}
     >
       {/* Desktop Sidebar — premium dark editorial */}
       <aside
@@ -197,8 +198,34 @@ export default function DashboardLayout({ children }) {
         </div>
       )}
 
-      {/* Main content — light surface, so internal pages stay readable */}
-      <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 bg-background text-foreground">
+      {/* Main content — unified dark editorial surface (matches landing identity) */}
+      <main
+        className="relative flex-1 min-w-0 pt-14 lg:pt-0 text-white"
+        style={{ background: "#0a0a0a" }}
+      >
+        {/* Ambient backdrop — subtle grid + radial glow, consistent with landing */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage:
+              "radial-gradient(ellipse 100% 70% at 50% 0%, #000 30%, transparent 80%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 100% 70% at 50% 0%, #000 30%, transparent 80%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-0 left-1/4 w-[40rem] h-[40rem] -translate-y-1/2"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(34,211,238,0.10), transparent 70%)",
+            filter: "blur(40px)",
+          }}
+        />
         <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8">
           {children ?? <Outlet />}
         </div>
