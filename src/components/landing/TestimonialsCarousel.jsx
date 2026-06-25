@@ -13,7 +13,7 @@ const ITEMS = [
     photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces",
     before: "2.9%",
     after: "2.3%",
-    savings: "€42K",
+    savings: "€12K",
   },
   {
     category: "Shipping",
@@ -25,7 +25,7 @@ const ITEMS = [
     photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces",
     before: "€8.90",
     after: "€6.40",
-    savings: "€38K",
+    savings: "€9K",
   },
   {
     category: "SaaS",
@@ -37,7 +37,7 @@ const ITEMS = [
     photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces",
     before: "24 tools",
     after: "13 tools",
-    savings: "€29K",
+    savings: "€7K",
   },
 ];
 

@@ -84,11 +84,11 @@ export default function FounderLetter() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          className="grid grid-cols-2 gap-3 sm:gap-4"
         >
           {/* LEFT — portrait card */}
           <div
-            className="relative rounded-2xl overflow-hidden min-h-[280px] sm:min-h-[340px]"
+            className="relative rounded-2xl overflow-hidden min-h-[220px] sm:min-h-[340px]"
             style={{
               background: "#06080F",
               border: "1px solid rgba(255,255,255,0.10)",
@@ -106,7 +106,7 @@ export default function FounderLetter() {
 
           {/* RIGHT — letter card */}
           <div
-            className="relative rounded-2xl overflow-hidden p-6 sm:p-7 flex flex-col"
+            className="relative rounded-2xl overflow-hidden p-4 sm:p-7 flex flex-col"
             style={{
               background: "linear-gradient(180deg, #0d1224 0%, #060810 100%)",
               border: "1px solid rgba(255,255,255,0.10)",
