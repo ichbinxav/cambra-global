@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Quote, TrendingUp } from "lucide-react";
 
 const ITEMS = [
@@ -42,15 +42,42 @@ const ITEMS = [
 
 export default function TestimonialsCarousel() {
   const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
   const total = ITEMS.length;
   const item = ITEMS[idx];
+  const containerRef = useRef(null);
 
   const prev = () => setIdx((i) => (i - 1 + total) % total);
   const next = () => setIdx((i) => (i + 1) % total);
 
+  // Auto-rotate every 6s. Pauses on hover, when tab is hidden,
+  // or if the user prefers reduced motion.
+  useEffect(() => {
+    if (paused) return;
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
+
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        setIdx((i) => (i + 1) % total);
+      }
+    }, 6000);
+    return () => clearInterval(id);
+  }, [paused, total]);
+
   return (
     <section id="testimonials" className="relative py-12 sm:py-16 overflow-hidden">
-      <div className="relative max-w-2xl mx-auto px-6 sm:px-10">
+      <div
+        ref={containerRef}
+        className="relative max-w-2xl mx-auto px-6 sm:px-10"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocusCapture={() => setPaused(true)}
+        onBlurCapture={() => setPaused(false)}
+      >
         {/* eyebrow */}
         <div className="text-center mb-4">
           <span
