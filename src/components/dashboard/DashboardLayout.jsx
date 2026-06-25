@@ -226,7 +226,7 @@ export default function DashboardLayout({ children }) {
             filter: "blur(40px)",
           }}
         />
-        <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8">
+        <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8 min-h-[60vh]">
           {children ?? <Outlet />}
         </div>
       </main>

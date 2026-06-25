@@ -69,11 +69,13 @@ import ScrollToTop from '@/components/shared/ScrollToTop.jsx';
 import ErrorBoundary from '@/components/shared/ErrorBoundary.jsx';
 import { ToastProvider } from '@/components/shared/Toast.jsx';
 
-// Dark-style fallback shown while lazy chunks load
+// Dark-style fallback shown while lazy chunks load.
+// NOT fixed-position — it sits inline inside the routed area so DashboardLayout
+// chrome (sidebar/header) stays visible around it, instead of a full black screen.
 function LazyFallback() {
   return (
     <div
-      className="fixed inset-0 flex flex-col items-center justify-center"
+      className="min-h-screen w-full flex flex-col items-center justify-center"
       style={{ background: "#0a0a0a" }}
       role="status"
       aria-live="polite"
