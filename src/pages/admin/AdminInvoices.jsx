@@ -3,10 +3,12 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/components/shared/Toast.jsx';
 
 const STATUSES = ['all','draft','issued','sent','due','partially_paid','paid','failed','overdue','void','disputed','refunded'];
 
 export default function AdminInvoices() {
+  const { toast } = useToast();
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState('all');
   const [q, setQ] = useState('');
@@ -27,19 +29,21 @@ export default function AdminInvoices() {
       const res = await base44.functions.invoke('createPaymentLink', { invoice_id: id });
       if (res.data?.url) window.open(res.data.url, '_blank');
       await load();
-    } catch (e) { alert(e.response?.data?.error || e.message); }
+    } catch (e) { toast.error(e.response?.data?.error || e.message); }
   };
 
   const markPaid = async (id) => {
+    // prompt() preserved — data entry dialog, not a notification.
     const v = prompt('Amount received (e.g. 120.50)');
     if (!v) return;
     const amount = Number(v);
-    if (isNaN(amount)) return alert('Invalid amount');
+    if (isNaN(amount)) { toast.error('Invalid amount'); return; }
     await base44.functions.invoke('recordPayment', { invoice_id: id, amount, method: 'manual' });
     await load();
   };
 
   const reconcile = async (id) => {
+    // prompt() preserved — data entry dialog, not a notification.
     const target = prompt('Target status (void|disputed|refunded|failed)');
     if (!target) return;
     await base44.functions.invoke('reconcileInvoice', { invoice_id: id, target_status: target, reason: 'manual_admin' });
@@ -50,7 +54,7 @@ export default function AdminInvoices() {
     try {
       const res = await base44.functions.invoke('generateInvoicePdf', { invoice_id: id });
       if (res.data?.url) window.open(res.data.url, '_blank');
-    } catch (e) { alert(e.response?.data?.error || e.message); }
+    } catch (e) { toast.error(e.response?.data?.error || e.message); }
   };
 
   return (
