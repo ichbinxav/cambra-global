@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Menu, X, ArrowRight, Activity, Plug, BookOpen, Tag, HelpCircle, Mail, LayoutDashboard, BarChart3, Users, Settings, Shield, Sparkles } from "lucide-react";
+import { Menu, X, ArrowRight, Plug, BookOpen, Tag, HelpCircle, Mail, LayoutDashboard, BarChart3, Users, Settings, Shield, Sparkles, Activity } from "lucide-react";
 import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
 import { useAuth } from "@/lib/AuthContext";
 import MobileNavMenu from "@/components/landing/MobileNavMenu";
@@ -84,22 +83,18 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Desktop CTAs */}
+        {/* Desktop CTAs — unified btn-* token system */}
         <div className="hidden md:flex items-center gap-2">
           <LanguageSwitcher variant="light" className="mr-1" />
           {isAuthenticated ? (
             <>
               {isAdmin && (
-                <Link to="/admin">
-                  <Button variant="outline" size="sm" className="h-8 rounded-full px-3 text-xs font-semibold gap-1.5 border-border">
-                    <Shield size={12} /> Admin
-                  </Button>
+                <Link to="/admin" className="btn-base btn-secondary btn-sm">
+                  <Shield size={12} /> Admin
                 </Link>
               )}
-              <Link to="/Dashboard">
-                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-semibold shadow-sm bg-foreground text-background hover:bg-foreground/90">
-                  {t("nav_dashboard")}
-                </Button>
+              <Link to="/Dashboard" className="btn-base btn-primary btn-sm">
+                {t("nav_dashboard")}
               </Link>
             </>
           ) : (
@@ -108,14 +103,12 @@ export default function Navbar() {
                 href="/auth/start"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-8 px-4 text-sm font-medium text-foreground hover:text-foreground/70 transition-colors rounded-full inline-flex items-center justify-center"
+                className="btn-base btn-ghost btn-sm"
               >
                 Sign in
               </a>
-              <Link to="/Analyzer">
-                <Button size="sm" className="h-8 rounded-full px-5 text-sm font-bold shadow-sm bg-foreground text-background hover:bg-foreground/90 inline-flex items-center justify-center gap-2">
-                  {t("nav_get_started")} <ArrowRight className="h-3 w-3" />
-                </Button>
+              <Link to="/Analyzer" className="btn-base btn-primary btn-sm">
+                {t("nav_get_started")} <ArrowRight className="h-3 w-3" />
               </Link>
             </>
           )}

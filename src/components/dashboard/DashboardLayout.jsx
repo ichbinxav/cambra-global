@@ -47,15 +47,12 @@ export default function DashboardLayout() {
           </Link>
         </div>
 
-        {/* Status pill */}
+        {/* Status pill — shared token */}
         <div className="relative px-3 pt-3 pb-2">
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border border-border/60 bg-background/60 backdrop-blur-sm">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
-            </span>
-            <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-muted-foreground">Network live</span>
-          </div>
+          <span className="pill-live">
+            <span className="dot" />
+            Network live
+          </span>
         </div>
 
         <nav className="relative flex-1 p-3 pt-2 space-y-0.5">
