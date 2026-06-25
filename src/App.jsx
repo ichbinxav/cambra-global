@@ -48,6 +48,7 @@ import AdminRecommendations from '@/pages/admin/AdminRecommendations';
 import AuthRedirect from '@/pages/AuthRedirect';
 import LoginGate from '@/pages/LoginGate';
 import CookieConsent from '@/components/shared/CookieConsent';
+import AdaptiveMarketingRoute from '@/components/shared/AdaptiveMarketingRoute';
 import Pricing from '@/pages/Pricing.jsx';
 import Developers from '@/pages/Developers.jsx';
 import DevelopersMCP from '@/pages/DevelopersMCP.jsx';
@@ -208,22 +209,22 @@ const AuthenticatedApp = () => {
         <Route path="/snapshot" element={<Navigate to="/Snapshot" replace />} />
         <Route path="/Deals" element={<Navigate to="/UnlockSavings" replace />} />
         <Route path="/deals" element={<Navigate to="/UnlockSavings" replace />} />
-        <Route path="/Pricing" element={withBoundary(<Pricing />)} />
+        <Route path="/Pricing" element={<AdaptiveMarketingRoute>{withBoundary(<Pricing />)}</AdaptiveMarketingRoute>} />
         <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
-        <Route path="/Developers" element={withBoundary(<Developers />)} />
+        <Route path="/Developers" element={<AdaptiveMarketingRoute>{withBoundary(<Developers />)}</AdaptiveMarketingRoute>} />
         <Route path="/developers" element={<Navigate to="/Developers" replace />} />
-        <Route path="/Developers/MCP" element={withBoundary(<DevelopersMCP />)} />
+        <Route path="/Developers/MCP" element={<AdaptiveMarketingRoute>{withBoundary(<DevelopersMCP />)}</AdaptiveMarketingRoute>} />
         <Route path="/developers/mcp" element={<Navigate to="/Developers/MCP" replace />} />
-        <Route path="/HowItWorks" element={withBoundary(<HowItWorks />)} />
+        <Route path="/HowItWorks" element={<AdaptiveMarketingRoute>{withBoundary(<HowItWorks />)}</AdaptiveMarketingRoute>} />
         <Route path="/howitworks" element={<Navigate to="/HowItWorks" replace />} />
-        <Route path="/Testimonials" element={withBoundary(<Testimonials />)} />
+        <Route path="/Testimonials" element={<AdaptiveMarketingRoute>{withBoundary(<Testimonials />)}</AdaptiveMarketingRoute>} />
         <Route path="/testimonials" element={<Navigate to="/Testimonials" replace />} />
-        <Route path="/Contact" element={withBoundary(<Contact />)} />
+        <Route path="/Contact" element={<AdaptiveMarketingRoute>{withBoundary(<Contact />)}</AdaptiveMarketingRoute>} />
         <Route path="/contact" element={<Navigate to="/Contact" replace />} />
-        <Route path="/Help" element={withBoundary(<Help />)} />
+        <Route path="/Help" element={<AdaptiveMarketingRoute>{withBoundary(<Help />)}</AdaptiveMarketingRoute>} />
         <Route path="/help" element={<Navigate to="/Help" replace />} />
-        <Route path="/Help/:slug" element={withBoundary(<HelpCategory />)} />
-        <Route path="/help/:slug" element={withBoundary(<HelpCategory />)} />
+        <Route path="/Help/:slug" element={<AdaptiveMarketingRoute>{withBoundary(<HelpCategory />)}</AdaptiveMarketingRoute>} />
+        <Route path="/help/:slug" element={<AdaptiveMarketingRoute>{withBoundary(<HelpCategory />)}</AdaptiveMarketingRoute>} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
@@ -245,6 +246,8 @@ const AuthenticatedApp = () => {
           <Route path="/Invoices" element={withBoundary(<Invoices />)} />
           <Route path="/Vault" element={withBoundary(<Vault />)} />
         </Route>
+
+
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
           <Route path="/admin" element={withBoundary(<AdminOverview />)} />

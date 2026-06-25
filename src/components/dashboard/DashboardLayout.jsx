@@ -17,7 +17,7 @@ const NAV_ITEMS = [
   { path: "/Account", label: "Account", icon: Settings },
 ];
 
-export default function DashboardLayout() {
+export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
@@ -200,7 +200,7 @@ export default function DashboardLayout() {
       {/* Main content — light surface, so internal pages stay readable */}
       <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 bg-background text-foreground">
         <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8">
-          <Outlet />
+          {children ?? <Outlet />}
         </div>
       </main>
     </div>
