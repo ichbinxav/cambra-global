@@ -8,12 +8,14 @@ import { useTranslation } from "@/lib/i18n.jsx";
 import AuroraBackground from "@/components/landing/AuroraBackground";
 import AnimatedSection from "@/components/landing/AnimatedSection";
 import SavingsCurveChart from "@/components/landing/SavingsCurveChart";
-import TestimonialsStrong from "@/components/landing/TestimonialsStrong";
+import TestimonialsCarousel from "@/components/landing/TestimonialsCarousel";
 import FounderLetter from "@/components/landing/FounderLetter";
 import StatsGrid from "@/components/landing/StatsGrid";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
+import IntegrationsLogos from "@/components/landing/IntegrationsLogos";
+import OneScanSection from "@/components/landing/OneScanSection";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
 const LANDING_JSON_LD = {
@@ -649,10 +651,10 @@ export default function Landing() {
         <Hero />
         <StatsGrid />
         <ProblemSectionWow />
+        <OneScanSection />
+        <IntegrationsLogos />
         <HowItWorksSection />
-        <div id="testimonials">
-          <TestimonialsStrong />
-        </div>
+        <TestimonialsCarousel />
         <FounderLetter />
         <PricingDual />
         <StopLeavingMarginCTA />

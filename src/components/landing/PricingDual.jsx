@@ -93,10 +93,10 @@ export default function PricingDual() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-2 gap-3 sm:gap-5">
           {/* LEFT — FREE / Infrastructure */}
           <div
-            className="relative rounded-3xl p-8 sm:p-10 overflow-hidden"
+            className="relative rounded-3xl p-5 sm:p-10 overflow-hidden"
             style={{
               background:
                 "linear-gradient(180deg, #f5f9ff 0%, #e6efff 100%)",
@@ -150,7 +150,7 @@ export default function PricingDual() {
 
           {/* RIGHT — 25% / Recovery */}
           <div
-            className="relative rounded-3xl p-8 sm:p-10 overflow-hidden"
+            className="relative rounded-3xl p-5 sm:p-10 overflow-hidden"
             style={{
               background:
                 "linear-gradient(180deg, #0b1226 0%, #060912 100%)",
