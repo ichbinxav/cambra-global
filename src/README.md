@@ -22,8 +22,10 @@ CAMBRA is a buy-side infrastructure operating system for independent European br
 
 ## Local setup
 
+```bash
 npm install
 npm run dev
+```
 
 ## Environment variables
 
@@ -32,11 +34,13 @@ Backend secrets (APP_DOMAIN, STRIPE_*, BENCHMARK_ANON_SALT) are in Base44 secret
 
 ## Validation
 
+```bash
 npm run build       # must pass
 npm run lint        # must pass
-npm run typecheck   # must pass (ui/ wrappers excluded per jsconfig.json)
+npm run typecheck   # must pass (UI wrappers may be narrowly excluded)
 npx vitest run      # 33 tests
 npm audit --omit=dev
+```
 
 ## Base44 functions (25 total)
 
