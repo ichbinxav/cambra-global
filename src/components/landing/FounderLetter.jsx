@@ -1,147 +1,248 @@
 import React from "react";
-import { Quote } from "lucide-react";
+import { motion } from "framer-motion";
 
 /**
- * Founder letter — unified single dark card (no split light/dark).
- * Photo + quote sit inside ONE coherent card matching landing's dark editorial language.
+ * Founder letter — editorial "open letter" redesign.
+ * Large serif-feel quote, vertical layout with photo as portrait medallion,
+ * cinematic dark surface with corner ornaments and signature flourish.
  */
 const FOUNDER_PHOTO =
   "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d863d71f2_0347F92E-E1B9-4977-A6B1-85897923556A.jpeg";
 
 export default function FounderLetter() {
   return (
-    <section className="relative py-16 sm:py-24 overflow-hidden">
-      <div className="relative max-w-2xl mx-auto px-6 sm:px-10 text-center">
-        {/* eyebrow */}
-        <span
-          className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
-          style={{
-            border: "1px solid rgba(255,255,255,0.14)",
-            background: "rgba(255,255,255,0.03)",
-          }}
-        >
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
-          </span>
-          <span className="text-[10px] uppercase tracking-[0.24em] font-bold text-white/70">
-            Meet the founder
-          </span>
-        </span>
+    <section className="relative py-20 sm:py-28 overflow-hidden">
+      {/* ambient cyan halo */}
+      <div
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          width: 700, height: 700, left: "50%", top: "30%", transform: "translate(-50%, -50%)",
+          background: "radial-gradient(circle, rgba(34,211,238,0.07) 0%, transparent 70%)",
+          filter: "blur(80px)",
+        }}
+      />
 
-        <h2
-          className="text-white mb-8"
-          style={{
-            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(28px, 4.2vw, 44px)",
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-            lineHeight: 1.05,
-          }}
+      <div className="relative max-w-3xl mx-auto px-6 sm:px-10">
+        {/* Eyebrow */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
         >
-          A note from{" "}
           <span
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
             style={{
-              background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              border: "1px solid rgba(255,255,255,0.14)",
+              background: "rgba(255,255,255,0.03)",
             }}
           >
-            the founder.
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.28em] font-bold text-white/70">
+              An open letter
+            </span>
           </span>
-        </h2>
+        </motion.div>
 
-        {/* UNIFIED CARD — photo left, quote right, single surface */}
-        <div
-          className="relative rounded-2xl overflow-hidden text-left"
+        {/* THE LETTER — single editorial surface */}
+        <motion.article
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="relative rounded-3xl overflow-hidden"
           style={{
-            background: "linear-gradient(180deg, #0b1020 0%, #07090f 100%)",
+            background:
+              "linear-gradient(180deg, #0d1224 0%, #060810 100%)",
             border: "1px solid rgba(255,255,255,0.10)",
-            boxShadow: "0 20px 50px -20px rgba(0,0,0,0.5)",
+            boxShadow:
+              "0 40px 100px -30px rgba(0,0,0,0.7), 0 0 60px -20px rgba(34,211,238,0.12)",
           }}
         >
-          {/* corner glow */}
-          <div
+          {/* corner ornaments — minimalist editorial brackets */}
+          <span
             aria-hidden
-            className="absolute pointer-events-none"
+            className="absolute top-5 left-5 w-6 h-6"
             style={{
-              width: 320, height: 320, right: "-15%", top: "-30%",
-              background: "radial-gradient(circle, rgba(34,211,238,0.18) 0%, transparent 70%)",
-              filter: "blur(50px)",
+              borderTop: "1px solid rgba(34,211,238,0.5)",
+              borderLeft: "1px solid rgba(34,211,238,0.5)",
+            }}
+          />
+          <span
+            aria-hidden
+            className="absolute top-5 right-5 w-6 h-6"
+            style={{
+              borderTop: "1px solid rgba(34,211,238,0.5)",
+              borderRight: "1px solid rgba(34,211,238,0.5)",
+            }}
+          />
+          <span
+            aria-hidden
+            className="absolute bottom-5 left-5 w-6 h-6"
+            style={{
+              borderBottom: "1px solid rgba(34,211,238,0.5)",
+              borderLeft: "1px solid rgba(34,211,238,0.5)",
+            }}
+          />
+          <span
+            aria-hidden
+            className="absolute bottom-5 right-5 w-6 h-6"
+            style={{
+              borderBottom: "1px solid rgba(34,211,238,0.5)",
+              borderRight: "1px solid rgba(34,211,238,0.5)",
             }}
           />
 
-          <div className="relative grid grid-cols-12 gap-0">
-            {/* PHOTO — same dark surface, no white card cut */}
-            <div className="col-span-5 sm:col-span-4 relative" style={{ minHeight: 200 }}>
-              <img
-                src={FOUNDER_PHOTO}
-                alt="Xavier M. Contero — Founder of CAMBRA"
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{ filter: "grayscale(85%) contrast(1.05) brightness(0.95)" }}
-              />
-              {/* fade into card so it feels unified, not pasted */}
+          {/* watermark "C" */}
+          <span
+            aria-hidden
+            className="absolute select-none pointer-events-none"
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: 360,
+              fontWeight: 900,
+              letterSpacing: "-0.08em",
+              lineHeight: 1,
+              right: "-3rem",
+              bottom: "-6rem",
+              color: "rgba(255,255,255,0.025)",
+            }}
+          >
+            C
+          </span>
+
+          <div className="relative px-7 sm:px-14 py-14 sm:py-20 text-center">
+            {/* Portrait medallion */}
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="relative mx-auto mb-10"
+              style={{ width: 96, height: 96 }}
+            >
+              {/* glow ring */}
               <div
                 aria-hidden
-                className="absolute inset-0"
+                className="absolute inset-0 rounded-full"
                 style={{
                   background:
-                    "linear-gradient(90deg, transparent 55%, rgba(11,16,32,0.85) 100%)",
+                    "conic-gradient(from 180deg, rgba(34,211,238,0.6), rgba(96,165,250,0.4), rgba(34,211,238,0.6))",
+                  padding: 2,
+                  filter: "blur(0.5px)",
                 }}
               />
-            </div>
-
-            {/* QUOTE */}
-            <div className="col-span-7 sm:col-span-8 p-5 sm:p-7 flex flex-col">
-              <Quote size={18} style={{ color: "#22d3ee" }} className="mb-3 shrink-0" />
-
-              <p
-                className="text-white mb-2 flex-1"
+              <div
+                className="relative rounded-full overflow-hidden"
                 style={{
-                  fontSize: "clamp(13px, 1.6vw, 16px)",
-                  lineHeight: 1.5,
-                  fontWeight: 500,
-                  letterSpacing: "-0.005em",
+                  width: 96, height: 96,
+                  margin: 2,
+                  width: "calc(100% - 4px)",
+                  height: "calc(100% - 4px)",
+                  border: "1px solid rgba(0,0,0,0.4)",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
                 }}
               >
-                After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.
-              </p>
-              <p
-                className="text-white/55 mb-5"
-                style={{ fontSize: "clamp(11px, 1.3vw, 13px)", lineHeight: 1.5 }}
-              >
-                That's why I started CAMBRA.
-              </p>
-
-              <div
-                className="pt-4 flex items-center justify-between gap-2"
-                style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
-              >
-                <div className="min-w-0">
-                  <p className="text-white text-[12px] font-bold tracking-tight truncate">
-                    Xavier M. Contero
-                  </p>
-                  <p
-                    className="text-[9px] uppercase tracking-[0.22em] font-bold text-white/45 mt-0.5"
-                    style={{ letterSpacing: "0.22em" }}
-                  >
-                    Founder · CAMBRA
-                  </p>
-                </div>
-                <span
-                  className="text-[8px] uppercase tracking-[0.22em] font-bold px-2 py-1 rounded-full shrink-0"
-                  style={{
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    color: "rgba(255,255,255,0.75)",
-                  }}
-                >
-                  Paris
-                </span>
+                <img
+                  src={FOUNDER_PHOTO}
+                  alt="Xavier M. Contero"
+                  className="w-full h-full object-cover"
+                  style={{ filter: "grayscale(80%) contrast(1.08)" }}
+                />
               </div>
+            </motion.div>
+
+            {/* Opening dash — editorial flourish */}
+            <div
+              aria-hidden
+              className="mx-auto mb-8"
+              style={{
+                width: 40,
+                height: 1,
+                background: "linear-gradient(90deg, transparent, rgba(34,211,238,0.7), transparent)",
+              }}
+            />
+
+            {/* The letter body — large, intimate, serif-feel */}
+            <p
+              className="text-white/95 mx-auto"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(20px, 2.6vw, 28px)",
+                lineHeight: 1.45,
+                letterSpacing: "-0.02em",
+                fontWeight: 400,
+                maxWidth: 580,
+              }}
+            >
+              After years inside global companies, I realised independent brands were operating without the infrastructure they deserved.
+            </p>
+
+            <p
+              className="mt-6 mx-auto"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(18px, 2.2vw, 24px)",
+                lineHeight: 1.5,
+                letterSpacing: "-0.015em",
+                fontWeight: 400,
+                maxWidth: 540,
+                background:
+                  "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #22d3ee 100%)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              That's why I started CAMBRA.
+            </p>
+
+            {/* Closing dash */}
+            <div
+              aria-hidden
+              className="mx-auto my-10"
+              style={{
+                width: 40,
+                height: 1,
+                background: "linear-gradient(90deg, transparent, rgba(34,211,238,0.7), transparent)",
+              }}
+            />
+
+            {/* Signature flourish — handwritten feel */}
+            <p
+              className="mb-2"
+              style={{
+                fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
+                fontSize: "clamp(28px, 3.5vw, 36px)",
+                color: "rgba(34,211,238,0.85)",
+                letterSpacing: "0.01em",
+                lineHeight: 1,
+                transform: "rotate(-2deg)",
+                display: "inline-block",
+              }}
+            >
+              Xavier
+            </p>
+
+            <div className="mt-3 flex items-center justify-center gap-2">
+              <p className="text-white text-[12px] font-bold tracking-tight">
+                Xavier M. Contero
+              </p>
+              <span className="text-white/30">·</span>
+              <p
+                className="text-[9px] uppercase font-bold text-white/55"
+                style={{ letterSpacing: "0.22em" }}
+              >
+                Founder · Paris
+              </p>
             </div>
           </div>
-        </div>
+        </motion.article>
       </div>
     </section>
   );
