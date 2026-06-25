@@ -788,6 +788,7 @@ export default function Analyzer() {
               confirmed={confirmedTools}
               dismissed={dismissedTools}
               onToggle={handleToggleTool}
+              discovering={discovery.status === "running"}
             />
 
             {/* Manual section */}

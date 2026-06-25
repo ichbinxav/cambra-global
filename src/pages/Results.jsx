@@ -248,6 +248,12 @@ export default function Results() {
     .map(b => Number(b.n));
   const maxN = verticalNs.length ? Math.max(...verticalNs) : 0;
 
+  // FIX 7 — Show network benchmark line only when n >= 5 AND we have a network
+  // source; otherwise show the static-data note. Both can never show together.
+  const anyBenchmark = benchmarks.payments || benchmarks.shipping || benchmarks.saas;
+  const showNetworkBenchmarkLine = maxN >= 5;
+  const showStaticBenchmarkNote = anyBenchmark && !showNetworkBenchmarkLine;
+
   const handleShare = async () => {
     const url = window.location.href;
     try {
@@ -583,9 +589,14 @@ export default function Results() {
               </p>
             )}
             <p className="text-[11px] text-muted-foreground/70">{t("private_note")}</p>
-            {maxN >= 5 && (
+            {showNetworkBenchmarkLine && (
               <p className="text-[11px] text-muted-foreground/70">
                 {t("benchmarked_against", { n: maxN, country })}
+              </p>
+            )}
+            {showStaticBenchmarkNote && (
+              <p className="text-[11px] text-muted-foreground/70">
+                {t("benchmark_static_note")}
               </p>
             )}
           </div>

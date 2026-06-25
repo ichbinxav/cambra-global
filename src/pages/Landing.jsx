@@ -295,7 +295,7 @@ function PricingCTASection() {
         <SectionLabel className="mb-6">{t("pricing_model")}</SectionLabel>
         <h2 className="text-display text-white mb-8">{t("pricing_headline")}</h2>
 
-        <ul className="space-y-2.5 text-[14px] mb-10 inline-block text-left">
+        <ul className="space-y-2.5 text-[14px] mb-10 text-left w-full sm:w-auto sm:inline-block">
           {lines.map((l, i) => (
             <li key={i} className="flex items-center gap-3 text-white/75">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />

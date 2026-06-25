@@ -386,6 +386,44 @@ const DICT = {
     minutes_ago:          "{n}m ago",
     hours_ago:            "{n}h ago",
     days_ago:             "{n}d ago",
+
+    /* FIX 1 — ConnectTools category labels */
+    cat_payments:         "Payments",
+    cat_commerce:         "Commerce",
+    cat_banking:          "Banking",
+    cat_shipping:         "Shipping",
+    cat_marketing:        "Marketing",
+    cat_finance:          "Finance",
+    cat_support:          "Support",
+    cat_hr:               "HR",
+    cat_telecom:          "Telecom",
+    cat_logistics:        "Logistics",
+    cat_analytics:        "Analytics",
+
+    /* FIX 2 — Dashboard strings */
+    savings_trend:        "Savings Trend",
+    monthly_savings:      "Monthly Savings",
+    to_date:              "to date",
+    no_deal_yet:          "Savings tracking starts once your first deal is activated",
+    infrastructure_empty_dashboard: "Run the Analyzer to map your infrastructure",
+    verified_with_stripe: "Verified with Stripe",
+    connect_stripe_cta:   "Connect Stripe to verify →",
+    start_analysis_cta:   "Start free analysis →",
+    feature_detection:    "Automatic detection",
+    feature_benchmark:    "Benchmark comparison",
+    feature_savings:      "Savings calculation",
+
+    /* FIX 4 — Toast keys */
+    sync_success:         "Sync completed successfully",
+    sync_error:           "Sync failed — please try again",
+    connect_success:      "Connected successfully",
+    connect_error:        "Connection failed — please try again",
+
+    /* FIX 5 — Discovery empty state */
+    discovery_empty:      "We couldn't detect any tools automatically. Add them manually below.",
+
+    /* FIX 7 — Results static benchmark note */
+    benchmark_static_note:"Benchmark based on CAMBRA reference data — network sample growing",
   },
 
   fr: {
@@ -703,6 +741,44 @@ const DICT = {
     minutes_ago:          "il y a {n} min",
     hours_ago:            "il y a {n} h",
     days_ago:             "il y a {n} j",
+
+    /* FIX 1 — ConnectTools category labels */
+    cat_payments:         "Paiements",
+    cat_commerce:         "Commerce",
+    cat_banking:          "Banque",
+    cat_shipping:         "Expédition",
+    cat_marketing:        "Marketing",
+    cat_finance:          "Finance",
+    cat_support:          "Support",
+    cat_hr:               "Ressources Humaines",
+    cat_telecom:          "Télécom",
+    cat_logistics:        "Logistique",
+    cat_analytics:        "Analytique",
+
+    /* FIX 2 — Dashboard strings */
+    savings_trend:        "Tendance des économies",
+    monthly_savings:      "Économies mensuelles",
+    to_date:              "à ce jour",
+    no_deal_yet:          "Le suivi des économies démarre dès que votre premier deal est activé",
+    infrastructure_empty_dashboard: "Lancez l'Analyseur pour cartographier votre infrastructure",
+    verified_with_stripe: "Vérifié avec Stripe",
+    connect_stripe_cta:   "Connecter Stripe pour vérifier →",
+    start_analysis_cta:   "Lancer l'analyse gratuite →",
+    feature_detection:    "Détection automatique",
+    feature_benchmark:    "Comparaison benchmark",
+    feature_savings:      "Calcul des économies",
+
+    /* FIX 4 — Toast keys */
+    sync_success:         "Synchronisation réussie",
+    sync_error:           "Synchronisation échouée — veuillez réessayer",
+    connect_success:      "Connexion réussie",
+    connect_error:        "Connexion échouée — veuillez réessayer",
+
+    /* FIX 5 — Discovery empty state */
+    discovery_empty:      "Nous n'avons pas pu détecter d'outils automatiquement. Ajoutez-les manuellement ci-dessous.",
+
+    /* FIX 7 — Results static benchmark note */
+    benchmark_static_note:"Benchmark basé sur les données de référence CAMBRA — échantillon réseau en croissance",
   },
 
   es: {
@@ -1020,6 +1096,44 @@ const DICT = {
     minutes_ago:          "hace {n} min",
     hours_ago:            "hace {n} h",
     days_ago:             "hace {n} d",
+
+    /* FIX 1 — ConnectTools category labels */
+    cat_payments:         "Pagos",
+    cat_commerce:         "Comercio",
+    cat_banking:          "Banca",
+    cat_shipping:         "Envíos",
+    cat_marketing:        "Marketing",
+    cat_finance:          "Finanzas",
+    cat_support:          "Soporte",
+    cat_hr:               "RRHH",
+    cat_telecom:          "Telecom",
+    cat_logistics:        "Logística",
+    cat_analytics:        "Analítica",
+
+    /* FIX 2 — Dashboard strings */
+    savings_trend:        "Tendencia de ahorros",
+    monthly_savings:      "Ahorros mensuales",
+    to_date:              "hasta la fecha",
+    no_deal_yet:          "El seguimiento de ahorros comienza cuando se activa tu primer deal",
+    infrastructure_empty_dashboard: "Ejecuta el Analizador para mapear tu infraestructura",
+    verified_with_stripe: "Verificado con Stripe",
+    connect_stripe_cta:   "Conectar Stripe para verificar →",
+    start_analysis_cta:   "Iniciar análisis gratuito →",
+    feature_detection:    "Detección automática",
+    feature_benchmark:    "Comparación de benchmark",
+    feature_savings:      "Cálculo de ahorros",
+
+    /* FIX 4 — Toast keys */
+    sync_success:         "Sincronización completada",
+    sync_error:           "Sincronización fallida — inténtalo de nuevo",
+    connect_success:      "Conexión exitosa",
+    connect_error:        "Conexión fallida — inténtalo de nuevo",
+
+    /* FIX 5 — Discovery empty state */
+    discovery_empty:      "No pudimos detectar ninguna herramienta automáticamente. Añádelas manualmente abajo.",
+
+    /* FIX 7 — Results static benchmark note */
+    benchmark_static_note:"Benchmark basado en datos de referencia CAMBRA — muestra de red en crecimiento",
   },
 };
 

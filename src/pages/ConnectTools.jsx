@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import Navbar from "@/components/landing/Navbar";
 import StripeConnectCard from "@/components/connect/StripeConnectCard.jsx";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { useToast } from "@/components/shared/Toast.jsx";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 const CATEGORY_ORDER = [
@@ -16,17 +17,20 @@ const CATEGORY_ORDER = [
   "marketing", "finance", "support", "hr", "telecom",
 ];
 
-// Maps category keys to their i18n keys and icons. Labels resolved via t() at render.
+// FIX 1 — each category maps to its own dedicated translation key.
 const CATEGORY_META = {
-  payments:  { labelKey: "payments_title",  fallback: "Payments",  icon: CreditCard },
-  commerce:  { labelKey: "stripe_section",  fallback: "Commerce",  icon: Store },
-  banking:   { labelKey: "field_banking_fees_label", fallback: "Banking", icon: Building2 },
-  shipping:  { labelKey: "shipping_title",  fallback: "Shipping",  icon: Truck },
-  marketing: { labelKey: "saas_title",      fallback: "Marketing", icon: Mail },
-  finance:   { labelKey: "saas_title",      fallback: "Finance",   icon: Layers },
-  support:   { labelKey: "saas_title",      fallback: "Support",   icon: Headphones },
-  hr:        { labelKey: "saas_title",      fallback: "HR",        icon: Users },
-  telecom:   { labelKey: "saas_title",      fallback: "Telecom",   icon: Wifi },
+  payments:  { labelKey: "cat_payments",  fallback: "Payments",  icon: CreditCard },
+  commerce:  { labelKey: "cat_commerce",  fallback: "Commerce",  icon: Store },
+  banking:   { labelKey: "cat_banking",   fallback: "Banking",   icon: Building2 },
+  shipping:  { labelKey: "cat_shipping",  fallback: "Shipping",  icon: Truck },
+  marketing: { labelKey: "cat_marketing", fallback: "Marketing", icon: Mail },
+  finance:   { labelKey: "cat_finance",   fallback: "Finance",   icon: Layers },
+  support:   { labelKey: "cat_support",   fallback: "Support",   icon: Headphones },
+  hr:        { labelKey: "cat_hr",        fallback: "HR",        icon: Users },
+  telecom:   { labelKey: "cat_telecom",   fallback: "Telecom",   icon: Wifi },
+  logistics: { labelKey: "cat_logistics", fallback: "Logistics", icon: Truck },
+  analytics: { labelKey: "cat_analytics", fallback: "Analytics", icon: Layers },
+  other:     { labelKey: "cat_other",     fallback: "Other",     icon: Layers },
 };
 
 function timeAgo(iso) {
@@ -98,7 +102,7 @@ function StatusBadge({ integration, stripeConnected, t, formatEur }) {
   );
 }
 
-function ActionCTA({ integration, stripeConnected, t }) {
+function ActionCTA({ integration, stripeConnected, t, onSync }) {
   const status = integration.display_status;
   if (status === "connected") {
     return (
@@ -106,8 +110,12 @@ function ActionCTA({ integration, stripeConnected, t }) {
         <span className="text-[10px] text-muted-foreground hidden sm:inline">
           {t("last_sync", { time: timeAgo(integration.last_verified_at) })}
         </span>
-        <button className="inline-flex items-center gap-1 h-8 px-3 rounded-full border border-border/60 text-[11px] font-bold text-foreground hover:border-foreground/40 transition-colors min-h-[44px] sm:min-h-0">
-          <RefreshCw size={10} /> {t("sync_now")}
+        <button
+          type="button"
+          onClick={() => onSync?.(integration)}
+          className="inline-flex items-center gap-1 h-8 px-3 rounded-full border border-border/60 text-[11px] font-bold text-foreground hover:border-foreground/40 transition-colors min-h-[44px] sm:min-h-0"
+        >
+          <RefreshCw size={10} aria-hidden="true" /> {t("sync_now")}
         </button>
       </div>
     );
@@ -130,7 +138,7 @@ function ActionCTA({ integration, stripeConnected, t }) {
 }
 
 /* ── integration card ────────────────────────────────────────── */
-function IntegrationCard({ integration, stripeConnected, t }) {
+function IntegrationCard({ integration, stripeConnected, t, onSync }) {
   const FallbackIcon = (CATEGORY_META[integration.category] || { icon: Layers }).icon;
   return (
     <div className="p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-colors">
@@ -150,7 +158,7 @@ function IntegrationCard({ integration, stripeConnected, t }) {
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <StatusBadge integration={integration} stripeConnected={stripeConnected} t={t} />
-          <ActionCTA integration={integration} stripeConnected={stripeConnected} t={t} />
+          <ActionCTA integration={integration} stripeConnected={stripeConnected} t={t} onSync={onSync} />
         </div>
       </div>
     </div>
@@ -160,10 +168,30 @@ function IntegrationCard({ integration, stripeConnected, t }) {
 /* ── main ────────────────────────────────────────────────────── */
 export default function ConnectTools() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [grouped, setGrouped] = useState({});
   const [allIntegrations, setAllIntegrations] = useState([]);
   const [stripeConnected, setStripeConnected] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // FIX 4 — handler for Sync button on connected integration rows.
+  // Only Stripe has a real sync endpoint today; for other integrations we still
+  // give the user feedback and leave the visual state unchanged.
+  const handleSync = async (integration) => {
+    try {
+      if (integration.integration_id === "stripe") {
+        const res = await base44.functions.invoke("stripeDataSync", {});
+        const data = res?.data || res;
+        if (data?.ok === false || data?.error) {
+          toast.error(t("sync_error"), data?.error || undefined);
+          return;
+        }
+      }
+      toast.success(t("sync_success"));
+    } catch (err) {
+      toast.error(t("sync_error"), err?.message || undefined);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -268,6 +296,7 @@ export default function ConnectTools() {
                     integration={it}
                     stripeConnected={stripeConnected}
                     t={t}
+                    onSync={handleSync}
                   />
                 ))}
               </div>

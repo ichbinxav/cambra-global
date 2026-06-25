@@ -27,21 +27,33 @@ function formatEurLocal(n, lang) {
   }
 }
 
+// FIX 2 — Each category carries its own i18n key so its header renders translated.
 const NODE_CATEGORY = {
-  payment_provider:   { key: "Payments",  icon: CreditCard },
-  commerce_platform:  { key: "Commerce",  icon: Store },
-  shipping_carrier:   { key: "Shipping",  icon: Truck },
-  logistics:          { key: "Shipping",  icon: Truck },
-  marketing:          { key: "Marketing", icon: Mail },
-  saas_tool:          { key: "SaaS",      icon: Package },
-  analytics:          { key: "SaaS",      icon: Package },
-  support:            { key: "Support",   icon: Headphones },
-  bank:               { key: "Banking",   icon: Building2 },
-  insurance:          { key: "Banking",   icon: Building2 },
-  telecom:            { key: "Telecom",   icon: Wifi },
-  hr_tool:            { key: "HR",        icon: Users },
+  payment_provider:   { key: "Payments",  i18n: "cat_payments",  icon: CreditCard },
+  commerce_platform:  { key: "Commerce",  i18n: "cat_commerce",  icon: Store },
+  shipping_carrier:   { key: "Shipping",  i18n: "cat_shipping",  icon: Truck },
+  logistics:          { key: "Shipping",  i18n: "cat_shipping",  icon: Truck },
+  marketing:          { key: "Marketing", i18n: "cat_marketing", icon: Mail },
+  saas_tool:          { key: "SaaS",      i18n: "saas_title",    icon: Package },
+  analytics:          { key: "SaaS",      i18n: "saas_title",    icon: Package },
+  support:            { key: "Support",   i18n: "cat_support",   icon: Headphones },
+  bank:               { key: "Banking",   i18n: "cat_banking",   icon: Building2 },
+  insurance:          { key: "Banking",   i18n: "cat_banking",   icon: Building2 },
+  telecom:            { key: "Telecom",   i18n: "cat_telecom",   icon: Wifi },
+  hr_tool:            { key: "HR",        i18n: "cat_hr",        icon: Users },
 };
 const CATEGORY_ORDER = ["Payments", "Commerce", "Shipping", "Marketing", "SaaS", "Banking", "Support", "HR", "Telecom"];
+const CATEGORY_I18N_KEY = {
+  Payments: "cat_payments",
+  Commerce: "cat_commerce",
+  Shipping: "cat_shipping",
+  Marketing: "cat_marketing",
+  SaaS:     "saas_title",
+  Banking:  "cat_banking",
+  Support:  "cat_support",
+  HR:       "cat_hr",
+  Telecom:  "cat_telecom",
+};
 
 function nodeBadge(node, t) {
   const status = node.status || "detected";
@@ -208,8 +220,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick stats strip — 3 verticals */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* FIX 3C — Quick stats: 2 cols on mobile, 3 on desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {[
           { label: t("payments_title"), value: latest.payment_savings, icon: CreditCard },
           { label: t("shipping_title"), value: latest.shipping_savings, icon: Truck },
@@ -245,8 +257,10 @@ export default function Dashboard() {
               return (
                 <div key={cat} className="rounded-2xl border border-border/50 bg-card overflow-hidden">
                   <div className="px-4 py-2.5 border-b border-border/40 bg-secondary/30 flex items-center gap-2">
-                    <Icon size={12} className="text-muted-foreground" />
-                    <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground">{cat}</span>
+                    <Icon size={12} className="text-muted-foreground" aria-hidden="true" />
+                    <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground">
+                      {t(CATEGORY_I18N_KEY[cat] || "cat_other")}
+                    </span>
                     <span className="text-[10px] text-muted-foreground/50">({items.length})</span>
                   </div>
                   <div className="divide-y divide-border/30">
@@ -260,7 +274,7 @@ export default function Dashboard() {
                           </span>
                           {Number(n.monthly_cost) > 0 && (
                             <span className="text-xs font-bold tabular-nums whitespace-nowrap">
-                              {formatEur(Number(n.monthly_cost))}/mo
+                              {formatEur(Number(n.monthly_cost))}/{t("per_mo_short")}
                             </span>
                           )}
                         </div>
@@ -274,12 +288,16 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── Savings trend (State C only: Stripe connected OR live deal) ── */}
+      {/* FIX 3C — Savings trend wrapped with horizontal scroll on mobile */}
       {(stripeConnected || hasLiveDeal) && brand && (
-        <SavingsTrendPanel
-          brandId={brand.id}
-          identifiedMonthly={(Number(latest.total_savings) || 0) / 12}
-        />
+        <div className="overflow-x-auto -mx-1 px-1">
+          <div className="min-w-[320px]">
+            <SavingsTrendPanel
+              brandId={brand.id}
+              identifiedMonthly={(Number(latest.total_savings) || 0) / 12}
+            />
+          </div>
+        </div>
       )}
 
       {/* ── M6 — Infrastructure status (unchanged) ── */}
