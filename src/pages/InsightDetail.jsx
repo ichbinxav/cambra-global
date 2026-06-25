@@ -5,10 +5,12 @@ import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
+import { useToast } from "@/components/shared/Toast.jsx";
 
 const CATEGORIES = { payments: "Payments", margins: "Margins", scaling: "Scaling", infrastructure: "Infrastructure" };
 
 export default function InsightDetail() {
+  const { toast } = useToast();
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(true);
   const [subscribed, setSubscribed] = useState(false);
@@ -58,11 +60,11 @@ export default function InsightDetail() {
     const status = res?.data?.status;
     if (status === 'activated_free' || status === 'already_active') {
       setSubscribed(true);
-      alert('Access activated — early partners free for life.');
+      toast.success('Access activated — early partners free for life.');
     } else if (status === 'requires_checkout') {
-      alert('Free seats are over. We will enable paid plan (€60/mo) soon.');
+      toast.info('Free seats are over. We will enable paid plan (€60/mo) soon.');
     } else if (res?.data?.error) {
-      alert(res.data.error);
+      toast.error(res.data.error);
     }
   };
 

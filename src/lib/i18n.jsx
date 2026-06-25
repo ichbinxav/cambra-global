@@ -1170,18 +1170,56 @@ function readStoredLang() {
   return "en";
 }
 
+// Ensure a meta tag exists; create it if missing. Returns the element.
+function ensureMeta(selector, attrs) {
+  let el = document.querySelector(selector);
+  if (!el) {
+    el = document.createElement("meta");
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    document.head.appendChild(el);
+  }
+  return el;
+}
+
 function updateMetaTags(lang) {
   try {
     const dict = DICT[lang] || DICT.en;
-    if (dict.meta_title) document.title = dict.meta_title;
-    let m = document.querySelector('meta[name="description"]');
-    if (!m) {
-      m = document.createElement("meta");
-      m.setAttribute("name", "description");
-      document.head.appendChild(m);
-    }
-    if (dict.meta_description) m.setAttribute("content", dict.meta_description);
+    const title = dict.meta_title;
+    const description = dict.meta_description;
+
+    // <html lang>
     document.documentElement.lang = lang;
+
+    // <title>
+    if (title) document.title = title;
+
+    // Standard description
+    if (description) {
+      ensureMeta('meta[name="description"]', { name: "description" })
+        .setAttribute("content", description);
+    }
+
+    // Open Graph
+    if (title) {
+      ensureMeta('meta[property="og:title"]', { property: "og:title" })
+        .setAttribute("content", title);
+    }
+    if (description) {
+      ensureMeta('meta[property="og:description"]', { property: "og:description" })
+        .setAttribute("content", description);
+    }
+    ensureMeta('meta[property="og:locale"]', { property: "og:locale" })
+      .setAttribute("content", { en: "en_GB", fr: "fr_FR", es: "es_ES" }[lang] || "en_GB");
+
+    // Twitter
+    if (title) {
+      ensureMeta('meta[name="twitter:title"]', { name: "twitter:title" })
+        .setAttribute("content", title);
+    }
+    if (description) {
+      ensureMeta('meta[name="twitter:description"]', { name: "twitter:description" })
+        .setAttribute("content", description);
+    }
   } catch {}
 }
 

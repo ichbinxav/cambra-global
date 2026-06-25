@@ -76,20 +76,29 @@ function tenantFilterByCreatedBy(principal, extra = {}) {
   if (!userEmail) return { ...extra, _impossible_tenant_match: "__no_identity__" };
   return { ...extra, created_by: userEmail };
 }
+// FIX 8 — Same hardened tenant assertion as apiV1 (mirrored).
+// Allows ownership fallback by created_by OR owner_email when the resource
+// has no organization_id; deny by default when no identity is present.
 function assertTenant(principal, resource) {
   if (!resource) return null;
+  const deny = () => { const e = new Error("not_found"); e.code = "not_found"; throw e; };
+  const userEmail = principal.user_email || principal.raw?.user_email;
   const orgId = principal.raw?.organization_id;
+  const ownsResource =
+    (!!userEmail) && (
+      (resource.created_by && resource.created_by === userEmail) ||
+      (resource.owner_email && resource.owner_email === userEmail)
+    );
+
   if (orgId) {
     if (resource.organization_id && resource.organization_id === orgId) return resource;
-    const e = new Error("not_found"); e.code = "not_found"; throw e;
+    if (!resource.organization_id && ownsResource) return resource;
+    deny();
   }
   if (isPlatformPrincipal(principal)) return resource;
-  const userEmail = principal.user_email || principal.raw?.user_email;
-  if (!userEmail) {
-    const e = new Error("not_found"); e.code = "not_found"; throw e;
-  }
-  if (resource.created_by && resource.created_by === userEmail) return resource;
-  const e = new Error("not_found"); e.code = "not_found"; throw e;
+  if (!userEmail) deny();
+  if (ownsResource) return resource;
+  deny();
 }
 
 // -----------------------------------------------------------------------------

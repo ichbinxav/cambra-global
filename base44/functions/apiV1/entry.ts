@@ -260,21 +260,34 @@ function tenantFilterByCreatedBy(principal, extra = {}) {
 
 // Validate that a single fetched resource belongs to the principal's tenant.
 // Throws not_found if it doesn't (so cross-tenant probing leaks nothing).
+//
+// FIX 8 — Hardened ownership fallback:
+//   - Org-scoped principal + resource has organization_id → exact match required.
+//   - Org-scoped principal + resource lacks organization_id → allow only if
+//     resource.created_by OR resource.owner_email matches principal.user_email.
+//   - User-scoped (OAuth) principal → allow if created_by OR owner_email match.
+//   - Platform API keys → pass through.
+//   - No identity at all → deny.
 function assertTenant(principal, resource) {
   if (!resource) return null;
+  const deny = () => { const err = new Error("not_found"); err.code = "not_found"; err.status = 404; throw err; };
+  const userEmail = principal.user_email || principal.raw?.user_email;
   const orgId = principal.raw?.organization_id;
+  const ownsResource =
+    (!!userEmail) && (
+      (resource.created_by && resource.created_by === userEmail) ||
+      (resource.owner_email && resource.owner_email === userEmail)
+    );
+
   if (orgId) {
     if (resource.organization_id && resource.organization_id === orgId) return resource;
-    const err = new Error("not_found"); err.code = "not_found"; err.status = 404; throw err;
+    if (!resource.organization_id && ownsResource) return resource;
+    deny();
   }
   if (isPlatformPrincipal(principal)) return resource;
-  // OAuth without org_id — fall back to created_by match
-  const userEmail = principal.user_email || principal.raw?.user_email;
-  if (!userEmail) {
-    const err = new Error("not_found"); err.code = "not_found"; err.status = 404; throw err;
-  }
-  if (resource.created_by && resource.created_by === userEmail) return resource;
-  const err = new Error("not_found"); err.code = "not_found"; err.status = 404; throw err;
+  if (!userEmail) deny();
+  if (ownsResource) return resource;
+  deny();
 }
 
 // -----------------------------------------------------------------------------
@@ -435,9 +448,51 @@ const RESOURCES = {
     scope: "read:reports",
     handler: async (base44, { query, principal }) => {
       const limit = Math.min(parseInt(query.limit || "50", 10), 200);
-      // FIX 3 — tenant isolation: scope reports by organization_id or created_by; deny by default
-      const filter = tenantFilterByCreatedBy(principal, { source_type: "report" });
-      const items = await base44.asServiceRole.entities.Document.filter(filter, "-created_date", limit).catch(() => []);
+      // FIX 7 — match POST /v1/reports persistence: a report stored with both
+      // owner_email AND created_by must be retrievable by either field, within
+      // the correct tenant scope (org-scoped principals are filtered first by
+      // organization_id; user-scoped principals match created_by OR owner_email).
+      const orgId = principal.raw?.organization_id;
+      const userEmail = principal.user_email || principal.raw?.user_email;
+
+      if (orgId) {
+        // Org-scoped token: org_id must match.
+        const filter = { source_type: "report", organization_id: orgId };
+        const items = await base44.asServiceRole.entities.Document
+          .filter(filter, "-created_date", limit).catch(() => []);
+        return { data: items, meta: { count: items.length } };
+      }
+
+      if (isPlatformPrincipal(principal)) {
+        const items = await base44.asServiceRole.entities.Document
+          .filter({ source_type: "report" }, "-created_date", limit).catch(() => []);
+        return { data: items, meta: { count: items.length } };
+      }
+
+      if (!userEmail) {
+        // No identity → deny by default (return empty, never list everything).
+        return { data: [], meta: { count: 0 } };
+      }
+
+      // User-scoped: match created_by OR owner_email.
+      const [byCreated, byOwner] = await Promise.all([
+        base44.asServiceRole.entities.Document
+          .filter({ source_type: "report", created_by: userEmail }, "-created_date", limit)
+          .catch(() => []),
+        base44.asServiceRole.entities.Document
+          .filter({ source_type: "report", owner_email: userEmail }, "-created_date", limit)
+          .catch(() => []),
+      ]);
+      // De-duplicate by id, preserve newest-first ordering.
+      const seen = new Set();
+      const merged = [];
+      for (const doc of [...byCreated, ...byOwner]) {
+        if (!doc || seen.has(doc.id)) continue;
+        seen.add(doc.id);
+        merged.push(doc);
+      }
+      merged.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
+      const items = merged.slice(0, limit);
       return { data: items, meta: { count: items.length } };
     },
   },

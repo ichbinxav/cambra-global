@@ -1,12 +1,21 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Minimal Vitest config for pure-logic unit tests (M0B).
-// scoreEngine.js is framework-free pure logic, so tests run in a plain node
-// environment with no DOM.
+// Root vitest config — picks up tests across src/ and base44/.
+// scoreEngine.js and other pure-logic tests run in node (no DOM).
+// ESM-safe __dirname equivalent (no Node CommonJS globals in this file).
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
   test: {
     environment: 'node',
     include: ['**/*.test.{js,jsx,ts,tsx}'],
     globals: true,
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
   },
 });

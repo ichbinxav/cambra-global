@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { base44 } from "@/api/base44Client";
+import { useToast } from "@/components/shared/Toast.jsx";
 
 export default function LeadModal() {
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [consent, setConsent] = useState(false);
@@ -41,7 +43,7 @@ export default function LeadModal() {
       setStep('thanks');
     } catch (err) {
       console.error('Lead submit error', err);
-      alert('Something went wrong. Please try again.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -66,7 +68,7 @@ export default function LeadModal() {
       setEmail(''); setWhatsapp(''); setConsent(false); setOptedIn(true); setCreatedId(null);
     } catch (e) {
       console.error('Lead opt-in error', e);
-      alert('Could not save your preference.');
+      toast.error('Could not save your preference.');
     } finally {
       setSubmitting(false);
     }

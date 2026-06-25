@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Zap, ArrowRight, CheckCircle2, Lock, FileSignature, Loader2, AlertTriangle } from "lucide-react";
+import { useToast } from "@/components/shared/Toast.jsx";
 
 /**
  * Unlock Savings — converts an estimated savings opportunity into a real
@@ -10,6 +11,7 @@ import { Zap, ArrowRight, CheckCircle2, Lock, FileSignature, Loader2, AlertTrian
  * This is the single canonical entry point for moving from analysis -> recovery.
  */
 export default function UnlockSavings() {
+  const { toast } = useToast();
   const [results, setResults] = useState([]);
   const [recs, setRecs] = useState([]);
   const [activations, setActivations] = useState([]);
@@ -77,7 +79,7 @@ export default function UnlockSavings() {
 
       await load();
     } catch (e) {
-      alert(e.message || "Failed to unlock savings");
+      toast.error(e.message || "Failed to unlock savings");
     }
     setBusyId(null);
   };

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useToast } from "@/components/shared/Toast.jsx";
 
 const PUBLIC_ROUTES = [
   "/",
@@ -37,18 +38,19 @@ const ADMIN_ROUTES = [
 ];
 
 function RouteRow({ route, html }) {
+  const { toast } = useToast();
   const taRef = useRef(null);
   const handleCopy = async () => {
     if (!html) return;
     try {
       await navigator.clipboard.writeText(html);
-      alert(`Copiado: ${route}`);
+      toast.success(`Copiado: ${route}`);
     } catch (e) {
       // fallback select
       try {
         taRef.current?.select();
         document.execCommand("copy");
-        alert(`Copiado (fallback): ${route}`);
+        toast.success(`Copiado (fallback): ${route}`);
       } catch {}
     }
   };

@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, Sparkles, TrendingUp, BookOpen } from "lucide-react";
 import PageHero from "@/components/shared/PageHero";
+import { useToast } from "@/components/shared/Toast.jsx";
 
 const CATEGORIES = {
   payments: { label: "Payments", color: "#1F4ED8" },
@@ -14,6 +15,7 @@ const CATEGORIES = {
 };
 
 export default function Insights() {
+  const { toast } = useToast();
   const [insights, setInsights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -44,11 +46,11 @@ export default function Insights() {
     const status = res?.data?.status;
     if (status === 'activated_free' || status === 'already_active') {
       setSubscribed(true);
-      alert('Access activated — early partners free for life.');
+      toast.success('Access activated — early partners free for life.');
     } else if (status === 'requires_checkout') {
-      alert('Free seats are over. We will enable paid plan (€60/mo) soon.');
+      toast.info('Free seats are over. We will enable paid plan (€60/mo) soon.');
     } else if (res?.data?.error) {
-      alert(res.data.error);
+      toast.error(res.data.error);
     }
   };
 

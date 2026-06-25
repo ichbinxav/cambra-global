@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Globe, MapPin, Users } from "lucide-react";
 import PageHero from "@/components/shared/PageHero";
+import { useToast } from "@/components/shared/Toast.jsx";
 
 const CATEGORIES = [
   { value: "all", label: "All categories" },
@@ -30,6 +31,7 @@ const CATEGORY_DESC = {
 };
 
 export default function Network() {
+  const { toast } = useToast();
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -70,11 +72,11 @@ export default function Network() {
     const status = res?.data?.status;
     if (status === 'activated_free' || status === 'already_active') {
       setSubscribed(true);
-      alert('Access activated — early partners free for life.');
+      toast.success('Access activated — early partners free for life.');
     } else if (status === 'requires_checkout') {
-      alert('Free seats are over. We will enable paid plan (€60/mo) soon.');
+      toast.info('Free seats are over. We will enable paid plan (€60/mo) soon.');
     } else if (res?.data?.error) {
-      alert(res.data.error);
+      toast.error(res.data.error);
     }
   };
 
