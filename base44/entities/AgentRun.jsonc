@@ -1,0 +1,139 @@
+{
+  "name": "AgentRun",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "agent_type": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas",
+        "recommendation",
+        "general"
+      ]
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "scheduled",
+        "post_analyzer",
+        "post_connection"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "completed",
+        "failed",
+        "awaiting_approval",
+        "approved",
+        "rejected"
+      ],
+      "default": "running"
+    },
+    "prompt_summary": {
+      "type": "string",
+      "description": "Short description of what the agent was asked to do."
+    },
+    "input_json": {
+      "type": "object",
+      "description": "The inputs provided to the agent."
+    },
+    "output_json": {
+      "type": "object",
+      "description": "The agent's output \u2014 recommendations, findings, proposed actions."
+    },
+    "actions_proposed": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Each action the agent wants to take. NEVER auto-executed."
+    },
+    "actions_approved": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Actions approved by a human admin."
+    },
+    "actions_rejected": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Actions rejected by a human admin."
+    },
+    "confidence": {
+      "type": "number",
+      "description": "0.0 to 1.0 \u2014 overall agent confidence."
+    },
+    "reasoning": {
+      "type": "string",
+      "description": "The agent's reasoning for its output."
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The data points the agent used."
+    },
+    "model_metadata": {
+      "type": "object",
+      "description": "Model name, version, token counts."
+    },
+    "requires_approval": {
+      "type": "boolean",
+      "default": true,
+      "description": "Always true. Cannot be overridden by callers."
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email of admin who approved."
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "engine_version": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "brand_id",
+    "agent_type",
+    "trigger"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

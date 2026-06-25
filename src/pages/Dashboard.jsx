@@ -13,6 +13,7 @@ import CumulativeSavingsChart from "@/components/dashboard/CumulativeSavingsChar
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import InfrastructureGraphPanel from "@/components/dashboard/InfrastructureGraphPanel";
 import LastScanBar from "@/components/dashboard/LastScanBar";
+import AIInsightsPanel from "@/components/dashboard/AIInsightsPanel";
 import GMVMetrics from "@/components/dashboard/GMVMetrics";
 import { CreditCard, Truck, Package, Store, ShieldCheck } from "lucide-react"; // ShieldCheck kept for quick actions only
 import RecommendationList from "@/components/recommendations/RecommendationList";
@@ -297,6 +298,9 @@ export default function Dashboard() {
 
           {/* M6 — Infrastructure Graph */}
           <InfrastructureGraphPanel />
+
+          {/* M8 — AI Insights (last 3 agent runs) */}
+          <AIInsightsPanel />
 
           {/* Recommendations */}
           <div className="relative rounded-2xl bg-card/95 backdrop-blur-sm border border-border/60 p-5 mt-3 overflow-hidden shadow-[0_8px_24px_-12px_rgba(0,0,0,0.08)]">

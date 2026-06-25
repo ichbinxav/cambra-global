@@ -77,6 +77,20 @@ Deno.serve(async (req) => {
     console.warn('runContinuousDiscovery failed (non-blocking):', e?.message || e);
   }
 
+  // ——— M8: Recommendation Agent (non-blocking) ———
+  // Synthesizes signals into a prioritized recommendation list. Awaits human approval.
+  // Failure here must NEVER interrupt the email/user flow.
+  try {
+    if (data.brand_id) {
+      await base44.asServiceRole.functions.invoke('runRecommendationAgent', {
+        brand_id: data.brand_id,
+        trigger: 'post_analyzer'
+      });
+    }
+  } catch (e) {
+    console.warn('runRecommendationAgent failed (non-blocking):', e?.message || e);
+  }
+
   const appDomain = Deno.env.get('APP_DOMAIN') || 'cambra.global';
 
   await base44.asServiceRole.integrations.Core.SendEmail({
