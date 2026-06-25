@@ -82,13 +82,19 @@ Deno.serve(async (req) => {
   }
 
   // ── Update the AgentRun ──────────────────────────────────────
-  await svc.entities.AgentRun.update(run_id, {
-    status: 'approved',
-    actions_approved: approvedArr,
-    actions_rejected: rejectedArr,
-    approved_by: user.email,
-    approved_at: nowIso,
-  });
+  let update_error = null;
+  try {
+    await svc.entities.AgentRun.update(run_id, {
+      status: 'approved',
+      actions_approved: approvedArr,
+      actions_rejected: rejectedArr,
+      approved_by: user.email,
+      approved_at: nowIso,
+    });
+  } catch (e) {
+    update_error = e?.message || String(e);
+    console.error('AgentRun update failed:', update_error);
+  }
 
   // ── Log to OperationalLog (best-effort) ──────────────────────
   try {
@@ -108,10 +114,11 @@ Deno.serve(async (req) => {
   } catch (_) { /* OperationalLog may be optional — non-fatal */ }
 
   return Response.json({
-    ok: true,
+    ok: !update_error,
     run_id,
     actions_approved_count: approvedArr.length,
     actions_rejected_count: rejectedArr.length,
     recommendations_written,
+    update_error,
   });
 });
