@@ -30,8 +30,8 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div
-      className="min-h-screen flex font-inter text-white"
-      style={{ background: "#0a0a0a" }}
+      className="flex font-inter text-white"
+      style={{ background: "#0a0a0a", minHeight: "100dvh", opacity: 1, visibility: "visible" }}
     >
       {/* Desktop Sidebar — premium dark editorial */}
       <aside
@@ -202,7 +202,7 @@ export default function DashboardLayout({ children }) {
       {/* Main content — unified dark editorial surface (matches landing identity) */}
       <main
         className="relative flex-1 min-w-0 pt-14 lg:pt-0 text-white"
-        style={{ background: "#0a0a0a" }}
+        style={{ background: "#0a0a0a", opacity: 1, visibility: "visible", minHeight: "100dvh" }}
       >
         {/* Ambient backdrop — subtle grid + radial glow, consistent with landing */}
         <div

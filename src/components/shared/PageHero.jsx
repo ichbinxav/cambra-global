@@ -37,7 +37,9 @@ export default function PageHero({
   // Premium navy hero — default
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      // Start visible — animation is an enhancement, never a gate. If framer-motion
+      // fails to mount on Safari, the hero is still on screen.
+      initial={{ opacity: 1, y: 0 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="relative rounded-2xl border border-white/[0.08] p-6 sm:p-9 mb-6 overflow-hidden"

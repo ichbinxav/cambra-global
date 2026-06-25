@@ -24,7 +24,8 @@ export default function RevealOnScroll({
 
   const variants = {
     hidden: {
-      opacity: 0,
+      opacity: 1, // SAFETY: never start invisible. The "reveal" is purely a
+                  // translate; if motion fails, content remains visible.
       y: direction === "up" ? 32 : direction === "down" ? -32 : 0,
       x: direction === "left" ? 32 : direction === "right" ? -32 : 0,
     },
@@ -40,6 +41,7 @@ export default function RevealOnScroll({
     <motion.div
       ref={ref}
       className={className}
+      style={{ opacity: 1, visibility: "visible" }}
       initial="hidden"
       animate={show ? "visible" : "hidden"}
       variants={variants}
