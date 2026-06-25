@@ -96,7 +96,7 @@ function LandingNavbar() {
 function Hero() {
   const { t } = useTranslation();
   return (
-    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", background: "#0a0a0a", color: "#ffffff" }}>
+    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "#ffffff" }}>
       {/* Cinematic ambient layers */}
       <AuroraBackground intensity={1} />
 
@@ -235,7 +235,7 @@ function ProblemSection() {
   ];
 
   return (
-    <section style={{ background: "#0a0a0a" }} className="relative py-24 sm:py-32 overflow-hidden">
+    <section className="relative py-24 sm:py-32 overflow-hidden">
       {/* ambient red wash for the "problem" mood */}
       <div
         aria-hidden
@@ -303,7 +303,7 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section id="how" style={{ background: "#0a0a0a" }} className="relative py-24 sm:py-32 overflow-hidden">
+    <section id="how" className="relative py-24 sm:py-32 overflow-hidden">
       {/* ambient blue wash */}
       <div
         aria-hidden
@@ -402,7 +402,7 @@ function BenchmarkSection() {
   ];
 
   return (
-    <section style={{ background: "#0a0a0a" }} className="relative py-24 sm:py-32 overflow-hidden">
+    <section className="relative py-24 sm:py-32 overflow-hidden">
       <div
         aria-hidden
         className="absolute pointer-events-none"
@@ -465,7 +465,7 @@ function PricingCTASection() {
   const lines = [t("pricing_line1"), t("pricing_line2"), t("pricing_line3"), t("pricing_line4")];
 
   return (
-    <section style={{ background: "#0a0a0a" }} className="py-24 sm:py-32 relative overflow-hidden">
+    <section className="py-24 sm:py-32 relative overflow-hidden">
       <div
         aria-hidden
         className="absolute pointer-events-none"
@@ -543,7 +543,7 @@ function LandingFooter() {
   const { t } = useTranslation();
   return (
     <footer
-      style={{ background: "#0a0a0a", borderTop: "1px solid rgba(255,255,255,0.06)" }}
+      style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
       className="py-10"
     >
       <div className="max-w-6xl mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -567,9 +567,33 @@ function LandingFooter() {
 
 export default function Landing() {
   return (
-    <div className="min-h-screen font-inter" style={{ background: "#0a0a0a", color: "#ffffff" }}>
+    <div
+      className="min-h-screen font-inter relative"
+      style={{
+        color: "#ffffff",
+        // Continuous editorial gradient — no flat #0a0a0a "cuts" between sections
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+      }}
+    >
+      {/* Fixed ambient noise/grid that unifies every section */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          opacity: 0.35,
+          maskImage:
+            "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+        }}
+      />
+
       <LandingNavbar />
-      <main>
+      <main className="relative">
         <Hero />
         <ProblemSection />
         <HowItWorksSection />
