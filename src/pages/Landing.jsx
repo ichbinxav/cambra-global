@@ -10,6 +10,9 @@ import AnimatedSection from "@/components/landing/AnimatedSection";
 import SavingsCurveChart from "@/components/landing/SavingsCurveChart";
 import TestimonialsStrong from "@/components/landing/TestimonialsStrong";
 import FounderLetter from "@/components/landing/FounderLetter";
+import StatsGrid from "@/components/landing/StatsGrid";
+import PricingDual from "@/components/landing/PricingDual";
+import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
 const LANDING_JSON_LD = {
@@ -649,8 +652,10 @@ export default function Landing() {
           <TestimonialsStrong />
         </div>
         <FounderLetter />
+        <StatsGrid />
         <BenchmarkSection />
-        <PricingCTASection />
+        <PricingDual />
+        <StopLeavingMarginCTA />
       </main>
       <LandingFooter />
     </div>

@@ -1,53 +1,47 @@
 import React from "react";
+import { ArrowRight, Quote } from "lucide-react";
 
 /**
- * Founder's letter — editorial, cinematic.
- * Two-column layout: portrait + handwritten signature on the left,
- * personal letter on the right.
- *
- * Replace FOUNDER_PHOTO with a real URL when available.
+ * Founder note — editorial, clean, brand-aligned.
+ * Layout matches the reference screenshot:
+ *  - eyebrow pill: MEET THE FOUNDER
+ *  - large headline "A note from the founder."
+ *  - photo + quote card side by side
+ *  - signature row with name + arrow
  */
 const FOUNDER_PHOTO =
   "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d863d71f2_0347F92E-E1B9-4977-A6B1-85897923556A.jpeg";
 
 export default function FounderLetter() {
   return (
-    <section className="relative py-28 sm:py-36 overflow-hidden">
-      {/* ambient cyan wash */}
+    <section className="relative py-24 sm:py-32 overflow-hidden">
+      {/* ambient washes */}
       <div
         aria-hidden
         className="absolute pointer-events-none"
         style={{
-          width: 900,
-          height: 700,
-          left: "-10%",
-          top: "20%",
-          background:
-            "radial-gradient(circle, rgba(34,211,238,0.10) 0%, transparent 70%)",
-          filter: "blur(110px)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          width: 700,
-          height: 600,
-          right: "-10%",
-          bottom: "5%",
-          background:
-            "radial-gradient(circle, rgba(96,165,250,0.10) 0%, transparent 70%)",
+          width: 800, height: 600, left: "-10%", top: "20%",
+          background: "radial-gradient(circle, rgba(34,211,238,0.08) 0%, transparent 70%)",
           filter: "blur(100px)",
         }}
       />
+      <div
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          width: 700, height: 500, right: "-10%", bottom: "10%",
+          background: "radial-gradient(circle, rgba(96,165,250,0.08) 0%, transparent 70%)",
+          filter: "blur(90px)",
+        }}
+      />
 
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
-        {/* Eyebrow */}
-        <div className="mb-12 flex items-center gap-3">
+      <div className="relative max-w-5xl mx-auto px-6 sm:px-10">
+        {/* eyebrow */}
+        <div className="mb-8">
           <span
             className="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
             style={{
-              border: "1px solid rgba(255,255,255,0.12)",
+              border: "1px solid rgba(255,255,255,0.14)",
               background: "rgba(255,255,255,0.03)",
             }}
           >
@@ -55,153 +49,138 @@ export default function FounderLetter() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
             </span>
-            <span className="text-[10px] uppercase tracking-[0.24em] font-bold text-white/65">
-              A letter from the founder
+            <span className="text-[10px] uppercase tracking-[0.24em] font-bold text-white/70">
+              Meet the founder
             </span>
           </span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-          {/* LEFT — portrait + signature */}
-          <div className="lg:col-span-4 lg:sticky lg:top-28">
+        {/* headline */}
+        <h2
+          className="text-white mb-12"
+          style={{
+            fontSize: "clamp(36px, 5.5vw, 64px)",
+            fontWeight: 900,
+            letterSpacing: "-0.04em",
+            lineHeight: 1.02,
+            maxWidth: 760,
+          }}
+        >
+          A note from{" "}
+          <span
+            style={{
+              background:
+                "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            the founder.
+          </span>
+        </h2>
+
+        {/* photo + quote card */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+          {/* PHOTO */}
+          <div className="md:col-span-5">
             <div
-              className="relative rounded-2xl overflow-hidden"
+              className="relative rounded-2xl overflow-hidden h-full"
               style={{
                 border: "1px solid rgba(255,255,255,0.10)",
                 boxShadow:
-                  "0 30px 80px -30px rgba(0,0,0,0.7), 0 0 60px -20px rgba(34,211,238,0.20)",
+                  "0 30px 70px -30px rgba(0,0,0,0.7), 0 0 50px -20px rgba(34,211,238,0.15)",
+                minHeight: 360,
               }}
             >
               <img
                 src={FOUNDER_PHOTO}
-                alt="Xavier M. Contero — Founder & CEO of CAMBRA"
-                className="w-full h-auto block"
-                style={{ aspectRatio: "3 / 4", objectFit: "cover" }}
+                alt="Xavier M. Contero — Founder of CAMBRA"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ filter: "grayscale(40%) contrast(1.05)" }}
               />
-              {/* photo overlay */}
               <div
                 aria-hidden
-                className="absolute inset-0 pointer-events-none"
+                className="absolute inset-0"
                 style={{
                   background:
-                    "linear-gradient(180deg, transparent 50%, rgba(8,10,18,0.85) 100%)",
+                    "linear-gradient(180deg, transparent 60%, rgba(8,10,18,0.55) 100%)",
                 }}
               />
-              {/* caption inside photo */}
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <p className="text-white text-[13px] font-bold tracking-tight">
-                  Xavier M. Contero
-                </p>
-                <p className="text-white/65 text-[11px] uppercase tracking-[0.18em] mt-0.5">
-                  Founder & CEO · CAMBRA
-                </p>
-              </div>
-            </div>
-
-            {/* Signature */}
-            <div className="mt-6 flex items-center gap-4">
-              <span
-                className="text-white"
-                style={{
-                  fontFamily:
-                    '"Caveat", "Brush Script MT", "Segoe Script", cursive',
-                  fontSize: 38,
-                  lineHeight: 1,
-                  transform: "rotate(-3deg)",
-                  display: "inline-block",
-                  textShadow: "0 0 24px rgba(34,211,238,0.25)",
-                }}
-              >
-                Xavier
-              </span>
-              <span
-                className="text-[11px] uppercase tracking-[0.22em] text-white/40"
-              >
-                Paris · 2026
-              </span>
             </div>
           </div>
 
-          {/* RIGHT — the letter */}
-          <div className="lg:col-span-8">
-            <h2
-              className="text-white mb-10"
-              style={{
-                fontSize: "clamp(34px, 4.5vw, 56px)",
-                fontWeight: 900,
-                letterSpacing: "-0.04em",
-                lineHeight: 1.02,
-              }}
-            >
-              I built CAMBRA because{" "}
-              <span
-                style={{
-                  background:
-                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #22d3ee 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                independent brands are getting robbed in silence.
-              </span>
-            </h2>
-
+          {/* QUOTE */}
+          <div className="md:col-span-7">
             <div
-              className="text-white/80 space-y-6"
-              style={{
-                fontSize: "clamp(17px, 1.55vw, 19px)",
-                lineHeight: 1.65,
-                letterSpacing: "-0.005em",
-                fontWeight: 400,
-              }}
-            >
-              <p>
-                For years I watched founders build brands customers loved, only
-                to see the margin quietly disappear into payment fees, shipping
-                contracts and SaaS invoices nobody had time to renegotiate.
-              </p>
-              <p>
-                The big players have CFOs, procurement teams and leverage. You
-                have a Stripe dashboard, a Shopify export and an inbox full of
-                receipts. The system is built so you never know what you should
-                actually be paying.
-              </p>
-              <p className="text-white">
-                CAMBRA was built to flip that. We pool data from hundreds of
-                independent brands, benchmark every single cost line, and use
-                that collective leverage to recover what's yours.
-              </p>
-              <p>
-                We don't charge a retainer. We don't sell software. We only get
-                paid when you actually save money —{" "}
-                <span className="text-white font-bold">
-                  25% of what we recover, nothing else.
-                </span>
-              </p>
-              <p>
-                If you're tired of overpaying and ready to find out how much,
-                I'd love to show you.
-              </p>
-            </div>
-
-            {/* PS */}
-            <div
-              className="mt-12 p-6 rounded-2xl"
+              className="relative h-full rounded-2xl p-8 sm:p-10 flex flex-col"
               style={{
                 background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)",
+                  "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)",
                 border: "1px solid rgba(255,255,255,0.10)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
               }}
             >
-              <p className="text-[11px] uppercase tracking-[0.22em] font-bold text-cyan-300/80 mb-2">
-                P.S.
+              {/* big quote glyph */}
+              <Quote
+                size={36}
+                className="mb-6"
+                style={{ color: "#60a5fa" }}
+                aria-hidden
+              />
+
+              <p
+                className="text-white"
+                style={{
+                  fontSize: "clamp(20px, 2.2vw, 26px)",
+                  lineHeight: 1.4,
+                  letterSpacing: "-0.02em",
+                  fontWeight: 500,
+                }}
+              >
+                After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.
               </p>
-              <p className="text-white/75 text-[15px] leading-relaxed">
-                The analysis is free. If we don't find savings, you pay nothing.
-                If we do, you pocket 75% of every euro we recover. That's the
-                whole deal.
+
+              <p
+                className="mt-5 text-[15px]"
+                style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.6 }}
+              >
+                That's why I started CAMBRA.
               </p>
+
+              {/* spacer */}
+              <div className="flex-1" />
+
+              {/* signature row */}
+              <div
+                className="mt-8 pt-6 flex items-center justify-between"
+                style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                <div>
+                  <p className="text-white text-[14px] font-bold tracking-tight">
+                    Xavier M. Contero
+                  </p>
+                  <p
+                    className="text-[10px] uppercase tracking-[0.24em] font-bold mt-1"
+                    style={{ color: "rgba(255,255,255,0.45)" }}
+                  >
+                    Founder · CAMBRA
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  aria-label="More about the founder"
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-white/10"
+                  style={{
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    color: "rgba(255,255,255,0.85)",
+                  }}
+                >
+                  <ArrowRight size={16} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
