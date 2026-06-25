@@ -8,7 +8,6 @@ import {
   ArrowRight, ArrowLeft, Loader2, AlertTriangle, MapPin,
   ShieldCheck, Sparkles, ChevronDown, ChevronUp, Plus, Store,
 } from "lucide-react";
-import Navbar from "@/components/landing/Navbar";
 import StripeConnectCard from "@/components/connect/StripeConnectCard";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
@@ -23,7 +22,6 @@ import {
   computeInfraScore, calculateSavings, getBenchmarks,
   ENGINE_VERSION, validateAnalyzerInput,
 } from "@/lib/scoreEngine";
-import RouteProbe from "@/components/dev/RouteProbe";
 
 // ─── Category mapping (i18n keys → internal slugs) ─────────────────────────
 const CATEGORY_OPTIONS = [
@@ -605,14 +603,11 @@ export default function Analyzer() {
   if (running) {
     const monthlyRev = midpointForRange(revenueRange);
     return (
-      <>
-        <RouteProbe label="Analyzer" state={{ branch: "running", done: analysisDone }} />
-        <AnalysisProgress
-          country={country || t("your_region")}
-          tier={tierLabelForRevenue(monthlyRev, country)}
-          done={analysisDone}
-        />
-      </>
+      <AnalysisProgress
+        country={country || t("your_region")}
+        tier={tierLabelForRevenue(monthlyRev, country)}
+        done={analysisDone}
+      />
     );
   }
 
@@ -621,78 +616,37 @@ export default function Analyzer() {
 
   return (
     <div
-      className="relative min-h-screen flex flex-col font-inter overflow-x-hidden"
+      className="font-inter"
       style={{
-        color: "#ffffff",
-        background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
+        color: "#0a0a0a",
+        background: "#ffffff",
       }}
     >
-      <RouteProbe label="Analyzer" state={{ branch: "main", step, memoryLoaded, brandId: brandId || "none" }} />
-
-      {/* Fixed ambient grid + halos */}
+      {/* Plain inline step indicator — normal document flow */}
       <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0"
         style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          opacity: 0.3,
-          maskImage:
-            "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed z-0"
-        style={{
-          width: 700, height: 700, left: "50%", top: 80, transform: "translateX(-50%)",
-          background: "radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)",
-          filter: "blur(80px)",
-        }}
-      />
-
-      <Navbar />
-
-      {/* Gradient progress bar under navbar */}
-      <div className="fixed top-14 left-0 right-0 z-50 h-[2px]" style={{ background: "rgba(255,255,255,0.06)" }}>
-        <div
-          className="h-full transition-all duration-500"
-          style={{
-            width: `${progressPct}%`,
-            background: "linear-gradient(90deg, #3b82f6 0%, #22d3ee 100%)",
-            boxShadow: "0 0 16px rgba(34,211,238,0.6)",
-          }}
-        />
-      </div>
-
-      {/* Step indicator — glass */}
-      <div
-        className="sticky top-14 z-40 flex items-center justify-between px-5 py-3"
-        style={{
-          background: "rgba(10,10,10,0.7)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "8px 0 16px",
+          borderBottom: "1px solid #e5e5e5",
+          marginBottom: 24,
+          flexWrap: "wrap",
+          gap: 8,
         }}
       >
-        <span className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
-          </span>
-          Live audit
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#666" }}>
+          Live audit · Step {step} of 3
         </span>
-        <div className="flex items-center gap-3">
-          <StepIndicator current={step} total={3} />
-          <span className="text-xs font-bold tabular-nums text-white/70">{step}/3</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 160, height: 4, background: "#eee", borderRadius: 2, overflow: "hidden" }}>
+            <div style={{ width: `${progressPct}%`, height: "100%", background: "#0a0a0a" }} />
+          </div>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#0a0a0a", fontVariantNumeric: "tabular-nums" }}>{step}/3</span>
         </div>
       </div>
 
-      <main className="relative z-10 flex-1 max-w-lg mx-auto w-full px-5 pt-10 pb-36">
+      <main className="font-inter" style={{ maxWidth: 560, margin: "0 auto", color: "#0a0a0a" }}>
         {/* Resume offer */}
         {resumeOffer && step === 1 && (
           <div
@@ -1167,14 +1121,19 @@ export default function Analyzer() {
         )}
       </main>
 
-      {/* Footer actions — glass */}
+      {/* Footer actions — normal flow, plain */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-3"
         style={{
-          background: "rgba(10,10,10,0.78)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          padding: "16px 0",
+          borderTop: "1px solid #e5e5e5",
+          marginTop: 32,
+          maxWidth: 560,
+          marginLeft: "auto",
+          marginRight: "auto",
         }}
       >
         <Button

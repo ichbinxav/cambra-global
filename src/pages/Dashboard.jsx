@@ -20,7 +20,6 @@ import PageHero from "@/components/shared/PageHero";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import { useTranslation } from "@/lib/i18n.jsx";
 import CambraCTA from "@/components/shared/CambraCTA";
-import RouteProbe from "@/components/dev/RouteProbe";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function formatEurLocal(n, lang) {
@@ -147,10 +146,7 @@ export default function Dashboard() {
   }, []);
 
   if (loading) return (
-    <>
-      <RouteProbe label="Dashboard" state={{ branch: "loading" }} />
-      <DashboardSkeleton />
-    </>
+    <div style={{ padding: 24, color: "#666", fontSize: 14 }}>Loading…</div>
   );
 
   const firstName = user?.full_name ? user.full_name.split(" ")[0] : t("dashboard_word");
@@ -159,32 +155,35 @@ export default function Dashboard() {
   /* ───── STATE A: no AnalyzerResult yet ───── */
   if (!latest) {
     return (
-      <div className="pb-10">
-        <RouteProbe label="Dashboard" state={{ branch: "stateA-noResult", user: user?.email || "none" }} />
-        <div className="min-h-[60vh] flex items-center justify-center px-4 py-12">
+      <div style={{ paddingBottom: 40 }}>
+        <div style={{ display: "flex", justifyContent: "center", padding: "48px 16px" }}>
           <div
-            className="w-full max-w-xl rounded-3xl p-8 sm:p-10 text-center"
             style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              boxShadow: "0 30px 80px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(96,165,250,0.15)",
+              width: "100%",
+              maxWidth: 576,
+              borderRadius: 24,
+              padding: "40px 32px",
+              textAlign: "center",
+              background: "#ffffff",
+              border: "1px solid #e5e5e5",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
             }}
           >
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6"
               style={{
-                background: "rgba(34,211,238,0.08)",
-                border: "1px solid rgba(34,211,238,0.25)",
-                boxShadow: "0 0 24px rgba(34,211,238,0.18)",
+                width: 56, height: 56, borderRadius: 16,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                margin: "0 auto 24px",
+                background: "#f0fafd",
+                border: "1px solid #c0e9f0",
               }}
             >
-              <Sparkles size={20} className="text-cyan-300" />
+              <Sparkles size={20} style={{ color: "#0891b2" }} />
             </div>
             <h1
-              className="text-white mb-3"
               style={{
+                color: "#0a0a0a",
+                marginBottom: 12,
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "clamp(28px, 4vw, 36px)",
                 fontWeight: 900,
@@ -194,16 +193,16 @@ export default function Dashboard() {
             >
               {t("state_a_title")}
             </h1>
-            <p className="text-sm text-white/55 mb-7 max-w-md mx-auto leading-relaxed">
+            <p style={{ fontSize: 14, color: "#666", marginBottom: 28, maxWidth: 420, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>
               {t("state_a_sub")}
             </p>
             <CambraCTA intent="audit" size="lg" />
           </div>
         </div>
 
-        {/* Feature hint cards */}
-        <div className="max-w-3xl mx-auto px-4 pb-6 -mt-2">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Feature hint cards — plain */}
+        <div style={{ maxWidth: 768, margin: "0 auto", padding: "0 16px 24px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             {[
               { icon: Plug, title: t("auto_detection"), desc: t("ct_page_sub") },
               { icon: Layers, title: t("bench_comparison"), desc: t("benchmarked_against", { n: "100+", country: "EU" }) },
@@ -211,25 +210,27 @@ export default function Dashboard() {
             ].map(({ icon: Icon, title, desc }) => (
               <div
                 key={title}
-                className="rounded-2xl p-4 sm:p-5 text-left"
                 style={{
-                  background: "rgba(255,255,255,0.025)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  backdropFilter: "blur(8px)",
-                  WebkitBackdropFilter: "blur(8px)",
+                  borderRadius: 16,
+                  padding: 20,
+                  textAlign: "left",
+                  background: "#ffffff",
+                  border: "1px solid #e5e5e5",
                 }}
               >
                 <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center mb-3"
                   style={{
-                    background: "rgba(34,211,238,0.08)",
-                    border: "1px solid rgba(34,211,238,0.20)",
+                    width: 32, height: 32, borderRadius: 8,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    marginBottom: 12,
+                    background: "#f0fafd",
+                    border: "1px solid #c0e9f0",
                   }}
                 >
-                  <Icon size={14} className="text-cyan-300" />
+                  <Icon size={14} style={{ color: "#0891b2" }} />
                 </div>
-                <p className="text-[13px] font-bold text-white mb-1">{title}</p>
-                <p className="text-[11px] text-white/55 leading-snug line-clamp-2">{desc}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#0a0a0a", marginBottom: 4 }}>{title}</p>
+                <p style={{ fontSize: 11, color: "#666", lineHeight: 1.4 }}>{desc}</p>
               </div>
             ))}
           </div>
@@ -256,8 +257,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      <RouteProbe label="Dashboard" state={{ branch: "stateB/C-main", stripeConnected, hasGraph: graphNodes.length }} />
+    <div className="space-y-6 pb-10" style={{ color: "#0a0a0a" }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-2">
         <div>

@@ -49,6 +49,7 @@ import AuthRedirect from '@/pages/AuthRedirect';
 import LoginGate from '@/pages/LoginGate';
 import CookieConsent from '@/components/shared/CookieConsent';
 import AdaptiveMarketingRoute from '@/components/shared/AdaptiveMarketingRoute';
+import AuthenticatedShell from '@/components/shell/AuthenticatedShell';
 import Pricing from '@/pages/Pricing.jsx';
 import Developers from '@/pages/Developers.jsx';
 import DevelopersMCP from '@/pages/DevelopersMCP.jsx';
@@ -206,20 +207,24 @@ const AuthenticatedApp = () => {
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
-        {/* Protected routes WITHOUT dashboard chrome — full-screen audit flow */}
-        <Route path="/Analyzer" element={<ProtectedRoute>{withBoundary(<Analyzer />)}</ProtectedRoute>} />
-        <Route path="/Results" element={<ProtectedRoute>{withBoundary(<Results />)}</ProtectedRoute>} />
-        <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />
+        {/* Surgical rebuild — the 4 black-screen routes use a plain, bulletproof
+            shell (white bg, normal flow, no effects). All page logic is preserved
+            in the page components themselves. */}
+        <Route path="/Analyzer"      element={<AuthenticatedShell>{withBoundary(<Analyzer />)}</AuthenticatedShell>} />
+        <Route path="/Dashboard"     element={<AuthenticatedShell>{withBoundary(<Dashboard />)}</AuthenticatedShell>} />
+        <Route path="/Results"       element={<AuthenticatedShell>{withBoundary(<Results />)}</AuthenticatedShell>} />
+        <Route path="/UnlockSavings" element={<AuthenticatedShell>{withBoundary(<UnlockSavings />)}</AuthenticatedShell>} />
 
-        {/* Protected routes WITH dashboard chrome */}
+        {/* ConnectTools — same plain shell to keep cross-navigation consistent */}
+        <Route path="/ConnectTools"  element={<AuthenticatedShell>{withBoundary(<ConnectTools />)}</AuthenticatedShell>} />
+
+        {/* Remaining protected routes WITH dashboard chrome (unchanged) */}
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-          <Route path="/Dashboard" element={withBoundary(<Dashboard />)} />
           <Route path="/Reports" element={withBoundary(<Reports />)} />
           <Route path="/Network" element={withBoundary(<Network />)} />
           <Route path="/Insights" element={withBoundary(<Insights />)} />
           <Route path="/InsightDetail" element={withBoundary(<InsightDetail />)} />
           <Route path="/Account" element={withBoundary(<Account />)} />
-          <Route path="/UnlockSavings" element={withBoundary(<UnlockSavings />)} />
           <Route path="/RecoveryTracker" element={withBoundary(<RecoveryTracker />)} />
           <Route path="/Invoices" element={withBoundary(<Invoices />)} />
           <Route path="/Vault" element={withBoundary(<Vault />)} />

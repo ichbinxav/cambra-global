@@ -33,13 +33,23 @@ export default function AnalysisProgress({ country = "", tier = "", done = false
   }, [current, done]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex items-center justify-center px-5">
+    <div
+      style={{
+        minHeight: "60vh",
+        background: "#ffffff",
+        color: "#0a0a0a",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px 20px",
+      }}
+    >
       <div className="max-w-sm w-full">
         <div className="text-center mb-8">
           <div className="h-10 w-10 mx-auto mb-4" style={{ animation: "spin 4s linear infinite" }}>
             <BrandGlyph className="h-10 w-10" />
           </div>
-          <h2 className="text-xl font-black tracking-[-0.03em] text-foreground">
+          <h2 style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.03em", color: "#0a0a0a" }}>
             {t("progress_title")}
           </h2>
         </div>

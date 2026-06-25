@@ -13,7 +13,6 @@ import RecommendedActionsLocked from "@/components/results/RecommendedActionsLoc
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
-import RouteProbe from "@/components/dev/RouteProbe";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function formatEurLocal(n, lang) {
@@ -162,10 +161,14 @@ export default function Results() {
     })();
   }, []);
 
-  // FIX 28 — Results skeleton: hero shimmer + 3 card shimmers + map shimmer
+  // Loading — plain visible state, no shimmer over dark bg
   if (loading) return (
+    <div style={{ padding: 24, color: "#666", fontSize: 14 }}>Loading…</div>
+  );
+
+  // (unreachable placeholder kept so the original shimmer JSX below is dropped)
+  if (false) return (
     <div className="min-h-screen bg-background">
-      <RouteProbe label="Results" state={{ branch: "loading", needsAuth, hasResult: !!result }} />
       <div className="relative max-w-4xl mx-auto px-5 py-10 pb-24 space-y-10">
         {/* Hero shimmer */}
         <section className="text-center" aria-busy="true" aria-label={t("progress_mapping")}>
@@ -197,9 +200,8 @@ export default function Results() {
   );
 
   if (needsAuth) return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      <RouteProbe label="Results" state={{ branch: "needsAuth" }} />
-      <div className="text-center max-w-sm">
+    <div style={{ padding: 24, textAlign: "center" }}>
+      <div className="text-center max-w-sm" style={{ margin: "0 auto" }}>
         <h1 className="text-lg font-bold mb-2">{t("sign_in_required")}</h1>
         <p className="text-sm text-muted-foreground mb-4">{t("sign_in_sub")}</p>
         <a href="/auth/start" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold">{t("sign_in")}</a>
@@ -208,9 +210,8 @@ export default function Results() {
   );
 
   if (!result) return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-5">
-      <RouteProbe label="Results" state={{ branch: "noResult" }} />
-      <div className="text-center">
+    <div style={{ padding: 24, textAlign: "center" }}>
+      <div className="text-center" style={{ margin: "0 auto" }}>
         <p className="text-muted-foreground mb-4 text-sm">{t("no_results")}</p>
         <Link to="/Analyzer"><Button variant="outline" className="rounded-full px-6 text-sm h-11">{t("run_the_analyzer")}</Button></Link>
       </div>
@@ -297,31 +298,24 @@ export default function Results() {
 
   /* ── render ──────────────────────────────────────────────── */
   return (
-    <div className="relative min-h-screen font-inter bg-background text-foreground overflow-x-hidden">
-      <RouteProbe label="Results" state={{ branch: "main", id: result.id }} />
-      {/* ambient */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 dot-grid opacity-40" />
-        <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.16]" />
+    <div className="font-inter" style={{ background: "#ffffff", color: "#0a0a0a" }}>
+      {/* Inline share row — normal flow */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+        <button
+          type="button"
+          onClick={handleShare}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "6px 12px", borderRadius: 999,
+            border: "1px solid #e5e5e5", background: "#fff",
+            fontSize: 12, fontWeight: 500, color: "#666", cursor: "pointer",
+          }}
+        >
+          <Share2 size={11} /> {t("share")}
+        </button>
       </div>
 
-      {/* top bar */}
-      <div className="relative sticky top-0 z-20 border-b border-border/40 px-5 py-3.5 flex items-center justify-between bg-background/97 backdrop-blur-2xl">
-        <Link to="/" className="text-sm font-black tracking-tight">CAMBRA</Link>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleShare}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
-          >
-            <Share2 size={11} /> {t("share")}
-          </button>
-          <Link to="/Dashboard">
-            <Button size="sm" className="h-8 rounded-full text-xs px-4 font-semibold">{t("nav_dashboard")}</Button>
-          </Link>
-        </div>
-      </div>
-
-      <div className="relative max-w-4xl mx-auto px-5 py-10 pb-24 space-y-14">
+      <div className="max-w-4xl mx-auto space-y-14">
 
         {/* ═══ HERO ════════════════════════════════════════════ */}
         <section className="text-center">

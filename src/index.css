@@ -899,8 +899,7 @@ body {
   100% { background-position: -200% 0; }
 }
 
-/* ===== HARD FAILSAFE — force routed content visible ===== */
-#root { min-height: 100vh !important; }
+/* ===== AUTHENTICATED SHELL SAFETY ===== */
+#root { min-height: 100dvh; }
 #root > * { opacity: 1 !important; visibility: visible !important; }
-main { opacity: 1 !important; visibility: visible !important; min-height: 50vh; }
-[class*="animate-"] { opacity: 1 !important; }
+main { opacity: 1 !important; visibility: visible !important; }
