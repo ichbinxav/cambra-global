@@ -4,22 +4,96 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  * M5 — seedIntegrationCatalog
  *
  * Idempotent admin-only seeder for the IntegrationCatalog.
- * Upserts by integration_id.
+ * Upserts by integration_id. 60 entries covering Payments, Commerce, Banking,
+ * Shipping, Marketing, Finance, Support, HR, Telecom, Analytics.
  */
 
 const CATALOG = [
-  { integration_id: "shopify",       name: "Shopify",       category: "commerce",  auth_type: "oauth",   depth: "deep",     status: "coming_soon", priority: 1,  value_unlock: "Real GMV, orders, AOV, country mix, currency" },
-  { integration_id: "stripe",        name: "Stripe",        category: "payments",  auth_type: "oauth",   depth: "deep",     status: "live",        priority: 2,  value_unlock: "Real payment fees, effective rate, disputes" },
-  { integration_id: "google_drive",  name: "Google Drive",  category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 3,  value_unlock: "Find invoices and statements automatically" },
-  { integration_id: "gmail",         name: "Gmail",         category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 4,  value_unlock: "Find provider invoices in your inbox" },
-  { integration_id: "xero",          name: "Xero",          category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 5,  value_unlock: "Recurring costs, SaaS spend, accounting evidence" },
-  { integration_id: "pennylane",     name: "Pennylane",     category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 6,  value_unlock: "Recurring costs and accounting evidence" },
-  { integration_id: "sendcloud",     name: "Sendcloud",     category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 7,  value_unlock: "Real shipping costs, carriers, destinations" },
-  { integration_id: "shipstation",   name: "ShipStation",   category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 8,  value_unlock: "Shipping costs and carrier performance" },
-  { integration_id: "packlink",      name: "Packlink",      category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 9,  value_unlock: "Shipping rates and label costs" },
-  { integration_id: "klaviyo",       name: "Klaviyo",       category: "marketing", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 10, value_unlock: "Email marketing spend and contact tier" },
-  { integration_id: "quickbooks",    name: "QuickBooks",    category: "finance",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 11, value_unlock: "Accounting and recurring cost evidence" },
-  { integration_id: "gorgias",       name: "Gorgias",       category: "support",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 12, value_unlock: "Support tooling cost benchmark" },
+  // ── Payments (10) ─────────────────────────────────────────────
+  { integration_id: "stripe",           name: "Stripe",           category: "payments",  auth_type: "oauth",   depth: "deep",     status: "live",        priority: 1,  value_unlock: "Real payment fees, effective rate, disputes" },
+  { integration_id: "paypal",           name: "PayPal",           category: "payments",  auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 2,  value_unlock: "Checkout volumes and fees" },
+  { integration_id: "adyen",            name: "Adyen",            category: "payments",  auth_type: "api_key", depth: "deep",     status: "coming_soon", priority: 3,  value_unlock: "Enterprise interchange++ rates and disputes" },
+  { integration_id: "mollie",           name: "Mollie",           category: "payments",  auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 4,  value_unlock: "European payment processing & fees" },
+  { integration_id: "klarna",           name: "Klarna",           category: "payments",  auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 5,  value_unlock: "Buy-now-pay-later volume and fees" },
+  { integration_id: "sumup",            name: "SumUp",            category: "payments",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 6,  value_unlock: "In-store TPV terminal data and fees" },
+  { integration_id: "zettle",           name: "Zettle",           category: "payments",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 7,  value_unlock: "In-store card terminal data" },
+  { integration_id: "checkout_com",     name: "Checkout.com",     category: "payments",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 8,  value_unlock: "Enterprise card acquiring fees" },
+  { integration_id: "braintree",        name: "Braintree",        category: "payments",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 9,  value_unlock: "PayPal-owned acquiring data" },
+  { integration_id: "shopify_payments", name: "Shopify Payments", category: "payments",  auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 10, value_unlock: "Shopify-managed payment fees" },
+
+  // ── Commerce (6) ──────────────────────────────────────────────
+  { integration_id: "shopify",          name: "Shopify",          category: "commerce",  auth_type: "oauth",   depth: "deep",     status: "coming_soon", priority: 1,  value_unlock: "Real GMV, orders, AOV, country mix, currency" },
+  { integration_id: "woocommerce",      name: "WooCommerce",      category: "commerce",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 2,  value_unlock: "WordPress store revenue and orders" },
+  { integration_id: "prestashop",       name: "PrestaShop",       category: "commerce",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 3,  value_unlock: "Self-hosted store orders and revenue" },
+  { integration_id: "magento",          name: "Magento",          category: "commerce",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 4,  value_unlock: "Adobe Commerce GMV and orders" },
+  { integration_id: "bigcommerce",      name: "BigCommerce",      category: "commerce",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 5,  value_unlock: "BigCommerce store revenue and orders" },
+  { integration_id: "wix_ecom",         name: "Wix eCommerce",    category: "commerce",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 6,  value_unlock: "Wix store revenue and product mix" },
+
+  // ── Banking (8) ──────────────────────────────────────────────
+  { integration_id: "qonto",            name: "Qonto",            category: "banking",   auth_type: "oauth",   depth: "deep",     status: "coming_soon", priority: 1,  value_unlock: "Business banking fees and FX spreads" },
+  { integration_id: "revolut_business", name: "Revolut Business", category: "banking",   auth_type: "oauth",   depth: "deep",     status: "coming_soon", priority: 2,  value_unlock: "Multi-currency banking and FX data" },
+  { integration_id: "wise",             name: "Wise Business",    category: "banking",   auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 3,  value_unlock: "Cross-border payment fees and FX" },
+  { integration_id: "shine",            name: "Shine",            category: "banking",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 4,  value_unlock: "French SME banking fees" },
+  { integration_id: "n26_business",     name: "N26 Business",     category: "banking",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 5,  value_unlock: "German SME banking fees" },
+  { integration_id: "spendesk",         name: "Spendesk",         category: "banking",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 6,  value_unlock: "Spend management and card fees" },
+  { integration_id: "memo_bank",        name: "Memo Bank",        category: "banking",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 7,  value_unlock: "French business banking data" },
+  { integration_id: "swan",             name: "Swan",             category: "banking",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 8,  value_unlock: "Embedded banking and IBAN data" },
+
+  // ── Shipping (12) ─────────────────────────────────────────────
+  { integration_id: "sendcloud",        name: "Sendcloud",        category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 1,  value_unlock: "Real shipping costs, carriers, destinations" },
+  { integration_id: "shipstation",      name: "ShipStation",      category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 2,  value_unlock: "Shipping costs and carrier performance" },
+  { integration_id: "packlink",         name: "Packlink",         category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 3,  value_unlock: "Multi-carrier shipping rates" },
+  { integration_id: "dhl",              name: "DHL",              category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 4,  value_unlock: "DHL carrier rates and shipment data" },
+  { integration_id: "fedex",            name: "FedEx",            category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 5,  value_unlock: "FedEx express and freight rates" },
+  { integration_id: "ups",              name: "UPS",              category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 6,  value_unlock: "UPS shipment data and rates" },
+  { integration_id: "colissimo",        name: "Colissimo",        category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 7,  value_unlock: "La Poste / Colissimo shipping rates" },
+  { integration_id: "chronopost",       name: "Chronopost",       category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 8,  value_unlock: "Express French shipping rates" },
+  { integration_id: "mondial_relay",    name: "Mondial Relay",    category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 9,  value_unlock: "Pickup-point shipping rates" },
+  { integration_id: "dpd",              name: "DPD",              category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 10, value_unlock: "DPD European parcel rates" },
+  { integration_id: "byrd",             name: "Byrd",             category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 11, value_unlock: "European 3PL fulfillment fees" },
+  { integration_id: "cubyn",            name: "Cubyn",            category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 12, value_unlock: "French 3PL fulfillment fees" },
+
+  // ── Marketing (8) ─────────────────────────────────────────────
+  { integration_id: "klaviyo",          name: "Klaviyo",          category: "marketing", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 1,  value_unlock: "Email marketing spend and contact tier" },
+  { integration_id: "mailchimp",        name: "Mailchimp",        category: "marketing", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 2,  value_unlock: "Email list size and plan spend" },
+  { integration_id: "brevo",            name: "Brevo",            category: "marketing", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 3,  value_unlock: "Email + SMS marketing spend" },
+  { integration_id: "attentive",        name: "Attentive",        category: "marketing", auth_type: "api_key", depth: "standard", status: "planned",     priority: 4,  value_unlock: "SMS marketing spend" },
+  { integration_id: "postscript",       name: "Postscript",       category: "marketing", auth_type: "api_key", depth: "standard", status: "planned",     priority: 5,  value_unlock: "SMS marketing spend (Shopify)" },
+  { integration_id: "meta_ads",         name: "Meta Ads",         category: "marketing", auth_type: "oauth",   depth: "deep",     status: "planned",     priority: 6,  value_unlock: "Facebook/Instagram ad spend & ROAS" },
+  { integration_id: "google_ads",       name: "Google Ads",       category: "marketing", auth_type: "oauth",   depth: "deep",     status: "planned",     priority: 7,  value_unlock: "Google Ads spend & ROAS" },
+  { integration_id: "tiktok_ads",       name: "TikTok Ads",       category: "marketing", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 8,  value_unlock: "TikTok Ads spend & performance" },
+
+  // ── Finance (6) ───────────────────────────────────────────────
+  { integration_id: "google_drive",     name: "Google Drive",     category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 1,  value_unlock: "Find invoices and statements automatically" },
+  { integration_id: "gmail",            name: "Gmail",            category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 2,  value_unlock: "Find provider invoices in your inbox" },
+  { integration_id: "xero",             name: "Xero",             category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 3,  value_unlock: "Recurring costs, SaaS spend, accounting evidence" },
+  { integration_id: "pennylane",        name: "Pennylane",        category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 4,  value_unlock: "Recurring costs and accounting evidence" },
+  { integration_id: "quickbooks",       name: "QuickBooks",       category: "finance",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 5,  value_unlock: "Accounting and recurring cost evidence" },
+  { integration_id: "sellsy",           name: "Sellsy",           category: "finance",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 6,  value_unlock: "French SME billing and accounting" },
+
+  // ── Support (6) ───────────────────────────────────────────────
+  { integration_id: "gorgias",          name: "Gorgias",          category: "support",   auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 1,  value_unlock: "Support tooling cost benchmark" },
+  { integration_id: "zendesk",          name: "Zendesk",          category: "support",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 2,  value_unlock: "Support seat cost and volume" },
+  { integration_id: "freshdesk",        name: "Freshdesk",        category: "support",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 3,  value_unlock: "Support tooling spend" },
+  { integration_id: "intercom",         name: "Intercom",         category: "support",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 4,  value_unlock: "Support and messaging spend" },
+  { integration_id: "reamaze",          name: "Re:amaze",         category: "support",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 5,  value_unlock: "Multi-channel support spend" },
+  { integration_id: "tidio",            name: "Tidio",            category: "support",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 6,  value_unlock: "Live chat and bot spend" },
+
+  // ── HR (5) ────────────────────────────────────────────────────
+  { integration_id: "factorial",        name: "Factorial",        category: "hr",        auth_type: "oauth",   depth: "standard", status: "planned",     priority: 1,  value_unlock: "HRIS spend per employee benchmark" },
+  { integration_id: "personio",         name: "Personio",         category: "hr",        auth_type: "oauth",   depth: "standard", status: "planned",     priority: 2,  value_unlock: "HRIS + payroll spend per employee" },
+  { integration_id: "deel",             name: "Deel",             category: "hr",        auth_type: "oauth",   depth: "standard", status: "planned",     priority: 3,  value_unlock: "Global payroll and contractor fees" },
+  { integration_id: "payfit",           name: "PayFit",           category: "hr",        auth_type: "oauth",   depth: "standard", status: "planned",     priority: 4,  value_unlock: "French/EU payroll fees" },
+  { integration_id: "lucca",            name: "Lucca",            category: "hr",        auth_type: "oauth",   depth: "standard", status: "planned",     priority: 5,  value_unlock: "HR suite spend per employee" },
+
+  // ── Telecom (3) ───────────────────────────────────────────────
+  { integration_id: "aircall",          name: "Aircall",          category: "telecom",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 1,  value_unlock: "Cloud phone seat cost and usage" },
+  { integration_id: "ringover",         name: "Ringover",         category: "telecom",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 2,  value_unlock: "Cloud telephony spend" },
+  { integration_id: "dialpad",          name: "Dialpad",          category: "telecom",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 3,  value_unlock: "Voice + messaging spend" },
+
+  // ── Analytics (2) — bucketed under marketing in UI ────────────
+  { integration_id: "google_analytics", name: "Google Analytics", category: "marketing", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 9,  value_unlock: "Traffic, conversion and channel mix data" },
+  { integration_id: "segment",          name: "Segment",          category: "marketing", auth_type: "api_key", depth: "standard", status: "planned",     priority: 10, value_unlock: "Customer data infrastructure spend" },
 ];
 
 Deno.serve(async (req) => {
@@ -30,19 +104,23 @@ Deno.serve(async (req) => {
     if (user.role !== 'admin') return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
 
     let seeded = 0;
+    let created = 0;
+    let updated = 0;
     for (const entry of CATALOG) {
       const existing = await base44.asServiceRole.entities.IntegrationCatalog
         .filter({ integration_id: entry.integration_id }, '-created_date', 1)
         .catch(() => []);
       if (existing.length) {
         await base44.asServiceRole.entities.IntegrationCatalog.update(existing[0].id, entry);
+        updated++;
       } else {
         await base44.asServiceRole.entities.IntegrationCatalog.create(entry);
+        created++;
       }
       seeded++;
     }
 
-    return Response.json({ ok: true, seeded });
+    return Response.json({ ok: true, seeded, created, updated, total: CATALOG.length });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
