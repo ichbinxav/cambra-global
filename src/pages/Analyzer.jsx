@@ -17,6 +17,9 @@ import DetectedToolsGrid from "@/components/analyzer/DetectedToolsGrid";
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
 import AnalyzerAuthGate from "@/components/analyzer/AnalyzerAuthGate";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
+import StepIndicator from "@/components/analyzer/StepIndicator";
+import WhatHappensNext from "@/components/analyzer/WhatHappensNext";
+import ConfidenceIndicator from "@/components/analyzer/ConfidenceIndicator";
 import {
   computeInfraScore, calculateSavings, getBenchmarks,
   ENGINE_VERSION, validateAnalyzerInput,
@@ -716,7 +719,7 @@ export default function Analyzer() {
           Live audit
         </span>
         <div className="flex items-center gap-3">
-          <span className="text-[11px] text-white/40">~2 minutes</span>
+          <StepIndicator current={step} total={3} />
           <span className="text-xs font-bold tabular-nums text-white/70">{step}/3</span>
         </div>
       </div>
@@ -908,6 +911,8 @@ export default function Analyzer() {
                 </div>
               </div>
             </div>
+
+            <WhatHappensNext />
           </div>
         )}
 
@@ -940,6 +945,25 @@ export default function Analyzer() {
               onToggle={handleToggleTool}
               discovering={discovery.status === "running"}
             />
+
+            {/* Confidence indicator — surfaces signal strength to the user */}
+            <div className="mt-5 flex items-center justify-between gap-3 flex-wrap">
+              <ConfidenceIndicator
+                level={(() => {
+                  const confirmedCount = confirmedTools.size;
+                  const manualFilled = (manual.payment_provider ? 1 : 0)
+                    + (manual.shipping_provider ? 1 : 0)
+                    + (manual.total_saas_spend > 0 ? 1 : 0);
+                  const score = confirmedCount + manualFilled;
+                  if (score >= 5) return "high";
+                  if (score >= 2) return "medium";
+                  return "low";
+                })()}
+              />
+              <span className="text-[10px] text-white/45 font-mono">
+                {confirmedTools.size} {confirmedTools.size === 1 ? "tool" : "tools"} confirmed
+              </span>
+            </div>
 
             {/* Manual section */}
             <div className="mt-6">
@@ -1138,13 +1162,13 @@ export default function Analyzer() {
                 <div
                   className="rounded-2xl p-6 text-center"
                   style={{
-                    background: "rgba(34,211,238,0.06)",
-                    border: "1px solid rgba(34,211,238,0.25)",
-                    boxShadow: "0 0 32px rgba(34,211,238,0.15)",
+                    background: "rgba(52,211,153,0.08)",
+                    border: "1px solid rgba(52,211,153,0.30)",
+                    boxShadow: "0 0 32px rgba(52,211,153,0.18)",
                   }}
                 >
-                  <ShieldCheck size={28} className="mx-auto mb-2 text-cyan-300" />
-                  <p className="text-sm font-black text-white">{t("az_step3_verified")}</p>
+                  <ShieldCheck size={28} className="mx-auto mb-2 text-emerald-300" />
+                  <p className="text-sm font-black text-emerald-300">{t("az_step3_verified")}</p>
                 </div>
                 <UpgradeToVerified vertical="payments" isConnected currentConfidence="verified" />
               </div>

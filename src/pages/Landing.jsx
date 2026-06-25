@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, FileText, Sparkles, ShieldCheck } from "lucide-react";
-import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -109,24 +108,34 @@ function Hero() {
       {/* Cinematic ambient layers */}
       <AuroraBackground intensity={1} />
 
-      {/* Spotlight halo behind headline */}
-      <motion.div
+      {/* Spotlight halo behind headline — pure CSS pulse */}
+      <div
         aria-hidden
-        className="absolute pointer-events-none"
+        className="absolute pointer-events-none landing-halo-pulse"
         style={{
           width: 720, height: 720, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
           background: "radial-gradient(circle, rgba(59,130,246,0.22) 0%, transparent 70%)",
           filter: "blur(70px)",
         }}
-        animate={{ scale: [1, 1.08, 1], opacity: [0.85, 1, 0.85] }}
-        transition={{ duration: 7, ease: "easeInOut", repeat: Infinity }}
       />
+      <style>{`
+        @keyframes landingHaloPulse {
+          0%, 100% { opacity: 0.85; transform: translate(-50%, -50%) scale(1); }
+          50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.08); }
+        }
+        .landing-halo-pulse { animation: landingHaloPulse 7s ease-in-out infinite; }
+        @keyframes landingCtaPulse {
+          0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+          50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.15); }
+        }
+        .landing-cta-pulse { animation: landingCtaPulse 6s ease-in-out infinite; }
+      `}</style>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 py-20 lg:py-28 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* LEFT — aggressive copy */}
         <div className="lg:col-span-7">
-          <motion.div
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-8 text-[11px] uppercase tracking-[0.22em]"
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-8 text-[11px] uppercase tracking-[0.22em] animate-fade-up"
             style={{
               border: "1px solid rgba(96,165,250,0.30)",
               color: "rgba(255,255,255,0.85)",
@@ -135,23 +144,18 @@ function Hero() {
               WebkitBackdropFilter: "blur(8px)",
               boxShadow: "0 0 24px rgba(59,130,246,0.18)",
             }}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
             </span>
             Pay only if we save you money
-          </motion.div>
+          </div>
 
-          <motion.h1
-            className="text-white"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+          <h1
+            className="text-white animate-fade-up"
             style={{
+              animationDelay: "100ms",
               fontSize: "clamp(44px, 7.5vw, 96px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
@@ -172,41 +176,33 @@ function Hero() {
             >
               Recover the margin.
             </span>
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            className="mt-8 text-white/60"
-            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6 }}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
+          <p
+            className="mt-8 text-white/60 animate-fade-up"
+            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, animationDelay: "250ms" }}
           >
             Most independent brands overpay <span className="text-white">15–30%</span> on payments, shipping and SaaS. CAMBRA benchmarks every line against our network and recovers what's yours. <span className="text-white">You keep 75%. We only get paid when you do.</span>
-          </motion.p>
+          </p>
 
-          <motion.div
-            className="mt-10 flex flex-wrap items-center gap-3"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+          <div
+            className="mt-10 flex flex-wrap items-center gap-3 animate-fade-up"
+            style={{ animationDelay: "400ms" }}
           >
-            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-              <Link
-                to="/Analyzer"
-                className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] transition-shadow"
-                style={{
-                  boxShadow:
-                    "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
-                }}
-              >
-                Find what you're losing — 3 min
-                <ArrowRight size={16} />
-              </Link>
-            </motion.div>
-            <motion.a
-              whileHover={{ scale: 1.03, borderColor: "rgba(255,255,255,0.5)", color: "rgba(255,255,255,0.95)" }}
+            <Link
+              to="/Analyzer"
+              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] transition-transform hover:scale-[1.04] active:scale-[0.97]"
+              style={{
+                boxShadow:
+                  "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
+              }}
+            >
+              Find what you're losing — 3 min
+              <ArrowRight size={16} />
+            </Link>
+            <a
               href="#testimonials"
-              className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium"
+              className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium transition-all hover:scale-[1.03] hover:text-white"
               style={{
                 border: "1px solid rgba(255,255,255,0.20)",
                 color: "rgba(255,255,255,0.70)",
@@ -216,16 +212,13 @@ function Hero() {
               }}
             >
               See a sample report
-            </motion.a>
-          </motion.div>
+            </a>
+          </div>
 
           {/* Trust row */}
-          <motion.div
-            className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px]"
-            style={{ color: "rgba(255,255,255,0.45)" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.6 }}
+          <div
+            className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px] animate-fade-up"
+            style={{ color: "rgba(255,255,255,0.45)", animationDelay: "600ms" }}
           >
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck size={13} className="text-cyan-300/80" />
@@ -239,16 +232,11 @@ function Hero() {
               <ShieldCheck size={13} className="text-cyan-300/80" />
               EU brands only
             </span>
-          </motion.div>
+          </div>
         </div>
 
         {/* RIGHT — animated cumulative savings chart */}
-        <motion.div
-          className="lg:col-span-5"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
-        >
+        <div className="lg:col-span-5 animate-fade-up" style={{ animationDelay: "350ms" }}>
           <div
             className="relative p-6 sm:p-8 rounded-2xl overflow-hidden"
             style={{
@@ -274,7 +262,7 @@ function Hero() {
             </div>
             <SavingsCurveChart className="mt-6" />
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -309,10 +297,8 @@ function ProblemSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {cards.map((c, i) => (
             <AnimatedSection key={i} delay={i * 0.1}>
-              <motion.div
-                whileHover={{ y: -6 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="surface p-6 relative group h-full"
+              <div
+                className="surface p-6 relative group h-full transition-transform hover:-translate-y-1.5"
                 style={{ background: "rgba(255,255,255,0.025)" }}
               >
                 {/* hover halo */}
@@ -339,7 +325,7 @@ function ProblemSection() {
                 <p className="relative text-mono text-[12px] font-bold" style={{ color: "rgba(239,68,68,0.95)" }}>
                   {c.stat}
                 </p>
-              </motion.div>
+              </div>
             </AnimatedSection>
           ))}
         </div>
@@ -375,27 +361,29 @@ function HowItWorksSection() {
         </AnimatedSection>
 
         <div className="relative space-y-3">
-          {/* Animated connector line behind the steps */}
-          <motion.div
+          {/* Animated connector line behind the steps — pure CSS reveal */}
+          <div
             aria-hidden
-            className="absolute left-8 top-0 bottom-0 w-px hidden sm:block"
+            className="absolute left-8 top-0 bottom-0 w-px hidden sm:block landing-connector-line"
             style={{
               background:
                 "linear-gradient(180deg, transparent, rgba(96,165,250,0.4), rgba(44,167,193,0.3), transparent)",
               boxShadow: "0 0 16px rgba(96,165,250,0.3)",
+              transformOrigin: "top",
             }}
-            initial={{ scaleY: 0, originY: 0 }}
-            whileInView={{ scaleY: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
           />
+          <style>{`
+            @keyframes landingConnectorReveal {
+              from { transform: scaleY(0); }
+              to   { transform: scaleY(1); }
+            }
+            .landing-connector-line { animation: landingConnectorReveal 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+          `}</style>
 
           {steps.map((s, i) => (
             <AnimatedSection key={s.n} delay={i * 0.15}>
-              <motion.div
-                whileHover={{ scale: 1.005, borderColor: "rgba(96,165,250,0.25)" }}
-                transition={{ duration: 0.3 }}
-                className="surface relative overflow-hidden p-8 sm:p-10 group"
+              <div
+                className="surface relative overflow-hidden p-8 sm:p-10 group transition-transform hover:scale-[1.005]"
                 style={{ background: "rgba(255,255,255,0.025)" }}
               >
                 {/* hover glow halo */}
@@ -438,7 +426,7 @@ function HowItWorksSection() {
                   <h3 className="text-title text-white mb-3">{s.title}</h3>
                   <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.55)" }}>{s.desc}</p>
                 </div>
-              </motion.div>
+              </div>
             </AnimatedSection>
           ))}
         </div>
@@ -475,10 +463,8 @@ function BenchmarkSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {stats.map((s, i) => (
             <AnimatedSection key={i} delay={i * 0.12}>
-              <motion.div
-                whileHover={{ y: -4, borderColor: "rgba(96,165,250,0.30)" }}
-                transition={{ duration: 0.3 }}
-                className="surface p-6 flex items-start gap-3 relative group h-full"
+              <div
+                className="surface p-6 flex items-start gap-3 relative group h-full transition-transform hover:-translate-y-1"
                 style={{ background: "rgba(255,255,255,0.025)" }}
               >
                 <div
@@ -489,9 +475,8 @@ function BenchmarkSection() {
                       "radial-gradient(circle at 0% 0%, rgba(44,167,193,0.16), transparent 70%)",
                   }}
                 />
-                <motion.div
-                  whileHover={{ rotate: 8, scale: 1.05 }}
-                  className="relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                <div
+                  className="relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:rotate-[8deg] group-hover:scale-105"
                   style={{
                     background: "rgba(96,165,250,0.08)",
                     border: "1px solid rgba(96,165,250,0.20)",
@@ -499,9 +484,9 @@ function BenchmarkSection() {
                   }}
                 >
                   <s.icon size={15} className="text-blue-300" aria-hidden="true" />
-                </motion.div>
+                </div>
                 <p className="relative text-[14px] text-white/85 leading-relaxed">{s.text}</p>
-              </motion.div>
+              </div>
             </AnimatedSection>
           ))}
         </div>
@@ -530,17 +515,15 @@ function PricingCTASection() {
         }}
       />
 
-      {/* Animated breathing glow */}
-      <motion.div
+      {/* Animated breathing glow — pure CSS */}
+      <div
         aria-hidden
-        className="absolute pointer-events-none"
+        className="absolute pointer-events-none landing-cta-pulse"
         style={{
           width: 500, height: 500, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
           background: "radial-gradient(circle, rgba(96,165,250,0.20) 0%, transparent 70%)",
           filter: "blur(60px)",
         }}
-        animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-        transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
       />
 
       <div className="relative z-10 max-w-3xl mx-auto px-6 sm:px-10 text-center">
@@ -551,28 +534,25 @@ function PricingCTASection() {
 
         <ul className="space-y-2.5 text-[14px] mb-10 text-left w-full sm:w-auto sm:inline-block">
           {lines.map((l, i) => (
-            <motion.li
+            <li
               key={i}
-              className="flex items-center gap-3 text-white/75"
-              initial={{ opacity: 0, x: -16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
+              className="flex items-center gap-3 text-white/75 animate-fade-up"
+              style={{ animationDelay: `${i * 80}ms` }}
             >
               <span
                 className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"
                 style={{ boxShadow: "0 0 10px rgba(96,165,250,0.8)" }}
               />
               {l}
-            </motion.li>
+            </li>
           ))}
         </ul>
 
         <AnimatedSection delay={0.2}>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="inline-block">
+          <div className="inline-block">
             <Link
               to="/Analyzer"
-              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px]"
+              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] transition-transform hover:scale-[1.04] active:scale-[0.97]"
               aria-label={t("pricing_cta")}
               style={{
                 boxShadow:
@@ -582,7 +562,7 @@ function PricingCTASection() {
               <Sparkles size={14} />
               {t("pricing_cta")} <ArrowRight size={16} aria-hidden="true" />
             </Link>
-          </motion.div>
+          </div>
         </AnimatedSection>
 
         <p className="mt-6 text-[12px]" style={{ color: "rgba(255,255,255,0.35)" }}>

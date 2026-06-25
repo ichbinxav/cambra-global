@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
+import AnimatedCounter from "@/components/shared/AnimatedCounter";
 
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import LastScanBar from "@/components/dashboard/LastScanBar";
@@ -318,7 +319,12 @@ export default function Dashboard() {
                 filter: "drop-shadow(0 0 22px rgba(34,211,238,0.35))",
               }}
             >
-              {formatEur(latest.total_savings)}<span className="text-[0.35em] font-bold text-white/40 ml-2" style={{ WebkitTextFillColor: "rgba(255,255,255,0.4)" }}>/{t("per_yr_short")}</span>
+              <AnimatedCounter
+                value={Number(latest.total_savings) || 0}
+                format={(n) => formatEur(n)}
+                duration={1.8}
+              />
+              <span className="text-[0.35em] font-bold text-white/40 ml-2" style={{ WebkitTextFillColor: "rgba(255,255,255,0.4)" }}>/{t("per_yr_short")}</span>
             </p>
             <p className="text-sm text-white/60 mt-3 max-w-md">{heroSubtitle}</p>
           </div>

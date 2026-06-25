@@ -435,6 +435,23 @@ const DICT = {
     login_gate_and:         "and",
     login_gate_privacy_link:"Privacy Policy",
 
+    /* Analyzer — extras */
+    what_happens_next:      "What happens next?",
+    wh_step1_title:         "We scan your website",
+    wh_step1_desc:          "We identify the providers, carriers and SaaS tools visible on your site.",
+    wh_step2_title:         "We benchmark every line",
+    wh_step2_desc:          "Each tool is compared against anonymized data from European brands at your revenue tier.",
+    wh_step3_title:         "You see the gap in €",
+    wh_step3_desc:          "We show you exactly how much you could recover — and how to act on it.",
+
+    /* Results extras */
+    how_we_calculated:      "How we calculated this",
+    how_we_calculated_desc: "Savings = (your current rate − network benchmark rate) × your annual volume, capped at realistic recovery bands per vertical.",
+    overpaying:             "Overpaying vs network",
+    at_benchmark:           "At or below benchmark",
+    gdpr_note:              "Your data is private, encrypted and never sold. GDPR-compliant.",
+    read_policy:            "Read our Privacy Policy →",
+
     /* Cookie consent */
     cookie_banner_text:     "We use cookies to improve your experience and analyse platform usage.",
     cookie_accept_all:      "Accept all",
@@ -815,6 +832,23 @@ const DICT = {
     login_gate_and:         "et",
     login_gate_privacy_link:"Politique de confidentialité",
 
+    /* Analyzer — extras */
+    what_happens_next:      "Que se passe-t-il ensuite ?",
+    wh_step1_title:         "Nous analysons votre site",
+    wh_step1_desc:          "Nous identifions les prestataires, transporteurs et outils SaaS visibles sur votre site.",
+    wh_step2_title:         "Nous comparons chaque ligne",
+    wh_step2_desc:          "Chaque outil est comparé à des données anonymisées de marques européennes à votre niveau de CA.",
+    wh_step3_title:         "Vous voyez l'écart en €",
+    wh_step3_desc:          "Nous vous montrons exactement combien vous pouvez récupérer — et comment agir.",
+
+    /* Results extras */
+    how_we_calculated:      "Comment nous l'avons calculé",
+    how_we_calculated_desc: "Économies = (votre taux actuel − taux de benchmark réseau) × votre volume annuel, plafonnées à des bandes de récupération réalistes par vertical.",
+    overpaying:             "Vous payez plus que le réseau",
+    at_benchmark:           "Au niveau ou en dessous du benchmark",
+    gdpr_note:              "Vos données sont privées, chiffrées et jamais vendues. Conforme RGPD.",
+    read_policy:            "Lire notre Politique de confidentialité →",
+
     /* Cookie consent */
     cookie_banner_text:     "Nous utilisons des cookies pour améliorer votre expérience et analyser l'utilisation de la plateforme.",
     cookie_accept_all:      "Tout accepter",
@@ -1194,6 +1228,23 @@ const DICT = {
     login_gate_terms_link:  "Términos de servicio",
     login_gate_and:         "y",
     login_gate_privacy_link:"Política de privacidad",
+
+    /* Analyzer — extras */
+    what_happens_next:      "¿Qué pasa después?",
+    wh_step1_title:         "Escaneamos tu web",
+    wh_step1_desc:          "Identificamos los proveedores, transportistas y herramientas SaaS visibles en tu sitio.",
+    wh_step2_title:         "Comparamos cada línea",
+    wh_step2_desc:          "Cada herramienta se compara con datos anonimizados de marcas europeas en tu nivel de facturación.",
+    wh_step3_title:         "Ves la diferencia en €",
+    wh_step3_desc:          "Te mostramos exactamente cuánto puedes recuperar — y cómo actuar.",
+
+    /* Results extras */
+    how_we_calculated:      "Cómo lo hemos calculado",
+    how_we_calculated_desc: "Ahorros = (tu tasa actual − tasa benchmark de red) × tu volumen anual, limitados a bandas de recuperación realistas por vertical.",
+    overpaying:             "Pagas más que la red",
+    at_benchmark:           "Al nivel o por debajo del benchmark",
+    gdpr_note:              "Tus datos son privados, encriptados y nunca se venden. Cumple con RGPD.",
+    read_policy:            "Leer nuestra Política de privacidad →",
 
     /* Cookie consent */
     cookie_banner_text:     "Usamos cookies para mejorar tu experiencia y analizar el uso de la plataforma.",
