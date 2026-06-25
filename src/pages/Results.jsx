@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowRight, CreditCard, Truck, Package, CheckCircle2, Sparkles,
-  Share2, ChevronDown, ChevronUp, Plug, Building2, Store, Mail,
-  Headphones, Users, Wifi, Layers, AlertTriangle,
+  ArrowRight, CreditCard, Truck, Package, CheckCircle2,
+  Share2, Plug, Building2, Store, Mail,
+  Headphones, Users, Wifi, Layers,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
@@ -86,7 +86,6 @@ export default function Results() {
   const [graphNodes, setGraphNodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [needsAuth, setNeedsAuth] = useState(false);
-  const [showHow, setShowHow] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
   const verticalsRef = useRef(null);
 
@@ -278,8 +277,6 @@ export default function Results() {
     : heroConfidence === "mixed"
     ? { label: t("badge_mixed"),    cls: "bg-blue-500/10 text-blue-600 border-blue-500/25",          dot: "bg-blue-500" }
     : { label: t("badge_estimated"), cls: "bg-amber-500/10 text-amber-600 border-amber-500/25",      dot: "bg-amber-500" };
-
-  const calcDate = result.created_date ? new Date(result.created_date) : null;
 
   /* ── render ──────────────────────────────────────────────── */
   return (
@@ -518,53 +515,6 @@ export default function Results() {
                   </div>
                 );
               })}
-            </div>
-          )}
-        </section>
-
-        {/* ═══ HOW WE CALCULATED THIS ════════════════════════════ */}
-        <section className="rounded-2xl border border-border/50 bg-card overflow-hidden">
-          <button
-            onClick={() => setShowHow(s => !s)}
-            className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-secondary/30 transition-colors min-h-[44px]"
-          >
-            <span className="text-sm font-bold">{t("how_calculated")}</span>
-            {showHow ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
-          {showHow && (
-            <div className="px-5 pb-5 space-y-4 text-xs text-muted-foreground">
-              {result.methodology && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70 mb-1">{t("methodology_label")}</p>
-                  <p className="leading-relaxed">{result.methodology}</p>
-                </div>
-              )}
-              {Array.isArray(result.assumptions) && result.assumptions.length > 0 && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70 mb-1">{t("assumptions_label")}</p>
-                  <ul className="list-disc pl-5 space-y-1 leading-relaxed">
-                    {result.assumptions.map((a, i) => <li key={i}>{a}</li>)}
-                  </ul>
-                </div>
-              )}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-border/30">
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">{t("score_engine_label")}</p>
-                  <p className="text-foreground tabular-nums">v{result.score_engine_version || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">{t("savings_model_label")}</p>
-                  <p className="text-foreground tabular-nums">v{result.savings_model_version || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">{t("benchmarks_label")}</p>
-                  <p className="text-foreground tabular-nums">v{result.benchmark_version || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-foreground/70">{t("calculated_label")}</p>
-                  <p className="text-foreground">{calcDate ? calcDate.toLocaleDateString(({ en: "en-GB", fr: "fr-FR", es: "es-ES" })[lang] || "en-GB") : "—"}</p>
-                </div>
-              </div>
             </div>
           )}
         </section>
