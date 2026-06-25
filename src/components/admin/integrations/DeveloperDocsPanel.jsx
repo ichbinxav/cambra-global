@@ -104,13 +104,16 @@ Body:
           <h3 className="text-sm font-bold">Claude (Model Context Protocol)</h3>
         </div>
         <p className="text-xs text-muted-foreground">
-          Add CAMBRA as a remote MCP server in Claude Desktop or Claude.ai. All 8 tools are exposed (list_brands, get_kpis, trigger_analysis…).
+          Production-grade MCP server with 15 tools, 2 resources and 2 prompts exposed to Claude Desktop and Claude.ai. Scoped, rate-limited and audit-logged.
         </p>
         <CopyRow label="MCP URL" value={mcpUrl} />
         <div>
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">Config snippet</div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">Claude Desktop config</div>
           <CodeBlock>{mcpConfig}</CodeBlock>
         </div>
+        <a href="/Developers/MCP" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-cambra-blue hover:underline">
+          Full MCP setup guide <ExternalLink className="h-3 w-3" />
+        </a>
       </div>
 
       {/* REST */}

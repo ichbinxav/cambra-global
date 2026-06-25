@@ -45,6 +45,7 @@ import AdminRecommendations from '@/pages/admin/AdminRecommendations';
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing.jsx';
 import Developers from '@/pages/Developers.jsx';
+import DevelopersMCP from '@/pages/DevelopersMCP.jsx';
 import HowItWorks from '@/pages/HowItWorks';
 import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
@@ -198,6 +199,8 @@ const AuthenticatedApp = () => {
         <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
         <Route path="/Developers" element={<Developers />} />
         <Route path="/developers" element={<Navigate to="/Developers" replace />} />
+        <Route path="/Developers/MCP" element={<DevelopersMCP />} />
+        <Route path="/developers/mcp" element={<Navigate to="/Developers/MCP" replace />} />
         <Route path="/HowItWorks" element={<HowItWorks />} />
         <Route path="/howitworks" element={<Navigate to="/HowItWorks" replace />} />
         <Route path="/Testimonials" element={<Testimonials />} />
