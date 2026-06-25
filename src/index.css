@@ -868,7 +868,20 @@ body {
 }
 
 /* Animations */
-.animate-fade-up { animation: fadeUp 400ms ease-out forwards; }
+/* Safari/iOS-safe fade-up:
+   Base state is VISIBLE (opacity:1). The animation only runs when motion is
+   allowed AND the browser actually executes it. If the animation fails to
+   run (Safari/iOS edge cases, backdrop-filter contexts, etc.), the element
+   stays visible — never permanently invisible. */
+.animate-fade-up { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .animate-fade-up { animation: cambraFadeUp 400ms ease-out both; }
+}
+@keyframes cambraFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Legacy alias — kept so any inline style referencing the old keyframe still resolves */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }

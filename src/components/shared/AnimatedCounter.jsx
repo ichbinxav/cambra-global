@@ -75,12 +75,11 @@ export default function AnimatedCounter({
         }
       })();
 
+  // Always render visible — the count-up animates the NUMBER itself,
+  // not the span's opacity. This prevents Safari/iOS from leaving the
+  // counter invisible if the IntersectionObserver never fires.
   return (
-    <span
-      ref={ref}
-      className="inline-block transition-opacity duration-300"
-      style={{ opacity: inView ? 1 : 0 }}
-    >
+    <span ref={ref} className="inline-block">
       {prefix}{formatted}{suffix}
     </span>
   );
