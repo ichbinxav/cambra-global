@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BarChart3, Users, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Plug, Home, ShieldCheck, Building2 } from "lucide-react";
+import { LayoutDashboard, BarChart3, Users, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Plug, Home, ShieldCheck, Building2, Zap, FolderOpen, TrendingUp } from "lucide-react";
 import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
+// MVP navigation — focused, minimal. Advanced API/OAuth/Webhook screens are admin-only.
 const NAV_ITEMS = [
-  { path: "/Dashboard", label: "Overview", icon: LayoutDashboard },
-  { path: "/Reports", label: "Reports", icon: BarChart3 },
-  { path: "/Network", label: "Network", icon: Users },
-  { path: "/Insights", label: "Insights", icon: FileText },
-  { path: "/Onboarding", label: "Onboarding", icon: Building2 },
-  { path: "/ConnectTools", label: "Data sources", icon: Plug },
+  { path: "/Dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/Analyzer", label: "Analyzer", icon: BarChart3 },
+  { path: "/Results", label: "Results", icon: FileText },
+  { path: "/UnlockSavings", label: "Unlock Savings", icon: Zap },
+  { path: "/RecoveryTracker", label: "Recovery Tracker", icon: TrendingUp },
+  { path: "/Vault", label: "Documents", icon: FolderOpen },
   { path: "/Account", label: "Account", icon: Settings },
 ];
 

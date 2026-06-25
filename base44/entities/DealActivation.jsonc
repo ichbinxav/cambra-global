@@ -22,7 +22,7 @@
     },
     "provider": {
       "type": "string",
-      "description": "DEPRECATED: legacy provider name. Present for temporary read-only compatibility."
+      "description": "DEPRECATED: legacy provider name. Read-only."
     },
     "vertical": {
       "type": "string",
@@ -85,7 +85,7 @@
         "revoked",
         "closed"
       ],
-      "default": "detected"
+      "default": "proposed"
     },
     "realization_mode": {
       "type": "string",
@@ -111,5 +111,34 @@
     "node_share_percent",
     "billing_model",
     "status"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    }
+  }
 }

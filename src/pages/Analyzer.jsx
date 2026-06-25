@@ -215,7 +215,25 @@ export default function Analyzer() {
     const savings = calculateSavings(inputData);
     const scoreReport = computeInfraScore(inputData, "manual");
 
+    // Resolve / create Brand so the whole flow stays linked.
+    let brandId = null;
+    try {
+      const existing = await base44.entities.Brand.list("-created_date", 1).catch(() => []);
+      if (existing.length) {
+        brandId = existing[0].id;
+      } else if (data.brand_name) {
+        const newBrand = await base44.entities.Brand.create({
+          name: data.brand_name,
+          category: (data.category || "other").toLowerCase().replace(/[^a-z]/g, "_") || "other",
+          country: data.country,
+          channels: ["dtc"],
+        });
+        brandId = newBrand.id;
+      }
+    } catch (_) { /* non-fatal */ }
+
     const input = await base44.entities.AnalyzerInput.create({
+      brand_id: brandId,
       monthly_revenue: data.monthly_revenue, monthly_transactions: data.monthly_transactions,
       avg_order_value: data.avg_order_value,
       country: data.country,
@@ -229,8 +247,29 @@ export default function Analyzer() {
       in_store_gmv: data.in_store_gmv, in_store_avg_ticket: data.in_store_avg_ticket,
       card_mix_pct: data.card_mix_pct, fixed_banking_fees: data.fixed_banking_fees,
       maintenance_fees: data.maintenance_fees, contract_duration_months: data.contract_duration_months,
+      data_source: uploadedFile ? "hybrid" : "manual",
     });
+
+    // Credibility envelope — manual results are NEVER 'verified'.
+    const dataSource = uploadedFile ? "hybrid" : "manual";
+    const completeness = (() => {
+      let filled = 0, total = 10;
+      if (data.monthly_revenue > 0) filled++;
+      if (data.monthly_transactions > 0) filled++;
+      if (data.payment_provider) filled++;
+      if (data.payment_fee_pct > 0) filled++;
+      if (data.shipping_provider) filled++;
+      if (data.monthly_shipping_cost > 0) filled++;
+      if (data.monthly_shipments > 0) filled++;
+      if (data.total_saas_spend > 0) filled++;
+      if (data.country) filled++;
+      if (uploadedFile) filled += 2; // weight upload
+      return Math.min(100, Math.round((filled / total) * 100));
+    })();
+    const confidence = completeness >= 80 ? "high" : completeness >= 50 ? "medium" : "low";
+
     const result = await base44.entities.AnalyzerResult.create({
+      brand_id: brandId,
       input_id: input.id,
       payment_savings: savings.paymentSavings,
       shipping_savings: savings.shippingSavings,
@@ -238,6 +277,20 @@ export default function Analyzer() {
       total_savings: savings.totalSavings,
       infra_score: scoreReport.total,
       details: savings.details,
+      confidence_level: confidence,
+      data_completeness_score: completeness,
+      methodology: "Manual / hybrid input compared to CAMBRA network benchmark (tier-aware, geo-adjusted). Savings = (current_rate − benchmark_rate) × annual_volume, capped at realistic recovery bands.",
+      assumptions: [
+        "Volume held constant across the year (no seasonality)",
+        "Benchmarks applied per revenue tier and geography (EU/UK)",
+        "All-in effective rate used for TPV (variable + fixed amortized)",
+        "Estimates do not account for contractual lock-ins or termination fees",
+      ],
+      benchmark_source: "network_internal",
+      verification_status: "pending_verification",
+      next_best_action: uploadedFile
+        ? "Review your uploaded data and confirm extracted figures."
+        : "Connect Stripe / your PSP to upgrade confidence to high.",
     });
     navigate(`/Results?id=${result.id}`);
   };

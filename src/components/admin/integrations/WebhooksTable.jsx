@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2, Webhook } from "lucide-react";
+import { Plus, Trash2, Webhook, Send, Loader2 } from "lucide-react";
 
 const EVENTS = ["new_brand_created", "new_document_uploaded", "analysis_completed", "savings_unlocked"];
 
@@ -21,6 +21,20 @@ export default function WebhooksTable({ webhooks, onChanged }) {
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [events, setEvents] = useState([]);
+  const [testingId, setTestingId] = useState(null);
+  const [testResult, setTestResult] = useState(null);
+
+  const handleTest = async (id) => {
+    setTestingId(id); setTestResult(null);
+    try {
+      const { data } = await base44.functions.invoke("sendTestWebhook", { webhook_id: id });
+      setTestResult({ id, ...data });
+    } catch (e) {
+      setTestResult({ id, ok: false, error_message: e.message });
+    }
+    setTestingId(null);
+    onChanged?.();
+  };
 
   const handleCreate = async () => {
     if (!name || !url || events.length === 0) return;
@@ -87,14 +101,27 @@ export default function WebhooksTable({ webhooks, onChanged }) {
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button size="icon" variant="ghost" onClick={() => handleDelete(w.id)} className="h-8 w-8 text-destructive">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="inline-flex items-center gap-1">
+                      <Button size="icon" variant="ghost" onClick={() => handleTest(w.id)} disabled={testingId === w.id} className="h-8 w-8" title="Send test webhook">
+                        {testingId === w.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => handleDelete(w.id)} className="h-8 w-8 text-destructive">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {testResult && (
+        <div className={`rounded-lg border p-3 text-xs ${testResult.ok ? "border-green-500/30 bg-green-500/5 text-green-800" : "border-red-500/30 bg-red-500/5 text-red-800"}`}>
+          <div className="font-bold mb-1">{testResult.ok ? "✓ Test webhook delivered" : "✗ Test webhook failed"}</div>
+          <div className="font-mono">HTTP {testResult.response_code || "—"} · {testResult.duration_ms || 0}ms · sig: HMAC-SHA256</div>
+          {testResult.error_message && <div className="font-mono text-[10px] mt-1">{testResult.error_message}</div>}
         </div>
       )}
 

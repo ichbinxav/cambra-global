@@ -12,6 +12,7 @@ import OAuthAppsPanel from "@/components/admin/integrations/OAuthAppsPanel";
 import OrganizationsPanel from "@/components/admin/integrations/OrganizationsPanel";
 import UsageAndDLQPanel from "@/components/admin/integrations/UsageAndDLQPanel";
 import ApiSelfTestPanel from "@/components/admin/integrations/ApiSelfTestPanel";
+import FlowSelfTestPanel from "@/components/admin/integrations/FlowSelfTestPanel";
 
 export default function AdminApiIntegrations() {
   const [keys, setKeys] = useState([]);
@@ -72,7 +73,8 @@ export default function AdminApiIntegrations() {
           <TabsTrigger value="oauth" className="gap-2"><Lock className="h-3.5 w-3.5" /> OAuth Apps</TabsTrigger>
           <TabsTrigger value="orgs" className="gap-2"><Building2 className="h-3.5 w-3.5" /> Organizations</TabsTrigger>
           <TabsTrigger value="usage" className="gap-2"><BarChart3 className="h-3.5 w-3.5" /> Usage & DLQ</TabsTrigger>
-          <TabsTrigger value="tests" className="gap-2"><ShieldCheck className="h-3.5 w-3.5" /> Self-tests</TabsTrigger>
+          <TabsTrigger value="tests" className="gap-2"><ShieldCheck className="h-3.5 w-3.5" /> API Self-tests</TabsTrigger>
+          <TabsTrigger value="flow" className="gap-2"><ShieldCheck className="h-3.5 w-3.5" /> Flow Tests</TabsTrigger>
           <TabsTrigger value="activity" className="gap-2"><Activity className="h-3.5 w-3.5" /> Activity</TabsTrigger>
           <TabsTrigger value="docs" className="gap-2"><BookOpen className="h-3.5 w-3.5" /> Docs</TabsTrigger>
         </TabsList>
@@ -103,6 +105,10 @@ export default function AdminApiIntegrations() {
 
         <TabsContent value="tests" className="mt-6">
           <ApiSelfTestPanel />
+        </TabsContent>
+
+        <TabsContent value="flow" className="mt-6">
+          <FlowSelfTestPanel />
         </TabsContent>
 
         <TabsContent value="docs" className="mt-6">

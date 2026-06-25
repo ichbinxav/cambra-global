@@ -19,6 +19,8 @@ import Network from '@/pages/Network';
 import Insights from '@/pages/Insights';
 import InsightDetail from '@/pages/InsightDetail';
 import Account from '@/pages/Account';
+import UnlockSavings from '@/pages/UnlockSavings';
+import RecoveryTracker from '@/pages/RecoveryTracker';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import Cookies from '@/pages/Cookies';
@@ -228,6 +230,8 @@ const AuthenticatedApp = () => {
           <Route path="/Insights" element={<Insights />} />
           <Route path="/InsightDetail" element={<InsightDetail />} />
           <Route path="/Account" element={<Account />} />
+          <Route path="/UnlockSavings" element={<UnlockSavings />} />
+          <Route path="/RecoveryTracker" element={<RecoveryTracker />} />
           <Route path="/Invoices" element={<Invoices />} />
           <Route path="/Vault" element={<Vault />} />
         </Route>

@@ -7,7 +7,7 @@
     },
     "deal_id": {
       "type": "string",
-      "description": "DEPRECATED: legacy ambiguous reference. Present for temporary read-only compatibility."
+      "description": "DEPRECATED: legacy. Read-only."
     },
     "deal_activation_id": {
       "type": "string",
@@ -108,5 +108,24 @@
     "baseline_value",
     "locked",
     "locked_at"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

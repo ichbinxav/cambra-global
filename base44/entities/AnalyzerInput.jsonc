@@ -4,7 +4,7 @@
   "properties": {
     "brand_id": {
       "type": "string",
-      "description": "Associated brand ID"
+      "description": "Required link to Brand"
     },
     "monthly_revenue": {
       "type": "number"
@@ -63,7 +63,50 @@
     },
     "total_saas_spend": {
       "type": "number"
+    },
+    "country": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "data_source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "file_upload",
+        "api",
+        "hybrid"
+      ],
+      "default": "manual",
+      "description": "How data was provided. Affects confidence."
     }
   },
-  "required": []
+  "required": [],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    }
+  }
 }

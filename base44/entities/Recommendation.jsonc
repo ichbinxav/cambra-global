@@ -28,7 +28,8 @@
         "deal_suggestion",
         "missing_data",
         "next_action",
-        "opportunity_ranking"
+        "opportunity_ranking",
+        "unlock_savings"
       ]
     },
     "title": {
@@ -93,7 +94,9 @@
         "seen",
         "dismissed",
         "implemented",
-        "archived"
+        "archived",
+        "proposed",
+        "awaiting_authorization"
       ],
       "default": "active"
     }
@@ -102,5 +105,31 @@
     "type",
     "title",
     "description"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    }
+  }
 }

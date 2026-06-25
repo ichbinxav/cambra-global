@@ -56,7 +56,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Sales channels"
+      "description": "Sales channels (canonical)"
     },
     "stack": {
       "type": "array",
@@ -94,32 +94,60 @@
       "description": "Brand biography / description"
     },
     "instagram_url": {
-      "type": "string",
-      "description": "Instagram profile URL"
+      "type": "string"
     },
     "linkedin_url": {
-      "type": "string",
-      "description": "LinkedIn page URL"
+      "type": "string"
     },
     "twitter_url": {
-      "type": "string",
-      "description": "Twitter/X profile URL"
+      "type": "string"
     },
     "tiktok_url": {
-      "type": "string",
-      "description": "TikTok profile URL"
+      "type": "string"
     },
     "youtube_url": {
-      "type": "string",
-      "description": "YouTube channel URL"
+      "type": "string"
     },
     "accept_terms": {
       "type": "boolean",
+      "default": false
+    },
+    "is_demo": {
+      "type": "boolean",
       "default": false,
-      "description": "User accepted terms and conditions"
+      "description": "Demo/fake brand for testing \u2014 never billed"
     }
   },
   "required": [
     "name"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.contact_email": "{{user.email}}"
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    }
+  }
 }

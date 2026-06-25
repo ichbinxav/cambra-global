@@ -39,12 +39,10 @@
       "type": "string"
     },
     "series": {
-      "type": "string",
-      "description": "Invoice series code, e.g. INV-2026"
+      "type": "string"
     },
     "sequence": {
-      "type": "number",
-      "description": "Sequential number within series"
+      "type": "number"
     },
     "issued_at": {
       "type": "string",
@@ -116,5 +114,24 @@
   },
   "required": [
     "status"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

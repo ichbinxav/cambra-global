@@ -55,7 +55,81 @@
           "type": "number"
         }
       }
+    },
+    "confidence_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "description": "Credibility of the estimate"
+    },
+    "data_completeness_score": {
+      "type": "number",
+      "description": "0-100 \u2014 % of fields populated with real data"
+    },
+    "methodology": {
+      "type": "string",
+      "description": "Short description of how savings were computed"
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Assumptions applied during estimation"
+    },
+    "benchmark_source": {
+      "type": "string",
+      "enum": [
+        "network_internal",
+        "industry_public",
+        "provider_published",
+        "hybrid"
+      ],
+      "default": "network_internal"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "estimated",
+        "pending_verification",
+        "verified"
+      ],
+      "default": "pending_verification",
+      "description": "Estimates from manual input are never 'verified' until backed by evidence"
+    },
+    "next_best_action": {
+      "type": "string"
     }
   },
-  "required": []
+  "required": [],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    }
+  }
 }
