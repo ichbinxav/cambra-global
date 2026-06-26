@@ -48,6 +48,7 @@ import AdminApiIntegrations from '@/pages/admin/AdminApiIntegrations';
 import AdminControl from '@/pages/admin/AdminControl';
 import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
 import AdminRecommendations from '@/pages/admin/AdminRecommendations';
+import AdminCompliance from '@/pages/admin/AdminCompliance';
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing.jsx';
 import Developers from '@/pages/Developers.jsx';
@@ -268,6 +269,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/api-integrations" element={withBoundary(<AdminApiIntegrations />)} />
           <Route path="/admin/control" element={withBoundary(<AdminControl />)} />
           <Route path="/admin/recommendations" element={withBoundary(<AdminRecommendations />)} />
+          <Route path="/admin/compliance" element={withBoundary(<AdminCompliance />)} />
           <Route path="/admin/activation" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/activation/:id" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/invoices" element={withBoundary(<AdminInvoices />)} />

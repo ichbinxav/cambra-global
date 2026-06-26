@@ -10,6 +10,24 @@ import Navbar from "@/components/landing/Navbar";
 import StripeConnectCard from "@/components/connect/StripeConnectCard.jsx";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
+import { CONNECTORS } from "@/lib/connectors.config";
+
+// E(a) — OAuth-backed integrations that are still pending real workspace OAuth
+// credentials. While CONNECTORS[id] is empty, force these to render as
+// "coming_soon" so users don't hit a dead Connect button. Once the OAuth app
+// is registered and the id is filled in, the override falls through and the
+// real catalog_status takes over.
+const OAUTH_PENDING_IDS = {
+  google_drive: "drive",
+  google_sheets: "sheets",
+  gmail: "gmail",
+  slack: "slack",
+};
+function isOAuthPending(integrationId) {
+  const key = OAUTH_PENDING_IDS[integrationId];
+  if (!key) return false;
+  return !CONNECTORS[key];
+}
 
 /* ── helpers ─────────────────────────────────────────────────── */
 const CATEGORY_ORDER = [
@@ -324,7 +342,14 @@ export default function ConnectTools() {
             // skip Stripe in payments — it's shown above
             .filter(it => !(catKey === "payments" && it.integration_id === "stripe"));
 
-          if (items.length === 0) return null;
+          // E(a) — gate Drive/Sheets/Gmail/Slack while OAuth creds aren't registered.
+          const gatedItems = items.map(it => {
+            if (it.display_status !== "connected" && isOAuthPending(it.integration_id)) {
+              return { ...it, display_status: "coming_soon", catalog_status: "coming_soon" };
+            }
+            return it;
+          });
+          if (gatedItems.length === 0) return null;
 
           const meta = CATEGORY_META[catKey] || { labelKey: null, fallback: catKey, icon: Layers };
           const Icon = meta.icon;
@@ -338,7 +363,7 @@ export default function ConnectTools() {
                 <span className="text-xs text-muted-foreground/60 tabular-nums">({items.length})</span>
               </div>
               <div className="space-y-2">
-                {items.map(it => (
+                {gatedItems.map(it => (
                   <IntegrationCard
                     key={it.integration_id}
                     integration={it}
