@@ -1,0 +1,72 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "Groups messages of a single chat session."
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "assistant",
+        "system"
+      ],
+      "default": "user"
+    },
+    "content": {
+      "type": "string",
+      "description": "Plain-text message body."
+    },
+    "tool_calls_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Structured record of what tools/agents the assistant decided to call, with statuses (executed | drafted | refused | requires_confirmation)."
+    },
+    "agent_task_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AgentTask ids the assistant created in response to this message."
+    },
+    "approval_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Approval ids created during this message (drafts waiting for founder review)."
+    },
+    "blocked_by_gate": {
+      "type": "string",
+      "description": "Set when the chat refused / parked an action: 'risk_l3_l4_forced_draft' | 'bulk_needs_confirmation' | 'unknown_intent' | 'tool_not_allowed'."
+    }
+  },
+  "required": [
+    "conversation_id",
+    "role",
+    "content"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
