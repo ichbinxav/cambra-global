@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity
+  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -23,6 +23,7 @@ const NAV = [
   { path: "/admin/api-integrations", label: "API & Webhooks", icon: Plug },
   { path: "/admin/compliance", label: "Compliance", icon: ShieldCheck },
   { path: "/admin/activity", label: "Activity Log", icon: Activity },
+  { path: "/admin/approvals", label: "Approvals", icon: ShieldAlert, showPendingBadge: true },
 ];
 
 export default function AdminLayout() {
@@ -30,6 +31,7 @@ export default function AdminLayout() {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingApprovals, setPendingApprovals] = useState(0);
   const location = useLocation();
 
   useEffect(() => {
@@ -39,6 +41,21 @@ export default function AdminLayout() {
       setLoadingUser(false);
     }
   }, [isAuthenticated, isLoadingAuth]);
+
+  // Poll pending approvals count for sidebar badge (admin-only context)
+  useEffect(() => {
+    if (user?.role !== "admin") return;
+    let cancelled = false;
+    const loadCount = async () => {
+      try {
+        const rows = await base44.entities.Approval.filter({ status: "pending" }, "-created_date", 200);
+        if (!cancelled) setPendingApprovals(Array.isArray(rows) ? rows.length : 0);
+      } catch { /* non-fatal */ }
+    };
+    loadCount();
+    const id = setInterval(loadCount, 30_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [user, location.pathname]);
 
   if (isLoadingAuth || loadingUser) {
     return (
@@ -118,7 +135,14 @@ export default function AdminLayout() {
                 }`}
               >
                 <item.icon size={13} />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {item.showPendingBadge && pendingApprovals > 0 && (
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full text-[10px] font-black tabular-nums ${
+                    active ? "bg-background text-foreground" : "bg-rose-600 text-white"
+                  }`}>
+                    {pendingApprovals > 99 ? "99+" : pendingApprovals}
+                  </span>
+                )}
               </Link>
             );
           })}

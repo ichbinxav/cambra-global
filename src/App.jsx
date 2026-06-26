@@ -50,6 +50,7 @@ import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
 import AdminRecommendations from '@/pages/admin/AdminRecommendations';
 import AdminCompliance from '@/pages/admin/AdminCompliance';
 import AdminActivity from '@/pages/admin/AdminActivity';
+import AdminApprovals from '@/pages/admin/AdminApprovals';
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing.jsx';
 import Developers from '@/pages/Developers.jsx';
@@ -272,6 +273,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/recommendations" element={withBoundary(<AdminRecommendations />)} />
           <Route path="/admin/compliance" element={withBoundary(<AdminCompliance />)} />
           <Route path="/admin/activity" element={withBoundary(<AdminActivity />)} />
+          <Route path="/admin/approvals" element={withBoundary(<AdminApprovals />)} />
           <Route path="/admin/activation" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/activation/:id" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/invoices" element={withBoundary(<AdminInvoices />)} />
