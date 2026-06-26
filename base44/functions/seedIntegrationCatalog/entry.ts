@@ -73,6 +73,34 @@ const CATALOG = [
   { integration_id: "sellsy",           name: "Sellsy",           category: "finance",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 6,  value_unlock: "French SME billing and accounting" },
   { integration_id: "tipalti",          name: "Tipalti",          category: "finance",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 7,  value_unlock: "AP automation and supplier payment fees" },
 
+  // ── Accounting software — SME (FR/ES/EU) ──────────────────────
+  { integration_id: "sage",             name: "Sage",                  category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 8,  value_unlock: "General ledger, recurring vendor costs, P&L evidence" },
+  { integration_id: "cegid",            name: "Cegid Loop",            category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 9,  value_unlock: "French SME accounting ledger and vendor spend" },
+  { integration_id: "ebp",              name: "EBP",                   category: "finance", auth_type: "api_key", depth: "standard", status: "planned",     priority: 10, value_unlock: "French accounting and vendor invoice data" },
+  { integration_id: "ciel",             name: "Ciel Compta",           category: "finance", auth_type: "api_key", depth: "standard", status: "planned",     priority: 11, value_unlock: "French SME accounting ledger" },
+  { integration_id: "indy",             name: "Indy",                  category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 12, value_unlock: "French freelance/SME accounting and tax data" },
+  { integration_id: "tiime",            name: "Tiime",                 category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 13, value_unlock: "French accounting + receipts + expert link" },
+  { integration_id: "dougs",            name: "Dougs",                 category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 14, value_unlock: "French online accounting and vendor spend" },
+  { integration_id: "abby",             name: "Abby",                  category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 15, value_unlock: "French micro-entreprise accounting" },
+  { integration_id: "freebe",           name: "Freebe",                category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 16, value_unlock: "French freelance billing and accounting" },
+  { integration_id: "holded",           name: "Holded",                category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 17, value_unlock: "Spanish SME accounting, invoicing and vendor spend" },
+  { integration_id: "quipu",            name: "Quipu",                 category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 18, value_unlock: "Spanish SME accounting and invoicing data" },
+  { integration_id: "contasimple",      name: "Contasimple",           category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 19, value_unlock: "Spanish freelance/SME accounting" },
+  { integration_id: "anfix",            name: "Anfix",                 category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 20, value_unlock: "Spanish online accounting platform" },
+  { integration_id: "billin",           name: "Billin",                category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 21, value_unlock: "Spanish invoicing and accounting data" },
+  { integration_id: "facturadirecta",   name: "FacturaDirecta",        category: "finance", auth_type: "api_key", depth: "standard", status: "planned",     priority: 22, value_unlock: "Spanish invoicing and accounting" },
+  { integration_id: "a3_wolters_kluwer",name: "a3 (Wolters Kluwer)",   category: "finance", auth_type: "api_key", depth: "standard", status: "planned",     priority: 23, value_unlock: "Spanish asesoría-grade accounting suite" },
+  { integration_id: "sage_contaplus",   name: "Sage ContaPlus",        category: "finance", auth_type: "api_key", depth: "standard", status: "planned",     priority: 24, value_unlock: "Spanish SME accounting ledger" },
+  { integration_id: "datev",            name: "DATEV",                 category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 25, value_unlock: "German Steuerberater-grade accounting data" },
+  { integration_id: "lexoffice",        name: "Lexoffice",             category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 26, value_unlock: "German SME accounting and vendor spend" },
+  { integration_id: "fattureincloud",   name: "Fatture in Cloud",      category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 27, value_unlock: "Italian SME e-invoicing and accounting" },
+
+  // ── Expert-comptable & asesoría portals ───────────────────────
+  { integration_id: "expert_comptable_portal", name: "Expert-comptable portal", category: "finance", auth_type: "manual",  depth: "standard", status: "coming_soon", priority: 28, value_unlock: "Connect your expert-comptable to share P&L, vendor invoices and contracts" },
+  { integration_id: "asesoria_digital",        name: "Asesoría digital (ES)",   category: "finance", auth_type: "manual",  depth: "standard", status: "coming_soon", priority: 29, value_unlock: "Link your asesoría to share accounting evidence and recurring vendor spend" },
+  { integration_id: "fec_upload",              name: "FEC file upload (FR)",    category: "finance", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 30, value_unlock: "One-shot upload of your FEC to extract vendor spend and recurring costs" },
+  { integration_id: "modelo_347_upload",       name: "Modelo 347 upload (ES)",  category: "finance", auth_type: "api_key", depth: "standard", status: "planned",     priority: 31, value_unlock: "Extract supplier spend from your annual 347 declaration" },
+
   // ── Support (6) ───────────────────────────────────────────────
   { integration_id: "gorgias",          name: "Gorgias",          category: "support",   auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 1,  value_unlock: "Support tooling cost benchmark" },
   { integration_id: "zendesk",          name: "Zendesk",          category: "support",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 2,  value_unlock: "Support seat cost and volume" },
