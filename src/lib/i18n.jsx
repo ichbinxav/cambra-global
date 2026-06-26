@@ -424,6 +424,7 @@ const DICT = {
 
     /* FIX 7 — Results static benchmark note */
     benchmark_static_note:"Benchmark based on CAMBRA reference data — network sample growing",
+    benchmark_seed_note:"Benchmark from CAMBRA seeded reference cohort — not yet backed by network data",
 
     /* Login gate */
     login_gate_headline:    "Your infrastructure audit is ready.",
@@ -804,6 +805,7 @@ const DICT = {
 
     /* FIX 7 — Results static benchmark note */
     benchmark_static_note:"Benchmark basé sur les données de référence CAMBRA — échantillon réseau en croissance",
+    benchmark_seed_note:"Benchmark issu d'une cohorte de référence CAMBRA — pas encore adossé à des données réseau",
 
     /* Login gate */
     login_gate_headline:    "Votre audit d'infrastructure est prêt.",
@@ -1184,6 +1186,7 @@ const DICT = {
 
     /* FIX 7 — Results static benchmark note */
     benchmark_static_note:"Benchmark basado en datos de referencia CAMBRA — muestra de red en crecimiento",
+    benchmark_seed_note:"Benchmark de cohorte de referencia CAMBRA — aún no respaldado por datos de red",
 
     /* Login gate */
     login_gate_headline:    "Tu auditoría de infraestructura está lista.",

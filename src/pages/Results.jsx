@@ -250,9 +250,13 @@ export default function Results() {
 
   // FIX 7 — Show network benchmark line only when n >= 5 AND we have a network
   // source; otherwise show the static-data note. Both can never show together.
+  // Honesty: when any returned benchmark is a "seed" cohort (synthetic
+  // reference), say that explicitly instead of the generic static note.
   const anyBenchmark = benchmarks.payments || benchmarks.shipping || benchmarks.saas;
   const showNetworkBenchmarkLine = maxN >= 5;
   const showStaticBenchmarkNote = anyBenchmark && !showNetworkBenchmarkLine;
+  const anySeedBenchmark = [benchmarks.payments, benchmarks.shipping, benchmarks.saas]
+    .some(b => b?.source === "seed");
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -556,7 +560,7 @@ export default function Results() {
             )}
             {showStaticBenchmarkNote && (
               <p className="text-[11px] text-muted-foreground/70">
-                {t("benchmark_static_note")}
+                {anySeedBenchmark ? t("benchmark_seed_note") : t("benchmark_static_note")}
               </p>
             )}
           </div>
