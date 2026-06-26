@@ -20,6 +20,7 @@ const CATALOG = [
   { integration_id: "checkout_com",     name: "Checkout.com",     category: "payments",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 8,  value_unlock: "Enterprise card acquiring fees" },
   { integration_id: "braintree",        name: "Braintree",        category: "payments",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 9,  value_unlock: "PayPal-owned acquiring data" },
   { integration_id: "shopify_payments", name: "Shopify Payments", category: "payments",  auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 10, value_unlock: "Shopify-managed payment fees" },
+  { integration_id: "stripe_terminal",  name: "Stripe Terminal",  category: "payments",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 11, value_unlock: "In-store TPV via Stripe Terminal" },
 
   // ── Commerce (6) ──────────────────────────────────────────────
   { integration_id: "shopify",          name: "Shopify",          category: "commerce",  auth_type: "oauth",   depth: "deep",     status: "coming_soon", priority: 1,  value_unlock: "Real GMV, orders, AOV, country mix, currency" },
@@ -70,6 +71,7 @@ const CATALOG = [
   { integration_id: "pennylane",        name: "Pennylane",        category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 4,  value_unlock: "Recurring costs and accounting evidence" },
   { integration_id: "quickbooks",       name: "QuickBooks",       category: "finance",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 5,  value_unlock: "Accounting and recurring cost evidence" },
   { integration_id: "sellsy",           name: "Sellsy",           category: "finance",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 6,  value_unlock: "French SME billing and accounting" },
+  { integration_id: "tipalti",          name: "Tipalti",          category: "finance",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 7,  value_unlock: "AP automation and supplier payment fees" },
 
   // ── Support (6) ───────────────────────────────────────────────
   { integration_id: "gorgias",          name: "Gorgias",          category: "support",   auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 1,  value_unlock: "Support tooling cost benchmark" },
