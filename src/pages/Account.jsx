@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,12 +67,21 @@ export default function Account() {
 
   if (loading) return (
     <div className="flex items-center justify-center py-40">
-      <motion.div className="text-2xl text-muted-foreground/25" animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}>✱</motion.div>
+      <span
+        style={{
+          display: "inline-block",
+          width: 32, height: 32, borderRadius: "50%",
+          border: "2px solid rgba(255,255,255,0.12)",
+          borderTopColor: "#22d3ee",
+          animation: "cambra-spin 0.8s linear infinite",
+        }}
+      />
+      <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+    <div>
       <PageHero
         eyebrow="Settings · Profile & brand"
         title="Account."
@@ -170,6 +178,6 @@ export default function Account() {
           </Button>
         </Section>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -13,6 +13,7 @@ import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding.jsx';
 import Analyzer from '@/pages/Analyzer';
 import LoginGate from '@/pages/LoginGate';
+import HealthCheck from '@/pages/HealthCheck.jsx';
 import CookieConsent from '@/components/shared/CookieConsent';
 // FIX 13 — Lazy load heavy pages (Results, Dashboard, ConnectTools + heavy admin pages)
 const Results       = lazy(() => import('@/pages/Results'));
@@ -68,19 +69,26 @@ import ScrollToTop from '@/components/shared/ScrollToTop.jsx';
 import ErrorBoundary from '@/components/shared/ErrorBoundary.jsx';
 import { ToastProvider } from '@/components/shared/Toast.jsx';
 
-// FIX 13 — Dark-style fallback shown while lazy chunks load
+// Inline lazy chunk fallback — NOT fixed, so it doesn't blank out the screen
+// or fight the auth loading screen. Renders inside whatever shell is mounted.
 function LazyFallback() {
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center"
-      style={{ background: "#0a0a0a" }}
+      className="min-h-screen w-full flex flex-col items-center justify-center"
+      style={{ background: "transparent" }}
       role="status"
       aria-live="polite"
     >
-      <div className="h-10 w-10 text-white/90" style={{ animation: 'spin 4s linear infinite' }}>
-        <BrandGlyph className="h-10 w-10" />
-      </div>
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <span
+        style={{
+          display: "inline-block",
+          width: 32, height: 32, borderRadius: "50%",
+          border: "2px solid rgba(255,255,255,0.12)",
+          borderTopColor: "#22d3ee",
+          animation: "cambra-spin 0.8s linear infinite",
+        }}
+      />
+      <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
@@ -228,6 +236,8 @@ const AuthenticatedApp = () => {
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/LoginGate" element={<LoginGate />} />
         <Route path="/logingate" element={<Navigate to="/LoginGate" replace />} />
+        <Route path="/HealthCheck" element={<HealthCheck />} />
+        <Route path="/healthcheck" element={<Navigate to="/HealthCheck" replace />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

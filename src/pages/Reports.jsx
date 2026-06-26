@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
@@ -28,10 +27,11 @@ export default function Reports() {
   useEffect(() => {
     (async () => {
       try {
-        const authed = await base44.auth.isAuthenticated();
-        if (!authed) { setVLoading(false); return; }
-        const me = await base44.auth.me();
-        const brands = await base44.entities.Brand.filter({ created_by_id: me.id }, '-created_date', 1);
+        const me = await base44.auth.me().catch(() => null);
+        if (!me) { setVLoading(false); return; }
+        const brands = await base44.entities.Brand
+          .filter({ created_by: me.email }, '-created_date', 1)
+          .catch(() => []);
         const b = brands?.[0] || null;
         setBrand(b);
         if (b) {
@@ -56,7 +56,7 @@ export default function Reports() {
   }));
 
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+    <div>
       <PageHero
         eyebrow="Margin intelligence · History"
         title="Reports."
@@ -73,12 +73,19 @@ export default function Reports() {
 
       {loading ? (
         <div className="flex items-center justify-center py-40">
-          <motion.div className="text-2xl text-muted-foreground/25" animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}>✱</motion.div>
+          <span
+            style={{
+              display: "inline-block",
+              width: 32, height: 32, borderRadius: "50%",
+              border: "2px solid rgba(255,255,255,0.12)",
+              borderTopColor: "#22d3ee",
+              animation: "cambra-spin 0.8s linear infinite",
+            }}
+          />
+          <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       ) : results.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="relative rounded-2xl border border-white/[0.08] overflow-hidden p-12 sm:p-16 text-center"
           style={{
             background:
@@ -100,7 +107,7 @@ export default function Reports() {
               </Button>
             </Link>
           </div>
-        </motion.div>
+        </div>
       ) : (
         <>
           {/* KPI strip */}
@@ -108,12 +115,7 @@ export default function Reports() {
 
           {/* Chart */}
           {chartData.length > 0 && (
-            <motion.div
-              className="cambra-card p-7 mb-6"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
+            <div className="cambra-card p-7 mb-6">
               <div className="relative">
               <div className="mb-6 flex items-end justify-between gap-4">
                 <div>
@@ -142,17 +144,12 @@ export default function Reports() {
                 </BarChart>
               </ResponsiveContainer>
               </div>
-            </motion.div>
+            </div>
           )}
 
            {/* Verification checklist */}
            {!vLoading && (
-             <motion.div
-               className="cambra-card p-7 mb-6"
-               initial={{ opacity: 0, y: 12 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ delay: 0.15 }}
-             >
+             <div className="cambra-card p-7 mb-6">
                <div className="relative">
                <div className="mb-4 flex items-center justify-between">
                  <div>
@@ -191,18 +188,13 @@ export default function Reports() {
                </ul>
                {!brand && (
                 <p className="text-xs text-white/55 mt-3">Complete onboarding to enable verification tracking.</p>
-               )}
-               </div>
-               </motion.div>
-               )}
+                )}
+                </div>
+                </div>
+                )}
 
-               {lastReport && (
-               <motion.div
-               className="cambra-card p-7 mb-6"
-               initial={{ opacity: 0, y: 12 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ delay: 0.18 }}
-               >
+                {lastReport && (
+                <div className="cambra-card p-7 mb-6">
                <div className="relative">
                <div className="mb-4">
                  <p className="cc-eyebrow mb-1">TPE report</p>
@@ -241,16 +233,11 @@ export default function Reports() {
                  );
                  })()}
                  </div>
-                 </motion.div>
+                 </div>
                  )}
 
                  {/* History list */}
-                 <motion.div
-                 className="cambra-card overflow-hidden"
-                 initial={{ opacity: 0, y: 12 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 transition={{ delay: 0.2 }}
-                 >
+                 <div className="cambra-card overflow-hidden">
                  <div className="px-6 py-5 border-b border-white/[0.08] flex items-center justify-between relative">
                    <div>
                      <p className="cc-eyebrow mb-1">Audit history</p>
@@ -264,12 +251,7 @@ export default function Reports() {
                    const scoreColor = score >= 75 ? "text-[#52EBA4] bg-[#52EBA4]/10 border-[#52EBA4]/25" : score >= 50 ? "text-[#7BD9F0] bg-[#7BD9F0]/10 border-[#7BD9F0]/25" : score >= 30 ? "text-[#FFB05A] bg-[#FFB05A]/10 border-[#FFB05A]/25" : "text-[#FF7A6E] bg-[#FF7A6E]/10 border-[#FF7A6E]/25";
                    return (
                  <Link key={r.id} to={`/Results?id=${r.id}`}>
-                 <motion.div
-                   className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.04] transition-colors group cursor-pointer"
-                   initial={{ opacity: 0, x: -8 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   transition={{ delay: 0.1 + i * 0.04 }}
-                 >
+                 <div className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.04] transition-colors group cursor-pointer">
                    <div className="flex items-center gap-4 min-w-0">
                      <div className="w-9 h-9 rounded-xl bg-white/[0.05] border border-white/[0.10] flex items-center justify-center text-[11px] font-mono font-bold text-white/70 shrink-0">
                        {String(results.length - i).padStart(2, "0")}
@@ -288,15 +270,15 @@ export default function Reports() {
                        <p className="text-[10px] text-white/45 font-mono">recovery potential</p>
                      </div>
                      <ArrowUpRight size={14} className="text-white/30 group-hover:text-cambra-cyan group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                   </div>
-                 </motion.div>
-                 </Link>
-                 );
-                 })}
-                 </div>
-                 </motion.div>
-        </>
-      )}
-    </motion.div>
-  );
-}
+                     </div>
+                     </div>
+                     </Link>
+                     );
+                     })}
+                     </div>
+                     </div>
+                     </>
+                     )}
+                     </div>
+                     );
+                     }

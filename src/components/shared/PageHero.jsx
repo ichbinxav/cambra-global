@@ -1,9 +1,8 @@
 import { Activity } from "lucide-react";
-import { motion } from "framer-motion";
 
 /**
  * Premium navy hero header for inner pages.
- * Matches landing aesthetic — navy gradient, ambient glow, grid texture.
+ * Start visible — animation is an enhancement (no framer-motion).
  *
  * Props:
  *  - eyebrow:  text inside the live pill
@@ -34,19 +33,20 @@ export default function PageHero({
     );
   }
 
-  // Premium navy hero — default
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    <div
+      style={{ opacity: 1 }}
       className="relative rounded-2xl border border-white/[0.08] p-6 sm:p-9 mb-6 overflow-hidden"
-      style={{
-        background:
-          "radial-gradient(120% 80% at 0% 0%, rgba(31,78,216,0.22) 0%, transparent 55%), radial-gradient(100% 100% at 100% 100%, rgba(44,167,193,0.16) 0%, transparent 60%), linear-gradient(180deg, hsl(222 60% 7%) 0%, hsl(222 65% 4%) 100%)",
-        boxShadow: "0 1px 0 hsl(0 0% 100% / 0.06) inset, 0 30px 80px -28px rgba(0,0,0,0.55)",
-      }}
     >
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 0% 0%, rgba(31,78,216,0.22) 0%, transparent 55%), radial-gradient(100% 100% at 100% 100%, rgba(44,167,193,0.16) 0%, transparent 60%), linear-gradient(180deg, hsl(222 60% 7%) 0%, hsl(222 65% 4%) 100%)",
+          boxShadow: "0 1px 0 hsl(0 0% 100% / 0.06) inset, 0 30px 80px -28px rgba(0,0,0,0.55)",
+        }}
+      />
       {/* Grid texture */}
       <div
         aria-hidden
@@ -59,21 +59,18 @@ export default function PageHero({
           WebkitMaskImage: "radial-gradient(ellipse 90% 90% at 50% 0%, #000 30%, transparent 75%)",
         }}
       />
-
-      {/* Floating cyan glow */}
-      <motion.div
+      {/* Static cyan glow (no animation = no jank on auth pages) */}
+      <div
         aria-hidden
         className="pointer-events-none absolute -top-24 -right-16 w-72 h-72 rounded-full blur-[80px]"
-        style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.32), transparent)" }}
-        animate={{ opacity: [0.4, 0.7, 0.4], scale: [1, 1.08, 1] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.32), transparent)", opacity: 0.55 }}
       />
 
       <div className="relative">
         <HeaderInner eyebrow={eyebrow} title={title} subtitle={subtitle} actions={actions} Icon={Icon} dark={true} />
         {children}
       </div>
-    </motion.div>
+    </div>
   );
 }
 

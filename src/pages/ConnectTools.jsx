@@ -102,7 +102,7 @@ function StatusBadge({ integration, stripeConnected, t, formatEur }) {
   );
 }
 
-function ActionCTA({ integration, stripeConnected, t, onSync }) {
+function ActionCTA({ integration, stripeConnected, t, onSync, onConnect }) {
   const status = integration.display_status;
   if (status === "connected") {
     return (
@@ -122,23 +122,37 @@ function ActionCTA({ integration, stripeConnected, t, onSync }) {
   }
   if (status === "detected" || (integration.inferred_from_payments && stripeConnected)) {
     return (
-      <button className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 min-h-[44px] sm:min-h-0">
+      <button
+        onClick={() => onConnect?.(integration)}
+        className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 min-h-[44px] sm:min-h-0"
+      >
         {t("connect_to_verify")} <ArrowRight size={10} />
       </button>
     );
   }
   if (status === "available") {
     return (
-      <button className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 min-h-[44px] sm:min-h-0">
+      <button
+        onClick={() => onConnect?.(integration)}
+        className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 min-h-[44px] sm:min-h-0"
+      >
         {t("nav_connect")} <ArrowRight size={10} />
       </button>
     );
   }
-  return null;
+  // coming_soon / planned — graceful CTA registers interest
+  return (
+    <button
+      onClick={() => onConnect?.(integration)}
+      className="inline-flex items-center gap-1 h-8 px-3 rounded-full border border-border/60 text-muted-foreground text-[11px] font-bold hover:text-foreground hover:border-foreground/40 min-h-[44px] sm:min-h-0"
+    >
+      <Clock size={10} /> {t("badge_coming_soon")}
+    </button>
+  );
 }
 
 /* ── integration card ────────────────────────────────────────── */
-function IntegrationCard({ integration, stripeConnected, t, onSync }) {
+function IntegrationCard({ integration, stripeConnected, t, onSync, onConnect }) {
   const FallbackIcon = (CATEGORY_META[integration.category] || { icon: Layers }).icon;
   return (
     <div className="p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-colors">
@@ -158,7 +172,7 @@ function IntegrationCard({ integration, stripeConnected, t, onSync }) {
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <StatusBadge integration={integration} stripeConnected={stripeConnected} t={t} />
-          <ActionCTA integration={integration} stripeConnected={stripeConnected} t={t} onSync={onSync} />
+          <ActionCTA integration={integration} stripeConnected={stripeConnected} t={t} onSync={onSync} onConnect={onConnect} />
         </div>
       </div>
     </div>
@@ -173,6 +187,39 @@ export default function ConnectTools() {
   const [allIntegrations, setAllIntegrations] = useState([]);
   const [stripeConnected, setStripeConnected] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [brandId, setBrandId] = useState(null);
+
+  // Handle connect button. coming_soon → friendly info + record interest lead.
+  const handleConnect = async (integration) => {
+    const status = integration.display_status;
+    if (status === "coming_soon" || integration.catalog_status === "coming_soon" || integration.catalog_status === "planned") {
+      toast.success(`${integration.name} — coming soon. We'll let you know.`);
+      try {
+        await base44.entities.ProviderLead.create({
+          integration_id: integration.integration_id,
+          brand_id: brandId,
+          interest_expressed_at: new Date().toISOString(),
+        });
+      } catch { /* non-fatal */ }
+      return;
+    }
+    try {
+      const res = await base44.functions.invoke("initiateConnection", {
+        integration_id: integration.integration_id,
+        brand_id: brandId,
+      });
+      const data = res?.data || res;
+      if (!data?.ok && data?.status === "coming_soon") {
+        toast.success(`${integration.name} — coming soon. We'll let you know.`);
+        return;
+      }
+      if (data?.redirect_url) { window.location.href = data.redirect_url; return; }
+      if (data?.ok) toast.success(`${integration.name} connection started.`);
+      else if (data?.error) toast.error(data.error);
+    } catch (err) {
+      toast.error(err?.message || "Could not start connection.");
+    }
+  };
 
   // FIX 4 — handler for Sync button on connected integration rows.
   // Only Stripe has a real sync endpoint today; for other integrations we still
@@ -199,20 +246,21 @@ export default function ConnectTools() {
         // Get brand
         const me = await base44.auth.me().catch(() => null);
         if (!me) { setLoading(false); return; }
-        const brands = await base44.entities.Brand.filter({ created_by_id: me.id }, "-created_date", 1).catch(() => []);
-        const brandId = brands[0]?.id;
+        const brands = await base44.entities.Brand.filter({ created_by: me.email }, "-created_date", 1).catch(() => []);
+        const bId = brands[0]?.id;
+        setBrandId(bId);
 
-        if (!brandId) { setLoading(false); return; }
+        if (!bId) { setLoading(false); return; }
 
         // Check Stripe
         try {
           const sc = await base44.entities.StripeConnection
-            .filter({ brand_id: brandId, connection_status: "connected" }, "-last_sync_at", 1);
+            .filter({ brand_id: bId, connection_status: "connected" }, "-last_sync_at", 1);
           setStripeConnected(sc.length > 0);
         } catch (_) {}
 
         // Get grouped integration status
-        const res = await base44.functions.invoke("getIntegrationStatus", { brand_id: brandId });
+        const res = await base44.functions.invoke("getIntegrationStatus", { brand_id: bId });
         const payload = res?.data || res;
         if (payload?.ok) {
           setGrouped(payload.grouped || {});
@@ -297,6 +345,7 @@ export default function ConnectTools() {
                     stripeConnected={stripeConnected}
                     t={t}
                     onSync={handleSync}
+                    onConnect={handleConnect}
                   />
                 ))}
               </div>

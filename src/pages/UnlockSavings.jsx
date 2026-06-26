@@ -23,10 +23,26 @@ export default function UnlockSavings() {
     setLoading(true);
     const me = await base44.auth.me().catch(() => null);
     setUser(me);
+    if (!me) {
+      setResults([]); setRecs([]); setActivations([]);
+      setLoading(false);
+      return;
+    }
+    const brands = await base44.entities.Brand
+      .filter({ created_by: me.email }, "-created_date", 1)
+      .catch(() => []);
+    const brandId = brands[0]?.id;
+
     const [r, rec, act] = await Promise.all([
-      base44.entities.AnalyzerResult.list("-created_date", 20).catch(() => []),
-      base44.entities.Recommendation.list("-created_date", 50).catch(() => []),
-      base44.entities.DealActivation.list("-created_date", 50).catch(() => []),
+      brandId
+        ? base44.entities.AnalyzerResult.filter({ brand_id: brandId }, "-created_date", 20).catch(() => [])
+        : Promise.resolve([]),
+      brandId
+        ? base44.entities.Recommendation.filter({ brand_id: brandId }, "-created_date", 50).catch(() => [])
+        : Promise.resolve([]),
+      brandId
+        ? base44.entities.DealActivation.filter({ brand_id: brandId }, "-created_date", 50).catch(() => [])
+        : Promise.resolve([]),
     ]);
     setResults(r); setRecs(rec); setActivations(act);
     setLoading(false);
