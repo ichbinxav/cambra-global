@@ -3,13 +3,15 @@ import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles
+  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
-  { path: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
+  { path: "/admin", label: "Command Center", icon: LayoutDashboard, exact: true },
+  { path: "/admin/inbox", label: "Inbox", icon: Inbox, showQuestionsBadge: true },
+  { path: "/admin/overview", label: "Overview", icon: BarChart3 },
   { path: "/admin/users", label: "Users & Companies", icon: Users },
   { path: "/admin/applications", label: "Deal Applications", icon: FileText },
   { path: "/admin/pipeline", label: "Pipeline", icon: GitBranch },
@@ -33,6 +35,7 @@ export default function AdminLayout() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingApprovals, setPendingApprovals] = useState(0);
+  const [pendingQuestions, setPendingQuestions] = useState(0);
   const location = useLocation();
 
   useEffect(() => {
@@ -49,8 +52,14 @@ export default function AdminLayout() {
     let cancelled = false;
     const loadCount = async () => {
       try {
-        const rows = await base44.entities.Approval.filter({ status: "pending" }, "-created_date", 200);
-        if (!cancelled) setPendingApprovals(Array.isArray(rows) ? rows.length : 0);
+        const [approvals, questions] = await Promise.all([
+          base44.entities.Approval.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
+          base44.entities.AgentQuestion.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
+        ]);
+        if (!cancelled) {
+          setPendingApprovals(Array.isArray(approvals) ? approvals.length : 0);
+          setPendingQuestions(Array.isArray(questions) ? questions.length : 0);
+        }
       } catch { /* non-fatal */ }
     };
     loadCount();
@@ -142,6 +151,13 @@ export default function AdminLayout() {
                     active ? "bg-background text-foreground" : "bg-rose-600 text-white"
                   }`}>
                     {pendingApprovals > 99 ? "99+" : pendingApprovals}
+                  </span>
+                )}
+                {item.showQuestionsBadge && pendingQuestions > 0 && (
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full text-[10px] font-black tabular-nums ${
+                    active ? "bg-background text-foreground" : "bg-amber-500 text-white"
+                  }`}>
+                    {pendingQuestions > 99 ? "99+" : pendingQuestions}
                   </span>
                 )}
               </Link>

@@ -52,6 +52,8 @@ import AdminCompliance from '@/pages/admin/AdminCompliance';
 import AdminActivity from '@/pages/admin/AdminActivity';
 import AdminApprovals from '@/pages/admin/AdminApprovals';
 import AdminCopilot from '@/pages/admin/AdminCopilot';
+import AdminCommand from '@/pages/admin/AdminCommand';
+import AdminInbox from '@/pages/admin/AdminInbox';
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing.jsx';
 import Developers from '@/pages/Developers.jsx';
@@ -258,7 +260,10 @@ const AuthenticatedApp = () => {
         </Route>
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
-          <Route path="/admin" element={withBoundary(<AdminOverview />)} />
+          <Route path="/admin" element={withBoundary(<AdminCommand />)} />
+          <Route path="/admin/command" element={withBoundary(<AdminCommand />)} />
+          <Route path="/admin/inbox" element={withBoundary(<AdminInbox />)} />
+          <Route path="/admin/overview" element={withBoundary(<AdminOverview />)} />
           <Route path="/admin/users" element={withBoundary(<AdminUsers />)} />
           <Route path="/admin/users/:id" element={withBoundary(<AdminUserDetail />)} />
           <Route path="/admin/applications" element={withBoundary(<AdminApplications />)} />
