@@ -18,10 +18,17 @@ export default function Reports() {
   const [vLoading, setVLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.AnalyzerResult.list("-created_date", 20).then(r => {
+    (async () => {
+      const me = await base44.auth.me().catch(() => null);
+      if (!me) { setResults([]); setLoading(false); return; }
+      // Tenant filter — same pattern as UnlockSavings.jsx. Without this filter
+      // an admin viewing /Reports would see AnalyzerResults from other users.
+      const r = await base44.entities.AnalyzerResult
+        .filter({ created_by: me.email }, "-created_date", 20)
+        .catch(() => []);
       setResults(r);
       setLoading(false);
-    });
+    })();
   }, []);
 
   useEffect(() => {
