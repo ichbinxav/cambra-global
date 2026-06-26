@@ -21,6 +21,9 @@ const CATALOG = [
   { integration_id: "braintree",        name: "Braintree",        category: "payments",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 9,  value_unlock: "PayPal-owned acquiring data" },
   { integration_id: "shopify_payments", name: "Shopify Payments", category: "payments",  auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 10, value_unlock: "Shopify-managed payment fees" },
   { integration_id: "stripe_terminal",  name: "Stripe Terminal",  category: "payments",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 11, value_unlock: "In-store TPV via Stripe Terminal" },
+  { integration_id: "redsys",           name: "Redsys",           category: "payments",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 12, value_unlock: "Spanish bank-acquired card processing fees" },
+  { integration_id: "bizum",            name: "Bizum",            category: "payments",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 13, value_unlock: "Spanish instant payments volume and fees" },
+  { integration_id: "lydia_pro",        name: "Lydia Pro",        category: "payments",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 14, value_unlock: "French mobile payments and wallet fees" },
 
   // ── Commerce (6) ──────────────────────────────────────────────
   { integration_id: "shopify",          name: "Shopify",          category: "commerce",  auth_type: "oauth",   depth: "deep",     status: "coming_soon", priority: 1,  value_unlock: "Real GMV, orders, AOV, country mix, currency" },
@@ -29,6 +32,7 @@ const CATALOG = [
   { integration_id: "magento",          name: "Magento",          category: "commerce",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 4,  value_unlock: "Adobe Commerce GMV and orders" },
   { integration_id: "bigcommerce",      name: "BigCommerce",      category: "commerce",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 5,  value_unlock: "BigCommerce store revenue and orders" },
   { integration_id: "wix_ecom",         name: "Wix eCommerce",    category: "commerce",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 6,  value_unlock: "Wix store revenue and product mix" },
+  { integration_id: "wizishop",         name: "WiziShop",         category: "commerce",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 7,  value_unlock: "French SMB e-commerce platform revenue and orders" },
 
   // ── Banking (8) ──────────────────────────────────────────────
   { integration_id: "qonto",            name: "Qonto",            category: "banking",   auth_type: "oauth",   depth: "deep",     status: "coming_soon", priority: 1,  value_unlock: "Business banking fees and FX spreads" },
@@ -39,6 +43,14 @@ const CATALOG = [
   { integration_id: "spendesk",         name: "Spendesk",         category: "banking",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 6,  value_unlock: "Spend management and card fees" },
   { integration_id: "memo_bank",        name: "Memo Bank",        category: "banking",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 7,  value_unlock: "French business banking data" },
   { integration_id: "swan",             name: "Swan",             category: "banking",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 8,  value_unlock: "Embedded banking and IBAN data" },
+  { integration_id: "bnp_paribas_pro",     name: "BNP Paribas Pro",         category: "banking", auth_type: "api_key", depth: "standard", status: "planned", priority: 9,  value_unlock: "French traditional bank fees and account data" },
+  { integration_id: "credit_agricole_pro", name: "Crédit Agricole Pro",     category: "banking", auth_type: "api_key", depth: "standard", status: "planned", priority: 10, value_unlock: "French traditional bank fees and account data" },
+  { integration_id: "societe_generale_pro",name: "Société Générale Pro",    category: "banking", auth_type: "api_key", depth: "standard", status: "planned", priority: 11, value_unlock: "French traditional bank fees and account data" },
+  { integration_id: "boursorama_pro",      name: "Boursorama Pro",          category: "banking", auth_type: "api_key", depth: "standard", status: "planned", priority: 12, value_unlock: "French online bank fees and account data" },
+  { integration_id: "santander_pro",       name: "Santander Empresas",      category: "banking", auth_type: "api_key", depth: "standard", status: "planned", priority: 13, value_unlock: "Spanish traditional bank fees and account data" },
+  { integration_id: "bbva_pro",            name: "BBVA Empresas",           category: "banking", auth_type: "api_key", depth: "standard", status: "planned", priority: 14, value_unlock: "Spanish traditional bank fees and account data" },
+  { integration_id: "caixabank_pro",       name: "CaixaBank Negocios",      category: "banking", auth_type: "api_key", depth: "standard", status: "planned", priority: 15, value_unlock: "Spanish traditional bank fees and account data" },
+  { integration_id: "sabadell_pro",        name: "Banco Sabadell Empresas", category: "banking", auth_type: "api_key", depth: "standard", status: "planned", priority: 16, value_unlock: "Spanish traditional bank fees and account data" },
 
   // ── Shipping (12) ─────────────────────────────────────────────
   { integration_id: "sendcloud",        name: "Sendcloud",        category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 1,  value_unlock: "Real shipping costs, carriers, destinations" },
@@ -53,6 +65,12 @@ const CATALOG = [
   { integration_id: "dpd",              name: "DPD",              category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 10, value_unlock: "DPD European parcel rates" },
   { integration_id: "byrd",             name: "Byrd",             category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 11, value_unlock: "European 3PL fulfillment fees" },
   { integration_id: "cubyn",            name: "Cubyn",            category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 12, value_unlock: "French 3PL fulfillment fees" },
+  { integration_id: "seur",             name: "SEUR",             category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 13, value_unlock: "Spanish parcel carrier rates and tracking" },
+  { integration_id: "correos_express",  name: "Correos Express",  category: "shipping",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 14, value_unlock: "Spanish national carrier rates" },
+  { integration_id: "gls_spain",        name: "GLS Spain",        category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 15, value_unlock: "Spanish parcel rates and tracking" },
+  { integration_id: "gls_france",       name: "GLS France",       category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 16, value_unlock: "French parcel rates and tracking" },
+  { integration_id: "relais_colis",     name: "Relais Colis",     category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 17, value_unlock: "French pickup-point shipping rates" },
+  { integration_id: "shippeo",          name: "Shippeo",          category: "shipping",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 18, value_unlock: "Real-time shipment visibility platform" },
 
   // ── Marketing (8) ─────────────────────────────────────────────
   { integration_id: "klaviyo",          name: "Klaviyo",          category: "marketing", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 1,  value_unlock: "Email marketing spend and contact tier" },
@@ -63,6 +81,8 @@ const CATALOG = [
   { integration_id: "meta_ads",         name: "Meta Ads",         category: "marketing", auth_type: "oauth",   depth: "deep",     status: "planned",     priority: 6,  value_unlock: "Facebook/Instagram ad spend & ROAS" },
   { integration_id: "google_ads",       name: "Google Ads",       category: "marketing", auth_type: "oauth",   depth: "deep",     status: "planned",     priority: 7,  value_unlock: "Google Ads spend & ROAS" },
   { integration_id: "tiktok_ads",       name: "TikTok Ads",       category: "marketing", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 8,  value_unlock: "TikTok Ads spend & performance" },
+  { integration_id: "mailjet",          name: "Mailjet",          category: "marketing", auth_type: "api_key", depth: "standard", status: "planned",     priority: 11, value_unlock: "Transactional + marketing email spend" },
+  { integration_id: "splio",            name: "Splio",            category: "marketing", auth_type: "api_key", depth: "standard", status: "planned",     priority: 12, value_unlock: "French CRM and loyalty marketing spend" },
 
   // ── Finance (6) ───────────────────────────────────────────────
   { integration_id: "google_drive",     name: "Google Drive",     category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 1,  value_unlock: "Find invoices and statements automatically" },
@@ -120,6 +140,9 @@ const CATALOG = [
   { integration_id: "aircall",          name: "Aircall",          category: "telecom",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 1,  value_unlock: "Cloud phone seat cost and usage" },
   { integration_id: "ringover",         name: "Ringover",         category: "telecom",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 2,  value_unlock: "Cloud telephony spend" },
   { integration_id: "dialpad",          name: "Dialpad",          category: "telecom",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 3,  value_unlock: "Voice + messaging spend" },
+  { integration_id: "orange_pro",       name: "Orange Pro",       category: "telecom",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 4,  value_unlock: "French business mobile and internet fees" },
+  { integration_id: "movistar_empresas",name: "Movistar Empresas",category: "telecom",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 5,  value_unlock: "Spanish business mobile and internet fees" },
+  { integration_id: "ovh_telecom",      name: "OVH Telecom",      category: "telecom",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 6,  value_unlock: "French cloud telephony and internet spend" },
 
   // ── Analytics (2) — bucketed under marketing in UI ────────────
   { integration_id: "google_analytics", name: "Google Analytics", category: "marketing", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 9,  value_unlock: "Traffic, conversion and channel mix data" },
