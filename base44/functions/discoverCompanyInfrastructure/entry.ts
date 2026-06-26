@@ -70,7 +70,7 @@ const SIGNALS = [
   // commerce_platform (extended)
   { tool: 'WooCommerce', category: 'commerce_platform', pattern: /woocommerce/i,                                             method: 'meta_or_body', evidence_type: 'meta_tag', score: 0.70 },
   { tool: 'PrestaShop',  category: 'commerce_platform', pattern: /prestashop/i,                                              method: 'meta_or_body', evidence_type: 'meta_tag', score: 0.70 },
-  { tool: 'Magento',     category: 'commerce_platform', pattern: /magento|mage\//i,                                          method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
+  { tool: 'Magento',     category: 'commerce_platform', pattern: /magento[\/\.]|Magento_/i,                                  method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
   { tool: 'BigCommerce', category: 'commerce_platform', pattern: /bigcommerce\.com/i,                                        method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
 
   // shipping (extended)
