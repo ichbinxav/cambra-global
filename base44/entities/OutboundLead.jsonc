@@ -1,0 +1,87 @@
+{
+  "name": "OutboundLead",
+  "type": "object",
+  "properties": {
+    "company_name": {
+      "type": "string"
+    },
+    "company_domain": {
+      "type": "string"
+    },
+    "contact_full_name": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "contact_title": {
+      "type": "string"
+    },
+    "linkedin_url": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "lead",
+        "enriched",
+        "scored",
+        "contacted",
+        "meeting",
+        "won",
+        "lost"
+      ],
+      "default": "lead"
+    },
+    "score": {
+      "type": "number",
+      "description": "0-100 fit score from leadScoringAgent"
+    },
+    "score_breakdown_json": {
+      "type": "object",
+      "description": "Reasoning behind the score"
+    },
+    "next_action": {
+      "type": "string",
+      "description": "Suggested next action from agents"
+    },
+    "source": {
+      "type": "string",
+      "description": "apollo, clay, manual, etc."
+    },
+    "enriched": {
+      "type": "boolean",
+      "default": false
+    },
+    "enrichment_json": {
+      "type": "object"
+    },
+    "attio_record_id": {
+      "type": "string",
+      "description": "Filled when CRM agent pushes to Attio"
+    },
+    "raw_json": {
+      "type": "object",
+      "description": "Raw payload from source for traceability"
+    }
+  },
+  "required": [],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
