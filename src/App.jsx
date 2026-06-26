@@ -12,6 +12,8 @@ import { base44 } from '@/api/base44Client';
 import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding.jsx';
 import Analyzer from '@/pages/Analyzer';
+import LoginGate from '@/pages/LoginGate';
+import CookieConsent from '@/components/shared/CookieConsent';
 // FIX 13 — Lazy load heavy pages (Results, Dashboard, ConnectTools + heavy admin pages)
 const Results       = lazy(() => import('@/pages/Results'));
 const Dashboard     = lazy(() => import('@/pages/Dashboard'));
@@ -102,22 +104,14 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
-          <h1 className="text-lg font-bold mb-2">Sign-in required</h1>
-          <p className="text-sm text-muted-foreground mb-4">Open the login window and return automatically.</p>
-          <a
-            href="/auth/start"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold"
-          >
-            Sign in
-          </a>
-        </div>
-      </div>
-    );
+    // Persist intended destination so LoginGate / AuthRedirect can resume after Base44 login.
+    try {
+      const intended = window.location.pathname + window.location.search + window.location.hash;
+      sessionStorage.setItem("cambra_redirect_after_login", intended);
+      return <Navigate to={`/LoginGate?next=${encodeURIComponent(intended)}`} replace />;
+    } catch {
+      return <Navigate to="/LoginGate" replace />;
+    }
   }
 
   return children;
@@ -196,12 +190,13 @@ const AuthenticatedApp = () => {
         <Route path="/onboarding" element={<Navigate to="/Onboarding" replace />} />
         <Route path="/BrandProfile" element={withBoundary(<BrandProfile />)} />
         <Route path="/brandprofile" element={<Navigate to="/BrandProfile" replace />} />
-        <Route path="/Analyzer" element={withBoundary(<Analyzer />)} />
-        <Route path="/ConnectTools" element={withBoundary(<ConnectTools />)} />
+        {/* Auth wall — Analyzer, Results, ConnectTools, StripeAnalyzer now require login */}
+        <Route path="/Analyzer" element={<ProtectedRoute>{withBoundary(<Analyzer />)}</ProtectedRoute>} />
+        <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />
         <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
-        <Route path="/StripeAnalyzer" element={withBoundary(<StripeAnalyzer />)} />
+        <Route path="/StripeAnalyzer" element={<ProtectedRoute>{withBoundary(<StripeAnalyzer />)}</ProtectedRoute>} />
         <Route path="/stripeanalyzer" element={<Navigate to="/StripeAnalyzer" replace />} />
-        <Route path="/Results" element={withBoundary(<Results />)} />
+        <Route path="/Results" element={<ProtectedRoute>{withBoundary(<Results />)}</ProtectedRoute>} />
         <Route path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
         <Route path="/results" element={<Navigate to="/Results" replace />} />
         <Route path="/Privacy" element={withBoundary(<Privacy />)} />
@@ -231,6 +226,8 @@ const AuthenticatedApp = () => {
         <Route path="/Help/:slug" element={withBoundary(<HelpCategory />)} />
         <Route path="/help/:slug" element={withBoundary(<HelpCategory />)} />
         <Route path="/auth/start" element={<AuthRedirect />} />
+        <Route path="/LoginGate" element={<LoginGate />} />
+        <Route path="/logingate" element={<Navigate to="/LoginGate" replace />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
@@ -283,7 +280,8 @@ function App() {
                 <AuthenticatedApp />
                 <CopilotPanel />
                 <CopilotObservations />
-              </Router>
+                <CookieConsent />
+                </Router>
               <Toaster />
             </QueryClientProvider>
           </AuthProvider>

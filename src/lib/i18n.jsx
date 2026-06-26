@@ -424,6 +424,31 @@ const DICT = {
 
     /* FIX 7 — Results static benchmark note */
     benchmark_static_note:"Benchmark based on CAMBRA reference data — network sample growing",
+
+    /* Login gate */
+    login_gate_headline:    "Your infrastructure audit is ready.",
+    login_gate_sub:         "Create a free account or sign in to see your results.",
+    login_gate_cta:         "Continue",
+    login_gate_footnote:    "Free to start. No credit card. Pay only when you save.",
+    login_gate_terms:       "By continuing, you agree to our",
+    login_gate_terms_link:  "Terms of Service",
+    login_gate_and:         "and",
+    login_gate_privacy_link:"Privacy Policy",
+
+    /* Cookie consent */
+    cookie_banner_text:     "We use cookies to improve your experience and analyse platform usage.",
+    cookie_accept_all:      "Accept all",
+    cookie_manage:          "Manage preferences",
+    cookie_necessary:       "Necessary",
+    cookie_necessary_desc:  "Required for the platform to work. Cannot be disabled.",
+    cookie_analytics:       "Analytics",
+    cookie_analytics_desc:  "Help us understand how you use CAMBRA to improve the product.",
+    cookie_marketing:       "Marketing",
+    cookie_marketing_desc:  "Personalised insights and communications.",
+    cookie_save:            "Save preferences",
+    cookie_modal_title:     "Cookie preferences",
+    cookie_modal_sub:       "CAMBRA is committed to your privacy. Choose which cookies you allow.",
+    cookie_always_on:       "Always on",
   },
 
   fr: {
@@ -779,6 +804,31 @@ const DICT = {
 
     /* FIX 7 — Results static benchmark note */
     benchmark_static_note:"Benchmark basé sur les données de référence CAMBRA — échantillon réseau en croissance",
+
+    /* Login gate */
+    login_gate_headline:    "Votre audit d'infrastructure est prêt.",
+    login_gate_sub:         "Créez un compte gratuit ou connectez-vous pour voir vos résultats.",
+    login_gate_cta:         "Continuer",
+    login_gate_footnote:    "Gratuit pour commencer. Sans carte bancaire. Payez uniquement sur les économies.",
+    login_gate_terms:       "En continuant, vous acceptez nos",
+    login_gate_terms_link:  "Conditions d'utilisation",
+    login_gate_and:         "et",
+    login_gate_privacy_link:"Politique de confidentialité",
+
+    /* Cookie consent */
+    cookie_banner_text:     "Nous utilisons des cookies pour améliorer votre expérience et analyser l'utilisation de la plateforme.",
+    cookie_accept_all:      "Tout accepter",
+    cookie_manage:          "Gérer les préférences",
+    cookie_necessary:       "Nécessaires",
+    cookie_necessary_desc:  "Requis pour le fonctionnement de la plateforme. Ne peut pas être désactivé.",
+    cookie_analytics:       "Analytique",
+    cookie_analytics_desc:  "Nous aide à comprendre comment vous utilisez CAMBRA pour améliorer le produit.",
+    cookie_marketing:       "Marketing",
+    cookie_marketing_desc:  "Insights personnalisés et communications.",
+    cookie_save:            "Enregistrer les préférences",
+    cookie_modal_title:     "Préférences cookies",
+    cookie_modal_sub:       "CAMBRA s'engage à respecter votre vie privée. Choisissez les cookies que vous autorisez.",
+    cookie_always_on:       "Toujours activé",
   },
 
   es: {
@@ -1134,6 +1184,31 @@ const DICT = {
 
     /* FIX 7 — Results static benchmark note */
     benchmark_static_note:"Benchmark basado en datos de referencia CAMBRA — muestra de red en crecimiento",
+
+    /* Login gate */
+    login_gate_headline:    "Tu auditoría de infraestructura está lista.",
+    login_gate_sub:         "Crea una cuenta gratuita o inicia sesión para ver tus resultados.",
+    login_gate_cta:         "Continuar",
+    login_gate_footnote:    "Gratis para empezar. Sin tarjeta. Solo pagas cuando ahorras.",
+    login_gate_terms:       "Al continuar, aceptas nuestros",
+    login_gate_terms_link:  "Términos de servicio",
+    login_gate_and:         "y",
+    login_gate_privacy_link:"Política de privacidad",
+
+    /* Cookie consent */
+    cookie_banner_text:     "Usamos cookies para mejorar tu experiencia y analizar el uso de la plataforma.",
+    cookie_accept_all:      "Aceptar todo",
+    cookie_manage:          "Gestionar preferencias",
+    cookie_necessary:       "Necesarias",
+    cookie_necessary_desc:  "Requeridas para el funcionamiento de la plataforma. No se pueden desactivar.",
+    cookie_analytics:       "Analítica",
+    cookie_analytics_desc:  "Nos ayuda a entender cómo usas CAMBRA para mejorar el producto.",
+    cookie_marketing:       "Marketing",
+    cookie_marketing_desc:  "Insights y comunicaciones personalizadas.",
+    cookie_save:            "Guardar preferencias",
+    cookie_modal_title:     "Preferencias de cookies",
+    cookie_modal_sub:       "CAMBRA se compromete con tu privacidad. Elige qué cookies permites.",
+    cookie_always_on:       "Siempre activado",
   },
 };
 
