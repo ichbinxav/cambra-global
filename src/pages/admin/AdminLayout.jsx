@@ -68,35 +68,25 @@ export default function AdminLayout() {
     return () => { cancelled = true; clearInterval(id); };
   }, [user, location.pathname]);
 
-  // Shared dark editorial background — matches DashboardLayout / Landing / Analyzer
-  const darkBg = {
-    color: "#ffffff",
-    background:
-      "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
-  };
-
   if (isLoadingAuth || loadingUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={darkBg}>
-        <div
-          className="w-6 h-6 rounded-full animate-spin"
-          style={{ border: "2px solid rgba(255,255,255,0.12)", borderTopColor: "#22d3ee" }}
-        />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={darkBg}>
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="text-center max-w-sm">
-          <h1 className="text-lg font-bold mb-2 text-white">Sign-in required</h1>
-          <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>Open the login window and return automatically.</p>
+          <h1 className="text-lg font-bold mb-2">Sign-in required</h1>
+          <p className="text-sm text-muted-foreground mb-4">Open the login window and return automatically.</p>
           <a
             href="/auth/start"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-white text-black text-sm font-bold hover:bg-white/90 transition-colors"
+            className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold"
           >
             Sign in
           </a>
@@ -107,14 +97,12 @@ export default function AdminLayout() {
 
   if (user?.role !== "admin") {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={darkBg}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-4xl mb-4">🔒</p>
-          <h1 className="text-xl font-bold mb-2 text-white">Admin access required</h1>
-          <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.55)" }}>
-            Your account role: <strong className="text-white">{user?.role || "user"}</strong>. Contact support to get admin access.
-          </p>
-          <Link to="/Dashboard" className="text-sm font-semibold text-white underline underline-offset-4">Back to Dashboard</Link>
+          <h1 className="text-xl font-bold mb-2">Admin access required</h1>
+          <p className="text-muted-foreground text-sm mb-6">Your account role: <strong>{user?.role || "user"}</strong>. Contact support to get admin access.</p>
+          <Link to="/Dashboard" className="text-sm font-semibold underline">Back to Dashboard</Link>
         </div>
       </div>
     );
@@ -123,48 +111,27 @@ export default function AdminLayout() {
   const isActive = (path, exact) => exact ? location.pathname === path : location.pathname.startsWith(path);
 
   return (
-    <div className="min-h-screen flex font-inter" style={darkBg}>
-      {/* Sidebar — dark editorial glass, matches DashboardLayout */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-[70] w-56 flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
-        style={{
-          background: "rgba(10,10,10,0.65)",
-          borderRight: "1px solid rgba(255,255,255,0.06)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-        }}
-      >
-        {/* Subtle radial accent at top */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute top-0 left-0 right-0 h-40"
-          style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(59,130,246,0.15), transparent 70%)" }}
-        />
-
-        <div className="relative px-5 py-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+    <div className="min-h-screen bg-white flex">
+      {/* Sidebar — light, uniform */}
+      <aside className={`fixed inset-y-0 left-0 z-[70] w-56 bg-white border-r border-border/60 flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
+        <div className="px-5 py-5 border-b border-border/60">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-black tracking-[-0.02em] text-white">CAMBRA</p>
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
-                </span>
-                <p className="text-[10px] tracking-[0.22em] uppercase font-bold" style={{ color: "rgba(255,255,255,0.55)" }}>Admin · Live</p>
-              </div>
+              <p className="text-sm font-black tracking-tight text-foreground">CAMBRA</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tracking-[0.18em] uppercase">Admin · Live</p>
             </div>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setSidebarOpen(false); }}
-              className="lg:hidden p-1.5 rounded-lg transition-colors"
-              style={{ color: "rgba(255,255,255,0.55)", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+              className="lg:hidden text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors"
+              style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
               <X size={18} />
             </button>
           </div>
         </div>
 
-        <nav className="relative flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {NAV.map(item => {
             const active = isActive(item.path, item.exact);
             return (
@@ -174,27 +141,22 @@ export default function AdminLayout() {
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
                   active
-                    ? "bg-white text-black"
-                    : "hover:bg-white/5"
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
-                style={
-                  active
-                    ? { boxShadow: "0 0 24px rgba(34,211,238,0.25)" }
-                    : { color: "rgba(255,255,255,0.55)" }
-                }
               >
                 <item.icon size={13} />
                 <span className="flex-1">{item.label}</span>
                 {item.showPendingBadge && pendingApprovals > 0 && (
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full text-[10px] font-black tabular-nums ${
-                    active ? "bg-black text-white" : "bg-rose-600 text-white"
+                    active ? "bg-background text-foreground" : "bg-rose-600 text-white"
                   }`}>
                     {pendingApprovals > 99 ? "99+" : pendingApprovals}
                   </span>
                 )}
                 {item.showQuestionsBadge && pendingQuestions > 0 && (
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full text-[10px] font-black tabular-nums ${
-                    active ? "bg-black text-white" : "bg-amber-500 text-white"
+                    active ? "bg-background text-foreground" : "bg-amber-500 text-white"
                   }`}>
                     {pendingQuestions > 99 ? "99+" : pendingQuestions}
                   </span>
@@ -204,111 +166,61 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        <div className="relative px-3 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="px-3 py-4 border-t border-border/60">
           {user && (
             <div className="px-3 py-2 mb-2">
-              <p className="text-[11px] font-semibold text-white truncate">{user.full_name}</p>
-              <p className="text-[10px] truncate" style={{ color: "rgba(255,255,255,0.45)" }}>{user.email}</p>
+              <p className="text-[11px] font-semibold text-foreground truncate">{user.full_name}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
             </div>
           )}
           <button
             onClick={() => base44.auth.logout("/Landing")}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white/5 transition-all"
-            style={{ color: "rgba(255,255,255,0.55)" }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
           >
             <LogOut size={13} /> Sign out
           </button>
-          <Link
-            to="/Dashboard"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium hover:bg-white/5 transition-all"
-            style={{ color: "rgba(255,255,255,0.55)" }}
-          >
+          <Link to="/Dashboard" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
             <ChevronRight size={13} /> Back to app
           </Link>
         </div>
       </aside>
 
       {/* Overlay */}
-      {sidebarOpen && <div className="fixed inset-0 z-[60] bg-black/60 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <div className="fixed inset-0 z-[60] bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Main — dark editorial */}
-      <div className="flex-1 lg:ml-56 min-h-screen flex flex-col">
-        {/* Top bar — glass */}
-        <header
-          className="sticky top-0 z-20 h-12 flex items-center px-5 gap-3"
-          style={{
-            background: "rgba(10,10,10,0.78)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
-          }}
-        >
+      {/* Main — light */}
+      <div className="flex-1 lg:ml-56 min-h-screen flex flex-col bg-white">
+        {/* Top bar — light */}
+        <header className="sticky top-0 z-20 h-12 bg-white/95 backdrop-blur-xl border-b border-border/60 flex items-center px-5 gap-3">
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setSidebarOpen(true); }}
-            className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
-            style={{ color: "rgba(255,255,255,0.65)", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+            className="lg:hidden text-muted-foreground hover:text-foreground p-2 -ml-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
+            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
           >
             <Menu size={20} />
           </button>
-          <div className="text-xs flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
             {location.pathname.split("/").filter(Boolean).map((seg, i, arr) => (
               <span key={i} className="flex items-center gap-1.5">
                 {i > 0 && <ChevronRight size={10} />}
-                <span className={i === arr.length - 1 ? "font-semibold text-white" : ""}>{seg}</span>
+                <span className={i === arr.length - 1 ? "text-foreground font-semibold" : ""}>{seg}</span>
               </span>
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
             <a
               href="/Dashboard"
-              className="h-8 px-3 rounded-lg text-xs font-medium transition-colors inline-flex items-center hover:bg-white/5"
-              style={{
-                border: "1px solid rgba(255,255,255,0.12)",
-                color: "rgba(255,255,255,0.75)",
-                background: "rgba(255,255,255,0.02)",
-              }}
+              className="h-8 px-3 rounded-lg border border-border/60 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
             >
               Back to app
             </a>
-            <span
-              className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-              style={{
-                border: "1px solid rgba(34,211,238,0.30)",
-                background: "rgba(34,211,238,0.08)",
-                color: "#67e8f9",
-              }}
-            >
-              Admin
-            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-foreground border border-border/60 font-semibold">Admin</span>
           </div>
         </header>
 
-        <main className="relative flex-1 overflow-hidden">
-          {/* Ambient backdrop — same recipe as DashboardLayout */}
-          <div className="pointer-events-none absolute inset-0">
-            <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-                backgroundSize: "56px 56px",
-                opacity: 0.3,
-                maskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
-                WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
-              }}
-            />
-            <div
-              className="absolute -top-40 right-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl"
-              style={{ background: "radial-gradient(closest-side, rgba(59,130,246,0.16), transparent 65%)" }}
-            />
-            <div
-              className="absolute top-1/2 -left-32 w-[34rem] h-[34rem] rounded-full blur-3xl"
-              style={{ background: "radial-gradient(closest-side, rgba(34,211,238,0.14), transparent 65%)" }}
-            />
-          </div>
-          <div className="relative p-6 max-w-[1400px] mx-auto w-full text-white">
+        <main className="relative flex-1 bg-white">
+          <div className="relative p-6 max-w-[1400px] mx-auto w-full text-foreground">
             <Outlet />
           </div>
         </main>
