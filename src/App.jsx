@@ -55,6 +55,7 @@ import AdminCopilot from '@/pages/admin/AdminCopilot';
 import AdminCommand from '@/pages/admin/AdminCommand';
 import AdminInbox from '@/pages/admin/AdminInbox';
 import AdminChat from '@/pages/admin/AdminChat';
+import AdminDiscovery from '@/pages/admin/AdminDiscovery';
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing.jsx';
 import Developers from '@/pages/Developers.jsx';
@@ -265,6 +266,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/command" element={withBoundary(<AdminCommand />)} />
           <Route path="/admin/inbox" element={withBoundary(<AdminInbox />)} />
           <Route path="/admin/chat" element={withBoundary(<AdminChat />)} />
+          <Route path="/admin/discovery" element={withBoundary(<AdminDiscovery />)} />
           <Route path="/admin/overview" element={withBoundary(<AdminOverview />)} />
           <Route path="/admin/users" element={withBoundary(<AdminUsers />)} />
           <Route path="/admin/users/:id" element={withBoundary(<AdminUserDetail />)} />
