@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 const AGENT_NAME = "security";
 const TASK_TYPE = "security_review";
 const RISK_LEVEL = 1;
-const ENG_DISCLAIMER = "⚠️ Fix propuesto por IA. Revisa el diff antes de aprobar. Aplicar cambios de código tiene riesgo — verifica que entiendes el cambio.";
+const ENG_DISCLAIMER = "⚠️ Fix propuesto por IA. Revísalo antes de dárselo a Base44.";
 
 async function callClaude(prompt) {
   const key = Deno.env.get("ANTHROPIC_API_KEY");
@@ -72,10 +72,11 @@ Deno.serve(async (req) => {
       "",
       "Para CAMBRA (financiero + GDPR): cualquier fuga de tenant o de PII = severity 'critical'.",
       "",
-      "IMPORTANTE: NO aplicas cambios. Solo PROPONES fixes con diff exacto.",
+      "IMPORTANTE: NO aplicas cambios. NO tienes acceso de escritura al repo. Solo PROPONES fixes con diff exacto + ready_to_paste_prompt para que el founder lo lleve a Base44 manualmente.",
+      "- ready_to_paste_prompt: instrucción en español lista para copiar y pegar al builder chat de Base44. Empieza con 'En <file>, …' e indica el cambio concreto. NO pegues el diff entero dentro — Base44 trabaja con instrucciones, no con diffs literales.",
       "",
       "Devuelve SOLO JSON con shape:",
-      `{"findings":[{"id":"<slug>","file":"<path>","location":"<línea o función>","security_category":"<tenant_isolation|exposed_data|auth|secrets|injection>","severity":"<info|warning|critical>","problem_description":"<2-3 líneas>","proposed_fix_diff":"<diff before/after>","risk_of_applying":"<low|medium|high>","risk_explanation":"<por qué>"}],"summary":"<2 líneas>"}`,
+      `{"findings":[{"id":"<slug>","file":"<path>","location":"<línea o función>","security_category":"<tenant_isolation|exposed_data|auth|secrets|injection>","severity":"<info|warning|critical>","problem_description":"<2-3 líneas>","proposed_fix_diff":"<diff before/after>","ready_to_paste_prompt":"<instrucción lista para pegar a Base44>","risk_of_applying":"<low|medium|high>","risk_explanation":"<por qué>"}],"summary":"<2 líneas>"}`,
       "",
       "Si no hay hallazgos: findings: [].",
       "",

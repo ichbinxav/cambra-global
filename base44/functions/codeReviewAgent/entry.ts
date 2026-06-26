@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 const AGENT_NAME = "code_review";
 const TASK_TYPE = "code_review";
 const RISK_LEVEL = 1;
-const ENG_DISCLAIMER = "⚠️ Fix propuesto por IA. Revisa el diff antes de aprobar. Aplicar cambios de código tiene riesgo — verifica que entiendes el cambio.";
+const ENG_DISCLAIMER = "⚠️ Fix propuesto por IA. Revísalo antes de dárselo a Base44.";
 
 async function callClaude(prompt) {
   const key = Deno.env.get("ANTHROPIC_API_KEY");
@@ -71,12 +71,13 @@ Deno.serve(async (req) => {
       "- No hardcodeo de IDs, secrets ni configuración de entorno en componentes",
       `Focus extra del usuario: ${focusAreas}`,
       "",
-      "IMPORTANTE: NO aplicas cambios. Solo PROPONES fixes que un humano revisará.",
-      "Para cada hallazgo da un diff EXACTO (formato unified diff o bloque before/after).",
+      "IMPORTANTE: NO aplicas cambios. NO tienes acceso de escritura al repo. Solo PROPONES fixes que el founder llevará a Base44 manualmente.",
+      "Para cada hallazgo da un diff EXACTO (formato unified diff o bloque before/after) Y un ready_to_paste_prompt:",
+      "- ready_to_paste_prompt: texto en español que el founder copia tal cual y pega en Base44 builder chat. Debe empezar con la instrucción concreta ('En <file>, ...'), incluir el contexto del problema en 1-2 líneas, y pedir el cambio específico. NO incluyas el diff entero dentro del prompt — Base44 trabaja mejor con instrucciones que con diffs literales.",
       "Sé conservador: si no estás seguro, severity='info', no 'critical'.",
       "",
       "Devuelve SOLO JSON con shape:",
-      `{"findings":[{"id":"<slug-único>","file":"<path o snippet name>","location":"<línea o función>","severity":"<info|warning|critical>","problem_description":"<2-3 líneas>","proposed_fix_diff":"<diff before/after>","risk_of_applying":"<low|medium|high>","risk_explanation":"<por qué ese nivel de riesgo>"}],"summary":"<2 líneas>"}`,
+      `{"findings":[{"id":"<slug-único>","file":"<path o snippet name>","location":"<línea o función>","severity":"<info|warning|critical>","problem_description":"<2-3 líneas>","proposed_fix_diff":"<diff before/after>","ready_to_paste_prompt":"<instrucción lista para pegar a Base44>","risk_of_applying":"<low|medium|high>","risk_explanation":"<por qué ese nivel de riesgo>"}],"summary":"<2 líneas>"}`,
       "",
       "Si no hay hallazgos, findings: [].",
       "",

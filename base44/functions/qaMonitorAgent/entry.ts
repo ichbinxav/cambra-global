@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 const AGENT_NAME = "qa_monitor";
 const TASK_TYPE = "qa_monitor";
 const RISK_LEVEL = 1;
-const ENG_DISCLAIMER = "⚠️ Fix propuesto por IA. Revisa el diff antes de aprobar. Aplicar cambios de código tiene riesgo — verifica que entiendes el cambio.";
+const ENG_DISCLAIMER = "⚠️ Fix propuesto por IA. Revísalo antes de dárselo a Base44.";
 
 async function callClaude(prompt) {
   const key = Deno.env.get("ANTHROPIC_API_KEY");
@@ -87,12 +87,13 @@ Deno.serve(async (req) => {
 
     const prompt = [
       "Eres analista de QA/observabilidad. Te paso patrones de fallo agregados de un sistema de agentes.",
-      "IMPORTANTE: NO aplicas fixes. Solo PROPONES con diff cuando tengas alta confianza (si no, sugiere investigación).",
-      "Para cada patrón de fallo identifica: causa probable, severidad, y si propones fix, el diff exacto.",
+      "IMPORTANTE: NO aplicas fixes. NO tienes acceso de escritura al repo. Solo PROPONES con diff + ready_to_paste_prompt cuando tengas alta confianza (si no, sugiere investigación con investigation_steps en vez de fix).",
+      "Para cada patrón de fallo identifica: causa probable, severidad, y si propones fix, el diff exacto y un ready_to_paste_prompt.",
+      "- ready_to_paste_prompt: instrucción lista para pegar al builder de Base44. Empieza con 'En functions/<nombre>, …' o equivalente. NO pegues el diff dentro.",
       "Sé conservador: runtime fixes son los más arriesgados — prefiere 'risk_of_applying: high' por defecto.",
       "",
       "Devuelve SOLO JSON con shape:",
-      `{"findings":[{"id":"<slug>","affected_function":"<nombre>","failure_count":<num>,"failure_rate":<0..1>,"pattern":"<error pattern>","severity":"<info|warning|critical>","probable_cause":"<2 líneas>","proposed_fix_diff":"<diff o null si no propones fix>","risk_of_applying":"<low|medium|high>","risk_explanation":"<por qué>"}],"summary":"<2 líneas>"}`,
+      `{"findings":[{"id":"<slug>","affected_function":"<nombre>","failure_count":<num>,"failure_rate":<0..1>,"pattern":"<error pattern>","severity":"<info|warning|critical>","probable_cause":"<2 líneas>","proposed_fix_diff":"<diff o null si no propones fix>","ready_to_paste_prompt":"<instrucción para Base44 o null si solo es investigación>","investigation_steps":"<pasos sugeridos si no hay fix claro, o null>","risk_of_applying":"<low|medium|high>","risk_explanation":"<por qué>"}],"summary":"<2 líneas>"}`,
       "",
       `Total runs en ventana: ${totalRuns}, failure rate: ${(overallFailureRate * 100).toFixed(1)}%`,
       "Failure patterns agregados:",
