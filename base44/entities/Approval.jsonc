@@ -1,0 +1,96 @@
+{
+  "name": "Approval",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string",
+      "description": "Tenant isolation key. Every Approval belongs to exactly one Brand."
+    },
+    "agent_task_id": {
+      "type": "string",
+      "description": "FK \u2192 AgentTask. The task that is blocked waiting for this Approval."
+    },
+    "action_type": {
+      "type": "string",
+      "description": "What the approval would authorize (e.g. 'send_email', 'publish_post', 'contact_provider', 'sign_mandate')."
+    },
+    "related_entity_type": {
+      "type": "string"
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "risk_level": {
+      "type": "number",
+      "enum": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "description": "2 client-visible draft, 3 external action, 4 financial/legal. Levels 0-1 should never produce an Approval row."
+    },
+    "draft_content": {
+      "type": "string",
+      "description": "Human-readable rendering of what will be done if approved (email body, post text, provider message, etc.)."
+    },
+    "draft_payload_json": {
+      "type": "object",
+      "description": "Structured version of the draft, for execution after approval."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "expired",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email of the user who approved or rejected."
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "rejected_reason": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional auto-expiry deadline."
+    }
+  },
+  "required": [
+    "brand_id",
+    "agent_task_id",
+    "action_type",
+    "risk_level",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

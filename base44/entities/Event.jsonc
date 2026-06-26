@@ -1,0 +1,79 @@
+{
+  "name": "Event",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string",
+      "description": "Tenant isolation key. Every Event belongs to exactly one Brand."
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Dot-namespaced event name (e.g. 'analyzer.completed', 'agent.task.created', 'approval.approved')."
+    },
+    "source": {
+      "type": "string",
+      "description": "What produced this event (e.g. 'analyzer', 'copilot', 'stripe_webhook', 'user_action')."
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "Type of the primary related entity, if any (e.g. 'AnalyzerResult', 'DealActivation')."
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the primary related entity, if any."
+    },
+    "agent_task_id": {
+      "type": "string",
+      "description": "Optional FK to AgentTask if this event was emitted by or for an agent task."
+    },
+    "payload_json": {
+      "type": "object",
+      "description": "Structured event payload. Append-only \u2014 never edited after creation."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processed",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0
+    },
+    "error": {
+      "type": "string",
+      "description": "Last error message if status='failed'."
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "brand_id",
+    "event_type",
+    "source"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

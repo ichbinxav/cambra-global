@@ -1,0 +1,112 @@
+{
+  "name": "AgentTask",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string",
+      "description": "Tenant isolation key. Every AgentTask belongs to exactly one Brand."
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Name of the agent that owns this task (e.g. 'copilot', 'marketing_agent', 'leads_agent')."
+    },
+    "task_type": {
+      "type": "string",
+      "description": "What kind of action this task represents (e.g. 'draft_email', 'classify_lead', 'summarize_report')."
+    },
+    "related_entity_type": {
+      "type": "string",
+      "description": "Type of the entity this task is about (e.g. 'Brand', 'Lead', 'DealActivation')."
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "waiting_approval",
+        "completed",
+        "failed",
+        "retrying",
+        "cancelled"
+      ],
+      "default": "queued"
+    },
+    "input_summary": {
+      "type": "string",
+      "description": "Short human-readable summary of what the agent was given as input."
+    },
+    "output_summary": {
+      "type": "string",
+      "description": "Short human-readable summary of what the agent produced."
+    },
+    "output_payload_json": {
+      "type": "object",
+      "description": "Optional structured output (full draft, classification result, etc.)."
+    },
+    "error": {
+      "type": "string",
+      "description": "Last error message if status='failed' or 'retrying'."
+    },
+    "retry_count": {
+      "type": "number",
+      "default": 0
+    },
+    "requires_approval": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this task's output requires a human Approval before external execution (risk level >= 2)."
+    },
+    "risk_level": {
+      "type": "number",
+      "enum": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "default": 0,
+      "description": "0-1 auto, 2 client-visible draft, 3 external action, 4 financial/legal. Never use for forbidden actions (payments, contracts)."
+    },
+    "approval_id": {
+      "type": "string",
+      "description": "FK to the Approval blocking this task, if any."
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "brand_id",
+    "agent_name",
+    "task_type",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
