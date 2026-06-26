@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck
+  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -22,6 +22,7 @@ const NAV = [
   { path: "/admin/integrations", label: "Integrations", icon: Plug },
   { path: "/admin/api-integrations", label: "API & Webhooks", icon: Plug },
   { path: "/admin/compliance", label: "Compliance", icon: ShieldCheck },
+  { path: "/admin/activity", label: "Activity Log", icon: Activity },
 ];
 
 export default function AdminLayout() {
