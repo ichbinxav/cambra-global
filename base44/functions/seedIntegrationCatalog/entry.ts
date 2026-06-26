@@ -69,8 +69,8 @@ const CATALOG = [
   { integration_id: "gmail",            name: "Gmail",            category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 2,  value_unlock: "Find provider invoices in your inbox" },
   { integration_id: "xero",             name: "Xero",             category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 3,  value_unlock: "Recurring costs, SaaS spend, accounting evidence" },
   { integration_id: "pennylane",        name: "Pennylane",        category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 4,  value_unlock: "Recurring costs and accounting evidence" },
-  { integration_id: "quickbooks",       name: "QuickBooks",       category: "finance",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 5,  value_unlock: "Accounting and recurring cost evidence" },
-  { integration_id: "sellsy",           name: "Sellsy",           category: "finance",   auth_type: "oauth",   depth: "standard", status: "planned",     priority: 6,  value_unlock: "French SME billing and accounting" },
+  { integration_id: "quickbooks",       name: "QuickBooks",       category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 5,  value_unlock: "Accounting and recurring cost evidence" },
+  { integration_id: "sellsy",           name: "Sellsy",           category: "finance",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 6,  value_unlock: "French SME billing and accounting" },
   { integration_id: "tipalti",          name: "Tipalti",          category: "finance",   auth_type: "api_key", depth: "standard", status: "planned",     priority: 7,  value_unlock: "AP automation and supplier payment fees" },
 
   // ── Accounting software — SME (FR/ES/EU) ──────────────────────
@@ -85,15 +85,15 @@ const CATALOG = [
   { integration_id: "freebe",           name: "Freebe",                category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 16, value_unlock: "French freelance billing and accounting" },
   { integration_id: "holded",           name: "Holded",                category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 17, value_unlock: "Spanish SME accounting, invoicing and vendor spend" },
   { integration_id: "quipu",            name: "Quipu",                 category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 18, value_unlock: "Spanish SME accounting and invoicing data" },
-  { integration_id: "contasimple",      name: "Contasimple",           category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 19, value_unlock: "Spanish freelance/SME accounting" },
-  { integration_id: "anfix",            name: "Anfix",                 category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 20, value_unlock: "Spanish online accounting platform" },
+  { integration_id: "contasimple",      name: "Contasimple",           category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 19, value_unlock: "Spanish freelance/SME accounting" },
+  { integration_id: "anfix",            name: "Anfix",                 category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 20, value_unlock: "Spanish online accounting platform" },
   { integration_id: "billin",           name: "Billin",                category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 21, value_unlock: "Spanish invoicing and accounting data" },
   { integration_id: "facturadirecta",   name: "FacturaDirecta",        category: "finance", auth_type: "api_key", depth: "standard", status: "planned",     priority: 22, value_unlock: "Spanish invoicing and accounting" },
   { integration_id: "a3_wolters_kluwer",name: "a3 (Wolters Kluwer)",   category: "finance", auth_type: "api_key", depth: "standard", status: "planned",     priority: 23, value_unlock: "Spanish asesoría-grade accounting suite" },
   { integration_id: "sage_contaplus",   name: "Sage ContaPlus",        category: "finance", auth_type: "api_key", depth: "standard", status: "planned",     priority: 24, value_unlock: "Spanish SME accounting ledger" },
-  { integration_id: "datev",            name: "DATEV",                 category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 25, value_unlock: "German Steuerberater-grade accounting data" },
-  { integration_id: "lexoffice",        name: "Lexoffice",             category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 26, value_unlock: "German SME accounting and vendor spend" },
-  { integration_id: "fattureincloud",   name: "Fatture in Cloud",      category: "finance", auth_type: "oauth",   depth: "standard", status: "planned",     priority: 27, value_unlock: "Italian SME e-invoicing and accounting" },
+  { integration_id: "datev",            name: "DATEV",                 category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 25, value_unlock: "German Steuerberater-grade accounting data" },
+  { integration_id: "lexoffice",        name: "Lexoffice",             category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 26, value_unlock: "German SME accounting and vendor spend" },
+  { integration_id: "fattureincloud",   name: "Fatture in Cloud",      category: "finance", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 27, value_unlock: "Italian SME e-invoicing and accounting" },
 
   // ── Expert-comptable & asesoría portals ───────────────────────
   { integration_id: "expert_comptable_portal", name: "Expert-comptable portal", category: "finance", auth_type: "manual",  depth: "standard", status: "coming_soon", priority: 28, value_unlock: "Connect your expert-comptable to share P&L, vendor invoices and contracts" },
