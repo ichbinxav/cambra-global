@@ -108,11 +108,21 @@ export function getBenchmarks(monthlyRevenue = 0, country = "") {
 
   // Online card acceptance, blended effective rate (%)
   // EU benefits from PSD2 interchange caps (0.2% debit / 0.3% credit)
+  //
+  // ⚠️ SOURCE OF TRUTH for payments benchmarks.
+  // These values MUST stay in sync with the inline copy in
+  // functions/getBenchmarkForReport (STATIC_BENCHMARKS). Deno backend cannot
+  // import this file, so the values are duplicated by necessity. If you change
+  // anything here, change it there too. See Decision_Log.
+  //
+  // Values reflect typical market rates (not best-in-class):
+  //   - small EU 2.2% = mainstream Stripe/Adyen for €30–100K/mo merchants
+  //   - range[1] (high) = renegotiable floor reachable via the network
   const paymentBenchmarks = {
-    micro: { rate: eu ? 1.9 : 2.4, range: eu ? [1.7, 2.2] : [2.2, 2.9] },
-    small: { rate: eu ? 1.7 : 2.1, range: eu ? [1.5, 1.9] : [1.9, 2.4] },
-    mid:   { rate: eu ? 1.5 : 1.8, range: eu ? [1.3, 1.7] : [1.6, 2.1] },
-    large: { rate: eu ? 1.3 : 1.6, range: eu ? [1.1, 1.5] : [1.4, 1.9] },
+    micro: { rate: eu ? 2.4 : 2.9, range: eu ? [2.0, 2.6] : [2.5, 3.1] },
+    small: { rate: eu ? 2.2 : 2.6, range: eu ? [1.9, 2.4] : [2.3, 2.9] },
+    mid:   { rate: eu ? 1.9 : 2.3, range: eu ? [1.6, 2.1] : [2.0, 2.5] },
+    large: { rate: eu ? 1.6 : 1.9, range: eu ? [1.3, 1.8] : [1.6, 2.2] },
   };
 
   // In-store all-in effective rate (% of in-store GMV) — terminal rental + fixed fees + variable

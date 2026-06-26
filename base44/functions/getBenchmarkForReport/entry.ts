@@ -13,15 +13,37 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  * Confidence labels are ALWAYS attached and MUST be shown when rendering.
  */
 
-// Static fallbacks — all values stored in their NATURAL, READABLE unit.
-// payments/saas: percentage as displayed (2.4 means 2.4%, NOT 0.024).
-// shipping: euros per parcel (7.5 means 7.50 €/parcel).
-// The frontend renders `median + unit symbol` directly; it never multiplies by 100.
-const STATIC_BENCHMARKS: Record<string, Record<string, number>> = {
-  payments: { micro: 2.9, small: 2.4, mid: 1.9, large: 1.5 },
-  shipping: { micro: 7.5, small: 6.5, mid: 5.5, large: 4.8 },
-  saas: { micro: 4.5, small: 3.5, mid: 2.5, large: 1.8 },
-};
+// ════════════════════════════════════════════════════════════════════════════
+// ⚠️  SOURCE OF TRUTH WARNING — READ BEFORE EDITING
+// ════════════════════════════════════════════════════════════════════════════
+// The canonical benchmark values live in lib/scoreEngine.js → getBenchmarks().
+// Deno backend cannot import frontend files, so the values below are an
+// INTENTIONAL INLINE COPY that MUST stay byte-identical to scoreEngine.js.
+//
+// If you change a number here, you MUST change it in scoreEngine.js too,
+// and vice versa. A divergence will cause Results.jsx to show a benchmark
+// different from the one the Analyzer used to compute savings — silently
+// breaking client trust. See Decision_Log for context.
+//
+// Future improvement (deferred, more invasive): move both consumers to read
+// from a shared Benchmark entity in the DB so this duplication disappears.
+//
+// Format rules (all values in their NATURAL, READABLE unit):
+//   - payments / saas  →  % as displayed (2.2 means 2.2%, NOT 0.022)
+//   - shipping         →  euros per parcel (7.5 means 7.50 €/parcel)
+//   - The frontend renders `median + unit symbol` directly; never multiplies.
+// ════════════════════════════════════════════════════════════════════════════
+
+// Payments — tier + EU/non-EU aware. MUST equal scoreEngine.js paymentBenchmarks.rate.
+const PAYMENT_BENCHMARKS_EU = { micro: 2.4, small: 2.2, mid: 1.9, large: 1.6 };
+const PAYMENT_BENCHMARKS_NON_EU = { micro: 2.9, small: 2.6, mid: 2.3, large: 1.9 };
+
+// Shipping — tier + EU/non-EU aware. MUST equal scoreEngine.js shippingBenchmarks.perUnit.
+const SHIPPING_BENCHMARKS_EU = { micro: 5.80, small: 5.20, mid: 4.60, large: 3.90 };
+const SHIPPING_BENCHMARKS_NON_EU = { micro: 7.20, small: 6.50, mid: 5.80, large: 4.80 };
+
+// SaaS — tier-aware only. scoreEngine.js stores as ratio (0.060); we expose as % (6.0).
+const SAAS_BENCHMARKS_PCT = { micro: 6.0, small: 4.0, mid: 2.5, large: 1.5 };
 
 const STATIC_UNITS: Record<string, string> = {
   payments: "%",
@@ -29,10 +51,27 @@ const STATIC_UNITS: Record<string, string> = {
   shipping: "EUR_per_parcel",
 };
 
-function staticFor(vertical: string, tier: string): number | null {
-  const v = STATIC_BENCHMARKS[vertical];
-  if (!v) return null;
-  return v[tier] ?? v["small"] ?? null;
+const EU_COUNTRIES = new Set([
+  "France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Portugal",
+  "Sweden", "Denmark", "Finland", "Norway", "Austria", "Switzerland", "Ireland",
+  "Poland", "Czech Republic", "Romania", "Hungary", "Greece", "Luxembourg",
+  "Malta", "Cyprus", "Slovakia", "Slovenia", "Croatia", "Estonia", "Latvia",
+  "Lithuania", "Bulgaria",
+]);
+
+function staticFor(vertical: string, tier: string, country: string): number | null {
+  const isEU = EU_COUNTRIES.has(country);
+  const safeTier = (tier === "micro" || tier === "small" || tier === "mid" || tier === "large") ? tier : "small";
+  if (vertical === "payments") {
+    return (isEU ? PAYMENT_BENCHMARKS_EU : PAYMENT_BENCHMARKS_NON_EU)[safeTier];
+  }
+  if (vertical === "shipping") {
+    return (isEU ? SHIPPING_BENCHMARKS_EU : SHIPPING_BENCHMARKS_NON_EU)[safeTier];
+  }
+  if (vertical === "saas") {
+    return SAAS_BENCHMARKS_PCT[safeTier];
+  }
+  return null;
 }
 
 function unitFor(vertical: string): string | null {
@@ -104,8 +143,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fallback to static benchmark from scoreEngine
-    const staticVal = staticFor(vertical, revenue_tier);
+    // Fallback to static benchmark — values mirrored from scoreEngine.js
+    const staticVal = staticFor(vertical, revenue_tier, country);
     return Response.json({
       source: "static",
       confidence: "static",

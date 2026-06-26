@@ -14,17 +14,17 @@ import { getBenchmarks, calculateSavings } from './scoreEngine.js';
 describe('getBenchmarks — payment rate by tier (EU)', () => {
   const EU = 'France';
 
-  it('micro EU = 1.9%', () => {
-    expect(getBenchmarks(10_000, EU).payment.rate).toBe(1.9);
+  it('micro EU = 2.4%', () => {
+    expect(getBenchmarks(10_000, EU).payment.rate).toBe(2.4);
   });
-  it('small EU = 1.7%', () => {
-    expect(getBenchmarks(50_000, EU).payment.rate).toBe(1.7);
+  it('small EU = 2.2%', () => {
+    expect(getBenchmarks(50_000, EU).payment.rate).toBe(2.2);
   });
-  it('mid EU = 1.5%', () => {
-    expect(getBenchmarks(200_000, EU).payment.rate).toBe(1.5);
+  it('mid EU = 1.9%', () => {
+    expect(getBenchmarks(200_000, EU).payment.rate).toBe(1.9);
   });
-  it('large EU = 1.3%', () => {
-    expect(getBenchmarks(600_000, EU).payment.rate).toBe(1.3);
+  it('large EU = 1.6%', () => {
+    expect(getBenchmarks(600_000, EU).payment.rate).toBe(1.6);
   });
 
   it('assigns the correct tier label per threshold', () => {
@@ -36,11 +36,11 @@ describe('getBenchmarks — payment rate by tier (EU)', () => {
 });
 
 describe('getBenchmarks — EU vs non-EU difference', () => {
-  it('micro: EU 1.9% is better than non-EU 2.4%', () => {
+  it('micro: EU 2.4% is better than non-EU 2.9%', () => {
     const euRate = getBenchmarks(10_000, 'France').payment.rate;
     const nonEuRate = getBenchmarks(10_000, 'United States').payment.rate;
-    expect(euRate).toBe(1.9);
-    expect(nonEuRate).toBe(2.4);
+    expect(euRate).toBe(2.4);
+    expect(nonEuRate).toBe(2.9);
     expect(euRate).toBeLessThan(nonEuRate);
   });
 
