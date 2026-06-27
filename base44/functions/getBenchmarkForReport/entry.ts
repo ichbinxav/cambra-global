@@ -13,61 +13,47 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  * Confidence labels are ALWAYS attached and MUST be shown when rendering.
  */
 
-// ⚠️ SOURCE OF TRUTH for static fallbacks.
-// These values MUST mirror lib/scoreEngine.js → getBenchmarks() exactly.
-// Deno backend cannot import scoreEngine (frontend lib), so the values are
-// duplicated by necessity. If scoreEngine changes, update here too.
-//
-// Structure mirrors the engine:
-//   - payments + shipping: split EU / non-EU (PSD2 caps, SEPA, EU carrier blend)
-//   - saas: no geo split (same Gartner/Paddle ratios globally)
-//
-// Last sync: 2026-06-26 against scoreEngine v1.0.0
-const STATIC_BENCHMARKS = {
+// ⚠️ Mirror of lib/scoreEngine.js getBenchmarks() (v1.0.0). DO NOT diverge.
+// Same note lives in functions/spendIntelligenceAgent and recommendationEngineAgent.
+// EU brands benefit from PSD2 caps / SEPA / shorter logistics — geography-aware.
+const EU_COUNTRIES = new Set([
+  "France","Germany","Spain","Italy","Netherlands","Belgium","Portugal","Sweden",
+  "Denmark","Finland","Norway","Austria","Switzerland","Ireland","Poland",
+  "Czech Republic","Romania","Hungary","Greece","Luxembourg","Malta","Cyprus",
+  "Slovakia","Slovenia","Croatia","Estonia","Latvia","Lithuania","Bulgaria",
+]);
+
+const STATIC_BENCHMARKS: Record<string, Record<string, Record<string, number>>> = {
   payments: {
-    eu:     { micro: 2.4, small: 2.2, mid: 1.9, large: 1.6 },
-    nonEu:  { micro: 2.9, small: 2.6, mid: 2.3, large: 1.9 },
+    eu:    { micro: 2.4, small: 2.2, mid: 1.9, large: 1.6 },
+    nonEu: { micro: 2.9, small: 2.6, mid: 2.3, large: 1.9 },
   },
   shipping: {
-    eu:     { micro: 5.80, small: 5.20, mid: 4.60, large: 3.90 },
-    nonEu:  { micro: 7.20, small: 6.50, mid: 5.80, large: 4.80 },
+    eu:    { micro: 5.80, small: 5.20, mid: 4.60, large: 3.90 },
+    nonEu: { micro: 7.20, small: 6.50, mid: 5.80, large: 4.80 },
   },
-  saas:     { micro: 0.060, small: 0.040, mid: 0.025, large: 0.015 },
+  // SaaS share of revenue is geography-agnostic in the engine.
+  saas: {
+    any:   { micro: 0.060, small: 0.040, mid: 0.025, large: 0.015 },
+  },
 };
 
-// Same EU list as scoreEngine.js — keep in sync.
-const EU_COUNTRIES = [
-  "France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Portugal",
-  "Sweden", "Denmark", "Finland", "Norway", "Austria", "Switzerland", "Ireland",
-  "Poland", "Czech Republic", "Romania", "Hungary", "Greece", "Luxembourg",
-  "Malta", "Cyprus", "Slovakia", "Slovenia", "Croatia", "Estonia", "Latvia",
-  "Lithuania", "Bulgaria",
-];
-
-function isEU(country) {
-  return EU_COUNTRIES.includes(country);
-}
-
-function staticFor(vertical, tier, country) {
+function staticFor(vertical: string, tier: string, country: string): number | null {
   const v = STATIC_BENCHMARKS[vertical];
   if (!v) return null;
-  // SaaS: no geo split
-  if (vertical === "saas") {
-    return v[tier] ?? v["small"] ?? null;
-  }
-  // Payments + shipping: split by EU vs non-EU
-  const geoTable = isEU(country) ? v.eu : v.nonEu;
-  return geoTable[tier] ?? geoTable["small"] ?? null;
+  const isEu = EU_COUNTRIES.has(country);
+  const bucket = v.any || (isEu ? v.eu : v.nonEu);
+  return bucket[tier] ?? bucket["small"] ?? null;
 }
 
-function metricKeyFor(vertical) {
+function metricKeyFor(vertical: string): string | null {
   if (vertical === "payments") return "payment_effective_rate";
   if (vertical === "shipping") return "shipping_avg_cost_per_unit";
   if (vertical === "saas") return "saas_monthly_spend_pct_revenue";
   return null;
 }
 
-function confidenceFor(n) {
+function confidenceFor(n: number): string {
   if (n >= 40) return "high";
   if (n >= 15) return "medium";
   if (n >= 5) return "low";
@@ -124,7 +110,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fallback to static benchmark from scoreEngine
+    // Fallback to static benchmark from scoreEngine v1.0.0
     const staticVal = staticFor(vertical, revenue_tier, country);
     return Response.json({
       source: "static",
@@ -134,9 +120,10 @@ Deno.serve(async (req) => {
       p25: null,
       p75: null,
       best_in_class: null,
-      note: "Benchmark from CAMBRA static reference table — network sample too small",
+      score_engine_version: "1.0.0",
+      note: "Benchmark from CAMBRA static reference table (scoreEngine v1.0.0) — network sample too small",
     });
   } catch (error) {
-    return Response.json({ error: error?.message || String(error) }, { status: 500 });
+    return Response.json({ error: (error as any)?.message || String(error) }, { status: 500 });
   }
 });

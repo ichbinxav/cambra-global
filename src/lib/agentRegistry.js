@@ -73,6 +73,16 @@ export const CLUSTERS = [
     ],
   },
   {
+    key: "analyzer_brain",
+    label: "Analyzer Brain",
+    description: "Loop de valor del brand: web → stack → gasto → recomendaciones. Parte determinista (scoreEngine) funciona sin key; Claude solo explica.",
+    agents: [
+      { name: "Discovery (Tech Stack)", fn: "discoveryTechStackAgent",   level: 1, tool: "Deterministic + Claude", secret: "ANTHROPIC_API_KEY", desc: "Escanea web pública y detecta tools del stack.", requiresInput: "url" },
+      { name: "Spend Intelligence",     fn: "spendIntelligenceAgent",    level: 1, tool: "scoreEngine + Claude",   secret: "ANTHROPIC_API_KEY", desc: "Estima gasto por tool con benchmarks tier+EU.", requiresInput: "brand" },
+      { name: "Recommendation Engine",  fn: "recommendationEngineAgent", level: 1, tool: "scoreEngine + Claude",   secret: "ANTHROPIC_API_KEY", desc: "Detecta oportunidades vs benchmark (savings + confidence + effort + priority).", requiresInput: "brand" },
+    ],
+  },
+  {
     key: "engineering",
     label: "Engineering",
     description: "Detecta problemas y propone fixes — el founder los aplica vía Base44.",
@@ -87,6 +97,7 @@ export const CLUSTERS = [
 ];
 
 export const ORCHESTRATORS = [
+  { name: "Brain Chain",     fn: "brainOrchestrator",     desc: "Discovery → Spend → Recommendation. Mete una URL, corre el loop entero.", requiresInput: "url" },
   { name: "Lead Chain",      fn: "leadOrchestrator",      desc: "Discovery → Enrichment → Scoring → CRM." },
   { name: "Outreach Chain",  fn: "outreachOrchestrator",  desc: "Outreach.draft → [Approval] → Outreach.execute → FollowUp.draft → [Approval]." },
   { name: "Marketing Chain", fn: "marketingOrchestrator", desc: "Ejecuta una selección de agentes de marketing sobre un mismo topic." },

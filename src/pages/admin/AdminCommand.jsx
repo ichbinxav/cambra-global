@@ -73,6 +73,10 @@ export default function AdminCommand() {
         qaMonitorAgent: "qa_monitor",
         engineeringReportAgent: "engineering_report",
         fixValidatorAgent: "fix_validator",
+        discoveryTechStackAgent: "discovery_tech_stack",
+        spendIntelligenceAgent: "spend_intelligence",
+        recommendationEngineAgent: "recommendation_engine",
+        brainOrchestrator: "brain_orchestrator",
       };
       for (const [fn, an] of Object.entries(FN_TO_AGENT_NAME)) {
         const t = allTasks.find(x => x.agent_name === an);
