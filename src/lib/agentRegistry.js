@@ -92,6 +92,7 @@ export const CLUSTERS = [
       { name: "QA Monitor",        fn: "qaMonitorAgent",         level: 1, tool: "Claude",   secret: "ANTHROPIC_API_KEY", desc: "Vigila runtime (fallos, regresiones)." },
       { name: "Engineering Report", fn: "engineeringReportAgent", level: 1, tool: "—",        secret: null, desc: "Consolida 2x/día con prompts listos." },
       { name: "Fix Validator",     fn: "fixValidatorAgent",      level: 1, tool: "Claude",   secret: "ANTHROPIC_API_KEY", desc: "Valida fixes aplicados (rescan + review)." },
+      { name: "System Health",     fn: "systemHealthAgent",      level: 1, tool: "Deterministic", secret: null, desc: "Meta-vigilante read-only: agentes fallando, tasks colgados, schedules, loop del Brain, events huérfanos." },
     ],
   },
 ];

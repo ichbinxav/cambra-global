@@ -77,6 +77,7 @@ export default function AdminCommand() {
         spendIntelligenceAgent: "spend_intelligence",
         recommendationEngineAgent: "recommendation_engine",
         brainOrchestrator: "brain_orchestrator",
+        systemHealthAgent: "system_health",
       };
       for (const [fn, an] of Object.entries(FN_TO_AGENT_NAME)) {
         const t = allTasks.find(x => x.agent_name === an);
