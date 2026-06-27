@@ -224,12 +224,41 @@ Deno.serve(async (req) => {
     }
 
     // ── 2. Load brand context ─────────────────────────────────────────────
+    // Revenue lives on AnalyzerInput (canonical source used by Dashboard/Results).
+    // Brand only stores a coarse `annual_revenue` range — used as fallback.
     let brand = null;
     try {
       brand = await base44.asServiceRole.entities.Brand.get(brand_id);
     } catch { /* brand may not exist; we fall back to defaults */ }
-    const monthlyRevenue = Math.max(0, Number(brand?.monthly_revenue) || 0);
     const country = brand?.country || "";
+
+    let monthlyRevenue = 0;
+    let revenueSource = "none";
+    try {
+      const inputs = await base44.asServiceRole.entities.AnalyzerInput
+        .filter({ brand_id }, "-created_date", 1);
+      if (inputs?.[0]?.monthly_revenue) {
+        monthlyRevenue = Math.max(0, Number(inputs[0].monthly_revenue) || 0);
+        revenueSource = "AnalyzerInput.monthly_revenue";
+      }
+    } catch { /* no inputs */ }
+
+    // Fallback: derive a conservative monthly revenue from Brand.annual_revenue range
+    if (monthlyRevenue <= 0 && brand?.annual_revenue) {
+      const RANGE_MIDPOINT_MONTHLY = {
+        under_500k: 21000,    // ~€250K/yr midpoint
+        "500k_1m": 62500,     // ~€750K/yr
+        "1m_5m": 250000,      // ~€3M/yr
+        "5m_20m": 1041000,    // ~€12.5M/yr
+        "20m_plus": 2500000,  // ~€30M/yr lower-bound estimate
+      };
+      const fallback = RANGE_MIDPOINT_MONTHLY[brand.annual_revenue];
+      if (fallback) {
+        monthlyRevenue = fallback;
+        revenueSource = `Brand.annual_revenue range "${brand.annual_revenue}" → midpoint estimate`;
+      }
+    }
+
     const bm = getBenchmarks(monthlyRevenue, country);
 
     // ── 3. Deterministic estimation ───────────────────────────────────────
@@ -251,7 +280,7 @@ Deno.serve(async (req) => {
           // Honest: without revenue we can't anchor any benchmark.
           est = {
             monthly_spend: null,
-            basis: "no monthly_revenue on Brand — cannot anchor any scoreEngine benchmark. Provide revenue to estimate.",
+            basis: "no monthly revenue available (neither AnalyzerInput nor Brand.annual_revenue) — cannot anchor any scoreEngine benchmark.",
           };
         } else if (vertical === "payments") {
           est = estimatePaymentSpend(monthlyRevenue, bm, items.length);
@@ -293,6 +322,7 @@ Deno.serve(async (req) => {
 
     const basis_context = {
       monthly_revenue: monthlyRevenue,
+      monthly_revenue_source: revenueSource,
       country: country || null,
       tier: bm.tier,
       region: bm.eu ? "EU" : "non-EU",
