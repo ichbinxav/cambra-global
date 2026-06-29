@@ -1,0 +1,55 @@
+{
+  "name": "OAuthState",
+  "type": "object",
+  "properties": {
+    "state": {
+      "type": "string",
+      "description": "Random opaque token (32 bytes base64url) used to bind an OAuth callback to the exact brand/user that started the flow. Anti-CSRF + anti-mix-up."
+    },
+    "brand_id": {
+      "type": "string",
+      "description": "Tenant key. The callback can only land tokens for this brand."
+    },
+    "provider": {
+      "type": "string",
+      "description": "Provider slug from the registry."
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user who started the flow. Callback must match."
+    },
+    "redirect_after": {
+      "type": "string",
+      "description": "Optional same-origin URL to bounce to after a successful callback."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Hard expiry (default +10 min)."
+    },
+    "used_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Set the moment the callback consumes the state. Prevents replay."
+    }
+  },
+  "required": [
+    "state",
+    "brand_id",
+    "provider",
+    "user_email",
+    "expires_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

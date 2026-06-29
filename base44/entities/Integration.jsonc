@@ -1,0 +1,103 @@
+{
+  "name": "Integration",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string",
+      "description": "Tenant isolation key. Every Integration belongs to exactly one Brand."
+    },
+    "provider": {
+      "type": "string",
+      "description": "Stable provider slug, matches a key in functions/integrationRegistry.js (e.g. 'demo_provider', 'stripe', 'shopify'). Source of truth for which OAuth config to use."
+    },
+    "category": {
+      "type": "string",
+      "description": "Cached from the registry at connection time (e.g. 'payments', 'shipping'). Denormalized so the UI can group without re-joining."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "available",
+        "connecting",
+        "connected",
+        "error",
+        "disconnected"
+      ],
+      "default": "connecting"
+    },
+    "access_token": {
+      "type": "string",
+      "description": "AES-256-GCM encrypted token blob. Format: 'v1:<iv_b64>:<ciphertext_b64>:<tag_b64>'. NEVER returned to the client by any function \u2014 server-only. RLS allows admin/creator read because Base44 RLS is row-level not field-level; functions strip this field before returning to UI."
+    },
+    "refresh_token": {
+      "type": "string",
+      "description": "AES-256-GCM encrypted refresh token blob, same format as access_token. Same server-only access pattern."
+    },
+    "access_token_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "connected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_sync_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_sync_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "partial",
+        "failed",
+        "never"
+      ],
+      "default": "never"
+    },
+    "last_error": {
+      "type": "string",
+      "description": "Most recent error message from sync or refresh."
+    },
+    "provider_account_id": {
+      "type": "string",
+      "description": "External account id returned by the provider after OAuth (for display + dedup)."
+    },
+    "metadata_json": {
+      "type": "object",
+      "description": "Free-form metadata from the provider (account name, currency, etc). Never put secrets here."
+    }
+  },
+  "required": [
+    "brand_id",
+    "provider",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -71,6 +71,8 @@ import Snapshot from '@/pages/Snapshot';
 import AdminInvoices from '@/pages/admin/AdminInvoices';
 import Invoices from '@/pages/Invoices';
 import Vault from '@/pages/Vault';
+import ConnectIntegrations from '@/pages/ConnectIntegrations';
+import IntegrationsCallback from '@/pages/IntegrationsCallback';
 import BrandProfile from '@/pages/BrandProfile';
 import BrandGlyph from '@/components/shared/BrandGlyph';
 import CopilotPanel from '@/components/copilot/CopilotPanel.jsx';
@@ -225,6 +227,8 @@ const AuthenticatedApp = () => {
           <Route path="/RecoveryTracker" element={withBoundary(<RecoveryTracker />)} />
           <Route path="/Invoices" element={withBoundary(<Invoices />)} />
           <Route path="/Vault" element={withBoundary(<Vault />)} />
+          <Route path="/ConnectIntegrations" element={withBoundary(<ConnectIntegrations />)} />
+          <Route path="/IntegrationsCallback" element={withBoundary(<IntegrationsCallback />)} />
         </Route>
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
