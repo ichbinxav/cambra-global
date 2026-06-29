@@ -63,6 +63,10 @@ const COMPARED_FIELDS = [
   "category",
   "demo_mode",
   "display_name",
+  // Per-shop providers (Shopify and any future provider that follows the
+  // {shop}.example.com pattern). The engine reads this flag in modeStart to
+  // decide whether to require a shop_domain parameter from the client.
+  "requires_shop_domain",
 ];
 
 // Deep-equality for plain JSON values (strings, numbers, booleans, arrays of

@@ -180,6 +180,31 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // ─── REAL PROVIDERS (Tanda 3: commerce OAuth — per-shop) ─────────────────
+  // Shopify's OAuth URLs include the customer's shop handle as a subdomain:
+  // {shop}.myshopify.com. The engine interpolates {shop} at runtime using a
+  // generic helper (interpolateShopDomain) — there is NO hardcoded provider
+  // name. Any future provider with the same pattern just needs
+  // `requires_shop_domain: true` and `{shop}` tokens in its URLs.
+  shopify: {
+    display_name: "Shopify",
+    category: "commerce",
+    logo: null,
+    description: "Shopify OAuth — read-only access to orders and products. Auth URLs are per-shop ({shop}.myshopify.com); the customer provides their shop handle at connect time. Note: no dedicated `orders` normalizer exists yet — data_type is set to `transactions` so the wiring is valid today; replace with an `orders` normalizer before going live.",
+    auth_method: "oauth",
+    auth_url: "https://{shop}.myshopify.com/admin/oauth/authorize",
+    token_url: "https://{shop}.myshopify.com/admin/oauth/access_token",
+    scopes: ["read_orders", "read_products"],
+    client_id_env: "SHOPIFY_CLIENT_ID",
+    client_secret_env: "SHOPIFY_CLIENT_SECRET",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://{shop}.myshopify.com/admin/api/2024-01/orders.json", method: "GET", normalize_as: "transactions" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
 };
 
 function getProviderConfig(provider) {
@@ -254,6 +279,28 @@ function jsonError(status, message) {
   return Response.json({ ok: false, error: message }, { status });
 }
 
+// ─── Per-shop URL interpolation (generic, no provider names) ───────────────
+// Some providers (Shopify today, others tomorrow) host OAuth and data
+// endpoints under the customer's own subdomain. The registry encodes this as
+// the literal token {shop} in any URL field; this helper replaces it with the
+// validated shop handle. If the URL doesn't contain {shop} it's returned
+// untouched — Stripe/Mollie/Klaviyo/PayPal/demos never see this code path.
+const SHOP_DOMAIN_REGEX = /^[a-z0-9][a-z0-9-]{0,58}[a-z0-9]$/i;
+function validateShopDomain(shop) {
+  if (!shop || typeof shop !== "string") throw new Error("shop_domain is required for this provider");
+  const trimmed = shop.trim();
+  // Reject anything that smells like a URL, dot, path, or scheme.
+  if (!SHOP_DOMAIN_REGEX.test(trimmed)) {
+    throw new Error("shop_domain must be the handle only (e.g. 'mitienda'), no dots, no scheme, no path");
+  }
+  return trimmed.toLowerCase();
+}
+function interpolateShopDomain(url, shop) {
+  if (!url || typeof url !== "string" || !url.includes("{shop}")) return url;
+  if (!shop) throw new Error("shop_domain is required to interpolate {shop} in this URL");
+  return url.replaceAll("{shop}", shop);
+}
+
 async function assertBrandOwnedByUser(base44, brandId, userEmail) {
   if (!brandId) throw new Error("brand_id is required");
   const brand = await base44.entities.Brand.get(brandId);
@@ -267,7 +314,7 @@ async function assertBrandOwnedByUser(base44, brandId, userEmail) {
 // ─── Mode: start ───────────────────────────────────────────────────────────
 
 async function modeStart(base44, user, params) {
-  const { brand_id, provider, redirect_after } = params;
+  const { brand_id, provider, redirect_after, shop_domain: rawShopDomain } = params;
   const cfg = getProviderConfig(provider);
   if (!cfg) return jsonError(400, `Unknown provider: ${provider}`);
 
@@ -275,6 +322,17 @@ async function modeStart(base44, user, params) {
   const authMethod = cfg.auth_method || "oauth";
   if (authMethod !== "oauth") {
     return jsonError(400, `Provider ${provider} uses auth_method="${authMethod}". Use mode="connect_api_key" instead.`);
+  }
+
+  // Per-shop providers require the customer's shop handle at connect time.
+  // Validation is generic — the engine never knows the provider name.
+  let shopDomain = null;
+  if (cfg.requires_shop_domain) {
+    try {
+      shopDomain = validateShopDomain(rawShopDomain);
+    } catch (err) {
+      return jsonError(400, err.message);
+    }
   }
 
   if (user.role !== "admin") {
@@ -294,6 +352,7 @@ async function modeStart(base44, user, params) {
     provider,
     user_email: user.email,
     redirect_after: redirect_after || null,
+    shop_domain: shopDomain,
     expires_at: expiresAt,
   });
 
@@ -330,13 +389,15 @@ async function modeStart(base44, user, params) {
     state,
     redirect_uri: getRedirectUri(),
   });
-  const authorize_url = `${cfg.auth_url}?${params2.toString()}`;
+  // Interpolate {shop} if present. No-op for providers without {shop}.
+  const baseAuthUrl = interpolateShopDomain(cfg.auth_url, shopDomain);
+  const authorize_url = `${baseAuthUrl}?${params2.toString()}`;
   return Response.json({ ok: true, authorize_url, state });
 }
 
 // ─── Mode: callback ────────────────────────────────────────────────────────
 
-async function exchangeCodeForTokens(cfg, code) {
+async function exchangeCodeForTokens(cfg, code, shopDomain) {
   if (cfg.demo_mode) {
     return {
       access_token: `demo_at_${randomStateToken().slice(0, 24)}`,
@@ -355,7 +416,9 @@ async function exchangeCodeForTokens(cfg, code) {
     client_secret: clientSecret,
     redirect_uri: getRedirectUri(),
   });
-  const res = await fetch(cfg.token_url, {
+  // Interpolate {shop} if present. No-op for providers without {shop}.
+  const tokenUrl = interpolateShopDomain(cfg.token_url, shopDomain);
+  const res = await fetch(tokenUrl, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json" },
     body,
@@ -398,7 +461,7 @@ async function modeCallback(base44, user, params) {
 
   let tokens;
   try {
-    tokens = await exchangeCodeForTokens(cfg, code);
+    tokens = await exchangeCodeForTokens(cfg, code, row.shop_domain || null);
   } catch (err) {
     const existing = await base44.asServiceRole.entities.Integration
       .filter({ brand_id: row.brand_id, provider: row.provider }, "-created_date", 1)
@@ -427,7 +490,13 @@ async function modeCallback(base44, user, params) {
     connected_at: new Date().toISOString(),
     last_error: null,
     provider_account_id: tokens.account_id || null,
-    metadata_json: { account_id: tokens.account_id, demo_mode: !!cfg.demo_mode },
+    // shop_domain persisted in metadata_json so dataSyncAgent + modeRefresh
+    // can re-interpolate {shop} on every subsequent call without re-asking.
+    metadata_json: {
+      account_id: tokens.account_id,
+      demo_mode: !!cfg.demo_mode,
+      ...(row.shop_domain ? { shop_domain: row.shop_domain } : {}),
+    },
     category: cfg.category,
   };
 
@@ -550,7 +619,9 @@ async function modeRefresh(base44, user, params) {
     client_id: Deno.env.get(cfg.client_id_env),
     client_secret: Deno.env.get(cfg.client_secret_env),
   });
-  const res = await fetch(cfg.token_url, {
+  // Interpolate {shop} from the stored shop_domain, if any. No-op otherwise.
+  const tokenUrl = interpolateShopDomain(cfg.token_url, integ.metadata_json?.shop_domain || null);
+  const res = await fetch(tokenUrl, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json" },
     body,

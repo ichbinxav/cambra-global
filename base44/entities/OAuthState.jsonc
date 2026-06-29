@@ -22,6 +22,10 @@
       "type": "string",
       "description": "Optional same-origin URL to bounce to after a successful callback."
     },
+    "shop_domain": {
+      "type": "string",
+      "description": "Per-shop OAuth handle (e.g. 'mitienda' for Shopify's mitienda.myshopify.com). Set ONLY for providers whose registry entry has requires_shop_domain=true. The callback uses it to interpolate {shop} into the token_url. Validated server-side against /^[a-z0-9][a-z0-9-]{0,58}[a-z0-9]$/i \u2014 handle only, no dots, no scheme, no path."
+    },
     "expires_at": {
       "type": "string",
       "format": "date-time",

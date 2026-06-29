@@ -152,7 +152,41 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // ─── REAL PROVIDERS (Tanda 3: commerce OAuth — per-shop) ─────────────────
+  // Shopify's OAuth URLs include the customer's shop handle as a subdomain:
+  // {shop}.myshopify.com. The engine interpolates {shop} at runtime using a
+  // generic helper (interpolateShopDomain) — there is NO hardcoded provider
+  // name. Any future provider with the same pattern just needs
+  // `requires_shop_domain: true` and `{shop}` tokens in its URLs.
+  shopify: {
+    display_name: "Shopify",
+    category: "commerce",
+    logo: null,
+    description: "Shopify OAuth — read-only access to orders and products. Auth URLs are per-shop ({shop}.myshopify.com); the customer provides their shop handle at connect time. Note: no dedicated `orders` normalizer exists yet — data_type is set to `transactions` so the wiring is valid today; replace with an `orders` normalizer before going live.",
+    auth_method: "oauth",
+    auth_url: "https://{shop}.myshopify.com/admin/oauth/authorize",
+    token_url: "https://{shop}.myshopify.com/admin/oauth/access_token",
+    scopes: ["read_orders", "read_products"],
+    client_id_env: "SHOPIFY_CLIENT_ID",
+    client_secret_env: "SHOPIFY_CLIENT_SECRET",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://{shop}.myshopify.com/admin/api/2024-01/orders.json", method: "GET", normalize_as: "transactions" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
 };
+
+// Per-shop URL interpolation (generic, no provider names). Mirrors the helper
+// in oauthConnector — same contract: if the URL has no {shop}, returns it
+// unchanged; if it does, requires a non-empty shop value and throws otherwise.
+function interpolateShopDomain(url, shop) {
+  if (!url || typeof url !== "string" || !url.includes("{shop}")) return url;
+  if (!shop) throw new Error("shop_domain is required to interpolate {shop} in this URL");
+  return url.replaceAll("{shop}", shop);
+}
 
 // Generic auth header builder — the registry says how, this function follows.
 // No provider name appears anywhere. Adding a new api_key provider means
@@ -323,7 +357,10 @@ Deno.serve(async (req) => {
           raw = demoMockResponse(ep.normalize_as || cfg.data_type);
         } else {
           const authHeaders = await buildAuthHeaders(cfg, integ);
-          const res = await fetch(ep.url, {
+          // Interpolate {shop} per-endpoint using the value stored at
+          // connect time. No-op for providers without {shop}.
+          const endpointUrl = interpolateShopDomain(ep.url, integ.metadata_json?.shop_domain || null);
+          const res = await fetch(endpointUrl, {
             method: ep.method || "GET",
             headers: { ...authHeaders, "Accept": "application/json" },
           });
