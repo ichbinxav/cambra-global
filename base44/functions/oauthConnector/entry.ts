@@ -92,6 +92,45 @@ const REGISTRY = {
     ],
     demo_mode: true,
   },
+
+  // ─── REAL PROVIDERS (Tanda 1: payments OAuth) ────────────────────────────
+  // Wiring only — `client_id_env` / `client_secret_env` point to env vars that
+  // are NOT set yet. modeStart() returns a clean 503 if they're missing, so
+  // the engine tolerates absent secrets until they're pasted.
+  stripe: {
+    display_name: "Stripe",
+    category: "payments",
+    logo: null,
+    description: "Stripe Connect — read-only access to balance transactions and fees.",
+    auth_method: "oauth",
+    auth_url: "https://connect.stripe.com/oauth/authorize",
+    token_url: "https://connect.stripe.com/oauth/token",
+    scopes: ["read_only"],
+    client_id_env: "STRIPE_CLIENT_ID",
+    client_secret_env: "STRIPE_SECRET_KEY",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api.stripe.com/v1/balance_transactions", method: "GET", normalize_as: "transactions" },
+    ],
+    demo_mode: false,
+  },
+  mollie: {
+    display_name: "Mollie",
+    category: "payments",
+    logo: null,
+    description: "Mollie OAuth — read-only access to payments across organizations.",
+    auth_method: "oauth",
+    auth_url: "https://my.mollie.com/oauth2/authorize",
+    token_url: "https://api.mollie.com/oauth2/tokens",
+    scopes: ["organizations.read", "payments.read", "profiles.read"],
+    client_id_env: "MOLLIE_CLIENT_ID",
+    client_secret_env: "MOLLIE_CLIENT_SECRET",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api.mollie.com/v2/payments", method: "GET", normalize_as: "transactions" },
+    ],
+    demo_mode: false,
+  },
 };
 
 function getProviderConfig(provider) {
