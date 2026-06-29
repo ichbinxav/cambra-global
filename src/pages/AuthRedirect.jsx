@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import LoadingScreen from "@/components/shared/LoadingScreen";
 
 /* AuthRedirect — entry point that hands off to Base44 login.
    Honors:
@@ -25,15 +26,10 @@ export default function AuthRedirect() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      <div className="text-center">
-        <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin mx-auto mb-3" />
-        <h1 className="text-base font-bold mb-1">Redirecting to sign in…</h1>
-        <p className="text-sm text-muted-foreground">
-          The login window will open and you'll return automatically.
-        </p>
-      </div>
-    </div>
+    <LoadingScreen
+      label="Redirecting to sign in"
+      sublabel="The login window will open and you'll return automatically."
+    />
   );
 }
 

@@ -9,6 +9,7 @@ import { LanguageProvider } from '@/lib/i18n.jsx';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
 
+import LoadingScreen from '@/components/shared/LoadingScreen';
 import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding.jsx';
 import Analyzer from '@/pages/Analyzer';
@@ -78,28 +79,11 @@ import ScrollToTop from '@/components/shared/ScrollToTop.jsx';
 import ErrorBoundary from '@/components/shared/ErrorBoundary.jsx';
 import { ToastProvider } from '@/components/shared/Toast.jsx';
 
-// Inline lazy chunk fallback — NOT fixed, so it doesn't blank out the screen
-// or fight the auth loading screen. Renders inside whatever shell is mounted.
+// Inline lazy chunk fallback — NOT fullscreen, so it doesn't blank out the
+// screen or fight the auth loading screen. Renders inside whatever shell is
+// mounted (e.g. inside DashboardLayout).
 function LazyFallback() {
-  return (
-    <div
-      className="min-h-screen w-full flex flex-col items-center justify-center"
-      style={{ background: "transparent" }}
-      role="status"
-      aria-live="polite"
-    >
-      <span
-        style={{
-          display: "inline-block",
-          width: 32, height: 32, borderRadius: "50%",
-          border: "2px solid rgba(255,255,255,0.12)",
-          borderTopColor: "#22d3ee",
-          animation: "cambra-spin 0.8s linear infinite",
-        }}
-      />
-      <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
-  );
+  return <LoadingScreen label="Loading" fullscreen={false} />;
 }
 
 // Wrap a route element in a per-route ErrorBoundary so one page crash does not
@@ -110,14 +94,7 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoadingAuth } = useAuth();
 
   if (isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="h-8 w-8" style={{ animation: 'spin 4s linear infinite' }}>
-          <BrandGlyph className="h-8 w-8" />
-        </div>
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+    return <LoadingScreen label="Checking session" />;
   }
 
   if (!isAuthenticated) {
@@ -148,14 +125,7 @@ const AdminRoute = ({ children }) => {
   }, [isAuthenticated, isLoadingAuth]);
 
   if (isLoadingAuth || loadingUser) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="h-8 w-8" style={{ animation: 'spin 4s linear infinite' }}>
-          <BrandGlyph className="h-8 w-8" />
-        </div>
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+    return <LoadingScreen label="Verifying admin access" />;
   }
 
   if (!isAuthenticated) {
@@ -181,15 +151,7 @@ const AuthenticatedApp = () => {
   const isPublicLanding = typeof window !== "undefined" && (window.location.pathname === "/" || window.location.pathname === "/Landing" || window.location.pathname === "/landing");
 
   if (!isPublicLanding && (isLoadingPublicSettings || isLoadingAuth)) {
-    return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-background" role="status" aria-live="polite">
-        <div className="h-12 w-12 text-foreground/90" style={{ animation: 'spin 4s linear infinite' }}>
-          <BrandGlyph className="h-12 w-12" />
-        </div>
-        <p className="mt-3 text-sm text-foreground/70">Loading…</p>
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+    return <LoadingScreen label="Loading workspace" />;
   }
 
   if (!isPublicLanding && authError) {
