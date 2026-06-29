@@ -116,6 +116,10 @@
       "type": "boolean",
       "default": false,
       "description": "Demo/fake brand for testing \u2014 never billed"
+    },
+    "anon_session_id": {
+      "type": "string",
+      "description": "Set when the Brand was created during an anonymous Analyzer session, before the user signed up. Cleared on claim. UUID v4 generated client-side, validated server-side. Never exposed to other users."
     }
   },
   "required": [

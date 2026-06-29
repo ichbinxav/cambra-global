@@ -15,8 +15,33 @@ import { useToast } from "@/components/shared/Toast.jsx";
 import RevenueRangePicker, { midpointForRange } from "@/components/analyzer/RevenueRangePicker";
 import DetectedToolsGrid from "@/components/analyzer/DetectedToolsGrid";
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
-import AnalyzerAuthGate from "@/components/analyzer/AnalyzerAuthGate";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
+
+// ─── Anonymous session id ──────────────────────────────────────────────────
+// Stored in localStorage so the user can complete the audit while signed-out,
+// land on the teaser, and then claim the result after signing up.
+// UUID v4 → 122 bits of entropy → unguessable.
+const ANON_KEY = "cambra_anon_session_id";
+function makeUuidV4() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  // Fallback if crypto.randomUUID isn't available
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === "x" ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+function getOrCreateAnonSessionId() {
+  try {
+    let id = localStorage.getItem(ANON_KEY);
+    if (id) return id;
+    id = makeUuidV4();
+    localStorage.setItem(ANON_KEY, id);
+    return id;
+  } catch {
+    return makeUuidV4();
+  }
+}
 import {
   computeInfraScore, calculateSavings, getBenchmarks,
   ENGINE_VERSION, validateAnalyzerInput,
@@ -98,8 +123,9 @@ export default function Analyzer() {
   const urlParams = new URLSearchParams(window.location.search);
   const resumeParam = urlParams.get("resume") === "true";
 
-  // Auth gate — analyzer is only available to signed-in users so we always
-  // have an email, the audit is saved, and the user can resume from any device.
+  // Auth status — the analyzer is now PUBLIC. Anonymous users complete the
+  // flow and land on /AnalyzerTeaser. Signed-in users keep the original
+  // resumable / persistent behaviour.
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
 
@@ -301,13 +327,16 @@ export default function Analyzer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [websiteUrl]);
 
-  // ── FIX 1 — Ensure a Brand exists for THIS website, not "the user's latest brand".
-  // Resolution order, scoped to the current user:
+  // ── Ensure a Brand exists for THIS website (signed-in users only).
+  // Anonymous users never call this — their Brand is created server-side at
+  // the end of the flow by submitAnonymousAnalysis (RLS would block a direct
+  // client write without an authenticated user).
+  // Resolution order for signed-in users, scoped to the current user:
   //   1. If brandId is already set, use it.
   //   2. Find an existing Brand whose normalized website matches the form domain.
   //   3. Otherwise create a new Brand with this website attached.
-  // Cross-domain analyses can therefore never attach to an unrelated previous brand.
   const ensureBrand = async () => {
+    if (!isAuthed) return null;
     if (brandId) return brandId;
     if (!brandName || !brandName.trim()) return null;
 
@@ -351,11 +380,10 @@ export default function Analyzer() {
     setDiscovery({ status: "running", findings: [], jobId: null });
 
     try {
-      const id = await ensureBrand();
-      if (!id) {
-        setDiscovery({ status: "idle", findings: [], jobId: null });
-        return;
-      }
+      // Signed-in users get a real Brand record (resumable, persistent).
+      // Anonymous users skip brand creation and pass brand_id=null — the
+      // discovery function tolerates a null brand_id (no DB write required).
+      const id = isAuthed ? await ensureBrand() : null;
       const res = await base44.functions.invoke("discoverCompanyInfrastructure", {
         website_url: url,
         brand_id: id,
@@ -430,16 +458,16 @@ export default function Analyzer() {
       setErrorBanner(missing.join("\n"));
       return;
     }
-    await ensureBrand();
+    if (isAuthed) await ensureBrand();
     setStep(2);
-    persistResumeState(2);
+    if (isAuthed) persistResumeState(2);
   };
 
   // ── Continue from Step 2 ──
   const goStep3 = async () => {
     setErrorBanner("");
     setStep(3);
-    persistResumeState(3);
+    if (isAuthed) persistResumeState(3);
   };
 
   // ── Check if Stripe is connected (after returning from OAuth) ──
@@ -512,9 +540,13 @@ export default function Analyzer() {
     };
   };
 
-  // ── Run analysis (UNCHANGED business logic) ──
-  // Auth is already guaranteed by the AnalyzerAuthGate shown before Step 1,
-  // so no auth check is needed here.
+  // ── Run analysis ──
+  // Two code paths:
+  //   1. Signed-in user → write entities directly (RLS allows created_by = me).
+  //   2. Anonymous user → send the payload to submitAnonymousAnalysis (a
+  //      service-role backend function that persists the 3 records tagged
+  //      with anon_session_id). The breakdown NEVER comes back to the client
+  //      while signed-out — only a session_id, used to reach the teaser page.
   const runAnalysis = async () => {
     setErrorBanner("");
 
@@ -527,9 +559,9 @@ export default function Analyzer() {
 
     setRunning(true);
 
-    // Upgrade payment_fee_pct from live Stripe if connected
+    // Upgrade payment_fee_pct from live Stripe if connected (signed-in only)
     let stripePaymentFeePct = null;
-    if (stripeConnected && brandId) {
+    if (isAuthed && stripeConnected && brandId) {
       try {
         const sc = await base44.entities.StripeConnection
           .filter({ brand_id: brandId, connection_status: "connected" }, "-last_sync_at", 1)
@@ -545,9 +577,8 @@ export default function Analyzer() {
     const savings = calculateSavings(inputData);
     const scoreReport = computeInfraScore(inputData, stripeConnected ? "connected" : "manual");
 
-    // Persist AnalyzerInput
-    const input = await base44.entities.AnalyzerInput.create({
-      brand_id: brandId,
+    // Shared payloads — used by both branches so the saved record is identical
+    const analyzerInputPayload = {
       monthly_revenue: inputData.monthly_revenue,
       monthly_revenue_range: revenueRange,
       avg_order_value: inputData.avg_order_value,
@@ -567,7 +598,7 @@ export default function Analyzer() {
       confirmed_tools: inputData.confirmed_tools,
       dismissed_tools: inputData.dismissed_tools,
       data_source: stripeConnected ? "hybrid" : "manual",
-    });
+    };
 
     // Credibility envelope
     const completeness = (() => {
@@ -585,9 +616,7 @@ export default function Analyzer() {
     })();
     const confidence = stripeConnected ? "high" : (completeness >= 80 ? "high" : completeness >= 50 ? "medium" : "low");
 
-    const result = await base44.entities.AnalyzerResult.create({
-      brand_id: brandId,
-      input_id: input.id,
+    const analyzerResultPayload = {
       payment_savings: savings.paymentSavings,
       shipping_savings: savings.shippingSavings,
       saas_savings: savings.saasSavings,
@@ -611,17 +640,62 @@ export default function Analyzer() {
       next_best_action: stripeConnected
         ? "Connect carriers and finalize your provider list."
         : "Connect Stripe to upgrade your payments confidence to verified.",
-    });
+    };
 
-    setAnalysisDone(true);
+    // ═══ Branch 1 — signed-in user ═══════════════════════════════════════
+    if (isAuthed) {
+      const input = await base44.entities.AnalyzerInput.create({
+        brand_id: brandId,
+        ...analyzerInputPayload,
+      });
+      const result = await base44.entities.AnalyzerResult.create({
+        brand_id: brandId,
+        input_id: input.id,
+        ...analyzerResultPayload,
+      });
+      setAnalysisDone(true);
+      toast.success(t("progress_ready"));
+      setTimeout(() => navigate(`/Results?id=${result.id}`), 700);
+      return;
+    }
 
-    // FIX 27 — toast on analysis complete + navigation to Results
-    toast.success(t("progress_ready"));
-    setTimeout(() => navigate(`/Results?id=${result.id}`), 700);
+    // ═══ Branch 2 — anonymous user ═══════════════════════════════════════
+    // The whole result is persisted server-side. The client only receives a
+    // session_id back — no record ids, no breakdown.
+    const anonSessionId = getOrCreateAnonSessionId();
+    const toolsCount = confirmedTools.size;
+    try {
+      const resp = await base44.functions.invoke("submitAnonymousAnalysis", {
+        anon_session_id: anonSessionId,
+        brand: {
+          name: brandName.trim(),
+          website: websiteUrl ? (websiteUrl.includes("://") ? websiteUrl : `https://${websiteUrl}`) : undefined,
+          country,
+          category: CATEGORY_MAP[category] || "other",
+          channels: ["dtc"],
+        },
+        analyzer_input: analyzerInputPayload,
+        analyzer_result: analyzerResultPayload,
+        tools_count: toolsCount,
+      });
+      const payload = resp?.data || resp;
+      if (!payload?.ok) {
+        setRunning(false);
+        setErrorBanner("We couldn't save your audit. Please try again.");
+        return;
+      }
+      setAnalysisDone(true);
+      toast.success(t("progress_ready"));
+      setTimeout(() => navigate(`/AnalyzerTeaser?session=${encodeURIComponent(anonSessionId)}`), 700);
+    } catch (e) {
+      setRunning(false);
+      setErrorBanner("We couldn't save your audit. Please try again.");
+    }
   };
 
-  // ── Auth gate — block the whole flow until the user is signed in. ──
-  // Shows a small loading state while we check, then either the gate or the flow.
+  // ── Auth check ──
+  // The analyzer is PUBLIC. We still wait for the auth check to finish so that
+  // we know which branch (resumable signed-in flow vs anonymous flow) to use.
   if (!authChecked) {
     return (
       <div
@@ -633,7 +707,6 @@ export default function Analyzer() {
       </div>
     );
   }
-  if (!isAuthed) return <AnalyzerAuthGate />;
 
   // ── If running, render full-screen progress overlay ──
   if (running) {

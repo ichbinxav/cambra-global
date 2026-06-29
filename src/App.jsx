@@ -12,6 +12,7 @@ import { base44 } from '@/api/base44Client';
 import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding.jsx';
 import Analyzer from '@/pages/Analyzer';
+import AnalyzerTeaser from '@/pages/AnalyzerTeaser';
 import LoginGate from '@/pages/LoginGate';
 import HealthCheck from '@/pages/HealthCheck.jsx';
 import CookieConsent from '@/components/shared/CookieConsent';
@@ -206,14 +207,17 @@ const AuthenticatedApp = () => {
         <Route path="/onboarding" element={<Navigate to="/Onboarding" replace />} />
         <Route path="/BrandProfile" element={withBoundary(<BrandProfile />)} />
         <Route path="/brandprofile" element={<Navigate to="/BrandProfile" replace />} />
-        {/* Auth wall — Analyzer, Results, ConnectTools, StripeAnalyzer now require login */}
-        <Route path="/Analyzer" element={<ProtectedRoute>{withBoundary(<Analyzer />)}</ProtectedRoute>} />
+        {/* Analyzer is now PUBLIC — anonymous users complete the audit and see a teaser.
+            Results/ConnectTools/StripeAnalyzer remain auth-walled. */}
+        <Route path="/Analyzer" element={withBoundary(<Analyzer />)} />
+        <Route path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
+        <Route path="/AnalyzerTeaser" element={withBoundary(<AnalyzerTeaser />)} />
+        <Route path="/analyzerteaser" element={<Navigate to="/AnalyzerTeaser" replace />} />
         <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />
         <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
         <Route path="/StripeAnalyzer" element={<ProtectedRoute>{withBoundary(<StripeAnalyzer />)}</ProtectedRoute>} />
         <Route path="/stripeanalyzer" element={<Navigate to="/StripeAnalyzer" replace />} />
         <Route path="/Results" element={<ProtectedRoute>{withBoundary(<Results />)}</ProtectedRoute>} />
-        <Route path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
         <Route path="/results" element={<Navigate to="/Results" replace />} />
         <Route path="/Privacy" element={withBoundary(<Privacy />)} />
         <Route path="/privacy" element={<Navigate to="/Privacy" replace />} />

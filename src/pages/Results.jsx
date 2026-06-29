@@ -92,10 +92,34 @@ export default function Results() {
 
   useEffect(() => {
     (async () => {
-      const urlId = new URLSearchParams(window.location.search).get("id");
+      const params = new URLSearchParams(window.location.search);
+      let urlId = params.get("id");
+      const claimSession = params.get("claim");
+
       const authed = await base44.auth.isAuthenticated();
       if (!authed) { setNeedsAuth(true); setLoading(false); return; }
       const me = await base44.auth.me();
+
+      // ── Claim flow ─────────────────────────────────────────────────────
+      // If we landed here with ?claim=<anon_session_id>, reassign the
+      // anonymous records (Brand, AnalyzerInput, AnalyzerResult) to this
+      // user, then continue loading the (now-owned) result by id.
+      if (claimSession) {
+        try {
+          const resp = await base44.functions.invoke("claimAnonymousAnalysis", {
+            anon_session_id: claimSession,
+          });
+          const payload = resp?.data || resp;
+          if (payload?.ok && payload.result_id) {
+            urlId = payload.result_id;
+            try { localStorage.removeItem("cambra_anon_session_id"); } catch { /* ignore */ }
+            // Clean the URL so refreshes don't re-claim
+            try { window.history.replaceState({}, "", `/Results?id=${payload.result_id}`); } catch { /* ignore */ }
+          }
+          // If the claim fails (already claimed, not found, etc.), we just
+          // fall through to the normal id/latest-result load below.
+        } catch { /* fall through */ }
+      }
 
       // Load AnalyzerResult
       let res = [];

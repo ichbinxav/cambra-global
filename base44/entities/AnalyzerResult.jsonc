@@ -115,6 +115,14 @@
     },
     "next_best_action": {
       "type": "string"
+    },
+    "anon_session_id": {
+      "type": "string",
+      "description": "Set when this AnalyzerResult was created during an anonymous Analyzer session, before the user signed up. Cleared on claim. The teaser endpoint exposes ONLY a 4-field subset of this record to clients with a matching anon_session_id."
+    },
+    "anon_tools_count": {
+      "type": "number",
+      "description": "Number of tools detected/confirmed during the anonymous session \u2014 used by the teaser to show 'X tools detected' without revealing which tools."
     }
   },
   "required": [],

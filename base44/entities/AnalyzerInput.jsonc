@@ -187,6 +187,10 @@
       ],
       "default": "manual",
       "description": "How data was provided. Affects confidence."
+    },
+    "anon_session_id": {
+      "type": "string",
+      "description": "Set when this AnalyzerInput was created during an anonymous Analyzer session. Cleared on claim."
     }
   },
   "required": [],
