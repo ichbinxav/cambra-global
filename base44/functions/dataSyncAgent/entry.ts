@@ -195,6 +195,25 @@ const REGISTRY = {
     requires_shop_domain: true,
   },
 
+  // Mirror of pennylane — same contract, both files identical.
+  pennylane: {
+    display_name: "Pennylane",
+    category: "accounting",
+    logo: null,
+    description: "Pennylane OAuth (RTR) — read-only access to customer/supplier invoices and companies. Pennylane rotates refresh tokens; the engine handles that generically in modeRefresh. Endpoint paths and scopes confirmed against Pennylane docs but verify at first real connect.",
+    auth_method: "oauth",
+    auth_url: "https://app.pennylane.com/oauth/authorize",
+    token_url: "https://app.pennylane.com/oauth/token",
+    scopes: ["customer_invoices_read", "supplier_invoices_read", "companies_read"],
+    client_id_env: "PENNYLANE_CLIENT_ID",
+    client_secret_env: "PENNYLANE_CLIENT_SECRET",
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://app.pennylane.com/api/external/v2/customer_invoices", method: "GET", normalize_as: "invoices" },
+    ],
+    demo_mode: false,
+  },
+
   // Mirror of sendcloud — same contract, both files identical.
   sendcloud: {
     display_name: "Sendcloud",

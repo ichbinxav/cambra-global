@@ -230,6 +230,43 @@ const REGISTRY = {
     requires_shop_domain: true,
   },
 
+  // ─── REAL PROVIDERS (Tanda 3.5: accounting OAuth — Pennylane) ─────────────
+  // Pennylane = French accounting platform. Standard OAuth2 with Refresh Token
+  // Rotation (RTR): every refresh call returns a NEW refresh_token and
+  // invalidates the previous one. The engine already handles RTR correctly in
+  // modeRefresh (line: `json.refresh_token ? await encryptToken(json.refresh_token) : integ.refresh_token`),
+  // so Pennylane needs ZERO engine changes — just this registry entry.
+  //
+  // Verification pending (paths/scopes are from Pennylane public docs as of
+  // 2025 but may shift between API versions; confirm at first real connect):
+  //   - auth_url + token_url: app.pennylane.com/oauth/{authorize|token}
+  //   - scopes: customer_invoices_read + supplier_invoices_read + companies_read
+  //     (read-only set, matches accounting verticals we care about)
+  //   - data endpoint: external/v2/customer_invoices
+  //
+  // Deuda anotada (mismo patrón que Klaviyo/Shopify/Sendcloud): el normalizador
+  // genérico `invoices` espera { invoices: [...] }. Pennylane probablemente
+  // devuelve { customer_invoices: [...] } o { items: [...] }. El wiring es
+  // válido hoy (no rompe nada), pero un sync real necesitará un normalizador
+  // dedicado antes de mover datos útiles a producción.
+  pennylane: {
+    display_name: "Pennylane",
+    category: "accounting",
+    logo: null,
+    description: "Pennylane OAuth (RTR) — read-only access to customer/supplier invoices and companies. Pennylane rotates refresh tokens; the engine handles that generically in modeRefresh. Endpoint paths and scopes confirmed against Pennylane docs but verify at first real connect.",
+    auth_method: "oauth",
+    auth_url: "https://app.pennylane.com/oauth/authorize",
+    token_url: "https://app.pennylane.com/oauth/token",
+    scopes: ["customer_invoices_read", "supplier_invoices_read", "companies_read"],
+    client_id_env: "PENNYLANE_CLIENT_ID",
+    client_secret_env: "PENNYLANE_CLIENT_SECRET",
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://app.pennylane.com/api/external/v2/customer_invoices", method: "GET", normalize_as: "invoices" },
+    ],
+    demo_mode: false,
+  },
+
   // ─── REAL PROVIDERS (Tanda 4: shipping HTTP Basic Auth — public+secret) ──
   // Sendcloud authenticates with HTTP Basic Auth using TWO keys (a public key
   // as the username and a secret key as the password). The motor handles this
