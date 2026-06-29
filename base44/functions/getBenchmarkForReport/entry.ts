@@ -13,11 +13,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  * Confidence labels are ALWAYS attached and MUST be shown when rendering.
  */
 
-// Static fallbacks — EXACT MIRROR of lib/scoreEngine.js getBenchmarks() v1.0.0.
-// DO NOT diverge. If you change values here, change them there too (and in
-// functions/spendIntelligenceAgent.js). All three must produce the same number
-// for the same (vertical, tier, region) tuple — otherwise the brand will see a
-// benchmark on screen that B3 didn't use to compute their savings (credibility bug).
+// ════════════════════════════════════════════════════════════════════
+// STATIC FALLBACK BENCHMARKS — EXACT MIRROR of lib/scoreEngine.js v1.0.0
+//
+// DO NOT DIVERGE. Every value here MUST match getBenchmarks() in
+// lib/scoreEngine.js AND the mirrors inside:
+//   - functions/spendIntelligenceAgent.js
+//   - functions/recommendationEngineAgent.js
+//
+// If you change a value here without changing the other three, the brand
+// will see a benchmark on screen that B3 did NOT use to compute their
+// savings — the credibility bug we keep killing. Verify all four files
+// after any edit.
+// ════════════════════════════════════════════════════════════════════
+
 const EU_COUNTRIES = new Set([
   "France","Germany","Spain","Italy","Netherlands","Belgium","Portugal",
   "Sweden","Denmark","Finland","Norway","Austria","Switzerland","Ireland",
@@ -25,9 +34,10 @@ const EU_COUNTRIES = new Set([
   "Malta","Cyprus","Slovakia","Slovenia","Croatia","Estonia","Latvia",
   "Lithuania","Bulgaria",
 ]);
-const isEU = (c: string) => EU_COUNTRIES.has(c);
+const isEU = (c) => EU_COUNTRIES.has(c);
 
-const STATIC_BENCHMARKS: Record<string, any> = {
+// Mirror of scoreEngine.getBenchmarks() v1.0.0 — see file header
+const STATIC_BENCHMARKS = {
   payments: {
     micro: { eu: 2.4, nonEu: 2.9 },
     small: { eu: 2.2, nonEu: 2.6 },
@@ -41,7 +51,7 @@ const STATIC_BENCHMARKS: Record<string, any> = {
     large: { eu: 3.90, nonEu: 4.80 },
   },
   saas: {
-    // % of monthly revenue — region-agnostic in scoreEngine v1.0.0
+    // SaaS benchmark is % of monthly revenue — region-agnostic in scoreEngine v1.0.0
     micro: 0.060,
     small: 0.040,
     mid:   0.025,
@@ -49,7 +59,7 @@ const STATIC_BENCHMARKS: Record<string, any> = {
   },
 };
 
-function staticFor(vertical: string, tier: string, country: string): number | null {
+function staticFor(vertical, tier, country) {
   const v = STATIC_BENCHMARKS[vertical];
   if (!v) return null;
   const t = v[tier] || v["small"];
@@ -58,14 +68,14 @@ function staticFor(vertical: string, tier: string, country: string): number | nu
   return isEU(country) ? t.eu : t.nonEu;
 }
 
-function metricKeyFor(vertical: string): string | null {
+function metricKeyFor(vertical) {
   if (vertical === "payments") return "payment_effective_rate";
   if (vertical === "shipping") return "shipping_avg_cost_per_unit";
   if (vertical === "saas") return "saas_monthly_spend_pct_revenue";
   return null;
 }
 
-function confidenceFor(n: number): string {
+function confidenceFor(n) {
   if (n >= 40) return "high";
   if (n >= 15) return "medium";
   if (n >= 5) return "low";
@@ -122,7 +132,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fallback to static benchmark — MUST match scoreEngine v1.0.0 (mirrored above).
+    // Fallback to static benchmark — MUST match scoreEngine v1.0.0 (mirror above)
     const staticVal = staticFor(vertical, revenue_tier, country);
     return Response.json({
       source: "static",
@@ -137,6 +147,6 @@ Deno.serve(async (req) => {
       note: "Benchmark from CAMBRA static reference table (scoreEngine v1.0.0) — network sample too small",
     });
   } catch (error) {
-    return Response.json({ error: (error as any)?.message || String(error) }, { status: 500 });
+    return Response.json({ error: error?.message || String(error) }, { status: 500 });
   }
 });
