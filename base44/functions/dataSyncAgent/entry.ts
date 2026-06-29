@@ -103,6 +103,55 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // ─── REAL PROVIDERS (Tanda 2: marketing + payments OAuth) ────────────────
+  // Same wiring pattern as Tanda 1 — env vars not set yet, modeStart returns
+  // a clean 503 until the credentials are pasted. No engine changes needed.
+  klaviyo: {
+    display_name: "Klaviyo",
+    category: "marketing",
+    logo: null,
+    // Klaviyo also supports API-key auth as an alternative — if we ever want
+    // to expose that path, add a second registry entry "klaviyo_apikey" with
+    // auth_method: "api_key". Today we wire OAuth only.
+    description: "Klaviyo OAuth — read-only access to accounts, campaigns and metrics. Token endpoint uses a.klaviyo.com (NOT www) per Klaviyo's 2025 requirement.",
+    auth_method: "oauth",
+    auth_url: "https://www.klaviyo.com/oauth/authorize",
+    token_url: "https://a.klaviyo.com/oauth/token",
+    scopes: ["accounts:read", "campaigns:read", "metrics:read"],
+    client_id_env: "KLAVIYO_CLIENT_ID",
+    client_secret_env: "KLAVIYO_CLIENT_SECRET",
+    // No "marketing_spend" normalizer exists yet — using "invoices" so the
+    // wiring is valid today (the sync engine throws if it can't resolve a
+    // normalizer). When we plug Klaviyo for real we add a dedicated
+    // `metrics` normalizer and flip data_type/normalize_as here.
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://a.klaviyo.com/api/metrics", method: "GET", normalize_as: "invoices" },
+    ],
+    demo_mode: false,
+  },
+  paypal: {
+    display_name: "PayPal",
+    category: "payments",
+    logo: null,
+    // openid is REQUIRED by PayPal even when you only need reporting reads.
+    // The reporting endpoint requires extra approval from PayPal — confirm
+    // the exact path when we go live (`/v1/reporting/transactions` is the
+    // documented one as of 2025).
+    description: "PayPal OAuth — read-only access to transaction reporting. The reporting endpoint may require approval from PayPal; confirm at connect time.",
+    auth_method: "oauth",
+    auth_url: "https://www.paypal.com/signin/authorize",
+    token_url: "https://api-m.paypal.com/v1/oauth2/token",
+    scopes: ["openid", "https://uri.paypal.com/services/reporting/search/read"],
+    client_id_env: "PAYPAL_CLIENT_ID",
+    client_secret_env: "PAYPAL_CLIENT_SECRET",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api-m.paypal.com/v1/reporting/transactions", method: "GET", normalize_as: "transactions" },
+    ],
+    demo_mode: false,
+  },
 };
 
 // Generic auth header builder — the registry says how, this function follows.
