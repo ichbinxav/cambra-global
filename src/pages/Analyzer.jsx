@@ -492,15 +492,8 @@ export default function Analyzer() {
     if (isAuthed) persistResumeState(2);
   };
 
-  // ── Continue from Step 2 ──
-  const goStep3 = async () => {
-    setErrorBanner("");
-    setStep(3);
-    if (isAuthed) persistResumeState(3);
-  };
-
   // ── Check if Stripe is connected (after returning from OAuth) ──
-  // Stripe connect now lives in Step 2 (Data source); detection runs there.
+  // Stripe connect lives inside Step 2 (merged stack + verification).
   useEffect(() => {
     if (!brandId || step !== 2) return;
     let cancelled = false;
@@ -751,7 +744,8 @@ export default function Analyzer() {
   }
 
   // ─────────────────────── UI ──────────────────────
-  const progressPct = (step / 3) * 100;
+  // Flow merged from 3 steps → 2 steps (Brand · Stack+Verify).
+  const progressPct = (step / 2) * 100;
 
   return (
     <div
@@ -820,7 +814,7 @@ export default function Analyzer() {
         </span>
         <div className="flex items-center gap-3">
           <span className="text-[11px] text-white/40">~2 minutes</span>
-          <span className="text-xs font-bold tabular-nums text-white/70">{step}/3</span>
+          <span className="text-xs font-bold tabular-nums text-white/70">{step}/2</span>
         </div>
       </div>
 
@@ -1015,13 +1009,13 @@ export default function Analyzer() {
           </div>
         )}
 
-        {/* ──────────── STEP 3 — Tools & rates (was Step 2 before reorder) ──────────── */}
-        {step === 3 && (
+        {/* ──────────── STEP 2 — Your stack (tools + optional verification) ──────────── */}
+        {step === 2 && (
           <div>
             <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
               style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
             >
-              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 03 · Infrastructure</span>
+              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 02 · Your stack</span>
             </div>
             <h1
               className="text-white mb-3"
@@ -1067,6 +1061,25 @@ export default function Analyzer() {
               onToggleByName={handleToggleByName}
               onAddCustom={handleAddCustomTool}
               vertical={category}
+            />
+
+            {/* ─── Verify your rates (optional) ──────────────────────────────
+                Merged from the old Step 2. Connecting Stripe or uploading a
+                document upgrades the audit from "estimated" to "verified" —
+                purely optional, the flow runs without it. */}
+            <div className="mt-8 mb-2">
+              <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55 mb-1">
+                Verify your rates (optional)
+              </p>
+              <p className="text-[12px] text-white/45">
+                Connect Stripe or upload a statement to turn estimates into verified numbers.
+              </p>
+            </div>
+            <Step3DataSource
+              stripeConnected={stripeConnected}
+              persistResumeState={() => persistResumeState(2)}
+              onPrefillManual={(partial) => setManual(m => ({ ...m, ...partial }))}
+              onSkipAndRun={runAnalysis}
             />
 
             {/* Manual numbers section — opens a dedicated form for rates & volumes.
@@ -1240,36 +1253,6 @@ export default function Analyzer() {
           </div>
         )}
 
-        {/* ──────────── STEP 2 — Data source (was Step 3 before reorder) ──────────── */}
-        {step === 2 && (
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
-              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
-            >
-              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 02 · Data source</span>
-            </div>
-            <h1
-              className="text-white mb-3"
-              style={{
-                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-                fontSize: "clamp(28px, 4vw, 36px)",
-                fontWeight: 900,
-                letterSpacing: "-0.04em",
-                lineHeight: 1.02,
-              }}
-            >
-              {t("az_step3_title")}
-            </h1>
-            <p className="text-[14px] text-white/55 mb-7">{t("az_step3_sub")}</p>
-
-            <Step3DataSource
-              stripeConnected={stripeConnected}
-              persistResumeState={() => persistResumeState(2)}
-              onPrefillManual={(partial) => setManual(m => ({ ...m, ...partial }))}
-              onSkipAndRun={() => { setStep(3); if (isAuthed) persistResumeState(3); }}
-            />
-          </div>
-        )}
       </main>
 
       {/* Auto-detection popup — only visible in Step 1 once discovery completes */}
@@ -1328,17 +1311,6 @@ export default function Analyzer() {
           </Button>
         )}
         {step === 2 && (
-          <Button
-            onClick={goStep3}
-            className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-white text-black hover:bg-white/90"
-            style={{
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.22)",
-            }}
-          >
-            {stripeConnected ? t("continue_label") : "Skip & continue"} <ArrowRight className="h-4 w-4" />
-          </Button>
-        )}
-        {step === 3 && (
           <Button
             onClick={runAnalysis}
             className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90"
