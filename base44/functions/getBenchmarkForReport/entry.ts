@@ -13,37 +13,49 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  * Confidence labels are ALWAYS attached and MUST be shown when rendering.
  */
 
-// ⚠️ Mirror of lib/scoreEngine.js getBenchmarks() (v1.0.0). DO NOT diverge.
-// Same note lives in functions/spendIntelligenceAgent and recommendationEngineAgent.
-// EU brands benefit from PSD2 caps / SEPA / shorter logistics — geography-aware.
+// Static fallbacks — EXACT MIRROR of lib/scoreEngine.js getBenchmarks() v1.0.0.
+// DO NOT diverge. If you change values here, change them there too (and in
+// functions/spendIntelligenceAgent.js). All three must produce the same number
+// for the same (vertical, tier, region) tuple — otherwise the brand will see a
+// benchmark on screen that B3 didn't use to compute their savings (credibility bug).
 const EU_COUNTRIES = new Set([
-  "France","Germany","Spain","Italy","Netherlands","Belgium","Portugal","Sweden",
-  "Denmark","Finland","Norway","Austria","Switzerland","Ireland","Poland",
-  "Czech Republic","Romania","Hungary","Greece","Luxembourg","Malta","Cyprus",
-  "Slovakia","Slovenia","Croatia","Estonia","Latvia","Lithuania","Bulgaria",
+  "France","Germany","Spain","Italy","Netherlands","Belgium","Portugal",
+  "Sweden","Denmark","Finland","Norway","Austria","Switzerland","Ireland",
+  "Poland","Czech Republic","Romania","Hungary","Greece","Luxembourg",
+  "Malta","Cyprus","Slovakia","Slovenia","Croatia","Estonia","Latvia",
+  "Lithuania","Bulgaria",
 ]);
+const isEU = (c: string) => EU_COUNTRIES.has(c);
 
-const STATIC_BENCHMARKS: Record<string, Record<string, Record<string, number>>> = {
+const STATIC_BENCHMARKS: Record<string, any> = {
   payments: {
-    eu:    { micro: 2.4, small: 2.2, mid: 1.9, large: 1.6 },
-    nonEu: { micro: 2.9, small: 2.6, mid: 2.3, large: 1.9 },
+    micro: { eu: 2.4, nonEu: 2.9 },
+    small: { eu: 2.2, nonEu: 2.6 },
+    mid:   { eu: 1.9, nonEu: 2.3 },
+    large: { eu: 1.6, nonEu: 1.9 },
   },
   shipping: {
-    eu:    { micro: 5.80, small: 5.20, mid: 4.60, large: 3.90 },
-    nonEu: { micro: 7.20, small: 6.50, mid: 5.80, large: 4.80 },
+    micro: { eu: 5.80, nonEu: 7.20 },
+    small: { eu: 5.20, nonEu: 6.50 },
+    mid:   { eu: 4.60, nonEu: 5.80 },
+    large: { eu: 3.90, nonEu: 4.80 },
   },
-  // SaaS share of revenue is geography-agnostic in the engine.
   saas: {
-    any:   { micro: 0.060, small: 0.040, mid: 0.025, large: 0.015 },
+    // % of monthly revenue — region-agnostic in scoreEngine v1.0.0
+    micro: 0.060,
+    small: 0.040,
+    mid:   0.025,
+    large: 0.015,
   },
 };
 
 function staticFor(vertical: string, tier: string, country: string): number | null {
   const v = STATIC_BENCHMARKS[vertical];
   if (!v) return null;
-  const isEu = EU_COUNTRIES.has(country);
-  const bucket = v.any || (isEu ? v.eu : v.nonEu);
-  return bucket[tier] ?? bucket["small"] ?? null;
+  const t = v[tier] || v["small"];
+  if (t == null) return null;
+  if (vertical === "saas") return typeof t === "number" ? t : null;
+  return isEU(country) ? t.eu : t.nonEu;
 }
 
 function metricKeyFor(vertical: string): string | null {
@@ -110,7 +122,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fallback to static benchmark from scoreEngine v1.0.0
+    // Fallback to static benchmark — MUST match scoreEngine v1.0.0 (mirrored above).
     const staticVal = staticFor(vertical, revenue_tier, country);
     return Response.json({
       source: "static",
@@ -121,6 +133,7 @@ Deno.serve(async (req) => {
       p75: null,
       best_in_class: null,
       score_engine_version: "1.0.0",
+      region: isEU(country) ? "EU" : "non-EU",
       note: "Benchmark from CAMBRA static reference table (scoreEngine v1.0.0) — network sample too small",
     });
   } catch (error) {

@@ -1,23 +1,45 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, MessageSquare, ArrowRight } from "lucide-react";
+import { Mail, MessageSquare, ArrowRight, Loader2 } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
+import { base44 } from "@/api/base44Client";
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Send email or create contact record
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    if (submitting) return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      // Landing opt-in → Lead population (the right one for contact-form intake).
+      // Lead schema accepts: email, whatsapp, benchmark_opt_in, consent, source_page, notes.
+      // We pack name + message into `notes` since the schema has no name/message fields,
+      // and mark consent=true (the user explicitly submitted the contact form).
+      await base44.entities.Lead.create({
+        email: formData.email,
+        consent: true,
+        source_page: "/Contact",
+        notes: `Name: ${formData.name}\n\n${formData.message}`,
+      });
+      setSubmitted(true);
+      setFormData({ name: "", email: "", message: "" });
+      setTimeout(() => setSubmitted(false), 4000);
+    } catch (err) {
+      setError(err?.message || "Could not send your message. Please email us directly.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -107,11 +129,18 @@ export default function Contact() {
                 </div>
                 <Button
                   type="submit"
+                  disabled={submitting}
                   className="w-full h-12 rounded-full font-bold gap-2"
                 >
-                  {submitted ? "Message sent! ✓" : "Send message"}
-                  {!submitted && <ArrowRight className="w-4 h-4" />}
+                  {submitting
+                    ? <>Sending... <Loader2 className="w-4 h-4 animate-spin" /></>
+                    : submitted
+                      ? "Message sent! ✓"
+                      : <>Send message <ArrowRight className="w-4 h-4" /></>}
                 </Button>
+                {error && (
+                  <p className="text-xs text-rose-600 mt-2 text-center">{error}</p>
+                )}
               </form>
             </div>
           </div>
