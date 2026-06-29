@@ -171,7 +171,7 @@ const REGISTRY = {
     client_secret_env: "PAYPAL_CLIENT_SECRET",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api-m.paypal.com/v1/reporting/transactions", method: "GET", normalize_as: "transactions" },
+      { url: "https://api-m.paypal.com/v1/reporting/transactions", method: "GET", normalize_as: "paypal_transactions" },
     ],
     demo_mode: false,
   },
@@ -351,6 +351,66 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── paypal_transactions ────────────────────────────────────────────────
+  // THIRD real normalizer. Translates PayPal Transaction Search API response:
+  //   GET /v1/reporting/transactions
+  //   { transaction_details: [ { transaction_info: {...} } ], total_pages, page }
+  //
+  // PayPal-specific quirks translated (CAMBRA "rule of gold" still holds —
+  // every output field comes 1:1 from input, modulo unit normalization):
+  //   - Money objects: { currency_code, value: "465.00" } → parseFloat
+  //   - fee_amount.value comes NEGATIVE ("-13.79") because PayPal models it
+  //     as a debit. CAMBRA models `fee` as a positive cost (consistent with
+  //     Stripe/Mollie). We Math.abs() to flip sign. This is a convention
+  //     translation, not value invention — same magnitude, sign normalized.
+  //   - Dates are already ISO (transaction_initiation_date), no conversion.
+  //   - external_id = transaction_id + ":" + date — same transaction_id may
+  //     appear on multiple pages with different event codes (auth/capture/
+  //     refund), so the date pins the specific event.
+  //   - fee_amount may be ABSENT for fee-free transactions → fee 0.
+  //   - Items missing `transaction_info` are SKIPPED (not emitted as zero
+  //     rows) — an empty item translates to nothing.
+  //
+  // PAGINATION (deferred): response carries `total_pages` and `page`. Full
+  // pagination is the sync engine's job, not this normalizer's.
+  //
+  // ⚠️ DEUDA EXPLÍCITA: written from docs + official example, not from a real
+  // payload. The Transaction Search API also requires PayPal approval to
+  // enable. Verify field paths and sign conventions on first real connect.
+  paypal_transactions: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const items = Array.isArray(raw?.transaction_details) ? raw.transaction_details : [];
+    const rows = [];
+    for (const item of items) {
+      const info = item?.transaction_info;
+      if (!info || typeof info !== "object") continue; // skip items with no payload
+      const txId = info?.transaction_id ?? null;
+      const date = typeof info?.transaction_initiation_date === "string"
+        ? info.transaction_initiation_date
+        : null;
+      const externalId = txId
+        ? (date ? `${txId}:${date}` : txId)
+        : null;
+      const currency = info?.transaction_amount?.currency_code || "EUR";
+      // Sign normalization: PayPal emits fee as negative; CAMBRA models fee≥0.
+      const feeRaw = toNum(info?.fee_amount?.value);
+      const fee = Math.abs(feeRaw);
+      rows.push({
+        vertical: "payments",
+        external_id: externalId,
+        amount: toNum(info?.transaction_amount?.value),
+        fee,
+        currency,
+        occurred_at: date,
+        type: info?.transaction_event_code ?? null,
+      });
+    }
+    return rows;
+  },
   // ─── mollie_settlements ─────────────────────────────────────────────────
   // SECOND real normalizer. Translates Mollie's GET /v2/settlements response.
   //

@@ -206,7 +206,7 @@ const REGISTRY = {
     client_secret_env: "PAYPAL_CLIENT_SECRET",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api-m.paypal.com/v1/reporting/transactions", method: "GET", normalize_as: "transactions" },
+      { url: "https://api-m.paypal.com/v1/reporting/transactions", method: "GET", normalize_as: "paypal_transactions" },
     ],
     demo_mode: false,
   },
