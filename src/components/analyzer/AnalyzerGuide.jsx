@@ -29,9 +29,10 @@ export default function AnalyzerGuide({
   // Rule-based message picker — first match wins. Returns null if nothing
   // relevant to say, so the card hides itself.
   //
-  // Two-step flow:
+  // Three-step flow (minimum-friction redesign):
   //   step 1 → Brand (with live website discovery)
-  //   step 2 → Stack (tool picker + optional Stripe / upload verification)
+  //   step 2 → Stack (tool picker only — single task)
+  //   step 3 → Result preview + optional refinement (Connect / Upload / Manual)
   const message = useMemo(() => {
     // ─── Step 1 — Brand & discovery ──────────────────────────────────────
     if (step === 1 && discoveryStatus === "idle") {
@@ -70,20 +71,18 @@ export default function AnalyzerGuide({
       };
     }
 
-    // ─── Step 2 — Stack (tools + optional verification) ──────────────────
+    // ─── Step 2 — Stack (one task: confirm the tool list) ───────────────
     // "Typical stack" benchmark by revenue tier (qualitative, not numeric).
     const expectedStackSize =
       revenueEur < 10_000 ? 4 :
       revenueEur < 50_000 ? 7 :
       revenueEur < 200_000 ? 10 : 14;
 
-    // Priority order matters: empty → guide to picking, thin → push for more,
-    // complete + not verified → upsell Stripe, complete + verified → green light.
     if (step === 2 && confirmedCount === 0) {
       return {
         id: "s2-empty",
-        title: "Pick every tool you use",
-        body: "Tap each one — payments, shipping, SaaS, banking. The more complete your stack, the sharper your savings.",
+        title: "Confirm the tools you use",
+        body: "Detected ones are pre-selected. Tap to add anything we missed — banking, SaaS, marketing.",
       };
     }
     if (step === 2 && confirmedCount < expectedStackSize) {
@@ -91,21 +90,30 @@ export default function AnalyzerGuide({
       return {
         id: "s2-thin",
         title: `${confirmedCount} selected — brands your size usually have ~${expectedStackSize}`,
-        body: `Add about ${missing} more. Don't forget banking, SaaS subscriptions, and marketing tools.`,
+        body: `Add about ${missing} more for a sharper number. Then tap "See my savings".`,
       };
     }
-    if (step === 2 && confirmedCount >= expectedStackSize && !stripeConnected) {
-      return {
-        id: "s2-verify",
-        title: "Want verified numbers?",
-        body: "Scroll down and connect Stripe (read-only) or upload a statement to upgrade your audit from estimated to verified.",
-      };
-    }
-    if (step === 2 && stripeConnected) {
+    if (step === 2 && confirmedCount >= expectedStackSize) {
       return {
         id: "s2-ready",
-        title: "Verified & ready",
-        body: "Stripe connected, stack confirmed. Run the analysis to see your savings breakdown.",
+        title: "Stack looks complete",
+        body: "Tap \"See my savings\" — you'll get your number right away, no connection required.",
+      };
+    }
+
+    // ─── Step 3 — Result preview + optional refinement ──────────────────
+    if (step === 3 && !stripeConnected) {
+      return {
+        id: "s3-refine",
+        title: "Your estimated savings are ready",
+        body: "Want the exact number? Connect Stripe or upload a statement below — fully optional.",
+      };
+    }
+    if (step === 3 && stripeConnected) {
+      return {
+        id: "s3-verified",
+        title: "Verified with Stripe",
+        body: "Your payments figure is now sourced from live data. Open the full report when you're ready.",
       };
     }
 

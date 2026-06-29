@@ -6,18 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  ArrowRight, ArrowLeft, Loader2, AlertTriangle, MapPin,
+  ArrowRight, ArrowLeft, Loader2, AlertTriangle,
   Sparkles, ChevronDown, ChevronUp, Plus, Store,
 } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
-import RevenueSlider, { eurToRangeKey } from "@/components/analyzer/RevenueSlider";
+import { eurToRangeKey } from "@/components/analyzer/RevenueSlider";
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
 import ToolPicker from "@/components/analyzer/ToolPicker";
 import Step3DataSource from "@/components/analyzer/Step3DataSource";
 import DetectionPopup from "@/components/analyzer/DetectionPopup";
 import AnalyzerGuide from "@/components/analyzer/AnalyzerGuide";
+import AnalyzerResultCard from "@/components/analyzer/AnalyzerResultCard";
+import Step1Brand from "@/components/analyzer/Step1Brand";
 import { CATALOG, getCatalogMeta } from "@/lib/analyzerToolCatalog";
 
 // ─── Anonymous session id ──────────────────────────────────────────────────
@@ -181,6 +183,14 @@ export default function Analyzer() {
   // Running analysis
   const [running, setRunning] = useState(false);
   const [analysisDone, setAnalysisDone] = useState(false);
+
+  // Step 3 result preview state — populated by runAnalysis() so the user
+  // sees their savings number IMMEDIATELY without leaving the Analyzer.
+  // The full report (Results) and the teaser (AnalyzerTeaser) are the
+  // destinations of the final CTA in Step 3, not intermediate stops.
+  const [resultPreview, setResultPreview] = useState(null);
+  // { totalSavings, paymentSavings, shippingSavings, saasSavings,
+  //   confidence, resultId?, anonSessionId? }
 
   // ── Auth check on mount — gate the analyzer behind sign-in ──
   useEffect(() => {
@@ -493,9 +503,10 @@ export default function Analyzer() {
   };
 
   // ── Check if Stripe is connected (after returning from OAuth) ──
-  // Stripe connect lives inside Step 2 (merged stack + verification).
+  // Stripe connect lives inside Step 3 (post-result refinement upsell).
+  // Step 2 is single-task (tool picker only) — no connectors there.
   useEffect(() => {
-    if (!brandId || step !== 2) return;
+    if (!brandId || step !== 3) return;
     let cancelled = false;
     (async () => {
       try {
@@ -665,6 +676,17 @@ export default function Analyzer() {
         : "Connect Stripe to upgrade your payments confidence to verified.",
     };
 
+    // Shared preview shape — used to render the in-page Step 3 card without
+    // a network round-trip. Persistence still happens (so the final CTA can
+    // hand off to /Results or /AnalyzerTeaser the same way it always did).
+    const sharedPreview = {
+      totalSavings:    savings.totalSavings,
+      paymentSavings:  savings.paymentSavings,
+      shippingSavings: savings.shippingSavings,
+      saasSavings:     savings.saasSavings,
+      confidence,
+    };
+
     // ═══ Branch 1 — signed-in user ═══════════════════════════════════════
     if (isAuthed) {
       const input = await base44.entities.AnalyzerInput.create({
@@ -678,7 +700,13 @@ export default function Analyzer() {
       });
       setAnalysisDone(true);
       toast.success(t("progress_ready"));
-      setTimeout(() => navigate(`/Results?id=${result.id}`), 700);
+      // Stay INSIDE the Analyzer — show the result preview in Step 3.
+      // The user reaches /Results via the final CTA, not automatically.
+      setTimeout(() => {
+        setResultPreview({ ...sharedPreview, resultId: result.id });
+        setRunning(false);
+        setStep(3);
+      }, 700);
       return;
     }
 
@@ -709,10 +737,28 @@ export default function Analyzer() {
       }
       setAnalysisDone(true);
       toast.success(t("progress_ready"));
-      setTimeout(() => navigate(`/AnalyzerTeaser?session=${encodeURIComponent(anonSessionId)}`), 700);
+      // Same as authed branch — stay in the Analyzer, show preview, final
+      // CTA navigates to /AnalyzerTeaser for the claim flow.
+      setTimeout(() => {
+        setResultPreview({ ...sharedPreview, anonSessionId });
+        setRunning(false);
+        setStep(3);
+      }, 700);
     } catch (e) {
       setRunning(false);
       setErrorBanner("We couldn't save your audit. Please try again.");
+    }
+  };
+
+  // Final CTA on Step 3 — sends the user to the destination that already
+  // exists (signed-in → /Results, anonymous → /AnalyzerTeaser claim wall).
+  // We never bypass the teaser/auth wall here.
+  const handleSeeReport = () => {
+    if (!resultPreview) return;
+    if (resultPreview.resultId) {
+      navigate(`/Results?id=${resultPreview.resultId}`);
+    } else if (resultPreview.anonSessionId) {
+      navigate(`/AnalyzerTeaser?session=${encodeURIComponent(resultPreview.anonSessionId)}`);
     }
   };
 
@@ -744,8 +790,9 @@ export default function Analyzer() {
   }
 
   // ─────────────────────── UI ──────────────────────
-  // Flow merged from 3 steps → 2 steps (Brand · Stack+Verify).
-  const progressPct = (step / 2) * 100;
+  // Three-step flow: Brand · Stack · Result+Refine.
+  // Each step has a SINGLE primary task — minimum friction.
+  const progressPct = (step / 3) * 100;
 
   return (
     <div
@@ -814,7 +861,7 @@ export default function Analyzer() {
         </span>
         <div className="flex items-center gap-3">
           <span className="text-[11px] text-white/40">~2 minutes</span>
-          <span className="text-xs font-bold tabular-nums text-white/70">{step}/2</span>
+          <span className="text-xs font-bold tabular-nums text-white/70">{step}/3</span>
         </div>
       </div>
 
@@ -875,141 +922,28 @@ export default function Analyzer() {
           </div>
         )}
 
-        {/* ──────────── STEP 1 ──────────── */}
+        {/* ──────────── STEP 1 — Brand basics (extracted to Step1Brand) ──────────── */}
         {step === 1 && (
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
-              style={{
-                border: "1px solid rgba(255,255,255,0.12)",
-                background: "rgba(255,255,255,0.03)",
-              }}
-            >
-              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 01 · Brand</span>
-            </div>
-            <h1
-              className="text-white mb-3"
-              style={{
-                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-                fontSize: "clamp(28px, 4vw, 36px)",
-                fontWeight: 900,
-                letterSpacing: "-0.04em",
-                lineHeight: 1.02,
-              }}
-            >
-              {t("az_step1_title")}
-            </h1>
-            <p className="text-[14px] text-white/55 mb-7">{t("az_step1_sub")}</p>
-
-            <div className="space-y-5">
-              <div className="space-y-1.5">
-                <Label htmlFor="az-website" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_website")}</Label>
-                <Input
-                  id="az-website"
-                  value={websiteUrl}
-                  onChange={e => setWebsiteUrl(e.target.value)}
-                  onBlur={handleWebsiteBlur}
-                  placeholder="yourbrand.com"
-                  className="h-12 text-sm text-white placeholder:text-white/30"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                  }}
-                  inputMode="url"
-                  aria-required="true"
-                />
-                {discovery.status === "running" && (
-                  <div className="flex items-center gap-1.5 text-[11px] text-white/55">
-                    <Loader2 size={11} className="animate-spin text-cyan-400" />
-                    {t("analyzing_your_infra")}
-                  </div>
-                )}
-                {discovery.status === "completed" && discovery.findings.length === 0 && websiteUrl && (
-                  <p className="text-[11px] text-white/40">{t("no_public_signals")}</p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="az-brand" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_brand_name")}</Label>
-                <Input
-                  id="az-brand"
-                  value={brandName}
-                  onChange={e => setBrandName(e.target.value)}
-                  placeholder={t("your_brand_placeholder")}
-                  className="h-12 text-sm text-white placeholder:text-white/30"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                  }}
-                  aria-required="true"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="az-country" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_country")}</Label>
-                <div className="relative">
-                  <select
-                    id="az-country"
-                    value={country}
-                    onChange={e => setCountry(e.target.value)}
-                    aria-required="true"
-                    className="w-full h-12 pl-9 pr-3 rounded-md text-sm appearance-none text-white"
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                    }}
-                  >
-                    <option value="" style={{ background: "#0a0a0a" }}>{t("select_country")}</option>
-                    {COUNTRIES.map(c => <option key={c} value={c} style={{ background: "#0a0a0a" }}>{c}</option>)}
-                  </select>
-                  <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" aria-hidden="true" />
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none" aria-hidden="true" />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label id="az-revenue-label" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_revenue")}</Label>
-                <div
-                  className="rounded-2xl px-4 py-4"
-                  style={{
-                    background: "rgba(255,255,255,0.025)",
-                    border: "1px solid rgba(255,255,255,0.10)",
-                  }}
-                >
-                  <RevenueSlider valueEur={revenueEur} onChangeEur={setRevenueEur} />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label id="az-category-label" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_category")}</Label>
-                <div role="radiogroup" aria-labelledby="az-category-label" className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {CATEGORY_OPTIONS.map(c => (
-                    <button
-                      key={c.key}
-                      type="button"
-                      role="radio"
-                      aria-checked={category === c.key}
-                      onClick={() => setCategory(c.key)}
-                      className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                        category === c.key
-                          ? "bg-white text-black"
-                          : "text-white/80 hover:text-white"
-                      }`}
-                      style={
-                        category === c.key
-                          ? { border: "1px solid rgba(255,255,255,0.95)" }
-                          : { border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }
-                      }
-                    >
-                      {t(c.i18n)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <Step1Brand
+            t={t}
+            brandName={brandName} setBrandName={setBrandName}
+            websiteUrl={websiteUrl} setWebsiteUrl={setWebsiteUrl}
+            country={country} setCountry={setCountry}
+            revenueEur={revenueEur} setRevenueEur={setRevenueEur}
+            category={category} setCategory={setCategory}
+            discoveryStatus={discovery.status}
+            discoveryEmpty={discovery.status === "completed" && discovery.findings.length === 0 && !!websiteUrl}
+            onWebsiteBlur={handleWebsiteBlur}
+            COUNTRIES={COUNTRIES}
+            CATEGORY_OPTIONS={CATEGORY_OPTIONS}
+          />
         )}
 
-        {/* ──────────── STEP 2 — Your stack (tools + optional verification) ──────────── */}
+        {/* ──────────── STEP 2 — Your stack (ONE TASK: confirm the tool list) ──────────── */}
+        {/* This screen does ONE thing: let the user confirm/adjust the tools
+            we detected. Connect/Upload/Manual all live in Step 3 — they are
+            REFINEMENTS that come AFTER the user sees their savings number,
+            never as prerequisites. */}
         {step === 2 && (
           <div>
             <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
@@ -1027,11 +961,10 @@ export default function Analyzer() {
                 lineHeight: 1.02,
               }}
             >
-              {t("az_step2_title")}
+              Confirm your tools
             </h1>
-            <p className="text-[14px] text-white/55 mb-4">
-              Tap every tool you use. The more we know, the more accurate your savings — and you'll never
-              be billed for guessing. Search 70+ providers below, or add anything missing.
+            <p className="text-[14px] text-white/55 mb-5">
+              Detected tools are pre-selected — just add anything we missed. No need to connect anything yet.
             </p>
 
             {/* Selection counter */}
@@ -1062,40 +995,67 @@ export default function Analyzer() {
               onAddCustom={handleAddCustomTool}
               vertical={category}
             />
+          </div>
+        )}
 
-            {/* ─── Verify your rates (optional) ──────────────────────────────
-                Merged from the old Step 2. Connecting Stripe or uploading a
-                document upgrades the audit from "estimated" to "verified" —
-                purely optional, the flow runs without it. */}
-            <div className="mt-8 mb-2">
-              <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55 mb-1">
-                Verify your rates (optional)
-              </p>
-              <p className="text-[12px] text-white/45">
-                Connect Stripe or upload a statement to turn estimates into verified numbers.
-              </p>
+        {/* ──────────── STEP 3 — Your result + optional refinement ──────────── */}
+        {/* The whole point of the redesign: the user sees their savings number
+            FIRST, then is offered optional ways to refine it (Connect / Upload /
+            manual rates). The final CTA hands off to /Results (signed-in) or
+            /AnalyzerTeaser (anonymous claim wall). */}
+        {step === 3 && resultPreview && (
+          <div className="space-y-7">
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1"
+              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+            >
+              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 03 · Your result</span>
             </div>
-            <Step3DataSource
-              stripeConnected={stripeConnected}
-              persistResumeState={() => persistResumeState(2)}
-              onPrefillManual={(partial) => setManual(m => ({ ...m, ...partial }))}
-              onSkipAndRun={runAnalysis}
+
+            {/* The reward — the user sees their savings WITHOUT having to connect anything */}
+            <AnalyzerResultCard
+              totalSavings={resultPreview.totalSavings}
+              paymentSavings={resultPreview.paymentSavings}
+              shippingSavings={resultPreview.shippingSavings}
+              saasSavings={resultPreview.saasSavings}
+              confidence={resultPreview.confidence}
+              isAuthed={isAuthed}
+              brandName={brandName}
+              onSeeReport={handleSeeReport}
             />
 
-            {/* Manual numbers section — opens a dedicated form for rates & volumes.
-                This is separate from the picker (which selects tool names). */}
-            <div className="mt-7">
+            {/* Soft upsell — refinement lives BELOW the value, not before it */}
+            <div>
+              <div className="mb-3 flex items-baseline gap-2">
+                <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
+                  Want your exact savings?
+                </p>
+                <p className="text-[11px] text-white/40">Optional</p>
+              </div>
+              <p className="text-[13px] text-white/55 mb-4">
+                Connect a tool or upload a statement to turn your estimate into a verified number.
+                Nothing here is required — your audit is already saved.
+              </p>
+              <Step3DataSource
+                stripeConnected={stripeConnected}
+                persistResumeState={() => persistResumeState(3)}
+                onPrefillManual={(partial) => setManual(m => ({ ...m, ...partial }))}
+                onSkipAndRun={handleSeeReport}
+              />
+            </div>
+
+            {/* Power-user manual rates — discreet, collapsed by default */}
+            <div>
               <button
                 type="button"
                 onClick={() => setManualOpen(o => !o)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[48px] text-white/85 hover:text-white transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[48px] text-white/75 hover:text-white transition-colors"
                 style={{
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  background: "rgba(255,255,255,0.02)",
                 }}
               >
-                <span className="flex items-center gap-2 text-sm font-semibold">
-                  <Plus size={14} /> Add rates & volumes (optional, more accurate)
+                <span className="flex items-center gap-2 text-[13px] font-medium">
+                  <Plus size={13} /> Fine-tune rates manually (advanced)
                 </span>
                 {manualOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
@@ -1157,35 +1117,7 @@ export default function Analyzer() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_saas_tools")}</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {COMMON_SAAS_TOOLS.map(toolName => {
-                        const active = manual.saas_tools_selected.includes(toolName);
-                        return (
-                          <button
-                            key={toolName}
-                            type="button"
-                            onClick={() => setManual(m => ({
-                              ...m,
-                              saas_tools_selected: active
-                                ? m.saas_tools_selected.filter(x => x !== toolName)
-                                : [...m.saas_tools_selected, toolName],
-                            }))}
-                            className={`min-h-[44px] px-3 rounded-xl text-xs font-semibold transition-colors ${
-                                  active ? "bg-white text-black" : "text-white/80 hover:text-white"
-                                }`}
-                                style={
-                                  active
-                                    ? { border: "1px solid rgba(255,255,255,0.95)" }
-                                    : { border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }
-                                }
-                          >
-                            {toolName}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55 pt-2 block">{t("field_saas_spend")}</Label>
+                    <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_saas_spend")}</Label>
                     <Input
                       type="number" min={0} inputMode="numeric"
                       value={manual.total_saas_spend || ""}
@@ -1313,13 +1245,25 @@ export default function Analyzer() {
         {step === 2 && (
           <Button
             onClick={runAnalysis}
-            className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90"
+            disabled={confirmedNamesSet.size === 0}
+            className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 disabled:opacity-40"
             style={{
               background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
               boxShadow: "0 0 32px rgba(34,211,238,0.45), 0 12px 32px -12px rgba(34,211,238,0.6)",
             }}
           >
-            {t("run_analysis_cta")} <ArrowRight className="h-4 w-4" />
+            See my savings <ArrowRight className="h-4 w-4" />
+          </Button>
+        )}
+        {step === 3 && (
+          <Button
+            onClick={handleSeeReport}
+            className="h-11 rounded-full px-6 text-sm font-bold gap-2 bg-white text-black hover:bg-white/90"
+            style={{
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(34,211,238,0.55), 0 0 28px rgba(34,211,238,0.22)",
+            }}
+          >
+            {isAuthed ? "See full report" : "Create account"} <ArrowRight className="h-4 w-4" />
           </Button>
         )}
       </div>
