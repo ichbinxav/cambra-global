@@ -64,6 +64,23 @@ const REGISTRY = {
     ],
     demo_mode: true,
   },
+  // Mirror of demo_basicauth_provider — same contract, both files identical.
+  demo_basicauth_provider: {
+    display_name: "Demo Basic Auth Provider",
+    category: "shipping",
+    logo: null,
+    description: "Fictional Basic-Auth provider used to verify the basic_auth path.",
+    auth_method: "basic_auth",
+    basic_auth_help_url: "https://demo.example.invalid/account/api-keys",
+    basic_auth_help_text: "Generate a public/secret key pair, paste both here.",
+    basic_auth_user_label: "Public key",
+    basic_auth_pass_label: "Secret key",
+    data_type: "shipments",
+    data_endpoints: [
+      { url: "https://demo.example.invalid/v1/shipments", method: "GET", normalize_as: "shipments" },
+    ],
+    demo_mode: true,
+  },
 
   // ─── REAL PROVIDERS (Tanda 1: payments OAuth) ────────────────────────────
   // Wiring only — `client_id_env` / `client_secret_env` point to env vars that
@@ -177,6 +194,24 @@ const REGISTRY = {
     demo_mode: false,
     requires_shop_domain: true,
   },
+
+  // Mirror of sendcloud — same contract, both files identical.
+  sendcloud: {
+    display_name: "Sendcloud",
+    category: "shipping",
+    logo: null,
+    description: "Sendcloud — HTTP Basic Auth with a public+secret key pair. Aggregates 80+ carriers. Note: no dedicated parcels normalizer yet — uses the generic shipments normalizer; replace before going live.",
+    auth_method: "basic_auth",
+    basic_auth_help_url: "https://panel.sendcloud.sc/integrations/sendcloud-api",
+    basic_auth_help_text: "Settings → Integrations → Sendcloud API → generate Public + Secret key.",
+    basic_auth_user_label: "Public key",
+    basic_auth_pass_label: "Secret key",
+    data_type: "shipments",
+    data_endpoints: [
+      { url: "https://panel.sendcloud.sc/api/v2/parcels", method: "GET", normalize_as: "shipments" },
+    ],
+    demo_mode: false,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -204,6 +239,19 @@ async function buildAuthHeaders(cfg, integ) {
     const header = cfg.api_key_header || "Authorization";
     const format = cfg.api_key_format || "{key}";
     return { [header]: format.replace("{key}", key) };
+  }
+  if (authMethod === "basic_auth") {
+    // Stored as a single encrypted blob in the form "public:secret" — exactly
+    // the wire format Basic Auth expects before base64 encoding. We decrypt
+    // ONCE and emit "Authorization: Basic " + base64(public:secret). Generic:
+    // no provider name appears here; the registry dictates the auth_method.
+    // btoa() is safe for ASCII (all real basic_auth keys are ASCII); we keep
+    // the same encoding path the rest of the engine already trusts.
+    const combined = await decryptToken(integ.access_token);
+    if (!combined || !combined.includes(":")) {
+      throw new Error("No valid basic_auth credentials stored");
+    }
+    return { "Authorization": `Basic ${btoa(combined)}` };
   }
   throw new Error(`Unsupported auth_method: ${authMethod}`);
 }

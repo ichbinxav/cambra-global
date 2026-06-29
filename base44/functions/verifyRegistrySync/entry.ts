@@ -56,6 +56,13 @@ const COMPARED_FIELDS = [
   "api_key_format",
   "api_key_help_url",
   "api_key_help_text",
+  // Basic Auth-specific (public + secret key pair, e.g. Sendcloud).
+  // No URL/scope/env fields exist for basic_auth — the keys come from the
+  // client at connect time and are stored encrypted in Integration.access_token.
+  "basic_auth_help_url",
+  "basic_auth_help_text",
+  "basic_auth_user_label",
+  "basic_auth_pass_label",
   // Common (drive engine behaviour regardless of auth_method)
   "auth_method",
   "data_type",

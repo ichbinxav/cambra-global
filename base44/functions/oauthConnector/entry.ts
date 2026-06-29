@@ -72,6 +72,30 @@ const REGISTRY = {
     ],
     demo_mode: true,
   },
+  // DEMO BASIC AUTH PROVIDER — verifies the basic_auth path end-to-end. The
+  // user pastes TWO keys (public + secret); we combine them as
+  // "public:secret", encrypt the resulting blob with the SAME AES-256-GCM
+  // mechanism used everywhere else, and the sync builds the
+  // "Authorization: Basic base64(public:secret)" header declared by the
+  // registry. The combined form matches Basic Auth's native wire format,
+  // so the cipher payload IS the pre-image of the final header — one
+  // encrypt/decrypt cycle, no schema changes, no provider names anywhere.
+  demo_basicauth_provider: {
+    display_name: "Demo Basic Auth Provider",
+    category: "shipping",
+    logo: null,
+    description: "Fictional Basic-Auth provider used to verify the basic_auth path.",
+    auth_method: "basic_auth",
+    basic_auth_help_url: "https://demo.example.invalid/account/api-keys",
+    basic_auth_help_text: "Generate a public/secret key pair, paste both here.",
+    basic_auth_user_label: "Public key",
+    basic_auth_pass_label: "Secret key",
+    data_type: "shipments",
+    data_endpoints: [
+      { url: "https://demo.example.invalid/v1/shipments", method: "GET", normalize_as: "shipments" },
+    ],
+    demo_mode: true,
+  },
   // DEMO API KEY PROVIDER — verifies the api_key path end-to-end. The user
   // pastes a key, we encrypt it with the same AES-256-GCM mechanism used for
   // OAuth tokens, and the sync uses it to build the auth header declared by
@@ -204,6 +228,38 @@ const REGISTRY = {
     ],
     demo_mode: false,
     requires_shop_domain: true,
+  },
+
+  // ─── REAL PROVIDERS (Tanda 4: shipping HTTP Basic Auth — public+secret) ──
+  // Sendcloud authenticates with HTTP Basic Auth using TWO keys (a public key
+  // as the username and a secret key as the password). The motor handles this
+  // GENERICALLY via auth_method="basic_auth": we combine the two keys as
+  // "public:secret" (Basic Auth's native wire format) and encrypt the combined
+  // blob in Integration.access_token using the existing AES-256-GCM helper.
+  // At sync time, buildAuthHeaders decrypts and emits `Basic base64(...)` —
+  // no provider name appears in the engine. Adding any future basic_auth
+  // provider = one registry entry, zero engine changes.
+  //
+  // Deuda anotada (igual patrón que Klaviyo/Shopify): no existe normalizador
+  // shipping específico para Sendcloud — el genérico `shipments` espera
+  // { shipments: [...] } y Sendcloud responde { parcels: [...] }. El wiring
+  // queda válido hoy (cero crashes), pero un sync real no rendirá datos
+  // útiles hasta añadir un normalizador `parcels`.
+  sendcloud: {
+    display_name: "Sendcloud",
+    category: "shipping",
+    logo: null,
+    description: "Sendcloud — HTTP Basic Auth with a public+secret key pair. Aggregates 80+ carriers. Note: no dedicated parcels normalizer yet — uses the generic shipments normalizer; replace before going live.",
+    auth_method: "basic_auth",
+    basic_auth_help_url: "https://panel.sendcloud.sc/integrations/sendcloud-api",
+    basic_auth_help_text: "Settings → Integrations → Sendcloud API → generate Public + Secret key.",
+    basic_auth_user_label: "Public key",
+    basic_auth_pass_label: "Secret key",
+    data_type: "shipments",
+    data_endpoints: [
+      { url: "https://panel.sendcloud.sc/api/v2/parcels", method: "GET", normalize_as: "shipments" },
+    ],
+    demo_mode: false,
   },
 };
 
@@ -586,6 +642,84 @@ async function modeConnectApiKey(base44, user, params) {
   return Response.json({ ok: true, integration_id: integrationId });
 }
 
+// ─── Mode: connect_basic_auth ──────────────────────────────────────────────
+// Generic HTTP Basic Auth onboarding. The user pastes TWO keys (public key as
+// the username, secret key as the password); we combine them as
+// "public:secret" — Basic Auth's native wire format — and encrypt the combined
+// blob with the SAME AES-256-GCM mechanism used everywhere else (reuses
+// encryptToken — no duplicate crypto). At sync time buildAuthHeaders decrypts
+// once and emits the header.
+//
+// Storage choice (option b): one cipher blob in access_token, no schema
+// changes. The `:` in the plaintext IS the standard Basic Auth separator —
+// RFC 7617 forbids `:` in the username field, so we mirror that and reject
+// any key containing `:` at input time. Mantenibilidad + seguridad: una sola
+// llamada a crypto en ambas direcciones, ningún campo nuevo en Integration.
+//
+// The two keys NEVER come back to the client. We strip them from every
+// Response and never log them.
+
+async function modeConnectBasicAuth(base44, user, params) {
+  const { brand_id, provider, public_key, secret_key } = params;
+  const cfg = getProviderConfig(provider);
+  if (!cfg) return jsonError(400, `Unknown provider: ${provider}`);
+
+  const authMethod = cfg.auth_method || "oauth";
+  if (authMethod !== "basic_auth") {
+    return jsonError(400, `Provider ${provider} uses auth_method="${authMethod}". Use the matching connect mode instead.`);
+  }
+
+  // Validate both keys: non-empty, no ':' (RFC 7617 separator).
+  for (const [name, v] of [["public_key", public_key], ["secret_key", secret_key]]) {
+    if (typeof v !== "string" || v.trim().length < 4) {
+      return jsonError(400, `${name} is required (min 4 chars)`);
+    }
+    if (v.includes(":")) {
+      return jsonError(400, `${name} cannot contain ':' (reserved as the Basic Auth separator)`);
+    }
+  }
+
+  if (user.role !== "admin") {
+    await assertBrandOwnedByUser(base44, brand_id, user.email);
+  }
+
+  const combined = `${public_key.trim()}:${secret_key.trim()}`;
+  const encrypted = await encryptToken(combined);
+
+  const update = {
+    status: "connected",
+    access_token: encrypted,
+    refresh_token: null,
+    access_token_expires_at: null,
+    scopes: [],
+    connected_at: new Date().toISOString(),
+    last_error: null,
+    provider_account_id: null,
+    metadata_json: { auth_method: "basic_auth", demo_mode: !!cfg.demo_mode },
+    category: cfg.category,
+  };
+
+  const existing = await base44.asServiceRole.entities.Integration
+    .filter({ brand_id, provider }, "-created_date", 1)
+    .catch(() => []);
+
+  let integrationId;
+  if (existing[0]) {
+    await base44.asServiceRole.entities.Integration.update(existing[0].id, update);
+    integrationId = existing[0].id;
+  } else {
+    const created = await base44.asServiceRole.entities.Integration.create({
+      brand_id,
+      provider,
+      ...update,
+    });
+    integrationId = created.id;
+  }
+
+  // Important: response carries the integration id only — NEVER the keys.
+  return Response.json({ ok: true, integration_id: integrationId });
+}
+
 // ─── Mode: refresh ─────────────────────────────────────────────────────────
 
 async function modeRefresh(base44, user, params) {
@@ -663,6 +797,7 @@ Deno.serve(async (req) => {
     if (mode === "callback")        return await modeCallback(base44, user, body);
     if (mode === "refresh")         return await modeRefresh(base44, user, body);
     if (mode === "connect_api_key") return await modeConnectApiKey(base44, user, body);
+    if (mode === "connect_basic_auth") return await modeConnectBasicAuth(base44, user, body);
     // Read-only introspection: returns the REGISTRY so verifyRegistrySync can
     // compare it against dataSyncAgent's copy. Never reads/writes any data,
     // never touches OAuth flows. Admin-only to avoid leaking endpoint URLs.
@@ -670,7 +805,7 @@ Deno.serve(async (req) => {
       if (user.role !== "admin") return jsonError(403, "Admin only");
       return Response.json({ ok: true, registry: REGISTRY, source: "oauthConnector" });
     }
-    return jsonError(400, `Unknown mode: ${mode}. Use start | callback | refresh | connect_api_key | describe`);
+    return jsonError(400, `Unknown mode: ${mode}. Use start | callback | refresh | connect_api_key | connect_basic_auth | describe`);
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
