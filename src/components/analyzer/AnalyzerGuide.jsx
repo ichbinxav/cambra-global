@@ -28,13 +28,17 @@ export default function AnalyzerGuide({
 }) {
   // Rule-based message picker — first match wins. Returns null if nothing
   // relevant to say, so the card hides itself.
+  //
+  // Two-step flow:
+  //   step 1 → Brand (with live website discovery)
+  //   step 2 → Stack (tool picker + optional Stripe / upload verification)
   const message = useMemo(() => {
-    // Step 1 — pre-discovery
+    // ─── Step 1 — Brand & discovery ──────────────────────────────────────
     if (step === 1 && discoveryStatus === "idle") {
       return {
         id: "s1-idle",
         title: "Start with your website",
-        body: "We'll detect your payment, shipping & SaaS stack automatically — no logins needed.",
+        body: "We'll scan your site for payment, shipping & SaaS signals automatically — no logins needed.",
       };
     }
     if (step === 1 && discoveryStatus === "running") {
@@ -48,60 +52,60 @@ export default function AnalyzerGuide({
       return {
         id: "s1-detected",
         title: `${detectedCount} tool${detectedCount === 1 ? "" : "s"} detected`,
-        body: "Continue to the next step to confirm them and add anything we missed.",
+        body: "Continue to confirm them, add anything we missed, and optionally verify your rates.",
       };
     }
     if (step === 1 && discoveryStatus === "completed" && detectedCount === 0) {
       return {
         id: "s1-empty",
         title: "No public signals found",
-        body: "That's fine — you'll pick your stack manually in the next step.",
+        body: "That's fine — you'll pick your stack manually in the next step. Takes ~1 minute.",
+      };
+    }
+    if (step === 1 && discoveryStatus === "failed") {
+      return {
+        id: "s1-failed",
+        title: "We couldn't scan automatically",
+        body: "No problem — you'll pick your tools manually in the next step. The audit still works.",
       };
     }
 
-    // Step 2 — data source choice
-    if (step === 2 && !stripeConnected) {
-      return {
-        id: "s2-upgrade",
-        title: "Connect to upgrade your audit",
-        body: "Live Stripe data turns your savings from 'estimated' to 'verified'. You can also skip and continue.",
-      };
-    }
-    if (step === 2 && stripeConnected) {
-      return {
-        id: "s2-connected",
-        title: "Stripe connected ✓",
-        body: "Your payment fee rate is now sourced from live data.",
-      };
-    }
-
-    // Step 3 — tools & rates
-    // "Typical stack" benchmark by revenue tier (very rough, qualitative).
+    // ─── Step 2 — Stack (tools + optional verification) ──────────────────
+    // "Typical stack" benchmark by revenue tier (qualitative, not numeric).
     const expectedStackSize =
       revenueEur < 10_000 ? 4 :
       revenueEur < 50_000 ? 7 :
       revenueEur < 200_000 ? 10 : 14;
 
-    if (step === 3 && confirmedCount === 0) {
+    // Priority order matters: empty → guide to picking, thin → push for more,
+    // complete + not verified → upsell Stripe, complete + verified → green light.
+    if (step === 2 && confirmedCount === 0) {
       return {
-        id: "s3-empty",
-        title: "Pick every tool in your stack",
-        body: "The more we know, the more accurate your savings. Search 70+ providers or add custom ones.",
+        id: "s2-empty",
+        title: "Pick every tool you use",
+        body: "Tap each one — payments, shipping, SaaS, banking. The more complete your stack, the sharper your savings.",
       };
     }
-    if (step === 3 && confirmedCount < expectedStackSize) {
+    if (step === 2 && confirmedCount < expectedStackSize) {
       const missing = expectedStackSize - confirmedCount;
       return {
-        id: "s3-thin",
-        title: `${confirmedCount} selected — most brands your size pick ~${expectedStackSize}`,
-        body: `Add roughly ${missing} more to sharpen your infrastructure score.`,
+        id: "s2-thin",
+        title: `${confirmedCount} selected — brands your size usually have ~${expectedStackSize}`,
+        body: `Add about ${missing} more. Don't forget banking, SaaS subscriptions, and marketing tools.`,
       };
     }
-    if (step === 3 && confirmedCount >= expectedStackSize) {
+    if (step === 2 && confirmedCount >= expectedStackSize && !stripeConnected) {
       return {
-        id: "s3-ready",
-        title: "Stack looks complete",
-        body: "Ready when you are — run the analysis to see your savings breakdown.",
+        id: "s2-verify",
+        title: "Want verified numbers?",
+        body: "Scroll down and connect Stripe (read-only) or upload a statement to upgrade your audit from estimated to verified.",
+      };
+    }
+    if (step === 2 && stripeConnected) {
+      return {
+        id: "s2-ready",
+        title: "Verified & ready",
+        body: "Stripe connected, stack confirmed. Run the analysis to see your savings breakdown.",
       };
     }
 
