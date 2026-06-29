@@ -175,30 +175,19 @@ export default function Step3DataSource({
       {mode === "connect" && (
         <div className="space-y-4">
           {stripeConnected ? (
-            <>
-              <div
-                className="rounded-2xl p-6 text-center"
-                style={{
-                  background: "rgba(34,211,238,0.06)",
-                  border: "1px solid rgba(34,211,238,0.25)",
-                  boxShadow: "0 0 32px rgba(34,211,238,0.15)",
-                }}
-              >
-                <ShieldCheck size={28} className="mx-auto mb-2 text-cyan-300" />
-                <p className="text-sm font-black text-white">Stripe connected — payments verified</p>
-              </div>
-              <UpgradeToVerified vertical="payments" isConnected currentConfidence="verified" />
-            </>
+            <div
+              className="rounded-2xl p-6 text-center"
+              style={{
+                background: "rgba(34,211,238,0.06)",
+                border: "1px solid rgba(34,211,238,0.25)",
+                boxShadow: "0 0 32px rgba(34,211,238,0.15)",
+              }}
+            >
+              <ShieldCheck size={28} className="mx-auto mb-2 text-cyan-300" />
+              <p className="text-sm font-black text-white">Stripe connected — payments verified</p>
+            </div>
           ) : (
-            <>
-              <StripeConnectCard redirectAfter="/Analyzer?resume=true" />
-              <UpgradeToVerified
-                vertical="payments"
-                currentConfidence="estimated"
-                isConnected={false}
-                onConnect={() => { persistResumeState?.(); }}
-              />
-            </>
+            <StripeConnectCard redirectAfter="/Analyzer?resume=true" />
           )}
 
           {/* Link to full integration hub */}
