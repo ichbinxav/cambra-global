@@ -45,14 +45,22 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 // this list is metadata (e.g. logo, description) and is ignored on purpose to
 // keep the check focused on what actually drives behaviour.
 const COMPARED_FIELDS = [
+  // OAuth-specific
   "auth_url",
   "token_url",
   "scopes",
+  "client_id_env",
+  "client_secret_env",
+  // API key-specific
+  "api_key_header",
+  "api_key_format",
+  "api_key_help_url",
+  "api_key_help_text",
+  // Common (drive engine behaviour regardless of auth_method)
+  "auth_method",
   "data_type",
   "data_endpoints",
   "category",
-  "client_id_env",
-  "client_secret_env",
   "demo_mode",
   "display_name",
 ];

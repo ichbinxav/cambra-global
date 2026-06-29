@@ -42,14 +42,25 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 
 // ─── REGISTRY (keep in sync with functions/dataSyncAgent.js) ───────────────
+// Each entry declares HOW to authenticate (`auth_method`) and HOW to read data
+// (`data_endpoints`). The engine never knows what "stripe" or "shopify" is —
+// it just looks up the config here and follows the recipe.
+//
+// auth_method:
+//   "oauth"   → uses auth_url/token_url/scopes/client_id_env/client_secret_env
+//   "api_key" → uses api_key_header/api_key_format/api_key_help_url
+//
+// When `auth_method` is omitted it defaults to "oauth" for backward compat
+// with the original demo_provider entry.
 const REGISTRY = {
-  // DEMO PROVIDER — fictional, used to verify the engine end-to-end without
-  // touching any real OAuth platform. `demo_mode: true` is ONLY allowed here.
+  // DEMO OAUTH PROVIDER — verifies the OAuth path end-to-end without hitting
+  // a real platform. `demo_mode: true` is ONLY allowed for these demo entries.
   demo_provider: {
     display_name: "Demo Provider",
     category: "payments",
     logo: null,
     description: "Fictional provider used to verify the connector engine.",
+    auth_method: "oauth",
     auth_url: "https://demo.example.invalid/oauth/authorize",
     token_url: "https://demo.example.invalid/oauth/token",
     scopes: ["read:transactions", "read:fees"],
@@ -58,6 +69,26 @@ const REGISTRY = {
     data_type: "transactions",
     data_endpoints: [
       { url: "https://demo.example.invalid/v1/transactions", method: "GET", normalize_as: "transactions" },
+    ],
+    demo_mode: true,
+  },
+  // DEMO API KEY PROVIDER — verifies the api_key path end-to-end. The user
+  // pastes a key, we encrypt it with the same AES-256-GCM mechanism used for
+  // OAuth tokens, and the sync uses it to build the auth header declared by
+  // the registry. Cero hardcodeo de proveedor.
+  demo_apikey_provider: {
+    display_name: "Demo API Key Provider",
+    category: "shipping",
+    logo: null,
+    description: "Fictional API-key provider used to verify the api_key path.",
+    auth_method: "api_key",
+    api_key_header: "X-API-Key",
+    api_key_format: "{key}",
+    api_key_help_url: "https://demo.example.invalid/account/api-keys",
+    api_key_help_text: "Open your Demo Provider dashboard → Account → API Keys, create a read-only key, paste it here.",
+    data_type: "shipments",
+    data_endpoints: [
+      { url: "https://demo.example.invalid/v1/shipments", method: "GET", normalize_as: "shipments" },
     ],
     demo_mode: true,
   },
@@ -151,6 +182,12 @@ async function modeStart(base44, user, params) {
   const { brand_id, provider, redirect_after } = params;
   const cfg = getProviderConfig(provider);
   if (!cfg) return jsonError(400, `Unknown provider: ${provider}`);
+
+  // OAuth-only mode — api_key providers go through modeConnectApiKey instead.
+  const authMethod = cfg.auth_method || "oauth";
+  if (authMethod !== "oauth") {
+    return jsonError(400, `Provider ${provider} uses auth_method="${authMethod}". Use mode="connect_api_key" instead.`);
+  }
 
   if (user.role !== "admin") {
     await assertBrandOwnedByUser(base44, brand_id, user.email);
@@ -329,6 +366,69 @@ async function modeCallback(base44, user, params) {
   });
 }
 
+// ─── Mode: connect_api_key ─────────────────────────────────────────────────
+// Generic API-key onboarding. The user pastes a key, we encrypt it with the
+// SAME AES-256-GCM mechanism used for OAuth tokens (reuses encryptToken — no
+// duplicate crypto logic), and we store it in Integration.access_token.
+//
+// The key NEVER comes back to the client. We strip it from every Response.
+
+async function modeConnectApiKey(base44, user, params) {
+  const { brand_id, provider, api_key } = params;
+  const cfg = getProviderConfig(provider);
+  if (!cfg) return jsonError(400, `Unknown provider: ${provider}`);
+
+  const authMethod = cfg.auth_method || "oauth";
+  if (authMethod !== "api_key") {
+    return jsonError(400, `Provider ${provider} uses auth_method="${authMethod}". Use mode="start" (OAuth) instead.`);
+  }
+
+  if (typeof api_key !== "string" || api_key.trim().length < 4) {
+    return jsonError(400, "api_key is required (min 4 chars)");
+  }
+
+  if (user.role !== "admin") {
+    await assertBrandOwnedByUser(base44, brand_id, user.email);
+  }
+
+  // In demo mode we still encrypt the pasted value so the storage path is
+  // identical to a real provider — that's the whole point of the demo.
+  const encryptedKey = await encryptToken(api_key.trim());
+
+  const update = {
+    status: "connected",
+    access_token: encryptedKey,
+    refresh_token: null,
+    access_token_expires_at: null,
+    scopes: [],
+    connected_at: new Date().toISOString(),
+    last_error: null,
+    provider_account_id: null,
+    metadata_json: { auth_method: "api_key", demo_mode: !!cfg.demo_mode },
+    category: cfg.category,
+  };
+
+  const existing = await base44.asServiceRole.entities.Integration
+    .filter({ brand_id, provider }, "-created_date", 1)
+    .catch(() => []);
+
+  let integrationId;
+  if (existing[0]) {
+    await base44.asServiceRole.entities.Integration.update(existing[0].id, update);
+    integrationId = existing[0].id;
+  } else {
+    const created = await base44.asServiceRole.entities.Integration.create({
+      brand_id,
+      provider,
+      ...update,
+    });
+    integrationId = created.id;
+  }
+
+  // Important: response carries the integration id only — NEVER the key.
+  return Response.json({ ok: true, integration_id: integrationId });
+}
+
 // ─── Mode: refresh ─────────────────────────────────────────────────────────
 
 async function modeRefresh(base44, user, params) {
@@ -400,9 +500,10 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const mode = body?.mode;
 
-    if (mode === "start")    return await modeStart(base44, user, body);
-    if (mode === "callback") return await modeCallback(base44, user, body);
-    if (mode === "refresh")  return await modeRefresh(base44, user, body);
+    if (mode === "start")           return await modeStart(base44, user, body);
+    if (mode === "callback")        return await modeCallback(base44, user, body);
+    if (mode === "refresh")         return await modeRefresh(base44, user, body);
+    if (mode === "connect_api_key") return await modeConnectApiKey(base44, user, body);
     // Read-only introspection: returns the REGISTRY so verifyRegistrySync can
     // compare it against dataSyncAgent's copy. Never reads/writes any data,
     // never touches OAuth flows. Admin-only to avoid leaking endpoint URLs.
@@ -410,7 +511,7 @@ Deno.serve(async (req) => {
       if (user.role !== "admin") return jsonError(403, "Admin only");
       return Response.json({ ok: true, registry: REGISTRY, source: "oauthConnector" });
     }
-    return jsonError(400, `Unknown mode: ${mode}. Use start | callback | refresh | describe`);
+    return jsonError(400, `Unknown mode: ${mode}. Use start | callback | refresh | connect_api_key | describe`);
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }

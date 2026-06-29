@@ -36,6 +36,7 @@ const REGISTRY = {
     category: "payments",
     logo: null,
     description: "Fictional provider used to verify the connector engine.",
+    auth_method: "oauth",
     auth_url: "https://demo.example.invalid/oauth/authorize",
     token_url: "https://demo.example.invalid/oauth/token",
     scopes: ["read:transactions", "read:fees"],
@@ -47,7 +48,43 @@ const REGISTRY = {
     ],
     demo_mode: true,
   },
+  demo_apikey_provider: {
+    display_name: "Demo API Key Provider",
+    category: "shipping",
+    logo: null,
+    description: "Fictional API-key provider used to verify the api_key path.",
+    auth_method: "api_key",
+    api_key_header: "X-API-Key",
+    api_key_format: "{key}",
+    api_key_help_url: "https://demo.example.invalid/account/api-keys",
+    api_key_help_text: "Open your Demo Provider dashboard → Account → API Keys, create a read-only key, paste it here.",
+    data_type: "shipments",
+    data_endpoints: [
+      { url: "https://demo.example.invalid/v1/shipments", method: "GET", normalize_as: "shipments" },
+    ],
+    demo_mode: true,
+  },
 };
+
+// Generic auth header builder — the registry says how, this function follows.
+// No provider name appears anywhere. Adding a new api_key provider means
+// adding a registry entry, nothing else.
+async function buildAuthHeaders(cfg, integ) {
+  const authMethod = cfg.auth_method || "oauth";
+  if (authMethod === "oauth") {
+    const accessToken = await decryptToken(integ.access_token);
+    if (!accessToken) throw new Error("No access token stored");
+    return { "Authorization": `Bearer ${accessToken}` };
+  }
+  if (authMethod === "api_key") {
+    const key = await decryptToken(integ.access_token);
+    if (!key) throw new Error("No API key stored");
+    const header = cfg.api_key_header || "Authorization";
+    const format = cfg.api_key_format || "{key}";
+    return { [header]: format.replace("{key}", key) };
+  }
+  throw new Error(`Unsupported auth_method: ${authMethod}`);
+}
 
 function getProviderConfig(provider) {
   if (!provider || typeof provider !== "string") return null;
@@ -197,11 +234,10 @@ Deno.serve(async (req) => {
         if (cfg.demo_mode) {
           raw = demoMockResponse(ep.normalize_as || cfg.data_type);
         } else {
-          const accessToken = await decryptToken(integ.access_token);
-          if (!accessToken) throw new Error("No access token stored");
+          const authHeaders = await buildAuthHeaders(cfg, integ);
           const res = await fetch(ep.url, {
             method: ep.method || "GET",
-            headers: { "Authorization": `Bearer ${accessToken}`, "Accept": "application/json" },
+            headers: { ...authHeaders, "Accept": "application/json" },
           });
           if (!res.ok) {
             const text = await res.text();

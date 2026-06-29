@@ -1,12 +1,13 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react"; // useState also used inside IntegrationRow
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import Navbar from "@/components/landing/Navbar";
 import { useToast } from "@/components/shared/Toast.jsx";
 import {
   CheckCircle2, RefreshCw, ArrowRight, Loader2, AlertTriangle,
-  CreditCard, Truck, Building2, Mail, Layers, Plug, Sparkles,
+  CreditCard, Truck, Building2, Mail, Layers, Plug, Sparkles, KeyRound,
 } from "lucide-react";
+import ApiKeyConnectForm from "@/components/connect/ApiKeyConnectForm";
 
 /**
  * Fase 0 — generic OAuth connector UX.
@@ -45,12 +46,24 @@ function timeAgo(iso) {
 
 /* The registry is server-side. We mirror just the safe-to-expose fields on
    the client so the UI can group/label without an extra round-trip. Keep in
-   sync with functions/integrationRegistry.js (display_name, category). */
+   sync with functions/integrationRegistry.js (display_name, category,
+   auth_method + api_key_* metadata). NEVER mirror secrets — only how to
+   render the connect UI. */
 const CLIENT_REGISTRY_MIRROR = {
   demo_provider: {
     display_name: "Demo Provider",
     category: "payments",
     description: "Fictional provider to verify the connector engine.",
+    auth_method: "oauth",
+    demo_mode: true,
+  },
+  demo_apikey_provider: {
+    display_name: "Demo API Key Provider",
+    category: "shipping",
+    description: "Fictional API-key provider to verify the api_key path.",
+    auth_method: "api_key",
+    api_key_help_url: "https://demo.example.invalid/account/api-keys",
+    api_key_help_text: "Open your Demo Provider dashboard → Account → API Keys, create a read-only key, paste it here.",
     demo_mode: true,
   },
 };
@@ -90,17 +103,17 @@ export default function ConnectIntegrations() {
     })();
   }, []);
 
-  /* For Fase 0, the "demo_provider" entry is always available — there's no
-     Discovery row for a fictional provider. Real providers (later phases)
-     will appear only if Discovery detected them. */
+  /* For Fase 0, the demo entries are always available — there's no Discovery
+     row for fictional providers. Real providers (later phases) will appear
+     only if Discovery detected them. */
   const rows = useMemo(() => {
     const integByProvider = new Map(integrations.map(i => [i.provider, i]));
-    const demoRow = {
-      provider: "demo_provider",
-      meta: CLIENT_REGISTRY_MIRROR.demo_provider,
+    const demoRows = ["demo_provider", "demo_apikey_provider"].map(slug => ({
+      provider: slug,
+      meta: CLIENT_REGISTRY_MIRROR[slug],
       detection: null,
-      integration: integByProvider.get("demo_provider") || null,
-    };
+      integration: integByProvider.get(slug) || null,
+    }));
     // Real providers from Discovery — only those present in the client mirror
     // get a Connect button. Anything else stays hidden in Fase 0.
     const realRows = detected
@@ -111,7 +124,7 @@ export default function ConnectIntegrations() {
         detection: d,
         integration: integByProvider.get(d.integration_id) || null,
       }));
-    return [demoRow, ...realRows];
+    return [...demoRows, ...realRows];
   }, [detected, integrations]);
 
   const grouped = useMemo(() => {
@@ -144,6 +157,32 @@ export default function ConnectIntegrations() {
       window.location.href = data.authorize_url;
     } catch (err) {
       toast.error("Connection failed", err?.message || undefined);
+      setBusyProvider(null);
+    }
+  };
+
+  // API-key flow: the user pastes a key, we send it to the connector which
+  // encrypts and stores it. We never persist it on the client.
+  const handleSaveApiKey = async (row, apiKey) => {
+    if (!brandId) return;
+    setBusyProvider(row.provider);
+    try {
+      const res = await base44.functions.invoke("oauthConnector", {
+        mode: "connect_api_key",
+        brand_id: brandId,
+        provider: row.provider,
+        api_key: apiKey,
+      });
+      const data = res?.data || res;
+      if (!data?.ok) {
+        toast.error("Couldn't save API key", data?.error || undefined);
+        return;
+      }
+      toast.success(`${row.meta.display_name} connected`);
+      await loadAll(brandId);
+    } catch (err) {
+      toast.error("Couldn't save API key", err?.message || undefined);
+    } finally {
       setBusyProvider(null);
     }
   };
@@ -227,6 +266,7 @@ export default function ConnectIntegrations() {
                     busy={busyProvider === row.provider}
                     onConnect={() => handleConnect(row)}
                     onSync={() => handleSync(row)}
+                    onSaveApiKey={(key) => handleSaveApiKey(row, key)}
                   />
                 ))}
               </div>
@@ -254,15 +294,20 @@ export default function ConnectIntegrations() {
   );
 }
 
-function IntegrationRow({ row, busy, onConnect, onSync }) {
+function IntegrationRow({ row, busy, onConnect, onSync, onSaveApiKey }) {
   const integ = row.integration;
   const status = integ?.status || (row.detection ? "detected" : "available");
+  const authMethod = row.meta?.auth_method || "oauth";
+  const isApiKey = authMethod === "api_key";
+  const [keyFormOpen, setKeyFormOpen] = useState(false);
 
+  // For api_key providers, the primary action ("Connect" / "Reconnect") opens
+  // an inline form instead of redirecting. Connected status still shows Sync.
   return (
     <div className="p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-colors">
       <div className="flex items-center gap-3 flex-wrap">
         <div className="w-10 h-10 rounded-xl border border-border/60 bg-secondary flex items-center justify-center shrink-0">
-          <Plug size={15} className="text-foreground" />
+          {isApiKey ? <KeyRound size={15} className="text-foreground" /> : <Plug size={15} className="text-foreground" />}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -270,6 +315,11 @@ function IntegrationRow({ row, busy, onConnect, onSync }) {
             {row.meta.demo_mode && (
               <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold bg-cyan-500/10 text-cyan-700 border border-cyan-500/25">
                 Demo
+              </span>
+            )}
+            {isApiKey && (
+              <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold bg-secondary text-muted-foreground border border-border/60">
+                API key
               </span>
             )}
           </div>
@@ -297,6 +347,16 @@ function IntegrationRow({ row, busy, onConnect, onSync }) {
               {busy ? <Loader2 size={10} className="animate-spin" /> : <RefreshCw size={10} />}
               Sync
             </button>
+          ) : isApiKey ? (
+            <button
+              type="button"
+              onClick={() => setKeyFormOpen((v) => !v)}
+              disabled={busy}
+              className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 disabled:opacity-50"
+            >
+              {busy ? <Loader2 size={10} className="animate-spin" /> : <KeyRound size={10} />}
+              {keyFormOpen ? "Close" : status === "error" ? "Reconnect" : "Connect"}
+            </button>
           ) : (
             <button
               type="button"
@@ -312,6 +372,19 @@ function IntegrationRow({ row, busy, onConnect, onSync }) {
           )}
         </div>
       </div>
+
+      {isApiKey && keyFormOpen && status !== "connected" && (
+        <ApiKeyConnectForm
+          helpUrl={row.meta.api_key_help_url}
+          helpText={row.meta.api_key_help_text}
+          busy={busy}
+          onCancel={() => setKeyFormOpen(false)}
+          onSave={async (k) => {
+            await onSaveApiKey(k);
+            setKeyFormOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

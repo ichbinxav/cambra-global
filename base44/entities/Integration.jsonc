@@ -8,7 +8,7 @@
     },
     "provider": {
       "type": "string",
-      "description": "Stable provider slug, matches a key in functions/integrationRegistry.js (e.g. 'demo_provider', 'stripe', 'shopify'). Source of truth for which OAuth config to use."
+      "description": "Stable provider slug, matches a key in functions/integrationRegistry.js (e.g. 'demo_provider', 'stripe', 'shopify'). Source of truth for which OAuth or API-key config to use."
     },
     "category": {
       "type": "string",
@@ -28,11 +28,11 @@
     },
     "access_token": {
       "type": "string",
-      "description": "AES-256-GCM encrypted token blob. Format: 'v1:<iv_base64>:<ciphertext_base64>' \u2014 the authentication tag is appended to the ciphertext by AES-GCM itself (it is NOT a separate segment). NEVER returned to the client by any function \u2014 server-only. RLS allows admin/creator read because Base44 RLS is row-level not field-level; functions strip this field before returning to UI."
+      "description": "AES-256-GCM encrypted credential blob. For OAuth providers this is the access_token; for API-key providers this is the pasted API key. Same format in both cases: 'v1:<iv_base64>:<ciphertext_base64>' \u2014 the authentication tag is appended to the ciphertext by AES-GCM itself (it is NOT a separate segment). NEVER returned to the client by any function \u2014 server-only. RLS allows admin/creator read because Base44 RLS is row-level not field-level; functions strip this field before returning to UI."
     },
     "refresh_token": {
       "type": "string",
-      "description": "AES-256-GCM encrypted refresh token blob, same format as access_token ('v1:<iv_base64>:<ciphertext_base64>', auth tag included inside the ciphertext). Same server-only access pattern."
+      "description": "AES-256-GCM encrypted refresh token blob (OAuth providers only \u2014 null for api_key providers). Same format as access_token ('v1:<iv_base64>:<ciphertext_base64>', auth tag included inside the ciphertext). Same server-only access pattern."
     },
     "access_token_expires_at": {
       "type": "string",
@@ -69,11 +69,11 @@
     },
     "provider_account_id": {
       "type": "string",
-      "description": "External account id returned by the provider after OAuth (for display + dedup)."
+      "description": "External account id returned by the provider after OAuth (for display + dedup). Null for api_key providers that don't expose an account id."
     },
     "metadata_json": {
       "type": "object",
-      "description": "Free-form metadata from the provider (account name, currency, etc). Never put secrets here."
+      "description": "Free-form metadata from the provider (account name, currency, auth_method, etc). Never put secrets here."
     }
   },
   "required": [
