@@ -53,7 +53,9 @@ npx vitest run
 ```
 
 Environment variables — copy `.env.example` to `.env.local` and fill in the
-Base44 values from your workspace dashboard.
+frontend values. Backend secrets (Stripe, Anthropic, Instantly, Cal.com)
+go in **Base44 dashboard → Settings → Environment variables**, not in
+`.env.local`. See `.env.example` for the full list and what each is for.
 
 ---
 
