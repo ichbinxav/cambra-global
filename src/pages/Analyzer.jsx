@@ -12,7 +12,7 @@ import {
 import Navbar from "@/components/landing/Navbar";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
-import RevenueRangePicker, { midpointForRange } from "@/components/analyzer/RevenueRangePicker";
+import RevenueSlider, { eurToRangeKey } from "@/components/analyzer/RevenueSlider";
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
 import ToolPicker from "@/components/analyzer/ToolPicker";
 import Step3DataSource from "@/components/analyzer/Step3DataSource";
@@ -144,7 +144,9 @@ export default function Analyzer() {
   const [brandName, setBrandName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [country, setCountry] = useState("");
-  const [revenueRange, setRevenueRange] = useState("");
+  // Continuous monthly revenue in EUR (slider). 0 means "not set yet".
+  const [revenueEur, setRevenueEur] = useState(0);
+  const revenueRange = revenueEur > 0 ? eurToRangeKey(revenueEur) : "";
   const [category, setCategory] = useState("");
 
   // Brand id + resume state
@@ -245,7 +247,7 @@ export default function Analyzer() {
       if (fv.brandName) setBrandName(fv.brandName);
       if (fv.websiteUrl) setWebsiteUrl(fv.websiteUrl);
       if (fv.country) setCountry(fv.country);
-      if (fv.revenueRange) setRevenueRange(fv.revenueRange);
+      if (typeof fv.revenueEur === "number" && fv.revenueEur > 0) setRevenueEur(fv.revenueEur);
       if (fv.category) setCategory(fv.category);
       if (fv.manual) setManual(m => ({ ...m, ...fv.manual }));
       if (Array.isArray(resume.confirmedTools)) setConfirmedTools(new Set(resume.confirmedTools));
@@ -281,7 +283,7 @@ export default function Analyzer() {
     const payload = {
       step: nextStep,
       formValues: {
-        brandName, websiteUrl, country, revenueRange, category, manual,
+        brandName, websiteUrl, country, revenueEur, category, manual,
       },
       detectedTools: discovery.findings,
       confirmedTools: Array.from(confirmedTools),
@@ -469,7 +471,7 @@ export default function Analyzer() {
   // ── Validate Step 1 ──
   const step1Valid =
     brandName.trim().length > 0 && websiteUrl.trim().length > 0 &&
-    country.length > 0 && revenueRange.length > 0;
+    country.length > 0 && revenueEur > 0;
 
   // ── Continue from Step 1 ──
   const goStep2 = async () => {
@@ -479,7 +481,7 @@ export default function Analyzer() {
       if (!brandName.trim()) missing.push(t("error_brand_required"));
       if (!websiteUrl.trim()) missing.push(t("error_website_required"));
       if (!country) missing.push(t("error_country_required"));
-      if (!revenueRange) missing.push(t("error_revenue_required"));
+      if (!revenueEur) missing.push(t("error_revenue_required"));
       setErrorBanner(missing.join("\n"));
       return;
     }
@@ -496,8 +498,9 @@ export default function Analyzer() {
   };
 
   // ── Check if Stripe is connected (after returning from OAuth) ──
+  // Stripe connect now lives in Step 2 (Data source); detection runs there.
   useEffect(() => {
-    if (!brandId || step !== 3) return;
+    if (!brandId || step !== 2) return;
     let cancelled = false;
     (async () => {
       try {
@@ -512,7 +515,7 @@ export default function Analyzer() {
 
   // ── Build AnalyzerInput payload ──
   const buildInputPayload = () => {
-    const monthlyRevenue = midpointForRange(revenueRange);
+    const monthlyRevenue = revenueEur;
 
     // From confirmed tools, derive payment_provider + shipping_provider hints
     const confirmedNames = new Set();
@@ -735,7 +738,7 @@ export default function Analyzer() {
 
   // ── If running, render full-screen progress overlay ──
   if (running) {
-    const monthlyRev = midpointForRange(revenueRange);
+    const monthlyRev = revenueEur;
     return (
       <AnalysisProgress
         country={country || t("your_region")}
@@ -974,8 +977,14 @@ export default function Analyzer() {
 
               <div className="space-y-2">
                 <Label id="az-revenue-label" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">{t("field_revenue")}</Label>
-                <div role="radiogroup" aria-labelledby="az-revenue-label" aria-required="true">
-                  <RevenueRangePicker value={revenueRange} onChange={setRevenueRange} />
+                <div
+                  className="rounded-2xl px-4 py-4"
+                  style={{
+                    background: "rgba(255,255,255,0.025)",
+                    border: "1px solid rgba(255,255,255,0.10)",
+                  }}
+                >
+                  <RevenueSlider valueEur={revenueEur} onChangeEur={setRevenueEur} />
                 </div>
               </div>
 
@@ -1009,13 +1018,13 @@ export default function Analyzer() {
           </div>
         )}
 
-        {/* ──────────── STEP 2 ──────────── */}
-        {step === 2 && (
+        {/* ──────────── STEP 3 — Tools & rates (was Step 2 before reorder) ──────────── */}
+        {step === 3 && (
           <div>
             <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
               style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
             >
-              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 02 · Infrastructure</span>
+              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 03 · Infrastructure</span>
             </div>
             <h1
               className="text-white mb-3"
@@ -1233,13 +1242,13 @@ export default function Analyzer() {
           </div>
         )}
 
-        {/* ──────────── STEP 3 ──────────── */}
-        {step === 3 && (
+        {/* ──────────── STEP 2 — Data source (was Step 3 before reorder) ──────────── */}
+        {step === 2 && (
           <div>
             <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
               style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
             >
-              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 03 · Verify</span>
+              <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Step 02 · Data source</span>
             </div>
             <h1
               className="text-white mb-3"
@@ -1257,9 +1266,9 @@ export default function Analyzer() {
 
             <Step3DataSource
               stripeConnected={stripeConnected}
-              persistResumeState={() => persistResumeState(3)}
+              persistResumeState={() => persistResumeState(2)}
               onPrefillManual={(partial) => setManual(m => ({ ...m, ...partial }))}
-              onSkipAndRun={runAnalysis}
+              onSkipAndRun={() => { setStep(3); if (isAuthed) persistResumeState(3); }}
             />
           </div>
         )}
@@ -1310,7 +1319,7 @@ export default function Analyzer() {
               boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.22)",
             }}
           >
-            {t("continue_label")} <ArrowRight className="h-4 w-4" />
+            {stripeConnected ? t("continue_label") : "Skip & continue"} <ArrowRight className="h-4 w-4" />
           </Button>
         )}
         {step === 3 && (
