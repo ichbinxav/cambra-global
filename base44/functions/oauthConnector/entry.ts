@@ -300,7 +300,7 @@ const REGISTRY = {
     basic_auth_pass_label: "Secret key",
     data_type: "shipments",
     data_endpoints: [
-      { url: "https://panel.sendcloud.sc/api/v2/parcels", method: "GET", normalize_as: "shipments" },
+      { url: "https://panel.sendcloud.sc/api/v3/shipments", method: "GET", normalize_as: "sendcloud_shipments" },
     ],
     demo_mode: false,
   },

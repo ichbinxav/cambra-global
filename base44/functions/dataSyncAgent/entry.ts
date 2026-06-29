@@ -233,7 +233,7 @@ const REGISTRY = {
     basic_auth_pass_label: "Secret key",
     data_type: "shipments",
     data_endpoints: [
-      { url: "https://panel.sendcloud.sc/api/v2/parcels", method: "GET", normalize_as: "shipments" },
+      { url: "https://panel.sendcloud.sc/api/v3/shipments", method: "GET", normalize_as: "sendcloud_shipments" },
     ],
     demo_mode: false,
   },
@@ -351,6 +351,94 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── sendcloud_shipments ────────────────────────────────────────────────
+  // FIFTH real normalizer. Translates Sendcloud REST API v3:
+  //   GET https://panel.sendcloud.sc/api/v3/shipments
+  //   { data: [ { id, order_number, total_order_price: {currency, value},
+  //               parcels: [ { id, status, weight, created_at, ... } ] } ] }
+  //
+  // CRITICAL distinction from the 4 previous normalizers:
+  //   - Stripe/Mollie/PayPal mapped FEES, Shopify mapped GMV.
+  //   - Sendcloud maps SHIPPING VOLUME (weight, count, dates) — vertical:
+  //     "shipping". The REAL carrier rate (what the brand pays to ship) does
+  //     NOT live in this endpoint; it comes from the separate
+  //     `shipping-options/rates` endpoint we'll add later. So `cost: 0` here
+  //     is HONEST ABSENCE — same pattern as Shopify's `fee: 0`. Downstream
+  //     code must NOT treat this as a real shipping cost.
+  //
+  // Granularity: ONE ROW PER PARCEL, not per shipment.
+  //   In logistics the unit of cost is the physical parcel (weight,
+  //   dimensions, per-parcel carrier rate). A shipment with 3 parcels emits
+  //   3 rows. When we wire the rates endpoint, those rates also come
+  //   per-parcel — granularities will match. Repeating `order_price` on each
+  //   parcel of the same shipment is 1:1 input passthrough (the field exists
+  //   on the shipment, each child preserves it as context). It MUST NOT be
+  //   summed at portfolio level without de-duplicating by `shipment_id`.
+  //
+  // Translations:
+  //   - amounts: strings → parseFloat (already in units, no /100)
+  //   - weight: parsed via toNum, weight_unit propagated as-is (kg/g/lb)
+  //   - dates: ISO preserved as-is
+  //   - external_id: shipment.id + ":" + parcel.id (same compound pattern as
+  //     Mollie "settlement:method" and PayPal "tx:date" — gives context
+  //     without a join)
+  //
+  // Items skipped:
+  //   - shipment without `parcels` array → emits nothing for that shipment
+  //   - parcel without `id` → skipped (same pattern as PayPal/Shopify)
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) Carrier rate (real shipping cost) lives in /shipping-options/rates,
+  //       a second endpoint to add when we wire Sendcloud for real. This
+  //       endpoint gives volume/weight, NOT cost. `cost: 0` is enforced as
+  //       an invariant.
+  //   (b) v3 pagination is cursor-based (base64), different from v2's offset.
+  //       That's the sync engine's job, not this normalizer's.
+  //   (c) Written from v3 docs; verify field paths on first real connect.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  sendcloud_shipments: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const shipments = Array.isArray(raw?.data) ? raw.data : [];
+    const rows = [];
+    for (const shipment of shipments) {
+      if (!shipment || typeof shipment !== "object") continue;
+      const parcels = Array.isArray(shipment?.parcels) ? shipment.parcels : null;
+      if (!parcels) continue; // skip shipments with no parcels array
+      const shipmentId = shipment?.id ?? null;
+      const orderNumber = shipment?.order_number ?? null;
+      const orderPrice = toNum(shipment?.total_order_price?.value);
+      const currency = shipment?.total_order_price?.currency || "EUR";
+      for (const parcel of parcels) {
+        if (!parcel || typeof parcel !== "object") continue;
+        const parcelId = parcel?.id;
+        if (parcelId === null || parcelId === undefined) continue; // skip parcels without id
+        const externalId = shipmentId !== null
+          ? `${shipmentId}:${parcelId}`
+          : String(parcelId);
+        const occurredAt = typeof parcel?.created_at === "string" ? parcel.created_at : null;
+        rows.push({
+          vertical: "shipping",
+          external_id: externalId,
+          shipment_id: shipmentId,
+          order_number: orderNumber,
+          weight: toNum(parcel?.weight?.value),
+          weight_unit: parcel?.weight?.unit ?? null,
+          order_price: orderPrice,
+          cost: 0, // Real carrier rate lives in /shipping-options/rates, not here.
+          currency,
+          status: parcel?.status?.code ?? null,
+          tracking_number: parcel?.tracking_number ?? null,
+          occurred_at: occurredAt,
+        });
+      }
+    }
+    return rows;
+  },
   // ─── shopify_orders ─────────────────────────────────────────────────────
   // FOURTH real normalizer. Translates Shopify REST Admin orders.json:
   //   GET /admin/api/2024-01/orders.json
