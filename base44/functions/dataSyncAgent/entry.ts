@@ -195,7 +195,7 @@ const REGISTRY = {
     client_secret_env: "SHOPIFY_CLIENT_SECRET",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://{shop}.myshopify.com/admin/api/2024-01/orders.json", method: "GET", normalize_as: "transactions" },
+      { url: "https://{shop}.myshopify.com/admin/api/2024-01/orders.json", method: "GET", normalize_as: "shopify_orders" },
     ],
     demo_mode: false,
     requires_shop_domain: true,
@@ -351,6 +351,89 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── shopify_orders ─────────────────────────────────────────────────────
+  // FOURTH real normalizer. Translates Shopify REST Admin orders.json:
+  //   GET /admin/api/2024-01/orders.json
+  //   { orders: [ { id, total_price, total_price_set, currency, created_at,
+  //                 financial_status, ... } ] }
+  //
+  // CRITICAL distinction from the 3 previous normalizers:
+  //   - Stripe/Mollie/PayPal mapped FEES (vertical: "payments").
+  //   - Shopify maps GMV / SALES VOLUME (vertical: "commerce").
+  //   Shopify is the storefront, not the processor. There is NO transaction
+  //   fee in this payload. Emitting fee: 0 here is HONEST ABSENCE, not an
+  //   invented value — downstream code must NOT treat this as a real fee.
+  //
+  // Money source robustness (two forms, both 1:1 from input — form navigation,
+  // not value invention):
+  //   - Flat field: order.total_price ("270.37")
+  //   - Money object: order.total_price_set.shop_money.amount ("270.37")
+  //   We prefer the flat field; if missing or NaN, we fall back to the money
+  //   object. Same defensive pattern as Mollie's `costs` probe.
+  //
+  // Translations:
+  //   - amounts: strings → parseFloat (already in units, no /100)
+  //   - dates:   ISO strings → preserved as-is
+  //   - currency: order.currency → total_price_set.shop_money.currency_code → "EUR"
+  //   - financial_status preserved 1:1 (paid/refunded/voided) for downstream
+  //     filtering of net GMV.
+  //
+  // Items without `id` are SKIPPED (same pattern as PayPal items without
+  // transaction_info) — an order without an id translates to nothing useful.
+  //
+  // ⚠️  DEUDA GRANDE (more uncertain than the others):
+  //   (a) REST Admin API is LEGACY as of Oct 2024. Shopify pushes GraphQL
+  //       Admin API. This normalizer may need a sibling `shopify_orders_gql`
+  //       and a sync engine change (different request shape, cursor-based
+  //       pagination via `pageInfo.endCursor`).
+  //   (b) Without `read_all_orders` scope, REST returns ONLY the last 60 days
+  //       of orders. Extended access requires Shopify approval.
+  //   (c) Pagination is cursor-based via the `Link` HTTP header
+  //       (`<...&page_info=XYZ>; rel="next"`). That's the sync engine's job,
+  //       not this normalizer's.
+  //   (d) `data_type` in the registry is still "transactions" (the bucket
+  //       used by getProviderConfig). When CAMBRA introduces a formal
+  //       "orders" / "commerce" data_type, flip it here too.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  shopify_orders: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    // Prefer flat total_price; fall back to total_price_set.shop_money.amount.
+    // Returns 0 if both are absent/unparseable. NEVER invents a value.
+    const pickAmount = (order) => {
+      const flat = toNum(order?.total_price, null);
+      if (flat !== null) return flat;
+      return toNum(order?.total_price_set?.shop_money?.amount, 0);
+    };
+    const orders = Array.isArray(raw?.orders) ? raw.orders : [];
+    const rows = [];
+    for (const order of orders) {
+      if (!order || typeof order !== "object") continue;
+      const id = order?.id;
+      if (id === null || id === undefined) continue; // skip items without id
+      const currency = order?.currency
+        || order?.total_price_set?.shop_money?.currency_code
+        || "EUR";
+      const occurredAt = typeof order?.created_at === "string" ? order.created_at : null;
+      rows.push({
+        vertical: "commerce",
+        external_id: String(id),
+        amount: pickAmount(order),
+        subtotal: toNum(order?.subtotal_price),
+        tax: toNum(order?.total_tax),
+        discounts: toNum(order?.total_discounts),
+        fee: 0, // Shopify-as-storefront does not charge per-transaction fee.
+        currency,
+        occurred_at: occurredAt,
+        financial_status: order?.financial_status ?? null,
+      });
+    }
+    return rows;
+  },
   // ─── paypal_transactions ────────────────────────────────────────────────
   // THIRD real normalizer. Translates PayPal Transaction Search API response:
   //   GET /v1/reporting/transactions

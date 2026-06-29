@@ -230,7 +230,7 @@ const REGISTRY = {
     client_secret_env: "SHOPIFY_CLIENT_SECRET",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://{shop}.myshopify.com/admin/api/2024-01/orders.json", method: "GET", normalize_as: "transactions" },
+      { url: "https://{shop}.myshopify.com/admin/api/2024-01/orders.json", method: "GET", normalize_as: "shopify_orders" },
     ],
     demo_mode: false,
     requires_shop_domain: true,
