@@ -142,16 +142,22 @@ const REGISTRY = {
     display_name: "Mollie",
     category: "payments",
     logo: null,
-    description: "Mollie OAuth — read-only access to payments across organizations.",
+    // Endpoint pivot (docs): Mollie's /v2/payments does NOT carry fee data.
+    // Fees are aggregated per payment method inside /v2/settlements.costs[].
+    // The mollie_settlements normalizer emits one row per method per settlement.
+    // settlements.read scope is required for the new endpoint. payments.read
+    // stays for when we add a second endpoint that reads individual payments
+    // (refunds, disputes) — kept on purpose, not orphan.
+    description: "Mollie OAuth — read-only access to settlements (per-method fee breakdown) and organizations. Per-payment data lives in a separate endpoint we may add later.",
     auth_method: "oauth",
     auth_url: "https://my.mollie.com/oauth2/authorize",
     token_url: "https://api.mollie.com/oauth2/tokens",
-    scopes: ["organizations.read", "payments.read", "profiles.read"],
+    scopes: ["organizations.read", "payments.read", "profiles.read", "settlements.read"],
     client_id_env: "MOLLIE_CLIENT_ID",
     client_secret_env: "MOLLIE_CLIENT_SECRET",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api.mollie.com/v2/payments", method: "GET", normalize_as: "transactions" },
+      { url: "https://api.mollie.com/v2/settlements", method: "GET", normalize_as: "mollie_settlements" },
     ],
     demo_mode: false,
   },

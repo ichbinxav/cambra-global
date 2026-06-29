@@ -107,16 +107,22 @@ const REGISTRY = {
     display_name: "Mollie",
     category: "payments",
     logo: null,
-    description: "Mollie OAuth — read-only access to payments across organizations.",
+    // Endpoint pivot (docs): Mollie's /v2/payments does NOT carry fee data.
+    // Fees are aggregated per payment method inside /v2/settlements.costs[].
+    // The mollie_settlements normalizer emits one row per method per settlement.
+    // settlements.read scope is required for the new endpoint. payments.read
+    // stays for when we add a second endpoint that reads individual payments
+    // (refunds, disputes) — kept on purpose, not orphan.
+    description: "Mollie OAuth — read-only access to settlements (per-method fee breakdown) and organizations. Per-payment data lives in a separate endpoint we may add later.",
     auth_method: "oauth",
     auth_url: "https://my.mollie.com/oauth2/authorize",
     token_url: "https://api.mollie.com/oauth2/tokens",
-    scopes: ["organizations.read", "payments.read", "profiles.read"],
+    scopes: ["organizations.read", "payments.read", "profiles.read", "settlements.read"],
     client_id_env: "MOLLIE_CLIENT_ID",
     client_secret_env: "MOLLIE_CLIENT_SECRET",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api.mollie.com/v2/payments", method: "GET", normalize_as: "transactions" },
+      { url: "https://api.mollie.com/v2/settlements", method: "GET", normalize_as: "mollie_settlements" },
     ],
     demo_mode: false,
   },
@@ -345,6 +351,98 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── mollie_settlements ─────────────────────────────────────────────────
+  // SECOND real normalizer. Translates Mollie's GET /v2/settlements response.
+  //
+  // Why this endpoint and not /v2/payments:
+  //   Mollie's Payment object does NOT carry the fee. The fee lives in the
+  //   Settlements API, AGGREGATED BY PAYMENT METHOD inside a `costs[]` array.
+  //   So one settlement => N normalized rows (one per method: iDEAL, PayPal,
+  //   creditcard, etc.). This per-method breakdown is exactly what CAMBRA
+  //   benchmarks against — keeping it as separate rows preserves that signal.
+  //
+  // ⚠️  DEUDA EXPLÍCITA (verificar con un settlement REAL al conectar Mollie):
+  //   - This was written from PUBLIC DOCS, not from a real payload.
+  //   - The exact nesting of `periods` is documented but can shift by API
+  //     version: it may be { "2024": { "07": { costs: [...] } } } (year→month),
+  //     or sometimes flat `{ periods: [...] }`, or `costs` may appear at the
+  //     settlement root for some account types. We probe defensively but the
+  //     real shape might still surprise us. When the first real settlement
+  //     arrives, walk it manually and tighten or relax the probe.
+  //   - `amount.net/vat/gross` are strings in docs (e.g. "12.7600") — we
+  //     parseFloat them. If Mollie ever returns numeric (some API versions do),
+  //     parseFloat on a number still works in JS, so this is forward-safe.
+  //   - The list endpoint wraps results in `_embedded.settlements`; we
+  //     support that AND a bare single settlement. Pagination (following
+  //     `_links.next`) is the sync engine's job, not this normalizer's.
+  //   - OAuth scope: this endpoint requires `settlements.read`. The registry
+  //     entry adds it; `payments.read` stays for when we add a second
+  //     endpoint that reads individual payments (refunds, disputes).
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // The "defensive probing" of `costs` is form navigation, not value invention.
+  mollie_settlements: (raw) => {
+    // Robust numeric parse: handles strings, nulls, undefined, "" and "abc".
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    // Pull out a list of settlement objects regardless of wrap shape.
+    const settlements = (() => {
+      if (!raw || typeof raw !== "object") return [];
+      if (Array.isArray(raw?._embedded?.settlements)) return raw._embedded.settlements;
+      // Bare single settlement — Mollie returns this when you GET a specific id.
+      if (raw.resource === "settlement" || raw.id || raw.periods || raw.costs) return [raw];
+      return [];
+    })();
+    // Defensive walk: returns every `costs[]` array we can find inside the
+    // settlement, no matter how `periods` is shaped (object-of-years,
+    // array, or flat).
+    const collectCosts = (settlement) => {
+      const out = [];
+      if (Array.isArray(settlement?.costs)) out.push(...settlement.costs);
+      const periods = settlement?.periods;
+      if (periods && typeof periods === "object") {
+        const periodValues = Array.isArray(periods) ? periods : Object.values(periods);
+        for (const p of periodValues) {
+          if (!p || typeof p !== "object") continue;
+          if (Array.isArray(p?.costs)) out.push(...p.costs);
+          // Year → month nesting: each year is an object whose values are months.
+          for (const inner of Object.values(p)) {
+            if (inner && typeof inner === "object" && Array.isArray(inner?.costs)) {
+              out.push(...inner.costs);
+            }
+          }
+        }
+      }
+      return out;
+    };
+    const rows = [];
+    for (const settlement of settlements) {
+      const settlementId = settlement?.id ?? null;
+      const currency = settlement?.amount?.currency || "EUR";
+      const occurredAt = typeof settlement?.createdAt === "string" ? settlement.createdAt : null;
+      const costs = collectCosts(settlement);
+      for (const cost of costs) {
+        const method = cost?.method ?? cost?.description ?? "unknown";
+        rows.push({
+          vertical: "payments",
+          external_id: settlementId ? `${settlementId}:${method}` : method,
+          provider_method: method,
+          fee: toNum(cost?.amount?.gross),
+          fee_net: toNum(cost?.amount?.net),
+          fee_vat: toNum(cost?.amount?.vat),
+          count: toNum(cost?.count),
+          rate_fixed: toNum(cost?.rate?.fixed, null),
+          rate_percentage: cost?.rate?.percentage ?? null,
+          currency,
+          occurred_at: occurredAt,
+        });
+      }
+    }
+    return rows;
+  },
   stripe_transactions: (raw) => {
     const rows = Array.isArray(raw?.data) ? raw.data : [];
     return rows.map((tx) => {
