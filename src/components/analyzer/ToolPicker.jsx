@@ -1,6 +1,86 @@
 import React, { useMemo, useState } from "react";
-import { Check, Search, Sparkles, Plus, Flame } from "lucide-react";
+import { Check, Search, Sparkles, Plus, Flame, Star, Zap } from "lucide-react";
 import { CATALOG, TOOL_CATEGORIES, getCatalogMeta } from "@/lib/analyzerToolCatalog";
+
+/**
+ * Essentials — tools that every DTC/commerce brand needs SOMETHING in,
+ * regardless of vertical. Used to mark category gaps that hurt the score.
+ * One representative per category-bucket the founder almost certainly uses.
+ */
+const ESSENTIAL_TOOLS = new Set([
+  // Founders need *a* payment processor
+  "Stripe", "Shopify Payments", "PayPal", "Adyen", "Mollie",
+  // …and *a* commerce platform
+  "Shopify", "WooCommerce", "Prestashop",
+  // …and *a* shipping carrier
+  "DHL", "UPS", "Colissimo", "Sendcloud",
+  // …and *a* business bank
+  "Qonto", "Revolut Business", "Wise Business",
+]);
+
+/**
+ * Vertical → set of tools that are *especially popular* in that sector.
+ * Used to surface a "Recommended for {sector}" band at the top of the
+ * picker AND to badge those tools inside their category sections.
+ *
+ * Curated from common DTC stacks per category — not exhaustive, just the
+ * ones founders in that vertical recognize immediately.
+ */
+const VERTICAL_POPULAR = {
+  Fashion: [
+    "Shopify", "Stripe", "Klaviyo", "Meta Ads", "DHL", "Colissimo",
+    "Sendcloud", "Yotpo", "Gorgias", "Klarna", "Alma",
+  ],
+  Beauty: [
+    "Shopify", "Stripe", "Klaviyo", "Attentive", "Meta Ads", "Yotpo",
+    "Gorgias", "Sendcloud", "Colissimo",
+  ],
+  "Food & Beverage": [
+    "Shopify", "Stripe", "Klaviyo", "Sendcloud", "Chronopost",
+    "Mondial Relay", "Meta Ads", "Gorgias",
+  ],
+  Electronics: [
+    "Shopify", "WooCommerce", "Stripe", "PayPal", "DHL", "UPS",
+    "Zendesk", "Gorgias", "Klaviyo", "Google Ads",
+  ],
+  "Home & Living": [
+    "Shopify", "WooCommerce", "Stripe", "DHL", "GLS", "Sendcloud",
+    "Klaviyo", "Meta Ads", "Yotpo",
+  ],
+  "Sports & Outdoors": [
+    "Shopify", "Stripe", "DHL", "Sendcloud", "Klaviyo", "Meta Ads",
+    "Gorgias", "Yotpo",
+  ],
+  "Health & Wellness": [
+    "Shopify", "Stripe", "Klaviyo", "Attentive", "Meta Ads",
+    "Gorgias", "Yotpo", "Sendcloud",
+  ],
+  "Toys & Kids": [
+    "Shopify", "Stripe", "Klaviyo", "Sendcloud", "Colissimo",
+    "Meta Ads", "Gorgias",
+  ],
+  Pets: [
+    "Shopify", "Stripe", "Klaviyo", "Sendcloud", "Meta Ads",
+    "Gorgias", "Yotpo",
+  ],
+  "Jewelry & Accessories": [
+    "Shopify", "Stripe", "Klaviyo", "Meta Ads", "DHL", "Colissimo",
+    "Yotpo", "Gorgias", "Klarna",
+  ],
+  "Books & Media": [
+    "Shopify", "WooCommerce", "Stripe", "Sendcloud", "Colissimo",
+    "Klaviyo", "Meta Ads",
+  ],
+  Automotive: [
+    "WooCommerce", "Shopify", "Stripe", "PayPal", "DHL", "UPS",
+    "Zendesk", "Google Ads",
+  ],
+  "B2B & Wholesale": [
+    "Stripe", "GoCardless", "Qonto", "Revolut Business", "Pennylane",
+    "Quickbooks", "HubSpot", "Notion", "Slack", "Linear",
+  ],
+  Other: [],
+};
 
 /**
  * Impact-by-category — qualitative signal for the picker. The Analyzer's
@@ -88,6 +168,24 @@ export default function ToolPicker({
     return [...ordered, ...byKey.values()];
   }, [vertical]);
 
+  // Set of tool names that are popular in the brand's vertical.
+  // Used both for the "Recommended" band and for the individual badges.
+  const popularSet = useMemo(() => {
+    const list = VERTICAL_POPULAR[vertical] || [];
+    return new Set(list.map(n => n.toLowerCase()));
+  }, [vertical]);
+
+  // Tools to feature in the "Recommended for {sector}" band, in order.
+  const recommendedItems = useMemo(() => {
+    if (!vertical || !popularSet.size) return [];
+    // Preserve VERTICAL_POPULAR's curated order (already curated by hand).
+    const orderedNames = VERTICAL_POPULAR[vertical] || [];
+    const byName = new Map(CATALOG.map(c => [c.name.toLowerCase(), c]));
+    return orderedNames
+      .map(n => byName.get(n.toLowerCase()))
+      .filter(Boolean);
+  }, [vertical, popularSet]);
+
   const confirmedLower = useMemo(() => {
     const s = new Set();
     confirmedNames?.forEach(n => s.add(String(n).toLowerCase()));
@@ -111,6 +209,7 @@ export default function ToolPicker({
 
   // Group filtered items by category for nicer rendering — ordered by the
   // brand's vertical priority (so the most relevant categories come first).
+  // Within each category, popular-in-vertical tools float to the top.
   const grouped = useMemo(() => {
     const map = new Map();
     // Seed the map in vertical-priority order so iteration follows it.
@@ -119,10 +218,17 @@ export default function ToolPicker({
       if (!map.has(item.category)) map.set(item.category, []);
       map.get(item.category).push(item);
     }
-    // Drop empty categories so we don't render blank headers.
-    for (const [k, v] of map) if (v.length === 0) map.delete(k);
+    // Sort each bucket so popular-in-vertical tools come first.
+    for (const [k, items] of map) {
+      items.sort((a, b) => {
+        const aPop = popularSet.has(a.name.toLowerCase()) ? 0 : 1;
+        const bPop = popularSet.has(b.name.toLowerCase()) ? 0 : 1;
+        return aPop - bPop;
+      });
+      if (items.length === 0) map.delete(k);
+    }
     return map;
-  }, [filtered, orderedCategories]);
+  }, [filtered, orderedCategories, popularSet]);
 
   const handleAddCustom = (e) => {
     e?.preventDefault?.();
@@ -170,6 +276,49 @@ export default function ToolPicker({
                 Tap any to remove if it's not yours.
               </p>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Recommended-for-vertical band — only shown when the brand has a
+          known vertical AND the user isn't searching/filtering. Gives an
+          instant "this is for you" entry point before the full grid. */}
+      {recommendedItems.length > 0 && !query.trim() && activeCat === "all" && (
+        <div
+          className="rounded-2xl p-4"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(168,85,247,0.08) 0%, rgba(236,72,153,0.05) 100%)",
+            border: "1px solid rgba(168,85,247,0.25)",
+          }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Star size={13} className="text-fuchsia-300" />
+            <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-fuchsia-200">
+              Recommended for {vertical}
+            </span>
+            <span className="text-[10px] text-white/45 tabular-nums">
+              {recommendedItems.length}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {recommendedItems.slice(0, 9).map(item => {
+              const selected = confirmedLower.has(item.name.toLowerCase());
+              const wasDetected = detectedSet.has(item.name.toLowerCase());
+              return (
+                <ToolCard
+                  key={`rec-${item.name}`}
+                  item={item}
+                  selected={selected}
+                  detected={wasDetected}
+                  popular
+                  essential={ESSENTIAL_TOOLS.has(item.name)}
+                  onClick={() =>
+                    onToggleByName?.(item.name, selected ? "dismiss" : "confirm")
+                  }
+                />
+              );
+            })}
           </div>
         </div>
       )}
@@ -243,12 +392,16 @@ export default function ToolPicker({
                   {items.map(item => {
                     const selected = confirmedLower.has(item.name.toLowerCase());
                     const wasDetected = detectedSet.has(item.name.toLowerCase());
+                    const isPopular = popularSet.has(item.name.toLowerCase());
+                    const isEssential = ESSENTIAL_TOOLS.has(item.name);
                     return (
                       <ToolCard
                         key={item.name}
                         item={item}
                         selected={selected}
                         detected={wasDetected}
+                        popular={isPopular}
+                        essential={isEssential}
                         onClick={() =>
                           onToggleByName?.(item.name, selected ? "dismiss" : "confirm")
                         }
@@ -321,10 +474,11 @@ export default function ToolPicker({
 
 /* ───────────────── helpers ───────────────── */
 
-function ToolCard({ item, selected, detected, onClick }) {
-  // Three visual states, ordered by intensity:
+function ToolCard({ item, selected, detected, popular, essential, onClick }) {
+  // Visual states, ordered by intensity:
   //   selected           → solid white border, strongest signal
   //   detected (auto)    → cyan-tinted border, "we found this"
+  //   popular (vertical) → subtle fuchsia tint, "common in your sector"
   //   default            → neutral
   const cardStyle = selected
     ? {
@@ -338,10 +492,37 @@ function ToolCard({ item, selected, detected, onClick }) {
         border: "1px solid rgba(34,211,238,0.42)",
         boxShadow: "0 0 14px rgba(34,211,238,0.10)",
       }
+    : popular
+    ? {
+        background: "rgba(168,85,247,0.05)",
+        border: "1px solid rgba(168,85,247,0.32)",
+      }
     : {
         background: "rgba(255,255,255,0.025)",
         border: "1px solid rgba(255,255,255,0.10)",
       };
+
+  // Sub-label priority: Detected > Popular > Essential (only one is shown).
+  let sublabel = null;
+  if (detected && !selected) {
+    sublabel = (
+      <p className="text-[10px] text-cyan-300 leading-tight mt-0.5 flex items-center gap-1">
+        <Sparkles size={9} aria-hidden="true" /> Detected
+      </p>
+    );
+  } else if (popular && !selected) {
+    sublabel = (
+      <p className="text-[10px] text-fuchsia-300 leading-tight mt-0.5 flex items-center gap-1">
+        <Star size={9} aria-hidden="true" /> Popular
+      </p>
+    );
+  } else if (essential && !selected) {
+    sublabel = (
+      <p className="text-[10px] text-amber-300/80 leading-tight mt-0.5 flex items-center gap-1">
+        <Zap size={9} aria-hidden="true" /> Essential
+      </p>
+    );
+  }
 
   return (
     <button
@@ -363,11 +544,7 @@ function ToolCard({ item, selected, detected, onClick }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-semibold text-white truncate leading-tight">{item.name}</p>
-        {detected && !selected && (
-          <p className="text-[10px] text-cyan-300 leading-tight mt-0.5 flex items-center gap-1">
-            <Sparkles size={9} aria-hidden="true" /> Detected
-          </p>
-        )}
+        {sublabel}
       </div>
       {selected && (
         <div
