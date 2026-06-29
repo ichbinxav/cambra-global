@@ -17,6 +17,7 @@ import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
 import ToolPicker from "@/components/analyzer/ToolPicker";
 import Step3DataSource from "@/components/analyzer/Step3DataSource";
 import DetectionPopup from "@/components/analyzer/DetectionPopup";
+import AnalyzerGuide from "@/components/analyzer/AnalyzerGuide";
 import { CATALOG, getCatalogMeta } from "@/lib/analyzerToolCatalog";
 
 // ─── Anonymous session id ──────────────────────────────────────────────────
@@ -1065,6 +1066,7 @@ export default function Analyzer() {
               confirmedNames={confirmedNamesSet}
               onToggleByName={handleToggleByName}
               onAddCustom={handleAddCustomTool}
+              vertical={category}
             />
 
             {/* Manual numbers section — opens a dedicated form for rates & volumes.
@@ -1277,6 +1279,16 @@ export default function Analyzer() {
           onConnect={() => { if (step1Valid) goStep2(); }}
         />
       )}
+
+      {/* Ambient guide — adapts message to step + state, deterministic, dismissable */}
+      <AnalyzerGuide
+        step={step}
+        discoveryStatus={discovery.status}
+        detectedCount={discovery.findings.length}
+        confirmedCount={confirmedNamesSet.size}
+        stripeConnected={stripeConnected}
+        revenueEur={revenueEur}
+      />
 
       {/* Footer actions — glass */}
       <div

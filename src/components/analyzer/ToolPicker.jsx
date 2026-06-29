@@ -1,6 +1,47 @@
 import React, { useMemo, useState } from "react";
-import { Check, Search, Sparkles, Plus } from "lucide-react";
+import { Check, Search, Sparkles, Plus, Flame } from "lucide-react";
 import { CATALOG, TOOL_CATEGORIES, getCatalogMeta } from "@/lib/analyzerToolCatalog";
+
+/**
+ * Impact-by-category — qualitative signal for the picker. The Analyzer's
+ * actual savings come from scoreEngine, so this is purely a visual nudge
+ * that helps founders pick what matters most for their score.
+ *
+ *   high   → directly drives savings (payments, shipping)
+ *   medium → recurring cost line items (saas, marketing, banking, commerce)
+ *   low    → ops/visibility (analytics, support)
+ */
+const CATEGORY_IMPACT = {
+  payments:  "high",
+  shipping:  "high",
+  saas:      "medium",
+  marketing: "medium",
+  banking:   "medium",
+  commerce:  "medium",
+  analytics: "low",
+  support:   "low",
+};
+
+/**
+ * Vertical → priority order. The first category listed is shown first when
+ * the founder's brand category matches. Falls back to TOOL_CATEGORIES order.
+ */
+const VERTICAL_PRIORITY = {
+  Fashion:                  ["commerce", "payments", "shipping", "marketing", "saas", "analytics", "support", "banking"],
+  Beauty:                   ["commerce", "payments", "shipping", "marketing", "saas", "analytics", "support", "banking"],
+  "Food & Beverage":        ["commerce", "shipping", "payments", "marketing", "saas", "analytics", "support", "banking"],
+  Electronics:              ["commerce", "payments", "shipping", "marketing", "support", "saas", "analytics", "banking"],
+  "Home & Living":          ["commerce", "shipping", "payments", "marketing", "saas", "analytics", "support", "banking"],
+  "Sports & Outdoors":      ["commerce", "shipping", "payments", "marketing", "saas", "analytics", "support", "banking"],
+  "Health & Wellness":      ["commerce", "payments", "marketing", "shipping", "saas", "analytics", "support", "banking"],
+  "Toys & Kids":            ["commerce", "shipping", "payments", "marketing", "saas", "analytics", "support", "banking"],
+  Pets:                     ["commerce", "shipping", "payments", "marketing", "saas", "analytics", "support", "banking"],
+  "Jewelry & Accessories":  ["commerce", "payments", "shipping", "marketing", "saas", "analytics", "support", "banking"],
+  "Books & Media":          ["commerce", "shipping", "payments", "marketing", "saas", "analytics", "support", "banking"],
+  Automotive:               ["commerce", "shipping", "payments", "marketing", "saas", "support", "analytics", "banking"],
+  "B2B & Wholesale":        ["payments", "banking", "saas", "commerce", "shipping", "marketing", "analytics", "support"],
+  Other:                    null, // use default order
+};
 
 /**
  * ToolPicker — Step 2 grid where the founder ticks every tool in their stack.
@@ -26,11 +67,26 @@ export default function ToolPicker({
   confirmedNames,
   onToggleByName,
   onAddCustom,
+  vertical = "",
 }) {
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState("all");
   const [customName, setCustomName] = useState("");
   const [customCat, setCustomCat] = useState("saas");
+
+  // Reorder category tabs and group rendering based on the brand's vertical.
+  const orderedCategories = useMemo(() => {
+    const priority = VERTICAL_PRIORITY[vertical];
+    if (!priority) return TOOL_CATEGORIES;
+    const byKey = new Map(TOOL_CATEGORIES.map(c => [c.key, c]));
+    const ordered = [];
+    for (const k of priority) {
+      const c = byKey.get(k);
+      if (c) { ordered.push(c); byKey.delete(k); }
+    }
+    // Append any categories not in the priority list
+    return [...ordered, ...byKey.values()];
+  }, [vertical]);
 
   const confirmedLower = useMemo(() => {
     const s = new Set();
@@ -53,15 +109,20 @@ export default function ToolPicker({
     });
   }, [query, activeCat]);
 
-  // Group filtered items by category for nicer rendering
+  // Group filtered items by category for nicer rendering — ordered by the
+  // brand's vertical priority (so the most relevant categories come first).
   const grouped = useMemo(() => {
     const map = new Map();
+    // Seed the map in vertical-priority order so iteration follows it.
+    for (const c of orderedCategories) map.set(c.key, []);
     for (const item of filtered) {
       if (!map.has(item.category)) map.set(item.category, []);
       map.get(item.category).push(item);
     }
+    // Drop empty categories so we don't render blank headers.
+    for (const [k, v] of map) if (v.length === 0) map.delete(k);
     return map;
-  }, [filtered]);
+  }, [filtered, orderedCategories]);
 
   const handleAddCustom = (e) => {
     e?.preventDefault?.();
@@ -137,7 +198,7 @@ export default function ToolPicker({
             onClick={() => setActiveCat("all")}
             count={CATALOG.length}
           />
-          {TOOL_CATEGORIES.map(c => {
+          {orderedCategories.map(c => {
             const count = CATALOG.filter(i => i.category === c.key).length;
             return (
               <CategoryPill
@@ -168,13 +229,15 @@ export default function ToolPicker({
         <div className="space-y-5">
           {Array.from(grouped.entries()).map(([catKey, items]) => {
             const cat = TOOL_CATEGORIES.find(c => c.key === catKey);
+            const impact = CATEGORY_IMPACT[catKey] || "low";
             return (
               <div key={catKey}>
                 <div className="flex items-baseline gap-2 mb-2 px-1">
                   <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
                     {cat?.label || catKey}
                   </p>
-                  <p className="text-[10px] text-white/30">{cat?.blurb}</p>
+                  <ImpactBadge impact={impact} />
+                  <p className="text-[10px] text-white/30 ml-auto truncate">{cat?.blurb}</p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {items.map(item => {
@@ -185,7 +248,7 @@ export default function ToolPicker({
                         key={item.name}
                         item={item}
                         selected={selected}
-                        hint={wasDetected ? "Detected" : null}
+                        detected={wasDetected}
                         onClick={() =>
                           onToggleByName?.(item.name, selected ? "dismiss" : "confirm")
                         }
@@ -258,25 +321,35 @@ export default function ToolPicker({
 
 /* ───────────────── helpers ───────────────── */
 
-function ToolCard({ item, selected, hint, onClick }) {
+function ToolCard({ item, selected, detected, onClick }) {
+  // Three visual states, ordered by intensity:
+  //   selected           → solid white border, strongest signal
+  //   detected (auto)    → cyan-tinted border, "we found this"
+  //   default            → neutral
+  const cardStyle = selected
+    ? {
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.85)",
+        boxShadow: "0 0 0 1px rgba(255,255,255,0.12) inset",
+      }
+    : detected
+    ? {
+        background: "rgba(34,211,238,0.05)",
+        border: "1px solid rgba(34,211,238,0.42)",
+        boxShadow: "0 0 14px rgba(34,211,238,0.10)",
+      }
+    : {
+        background: "rgba(255,255,255,0.025)",
+        border: "1px solid rgba(255,255,255,0.10)",
+      };
+
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={selected}
       className="relative flex items-center gap-2.5 px-3 py-3 rounded-xl text-left min-h-[60px] transition-all"
-      style={
-        selected
-          ? {
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.85)",
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.12) inset",
-            }
-          : {
-              background: "rgba(255,255,255,0.025)",
-              border: "1px solid rgba(255,255,255,0.10)",
-            }
-      }
+      style={cardStyle}
     >
       <div
         className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-black"
@@ -290,8 +363,10 @@ function ToolCard({ item, selected, hint, onClick }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-semibold text-white truncate leading-tight">{item.name}</p>
-        {hint && (
-          <p className="text-[10px] text-cyan-300 leading-tight mt-0.5">{hint}</p>
+        {detected && !selected && (
+          <p className="text-[10px] text-cyan-300 leading-tight mt-0.5 flex items-center gap-1">
+            <Sparkles size={9} aria-hidden="true" /> Detected
+          </p>
         )}
       </div>
       {selected && (
@@ -304,6 +379,26 @@ function ToolCard({ item, selected, hint, onClick }) {
         </div>
       )}
     </button>
+  );
+}
+
+function ImpactBadge({ impact }) {
+  // Qualitative badge — drives founder attention without making numeric
+  // promises. Tied to CATEGORY_IMPACT, not to scoreEngine output.
+  const map = {
+    high:   { label: "High impact",   color: "#fb923c", bg: "rgba(251,146,60,0.10)",  border: "rgba(251,146,60,0.35)" },
+    medium: { label: "Medium impact", color: "#facc15", bg: "rgba(250,204,21,0.08)",  border: "rgba(250,204,21,0.28)" },
+    low:    { label: "Visibility",    color: "#94a3b8", bg: "rgba(148,163,184,0.08)", border: "rgba(148,163,184,0.24)" },
+  };
+  const v = map[impact] || map.low;
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.14em]"
+      style={{ background: v.bg, border: `1px solid ${v.border}`, color: v.color }}
+    >
+      {impact === "high" && <Flame size={8} aria-hidden="true" />}
+      {v.label}
+    </span>
   );
 }
 
