@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +14,9 @@ import StripeConnectCard from "@/components/connect/StripeConnectCard";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
 import RevenueRangePicker, { midpointForRange } from "@/components/analyzer/RevenueRangePicker";
-import DetectedToolsGrid from "@/components/analyzer/DetectedToolsGrid";
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
+import ToolPicker from "@/components/analyzer/ToolPicker";
+import { CATALOG, getCatalogMeta } from "@/lib/analyzerToolCatalog";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 
 // ─── Anonymous session id ──────────────────────────────────────────────────
@@ -73,9 +75,15 @@ const COUNTRIES = [
   "Greece", "Luxembourg", "United States", "Canada", "Australia", "Other",
 ];
 
-const PAYMENT_PROVIDERS = ["Stripe", "Adyen", "Mollie", "PayPal", "Klarna", "Shopify Payments", "Other"];
-const SHIPPING_PROVIDERS = ["DHL", "UPS", "FedEx", "Colissimo", "Chronopost", "Mondial Relay", "Sendcloud", "Other"];
-const COMMON_SAAS_TOOLS = ["Shopify", "Klaviyo", "Gorgias", "Notion", "Slack", "Mailchimp"];
+// ── Enriched provider lists ────────────────────────────────────────────────
+// Sourced from the same catalog used by ToolPicker so the manual selects and
+// the visual grid stay in sync. PAYMENT_PROVIDERS and SHIPPING_PROVIDERS are
+// still used to seed payment_provider / shipping_provider from confirmedNames
+// (see buildInputPayload), so keeping these as plain string arrays preserves
+// the existing calc path.
+const PAYMENT_PROVIDERS = CATALOG.filter(c => c.category === "payments").map(c => c.name).concat("Other");
+const SHIPPING_PROVIDERS = CATALOG.filter(c => c.category === "shipping").map(c => c.name).concat("Other");
+const COMMON_SAAS_TOOLS = CATALOG.filter(c => c.category === "saas").map(c => c.name);
 
 const RESUME_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -170,28 +178,6 @@ export default function Analyzer() {
   // Running analysis
   const [running, setRunning] = useState(false);
   const [analysisDone, setAnalysisDone] = useState(false);
-
-  // ── Build the unified tool list shown in Step 2 ──
-  const buildToolList = () => {
-    const map = new Map();
-    const keyFor = (cat, name) => `${cat}|${name}`;
-
-    // Website-detected findings (from discovery)
-    for (const f of discovery.findings || []) {
-      const k = keyFor(f.category, f.provider_or_tool);
-      if (!map.has(k)) {
-        map.set(k, {
-          category: f.category,
-          provider_or_tool: f.provider_or_tool,
-          confidence_score: f.confidence_score,
-          source: "website",
-        });
-      }
-    }
-    return Array.from(map.values());
-  };
-
-  const tools = buildToolList();
 
   // ── Auth check on mount — gate the analyzer behind sign-in ──
   useEffect(() => {
@@ -425,7 +411,7 @@ export default function Analyzer() {
     return () => { if (discoveryTimer.current) clearTimeout(discoveryTimer.current); };
   }, []);
 
-  // ── Toggle a tool's confirmed/dismissed state ──
+  // ── Toggle a tool's confirmed/dismissed state (key = `${category}|${name}`) ──
   const handleToggleTool = (key, action) => {
     setConfirmedTools(prev => {
       const next = new Set(prev);
@@ -439,6 +425,46 @@ export default function Analyzer() {
       else next.delete(key);
       return next;
     });
+  };
+
+  // ── ToolPicker bridge: it works by tool NAME, internal state by `${category}|${name}`.
+  // Find the canonical category for a given name (catalog first, then discovery).
+  const categoryForName = (name) => {
+    const fromCatalog = getCatalogMeta(name);
+    if (fromCatalog) return fromCatalog.category;
+    const fromDiscovery = (discovery.findings || []).find(
+      f => String(f.provider_or_tool).toLowerCase() === String(name).toLowerCase()
+    );
+    return fromDiscovery?.category || "saas";
+  };
+
+  const handleToggleByName = (name, action) => {
+    const cat = categoryForName(name);
+    handleToggleTool(`${cat}|${name}`, action);
+  };
+
+  // Confirmed tool NAMES only (used by ToolPicker to highlight selections).
+  const confirmedNamesSet = useMemo(() => {
+    const s = new Set();
+    confirmedTools.forEach(key => {
+      const name = String(key).split("|")[1];
+      if (name) s.add(name);
+    });
+    return s;
+  }, [confirmedTools]);
+
+  // Names auto-detected from discovery (for the "Detected on your site" band).
+  const detectedNames = useMemo(() => {
+    return (discovery.findings || [])
+      .map(f => f.provider_or_tool)
+      .filter(Boolean);
+  }, [discovery.findings]);
+
+  // Custom tool: add it as a confirmed entry under the chosen category.
+  const handleAddCustomTool = (name, category) => {
+    const cleanName = String(name).trim();
+    if (!cleanName) return;
+    handleToggleTool(`${category}|${cleanName}`, "confirm");
   };
 
   // ── Validate Step 1 ──
@@ -1004,18 +1030,42 @@ export default function Analyzer() {
             >
               {t("az_step2_title")}
             </h1>
-            <p className="text-[14px] text-white/55 mb-7">{t("az_step2_sub")}</p>
+            <p className="text-[14px] text-white/55 mb-4">
+              Tap every tool you use. The more we know, the more accurate your savings — and you'll never
+              be billed for guessing. Search 70+ providers below, or add anything missing.
+            </p>
 
-            <DetectedToolsGrid
-              tools={tools}
-              confirmed={confirmedTools}
-              dismissed={dismissedTools}
-              onToggle={handleToggleTool}
-              discovering={discovery.status === "running"}
+            {/* Selection counter */}
+            <div className="mb-5 flex items-center justify-between px-1">
+              <p className="text-[11px] uppercase tracking-[0.18em] font-bold text-white/45">
+                Your stack
+              </p>
+              <p className="text-[11px] font-bold text-white/75 tabular-nums">
+                {confirmedNamesSet.size} selected
+              </p>
+            </div>
+
+            {/* Discovery loading state */}
+            {discovery.status === "running" && (
+              <div
+                className="mb-4 rounded-xl p-3 flex items-center gap-2"
+                style={{ background: "rgba(34,211,238,0.05)", border: "1px solid rgba(34,211,238,0.18)" }}
+              >
+                <Loader2 size={13} className="animate-spin text-cyan-300 shrink-0" />
+                <p className="text-[12px] text-white/65">{t("analyzing_your_infra")}</p>
+              </div>
+            )}
+
+            <ToolPicker
+              detected={detectedNames}
+              confirmedNames={confirmedNamesSet}
+              onToggleByName={handleToggleByName}
+              onAddCustom={handleAddCustomTool}
             />
 
-            {/* Manual section */}
-            <div className="mt-6">
+            {/* Manual numbers section — opens a dedicated form for rates & volumes.
+                This is separate from the picker (which selects tool names). */}
+            <div className="mt-7">
               <button
                 type="button"
                 onClick={() => setManualOpen(o => !o)}
@@ -1026,7 +1076,7 @@ export default function Analyzer() {
                 }}
               >
                 <span className="flex items-center gap-2 text-sm font-semibold">
-                  <Plus size={14} /> {t("add_manually")}
+                  <Plus size={14} /> Add rates & volumes (optional, more accurate)
                 </span>
                 {manualOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
