@@ -149,6 +149,15 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
+
+    // Read-only introspection mode: returns the REGISTRY so verifyRegistrySync
+    // can compare it against oauthConnector's copy. Never touches integrations
+    // or syncs. Admin-only to avoid leaking endpoint URLs.
+    if (body?.mode === "describe") {
+      if (user.role !== "admin") return Response.json({ ok: false, error: "Admin only" }, { status: 403 });
+      return Response.json({ ok: true, registry: REGISTRY, source: "dataSyncAgent" });
+    }
+
     const { integration_id } = body;
     if (!integration_id) {
       return Response.json({ ok: false, error: "integration_id is required" }, { status: 400 });

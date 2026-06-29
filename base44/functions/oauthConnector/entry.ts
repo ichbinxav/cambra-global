@@ -403,7 +403,14 @@ Deno.serve(async (req) => {
     if (mode === "start")    return await modeStart(base44, user, body);
     if (mode === "callback") return await modeCallback(base44, user, body);
     if (mode === "refresh")  return await modeRefresh(base44, user, body);
-    return jsonError(400, `Unknown mode: ${mode}. Use start | callback | refresh`);
+    // Read-only introspection: returns the REGISTRY so verifyRegistrySync can
+    // compare it against dataSyncAgent's copy. Never reads/writes any data,
+    // never touches OAuth flows. Admin-only to avoid leaking endpoint URLs.
+    if (mode === "describe") {
+      if (user.role !== "admin") return jsonError(403, "Admin only");
+      return Response.json({ ok: true, registry: REGISTRY, source: "oauthConnector" });
+    }
+    return jsonError(400, `Unknown mode: ${mode}. Use start | callback | refresh | describe`);
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }

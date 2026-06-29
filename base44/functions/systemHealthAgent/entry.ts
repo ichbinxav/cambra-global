@@ -213,6 +213,44 @@ Deno.serve(async (req) => {
       .map(q => ({ ...q, age_hours: Math.round(q.age_hours) }));
     const sevFounderInputs = (staleApprovals.length + staleQuestions.length) > 0 ? "yellow" : "green";
 
+    // ── 8. Integration REGISTRY sync (oauthConnector vs dataSyncAgent) ──
+    // The REGISTRY object is duplicated across two Deno functions because they
+    // can't import from each other. If they ever drift, integrations fail
+    // silently. We delegate the comparison to verifyRegistrySync (read-only)
+    // so the logic lives in one place.
+    let registrySync = { severity: "green", in_sync: true, divergence_count: 0, divergences: [], error: null };
+    try {
+      const verifyRes = await base44.functions.invoke("verifyRegistrySync", {});
+      const verifyBody = verifyRes?.data || verifyRes;
+      if (verifyBody?.ok) {
+        registrySync = {
+          severity: verifyBody.in_sync ? "green" : "red",
+          in_sync: !!verifyBody.in_sync,
+          divergence_count: verifyBody.divergences?.length || 0,
+          // Cap at 5 to avoid bloating the health report.
+          divergences: (verifyBody.divergences || []).slice(0, 5),
+          error: null,
+        };
+      } else {
+        registrySync = {
+          severity: "yellow",
+          in_sync: false,
+          divergence_count: 0,
+          divergences: [],
+          error: verifyBody?.error || "verifyRegistrySync returned no payload",
+        };
+      }
+    } catch (err) {
+      registrySync = {
+        severity: "yellow",
+        in_sync: false,
+        divergence_count: 0,
+        divergences: [],
+        error: `verifyRegistrySync invocation failed: ${err.message}`,
+      };
+    }
+    const sevRegistry = registrySync.severity;
+
     // ── 7. Key activation status (informational) ────────────────────────
     // Proxy: an agent depending on a secret is "live" if it has any completed
     // task in the last 7d. We just count — never alarm.
@@ -226,7 +264,7 @@ Deno.serve(async (req) => {
     const sevKeys = "green"; // Informational only
 
     // ── Overall severity ────────────────────────────────────────────────
-    const overall = pickSeverity(sevFailing, sevStalled, sevSchedules, sevBrain, sevEvents, sevFounderInputs);
+    const overall = pickSeverity(sevFailing, sevStalled, sevSchedules, sevBrain, sevEvents, sevFounderInputs, sevRegistry);
 
     // Build proposal (the "reaper" suggestion — never auto-executes)
     const proposals = [];
@@ -256,6 +294,7 @@ Deno.serve(async (req) => {
         stuck_events:     { severity: sevEvents, count: stuckEvents.length, orphan_types: orphanEventTypes, items: stuckEvents.slice(0, 10) },
         founder_inputs:   { severity: sevFounderInputs, stale_approvals: staleApprovals, stale_questions: staleQuestions },
         keys:             { severity: sevKeys, agents_active_last_7d: agentsWithRecentSuccess.size, agents_dormant: dormantAgents.length, dormant_list: dormantAgents },
+        registry_sync:    { severity: sevRegistry, ...registrySync },
       },
       proposals,
       next_step: "This report only DETECTS. Nothing was modified. Review proposals and decide.",
