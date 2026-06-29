@@ -16,6 +16,7 @@ import RevenueSlider, { eurToRangeKey } from "@/components/analyzer/RevenueSlide
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
 import ToolPicker from "@/components/analyzer/ToolPicker";
 import Step3DataSource from "@/components/analyzer/Step3DataSource";
+import DetectionPopup from "@/components/analyzer/DetectionPopup";
 import { CATALOG, getCatalogMeta } from "@/lib/analyzerToolCatalog";
 
 // ─── Anonymous session id ──────────────────────────────────────────────────
@@ -927,11 +928,6 @@ export default function Analyzer() {
                     {t("analyzing_your_infra")}
                   </div>
                 )}
-                {discovery.status === "completed" && discovery.findings.length > 0 && (
-                  <p className="text-[11px] text-cyan-300 font-medium">
-                    {t("found_tools_on_site", { n: discovery.findings.length, plural: discovery.findings.length === 1 ? "" : "s" })}
-                  </p>
-                )}
                 {discovery.status === "completed" && discovery.findings.length === 0 && websiteUrl && (
                   <p className="text-[11px] text-white/40">{t("no_public_signals")}</p>
                 )}
@@ -1273,6 +1269,14 @@ export default function Analyzer() {
           </div>
         )}
       </main>
+
+      {/* Auto-detection popup — only visible in Step 1 once discovery completes */}
+      {step === 1 && discovery.status === "completed" && discovery.findings.length > 0 && (
+        <DetectionPopup
+          findings={discovery.findings}
+          onConnect={() => { if (step1Valid) goStep2(); }}
+        />
+      )}
 
       {/* Footer actions — glass */}
       <div
