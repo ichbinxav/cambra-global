@@ -6,7 +6,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  * READ-ONLY. NEVER kills tasks, NEVER applies fixes, NEVER re-runs schedules.
  * It only DETECTS and REPORTS. The founder (or future reapers) decides.
  *
- * Vigila 7 dimensiones:
+ * Vigila 9 dimensiones:
  *   1. Agentes fallando (last N runs)
  *   2. AgentTasks colgados (running > 1h)
  *   3. Schedules que debieron correr
@@ -14,6 +14,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  *   5. Events sin consumir (pending > 1h)
  *   6. AgentQuestions/Approvals estancados (pending > 24h)
  *   7. Estado de las keys (informativo)
+ *   8. REGISTRY sync entre oauthConnector y dataSyncAgent
+ *   9. Salud de Integrations (errored / stale-sync / expired tokens)
  *
  * Severities per dimension: 🟢 ok · 🟡 attention · 🔴 problem.
  * Overall = highest individual.
@@ -48,6 +50,11 @@ const EXPECTED_SCHEDULES = [
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 
+// Thresholds for the Integrations health dimension. Explicit so it's obvious
+// what we'd tweak if signals are too noisy / not noisy enough.
+const INTEGRATION_STALE_SYNC_DAYS = 7;     // connected but no sync for this many days → yellow
+const INTEGRATION_EXPIRED_GRACE_MIN = 5;   // OAuth token already expired more than this → yellow
+
 function pickSeverity(...sevs) {
   if (sevs.includes("red")) return "red";
   if (sevs.includes("yellow")) return "yellow";
@@ -78,12 +85,14 @@ Deno.serve(async (req) => {
 
     // ── Snapshot inputs (read-only) ─────────────────────────────────────
     // Cap pulls to recent windows; we don't need full history for a health check.
-    const [recentTasks, runningTasks, pendingEvents, pendingApprovals, pendingQuestions] = await Promise.all([
+    const [recentTasks, runningTasks, pendingEvents, pendingApprovals, pendingQuestions, allIntegrations] = await Promise.all([
       base44.asServiceRole.entities.AgentTask.list("-created_date", 500).catch(() => []),
       base44.asServiceRole.entities.AgentTask.filter({ status: "running" }, "-created_date", 200).catch(() => []),
       base44.asServiceRole.entities.Event.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
       base44.asServiceRole.entities.Approval.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
       base44.asServiceRole.entities.AgentQuestion.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
+      // Platform-wide read — same admin pattern as the other dimensions.
+      base44.asServiceRole.entities.Integration.list("-created_date", 500).catch(() => []),
     ]);
 
     // ── 1. Failing agents (last 5 runs per agent) ───────────────────────
@@ -263,8 +272,76 @@ Deno.serve(async (req) => {
     const dormantAgents = KNOWN_AGENTS.filter(an => !agentsObservedAtAll.has(an));
     const sevKeys = "green"; // Informational only
 
+    // ── 9. Integrations health ──────────────────────────────────────────
+    // Three sub-signals over a single read of the Integration entity:
+    //   - errored:        status === "error" (somebody needs to reconnect)
+    //   - stale_sync:     status === "connected" but last_sync_at is missing
+    //                     or older than INTEGRATION_STALE_SYNC_DAYS
+    //   - expired_tokens: OAuth integrations whose access_token_expires_at is
+    //                     already in the past (refresh job didn't run / failed).
+    //                     API-key integrations are skipped — keys don't expire
+    //                     like OAuth tokens do, and `access_token_expires_at`
+    //                     is null for them anyway.
+    //
+    // Read-only: we never touch the row. Just report.
+    const erroredIntegrations = [];
+    const staleSyncIntegrations = [];
+    const expiredTokenIntegrations = [];
+    const staleSyncCutoff = now - INTEGRATION_STALE_SYNC_DAYS * DAY;
+    const expiredCutoff = now - INTEGRATION_EXPIRED_GRACE_MIN * 60 * 1000;
+
+    for (const integ of allIntegrations) {
+      if (integ.status === "error") {
+        erroredIntegrations.push({
+          integration_id: integ.id,
+          provider: integ.provider,
+          brand_id: integ.brand_id,
+          last_error: integ.last_error || null,
+          last_sync_at: integ.last_sync_at || null,
+        });
+        continue; // don't double-count errored rows in other buckets
+      }
+
+      if (integ.status === "connected") {
+        const lastSyncMs = integ.last_sync_at ? new Date(integ.last_sync_at).getTime() : null;
+        if (lastSyncMs == null || lastSyncMs < staleSyncCutoff) {
+          const ageDays = lastSyncMs == null
+            ? null
+            : Math.round((now - lastSyncMs) / DAY);
+          staleSyncIntegrations.push({
+            integration_id: integ.id,
+            provider: integ.provider,
+            brand_id: integ.brand_id,
+            last_sync_at: integ.last_sync_at || null,
+            age_days: ageDays,
+            reason: lastSyncMs == null
+              ? "Connected but never synced"
+              : `Last sync ${ageDays}d ago (threshold ${INTEGRATION_STALE_SYNC_DAYS}d)`,
+          });
+        }
+
+        const authMethod = integ.metadata_json?.auth_method || "oauth";
+        if (authMethod === "oauth" && integ.access_token_expires_at) {
+          const expMs = new Date(integ.access_token_expires_at).getTime();
+          if (expMs < expiredCutoff) {
+            expiredTokenIntegrations.push({
+              integration_id: integ.id,
+              provider: integ.provider,
+              brand_id: integ.brand_id,
+              expired_at: integ.access_token_expires_at,
+              expired_minutes_ago: Math.round((now - expMs) / 60000),
+            });
+          }
+        }
+      }
+    }
+
+    const integHasError = erroredIntegrations.length > 0;
+    const integHasYellow = staleSyncIntegrations.length > 0 || expiredTokenIntegrations.length > 0;
+    const sevIntegrations = integHasError ? "red" : integHasYellow ? "yellow" : "green";
+
     // ── Overall severity ────────────────────────────────────────────────
-    const overall = pickSeverity(sevFailing, sevStalled, sevSchedules, sevBrain, sevEvents, sevFounderInputs, sevRegistry);
+    const overall = pickSeverity(sevFailing, sevStalled, sevSchedules, sevBrain, sevEvents, sevFounderInputs, sevRegistry, sevIntegrations);
 
     // Build proposal (the "reaper" suggestion — never auto-executes)
     const proposals = [];
@@ -295,6 +372,21 @@ Deno.serve(async (req) => {
         founder_inputs:   { severity: sevFounderInputs, stale_approvals: staleApprovals, stale_questions: staleQuestions },
         keys:             { severity: sevKeys, agents_active_last_7d: agentsWithRecentSuccess.size, agents_dormant: dormantAgents.length, dormant_list: dormantAgents },
         registry_sync:    { severity: sevRegistry, ...registrySync },
+        integrations_health: {
+          severity: sevIntegrations,
+          total_integrations: allIntegrations.length,
+          errored: { count: erroredIntegrations.length, items: erroredIntegrations.slice(0, 20) },
+          stale_sync: {
+            count: staleSyncIntegrations.length,
+            threshold_days: INTEGRATION_STALE_SYNC_DAYS,
+            items: staleSyncIntegrations.slice(0, 20),
+          },
+          expired_tokens: {
+            count: expiredTokenIntegrations.length,
+            grace_minutes: INTEGRATION_EXPIRED_GRACE_MIN,
+            items: expiredTokenIntegrations.slice(0, 20),
+          },
+        },
       },
       proposals,
       next_step: "This report only DETECTS. Nothing was modified. Review proposals and decide.",
@@ -317,6 +409,9 @@ Deno.serve(async (req) => {
           broken_brain_chains: brokenChains.length,
           stuck_events: stuckEvents.length,
           stale_founder_inputs: staleApprovals.length + staleQuestions.length,
+          integrations_errored: erroredIntegrations.length,
+          integrations_stale_sync: staleSyncIntegrations.length,
+          integrations_expired_tokens: expiredTokenIntegrations.length,
         },
       },
       status: "pending",
