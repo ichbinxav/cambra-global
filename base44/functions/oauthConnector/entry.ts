@@ -134,7 +134,7 @@ const REGISTRY = {
     client_secret_env: "STRIPE_SECRET_KEY",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api.stripe.com/v1/balance_transactions", method: "GET", normalize_as: "transactions" },
+      { url: "https://api.stripe.com/v1/balance_transactions", method: "GET", normalize_as: "stripe_transactions" },
     ],
     demo_mode: false,
   },

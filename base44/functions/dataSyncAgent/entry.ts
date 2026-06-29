@@ -99,7 +99,7 @@ const REGISTRY = {
     client_secret_env: "STRIPE_SECRET_KEY",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api.stripe.com/v1/balance_transactions", method: "GET", normalize_as: "transactions" },
+      { url: "https://api.stripe.com/v1/balance_transactions", method: "GET", normalize_as: "stripe_transactions" },
     ],
     demo_mode: false,
   },
@@ -318,6 +318,53 @@ const normalizers = {
       currency: r.currency || "EUR",
       occurred_at: r.created_at || null,
     }));
+  },
+  // ─── stripe_transactions ────────────────────────────────────────────────
+  // FIRST real normalizer (the others above are placeholders).
+  //
+  // Translates ONE form: Stripe's GET /v1/balance_transactions response.
+  //   { object: "list", data: [ {id, amount, fee, net, currency, created, ...} ], has_more }
+  //
+  // CAMBRA "rule of gold": a normalizer TRANSLATES form, it never invents or
+  // calculates values. Every output field comes 1:1 from an input field
+  // (modulo unit conversion: cents→units, UNIX→ISO, lowercase→uppercase).
+  //
+  // Unit conventions translated:
+  //   - amount/fee/net: Stripe gives cents (smallest currency unit) → divide by 100
+  //   - currency: Stripe gives lowercase "eur" → uppercase "EUR"
+  //   - created: Stripe gives UNIX seconds → ISO string
+  //   - type: prefer `reporting_category` (Stripe's curated taxonomy) over raw `type`
+  //
+  // Robustness:
+  //   - raw not an object, or raw.data not an array → returns []
+  //   - missing numeric fields → coerced to 0 via `?? 0` (then /100 = 0)
+  //   - missing string/timestamp fields → null
+  //   - never throws on shape; the worst case is an empty list
+  //
+  // PAGINATION (deferred): Stripe responses carry `has_more: true` + we'd need
+  // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
+  // page 1. Implement full pagination when we wire Stripe with real credentials
+  // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  stripe_transactions: (raw) => {
+    const rows = Array.isArray(raw?.data) ? raw.data : [];
+    return rows.map((tx) => {
+      const amountCents = Number(tx?.amount ?? 0);
+      const feeCents = Number(tx?.fee ?? 0);
+      const netCents = Number(tx?.net ?? 0);
+      const createdSec = Number(tx?.created ?? 0);
+      const currency = typeof tx?.currency === "string" ? tx.currency.toUpperCase() : "EUR";
+      const occurredAt = createdSec > 0 ? new Date(createdSec * 1000).toISOString() : null;
+      return {
+        vertical: "payments",
+        external_id: tx?.id ?? null,
+        amount: amountCents / 100,
+        fee: feeCents / 100,
+        net: netCents / 100,
+        currency,
+        occurred_at: occurredAt,
+        type: tx?.reporting_category ?? tx?.type ?? null,
+      };
+    });
   },
   invoices: (raw) => {
     const rows = Array.isArray(raw?.invoices) ? raw.invoices : [];
