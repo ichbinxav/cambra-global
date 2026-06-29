@@ -7,17 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   ArrowRight, ArrowLeft, Loader2, AlertTriangle, MapPin,
-  ShieldCheck, Sparkles, ChevronDown, ChevronUp, Plus, Store,
+  Sparkles, ChevronDown, ChevronUp, Plus, Store,
 } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
-import StripeConnectCard from "@/components/connect/StripeConnectCard";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
 import RevenueRangePicker, { midpointForRange } from "@/components/analyzer/RevenueRangePicker";
 import AnalysisProgress from "@/components/analyzer/AnalysisProgress";
 import ToolPicker from "@/components/analyzer/ToolPicker";
+import Step3DataSource from "@/components/analyzer/Step3DataSource";
 import { CATALOG, getCatalogMeta } from "@/lib/analyzerToolCatalog";
-import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 
 // ─── Anonymous session id ──────────────────────────────────────────────────
 // Stored in localStorage so the user can complete the audit while signed-out,
@@ -1256,44 +1255,12 @@ export default function Analyzer() {
             </h1>
             <p className="text-[14px] text-white/55 mb-7">{t("az_step3_sub")}</p>
 
-            {stripeConnected ? (
-              <div className="space-y-4">
-                <div
-                  className="rounded-2xl p-6 text-center"
-                  style={{
-                    background: "rgba(34,211,238,0.06)",
-                    border: "1px solid rgba(34,211,238,0.25)",
-                    boxShadow: "0 0 32px rgba(34,211,238,0.15)",
-                  }}
-                >
-                  <ShieldCheck size={28} className="mx-auto mb-2 text-cyan-300" />
-                  <p className="text-sm font-black text-white">{t("az_step3_verified")}</p>
-                </div>
-                <UpgradeToVerified vertical="payments" isConnected currentConfidence="verified" />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <StripeConnectCard redirectAfter="/Analyzer?resume=true" />
-                <UpgradeToVerified
-                  vertical="payments"
-                  currentConfidence="estimated"
-                  isConnected={false}
-                  onConnect={() => {
-                    // Persist resume state before OAuth redirect so we can restore on return
-                    persistResumeState(3);
-                  }}
-                />
-              </div>
-            )}
-
-            <div className="mt-6 text-center">
-              <button
-                onClick={runAnalysis}
-                className="text-xs font-semibold text-white/50 hover:text-white underline underline-offset-2 transition-colors"
-              >
-                {stripeConnected ? t("confirm_cta") : t("az_step3_skip")}
-              </button>
-            </div>
+            <Step3DataSource
+              stripeConnected={stripeConnected}
+              persistResumeState={() => persistResumeState(3)}
+              onPrefillManual={(partial) => setManual(m => ({ ...m, ...partial }))}
+              onSkipAndRun={runAnalysis}
+            />
           </div>
         )}
       </main>
