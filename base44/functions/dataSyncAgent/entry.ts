@@ -1090,8 +1090,8 @@ const normalizers = {
   // "/Date(MILLISECONDS+0000)/" — extract digits, new Date(ms).toISOString() (NOT seconds).
   // DEUDA: (a) verify fields first connect. (b) Date in /Date(ms)/ — MILLISECONDS, confirm.
   // (c) static_headers forces JSON over XML default; confirm no ?format=json also needed.
-  // (d) ⚠️ Xero-Tenant-Id required in prod multi-org — NOT captured yet; same per-integration
-  // dynamic-header debt as Sage. Flagged, not solved. (e) ?page=N pagination — sync engine.
+  // (d) Xero-Tenant-Id captured at connect via shop_domain and injected by static_headers
+  // ({shop} interpolation). Same UX pattern as Sage X-Business. (e) ?page=N pagination — sync engine.
   xero_bills: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;

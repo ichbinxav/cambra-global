@@ -25,13 +25,14 @@ import ShopDomainCaptureForm from "@/components/connect/ShopDomainCaptureForm";
  */
 
 const CATEGORY_META = {
-  payments:  { label: "Payments",  icon: CreditCard },
-  shipping:  { label: "Shipping",  icon: Truck },
-  banking:   { label: "Banking",   icon: Building2 },
-  marketing: { label: "Marketing", icon: Mail },
-  saas:      { label: "Tools",     icon: Layers },
-  commerce:  { label: "Commerce",  icon: Layers },
-  other:     { label: "Other",     icon: Layers },
+  payments:   { label: "Payments",   icon: CreditCard },
+  shipping:   { label: "Shipping",   icon: Truck },
+  banking:    { label: "Banking",    icon: Building2 },
+  accounting: { label: "Accounting", icon: Building2 },
+  marketing:  { label: "Marketing",  icon: Mail },
+  saas:       { label: "Tools",      icon: Layers },
+  commerce:   { label: "Commerce",   icon: Layers },
+  other:      { label: "Other",      icon: Layers },
 };
 
 function timeAgo(iso) {
