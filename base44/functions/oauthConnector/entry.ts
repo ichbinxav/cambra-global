@@ -350,6 +350,45 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // ─── REAL PROVIDERS (Tanda 7: BNPL Basic Auth — Klarna) ──────────────────
+  // Klarna Settlements API authenticates with HTTP Basic Auth (API username
+  // + API password from the Merchant Portal). The motor's `basic_auth`
+  // path encrypts "user:pass" as a single AES-256-GCM blob — same mechanism
+  // as Sendcloud. ZERO engine changes.
+  //
+  // The normalizer `klarna_settlements` groups transaction lines by
+  // `order_id` and emits ONE row per order, summing SALE/RETURN into
+  // `amount` and FEE/FEE_REFUND into `fee`. Handles both NET (SALE+FEE in
+  // same payout) and GROSS (FEE-only payout) settlement modes.
+  //
+  // Wiring only — no secrets needed for Basic Auth providers at registry
+  // level; the brand pastes their credentials at connect time via the
+  // generic UI form.
+  //
+  // Deuda anotada (also documented inside the normalizer):
+  //   (a) Endpoint path from public docs; verify at first real connect.
+  //   (b) `amount` is a STRING in MAJOR currency units (not minor units
+  //       like Stripe/Zettle/Square). The normalizer does NOT divide by
+  //       100. Confirm against a real payout.
+  //   (c) GROSS settlements emit rows with amount:0 (no SALE lines).
+  //   (d) Cursor pagination — sync engine's job.
+  klarna: {
+    display_name: "Klarna",
+    category: "payments",
+    logo: null,
+    description: "Klarna Settlements API — Basic Auth (API username + password). The normalizer groups lines by order_id and aggregates SALE/RETURN into amount and FEE/FEE_REFUND into fee, handling both NET and GROSS settlement modes.",
+    auth_method: "basic_auth",
+    basic_auth_help_url: "https://docs.klarna.com",
+    basic_auth_help_text: "Genera tus credenciales de API en el Merchant Portal de Klarna (username + password) y pégalas aquí.",
+    basic_auth_user_label: "API username",
+    basic_auth_pass_label: "API password",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api.klarna.com/settlements/v1/payouts/transactions", method: "GET", normalize_as: "klarna_settlements" },
+    ],
+    demo_mode: false,
+  },
 };
 
 function getProviderConfig(provider) {

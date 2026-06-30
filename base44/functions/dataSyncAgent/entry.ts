@@ -254,6 +254,24 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // Mirror of klarna — same contract, both files identical.
+  klarna: {
+    display_name: "Klarna",
+    category: "payments",
+    logo: null,
+    description: "Klarna Settlements API — Basic Auth (API username + password). The normalizer groups lines by order_id and aggregates SALE/RETURN into amount and FEE/FEE_REFUND into fee, handling both NET and GROSS settlement modes.",
+    auth_method: "basic_auth",
+    basic_auth_help_url: "https://docs.klarna.com",
+    basic_auth_help_text: "Genera tus credenciales de API en el Merchant Portal de Klarna (username + password) y pégalas aquí.",
+    basic_auth_user_label: "API username",
+    basic_auth_pass_label: "API password",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api.klarna.com/settlements/v1/payouts/transactions", method: "GET", normalize_as: "klarna_settlements" },
+    ],
+    demo_mode: false,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -368,6 +386,113 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── klarna_settlements ─────────────────────────────────────────────────
+  // TENTH real normalizer. Translates Klarna Settlements API:
+  //   GET /v1/payouts/transactions
+  //   { transactions: [ { type, order_id, capture_id, amount, currency,
+  //                       capture_date, sale_date } ] }
+  //
+  // CRITICAL: the fee is a SEPARATE LINE TYPE, not a field. Same family of
+  // problem as Zettle (line-pairing), but with a richer taxonomy:
+  //   - "SALE"       → positive sale line
+  //   - "RETURN"     → refund (subtracts from SALE)
+  //   - "FEE"        → Klarna's commission (subtracts from settlement)
+  //   - "FEE_REFUND" → refund of a previously-charged fee
+  // All lines of the same order share the same `order_id`. We MUST group by
+  // order_id and emit ONE row per order — going line-by-line would scatter
+  // the fee from its sale and break per-order benchmarking.
+  //
+  // NET vs GROSS:
+  //   - NET settlements: SALE and FEE lines arrive together (same payout).
+  //   - GROSS settlements: the merchant receives a "GROSS_FEE" payout that
+  //     contains ONLY FEE lines (no SALE), with their original order_id.
+  //   We must NOT assume each group has a SALE. A group with only FEE/
+  //   FEE_REFUND lines is valid — emit a row with amount: 0 and the net
+  //   fee. Otherwise we'd silently drop fee data in GROSS mode.
+  //
+  // CAMBRA "rule of gold" (1:1 from input, modulo unit):
+  //   - amount is a STRING in MAJOR currency units ("108.95" = 108.95 EUR),
+  //     NOT minor units. Do NOT divide by 100. Different from Stripe/
+  //     Zettle/Square which return minor units. Pass through toNum and use
+  //     directly. This is a Klarna-specific quirk documented in their docs.
+  //   - currency taken from the first line of the group, falls back to
+  //     "EUR" only if absent — defecto razonable.
+  //   - dates: ISO 8601 preserved AS-IS. Prefer sale_date of the SALE line
+  //     (the moment of revenue). If no SALE in the group (GROSS case), use
+  //     capture_date of the first line — best available timestamp.
+  //
+  // Sign convention for `fee`:
+  //   - sum(FEE) - sum(FEE_REFUND) → "net fee paid this period". Normally
+  //     ≥ 0; if refunds exceed charges in a period the net goes negative
+  //     and we propagate as-is (matches the Zettle/PayPal convention of
+  //     not choosing the sign for the user).
+  //
+  // Items skipped:
+  //   - line without `order_id` → skipped (no way to pair).
+  //   - group with no SALE / RETURN / FEE / FEE_REFUND lines → skipped
+  //     (unrecognized line types only; honest absence).
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) Written from public docs; verify exact root key (raw.transactions
+  //       vs alternative) and field names on first real connect.
+  //   (b) `amount` is a STRING in MAJOR units — confirm against a real
+  //       payout. If Klarna ever switches a tenant to minor units, this
+  //       normalizer needs a /100 branch.
+  //   (c) NET vs GROSS — both modes are supported (groups with only FEE
+  //       lines emit amount: 0 + fee). Confirm behavior with a real GROSS
+  //       settlement on first connect.
+  //   (d) Pagination — sync engine's job, not this normalizer's.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  klarna_settlements: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const lines = Array.isArray(raw?.transactions) ? raw.transactions : [];
+    // Group by order_id. Skip lines without order_id (no way to pair).
+    const groups = new Map();
+    for (const line of lines) {
+      if (!line || typeof line !== "object") continue;
+      const orderId = line?.order_id;
+      if (!orderId || typeof orderId !== "string") continue;
+      if (!groups.has(orderId)) groups.set(orderId, []);
+      groups.get(orderId).push(line);
+    }
+    const rows = [];
+    for (const [orderId, groupLines] of groups) {
+      let saleSum = 0, returnSum = 0, feeSum = 0, feeRefundSum = 0;
+      let saw = false;
+      let saleLine = null;
+      for (const line of groupLines) {
+        const type = line?.type;
+        const amt = toNum(line?.amount);
+        if (type === "SALE") { saleSum += amt; saw = true; if (!saleLine) saleLine = line; }
+        else if (type === "RETURN") { returnSum += amt; saw = true; }
+        else if (type === "FEE") { feeSum += amt; saw = true; }
+        else if (type === "FEE_REFUND") { feeRefundSum += amt; saw = true; }
+      }
+      if (!saw) continue; // unrecognized lines only — honest absence
+      const amount = saleSum - returnSum;
+      const fee = feeSum - feeRefundSum;
+      const currency = groupLines[0]?.currency || "EUR";
+      // Prefer sale_date of the SALE line; otherwise capture_date of first line (GROSS).
+      const occurredAt = (saleLine && typeof saleLine?.sale_date === "string")
+        ? saleLine.sale_date
+        : (typeof groupLines[0]?.capture_date === "string" ? groupLines[0].capture_date : null);
+      rows.push({
+        vertical: "payments",
+        external_id: orderId,
+        amount,
+        fee,
+        currency,
+        occurred_at: occurredAt,
+        type: "settlement",
+      });
+    }
+    return rows;
+  },
   // ─── square_payments ────────────────────────────────────────────────────
   // NINTH real normalizer. Translates Square Payments API:
   //   GET https://connect.squareup.com/v2/payments
