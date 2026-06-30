@@ -649,7 +649,15 @@ function mergeStaticHeaders(cfg, authHeaders, plaintextToken, shopDomain) {
     if (value.includes("{token}") && plaintextToken) {
       value = value.replaceAll("{token}", plaintextToken);
     }
-    if (value.includes("{shop}") && shopDomain) {
+    if (value.includes("{shop}")) {
+      // Fail-fast — symmetric with interpolateShopDomain() above, which throws
+      // the equivalent "in this URL" error. A missing shop_domain at sync time
+      // for a provider that declares {shop} in a header value is a
+      // configuration bug (e.g. integration migrated without metadata_json
+      // backfill); silently sending the literal placeholder to the provider
+      // would produce a confusing 400/401 from their side instead of a clear
+      // error on ours.
+      if (!shopDomain) throw new Error("shop_domain is required to interpolate {shop} in this header value");
       value = value.replaceAll("{shop}", shopDomain);
     }
     merged[name] = value;

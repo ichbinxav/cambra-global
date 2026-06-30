@@ -31,30 +31,22 @@ describe("mergeStaticHeaders — {shop} interpolation in header values", () => {
     });
   });
 
-  // ─── T3 — comportamiento documentado cuando shopDomain falta ────────────
-  // REPORTE DE COMPORTAMIENTO ACTUAL (NO juicio sobre si es bug):
-  // Cuando shopDomain es null/undefined/"" pero el valor del header contiene
-  // {shop}, la guarda `if (value.includes("{shop}") && shopDomain)` falla
-  // por el lado del shopDomain falsy, y el valor se merge tal cual — es
-  // decir, el header final sale con el placeholder LITERAL "{shop}".
-  // El header NO se omite, NO se lanza error. Lo que se enviaría al
-  // provider es literalmente "Xero-Tenant-Id: {shop}".
-  //
-  // No se reescribe el comportamiento aquí. Solo se documenta vía test.
-  it("T3a — shopDomain=null + {shop} in value → placeholder kept LITERAL", () => {
+  // ─── T3 — fail-fast cuando shopDomain falta (Opción A confirmada) ──────
+  // Symmetric con interpolateShopDomain() (path URL). Si el header value
+  // contiene {shop} y no hay shopDomain, lanzamos un error claro en vez de
+  // enviar el placeholder literal al provider.
+  const SHOP_ERR = /shop_domain is required to interpolate \{shop\} in this header value/;
+  it("T3a — shopDomain=null + {shop} in value → throws", () => {
     const cfg = { static_headers: { "Xero-Tenant-Id": "{shop}" } };
-    const out = mergeStaticHeaders(cfg, {}, null, null);
-    expect(out).toEqual({ "Xero-Tenant-Id": "{shop}" });
+    expect(() => mergeStaticHeaders(cfg, {}, null, null)).toThrow(SHOP_ERR);
   });
-  it("T3b — shopDomain=undefined → placeholder kept LITERAL", () => {
+  it("T3b — shopDomain=undefined → throws", () => {
     const cfg = { static_headers: { "Xero-Tenant-Id": "{shop}" } };
-    const out = mergeStaticHeaders(cfg, {}, null, undefined);
-    expect(out).toEqual({ "Xero-Tenant-Id": "{shop}" });
+    expect(() => mergeStaticHeaders(cfg, {}, null, undefined)).toThrow(SHOP_ERR);
   });
-  it("T3c — shopDomain='' → placeholder kept LITERAL (empty string is falsy)", () => {
+  it("T3c — shopDomain='' (empty string is falsy) → throws", () => {
     const cfg = { static_headers: { "Xero-Tenant-Id": "{shop}" } };
-    const out = mergeStaticHeaders(cfg, {}, null, "");
-    expect(out).toEqual({ "Xero-Tenant-Id": "{shop}" });
+    expect(() => mergeStaticHeaders(cfg, {}, null, "")).toThrow(SHOP_ERR);
   });
 
   // ─── T4 ─────────────────────────────────────────────────────────────────
@@ -142,6 +134,61 @@ describe("mergeStaticHeaders — {shop} interpolation in header values", () => {
     expect(out).toEqual({
       "Authorization": "Zoho-oauthtoken ACCESS_TOKEN_XYZ",
       "X-Tenant": "tenant_42",
+    });
+  });
+
+  // ─── T9 — providers sin {shop} en ningún header NO se ven afectados ─────
+  // Confirma que el fail-fast solo se dispara cuando hay {shop} en algún
+  // valor. Square/PayPlug no declaran {shop} → shopDomain=null debe ser un
+  // no-op silencioso, sin error.
+  it("T9a — Square shape with shopDomain=null does NOT throw", () => {
+    const cfg = { static_headers: { "Square-Version": "2026-01-22" } };
+    expect(() => mergeStaticHeaders(cfg, { "Authorization": "Bearer sq" }, null, null)).not.toThrow();
+    const out = mergeStaticHeaders(cfg, { "Authorization": "Bearer sq" }, null, null);
+    expect(out).toEqual({ "Authorization": "Bearer sq", "Square-Version": "2026-01-22" });
+  });
+  it("T9b — PayPlug shape with shopDomain=null/undefined does NOT throw", () => {
+    const cfg = {
+      static_headers: {
+        "PayPlug-Version": "2019-08-06",
+        "Accept": "application/json",
+      },
+    };
+    expect(() => mergeStaticHeaders(cfg, { "Authorization": "Bearer pp" }, null, undefined)).not.toThrow();
+  });
+
+  // ─── T10 — aislamiento del error en un sync multi-endpoint ──────────────
+  // Simula el call-site real de dataSyncAgent (línea 2292): un loop que
+  // procesa varios endpoints, donde uno es Xero sin shop_domain y otro es
+  // Square. El loop está envuelto en try/catch a nivel de integración, así
+  // que el fallo de Xero debe propagarse como un Error capturable (mensaje
+  // claro), y la iteración de Square debe poder ejecutarse en su propia
+  // pasada sin verse afectada por el throw anterior.
+  it("T10 — Xero without shop_domain throws clean error; isolated per-endpoint", () => {
+    const endpoints = [
+      // Xero-like: requires shop_domain, has it missing
+      { name: "xero", cfg: { static_headers: { "Xero-Tenant-Id": "{shop}", "Accept": "application/json" } }, shopDomain: null },
+      // Square-like: no {shop} anywhere, should succeed regardless
+      { name: "square", cfg: { static_headers: { "Square-Version": "2026-01-22" } }, shopDomain: null },
+    ];
+    const results = [];
+    for (const ep of endpoints) {
+      try {
+        const out = mergeStaticHeaders(ep.cfg, { "Authorization": "Bearer x" }, null, ep.shopDomain);
+        results.push({ name: ep.name, ok: true, headers: out });
+      } catch (err) {
+        results.push({ name: ep.name, ok: false, error: err.message });
+      }
+    }
+    expect(results[0]).toEqual({
+      name: "xero",
+      ok: false,
+      error: "shop_domain is required to interpolate {shop} in this header value",
+    });
+    expect(results[1]).toEqual({
+      name: "square",
+      ok: true,
+      headers: { "Authorization": "Bearer x", "Square-Version": "2026-01-22" },
     });
   });
 });
