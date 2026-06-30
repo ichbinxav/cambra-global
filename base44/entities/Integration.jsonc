@@ -74,6 +74,31 @@
     "metadata_json": {
       "type": "object",
       "description": "Free-form metadata from the provider (account name, currency, auth_method, etc). Never put secrets here."
+    },
+    "integration_data_quality": {
+      "type": "object",
+      "description": "Per-sync-run snapshot of structural data-quality gaps surfaced by the upstream provider API. Computed by dataSyncAgent at every sync run from the registry's known_data_gaps for this provider. Purely INFORMATIONAL: NEVER consumed by computeVerticalStatus, generateRecommendations, savings, benchmarks, or any business-logic score. UI surfaces it as a read-only badge. Decision to connect this to recommendation confidence is pending product input \u2014 do not wire it without explicit approval.",
+      "properties": {
+        "completeness_pct": {
+          "type": "number",
+          "description": "100 if the provider has no known_data_gaps in the registry; 70 if at least one known gap is present. Single fixed step on purpose \u2014 per-gap severity weighting is future work."
+        },
+        "known_gaps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Snapshot of registry.known_data_gaps at sync time. [] when no gaps."
+        },
+        "evidence": {
+          "type": "string",
+          "description": "Human-readable one-line explanation of the gap(s), for UI display."
+        },
+        "computed_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     }
   },
   "required": [
