@@ -216,6 +216,25 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // Mirror of zettle — same contract, both files identical.
+  zettle: {
+    display_name: "Zettle",
+    category: "payments",
+    logo: null,
+    description: "Zettle (PayPal) OAuth — read-only access to Finance API v2 liquid-account transactions. The normalizer pairs PAYMENT + PAYMENT_FEE lines by originatingTransactionUuid to emit one row per transaction (Zettle models the fee as a separate negative line).",
+    auth_method: "oauth",
+    auth_url: "https://oauth.izettle.com/authorize",
+    token_url: "https://oauth.izettle.com/token",
+    scopes: ["READ:FINANCE", "READ:PURCHASE"],
+    client_id_env: "ZETTLE_CLIENT_ID",
+    client_secret_env: "ZETTLE_CLIENT_SECRET",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://finance.izettle.com/v2/accounts/liquid/transactions", method: "GET", normalize_as: "zettle_finance" },
+    ],
+    demo_mode: false,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper

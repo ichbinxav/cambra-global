@@ -283,6 +283,39 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // ─── REAL PROVIDERS (Tanda 5: in-person payments OAuth — Zettle) ─────────
+  // Zettle (PayPal-owned, formerly iZettle) provides Finance API v2 for
+  // liquid-account transactions. Standard OAuth2 — no refresh token rotation,
+  // no per-shop subdomain. The normalizer `zettle_finance` pairs PAYMENT +
+  // PAYMENT_FEE lines that share originatingTransactionUuid and emits ONE
+  // row per transaction (see the normalizer for the full pairing contract).
+  //
+  // Wiring only — `client_id_env` / `client_secret_env` point to env vars
+  // that are NOT set yet. modeStart() returns a clean 503 if they're
+  // missing, so the engine tolerates absent secrets until they're pasted.
+  //
+  // Deuda anotada (also documented inside the normalizer):
+  //   (a) Endpoint paths from public docs; verify at first real connect.
+  //   (b) Finance API line responses do NOT carry currency; the normalizer
+  //       hardcodes "EUR" today. Confirm currency source at first connect.
+  zettle: {
+    display_name: "Zettle",
+    category: "payments",
+    logo: null,
+    description: "Zettle (PayPal) OAuth — read-only access to Finance API v2 liquid-account transactions. The normalizer pairs PAYMENT + PAYMENT_FEE lines by originatingTransactionUuid to emit one row per transaction (Zettle models the fee as a separate negative line).",
+    auth_method: "oauth",
+    auth_url: "https://oauth.izettle.com/authorize",
+    token_url: "https://oauth.izettle.com/token",
+    scopes: ["READ:FINANCE", "READ:PURCHASE"],
+    client_id_env: "ZETTLE_CLIENT_ID",
+    client_secret_env: "ZETTLE_CLIENT_SECRET",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://finance.izettle.com/v2/accounts/liquid/transactions", method: "GET", normalize_as: "zettle_finance" },
+    ],
+    demo_mode: false,
+  },
 };
 
 function getProviderConfig(provider) {
