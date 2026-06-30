@@ -655,6 +655,44 @@ const REGISTRY = {
     demo_mode: false,
   },
 
+  // ─── REAL PROVIDERS (Tanda 15: accounting API key — sevDesk) ─────────────
+  // sevDesk API v1. German accounting software. ⚠️ API key goes in the
+  // Authorization header WITHOUT the "Bearer " prefix — bare key, declared
+  // via api_key_format: "{key}" (most other api_key providers prefix with
+  // "Bearer "; sevDesk is the exception). Reads /Voucher, normalizer
+  // filters creditDebit === "C" (supplier vouchers = brand EXPENSES);
+  // creditDebit "D" rows (incoming, revenue) are dropped silently — same
+  // shape as xero_bills filtering Type === "ACCPAY".
+  //
+  // ⚠️  DEUDA ANOTADA (see normalizer comment for the full list):
+  //   (a) Written from docs; verify creditDebit C/D convention and sum*
+  //       field names at first real connect.
+  //   (b) supplierName may arrive as a bare string OR nested supplier.name
+  //       — both forms handled, confirm the dominant shape on real connect.
+  //   (c) status is a numeric sevDesk state code (50=draft / 100=open /
+  //       1000=paid); stored as raw string. Label mapping is consumer's job.
+  //   (d) voucherDate may carry a TZ offset; preserved as-is.
+  //   (e) offset+limit pagination — sync engine.
+  sevdesk: {
+    display_name: "sevDesk",
+    category: "accounting",
+    logo: null,
+    description: "sevDesk API v1 — API key in Authorization header WITHOUT 'Bearer' prefix (bare key). Reads /Voucher filtered to creditDebit='C' (supplier vouchers = brand expenses). German accounting software.",
+    auth_method: "api_key",
+    api_key_header: "Authorization",
+    api_key_format: "{key}",
+    api_key_help_url: "https://api.sevdesk.de/",
+    api_key_help_text: "En sevDesk → Configuración → Usuarios → tu usuario → API Token. Copia el token y pégalo aquí.",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://my.sevdesk.de/api/v1/Voucher", method: "GET", normalize_as: "sevdesk_vouchers" },
+    ],
+    demo_mode: false,
+  },
+
   // ─── REAL PROVIDERS (Tanda 14: accounting API key — Odoo) ────────────────
   // Odoo REST API (Odoo 17+). API key as Bearer. Reads /api/account.move
   // filtered to move_type=in_invoice (supplier bills = brand EXPENSES).

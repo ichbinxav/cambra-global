@@ -382,6 +382,27 @@ const REGISTRY = {
     demo_mode: false,
   },
 
+  // Mirror of sevdesk — same contract, both files identical.
+  sevdesk: {
+    display_name: "sevDesk",
+    category: "accounting",
+    logo: null,
+    description: "sevDesk API v1 — API key in Authorization header WITHOUT 'Bearer' prefix (bare key). Reads /Voucher filtered to creditDebit='C' (supplier vouchers = brand expenses). German accounting software.",
+    auth_method: "api_key",
+    api_key_header: "Authorization",
+    api_key_format: "{key}",
+    api_key_help_url: "https://api.sevdesk.de/",
+    api_key_help_text: "En sevDesk → Configuración → Usuarios → tu usuario → API Token. Copia el token y pégalo aquí.",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://my.sevdesk.de/api/v1/Voucher", method: "GET", normalize_as: "sevdesk_vouchers" },
+    ],
+    demo_mode: false,
+  },
+
   // Mirror of odoo — same contract, both files identical.
   odoo: {
     display_name: "Odoo",
@@ -514,6 +535,63 @@ const normalizers = {
   // Cents→units (/100), lowercase→uppercase currency, UNIX seconds→ISO. Prefer reporting_category
   // over raw type. Defensive: raw.data not array → []. Pagination (has_more / starting_after)
   // is sync engine job, not this normalizer.
+  // sevdesk_vouchers — sevDesk API v1 /Voucher (German accounting). A "Voucher"
+  // is the unit of accounting entry; there is NO separate supplier_invoice
+  // endpoint. Filter: creditDebit === "C" (Credit = outgoing = supplier
+  // voucher = expense); "D" (Debit = incoming = revenue) dropped silently.
+  // Auth header is bare key (api_key_format "{key}", no "Bearer " prefix).
+  // Root: raw.objects (sevDesk wraps every list in {objects:[...]}); no
+  // fallback. sum* values are STRINGS in major units → parseFloat (NOT /100).
+  // supplier_name: prefer flat string supplierName, else nested supplier.name,
+  // else null. voucherDate may be "YYYY-MM-DD" or ISO with TZ offset
+  // ("2024-01-15T00:00:00+01:00") — preserved AS-IS. status is a numeric
+  // sevDesk state code (50/100/1000); stringified raw, label mapping is the
+  // consumer's job.
+  // DEUDA: (a) verify creditDebit C/D + sum* field names first connect.
+  // (b) supplierName: string OR nested supplier.name — both handled. (c) status
+  // numeric code, kept as raw string. (d) voucherDate may carry TZ — as-is.
+  // (e) offset+limit pagination — sync engine.
+  sevdesk_vouchers: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const vouchers = Array.isArray(raw?.objects) ? raw.objects : [];
+    const rows = [];
+    for (const voucher of vouchers) {
+      if (!voucher || typeof voucher !== "object") continue;
+      if (voucher?.creditDebit !== "C") continue; // skip revenue rows ("D")
+      const id = voucher?.id;
+      if (id === null || id === undefined || id === "") continue; // skip without anchor
+      const flatSupplier = voucher?.supplierName;
+      const supplierName = (typeof flatSupplier === "string" && flatSupplier.length > 0)
+        ? flatSupplier
+        : (voucher?.supplier?.name ?? null);
+      const rawCurrency = voucher?.currency;
+      const currency = (typeof rawCurrency === "string" && rawCurrency.length > 0)
+        ? rawCurrency
+        : "EUR";
+      const occurredAt = typeof voucher?.voucherDate === "string" ? voucher.voucherDate : null;
+      const status = (voucher?.status !== null && voucher?.status !== undefined)
+        ? String(voucher.status)
+        : null;
+      rows.push({
+        vertical: "accounting",
+        direction: "expense",
+        external_id: String(id),
+        supplier_name: supplierName,
+        amount: toNum(voucher?.sumGross),
+        amount_before_tax: toNum(voucher?.sumNet),
+        tax: toNum(voucher?.sumTax),
+        fee: 0, // A voucher is an expense, not a fee.
+        currency,
+        occurred_at: occurredAt,
+        status,
+      });
+    }
+    return rows;
+  },
   // odoo_bills — Odoo REST /api/account.move (Odoo 17+, Custom plan only).
   // Filter: move_type === "in_invoice" (supplier bill = expense); out_invoice (revenue)
   // and any other move_type (entry, in_refund, out_refund, …) are skipped silently.
