@@ -74,6 +74,13 @@ const COMPARED_FIELDS = [
   // {shop}.example.com pattern). The engine reads this flag in modeStart to
   // decide whether to require a shop_domain parameter from the client.
   "requires_shop_domain",
+  // Sync engine — pagination + date-range + rate-limit (introduced when we
+  // added generic pagination to the engine; drives request flow). Optional
+  // per provider: providers without these fall back to legacy single-fetch
+  // behaviour. Comparing them anyway because a drift here is a real bug.
+  "pagination",
+  "date_range",
+  "rate_limit",
 ];
 
 // Deep-equality for plain JSON values (strings, numbers, booleans, arrays of

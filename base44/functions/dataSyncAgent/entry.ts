@@ -79,8 +79,11 @@ const REGISTRY = {
     client_secret_env: "STRIPE_SECRET_KEY",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api.stripe.com/v1/balance_transactions", method: "GET", normalize_as: "stripe_transactions" },
+      { url: "https://api.stripe.com/v1/balance_transactions?limit=100", method: "GET", normalize_as: "stripe_transactions" },
     ],
+    pagination: { style: "cursor_stripe" },
+    date_range: { since_param: "created[gte]", until_param: "created[lte]", format: "unix" },
+    rate_limit: { rps: 25 },
     demo_mode: false,
   },
   mollie: {
@@ -102,8 +105,11 @@ const REGISTRY = {
     client_secret_env: "MOLLIE_CLIENT_SECRET",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api.mollie.com/v2/settlements", method: "GET", normalize_as: "mollie_settlements" },
+      { url: "https://api.mollie.com/v2/settlements?limit=100", method: "GET", normalize_as: "mollie_settlements" },
     ],
+    pagination: { style: "cursor_hal_body" },
+    date_range: { since_param: "from", until_param: "until", format: "iso" },
+    rate_limit: { rps: 5 },
     demo_mode: false,
   },
 
@@ -420,8 +426,11 @@ const REGISTRY = {
     },
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api.payplug.com/v1/payments", method: "GET", normalize_as: "payplug_payments" },
+      { url: "https://api.payplug.com/v1/payments?per_page=100&page=1", method: "GET", normalize_as: "payplug_payments" },
     ],
+    pagination: { style: "page_number", page_param: "page", size_param: "per_page", page_size: 100, array_root: "data" },
+    date_range: { since_param: "created_at_from", until_param: "created_at_to", format: "unix" },
+    rate_limit: { rps: 4 },
     demo_mode: false,
   },
 
@@ -1938,6 +1947,190 @@ function computeIntegrationDataQuality(cfg) {
   };
 }
 
+// ─── Sync engine: pagination + date-range + rate-limit ─────────────────────
+//
+// ⚠️ COPIA VERBATIM de los módulos en src/lib/syncEngine/ (Deno no puede
+//    importar de src/). Mismo patrón que el normalizer Stripe / REGISTRY.
+//    Tests unitarios viven en src/lib/syncEngine/*.test.js — si esta copia
+//    diverge, realinearla manualmente. No hay enforcement automático.
+
+// --- paginators -------------------------------------------------------------
+function _engineSyncWithQueryParam(url, key, value) {
+  const [base, search = ""] = url.split("?");
+  const params = new URLSearchParams(search);
+  params.set(key, value);
+  return `${base}?${params.toString()}`;
+}
+function _engineSyncWithQueryParams(url, kvPairs) {
+  const [base, search = ""] = url.split("?");
+  const params = new URLSearchParams(search);
+  for (const [k, v] of Object.entries(kvPairs)) params.set(k, v);
+  return `${base}?${params.toString()}`;
+}
+function _paginatorCursorStripe(raw, _h, currentUrl) {
+  const data = Array.isArray(raw?.data) ? raw.data : [];
+  if (!raw?.has_more || data.length === 0) return { nextUrl: null, nextCursor: null };
+  const lastId = data[data.length - 1]?.id;
+  if (!lastId) return { nextUrl: null, nextCursor: null };
+  return { nextUrl: _engineSyncWithQueryParam(currentUrl, "starting_after", lastId), nextCursor: lastId };
+}
+function _paginatorCursorHalBody(raw) {
+  const next = raw?._links?.next?.href;
+  if (!next || typeof next !== "string") return { nextUrl: null, nextCursor: null };
+  return { nextUrl: next, nextCursor: next };
+}
+function _paginatorPageNumber(raw, _h, currentUrl, cfg) {
+  const pageParam = cfg?.page_param || "page";
+  const sizeParam = cfg?.size_param || "per_page";
+  const pageSize = cfg?.page_size || 100;
+  const arrayRoot = cfg?.array_root;
+  let arr;
+  if (arrayRoot && typeof arrayRoot === "string") arr = raw?.[arrayRoot];
+  else if (Array.isArray(raw?.data)) arr = raw.data;
+  else if (Array.isArray(raw)) arr = raw;
+  else arr = [];
+  arr = Array.isArray(arr) ? arr : [];
+  if (arr.length === 0 || arr.length < pageSize) return { nextUrl: null, nextCursor: null };
+  const [, search = ""] = currentUrl.split("?");
+  const params = new URLSearchParams(search);
+  const currentPage = parseInt(params.get(pageParam) || `${cfg?.start_page || 1}`, 10);
+  const nextPage = (Number.isFinite(currentPage) ? currentPage : 1) + 1;
+  return {
+    nextUrl: _engineSyncWithQueryParams(currentUrl, { [pageParam]: String(nextPage), [sizeParam]: String(pageSize) }),
+    nextCursor: String(nextPage),
+  };
+}
+function _paginatorLinkHeader(_raw, headers) {
+  const v = headers?.get?.("Link") || headers?.get?.("link");
+  if (!v) return { nextUrl: null, nextCursor: null };
+  for (const part of v.split(",").map(s => s.trim())) {
+    const m = part.match(/^<([^>]+)>\s*;\s*rel="?next"?/i);
+    if (m) return { nextUrl: m[1], nextCursor: m[1] };
+  }
+  return { nextUrl: null, nextCursor: null };
+}
+function _paginatorOffsetLimit(raw, _h, currentUrl, cfg) {
+  const offsetParam = cfg?.offset_param || "offset";
+  const limitParam = cfg?.limit_param || "limit";
+  const pageSize = cfg?.page_size || 100;
+  const arrayRoot = cfg?.array_root;
+  let arr;
+  if (arrayRoot && typeof arrayRoot === "string") arr = raw?.[arrayRoot];
+  else if (Array.isArray(raw?.objects)) arr = raw.objects;
+  else if (Array.isArray(raw?.data)) arr = raw.data;
+  else if (Array.isArray(raw)) arr = raw;
+  else arr = [];
+  arr = Array.isArray(arr) ? arr : [];
+  if (arr.length === 0 || arr.length < pageSize) return { nextUrl: null, nextCursor: null };
+  const [, search = ""] = currentUrl.split("?");
+  const params = new URLSearchParams(search);
+  const currentOffset = parseInt(params.get(offsetParam) || "0", 10);
+  const nextOffset = (Number.isFinite(currentOffset) ? currentOffset : 0) + pageSize;
+  return {
+    nextUrl: _engineSyncWithQueryParams(currentUrl, { [offsetParam]: String(nextOffset), [limitParam]: String(pageSize) }),
+    nextCursor: String(nextOffset),
+  };
+}
+function _paginatorNull() { return { nextUrl: null, nextCursor: null }; }
+function getPaginator(style) {
+  if (style === "cursor_stripe")   return _paginatorCursorStripe;
+  if (style === "cursor_hal_body") return _paginatorCursorHalBody;
+  if (style === "page_number")     return _paginatorPageNumber;
+  if (style === "link_header")     return _paginatorLinkHeader;
+  if (style === "offset_limit")    return _paginatorOffsetLimit;
+  return _paginatorNull;
+}
+
+// --- date range -------------------------------------------------------------
+const TWELVE_MONTHS_MS = 365 * 24 * 60 * 60 * 1000;
+function computeSyncWindow({ lastSyncedUntil, now = new Date() }) {
+  const until = new Date(now.getTime());
+  let since;
+  if (lastSyncedUntil) {
+    const parsed = new Date(lastSyncedUntil);
+    since = Number.isFinite(parsed.getTime()) ? parsed : new Date(now.getTime() - TWELVE_MONTHS_MS);
+  } else {
+    since = new Date(now.getTime() - TWELVE_MONTHS_MS);
+  }
+  return { since, until };
+}
+function _formatDateValue(date, format) {
+  if (format === "unix") return String(Math.floor(date.getTime() / 1000));
+  if (format === "iso_date") return date.toISOString().slice(0, 10);
+  return date.toISOString();
+}
+function applyDateRangeToUrl(url, cfg, window) {
+  if (!cfg || typeof cfg !== "object") return url;
+  if (!url || typeof url !== "string") return url;
+  if (!window?.since || !window?.until) return url;
+  const sinceParam = cfg.since_param;
+  const untilParam = cfg.until_param;
+  const format = cfg.format || "iso";
+  if (!sinceParam) return url;
+  const [base, search = ""] = url.split("?");
+  const params = new URLSearchParams(search);
+  params.set(sinceParam, _formatDateValue(window.since, format));
+  if (untilParam) params.set(untilParam, _formatDateValue(window.until, format));
+  return `${base}?${params.toString()}`;
+}
+
+// --- rate limit + backoff ---------------------------------------------------
+const _BASE_BACKOFF_MS = 500;
+const _DEFAULT_MAX_RETRIES = 4;
+function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function _parseRetryAfter(v) {
+  if (!v) return null;
+  const asInt = parseInt(v, 10);
+  if (Number.isFinite(asInt) && asInt >= 0) return asInt * 1000;
+  const asDate = Date.parse(v);
+  if (Number.isFinite(asDate)) { const d = asDate - Date.now(); return d > 0 ? d : 0; }
+  return null;
+}
+function _minDelayMs(rl) {
+  const rps = rl?.rps;
+  if (!rps || typeof rps !== "number" || rps <= 0) return 0;
+  return Math.ceil(1000 / rps);
+}
+function createRateState() { return { lastCallAt: 0 }; }
+async function fetchWithBackoff(fetchFn, rlCfg, state, maxRetries = _DEFAULT_MAX_RETRIES) {
+  const minDelay = _minDelayMs(rlCfg);
+  if (minDelay > 0 && state?.lastCallAt) {
+    const elapsed = Date.now() - state.lastCallAt;
+    if (elapsed < minDelay) await _sleep(minDelay - elapsed);
+  }
+  let attempt = 0;
+  while (true) {
+    if (state) state.lastCallAt = Date.now();
+    let res;
+    try { res = await fetchFn(); }
+    catch (err) {
+      if (attempt >= maxRetries) throw err;
+      await _sleep(_BASE_BACKOFF_MS * Math.pow(2, attempt));
+      attempt++; continue;
+    }
+    if (res.ok) return res;
+    const retryable = res.status === 429 || (res.status >= 500 && res.status < 600);
+    if (!retryable || attempt >= maxRetries) return res;
+    const retryAfter = _parseRetryAfter(res.headers?.get?.("Retry-After"));
+    await _sleep(retryAfter !== null ? retryAfter : _BASE_BACKOFF_MS * Math.pow(2, attempt));
+    attempt++;
+  }
+}
+
+// --- Hard caps (defensive — never spin forever) -----------------------------
+// Even with rate limits and pagination, a provider returning never-ending
+// pages would block Deno's request budget. These caps make the worst case
+// bounded:
+//   - MAX_PAGES_PER_ENDPOINT: 50 pages × default 100 rows = 5,000 records per
+//     endpoint per sync. Enough for monthly incremental on most brands.
+//     The 12-month initial backfill may hit this cap on large clients — the
+//     next sync will pick up where this one left off (last_synced_until is
+//     persisted even on partial success).
+//   - PAGE_BUFFER_LIMIT: hard cap on records held in memory before we stop
+//     and return partial results. Protects Deno worker memory.
+const MAX_PAGES_PER_ENDPOINT = 50;
+const PAGE_BUFFER_LIMIT = 5000;
+
 // ─── Handler ───────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -1986,36 +2179,103 @@ Deno.serve(async (req) => {
       started_at: new Date().toISOString(),
     });
 
+    // ─── New sync flow: pagination + date-range + rate-limit ─────────────
+    //
+    // Behavior matrix:
+    //   - Provider with NO `pagination` config → null paginator → 1 page
+    //     (legacy behavior, untouched providers run identically to before).
+    //   - Provider with `pagination` config → loop until paginator returns
+    //     {nextUrl: null}, hard-capped at MAX_PAGES_PER_ENDPOINT.
+    //   - Provider with `date_range` config → first URL gets since/until
+    //     params injected. Subsequent paginator URLs are used as-is (Stripe
+    //     keeps the params; HAL next URL already contains them; page_number
+    //     re-applies them since we use _engineSyncWithQueryParams).
+    //   - Provider with `rate_limit` config → throttle between calls, plus
+    //     reactive backoff on 429/5xx via fetchWithBackoff.
+    //   - last_synced_until / last_cursor stored per-endpoint in
+    //     integ.metadata_json under sync_state[normalize_as].
     let allRecords = [];
+    let totalPagesFetched = 0;
+    let partialReason = null;
     const endpoints = cfg.data_endpoints || [];
+
+    // Snapshot existing sync_state from metadata (per-endpoint cursors / windows).
+    const existingMeta = (integ.metadata_json && typeof integ.metadata_json === "object") ? { ...integ.metadata_json } : {};
+    const syncState = (existingMeta.sync_state && typeof existingMeta.sync_state === "object")
+      ? { ...existingMeta.sync_state }
+      : {};
 
     try {
       for (const ep of endpoints) {
-        let raw;
-        if (cfg.demo_mode) {
-          raw = demoMockResponse(ep.normalize_as || cfg.data_type);
-        } else {
+        const epKey = ep.normalize_as || cfg.data_type;
+        const norm = normalizers[epKey];
+        if (!norm) throw new Error(`No normalizer for data_type=${epKey}`);
+
+        // Resolve sync window for this endpoint (per-endpoint last_synced_until).
+        const epState = syncState[epKey] || {};
+        const window = computeSyncWindow({ lastSyncedUntil: epState.last_synced_until || null });
+
+        // Resolve auth headers ONCE per endpoint (token, static headers, {shop}).
+        let finalAuthHeaders = {};
+        if (!cfg.demo_mode) {
           const { headers: authHeaders, plaintextToken } = await buildAuthHeaders(cfg, integ);
-          // Fuse static headers declared in the registry (e.g. API version,
-          // alternate auth header). No-op for providers without
-          // static_headers — exact same headers as before this change.
-          const finalAuthHeaders = mergeStaticHeaders(cfg, authHeaders, plaintextToken, integ.metadata_json?.shop_domain || null);
-          // Interpolate {shop} per-endpoint using the value stored at
-          // connect time. No-op for providers without {shop}.
-          const endpointUrl = interpolateShopDomain(ep.url, integ.metadata_json?.shop_domain || null);
-          const res = await fetch(endpointUrl, {
-            method: ep.method || "GET",
-            headers: { ...finalAuthHeaders, "Accept": "application/json" },
-          });
-          if (!res.ok) {
-            const text = await res.text();
-            throw new Error(`Endpoint ${ep.url} returned ${res.status}: ${text.slice(0, 200)}`);
-          }
-          raw = await res.json();
+          finalAuthHeaders = mergeStaticHeaders(cfg, authHeaders, plaintextToken, integ.metadata_json?.shop_domain || null);
         }
-        const norm = normalizers[ep.normalize_as || cfg.data_type];
-        if (!norm) throw new Error(`No normalizer for data_type=${ep.normalize_as || cfg.data_type}`);
-        allRecords = allRecords.concat(norm(raw));
+
+        // Build the first URL: interpolate {shop}, then inject date-range params.
+        let currentUrl = interpolateShopDomain(ep.url, integ.metadata_json?.shop_domain || null);
+        currentUrl = applyDateRangeToUrl(currentUrl, cfg.date_range, window);
+
+        // Paginator + rate state are per-endpoint (each endpoint has its own throttle budget).
+        const paginator = getPaginator(cfg.pagination?.style);
+        const rateState = createRateState();
+
+        let pageIdx = 0;
+        let lastCursor = null;
+        let nextUrl = currentUrl;
+        while (nextUrl) {
+          if (pageIdx >= MAX_PAGES_PER_ENDPOINT) { partialReason = `Hit MAX_PAGES_PER_ENDPOINT (${MAX_PAGES_PER_ENDPOINT}) on ${epKey}`; break; }
+          if (allRecords.length >= PAGE_BUFFER_LIMIT) { partialReason = `Hit PAGE_BUFFER_LIMIT (${PAGE_BUFFER_LIMIT}) on ${epKey}`; break; }
+
+          let raw, resHeaders = { get: () => null };
+          if (cfg.demo_mode) {
+            raw = demoMockResponse(epKey);
+            // demo mode never paginates — return after first synthetic page.
+          } else {
+            const res = await fetchWithBackoff(
+              () => fetch(nextUrl, { method: ep.method || "GET", headers: { ...finalAuthHeaders, "Accept": "application/json" } }),
+              cfg.rate_limit,
+              rateState,
+            );
+            if (!res.ok) {
+              const text = await res.text();
+              throw new Error(`Endpoint ${ep.url} returned ${res.status}: ${text.slice(0, 200)}`);
+            }
+            raw = await res.json();
+            resHeaders = res.headers;
+          }
+
+          allRecords = allRecords.concat(norm(raw));
+          totalPagesFetched++;
+
+          // Decide next page.
+          const nextStep = paginator(raw, resHeaders, nextUrl, cfg.pagination || {});
+          if (nextStep.nextCursor) lastCursor = nextStep.nextCursor;
+          nextUrl = cfg.demo_mode ? null : nextStep.nextUrl;
+          pageIdx++;
+        }
+
+        // Persist per-endpoint sync state. last_synced_until advances to the
+        // window's `until` ONLY when we finished without hitting a cap; on a
+        // partial sync we keep the previous last_synced_until so the next run
+        // re-tries the same window. last_cursor is informational (the cursor
+        // of the last page we read).
+        syncState[epKey] = {
+          last_cursor: lastCursor,
+          last_synced_until: partialReason ? (epState.last_synced_until || null) : window.until.toISOString(),
+          last_window_since: window.since.toISOString(),
+          last_pages_fetched: pageIdx,
+        };
       }
 
       // Compute integration_data_quality from the registry's known_data_gaps.
@@ -2023,17 +2283,32 @@ Deno.serve(async (req) => {
       // those without known_data_gaps get completeness_pct=100, known_gaps=[].
       const integrationDataQuality = computeIntegrationDataQuality(cfg);
 
+      // Persist sync_state inside metadata_json (preserving anything else
+      // already stored there, e.g. shop_domain, auth_method, account_id).
+      const newMetadata = { ...existingMeta, sync_state: syncState };
+
+      const finalStatus = partialReason ? "partial" : "success";
+
       await base44.asServiceRole.entities.Integration.update(integ.id, {
         last_sync_at: new Date().toISOString(),
-        last_sync_status: "success",
-        last_error: null,
+        last_sync_status: finalStatus,
+        last_error: partialReason || null,
         integration_data_quality: integrationDataQuality,
+        metadata_json: newMetadata,
       });
 
       await base44.asServiceRole.entities.AgentTask.update(task.id, {
         status: "completed",
-        output_summary: `Synced ${allRecords.length} records from ${integ.provider}`,
-        output_payload_json: { records_count: allRecords.length, sample: allRecords.slice(0, 3) },
+        output_summary: partialReason
+          ? `Synced ${allRecords.length} records from ${integ.provider} (PARTIAL: ${partialReason})`
+          : `Synced ${allRecords.length} records from ${integ.provider}`,
+        output_payload_json: {
+          records_count: allRecords.length,
+          pages_fetched: totalPagesFetched,
+          partial_reason: partialReason,
+          sync_state: syncState,
+          sample: allRecords.slice(0, 3),
+        },
         completed_at: new Date().toISOString(),
       });
 
@@ -2044,7 +2319,13 @@ Deno.serve(async (req) => {
         entity_type: "Integration",
         entity_id: integ.id,
         agent_task_id: task.id,
-        payload_json: { provider: integ.provider, records_count: allRecords.length, demo_mode: !!cfg.demo_mode },
+        payload_json: {
+          provider: integ.provider,
+          records_count: allRecords.length,
+          pages_fetched: totalPagesFetched,
+          partial_reason: partialReason,
+          demo_mode: !!cfg.demo_mode,
+        },
         status: "processed",
         processed_at: new Date().toISOString(),
       });
@@ -2053,6 +2334,9 @@ Deno.serve(async (req) => {
         ok: true,
         agent_task_id: task.id,
         records_count: allRecords.length,
+        pages_fetched: totalPagesFetched,
+        partial_reason: partialReason,
+        sync_state: syncState,
         normalized_sample: allRecords.slice(0, 5),
         demo_mode: !!cfg.demo_mode,
       });

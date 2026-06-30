@@ -134,8 +134,17 @@ const REGISTRY = {
     client_secret_env: "STRIPE_SECRET_KEY",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api.stripe.com/v1/balance_transactions", method: "GET", normalize_as: "stripe_transactions" },
+      { url: "https://api.stripe.com/v1/balance_transactions?limit=100", method: "GET", normalize_as: "stripe_transactions" },
     ],
+    // Pagination: Stripe cursor-style (has_more + starting_after=<last_id>).
+    // Page size locked at 100 in the endpoint URL above (Stripe's max).
+    pagination: { style: "cursor_stripe" },
+    // Date-range: Stripe accepts created[gte]/created[lte] as UNIX seconds.
+    // Backfill 12m / incremental from last_synced_until (engine handles).
+    date_range: { since_param: "created[gte]", until_param: "created[lte]", format: "unix" },
+    // Stripe production rate ~100 rps; we cap at 25 rps to leave headroom for
+    // any other Stripe calls happening in the same brand.
+    rate_limit: { rps: 25 },
     demo_mode: false,
   },
   mollie: {
@@ -157,8 +166,16 @@ const REGISTRY = {
     client_secret_env: "MOLLIE_CLIENT_SECRET",
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api.mollie.com/v2/settlements", method: "GET", normalize_as: "mollie_settlements" },
+      { url: "https://api.mollie.com/v2/settlements?limit=100", method: "GET", normalize_as: "mollie_settlements" },
     ],
+    // Pagination: Mollie HAL — follow _links.next.href.
+    pagination: { style: "cursor_hal_body" },
+    // Date-range: Mollie /v2/settlements accepts `from` and `until` as ISO
+    // timestamps. Settlement-level filter (not payment-level).
+    date_range: { since_param: "from", until_param: "until", format: "iso" },
+    // Mollie documented rate limit is generous (300 rpm on settlements);
+    // we cap at 5 rps to be safe and friendly.
+    rate_limit: { rps: 5 },
     demo_mode: false,
   },
 
@@ -700,8 +717,15 @@ const REGISTRY = {
     },
     data_type: "transactions",
     data_endpoints: [
-      { url: "https://api.payplug.com/v1/payments", method: "GET", normalize_as: "payplug_payments" },
+      { url: "https://api.payplug.com/v1/payments?per_page=100&page=1", method: "GET", normalize_as: "payplug_payments" },
     ],
+    // Pagination: PayPlug uses page-number style (?page=N&per_page=<size>).
+    // array_root="data" so the engine knows where the rows live.
+    pagination: { style: "page_number", page_param: "page", size_param: "per_page", page_size: 100, array_root: "data" },
+    // Date-range: PayPlug accepts created_at_from/created_at_to as Unix seconds.
+    date_range: { since_param: "created_at_from", until_param: "created_at_to", format: "unix" },
+    // No public rps documented; cap at 4 rps conservatively.
+    rate_limit: { rps: 4 },
     demo_mode: false,
   },
 
