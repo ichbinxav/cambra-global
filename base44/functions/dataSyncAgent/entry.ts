@@ -334,6 +334,28 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // Mirror of xero — same contract, both files identical.
+  xero: {
+    display_name: "Xero",
+    category: "accounting",
+    logo: null,
+    description: "Xero Accounting API — OAuth2 + Bearer. Reads /Invoices and the normalizer filters to ACCPAY (supplier bills = brand expenses). Uses the generic static_headers mechanism to force JSON output (Xero defaults to XML). NOTE: Xero requires a Xero-Tenant-Id header in production multi-org accounts — not captured yet; will need to be wired before first real connect.",
+    auth_method: "oauth",
+    auth_url: "https://login.xero.com/identity/connect/authorize",
+    token_url: "https://identity.xero.com/connect/token",
+    scopes: ["accounting.transactions.read", "offline_access"],
+    client_id_env: "XERO_CLIENT_ID",
+    client_secret_env: "XERO_CLIENT_SECRET",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://api.xero.com/api.xro/2.0/Invoices", method: "GET", normalize_as: "xero_bills" },
+    ],
+    demo_mode: false,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -485,6 +507,111 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── xero_bills ─────────────────────────────────────────────────────────
+  // FOURTEENTH real normalizer. Translates Xero Accounting API /Invoices:
+  //   GET https://api.xero.com/api.xro/2.0/Invoices
+  //   { Invoices: [ { Type, InvoiceID, Contact: { Name, ContactID },
+  //                   Total, SubTotal, TotalTax, CurrencyCode, Status,
+  //                   Date, ... } ] }
+  //
+  // Twin of `pennylane_supplier_invoices` / `holded_purchases` — accounting
+  // vertical, direction "expense", supplier_name propagated. The three
+  // together cover the long-tail of brand spend across three accounting
+  // suites; the cerebro de-duplicates by (supplier_name + date) at read time,
+  // not here.
+  //
+  // CRITICAL Xero-specific filter:
+  //   /Invoices returns BOTH supplier bills (Type "ACCPAY", expenses) AND
+  //   customer invoices (Type "ACCREC", revenue) in the same array. CAMBRA's
+  //   contract for this normalizer is "supplier bills only" (mirrors the
+  //   purchase endpoints of Holded and the supplier_invoices endpoint of
+  //   Pennylane). We filter Type === "ACCPAY" and drop ACCREC silently. A
+  //   future `xero_invoices` normalizer can read the same payload with the
+  //   opposite filter when we wire revenue.
+  //
+  // CAMBRA "rule of gold" (1:1 from input, modulo unit):
+  //   - Total / SubTotal / TotalTax arrive as NUMBERS in major currency
+  //     units (NOT cents). toNum passes them through unchanged.
+  //   - currency from CurrencyCode, default "EUR" if absent.
+  //   - supplier_name from Contact.Name; null if absent (no invention).
+  //   - Status preserved 1:1.
+  //
+  // Date handling — UNIT/FORMAT CONVERSION (the one place we DO transform):
+  //   - Xero ships dates as Microsoft-style strings:
+  //       "/Date(1519776000000+0000)/"
+  //     where the number is UNIX MILLISECONDS (not seconds — do NOT *1000).
+  //   - We extract the digits with /\/Date\((\d+)/ and convert via
+  //     new Date(ms).toISOString().
+  //   - If the value is not a string, doesn't match the pattern, or yields
+  //     an Invalid Date → null. We do NOT emit fake timestamps.
+  //
+  // Root navigation:
+  //   - Xero wraps the array in raw.Invoices. If raw.Invoices is not an
+  //     array → []. No fallback to bare array / other shapes; same rule as
+  //     pennylane_invoices (each provider has its own root key).
+  //
+  // Items skipped:
+  //   - Type !== "ACCPAY" → dropped silently (revenue rows).
+  //   - missing InvoiceID → skipped (no anchor).
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) Field names from public docs; verify on first real connect.
+  //   (b) Date in Microsoft "/Date(ms)/" format — MILLISECONDS. Confirm.
+  //   (c) static_headers forces JSON over XML; confirm no query param is
+  //       also needed (some Xero endpoints accept ?format=json on top of
+  //       the Accept header).
+  //   (d) Xero requires a `Xero-Tenant-Id` header in production multi-org
+  //       accounts. NOT captured at connect time yet. Generic static_headers
+  //       can only carry static strings; the tenant id is per-integration.
+  //       Will need either (i) a per-integration dynamic-header mechanism,
+  //       or (ii) capture the tenant_id during modeCallback and store it
+  //       in Integration.metadata_json (then a small additional fuser
+  //       reads it). Flagged; NOT resolved here.
+  //   (e) Pagination — sync engine's job (Xero uses ?page=N).
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input
+  // (modulo /Date(ms)/ → ISO and the ACCPAY filter).
+  xero_bills: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const msDateToIso = (v) => {
+      if (typeof v !== "string") return null;
+      const m = v.match(/\/Date\((\d+)/);
+      if (!m) return null;
+      const ms = parseInt(m[1], 10);
+      if (!Number.isFinite(ms) || ms <= 0) return null;
+      const d = new Date(ms);
+      if (Number.isNaN(d.getTime())) return null;
+      return d.toISOString();
+    };
+    const invoices = Array.isArray(raw?.Invoices) ? raw.Invoices : [];
+    const rows = [];
+    for (const inv of invoices) {
+      if (!inv || typeof inv !== "object") continue;
+      if (inv?.Type !== "ACCPAY") continue; // skip revenue rows (ACCREC)
+      const id = inv?.InvoiceID;
+      if (id === null || id === undefined || id === "") continue; // skip without anchor
+      const supplierName = inv?.Contact?.Name ?? null;
+      const currency = inv?.CurrencyCode || "EUR";
+      rows.push({
+        vertical: "accounting",
+        direction: "expense",
+        external_id: String(id),
+        supplier_name: supplierName,
+        amount: toNum(inv?.Total),
+        amount_before_tax: toNum(inv?.SubTotal),
+        tax: toNum(inv?.TotalTax),
+        fee: 0, // A bill is an expense, not a fee.
+        currency,
+        occurred_at: msDateToIso(inv?.Date),
+        status: inv?.Status ?? null,
+      });
+    }
+    return rows;
+  },
   // ─── holded_purchases ───────────────────────────────────────────────────
   // THIRTEENTH real normalizer. Translates Holded Invoicing API:
   //   GET https://api.holded.com/api/invoicing/v1/documents/purchase

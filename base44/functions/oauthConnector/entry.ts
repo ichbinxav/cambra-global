@@ -510,6 +510,57 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // ─── REAL PROVIDERS (Tanda 11: accounting OAuth — Xero) ──────────────────
+  // Xero Accounting API. OAuth2 + Bearer. Two non-trivial details:
+  //
+  //   1. Xero returns XML by default. We force JSON via the GENERIC
+  //      static_headers mechanism (Accept: application/json). No
+  //      provider-specific branch in the engine — same path Square uses
+  //      to inject Square-Version.
+  //
+  //   2. The /Invoices endpoint returns BOTH supplier bills (Type
+  //      "ACCPAY", expenses) and customer invoices (Type "ACCREC",
+  //      revenue) in the same array. The normalizer filters to ACCPAY
+  //      only; ACCREC rows are dropped silently. CAMBRA-side: this gives
+  //      us the brand's expense tail (third accounting source after
+  //      Pennylane supplier_invoices and Holded purchases).
+  //
+  // ⚠️  PENDING SCOPE GAP — XERO-TENANT-ID:
+  //   In production Xero requires a `Xero-Tenant-Id` header on every
+  //   data request (organisations are multi-tenant; the token alone is
+  //   not enough). TODAY we do NOT capture it at connect time. This
+  //   means the very first real connect will 401/400 until we add a
+  //   capture step in modeCallback (or as a follow-up question) and a
+  //   way to inject a per-integration dynamic header. The generic
+  //   static_headers can only carry STATIC strings — the tenant id is
+  //   per-tenant, not per-provider. Flagged as deuda; do NOT solve here.
+  //
+  // Deuda anotada (detail inside the normalizer):
+  //   (a) Field names from public docs; verify on first real connect.
+  //   (b) Date in Microsoft "/Date(ms)/" format — MILLISECONDS, not seconds.
+  //   (c) static_headers forces JSON; confirm no query param is also needed.
+  //   (d) Xero-Tenant-Id required in prod — see above.
+  xero: {
+    display_name: "Xero",
+    category: "accounting",
+    logo: null,
+    description: "Xero Accounting API — OAuth2 + Bearer. Reads /Invoices and the normalizer filters to ACCPAY (supplier bills = brand expenses). Uses the generic static_headers mechanism to force JSON output (Xero defaults to XML). NOTE: Xero requires a Xero-Tenant-Id header in production multi-org accounts — not captured yet; will need to be wired before first real connect.",
+    auth_method: "oauth",
+    auth_url: "https://login.xero.com/identity/connect/authorize",
+    token_url: "https://identity.xero.com/connect/token",
+    scopes: ["accounting.transactions.read", "offline_access"],
+    client_id_env: "XERO_CLIENT_ID",
+    client_secret_env: "XERO_CLIENT_SECRET",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://api.xero.com/api.xro/2.0/Invoices", method: "GET", normalize_as: "xero_bills" },
+    ],
+    demo_mode: false,
+  },
 };
 
 function getProviderConfig(provider) {
