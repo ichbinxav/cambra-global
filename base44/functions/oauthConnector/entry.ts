@@ -561,6 +561,56 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // ─── REAL PROVIDERS (Tanda 12: accounting OAuth — QuickBooks) ────────────
+  // QuickBooks Online Accounting API v3. OAuth2 + Bearer. Two non-trivial
+  // points handled via mechanisms that already exist:
+  //
+  //   1. Per-company URL: the {shop} token in the data endpoint is the
+  //      QuickBooks `realmId` (company ID), NOT a domain. The generic
+  //      interpolateShopDomain helper accepts any string, so the same
+  //      mechanism that serves Shopify (handle) and WooCommerce (domain)
+  //      serves QuickBooks (numeric realmId) without changes.
+  //
+  //   2. JSON over XML: QuickBooks can return XML. We force JSON via the
+  //      generic static_headers (Accept: application/json) — same path
+  //      Xero uses for the same reason.
+  //
+  // Endpoint shape:
+  //   The path uses a SQL-like query string (`?query=select * from Bill`).
+  //   "Bill" in QuickBooks terminology = supplier bill = brand EXPENSE.
+  //
+  // Deuda anotada (detail inside the normalizer):
+  //   (a) Field names from public docs; verify on first real connect.
+  //   (b) amount_before_tax & tax forced to 0 — QuickBooks Bill header
+  //       doesn't carry a reliable tax breakdown (tax sits on Line items).
+  //   (c) {shop} = realmId here; helper handles strings generically.
+  //   (d) URL contains spaces in the query (`select * from Bill`). fetch()
+  //       typically tolerates spaces but the engine may need to encode
+  //       them. Confirm on first real connect.
+  //   (e) Pagination uses STARTPOSITION + MAXRESULTS in the SQL-like
+  //       query, not ?page=N. Sync engine's job.
+  quickbooks: {
+    display_name: "QuickBooks",
+    category: "accounting",
+    logo: null,
+    description: "QuickBooks Online Accounting API v3 — OAuth2 + Bearer. Reads supplier Bills (=brand expenses) via a SQL-like query endpoint. Per-company: the customer provides their realmId at connect time, interpolated as {shop}. Uses the generic static_headers to force JSON output.",
+    auth_method: "oauth",
+    auth_url: "https://appcenter.intuit.com/connect/oauth2",
+    token_url: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
+    scopes: ["com.intuit.quickbooks.accounting"],
+    client_id_env: "QUICKBOOKS_CLIENT_ID",
+    client_secret_env: "QUICKBOOKS_CLIENT_SECRET",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://quickbooks.api.intuit.com/v3/company/{shop}/query?query=select * from Bill", method: "GET", normalize_as: "quickbooks_bills" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
 };
 
 function getProviderConfig(provider) {

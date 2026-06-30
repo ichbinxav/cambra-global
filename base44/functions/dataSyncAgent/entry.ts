@@ -356,6 +356,29 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // Mirror of quickbooks — same contract, both files identical.
+  quickbooks: {
+    display_name: "QuickBooks",
+    category: "accounting",
+    logo: null,
+    description: "QuickBooks Online Accounting API v3 — OAuth2 + Bearer. Reads supplier Bills (=brand expenses) via a SQL-like query endpoint. Per-company: the customer provides their realmId at connect time, interpolated as {shop}. Uses the generic static_headers to force JSON output.",
+    auth_method: "oauth",
+    auth_url: "https://appcenter.intuit.com/connect/oauth2",
+    token_url: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
+    scopes: ["com.intuit.quickbooks.accounting"],
+    client_id_env: "QUICKBOOKS_CLIENT_ID",
+    client_secret_env: "QUICKBOOKS_CLIENT_SECRET",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://quickbooks.api.intuit.com/v3/company/{shop}/query?query=select * from Bill", method: "GET", normalize_as: "quickbooks_bills" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -507,6 +530,94 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── quickbooks_bills ───────────────────────────────────────────────────
+  // FIFTEENTH real normalizer. Translates QuickBooks Online Accounting v3:
+  //   GET /v3/company/{realmId}/query?query=select * from Bill
+  //   { QueryResponse: { Bill: [ { Id, VendorRef: {value, name},
+  //                                TotalAmt, TxnDate, DueDate,
+  //                                CurrencyRef: {value, name}, Balance,
+  //                                Line: [...] } ] } }
+  //
+  // Twin of `xero_bills` / `holded_purchases` / `pennylane_supplier_invoices`
+  // — accounting vertical, direction "expense", supplier_name propagated.
+  // Together they form CAMBRA's coverage of the long tail of brand spend
+  // across the four mainstream accounting suites for our target tenants.
+  //
+  // CAMBRA "rule of gold" — every output field comes 1:1 from input.
+  // Quirks translated:
+  //   - VendorRef is an OBJECT { value: id, name: "..." }. We read .name
+  //     for supplier_name. NEVER pass VendorRef itself — that would emit
+  //     a reference object as a supplier name and confuse the cerebro.
+  //   - CurrencyRef is also an OBJECT { value: "USD", name: "..." }. We
+  //     read .value (the ISO code). Defaults to "USD" (not "EUR") because
+  //     QuickBooks is US-centric; emitting "EUR" by default would invent
+  //     a currency for an account that's likely USD.
+  //   - TotalAmt is a NUMBER (major units, no /100). toNum passes through.
+  //   - TxnDate is "YYYY-MM-DD" (date-only). Preserved AS-IS — we do NOT
+  //     promote to ISO with T00:00:00Z because that invents a UTC TZ the
+  //     source never specified (same rule as pennylane_invoices.date).
+  //
+  // Root navigation:
+  //   - QuickBooks wraps in TWO levels: QueryResponse.Bill. We require
+  //     both. No fallback to bare array or other shapes — same rule as
+  //     pennylane_invoices (each provider has its own root key).
+  //
+  // Items skipped:
+  //   - bill without `Id` → skipped (no anchor).
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) Field names from public docs; verify on first real connect.
+  //   (b) `amount_before_tax` and `tax` FORCED TO 0 — QuickBooks Bill
+  //       header does NOT carry a reliable tax breakdown. The real tax
+  //       lives in the Line items array (each Line has its own TaxLine).
+  //       Computing the per-bill subtotal/tax would require summing Lines
+  //       with their tax codes — out of scope for a translation
+  //       normalizer. Marked as 0 (honest absence, not invented). When we
+  //       need the breakdown, build it from Lines as a follow-up.
+  //   (c) `status` left null — QuickBooks Bill doesn't expose a simple
+  //       textual status at header level. Could be derived from Balance
+  //       vs TotalAmt later if needed.
+  //   (d) {shop} here is the realmId (numeric company ID), not a domain.
+  //       The generic interpolation helper accepts any non-empty string.
+  //   (e) URL query string contains spaces (`select * from Bill`).
+  //       fetch() typically encodes them, but if the engine fails on the
+  //       raw form, encode the query param at the sync layer. Confirm
+  //       on first real connect.
+  //   (f) Pagination via STARTPOSITION + MAXRESULTS in the SQL-like
+  //       query, not ?page=N. Sync engine's job.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  quickbooks_bills: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const bills = Array.isArray(raw?.QueryResponse?.Bill) ? raw.QueryResponse.Bill : [];
+    const rows = [];
+    for (const bill of bills) {
+      if (!bill || typeof bill !== "object") continue;
+      const id = bill?.Id;
+      if (id === null || id === undefined || id === "") continue; // skip without anchor
+      const supplierName = bill?.VendorRef?.name ?? null;
+      const currency = bill?.CurrencyRef?.value || "USD";
+      const occurredAt = typeof bill?.TxnDate === "string" ? bill.TxnDate : null;
+      rows.push({
+        vertical: "accounting",
+        direction: "expense",
+        external_id: String(id),
+        supplier_name: supplierName,
+        amount: toNum(bill?.TotalAmt),
+        amount_before_tax: 0, // see DEUDA (b) — tax lives in Line items
+        tax: 0,               // see DEUDA (b)
+        fee: 0, // A bill is an expense, not a fee.
+        currency,
+        occurred_at: occurredAt,
+        status: null, // see DEUDA (c) — no header-level status
+      });
+    }
+    return rows;
+  },
   // ─── xero_bills ─────────────────────────────────────────────────────────
   // FOURTEENTH real normalizer. Translates Xero Accounting API /Invoices:
   //   GET https://api.xero.com/api.xro/2.0/Invoices
