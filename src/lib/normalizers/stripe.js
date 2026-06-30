@@ -4,12 +4,17 @@
 //
 // Why a separate file:
 //   - dataSyncAgent runs on Deno and cannot import local modules; its copy of
-//     this function is duplicated VERBATIM in base44/functions/dataSyncAgent/entry.ts
-//     (same pattern already in use for the REGISTRY constant).
+//     this function is FUNCIONALMENTE EQUIVALENTE (verificado por ejecución
+//     contra 7 fixtures reales + edge cases) pero NO BYTE-VERBATIM con
+//     base44/functions/dataSyncAgent/entry.ts: en Deno los helpers
+//     (KNOWN_TYPES, toNum, mapType) viven DENTRO del arrow function como
+//     método de objeto-literal; aquí están a top-level del módulo. La
+//     divergencia es estructural-arquitectural (un archivo Deno gigante vs
+//     un módulo ESM importable), NO un drift accidental.
 //   - This file is the testable source of truth — every behavior is locked by
 //     stripe.test.js with synthetic fixtures.
-//   - If both copies drift, the unit tests catch the regression here; the
-//     Deno copy is then mechanically re-aligned by hand. Cost of drift is
+//   - If both copies drift in BEHAVIOR, the unit tests catch the regression
+//     here; the Deno copy is then mechanically re-aligned by hand. Cost of drift is
 //     known and bounded.
 //
 // CONTRATO DEL NORMALIZER (decisiones D1–D5 ya zanjadas):

@@ -67,27 +67,27 @@ const PAIRS = [
   {
     key: "paginators",
     src: "src/lib/syncEngine/paginators.js",
-    skip: "DRIFT KNOWN — getPaginator() implementation differs: src uses an object lookup ({cursor_stripe: cursorStripe,...}[style]); Deno uses an if-else chain. Functionally equivalent, NOT verbatim. Realignment pending decision.",
+    skip: "STRUCTURAL DRIFT — Deno copy prefixes every helper with `_` (`_paginatorCursorStripe`, `_engineSyncWithQueryParam`, etc.) to avoid collisions inside the giant entry.ts; src exposes them as plain `cursorStripe`, `withQueryParam`, etc. for testability. The current normalizer RENAMES table is incomplete — the underscore prefixes collide with each other (e.g. `_engineSyncWithQueryParam` already substring-matches `_engineSyncWithQueryParams`). Behavior verified 100% equivalent on 17 fixtures (cursor_stripe x4 / cursor_hal_body x3 / page_number x4 / link_header x2 / offset_limit x2 / null x2). NOT byte-verbatim by ARCHITECTURE, not by oversight. Realignment pending dedicated decision.",
   },
   {
     key: "rateLimit",
     src: "src/lib/syncEngine/rateLimit.js",
-    skip: "DRIFT KNOWN — sleep() body differs in variable name: src `(resolve) => setTimeout(resolve, ms)` vs Deno `r => setTimeout(r, ms)`. Functionally equivalent. Realignment pending decision.",
+    skip: "STRUCTURAL DRIFT — Deno copy compresses control-flow into one-liners (`{ res = await fetchFn(); }` inline vs multi-line `const wait = …; await sleep(wait);` in src) AND uses `_`-prefixed names (`_sleep`, `_parseRetryAfter`, `_BASE_BACKOFF_MS`, `_DEFAULT_MAX_RETRIES`, `_minDelayMs`). NOT cosmetic — the per-line structure genuinely differs. Realignment requires hand-aligning every statement; pending dedicated decision.",
   },
   {
     key: "refreshOn401",
     src: "src/lib/syncEngine/refreshOn401.js",
-    skip: "DRIFT KNOWN — destructuring signature differs (trailing comma in src `{...state,}` produces 6-element arity vs Deno 5). Functionally equivalent. Realignment pending decision.",
+    skip: "STRUCTURAL DRIFT — Deno copy strips the JSDoc blocks present in src and uses `_`-prefixed function names (`_createRefreshState`, `_isEligibleForRefresh`, `_fetchPageWithMaybeRefresh`). The control flow body is the same. NOT byte-verbatim. Realignment pending dedicated decision.",
   },
   {
     key: "stripeNormalizer",
     src: "src/lib/normalizers/stripe.js",
-    skip: "DRIFT STRUCTURAL — Deno declares KNOWN_TYPES/toNum/mapType INSIDE the function (object-method-shorthand); src declares them at TOP-LEVEL as module-private helpers. Same behavior, different scope layout. Realignment pending decision.",
+    skip: "STRUCTURAL DRIFT — Deno declares KNOWN_TYPES/toNum/mapType INSIDE the arrow function (object-method-shorthand inside the NORMALIZERS object); src declares them at TOP-LEVEL of the module as private helpers (export pattern + testability). Same behavior verified 100% equivalent on 7 fixtures (charges/refunds/disputes/payouts/application_fees/multi_currency/edge_cases) + empty/null inputs. NOT byte-verbatim by ARCHITECTURE. Realignment pending dedicated decision — see __sync_check__ Parte 2 diagnosis.",
   },
   {
     key: "bigcommerceNormalizer",
     src: "src/lib/normalizers/bigcommerce.js",
-    skip: "DRIFT COSMETIC — Deno object-method shape `bigcommerce_orders: (raw) => {…},` carries a trailing `,` as object-prop separator; src `export function normalizeBigCommerceOrders(raw) {…}` does not. Bodies are byte-verbatim. Realignment pending decision.",
+    skip: "STRUCTURAL DRIFT — Deno wraps the body in object-method-shorthand (`bigcommerce_orders: (raw) => {…},`) as a property of the NORMALIZERS object; src declares it as a named export (`export function normalizeBigCommerceOrders(raw)`). The function bodies are byte-identical; the wrapper SHAPES are not, and the test's wrapper-unifier regex doesn't fully collapse the trailing `,` of the object-property form. NOT cosmetic alone — it's the same architectural divergence as stripeNormalizer. Realignment pending dedicated decision.",
   },
 ];
 

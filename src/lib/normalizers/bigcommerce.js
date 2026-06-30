@@ -2,11 +2,15 @@
 //
 // BigCommerce Orders v2 (storefront, not processor → fee:0 honest absence).
 //
-// ⚠️ COPIA VERBATIM de base44/functions/dataSyncAgent/entry.ts (Deno no
-// puede importar de src/). Mismo patrón que stripe.js. Los tests unitarios
-// viven en src/lib/normalizers/bigcommerce.test.js; si esta copia diverge
-// de la entrada en dataSyncAgent, realinearla MANUALMENTE — no hay
-// enforcement automático.
+// ⚠️ FUNCIONALMENTE EQUIVALENTE a base44/functions/dataSyncAgent/entry.ts
+// — NO byte-verbatim. En Deno la función vive como `bigcommerce_orders:
+// (raw) => {...},` (método de objeto-literal dentro de NORMALIZERS), aquí
+// como `export function normalizeBigCommerceOrders(raw)`. Los cuerpos son
+// idénticos; las envolturas no. Misma divergencia estructural-arquitectural
+// que stripe.js — no es un drift accidental. Los tests unitarios viven en
+// src/lib/normalizers/bigcommerce.test.js; si el CUERPO de esta copia diverge
+// del cuerpo de la entrada en dataSyncAgent, realinearla MANUALMENTE — el
+// test de sincronía la tiene en skip y NO la cubre hoy.
 //
 // Contrato (confirmado contra el código real, NO contra suposiciones):
 //   - Root: bare array. NO fallback a otras claves (raw.orders, raw.data, …).

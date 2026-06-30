@@ -27,9 +27,13 @@
 //      `oauthConnector(mode:"refresh", integration_id)` — but this module
 //      is environment-agnostic and unit-testable in plain Node.
 //
-// IMPORTANTE: módulo duplicado verbatim en
-// base44/functions/dataSyncAgent/entry.ts (Deno no puede importar de src/).
-// Mismo patrón que el resto del sync engine.
+// IMPORTANTE: este módulo es la FUENTE DE VERDAD lógica. La copia Deno en
+// base44/functions/dataSyncAgent/entry.ts es FUNCIONALMENTE EQUIVALENTE pero
+// NO byte-verbatim — la copia Deno omite los bloques JSDoc presentes aquí y
+// usa nombres con prefijo `_` (`_createRefreshState`,
+// `_isEligibleForRefresh`, `_fetchPageWithMaybeRefresh`). Misma arquitectura
+// de un solo archivo Deno gigante. El test de sincronía la tiene en skip con
+// razón documentada.
 
 // SYNC-START: refreshOn401
 /**

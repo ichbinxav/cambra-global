@@ -287,6 +287,15 @@ const REGISTRY = {
     category: "commerce",
     logo: null,
     description: "BigCommerce Orders v2 — API key in X-Auth-Token header (declared via static_headers). Per-store: the customer provides their store_hash at connect time, interpolated as {shop}.",
+    // refunds_not_inline_v2: /v2/orders does NOT carry refund line items inline.
+    // Refunds live on a separate endpoint (/v3/orders/{id}/refunds, V3 API) or
+    // are surfaced only as the aggregate field `refunded_amount` on /v2/orders
+    // (no per-tax-line breakdown). Confirmed via BigCommerce support + Medium
+    // (Order Refund API article) + StackOverflow. Net order volume may be
+    // overstated since refunds are not subtracted at this normalizer level.
+    // Same pattern as PayPlug's known_data_gaps — purely informational metadata,
+    // NOT consumed by computeVerticalStatus / generateRecommendations / savings.
+    known_data_gaps: ["refunds_not_inline_v2"],
     auth_method: "api_key",
     // The token doesn't go in the Authorization header — it goes in
     // X-Auth-Token via static_headers below. So we suppress the default

@@ -11,10 +11,15 @@
 // Integration.metadata_json.last_cursor para reanudar — los providers que no
 // usen cursores devolverán null aquí.
 //
-// IMPORTANTE: este módulo es la FUENTE DE VERDAD. Está duplicado verbatim
-// dentro de base44/functions/dataSyncAgent/entry.ts (Deno no puede importar
-// de src/). Mismo patrón que stripe.js. Si diverge, los tests aquí lo
-// detectan y la copia Deno se realinea a mano.
+// IMPORTANTE: este módulo es la FUENTE DE VERDAD lógica. La copia Deno en
+// base44/functions/dataSyncAgent/entry.ts es FUNCIONALMENTE EQUIVALENTE pero
+// NO byte-verbatim — la copia Deno prefija todos los helpers con `_`
+// (`_paginatorCursorStripe`, `_engineSyncWithQueryParam`, etc.) para evitar
+// colisiones dentro del archivo gigante; aquí están sin prefijo para que
+// los tests las importen limpiamente. Equivalencia funcional verificada por
+// ejecución contra 17 fixtures (cursor_stripe x4, cursor_hal_body x3,
+// page_number x4, link_header x2, offset_limit x2, null x2) en el cierre de
+// deuda — Parte 2. El test de sincronía la tiene en skip con razón documentada.
 //
 // Estilos hoy implementados (los 3 prioritarios del prompt):
 //   - "cursor_stripe"   → has_more + starting_after=<last_id_in_page>

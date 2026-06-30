@@ -16,8 +16,13 @@
 // Errores estructurales (4xx que no son 429, p.ej. 401, 400) NO se reintentan
 // — son fallos de configuración del cliente, retry solo gasta cuota.
 //
-// IMPORTANTE: este módulo es la FUENTE DE VERDAD. Duplicado verbatim en
-// base44/functions/dataSyncAgent/entry.ts.
+// IMPORTANTE: este módulo es la FUENTE DE VERDAD lógica. La copia Deno en
+// base44/functions/dataSyncAgent/entry.ts es FUNCIONALMENTE EQUIVALENTE pero
+// NO byte-verbatim — la copia Deno comprime las ramas en one-liners y usa
+// nombres con prefijo `_` (`_sleep`, `_parseRetryAfter`, etc.) por la misma
+// razón que paginators. Misma arquitectura de un solo archivo Deno gigante,
+// misma decisión consciente. El test de sincronía la tiene en skip con razón
+// documentada.
 
 // SYNC-START: rateLimit
 const DEFAULT_MAX_RETRIES = 4;
