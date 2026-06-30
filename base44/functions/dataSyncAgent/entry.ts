@@ -330,6 +330,107 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── zettle_finance ─────────────────────────────────────────────────────
+  // EIGHTH real normalizer. Translates Zettle Finance API v2:
+  //   GET https://finance.izettle.com/v2/accounts/liquid/transactions
+  //   { data: [ { timestamp, amount, originatorTransactionType,
+  //               originatingTransactionUuid } ] }
+  //
+  // CRITICAL: the fee is a SEPARATE LINE, not a field.
+  // One sale emits TWO rows with the SAME originatingTransactionUuid:
+  //   - originatorTransactionType "PAYMENT"     → amount POSITIVE (charge)
+  //   - originatorTransactionType "PAYMENT_FEE" → amount NEGATIVE (commission)
+  // We MUST group by originatingTransactionUuid and emit ONE row per
+  // transaction (not one per line). Going line-by-line would double-count
+  // amounts and leave the fee floating. This is the whole point of the
+  // normalizer — the engine reads `data[]` raw; only this function knows
+  // the pairing contract.
+  //
+  // Amount handling (CAMBRA "rule of gold": 1:1 from input, modulo units):
+  //   - Zettle gives integers in minor currency units (1100 = 11.00 €).
+  //     Divide by 100, same convention as Stripe.
+  //   - fee = abs(PAYMENT_FEE.amount) / 100. Zettle models the fee as a
+  //     negative debit; CAMBRA models fee≥0 (same as PayPal sign flip).
+  //     Magnitude untouched, sign normalized.
+  //   - If a group has no PAYMENT_FEE line → fee: 0 (honest absence, not
+  //     invented). Same pattern as `fee: 0` in shopify_orders / pennylane.
+  //
+  // Refund handling:
+  //   - A PAYMENT line with NEGATIVE amount is a refund. Emit it AS-IS
+  //     (negative amount). Do NOT drop refunds — they're real cashflow
+  //     and the cerebro needs them for net revenue.
+  //
+  // PAYOUT lines:
+  //   - originatorTransactionType "PAYOUT" represents money moved from the
+  //     liquid account to the merchant's bank. It's NOT a sale and would
+  //     double-count GMV if emitted. Skipped entirely.
+  //
+  // Items skipped:
+  //   - Groups without a PAYMENT line (e.g. orphan fee, payout-only) →
+  //     skipped. Same skip-when-no-anchor pattern as PayPal/Shopify items
+  //     without id.
+  //   - Lines without `originatingTransactionUuid` → skipped (no way to
+  //     pair them with their fee). Honest absence.
+  //
+  // Date handling:
+  //   - `timestamp` is ISO with offset ("2020-11-21T04:00:15.704+0000").
+  //     Preserved AS-IS, no TZ reinterpretation. Same pattern as Pennylane.
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) Written from public docs; verify field paths on first real connect.
+  //   (b) `currency` hardcoded to "EUR" — the line-level response does not
+  //       carry currency. Confirm at first real connect whether currency
+  //       lives on the account, on a parent field, or needs a separate
+  //       account-info call. If multi-currency merchants exist, this
+  //       normalizer needs the source field wired in.
+  //   (c) Pagination (limit/offset) — sync engine's job, not this
+  //       normalizer's.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input
+  // (modulo unit conversion and sign normalization on fee).
+  zettle_finance: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const lines = Array.isArray(raw?.data) ? raw.data : [];
+    // Group by originatingTransactionUuid. Skip PAYOUT lines entirely and
+    // lines without a uuid (no way to pair them).
+    const groups = new Map();
+    for (const line of lines) {
+      if (!line || typeof line !== "object") continue;
+      const txType = line?.originatorTransactionType;
+      if (txType === "PAYOUT") continue; // not a sale
+      const uuid = line?.originatingTransactionUuid;
+      if (!uuid || typeof uuid !== "string") continue;
+      if (!groups.has(uuid)) groups.set(uuid, []);
+      groups.get(uuid).push(line);
+    }
+    const rows = [];
+    for (const [uuid, groupLines] of groups) {
+      // Anchor line: the PAYMENT (or REFUND, which Zettle models as a
+      // PAYMENT with negative amount). If absent, skip the group.
+      const paymentLine = groupLines.find(l => l?.originatorTransactionType === "PAYMENT");
+      if (!paymentLine) continue;
+      const feeLine = groupLines.find(l => l?.originatorTransactionType === "PAYMENT_FEE");
+      const amount = toNum(paymentLine?.amount) / 100;
+      const fee = feeLine ? Math.abs(toNum(feeLine?.amount)) / 100 : 0;
+      const occurredAt = typeof paymentLine?.timestamp === "string"
+        ? paymentLine.timestamp
+        : null;
+      rows.push({
+        vertical: "payments",
+        external_id: uuid,
+        amount,
+        fee,
+        currency: "EUR", // see DEUDA (b) — confirm source on first real connect
+        occurred_at: occurredAt,
+        type: paymentLine?.originatorTransactionType ?? null,
+      });
+    }
+    return rows;
+  },
   // ─── pennylane_supplier_invoices ────────────────────────────────────────
   // SEVENTH real normalizer. Twin of `pennylane_invoices`, with two
   // additions that justify a separate row type:
