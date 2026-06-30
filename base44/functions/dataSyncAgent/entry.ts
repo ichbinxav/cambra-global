@@ -1596,6 +1596,35 @@ async function assertBrandOwnedByUser(base44, brandId, user) {
   }
 }
 
+// ─── Integration Data Quality Score (Opción B, Fase 2) ─────────────────────
+// Reads the static `known_data_gaps` metadata from the provider's REGISTRY
+// entry and projects it into a per-sync-run snapshot stored on Integration.
+// Single fixed step on purpose: 100 if no gaps in the registry, 70 if any.
+// Per-gap severity weighting is FUTURE WORK (decisión de producto).
+//
+// INVARIANTE: this is PURELY INFORMATIONAL. It must NEVER be read by:
+//   - computeVerticalStatus (different metric: onboarding profile completeness)
+//   - generateRecommendations (decisión de producto pendiente)
+//   - savings / benchmarks / confidence calculations
+// Connecting it to recommendation confidence requires explicit human decision.
+function computeIntegrationDataQuality(cfg) {
+  const gaps = Array.isArray(cfg?.known_data_gaps) ? cfg.known_data_gaps : [];
+  if (gaps.length === 0) {
+    return {
+      completeness_pct: 100,
+      known_gaps: [],
+      evidence: "",
+      computed_at: new Date().toISOString(),
+    };
+  }
+  return {
+    completeness_pct: 70,
+    known_gaps: [...gaps],
+    evidence: `Provider API has known structural gaps: ${gaps.join(", ")}`,
+    computed_at: new Date().toISOString(),
+  };
+}
+
 // ─── Handler ───────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -1676,10 +1705,16 @@ Deno.serve(async (req) => {
         allRecords = allRecords.concat(norm(raw));
       }
 
+      // Compute integration_data_quality from the registry's known_data_gaps.
+      // Purely informational — see invariant above. Runs for every provider:
+      // those without known_data_gaps get completeness_pct=100, known_gaps=[].
+      const integrationDataQuality = computeIntegrationDataQuality(cfg);
+
       await base44.asServiceRole.entities.Integration.update(integ.id, {
         last_sync_at: new Date().toISOString(),
         last_sync_status: "success",
         last_error: null,
+        integration_data_quality: integrationDataQuality,
       });
 
       await base44.asServiceRole.entities.AgentTask.update(task.id, {
