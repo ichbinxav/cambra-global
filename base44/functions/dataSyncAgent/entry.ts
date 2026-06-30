@@ -241,13 +241,16 @@ const REGISTRY = {
     display_name: "Square",
     category: "payments",
     logo: null,
-    description: "Square Payments OAuth — read-only access to /v2/payments. Each payment carries its fee inline in processing_fee[]. NOTE: Square requires a Square-Version header on every request; the generic sync engine does not inject it yet — wire that before the first real connect.",
+    description: "Square Payments OAuth — read-only access to /v2/payments. Each payment carries its fee inline in processing_fee[]. Uses the generic static_headers mechanism to inject Square-Version on every request (Square requires this header).",
     auth_method: "oauth",
     auth_url: "https://connect.squareup.com/oauth2/authorize",
     token_url: "https://connect.squareup.com/oauth2/token",
     scopes: ["PAYMENTS_READ"],
     client_id_env: "SQUARE_CLIENT_ID",
     client_secret_env: "SQUARE_CLIENT_SECRET",
+    static_headers: {
+      "Square-Version": "2026-01-22",
+    },
     data_type: "transactions",
     data_endpoints: [
       { url: "https://connect.squareup.com/v2/payments", method: "GET", normalize_as: "square_payments" },
@@ -291,6 +294,28 @@ const REGISTRY = {
     demo_mode: false,
     requires_shop_domain: true,
   },
+
+  // Mirror of bigcommerce — same contract, both files identical.
+  bigcommerce: {
+    display_name: "BigCommerce",
+    category: "commerce",
+    logo: null,
+    description: "BigCommerce Orders v2 — API key in X-Auth-Token header (declared via static_headers). Per-store: the customer provides their store_hash at connect time, interpolated as {shop}.",
+    auth_method: "api_key",
+    api_key_header: "X-Auth-Token",
+    api_key_format: "{key}",
+    api_key_help_url: "https://developer.bigcommerce.com/docs/start/authentication/api-accounts",
+    api_key_help_text: "En BigCommerce → Settings → API Accounts crea una cuenta con scope de lectura de Orders. Pega el Access Token aquí y tu store hash.",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api.bigcommerce.com/stores/{shop}/v2/orders", method: "GET", normalize_as: "bigcommerce_orders" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -305,19 +330,33 @@ function interpolateShopDomain(url, shop) {
 // Generic auth header builder — the registry says how, this function follows.
 // No provider name appears anywhere. Adding a new api_key provider means
 // adding a registry entry, nothing else.
+//
+// Returns { headers, plaintextToken } so the caller can fuse static_headers
+// declared in the registry and optionally interpolate the secret as {token}
+// (used by providers that put the secret in a non-standard header, e.g.
+// X-Auth-Token instead of Authorization). The plaintextToken is the SAME
+// secret string the auth header consumes — exposing it to the static-header
+// fuser does not widen the trust surface (the secret already lives in this
+// function's stack frame anyway, and is never logged).
 async function buildAuthHeaders(cfg, integ) {
   const authMethod = cfg.auth_method || "oauth";
   if (authMethod === "oauth") {
     const accessToken = await decryptToken(integ.access_token);
     if (!accessToken) throw new Error("No access token stored");
-    return { "Authorization": `Bearer ${accessToken}` };
+    return {
+      headers: { "Authorization": `Bearer ${accessToken}` },
+      plaintextToken: accessToken,
+    };
   }
   if (authMethod === "api_key") {
     const key = await decryptToken(integ.access_token);
     if (!key) throw new Error("No API key stored");
     const header = cfg.api_key_header || "Authorization";
     const format = cfg.api_key_format || "{key}";
-    return { [header]: format.replace("{key}", key) };
+    return {
+      headers: { [header]: format.replace("{key}", key) },
+      plaintextToken: key,
+    };
   }
   if (authMethod === "basic_auth") {
     // Stored as a single encrypted blob in the form "public:secret" — exactly
@@ -330,9 +369,32 @@ async function buildAuthHeaders(cfg, integ) {
     if (!combined || !combined.includes(":")) {
       throw new Error("No valid basic_auth credentials stored");
     }
-    return { "Authorization": `Basic ${btoa(combined)}` };
+    return {
+      headers: { "Authorization": `Basic ${btoa(combined)}` },
+      plaintextToken: combined,
+    };
   }
   throw new Error(`Unsupported auth_method: ${authMethod}`);
+}
+
+// Generic static-header fuser. The registry says which extra headers each
+// provider needs (e.g. `Square-Version`, `X-Auth-Token`); this function
+// applies them with `{token}` interpolation. Provider-agnostic: works the
+// same for every auth_method. If cfg.static_headers is absent → returns
+// authHeaders untouched, so providers without static_headers behave EXACTLY
+// as before this change (no-regression invariant).
+function mergeStaticHeaders(cfg, authHeaders, plaintextToken) {
+  const staticH = cfg.static_headers;
+  if (!staticH || typeof staticH !== "object") return authHeaders;
+  const merged = { ...authHeaders };
+  for (const [name, rawValue] of Object.entries(staticH)) {
+    if (typeof rawValue !== "string") continue;
+    const value = rawValue.includes("{token}") && plaintextToken
+      ? rawValue.replaceAll("{token}", plaintextToken)
+      : rawValue;
+    merged[name] = value;
+  }
+  return merged;
 }
 
 function getProviderConfig(provider) {
@@ -405,6 +467,91 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── bigcommerce_orders ─────────────────────────────────────────────────
+  // TWELFTH real normalizer. Translates BigCommerce Orders v2:
+  //   GET https://api.bigcommerce.com/stores/{shop}/v2/orders
+  //   [ { id, status, status_id, currency_code,
+  //       total_inc_tax, total_tax, date_created, ... } ]
+  //
+  // Twin of `shopify_orders` / `woocommerce_orders` — commerce vertical, GMV,
+  // fee:0. Storefront, not processor; per-transaction fee is HONEST ABSENCE.
+  //
+  // CAMBRA "rule of gold" (1:1 from input, modulo unit):
+  //   - amounts are STRINGS in MAJOR currency units ("29.35") → parseFloat.
+  //     Do NOT divide by 100. Same convention as WooCommerce/Klarna/Pennylane.
+  //   - currency from `currency_code`, default "EUR" only if absent.
+  //
+  // Root navigation:
+  //   - BigCommerce v2 returns a BARE ARRAY. Array.isArray(raw) → use it,
+  //     otherwise []. No fallback to other shapes — same rule as
+  //     woocommerce_orders.
+  //
+  // Date handling:
+  //   - `date_created` arrives as RFC-2822 ("Tue, 25 Feb 2020 12:00:00 +0000"),
+  //     NOT ISO 8601. We preserve AS-IS. Converting to ISO here could fail
+  //     silently on TZ-naïve inputs or invent a Z that the source never
+  //     specified — same rule as date_created_gmt in WooCommerce. The cerebro
+  //     decides how to parse if it needs to.
+  //
+  // Status handling:
+  //   - Prefer textual `status` ("Awaiting Payment", "Shipped", …). If
+  //     absent, fall back to `String(status_id)` (numeric code). BigCommerce
+  //     historically populates both, but we never invent a value.
+  //
+  // Items skipped:
+  //   - order without `id` → skipped (same pattern as Shopify/WooCommerce).
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) Written from public docs; verify root shape and field names on
+  //       first real connect.
+  //   (b) `date_created` is RFC-2822; preserved as-is. ISO conversion is the
+  //       consumer's responsibility — not invented here.
+  //   (c) Per-store URL: {shop} = store_hash (e.g. "abc12345xyz"). The
+  //       generic interpolation helper accepts any non-empty string, so the
+  //       store_hash flows through without special-casing.
+  //   (d) Auth header is X-Auth-Token (not Authorization Bearer). This is
+  //       declared in the registry via `static_headers: { "X-Auth-Token":
+  //       "{token}" }` — the engine's generic mergeStaticHeaders helper
+  //       handles {token} interpolation. No code-level branch for BigCommerce.
+  //   (e) Pagination ?page&limit — sync engine's job.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  bigcommerce_orders: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    // v2 returns a bare array. No fallback to other root shapes.
+    const orders = Array.isArray(raw) ? raw : [];
+    const rows = [];
+    for (const order of orders) {
+      if (!order || typeof order !== "object") continue;
+      const id = order?.id;
+      if (id === null || id === undefined || id === "") continue; // skip orders without id
+      const currency = order?.currency_code || "EUR";
+      // Prefer textual status, fall back to status_id (stringified) if absent.
+      const statusText = order?.status;
+      const status = (typeof statusText === "string" && statusText.length > 0)
+        ? statusText
+        : (order?.status_id !== null && order?.status_id !== undefined
+            ? String(order.status_id)
+            : null);
+      // date_created is RFC-2822; preserved AS-IS (no inventive ISO conversion).
+      const occurredAt = typeof order?.date_created === "string" ? order.date_created : null;
+      rows.push({
+        vertical: "commerce",
+        external_id: String(id),
+        amount: toNum(order?.total_inc_tax),
+        tax: toNum(order?.total_tax),
+        fee: 0, // BigCommerce-as-storefront does not charge per-transaction fee.
+        currency,
+        occurred_at: occurredAt,
+        status,
+      });
+    }
+    return rows;
+  },
   // ─── woocommerce_orders ─────────────────────────────────────────────────
   // ELEVENTH real normalizer. Translates WooCommerce REST API v3:
   //   GET {site}/wp-json/wc/v3/orders
@@ -1386,13 +1533,17 @@ Deno.serve(async (req) => {
         if (cfg.demo_mode) {
           raw = demoMockResponse(ep.normalize_as || cfg.data_type);
         } else {
-          const authHeaders = await buildAuthHeaders(cfg, integ);
+          const { headers: authHeaders, plaintextToken } = await buildAuthHeaders(cfg, integ);
+          // Fuse static headers declared in the registry (e.g. API version,
+          // alternate auth header). No-op for providers without
+          // static_headers — exact same headers as before this change.
+          const finalAuthHeaders = mergeStaticHeaders(cfg, authHeaders, plaintextToken);
           // Interpolate {shop} per-endpoint using the value stored at
           // connect time. No-op for providers without {shop}.
           const endpointUrl = interpolateShopDomain(ep.url, integ.metadata_json?.shop_domain || null);
           const res = await fetch(endpointUrl, {
             method: ep.method || "GET",
-            headers: { ...authHeaders, "Accept": "application/json" },
+            headers: { ...finalAuthHeaders, "Accept": "application/json" },
           });
           if (!res.ok) {
             const text = await res.text();

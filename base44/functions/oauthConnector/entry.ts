@@ -337,13 +337,16 @@ const REGISTRY = {
     display_name: "Square",
     category: "payments",
     logo: null,
-    description: "Square Payments OAuth — read-only access to /v2/payments. Each payment carries its fee inline in processing_fee[]. NOTE: Square requires a Square-Version header on every request; the generic sync engine does not inject it yet — wire that before the first real connect.",
+    description: "Square Payments OAuth — read-only access to /v2/payments. Each payment carries its fee inline in processing_fee[]. Uses the generic static_headers mechanism to inject Square-Version on every request (Square requires this header).",
     auth_method: "oauth",
     auth_url: "https://connect.squareup.com/oauth2/authorize",
     token_url: "https://connect.squareup.com/oauth2/token",
     scopes: ["PAYMENTS_READ"],
     client_id_env: "SQUARE_CLIENT_ID",
     client_secret_env: "SQUARE_CLIENT_SECRET",
+    static_headers: {
+      "Square-Version": "2026-01-22",
+    },
     data_type: "transactions",
     data_endpoints: [
       { url: "https://connect.squareup.com/v2/payments", method: "GET", normalize_as: "square_payments" },
@@ -426,6 +429,51 @@ const REGISTRY = {
     data_type: "transactions",
     data_endpoints: [
       { url: "https://{shop}/wp-json/wc/v3/orders", method: "GET", normalize_as: "woocommerce_orders" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
+
+  // ─── REAL PROVIDERS (Tanda 9: commerce API key per-store — BigCommerce) ──
+  // BigCommerce Orders v2. Authenticates with an API access token sent in
+  // the `X-Auth-Token` header (NOT Authorization Bearer). The engine uses
+  // the generic `static_headers` mechanism declared in the registry to
+  // route the token to the right header — no provider-specific code.
+  //
+  // Per-store URL: the `{shop}` token in the data endpoint is the
+  // BigCommerce store_hash (e.g. "abc12345xyz"), not a dominio. The
+  // generic interpolation helper accepts any string.
+  //
+  // Deuda anotada (also documented inside the normalizer):
+  //   (a) Endpoint path from public docs; verify at first real connect.
+  //   (b) date_created is RFC-2822, preserved as-is.
+  //   (c) {shop} = store_hash here; the generic helper handles it.
+  //   (d) Pagination ?page&limit — sync engine's job.
+  bigcommerce: {
+    display_name: "BigCommerce",
+    category: "commerce",
+    logo: null,
+    description: "BigCommerce Orders v2 — API key in X-Auth-Token header (declared via static_headers). Per-store: the customer provides their store_hash at connect time, interpolated as {shop}.",
+    auth_method: "api_key",
+    // The token doesn't go in the Authorization header — it goes in
+    // X-Auth-Token via static_headers below. So we suppress the default
+    // Authorization route by sending the token to an internal header
+    // name that we then override in static_headers… actually no: we set
+    // api_key_header to "X-Auth-Token" so buildAuthHeaders emits the
+    // right header directly, AND we also declare static_headers for
+    // Accept. Simpler and equivalent. The {token} interpolation path
+    // remains documented and available for any future provider that
+    // needs it.
+    api_key_header: "X-Auth-Token",
+    api_key_format: "{key}",
+    api_key_help_url: "https://developer.bigcommerce.com/docs/start/authentication/api-accounts",
+    api_key_help_text: "En BigCommerce → Settings → API Accounts crea una cuenta con scope de lectura de Orders. Pega el Access Token aquí y tu store hash.",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api.bigcommerce.com/stores/{shop}/v2/orders", method: "GET", normalize_as: "bigcommerce_orders" },
     ],
     demo_mode: false,
     requires_shop_domain: true,
