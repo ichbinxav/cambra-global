@@ -672,11 +672,19 @@ const REGISTRY = {
   //   (d) amount in CENTS (/100). created_at/paid_at Unix SECONDS (*1000).
   //   (e) Root key probe: raw.data array OR bare array; confirm at real connect.
   //   (f) Pagination — sync engine.
+  // known_data_gaps: provider-level static metadata flagging documented
+  // limitations of the upstream API. Currently flags that /v1/payments only
+  // returns API-created payments; portal-created payments are invisible →
+  // volume may be undercounted. DEUDA: known_data_gaps is defined in the
+  // registry but NOT YET wired into DataQualityScore.completeness. Verify in
+  // M2/M3 whether a generic consumption mechanism exists; if not, that's
+  // explicit future work — do not assume engine behaviour without a human decision.
   payplug: {
     display_name: "PayPlug",
     category: "payments",
     logo: null,
     description: "PayPlug Payments API — Bearer secret key (sk_live_...). Reads /v1/payments. Requires mandatory PayPlug-Version header via static_headers. Amounts in cents, timestamps Unix seconds. ⚠️ Fee is NOT exposed in the payments API (lives in settlements) — volume only.",
+    known_data_gaps: ["portal_payments_not_visible_via_api"],
     auth_method: "api_key",
     api_key_header: "Authorization",
     api_key_format: "Bearer {key}",
