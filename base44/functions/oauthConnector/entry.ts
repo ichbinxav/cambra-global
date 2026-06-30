@@ -775,8 +775,18 @@ const REGISTRY = {
       "Accept": "application/json",
     },
     data_type: "invoices",
+    // Two endpoints on the same provider — mirrors Pennylane's customer+supplier
+    // pattern. /Voucher (expenses) and /Invoice (revenue) coexist: each has its
+    // own normalizer, neither is touched when the other changes.
+    // countAll=true is REQUIRED on /Invoice — without it sevDesk does not
+    // return the total row count and offset-based pagination cannot advance.
+    // sevDesk operational note (NOT a known_data_gap — covered by last_sync_status):
+    // API tokens are bound to a specific sevDesk user account. If that user is
+    // deleted in sevDesk, the token dies silently — the next sync surfaces a
+    // 401 via last_error, which is already the right behavior.
     data_endpoints: [
       { url: "https://my.sevdesk.de/api/v1/Voucher", method: "GET", normalize_as: "sevdesk_vouchers" },
+      { url: "https://my.sevdesk.de/api/v1/Invoice?limit=100&offset=0&countAll=true", method: "GET", normalize_as: "sevdesk_invoices" },
     ],
     demo_mode: false,
   },

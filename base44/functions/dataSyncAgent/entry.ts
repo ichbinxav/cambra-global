@@ -449,8 +449,18 @@ const REGISTRY = {
       "Accept": "application/json",
     },
     data_type: "invoices",
+    // Two endpoints on the same provider — mirrors Pennylane's customer+supplier
+    // pattern. /Voucher (expenses) and /Invoice (revenue) coexist: each has its
+    // own normalizer, neither is touched when the other changes.
+    // countAll=true is REQUIRED on /Invoice — without it sevDesk does not
+    // return the total row count and offset-based pagination cannot advance.
+    // sevDesk operational note (NOT a known_data_gap — covered by last_sync_status):
+    // API tokens are bound to a specific sevDesk user account. If that user is
+    // deleted in sevDesk, the token dies silently — the next sync surfaces a
+    // 401 via last_error, which is already the right behavior.
     data_endpoints: [
       { url: "https://my.sevdesk.de/api/v1/Voucher", method: "GET", normalize_as: "sevdesk_vouchers" },
+      { url: "https://my.sevdesk.de/api/v1/Invoice?limit=100&offset=0&countAll=true", method: "GET", normalize_as: "sevdesk_invoices" },
     ],
     demo_mode: false,
   },
@@ -750,6 +760,81 @@ const normalizers = {
         currency,
         occurred_at: occurredAt,
         status,
+      });
+    }
+    return rows;
+  },
+  // sevdesk_invoices — sevDesk API v1 /Invoice (customer invoice = REVENUE).
+  // SISTER of sevdesk_vouchers (which reads /Voucher = expenses). Both endpoints
+  // live on the same provider; this normalizer is REVENUE-only (no direction
+  // field — per the CAMBRA contract, customer_invoices without `direction` mean
+  // revenue, supplier rows carry `direction: "expense"`).
+  //
+  // Root: raw.objects (sevDesk's standard list wrapper) is the ONLY accepted
+  // shape — no fallback to other roots (consistent with sevdesk_vouchers).
+  // Skip lines without id.
+  //
+  // Amounts: invoice.sumGross is ALREADY in MAJOR currency units (NOT cents).
+  // DO NOT divide by 100. This differs from Payplug/Stripe/Zettle/Square which
+  // emit minor units. Anti-regression test T6 specifically guards this.
+  //
+  // Dates: invoice.invoiceDate may be "YYYY-MM-DD" or ISO with TZ offset
+  // ("2024-01-15T00:00:00+01:00") — preserved AS-IS. If absent, occurred_at:null
+  // (no invented fallback — sevDesk has no reliable alternative timestamp at
+  // header level).
+  //
+  // Status: sevDesk uses NUMERIC state codes on /Invoice:
+  //   100  → "draft"
+  //   200  → "open"   (sent / awaiting payment)
+  //   1000 → "paid"
+  //   anything else → null (do NOT invent labels — same defensive stance as
+  //   sevdesk_vouchers which stores raw numeric string for /Voucher status).
+  //   ⚠️ Codes from public docs; verify against real API at first connect.
+  //
+  // Currency: invoice.currency arrives as ISO code (e.g. "EUR") — no Stripe-style
+  // lowercase→uppercase transformation needed. Fallback "EUR" when absent.
+  //
+  // DEUDA: (a) verify status code mapping at first real connect — 100/200/1000
+  // assumption from public docs. (b) limit/offset+countAll pagination is the
+  // sync engine's job; countAll=true is hard-coded in the URL because sevDesk
+  // does NOT return total count without it. (c) sumNet/sumTax not exposed at
+  // this normalizer (header-level breakdown reliability TBC); add later if
+  // needed via a per-invoice GET (same pattern as quickbooks_bills DEUDA b).
+  sevdesk_invoices: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    // sevDesk status code → CAMBRA-readable label. Anything outside the known
+    // set returns null (never invent a label).
+    const mapStatus = (rawStatus) => {
+      if (rawStatus === null || rawStatus === undefined) return null;
+      const n = typeof rawStatus === "number" ? rawStatus : parseInt(String(rawStatus), 10);
+      if (n === 100) return "draft";
+      if (n === 200) return "open";
+      if (n === 1000) return "paid";
+      return null;
+    };
+    const invoices = Array.isArray(raw?.objects) ? raw.objects : [];
+    const rows = [];
+    for (const invoice of invoices) {
+      if (!invoice || typeof invoice !== "object") continue;
+      const id = invoice?.id;
+      if (id === null || id === undefined || id === "") continue; // skip without anchor
+      const rawCurrency = invoice?.currency;
+      const currency = (typeof rawCurrency === "string" && rawCurrency.length > 0)
+        ? rawCurrency
+        : "EUR";
+      const occurredAt = typeof invoice?.invoiceDate === "string" ? invoice.invoiceDate : null;
+      rows.push({
+        vertical: "accounting",
+        external_id: String(id),
+        amount: toNum(invoice?.sumGross), // ALREADY in major units — DO NOT /100
+        fee: 0, // A customer invoice is revenue, not a fee.
+        currency,
+        occurred_at: occurredAt,
+        status: mapStatus(invoice?.status),
       });
     }
     return rows;
