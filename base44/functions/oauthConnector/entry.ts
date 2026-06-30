@@ -389,6 +389,47 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // ─── REAL PROVIDERS (Tanda 8: commerce Basic Auth per-shop — WooCommerce) ─
+  // WooCommerce REST API v3. Authenticates with HTTP Basic Auth using a
+  // consumer_key (ck_...) as username and consumer_secret (cs_...) as
+  // password — same `basic_auth` path used by Sendcloud/Klarna, zero crypto
+  // changes.
+  //
+  // Per-shop URL: WooCommerce lives on the customer's own domain. The
+  // engine reuses the existing `requires_shop_domain` mechanism (originally
+  // built for Shopify) — the data endpoint contains `{shop}` which is
+  // interpolated at sync time with whatever the brand pasted at connect
+  // time. For Shopify the value is a handle ("mitienda"); for WooCommerce
+  // it's a full domain ("mitienda.com"). The interpolation helper is
+  // generic and accepts both. modeConnectBasicAuth was extended in this
+  // change to read+persist shop_domain when requires_shop_domain is true
+  // (same surface modeStart already had for OAuth providers).
+  //
+  // Deuda anotada (also documented inside the normalizer):
+  //   (a) Endpoint path from public docs; verify at first real connect.
+  //   (b) `total` / `total_tax` are STRINGS in MAJOR currency units; the
+  //       normalizer does NOT divide by 100.
+  //   (c) `date_created_gmt` has no "Z" suffix even though it's UTC —
+  //       preserved as-is.
+  //   (d) Pagination + WP-specific headers — sync engine's job.
+  woocommerce: {
+    display_name: "WooCommerce",
+    category: "commerce",
+    logo: null,
+    description: "WooCommerce REST API v3 — Basic Auth with consumer_key (ck_) + consumer_secret (cs_). Per-shop: the customer provides their site's base URL at connect time, which the engine interpolates as {shop} (full domain).",
+    auth_method: "basic_auth",
+    basic_auth_help_url: "https://woocommerce.com/document/woocommerce-rest-api/",
+    basic_auth_help_text: "En WooCommerce → Ajustes → Avanzado → REST API, crea una clave con permiso de Lectura. Pega la Consumer key (ck_...) como usuario y la Consumer secret (cs_...) como contraseña.",
+    basic_auth_user_label: "Consumer key (ck_...)",
+    basic_auth_pass_label: "Consumer secret (cs_...)",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://{shop}/wp-json/wc/v3/orders", method: "GET", normalize_as: "woocommerce_orders" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
 };
 
 function getProviderConfig(provider) {
@@ -788,7 +829,7 @@ async function modeConnectApiKey(base44, user, params) {
 // Response and never log them.
 
 async function modeConnectBasicAuth(base44, user, params) {
-  const { brand_id, provider, public_key, secret_key } = params;
+  const { brand_id, provider, public_key, secret_key, shop_domain: rawShopDomain } = params;
   const cfg = getProviderConfig(provider);
   if (!cfg) return jsonError(400, `Unknown provider: ${provider}`);
 
@@ -807,6 +848,20 @@ async function modeConnectBasicAuth(base44, user, params) {
     }
   }
 
+  // Per-shop basic_auth providers (e.g. WooCommerce) need the customer's
+  // base URL at connect time so dataSyncAgent can interpolate {shop} into
+  // the data endpoint. Generic — the engine never names a provider. NOTE:
+  // unlike the OAuth path (Shopify), we do NOT enforce SHOP_DOMAIN_REGEX
+  // here because basic_auth providers can carry full domains (e.g.
+  // "mitienda.com"). The interpolation helper accepts any non-empty string.
+  let shopDomain = null;
+  if (cfg.requires_shop_domain) {
+    if (typeof rawShopDomain !== "string" || rawShopDomain.trim().length < 3) {
+      return jsonError(400, "shop_domain is required for this provider");
+    }
+    shopDomain = rawShopDomain.trim().toLowerCase();
+  }
+
   if (user.role !== "admin") {
     await assertBrandOwnedByUser(base44, brand_id, user.email);
   }
@@ -823,7 +878,11 @@ async function modeConnectBasicAuth(base44, user, params) {
     connected_at: new Date().toISOString(),
     last_error: null,
     provider_account_id: null,
-    metadata_json: { auth_method: "basic_auth", demo_mode: !!cfg.demo_mode },
+    metadata_json: {
+      auth_method: "basic_auth",
+      demo_mode: !!cfg.demo_mode,
+      ...(shopDomain ? { shop_domain: shopDomain } : {}),
+    },
     category: cfg.category,
   };
 

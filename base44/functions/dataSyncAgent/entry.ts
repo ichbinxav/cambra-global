@@ -272,6 +272,25 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // Mirror of woocommerce — same contract, both files identical.
+  woocommerce: {
+    display_name: "WooCommerce",
+    category: "commerce",
+    logo: null,
+    description: "WooCommerce REST API v3 — Basic Auth with consumer_key (ck_) + consumer_secret (cs_). Per-shop: the customer provides their site's base URL at connect time, which the engine interpolates as {shop} (full domain).",
+    auth_method: "basic_auth",
+    basic_auth_help_url: "https://woocommerce.com/document/woocommerce-rest-api/",
+    basic_auth_help_text: "En WooCommerce → Ajustes → Avanzado → REST API, crea una clave con permiso de Lectura. Pega la Consumer key (ck_...) como usuario y la Consumer secret (cs_...) como contraseña.",
+    basic_auth_user_label: "Consumer key (ck_...)",
+    basic_auth_pass_label: "Consumer secret (cs_...)",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://{shop}/wp-json/wc/v3/orders", method: "GET", normalize_as: "woocommerce_orders" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -386,6 +405,89 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── woocommerce_orders ─────────────────────────────────────────────────
+  // ELEVENTH real normalizer. Translates WooCommerce REST API v3:
+  //   GET {site}/wp-json/wc/v3/orders
+  //   [ { id, status, currency, total, total_tax,
+  //       date_created_gmt, date_created, payment_method, ... } ]
+  //
+  // Twin of `shopify_orders` (commerce vertical, GMV, fee:0). Same family
+  // of decisions:
+  //   - vertical: "commerce" — WooCommerce is the storefront, not the
+  //     processor. There is NO transaction fee in this payload. Emitting
+  //     fee: 0 is HONEST ABSENCE, not invented; downstream MUST NOT treat
+  //     it as a real fee.
+  //   - amount: total as MAJOR currency units (string "29.35") → parseFloat.
+  //     Do NOT divide by 100. Same convention as Klarna/Pennylane/Shopify
+  //     (sources where money arrives in major units), different from
+  //     Stripe/Zettle/Square (minor units).
+  //
+  // Root navigation (CAMBRA "rule of gold": form translation, not value
+  // invention):
+  //   - WooCommerce v3 returns a BARE ARRAY at the root (`[ {...}, {...} ]`).
+  //     If Array.isArray(raw) → use it.
+  //   - If raw is an object (defensive: misrouted response, wrong wrapper)
+  //     → emit []. We do NOT probe `raw.orders` — that's a Shopify shape,
+  //     not WooCommerce. Adding such a fallback would invent robustness
+  //     against a case that doesn't exist in this API.
+  //
+  // Date handling:
+  //   - `date_created_gmt` is UTC but WITHOUT a "Z" suffix
+  //     ("2017-03-22T19:28:02"). We preserve AS-IS. We do NOT append "Z"
+  //     because that would change the type of the field versus input.
+  //     The cerebro decides how to interpret it.
+  //   - Prefer `date_created_gmt` over `date_created` (local TZ-less).
+  //     If both absent → null.
+  //
+  // Items skipped:
+  //   - order without `id` → skipped (same pattern as Shopify/PayPal).
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) Written from public docs; verify root shape and field names on
+  //       first real connect.
+  //   (b) Per-shop URL: the data endpoint contains {shop} which the engine
+  //       interpolates via interpolateShopDomain at sync time, using the
+  //       shop_domain saved in Integration.metadata_json at connect time.
+  //       For WooCommerce the "shop" is a full domain (e.g.
+  //       "mitienda.com"), unlike Shopify's handle-only ("mitienda").
+  //       The interpolation helper is generic and accepts both.
+  //   (c) Pagination: `?page=N&per_page=M` + `X-WP-Total` header —
+  //       sync engine's job, not this normalizer's.
+  //   (d) `date_created_gmt` lacks the "Z" UTC suffix even though it IS
+  //       UTC — preserved as-is, no synthetic suffix.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  woocommerce_orders: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    // v3 returns a bare array. No fallback to other root shapes.
+    const orders = Array.isArray(raw) ? raw : [];
+    const rows = [];
+    for (const order of orders) {
+      if (!order || typeof order !== "object") continue;
+      const id = order?.id;
+      if (id === null || id === undefined || id === "") continue; // skip orders without id
+      const currency = order?.currency || "EUR";
+      // Prefer GMT, fall back to local-tz date_created, then null.
+      const occurredAt = typeof order?.date_created_gmt === "string"
+        ? order.date_created_gmt
+        : (typeof order?.date_created === "string" ? order.date_created : null);
+      rows.push({
+        vertical: "commerce",
+        external_id: String(id),
+        amount: toNum(order?.total),
+        tax: toNum(order?.total_tax),
+        fee: 0, // WooCommerce-as-storefront does not charge per-transaction fee.
+        currency,
+        occurred_at: occurredAt,
+        status: order?.status ?? null,
+      });
+    }
+    return rows;
+  },
   // ─── klarna_settlements ─────────────────────────────────────────────────
   // TENTH real normalizer. Translates Klarna Settlements API:
   //   GET /v1/payouts/transactions
