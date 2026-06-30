@@ -1390,17 +1390,43 @@ const normalizers = {
       groups.get(uuid).push(line);
     }
     const rows = [];
+    // Counter for groups dropped due to missing PAYMENT anchor. Logged at the
+    // end so a real sync surfaces this as a visible signal in console output
+    // instead of swallowing data drops silently inside `continue`. Decision
+    // path documented in audit T3 — the underlying drop behavior is INTENTIONALLY
+    // unchanged here (we still need a real Zettle payload to know whether
+    // Zettle ever emits literal "REFUND" type, or always models refunds as
+    // PAYMENT with negative amount as the code currently assumes). This logging
+    // is observability only, zero behavior change.
+    let droppedNoAnchor = 0;
+    const droppedSampleTypes = new Set();
     for (const [uuid, groupLines] of groups) {
       // Anchor line: the PAYMENT (or REFUND, which Zettle models as a
       // PAYMENT with negative amount). If absent, skip the group.
       const paymentLine = groupLines.find(l => l?.originatorTransactionType === "PAYMENT");
-      if (!paymentLine) continue;
+      if (!paymentLine) {
+        droppedNoAnchor++;
+        for (const l of groupLines) {
+          if (l?.originatorTransactionType) droppedSampleTypes.add(l.originatorTransactionType);
+        }
+        continue;
+      }
       const feeLine = groupLines.find(l => l?.originatorTransactionType === "PAYMENT_FEE");
       const amount = toNum(paymentLine?.amount) / 100;
       const fee = feeLine ? Math.abs(toNum(feeLine?.amount)) / 100 : 0;
       const occurredAt = typeof paymentLine?.timestamp === "string"
         ? paymentLine.timestamp
         : null;
+      // Type whitelist — only the documented Zettle anchor types are preserved;
+      // anything else (new type added by Zettle, garbage) → null. Consistent
+      // with the same fix applied to square_payments.status. See audit T6.
+      // NOTE: Zettle's documented sale-anchor types are limited to PAYMENT;
+      // REFUND handling is unresolved (see T3 audit) and intentionally NOT
+      // added to the whitelist here — preserving raw on unknown would
+      // contradict the strict-over-permissive decision applied to Square.
+      const KNOWN_TYPES = ["PAYMENT"];
+      const rawType = paymentLine?.originatorTransactionType;
+      const type = KNOWN_TYPES.includes(rawType) ? rawType : null;
       rows.push({
         vertical: "payments",
         external_id: uuid,
@@ -1408,8 +1434,18 @@ const normalizers = {
         fee,
         currency: "EUR", // see DEUDA (b) — confirm source on first real connect
         occurred_at: occurredAt,
-        type: paymentLine?.originatorTransactionType ?? null,
+        type,
       });
+    }
+    if (droppedNoAnchor > 0) {
+      // Visible signal in sync logs — picked up by sevDesk-style debugging at
+      // first real connect. Sample types help diagnose whether Zettle is
+      // actually emitting literal "REFUND" (the open question in T3).
+      console.warn(
+        `[zettle_finance] dropped ${droppedNoAnchor} group(s) with no PAYMENT anchor. ` +
+        `Sample types in dropped groups: [${Array.from(droppedSampleTypes).join(", ")}]. ` +
+        `If "REFUND" appears here, T3 is real — refunds are being silently lost.`
+      );
     }
     return rows;
   },
