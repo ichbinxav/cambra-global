@@ -1,30 +1,10 @@
 /**
- * dataSyncAgent — Generic data reader (Fase 0)
- * =============================================================================
- * Pulls data from a connected Integration using the endpoints declared in the
- * registry, then normalizes the response into CAMBRA's common spend format.
- *
- * Generic: the engine reads cfg.data_endpoints and cfg.data_type from the
- * REGISTRY constant below. Adding a new provider does not require touching
- * any code in this file — only adding an entry to REGISTRY.
- *
- * Agent OS conventions:
- *   - Creates an AgentTask for this run (visible in the Activity Log)
- *   - Risk level 0 (read-only, no external action with consequences)
- *   - Emits an Event on completion
- *   - Tenant isolation: brand ownership is verified before any work
- *
- * Input:  { integration_id }
- * Output: { ok, agent_task_id, records_count, normalized_sample }
- *
- * Demo mode (registry flag): returns deterministic mock data so the entire
- * pipeline can be exercised without a real provider.
- *
- * ⚠️  REGISTRY DUPLICATION NOTE
- * Deno functions cannot import from sibling functions. The REGISTRY below is
- * duplicated VERBATIM from functions/oauthConnector.js. When adding a
- * provider, edit BOTH FILES in the same change.
- * =============================================================================
+ * dataSyncAgent — Generic data reader. Reads cfg.data_endpoints + cfg.data_type
+ * from REGISTRY, fetches, normalizes into CAMBRA spend format. Risk 0 (read-only).
+ * Emits AgentTask + Event. Tenant-isolated.
+ * In: { integration_id }  Out: { ok, agent_task_id, records_count, normalized_sample }
+ * ⚠️ REGISTRY duplicated verbatim in oauthConnector.js — Deno cannot share imports.
+ *    Edit BOTH files together when adding a provider.
  */
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
@@ -412,17 +392,8 @@ function interpolateShopDomain(url, shop) {
   return url.replaceAll("{shop}", shop);
 }
 
-// Generic auth header builder — the registry says how, this function follows.
-// No provider name appears anywhere. Adding a new api_key provider means
-// adding a registry entry, nothing else.
-//
-// Returns { headers, plaintextToken } so the caller can fuse static_headers
-// declared in the registry and optionally interpolate the secret as {token}
-// (used by providers that put the secret in a non-standard header, e.g.
-// X-Auth-Token instead of Authorization). The plaintextToken is the SAME
-// secret string the auth header consumes — exposing it to the static-header
-// fuser does not widen the trust surface (the secret already lives in this
-// function's stack frame anyway, and is never logged).
+// Generic auth header builder. Returns { headers, plaintextToken } so callers
+// can fuse static_headers and interpolate {token} for non-standard headers.
 async function buildAuthHeaders(cfg, integ) {
   const authMethod = cfg.auth_method || "oauth";
   if (authMethod === "oauth") {
@@ -444,12 +415,7 @@ async function buildAuthHeaders(cfg, integ) {
     };
   }
   if (authMethod === "basic_auth") {
-    // Stored as a single encrypted blob in the form "public:secret" — exactly
-    // the wire format Basic Auth expects before base64 encoding. We decrypt
-    // ONCE and emit "Authorization: Basic " + base64(public:secret). Generic:
-    // no provider name appears here; the registry dictates the auth_method.
-    // btoa() is safe for ASCII (all real basic_auth keys are ASCII); we keep
-    // the same encoding path the rest of the engine already trusts.
+    // Stored as single AES blob "public:secret" → emit "Basic " + btoa(combined).
     const combined = await decryptToken(integ.access_token);
     if (!combined || !combined.includes(":")) {
       throw new Error("No valid basic_auth credentials stored");
@@ -462,12 +428,8 @@ async function buildAuthHeaders(cfg, integ) {
   throw new Error(`Unsupported auth_method: ${authMethod}`);
 }
 
-// Generic static-header fuser. The registry says which extra headers each
-// provider needs (e.g. `Square-Version`, `X-Auth-Token`); this function
-// applies them with `{token}` interpolation. Provider-agnostic: works the
-// same for every auth_method. If cfg.static_headers is absent → returns
-// authHeaders untouched, so providers without static_headers behave EXACTLY
-// as before this change (no-regression invariant).
+// Generic static-header fuser. Applies cfg.static_headers with {token} interp.
+// No-op if cfg.static_headers is absent. Provider-agnostic.
 function mergeStaticHeaders(cfg, authHeaders, plaintextToken) {
   const staticH = cfg.static_headers;
   if (!staticH || typeof staticH !== "object") return authHeaders;
@@ -526,117 +488,17 @@ const normalizers = {
       occurred_at: r.created_at || null,
     }));
   },
-  // ─── stripe_transactions ────────────────────────────────────────────────
-  // FIRST real normalizer (the others above are placeholders).
-  //
-  // Translates ONE form: Stripe's GET /v1/balance_transactions response.
-  //   { object: "list", data: [ {id, amount, fee, net, currency, created, ...} ], has_more }
-  //
-  // CAMBRA "rule of gold": a normalizer TRANSLATES form, it never invents or
-  // calculates values. Every output field comes 1:1 from an input field
-  // (modulo unit conversion: cents→units, UNIX→ISO, lowercase→uppercase).
-  //
-  // Unit conventions translated:
-  //   - amount/fee/net: Stripe gives cents (smallest currency unit) → divide by 100
-  //   - currency: Stripe gives lowercase "eur" → uppercase "EUR"
-  //   - created: Stripe gives UNIX seconds → ISO string
-  //   - type: prefer `reporting_category` (Stripe's curated taxonomy) over raw `type`
-  //
-  // Robustness:
-  //   - raw not an object, or raw.data not an array → returns []
-  //   - missing numeric fields → coerced to 0 via `?? 0` (then /100 = 0)
-  //   - missing string/timestamp fields → null
-  //   - never throws on shape; the worst case is an empty list
-  //
-  // PAGINATION (deferred): Stripe responses carry `has_more: true` + we'd need
-  // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
-  // page 1. Implement full pagination when we wire Stripe with real credentials
-  // (motor change in dataSyncAgent's sync loop, not in this normalizer).
-  // ─── sage_purchase_invoices ─────────────────────────────────────────────
-  // SIXTEENTH real normalizer. Translates Sage Business Cloud Accounting v3.1:
-  //   GET https://api.accounting.sage.com/v3.1/purchase_invoices
-  //   { "$items": [ { id, displayed_as, contact: {...}|string,
-  //                   date, total_amount, net_amount, tax_amount,
-  //                   currency: {...}|string, status: {...}|string } ],
-  //     "$total", "$next", "$back" }
-  //
-  // Twin of the other accounting normalizers (xero_bills / quickbooks_bills
-  // / holded_purchases / pennylane_supplier_invoices). Same shape contract:
-  //   - vertical: "accounting"
-  //   - direction: "expense"
-  //   - supplier_name propagated
-  //   - fee: 0 (an invoice is an expense, not a fee)
-  // Together they form CAMBRA's coverage of the long tail of brand spend
-  // across the five mainstream accounting suites for our target tenants.
-  //
-  // Sage-specific quirks (all CAMBRA "rule of gold": 1:1 from input,
-  // modulo unit; NEVER invent values):
-  //
-  //   1. ROOT KEY `$items` — dollar prefix.
-  //      Sage v3.1 wraps the list in `$items` (with a literal dollar
-  //      sign). Accessing it requires bracket notation `raw["$items"]`
-  //      — `raw.$items` works in JS but is fragile under transforms.
-  //      No fallback to bare array or `items` (no-dollar) — each
-  //      provider has its own root key, same rule as Pennylane (`items`)
-  //      and QuickBooks (`QueryResponse.Bill`). If Sage turns out to
-  //      emit a different key, fix it here at first connect — don't
-  //      guess now.
-  //
-  //   2. DUAL OBJECT/STRING for contact, currency, status.
-  //      Sage docs show three fields that CAN arrive either as an
-  //      expanded object OR as a flat string identifier:
-  //        - contact   → { id, displayed_as, name? }  OR  "contact-id"
-  //        - currency  → { id: "EUR", displayed_as: "Euro" }  OR  "EUR"
-  //        - status    → { id, displayed_as }  OR  "DRAFT"
-  //      Which form arrives depends on whether the call expanded the
-  //      relation (Sage uses `?attributes=...` for that). The
-  //      normalizer handles BOTH forms generically:
-  //        - object → read .name/.id/.displayed_as as appropriate
-  //        - string → use as-is
-  //        - anything else → null (honest absence)
-  //      This is form navigation, not value invention.
-  //
-  //   3. supplier_name preference order:
-  //      contact.name first (the actual supplier name when present),
-  //      then contact.displayed_as (Sage's human-readable shorthand),
-  //      else null. NEVER fabricate. NEVER fall back to contact.id
-  //      (that's an internal Sage id, not a name).
-  //
-  //   4. currency precedence: when currency is an object, read .id
-  //      (the ISO code "EUR"/"USD"), NOT .displayed_as ("Euro"). The
-  //      ISO code is the canonical key downstream cohorts use.
-  //
-  //   5. status precedence: when status is an object, read
-  //      .displayed_as (the human label "Draft"/"Sent"). status.id
-  //      is an opaque numeric id with no operational meaning for the
-  //      cerebro.
-  //
-  // Amount handling — Sage docs mark amounts as "decimal" but they
-  // may arrive as strings ("180.00") or numbers (180.0). toNum
-  // handles both. Major currency units (no /100).
-  //
-  // Date handling — `date` is "YYYY-MM-DD" (date-only). Preserved
-  // AS-IS, no synthetic timezone — same rule as
-  // pennylane_invoices.date and quickbooks_bills.TxnDate.
-  //
-  // Items skipped:
-  //   - invoice without `id` → skipped (same pattern as Holded/Xero).
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) Field names from public docs; verify on first real connect.
-  //   (b) Root key `$items` confirmed in docs; verify in a real payload.
-  //   (c) contact / currency / status: object-vs-string — both handled;
-  //       confirm which form Sage actually returns by default and
-  //       whether attributes-expansion is needed.
-  //   (d) `full_access` scope assumed; verify if a read-only scope
-  //       exists that better fits CAMBRA's least-privilege posture.
-  //   (e) Sage multi-business: production accounts may require a
-  //       per-business identifier header (analogous to Xero's
-  //       Xero-Tenant-Id). NOT captured today — same per-integration
-  //       dynamic-header debt. Flagged in registry, NOT resolved here.
-  //   (f) Pagination via `$next` / `$back` cursors — sync engine.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // stripe_transactions (first real normalizer) — Stripe /v1/balance_transactions.
+  // Cents→units (/100), lowercase→uppercase currency, UNIX seconds→ISO. Prefer reporting_category
+  // over raw type. Defensive: raw.data not array → []. Pagination (has_more / starting_after)
+  // is sync engine job, not this normalizer.
+  // sage_purchase_invoices — Sage Accounting v3.1 /purchase_invoices (supplier bills = expense).
+  // Root `$items` (dollar prefix, bracket notation). contact/currency/status dual object|string.
+  // supplier_name = contact.name ?? contact.displayed_as (NEVER .id). currency from .id (ISO),
+  // not .displayed_as. status from .displayed_as. Amounts in major units. Date date-only as-is.
+  // DEUDA: (a) verify field names first real connect. (b) root `$items` confirmed in docs.
+  // (c) object/string both handled. (d) full_access scope assumed. (e) Sage multi-business
+  // may require per-business header (same Xero-Tenant-Id debt). (f) cursor pagination via $next/$back.
   sage_purchase_invoices: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -690,63 +552,15 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── quickbooks_bills ───────────────────────────────────────────────────
-  // FIFTEENTH real normalizer. Translates QuickBooks Online Accounting v3:
-  //   GET /v3/company/{realmId}/query?query=select * from Bill
-  //   { QueryResponse: { Bill: [ { Id, VendorRef: {value, name},
-  //                                TotalAmt, TxnDate, DueDate,
-  //                                CurrencyRef: {value, name}, Balance,
-  //                                Line: [...] } ] } }
-  //
-  // Twin of `xero_bills` / `holded_purchases` / `pennylane_supplier_invoices`
-  // — accounting vertical, direction "expense", supplier_name propagated.
-  // Together they form CAMBRA's coverage of the long tail of brand spend
-  // across the four mainstream accounting suites for our target tenants.
-  //
-  // CAMBRA "rule of gold" — every output field comes 1:1 from input.
-  // Quirks translated:
-  //   - VendorRef is an OBJECT { value: id, name: "..." }. We read .name
-  //     for supplier_name. NEVER pass VendorRef itself — that would emit
-  //     a reference object as a supplier name and confuse the cerebro.
-  //   - CurrencyRef is also an OBJECT { value: "USD", name: "..." }. We
-  //     read .value (the ISO code). Defaults to "USD" (not "EUR") because
-  //     QuickBooks is US-centric; emitting "EUR" by default would invent
-  //     a currency for an account that's likely USD.
-  //   - TotalAmt is a NUMBER (major units, no /100). toNum passes through.
-  //   - TxnDate is "YYYY-MM-DD" (date-only). Preserved AS-IS — we do NOT
-  //     promote to ISO with T00:00:00Z because that invents a UTC TZ the
-  //     source never specified (same rule as pennylane_invoices.date).
-  //
-  // Root navigation:
-  //   - QuickBooks wraps in TWO levels: QueryResponse.Bill. We require
-  //     both. No fallback to bare array or other shapes — same rule as
-  //     pennylane_invoices (each provider has its own root key).
-  //
-  // Items skipped:
-  //   - bill without `Id` → skipped (no anchor).
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) Field names from public docs; verify on first real connect.
-  //   (b) `amount_before_tax` and `tax` FORCED TO 0 — QuickBooks Bill
-  //       header does NOT carry a reliable tax breakdown. The real tax
-  //       lives in the Line items array (each Line has its own TaxLine).
-  //       Computing the per-bill subtotal/tax would require summing Lines
-  //       with their tax codes — out of scope for a translation
-  //       normalizer. Marked as 0 (honest absence, not invented). When we
-  //       need the breakdown, build it from Lines as a follow-up.
-  //   (c) `status` left null — QuickBooks Bill doesn't expose a simple
-  //       textual status at header level. Could be derived from Balance
-  //       vs TotalAmt later if needed.
-  //   (d) {shop} here is the realmId (numeric company ID), not a domain.
-  //       The generic interpolation helper accepts any non-empty string.
-  //   (e) URL query string contains spaces (`select * from Bill`).
-  //       fetch() typically encodes them, but if the engine fails on the
-  //       raw form, encode the query param at the sync layer. Confirm
-  //       on first real connect.
-  //   (f) Pagination via STARTPOSITION + MAXRESULTS in the SQL-like
-  //       query, not ?page=N. Sync engine's job.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // quickbooks_bills — QBO v3 /query?query=select * from Bill (Bill = supplier bill = expense).
+  // Root QueryResponse.Bill (two levels, no fallback). VendorRef and CurrencyRef are OBJECTS:
+  // supplier_name = VendorRef.name, currency = CurrencyRef.value (ISO). Default "USD" (not EUR,
+  // QBO is US-centric). TotalAmt is number, major units. TxnDate "YYYY-MM-DD" as-is.
+  // DEUDA: (a) verify fields first connect. (b) amount_before_tax & tax = 0: header has no
+  // reliable tax breakdown, real tax in Line[] items (honest absence). (c) status = null:
+  // no header-level status. (d) {shop} = realmId (numeric), generic helper handles strings.
+  // (e) URL has spaces in query string ("select * from Bill"); fetch tolerates, encode if breaks.
+  // (f) pagination via STARTPOSITION + MAXRESULTS — sync engine.
   quickbooks_bills: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -778,70 +592,14 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── xero_bills ─────────────────────────────────────────────────────────
-  // FOURTEENTH real normalizer. Translates Xero Accounting API /Invoices:
-  //   GET https://api.xero.com/api.xro/2.0/Invoices
-  //   { Invoices: [ { Type, InvoiceID, Contact: { Name, ContactID },
-  //                   Total, SubTotal, TotalTax, CurrencyCode, Status,
-  //                   Date, ... } ] }
-  //
-  // Twin of `pennylane_supplier_invoices` / `holded_purchases` — accounting
-  // vertical, direction "expense", supplier_name propagated. The three
-  // together cover the long-tail of brand spend across three accounting
-  // suites; the cerebro de-duplicates by (supplier_name + date) at read time,
-  // not here.
-  //
-  // CRITICAL Xero-specific filter:
-  //   /Invoices returns BOTH supplier bills (Type "ACCPAY", expenses) AND
-  //   customer invoices (Type "ACCREC", revenue) in the same array. CAMBRA's
-  //   contract for this normalizer is "supplier bills only" (mirrors the
-  //   purchase endpoints of Holded and the supplier_invoices endpoint of
-  //   Pennylane). We filter Type === "ACCPAY" and drop ACCREC silently. A
-  //   future `xero_invoices` normalizer can read the same payload with the
-  //   opposite filter when we wire revenue.
-  //
-  // CAMBRA "rule of gold" (1:1 from input, modulo unit):
-  //   - Total / SubTotal / TotalTax arrive as NUMBERS in major currency
-  //     units (NOT cents). toNum passes them through unchanged.
-  //   - currency from CurrencyCode, default "EUR" if absent.
-  //   - supplier_name from Contact.Name; null if absent (no invention).
-  //   - Status preserved 1:1.
-  //
-  // Date handling — UNIT/FORMAT CONVERSION (the one place we DO transform):
-  //   - Xero ships dates as Microsoft-style strings:
-  //       "/Date(1519776000000+0000)/"
-  //     where the number is UNIX MILLISECONDS (not seconds — do NOT *1000).
-  //   - We extract the digits with /\/Date\((\d+)/ and convert via
-  //     new Date(ms).toISOString().
-  //   - If the value is not a string, doesn't match the pattern, or yields
-  //     an Invalid Date → null. We do NOT emit fake timestamps.
-  //
-  // Root navigation:
-  //   - Xero wraps the array in raw.Invoices. If raw.Invoices is not an
-  //     array → []. No fallback to bare array / other shapes; same rule as
-  //     pennylane_invoices (each provider has its own root key).
-  //
-  // Items skipped:
-  //   - Type !== "ACCPAY" → dropped silently (revenue rows).
-  //   - missing InvoiceID → skipped (no anchor).
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) Field names from public docs; verify on first real connect.
-  //   (b) Date in Microsoft "/Date(ms)/" format — MILLISECONDS. Confirm.
-  //   (c) static_headers forces JSON over XML; confirm no query param is
-  //       also needed (some Xero endpoints accept ?format=json on top of
-  //       the Accept header).
-  //   (d) Xero requires a `Xero-Tenant-Id` header in production multi-org
-  //       accounts. NOT captured at connect time yet. Generic static_headers
-  //       can only carry static strings; the tenant id is per-integration.
-  //       Will need either (i) a per-integration dynamic-header mechanism,
-  //       or (ii) capture the tenant_id during modeCallback and store it
-  //       in Integration.metadata_json (then a small additional fuser
-  //       reads it). Flagged; NOT resolved here.
-  //   (e) Pagination — sync engine's job (Xero uses ?page=N).
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input
-  // (modulo /Date(ms)/ → ISO and the ACCPAY filter).
+  // xero_bills — Xero /Invoices, filter Type === "ACCPAY" (supplier bills = expense);
+  // ACCREC (revenue) dropped silently. Root raw.Invoices, no fallback. Total/SubTotal/TotalTax
+  // are numbers in major units. supplier_name = Contact.Name. Date is Microsoft
+  // "/Date(MILLISECONDS+0000)/" — extract digits, new Date(ms).toISOString() (NOT seconds).
+  // DEUDA: (a) verify fields first connect. (b) Date in /Date(ms)/ — MILLISECONDS, confirm.
+  // (c) static_headers forces JSON over XML default; confirm no ?format=json also needed.
+  // (d) ⚠️ Xero-Tenant-Id required in prod multi-org — NOT captured yet; same per-integration
+  // dynamic-header debt as Sage. Flagged, not solved. (e) ?page=N pagination — sync engine.
   xero_bills: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -883,54 +641,13 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── holded_purchases ───────────────────────────────────────────────────
-  // THIRTEENTH real normalizer. Translates Holded Invoicing API:
-  //   GET https://api.holded.com/api/invoicing/v1/documents/purchase
-  //   [ { id, contactName, contact: { name }, total, tax, subtotal,
-  //       currency, date (UNIX seconds), status, ... } ]
-  //
-  // Twin of `pennylane_supplier_invoices` — accounting vertical, direction
-  // "expense", supplier_name propagated. Together they form CAMBRA's two
-  // sources of truth for the long tail of infra spend (SaaS, marketing,
-  // carrier, energy, …). The cerebro reads both; dedup by supplier_name +
-  // date is the consumer's job, not this normalizer's.
-  //
-  // CAMBRA "rule of gold" (1:1 from input, modulo unit):
-  //   - amounts may arrive as number OR string. toNum handles both.
-  //     NOT divided by 100 — Holded gives major currency units (29.35).
-  //   - currency uppercased (Holded may emit lowercase "eur").
-  //   - supplier_name read as doc.contactName ?? doc.contact?.name ?? null.
-  //     Two field paths because the docs hint at both; honest null if absent.
-  //   - status preserved 1:1 (null if absent).
-  //
-  // Date handling — UNIT CONVERSION (the one place we DO transform):
-  //   - Holded ships `date` as UNIX SECONDS (e.g. 1640995200), not ISO.
-  //     We convert to ISO 8601 via new Date(seconds * 1000).toISOString().
-  //     This is a unit-of-time conversion analogous to Stripe's cents→units.
-  //   - If date is not a positive number (after coercion) → null. We do NOT
-  //     emit an Invalid Date or a fake "now" timestamp.
-  //
-  // Root navigation:
-  //   - Assumed bare array. Array.isArray(raw) → use it, otherwise [].
-  //     No fallback to other shapes; same rule as woocommerce_orders /
-  //     bigcommerce_orders. If Holded turns out to wrap in a key, fix it
-  //     in this normalizer at first real connect — don't guess now.
-  //
-  // Items skipped:
-  //   - document without `id` → skipped (same pattern as Pennylane/Shopify).
-  //
-  // ⚠️  DEUDA ANOTADA (Holded has MORE uncertainty than usual — docs hide
-  //                    the response example behind login):
-  //   (a) Field names (contactName, total, tax, subtotal, date) are the
-  //       MOST LIKELY ones from the public docs but NOT confirmed against a
-  //       real payload. Verify ALL of them at first real connect.
-  //   (b) Root shape assumed bare array; confirm if Holded wraps in a key.
-  //   (c) `date` assumed UNIX SECONDS — if Holded actually emits ms, drop
-  //       the *1000 in the Date constructor. Confirm at first real connect.
-  //   (d) Pagination — sync engine's job, not this normalizer's.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input
-  // (modulo unit conversion: lowercase→uppercase currency, UNIX→ISO date).
+  // holded_purchases — Holded /documents/purchase (purchase = supplier bill = expense).
+  // Root bare array, no fallback. supplier_name = doc.contactName ?? doc.contact?.name.
+  // currency uppercased ("eur" → "EUR"). date is UNIX SECONDS → new Date(s*1000).toISOString().
+  // DEUDA HIGH UNCERTAINTY (docs hidden behind login):
+  // (a) field names assumed from public docs, verify ALL at first connect. (b) root shape
+  // assumed bare array; confirm if wrapped. (c) date assumed UNIX SECONDS — if ms, drop *1000.
+  // (d) pagination — sync engine.
   holded_purchases: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -974,55 +691,13 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── bigcommerce_orders ─────────────────────────────────────────────────
-  // TWELFTH real normalizer. Translates BigCommerce Orders v2:
-  //   GET https://api.bigcommerce.com/stores/{shop}/v2/orders
-  //   [ { id, status, status_id, currency_code,
-  //       total_inc_tax, total_tax, date_created, ... } ]
-  //
-  // Twin of `shopify_orders` / `woocommerce_orders` — commerce vertical, GMV,
-  // fee:0. Storefront, not processor; per-transaction fee is HONEST ABSENCE.
-  //
-  // CAMBRA "rule of gold" (1:1 from input, modulo unit):
-  //   - amounts are STRINGS in MAJOR currency units ("29.35") → parseFloat.
-  //     Do NOT divide by 100. Same convention as WooCommerce/Klarna/Pennylane.
-  //   - currency from `currency_code`, default "EUR" only if absent.
-  //
-  // Root navigation:
-  //   - BigCommerce v2 returns a BARE ARRAY. Array.isArray(raw) → use it,
-  //     otherwise []. No fallback to other shapes — same rule as
-  //     woocommerce_orders.
-  //
-  // Date handling:
-  //   - `date_created` arrives as RFC-2822 ("Tue, 25 Feb 2020 12:00:00 +0000"),
-  //     NOT ISO 8601. We preserve AS-IS. Converting to ISO here could fail
-  //     silently on TZ-naïve inputs or invent a Z that the source never
-  //     specified — same rule as date_created_gmt in WooCommerce. The cerebro
-  //     decides how to parse if it needs to.
-  //
-  // Status handling:
-  //   - Prefer textual `status` ("Awaiting Payment", "Shipped", …). If
-  //     absent, fall back to `String(status_id)` (numeric code). BigCommerce
-  //     historically populates both, but we never invent a value.
-  //
-  // Items skipped:
-  //   - order without `id` → skipped (same pattern as Shopify/WooCommerce).
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) Written from public docs; verify root shape and field names on
-  //       first real connect.
-  //   (b) `date_created` is RFC-2822; preserved as-is. ISO conversion is the
-  //       consumer's responsibility — not invented here.
-  //   (c) Per-store URL: {shop} = store_hash (e.g. "abc12345xyz"). The
-  //       generic interpolation helper accepts any non-empty string, so the
-  //       store_hash flows through without special-casing.
-  //   (d) Auth header is X-Auth-Token (not Authorization Bearer). This is
-  //       declared in the registry via `static_headers: { "X-Auth-Token":
-  //       "{token}" }` — the engine's generic mergeStaticHeaders helper
-  //       handles {token} interpolation. No code-level branch for BigCommerce.
-  //   (e) Pagination ?page&limit — sync engine's job.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // bigcommerce_orders — BigCommerce Orders v2 (storefront, not processor → fee:0 honest absence).
+  // Root bare array, no fallback. Amounts strings, major units, parseFloat (NOT /100).
+  // Status: prefer textual `status`, fall back to String(status_id).
+  // date_created is RFC-2822, preserved AS-IS (NOT converted to ISO — would invent TZ).
+  // DEUDA: (a) verify root + fields first connect. (b) date_created RFC-2822 as-is.
+  // (c) {shop} = store_hash, generic helper handles. (d) X-Auth-Token via static_headers
+  // (no code branch). (e) ?page&limit pagination — sync engine.
   bigcommerce_orders: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1059,58 +734,12 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── woocommerce_orders ─────────────────────────────────────────────────
-  // ELEVENTH real normalizer. Translates WooCommerce REST API v3:
-  //   GET {site}/wp-json/wc/v3/orders
-  //   [ { id, status, currency, total, total_tax,
-  //       date_created_gmt, date_created, payment_method, ... } ]
-  //
-  // Twin of `shopify_orders` (commerce vertical, GMV, fee:0). Same family
-  // of decisions:
-  //   - vertical: "commerce" — WooCommerce is the storefront, not the
-  //     processor. There is NO transaction fee in this payload. Emitting
-  //     fee: 0 is HONEST ABSENCE, not invented; downstream MUST NOT treat
-  //     it as a real fee.
-  //   - amount: total as MAJOR currency units (string "29.35") → parseFloat.
-  //     Do NOT divide by 100. Same convention as Klarna/Pennylane/Shopify
-  //     (sources where money arrives in major units), different from
-  //     Stripe/Zettle/Square (minor units).
-  //
-  // Root navigation (CAMBRA "rule of gold": form translation, not value
-  // invention):
-  //   - WooCommerce v3 returns a BARE ARRAY at the root (`[ {...}, {...} ]`).
-  //     If Array.isArray(raw) → use it.
-  //   - If raw is an object (defensive: misrouted response, wrong wrapper)
-  //     → emit []. We do NOT probe `raw.orders` — that's a Shopify shape,
-  //     not WooCommerce. Adding such a fallback would invent robustness
-  //     against a case that doesn't exist in this API.
-  //
-  // Date handling:
-  //   - `date_created_gmt` is UTC but WITHOUT a "Z" suffix
-  //     ("2017-03-22T19:28:02"). We preserve AS-IS. We do NOT append "Z"
-  //     because that would change the type of the field versus input.
-  //     The cerebro decides how to interpret it.
-  //   - Prefer `date_created_gmt` over `date_created` (local TZ-less).
-  //     If both absent → null.
-  //
-  // Items skipped:
-  //   - order without `id` → skipped (same pattern as Shopify/PayPal).
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) Written from public docs; verify root shape and field names on
-  //       first real connect.
-  //   (b) Per-shop URL: the data endpoint contains {shop} which the engine
-  //       interpolates via interpolateShopDomain at sync time, using the
-  //       shop_domain saved in Integration.metadata_json at connect time.
-  //       For WooCommerce the "shop" is a full domain (e.g.
-  //       "mitienda.com"), unlike Shopify's handle-only ("mitienda").
-  //       The interpolation helper is generic and accepts both.
-  //   (c) Pagination: `?page=N&per_page=M` + `X-WP-Total` header —
-  //       sync engine's job, not this normalizer's.
-  //   (d) `date_created_gmt` lacks the "Z" UTC suffix even though it IS
-  //       UTC — preserved as-is, no synthetic suffix.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // woocommerce_orders — WooCommerce v3 /orders (storefront, not processor → fee:0 honest absence).
+  // Root bare array, no fallback (NOT raw.orders — that's Shopify). Amounts strings major units.
+  // Prefer date_created_gmt over date_created. date_created_gmt is UTC but WITHOUT "Z" suffix
+  // ("2017-03-22T19:28:02") — preserved AS-IS, no synthetic Z.
+  // DEUDA: (a) verify root + fields first connect. (b) {shop} = full domain (vs Shopify handle),
+  // generic helper handles. (c) ?page&per_page + X-WP-Total — sync engine. (d) gmt lacks Z, as-is.
   woocommerce_orders: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1142,64 +771,16 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── klarna_settlements ─────────────────────────────────────────────────
-  // TENTH real normalizer. Translates Klarna Settlements API:
-  //   GET /v1/payouts/transactions
-  //   { transactions: [ { type, order_id, capture_id, amount, currency,
-  //                       capture_date, sale_date } ] }
-  //
-  // CRITICAL: the fee is a SEPARATE LINE TYPE, not a field. Same family of
-  // problem as Zettle (line-pairing), but with a richer taxonomy:
-  //   - "SALE"       → positive sale line
-  //   - "RETURN"     → refund (subtracts from SALE)
-  //   - "FEE"        → Klarna's commission (subtracts from settlement)
-  //   - "FEE_REFUND" → refund of a previously-charged fee
-  // All lines of the same order share the same `order_id`. We MUST group by
-  // order_id and emit ONE row per order — going line-by-line would scatter
-  // the fee from its sale and break per-order benchmarking.
-  //
-  // NET vs GROSS:
-  //   - NET settlements: SALE and FEE lines arrive together (same payout).
-  //   - GROSS settlements: the merchant receives a "GROSS_FEE" payout that
-  //     contains ONLY FEE lines (no SALE), with their original order_id.
-  //   We must NOT assume each group has a SALE. A group with only FEE/
-  //   FEE_REFUND lines is valid — emit a row with amount: 0 and the net
-  //   fee. Otherwise we'd silently drop fee data in GROSS mode.
-  //
-  // CAMBRA "rule of gold" (1:1 from input, modulo unit):
-  //   - amount is a STRING in MAJOR currency units ("108.95" = 108.95 EUR),
-  //     NOT minor units. Do NOT divide by 100. Different from Stripe/
-  //     Zettle/Square which return minor units. Pass through toNum and use
-  //     directly. This is a Klarna-specific quirk documented in their docs.
-  //   - currency taken from the first line of the group, falls back to
-  //     "EUR" only if absent — defecto razonable.
-  //   - dates: ISO 8601 preserved AS-IS. Prefer sale_date of the SALE line
-  //     (the moment of revenue). If no SALE in the group (GROSS case), use
-  //     capture_date of the first line — best available timestamp.
-  //
-  // Sign convention for `fee`:
-  //   - sum(FEE) - sum(FEE_REFUND) → "net fee paid this period". Normally
-  //     ≥ 0; if refunds exceed charges in a period the net goes negative
-  //     and we propagate as-is (matches the Zettle/PayPal convention of
-  //     not choosing the sign for the user).
-  //
-  // Items skipped:
-  //   - line without `order_id` → skipped (no way to pair).
-  //   - group with no SALE / RETURN / FEE / FEE_REFUND lines → skipped
-  //     (unrecognized line types only; honest absence).
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) Written from public docs; verify exact root key (raw.transactions
-  //       vs alternative) and field names on first real connect.
-  //   (b) `amount` is a STRING in MAJOR units — confirm against a real
-  //       payout. If Klarna ever switches a tenant to minor units, this
-  //       normalizer needs a /100 branch.
-  //   (c) NET vs GROSS — both modes are supported (groups with only FEE
-  //       lines emit amount: 0 + fee). Confirm behavior with a real GROSS
-  //       settlement on first connect.
-  //   (d) Pagination — sync engine's job, not this normalizer's.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // klarna_settlements — Klarna /payouts/transactions. Fee is a SEPARATE LINE TYPE, not a field.
+  // Line types per order_id: SALE (+), RETURN (refund), FEE (commission), FEE_REFUND.
+  // GROUP BY order_id, emit ONE row per order: amount = sum(SALE) - sum(RETURN);
+  // fee = sum(FEE) - sum(FEE_REFUND) (sign as-is, may go negative).
+  // NET mode: SALE+FEE in same payout. GROSS mode: payout with only FEE lines (no SALE) is VALID
+  // → emit amount:0 + fee (otherwise we silently drop fee data in GROSS).
+  // amount is STRING in MAJOR units (NOT /100, different from Stripe/Zettle/Square minor units).
+  // Prefer sale_date of SALE line; fallback capture_date of first line (GROSS).
+  // DEUDA: (a) verify root key + fields first connect. (b) amount major units — confirm.
+  // (c) NET+GROSS both supported. (d) pagination — sync engine.
   klarna_settlements: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1249,57 +830,13 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── square_payments ────────────────────────────────────────────────────
-  // NINTH real normalizer. Translates Square Payments API:
-  //   GET https://connect.squareup.com/v2/payments
-  //   { payments: [ { id, created_at, status, location_id,
-  //                   amount_money: { amount, currency },
-  //                   processing_fee: [ { amount_money: { amount, currency } } ],
-  //                   card_details: { card: { last_4, card_brand, card_type } } } ],
-  //     cursor }
-  //
-  // VENTAJA versus Zettle: one row in `payments[]` = one transaction. No
-  // grouping needed. The fee comes inline in `processing_fee[]`, an array
-  // (can have multiple INITIAL / REFUND entries; we SUM them, magnitude
-  // untouched).
-  //
-  // CAMBRA "rule of gold" (1:1 from input, modulo units):
-  //   - `amount_money.amount` is in MINOR currency units (555 = 5.55 USD).
-  //     Divide by 100. Same convention as Stripe/Zettle.
-  //   - `processing_fee[]` may be absent (unsettled payment), empty array,
-  //     or carry multiple entries. We sum every entry that has a numeric
-  //     `amount_money.amount`. Missing → fee: 0 (honest absence, not
-  //     invented). Same pattern as `fee: 0` elsewhere when the source is
-  //     genuinely silent.
-  //   - `currency` read from `amount_money.currency`, falls back to "EUR"
-  //     only if absent — defecto razonable, no valor inventado, mismo
-  //     patrón que el resto.
-  //
-  // Items skipped:
-  //   - payment without `id` → skipped (same pattern as Pennylane/PayPal).
-  //
-  // Card metadata:
-  //   - `card_last4` propagated from `card_details.card.last_4` when present,
-  //     `null` otherwise. NEVER fabricated. Useful for downstream
-  //     deduplication / fraud signals.
-  //
-  // Date handling:
-  //   - `created_at` is ISO 8601 with Z offset. Preserved AS-IS, no TZ
-  //     reinterpretation. Same pattern as Pennylane/Zettle.
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) Written from public docs; verify field paths on first real connect.
-  //   (b) `Square-Version` header is REQUIRED by Square on every request.
-  //       That's the sync engine's job (header injection), not this
-  //       normalizer's. When wiring real, add a generic mechanism for
-  //       per-provider mandatory headers in the registry.
-  //   (c) Cursor pagination (`cursor` in response) — sync engine's job.
-  //   (d) Refunds appear in a separate endpoint (/v2/refunds); not wired
-  //       here. processing_fee CAN include refund-related entries with
-  //       negative amounts — we sum them as-is, so net fee is correct
-  //       without us choosing the sign convention.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // square_payments — Square /v2/payments. One payment = one row (no grouping vs Zettle).
+  // amount_money.amount is MINOR units → /100 (same as Stripe/Zettle).
+  // processing_fee[] is ARRAY (may carry INITIAL+REFUND entries); SUM all amount_money.amount.
+  // Absent/empty → fee:0 (honest absence). card_last4 from card_details.card.last_4 or null.
+  // DEUDA: (a) verify field paths first connect. (b) Square-Version header REQUIRED — handled
+  // via static_headers, not normalizer. (c) cursor pagination — sync engine. (d) /v2/refunds
+  // is separate endpoint not wired; processing_fee may include refund entries (negative), summed as-is.
   square_payments: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1342,64 +879,15 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── zettle_finance ─────────────────────────────────────────────────────
-  // EIGHTH real normalizer. Translates Zettle Finance API v2:
-  //   GET https://finance.izettle.com/v2/accounts/liquid/transactions
-  //   { data: [ { timestamp, amount, originatorTransactionType,
-  //               originatingTransactionUuid } ] }
-  //
-  // CRITICAL: the fee is a SEPARATE LINE, not a field.
-  // One sale emits TWO rows with the SAME originatingTransactionUuid:
-  //   - originatorTransactionType "PAYMENT"     → amount POSITIVE (charge)
-  //   - originatorTransactionType "PAYMENT_FEE" → amount NEGATIVE (commission)
-  // We MUST group by originatingTransactionUuid and emit ONE row per
-  // transaction (not one per line). Going line-by-line would double-count
-  // amounts and leave the fee floating. This is the whole point of the
-  // normalizer — the engine reads `data[]` raw; only this function knows
-  // the pairing contract.
-  //
-  // Amount handling (CAMBRA "rule of gold": 1:1 from input, modulo units):
-  //   - Zettle gives integers in minor currency units (1100 = 11.00 €).
-  //     Divide by 100, same convention as Stripe.
-  //   - fee = abs(PAYMENT_FEE.amount) / 100. Zettle models the fee as a
-  //     negative debit; CAMBRA models fee≥0 (same as PayPal sign flip).
-  //     Magnitude untouched, sign normalized.
-  //   - If a group has no PAYMENT_FEE line → fee: 0 (honest absence, not
-  //     invented). Same pattern as `fee: 0` in shopify_orders / pennylane.
-  //
-  // Refund handling:
-  //   - A PAYMENT line with NEGATIVE amount is a refund. Emit it AS-IS
-  //     (negative amount). Do NOT drop refunds — they're real cashflow
-  //     and the cerebro needs them for net revenue.
-  //
-  // PAYOUT lines:
-  //   - originatorTransactionType "PAYOUT" represents money moved from the
-  //     liquid account to the merchant's bank. It's NOT a sale and would
-  //     double-count GMV if emitted. Skipped entirely.
-  //
-  // Items skipped:
-  //   - Groups without a PAYMENT line (e.g. orphan fee, payout-only) →
-  //     skipped. Same skip-when-no-anchor pattern as PayPal/Shopify items
-  //     without id.
-  //   - Lines without `originatingTransactionUuid` → skipped (no way to
-  //     pair them with their fee). Honest absence.
-  //
-  // Date handling:
-  //   - `timestamp` is ISO with offset ("2020-11-21T04:00:15.704+0000").
-  //     Preserved AS-IS, no TZ reinterpretation. Same pattern as Pennylane.
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) Written from public docs; verify field paths on first real connect.
-  //   (b) `currency` hardcoded to "EUR" — the line-level response does not
-  //       carry currency. Confirm at first real connect whether currency
-  //       lives on the account, on a parent field, or needs a separate
-  //       account-info call. If multi-currency merchants exist, this
-  //       normalizer needs the source field wired in.
-  //   (c) Pagination (limit/offset) — sync engine's job, not this
-  //       normalizer's.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input
-  // (modulo unit conversion and sign normalization on fee).
+  // zettle_finance — Zettle Finance v2. Fee is a SEPARATE LINE (not field).
+  // One sale = TWO lines same originatingTransactionUuid: PAYMENT (+) and PAYMENT_FEE (-).
+  // GROUP BY uuid, emit ONE row: amount=PAYMENT/100, fee=abs(PAYMENT_FEE)/100 (sign normalized).
+  // No PAYMENT_FEE → fee:0 honest absence. PAYMENT with negative amount = refund, emit AS-IS.
+  // SKIP: PAYOUT lines (money to bank, would double-count GMV); groups without PAYMENT;
+  // lines without uuid (no way to pair). Minor units → /100.
+  // DEUDA: (a) verify field paths first connect. (b) currency HARDCODED "EUR" — line response
+  // has no currency field; confirm source (account-level?) for multi-currency merchants.
+  // (c) limit/offset pagination — sync engine.
   zettle_finance: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1443,42 +931,13 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── pennylane_supplier_invoices ────────────────────────────────────────
-  // SEVENTH real normalizer. Twin of `pennylane_invoices`, with two
-  // additions that justify a separate row type:
-  //
-  //   - `supplier_name`: WHO the brand pays (Klaviyo, EDF, carrier, SaaS
-  //     vendor, …). This is the field that makes this endpoint valuable —
-  //     it's where the long tail of infra spend lives. If a supplier
-  //     invoice arrives without a supplier_name we propagate null (do NOT
-  //     invent a name); downstream decides whether to flag it.
-  //
-  //   - `direction: "expense"`: marks the row as a brand EXPENSE, not
-  //     revenue. Contract for the cerebro reading `vertical: "accounting"`:
-  //       · customer_invoices rows → no `direction` field → revenue by
-  //         default (already in production; we do NOT retro-edit them in
-  //         this turn).
-  //       · supplier_invoices rows → `direction: "expense"` explicit.
-  //     Asymmetry is intentional: keeps the customer normalizer untouched
-  //     (the "do not touch the 6 previous normalizers" guarantee) and the
-  //     read contract is documented here.
-  //
-  // Everything else mirrors `pennylane_invoices` 1:1:
-  //   - reads `items[]` only (NO fallback to `data[]`)
-  //   - STRING amounts → parseFloat via toNum
-  //   - `fee: 0` honest (an invoice is not a fee)
-  //   - `date` preserved as-is (date-only, no invented UTC)
-  //   - skip invoices without `id`
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) Written from docs; verify field paths on first real connect.
-  //   (b) Cursor pagination + 2-4 req/s rate limits — sync engine's job.
-  //   (c) This endpoint is the CORE of the 3-source spend model — it
-  //       captures the long tail of infra spend (SaaS, marketing, carrier,
-  //       energy, ...). When wiring Pennylane for real, this is the
-  //       endpoint that delivers the most CAMBRA value per call.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // pennylane_supplier_invoices — supplier invoices = brand EXPENSES, propagates supplier_name.
+  // Twin of pennylane_invoices but adds direction:"expense" + supplier_name (Klaviyo, EDF, etc).
+  // CONTRATO ASIMÉTRICO con cerebro: customer_invoices (no direction) = revenue;
+  // supplier_invoices (direction:"expense") = expense. Intentional, NOT a bug.
+  // Reads items[] only, no fallback. STRING amounts, fee:0 honest, date as-is, skip no-id.
+  // DEUDA: (a) verify fields first connect. (b) cursor pagination + 2-4 req/s — sync engine.
+  // (c) CORE of 3-source spend model — long tail of infra spend lives here.
   pennylane_supplier_invoices: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1510,59 +969,13 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── pennylane_invoices ─────────────────────────────────────────────────
-  // SIXTH real normalizer. Translates Pennylane API v2:
-  //   GET /api/external/v2/customer_invoices
-  //   { items: [ { id, invoice_number, status, currency, currency_amount,
-  //                currency_amount_before_tax, currency_tax, date } ],
-  //     has_more, next_cursor }
-  //
-  // Pennylane-specific quirk: data lives in `items[]`, NOT `data[]` or the
-  // root. Each normalizer in the engine has its own root key — Stripe `data`,
-  // Mollie `_embedded.settlements`, PayPal `transaction_details`, Shopify
-  // `orders`, Sendcloud `data`, Pennylane `items`. No defensive fallback —
-  // if the payload doesn't carry `items`, we emit []. The docs are explicit;
-  // adding a fallback would invent robustness against a case that shouldn't
-  // exist.
-  //
-  // Vertical: "accounting" — fourth vertical in the engine.
-  //   A customer invoice is GROSS REVENUE (what the brand bills to its
-  //   clients), not a fee or a sale. The cerebro must treat this row as
-  //   revenue, not as a comisión. `fee: 0` is enforced as invariant — same
-  //   honest-absence pattern as Shopify (storefront != processor) and
-  //   Sendcloud (shipments list != carrier rate).
-  //
-  // Amount handling:
-  //   - `amount` = `currency_amount` (total WITH tax) — the as-billed line.
-  //   - `amount_before_tax` and `tax` propagated 1:1 as separate fields, so
-  //     downstream can reconstruct net/gross without us choosing for them.
-  //   - All three are STRINGS in Pennylane ("180.00") → parseFloat. Same
-  //     pattern as Mollie/Shopify/PayPal/Sendcloud.
-  //
-  // Date handling:
-  //   - `date` arrives as date-only ("2025-10-01"), no time, no timezone.
-  //   - Preserved AS-IS. We do NOT promote to ISO with "T00:00:00Z" because
-  //     that would invent a UTC timezone the source never specified, and
-  //     change the type of the field versus input. The cerebro decides how
-  //     to interpret it.
-  //
-  // Items skipped:
-  //   - invoice without `id` → skipped (same pattern as Shopify/PayPal).
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) We wire customer_invoices (REVENUE billed to brand's clients).
-  //       For the brand's EXPENSES (where CAMBRA's infra costs live), add
-  //       a second endpoint `supplier_invoices` with a dedicated
-  //       `pennylane_supplier_invoices` normalizer. The scope is already
-  //       declared in the registry.
-  //   (b) Cursor pagination (`has_more` / `next_cursor`) + rate limits
-  //       (2-4 req/s) — sync engine job, not this normalizer's.
-  //   (c) Written from public docs; verify field paths at first real connect.
-  //   (d) `companies:readonly` scope format is assumed by analogy with the
-  //       customer/supplier ones; if Pennylane uses a different format for
-  //       companies, correct at first connect.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // pennylane_invoices — Pennylane v2 customer_invoices = GROSS REVENUE (NOT fee, NOT expense).
+  // Root items[] only, NO fallback to data[] or root. amount=currency_amount (with tax),
+  // amount_before_tax + tax propagated separately for downstream net/gross reconstruction.
+  // STRING amounts, parseFloat. fee:0 honest invariant. date date-only as-is, no synthetic UTC.
+  // DEUDA: (a) customer_invoices = revenue; supplier_invoices wired separately (sibling normalizer).
+  // (b) cursor pagination + 2-4 req/s rate limits — sync engine. (c) verify fields first connect.
+  // (d) companies:readonly scope format assumed.
   pennylane_invoices: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1592,52 +1005,14 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── sendcloud_shipments ────────────────────────────────────────────────
-  // FIFTH real normalizer. Translates Sendcloud REST API v3:
-  //   GET https://panel.sendcloud.sc/api/v3/shipments
-  //   { data: [ { id, order_number, total_order_price: {currency, value},
-  //               parcels: [ { id, status, weight, created_at, ... } ] } ] }
-  //
-  // CRITICAL distinction from the 4 previous normalizers:
-  //   - Stripe/Mollie/PayPal mapped FEES, Shopify mapped GMV.
-  //   - Sendcloud maps SHIPPING VOLUME (weight, count, dates) — vertical:
-  //     "shipping". The REAL carrier rate (what the brand pays to ship) does
-  //     NOT live in this endpoint; it comes from the separate
-  //     `shipping-options/rates` endpoint we'll add later. So `cost: 0` here
-  //     is HONEST ABSENCE — same pattern as Shopify's `fee: 0`. Downstream
-  //     code must NOT treat this as a real shipping cost.
-  //
-  // Granularity: ONE ROW PER PARCEL, not per shipment.
-  //   In logistics the unit of cost is the physical parcel (weight,
-  //   dimensions, per-parcel carrier rate). A shipment with 3 parcels emits
-  //   3 rows. When we wire the rates endpoint, those rates also come
-  //   per-parcel — granularities will match. Repeating `order_price` on each
-  //   parcel of the same shipment is 1:1 input passthrough (the field exists
-  //   on the shipment, each child preserves it as context). It MUST NOT be
-  //   summed at portfolio level without de-duplicating by `shipment_id`.
-  //
-  // Translations:
-  //   - amounts: strings → parseFloat (already in units, no /100)
-  //   - weight: parsed via toNum, weight_unit propagated as-is (kg/g/lb)
-  //   - dates: ISO preserved as-is
-  //   - external_id: shipment.id + ":" + parcel.id (same compound pattern as
-  //     Mollie "settlement:method" and PayPal "tx:date" — gives context
-  //     without a join)
-  //
-  // Items skipped:
-  //   - shipment without `parcels` array → emits nothing for that shipment
-  //   - parcel without `id` → skipped (same pattern as PayPal/Shopify)
-  //
-  // ⚠️  DEUDA ANOTADA:
-  //   (a) Carrier rate (real shipping cost) lives in /shipping-options/rates,
-  //       a second endpoint to add when we wire Sendcloud for real. This
-  //       endpoint gives volume/weight, NOT cost. `cost: 0` is enforced as
-  //       an invariant.
-  //   (b) v3 pagination is cursor-based (base64), different from v2's offset.
-  //       That's the sync engine's job, not this normalizer's.
-  //   (c) Written from v3 docs; verify field paths on first real connect.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // sendcloud_shipments — Sendcloud v3 /shipments. Maps SHIPPING VOLUME only (weight, count, dates).
+  // cost:0 HONEST ABSENCE — real carrier rate lives in /shipping-options/rates (separate endpoint).
+  // Granularity: ONE ROW PER PARCEL (not per shipment). order_price repeated per parcel as context
+  // — MUST NOT be summed at portfolio level without dedup by shipment_id.
+  // external_id = shipment.id + ":" + parcel.id (compound for context).
+  // Skip: shipments without parcels[]; parcels without id.
+  // DEUDA: (a) cost:0 invariant — carrier rate is separate endpoint. (b) v3 cursor pagination
+  // (base64) — sync engine. (c) verify fields first connect.
   sendcloud_shipments: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1680,51 +1055,14 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── shopify_orders ─────────────────────────────────────────────────────
-  // FOURTH real normalizer. Translates Shopify REST Admin orders.json:
-  //   GET /admin/api/2024-01/orders.json
-  //   { orders: [ { id, total_price, total_price_set, currency, created_at,
-  //                 financial_status, ... } ] }
-  //
-  // CRITICAL distinction from the 3 previous normalizers:
-  //   - Stripe/Mollie/PayPal mapped FEES (vertical: "payments").
-  //   - Shopify maps GMV / SALES VOLUME (vertical: "commerce").
-  //   Shopify is the storefront, not the processor. There is NO transaction
-  //   fee in this payload. Emitting fee: 0 here is HONEST ABSENCE, not an
-  //   invented value — downstream code must NOT treat this as a real fee.
-  //
-  // Money source robustness (two forms, both 1:1 from input — form navigation,
-  // not value invention):
-  //   - Flat field: order.total_price ("270.37")
-  //   - Money object: order.total_price_set.shop_money.amount ("270.37")
-  //   We prefer the flat field; if missing or NaN, we fall back to the money
-  //   object. Same defensive pattern as Mollie's `costs` probe.
-  //
-  // Translations:
-  //   - amounts: strings → parseFloat (already in units, no /100)
-  //   - dates:   ISO strings → preserved as-is
-  //   - currency: order.currency → total_price_set.shop_money.currency_code → "EUR"
-  //   - financial_status preserved 1:1 (paid/refunded/voided) for downstream
-  //     filtering of net GMV.
-  //
-  // Items without `id` are SKIPPED (same pattern as PayPal items without
-  // transaction_info) — an order without an id translates to nothing useful.
-  //
-  // ⚠️  DEUDA GRANDE (more uncertain than the others):
-  //   (a) REST Admin API is LEGACY as of Oct 2024. Shopify pushes GraphQL
-  //       Admin API. This normalizer may need a sibling `shopify_orders_gql`
-  //       and a sync engine change (different request shape, cursor-based
-  //       pagination via `pageInfo.endCursor`).
-  //   (b) Without `read_all_orders` scope, REST returns ONLY the last 60 days
-  //       of orders. Extended access requires Shopify approval.
-  //   (c) Pagination is cursor-based via the `Link` HTTP header
-  //       (`<...&page_info=XYZ>; rel="next"`). That's the sync engine's job,
-  //       not this normalizer's.
-  //   (d) `data_type` in the registry is still "transactions" (the bucket
-  //       used by getProviderConfig). When CAMBRA introduces a formal
-  //       "orders" / "commerce" data_type, flip it here too.
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  // shopify_orders — Shopify REST /orders.json (storefront, not processor → fee:0 honest absence).
+  // Two money forms: flat total_price OR nested total_price_set.shop_money.amount; prefer flat,
+  // fallback to nested. Amounts strings major units. Dates ISO as-is. financial_status preserved.
+  // ⚠️ DEUDA GRANDE: (a) REST Admin LEGACY since Oct 2024 — Shopify pushes GraphQL; may need
+  // shopify_orders_gql sibling + sync engine change (cursor pageInfo.endCursor). (b) without
+  // read_all_orders scope: REST returns only last 60 days; extended requires Shopify approval.
+  // (c) cursor pagination via Link header — sync engine. (d) data_type still "transactions",
+  // flip to "commerce" when CAMBRA introduces that bucket.
   shopify_orders: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1763,32 +1101,12 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── paypal_transactions ────────────────────────────────────────────────
-  // THIRD real normalizer. Translates PayPal Transaction Search API response:
-  //   GET /v1/reporting/transactions
-  //   { transaction_details: [ { transaction_info: {...} } ], total_pages, page }
-  //
-  // PayPal-specific quirks translated (CAMBRA "rule of gold" still holds —
-  // every output field comes 1:1 from input, modulo unit normalization):
-  //   - Money objects: { currency_code, value: "465.00" } → parseFloat
-  //   - fee_amount.value comes NEGATIVE ("-13.79") because PayPal models it
-  //     as a debit. CAMBRA models `fee` as a positive cost (consistent with
-  //     Stripe/Mollie). We Math.abs() to flip sign. This is a convention
-  //     translation, not value invention — same magnitude, sign normalized.
-  //   - Dates are already ISO (transaction_initiation_date), no conversion.
-  //   - external_id = transaction_id + ":" + date — same transaction_id may
-  //     appear on multiple pages with different event codes (auth/capture/
-  //     refund), so the date pins the specific event.
-  //   - fee_amount may be ABSENT for fee-free transactions → fee 0.
-  //   - Items missing `transaction_info` are SKIPPED (not emitted as zero
-  //     rows) — an empty item translates to nothing.
-  //
-  // PAGINATION (deferred): response carries `total_pages` and `page`. Full
-  // pagination is the sync engine's job, not this normalizer's.
-  //
-  // ⚠️ DEUDA EXPLÍCITA: written from docs + official example, not from a real
-  // payload. The Transaction Search API also requires PayPal approval to
-  // enable. Verify field paths and sign conventions on first real connect.
+  // paypal_transactions — PayPal /v1/reporting/transactions. Money objects {currency_code,value}.
+  // fee_amount.value comes NEGATIVE (PayPal models as debit); CAMBRA fee≥0 → Math.abs (sign
+  // normalized, magnitude untouched). external_id = transaction_id + ":" + date (same tx_id can
+  // appear on multiple pages with different event codes). Skip items without transaction_info.
+  // DEUDA: written from docs + example, NOT real payload. Transaction Search API requires PayPal
+  // approval. Verify field paths + sign conventions first connect. Pagination — sync engine.
   paypal_transactions: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1823,36 +1141,13 @@ const normalizers = {
     }
     return rows;
   },
-  // ─── mollie_settlements ─────────────────────────────────────────────────
-  // SECOND real normalizer. Translates Mollie's GET /v2/settlements response.
-  //
-  // Why this endpoint and not /v2/payments:
-  //   Mollie's Payment object does NOT carry the fee. The fee lives in the
-  //   Settlements API, AGGREGATED BY PAYMENT METHOD inside a `costs[]` array.
-  //   So one settlement => N normalized rows (one per method: iDEAL, PayPal,
-  //   creditcard, etc.). This per-method breakdown is exactly what CAMBRA
-  //   benchmarks against — keeping it as separate rows preserves that signal.
-  //
-  // ⚠️  DEUDA EXPLÍCITA (verificar con un settlement REAL al conectar Mollie):
-  //   - This was written from PUBLIC DOCS, not from a real payload.
-  //   - The exact nesting of `periods` is documented but can shift by API
-  //     version: it may be { "2024": { "07": { costs: [...] } } } (year→month),
-  //     or sometimes flat `{ periods: [...] }`, or `costs` may appear at the
-  //     settlement root for some account types. We probe defensively but the
-  //     real shape might still surprise us. When the first real settlement
-  //     arrives, walk it manually and tighten or relax the probe.
-  //   - `amount.net/vat/gross` are strings in docs (e.g. "12.7600") — we
-  //     parseFloat them. If Mollie ever returns numeric (some API versions do),
-  //     parseFloat on a number still works in JS, so this is forward-safe.
-  //   - The list endpoint wraps results in `_embedded.settlements`; we
-  //     support that AND a bare single settlement. Pagination (following
-  //     `_links.next`) is the sync engine's job, not this normalizer's.
-  //   - OAuth scope: this endpoint requires `settlements.read`. The registry
-  //     entry adds it; `payments.read` stays for when we add a second
-  //     endpoint that reads individual payments (refunds, disputes).
-  //
-  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
-  // The "defensive probing" of `costs` is form navigation, not value invention.
+  // mollie_settlements — Mollie /v2/settlements (Payments object has no fee — fee aggregated
+  // per method in settlements.costs[]). One settlement → N rows (one per method: iDEAL, PayPal...).
+  // Defensive nesting probe: costs may be at root, in periods[], or year→month nested.
+  // Supports both _embedded.settlements wrap and bare single settlement.
+  // DEUDA: written from DOCS not real payload. `periods` nesting can shift by API version.
+  // amount.net/vat/gross are strings. Pagination via _links.next — sync engine.
+  // Requires settlements.read scope; payments.read kept for future refunds/disputes endpoint.
   mollie_settlements: (raw) => {
     // Robust numeric parse: handles strings, nulls, undefined, "" and "abc".
     const toNum = (v, fallback = 0) => {
