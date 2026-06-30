@@ -655,6 +655,48 @@ const REGISTRY = {
     demo_mode: false,
   },
 
+  // ─── REAL PROVIDERS (Tanda 16: accounting OAuth — Lexoffice) ─────────────
+  // Lexoffice (lexware Office). German accounting software. OAuth2 Bearer
+  // (clean — no quirks). Reads /v1/voucherlist filtered to
+  // voucherType=purchaseinvoice (the URL pre-filters; the normalizer
+  // ALSO re-filters to accept BOTH purchaseinvoice AND purchasecreditnote
+  // — purchase credit notes are negative supplier bills, still expenses).
+  // Sales rows (salesinvoice, salescreditnote) dropped silently. Same
+  // filtering shape as xero_bills (ACCPAY-only) and sevdesk_vouchers
+  // (creditDebit="C" only).
+  //
+  // ⚠️  DEUDA ANOTADA (see normalizer comment for the full list):
+  //   (a) Written from docs; verify endpoint + fields at first real connect.
+  //   (b) amount_before_tax & tax forced to 0 — voucherlist is a SUMMARY
+  //       endpoint with no reliable net/tax breakdown; the per-voucher GET
+  //       carries the breakdown. Honest absence, same pattern as quickbooks_bills.
+  //   (c) URL pre-filters voucherType=purchaseinvoice; normalizer re-filters
+  //       to accept purchasecreditnote too. Confirm if purchasecreditnote
+  //       needs a second URL call or if the multi-value filter works.
+  //   (d) scopes [] — Lexoffice docs are vague on OAuth scope format; confirm
+  //       if any explicit scope is required at first real connect.
+  //   (e) page+size pagination; raw.totalPages is the upper bound — sync engine.
+  lexoffice: {
+    display_name: "Lexoffice",
+    category: "accounting",
+    logo: null,
+    description: "Lexoffice (lexware Office) API — OAuth2 Bearer. Reads /v1/voucherlist filtered to voucherType=purchaseinvoice (and the normalizer also accepts purchasecreditnote) = brand expenses. German accounting software.",
+    auth_method: "oauth",
+    auth_url: "https://app.lexoffice.de/oauth2/authorize",
+    token_url: "https://api.lexoffice.io/oauth2/access_token",
+    scopes: [],
+    client_id_env: "LEXOFFICE_CLIENT_ID",
+    client_secret_env: "LEXOFFICE_CLIENT_SECRET",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://api.lexoffice.io/v1/voucherlist?voucherType=purchaseinvoice&voucherStatus=open,paid,transferred", method: "GET", normalize_as: "lexoffice_vouchers" },
+    ],
+    demo_mode: false,
+  },
+
   // ─── REAL PROVIDERS (Tanda 15: accounting API key — sevDesk) ─────────────
   // sevDesk API v1. German accounting software. ⚠️ API key goes in the
   // Authorization header WITHOUT the "Bearer " prefix — bare key, declared

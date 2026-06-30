@@ -382,6 +382,28 @@ const REGISTRY = {
     demo_mode: false,
   },
 
+  // Mirror of lexoffice — same contract, both files identical.
+  lexoffice: {
+    display_name: "Lexoffice",
+    category: "accounting",
+    logo: null,
+    description: "Lexoffice (lexware Office) API — OAuth2 Bearer. Reads /v1/voucherlist filtered to voucherType=purchaseinvoice (and the normalizer also accepts purchasecreditnote) = brand expenses. German accounting software.",
+    auth_method: "oauth",
+    auth_url: "https://app.lexoffice.de/oauth2/authorize",
+    token_url: "https://api.lexoffice.io/oauth2/access_token",
+    scopes: [],
+    client_id_env: "LEXOFFICE_CLIENT_ID",
+    client_secret_env: "LEXOFFICE_CLIENT_SECRET",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://api.lexoffice.io/v1/voucherlist?voucherType=purchaseinvoice&voucherStatus=open,paid,transferred", method: "GET", normalize_as: "lexoffice_vouchers" },
+    ],
+    demo_mode: false,
+  },
+
   // Mirror of sevdesk — same contract, both files identical.
   sevdesk: {
     display_name: "sevDesk",
@@ -535,6 +557,60 @@ const normalizers = {
   // Cents→units (/100), lowercase→uppercase currency, UNIX seconds→ISO. Prefer reporting_category
   // over raw type. Defensive: raw.data not array → []. Pagination (has_more / starting_after)
   // is sync engine job, not this normalizer.
+  // lexoffice_vouchers — Lexoffice /v1/voucherlist (German accounting, OAuth2 Bearer).
+  // voucherlist is a SUMMARY endpoint; per-voucher GET carries the net/tax breakdown.
+  // Filter: voucherType === "purchaseinvoice" OR "purchasecreditnote" (supplier bills + credit
+  // notes = expenses); "salesinvoice" / "salescreditnote" (revenue) dropped silently.
+  // Root: raw.content (Spring-style paginated wrap {content, totalPages,...}); no fallback.
+  // totalAmount is typically a number in major units (toNum tolerates strings too).
+  // voucherDate is ISO with TZ ("2023-04-15T00:00:00.000+02:00") — preserved AS-IS.
+  // DEUDA: (a) verify endpoint + fields first connect. (b) amount_before_tax & tax = 0:
+  // voucherlist is a SUMMARY without reliable net/tax breakdown — honest absence (same as
+  // quickbooks_bills); per-voucher GET would be needed for the breakdown. (c) URL pre-filters
+  // voucherType=purchaseinvoice, normalizer re-filters to accept purchasecreditnote too —
+  // confirm if multi-value URL filter works or a second call is needed. (d) scopes [] — confirm
+  // if Lexoffice requires explicit OAuth scopes. (e) page+size pagination, raw.totalPages — sync engine.
+  lexoffice_vouchers: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const items = Array.isArray(raw?.content) ? raw.content : [];
+    const rows = [];
+    for (const item of items) {
+      if (!item || typeof item !== "object") continue;
+      const voucherType = item?.voucherType;
+      // Accept BOTH supplier invoices and supplier credit notes (both are expenses).
+      if (voucherType !== "purchaseinvoice" && voucherType !== "purchasecreditnote") continue;
+      const id = item?.id;
+      if (id === null || id === undefined || id === "") continue; // skip without anchor
+      const flatContactName = item?.contactName;
+      const supplierName = (typeof flatContactName === "string" && flatContactName.length > 0)
+        ? flatContactName
+        : null;
+      const rawCurrency = item?.currency;
+      const currency = (typeof rawCurrency === "string" && rawCurrency.length > 0)
+        ? rawCurrency
+        : "EUR";
+      const occurredAt = typeof item?.voucherDate === "string" ? item.voucherDate : null;
+      const status = typeof item?.voucherStatus === "string" ? item.voucherStatus : null;
+      rows.push({
+        vertical: "accounting",
+        direction: "expense",
+        external_id: String(id),
+        supplier_name: supplierName,
+        amount: toNum(item?.totalAmount),
+        amount_before_tax: 0, // see DEUDA (b) — voucherlist has no reliable net breakdown
+        tax: 0,               // see DEUDA (b)
+        fee: 0, // A voucher is an expense, not a fee.
+        currency,
+        occurred_at: occurredAt,
+        status,
+      });
+    }
+    return rows;
+  },
   // sevdesk_vouchers — sevDesk API v1 /Voucher (German accounting). A "Voucher"
   // is the unit of accounting entry; there is NO separate supplier_invoice
   // endpoint. Filter: creditDebit === "C" (Credit = outgoing = supplier
