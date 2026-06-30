@@ -654,6 +654,47 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // ─── REAL PROVIDERS (Tanda 14: accounting API key — Odoo) ────────────────
+  // Odoo REST API (Odoo 17+). API key as Bearer. Reads /api/account.move
+  // filtered to move_type=in_invoice (supplier bills = brand EXPENSES).
+  // Per-instance: customer provides Odoo domain (e.g. miempresa.odoo.com)
+  // as {shop}. Reuses generic api_key + requires_shop_domain plumbing.
+  //
+  // ⚠️  DEUDA ANOTADA (see normalizer comment for the full list):
+  //   (a) Odoo external REST API is ONLY available on the Custom plan,
+  //       NOT Free/Standard. Many clients will not have access — flagged
+  //       in api_key_help_text so the UI shows it pre-connect.
+  //   (b) REST API requires Odoo 17+; older versions only expose XML/JSON-RPC.
+  //   (c) Root response shape not 100% standard between Odoo versions;
+  //       normalizer probes 3 forms (array / .result / .records).
+  //   (d) Relational fields arrive as [id, "label"] tuples; if unexpanded
+  //       Odoo can return just the id — normalizer falls back to null name.
+  //   (e) Multi-database Odoo may require X-Odoo-Database header per
+  //       integration — same dynamic-header debt as Xero/Sage.
+  //   (f) URL carries bracket/quoted query params; depends on engine's
+  //       URL-encoding behaviour (same as QuickBooks query string).
+  //   (g) Pagination via offset+limit params — sync engine.
+  odoo: {
+    display_name: "Odoo",
+    category: "accounting",
+    logo: null,
+    description: "Odoo REST API (Odoo 17+) — API key as Bearer. Reads account.move filtered to move_type=in_invoice (supplier bills = brand expenses). Per-instance: the customer provides their Odoo domain at connect time (interpolated as {shop}). ⚠️ Requires Odoo Custom plan — the external REST API is NOT available on Free/Standard.",
+    auth_method: "api_key",
+    api_key_header: "Authorization",
+    api_key_format: "Bearer {key}",
+    api_key_help_url: "https://www.odoo.com/documentation/17.0/developer/reference/external_api.html",
+    api_key_help_text: "En Odoo → Preferencias → Seguridad de la cuenta → Nueva clave de API. Pega la clave y tu dominio Odoo (miempresa.odoo.com). Requiere plan Custom de Odoo (la API externa no está en Free/Standard).",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://{shop}/api/account.move?domain=[[\"move_type\",\"=\",\"in_invoice\"]]&fields=[\"name\",\"partner_id\",\"amount_total\",\"amount_untaxed\",\"amount_tax\",\"currency_id\",\"invoice_date\",\"state\",\"payment_state\"]", method: "GET", normalize_as: "odoo_bills" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
 };
 
 function getProviderConfig(provider) {

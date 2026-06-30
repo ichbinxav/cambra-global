@@ -381,6 +381,28 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // Mirror of odoo — same contract, both files identical.
+  odoo: {
+    display_name: "Odoo",
+    category: "accounting",
+    logo: null,
+    description: "Odoo REST API (Odoo 17+) — API key as Bearer. Reads account.move filtered to move_type=in_invoice (supplier bills = brand expenses). Per-instance: the customer provides their Odoo domain at connect time (interpolated as {shop}). ⚠️ Requires Odoo Custom plan — the external REST API is NOT available on Free/Standard.",
+    auth_method: "api_key",
+    api_key_header: "Authorization",
+    api_key_format: "Bearer {key}",
+    api_key_help_url: "https://www.odoo.com/documentation/17.0/developer/reference/external_api.html",
+    api_key_help_text: "En Odoo → Preferencias → Seguridad de la cuenta → Nueva clave de API. Pega la clave y tu dominio Odoo (miempresa.odoo.com). Requiere plan Custom de Odoo (la API externa no está en Free/Standard).",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://{shop}/api/account.move?domain=[[\"move_type\",\"=\",\"in_invoice\"]]&fields=[\"name\",\"partner_id\",\"amount_total\",\"amount_untaxed\",\"amount_tax\",\"currency_id\",\"invoice_date\",\"state\",\"payment_state\"]", method: "GET", normalize_as: "odoo_bills" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -492,6 +514,62 @@ const normalizers = {
   // Cents→units (/100), lowercase→uppercase currency, UNIX seconds→ISO. Prefer reporting_category
   // over raw type. Defensive: raw.data not array → []. Pagination (has_more / starting_after)
   // is sync engine job, not this normalizer.
+  // odoo_bills — Odoo REST /api/account.move (Odoo 17+, Custom plan only).
+  // Filter: move_type === "in_invoice" (supplier bill = expense); out_invoice (revenue)
+  // and any other move_type (entry, in_refund, out_refund, …) are skipped silently.
+  // Root probe: raw is array → raw; raw.result array → raw.result; raw.records array → raw.records;
+  // else [] (no further fallback). Relational fields are [id,"label"] tuples — relLabel(v)
+  // returns v[1] only if Array.isArray(v) && v.length >= 2; if Odoo sends a bare integer (no
+  // context expansion) supplier_name / currency fall back to null / "EUR" without crashing.
+  // Amounts are numbers in major units. invoice_date is "YYYY-MM-DD" date-only, preserved AS-IS.
+  // DEUDA: (a) ⚠️ Odoo external REST API is Custom plan only (not Free/Standard) — many
+  // clients won't have access. (b) REST is Odoo 17+; older versions only XML/JSON-RPC.
+  // (c) root shape not 100% standardized across Odoo versions — probed 3 forms, confirm at
+  // first real connect. (d) relational fields may arrive as bare id (no [id,"label"]) when
+  // context doesn't expand — handled via null fallback. (e) multi-db Odoo may require
+  // X-Odoo-Database header per integration (same dynamic-header debt as Xero/Sage, now 3rd
+  // API asking for it). (f) URL carries domain/fields with brackets+quotes — URL-encoding is
+  // sync engine's job (same situation as QuickBooks query string). (g) offset+limit pagination — sync engine.
+  odoo_bills: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    // Relational field reader: Odoo emits [id, "label"] for expanded relations.
+    // If unexpanded → bare integer → return null (NEVER the id as a name).
+    const relLabel = (v) => (Array.isArray(v) && v.length >= 2 ? v[1] : null);
+    // Root probe: 3 documented shapes across Odoo versions, no further fallback.
+    const records = Array.isArray(raw)
+      ? raw
+      : (Array.isArray(raw?.result)
+          ? raw.result
+          : (Array.isArray(raw?.records) ? raw.records : []));
+    const rows = [];
+    for (const record of records) {
+      if (!record || typeof record !== "object") continue;
+      if (record?.move_type !== "in_invoice") continue; // skip revenue / refunds / entries
+      const id = record?.id;
+      if (id === null || id === undefined || id === "") continue; // skip without anchor
+      const supplierName = relLabel(record?.partner_id);
+      const currency = relLabel(record?.currency_id) || "EUR";
+      const occurredAt = typeof record?.invoice_date === "string" ? record.invoice_date : null;
+      rows.push({
+        vertical: "accounting",
+        direction: "expense",
+        external_id: String(id),
+        supplier_name: supplierName,
+        amount: toNum(record?.amount_total),
+        amount_before_tax: toNum(record?.amount_untaxed),
+        tax: toNum(record?.amount_tax),
+        fee: 0, // A supplier bill is an expense, not a fee.
+        currency,
+        occurred_at: occurredAt,
+        status: record?.state ?? null,
+      });
+    }
+    return rows;
+  },
   // sage_purchase_invoices — Sage Accounting v3.1 /purchase_invoices (supplier bills = expense).
   // Root `$items` (dollar prefix, bracket notation). contact/currency/status dual object|string.
   // supplier_name = contact.name ?? contact.displayed_as (NEVER .id). currency from .id (ISO),
