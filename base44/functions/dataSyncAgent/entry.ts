@@ -495,6 +495,69 @@ const REGISTRY = {
     demo_mode: false,
     requires_shop_domain: true,
   },
+
+  // ─── REAL PROVIDERS (Tanda 18: accounting OAuth — FreshBooks) ────────────
+  // FreshBooks Expenses API. OAuth2 + Bearer. Per-account: the FreshBooks API
+  // namespaces every accounting endpoint under an `accountId` that is NOT
+  // returned by the OAuth callback and NOT a fixed value — it must be
+  // resolved by calling GET /auth/api/v1/users/me and reading
+  // business_memberships[].business.account_id.
+  //
+  // ⚠️ DECISIÓN DE ARQUITECTURA EN ESTE TURNO (camino 1, reuso del patrón
+  // QuickBooks): el motor genérico actual NO tiene mecanismo de "post-OAuth
+  // account resolution via API call". QuickBooks resuelve un problema
+  // análogo (realmId per-company) pidiendo al usuario que pegue el ID a
+  // mano vía requires_shop_domain + {shop} en la URL. FreshBooks reutiliza
+  // EXACTAMENTE ese patrón en lugar de inventar un mecanismo nuevo en el
+  // motor: el usuario pega su accountId al conectar, lo guardamos en
+  // metadata_json.shop_domain, y el sync engine lo interpola como {shop}.
+  // El motor no necesita ningún cambio.
+  //
+  // Trade-off conocido: UX peor que la "ideal" (auto-resolución vía
+  // /users/me), pero a) consistente con QuickBooks/Odoo, b) cero código
+  // imperativo nuevo en el registry, c) la decisión multi-membership (¿qué
+  // hacer si el usuario tiene varias empresas en FreshBooks?) se delega al
+  // propio usuario, que elige qué accountId pegar — ese problema sería
+  // estructural si lo automatizásemos. Cuando aparezca un SEGUNDO provider
+  // que también necesite post-OAuth API resolution, ahí sí merece la pena
+  // construir el mecanismo genérico (regla N≥2).
+  //
+  // accountId ≠ businessId (ojo, el prompt lo recalca): /accounting usa
+  // accountId; /timetracking y /projects usan businessId, irrelevante aquí.
+  //
+  // ⚠️ DEUDA ANOTADA (también dentro del normalizer):
+  //   (a) Fields written from public docs + ejemplo real de respuesta;
+  //       confirmar paths exactos at first real connect.
+  //   (b) `expense.amount` es un OBJETO anidado { amount: "762.68", code:
+  //       "USD" } — string en unidad MAYOR (no céntimos). Confirmar.
+  //   (c) Sin campo directo de supplier — supplier_name=null por defecto.
+  //       Hay un `vendorid` referencial pero no resuelve a nombre dentro
+  //       del mismo objeto expense; degradado a null sin inventar.
+  //   (d) Pagination via ?page&per_page — sync engine.
+  //   (e) Token de vida corta (~12h); refresh token single-use — manejado
+  //       por modeRefresh genérico, mismo path que Pennylane (RTR).
+  freshbooks: {
+    display_name: "FreshBooks",
+    category: "accounting",
+    logo: null,
+    description: "FreshBooks Expenses API — OAuth2 + Bearer. Reads /accounting/account/{accountId}/expenses/expenses (supplier expenses = brand expenses). Per-account: the customer provides their FreshBooks accountId at connect time (resolved manually from /users/me; see help_text), interpolated as {shop}. Reuses the QuickBooks pattern instead of inventing a post-OAuth ID resolution mechanism in the engine.",
+    auth_method: "oauth",
+    auth_url: "https://my.freshbooks.com/service/auth/oauth/authorize",
+    token_url: "https://api.freshbooks.com/auth/oauth/token",
+    scopes: ["user:expenses:read", "user:profile:read"],
+    client_id_env: "FRESHBOOKS_CLIENT_ID",
+    client_secret_env: "FRESHBOOKS_CLIENT_SECRET",
+    static_headers: {
+      "Accept": "application/json",
+      "Api-Version": "alpha",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://api.freshbooks.com/accounting/account/{shop}/expenses/expenses", method: "GET", normalize_as: "freshbooks_expenses" },
+    ],
+    demo_mode: false,
+    requires_shop_domain: true,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -1619,6 +1682,62 @@ const normalizers = {
           occurred_at: occurredAt,
         });
       }
+    }
+    return rows;
+  },
+  // freshbooks_expenses — FreshBooks /accounting/account/{accountId}/expenses/expenses.
+  // Supplier expenses = brand EXPENSES. Root nested at raw.response.result.expenses[] —
+  // NO fallback to bare array or other shapes (FreshBooks documented contract).
+  // ⚠️ amount es un OBJETO anidado: expense.amount = { amount: "762.68", code: "USD" }.
+  // Punto de fallo más fácil: copiar patrón de otros normalizers con amount plano y
+  // leer expense.amount directamente como string → daría NaN. Extraemos amount.amount
+  // (string en unidad MAYOR, NO céntimos, NO /100) Y amount.code en el mismo paso.
+  // Multi-currency: la API NO convierte divisas; cada fila conserva su currency real,
+  // sin inventar tasa de cambio.
+  // Sin campo directo de supplier en el objeto expense → supplier_name=null (NO inventar).
+  // billable: reflejado tal cual, sin filtrar por defecto.
+  // direction:"expense" fijo (endpoint exclusivo de gastos).
+  // DEUDA: (a) confirmar paths first real connect. (b) amount.amount = string mayor,
+  // confirmar. (c) supplier_name=null por ausencia honesta — añadir si aparece vendor
+  // expandido en respuesta real. (d) page/per_page pagination — sync engine.
+  freshbooks_expenses: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    // FreshBooks documented contract: raw.response.result.expenses[]. No fallback.
+    const expenses = Array.isArray(raw?.response?.result?.expenses) ? raw.response.result.expenses : [];
+    const rows = [];
+    for (const expense of expenses) {
+      if (!expense || typeof expense !== "object") continue;
+      const id = expense?.id;
+      if (id === null || id === undefined || id === "") continue; // skip expenses without id
+      // amount is a nested object { amount: "762.68", code: "USD" }.
+      // Read defensively: if the object is missing, BOTH amount and currency are null,
+      // but the row is still emitted (only missing `id` discards the row).
+      const amountObj = expense?.amount;
+      const amount = (amountObj && typeof amountObj === "object" && amountObj.amount !== undefined && amountObj.amount !== null && amountObj.amount !== "")
+        ? toNum(amountObj.amount, null)
+        : null;
+      const currency = (amountObj && typeof amountObj === "object" && typeof amountObj.code === "string" && amountObj.code.length > 0)
+        ? amountObj.code
+        : null;
+      const occurredAt = typeof expense?.date === "string" ? expense.date : null;
+      rows.push({
+        vertical: "accounting",
+        direction: "expense", // FreshBooks expenses endpoint = brand EXPENSE
+        external_id: String(id),
+        supplier_name: null, // no direct supplier field in expense object — honest absence
+        amount,
+        amount_before_tax: 0, // expense object carries no reliable net breakdown
+        tax: 0,               // tax sits on a separate taxes[] structure not wired today
+        fee: 0,               // An expense is not a fee.
+        currency,
+        billable: typeof expense?.billable === "boolean" ? expense.billable : null,
+        occurred_at: occurredAt,
+        status: expense?.status !== undefined && expense?.status !== null ? String(expense.status) : null,
+      });
     }
     return rows;
   },
