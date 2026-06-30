@@ -655,6 +655,44 @@ const REGISTRY = {
     demo_mode: false,
   },
 
+  // ─── REAL PROVIDERS (Tanda 17: payments API key — PayPlug) ───────────────
+  // PayPlug. French PSP. Bearer API key (sk_live_...). Requires mandatory
+  // PayPlug-Version header on every request (declared via static_headers).
+  // Reads /v1/payments. ⚠️ Fee is NOT exposed on payment objects — lives
+  // in the settlement endpoint (not wired). Volume only (denominator),
+  // not rate. Amounts are in CENTS (/100); timestamps are Unix SECONDS (*1000).
+  //
+  // ⚠️  DEUDA ANOTADA (see normalizer comment for the full list):
+  //   (a) Written from docs; verify endpoint + fields at first real connect.
+  //   (b) fee:0 — PayPlug payments API does NOT carry fee. Real fee lives
+  //       in the settlement/payout endpoint; future work if rate is needed.
+  //   (c) ⚠️ /v1/payments ONLY lists payments created via the API; payments
+  //       created from the PayPlug portal do NOT appear. May undercount
+  //       volume — confirm impact with real client.
+  //   (d) amount in CENTS (/100). created_at/paid_at Unix SECONDS (*1000).
+  //   (e) Root key probe: raw.data array OR bare array; confirm at real connect.
+  //   (f) Pagination — sync engine.
+  payplug: {
+    display_name: "PayPlug",
+    category: "payments",
+    logo: null,
+    description: "PayPlug Payments API — Bearer secret key (sk_live_...). Reads /v1/payments. Requires mandatory PayPlug-Version header via static_headers. Amounts in cents, timestamps Unix seconds. ⚠️ Fee is NOT exposed in the payments API (lives in settlements) — volume only.",
+    auth_method: "api_key",
+    api_key_header: "Authorization",
+    api_key_format: "Bearer {key}",
+    api_key_help_url: "https://docs.payplug.com/api",
+    api_key_help_text: "En PayPlug → Mi cuenta → Claves API, copia tu clave secreta (sk_live_...). Pégala aquí.",
+    static_headers: {
+      "PayPlug-Version": "2019-08-06",
+      "Accept": "application/json",
+    },
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api.payplug.com/v1/payments", method: "GET", normalize_as: "payplug_payments" },
+    ],
+    demo_mode: false,
+  },
+
   // ─── REAL PROVIDERS (Tanda 16: accounting OAuth — Lexoffice) ─────────────
   // Lexoffice (lexware Office). German accounting software. OAuth2 Bearer
   // (clean — no quirks). Reads /v1/voucherlist filtered to

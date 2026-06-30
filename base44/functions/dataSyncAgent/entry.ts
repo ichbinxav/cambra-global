@@ -382,6 +382,28 @@ const REGISTRY = {
     demo_mode: false,
   },
 
+  // Mirror of payplug — same contract, both files identical.
+  payplug: {
+    display_name: "PayPlug",
+    category: "payments",
+    logo: null,
+    description: "PayPlug Payments API — Bearer secret key (sk_live_...). Reads /v1/payments. Requires mandatory PayPlug-Version header via static_headers. Amounts in cents, timestamps Unix seconds. ⚠️ Fee is NOT exposed in the payments API (lives in settlements) — volume only.",
+    auth_method: "api_key",
+    api_key_header: "Authorization",
+    api_key_format: "Bearer {key}",
+    api_key_help_url: "https://docs.payplug.com/api",
+    api_key_help_text: "En PayPlug → Mi cuenta → Claves API, copia tu clave secreta (sk_live_...). Pégala aquí.",
+    static_headers: {
+      "PayPlug-Version": "2019-08-06",
+      "Accept": "application/json",
+    },
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api.payplug.com/v1/payments", method: "GET", normalize_as: "payplug_payments" },
+    ],
+    demo_mode: false,
+  },
+
   // Mirror of lexoffice — same contract, both files identical.
   lexoffice: {
     display_name: "Lexoffice",
@@ -557,6 +579,62 @@ const normalizers = {
   // Cents→units (/100), lowercase→uppercase currency, UNIX seconds→ISO. Prefer reporting_category
   // over raw type. Defensive: raw.data not array → []. Pagination (has_more / starting_after)
   // is sync engine job, not this normalizer.
+  // payplug_payments — PayPlug /v1/payments (French PSP). Bearer sk_live_ key + mandatory
+  // PayPlug-Version header (declared via static_headers). amount is in CENTS → /100.
+  // created_at/paid_at are Unix SECONDS → *1000 → ISO. Prefer paid_at over created_at.
+  // Root probe: raw.data array OR bare array; no further fallback. fee:0 honest absence —
+  // PayPlug payments API does NOT carry fee (lives in settlement endpoint, not wired).
+  // status: is_paid=true → "paid"; else is_refunded=true → "refunded"; else null.
+  // DEUDA: (a) verify endpoint + fields first connect. (b) fee:0 — settlement endpoint
+  // required for real fee rate, future work. (c) ⚠️ /v1/payments ONLY lists API-created
+  // payments — portal-created ones missing, may undercount volume. (d) cents (/100) +
+  // Unix seconds (*1000). (e) root key probe data vs bare array — confirm. (f) pagination — sync engine.
+  payplug_payments: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    // Unix SECONDS → ISO. Accept number or numeric string; reject non-positive / NaN.
+    const unixToIso = (v) => {
+      if (v === null || v === undefined || v === "") return null;
+      const seconds = typeof v === "number" ? v : parseFloat(v);
+      if (!Number.isFinite(seconds) || seconds <= 0) return null;
+      const d = new Date(seconds * 1000);
+      if (Number.isNaN(d.getTime())) return null;
+      return d.toISOString();
+    };
+    const payments = Array.isArray(raw?.data)
+      ? raw.data
+      : (Array.isArray(raw) ? raw : []);
+    const rows = [];
+    for (const payment of payments) {
+      if (!payment || typeof payment !== "object") continue;
+      const id = payment?.id;
+      if (id === null || id === undefined || id === "") continue; // skip without anchor
+      const amount = toNum(payment?.amount) / 100;
+      const rawCurrency = payment?.currency;
+      const currency = (typeof rawCurrency === "string" && rawCurrency.length > 0)
+        ? rawCurrency
+        : "EUR";
+      // Prefer paid_at (when it was actually paid), fall back to created_at.
+      const occurredAt = unixToIso(payment?.paid_at) ?? unixToIso(payment?.created_at);
+      const status = payment?.is_paid === true
+        ? "paid"
+        : (payment?.is_refunded === true ? "refunded" : null);
+      rows.push({
+        vertical: "payments",
+        external_id: String(id),
+        amount,
+        fee: 0, // PayPlug payments API does not carry fee — lives in settlement endpoint.
+        currency,
+        occurred_at: occurredAt,
+        type: "payment",
+        status,
+      });
+    }
+    return rows;
+  },
   // lexoffice_vouchers — Lexoffice /v1/voucherlist (German accounting, OAuth2 Bearer).
   // voucherlist is a SUMMARY endpoint; per-voucher GET carries the net/tax breakdown.
   // Filter: voucherType === "purchaseinvoice" OR "purchasecreditnote" (supplier bills + credit
