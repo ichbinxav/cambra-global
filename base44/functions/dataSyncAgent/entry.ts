@@ -210,12 +210,12 @@ const REGISTRY = {
     auth_method: "oauth",
     auth_url: "https://app.pennylane.com/oauth/authorize",
     token_url: "https://app.pennylane.com/oauth/token",
-    scopes: ["customer_invoices_read", "supplier_invoices_read", "companies_read"],
+    scopes: ["customer_invoices:readonly", "supplier_invoices:readonly", "companies:readonly"],
     client_id_env: "PENNYLANE_CLIENT_ID",
     client_secret_env: "PENNYLANE_CLIENT_SECRET",
     data_type: "invoices",
     data_endpoints: [
-      { url: "https://app.pennylane.com/api/external/v2/customer_invoices", method: "GET", normalize_as: "invoices" },
+      { url: "https://app.pennylane.com/api/external/v2/customer_invoices", method: "GET", normalize_as: "pennylane_invoices" },
     ],
     demo_mode: false,
   },
@@ -351,6 +351,88 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── pennylane_invoices ─────────────────────────────────────────────────
+  // SIXTH real normalizer. Translates Pennylane API v2:
+  //   GET /api/external/v2/customer_invoices
+  //   { items: [ { id, invoice_number, status, currency, currency_amount,
+  //                currency_amount_before_tax, currency_tax, date } ],
+  //     has_more, next_cursor }
+  //
+  // Pennylane-specific quirk: data lives in `items[]`, NOT `data[]` or the
+  // root. Each normalizer in the engine has its own root key — Stripe `data`,
+  // Mollie `_embedded.settlements`, PayPal `transaction_details`, Shopify
+  // `orders`, Sendcloud `data`, Pennylane `items`. No defensive fallback —
+  // if the payload doesn't carry `items`, we emit []. The docs are explicit;
+  // adding a fallback would invent robustness against a case that shouldn't
+  // exist.
+  //
+  // Vertical: "accounting" — fourth vertical in the engine.
+  //   A customer invoice is GROSS REVENUE (what the brand bills to its
+  //   clients), not a fee or a sale. The cerebro must treat this row as
+  //   revenue, not as a comisión. `fee: 0` is enforced as invariant — same
+  //   honest-absence pattern as Shopify (storefront != processor) and
+  //   Sendcloud (shipments list != carrier rate).
+  //
+  // Amount handling:
+  //   - `amount` = `currency_amount` (total WITH tax) — the as-billed line.
+  //   - `amount_before_tax` and `tax` propagated 1:1 as separate fields, so
+  //     downstream can reconstruct net/gross without us choosing for them.
+  //   - All three are STRINGS in Pennylane ("180.00") → parseFloat. Same
+  //     pattern as Mollie/Shopify/PayPal/Sendcloud.
+  //
+  // Date handling:
+  //   - `date` arrives as date-only ("2025-10-01"), no time, no timezone.
+  //   - Preserved AS-IS. We do NOT promote to ISO with "T00:00:00Z" because
+  //     that would invent a UTC timezone the source never specified, and
+  //     change the type of the field versus input. The cerebro decides how
+  //     to interpret it.
+  //
+  // Items skipped:
+  //   - invoice without `id` → skipped (same pattern as Shopify/PayPal).
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) We wire customer_invoices (REVENUE billed to brand's clients).
+  //       For the brand's EXPENSES (where CAMBRA's infra costs live), add
+  //       a second endpoint `supplier_invoices` with a dedicated
+  //       `pennylane_supplier_invoices` normalizer. The scope is already
+  //       declared in the registry.
+  //   (b) Cursor pagination (`has_more` / `next_cursor`) + rate limits
+  //       (2-4 req/s) — sync engine job, not this normalizer's.
+  //   (c) Written from public docs; verify field paths at first real connect.
+  //   (d) `companies:readonly` scope format is assumed by analogy with the
+  //       customer/supplier ones; if Pennylane uses a different format for
+  //       companies, correct at first connect.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  pennylane_invoices: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const items = Array.isArray(raw?.items) ? raw.items : [];
+    const rows = [];
+    for (const invoice of items) {
+      if (!invoice || typeof invoice !== "object") continue;
+      const id = invoice?.id;
+      if (id === null || id === undefined) continue; // skip invoices without id
+      const currency = invoice?.currency || "EUR";
+      const occurredAt = typeof invoice?.date === "string" ? invoice.date : null;
+      rows.push({
+        vertical: "accounting",
+        external_id: String(id),
+        invoice_number: invoice?.invoice_number ?? null,
+        amount: toNum(invoice?.currency_amount),
+        amount_before_tax: toNum(invoice?.currency_amount_before_tax),
+        tax: toNum(invoice?.currency_tax),
+        fee: 0, // A customer invoice is revenue, not a fee.
+        currency,
+        status: invoice?.status ?? null,
+        occurred_at: occurredAt,
+      });
+    }
+    return rows;
+  },
   // ─── sendcloud_shipments ────────────────────────────────────────────────
   // FIFTH real normalizer. Translates Sendcloud REST API v3:
   //   GET https://panel.sendcloud.sc/api/v3/shipments
