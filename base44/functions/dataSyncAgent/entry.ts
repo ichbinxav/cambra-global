@@ -282,6 +282,15 @@ const REGISTRY = {
     logo: null,
     description: "BigCommerce Orders v2 — API key in X-Auth-Token header (declared via static_headers). Per-store: the customer provides their store_hash at connect time, interpolated as {shop}.",
     auth_method: "api_key",
+    // The token doesn't go in the Authorization header — it goes in
+    // X-Auth-Token via static_headers below. So we suppress the default
+    // Authorization route by sending the token to an internal header
+    // name that we then override in static_headers… actually no: we set
+    // api_key_header to "X-Auth-Token" so buildAuthHeaders emits the
+    // right header directly, AND we also declare static_headers for
+    // Accept. Simpler and equivalent. The {token} interpolation path
+    // remains documented and available for any future provider that
+    // needs it.
     api_key_header: "X-Auth-Token",
     api_key_format: "{key}",
     api_key_help_url: "https://developer.bigcommerce.com/docs/start/authentication/api-accounts",
