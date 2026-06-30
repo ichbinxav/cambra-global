@@ -19,6 +19,7 @@
 // IMPORTANTE: este módulo es la FUENTE DE VERDAD. Duplicado verbatim en
 // base44/functions/dataSyncAgent/entry.ts.
 
+// SYNC-START: rateLimit
 const DEFAULT_MAX_RETRIES = 4;
 const BASE_BACKOFF_MS = 500;
 
@@ -93,5 +94,6 @@ export async function fetchWithBackoff(fetchFn, rateLimitCfg, state, maxRetries 
 export function createRateState() {
   return { lastCallAt: 0 };
 }
+// SYNC-END: rateLimit
 
 export const __internal = { parseRetryAfter, minDelayMs, sleep };

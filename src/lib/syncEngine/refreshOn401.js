@@ -31,6 +31,7 @@
 // base44/functions/dataSyncAgent/entry.ts (Deno no puede importar de src/).
 // Mismo patrón que el resto del sync engine.
 
+// SYNC-START: refreshOn401
 /**
  * State container shared across a single sync run. Tracks whether we've
  * already burned our one refresh attempt this run.
@@ -117,3 +118,4 @@ export async function fetchPageWithMaybeRefresh({
   // Single retry with the new auth headers. Whatever this returns is final.
   return await doFetch();
 }
+// SYNC-END: refreshOn401

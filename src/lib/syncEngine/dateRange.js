@@ -21,6 +21,7 @@
 // Si `date_range` no está declarado, esta capa es no-op — el provider sigue
 // recibiendo su URL tal cual.
 
+// SYNC-START: dateRange
 const TWELVE_MONTHS_MS = 365 * 24 * 60 * 60 * 1000;
 
 export function computeSyncWindow({ lastSyncedUntil, now = new Date() }) {
@@ -68,3 +69,4 @@ export function applyDateRangeToUrl(url, cfg, window) {
   if (untilParam) params.set(untilParam, formatDateValue(window.until, format));
   return `${base}?${params.toString()}`;
 }
+// SYNC-END: dateRange

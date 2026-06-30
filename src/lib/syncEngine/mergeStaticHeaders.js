@@ -18,6 +18,7 @@
 // refreshOn401.js / stripe.js. Si las dos copias divergen, los tests aquí lo
 // detectan y la copia Deno se realinea a mano.
 
+// SYNC-START: mergeStaticHeaders
 export function mergeStaticHeaders(cfg, authHeaders, plaintextToken, shopDomain) {
   const staticH = cfg.static_headers;
   if (!staticH || typeof staticH !== "object") return authHeaders;
@@ -43,3 +44,4 @@ export function mergeStaticHeaders(cfg, authHeaders, plaintextToken, shopDomain)
   }
   return merged;
 }
+// SYNC-END: mergeStaticHeaders

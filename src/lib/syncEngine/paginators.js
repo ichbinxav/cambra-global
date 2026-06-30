@@ -31,6 +31,7 @@
 // el paginator NULL → 1 página y stop. Este es el "modo viejo" — providers
 // sin config siguen funcionando idéntico que antes de este cambio.
 
+// SYNC-START: paginators
 function withQueryParam(url, key, value) {
   // Manipulación de query strings tolerante: si el provider ya añadió
   // ?starting_after=… al endpoint base (raro), lo respetamos sustituyendo.
@@ -177,6 +178,7 @@ export function getPaginator(style) {
   const fn = PAGINATORS[style];
   return fn || nullPaginator;
 }
+// SYNC-END: paginators
 
 // Para tests / debugging.
 export const __internal = { cursorStripe, cursorHalBody, pageNumber, linkHeader, offsetLimit, nullPaginator };

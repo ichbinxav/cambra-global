@@ -26,6 +26,7 @@
 // store_hash (helper genérico), (d) X-Auth-Token vía static_headers (sin
 // branch en código), (e) paginación ?page&limit — sync engine.
 
+// SYNC-START: bigcommerceNormalizer
 export function normalizeBigCommerceOrders(raw) {
   const toNum = (v, fallback = 0) => {
     if (v === null || v === undefined || v === "") return fallback;
@@ -62,3 +63,4 @@ export function normalizeBigCommerceOrders(raw) {
   }
   return rows;
 }
+// SYNC-END: bigcommerceNormalizer

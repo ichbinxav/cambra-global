@@ -639,6 +639,7 @@ async function buildAuthHeaders(cfg, integ) {
 // identifier in a HEADER (not in the URL like Shopify/WooCommerce). The
 // captured value lives in integ.metadata_json.shop_domain — same slot used
 // by URL-side {shop}. ONE source of truth per integration.
+// SYNC-START: mergeStaticHeaders
 function mergeStaticHeaders(cfg, authHeaders, plaintextToken, shopDomain) {
   const staticH = cfg.static_headers;
   if (!staticH || typeof staticH !== "object") return authHeaders;
@@ -664,6 +665,7 @@ function mergeStaticHeaders(cfg, authHeaders, plaintextToken, shopDomain) {
   }
   return merged;
 }
+// SYNC-END: mergeStaticHeaders
 
 function getProviderConfig(provider) {
   if (!provider || typeof provider !== "string") return null;
@@ -1213,6 +1215,7 @@ const normalizers = {
   // DEUDA: (a) verify root + fields first connect. (b) date_created RFC-2822 as-is.
   // (c) {shop} = store_hash, generic helper handles. (d) X-Auth-Token via static_headers
   // (no code branch). (e) ?page&limit pagination — sync engine.
+  // SYNC-START: bigcommerceNormalizer
   bigcommerce_orders: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1249,6 +1252,7 @@ const normalizers = {
     }
     return rows;
   },
+  // SYNC-END: bigcommerceNormalizer
   // woocommerce_orders — WooCommerce v3 /orders (storefront, not processor → fee:0 honest absence).
   // Root bare array, no fallback (NOT raw.orders — that's Shopify). Amounts strings major units.
   // Prefer date_created_gmt over date_created. date_created_gmt is UTC but WITHOUT "Z" suffix
@@ -1846,6 +1850,7 @@ const normalizers = {
   //   - filas sin id descartadas. defensividad estándar (toNum, null-safe).
   //
   // Pagination (has_more / starting_after) es responsabilidad del sync engine.
+  // SYNC-START: stripeNormalizer
   stripe_transactions: (raw) => {
     const KNOWN_TYPES = [
       "charge", "refund", "dispute", "payout", "transfer",
@@ -1889,6 +1894,7 @@ const normalizers = {
     }
     return out;
   },
+  // SYNC-END: stripeNormalizer
   invoices: (raw) => {
     const rows = Array.isArray(raw?.invoices) ? raw.invoices : [];
     return rows.map((r) => ({
@@ -1972,6 +1978,7 @@ function computeIntegrationDataQuality(cfg) {
 //    Tests unitarios viven en src/lib/syncEngine/*.test.js — si esta copia
 //    diverge, realinearla manualmente. No hay enforcement automático.
 
+// SYNC-START: paginators
 // --- paginators -------------------------------------------------------------
 function _engineSyncWithQueryParam(url, key, value) {
   const [base, search = ""] = url.split("?");
@@ -2058,7 +2065,9 @@ function getPaginator(style) {
   if (style === "offset_limit")    return _paginatorOffsetLimit;
   return _paginatorNull;
 }
+// SYNC-END: paginators
 
+// SYNC-START: dateRange
 // --- date range -------------------------------------------------------------
 const TWELVE_MONTHS_MS = 365 * 24 * 60 * 60 * 1000;
 function computeSyncWindow({ lastSyncedUntil, now = new Date() }) {
@@ -2091,7 +2100,9 @@ function applyDateRangeToUrl(url, cfg, window) {
   if (untilParam) params.set(untilParam, _formatDateValue(window.until, format));
   return `${base}?${params.toString()}`;
 }
+// SYNC-END: dateRange
 
+// SYNC-START: rateLimit
 // --- rate limit + backoff ---------------------------------------------------
 const _BASE_BACKOFF_MS = 500;
 const _DEFAULT_MAX_RETRIES = 4;
@@ -2134,6 +2145,7 @@ async function fetchWithBackoff(fetchFn, rlCfg, state, maxRetries = _DEFAULT_MAX
     attempt++;
   }
 }
+// SYNC-END: rateLimit
 
 // --- Refresh-on-401 wrapper -------------------------------------------------
 //
@@ -2148,6 +2160,7 @@ async function fetchWithBackoff(fetchFn, rlCfg, state, maxRetries = _DEFAULT_MAX
 //      throws), we return the ORIGINAL 401 — caller's existing error
 //      path takes over without modification.
 
+// SYNC-START: refreshOn401
 function _createRefreshState() { return { refreshed: false }; }
 
 function _isEligibleForRefresh(authMethod, hasRefreshToken) {
@@ -2173,6 +2186,7 @@ async function _fetchPageWithMaybeRefresh({ doFetch, refreshFn, rebuildHeaders, 
 
   return await doFetch();
 }
+// SYNC-END: refreshOn401
 
 // --- Hard caps (defensive — never spin forever) -----------------------------
 // Even with rate limits and pagination, a provider returning never-ending

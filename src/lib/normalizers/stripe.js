@@ -56,6 +56,7 @@
 //   (d) `dispute` no separa la "lost vs won" — eso vive en el objeto dispute
 //       de Stripe, no en balance_transactions. Futuro, fuera de scope.
 
+// SYNC-START: stripeNormalizer
 const KNOWN_TYPES = [
   "charge",
   "refund",
@@ -122,3 +123,4 @@ export function normalizeStripeBalanceTransactions(raw) {
   }
   return out;
 }
+// SYNC-END: stripeNormalizer
