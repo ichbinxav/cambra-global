@@ -282,30 +282,14 @@ const REGISTRY = {
   },
 
   // Mirror of bigcommerce — same contract, both files identical.
+  // REGISTRY rationale (X-Auth-Token, known_data_gaps): src/docs/normalizers-contracts.md#registrybigcommerce--x-auth-token-via-static_headers
   bigcommerce: {
     display_name: "BigCommerce",
     category: "commerce",
     logo: null,
     description: "BigCommerce Orders v2 — API key in X-Auth-Token header (declared via static_headers). Per-store: the customer provides their store_hash at connect time, interpolated as {shop}.",
-    // refunds_not_inline_v2: /v2/orders does NOT carry refund line items inline.
-    // Refunds live on a separate endpoint (/v3/orders/{id}/refunds, V3 API) or
-    // are surfaced only as the aggregate field `refunded_amount` on /v2/orders
-    // (no per-tax-line breakdown). Confirmed via BigCommerce support + Medium
-    // (Order Refund API article) + StackOverflow. Net order volume may be
-    // overstated since refunds are not subtracted at this normalizer level.
-    // Same pattern as PayPlug's known_data_gaps — purely informational metadata,
-    // NOT consumed by computeVerticalStatus / generateRecommendations / savings.
     known_data_gaps: ["refunds_not_inline_v2"],
     auth_method: "api_key",
-    // The token doesn't go in the Authorization header — it goes in
-    // X-Auth-Token via static_headers below. So we suppress the default
-    // Authorization route by sending the token to an internal header
-    // name that we then override in static_headers… actually no: we set
-    // api_key_header to "X-Auth-Token" so buildAuthHeaders emits the
-    // right header directly, AND we also declare static_headers for
-    // Accept. Simpler and equivalent. The {token} interpolation path
-    // remains documented and available for any future provider that
-    // needs it.
     api_key_header: "X-Auth-Token",
     api_key_format: "{key}",
     api_key_help_url: "https://developer.bigcommerce.com/docs/start/authentication/api-accounts",
@@ -411,13 +395,7 @@ const REGISTRY = {
   },
 
   // Mirror of payplug — same contract, both files identical.
-  // known_data_gaps: provider-level static metadata flagging documented
-  // limitations of the upstream API. Currently flags that /v1/payments only
-  // returns API-created payments; portal-created payments are invisible →
-  // volume may be undercounted. DEUDA: known_data_gaps is defined in the
-  // registry but NOT YET wired into DataQualityScore.completeness. Verify in
-  // M2/M3 whether a generic consumption mechanism exists; if not, that's
-  // explicit future work — do not assume engine behaviour without a human decision.
+  // REGISTRY rationale (known_data_gaps + DataQualityScore wiring deuda): src/docs/normalizers-contracts.md#registrypayplug--known_data_gaps
   payplug: {
     display_name: "PayPlug",
     category: "payments",
@@ -480,15 +458,7 @@ const REGISTRY = {
       "Accept": "application/json",
     },
     data_type: "invoices",
-    // Two endpoints on the same provider — mirrors Pennylane's customer+supplier
-    // pattern. /Voucher (expenses) and /Invoice (revenue) coexist: each has its
-    // own normalizer, neither is touched when the other changes.
-    // countAll=true is REQUIRED on /Invoice — without it sevDesk does not
-    // return the total row count and offset-based pagination cannot advance.
-    // sevDesk operational note (NOT a known_data_gap — covered by last_sync_status):
-    // API tokens are bound to a specific sevDesk user account. If that user is
-    // deleted in sevDesk, the token dies silently — the next sync surfaces a
-    // 401 via last_error, which is already the right behavior.
+    // REGISTRY rationale (two endpoints + countAll + token-user binding): src/docs/normalizers-contracts.md#registrysevdesk--two-endpoints-on-the-same-provider
     data_endpoints: [
       { url: "https://my.sevdesk.de/api/v1/Voucher", method: "GET", normalize_as: "sevdesk_vouchers" },
       { url: "https://my.sevdesk.de/api/v1/Invoice?limit=100&offset=0&countAll=true", method: "GET", normalize_as: "sevdesk_invoices" },
@@ -497,16 +467,7 @@ const REGISTRY = {
   },
 
   // Mirror of odoo — same contract, both files identical.
-  //
-  // ⚠️ DEUDA ESTRUCTURAL CONFIRMADA (multi-db Odoo, paralela a Zoho región+org_id):
-  // Odoo self-hosted multi-database requiere el header `X-Odoo-Database` con
-  // el NOMBRE de la base de datos, además del dominio de la instancia. Eso
-  // son DOS valores per-integration independientes (dominio Y database name)
-  // — el mecanismo actual `requires_shop_domain` solo soporta UN valor. La
-  // ruta simple (reutilizar {shop} en static_headers) sirve para Xero y Sage
-  // (1 valor cada uno), pero NO sirve para Odoo multi-db. NO se resuelve aquí
-  // hasta que aparezca un mecanismo genérico de N>1 valores per-integration.
-  // Odoo Online single-db (caso por defecto SaaS) no se ve afectado.
+  // ⚠️ DEUDA ESTRUCTURAL (multi-db, X-Odoo-Database): src/docs/normalizers-contracts.md#registryodoo--deuda-estructural-confirmada-multi-db
   odoo: {
     display_name: "Odoo",
     category: "accounting",
@@ -528,46 +489,9 @@ const REGISTRY = {
     requires_shop_domain: true,
   },
 
-  // ─── REAL PROVIDERS (Tanda 18: accounting OAuth — FreshBooks) ────────────
-  // FreshBooks Expenses API. OAuth2 + Bearer. Per-account: the FreshBooks API
-  // namespaces every accounting endpoint under an `accountId` that is NOT
-  // returned by the OAuth callback and NOT a fixed value — it must be
-  // resolved by calling GET /auth/api/v1/users/me and reading
-  // business_memberships[].business.account_id.
-  //
-  // ⚠️ DECISIÓN DE ARQUITECTURA EN ESTE TURNO (camino 1, reuso del patrón
-  // QuickBooks): el motor genérico actual NO tiene mecanismo de "post-OAuth
-  // account resolution via API call". QuickBooks resuelve un problema
-  // análogo (realmId per-company) pidiendo al usuario que pegue el ID a
-  // mano vía requires_shop_domain + {shop} en la URL. FreshBooks reutiliza
-  // EXACTAMENTE ese patrón en lugar de inventar un mecanismo nuevo en el
-  // motor: el usuario pega su accountId al conectar, lo guardamos en
-  // metadata_json.shop_domain, y el sync engine lo interpola como {shop}.
-  // El motor no necesita ningún cambio.
-  //
-  // Trade-off conocido: UX peor que la "ideal" (auto-resolución vía
-  // /users/me), pero a) consistente con QuickBooks/Odoo, b) cero código
-  // imperativo nuevo en el registry, c) la decisión multi-membership (¿qué
-  // hacer si el usuario tiene varias empresas en FreshBooks?) se delega al
-  // propio usuario, que elige qué accountId pegar — ese problema sería
-  // estructural si lo automatizásemos. Cuando aparezca un SEGUNDO provider
-  // que también necesite post-OAuth API resolution, ahí sí merece la pena
-  // construir el mecanismo genérico (regla N≥2).
-  //
-  // accountId ≠ businessId (ojo, el prompt lo recalca): /accounting usa
-  // accountId; /timetracking y /projects usan businessId, irrelevante aquí.
-  //
-  // ⚠️ DEUDA ANOTADA (también dentro del normalizer):
-  //   (a) Fields written from public docs + ejemplo real de respuesta;
-  //       confirmar paths exactos at first real connect.
-  //   (b) `expense.amount` es un OBJETO anidado { amount: "762.68", code:
-  //       "USD" } — string en unidad MAYOR (no céntimos). Confirmar.
-  //   (c) Sin campo directo de supplier — supplier_name=null por defecto.
-  //       Hay un `vendorid` referencial pero no resuelve a nombre dentro
-  //       del mismo objeto expense; degradado a null sin inventar.
-  //   (d) Pagination via ?page&per_page — sync engine.
-  //   (e) Token de vida corta (~12h); refresh token single-use — manejado
-  //       por modeRefresh genérico, mismo path que Pennylane (RTR).
+  // Mirror of freshbooks — same contract, both files identical.
+  // REGISTRY rationale (accountId resolution, camino 1 vs auto-resolve, accountId≠businessId, deuda completa):
+  // src/docs/normalizers-contracts.md#registryfreshbooks--requires_shop_domain-for-accountid
   freshbooks: {
     display_name: "FreshBooks",
     category: "accounting",
@@ -720,16 +644,7 @@ const normalizers = {
       occurred_at: r.created_at || null,
     }));
   },
-  // payplug_payments — PayPlug /v1/payments (French PSP). Bearer sk_live_ key + mandatory
-  // PayPlug-Version header (declared via static_headers). amount is in CENTS → /100.
-  // created_at/paid_at are Unix SECONDS → *1000 → ISO. Prefer paid_at over created_at.
-  // Root probe: raw.data array OR bare array; no further fallback. fee:0 honest absence —
-  // PayPlug payments API does NOT carry fee (lives in settlement endpoint, not wired).
-  // status: is_paid=true → "paid"; else is_refunded=true → "refunded"; else null.
-  // DEUDA: (a) verify endpoint + fields first connect. (b) fee:0 — settlement endpoint
-  // required for real fee rate, future work. (c) ⚠️ /v1/payments ONLY lists API-created
-  // payments — portal-created ones missing, may undercount volume. (d) cents (/100) +
-  // Unix seconds (*1000). (e) root key probe data vs bare array — confirm. (f) pagination — sync engine.
+  // payplug_payments — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#payplug_payments
   payplug_payments: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -776,19 +691,7 @@ const normalizers = {
     }
     return rows;
   },
-  // lexoffice_vouchers — Lexoffice /v1/voucherlist (German accounting, OAuth2 Bearer).
-  // voucherlist is a SUMMARY endpoint; per-voucher GET carries the net/tax breakdown.
-  // Filter: voucherType === "purchaseinvoice" OR "purchasecreditnote" (supplier bills + credit
-  // notes = expenses); "salesinvoice" / "salescreditnote" (revenue) dropped silently.
-  // Root: raw.content (Spring-style paginated wrap {content, totalPages,...}); no fallback.
-  // totalAmount is typically a number in major units (toNum tolerates strings too).
-  // voucherDate is ISO with TZ ("2023-04-15T00:00:00.000+02:00") — preserved AS-IS.
-  // DEUDA: (a) verify endpoint + fields first connect. (b) amount_before_tax & tax = 0:
-  // voucherlist is a SUMMARY without reliable net/tax breakdown — honest absence (same as
-  // quickbooks_bills); per-voucher GET would be needed for the breakdown. (c) URL pre-filters
-  // voucherType=purchaseinvoice, normalizer re-filters to accept purchasecreditnote too —
-  // confirm if multi-value URL filter works or a second call is needed. (d) scopes [] — confirm
-  // if Lexoffice requires explicit OAuth scopes. (e) page+size pagination, raw.totalPages — sync engine.
+  // lexoffice_vouchers — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#lexoffice_vouchers
   lexoffice_vouchers: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -830,22 +733,7 @@ const normalizers = {
     }
     return rows;
   },
-  // sevdesk_vouchers — sevDesk API v1 /Voucher (German accounting). A "Voucher"
-  // is the unit of accounting entry; there is NO separate supplier_invoice
-  // endpoint. Filter: creditDebit === "C" (Credit = outgoing = supplier
-  // voucher = expense); "D" (Debit = incoming = revenue) dropped silently.
-  // Auth header is bare key (api_key_format "{key}", no "Bearer " prefix).
-  // Root: raw.objects (sevDesk wraps every list in {objects:[...]}); no
-  // fallback. sum* values are STRINGS in major units → parseFloat (NOT /100).
-  // supplier_name: prefer flat string supplierName, else nested supplier.name,
-  // else null. voucherDate may be "YYYY-MM-DD" or ISO with TZ offset
-  // ("2024-01-15T00:00:00+01:00") — preserved AS-IS. status is a numeric
-  // sevDesk state code (50/100/1000); stringified raw, label mapping is the
-  // consumer's job.
-  // DEUDA: (a) verify creditDebit C/D + sum* field names first connect.
-  // (b) supplierName: string OR nested supplier.name — both handled. (c) status
-  // numeric code, kept as raw string. (d) voucherDate may carry TZ — as-is.
-  // (e) offset+limit pagination — sync engine.
+  // sevdesk_vouchers — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#sevdesk_vouchers
   sevdesk_vouchers: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -887,42 +775,8 @@ const normalizers = {
     }
     return rows;
   },
-  // sevdesk_invoices — sevDesk API v1 /Invoice (customer invoice = REVENUE).
-  // SISTER of sevdesk_vouchers (which reads /Voucher = expenses). Both endpoints
-  // live on the same provider; this normalizer is REVENUE-only (no direction
-  // field — per the CAMBRA contract, customer_invoices without `direction` mean
-  // revenue, supplier rows carry `direction: "expense"`).
-  //
-  // Root: raw.objects (sevDesk's standard list wrapper) is the ONLY accepted
-  // shape — no fallback to other roots (consistent with sevdesk_vouchers).
-  // Skip lines without id.
-  //
-  // Amounts: invoice.sumGross is ALREADY in MAJOR currency units (NOT cents).
-  // DO NOT divide by 100. This differs from Payplug/Stripe/Zettle/Square which
-  // emit minor units. Anti-regression test T6 specifically guards this.
-  //
-  // Dates: invoice.invoiceDate may be "YYYY-MM-DD" or ISO with TZ offset
-  // ("2024-01-15T00:00:00+01:00") — preserved AS-IS. If absent, occurred_at:null
-  // (no invented fallback — sevDesk has no reliable alternative timestamp at
-  // header level).
-  //
-  // Status: sevDesk uses NUMERIC state codes on /Invoice:
-  //   100  → "draft"
-  //   200  → "open"   (sent / awaiting payment)
-  //   1000 → "paid"
-  //   anything else → null (do NOT invent labels — same defensive stance as
-  //   sevdesk_vouchers which stores raw numeric string for /Voucher status).
-  //   ⚠️ Codes from public docs; verify against real API at first connect.
-  //
-  // Currency: invoice.currency arrives as ISO code (e.g. "EUR") — no Stripe-style
-  // lowercase→uppercase transformation needed. Fallback "EUR" when absent.
-  //
-  // DEUDA: (a) verify status code mapping at first real connect — 100/200/1000
-  // assumption from public docs. (b) limit/offset+countAll pagination is the
-  // sync engine's job; countAll=true is hard-coded in the URL because sevDesk
-  // does NOT return total count without it. (c) sumNet/sumTax not exposed at
-  // this normalizer (header-level breakdown reliability TBC); add later if
-  // needed via a per-invoice GET (same pattern as quickbooks_bills DEUDA b).
+  // sevdesk_invoices — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#sevdesk_invoices
+  // Status code map 100/200/1000 → draft/open/paid; unknowns → null (whitelist).
   sevdesk_invoices: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -962,22 +816,8 @@ const normalizers = {
     }
     return rows;
   },
-  // odoo_bills — Odoo REST /api/account.move (Odoo 17+, Custom plan only).
-  // Filter: move_type === "in_invoice" (supplier bill = expense); out_invoice (revenue)
-  // and any other move_type (entry, in_refund, out_refund, …) are skipped silently.
-  // Root probe: raw is array → raw; raw.result array → raw.result; raw.records array → raw.records;
-  // else [] (no further fallback). Relational fields are [id,"label"] tuples — relLabel(v)
-  // returns v[1] only if Array.isArray(v) && v.length >= 2; if Odoo sends a bare integer (no
-  // context expansion) supplier_name / currency fall back to null / "EUR" without crashing.
-  // Amounts are numbers in major units. invoice_date is "YYYY-MM-DD" date-only, preserved AS-IS.
-  // DEUDA: (a) ⚠️ Odoo external REST API is Custom plan only (not Free/Standard) — many
-  // clients won't have access. (b) REST is Odoo 17+; older versions only XML/JSON-RPC.
-  // (c) root shape not 100% standardized across Odoo versions — probed 3 forms, confirm at
-  // first real connect. (d) relational fields may arrive as bare id (no [id,"label"]) when
-  // context doesn't expand — handled via null fallback. (e) multi-db Odoo may require
-  // X-Odoo-Database header per integration (same dynamic-header debt as Xero/Sage, now 3rd
-  // API asking for it). (f) URL carries domain/fields with brackets+quotes — URL-encoding is
-  // sync engine's job (same situation as QuickBooks query string). (g) offset+limit pagination — sync engine.
+  // odoo_bills — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#odoo_bills
+  // Root probe: raw | raw.result | raw.records. Relational fields are [id,"label"] tuples.
   odoo_bills: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1018,13 +858,8 @@ const normalizers = {
     }
     return rows;
   },
-  // sage_purchase_invoices — Sage Accounting v3.1 /purchase_invoices (supplier bills = expense).
-  // Root `$items` (dollar prefix, bracket notation). contact/currency/status dual object|string.
-  // supplier_name = contact.name ?? contact.displayed_as (NEVER .id). currency from .id (ISO),
-  // not .displayed_as. status from .displayed_as. Amounts in major units. Date date-only as-is.
-  // DEUDA: (a) verify field names first real connect. (b) root `$items` confirmed in docs.
-  // (c) object/string both handled. (d) full_access scope assumed. (e) Sage multi-business
-  // may require per-business header (same Xero-Tenant-Id debt). (f) cursor pagination via $next/$back.
+  // sage_purchase_invoices — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#sage_purchase_invoices
+  // Root `$items` (bracket notation). contact/currency/status dual object|string.
   sage_purchase_invoices: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1078,15 +913,8 @@ const normalizers = {
     }
     return rows;
   },
-  // quickbooks_bills — QBO v3 /query?query=select * from Bill (Bill = supplier bill = expense).
-  // Root QueryResponse.Bill (two levels, no fallback). VendorRef and CurrencyRef are OBJECTS:
-  // supplier_name = VendorRef.name, currency = CurrencyRef.value (ISO). Default "USD" (not EUR,
-  // QBO is US-centric). TotalAmt is number, major units. TxnDate "YYYY-MM-DD" as-is.
-  // DEUDA: (a) verify fields first connect. (b) amount_before_tax & tax = 0: header has no
-  // reliable tax breakdown, real tax in Line[] items (honest absence). (c) status = null:
-  // no header-level status. (d) {shop} = realmId (numeric), generic helper handles strings.
-  // (e) URL has spaces in query string ("select * from Bill"); fetch tolerates, encode if breaks.
-  // (f) pagination via STARTPOSITION + MAXRESULTS — sync engine.
+  // quickbooks_bills — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#quickbooks_bills
+  // Root QueryResponse.Bill. Default currency "USD" (QBO is US-centric, not EUR).
   quickbooks_bills: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1118,14 +946,8 @@ const normalizers = {
     }
     return rows;
   },
-  // xero_bills — Xero /Invoices, filter Type === "ACCPAY" (supplier bills = expense);
-  // ACCREC (revenue) dropped silently. Root raw.Invoices, no fallback. Total/SubTotal/TotalTax
-  // are numbers in major units. supplier_name = Contact.Name. Date is Microsoft
-  // "/Date(MILLISECONDS+0000)/" — extract digits, new Date(ms).toISOString() (NOT seconds).
-  // DEUDA: (a) verify fields first connect. (b) Date in /Date(ms)/ — MILLISECONDS, confirm.
-  // (c) static_headers forces JSON over XML default; confirm no ?format=json also needed.
-  // (d) Xero-Tenant-Id captured at connect via shop_domain and injected by static_headers
-  // ({shop} interpolation). Same UX pattern as Sage X-Business. (e) ?page=N pagination — sync engine.
+  // xero_bills — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#xero_bills
+  // Filter Type === "ACCPAY". Date is Microsoft /Date(ms)/ — MILLISECONDS, not seconds.
   xero_bills: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1167,13 +989,8 @@ const normalizers = {
     }
     return rows;
   },
-  // holded_purchases — Holded /documents/purchase (purchase = supplier bill = expense).
-  // Root bare array, no fallback. supplier_name = doc.contactName ?? doc.contact?.name.
-  // currency uppercased ("eur" → "EUR"). date is UNIX SECONDS → new Date(s*1000).toISOString().
-  // DEUDA HIGH UNCERTAINTY (docs hidden behind login):
-  // (a) field names assumed from public docs, verify ALL at first connect. (b) root shape
-  // assumed bare array; confirm if wrapped. (c) date assumed UNIX SECONDS — if ms, drop *1000.
-  // (d) pagination — sync engine.
+  // holded_purchases — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#holded_purchases
+  // ⚠️ HIGH UNCERTAINTY: docs hidden behind login. date assumed UNIX SECONDS.
   holded_purchases: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1217,13 +1034,8 @@ const normalizers = {
     }
     return rows;
   },
-  // bigcommerce_orders — BigCommerce Orders v2 (storefront, not processor → fee:0 honest absence).
-  // Root bare array, no fallback. Amounts strings, major units, parseFloat (NOT /100).
-  // Status: prefer textual `status`, fall back to String(status_id).
-  // date_created is RFC-2822, preserved AS-IS (NOT converted to ISO — would invent TZ).
-  // DEUDA: (a) verify root + fields first connect. (b) date_created RFC-2822 as-is.
-  // (c) {shop} = store_hash, generic helper handles. (d) X-Auth-Token via static_headers
-  // (no code branch). (e) ?page&limit pagination — sync engine.
+  // bigcommerce_orders — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#bigcommerce_orders
+  // Storefront, not processor → fee:0 honest absence. Refunds NOT inline in v2.
   // SYNC-START: bigcommerceNormalizer
   bigcommerce_orders: (raw) => {
     const toNum = (v, fallback = 0) => {
@@ -1262,12 +1074,8 @@ const normalizers = {
     return rows;
   },
   // SYNC-END: bigcommerceNormalizer
-  // woocommerce_orders — WooCommerce v3 /orders (storefront, not processor → fee:0 honest absence).
-  // Root bare array, no fallback (NOT raw.orders — that's Shopify). Amounts strings major units.
-  // Prefer date_created_gmt over date_created. date_created_gmt is UTC but WITHOUT "Z" suffix
-  // ("2017-03-22T19:28:02") — preserved AS-IS, no synthetic Z.
-  // DEUDA: (a) verify root + fields first connect. (b) {shop} = full domain (vs Shopify handle),
-  // generic helper handles. (c) ?page&per_page + X-WP-Total — sync engine. (d) gmt lacks Z, as-is.
+  // woocommerce_orders — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#woocommerce_orders
+  // Root bare array (NOT raw.orders — that's Shopify). date_created_gmt UTC sin Z, AS-IS.
   woocommerce_orders: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1299,16 +1107,8 @@ const normalizers = {
     }
     return rows;
   },
-  // klarna_settlements — Klarna /payouts/transactions. Fee is a SEPARATE LINE TYPE, not a field.
-  // Line types per order_id: SALE (+), RETURN (refund), FEE (commission), FEE_REFUND.
-  // GROUP BY order_id, emit ONE row per order: amount = sum(SALE) - sum(RETURN);
-  // fee = sum(FEE) - sum(FEE_REFUND) (sign as-is, may go negative).
-  // NET mode: SALE+FEE in same payout. GROSS mode: payout with only FEE lines (no SALE) is VALID
-  // → emit amount:0 + fee (otherwise we silently drop fee data in GROSS).
-  // amount is STRING in MAJOR units (NOT /100, different from Stripe/Zettle/Square minor units).
-  // Prefer sale_date of SALE line; fallback capture_date of first line (GROSS).
-  // DEUDA: (a) verify root key + fields first connect. (b) amount major units — confirm.
-  // (c) NET+GROSS both supported. (d) pagination — sync engine.
+  // klarna_settlements — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#klarna_settlements
+  // Fee is a SEPARATE LINE TYPE (not field). GROUP BY order_id; NET and GROSS modes supported.
   klarna_settlements: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1358,13 +1158,8 @@ const normalizers = {
     }
     return rows;
   },
-  // square_payments — Square /v2/payments. One payment = one row (no grouping vs Zettle).
-  // amount_money.amount is MINOR units → /100 (same as Stripe/Zettle).
-  // processing_fee[] is ARRAY (may carry INITIAL+REFUND entries); SUM all amount_money.amount.
-  // Absent/empty → fee:0 (honest absence). card_last4 from card_details.card.last_4 or null.
-  // DEUDA: (a) verify field paths first connect. (b) Square-Version header REQUIRED — handled
-  // via static_headers, not normalizer. (c) cursor pagination — sync engine. (d) /v2/refunds
-  // is separate endpoint not wired; processing_fee may include refund entries (negative), summed as-is.
+  // square_payments — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#square_payments
+  // One payment = one row (no grouping). Status whitelist (5 known states); unknown → null.
   square_payments: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1414,15 +1209,8 @@ const normalizers = {
     }
     return rows;
   },
-  // zettle_finance — Zettle Finance v2. Fee is a SEPARATE LINE (not field).
-  // One sale = TWO lines same originatingTransactionUuid: PAYMENT (+) and PAYMENT_FEE (-).
-  // GROUP BY uuid, emit ONE row: amount=PAYMENT/100, fee=abs(PAYMENT_FEE)/100 (sign normalized).
-  // No PAYMENT_FEE → fee:0 honest absence. PAYMENT with negative amount = refund, emit AS-IS.
-  // SKIP: PAYOUT lines (money to bank, would double-count GMV); groups without PAYMENT;
-  // lines without uuid (no way to pair). Minor units → /100.
-  // DEUDA: (a) verify field paths first connect. (b) currency HARDCODED "EUR" — line response
-  // has no currency field; confirm source (account-level?) for multi-currency merchants.
-  // (c) limit/offset pagination — sync engine.
+  // zettle_finance — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#zettle_finance
+  // Fee is a SEPARATE LINE. GROUP BY originatingTransactionUuid. Skip PAYOUT (would double-count).
   zettle_finance: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1502,13 +1290,8 @@ const normalizers = {
     }
     return rows;
   },
-  // pennylane_supplier_invoices — supplier invoices = brand EXPENSES, propagates supplier_name.
-  // Twin of pennylane_invoices but adds direction:"expense" + supplier_name (Klaviyo, EDF, etc).
-  // CONTRATO ASIMÉTRICO con cerebro: customer_invoices (no direction) = revenue;
-  // supplier_invoices (direction:"expense") = expense. Intentional, NOT a bug.
-  // Reads items[] only, no fallback. STRING amounts, fee:0 honest, date as-is, skip no-id.
-  // DEUDA: (a) verify fields first connect. (b) cursor pagination + 2-4 req/s — sync engine.
-  // (c) CORE of 3-source spend model — long tail of infra spend lives here.
+  // pennylane_supplier_invoices — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#pennylane_supplier_invoices
+  // Supplier invoices = EXPENSES (direction:"expense" + supplier_name). Asymmetric vs revenue twin.
   pennylane_supplier_invoices: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1540,13 +1323,8 @@ const normalizers = {
     }
     return rows;
   },
-  // pennylane_invoices — Pennylane v2 customer_invoices = GROSS REVENUE (NOT fee, NOT expense).
-  // Root items[] only, NO fallback to data[] or root. amount=currency_amount (with tax),
-  // amount_before_tax + tax propagated separately for downstream net/gross reconstruction.
-  // STRING amounts, parseFloat. fee:0 honest invariant. date date-only as-is, no synthetic UTC.
-  // DEUDA: (a) customer_invoices = revenue; supplier_invoices wired separately (sibling normalizer).
-  // (b) cursor pagination + 2-4 req/s rate limits — sync engine. (c) verify fields first connect.
-  // (d) companies:readonly scope format assumed.
+  // pennylane_invoices — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#pennylane_invoices
+  // customer_invoices = GROSS REVENUE. Twin of pennylane_supplier_invoices (expenses).
   pennylane_invoices: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1576,14 +1354,8 @@ const normalizers = {
     }
     return rows;
   },
-  // sendcloud_shipments — Sendcloud v3 /shipments. Maps SHIPPING VOLUME only (weight, count, dates).
-  // cost:0 HONEST ABSENCE — real carrier rate lives in /shipping-options/rates (separate endpoint).
-  // Granularity: ONE ROW PER PARCEL (not per shipment). order_price repeated per parcel as context
-  // — MUST NOT be summed at portfolio level without dedup by shipment_id.
-  // external_id = shipment.id + ":" + parcel.id (compound for context).
-  // Skip: shipments without parcels[]; parcels without id.
-  // DEUDA: (a) cost:0 invariant — carrier rate is separate endpoint. (b) v3 cursor pagination
-  // (base64) — sync engine. (c) verify fields first connect.
+  // sendcloud_shipments — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#sendcloud_shipments
+  // ONE ROW PER PARCEL (not per shipment). cost:0 — real carrier rate in separate endpoint.
   sendcloud_shipments: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1626,14 +1398,8 @@ const normalizers = {
     }
     return rows;
   },
-  // shopify_orders — Shopify REST /orders.json (storefront, not processor → fee:0 honest absence).
-  // Two money forms: flat total_price OR nested total_price_set.shop_money.amount; prefer flat,
-  // fallback to nested. Amounts strings major units. Dates ISO as-is. financial_status preserved.
-  // ⚠️ DEUDA GRANDE: (a) REST Admin LEGACY since Oct 2024 — Shopify pushes GraphQL; may need
-  // shopify_orders_gql sibling + sync engine change (cursor pageInfo.endCursor). (b) without
-  // read_all_orders scope: REST returns only last 60 days; extended requires Shopify approval.
-  // (c) cursor pagination via Link header — sync engine. (d) data_type still "transactions",
-  // flip to "commerce" when CAMBRA introduces that bucket.
+  // shopify_orders — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#shopify_orders
+  // ⚠️ REST LEGACY since Oct 2024; GraphQL migration pending. Two money forms (flat | nested).
   shopify_orders: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1672,12 +1438,8 @@ const normalizers = {
     }
     return rows;
   },
-  // paypal_transactions — PayPal /v1/reporting/transactions. Money objects {currency_code,value}.
-  // fee_amount.value comes NEGATIVE (PayPal models as debit); CAMBRA fee≥0 → Math.abs (sign
-  // normalized, magnitude untouched). external_id = transaction_id + ":" + date (same tx_id can
-  // appear on multiple pages with different event codes). Skip items without transaction_info.
-  // DEUDA: written from docs + example, NOT real payload. Transaction Search API requires PayPal
-  // approval. Verify field paths + sign conventions first connect. Pagination — sync engine.
+  // paypal_transactions — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#paypal_transactions
+  // fee_amount.value comes NEGATIVE → Math.abs (CAMBRA fee≥0). external_id compound.
   paypal_transactions: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1712,13 +1474,8 @@ const normalizers = {
     }
     return rows;
   },
-  // mollie_settlements — Mollie /v2/settlements (Payments object has no fee — fee aggregated
-  // per method in settlements.costs[]). One settlement → N rows (one per method: iDEAL, PayPal...).
-  // Defensive nesting probe: costs may be at root, in periods[], or year→month nested.
-  // Supports both _embedded.settlements wrap and bare single settlement.
-  // DEUDA: written from DOCS not real payload. `periods` nesting can shift by API version.
-  // amount.net/vat/gross are strings. Pagination via _links.next — sync engine.
-  // Requires settlements.read scope; payments.read kept for future refunds/disputes endpoint.
+  // mollie_settlements — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#mollie_settlements
+  // One settlement → N rows (per method). Defensive nesting probe (root | periods | year→month).
   mollie_settlements: (raw) => {
     // Robust numeric parse: handles strings, nulls, undefined, "" and "abc".
     const toNum = (v, fallback = 0) => {
@@ -1781,21 +1538,8 @@ const normalizers = {
     }
     return rows;
   },
-  // freshbooks_expenses — FreshBooks /accounting/account/{accountId}/expenses/expenses.
-  // Supplier expenses = brand EXPENSES. Root nested at raw.response.result.expenses[] —
-  // NO fallback to bare array or other shapes (FreshBooks documented contract).
-  // ⚠️ amount es un OBJETO anidado: expense.amount = { amount: "762.68", code: "USD" }.
-  // Punto de fallo más fácil: copiar patrón de otros normalizers con amount plano y
-  // leer expense.amount directamente como string → daría NaN. Extraemos amount.amount
-  // (string en unidad MAYOR, NO céntimos, NO /100) Y amount.code en el mismo paso.
-  // Multi-currency: la API NO convierte divisas; cada fila conserva su currency real,
-  // sin inventar tasa de cambio.
-  // Sin campo directo de supplier en el objeto expense → supplier_name=null (NO inventar).
-  // billable: reflejado tal cual, sin filtrar por defecto.
-  // direction:"expense" fijo (endpoint exclusivo de gastos).
-  // DEUDA: (a) confirmar paths first real connect. (b) amount.amount = string mayor,
-  // confirmar. (c) supplier_name=null por ausencia honesta — añadir si aparece vendor
-  // expandido en respuesta real. (d) page/per_page pagination — sync engine.
+  // freshbooks_expenses — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#freshbooks_expenses
+  // ⚠️ amount es un OBJETO anidado { amount: "762.68", code: "USD" }, NO un escalar plano.
   freshbooks_expenses: (raw) => {
     const toNum = (v, fallback = 0) => {
       if (v === null || v === undefined || v === "") return fallback;
@@ -1837,28 +1581,8 @@ const normalizers = {
     }
     return rows;
   },
-  // stripe_transactions — Stripe /v1/balance_transactions.
-  //
-  // ⚠️ COPIA VERBATIM de src/lib/normalizers/stripe.js (fuente de verdad lógica).
-  // Deno no puede importar de la carpeta src/, así que duplicamos a propósito
-  // (mismo patrón que ya usa el REGISTRY). Los tests unitarios viven en
-  // src/lib/normalizers/stripe.test.js: si esta copia diverge del módulo,
-  // realinearla MANUALMENTE — no hay enforcement automático.
-  //
-  // Contrato (D1–D5):
-  //   - una fila por balance_transaction (NO grouping).
-  //   - type whitelisted desde reporting_category (charge|refund|dispute|payout|
-  //     transfer|stripe_fee|application_fee|adjustment); unknown → null.
-  //     application_fee_refund se colapsa a application_fee (signo del amount
-  //     indica devolución).
-  //   - refund preserva su signo nativo (negativo) — el cerebro suma con signo.
-  //   - dispute propaga amount + fee de Stripe (~15€).
-  //   - multi-currency preservada por fila, CERO conversión FX.
-  //   - application_fee NO se mezcla con processing fee (tipo aparte).
-  //   - cents → /100, UNIX seconds → ISO, currency lowercase → uppercase.
-  //   - filas sin id descartadas. defensividad estándar (toNum, null-safe).
-  //
-  // Pagination (has_more / starting_after) es responsabilidad del sync engine.
+  // stripe_transactions — Contrato completo + DEUDA: src/docs/normalizers-contracts.md#stripe_transactions
+  // Funcionalmente equivalente (no byte-verbatim) a src/lib/normalizers/stripe.js.
   // SYNC-START: stripeNormalizer
   stripe_transactions: (raw) => {
     const KNOWN_TYPES = [
@@ -1904,16 +1628,11 @@ const normalizers = {
     return out;
   },
   // SYNC-END: stripeNormalizer
-  invoices: (raw) => {
-    const rows = Array.isArray(raw?.invoices) ? raw.invoices : [];
-    return rows.map((r) => ({
-      vertical: "saas",
-      external_id: r.id ?? null,
-      amount: Number(r.total ?? r.amount ?? 0),
-      currency: r.currency || "EUR",
-      occurred_at: r.issued_at || r.created_at || null,
-    }));
-  },
+  // Generic legacy normalizers (smoke-test only):
+  //   - transactions: used ONLY by demo_provider
+  //   - shipments:    used ONLY by demo_apikey_provider + demo_basicauth_provider
+  // Real providers each have a dedicated normalizer above. Do NOT extend.
+  // (`invoices` removed in B3 cleanup — was zero-referenced; no real or demo provider used it.)
   shipments: (raw) => {
     const rows = Array.isArray(raw?.shipments) ? raw.shipments : [];
     return rows.map((r) => ({
@@ -1981,11 +1700,8 @@ function computeIntegrationDataQuality(cfg) {
 }
 
 // ─── Sync engine: pagination + date-range + rate-limit ─────────────────────
-//
-// ⚠️ COPIA VERBATIM de los módulos en src/lib/syncEngine/ (Deno no puede
-//    importar de src/). Mismo patrón que el normalizer Stripe / REGISTRY.
-//    Tests unitarios viven en src/lib/syncEngine/*.test.js — si esta copia
-//    diverge, realinearla manualmente. No hay enforcement automático.
+// Funcionalmente equivalente (NO byte-verbatim) a src/lib/syncEngine/*.
+// Detalle: src/docs/normalizers-contracts.md#sync-engine-duplication-notes
 
 // SYNC-START: paginators
 // --- paginators -------------------------------------------------------------
@@ -2157,17 +1873,9 @@ async function fetchWithBackoff(fetchFn, rlCfg, state, maxRetries = _DEFAULT_MAX
 // SYNC-END: rateLimit
 
 // --- Refresh-on-401 wrapper -------------------------------------------------
-//
-// ⚠️ COPIA VERBATIM de src/lib/syncEngine/refreshOn401.js (Deno no puede
-//    importar de src/). Tests unitarios viven en refreshOn401.test.js.
-//
-// Decisions baked in (see source module for full rationale):
-//   1. Only OAuth providers with a stored refresh_token are eligible.
-//      api_key / basic_auth fall through unchanged.
-//   2. ONE refresh per sync run, total. Flag lives in a shared state object.
-//   3. On any failure (refresh fails, retry still 401, header rebuild
-//      throws), we return the ORIGINAL 401 — caller's existing error
-//      path takes over without modification.
+// Funcionalmente equivalente (NO byte-verbatim) a src/lib/syncEngine/refreshOn401.js.
+// Behavior: OAuth-only, one refresh per sync run, on any failure return original 401.
+// Detalle: src/docs/normalizers-contracts.md#sync-engine-duplication-notes
 
 // SYNC-START: refreshOn401
 function _createRefreshState() { return { refreshed: false }; }
