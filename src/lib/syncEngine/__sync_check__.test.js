@@ -41,10 +41,10 @@ import { fileURLToPath } from "node:url";
 
 // Repo root: this file lives at src/lib/syncEngine/__sync_check__.test.js,
 // so 3 levels up gets us to the repo root deterministically (no glob, no cwd).
-// ESM-safe __dirname via import.meta.url (vitest runs as ESM, no CJS globals).
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const REPO_ROOT = path.resolve(__dirname, "..", "..", "..");
+// ESM-safe: derive the directory directly from import.meta.url without
+// shadowing the CJS globals __filename / __dirname (which the linter flags).
+const THIS_DIR = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(THIS_DIR, "..", "..", "..");
 const DENO_FILE = path.join(REPO_ROOT, "base44/functions/dataSyncAgent/entry.ts");
 
 // Each pair declares: a logical key (must match the SYNC-START/END markers
