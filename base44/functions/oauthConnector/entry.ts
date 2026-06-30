@@ -1220,7 +1220,7 @@ async function modeCallback(base44, user, params) {
 // The key NEVER comes back to the client. We strip it from every Response.
 
 async function modeConnectApiKey(base44, user, params) {
-  const { brand_id, provider, api_key } = params;
+  const { brand_id, provider, api_key, shop_domain: rawShopDomain } = params;
   const cfg = getProviderConfig(provider);
   if (!cfg) return jsonError(400, `Unknown provider: ${provider}`);
 
@@ -1231,6 +1231,22 @@ async function modeConnectApiKey(base44, user, params) {
 
   if (typeof api_key !== "string" || api_key.trim().length < 4) {
     return jsonError(400, "api_key is required (min 4 chars)");
+  }
+
+  // Per-shop api_key providers (e.g. BigCommerce store_hash, Odoo instance
+  // domain) need the customer's per-tenant identifier at connect time so
+  // dataSyncAgent can interpolate {shop} into the data endpoint. Generic —
+  // mirrors modeConnectBasicAuth byte-for-byte. The engine never names a
+  // provider. Like the basic_auth path (and unlike the OAuth path), we do
+  // NOT enforce SHOP_DOMAIN_REGEX here because api_key providers can carry
+  // full domains (Odoo's "miempresa.odoo.com" contains dots that the OAuth
+  // regex rejects). The interpolation helper accepts any non-empty string.
+  let shopDomain = null;
+  if (cfg.requires_shop_domain) {
+    if (typeof rawShopDomain !== "string" || rawShopDomain.trim().length < 3) {
+      return jsonError(400, "shop_domain is required for this provider");
+    }
+    shopDomain = rawShopDomain.trim().toLowerCase();
   }
 
   if (user.role !== "admin") {
@@ -1250,7 +1266,11 @@ async function modeConnectApiKey(base44, user, params) {
     connected_at: new Date().toISOString(),
     last_error: null,
     provider_account_id: null,
-    metadata_json: { auth_method: "api_key", demo_mode: !!cfg.demo_mode },
+    metadata_json: {
+      auth_method: "api_key",
+      demo_mode: !!cfg.demo_mode,
+      ...(shopDomain ? { shop_domain: shopDomain } : {}),
+    },
     category: cfg.category,
   };
 

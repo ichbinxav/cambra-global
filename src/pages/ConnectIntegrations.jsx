@@ -5,9 +5,10 @@ import Navbar from "@/components/landing/Navbar";
 import { useToast } from "@/components/shared/Toast.jsx";
 import {
   CheckCircle2, RefreshCw, ArrowRight, Loader2, AlertTriangle,
-  CreditCard, Truck, Building2, Mail, Layers, Plug, Sparkles, KeyRound,
+  CreditCard, Truck, Building2, Mail, Layers, Plug, Sparkles, KeyRound, Store, X,
 } from "lucide-react";
 import ApiKeyConnectForm from "@/components/connect/ApiKeyConnectForm";
+import ShopDomainCaptureForm from "@/components/connect/ShopDomainCaptureForm";
 
 /**
  * Fase 0 — generic OAuth connector UX.
@@ -65,6 +66,87 @@ const CLIENT_REGISTRY_MIRROR = {
     api_key_help_url: "https://demo.example.invalid/account/api-keys",
     api_key_help_text: "Open your Demo Provider dashboard → Account → API Keys, create a read-only key, paste it here.",
     demo_mode: true,
+  },
+
+  // ─── Per-shop providers (requires_shop_domain: true in the backend registry).
+  // Adding them to the mirror makes them visible/connectable in the UI. The
+  // backend already validates shop_domain on every path (modeStart for OAuth,
+  // modeConnectBasicAuth for basic_auth, modeConnectApiKey for api_key — the
+  // last path was just made symmetric in this turn). NEVER mirror secrets;
+  // mirror only the strings the UI needs to render the form. ───
+  shopify: {
+    display_name: "Shopify",
+    category: "commerce",
+    description: "Read-only access to orders and products.",
+    auth_method: "oauth",
+    requires_shop_domain: true,
+    shop_domain_field_label: "Shopify shop handle",
+    shop_domain_placeholder: "mitienda",
+    shop_domain_help_text: "Paste the handle only — the part before \".myshopify.com\". For \"mitienda.myshopify.com\" you paste \"mitienda\". No dots, no scheme, no path.",
+    shop_domain_help_url: "https://help.shopify.com/en/manual/intro-to-shopify/initial-setup/setup-your-store/store-name",
+  },
+  woocommerce: {
+    display_name: "WooCommerce",
+    category: "commerce",
+    description: "Reads orders. Two keys (consumer_key + consumer_secret).",
+    auth_method: "basic_auth",
+    requires_shop_domain: true,
+    shop_domain_field_label: "Your site domain",
+    shop_domain_placeholder: "mitienda.com",
+    shop_domain_help_text: "Paste your WooCommerce site's full domain (e.g. \"mitienda.com\"). No scheme, no path.",
+    shop_domain_help_url: "https://woocommerce.com/document/woocommerce-rest-api/",
+    basic_auth_user_label: "Consumer key (ck_…)",
+    basic_auth_pass_label: "Consumer secret (cs_…)",
+    basic_auth_help_url: "https://woocommerce.com/document/woocommerce-rest-api/",
+    basic_auth_help_text: "In WooCommerce → Settings → Advanced → REST API, create a key with Read permission. Consumer key is the username, Consumer secret the password.",
+  },
+  bigcommerce: {
+    display_name: "BigCommerce",
+    category: "commerce",
+    description: "Reads orders. API access token + store_hash.",
+    auth_method: "api_key",
+    requires_shop_domain: true,
+    shop_domain_field_label: "Store hash",
+    shop_domain_placeholder: "abc12345xyz",
+    shop_domain_help_text: "Your BigCommerce store_hash — the identifier in your store's URL (Settings → API Accounts, or visible in the dashboard URL).",
+    shop_domain_help_url: "https://developer.bigcommerce.com/docs/start/authentication/api-accounts",
+    api_key_help_url: "https://developer.bigcommerce.com/docs/start/authentication/api-accounts",
+    api_key_help_text: "In BigCommerce → Settings → API Accounts create an account with read scope on Orders, then paste the Access Token.",
+  },
+  quickbooks: {
+    display_name: "QuickBooks",
+    category: "accounting",
+    description: "Reads supplier bills (= brand expenses).",
+    auth_method: "oauth",
+    requires_shop_domain: true,
+    shop_domain_field_label: "Company ID (realmId)",
+    shop_domain_placeholder: "9341452991318123",
+    shop_domain_help_text: "Your QuickBooks Company ID (also called realmId) — a long numeric string. Find it in QuickBooks Online → Settings (gear icon) → Account and settings → Billing & subscription.",
+    shop_domain_help_url: "https://developer.intuit.com/app/developer/qbo/docs/learn/explore-the-quickbooks-online-api/explore-quickbooks-online-data#whats-the-company-id",
+  },
+  odoo: {
+    display_name: "Odoo",
+    category: "accounting",
+    description: "Reads supplier bills. Requires Odoo Custom plan (REST API).",
+    auth_method: "api_key",
+    requires_shop_domain: true,
+    shop_domain_field_label: "Your Odoo domain",
+    shop_domain_placeholder: "miempresa.odoo.com",
+    shop_domain_help_text: "Your full Odoo instance domain (e.g. \"miempresa.odoo.com\"). No scheme, no path.",
+    shop_domain_help_url: "https://www.odoo.com/documentation/17.0/developer/reference/external_api.html",
+    api_key_help_url: "https://www.odoo.com/documentation/17.0/developer/reference/external_api.html",
+    api_key_help_text: "In Odoo → Preferences → Account Security → New API Key. Requires Odoo Custom plan — the external REST API is not available on Free/Standard.",
+  },
+  freshbooks: {
+    display_name: "FreshBooks",
+    category: "accounting",
+    description: "Reads expenses (= brand expenses).",
+    auth_method: "oauth",
+    requires_shop_domain: true,
+    shop_domain_field_label: "FreshBooks accountId",
+    shop_domain_placeholder: "AbC123dEf456",
+    shop_domain_help_text: "Your FreshBooks accountId — an alphanumeric string from /auth/api/v1/users/me → business_memberships[].business.account_id. NOT the businessId. If you have multiple businesses in FreshBooks, paste the accountId of the one you want to connect.",
+    shop_domain_help_url: "https://www.freshbooks.com/api/me_endpoint",
   },
 };
 
@@ -136,8 +218,12 @@ export default function ConnectIntegrations() {
     return out;
   }, [rows]);
 
-  const handleConnect = async (row) => {
-    if (!brandId) return;
+  // OAuth start. For providers without requires_shop_domain we redirect
+  // immediately. For providers WITH requires_shop_domain the row opens its
+  // ShopDomainCaptureForm inline (see IntegrationRow) and calls handleStartOAuth
+  // with the captured value once the user submits.
+  const handleStartOAuth = async (row, shopDomain = null) => {
+    if (!brandId) return null;
     setBusyProvider(row.provider);
     try {
       const res = await base44.functions.invoke("oauthConnector", {
@@ -145,26 +231,32 @@ export default function ConnectIntegrations() {
         brand_id: brandId,
         provider: row.provider,
         redirect_after: "/ConnectIntegrations",
+        ...(shopDomain ? { shop_domain: shopDomain } : {}),
       });
       const data = res?.data || res;
       if (!data?.ok) {
         toast.error("Couldn't start connection", data?.error || undefined);
         setBusyProvider(null);
-        return;
+        return data?.error || "Couldn't start connection";
       }
       // Demo providers short-circuit through our own callback page; real
-      // providers redirect to their platform.
+      // providers redirect to their platform. We don't reset busyProvider on
+      // success — the page is about to unload.
       window.location.href = data.authorize_url;
+      return null;
     } catch (err) {
       toast.error("Connection failed", err?.message || undefined);
       setBusyProvider(null);
+      return err?.message || "Connection failed";
     }
   };
 
   // API-key flow: the user pastes a key, we send it to the connector which
-  // encrypts and stores it. We never persist it on the client.
-  const handleSaveApiKey = async (row, apiKey) => {
-    if (!brandId) return;
+  // encrypts and stores it. We never persist it on the client. For per-shop
+  // api_key providers (bigcommerce, odoo) shop_domain is captured alongside
+  // the key — the backend persists it in metadata_json.shop_domain.
+  const handleSaveApiKey = async (row, apiKey, shopDomain = null) => {
+    if (!brandId) return null;
     setBusyProvider(row.provider);
     try {
       const res = await base44.functions.invoke("oauthConnector", {
@@ -172,16 +264,49 @@ export default function ConnectIntegrations() {
         brand_id: brandId,
         provider: row.provider,
         api_key: apiKey,
+        ...(shopDomain ? { shop_domain: shopDomain } : {}),
       });
       const data = res?.data || res;
       if (!data?.ok) {
         toast.error("Couldn't save API key", data?.error || undefined);
-        return;
+        return data?.error || "Couldn't save API key";
       }
       toast.success(`${row.meta.display_name} connected`);
       await loadAll(brandId);
+      return null;
     } catch (err) {
       toast.error("Couldn't save API key", err?.message || undefined);
+      return err?.message || "Couldn't save API key";
+    } finally {
+      setBusyProvider(null);
+    }
+  };
+
+  // Basic-auth flow: same pattern as api_key but two values (public/secret).
+  // Only WooCommerce uses this path today and it requires shop_domain.
+  const handleSaveBasicAuth = async (row, publicKey, secretKey, shopDomain = null) => {
+    if (!brandId) return null;
+    setBusyProvider(row.provider);
+    try {
+      const res = await base44.functions.invoke("oauthConnector", {
+        mode: "connect_basic_auth",
+        brand_id: brandId,
+        provider: row.provider,
+        public_key: publicKey,
+        secret_key: secretKey,
+        ...(shopDomain ? { shop_domain: shopDomain } : {}),
+      });
+      const data = res?.data || res;
+      if (!data?.ok) {
+        toast.error("Couldn't save credentials", data?.error || undefined);
+        return data?.error || "Couldn't save credentials";
+      }
+      toast.success(`${row.meta.display_name} connected`);
+      await loadAll(brandId);
+      return null;
+    } catch (err) {
+      toast.error("Couldn't save credentials", err?.message || undefined);
+      return err?.message || "Couldn't save credentials";
     } finally {
       setBusyProvider(null);
     }
@@ -264,9 +389,10 @@ export default function ConnectIntegrations() {
                     key={row.provider}
                     row={row}
                     busy={busyProvider === row.provider}
-                    onConnect={() => handleConnect(row)}
+                    onStartOAuth={(shopDomain) => handleStartOAuth(row, shopDomain)}
                     onSync={() => handleSync(row)}
-                    onSaveApiKey={(key) => handleSaveApiKey(row, key)}
+                    onSaveApiKey={(key, shopDomain) => handleSaveApiKey(row, key, shopDomain)}
+                    onSaveBasicAuth={(pub, sec, shopDomain) => handleSaveBasicAuth(row, pub, sec, shopDomain)}
                   />
                 ))}
               </div>
@@ -294,20 +420,68 @@ export default function ConnectIntegrations() {
   );
 }
 
-function IntegrationRow({ row, busy, onConnect, onSync, onSaveApiKey }) {
+function IntegrationRow({ row, busy, onStartOAuth, onSync, onSaveApiKey, onSaveBasicAuth }) {
   const integ = row.integration;
   const status = integ?.status || (row.detection ? "detected" : "available");
   const authMethod = row.meta?.auth_method || "oauth";
   const isApiKey = authMethod === "api_key";
-  const [keyFormOpen, setKeyFormOpen] = useState(false);
+  const isBasicAuth = authMethod === "basic_auth";
+  const requiresShopDomain = !!row.meta?.requires_shop_domain;
 
-  // For api_key providers, the primary action ("Connect" / "Reconnect") opens
-  // an inline form instead of redirecting. Connected status still shows Sync.
+  // Open-state machine for the inline forms. Per-shop providers gate behind
+  // ShopDomainCaptureForm first; after shop_domain is captured we either
+  // redirect (OAuth) or open the credentials form (api_key / basic_auth).
+  const [formOpen, setFormOpen] = useState(false);
+  const [shopDomain, setShopDomain] = useState(null);
+  const [serverError, setServerError] = useState(null);
+  const [pendingBasicAuth, setPendingBasicAuth] = useState({ pub: "", sec: "" });
+
+  const closeAll = () => {
+    setFormOpen(false);
+    setShopDomain(null);
+    setServerError(null);
+    setPendingBasicAuth({ pub: "", sec: "" });
+  };
+
+  // What the primary button does, in plain terms:
+  //   - connected → Sync
+  //   - OAuth provider without shop_domain → redirect immediately
+  //   - everything else (OAuth+shop, api_key, basic_auth) → toggle inline form
+  const handlePrimaryClick = async () => {
+    if (status === "connected") return onSync();
+    if (formOpen) return closeAll();
+    if (!requiresShopDomain && !isApiKey && !isBasicAuth) {
+      // Pure OAuth, no shop_domain — straight redirect.
+      const err = await onStartOAuth(null);
+      if (err) setServerError(err);
+      return;
+    }
+    setFormOpen(true);
+  };
+
+  // Submit handler for the shop_domain step.
+  const handleShopDomainSubmit = async (value) => {
+    setServerError(null);
+    if (authMethod === "oauth") {
+      // OAuth + shop_domain: send straight to backend; on success the browser
+      // is redirected. On failure we surface the error in the form.
+      const err = await onStartOAuth(value);
+      if (err) setServerError(err);
+      return;
+    }
+    // api_key / basic_auth + shop_domain: capture and move to credentials step.
+    setShopDomain(value);
+  };
+
   return (
     <div className="p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-colors">
       <div className="flex items-center gap-3 flex-wrap">
         <div className="w-10 h-10 rounded-xl border border-border/60 bg-secondary flex items-center justify-center shrink-0">
-          {isApiKey ? <KeyRound size={15} className="text-foreground" /> : <Plug size={15} className="text-foreground" />}
+          {requiresShopDomain
+            ? <Store size={15} className="text-foreground" />
+            : isApiKey
+              ? <KeyRound size={15} className="text-foreground" />
+              : <Plug size={15} className="text-foreground" />}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -320,6 +494,16 @@ function IntegrationRow({ row, busy, onConnect, onSync, onSaveApiKey }) {
             {isApiKey && (
               <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold bg-secondary text-muted-foreground border border-border/60">
                 API key
+              </span>
+            )}
+            {isBasicAuth && (
+              <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold bg-secondary text-muted-foreground border border-border/60">
+                Basic auth
+              </span>
+            )}
+            {requiresShopDomain && (
+              <span className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold bg-secondary text-muted-foreground border border-border/60">
+                Per-shop
               </span>
             )}
           </div>
@@ -344,55 +528,179 @@ function IntegrationRow({ row, busy, onConnect, onSync, onSaveApiKey }) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <StatusBadge status={status} />
-          {status === "connected" ? (
-            <button
-              type="button"
-              onClick={onSync}
-              disabled={busy}
-              className="inline-flex items-center gap-1 h-8 px-3 rounded-full border border-border/60 text-[11px] font-bold hover:border-foreground/40 disabled:opacity-50"
-            >
-              {busy ? <Loader2 size={10} className="animate-spin" /> : <RefreshCw size={10} />}
-              Sync
-            </button>
-          ) : isApiKey ? (
-            <button
-              type="button"
-              onClick={() => setKeyFormOpen((v) => !v)}
-              disabled={busy}
-              className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 disabled:opacity-50"
-            >
-              {busy ? <Loader2 size={10} className="animate-spin" /> : <KeyRound size={10} />}
-              {keyFormOpen ? "Close" : status === "error" ? "Reconnect" : "Connect"}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onConnect}
-              disabled={busy || status === "connecting"}
-              className="inline-flex items-center gap-1 h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 disabled:opacity-50"
-            >
-              {busy || status === "connecting"
-                ? <Loader2 size={10} className="animate-spin" />
-                : <ArrowRight size={10} />}
-              {status === "error" ? "Reconnect" : "Connect"}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handlePrimaryClick}
+            disabled={busy || status === "connecting"}
+            className={`inline-flex items-center gap-1 h-8 px-3 rounded-full text-[11px] font-bold disabled:opacity-50 ${
+              status === "connected"
+                ? "border border-border/60 hover:border-foreground/40"
+                : "bg-foreground text-background hover:opacity-90"
+            }`}
+          >
+            {busy || status === "connecting"
+              ? <Loader2 size={10} className="animate-spin" />
+              : status === "connected"
+                ? <RefreshCw size={10} />
+                : formOpen
+                  ? <X size={10} />
+                  : <ArrowRight size={10} />}
+            {status === "connected"
+              ? "Sync"
+              : formOpen
+                ? "Close"
+                : status === "error"
+                  ? "Reconnect"
+                  : "Connect"}
+          </button>
         </div>
       </div>
 
-      {isApiKey && keyFormOpen && status !== "connected" && (
+      {/* Per-shop step 1: capture shop_domain. Shown for any provider with
+          requires_shop_domain, regardless of auth_method. Skipped once
+          shopDomain has been captured locally (we move on to credentials). */}
+      {formOpen && status !== "connected" && requiresShopDomain && !shopDomain && (
+        <ShopDomainCaptureForm
+          fieldLabel={row.meta.shop_domain_field_label}
+          placeholder={row.meta.shop_domain_placeholder}
+          helpUrl={row.meta.shop_domain_help_url}
+          helpText={row.meta.shop_domain_help_text}
+          busy={busy}
+          serverError={serverError}
+          onCancel={closeAll}
+          onSave={handleShopDomainSubmit}
+        />
+      )}
+
+      {/* api_key credentials step. Shown when (a) provider is api_key AND
+          (b) either shop_domain is not required, or it has been captured. */}
+      {formOpen && status !== "connected" && isApiKey && (!requiresShopDomain || shopDomain) && (
         <ApiKeyConnectForm
           helpUrl={row.meta.api_key_help_url}
           helpText={row.meta.api_key_help_text}
           busy={busy}
-          onCancel={() => setKeyFormOpen(false)}
+          onCancel={closeAll}
           onSave={async (k) => {
-            await onSaveApiKey(k);
-            setKeyFormOpen(false);
+            const err = await onSaveApiKey(k, shopDomain);
+            if (!err) closeAll();
+          }}
+        />
+      )}
+
+      {/* basic_auth credentials step. Shown when (a) provider is basic_auth
+          AND (b) either shop_domain is not required, or it has been captured. */}
+      {formOpen && status !== "connected" && isBasicAuth && (!requiresShopDomain || shopDomain) && (
+        <BasicAuthConnectForm
+          meta={row.meta}
+          busy={busy}
+          values={pendingBasicAuth}
+          onChange={setPendingBasicAuth}
+          onCancel={closeAll}
+          onSave={async ({ pub, sec }) => {
+            const err = await onSaveBasicAuth(pub, sec, shopDomain);
+            if (!err) closeAll();
           }}
         />
       )}
     </div>
+  );
+}
+
+/* Inline basic_auth form. Defined here (instead of its own file) because it
+   is a thin wrapper specific to ConnectIntegrations — two password inputs
+   plus help text. Matches the ApiKeyConnectForm visual pattern. */
+function BasicAuthConnectForm({ meta, busy, values, onChange, onCancel, onSave }) {
+  const [showHelp, setShowHelp] = useState(false);
+  const userLabel = meta.basic_auth_user_label || "Public key";
+  const passLabel = meta.basic_auth_pass_label || "Secret key";
+  const canSave =
+    values.pub.trim().length >= 4 && values.sec.trim().length >= 4 && !busy;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!canSave) return;
+    await onSave({ pub: values.pub.trim(), sec: values.sec.trim() });
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="mt-3 rounded-xl border border-border/60 bg-secondary/30 p-3 space-y-2"
+    >
+      <label className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground">
+        <KeyRound size={11} />
+        Paste your credentials
+      </label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <input
+          type="text"
+          autoComplete="off"
+          spellCheck={false}
+          value={values.pub}
+          onChange={(e) => onChange({ ...values, pub: e.target.value })}
+          placeholder={userLabel}
+          aria-label={userLabel}
+          className="h-10 px-3 rounded-md text-sm bg-background border border-border/60 font-mono"
+        />
+        <input
+          type="password"
+          autoComplete="off"
+          spellCheck={false}
+          value={values.sec}
+          onChange={(e) => onChange({ ...values, sec: e.target.value })}
+          placeholder={passLabel}
+          aria-label={passLabel}
+          className="h-10 px-3 rounded-md text-sm bg-background border border-border/60 font-mono"
+        />
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={!canSave}
+          className="inline-flex items-center gap-1 h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {busy ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle2 size={11} />}
+          Save
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={busy}
+          className="inline-flex items-center gap-1 h-9 px-3 rounded-full border border-border/60 text-xs font-bold text-muted-foreground hover:text-foreground"
+        >
+          <X size={11} />
+        </button>
+      </div>
+      {(meta.basic_auth_help_url || meta.basic_auth_help_text) && (
+        <div className="pt-1">
+          <button
+            type="button"
+            onClick={() => setShowHelp((v) => !v)}
+            className="text-[11px] font-semibold text-cyan-700 hover:underline"
+          >
+            {showHelp ? "Hide" : "Where do I find this?"}
+          </button>
+          {showHelp && (
+            <div className="mt-1.5 text-[11px] text-muted-foreground leading-relaxed">
+              {meta.basic_auth_help_text && <p>{meta.basic_auth_help_text}</p>}
+              {meta.basic_auth_help_url && (
+                <a
+                  href={meta.basic_auth_help_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 mt-1 text-cyan-700 hover:underline"
+                >
+                  Open provider docs
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      <p className="text-[10px] text-muted-foreground/70 leading-snug pt-1">
+        Your credentials are encrypted before being saved and never sent back to your browser.
+      </p>
+    </form>
   );
 }
 
