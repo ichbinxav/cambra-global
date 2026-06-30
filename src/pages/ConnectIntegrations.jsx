@@ -334,6 +334,13 @@ function IntegrationRow({ row, busy, onConnect, onSync, onSaveApiKey }) {
           {integ?.last_error && status === "error" && (
             <p className="text-[10px] text-red-600 mt-0.5 truncate">⚠ {integ.last_error}</p>
           )}
+          {/* Integration Data Quality — read-only badge (Opción B, Fase 3).
+              Shown ONLY when the last sync surfaced known structural gaps in
+              the provider's API (completeness_pct < 100). Informational only:
+              does NOT feed savings, benchmarks, recommendation confidence, or
+              any business-logic score. Decision to wire to recommendations is
+              pending product input. */}
+          <DataQualityBadge dataQuality={integ?.integration_data_quality} />
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <StatusBadge status={status} />
@@ -386,6 +393,28 @@ function IntegrationRow({ row, busy, onConnect, onSync, onSaveApiKey }) {
         />
       )}
     </div>
+  );
+}
+
+/* Read-only "partial data" indicator. Renders nothing unless completeness_pct
+   is a number < 100 — so providers without known_data_gaps (or integrations
+   that haven't synced yet) stay visually unchanged. Tenant-isolated by the
+   Integration entity's RLS (read = admin OR created_by); we just render what
+   the loader already filtered. */
+function DataQualityBadge({ dataQuality }) {
+  if (!dataQuality) return null;
+  const pct = dataQuality.completeness_pct;
+  if (typeof pct !== "number" || pct >= 100) return null;
+  const evidence = typeof dataQuality.evidence === "string" && dataQuality.evidence.length > 0
+    ? dataQuality.evidence
+    : "Partial data from provider API";
+  return (
+    <p
+      className="text-[10px] text-amber-700 mt-0.5 truncate"
+      title={evidence}
+    >
+      ⓘ Partial data: {evidence}
+    </p>
   );
 }
 
