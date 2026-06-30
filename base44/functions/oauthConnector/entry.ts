@@ -478,6 +478,38 @@ const REGISTRY = {
     demo_mode: false,
     requires_shop_domain: true,
   },
+
+  // ─── REAL PROVIDERS (Tanda 10: accounting API key — Holded) ──────────────
+  // Holded Invoicing API. Authenticates with a NON-STANDARD header named
+  // literally `key` (NOT Authorization Bearer). The engine routes it via
+  // the generic api_key_header mechanism — same path BigCommerce used for
+  // X-Auth-Token. No code-level branch for Holded.
+  //
+  // Endpoint: GET /api/invoicing/v1/documents/purchase
+  // (purchase = facturas de compra = brand EXPENSES, paired in the cerebro
+  // with pennylane_supplier_invoices as a second accounting source.)
+  //
+  // Deuda anotada (detail inside the normalizer):
+  //   (a) Field names assumed from public docs; verify on first real connect.
+  //   (b) Root: assumed bare array; confirm at first connect.
+  //   (c) `date` assumed UNIX seconds (not ms); confirm at first connect.
+  //   (d) Pagination — sync engine.
+  holded: {
+    display_name: "Holded",
+    category: "accounting",
+    logo: null,
+    description: "Holded Invoicing API — API key in a non-standard header named `key` (declared via api_key_header). Reads purchase documents (supplier invoices = brand expenses). Field names assumed from public docs; verify at first real connect.",
+    auth_method: "api_key",
+    api_key_header: "key",
+    api_key_format: "{key}",
+    api_key_help_url: "https://developers.holded.com/",
+    api_key_help_text: "En Holded → Configuración → Desarrolladores, genera una API Key. Pégala aquí. (Plan de pago requerido.)",
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://api.holded.com/api/invoicing/v1/documents/purchase", method: "GET", normalize_as: "holded_purchases" },
+    ],
+    demo_mode: false,
+  },
 };
 
 function getProviderConfig(provider) {

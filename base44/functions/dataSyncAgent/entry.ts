@@ -316,6 +316,24 @@ const REGISTRY = {
     demo_mode: false,
     requires_shop_domain: true,
   },
+
+  // Mirror of holded — same contract, both files identical.
+  holded: {
+    display_name: "Holded",
+    category: "accounting",
+    logo: null,
+    description: "Holded Invoicing API — API key in a non-standard header named `key` (declared via api_key_header). Reads purchase documents (supplier invoices = brand expenses). Field names assumed from public docs; verify at first real connect.",
+    auth_method: "api_key",
+    api_key_header: "key",
+    api_key_format: "{key}",
+    api_key_help_url: "https://developers.holded.com/",
+    api_key_help_text: "En Holded → Configuración → Desarrolladores, genera una API Key. Pégala aquí. (Plan de pago requerido.)",
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://api.holded.com/api/invoicing/v1/documents/purchase", method: "GET", normalize_as: "holded_purchases" },
+    ],
+    demo_mode: false,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -467,6 +485,97 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── holded_purchases ───────────────────────────────────────────────────
+  // THIRTEENTH real normalizer. Translates Holded Invoicing API:
+  //   GET https://api.holded.com/api/invoicing/v1/documents/purchase
+  //   [ { id, contactName, contact: { name }, total, tax, subtotal,
+  //       currency, date (UNIX seconds), status, ... } ]
+  //
+  // Twin of `pennylane_supplier_invoices` — accounting vertical, direction
+  // "expense", supplier_name propagated. Together they form CAMBRA's two
+  // sources of truth for the long tail of infra spend (SaaS, marketing,
+  // carrier, energy, …). The cerebro reads both; dedup by supplier_name +
+  // date is the consumer's job, not this normalizer's.
+  //
+  // CAMBRA "rule of gold" (1:1 from input, modulo unit):
+  //   - amounts may arrive as number OR string. toNum handles both.
+  //     NOT divided by 100 — Holded gives major currency units (29.35).
+  //   - currency uppercased (Holded may emit lowercase "eur").
+  //   - supplier_name read as doc.contactName ?? doc.contact?.name ?? null.
+  //     Two field paths because the docs hint at both; honest null if absent.
+  //   - status preserved 1:1 (null if absent).
+  //
+  // Date handling — UNIT CONVERSION (the one place we DO transform):
+  //   - Holded ships `date` as UNIX SECONDS (e.g. 1640995200), not ISO.
+  //     We convert to ISO 8601 via new Date(seconds * 1000).toISOString().
+  //     This is a unit-of-time conversion analogous to Stripe's cents→units.
+  //   - If date is not a positive number (after coercion) → null. We do NOT
+  //     emit an Invalid Date or a fake "now" timestamp.
+  //
+  // Root navigation:
+  //   - Assumed bare array. Array.isArray(raw) → use it, otherwise [].
+  //     No fallback to other shapes; same rule as woocommerce_orders /
+  //     bigcommerce_orders. If Holded turns out to wrap in a key, fix it
+  //     in this normalizer at first real connect — don't guess now.
+  //
+  // Items skipped:
+  //   - document without `id` → skipped (same pattern as Pennylane/Shopify).
+  //
+  // ⚠️  DEUDA ANOTADA (Holded has MORE uncertainty than usual — docs hide
+  //                    the response example behind login):
+  //   (a) Field names (contactName, total, tax, subtotal, date) are the
+  //       MOST LIKELY ones from the public docs but NOT confirmed against a
+  //       real payload. Verify ALL of them at first real connect.
+  //   (b) Root shape assumed bare array; confirm if Holded wraps in a key.
+  //   (c) `date` assumed UNIX SECONDS — if Holded actually emits ms, drop
+  //       the *1000 in the Date constructor. Confirm at first real connect.
+  //   (d) Pagination — sync engine's job, not this normalizer's.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input
+  // (modulo unit conversion: lowercase→uppercase currency, UNIX→ISO date).
+  holded_purchases: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const unixToIso = (v) => {
+      // Accept number or numeric string; treat anything else as missing.
+      if (v === null || v === undefined || v === "") return null;
+      const seconds = typeof v === "number" ? v : parseFloat(v);
+      if (!Number.isFinite(seconds) || seconds <= 0) return null;
+      const d = new Date(seconds * 1000);
+      // Invalid Date guard — defensive; only triggers on absurd inputs.
+      if (Number.isNaN(d.getTime())) return null;
+      return d.toISOString();
+    };
+    const docs = Array.isArray(raw) ? raw : [];
+    const rows = [];
+    for (const doc of docs) {
+      if (!doc || typeof doc !== "object") continue;
+      const id = doc?.id;
+      if (id === null || id === undefined || id === "") continue; // skip docs without id
+      const supplierName = doc?.contactName ?? doc?.contact?.name ?? null;
+      const rawCurrency = doc?.currency;
+      const currency = (typeof rawCurrency === "string" && rawCurrency.length > 0)
+        ? rawCurrency.toUpperCase()
+        : "EUR";
+      rows.push({
+        vertical: "accounting",
+        direction: "expense", // purchase document = brand EXPENSE
+        external_id: String(id),
+        supplier_name: supplierName,
+        amount: toNum(doc?.total),
+        amount_before_tax: toNum(doc?.subtotal),
+        tax: toNum(doc?.tax),
+        fee: 0, // A purchase invoice is an expense, not a fee.
+        currency,
+        occurred_at: unixToIso(doc?.date),
+        status: doc?.status ?? null,
+      });
+    }
+    return rows;
+  },
   // ─── bigcommerce_orders ─────────────────────────────────────────────────
   // TWELFTH real normalizer. Translates BigCommerce Orders v2:
   //   GET https://api.bigcommerce.com/stores/{shop}/v2/orders
