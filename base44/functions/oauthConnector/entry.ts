@@ -269,6 +269,7 @@ const REGISTRY = {
     data_type: "invoices",
     data_endpoints: [
       { url: "https://app.pennylane.com/api/external/v2/customer_invoices", method: "GET", normalize_as: "pennylane_invoices" },
+      { url: "https://app.pennylane.com/api/external/v2/supplier_invoices", method: "GET", normalize_as: "pennylane_supplier_invoices" },
     ],
     demo_mode: false,
   },

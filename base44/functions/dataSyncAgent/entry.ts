@@ -216,6 +216,7 @@ const REGISTRY = {
     data_type: "invoices",
     data_endpoints: [
       { url: "https://app.pennylane.com/api/external/v2/customer_invoices", method: "GET", normalize_as: "pennylane_invoices" },
+      { url: "https://app.pennylane.com/api/external/v2/supplier_invoices", method: "GET", normalize_as: "pennylane_supplier_invoices" },
     ],
     demo_mode: false,
   },
@@ -351,6 +352,73 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── pennylane_supplier_invoices ────────────────────────────────────────
+  // SEVENTH real normalizer. Twin of `pennylane_invoices`, with two
+  // additions that justify a separate row type:
+  //
+  //   - `supplier_name`: WHO the brand pays (Klaviyo, EDF, carrier, SaaS
+  //     vendor, …). This is the field that makes this endpoint valuable —
+  //     it's where the long tail of infra spend lives. If a supplier
+  //     invoice arrives without a supplier_name we propagate null (do NOT
+  //     invent a name); downstream decides whether to flag it.
+  //
+  //   - `direction: "expense"`: marks the row as a brand EXPENSE, not
+  //     revenue. Contract for the cerebro reading `vertical: "accounting"`:
+  //       · customer_invoices rows → no `direction` field → revenue by
+  //         default (already in production; we do NOT retro-edit them in
+  //         this turn).
+  //       · supplier_invoices rows → `direction: "expense"` explicit.
+  //     Asymmetry is intentional: keeps the customer normalizer untouched
+  //     (the "do not touch the 6 previous normalizers" guarantee) and the
+  //     read contract is documented here.
+  //
+  // Everything else mirrors `pennylane_invoices` 1:1:
+  //   - reads `items[]` only (NO fallback to `data[]`)
+  //   - STRING amounts → parseFloat via toNum
+  //   - `fee: 0` honest (an invoice is not a fee)
+  //   - `date` preserved as-is (date-only, no invented UTC)
+  //   - skip invoices without `id`
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) Written from docs; verify field paths on first real connect.
+  //   (b) Cursor pagination + 2-4 req/s rate limits — sync engine's job.
+  //   (c) This endpoint is the CORE of the 3-source spend model — it
+  //       captures the long tail of infra spend (SaaS, marketing, carrier,
+  //       energy, ...). When wiring Pennylane for real, this is the
+  //       endpoint that delivers the most CAMBRA value per call.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  pennylane_supplier_invoices: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const items = Array.isArray(raw?.items) ? raw.items : [];
+    const rows = [];
+    for (const invoice of items) {
+      if (!invoice || typeof invoice !== "object") continue;
+      const id = invoice?.id;
+      if (id === null || id === undefined) continue; // skip invoices without id
+      const currency = invoice?.currency || "EUR";
+      const occurredAt = typeof invoice?.date === "string" ? invoice.date : null;
+      rows.push({
+        vertical: "accounting",
+        direction: "expense", // marks this row as a brand EXPENSE
+        external_id: String(id),
+        supplier_name: invoice?.supplier_name ?? null,
+        invoice_number: invoice?.invoice_number ?? null,
+        amount: toNum(invoice?.currency_amount),
+        amount_before_tax: toNum(invoice?.currency_amount_before_tax),
+        tax: toNum(invoice?.currency_tax),
+        fee: 0, // A supplier invoice is an expense, not a fee.
+        currency,
+        status: invoice?.status ?? null,
+        occurred_at: occurredAt,
+      });
+    }
+    return rows;
+  },
   // ─── pennylane_invoices ─────────────────────────────────────────────────
   // SIXTH real normalizer. Translates Pennylane API v2:
   //   GET /api/external/v2/customer_invoices
