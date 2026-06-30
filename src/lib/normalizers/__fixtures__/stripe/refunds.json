@@ -1,0 +1,18 @@
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "txn_1Refund001",
+      "object": "balance_transaction",
+      "amount": -5000,
+      "fee": 0,
+      "net": -5000,
+      "currency": "eur",
+      "created": 1735862400,
+      "type": "refund",
+      "reporting_category": "refund",
+      "status": "available"
+    }
+  ]
+}

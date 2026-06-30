@@ -682,10 +682,6 @@ const normalizers = {
       occurred_at: r.created_at || null,
     }));
   },
-  // stripe_transactions (first real normalizer) — Stripe /v1/balance_transactions.
-  // Cents→units (/100), lowercase→uppercase currency, UNIX seconds→ISO. Prefer reporting_category
-  // over raw type. Defensive: raw.data not array → []. Pagination (has_more / starting_after)
-  // is sync engine job, not this normalizer.
   // payplug_payments — PayPlug /v1/payments (French PSP). Bearer sk_live_ key + mandatory
   // PayPlug-Version header (declared via static_headers). amount is in CENTS → /100.
   // created_at/paid_at are Unix SECONDS → *1000 → ISO. Prefer paid_at over created_at.
@@ -1801,26 +1797,70 @@ const normalizers = {
     }
     return rows;
   },
+  // stripe_transactions — Stripe /v1/balance_transactions.
+  //
+  // ⚠️ COPIA VERBATIM de src/lib/normalizers/stripe.js (fuente de verdad lógica).
+  // Deno no puede importar de la carpeta src/, así que duplicamos a propósito
+  // (mismo patrón que ya usa el REGISTRY). Los tests unitarios viven en
+  // src/lib/normalizers/stripe.test.js: si esta copia diverge del módulo,
+  // realinearla MANUALMENTE — no hay enforcement automático.
+  //
+  // Contrato (D1–D5):
+  //   - una fila por balance_transaction (NO grouping).
+  //   - type whitelisted desde reporting_category (charge|refund|dispute|payout|
+  //     transfer|stripe_fee|application_fee|adjustment); unknown → null.
+  //     application_fee_refund se colapsa a application_fee (signo del amount
+  //     indica devolución).
+  //   - refund preserva su signo nativo (negativo) — el cerebro suma con signo.
+  //   - dispute propaga amount + fee de Stripe (~15€).
+  //   - multi-currency preservada por fila, CERO conversión FX.
+  //   - application_fee NO se mezcla con processing fee (tipo aparte).
+  //   - cents → /100, UNIX seconds → ISO, currency lowercase → uppercase.
+  //   - filas sin id descartadas. defensividad estándar (toNum, null-safe).
+  //
+  // Pagination (has_more / starting_after) es responsabilidad del sync engine.
   stripe_transactions: (raw) => {
+    const KNOWN_TYPES = [
+      "charge", "refund", "dispute", "payout", "transfer",
+      "stripe_fee", "application_fee", "adjustment",
+    ];
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const mapType = (rawType) => {
+      if (typeof rawType !== "string") return null;
+      if (rawType === "application_fee_refund") return "application_fee";
+      if (KNOWN_TYPES.includes(rawType)) return rawType;
+      return null;
+    };
     const rows = Array.isArray(raw?.data) ? raw.data : [];
-    return rows.map((tx) => {
-      const amountCents = Number(tx?.amount ?? 0);
-      const feeCents = Number(tx?.fee ?? 0);
-      const netCents = Number(tx?.net ?? 0);
-      const createdSec = Number(tx?.created ?? 0);
-      const currency = typeof tx?.currency === "string" ? tx.currency.toUpperCase() : "EUR";
+    const out = [];
+    for (const tx of rows) {
+      if (!tx || typeof tx !== "object") continue;
+      const id = tx?.id;
+      if (id === null || id === undefined || id === "") continue; // skip sin anchor
+      const rawType = tx?.reporting_category ?? tx?.type ?? null;
+      const type = mapType(rawType);
+      const rawCurrency = tx?.currency;
+      const currency = (typeof rawCurrency === "string" && rawCurrency.length > 0)
+        ? rawCurrency.toUpperCase()
+        : "EUR";
+      const createdSec = toNum(tx?.created, 0);
       const occurredAt = createdSec > 0 ? new Date(createdSec * 1000).toISOString() : null;
-      return {
+      out.push({
         vertical: "payments",
-        external_id: tx?.id ?? null,
-        amount: amountCents / 100,
-        fee: feeCents / 100,
-        net: netCents / 100,
+        external_id: String(id),
+        amount: toNum(tx?.amount) / 100,
+        fee: toNum(tx?.fee) / 100,
+        net: toNum(tx?.net) / 100,
         currency,
         occurred_at: occurredAt,
-        type: tx?.reporting_category ?? tx?.type ?? null,
-      };
-    });
+        type,
+      });
+    }
+    return out;
   },
   invoices: (raw) => {
     const rows = Array.isArray(raw?.invoices) ? raw.invoices : [];

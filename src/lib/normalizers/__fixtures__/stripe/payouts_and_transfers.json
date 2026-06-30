@@ -1,0 +1,42 @@
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "txn_1Payout001",
+      "object": "balance_transaction",
+      "amount": -50000,
+      "fee": 0,
+      "net": -50000,
+      "currency": "eur",
+      "created": 1736035200,
+      "type": "payout",
+      "reporting_category": "payout",
+      "status": "available"
+    },
+    {
+      "id": "txn_1Transfer001",
+      "object": "balance_transaction",
+      "amount": 25000,
+      "fee": 0,
+      "net": 25000,
+      "currency": "eur",
+      "created": 1736121600,
+      "type": "transfer",
+      "reporting_category": "transfer",
+      "status": "available"
+    },
+    {
+      "id": "txn_1StripeFee001",
+      "object": "balance_transaction",
+      "amount": -2500,
+      "fee": 0,
+      "net": -2500,
+      "currency": "eur",
+      "created": 1736208000,
+      "type": "stripe_fee",
+      "reporting_category": "stripe_fee",
+      "status": "available"
+    }
+  ]
+}

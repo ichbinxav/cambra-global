@@ -1,0 +1,30 @@
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "txn_1AppFee001",
+      "object": "balance_transaction",
+      "amount": 500,
+      "fee": 0,
+      "net": 500,
+      "currency": "eur",
+      "created": 1736553600,
+      "type": "application_fee",
+      "reporting_category": "application_fee",
+      "status": "available"
+    },
+    {
+      "id": "txn_1AppFeeRefund001",
+      "object": "balance_transaction",
+      "amount": -500,
+      "fee": 0,
+      "net": -500,
+      "currency": "eur",
+      "created": 1736640000,
+      "type": "application_fee_refund",
+      "reporting_category": "application_fee_refund",
+      "status": "available"
+    }
+  ]
+}

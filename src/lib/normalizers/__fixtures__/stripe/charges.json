@@ -1,0 +1,30 @@
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "txn_1Charge001",
+      "object": "balance_transaction",
+      "amount": 12050,
+      "fee": 365,
+      "net": 11685,
+      "currency": "eur",
+      "created": 1735689600,
+      "type": "charge",
+      "reporting_category": "charge",
+      "status": "available"
+    },
+    {
+      "id": "txn_1Charge002",
+      "object": "balance_transaction",
+      "amount": 8900,
+      "fee": 271,
+      "net": 8629,
+      "currency": "eur",
+      "created": 1735776000,
+      "type": "charge",
+      "reporting_category": "charge",
+      "status": "available"
+    }
+  ]
+}

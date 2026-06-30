@@ -1,0 +1,39 @@
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "txn_1Eur001",
+      "object": "balance_transaction",
+      "amount": 10000,
+      "fee": 290,
+      "net": 9710,
+      "currency": "eur",
+      "created": 1736294400,
+      "type": "charge",
+      "reporting_category": "charge"
+    },
+    {
+      "id": "txn_1Usd001",
+      "object": "balance_transaction",
+      "amount": 15000,
+      "fee": 465,
+      "net": 14535,
+      "currency": "usd",
+      "created": 1736380800,
+      "type": "charge",
+      "reporting_category": "charge"
+    },
+    {
+      "id": "txn_1Gbp001",
+      "object": "balance_transaction",
+      "amount": 8000,
+      "fee": 240,
+      "net": 7760,
+      "currency": "gbp",
+      "created": 1736467200,
+      "type": "charge",
+      "reporting_category": "charge"
+    }
+  ]
+}

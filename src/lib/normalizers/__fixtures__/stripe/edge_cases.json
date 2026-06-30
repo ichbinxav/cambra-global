@@ -1,0 +1,47 @@
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "txn_1NoCategory001",
+      "object": "balance_transaction",
+      "amount": 1000,
+      "fee": 30,
+      "net": 970,
+      "currency": "eur",
+      "created": 1736726400,
+      "type": "unknown_future_type"
+    },
+    {
+      "amount": 5000,
+      "fee": 145,
+      "net": 4855,
+      "currency": "eur",
+      "created": 1736812800,
+      "type": "charge",
+      "reporting_category": "charge"
+    },
+    {
+      "id": "txn_1NoCreated001",
+      "object": "balance_transaction",
+      "amount": 2000,
+      "fee": 60,
+      "net": 1940,
+      "currency": "eur",
+      "created": 0,
+      "type": "charge",
+      "reporting_category": "charge"
+    },
+    null,
+    {
+      "id": "txn_1NoCurrency001",
+      "object": "balance_transaction",
+      "amount": 3000,
+      "fee": 90,
+      "net": 2910,
+      "created": 1736899200,
+      "type": "charge",
+      "reporting_category": "charge"
+    }
+  ]
+}

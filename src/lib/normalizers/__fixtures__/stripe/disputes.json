@@ -1,0 +1,18 @@
+{
+  "object": "list",
+  "has_more": false,
+  "data": [
+    {
+      "id": "txn_1Dispute001",
+      "object": "balance_transaction",
+      "amount": -12050,
+      "fee": 1500,
+      "net": -13550,
+      "currency": "eur",
+      "created": 1735948800,
+      "type": "adjustment",
+      "reporting_category": "dispute",
+      "status": "available"
+    }
+  ]
+}
