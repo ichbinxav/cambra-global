@@ -235,6 +235,25 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // Mirror of square — same contract, both files identical.
+  square: {
+    display_name: "Square",
+    category: "payments",
+    logo: null,
+    description: "Square Payments OAuth — read-only access to /v2/payments. Each payment carries its fee inline in processing_fee[]. NOTE: Square requires a Square-Version header on every request; the generic sync engine does not inject it yet — wire that before the first real connect.",
+    auth_method: "oauth",
+    auth_url: "https://connect.squareup.com/oauth2/authorize",
+    token_url: "https://connect.squareup.com/oauth2/token",
+    scopes: ["PAYMENTS_READ"],
+    client_id_env: "SQUARE_CLIENT_ID",
+    client_secret_env: "SQUARE_CLIENT_SECRET",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://connect.squareup.com/v2/payments", method: "GET", normalize_as: "square_payments" },
+    ],
+    demo_mode: false,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -349,6 +368,99 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── square_payments ────────────────────────────────────────────────────
+  // NINTH real normalizer. Translates Square Payments API:
+  //   GET https://connect.squareup.com/v2/payments
+  //   { payments: [ { id, created_at, status, location_id,
+  //                   amount_money: { amount, currency },
+  //                   processing_fee: [ { amount_money: { amount, currency } } ],
+  //                   card_details: { card: { last_4, card_brand, card_type } } } ],
+  //     cursor }
+  //
+  // VENTAJA versus Zettle: one row in `payments[]` = one transaction. No
+  // grouping needed. The fee comes inline in `processing_fee[]`, an array
+  // (can have multiple INITIAL / REFUND entries; we SUM them, magnitude
+  // untouched).
+  //
+  // CAMBRA "rule of gold" (1:1 from input, modulo units):
+  //   - `amount_money.amount` is in MINOR currency units (555 = 5.55 USD).
+  //     Divide by 100. Same convention as Stripe/Zettle.
+  //   - `processing_fee[]` may be absent (unsettled payment), empty array,
+  //     or carry multiple entries. We sum every entry that has a numeric
+  //     `amount_money.amount`. Missing → fee: 0 (honest absence, not
+  //     invented). Same pattern as `fee: 0` elsewhere when the source is
+  //     genuinely silent.
+  //   - `currency` read from `amount_money.currency`, falls back to "EUR"
+  //     only if absent — defecto razonable, no valor inventado, mismo
+  //     patrón que el resto.
+  //
+  // Items skipped:
+  //   - payment without `id` → skipped (same pattern as Pennylane/PayPal).
+  //
+  // Card metadata:
+  //   - `card_last4` propagated from `card_details.card.last_4` when present,
+  //     `null` otherwise. NEVER fabricated. Useful for downstream
+  //     deduplication / fraud signals.
+  //
+  // Date handling:
+  //   - `created_at` is ISO 8601 with Z offset. Preserved AS-IS, no TZ
+  //     reinterpretation. Same pattern as Pennylane/Zettle.
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) Written from public docs; verify field paths on first real connect.
+  //   (b) `Square-Version` header is REQUIRED by Square on every request.
+  //       That's the sync engine's job (header injection), not this
+  //       normalizer's. When wiring real, add a generic mechanism for
+  //       per-provider mandatory headers in the registry.
+  //   (c) Cursor pagination (`cursor` in response) — sync engine's job.
+  //   (d) Refunds appear in a separate endpoint (/v2/refunds); not wired
+  //       here. processing_fee CAN include refund-related entries with
+  //       negative amounts — we sum them as-is, so net fee is correct
+  //       without us choosing the sign convention.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  square_payments: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    const payments = Array.isArray(raw?.payments) ? raw.payments : [];
+    const rows = [];
+    for (const payment of payments) {
+      if (!payment || typeof payment !== "object") continue;
+      const id = payment?.id;
+      if (id === null || id === undefined || id === "") continue; // skip payments without id
+      // Amount lives in a nested object — read defensively.
+      const amount = toNum(payment?.amount_money?.amount) / 100;
+      const currency = payment?.amount_money?.currency || "EUR";
+      // processing_fee is an array; sum every entry's amount_money.amount.
+      // Absent / empty / non-array → fee: 0 (honest absence).
+      const feeArr = Array.isArray(payment?.processing_fee) ? payment.processing_fee : [];
+      let feeMinor = 0;
+      for (const entry of feeArr) {
+        if (!entry || typeof entry !== "object") continue;
+        const v = entry?.amount_money?.amount;
+        if (v === null || v === undefined) continue;
+        feeMinor += toNum(v);
+      }
+      const fee = feeMinor / 100;
+      const occurredAt = typeof payment?.created_at === "string" ? payment.created_at : null;
+      const cardLast4 = payment?.card_details?.card?.last_4 ?? null;
+      rows.push({
+        vertical: "payments",
+        external_id: String(id),
+        amount,
+        fee,
+        currency,
+        occurred_at: occurredAt,
+        status: payment?.status ?? null,
+        location_id: payment?.location_id ?? null,
+        card_last4: cardLast4,
+      });
+    }
+    return rows;
+  },
   // ─── zettle_finance ─────────────────────────────────────────────────────
   // EIGHTH real normalizer. Translates Zettle Finance API v2:
   //   GET https://finance.izettle.com/v2/accounts/liquid/transactions

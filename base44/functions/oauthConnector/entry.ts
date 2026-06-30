@@ -316,6 +316,40 @@ const REGISTRY = {
     ],
     demo_mode: false,
   },
+
+  // ─── REAL PROVIDERS (Tanda 6: in-person payments OAuth — Square) ─────────
+  // Square Payments API. Standard OAuth2. One row in `payments[]` = one
+  // transaction; the fee comes inline in `processing_fee[]`. No grouping
+  // needed (versus Zettle's PAYMENT + PAYMENT_FEE pairing).
+  //
+  // Wiring only — `client_id_env` / `client_secret_env` point to env vars
+  // that are NOT set yet. modeStart() returns a clean 503 if they're
+  // missing, so the engine tolerates absent secrets until they're pasted.
+  //
+  // Deuda anotada (also documented inside the normalizer):
+  //   (a) Endpoint paths from public docs; verify at first real connect.
+  //   (b) Square REQUIRES a `Square-Version` header on every request. The
+  //       generic sync engine does NOT inject this today — adding it is the
+  //       next engine-level change (registry-driven mandatory headers).
+  //       Until then, calling Square will fail with HTTP 400 from Square.
+  //   (c) Refunds live on /v2/refunds, not wired here.
+  square: {
+    display_name: "Square",
+    category: "payments",
+    logo: null,
+    description: "Square Payments OAuth — read-only access to /v2/payments. Each payment carries its fee inline in processing_fee[]. NOTE: Square requires a Square-Version header on every request; the generic sync engine does not inject it yet — wire that before the first real connect.",
+    auth_method: "oauth",
+    auth_url: "https://connect.squareup.com/oauth2/authorize",
+    token_url: "https://connect.squareup.com/oauth2/token",
+    scopes: ["PAYMENTS_READ"],
+    client_id_env: "SQUARE_CLIENT_ID",
+    client_secret_env: "SQUARE_CLIENT_SECRET",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://connect.squareup.com/v2/payments", method: "GET", normalize_as: "square_payments" },
+    ],
+    demo_mode: false,
+  },
 };
 
 function getProviderConfig(provider) {
