@@ -488,11 +488,21 @@ const REGISTRY = {
   },
 
   // Mirror of odoo — same contract, both files identical.
+  //
+  // ⚠️ DEUDA ESTRUCTURAL CONFIRMADA (multi-db Odoo, paralela a Zoho región+org_id):
+  // Odoo self-hosted multi-database requiere el header `X-Odoo-Database` con
+  // el NOMBRE de la base de datos, además del dominio de la instancia. Eso
+  // son DOS valores per-integration independientes (dominio Y database name)
+  // — el mecanismo actual `requires_shop_domain` solo soporta UN valor. La
+  // ruta simple (reutilizar {shop} en static_headers) sirve para Xero y Sage
+  // (1 valor cada uno), pero NO sirve para Odoo multi-db. NO se resuelve aquí
+  // hasta que aparezca un mecanismo genérico de N>1 valores per-integration.
+  // Odoo Online single-db (caso por defecto SaaS) no se ve afectado.
   odoo: {
     display_name: "Odoo",
     category: "accounting",
     logo: null,
-    description: "Odoo REST API (Odoo 17+) — API key as Bearer. Reads account.move filtered to move_type=in_invoice (supplier bills = brand expenses). Per-instance: the customer provides their Odoo domain at connect time (interpolated as {shop}). ⚠️ Requires Odoo Custom plan — the external REST API is NOT available on Free/Standard.",
+    description: "Odoo REST API (Odoo 17+) — API key as Bearer. Reads account.move filtered to move_type=in_invoice (supplier bills = brand expenses). Per-instance: the customer provides their Odoo domain at connect time (interpolated as {shop}). ⚠️ Requires Odoo Custom plan — the external REST API is NOT available on Free/Standard. ⚠️ Multi-db Odoo additionally requires an X-Odoo-Database header — NOT implemented (would need an N>1 per-integration mechanism, same structural blocker as Zoho region+org_id).",
     auth_method: "api_key",
     api_key_header: "Authorization",
     api_key_format: "Bearer {key}",
@@ -2117,6 +2127,45 @@ async function fetchWithBackoff(fetchFn, rlCfg, state, maxRetries = _DEFAULT_MAX
   }
 }
 
+// --- Refresh-on-401 wrapper -------------------------------------------------
+//
+// ⚠️ COPIA VERBATIM de src/lib/syncEngine/refreshOn401.js (Deno no puede
+//    importar de src/). Tests unitarios viven en refreshOn401.test.js.
+//
+// Decisions baked in (see source module for full rationale):
+//   1. Only OAuth providers with a stored refresh_token are eligible.
+//      api_key / basic_auth fall through unchanged.
+//   2. ONE refresh per sync run, total. Flag lives in a shared state object.
+//   3. On any failure (refresh fails, retry still 401, header rebuild
+//      throws), we return the ORIGINAL 401 — caller's existing error
+//      path takes over without modification.
+
+function _createRefreshState() { return { refreshed: false }; }
+
+function _isEligibleForRefresh(authMethod, hasRefreshToken) {
+  return authMethod === "oauth" && hasRefreshToken === true;
+}
+
+async function _fetchPageWithMaybeRefresh({ doFetch, refreshFn, rebuildHeaders, eligible, state }) {
+  const firstRes = await doFetch();
+  if (firstRes.status !== 401) return firstRes;
+  if (!eligible) return firstRes;
+  if (state.refreshed) return firstRes;
+
+  // Mark BEFORE the refresh call so any throw still flips the flag.
+  state.refreshed = true;
+
+  let refreshOk;
+  try { refreshOk = await refreshFn(); }
+  catch { return firstRes; }
+  if (!refreshOk) return firstRes;
+
+  try { await rebuildHeaders(); }
+  catch { return firstRes; }
+
+  return await doFetch();
+}
+
 // --- Hard caps (defensive — never spin forever) -----------------------------
 // Even with rate limits and pagination, a provider returning never-ending
 // pages would block Deno's request budget. These caps make the worst case
@@ -2128,6 +2177,11 @@ async function fetchWithBackoff(fetchFn, rlCfg, state, maxRetries = _DEFAULT_MAX
 //     persisted even on partial success).
 //   - PAGE_BUFFER_LIMIT: hard cap on records held in memory before we stop
 //     and return partial results. Protects Deno worker memory.
+//
+// ⚠️ PLACEHOLDER: valor no validado contra volumen real de ningún brand.
+// Ajustar cuando haya datos reales de capacidad (volumen p99 mensual de
+// transacciones Stripe/Mollie/PayPlug por brand, peso medio del payload,
+// presupuesto efectivo del worker Deno). Ver deuda técnica.
 const MAX_PAGES_PER_ENDPOINT = 50;
 const PAGE_BUFFER_LIMIT = 5000;
 
@@ -2205,6 +2259,19 @@ Deno.serve(async (req) => {
       ? { ...existingMeta.sync_state }
       : {};
 
+    // Refresh-on-401 state is shared across ALL endpoints + ALL pages within
+    // this sync run. One refresh per run, total. Eligibility is computed once
+    // per integration: a provider needs OAuth + a stored refresh_token to be
+    // eligible. Live mutable reference to `integ` lets the post-refresh
+    // rebuildHeaders() see the new access_token without re-reading from DB
+    // (we update integ in place after a successful refresh).
+    let liveInteg = integ;
+    const refreshState = _createRefreshState();
+    const refreshEligible = !cfg.demo_mode && _isEligibleForRefresh(
+      cfg.auth_method || "oauth",
+      !!liveInteg.refresh_token,
+    );
+
     try {
       for (const ep of endpoints) {
         const epKey = ep.normalize_as || cfg.data_type;
@@ -2216,14 +2283,21 @@ Deno.serve(async (req) => {
         const window = computeSyncWindow({ lastSyncedUntil: epState.last_synced_until || null });
 
         // Resolve auth headers ONCE per endpoint (token, static headers, {shop}).
+        // Wrapped in a thunk so refresh-on-401 can re-run it after a token
+        // refresh without duplicating the build logic.
         let finalAuthHeaders = {};
-        if (!cfg.demo_mode) {
-          const { headers: authHeaders, plaintextToken } = await buildAuthHeaders(cfg, integ);
-          finalAuthHeaders = mergeStaticHeaders(cfg, authHeaders, plaintextToken, integ.metadata_json?.shop_domain || null);
-        }
+        const buildHeadersFromLiveInteg = async () => {
+          if (cfg.demo_mode) { finalAuthHeaders = {}; return; }
+          const { headers: authHeaders, plaintextToken } = await buildAuthHeaders(cfg, liveInteg);
+          finalAuthHeaders = mergeStaticHeaders(
+            cfg, authHeaders, plaintextToken,
+            liveInteg.metadata_json?.shop_domain || null,
+          );
+        };
+        await buildHeadersFromLiveInteg();
 
         // Build the first URL: interpolate {shop}, then inject date-range params.
-        let currentUrl = interpolateShopDomain(ep.url, integ.metadata_json?.shop_domain || null);
+        let currentUrl = interpolateShopDomain(ep.url, liveInteg.metadata_json?.shop_domain || null);
         currentUrl = applyDateRangeToUrl(currentUrl, cfg.date_range, window);
 
         // Paginator + rate state are per-endpoint (each endpoint has its own throttle budget).
@@ -2242,11 +2316,41 @@ Deno.serve(async (req) => {
             raw = demoMockResponse(epKey);
             // demo mode never paginates — return after first synthetic page.
           } else {
-            const res = await fetchWithBackoff(
-              () => fetch(nextUrl, { method: ep.method || "GET", headers: { ...finalAuthHeaders, "Accept": "application/json" } }),
+            // doFetch closure: reads `nextUrl` and `finalAuthHeaders` by
+            // closure, so the post-refresh retry automatically picks up
+            // the NEW headers (rebuildHeaders mutates finalAuthHeaders).
+            const doFetch = () => fetchWithBackoff(
+              () => fetch(nextUrl, {
+                method: ep.method || "GET",
+                headers: { ...finalAuthHeaders, "Accept": "application/json" },
+              }),
               cfg.rate_limit,
               rateState,
             );
+
+            const res = await _fetchPageWithMaybeRefresh({
+              doFetch,
+              refreshFn: async () => {
+                // Delegate refresh to oauthConnector. Returns truthy on success.
+                const r = await base44.functions.invoke("oauthConnector", {
+                  mode: "refresh",
+                  integration_id: liveInteg.id,
+                });
+                const body = r?.data || r;
+                return !!body?.ok;
+              },
+              rebuildHeaders: async () => {
+                // Re-read the integration (now carrying the new access_token)
+                // and rebuild auth headers in place. The doFetch closure
+                // captures `finalAuthHeaders` by reference, so the retry
+                // automatically uses the rebuilt value.
+                liveInteg = await base44.asServiceRole.entities.Integration.get(liveInteg.id);
+                await buildHeadersFromLiveInteg();
+              },
+              eligible: refreshEligible,
+              state: refreshState,
+            });
+
             if (!res.ok) {
               const text = await res.text();
               throw new Error(`Endpoint ${ep.url} returned ${res.status}: ${text.slice(0, 200)}`);

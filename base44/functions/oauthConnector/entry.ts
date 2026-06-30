@@ -843,7 +843,7 @@ const REGISTRY = {
     display_name: "Odoo",
     category: "accounting",
     logo: null,
-    description: "Odoo REST API (Odoo 17+) — API key as Bearer. Reads account.move filtered to move_type=in_invoice (supplier bills = brand expenses). Per-instance: the customer provides their Odoo domain at connect time (interpolated as {shop}). ⚠️ Requires Odoo Custom plan — the external REST API is NOT available on Free/Standard.",
+    description: "Odoo REST API (Odoo 17+) — API key as Bearer. Reads account.move filtered to move_type=in_invoice (supplier bills = brand expenses). Per-instance: the customer provides their Odoo domain at connect time (interpolated as {shop}). ⚠️ Requires Odoo Custom plan — the external REST API is NOT available on Free/Standard. ⚠️ Multi-db Odoo additionally requires an X-Odoo-Database header — NOT implemented (would need an N>1 per-integration mechanism, same structural blocker as Zoho region+org_id).",
     auth_method: "api_key",
     api_key_header: "Authorization",
     api_key_format: "Bearer {key}",
