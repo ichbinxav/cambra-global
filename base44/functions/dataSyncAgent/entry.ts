@@ -379,6 +379,28 @@ const REGISTRY = {
     demo_mode: false,
     requires_shop_domain: true,
   },
+
+  // Mirror of sage — same contract, both files identical.
+  sage: {
+    display_name: "Sage",
+    category: "accounting",
+    logo: null,
+    description: "Sage Business Cloud Accounting API v3.1 — OAuth2 + Bearer. Reads /purchase_invoices (supplier invoices = brand expenses). Root key is `$items` (dollar prefix). The normalizer handles dual object/string forms for contact, currency, and status. Uses generic static_headers to force JSON output.",
+    auth_method: "oauth",
+    auth_url: "https://www.sageone.com/oauth2/auth/central",
+    token_url: "https://oauth.accounting.sage.com/token",
+    scopes: ["full_access"],
+    client_id_env: "SAGE_CLIENT_ID",
+    client_secret_env: "SAGE_CLIENT_SECRET",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://api.accounting.sage.com/v3.1/purchase_invoices", method: "GET", normalize_as: "sage_purchase_invoices" },
+    ],
+    demo_mode: false,
+  },
 };
 
 // Per-shop URL interpolation (generic, no provider names). Mirrors the helper
@@ -530,6 +552,144 @@ const normalizers = {
   // to re-fetch with `?starting_after=<last_id>`. The engine today only sees
   // page 1. Implement full pagination when we wire Stripe with real credentials
   // (motor change in dataSyncAgent's sync loop, not in this normalizer).
+  // ─── sage_purchase_invoices ─────────────────────────────────────────────
+  // SIXTEENTH real normalizer. Translates Sage Business Cloud Accounting v3.1:
+  //   GET https://api.accounting.sage.com/v3.1/purchase_invoices
+  //   { "$items": [ { id, displayed_as, contact: {...}|string,
+  //                   date, total_amount, net_amount, tax_amount,
+  //                   currency: {...}|string, status: {...}|string } ],
+  //     "$total", "$next", "$back" }
+  //
+  // Twin of the other accounting normalizers (xero_bills / quickbooks_bills
+  // / holded_purchases / pennylane_supplier_invoices). Same shape contract:
+  //   - vertical: "accounting"
+  //   - direction: "expense"
+  //   - supplier_name propagated
+  //   - fee: 0 (an invoice is an expense, not a fee)
+  // Together they form CAMBRA's coverage of the long tail of brand spend
+  // across the five mainstream accounting suites for our target tenants.
+  //
+  // Sage-specific quirks (all CAMBRA "rule of gold": 1:1 from input,
+  // modulo unit; NEVER invent values):
+  //
+  //   1. ROOT KEY `$items` — dollar prefix.
+  //      Sage v3.1 wraps the list in `$items` (with a literal dollar
+  //      sign). Accessing it requires bracket notation `raw["$items"]`
+  //      — `raw.$items` works in JS but is fragile under transforms.
+  //      No fallback to bare array or `items` (no-dollar) — each
+  //      provider has its own root key, same rule as Pennylane (`items`)
+  //      and QuickBooks (`QueryResponse.Bill`). If Sage turns out to
+  //      emit a different key, fix it here at first connect — don't
+  //      guess now.
+  //
+  //   2. DUAL OBJECT/STRING for contact, currency, status.
+  //      Sage docs show three fields that CAN arrive either as an
+  //      expanded object OR as a flat string identifier:
+  //        - contact   → { id, displayed_as, name? }  OR  "contact-id"
+  //        - currency  → { id: "EUR", displayed_as: "Euro" }  OR  "EUR"
+  //        - status    → { id, displayed_as }  OR  "DRAFT"
+  //      Which form arrives depends on whether the call expanded the
+  //      relation (Sage uses `?attributes=...` for that). The
+  //      normalizer handles BOTH forms generically:
+  //        - object → read .name/.id/.displayed_as as appropriate
+  //        - string → use as-is
+  //        - anything else → null (honest absence)
+  //      This is form navigation, not value invention.
+  //
+  //   3. supplier_name preference order:
+  //      contact.name first (the actual supplier name when present),
+  //      then contact.displayed_as (Sage's human-readable shorthand),
+  //      else null. NEVER fabricate. NEVER fall back to contact.id
+  //      (that's an internal Sage id, not a name).
+  //
+  //   4. currency precedence: when currency is an object, read .id
+  //      (the ISO code "EUR"/"USD"), NOT .displayed_as ("Euro"). The
+  //      ISO code is the canonical key downstream cohorts use.
+  //
+  //   5. status precedence: when status is an object, read
+  //      .displayed_as (the human label "Draft"/"Sent"). status.id
+  //      is an opaque numeric id with no operational meaning for the
+  //      cerebro.
+  //
+  // Amount handling — Sage docs mark amounts as "decimal" but they
+  // may arrive as strings ("180.00") or numbers (180.0). toNum
+  // handles both. Major currency units (no /100).
+  //
+  // Date handling — `date` is "YYYY-MM-DD" (date-only). Preserved
+  // AS-IS, no synthetic timezone — same rule as
+  // pennylane_invoices.date and quickbooks_bills.TxnDate.
+  //
+  // Items skipped:
+  //   - invoice without `id` → skipped (same pattern as Holded/Xero).
+  //
+  // ⚠️  DEUDA ANOTADA:
+  //   (a) Field names from public docs; verify on first real connect.
+  //   (b) Root key `$items` confirmed in docs; verify in a real payload.
+  //   (c) contact / currency / status: object-vs-string — both handled;
+  //       confirm which form Sage actually returns by default and
+  //       whether attributes-expansion is needed.
+  //   (d) `full_access` scope assumed; verify if a read-only scope
+  //       exists that better fits CAMBRA's least-privilege posture.
+  //   (e) Sage multi-business: production accounts may require a
+  //       per-business identifier header (analogous to Xero's
+  //       Xero-Tenant-Id). NOT captured today — same per-integration
+  //       dynamic-header debt. Flagged in registry, NOT resolved here.
+  //   (f) Pagination via `$next` / `$back` cursors — sync engine.
+  //
+  // CAMBRA "rule of gold" holds: every output field comes 1:1 from input.
+  sage_purchase_invoices: (raw) => {
+    const toNum = (v, fallback = 0) => {
+      if (v === null || v === undefined || v === "") return fallback;
+      const n = typeof v === "number" ? v : parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+    // $items uses dollar-prefix → bracket notation only.
+    const items = Array.isArray(raw?.["$items"]) ? raw["$items"] : [];
+    const rows = [];
+    for (const invoice of items) {
+      if (!invoice || typeof invoice !== "object") continue;
+      const id = invoice?.id;
+      if (id === null || id === undefined || id === "") continue; // skip without anchor
+      // contact: object {name, displayed_as, id} OR string id OR absent
+      const contact = invoice?.contact;
+      let supplierName = null;
+      if (contact && typeof contact === "object") {
+        supplierName = contact?.name ?? contact?.displayed_as ?? null;
+      }
+      // string `contact` is an opaque id — NOT a name; leave supplierName null.
+      // currency: object {id, displayed_as} OR string ISO code
+      const rawCurrency = invoice?.currency;
+      let currency = "EUR";
+      if (rawCurrency && typeof rawCurrency === "object") {
+        currency = rawCurrency?.id || "EUR";
+      } else if (typeof rawCurrency === "string" && rawCurrency.length > 0) {
+        currency = rawCurrency;
+      }
+      // status: object {id, displayed_as} OR string
+      const rawStatus = invoice?.status;
+      let status = null;
+      if (rawStatus && typeof rawStatus === "object") {
+        status = rawStatus?.displayed_as ?? null;
+      } else if (typeof rawStatus === "string") {
+        status = rawStatus;
+      }
+      const occurredAt = typeof invoice?.date === "string" ? invoice.date : null;
+      rows.push({
+        vertical: "accounting",
+        direction: "expense",
+        external_id: String(id),
+        supplier_name: supplierName,
+        amount: toNum(invoice?.total_amount),
+        amount_before_tax: toNum(invoice?.net_amount),
+        tax: toNum(invoice?.tax_amount),
+        fee: 0, // A purchase invoice is an expense, not a fee.
+        currency,
+        occurred_at: occurredAt,
+        status,
+      });
+    }
+    return rows;
+  },
   // ─── quickbooks_bills ───────────────────────────────────────────────────
   // FIFTEENTH real normalizer. Translates QuickBooks Online Accounting v3:
   //   GET /v3/company/{realmId}/query?query=select * from Bill

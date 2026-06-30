@@ -611,6 +611,49 @@ const REGISTRY = {
     demo_mode: false,
     requires_shop_domain: true,
   },
+
+  // ─── REAL PROVIDERS (Tanda 13: accounting OAuth — Sage) ──────────────────
+  // Sage Business Cloud Accounting API v3.1. OAuth2 + Bearer. Reads
+  // /purchase_invoices (supplier invoices = brand EXPENSES). NOT
+  // /sales_invoices (those are revenue).
+  //
+  // Quirks the normalizer handles (detail inside the normalizer comment):
+  //   1. Root key is `$items` (with a dollar sign) — requires bracket
+  //      notation, not dot access.
+  //   2. `contact`, `currency`, and `status` can each arrive as either
+  //      an OBJECT or a STRING depending on the API call shape. The
+  //      normalizer handles BOTH forms.
+  //
+  // ⚠️  DEUDA ANOTADA (see normalizer comment for the full list):
+  //   (a) Field names from public docs; verify on first real connect.
+  //   (b) Root key `$items` — confirm exact key on first real connect.
+  //   (c) currency/status/contact may be object OR string; both handled.
+  //   (d) `full_access` scope assumed; confirm if a read-only scope exists.
+  //   (e) Sage is multi-business: production accounts may require a
+  //       per-business identifier header (analogous to Xero's
+  //       Xero-Tenant-Id). NOT captured today — same per-integration
+  //       dynamic-header debt as Xero. Flagged, NOT resolved here.
+  //   (f) Pagination — sync engine's job.
+  sage: {
+    display_name: "Sage",
+    category: "accounting",
+    logo: null,
+    description: "Sage Business Cloud Accounting API v3.1 — OAuth2 + Bearer. Reads /purchase_invoices (supplier invoices = brand expenses). Root key is `$items` (dollar prefix). The normalizer handles dual object/string forms for contact, currency, and status. Uses generic static_headers to force JSON output.",
+    auth_method: "oauth",
+    auth_url: "https://www.sageone.com/oauth2/auth/central",
+    token_url: "https://oauth.accounting.sage.com/token",
+    scopes: ["full_access"],
+    client_id_env: "SAGE_CLIENT_ID",
+    client_secret_env: "SAGE_CLIENT_SECRET",
+    static_headers: {
+      "Accept": "application/json",
+    },
+    data_type: "invoices",
+    data_endpoints: [
+      { url: "https://api.accounting.sage.com/v3.1/purchase_invoices", method: "GET", normalize_as: "sage_purchase_invoices" },
+    ],
+    demo_mode: false,
+  },
 };
 
 function getProviderConfig(provider) {
