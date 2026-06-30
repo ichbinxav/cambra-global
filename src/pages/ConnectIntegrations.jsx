@@ -148,6 +148,32 @@ const CLIENT_REGISTRY_MIRROR = {
     shop_domain_help_text: "Your FreshBooks accountId — an alphanumeric string from /auth/api/v1/users/me → business_memberships[].business.account_id. NOT the businessId. If you have multiple businesses in FreshBooks, paste the accountId of the one you want to connect.",
     shop_domain_help_url: "https://www.freshbooks.com/api/me_endpoint",
   },
+  // Xero / Sage — per-integration identifier rides in a HEADER (not URL).
+  // Captured via the same shop_domain slot used by URL-based providers; the
+  // sync engine interpolates {shop} into static_headers values (Xero-Tenant-Id
+  // for Xero, X-Business for Sage). Same UX pattern as QuickBooks / FreshBooks.
+  xero: {
+    display_name: "Xero",
+    category: "accounting",
+    description: "Reads supplier bills (= brand expenses).",
+    auth_method: "oauth",
+    requires_shop_domain: true,
+    shop_domain_field_label: "Xero Tenant ID",
+    shop_domain_placeholder: "00000000-0000-0000-0000-000000000000",
+    shop_domain_help_text: "Your Xero Tenant ID (UUID). Find it by calling GET https://api.xero.com/connections after authorizing — the response lists every organisation you have access to with its tenantId. If you have multiple organisations in Xero, paste the tenantId of the one you want to connect.",
+    shop_domain_help_url: "https://developer.xero.com/documentation/guides/oauth2/auth-flow/#5-call-the-api",
+  },
+  sage: {
+    display_name: "Sage",
+    category: "accounting",
+    description: "Reads supplier invoices (= brand expenses).",
+    auth_method: "oauth",
+    requires_shop_domain: true,
+    shop_domain_field_label: "Sage Business ID",
+    shop_domain_placeholder: "abc12345-6789-0abc-def0-1234567890ab",
+    shop_domain_help_text: "Your Sage Business ID. Open Sage Accounting → Settings → Business Settings, or call GET https://api.accounting.sage.com/v3.1/businesses to list your businesses. If you have multiple businesses, paste the ID of the one you want to connect.",
+    shop_domain_help_url: "https://developer.sage.com/accounting/guides/getting-started/",
+  },
 };
 
 export default function ConnectIntegrations() {

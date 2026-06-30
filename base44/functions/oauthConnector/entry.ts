@@ -545,7 +545,7 @@ const REGISTRY = {
     display_name: "Xero",
     category: "accounting",
     logo: null,
-    description: "Xero Accounting API — OAuth2 + Bearer. Reads /Invoices and the normalizer filters to ACCPAY (supplier bills = brand expenses). Uses the generic static_headers mechanism to force JSON output (Xero defaults to XML). NOTE: Xero requires a Xero-Tenant-Id header in production multi-org accounts — not captured yet; will need to be wired before first real connect.",
+    description: "Xero Accounting API — OAuth2 + Bearer. Reads /Invoices and the normalizer filters to ACCPAY (supplier bills = brand expenses). Uses the generic static_headers mechanism to force JSON output (Xero defaults to XML) AND to inject the per-integration Xero-Tenant-Id header (interpolated from shop_domain). The customer pastes their Tenant-Id at connect time — same UX pattern as QuickBooks realmId, only the value rides in a header instead of the URL.",
     auth_method: "oauth",
     auth_url: "https://login.xero.com/identity/connect/authorize",
     token_url: "https://identity.xero.com/connect/token",
@@ -554,12 +554,14 @@ const REGISTRY = {
     client_secret_env: "XERO_CLIENT_SECRET",
     static_headers: {
       "Accept": "application/json",
+      "Xero-Tenant-Id": "{shop}",
     },
     data_type: "invoices",
     data_endpoints: [
       { url: "https://api.xero.com/api.xro/2.0/Invoices", method: "GET", normalize_as: "xero_bills" },
     ],
     demo_mode: false,
+    requires_shop_domain: true,
   },
 
   // ─── REAL PROVIDERS (Tanda 12: accounting OAuth — QuickBooks) ────────────
@@ -638,7 +640,7 @@ const REGISTRY = {
     display_name: "Sage",
     category: "accounting",
     logo: null,
-    description: "Sage Business Cloud Accounting API v3.1 — OAuth2 + Bearer. Reads /purchase_invoices (supplier invoices = brand expenses). Root key is `$items` (dollar prefix). The normalizer handles dual object/string forms for contact, currency, and status. Uses generic static_headers to force JSON output.",
+    description: "Sage Business Cloud Accounting API v3.1 — OAuth2 + Bearer. Reads /purchase_invoices (supplier invoices = brand expenses). Root key is `$items` (dollar prefix). The normalizer handles dual object/string forms for contact, currency, and status. Uses generic static_headers to force JSON output AND to inject the per-integration X-Business header (interpolated from shop_domain) — Sage scopes data to one business per call when the user has multiple businesses. Same UX pattern as Xero Tenant-Id.",
     auth_method: "oauth",
     auth_url: "https://www.sageone.com/oauth2/auth/central",
     token_url: "https://oauth.accounting.sage.com/token",
@@ -647,12 +649,14 @@ const REGISTRY = {
     client_secret_env: "SAGE_CLIENT_SECRET",
     static_headers: {
       "Accept": "application/json",
+      "X-Business": "{shop}",
     },
     data_type: "invoices",
     data_endpoints: [
       { url: "https://api.accounting.sage.com/v3.1/purchase_invoices", method: "GET", normalize_as: "sage_purchase_invoices" },
     ],
     demo_mode: false,
+    requires_shop_domain: true,
   },
 
   // ─── REAL PROVIDERS (Tanda 17: payments API key — PayPlug) ───────────────

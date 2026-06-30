@@ -329,7 +329,7 @@ const REGISTRY = {
     display_name: "Xero",
     category: "accounting",
     logo: null,
-    description: "Xero Accounting API — OAuth2 + Bearer. Reads /Invoices and the normalizer filters to ACCPAY (supplier bills = brand expenses). Uses the generic static_headers mechanism to force JSON output (Xero defaults to XML). NOTE: Xero requires a Xero-Tenant-Id header in production multi-org accounts — not captured yet; will need to be wired before first real connect.",
+    description: "Xero Accounting API — OAuth2 + Bearer. Reads /Invoices and the normalizer filters to ACCPAY (supplier bills = brand expenses). Uses the generic static_headers mechanism to force JSON output (Xero defaults to XML) AND to inject the per-integration Xero-Tenant-Id header (interpolated from shop_domain). The customer pastes their Tenant-Id at connect time — same UX pattern as QuickBooks realmId, only the value rides in a header instead of the URL.",
     auth_method: "oauth",
     auth_url: "https://login.xero.com/identity/connect/authorize",
     token_url: "https://identity.xero.com/connect/token",
@@ -338,12 +338,14 @@ const REGISTRY = {
     client_secret_env: "XERO_CLIENT_SECRET",
     static_headers: {
       "Accept": "application/json",
+      "Xero-Tenant-Id": "{shop}",
     },
     data_type: "invoices",
     data_endpoints: [
       { url: "https://api.xero.com/api.xro/2.0/Invoices", method: "GET", normalize_as: "xero_bills" },
     ],
     demo_mode: false,
+    requires_shop_domain: true,
   },
 
   // Mirror of quickbooks — same contract, both files identical.
@@ -374,7 +376,7 @@ const REGISTRY = {
     display_name: "Sage",
     category: "accounting",
     logo: null,
-    description: "Sage Business Cloud Accounting API v3.1 — OAuth2 + Bearer. Reads /purchase_invoices (supplier invoices = brand expenses). Root key is `$items` (dollar prefix). The normalizer handles dual object/string forms for contact, currency, and status. Uses generic static_headers to force JSON output.",
+    description: "Sage Business Cloud Accounting API v3.1 — OAuth2 + Bearer. Reads /purchase_invoices (supplier invoices = brand expenses). Root key is `$items` (dollar prefix). The normalizer handles dual object/string forms for contact, currency, and status. Uses generic static_headers to force JSON output AND to inject the per-integration X-Business header (interpolated from shop_domain) — Sage scopes data to one business per call when the user has multiple businesses. Same UX pattern as Xero Tenant-Id.",
     auth_method: "oauth",
     auth_url: "https://www.sageone.com/oauth2/auth/central",
     token_url: "https://oauth.accounting.sage.com/token",
@@ -383,12 +385,14 @@ const REGISTRY = {
     client_secret_env: "SAGE_CLIENT_SECRET",
     static_headers: {
       "Accept": "application/json",
+      "X-Business": "{shop}",
     },
     data_type: "invoices",
     data_endpoints: [
       { url: "https://api.accounting.sage.com/v3.1/purchase_invoices", method: "GET", normalize_as: "sage_purchase_invoices" },
     ],
     demo_mode: false,
+    requires_shop_domain: true,
   },
 
   // Mirror of payplug — same contract, both files identical.
@@ -605,17 +609,30 @@ async function buildAuthHeaders(cfg, integ) {
   throw new Error(`Unsupported auth_method: ${authMethod}`);
 }
 
-// Generic static-header fuser. Applies cfg.static_headers with {token} interp.
-// No-op if cfg.static_headers is absent. Provider-agnostic.
-function mergeStaticHeaders(cfg, authHeaders, plaintextToken) {
+// Generic static-header fuser. Applies cfg.static_headers with two interp
+// tokens: {token} (the plaintext access token, for non-standard auth headers)
+// and {shop} (the per-integration shop_domain, for dynamic per-tenant headers
+// like Xero-Tenant-Id or Sage X-Business). Both interp tokens are independent
+// — a header value can use either, both, or neither. No-op if cfg.static_headers
+// is absent. Provider-agnostic — the engine never names a provider.
+//
+// {shop} interpolation rationale: providers like Xero/Sage need a per-tenant
+// identifier in a HEADER (not in the URL like Shopify/WooCommerce). The
+// captured value lives in integ.metadata_json.shop_domain — same slot used
+// by URL-side {shop}. ONE source of truth per integration.
+function mergeStaticHeaders(cfg, authHeaders, plaintextToken, shopDomain) {
   const staticH = cfg.static_headers;
   if (!staticH || typeof staticH !== "object") return authHeaders;
   const merged = { ...authHeaders };
   for (const [name, rawValue] of Object.entries(staticH)) {
     if (typeof rawValue !== "string") continue;
-    const value = rawValue.includes("{token}") && plaintextToken
-      ? rawValue.replaceAll("{token}", plaintextToken)
-      : rawValue;
+    let value = rawValue;
+    if (value.includes("{token}") && plaintextToken) {
+      value = value.replaceAll("{token}", plaintextToken);
+    }
+    if (value.includes("{shop}") && shopDomain) {
+      value = value.replaceAll("{shop}", shopDomain);
+    }
     merged[name] = value;
   }
   return merged;
@@ -1942,7 +1959,7 @@ Deno.serve(async (req) => {
           // Fuse static headers declared in the registry (e.g. API version,
           // alternate auth header). No-op for providers without
           // static_headers — exact same headers as before this change.
-          const finalAuthHeaders = mergeStaticHeaders(cfg, authHeaders, plaintextToken);
+          const finalAuthHeaders = mergeStaticHeaders(cfg, authHeaders, plaintextToken, integ.metadata_json?.shop_domain || null);
           // Interpolate {shop} per-endpoint using the value stored at
           // connect time. No-op for providers without {shop}.
           const endpointUrl = interpolateShopDomain(ep.url, integ.metadata_json?.shop_domain || null);
