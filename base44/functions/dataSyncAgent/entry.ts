@@ -1340,6 +1340,13 @@ const normalizers = {
       const fee = feeMinor / 100;
       const occurredAt = typeof payment?.created_at === "string" ? payment.created_at : null;
       const cardLast4 = payment?.card_details?.card?.last_4 ?? null;
+      // Status whitelist — only the 5 documented Square states are preserved;
+      // anything else (new state added by Square, typo, garbage) → null.
+      // Decision: strict over permissive — see audit T5 in the conversation log.
+      // Downstream consumers can treat `null` as "unknown" without parsing.
+      const KNOWN_STATUS = ["COMPLETED", "APPROVED", "PENDING", "CANCELED", "FAILED"];
+      const rawStatus = payment?.status;
+      const status = KNOWN_STATUS.includes(rawStatus) ? rawStatus : null;
       rows.push({
         vertical: "payments",
         external_id: String(id),
@@ -1347,7 +1354,7 @@ const normalizers = {
         fee,
         currency,
         occurred_at: occurredAt,
-        status: payment?.status ?? null,
+        status,
         location_id: payment?.location_id ?? null,
         card_last4: cardLast4,
       });
