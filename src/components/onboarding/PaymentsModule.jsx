@@ -8,9 +8,7 @@ import MultiComboBox from '@/components/inputs/MultiComboBox';
 import { COUNTRIES } from '@/components/inputs/CountrySelect';
 import SmartNumberField from '@/components/inputs/SmartNumberField.jsx';
 import OptionTiles from '@/components/onboarding/OptionTiles';
-
-
-
+import VerticalStatusBadge from '@/components/onboarding/VerticalStatusBadge';
 
 
 export default function PaymentsModule(){
@@ -18,6 +16,7 @@ export default function PaymentsModule(){
   const [item, setItem] = useState({ canales: [], paises: [], monedas: [] });
   const [saving, setSaving] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [status, setStatus] = useState(null);
 
   useEffect(()=>{ (async()=>{
     const me = await base44.auth.me();
@@ -26,12 +25,15 @@ export default function PaymentsModule(){
     if (!b?.id) return;
     const [pp] = await base44.entities.PaymentsProfile.filter({ brand_id: b.id }, '-updated_date', 1);
     setItem(pp || { brand_id: b.id, canales: [], paises: [], monedas: [] });
-    await refreshStatus(b.id);
+    await refreshStatus();
   })(); },[]);
 
-  // Fires backend recompute of the vertical status; UI does not read the result today.
+  // Fetches vertical status (completeness / readiness / missing_fields).
   const refreshStatus = async () => {
-    await base44.functions.invoke('getOnboardingStatus', {});
+    try {
+      const res = await base44.functions.invoke('getOnboardingStatus', {});
+      setStatus(res?.data?.statuses?.payments || null);
+    } catch { /* non-fatal — badge just stays in its previous state */ }
   };
 
   const save = async () => {
@@ -65,15 +67,18 @@ export default function PaymentsModule(){
       setItem(created);
     }
     await base44.functions.invoke('computeVerticalStatus', { brandId, vertical: 'payments' });
-    await refreshStatus(brandId);
+    await refreshStatus();
     setSaving(false);
   };
 
   return (
     <div className="space-y-4">
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 glass">
-          <p className="text-xs text-muted-foreground">We only ask for the basics. You can expand anytime.</p>
+        <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border/60 glass flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
+            <p className="text-xs text-muted-foreground">We only ask for the basics. You can expand anytime.</p>
+            <VerticalStatusBadge status={status} />
+          </div>
           <Button variant="outline" onClick={()=>setShowAdvanced(v=>!v)} className="h-8 text-xs">
             {showAdvanced ? 'Hide advanced' : 'Enrich your information'}
           </Button>

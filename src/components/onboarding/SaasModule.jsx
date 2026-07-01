@@ -8,9 +8,7 @@ import KeyValueListInput from './KeyValueListInput';
 import MultiComboBox from '@/components/inputs/MultiComboBox';
 import ComboBox from '@/components/inputs/ComboBox';
 import OptionTiles from '@/components/onboarding/OptionTiles';
-
-
-
+import VerticalStatusBadge from '@/components/onboarding/VerticalStatusBadge';
 
 
 export default function SaasModule(){
@@ -18,6 +16,7 @@ export default function SaasModule(){
   const [item, setItem] = useState({ email_sms: [], extras: [], gasto_mensual_map: {}, contrato_map: {}, renovaciones_map: {} });
   const [saving, setSaving] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [status, setStatus] = useState(null);
 
   useEffect(()=>{ (async()=>{
     const me = await base44.auth.me();
@@ -26,12 +25,15 @@ export default function SaasModule(){
     if (!b?.id) return;
     const [sa] = await base44.entities.SaaSProfile.filter({ brand_id: b.id }, '-updated_date', 1);
     setItem(sa || { brand_id: b.id, email_sms: [], extras: [], gasto_mensual_map: {}, contrato_map: {}, renovaciones_map: {} });
-    await refreshStatus(b.id);
+    await refreshStatus();
   })(); },[]);
 
-  // Fires backend recompute of the vertical status; UI does not read the result today.
+  // Fetches vertical status (completeness / readiness / missing_fields).
   const refreshStatus = async () => {
-    await base44.functions.invoke('getOnboardingStatus', {});
+    try {
+      const res = await base44.functions.invoke('getOnboardingStatus', {});
+      setStatus(res?.data?.statuses?.saas || null);
+    } catch { /* non-fatal */ }
   };
 
   const save = async () => {
@@ -52,15 +54,18 @@ export default function SaasModule(){
       setItem(created);
     }
     await base44.functions.invoke('computeVerticalStatus', { brandId, vertical: 'saas' });
-    await refreshStatus(brandId);
+    await refreshStatus();
     setSaving(false);
   };
 
   return (
     <div className="space-y-4">
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-3 rounded-xl border border-border/60 glass">
-          <p className="text-xs text-muted-foreground">We only ask for the basics. You can expand anytime.</p>
+        <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border/60 glass flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
+            <p className="text-xs text-muted-foreground">We only ask for the basics. You can expand anytime.</p>
+            <VerticalStatusBadge status={status} />
+          </div>
           <Button variant="outline" onClick={()=>setShowAdvanced(v=>!v)} className="h-8 text-xs">
             {showAdvanced ? 'Hide advanced' : 'Enrich your information'}
           </Button>

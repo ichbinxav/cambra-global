@@ -168,21 +168,35 @@ export default function Vault() {
 function LinkEditor({ doc, onAdd, onRemove }){
   const [type, setType] = useState('brand');
   const [id, setId] = useState('');
-  // is_primary is not toggled in the UI today — always false.
-  const primary = false;
+  const [primary, setPrimary] = useState(false);
+
+  const submit = () => {
+    onAdd(doc, { target_type: type, target_id: id, is_primary: primary });
+    setId('');
+    setPrimary(false);
+  };
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Select value={type} onValueChange={setType}>
           <SelectTrigger className="w-48"><SelectValue placeholder="Tipo" /></SelectTrigger>
           <SelectContent>
             {['brand','deal_activation','provider','mandate','monthly_savings_report','invoice','contract','statement_import','verification_event','baseline','savings_evidence','payment_event'].map(t => (<SelectItem key={t} value={t}>{t}</SelectItem>))}
           </SelectContent>
         </Select>
-        <Input placeholder="ID de destino" value={id} onChange={e=>setId(e.target.value)} className="flex-1" />
-        <Button onClick={()=>onAdd(doc, { target_type: type, target_id: id, is_primary: primary })} disabled={!id}>Añadir</Button>
+        <Input placeholder="ID de destino" value={id} onChange={e=>setId(e.target.value)} className="flex-1 min-w-[140px]" />
+        <Button onClick={submit} disabled={!id}>Añadir</Button>
       </div>
+      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={primary}
+          onChange={(e) => setPrimary(e.target.checked)}
+          className="h-3.5 w-3.5 rounded border-border accent-foreground cursor-pointer"
+        />
+        <span>Mark as primary link for this target</span>
+      </label>
       <div className="text-xs text-muted-foreground">Actuales:</div>
       <ul className="space-y-1">
         {(doc.links||[]).map(l => (
