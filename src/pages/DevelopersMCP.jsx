@@ -49,7 +49,13 @@ const TOOLS = [
 
 export default function DevelopersMCP() {
   return (
-    <div className="min-h-screen bg-background cambra-page-bg">
+    <div
+      className="min-h-screen text-white"
+      style={{
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+      }}
+    >
       <Navbar />
 
       <div className="relative max-w-5xl mx-auto px-5 py-16 md:py-24">

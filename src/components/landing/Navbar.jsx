@@ -52,12 +52,25 @@ export default function Navbar() {
   }, [location.pathname]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-border/60">
+    <header
+      className="fixed top-0 left-0 right-0 z-50"
+      style={{
+        background: "rgba(10,10,10,0.85)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
       <div className="max-w-7xl mx-auto px-5 lg:px-8 h-14 flex items-center justify-between">
 
         {/* Logo */}
-        <Link to="/" className="flex-shrink-0 inline-flex items-center gap-2" aria-label="CAMBRA home">
-          <BrandLogoWordmark className="h-5" />
+        <Link
+          to="/"
+          className="flex-shrink-0 inline-flex items-center gap-2 text-white"
+          style={{ fontWeight: 900, letterSpacing: "-0.04em", fontSize: 18 }}
+          aria-label="CAMBRA home"
+        >
+          CAMBRA
         </Link>
 
         {/* Desktop nav */}
@@ -70,30 +83,30 @@ export default function Navbar() {
                 to={item.href}
                 className={`relative px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                   active
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-white"
+                    : "text-white/55 hover:text-white"
                 }`}
               >
                 {trLabel(item.label)}
                 {active && (
-                  <span className="absolute left-3 right-3 -bottom-[14px] h-[2px] bg-foreground rounded-full" />
+                  <span className="absolute left-3 right-3 -bottom-[14px] h-[2px] bg-white rounded-full" />
                 )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Desktop CTAs — unified btn-* token system */}
+        {/* Desktop CTAs — dark variant to match landing */}
         <div className="hidden md:flex items-center gap-2">
-          <LanguageSwitcher variant="light" className="mr-1" />
+          <LanguageSwitcher variant="dark" className="mr-1" />
           {isAuthenticated ? (
             <>
               {isAdmin && (
-                <Link to="/admin" className="btn-base btn-secondary btn-sm">
+                <Link to="/admin" className="btn-base btn-secondary-dark btn-sm">
                   <Shield size={12} /> Admin
                 </Link>
               )}
-              <Link to="/Dashboard" className="btn-base btn-primary btn-sm">
+              <Link to="/Dashboard" className="btn-base btn-primary-inverse btn-sm">
                 {t("nav_dashboard")}
               </Link>
             </>
@@ -103,11 +116,11 @@ export default function Navbar() {
                 href="/auth/start"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-base btn-ghost btn-sm"
+                className="btn-base btn-ghost-dark btn-sm"
               >
                 Sign in
               </a>
-              <Link to="/Analyzer" className="btn-base btn-primary btn-sm">
+              <Link to="/Analyzer" className="btn-base btn-primary-inverse btn-sm">
                 {t("nav_get_started")} <ArrowRight className="h-3 w-3" />
               </Link>
             </>
@@ -116,7 +129,7 @@ export default function Navbar() {
 
         {/* Mobile toggle */}
         <button
-          className="md:hidden p-2 text-foreground transition-colors -mr-2"
+          className="md:hidden p-2 text-white/80 hover:text-white transition-colors -mr-2"
           onClick={() => setOpen(v => !v)}
           aria-label="Toggle menu"
         >

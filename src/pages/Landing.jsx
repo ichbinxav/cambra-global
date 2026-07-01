@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
-import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
+import Navbar from "@/components/landing/Navbar";
 import { useTranslation } from "@/lib/i18n.jsx";
 import AuroraBackground from "@/components/landing/AuroraBackground";
 import AnimatedSection from "@/components/landing/AnimatedSection";
@@ -63,42 +63,11 @@ function useJsonLd(data) {
    CAMBRA Landing — editorial redesign · EN / FR / ES
    ────────────────────────────────────────────────────────── */
 
-function LandingNavbar() {
-  const { t } = useTranslation();
-   
+// JSON-LD injector — no visible UI. The visible navbar is the shared
+// <Navbar /> component so every public page renders the same header.
+function LandingJsonLd() {
   useJsonLd(LANDING_JSON_LD);
-  return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 sm:px-10"
-      style={{
-        height: 60,
-        background: "rgba(10,10,10,0.85)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-      }}
-    >
-      <Link to="/" className="text-white" style={{ fontWeight: 900, letterSpacing: "-0.04em", fontSize: 18 }}>
-        CAMBRA
-      </Link>
-
-      <div className="hidden md:flex items-center gap-8 text-[13px]" style={{ color: "rgba(255,255,255,0.55)" }}>
-        <a href="#how" className="hover:text-white transition-colors">{t("nav_how")}</a>
-        <Link to="/Pricing" className="hover:text-white transition-colors">{t("nav_pricing")}</Link>
-        <Link to="/Developers" className="hover:text-white transition-colors">{t("nav_developers")}</Link>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <LanguageSwitcher variant="dark" />
-        <Link
-          to="/Analyzer"
-          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-bold bg-white text-black hover:opacity-90 transition-opacity"
-        >
-          {t("nav_get_started")}
-        </Link>
-      </div>
-    </nav>
-  );
+  return null;
 }
 
 function Hero() {
@@ -439,7 +408,8 @@ export default function Landing() {
         }}
       />
 
-      <LandingNavbar />
+      <LandingJsonLd />
+      <Navbar />
       <main className="relative">
         <Hero />
         <ProblemSectionWow />

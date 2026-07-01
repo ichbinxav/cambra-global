@@ -45,15 +45,28 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <div className="relative min-h-screen bg-background font-inter overflow-hidden">
+    <div
+      className="relative min-h-screen font-inter overflow-hidden text-white"
+      style={{
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+      }}
+    >
       <Navbar />
 
       {/* Ambient backdrop */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 dot-grid opacity-50" />
-        <div className="absolute -top-32 left-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.20]" />
-        <div className="absolute top-1/3 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.18]" />
-      </div>
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          opacity: 0.35,
+          maskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+        }}
+      />
 
       <div className="relative pt-24 pb-20">
         <div className="max-w-6xl mx-auto px-5">
