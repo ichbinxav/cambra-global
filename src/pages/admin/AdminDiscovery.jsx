@@ -95,7 +95,7 @@ export default function AdminDiscovery() {
       {/* Run form */}
       <form
         onSubmit={handleRun}
-        className="rounded-2xl border border-border/60 bg-white p-5 space-y-3"
+        className="rounded-2xl border border-border/60 bg-card p-5 space-y-3"
       >
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_240px_auto] gap-3 items-end">
           <div>
@@ -110,7 +110,7 @@ export default function AdminDiscovery() {
                 onChange={e => setWebsite(e.target.value)}
                 placeholder="e.g. allbirds.com or https://www.gymshark.com"
                 disabled={running}
-                className="w-full h-10 pl-9 pr-3 rounded-lg border border-border/60 bg-white text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
+                className="w-full h-10 pl-9 pr-3 rounded-lg border border-border/60 bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
               />
             </div>
           </div>
@@ -124,7 +124,7 @@ export default function AdminDiscovery() {
               onChange={e => setBrandId(e.target.value)}
               placeholder="auto-pick if empty"
               disabled={running}
-              className="w-full h-10 px-3 rounded-lg border border-border/60 bg-white text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
+              className="w-full h-10 px-3 rounded-lg border border-border/60 bg-card text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
             />
           </div>
           <button
@@ -153,15 +153,15 @@ export default function AdminDiscovery() {
         <div className="space-y-4">
           {/* Status strip */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-xl border border-border/60 bg-white p-3">
+            <div className="rounded-xl border border-border/60 bg-card p-3">
               <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Tools detected</p>
               <p className="text-2xl font-black tabular-nums mt-0.5">{findings.length}</p>
             </div>
-            <div className="rounded-xl border border-border/60 bg-white p-3">
+            <div className="rounded-xl border border-border/60 bg-card p-3">
               <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Verticals covered</p>
               <p className="text-2xl font-black tabular-nums mt-0.5">{orderedVerticals.length}</p>
             </div>
-            <div className="rounded-xl border border-border/60 bg-white p-3">
+            <div className="rounded-xl border border-border/60 bg-card p-3">
               <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">AI interpretation</p>
               <p className="text-sm font-bold mt-1 flex items-center gap-1.5">
                 {result.interpretation_status === "ok" ? (
@@ -196,7 +196,7 @@ export default function AdminDiscovery() {
           ) : (
             <div className="space-y-3">
               {orderedVerticals.map(v => (
-                <div key={v} className="rounded-2xl border border-border/60 bg-white overflow-hidden">
+                <div key={v} className="rounded-2xl border border-border/60 bg-card overflow-hidden">
                   <div className="px-4 py-2.5 border-b border-border/40 bg-secondary/30 flex items-center justify-between">
                     <span className="text-[11px] uppercase tracking-wider font-bold text-foreground">
                       {VERTICAL_LABEL[v]}

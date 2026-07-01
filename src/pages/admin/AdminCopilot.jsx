@@ -26,7 +26,7 @@ function AgentPanel({ title, description, icon: Icon, onRun, busy, lastTask, err
   }[status] || "bg-secondary text-muted-foreground border-border/60";
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-white overflow-hidden">
+    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
       <div className="px-4 py-3 border-b border-border/40 flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-secondary border border-border/60 flex items-center justify-center">
           <Icon size={14} className="text-foreground" />
@@ -214,7 +214,7 @@ export default function AdminCopilot() {
             min={1} max={12}
             value={investorMonth}
             onChange={(e) => setInvestorMonth(Number(e.target.value))}
-            className="h-8 w-16 px-2 rounded-lg border border-border/60 bg-white text-xs font-semibold text-foreground"
+            className="h-8 w-16 px-2 rounded-lg border border-border/60 bg-card text-xs font-semibold text-foreground"
           />
           <label className="text-[11px] font-bold text-muted-foreground ml-2">Year</label>
           <input
@@ -222,7 +222,7 @@ export default function AdminCopilot() {
             min={2024} max={2100}
             value={investorYear}
             onChange={(e) => setInvestorYear(Number(e.target.value))}
-            className="h-8 w-20 px-2 rounded-lg border border-border/60 bg-white text-xs font-semibold text-foreground"
+            className="h-8 w-20 px-2 rounded-lg border border-border/60 bg-card text-xs font-semibold text-foreground"
           />
         </div>
         {investorDraft?.metrics && (
@@ -260,7 +260,7 @@ export default function AdminCopilot() {
             type="text"
             value={qaFlows}
             onChange={(e) => setQaFlows(e.target.value)}
-            className="mt-1 w-full h-9 px-3 rounded-lg border border-border/60 bg-white text-xs font-semibold text-foreground"
+            className="mt-1 w-full h-9 px-3 rounded-lg border border-border/60 bg-card text-xs font-semibold text-foreground"
           />
         </div>
         {qaReport ? (

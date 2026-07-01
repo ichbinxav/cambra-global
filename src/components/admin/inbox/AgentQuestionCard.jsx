@@ -51,7 +51,7 @@ export default function AgentQuestionCard({ question, onAnswered }) {
   };
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-white p-4 space-y-3">
+    <div className="rounded-2xl border border-border/60 bg-card p-4 space-y-3">
       <div className="flex items-start gap-3 flex-wrap">
         <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center shrink-0">
           <Icon size={14} className="text-foreground" />
@@ -82,7 +82,7 @@ export default function AgentQuestionCard({ question, onAnswered }) {
               type="button"
               disabled={busy}
               onClick={() => submit(opt)}
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-border/60 bg-white text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50 transition-colors"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-border/60 bg-card text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50 transition-colors"
             >
               {opt}
             </button>
@@ -99,7 +99,7 @@ export default function AgentQuestionCard({ question, onAnswered }) {
             onChange={e => setText(e.target.value)}
             disabled={busy}
             placeholder="Reply in 1–2 lines…"
-            className="flex-1 h-9 px-3 rounded-lg border border-border/60 bg-white text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
+            className="flex-1 h-9 px-3 rounded-lg border border-border/60 bg-card text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
             onKeyDown={e => { if (e.key === "Enter") submit(text); }}
           />
           <button
@@ -131,7 +131,7 @@ export default function AgentQuestionCard({ question, onAnswered }) {
             type="button"
             disabled={busy}
             onClick={() => submit("granted")}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-border/60 bg-white text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-border/60 bg-card text-xs font-semibold text-foreground hover:bg-secondary disabled:opacity-50"
           >
             I've granted it
           </button>
@@ -139,7 +139,7 @@ export default function AgentQuestionCard({ question, onAnswered }) {
             type="button"
             disabled={busy}
             onClick={() => submit("declined")}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-border/60 bg-white text-xs font-semibold text-muted-foreground hover:bg-secondary disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-border/60 bg-card text-xs font-semibold text-muted-foreground hover:bg-secondary disabled:opacity-50"
           >
             Decline
           </button>

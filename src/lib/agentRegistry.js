@@ -107,11 +107,11 @@ export const ORCHESTRATORS = [
 
 export function levelBadge(level) {
   switch (level) {
-    case 0: return { label: "L0", cls: "bg-slate-100 text-slate-700 border-slate-200" };
+    case 0: return { label: "L0", cls: "bg-muted text-slate-700 border-slate-200" };
     case 1: return { label: "L1", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" };
     case 2: return { label: "L2", cls: "bg-amber-50 text-amber-700 border-amber-200" };
     case 3: return { label: "L3", cls: "bg-orange-50 text-orange-700 border-orange-200" };
     case 4: return { label: "L4", cls: "bg-rose-50 text-rose-700 border-rose-200" };
-    default: return { label: `L${level}`, cls: "bg-slate-100 text-slate-700 border-slate-200" };
+    default: return { label: `L${level}`, cls: "bg-muted text-slate-700 border-slate-200" };
   }
 }

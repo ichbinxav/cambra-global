@@ -122,7 +122,7 @@ export default function AdminCommand() {
           type="button"
           onClick={load}
           disabled={refreshing}
-          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border/60 bg-white text-xs font-semibold text-foreground hover:bg-secondary transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border/60 bg-card text-xs font-semibold text-foreground hover:bg-secondary transition-colors disabled:opacity-50"
         >
           <RefreshCw size={11} className={refreshing ? "animate-spin" : ""} />
           Refresh
@@ -152,7 +152,7 @@ export default function AdminCommand() {
 
       {/* 3. Agents */}
       {loading ? (
-        <div className="rounded-2xl border border-border/60 bg-white p-8 text-center text-sm text-muted-foreground">Loading…</div>
+        <div className="rounded-2xl border border-border/60 bg-card p-8 text-center text-sm text-muted-foreground">Loading…</div>
       ) : (
         <AgentGrid activeSecrets={activeSecrets} lastTaskByAgent={lastTaskByAgent} />
       )}

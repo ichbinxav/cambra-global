@@ -19,7 +19,7 @@ export default function ActivityFilters({
   totalCount = 0,
 }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-white p-4">
+    <div className="rounded-2xl border border-border/60 bg-card p-4">
       <div className="flex flex-wrap items-center gap-3">
         {/* Status pills */}
         <div className="flex flex-wrap gap-1.5">
@@ -31,7 +31,7 @@ export default function ActivityFilters({
               className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${
                 status === s
                   ? "bg-foreground text-background border-foreground"
-                  : "bg-white text-muted-foreground border-border/60 hover:text-foreground"
+                  : "bg-card text-muted-foreground border-border/60 hover:text-foreground"
               }`}
             >
               {s.replace("_", " ")}
@@ -44,7 +44,7 @@ export default function ActivityFilters({
           <select
             value={agent}
             onChange={(e) => onAgentChange(e.target.value)}
-            className="h-8 px-2.5 rounded-lg border border-border/60 bg-white text-xs font-semibold text-foreground"
+            className="h-8 px-2.5 rounded-lg border border-border/60 bg-card text-xs font-semibold text-foreground"
           >
             <option value="all">All agents</option>
             {agentOptions.map(a => (
@@ -60,7 +60,7 @@ export default function ActivityFilters({
               value={brandQuery}
               onChange={(e) => onBrandQueryChange(e.target.value)}
               placeholder="Filter by brand id…"
-              className="h-8 pl-7 pr-3 rounded-lg border border-border/60 bg-white text-xs font-semibold text-foreground w-52"
+              className="h-8 pl-7 pr-3 rounded-lg border border-border/60 bg-card text-xs font-semibold text-foreground w-52"
             />
           </div>
 

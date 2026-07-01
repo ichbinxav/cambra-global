@@ -23,7 +23,7 @@ export default function PageHero({
 }) {
   if (tone === "light") {
     return (
-      <div className="relative rounded-2xl border border-border/60 bg-white p-6 sm:p-8 mb-6 overflow-hidden">
+      <div className="relative rounded-2xl border border-border/60 bg-card p-6 sm:p-8 mb-6 overflow-hidden">
         <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
         <div className="relative">
           <HeaderInner eyebrow={eyebrow} title={title} subtitle={subtitle} actions={actions} Icon={Icon} dark={false} />
@@ -83,7 +83,7 @@ function HeaderInner({ eyebrow, title, subtitle, actions, Icon, dark }) {
             className={`inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full ${
               dark
                 ? "border border-white/[0.10] bg-white/[0.04] backdrop-blur-sm"
-                : "border border-border/60 bg-white"
+                : "border border-border/60 bg-card"
             }`}
           >
             <span className="relative flex h-1.5 w-1.5">

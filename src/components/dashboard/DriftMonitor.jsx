@@ -67,7 +67,7 @@ export default function DriftMonitor({ results = [] }) {
           Once you run a second analysis, we'll automatically compare scores and alert you if any pillar degrades.
         </p>
         <Link to="/Analyzer">
-          <button className="h-8 px-4 rounded-full bg-white text-[#06080F] text-[11px] font-bold inline-flex items-center gap-1.5 hover:bg-white/90 transition">
+          <button className="h-8 px-4 rounded-full bg-card text-[#06080F] text-[11px] font-bold inline-flex items-center gap-1.5 hover:bg-white/90 transition">
             Schedule re-analysis <ArrowRight className="h-3 w-3" />
           </button>
         </Link>
@@ -157,7 +157,7 @@ export default function DriftMonitor({ results = [] }) {
       {/* CTA */}
       {hasDrift ? (
         <Link to="/Network">
-          <button className="w-full h-9 rounded-full bg-white text-[#06080F] text-[11px] font-bold inline-flex items-center justify-center gap-1.5 hover:bg-white/90 transition">
+          <button className="w-full h-9 rounded-full bg-card text-[#06080F] text-[11px] font-bold inline-flex items-center justify-center gap-1.5 hover:bg-white/90 transition">
             Contact your account manager <ArrowRight className="h-3 w-3" />
           </button>
         </Link>

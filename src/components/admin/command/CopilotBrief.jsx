@@ -53,7 +53,7 @@ export default function CopilotBrief({ events, lastBrief }) {
     <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-blue-50 via-white to-violet-50 p-5">
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-white border border-border/60 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-card border border-border/60 flex items-center justify-center">
             <Sparkles size={13} className="text-foreground" />
           </div>
           <div>
@@ -64,7 +64,7 @@ export default function CopilotBrief({ events, lastBrief }) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Link to="/admin/copilot" className="inline-flex items-center h-8 px-3 rounded-full border border-border/60 bg-white text-xs font-semibold text-foreground hover:bg-secondary">
+          <Link to="/admin/copilot" className="inline-flex items-center h-8 px-3 rounded-full border border-border/60 bg-card text-xs font-semibold text-foreground hover:bg-secondary">
             Open full
           </Link>
           <button

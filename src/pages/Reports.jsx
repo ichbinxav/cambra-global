@@ -71,7 +71,7 @@ export default function Reports() {
         icon={TrendingUp}
         actions={
           <Link to="/Analyzer">
-            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-1.5">
+            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold bg-card text-[#06080F] hover:bg-white/90 gap-1.5">
               <Sparkles className="h-3.5 w-3.5" /> New scan <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
@@ -109,7 +109,7 @@ export default function Reports() {
               Run your first infrastructure audit to see margin recovery opportunities mapped here.
             </p>
             <Link to="/Analyzer">
-              <Button className="rounded-full px-7 h-11 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2">
+              <Button className="rounded-full px-7 h-11 text-sm font-bold bg-card text-[#06080F] hover:bg-white/90 gap-2">
                 <Sparkles className="h-3.5 w-3.5" /> Run Analyzer <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
@@ -260,7 +260,7 @@ export default function Reports() {
                  <Link key={r.id} to={`/Results?id=${r.id}`}>
                  <div className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.04] transition-colors group cursor-pointer">
                    <div className="flex items-center gap-4 min-w-0">
-                     <div className="w-9 h-9 rounded-xl bg-white/[0.05] border border-white/[0.10] flex items-center justify-center text-[11px] font-mono font-bold text-white/70 shrink-0">
+                     <div className="w-9 h-9 rounded-xl bg-card/[0.05] border border-white/[0.10] flex items-center justify-center text-[11px] font-mono font-bold text-white/70 shrink-0">
                        {String(results.length - i).padStart(2, "0")}
                      </div>
                      <div className="min-w-0">

@@ -64,7 +64,7 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
         {[0, 1, 2, 3].map(i => (
           <div
             key={i}
-            className="flex items-center gap-3 px-3 py-3 rounded-xl border border-border/60 bg-white min-h-[64px]"
+            className="flex items-center gap-3 px-3 py-3 rounded-xl border border-border/60 bg-card min-h-[64px]"
           >
             <div className="flex-1 min-w-0 space-y-2">
               <div className="h-3 w-32 rounded shimmer" />
@@ -122,7 +122,7 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
                       ? "border-foreground/30 bg-white"
                       : isDismissed
                       ? "border-border/30 bg-secondary/40 opacity-60"
-                      : "border-border/60 bg-white"
+                      : "border-border/60 bg-card"
                   }`}
                 >
                   <div className="flex-1 min-w-0">
@@ -147,7 +147,7 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
                     className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border flex items-center justify-center transition-colors ${
                       isDismissed
                         ? "border-red-300 bg-red-50 text-red-600"
-                        : "border-border/60 bg-white text-muted-foreground hover:border-red-300 hover:text-red-600"
+                        : "border-border/60 bg-card text-muted-foreground hover:border-red-300 hover:text-red-600"
                     }`}
                   >
                     <X size={16} aria-hidden="true" />
@@ -161,7 +161,7 @@ export default function DetectedToolsGrid({ tools, confirmed, dismissed, onToggl
                     className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border flex items-center justify-center transition-colors ${
                       isConfirmed
                         ? "border-emerald-400 bg-emerald-500 text-white"
-                        : "border-border/60 bg-white text-muted-foreground hover:border-emerald-400 hover:text-emerald-600"
+                        : "border-border/60 bg-card text-muted-foreground hover:border-emerald-400 hover:text-emerald-600"
                     }`}
                   >
                     <Check size={16} aria-hidden="true" />

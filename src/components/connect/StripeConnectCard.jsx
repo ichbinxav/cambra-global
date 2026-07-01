@@ -155,7 +155,7 @@ export default function StripeConnectCard({ redirectAfter } = {}) {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-border/60 bg-white p-4">
+      <div className="rounded-2xl border border-border/60 bg-card p-4">
         <Header>Loading…</Header>
       </div>
     );
@@ -163,7 +163,7 @@ export default function StripeConnectCard({ redirectAfter } = {}) {
 
   if (setupRequired) {
     return (
-      <div className="rounded-2xl border border-border/60 bg-white p-4">
+      <div className="rounded-2xl border border-border/60 bg-card p-4">
         <Header>Online payment processing fees & rates</Header>
         <div className="flex items-center justify-between gap-3">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary text-[10px] font-semibold text-muted-foreground border border-border/60">
@@ -211,7 +211,7 @@ export default function StripeConnectCard({ redirectAfter } = {}) {
   }
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-white p-4">
+    <div className="rounded-2xl border border-border/60 bg-card p-4">
       <Header>Connect read-only access to pull live fees & volumes</Header>
       <div className="flex items-center justify-between gap-3">
         <button

@@ -73,7 +73,7 @@ export default function ConnectorTile({ title, note, connectorId, functionName, 
   const toolMeta = KEY_TO_TOOL[connectorKey] || { name: title, logoName: title, fallback: title?.slice(0,2) };
 
   return (
-    <div className="group p-4 rounded-2xl border border-border/60 bg-white transition-all hover:border-foreground/40 hover:-translate-y-[1px]">
+    <div className="group p-4 rounded-2xl border border-border/60 bg-card transition-all hover:border-foreground/40 hover:-translate-y-[1px]">
       <div className="flex items-start gap-3">
         <ToolLogo name={toolMeta.logoName} size={20} />
         <div className="flex-1 min-w-0">

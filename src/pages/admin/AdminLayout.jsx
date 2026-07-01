@@ -112,9 +112,9 @@ export default function AdminLayout() {
   const isActive = (path, exact) => exact ? location.pathname === path : location.pathname.startsWith(path);
 
   return (
-    <div className="min-h-screen bg-white flex">
-      {/* Sidebar — light, uniform */}
-      <aside className={`fixed inset-y-0 left-0 z-[70] w-56 bg-white border-r border-border/60 flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar — dark, uniform */}
+      <aside className={`fixed inset-y-0 left-0 z-[70] w-56 bg-card border-r border-border/60 flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
         <div className="px-5 py-5 border-b border-border/60">
           <div className="flex items-center justify-between">
             <div>
@@ -189,10 +189,10 @@ export default function AdminLayout() {
       {/* Overlay */}
       {sidebarOpen && <div className="fixed inset-0 z-[60] bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Main — light */}
-      <div className="flex-1 lg:ml-56 min-h-screen flex flex-col bg-white">
-        {/* Top bar — light */}
-        <header className="sticky top-0 z-20 h-12 bg-white/95 backdrop-blur-xl border-b border-border/60 flex items-center px-5 gap-3">
+      {/* Main — dark */}
+      <div className="flex-1 lg:ml-56 min-h-screen flex flex-col bg-background">
+        {/* Top bar — dark */}
+        <header className="sticky top-0 z-20 h-12 bg-background/95 backdrop-blur-xl border-b border-border/60 flex items-center px-5 gap-3">
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setSidebarOpen(true); }}
@@ -220,7 +220,7 @@ export default function AdminLayout() {
           </div>
         </header>
 
-        <main className="relative flex-1 bg-white">
+        <main className="relative flex-1 bg-background">
           <div className="relative p-6 max-w-[1400px] mx-auto w-full text-foreground">
             <Outlet />
           </div>

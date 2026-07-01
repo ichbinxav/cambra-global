@@ -136,7 +136,7 @@ export default function Network() {
               <div className="relative">
               {/* Logo + category */}
               <div className="flex items-start justify-between mb-5">
-                <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-base font-black text-white shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-card/10 border border-white/10 flex items-center justify-center text-base font-black text-white shrink-0">
                   {brand.name?.[0]?.toUpperCase() || "?"}
                 </div>
                 {brand.category && (

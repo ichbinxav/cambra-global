@@ -16,10 +16,10 @@ export default function OnboardingLayout({ children, activeTab, onTabChange, sta
 
   return (
     <div className="max-w-[1400px] mx-auto px-5 py-6 space-y-5">
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-white p-6 sm:p-8">
+      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-6 sm:p-8">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-white">
+            <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-card">
               <Zap className="h-3 w-3 text-foreground" />
               <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Infrastructure profile · 3 pillars</span>
             </div>

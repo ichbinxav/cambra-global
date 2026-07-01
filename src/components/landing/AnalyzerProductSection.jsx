@@ -150,7 +150,7 @@ export default function AnalyzerProductSection() {
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className="relative h-12 rounded-full px-7 text-sm font-bold inline-flex items-center justify-center gap-2 overflow-hidden group bg-white text-[#06080F] hover:bg-white/95 transition"
+                  className="relative h-12 rounded-full px-7 text-sm font-bold inline-flex items-center justify-center gap-2 overflow-hidden group bg-card text-[#06080F] hover:bg-white/95 transition"
                 >
                   <motion.span
                     aria-hidden

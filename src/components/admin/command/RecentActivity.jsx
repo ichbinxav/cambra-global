@@ -28,7 +28,7 @@ function timeAgo(iso) {
 
 export default function RecentActivity({ tasks = [] }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-white overflow-hidden">
+    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
       <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity size={12} className="text-muted-foreground" />

@@ -343,7 +343,7 @@ export default function StackIntelligenceMap() {
 
             <a
               href="/Analyzer"
-              className="h-11 rounded-full text-xs font-bold tracking-[0.12em] uppercase bg-white text-neon-1 hover:bg-white/90 transition inline-flex items-center justify-center gap-2"
+              className="h-11 rounded-full text-xs font-bold tracking-[0.12em] uppercase bg-card text-neon-1 hover:bg-white/90 transition inline-flex items-center justify-center gap-2"
             >
               Run free audit <ArrowRight className="h-3.5 w-3.5" />
             </a>

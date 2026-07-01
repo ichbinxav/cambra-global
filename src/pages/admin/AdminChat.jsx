@@ -96,7 +96,7 @@ export default function AdminChat() {
                     key={s}
                     type="button"
                     onClick={() => send(s)}
-                    className="block w-full text-left px-3 py-2 rounded-lg border border-border/60 bg-white text-xs text-foreground hover:bg-secondary"
+                    className="block w-full text-left px-3 py-2 rounded-lg border border-border/60 bg-card text-xs text-foreground hover:bg-secondary"
                   >
                     "{s}"
                   </button>
@@ -116,7 +116,7 @@ export default function AdminChat() {
       {/* Input */}
       <form
         onSubmit={(e) => { e.preventDefault(); send(input); }}
-        className="rounded-2xl border border-border/60 bg-white p-2 flex items-center gap-2"
+        className="rounded-2xl border border-border/60 bg-card p-2 flex items-center gap-2"
       >
         <input
           type="text"

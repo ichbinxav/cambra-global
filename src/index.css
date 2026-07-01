@@ -62,25 +62,29 @@
   }
 
   .dark {
-    --background: 0 0% 3%;
-    --foreground: 0 0% 97%;
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 97%;
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 97%;
-    --primary: 0 0% 97%;
+    /* CAMBRA dark theme — matches landing gradient family
+       Base #0a0a0a → cards slightly lifted → borders subtle white.
+       All tokens are pure HSL triples (no alpha) — opacities live in
+       component classes, so hsl(var(--x)) always resolves cleanly. */
+    --background: 0 0% 4%;              /* #0a0a0a */
+    --foreground: 0 0% 98%;             /* near-white text */
+    --card: 222 30% 8%;                 /* lifted navy-black card */
+    --card-foreground: 0 0% 98%;
+    --popover: 222 30% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;                /* white primary (buttons) */
     --primary-foreground: 0 0% 4%;
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 0 0% 97%;
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 0 0% 10%;
-    --accent-foreground: 0 0% 97%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 97%;
-    --border: 0 0% 14%;
-    --input: 0 0% 14%;
-    --ring: 0 0% 83%;
+    --secondary: 222 20% 12%;           /* soft dark surface */
+    --secondary-foreground: 0 0% 98%;
+    --muted: 222 20% 12%;
+    --muted-foreground: 0 0% 62%;       /* legible dim text (WCAG AA) */
+    --accent: 222 20% 14%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 222 15% 16%;              /* subtle dark border, always legible */
+    --input: 222 20% 14%;
+    --ring: 188 95% 60%;                /* cyan focus ring */
 
     /* Neon palette — dark mode, serious */
     --neon-1: 220 45% 7%;

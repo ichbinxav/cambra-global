@@ -111,7 +111,7 @@ function IntegrationCard({ item, brandId, onChanged, hideStripe }) {
   };
 
   return (
-    <div className="flex items-center gap-3 p-4 rounded-2xl border border-border/60 bg-white hover:border-foreground/30 transition-colors">
+    <div className="flex items-center gap-3 p-4 rounded-2xl border border-border/60 bg-card hover:border-foreground/30 transition-colors">
       <div className="w-10 h-10 rounded-xl bg-secondary border border-border/60 flex items-center justify-center shrink-0 text-[11px] font-black text-foreground">
         {item.name.slice(0, 2).toUpperCase()}
       </div>
@@ -135,7 +135,7 @@ function IntegrationCard({ item, brandId, onChanged, hideStripe }) {
 
 function SkeletonRow() {
   return (
-    <div className="flex items-center gap-3 p-4 rounded-2xl border border-border/60 bg-white animate-pulse">
+    <div className="flex items-center gap-3 p-4 rounded-2xl border border-border/60 bg-card animate-pulse">
       <div className="w-10 h-10 rounded-xl bg-secondary" />
       <div className="flex-1 space-y-2">
         <div className="h-3 w-32 bg-secondary rounded" />
@@ -183,7 +183,7 @@ export default function IntegrationCatalogGrid({ hideStripe = true }) {
 
   if (error) {
     return (
-      <div className="p-5 rounded-2xl border border-border/60 bg-white text-sm text-muted-foreground">
+      <div className="p-5 rounded-2xl border border-border/60 bg-card text-sm text-muted-foreground">
         {error}
       </div>
     );

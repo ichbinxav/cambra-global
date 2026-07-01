@@ -47,7 +47,7 @@ export default function ApprovalCard({ approval, agentName, onApprove, onReject,
   const isExpired = expiry === "expired";
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-white overflow-hidden">
+    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b border-border/40 flex items-center gap-2 flex-wrap">
         <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold ${rMeta.cls}`}>
@@ -111,7 +111,7 @@ export default function ApprovalCard({ approval, agentName, onApprove, onReject,
               type="button"
               onClick={() => setRejectOpen(true)}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-border/60 bg-white text-xs font-bold text-foreground hover:bg-secondary transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full border border-border/60 bg-card text-xs font-bold text-foreground hover:bg-secondary transition-colors disabled:opacity-50"
             >
               <X size={12} /> Reject
             </button>
@@ -126,7 +126,7 @@ export default function ApprovalCard({ approval, agentName, onApprove, onReject,
               onChange={(e) => setReason(e.target.value)}
               placeholder="Reason for rejection (optional but helpful for the agent)…"
               rows={2}
-              className="w-full px-3 py-2 rounded-lg border border-border/60 bg-white text-xs text-foreground"
+              className="w-full px-3 py-2 rounded-lg border border-border/60 bg-card text-xs text-foreground"
             />
             <div className="flex items-center gap-2">
               <button
@@ -141,7 +141,7 @@ export default function ApprovalCard({ approval, agentName, onApprove, onReject,
                 type="button"
                 onClick={() => { setRejectOpen(false); setReason(""); }}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-border/60 bg-white text-xs font-semibold text-foreground hover:bg-secondary transition-colors"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-border/60 bg-card text-xs font-semibold text-foreground hover:bg-secondary transition-colors"
               >
                 Cancel
               </button>

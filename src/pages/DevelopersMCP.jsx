@@ -18,7 +18,7 @@ function CopyBlock({ children, label = "Copy" }) {
       </pre>
       <button
         onClick={copy}
-        className="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition"
+        className="absolute top-3 right-3 p-1.5 rounded-md bg-card/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 transition"
         aria-label={label}
       >
         {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}

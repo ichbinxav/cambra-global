@@ -200,7 +200,7 @@ export default function RecoverableMarginVisual() {
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
                   transition={{ duration: 0.6, delay: 0.25 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative rounded-2xl bg-white/[0.03] backdrop-blur-sm p-5 sm:p-6 flex flex-col"
+                  className="relative rounded-2xl bg-card/[0.03] backdrop-blur-sm p-5 sm:p-6 flex flex-col"
                   style={{
                     border: "1px solid",
                     borderColor: isPulsing ? "rgba(44,167,193,0.7)" : "rgba(255,255,255,0.1)",
@@ -301,7 +301,7 @@ export default function RecoverableMarginVisual() {
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
-                className="relative h-11 px-5 rounded-full bg-white text-[#06080F] text-sm font-bold inline-flex items-center justify-center gap-2 hover:bg-white/95 transition overflow-hidden"
+                className="relative h-11 px-5 rounded-full bg-card text-[#06080F] text-sm font-bold inline-flex items-center justify-center gap-2 hover:bg-white/95 transition overflow-hidden"
               >
                 {/* Shimmer sweep */}
                 <motion.span

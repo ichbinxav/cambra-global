@@ -36,7 +36,7 @@ export default function RevenueRangePicker({ value, onChange }) {
             className={`min-h-[56px] px-3 py-3 rounded-xl border text-sm font-semibold text-center transition-all ${
               active
                 ? "border-foreground bg-foreground text-background"
-                : "border-border/60 bg-white text-foreground hover:border-foreground/40"
+                : "border-border/60 bg-card text-foreground hover:border-foreground/40"
             }`}
           >
             {t(r.i18n)}

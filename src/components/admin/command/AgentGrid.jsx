@@ -39,7 +39,7 @@ function RunModal({ open, target, onClose, onRun }) {
   return (
     <div className="fixed inset-0 z-[200] bg-black/40 flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-2xl bg-white border border-border/60 shadow-xl p-5"
+        className="w-full max-w-md rounded-2xl bg-card border border-border/60 shadow-xl p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3 mb-4">
@@ -58,7 +58,7 @@ function RunModal({ open, target, onClose, onRun }) {
               <select
                 value={brandId}
                 onChange={(e) => setBrandId(e.target.value)}
-                className="w-full h-9 px-3 rounded-lg border border-border/60 bg-white text-xs"
+                className="w-full h-9 px-3 rounded-lg border border-border/60 bg-card text-xs"
               >
                 <option value="">Select a brand…</option>
                 {brands.map(b => (
@@ -75,7 +75,7 @@ function RunModal({ open, target, onClose, onRun }) {
                 placeholder="example.com"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="w-full h-9 px-3 rounded-lg border border-border/60 bg-white text-xs"
+                className="w-full h-9 px-3 rounded-lg border border-border/60 bg-card text-xs"
               />
             </div>
           )}
@@ -100,7 +100,7 @@ function AgentTile({ agent, lastTask, secretConfigured, onRun }) {
   // Brain agents are special: deterministic part works without key.
   const deterministicOk = agent.tool && (agent.tool.includes("scoreEngine") || agent.tool.includes("Deterministic"));
   return (
-    <div className="rounded-xl border border-border/60 bg-white p-3 space-y-2 hover:border-foreground/30 transition-colors">
+    <div className="rounded-xl border border-border/60 bg-card p-3 space-y-2 hover:border-foreground/30 transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold truncate">{agent.name}</p>

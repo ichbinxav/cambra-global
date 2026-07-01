@@ -243,7 +243,7 @@ export default function InfrastructureHeatmap() {
 
             <a
               href="/Analyzer"
-              className="mt-5 h-10 rounded-full text-xs font-bold tracking-[0.12em] uppercase bg-white text-neon-1 hover:bg-white/90 transition inline-flex items-center justify-center gap-2"
+              className="mt-5 h-10 rounded-full text-xs font-bold tracking-[0.12em] uppercase bg-card text-neon-1 hover:bg-white/90 transition inline-flex items-center justify-center gap-2"
             >
               Benchmark my stack <ArrowRight className="h-3.5 w-3.5" />
             </a>
