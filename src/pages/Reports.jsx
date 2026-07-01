@@ -260,7 +260,7 @@ export default function Reports() {
                  <Link key={r.id} to={`/Results?id=${r.id}`}>
                  <div className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.04] transition-colors group cursor-pointer">
                    <div className="flex items-center gap-4 min-w-0">
-                     <div className="w-9 h-9 rounded-xl bg-card/[0.05] border border-white/[0.10] flex items-center justify-center text-[11px] font-mono font-bold text-white/70 shrink-0">
+                     <div className="w-9 h-9 rounded-xl bg-white/[0.05] border border-white/[0.10] flex items-center justify-center text-[11px] font-mono font-bold text-white/70 shrink-0">
                        {String(results.length - i).padStart(2, "0")}
                      </div>
                      <div className="min-w-0">

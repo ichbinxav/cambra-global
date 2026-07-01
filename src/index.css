@@ -62,29 +62,31 @@
   }
 
   .dark {
-    /* CAMBRA dark theme — matches landing gradient family
-       Base #0a0a0a → cards slightly lifted → borders subtle white.
+    /* CAMBRA dark theme — LANDING GRADIENT FAMILY.
+       Landing gradient: #0a0a0a → #0b0e1a → #0a0d18 → #0b1020 → #08090f
+       Cards = translucent white on navy (glass), borders = white/8-10,
+       ring = cyan #22d3ee, primary accent = blue #3b82f6.
        All tokens are pure HSL triples (no alpha) — opacities live in
        component classes, so hsl(var(--x)) always resolves cleanly. */
-    --background: 0 0% 4%;              /* #0a0a0a */
+    --background: 226 32% 7%;           /* #0b0e1a — landing mid-tone */
     --foreground: 0 0% 98%;             /* near-white text */
-    --card: 222 30% 8%;                 /* lifted navy-black card */
+    --card: 226 40% 9%;                 /* #0b1020 — lifted navy card */
     --card-foreground: 0 0% 98%;
-    --popover: 222 30% 8%;
+    --popover: 226 40% 9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;                /* white primary (buttons) */
-    --primary-foreground: 0 0% 4%;
-    --secondary: 222 20% 12%;           /* soft dark surface */
+    --primary: 217 91% 60%;             /* #3b82f6 — landing blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 226 30% 12%;           /* soft translucent-feel surface */
     --secondary-foreground: 0 0% 98%;
-    --muted: 222 20% 12%;
-    --muted-foreground: 0 0% 62%;       /* legible dim text (WCAG AA) */
-    --accent: 222 20% 14%;
-    --accent-foreground: 0 0% 98%;
+    --muted: 226 30% 12%;
+    --muted-foreground: 220 15% 65%;    /* legible dim text (WCAG AA) */
+    --accent: 189 94% 55%;              /* #22d3ee — landing cyan */
+    --accent-foreground: 226 40% 9%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 222 15% 16%;              /* subtle dark border, always legible */
-    --input: 222 20% 14%;
-    --ring: 188 95% 60%;                /* cyan focus ring */
+    --border: 220 20% 18%;              /* subtle navy-tinted border */
+    --input: 226 30% 12%;
+    --ring: 189 94% 55%;                /* cyan focus ring #22d3ee */
 
     /* Neon palette — dark mode, serious */
     --neon-1: 220 45% 7%;
@@ -808,15 +810,38 @@ p { line-height: 1.6; }
    CAMBRA Design System — editorial utilities
    ────────────────────────────────────────────────────────────── */
 
-/* Body defaults — dark editorial baseline.
-   Page wrappers (e.g. .bg-background) still override per-page,
-   so only sections that don't set their own bg inherit this. */
+/* Body defaults — LANDING GRADIENT baseline.
+   Same 5-stop gradient as the Analyzer/Landing pages so the whole app
+   sits on the same navy-to-black wash. Page wrappers still override
+   per-page, so only sections that don't set their own bg inherit this. */
 body {
-  background: #0a0a0a;
+  background:
+    linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%);
+  background-attachment: fixed;
   color: #ffffff;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
+
+/* Glass surfaces — landing-grade translucent panels.
+   Use .glass-panel on cards/sidebars for the exact landing feel:
+   translucent white on navy, cyan-tinted border, backdrop blur. */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.glass-panel-strong {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Cyan/blue accent halos — landing signature glow */
+.halo-cyan  { box-shadow: 0 0 32px rgba(34, 211, 238, 0.35), 0 12px 32px -12px rgba(34, 211, 238, 0.45); }
+.halo-blue  { box-shadow: 0 0 28px rgba(59, 130, 246, 0.30), 0 12px 32px -12px rgba(59, 130, 246, 0.45); }
 
 /* Scrollbar (slimmer + lighter for dark surfaces) */
 ::-webkit-scrollbar { width: 4px; }

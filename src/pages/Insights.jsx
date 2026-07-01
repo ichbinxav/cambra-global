@@ -84,7 +84,7 @@ export default function Insights() {
               <p className="text-sm font-bold mb-0.5 text-white">Members-only research</p>
               <p className="text-xs text-white/65">Unlock all insights — early partners join for free.</p>
             </div>
-            <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold bg-card text-[#06080F] hover:bg-white/90">
+            <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold bg-white text-[#06080F] hover:bg-white/90">
               Unlock — <span className="mx-1 line-through opacity-60">€60</span> Free
             </Button>
           </div>
