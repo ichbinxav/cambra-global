@@ -174,4 +174,15 @@ Two categories remain that only real data can close:
   brand can recover €X"* — requires a real connection, a real audit, and a
   real renegotiation outcome to be defended in front of a merchant.
 
+### Known dependency vulnerabilities
+
+`npm audit` currently reports 7 remaining advisories (1 critical, 1 high, 5
+moderate). All 7 live in **dev-only** paths (`vite` / `vitest` / `esbuild` and
+their transitive deps) and never ship to the production bundle. Fixing them
+requires bumping `vitest` from `^2.1.9` to `^4.x`, which is a major-version
+breaking change (test runner API surface differs). Deferred as tracked debt —
+run `npm audit fix --force` once the test suite is ported to Vitest 4.
+
+### Support
+
 Contact the Base44 team via the dashboard for platform-level questions.
