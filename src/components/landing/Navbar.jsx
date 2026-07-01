@@ -1,30 +1,25 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ArrowRight, Plug, BookOpen, Tag, HelpCircle, Mail, LayoutDashboard, BarChart3, Users, Settings, Shield, Sparkles, Activity } from "lucide-react";
-import BrandLogoWordmark from "@/components/shared/BrandLogoWordmark";
+import { Menu, X, ArrowRight, Plug, BookOpen, Tag, HelpCircle, Mail, Shield, Sparkles, Activity } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import MobileNavMenu from "@/components/landing/MobileNavMenu";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
 
-// CAMBRA OS navigation — grouped by intent
+// CAMBRA public navigation — SAME set of links in every public page, whether
+// the visitor is signed in or not. Member navigation (Dashboard, Reports,
+// Network, Account, …) lives inside DashboardLayout, not here — so the top
+// navbar stays consistent across Landing, Pricing, HowItWorks, Contact, etc.
+// Access-gated links (Connect tools, Insights) are protected by their routes;
+// unauthenticated clicks land on /LoginGate automatically.
 const NAV_PUBLIC = [
-  { label: "Analyzer", href: "/Analyzer", icon: Activity, desc: "Scan your infrastructure" },
-  { label: "How it works", href: "/HowItWorks", icon: Sparkles, desc: "The 4-step audit" },
-  { label: "Connect your tools", href: "/ConnectTools", icon: Plug, desc: "Connect or upload data" },
-  { label: "Insights", href: "/Insights", icon: BookOpen, desc: "Margin intelligence" },
-  { label: "Pricing", href: "/Pricing", icon: Tag },
-  { label: "Help", href: "/Help", icon: HelpCircle },
-  { label: "Contact", href: "/Contact", icon: Mail },
-];
-
-const NAV_MEMBER = [
-  { label: "Dashboard", href: "/Dashboard", icon: LayoutDashboard, desc: "Command center" },
-  { label: "Reports", href: "/Reports", icon: BarChart3, desc: "Savings intelligence" },
-  { label: "Analyzer", href: "/Analyzer", icon: Activity, desc: "Run new scan" },
-  { label: "Network", href: "/Network", icon: Users, desc: "Operator directory" },
-  { label: "Insights", href: "/Insights", icon: BookOpen },
-  { label: "Account", href: "/Account", icon: Settings },
+  { label: "Analyzer",            href: "/Analyzer",     icon: Activity,    desc: "Scan your infrastructure" },
+  { label: "How it works",        href: "/HowItWorks",   icon: Sparkles,    desc: "The 4-step audit" },
+  { label: "Connect your tools",  href: "/ConnectTools", icon: Plug,        desc: "Connect or upload data" },
+  { label: "Insights",            href: "/Insights",     icon: BookOpen,    desc: "Margin intelligence" },
+  { label: "Pricing",             href: "/Pricing",      icon: Tag },
+  { label: "Help",                href: "/Help",         icon: HelpCircle },
+  { label: "Contact",             href: "/Contact",      icon: Mail },
 ];
 
 export default function Navbar() {
@@ -32,7 +27,7 @@ export default function Navbar() {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
   const { t } = useTranslation();
-  const NAV = isAuthenticated ? NAV_MEMBER : NAV_PUBLIC;
+  const NAV = NAV_PUBLIC;
   const isAdmin = user?.role === "admin";
 
   // Translation map for visible navbar labels

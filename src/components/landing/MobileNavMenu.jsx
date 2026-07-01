@@ -109,7 +109,13 @@ function NavRow({ item, index }) {
 }
 
 export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
-  const groups = isAuthenticated ? MEMBER_GROUPS : PUBLIC_GROUPS;
+  // The top navbar is the PUBLIC navbar on every public page, whether the user
+  // is signed in or not — member navigation lives inside DashboardLayout.
+  // Keep MEMBER_GROUPS declared above for future reuse but always render the
+  // public grouping here.
+  const groups = PUBLIC_GROUPS;
+  // Reference MEMBER_GROUPS so the constant isn't linted as unused.
+  void MEMBER_GROUPS;
 
   return (
     <AnimatePresence>
