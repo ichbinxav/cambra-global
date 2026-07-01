@@ -304,8 +304,10 @@ function HowItWorksSection() {
       />
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
-          <SectionLabel className="mb-6">{t("how_label")}</SectionLabel>
-          <h2 className="text-display text-white max-w-3xl mb-10">{t("how_label")}</h2>
+          <div className="text-center mb-10">
+            <SectionLabel className="mb-6 inline-block">{t("how_label")}</SectionLabel>
+            <h2 className="text-display text-white max-w-3xl mx-auto">{t("how_label")}</h2>
+          </div>
         </AnimatedSection>
 
         <div className="relative space-y-3">
