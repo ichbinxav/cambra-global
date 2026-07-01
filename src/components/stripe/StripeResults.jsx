@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CreditCard, TrendingDown, Zap, CheckCircle2, AlertTriangle, Shield } from "lucide-react";
+import { ArrowRight, CheckCircle2, AlertTriangle, Shield } from "lucide-react";
 import { motion } from "framer-motion";
-import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, Cell, ReferenceLine } from "recharts";
+import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from "recharts";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
 
 const STATUS_CONFIG = {

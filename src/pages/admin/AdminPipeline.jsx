@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { DEAL_STATUSES } from "@/lib/adminStatusConstants";
-import { AnimatePresence } from "framer-motion";
 import AdminApplicationDetail from "./AdminApplicationDetail.jsx";
 import { toast } from "sonner";
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, FileSignature, ListChecks, Receipt, CheckCircle2, Clock, Loader2, ArrowRight } from "lucide-react";
+import { TrendingUp, FileSignature, ListChecks, Receipt, CheckCircle2, Clock, Loader2 } from "lucide-react";
 
 const STAGES = [
   { key: "proposed", label: "Proposed", icon: ListChecks, color: "text-muted-foreground" },

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Search, X, Save, FileText, Link2, Plus, ExternalLink, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import { Search, X, Save, FileText, ExternalLink } from "lucide-react";
 import { formatSavings } from "@/lib/deals";
 
 const STATUS_CFG = {

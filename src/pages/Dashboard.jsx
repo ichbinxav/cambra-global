@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRight, CheckCircle2, AlertTriangle, Sparkles,
+  ArrowRight, CheckCircle2, Sparkles,
   CreditCard, Truck, Package, Plug, Building2, Store, Mail, Headphones, Users, Wifi, Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import LastScanBar from "@/components/dashboard/LastScanBar";
 import AIInsightsPanel from "@/components/dashboard/AIInsightsPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
-import PageHero from "@/components/shared/PageHero";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import { useTranslation } from "@/lib/i18n.jsx";
 

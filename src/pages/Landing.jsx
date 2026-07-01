@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, FileText, Sparkles, ShieldCheck } from "lucide-react";
+import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, Sparkles, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
@@ -14,7 +14,6 @@ import StatsGrid from "@/components/landing/StatsGrid";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
-import IntegrationsLogos from "@/components/landing/IntegrationsLogos";
 import OneScanSection from "@/components/landing/OneScanSection";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */

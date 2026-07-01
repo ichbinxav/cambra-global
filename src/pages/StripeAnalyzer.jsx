@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, CreditCard, Shield, Lock, Zap, CheckCircle2, AlertTriangle, TrendingDown, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, CreditCard, Shield, Zap, CheckCircle2, AlertTriangle, TrendingDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StripeConnectFlow from "@/components/stripe/StripeConnectFlow";
 import StripeResults from "@/components/stripe/StripeResults";

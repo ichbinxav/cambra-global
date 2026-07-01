@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Zap, Upload, X, ArrowRight } from "lucide-react";
+import { Zap, Upload, X } from "lucide-react";
 import { useState } from "react";
 
 /**

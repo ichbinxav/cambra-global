@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import MonthlyReportsTable from "@/components/admin/MonthlyReportsTable";
 
 const COLORS = ["#3b82f6", "#22c55e", "#f97316", "#8b5cf6", "#f59e0b", "#06b6d4"];

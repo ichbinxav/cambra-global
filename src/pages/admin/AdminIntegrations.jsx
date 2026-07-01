@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Wifi, WifiOff, AlertTriangle, RefreshCw, Clock, Shield, CheckCircle2 } from "lucide-react";
+import { WifiOff, AlertTriangle, Clock, Shield, CheckCircle2 } from "lucide-react";
 import ConnectorTile from "@/components/connect/ConnectorTile.jsx";
 import { CONNECTORS as CONNECTOR_IDS } from "@/lib/connectors.config.js";
 

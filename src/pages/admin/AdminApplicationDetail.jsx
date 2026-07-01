@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { X, Send, ChevronDown } from "lucide-react";
+import { X, Send } from "lucide-react";
 import { Link } from "react-router-dom";
-import { DEAL_STATUSES, ALL_STATUSES, STATUS_COLORS } from "@/lib/adminStatusConstants";
+import { ALL_STATUSES, STATUS_COLORS } from "@/lib/adminStatusConstants";
 
 const STATUSES = ALL_STATUSES;
 

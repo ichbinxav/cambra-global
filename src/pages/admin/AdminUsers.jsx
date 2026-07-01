@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
-import { Search, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Search, ArrowUpRight } from "lucide-react";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);

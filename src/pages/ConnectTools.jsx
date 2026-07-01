@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowRight, CheckCircle2, Plug, RefreshCw, Sparkles, Clock,
-  CreditCard, Truck, Package, Building2, Mail, Headphones, Users, Wifi, Store, Layers,
+  ArrowRight, CheckCircle2, RefreshCw, Sparkles, Clock,
+  CreditCard, Truck, Building2, Mail, Headphones, Users, Wifi, Store, Layers,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import Navbar from "@/components/landing/Navbar";

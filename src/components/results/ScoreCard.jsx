@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, ArrowRight, AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import AnimatedCounter from "@/components/shared/AnimatedCounter";
 
 function DimensionBar({ label, weight, score, desc }) {

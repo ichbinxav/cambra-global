@@ -5,7 +5,6 @@ import { DEAL_STATUSES } from "@/lib/adminStatusConstants";
 // UI blocks
 import AdminFiltersBar from "@/components/admin/AdminFiltersBar";
 import KPIStrip from "@/components/admin/KPIStrip";
-import ActionQueue from "@/components/admin/ActionQueue";
 import PipelineMini from "@/components/admin/PipelineMini";
 import TopOpportunities from "@/components/admin/TopOpportunities";
 import ProviderPerformance from "@/components/admin/ProviderPerformance";

@@ -4,7 +4,6 @@ import { ArrowRight, TrendingDown, CreditCard, Truck, Package, CheckCircle2 } fr
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
-import { base44 } from "@/api/base44Client";
 
 
 const SAVINGS = [

@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { ArrowRight, Zap } from "lucide-react";
-import { motion, useInView, animate } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 
 const CATEGORIES = ["Payments", "Logistics", "SaaS Stack", "Banking", "Telecom", "Insurance"];
 

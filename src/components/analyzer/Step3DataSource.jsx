@@ -5,7 +5,6 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import StripeConnectCard from "@/components/connect/StripeConnectCard";
-import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 
 /**
  * Step3DataSource — Step 3 of the Analyzer.

@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import CompanyBlock from "@/components/onboarding/CompanyBlock";
 

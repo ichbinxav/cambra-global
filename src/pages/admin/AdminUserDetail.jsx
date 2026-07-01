@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, CheckCircle2, Clock, AlertTriangle, Send } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 
 const STATUS_COLORS = {
   active: "text-green-600 bg-green-500/10 border-green-500/20",

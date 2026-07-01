@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { DEALS, PHASE_CONFIG } from "@/lib/deals.js";
-import { base44 } from "@/api/base44Client";
-import { CheckCircle2, Clock, AlertCircle, Edit2, X, Save } from "lucide-react";
+import { CheckCircle2, Edit2, X } from "lucide-react";
 
 const PHASE_LABELS = { live: "Live", soon: "Coming soon", planned: "Planned" };
 

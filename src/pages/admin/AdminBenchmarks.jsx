@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { getBenchmarks } from "@/lib/scoreEngine.js";
-import { Save, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
+import { RefreshCw } from "lucide-react";
 
 const TIERS = ["micro", "small", "mid", "large"];
 const TIER_LABELS = { micro: "Micro (<€30K/mo)", small: "Small (€30–100K/mo)", mid: "Mid (€100–500K/mo)", large: "Large (>€500K/mo)" };

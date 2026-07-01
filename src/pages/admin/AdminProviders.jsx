@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, X, Save, Building2, CheckCircle2, AlertCircle, Wifi } from "lucide-react";
-import { DEALS } from "@/lib/deals.js";
+import { Plus, X, Save, Building2 } from "lucide-react";
 
 const CATEGORIES = ["payments", "shipping", "saas", "insurance", "banking", "logistics"];
 const API_COLORS = {

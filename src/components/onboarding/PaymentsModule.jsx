@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
-import TagChipsInput from './TagChipsInput';
 import ComboBox from '@/components/inputs/ComboBox';
 import MultiComboBox from '@/components/inputs/MultiComboBox';
 import { COUNTRIES } from '@/components/inputs/CountrySelect';
