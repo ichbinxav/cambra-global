@@ -18,10 +18,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  *     src/lib/invoiceExtraction/layer2Validators.js — the same module tests
  *     exercise. Duplicated below because Deno cannot import from src/.
  *
- *   Layer 3 — cross-check with a second, different model.
- *     Runs base44.integrations.Core.InvokeLLM with a different family
- *     (Gemini) over the same document, compares field-by-field. Same
- *     privacy gate as Layer 1 — off by default.
+ *   Layer 3 — cross-check with a different model family.
+ *     Calls OpenAI (GPT) directly via the tenant's own OPENAI_API_KEY over
+ *     the same document, compares field-by-field. Same privacy gate as
+ *     Layer 1 — off by default. Chosen over Gemini-via-InvokeLLM so BOTH
+ *     legs of the pipeline stay under direct legal control (own keys, own
+ *     DPAs) while preserving cross-family diversity (Claude vs GPT).
  *
  * Rule of gold: if any layer rejects a field, that field NEVER enters the
  * canonical AnalyzerInput / *Profile writes. The record is stored with
@@ -151,24 +153,56 @@ async function runLayer1Anthropic(_fileUrl: string, _fileName: string) {
   return null;
 }
 
-// ─── Layer 3 — cross-check with a different model family (GATED) ─────────────
+// ─── Layer 3 — cross-check with OpenAI (GATED) ───────────────────────────────
 /**
- * Same shape and gate as Layer 1. When enabled, calls
- * base44.integrations.Core.InvokeLLM with model="gemini_3_flash" so that
- * (a) the second opinion comes from a different family and can catch
- * family-specific hallucinations, and (b) we don't burn Anthropic quota
- * twice per document.
+ * Second opinion for cross-validation. Uses OpenAI (GPT) via the caller's own
+ * OPENAI_API_KEY so BOTH layers stay under direct legal control:
+ *   - Layer 1: Anthropic (own key, own DPA, own zero-retention)
+ *   - Layer 3: OpenAI   (own key, own DPA, own zero-retention)
  *
- * Returns the same fields shape as Layer 1. Comparison between the two is
- * done in compareLayers().
+ * Trade-off analysis:
+ *   • Family diversity preserved — Claude vs GPT are distinct families,
+ *     so a family-specific hallucination in one is unlikely to be
+ *     autoconfirmed by the other. That was the whole point of a second
+ *     opinion; we keep it.
+ *   • Legal control complete — no leg of the pipeline goes through Base44
+ *     without a contract the tenant controls. No dependency on the
+ *     Base44↔Google contract for InvokeLLM/Gemini.
+ *   • Trade-off: two legal relationships to maintain (Anthropic + OpenAI)
+ *     instead of one. Both offer enterprise zero-retention + DPA for free.
+ *
+ * When enabled, this function POSTs to https://api.openai.com/v1/chat/completions
+ * with:
+ *   - model: gpt-4o (vision-capable; the exact model id will be pinned
+ *     once retention / DPA is confirmed with OpenAI)
+ *   - the document referenced as an image_url content part
+ *   - response_format: { type: "json_schema" } matching Layer 1's shape
+ *   - the same "return no_encontrado when uncertain" system contract
+ *
+ * Return contract: identical to runLayer1Anthropic — same fields, same
+ * confidence/evidence structure — so compareLayers() can diff them
+ * field-by-field with the existing 2% numeric tolerance.
+ *
+ * A malformed JSON response from OpenAI never throws — it degrades to
+ * "L3 did not run" and the extractor falls back to Layer 1 + Layer 2 only.
  */
-async function runLayer3Gemini(_base44: any, _fileUrl: string, _fileName: string) {
+async function runLayer3OpenAI(_fileUrl: string, _fileName: string) {
+  // GATE — no bytes leave the tenant while this returns null.
   if (!isLlmExtractionEnabled()) {
     return null;
   }
-  // Blocked pending privacy sign-off — see runLayer1Anthropic for the
-  // exact same rationale. When enabling, use InvokeLLM with a JSON schema
-  // matching the Layer 1 shape.
+
+  // ── Enabled path (blocked pending privacy sign-off) ─────────────────────
+  // Intentionally left un-executed. Do NOT enable without confirming with
+  // OpenAI (via platform.openai.com enterprise settings):
+  //   (a) which model id + endpoint we hit
+  //   (b) zero-retention / no-training flag is active for the OpenAI account
+  //   (c) DPA covering financial documents is signed
+  //
+  // When those three are green, replace this line with the real fetch() to
+  // https://api.openai.com/v1/chat/completions using OPENAI_API_KEY and the
+  // schema documented in the doc-comment above. Everything downstream is
+  // ready — compareLayers() and the fusion logic are proveder-agnostic.
   return null;
 }
 
@@ -238,8 +272,8 @@ async function runExtraction(base44: any, fileUrl: string, fileName: string, mon
       })
     : null;
 
-  // Layer 3 — second opinion.
-  const l3 = await runLayer3Gemini(base44, fileUrl, fileName);
+  // Layer 3 — second opinion (OpenAI, tenant-controlled key).
+  const l3 = await runLayer3OpenAI(fileUrl, fileName);
   const l3Verdict = compareLayers(l1, l3);
 
   // Combine — a field is kept only if L2 passed for it (or wasn't applicable)
