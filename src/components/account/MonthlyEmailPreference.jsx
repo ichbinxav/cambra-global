@@ -17,7 +17,7 @@ export default function MonthlyEmailPreference({ user, onUpdate }) {
       await base44.auth.updateMe({ monthly_email_summary: next });
       toast.success(next ? "Monthly summary enabled" : "Monthly summary disabled");
       onUpdate?.({ ...user, monthly_email_summary: next });
-    } catch (e) {
+    } catch {
       setEnabled(!next);
       toast.error("Could not save preference");
     } finally {
@@ -37,7 +37,7 @@ export default function MonthlyEmailPreference({ user, onUpdate }) {
       } else {
         toast.error(data?.error || "Could not send test email");
       }
-    } catch (e) {
+    } catch {
       toast.error("Could not send test email");
     } finally {
       setSending(false);

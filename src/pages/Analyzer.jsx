@@ -250,7 +250,7 @@ export default function Analyzer() {
     })();
 
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isAuthed]);
 
   const applyResumeState = (resume, skipPrompt = false) => {
@@ -323,7 +323,7 @@ export default function Analyzer() {
       const suggestion = autoSuggestBrandName(websiteUrl);
       if (suggestion) setBrandName(suggestion);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [websiteUrl]);
 
   // ── Ensure a Brand exists for THIS website (signed-in users only).
@@ -744,7 +744,7 @@ export default function Analyzer() {
         setRunning(false);
         setStep(3);
       }, 700);
-    } catch (e) {
+    } catch {
       setRunning(false);
       setErrorBanner("We couldn't save your audit. Please try again.");
     }

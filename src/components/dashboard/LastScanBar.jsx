@@ -36,7 +36,7 @@ export default function LastScanBar() {
       const runs = await base44.entities.ContinuousDiscoveryRun
         .filter({ brand_id: brands[0].id }, "-started_at", 1).catch(() => []);
       setRun(runs[0] || null);
-    } catch (_) { /* silent */ }
+    } catch { /* silent */ }
   };
 
   useEffect(() => { loadLatest(); }, []);
@@ -58,7 +58,7 @@ export default function LastScanBar() {
         });
       }
       await loadLatest();
-    } catch (_) { /* silent */ } finally {
+    } catch { /* silent */ } finally {
       setScanning(false);
     }
   };

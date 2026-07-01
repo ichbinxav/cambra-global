@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -60,7 +60,6 @@ export default function CopilotPanel() {
   const [loading, setLoading] = useState(true);
   const [copilot, setCopilot] = useState(null);
   const [ask, setAsk] = useState('');
-  const [answer, setAnswer] = useState('');
   const [messages, setMessages] = useState([]);
   const [pageIntro, setPageIntro] = useState('');
   const [sending, setSending] = useState(false);
@@ -75,7 +74,6 @@ export default function CopilotPanel() {
       if (!mounted) return;
       setCopilot(data);
       setPageIntro(`You are on ${data.page.title}. ${data.page.description} The main thing to do here is: ${data.guidance.nextStep}`);
-      setAnswer('');
       setMessages([]);
       setAsk('');
       setLoading(false);
@@ -114,11 +112,6 @@ export default function CopilotPanel() {
     })();
   }, []);
 
-  const attentionNeeded = useMemo(() => {
-    if (!copilot) return false;
-    return copilot.blockers.length > 0 || copilot.missingData.length > 0 || copilot.guidance.status === 'action_needed';
-  }, [copilot]);
-
   const playReceiveSound = () => {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
@@ -148,7 +141,6 @@ export default function CopilotPanel() {
     if (!copilot || !question || sending) return;
     setSending(true);
     setErrorMessage('');
-    setAnswer('');
     const currentQuestion = question;
     setMessages((prev) => [...prev, { role: 'user', content: currentQuestion }]);
     setAsk('');
@@ -162,7 +154,6 @@ export default function CopilotPanel() {
         brandContext: brandCtx,
       });
       const nextAnswer = response?.data?.answer || copilot.page.description;
-      setAnswer(nextAnswer);
       setMessages((prev) => [...prev, { role: 'assistant', content: nextAnswer }]);
       playReceiveSound();
     } catch (error) {

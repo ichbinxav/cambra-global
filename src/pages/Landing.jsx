@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, TrendingDown, Package, Layers, BarChart3, Truck, Sparkles, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
@@ -65,7 +65,7 @@ function useJsonLd(data) {
 
 function LandingNavbar() {
   const { t } = useTranslation();
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+   
   useJsonLd(LANDING_JSON_LD);
   return (
     <nav
@@ -102,7 +102,8 @@ function LandingNavbar() {
 }
 
 function Hero() {
-  const { t } = useTranslation();
+  // Reserved for i18n copy — Hero currently uses hardcoded EN strings.
+  useTranslation();
   return (
     <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "#ffffff", paddingTop: 80 }}>
       {/* Cinematic ambient layers */}
@@ -279,73 +280,7 @@ function Hero() {
   );
 }
 
-function ProblemSection() {
-  const { t } = useTranslation();
-  const cards = [
-    { icon: TrendingDown, title: t("problem_card1_title"), body: t("problem_card1_body"), stat: t("problem_card1_stat") },
-    { icon: Truck,        title: t("problem_card2_title"), body: t("problem_card2_body"), stat: t("problem_card2_stat") },
-    { icon: Layers,       title: t("problem_card3_title"), body: t("problem_card3_body"), stat: t("problem_card3_stat") },
-  ];
-
-  return (
-    <section className="relative py-12 sm:py-16 overflow-hidden">
-      {/* ambient red wash for the "problem" mood */}
-      <div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          width: 600, height: 600, left: "10%", top: "20%",
-          background: "radial-gradient(circle, rgba(239,68,68,0.10) 0%, transparent 70%)",
-          filter: "blur(80px)",
-        }}
-      />
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
-        <AnimatedSection>
-          <SectionLabel className="mb-6">{t("problem_label")}</SectionLabel>
-          <h2 className="text-display text-white max-w-3xl mb-10">{t("problem_headline")}</h2>
-        </AnimatedSection>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {cards.map((c, i) => (
-            <AnimatedSection key={i} delay={i * 0.1}>
-              <motion.div
-                whileHover={{ y: -6 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="surface p-6 relative group h-full"
-                style={{ background: "rgba(255,255,255,0.025)" }}
-              >
-                {/* hover halo */}
-                <div
-                  aria-hidden
-                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 50% 0%, rgba(239,68,68,0.16), transparent 60%)",
-                  }}
-                />
-                <div
-                  className="relative w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                  style={{
-                    background: "rgba(239,68,68,0.08)",
-                    border: "1px solid rgba(239,68,68,0.18)",
-                    boxShadow: "0 0 24px rgba(239,68,68,0.12)",
-                  }}
-                >
-                  <c.icon size={16} className="text-red-300" aria-hidden="true" />
-                </div>
-                <p className="relative text-white font-bold text-[15px] mb-1">{c.title}</p>
-                <p className="relative text-[13px] mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>{c.body}</p>
-                <p className="relative text-mono text-[12px] font-bold" style={{ color: "rgba(239,68,68,0.95)" }}>
-                  {c.stat}
-                </p>
-              </motion.div>
-            </AnimatedSection>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+// Note: legacy ProblemSection removed — landing now renders ProblemSectionWow.
 
 function HowItWorksSection() {
   const { t } = useTranslation();
@@ -446,151 +381,8 @@ function HowItWorksSection() {
   );
 }
 
-function BenchmarkSection() {
-  const { t } = useTranslation();
-  const stats = [
-    { icon: BarChart3, text: t("benchmark_payments") },
-    { icon: Truck,     text: t("benchmark_shipping") },
-    { icon: Package,   text: t("benchmark_saas") },
-  ];
-
-  return (
-    <section className="relative py-12 sm:py-16 overflow-hidden">
-      <div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          width: 700, height: 700, left: "-10%", bottom: "5%",
-          background: "radial-gradient(circle, rgba(44,167,193,0.10) 0%, transparent 70%)",
-          filter: "blur(90px)",
-        }}
-      />
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
-        <AnimatedSection>
-          <SectionLabel className="mb-6">{t("benchmark_label")}</SectionLabel>
-          <h2 className="text-display text-white max-w-3xl mb-12">{t("benchmark_headline")}</h2>
-        </AnimatedSection>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {stats.map((s, i) => (
-            <AnimatedSection key={i} delay={i * 0.12}>
-              <motion.div
-                whileHover={{ y: -4, borderColor: "rgba(96,165,250,0.30)" }}
-                transition={{ duration: 0.3 }}
-                className="surface p-6 flex items-start gap-3 relative group h-full"
-                style={{ background: "rgba(255,255,255,0.025)" }}
-              >
-                <div
-                  aria-hidden
-                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 0% 0%, rgba(44,167,193,0.16), transparent 70%)",
-                  }}
-                />
-                <motion.div
-                  whileHover={{ rotate: 8, scale: 1.05 }}
-                  className="relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{
-                    background: "rgba(96,165,250,0.08)",
-                    border: "1px solid rgba(96,165,250,0.20)",
-                    boxShadow: "0 0 20px rgba(96,165,250,0.12)",
-                  }}
-                >
-                  <s.icon size={15} className="text-blue-300" aria-hidden="true" />
-                </motion.div>
-                <p className="relative text-[14px] text-white/85 leading-relaxed">{s.text}</p>
-              </motion.div>
-            </AnimatedSection>
-          ))}
-        </div>
-
-        <p className="mt-8 text-[12px]" style={{ color: "rgba(255,255,255,0.30)" }}>
-          {t("benchmark_footnote")}
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function PricingCTASection() {
-  const { t } = useTranslation();
-  const lines = [t("pricing_line1"), t("pricing_line2"), t("pricing_line3"), t("pricing_line4")];
-
-  return (
-    <section className="py-12 sm:py-16 relative overflow-hidden">
-      <div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          width: 700, height: 700, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-          background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)",
-          filter: "blur(80px)",
-        }}
-      />
-
-      {/* Animated breathing glow */}
-      <motion.div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          width: 500, height: 500, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-          background: "radial-gradient(circle, rgba(96,165,250,0.20) 0%, transparent 70%)",
-          filter: "blur(60px)",
-        }}
-        animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-        transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
-      />
-
-      <div className="relative z-10 max-w-3xl mx-auto px-6 sm:px-10 text-center">
-        <AnimatedSection>
-          <SectionLabel className="mb-6">{t("pricing_model")}</SectionLabel>
-          <h2 className="text-display text-white mb-8">{t("pricing_headline")}</h2>
-        </AnimatedSection>
-
-        <ul className="space-y-2.5 text-[14px] mb-10 text-left w-full sm:w-auto sm:inline-block">
-          {lines.map((l, i) => (
-            <motion.li
-              key={i}
-              className="flex items-center gap-3 text-white/75"
-              initial={{ opacity: 0, x: -16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08, duration: 0.5 }}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"
-                style={{ boxShadow: "0 0 10px rgba(96,165,250,0.8)" }}
-              />
-              {l}
-            </motion.li>
-          ))}
-        </ul>
-
-        <AnimatedSection delay={0.2}>
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="inline-block">
-            <Link
-              to="/Analyzer"
-              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px]"
-              aria-label={t("pricing_cta")}
-              style={{
-                boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
-              }}
-            >
-              <Sparkles size={14} />
-              {t("pricing_cta")} <ArrowRight size={16} aria-hidden="true" />
-            </Link>
-          </motion.div>
-        </AnimatedSection>
-
-        <p className="mt-6 text-[12px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-          {t("pricing_trust")}
-        </p>
-      </div>
-    </section>
-  );
-}
+// Note: legacy BenchmarkSection removed — landing now renders StatsGrid.
+// Note: legacy PricingCTASection removed — landing now renders PricingDual + StopLeavingMarginCTA.
 
 function LandingFooter() {
   const { t } = useTranslation();

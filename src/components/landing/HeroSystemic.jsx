@@ -17,8 +17,6 @@ const SIGNALS = [
   { id: "saas",        Icon: LayoutGrid, t: "Commerce SaaS overlap",           delta: "2 duplicates",    state: "alert", value: "Dup.",  peer: "1 ESP", saving: 8000 },
 ];
 
-const LAYER_CHIPS = ["Payments", "Logistics", "Commerce SaaS"];
-
 // Animated counter
 function Counter({ to, duration = 2 }) {
   const [val, setVal] = useState(0);

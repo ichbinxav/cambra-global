@@ -39,7 +39,7 @@ export default function LoginGate() {
     const onKey = (e) => { if (e.key === "Enter") handleContinue(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [returnUrl]);
 
   return (

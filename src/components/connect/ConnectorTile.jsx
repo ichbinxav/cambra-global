@@ -24,7 +24,7 @@ export default function ConnectorTile({ title, note, connectorId, functionName, 
       const res = await base44.functions.invoke(functionName, { connectorId });
       const ok = !!res?.data?.connected;
       setConnected(ok);
-    } catch (e) {
+    } catch {
       setConnected(false);
     }
   }, [functionName, connectorId]);
@@ -52,7 +52,7 @@ export default function ConnectorTile({ title, note, connectorId, functionName, 
           await base44.functions.invoke('securityAuditLog', { event_type: 'integration_access_check', connector: connectorKey, success: !!ok });
         }
       }, 600);
-    } catch (e) {
+    } catch {
       setError('Connection failed');
       try { await base44.functions.invoke('securityAuditLog', { event_type: 'failure', connector: connectorKey, success: false }); } catch {}
     }
@@ -63,7 +63,7 @@ export default function ConnectorTile({ title, note, connectorId, functionName, 
       await base44.connectors.disconnectAppUser(connectorId);
       setConnected(false);
       await base44.functions.invoke('securityAuditLog', { event_type: 'disconnect', connector: connectorKey, success: true });
-    } catch (e) {
+    } catch {
       setError('Disconnect failed');
       try { await base44.functions.invoke('securityAuditLog', { event_type: 'failure', connector: connectorKey, success: false }); } catch {}
     }

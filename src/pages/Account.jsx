@@ -26,17 +26,6 @@ export default function Account() {
   const [paymentsProfiles, setPaymentsProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const makeAdmin = async () => {
-    const res = await base44.functions.invoke('promoteMeToAdmin', {});
-    if (res?.data?.success) {
-      const u = await base44.auth.me();
-      setUser(u);
-      toast.success('Ahora tienes rol administrador');
-    } else {
-      toast.error(res?.data?.error || 'No se pudo otorgar el rol admin');
-    }
-  };
-
   useEffect(() => {
     Promise.all([base44.auth.me(), base44.entities.Brand.list("-created_date", 1), base44.entities.PaymentsProfile.list("-created_date", 1)]).then(([u, b, p]) => {
       setUser(u);

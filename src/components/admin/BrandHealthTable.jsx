@@ -15,12 +15,7 @@ export default function BrandHealthTable({ brands = [], apps = [], activations =
 
   const countries = useMemo(() => Array.from(new Set(brands.map(b => b.country).filter(Boolean))), [brands]);
 
-  const byEmail = (email, list) => list.filter(x => (x.user_email || x.created_by || x.brand_id) && (x.user_email === email || x.created_by === email || x.brand_id === email));
-
   const brandRows = useMemo(() => {
-    // Pre-index by brand email (created_by)
-    const emailMap = new Map(brands.map(b => [b.created_by, b]));
-
     const savingsByEmail = {};
     (results || []).forEach(r => {
       const email = r.created_by;

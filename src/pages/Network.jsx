@@ -38,7 +38,6 @@ export default function Network() {
   const [catFilter, setCatFilter] = useState("all");
   const [sizeFilter, setSizeFilter] = useState("all");
   const [subscribed, setSubscribed] = useState(false);
-  const [subLoading, setSubLoading] = useState(true);
 
   useEffect(() => {
     base44.entities.Brand.list("-created_date", 100).then(b => { setBrands(b); setLoading(false); });
@@ -46,15 +45,11 @@ export default function Network() {
 
   useEffect(() => {
     (async () => {
-      try {
-        const authed = await base44.auth.isAuthenticated();
-        if (!authed) { setSubscribed(false); return; }
-        const me = await base44.auth.me();
-        const subs = await base44.entities.Subscription.filter({ user_email: me.email, status: 'active' }, '-created_date', 1);
-        setSubscribed(subs.length > 0);
-      } finally {
-        setSubLoading(false);
-      }
+      const authed = await base44.auth.isAuthenticated();
+      if (!authed) { setSubscribed(false); return; }
+      const me = await base44.auth.me();
+      const subs = await base44.entities.Subscription.filter({ user_email: me.email, status: 'active' }, '-created_date', 1);
+      setSubscribed(subs.length > 0);
     })();
   }, []);
 

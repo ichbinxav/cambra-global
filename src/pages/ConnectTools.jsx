@@ -79,7 +79,7 @@ function CardSkeleton() {
 }
 
 /* ── status badge ────────────────────────────────────────────── */
-function StatusBadge({ integration, stripeConnected, t, formatEur }) {
+function StatusBadge({ integration, stripeConnected, t }) {
   const status = integration.display_status;
   if (status === "connected") {
     return (
@@ -275,7 +275,7 @@ export default function ConnectTools() {
           const sc = await base44.entities.StripeConnection
             .filter({ brand_id: bId, connection_status: "connected" }, "-last_sync_at", 1);
           setStripeConnected(sc.length > 0);
-        } catch (_) {}
+        } catch {}
 
         // Get grouped integration status
         const res = await base44.functions.invoke("getIntegrationStatus", { brand_id: bId });

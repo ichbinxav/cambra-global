@@ -16,7 +16,6 @@ import OptionTiles from '@/components/onboarding/OptionTiles';
 export default function SaasModule(){
   const [brandId, setBrandId] = useState(null);
   const [item, setItem] = useState({ email_sms: [], extras: [], gasto_mensual_map: {}, contrato_map: {}, renovaciones_map: {} });
-  const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -30,9 +29,9 @@ export default function SaasModule(){
     await refreshStatus(b.id);
   })(); },[]);
 
-  const refreshStatus = async (bid)=>{
-    const res = await base44.functions.invoke('getOnboardingStatus', {});
-    setStatus(res.data?.statuses?.saas || null);
+  // Fires backend recompute of the vertical status; UI does not read the result today.
+  const refreshStatus = async () => {
+    await base44.functions.invoke('getOnboardingStatus', {});
   };
 
   const save = async () => {

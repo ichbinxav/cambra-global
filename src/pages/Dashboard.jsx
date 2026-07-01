@@ -94,19 +94,19 @@ export default function Dashboard() {
             const sc = await base44.entities.StripeConnection
               .filter({ brand_id: b.id, connection_status: "connected" }, "-last_sync_at", 1);
             setStripeConn(sc[0] || null);
-          } catch (_) {}
+          } catch {}
 
           try {
             const g = await base44.functions.invoke("getInfrastructureGraph", { brand_id: b.id });
             const payload = g?.data || g;
             if (payload?.ok) setGraphNodes(payload.nodes || []);
-          } catch (_) {}
+          } catch {}
 
           try {
             const acts = await base44.entities.DealActivation.filter({ brand_id: b.id });
             const live = (acts || []).some(a => ["live", "authorized", "migrating", "monetizing"].includes(a.status));
             setHasLiveDeal(live);
-          } catch (_) {}
+          } catch {}
         }
       } catch (err) {
         console.warn("Dashboard init error:", err?.message || err);

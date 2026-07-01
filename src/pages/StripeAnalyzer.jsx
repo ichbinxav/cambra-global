@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, CreditCard, Shield, Zap, CheckCircle2, AlertTriangle, TrendingDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,7 +9,6 @@ import StripeResults from "@/components/stripe/StripeResults";
 export default function StripeAnalyzer() {
   const [phase, setPhase] = useState("intro"); // intro | connecting | connected | analyzing | results
   const [mockData, setMockData] = useState(null);
-  const navigate = useNavigate();
 
   const handleConnect = () => setPhase("connecting");
   const handleConnected = (data) => {

@@ -10,7 +10,6 @@ export default function AdminUsers() {
   const [userDeals, setUserDeals] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [sort, setSort] = useState("created_date");
 
   useEffect(() => {
     Promise.all([

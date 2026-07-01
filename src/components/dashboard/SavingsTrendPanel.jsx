@@ -35,7 +35,7 @@ export default function SavingsTrendPanel({ brandId, identifiedMonthly = 0 }) {
         const res = await base44.functions.invoke("getBrandSavings", { brandId });
         const payload = res?.data || res;
         setData(payload);
-      } catch (_) {
+      } catch {
         setData(null);
       } finally {
         setLoading(false);

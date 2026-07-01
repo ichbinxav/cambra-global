@@ -17,13 +17,6 @@ import CommandHero from "@/components/admin/CommandHero";
 import OperationsConsole from "@/components/admin/OperationsConsole";
 import DataIntegrityWidget from "@/components/admin/DataIntegrityWidget";
 
-function toDateFromMonth(ym) {
-  // ym = 'YYYY-MM'
-  if (!ym) return null;
-  const [y, m] = ym.split("-").map(Number);
-  return new Date(y, (m || 1) - 1, 1);
-}
-
 function safeCurrency(n) {
   const v = Math.round(Number(n || 0));
   return `€${v.toLocaleString()}`;
@@ -69,7 +62,7 @@ export default function AdminOverview() {
       subs.push(base44.entities.DealActivation.subscribe(() => loadAll()));
       subs.push(base44.entities.MigrationTask.subscribe(() => loadAll()));
       subs.push(base44.entities.Invoice.subscribe(() => loadAll()));
-    } catch (e) { /* ignore realtime failures */ }
+    } catch { /* ignore realtime failures */ }
     return () => subs.forEach(u => u?.());
   }, []);
 
@@ -92,7 +85,7 @@ export default function AdminOverview() {
     );
   }
 
-  const { users, brands, results, apps, reports, providers, activations, tasks, mandates, invoices } = data;
+  const { users, brands, results, apps, reports, providers, activations, tasks, invoices } = data;
 
   // Derived lists with filters applied where relevant
   const countries = Array.from(new Set((brands || []).map(b => b.country).filter(Boolean)));
@@ -119,6 +112,10 @@ export default function AdminOverview() {
   const resultsInRange = (results || []).filter(r => inRangeDate(r.created_date));
   const resultsPrevRange = (results || []).filter(r => inPrevRange(r.created_date));
 
+  // reportsInRange was previously used for a widget that has been removed; kept
+  // computation trimmed. If a time-scoped reports view returns, filter `reports`
+  // with toDateFromMonth(r.month) against [since, now] then.
+
   // SECTION 1 — HERO KPI STRIP
   const identifiedSavings = resultsInRange.reduce((s, r) => s + (r.total_savings || 0), 0);
   const identifiedPrev = resultsPrevRange.reduce((s, r) => s + (r.total_savings || 0), 0);
@@ -128,11 +125,7 @@ export default function AdminOverview() {
 
   const activatedSavingsAnnual = activationsActive.reduce((s, a) => s + (a.projected_savings_annual || a.estimated_savings_yearly || a.realized_savings_yearly || 0), 0);
 
-  // Monetized revenue split (time-ranged by month key)
-  const reportsInRange = (reports || []).filter(r => {
-    const d = toDateFromMonth(r.month);
-    return d && d >= since && d <= now;
-  });
+  // Monetized revenue split — reads directly from Invoice, not reports.
   const monetizedPaid = (invoices || []).filter(i => i.status === 'paid').reduce((s, i) => s + (i.total_amount || 0), 0);
   const monetizedInvoiced = (invoices || []).filter(i => ['issued','sent','due','overdue'].includes(i.status)).reduce((s, i) => s + (i.total_amount || 0), 0);
 
@@ -238,21 +231,9 @@ export default function AdminOverview() {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 8);
 
-  // SECTION 7 — BRAND HEALTH
-  const latestScoreByEmail = {};
-  (results || []).forEach(r => {
-    const email = r.created_by;
-    const t = new Date(r.created_date).getTime();
-    if (!latestScoreByEmail[email] || latestScoreByEmail[email].t < t) {
-      latestScoreByEmail[email] = { t, score: r.infra_score || 0 };
-    }
-  });
-  const brandHealthRows = (brands || []).map(b => ({
-    name: b.name || b.created_by?.split("@")[0] || "Brand",
-    email: b.created_by,
-    score: latestScoreByEmail[b.created_by]?.score || 0,
-    deals: (apps || []).filter(a => a.user_email === b.created_by).length,
-  })).sort((a, b) => b.score - a.score).slice(0, 8);
+  // SECTION 7 — BRAND HEALTH is rendered by <BrandHealthTable /> which
+  // computes its own rows from brands/apps/activations/tasks/results. The
+  // legacy `brandHealthRows` aggregation was removed with the widget swap.
 
   // SECTION 8 — REVENUE & BILLING
   const realizedSavings = (reports || []).filter(r => ["invoiced","paid"].includes(r.status)).reduce((s, r) => s + (r.savings || 0), 0);

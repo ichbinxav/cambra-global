@@ -168,7 +168,8 @@ export default function Vault() {
 function LinkEditor({ doc, onAdd, onRemove }){
   const [type, setType] = useState('brand');
   const [id, setId] = useState('');
-  const [primary, setPrimary] = useState(false);
+  // is_primary is not toggled in the UI today — always false.
+  const primary = false;
 
   return (
     <div className="space-y-2">

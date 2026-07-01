@@ -18,7 +18,6 @@ export default function LiveSystemHeader() {
   }, []);
 
   const t = TICKERS[activeIdx];
-  const Icon = t.icon;
 
   return (
     <div className="border-b border-border/40 bg-card/50 backdrop-blur-sm sticky top-0 z-40">

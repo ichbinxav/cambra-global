@@ -14,7 +14,6 @@ export default function InsightDetail() {
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(true);
   const [subscribed, setSubscribed] = useState(false);
-  const [subLoading, setSubLoading] = useState(true);
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("id");
@@ -28,15 +27,11 @@ export default function InsightDetail() {
 
   useEffect(() => {
     (async () => {
-      try {
-        const authed = await base44.auth.isAuthenticated();
-        if (!authed) { setSubscribed(false); return; }
-        const me = await base44.auth.me();
-        const subs = await base44.entities.Subscription.filter({ user_email: me.email, status: 'active' }, '-created_date', 1);
-        setSubscribed(subs.length > 0);
-      } finally {
-        setSubLoading(false);
-      }
+      const authed = await base44.auth.isAuthenticated();
+      if (!authed) { setSubscribed(false); return; }
+      const me = await base44.auth.me();
+      const subs = await base44.entities.Subscription.filter({ user_email: me.email, status: 'active' }, '-created_date', 1);
+      setSubscribed(subs.length > 0);
     })();
   }, []);
 

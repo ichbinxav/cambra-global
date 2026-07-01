@@ -45,7 +45,7 @@ export default function RecommendationList(){
           reasons: Array.isArray(out?.reasons) ? out.reasons : r.reasons,
           missing_data: Array.isArray(out?.missing_data) ? out.missing_data : r.missing_data,
         };
-      } catch (_) {
+      } catch {
         return r;
       }
     }));
@@ -55,7 +55,7 @@ export default function RecommendationList(){
   };
 
   useEffect(()=>{ load();
-    try { const unsub = base44.entities.Recommendation.subscribe(()=>load()); return ()=>unsub?.(); } catch(e){}
+    try { const unsub = base44.entities.Recommendation.subscribe(()=>load()); return ()=>unsub?.(); } catch {}
   },[]);
 
   if (loading) return <div className="text-sm text-muted-foreground">Loading recommendations…</div>;

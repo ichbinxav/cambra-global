@@ -26,7 +26,6 @@ export default function DashboardLayout() {
   // user role tracking handled by AuthContext
 
   const isAdmin = user?.role === "admin";
-  const isProvider = user?.role === "provider";
 
   return (
     <div

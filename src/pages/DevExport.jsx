@@ -45,7 +45,7 @@ function RouteRow({ route, html }) {
     try {
       await navigator.clipboard.writeText(html);
       toast.success(`Copiado: ${route}`);
-    } catch (e) {
+    } catch {
       // fallback select
       try {
         taRef.current?.select();
@@ -100,7 +100,7 @@ export default function DevExport() {
             setResults((prev) => ({ ...prev, [route]: html }));
             try {
               // redacted: DOM export logs disabled in production
-            } catch (_) {}
+            } catch {}
 
           } catch (e) {
             setResults((prev) => ({ ...prev, [route]: `/* ERROR: ${e?.message || e} */` }));

@@ -8,7 +8,6 @@ const REALIZED_STATUSES = ["invoiced", "paid"];
 
 export default function AdminRevenue() {
   const [activations, setActivations] = useState([]);
-  const [brands, setBrands] = useState([]);
   const [reports, setReports] = useState([]);
   const [providers, setProviders] = useState([]);
   const [invoices, setInvoices] = useState([]);
@@ -21,13 +20,12 @@ export default function AdminRevenue() {
       base44.entities.MonthlySavingsReport.list("-month", 500),
       base44.entities.Provider.list(),
       base44.entities.Invoice.list("-issued_at", 500),
-    ]).then(([acts, b, msr, prov, invs]) => { setActivations(acts); setBrands(b); setReports(msr); setProviders(prov); setInvoices(invs); setLoading(false); });
+    ]).then(([acts, _b, msr, prov, invs]) => { setActivations(acts); setReports(msr); setProviders(prov); setInvoices(invs); setLoading(false); });
   }, []);
 
   if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
 
   const activeActivations = activations.filter(a => ["activated","migrating","live","monetizing"].includes(a.status));
-  const totalSavings = 0;
   const realizedFees = (invoices || []).filter(i => ['issued','sent','due','overdue','paid'].includes(i.status)).reduce((s, i) => s + (i.total_amount || 0), 0);
   const realizedSavings = reports.filter(r => REALIZED_STATUSES.includes(r.status)).reduce((s, r) => s + (r.savings || 0), 0);
   const contractsWithRealized = Array.from(new Set((invoices || []).filter(i => ['issued','sent','due','overdue','paid'].includes(i.status)).map(i => i.deal_activation_id))).length;

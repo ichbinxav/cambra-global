@@ -21,7 +21,6 @@ import SmartNumberField from '@/components/inputs/SmartNumberField.jsx';
 export default function ShippingModule(){
   const [brandId, setBrandId] = useState(null);
   const [item, setItem] = useState({ carriers: [], paises_serv: [] });
-  const [status, setStatus] = useState(null);
   const [saving, setSaving] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -35,9 +34,9 @@ export default function ShippingModule(){
     await refreshStatus(b.id);
   })(); },[]);
 
-  const refreshStatus = async (bid)=>{
-    const res = await base44.functions.invoke('getOnboardingStatus', {});
-    setStatus(res.data?.statuses?.shipping || null);
+  // Fires backend recompute of the vertical status; UI does not read the result today.
+  const refreshStatus = async () => {
+    await base44.functions.invoke('getOnboardingStatus', {});
   };
 
   const save = async () => {

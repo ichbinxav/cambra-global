@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 export default function SavingsEstimator() {
-  const [monthlyRevenue, setMonthlyRevenue] = useState(50000);
-  const [monthlyShipping, setMonthlyShipping] = useState(4000);
-  const [monthlySaaS, setMonthlySaaS] = useState(2500);
+  // Static demo values — this component is a marketing preview, not interactive.
+  const monthlyRevenue = 50000;
+  const monthlyShipping = 4000;
+  const monthlySaaS = 2500;
 
   // Assumptions aligned with Analyzer defaults:
   // Payments: 2.9% → tier benchmark (typical delta ~1.5pp) on revenue

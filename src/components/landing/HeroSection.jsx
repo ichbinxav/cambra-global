@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingDown, CreditCard, Truck, Package, CheckCircle2 } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import { useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -31,8 +31,8 @@ const fadeUp = {
 export default function HeroSection() {
   const { isAuthenticated } = useAuth();
   const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const watermarkY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
+  // Kept for future scroll-linked effects; watermark parallax was removed.
+  useScroll({ target: ref, offset: ["start start", "end start"] });
 
   return (
     <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">

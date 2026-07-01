@@ -50,13 +50,6 @@ export default function StripeResults({ data }) {
     amount: f.amount,
   }));
 
-  const monthlyData = data.top_fee_months.map(m => ({
-    name: m.month,
-    fees: m.fees,
-    volume: m.volume,
-    effectivePct: ((m.fees / m.volume) * 100).toFixed(2),
-  }));
-
   return (
     <div className="space-y-8">
       {/* Live badge */}

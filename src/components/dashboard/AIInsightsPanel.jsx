@@ -77,7 +77,7 @@ export default function AIInsightsPanel() {
           .list("-created_date", 3)
           .catch(() => []);
         if (!cancelled) setRuns(list);
-      } catch (_) {
+      } catch {
         /* silent — panel will show empty state */
       } finally {
         if (!cancelled) setLoading(false);

@@ -11,7 +11,6 @@ const STEP_DELAY_MS = 600;
 
 export default function AnalysisProgress({ country = "", tier = "", done = false }) {
   const { t } = useTranslation();
-  const safeCountry = country || t("nav_country") || "—";
   const steps = [
     t("progress_mapping"),
     t("progress_benchmarks", { country: country || "—", tier: tier || "—" }),
@@ -29,7 +28,7 @@ export default function AnalysisProgress({ country = "", tier = "", done = false
     if (current >= steps.length - 1) return;
     const timer = setTimeout(() => setCurrent(c => c + 1), STEP_DELAY_MS);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [current, done]);
 
   return (

@@ -2,11 +2,8 @@ import { useState } from "react";
 import { DEALS, PHASE_CONFIG } from "@/lib/deals.js";
 import { CheckCircle2, Edit2, X } from "lucide-react";
 
-const PHASE_LABELS = { live: "Live", soon: "Coming soon", planned: "Planned" };
-
 export default function AdminDeals() {
   const [selected, setSelected] = useState(null);
-  const [editMode, setEditMode] = useState(false);
 
   return (
     <div className="space-y-5">

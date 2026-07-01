@@ -26,7 +26,7 @@ function DimensionBar({ label, weight, score, desc }) {
   );
 }
 
-function ImpactRow({ impact, index }) {
+function ImpactRow({ impact }) {
   const severityConfig = {
     high:   { dot: "bg-[#7AA8FF]",  badge: "bg-[#7AA8FF]/15 text-[#7AA8FF] border-[#7AA8FF]/30" },
     medium: { dot: "bg-[#FFB05A]",  badge: "bg-[#FFB05A]/15 text-[#FFB05A] border-[#FFB05A]/30" },
@@ -56,7 +56,7 @@ function ImpactRow({ impact, index }) {
 
 export default function ScoreCard({ scoreReport }) {
   const [showDimensions, setShowDimensions] = useState(false);
-  const { total, potentialTotal, label, scoreColor, accuracyLabel, dimensions, impacts, dataQuality } = scoreReport;
+  const { total, potentialTotal, label, accuracyLabel, dimensions, impacts, dataQuality } = scoreReport;
 
   const circumference = 2 * Math.PI * 52;
   const offset = circumference * (1 - total / 100);
@@ -176,7 +176,7 @@ export default function ScoreCard({ scoreReport }) {
           <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-1">Score is impacted by</p>
           <div>
             {impacts.map((impact, i) => (
-              <ImpactRow key={i} impact={impact} index={i} />
+              <ImpactRow key={i} impact={impact} />
             ))}
           </div>
         </div>

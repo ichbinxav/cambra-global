@@ -4,7 +4,6 @@ import { base44 } from '@/api/base44Client';
 export default function AdminControl() {
   const [deals, setDeals] = useState([]);
   const [brands, setBrands] = useState([]);
-  const [reports, setReports] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [summary, setSummary] = useState(null);
   const [anomalies, setAnomalies] = useState([]);
@@ -18,7 +17,6 @@ export default function AdminControl() {
       const sm = sum.data?.summary || {};
       setSummary(sm);
       setDeals(sm.samples?.recent_deals || []);
-      setReports(sm.samples?.recent_reports || []);
       setInvoices(sm.samples?.recent_invoices || []);
       setAnomalies(integ.data?.anomalies || []);
       const b = await base44.entities.Brand.list();

@@ -144,7 +144,7 @@ export default function Results() {
           const sc = await base44.entities.StripeConnection
             .filter({ brand_id: r.brand_id, connection_status: "connected" }, "-last_sync_at", 1);
           setStripeConn(sc[0] || null);
-        } catch (_) { /* RLS may block — treat as not connected */ }
+        } catch { /* RLS may block — treat as not connected */ }
       }
 
       // Load benchmarks per vertical
@@ -155,7 +155,7 @@ export default function Results() {
         try {
           const resp = await base44.functions.invoke("getBenchmarkForReport", { vertical, revenue_tier: tier, country });
           return resp?.data || resp || null;
-        } catch (_) { return null; }
+        } catch { return null; }
       };
       const [bmPay, bmShip, bmSaas] = await Promise.all([fetchBm("payments"), fetchBm("shipping"), fetchBm("saas")]);
       setBenchmarks({ payments: bmPay, shipping: bmShip, saas: bmSaas });
@@ -166,7 +166,7 @@ export default function Results() {
           const g = await base44.functions.invoke("getInfrastructureGraph", { brand_id: r.brand_id });
           const payload = g?.data || g;
           if (payload?.ok) setGraphNodes(payload.nodes || []);
-        } catch (_) { /* non-blocking */ }
+        } catch { /* non-blocking */ }
       }
 
       setLoading(false);
@@ -290,7 +290,7 @@ export default function Results() {
       toast.success(t("link_copied"));
       setToastMsg(t("link_copied"));
       setTimeout(() => setToastMsg(""), 2500);
-    } catch (_) {
+    } catch {
       toast.error(t("copy_failed"));
       setToastMsg(t("copy_failed"));
       setTimeout(() => setToastMsg(""), 2500);

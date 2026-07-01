@@ -39,7 +39,6 @@ export default function FlowSelfTestPanel() {
     reset ? setResetting(true) : setSeeding(true);
     setError(null);
     try {
-      const url = reset ? "/functions/seedDemoData?reset=true" : "/functions/seedDemoData";
       const { data } = await base44.functions.invoke("seedDemoData", reset ? { reset: true } : {});
       setSeedResult(data);
     } catch (e) {
