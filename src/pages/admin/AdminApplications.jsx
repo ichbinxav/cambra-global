@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, ArrowUpRight } from "lucide-react";
-import AdminApplicationDetail from "./AdminApplicationDetail.jsx";
+import AdminApplicationDetail from "@/components/admin/AdminApplicationDetail.jsx";
 import { toast } from "sonner";
 import { ALL_STATUSES, STATUS_COLORS } from "@/lib/adminStatusConstants";
 
