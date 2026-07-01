@@ -56,11 +56,38 @@ const DENO_FILE = path.join(REPO_ROOT, "base44/functions/dataSyncAgent/entry.ts"
 // optional `skip` flag with a reason — used for pieces that DO have drift
 // today but whose realignment is parked as a separate decision.
 //
-// HALLAZGO (este turno): 5 de las 7 piezas marcadas en código como
-// "COPIA VERBATIM" en realidad NO lo son. Son FUNCIONALMENTE equivalentes
-// (mismos contratos, mismos resultados) pero NO byte-verbatim. Detalle por
-// pieza en el campo `skip` de cada entrada. Realineación pendiente de
-// decisión humana — fuera del scope de este prompt según instrucciones.
+// DECISIÓN ARQUITECTURAL (documentada, no accionada):
+//
+// De las 7 piezas duplicadas Deno↔src, 5 están en `skip`. Al analizarlas
+// juntas queda claro que NO son drift cosmético — son la CONSECUENCIA
+// ESPERADA de una restricción del entorno:
+//
+//   `base44/functions/dataSyncAgent/entry.ts` es un archivo Deno único
+//   que no puede importar de `src/`. Todo helper que viva en ese archivo
+//   comparte namespace con decenas de otros helpers del mismo archivo.
+//
+// Eso obliga a dos patrones divergentes:
+//
+//   1. Prefijos `_` en helpers genéricos (`_sleep`, `_paginatorCursorStripe`,
+//      `_createRefreshState`) para evitar colisiones en el archivo gigante.
+//   2. Normalizers como propiedades de un objeto `NORMALIZERS` (dispatch
+//      por key) en Deno vs named exports en src (tests por import).
+//
+// Realinear las 5 exige:
+//   - Desprefijar helpers verificando colisiones en un archivo Deno de
+//     miles de líneas que sólo se ejecuta al desplegar (no en tests locales).
+//   - Reescribir el dispatcher de normalizers.
+//
+// Riesgo real: un helper mal desprefijado tapa a otro silenciosamente y
+// `dataSyncAgent` deja de sincronizar bien un subset de integraciones sin
+// que ningún test en src/ lo detecte — porque los tests en src/ no
+// ejecutan el archivo Deno.
+//
+// El test cumple SU FUNCIÓN REAL tal cual está hoy: documenta el drift
+// arquitectural por pieza y se pondrá rojo el día que alguien introduzca
+// un drift FUNCIONAL (no arquitectural) en cualquier pieza no-skip. Las
+// 5 piezas skip permanecen así hasta que se decida migrar `dataSyncAgent`
+// a módulos — que es una decisión mucho más grande que este pase.
 const PAIRS = [
   { key: "mergeStaticHeaders",     src: "src/lib/syncEngine/mergeStaticHeaders.js" },
   { key: "dateRange",              src: "src/lib/syncEngine/dateRange.js" },
