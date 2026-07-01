@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { DEAL_STATUSES } from "@/lib/adminStatusConstants";
 
@@ -34,36 +34,66 @@ export default function AdminOverview() {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
+  const inFlightRef = useRef(false);
+  const pendingRef = useRef(false);
+  const debounceTimerRef = useRef(null);
 
+  // Coalesced loader: dedupe overlapping calls (avoid 11 × N SDK requests when
+  // multiple realtime subscriptions fire together) and debounce bursts.
   const loadAll = async () => {
-    const [users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices] = await Promise.all([
-      base44.entities.User.list(),
-      base44.entities.Brand.list(),
-      base44.entities.UserDeal.list(),
-      base44.entities.AnalyzerResult.list("-created_date", 500),
-      base44.entities.DealApplication.list("-created_date", 500),
-      base44.entities.MonthlySavingsReport.list("-month", 500),
-      base44.entities.Provider.list(),
-      base44.entities.DealActivation.list(),
-      base44.entities.MigrationTask.list("-updated_date", 500),
-      base44.entities.Mandate.list(),
-      base44.entities.Invoice.list("-issued_at", 500),
-    ]);
-    setData({ users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices });
+    if (inFlightRef.current) { pendingRef.current = true; return; }
+    inFlightRef.current = true;
+    try {
+      const [users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices] = await Promise.all([
+        base44.entities.User.list(),
+        base44.entities.Brand.list(),
+        base44.entities.UserDeal.list(),
+        base44.entities.AnalyzerResult.list("-created_date", 500),
+        base44.entities.DealApplication.list("-created_date", 500),
+        base44.entities.MonthlySavingsReport.list("-month", 500),
+        base44.entities.Provider.list(),
+        base44.entities.DealActivation.list(),
+        base44.entities.MigrationTask.list("-updated_date", 500),
+        base44.entities.Mandate.list(),
+        base44.entities.Invoice.list("-issued_at", 500),
+      ]);
+      setData({ users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices });
+    } catch (err) {
+      // Rate-limit or transient failure — leave existing data in place and
+      // retry on the next subscription event. Never crash the page.
+      console.warn("[AdminOverview] loadAll failed:", err?.message || err);
+    } finally {
+      inFlightRef.current = false;
+      if (pendingRef.current) {
+        pendingRef.current = false;
+        // Delay the follow-up so we don't immediately re-hit the rate limit.
+        setTimeout(() => scheduleLoad(), 500);
+      }
+    }
+  };
+
+  // Debounce subscription bursts (6 channels can fire near-simultaneously)
+  const scheduleLoad = () => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => loadAll(), 400);
   };
 
   useEffect(() => {
     loadAll().finally(() => setLoading(false));
     const subs = [];
     try {
-      subs.push(base44.entities.DealApplication.subscribe(() => loadAll()));
-      subs.push(base44.entities.AnalyzerResult.subscribe(() => loadAll()));
-      subs.push(base44.entities.MonthlySavingsReport.subscribe(() => loadAll()));
-      subs.push(base44.entities.DealActivation.subscribe(() => loadAll()));
-      subs.push(base44.entities.MigrationTask.subscribe(() => loadAll()));
-      subs.push(base44.entities.Invoice.subscribe(() => loadAll()));
+      subs.push(base44.entities.DealApplication.subscribe(scheduleLoad));
+      subs.push(base44.entities.AnalyzerResult.subscribe(scheduleLoad));
+      subs.push(base44.entities.MonthlySavingsReport.subscribe(scheduleLoad));
+      subs.push(base44.entities.DealActivation.subscribe(scheduleLoad));
+      subs.push(base44.entities.MigrationTask.subscribe(scheduleLoad));
+      subs.push(base44.entities.Invoice.subscribe(scheduleLoad));
     } catch { /* ignore realtime failures */ }
-    return () => subs.forEach(u => u?.());
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      subs.forEach(u => u?.());
+    };
+     
   }, []);
 
   // Time window helpers
