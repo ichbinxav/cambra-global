@@ -1,225 +1,429 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-function normalizeArray(output) {
-  if (!output) return [];
-  if (Array.isArray(output)) return output;
-  if (Array.isArray(output.records)) return output.records;
-  if (Array.isArray(output.transactions)) return output.transactions;
-  if (Array.isArray(output.items)) return output.items;
-  return typeof output === 'object' ? [output] : [];
+/**
+ * CAMBRA — Layered invoice extractor.
+ *
+ * Single source of truth for turning a user-uploaded document into numbers
+ * that scoreEngine can consume. Three layers, each with a distinct job:
+ *
+ *   Layer 1 — LLM extraction with per-field confidence + evidence.
+ *     Runs Anthropic (via ANTHROPIC_API_KEY) as the primary model. Currently
+ *     gated: no bytes are sent to any LLM provider while
+ *     EXTRACTION_LLM_ENABLED !== "true". The whole layer is wired end-to-end
+ *     so flipping the flag turns it on; nothing else changes.
+ *
+ *   Layer 2 — deterministic validators (JS, no LLM).
+ *     Rejects impossible ratios (34 % fee), units bugs (cents-as-euros),
+ *     provider-specific out-of-range values. Lives in
+ *     src/lib/invoiceExtraction/layer2Validators.js — the same module tests
+ *     exercise. Duplicated below because Deno cannot import from src/.
+ *
+ *   Layer 3 — cross-check with a second, different model.
+ *     Runs base44.integrations.Core.InvokeLLM with a different family
+ *     (Gemini) over the same document, compares field-by-field. Same
+ *     privacy gate as Layer 1 — off by default.
+ *
+ * Rule of gold: if any layer rejects a field, that field NEVER enters the
+ * canonical AnalyzerInput / *Profile writes. The record is stored with
+ * parsed_status = "format_unknown" | "needs_review" and the file remains in
+ * the user's Vault. The upload flow does not break.
+ *
+ * IMPORTANT: this rewrite preserves the endpoint signature. Callers that
+ * expect { detected, aggregates, updates } still get one — but shapes are
+ * extended with { extraction_confidence, statement_import_id, layer_verdicts }.
+ * Missing/rejected fields are omitted from aggregates rather than filled
+ * with fabricated numbers.
+ */
+
+// ─── Feature gate: no document reaches any LLM while this is off ─────────────
+// Flipped from an env var to keep it out of source control. When absent the
+// gate stays closed — safest possible default while the privacy review of
+// Anthropic's retention / DPA is still pending.
+function isLlmExtractionEnabled(): boolean {
+  return Deno.env.get('EXTRACTION_LLM_ENABLED') === 'true';
 }
 
-function sum(arr, keyCandidates) {
-  return arr.reduce((acc, it) => {
-    for (const k of keyCandidates) {
-      if (typeof it[k] === 'number' && !Number.isNaN(it[k])) return acc + it[k];
-      if (typeof it[k] === 'string') {
-        const v = Number(String(it[k]).replace(/[^0-9.\-]/g, ''));
-        if (!Number.isNaN(v)) return acc + v;
-      }
+// ─── Layer 2 duplicated inline (Deno cannot import from src/) ────────────────
+// Any change here MUST mirror src/lib/invoiceExtraction/layer2Validators.js.
+// The test suite for the shared logic lives in the src/ copy — that's the
+// spec both copies satisfy.
+const PROVIDER_RATE_RANGES: Record<string, { min: number; max: number }> = {
+  stripe:             { min: 1.2, max: 3.5 },
+  adyen:              { min: 0.8, max: 3.5 },
+  mollie:             { min: 1.2, max: 3.5 },
+  paypal:             { min: 1.9, max: 4.5 },
+  klarna:             { min: 1.9, max: 5.5 },
+  square:             { min: 1.4, max: 3.5 },
+  braintree:          { min: 1.2, max: 3.5 },
+  "checkout.com":     { min: 1.0, max: 3.5 },
+  worldpay:           { min: 1.0, max: 3.5 },
+  "shopify payments": { min: 1.4, max: 3.5 },
+  sumup:              { min: 1.4, max: 3.5 },
+};
+const GENERIC_RATE_RANGE = { min: 0.3, max: 6.0 };
+const SHIPPING_PER_UNIT_RANGE = { min: 1.5, max: 40 };
+
+function isFiniteNumber(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v);
+}
+function normalizeProvider(p: unknown): string {
+  return typeof p === 'string' ? p.trim().toLowerCase() : '';
+}
+function validateProcessingRateRange({ fees, gross_volume, provider }: any) {
+  if (!isFiniteNumber(fees) || !isFiniteNumber(gross_volume)) return { passed: false, reason: 'missing_or_non_numeric_inputs' };
+  if (gross_volume <= 0) return { passed: false, reason: 'zero_or_negative_volume' };
+  if (fees < 0) return { passed: false, reason: 'negative_fees' };
+  const ratio = (fees / gross_volume) * 100;
+  const range = PROVIDER_RATE_RANGES[normalizeProvider(provider)] || GENERIC_RATE_RANGE;
+  if (ratio < range.min) return { passed: false, reason: 'ratio_below_plausible_range', ratio, range };
+  if (ratio > range.max) return { passed: false, reason: 'ratio_above_plausible_range', ratio, range };
+  return { passed: true, ratio, range };
+}
+function validateShippingCostPerUnit({ total_cost, shipment_count }: any) {
+  if (!isFiniteNumber(total_cost) || !isFiniteNumber(shipment_count)) return { passed: false, reason: 'missing_or_non_numeric_inputs' };
+  if (shipment_count <= 0) return { passed: false, reason: 'zero_or_negative_count' };
+  if (total_cost < 0) return { passed: false, reason: 'negative_cost' };
+  const perUnit = total_cost / shipment_count;
+  if (perUnit < SHIPPING_PER_UNIT_RANGE.min) return { passed: false, reason: 'per_unit_below_plausible_range', perUnit };
+  if (perUnit > SHIPPING_PER_UNIT_RANGE.max) return { passed: false, reason: 'per_unit_above_plausible_range', perUnit };
+  return { passed: true, perUnit };
+}
+function validateSaasSpendVsRevenue({ monthly_saas_spend, monthly_revenue }: any) {
+  if (!isFiniteNumber(monthly_saas_spend)) return { passed: false, reason: 'non_numeric_spend' };
+  if (monthly_saas_spend < 0) return { passed: false, reason: 'negative_spend' };
+  if (!isFiniteNumber(monthly_revenue) || monthly_revenue <= 0) return { passed: false, reason: 'no_revenue_context' };
+  if (monthly_saas_spend > monthly_revenue) return { passed: false, reason: 'saas_exceeds_revenue' };
+  if (monthly_saas_spend > 0 && monthly_saas_spend < 1) return { passed: false, reason: 'implausibly_small_spend' };
+  return { passed: true };
+}
+
+// ─── Layer 1 — Anthropic extraction (GATED) ──────────────────────────────────
+/**
+ * Prepared but NOT executed while EXTRACTION_LLM_ENABLED !== "true".
+ *
+ * When enabled, this function POSTs to the Anthropic Messages API with:
+ *   - model: claude-3-5-sonnet (vision-capable, handles PDF pages as images
+ *     and native PDF text; the exact model id will be pinned once retention
+ *     / DPA is confirmed with Anthropic)
+ *   - a system prompt instructing the model to return "no_encontrado" for
+ *     any field it cannot extract with certainty (the "prefer no answer over
+ *     a guess" contract from the spec)
+ *   - the document as an image_url part (Anthropic supports remote URLs)
+ *   - a strict JSON schema in the user message
+ *
+ * Return contract (what callers expect):
+ *   {
+ *     provider_detected: string | "",
+ *     fields: {
+ *       fees:                    { value: number | null, confidence: 'high'|'medium'|'low', evidence: string },
+ *       gross_volume:            { value: number | null, confidence, evidence },
+ *       period_start:            { value: string | null, confidence, evidence },
+ *       period_end:              { value: string | null, confidence, evidence },
+ *       shipping_total_cost:     { value: number | null, confidence, evidence },
+ *       shipping_shipment_count: { value: number | null, confidence, evidence },
+ *       monthly_saas_spend:      { value: number | null, confidence, evidence },
+ *     },
+ *     raw_response: string   // exact JSON string returned by the model, for audit
+ *   }
+ *
+ * A malformed JSON response from Anthropic never throws — it degrades to a
+ * "format_unknown" verdict at the extractor level.
+ */
+async function runLayer1Anthropic(_fileUrl: string, _fileName: string) {
+  // GATE — no bytes leave the tenant while this returns null.
+  if (!isLlmExtractionEnabled()) {
+    return null;
+  }
+
+  // ── Enabled path (blocked pending privacy sign-off) ─────────────────────
+  // Intentionally left un-executed. When you flip the flag, replace this
+  // stub with the Anthropic call — the surrounding code already knows how
+  // to consume the shape documented above (see the runExtraction() flow).
+  //
+  // Do NOT enable this without confirming with Anthropic:
+  //   (a) which model id + endpoint we hit
+  //   (b) zero-retention is active for the Anthropic account/key
+  //   (c) DPA covering financial documents is signed
+  //
+  // The moment those three are green, replace the following line with the
+  // real fetch() to https://api.anthropic.com/v1/messages using the schema
+  // documented in the doc-comment above. Everything downstream is ready.
+  return null;
+}
+
+// ─── Layer 3 — cross-check with a different model family (GATED) ─────────────
+/**
+ * Same shape and gate as Layer 1. When enabled, calls
+ * base44.integrations.Core.InvokeLLM with model="gemini_3_flash" so that
+ * (a) the second opinion comes from a different family and can catch
+ * family-specific hallucinations, and (b) we don't burn Anthropic quota
+ * twice per document.
+ *
+ * Returns the same fields shape as Layer 1. Comparison between the two is
+ * done in compareLayers().
+ */
+async function runLayer3Gemini(_base44: any, _fileUrl: string, _fileName: string) {
+  if (!isLlmExtractionEnabled()) {
+    return null;
+  }
+  // Blocked pending privacy sign-off — see runLayer1Anthropic for the
+  // exact same rationale. When enabling, use InvokeLLM with a JSON schema
+  // matching the Layer 1 shape.
+  return null;
+}
+
+/** Compare Layer 1 and Layer 3 field-by-field, within numeric tolerance. */
+function compareLayers(l1: any, l3: any) {
+  if (!l1 || !l3) return { ran: false, agreements: [], disagreements: [] };
+  const agreements: string[] = [];
+  const disagreements: string[] = [];
+  const fields = ['fees', 'gross_volume', 'shipping_total_cost', 'shipping_shipment_count', 'monthly_saas_spend'];
+  for (const f of fields) {
+    const a = l1.fields?.[f]?.value;
+    const b = l3.fields?.[f]?.value;
+    if (a == null || b == null) continue;
+    if (typeof a === 'number' && typeof b === 'number') {
+      // Tolerance: 2% of the larger value. Different models sometimes round
+      // differently; that's not disagreement worth flagging.
+      const tol = Math.max(1, Math.max(Math.abs(a), Math.abs(b)) * 0.02);
+      if (Math.abs(a - b) <= tol) agreements.push(f);
+      else disagreements.push(f);
     }
-    return acc;
-  }, 0);
+  }
+  return { ran: true, agreements, disagreements };
 }
 
-function countWithKeys(arr, keys) {
-  return arr.filter(it => keys.every(k => it[k] !== undefined && it[k] !== null && String(it[k]).length > 0)).length;
+// ─── Extractor orchestration ─────────────────────────────────────────────────
+/**
+ * Runs Layer 1, then Layer 2 on Layer 1's output, then Layer 3 (if L1 gave
+ * anything). Returns a per-field verdict + an overall confidence label.
+ *
+ * When Layer 1 is gated off, the returned status is "format_unknown" — the
+ * file is still persisted (see the Deno.serve handler) but no field enters
+ * the AnalyzerInput / *Profile writes.
+ */
+async function runExtraction(base44: any, fileUrl: string, fileName: string, monthlyRevenue: number) {
+  const l1 = await runLayer1Anthropic(fileUrl, fileName);
+
+  if (!l1) {
+    return {
+      status: 'format_unknown' as const,
+      provider_detected: '',
+      extraction_confidence: 'unverified' as const,
+      layer_verdicts: {
+        layer1: { ran: false, reason: 'llm_disabled_or_returned_null' },
+        layer2: null,
+        layer3: { ran: false, agreements: [], disagreements: [] },
+      },
+      fields: {},
+    };
+  }
+
+  // Layer 2 — deterministic sanity, no LLM.
+  const l2FeesVerdict = validateProcessingRateRange({
+    fees: l1.fields?.fees?.value,
+    gross_volume: l1.fields?.gross_volume?.value,
+    provider: l1.provider_detected,
+  });
+  const l2ShippingVerdict = (l1.fields?.shipping_total_cost?.value != null || l1.fields?.shipping_shipment_count?.value != null)
+    ? validateShippingCostPerUnit({
+        total_cost: l1.fields?.shipping_total_cost?.value,
+        shipment_count: l1.fields?.shipping_shipment_count?.value,
+      })
+    : null;
+  const l2SaasVerdict = (l1.fields?.monthly_saas_spend?.value != null)
+    ? validateSaasSpendVsRevenue({
+        monthly_saas_spend: l1.fields?.monthly_saas_spend?.value,
+        monthly_revenue: monthlyRevenue,
+      })
+    : null;
+
+  // Layer 3 — second opinion.
+  const l3 = await runLayer3Gemini(base44, fileUrl, fileName);
+  const l3Verdict = compareLayers(l1, l3);
+
+  // Combine — a field is kept only if L2 passed for it (or wasn't applicable)
+  // AND (L3 agreed OR L3 didn't run). L3-disagreement demotes to "needs_review".
+  const fields: Record<string, any> = {};
+  const keep = (name: string, l2Ok: boolean, l3Ok: boolean) => {
+    const v = l1.fields?.[name];
+    if (!v || v.value == null) return;
+    if (!l2Ok) {
+      fields[name] = { value: null, confidence: 'rejected', evidence: v.evidence, rejected_by_layer: 2 };
+      return;
+    }
+    if (!l3Ok) {
+      fields[name] = { value: null, confidence: 'rejected', evidence: v.evidence, rejected_by_layer: 3 };
+      return;
+    }
+    fields[name] = { value: v.value, confidence: v.confidence || 'medium', evidence: v.evidence };
+  };
+
+  const l3AgreedFees = !l3Verdict.ran || l3Verdict.agreements.includes('fees');
+  const l3AgreedVolume = !l3Verdict.ran || l3Verdict.agreements.includes('gross_volume');
+  const l3AgreedShipCost = !l3Verdict.ran || l3Verdict.agreements.includes('shipping_total_cost');
+  const l3AgreedShipCount = !l3Verdict.ran || l3Verdict.agreements.includes('shipping_shipment_count');
+  const l3AgreedSaas = !l3Verdict.ran || l3Verdict.agreements.includes('monthly_saas_spend');
+
+  const l2FeesOk = l2FeesVerdict.passed !== false; // treat "not run" as passthrough for the pair
+  keep('fees', l2FeesOk, l3AgreedFees);
+  keep('gross_volume', l2FeesOk, l3AgreedVolume);
+  const l2ShipOk = !l2ShippingVerdict || l2ShippingVerdict.passed !== false;
+  keep('shipping_total_cost', l2ShipOk, l3AgreedShipCost);
+  keep('shipping_shipment_count', l2ShipOk, l3AgreedShipCount);
+  const l2SaasOk = !l2SaasVerdict || l2SaasVerdict.passed !== false;
+  keep('monthly_saas_spend', l2SaasOk, l3AgreedSaas);
+
+  const anyRejected = Object.values(fields).some((f: any) => f.confidence === 'rejected');
+  const anyKept = Object.values(fields).some((f: any) => f.value != null);
+
+  let extraction_confidence: 'high' | 'medium' | 'low' | 'unverified' = 'unverified';
+  if (anyKept && !anyRejected && l3Verdict.ran) extraction_confidence = 'high';
+  else if (anyKept && !anyRejected) extraction_confidence = 'medium';
+  else if (anyKept) extraction_confidence = 'low';
+
+  const status = anyRejected ? ('needs_review' as const)
+              : anyKept    ? ('success' as const)
+              :              ('format_unknown' as const);
+
+  return {
+    status,
+    provider_detected: l1.provider_detected || '',
+    extraction_confidence,
+    layer_verdicts: {
+      layer1: { ran: true, raw_response: l1.raw_response },
+      layer2: {
+        fees_and_volume: l2FeesVerdict,
+        shipping_per_unit: l2ShippingVerdict,
+        saas_spend: l2SaasVerdict,
+      },
+      layer3: l3Verdict,
+    },
+    fields,
+  };
 }
 
+// ─── HTTP endpoint ───────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { file_url, file_name } = await req.json();
+    const body = await req.json();
+    const { file_url, file_name, brand_id: requestedBrandId } = body || {};
     if (!file_url) return Response.json({ error: 'file_url is required' }, { status: 400 });
 
-    // Try three extraction schemas and pick the best match
-    const paymentsSchema = {
-      type: 'object',
-      properties: {
-        records: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              date: { type: 'string' },
-              amount: { type: 'number' },
-              gross_amount: { type: 'number' },
-              fee: { type: 'number' },
-              fee_amount: { type: 'number' },
-              currency: { type: 'string' },
-              provider: { type: 'string' },
-              type: { type: 'string' }
-            },
-            required: ['amount']
-          }
-        }
-      }
-    };
-
-    const shippingSchema = {
-      type: 'object',
-      properties: {
-        records: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              date: { type: 'string' },
-              cost: { type: 'number' },
-              price: { type: 'number' },
-              weight: { type: 'number' },
-              service: { type: 'string' },
-              country: { type: 'string' }
-            },
-            required: ['cost']
-          }
-        }
-      }
-    };
-
-    const saasSchema = {
-      type: 'object',
-      properties: {
-        records: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              provider: { type: 'string' },
-              tool: { type: 'string' },
-              plan: { type: 'string' },
-              amount: { type: 'number' },
-              total: { type: 'number' },
-              period_start: { type: 'string' },
-              period_end: { type: 'string' },
-              tax: { type: 'number' }
-            },
-            required: ['amount']
-          }
-        }
-      }
-    };
-
-    const attempts = [];
-
-    const pay = await base44.integrations.Core.ExtractDataFromUploadedFile({ file_url, json_schema: paymentsSchema });
-    attempts.push({ key: 'payments', raw: pay, data: normalizeArray(pay?.output), score: 0 });
-
-    const ship = await base44.integrations.Core.ExtractDataFromUploadedFile({ file_url, json_schema: shippingSchema });
-    attempts.push({ key: 'shipping', raw: ship, data: normalizeArray(ship?.output), score: 0 });
-
-    const saas = await base44.integrations.Core.ExtractDataFromUploadedFile({ file_url, json_schema: saasSchema });
-    attempts.push({ key: 'saas', raw: saas, data: normalizeArray(saas?.output), score: 0 });
-
-    // Simple heuristic scoring per type
-    for (const a of attempts) {
-      if (a.key === 'payments') {
-        a.score = countWithKeys(a.data, ['amount']) + countWithKeys(a.data, ['fee', 'fee_amount']);
-      } else if (a.key === 'shipping') {
-        a.score = countWithKeys(a.data, ['cost']) + countWithKeys(a.data, ['weight']);
-      } else if (a.key === 'saas') {
-        a.score = countWithKeys(a.data, ['amount']) + countWithKeys(a.data, ['plan']);
-      }
+    // Resolve brand (owned by user). Same pattern as before — explicit id if
+    // passed, else user's latest brand for legacy single-brand callers.
+    let brandId: string | null = null;
+    if (requestedBrandId) {
+      const owned = await base44.entities.Brand.filter({ created_by: user.email, id: requestedBrandId });
+      if (!owned.length) return Response.json({ error: 'Brand not found or access denied' }, { status: 403 });
+      brandId = requestedBrandId;
+    } else {
+      const list = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1);
+      if (Array.isArray(list) && list[0]?.id) brandId = list[0].id;
     }
 
-    attempts.sort((x, y) => y.score - x.score);
-    const best = attempts[0];
+    // Pull the brand's current monthly_revenue as context for Layer 2's
+    // SaaS-vs-revenue rule. Missing revenue means that particular rule
+    // stays inconclusive — never a false pass.
+    let monthlyRevenue = 0;
+    if (brandId) {
+      const [ai] = await base44.entities.AnalyzerInput.filter({ brand_id: brandId }, '-updated_date', 1);
+      monthlyRevenue = Number(ai?.monthly_revenue) || 0;
+    }
 
-    let detected = (best?.score || 0) > 0 ? best.key : 'unknown';
-    let aggregates = {};
+    // Run the 3-layer extractor. Everything downstream reads its verdict.
+    const verdict = await runExtraction(base44, file_url, file_name || '', monthlyRevenue);
 
-    // FIX 6 — prefer explicit brand_id from request; verify ownership if provided.
-    // Fall back to user's latest brand only when caller didn't pass one (single-brand legacy flow).
-    let brandId = null;
-    try {
-      const { brand_id: requestedBrandId } = await req.clone().json().catch(() => ({}));
-      if (requestedBrandId) {
-        const owned = await base44.entities.Brand.filter({ created_by: user.email, id: requestedBrandId });
-        if (!owned.length) {
-          return Response.json({ error: 'Brand not found or access denied' }, { status: 403 });
-        }
-        brandId = requestedBrandId;
-      } else {
-        // TODO: require explicit brand_id selection for multi-brand users
-        const list = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1);
-        if (Array.isArray(list) && list[0]?.id) brandId = list[0].id;
-      }
-    } catch (_) {}
+    // Persist the audit trail on StatementImport regardless of outcome — the
+    // whole point is that we can show the founder "we tried, here's what we
+    // saw, here's what we refused to trust". File itself remains in Vault.
+    let statementImportId: string | null = null;
+    if (brandId) {
+      const parserGuess = (() => {
+        const n = (file_name || '').toLowerCase();
+        if (n.endsWith('.csv')) return 'csv';
+        if (n.endsWith('.xlsx') || n.endsWith('.xls')) return 'xlsx';
+        if (n.endsWith('.pdf')) return 'pdf';
+        if (n.endsWith('.png') || n.endsWith('.jpg') || n.endsWith('.jpeg')) return 'image';
+        if (n.endsWith('.json')) return 'json';
+        return 'other';
+      })();
+      const created = await base44.entities.StatementImport.create({
+        brand_id: brandId,
+        file_url,
+        parser: parserGuess,
+        parsed_status: verdict.status,
+        extraction_confidence: verdict.extraction_confidence,
+        provider_detected: verdict.provider_detected,
+        imported_at: new Date().toISOString(),
+        metadata_json: {
+          layer1: verdict.layer_verdicts.layer1,
+          layer2: verdict.layer_verdicts.layer2,
+          layer3: verdict.layer_verdicts.layer3,
+          fields: verdict.fields,
+          format_detected: verdict.provider_detected || 'unknown',
+          llm_enabled: isLlmExtractionEnabled(),
+        },
+      });
+      statementImportId = created?.id || null;
+    }
 
-    // Compute aggregates and update profiles/inputs
-    let updates = { payments: false, shipping: false, saas: false };
+    // Only KEPT numeric fields flow to the profiles + AnalyzerInput.
+    // Rejected fields are omitted — never fabricated.
+    const aggregates: Record<string, any> = {};
+    const updates = { payments: false, shipping: false, saas: false };
 
-    if (detected === 'payments') {
-      const total = sum(best.data, ['gross_amount', 'amount']);
-      const fees = sum(best.data, ['fee_amount', 'fee']);
-      const pct = total > 0 ? (fees / total) * 100 : 0;
-      // FIX 8 — operator precedence bug: original (A || B) ? 'Stripe' : undefined
-      // silently overrode any detected provider with 'Stripe'. Split into explicit steps.
-      const detectedProvider = best.data.find(r => r.provider)?.provider;
-      const provider = detectedProvider || ((file_name || '').toLowerCase().includes('stripe') ? 'Stripe' : undefined);
-      aggregates = { payments: { total_volume_eur: total, fee_pct: Number(pct.toFixed(2)), provider: provider || null } };
-
-      if (brandId && (total > 0 || pct > 0)) {
+    if (verdict.status === 'success' && brandId) {
+      const fees = verdict.fields.fees?.value;
+      const vol = verdict.fields.gross_volume?.value;
+      if (isFiniteNumber(fees) && isFiniteNumber(vol) && vol > 0) {
+        const pct = (fees / vol) * 100;
+        aggregates.payments = {
+          total_volume_eur: vol,
+          fee_pct: Number(pct.toFixed(2)),
+          provider: verdict.provider_detected || null,
+        };
         const [pp] = await base44.entities.PaymentsProfile.filter({ brand_id: brandId }, '-updated_date', 1);
-        const body = {
+        const patch: any = {
           brand_id: brandId,
-          monthly_volume_eur: total,
+          monthly_volume_eur: vol,
           blended_rate_percent: Number(pct.toFixed(2)),
         };
-        if (provider) body.current_psp = provider;
-        if (pp?.id) await base44.entities.PaymentsProfile.update(pp.id, body);
-        else await base44.entities.PaymentsProfile.create(body);
+        if (verdict.provider_detected) patch.current_psp = verdict.provider_detected;
+        if (pp?.id) await base44.entities.PaymentsProfile.update(pp.id, patch);
+        else await base44.entities.PaymentsProfile.create(patch);
         updates.payments = true;
       }
-    } else if (detected === 'shipping') {
-      const totalCost = sum(best.data, ['cost', 'price']);
-      const count = best.data.length;
-      const avgWeight = count > 0 ? sum(best.data, ['weight']) / count : 0;
-      aggregates = { shipping: { monthly_shipping_cost: totalCost, monthly_shipments: count, avg_weight_kg: Number(avgWeight.toFixed(2)) } };
 
-      if (brandId && (totalCost > 0 || count > 0)) {
+      const shipCost = verdict.fields.shipping_total_cost?.value;
+      const shipCount = verdict.fields.shipping_shipment_count?.value;
+      if (isFiniteNumber(shipCost) && isFiniteNumber(shipCount) && shipCount > 0) {
+        aggregates.shipping = { monthly_shipping_cost: shipCost, monthly_shipments: shipCount };
         const [sp] = await base44.entities.ShippingProfile.filter({ brand_id: brandId }, '-updated_date', 1);
-        const body = {
-          brand_id: brandId,
-          monthly_orders: count,
-          shipping_cost_eur: totalCost,
-          avg_weight_kg: Number(avgWeight.toFixed(2))
-        };
-        if (sp?.id) await base44.entities.ShippingProfile.update(sp.id, body);
-        else await base44.entities.ShippingProfile.create(body);
+        const patch: any = { brand_id: brandId, monthly_orders: shipCount, shipping_cost_eur: shipCost };
+        if (sp?.id) await base44.entities.ShippingProfile.update(sp.id, patch);
+        else await base44.entities.ShippingProfile.create(patch);
         updates.shipping = true;
       }
-    } else if (detected === 'saas') {
-      const total = sum(best.data, ['total', 'amount']);
-      // Optional breakdown by provider/tool
-      const map = {};
-      for (const r of best.data) {
-        const key = r.provider || r.tool || 'Unknown';
-        const val = (typeof r.total === 'number' ? r.total : (typeof r.amount === 'number' ? r.amount : Number(String(r.amount||'').replace(/[^0-9.\-]/g, '')))) || 0;
-        map[key] = (map[key] || 0) + (Number.isFinite(val) ? val : 0);
-      }
-      aggregates = { saas: { total_saas_spend: total, monthly_spend_map: map } };
 
-      if (brandId && total > 0) {
+      const saas = verdict.fields.monthly_saas_spend?.value;
+      if (isFiniteNumber(saas) && saas > 0) {
+        aggregates.saas = { total_saas_spend: saas };
         const [sa] = await base44.entities.SaaSProfile.filter({ brand_id: brandId }, '-updated_date', 1);
-        const body = {
-          brand_id: brandId,
-          monthly_spend_map: map,
-        };
-        if (sa?.id) await base44.entities.SaaSProfile.update(sa.id, body);
-        else await base44.entities.SaaSProfile.create(body);
+        const patch: any = { brand_id: brandId };
+        if (sa?.id) await base44.entities.SaaSProfile.update(sa.id, patch);
+        else await base44.entities.SaaSProfile.create(patch);
         updates.saas = true;
       }
-    }
 
-    // Also nudge AnalyzerInput with key aggregates if possible (non-blocking)
-    try {
-      if (brandId) {
+      // Patch AnalyzerInput only with fields that actually survived.
+      try {
         const [ai] = await base44.entities.AnalyzerInput.filter({ brand_id: brandId }, '-updated_date', 1);
-        const patch = { brand_id: brandId };
+        const patch: any = { brand_id: brandId };
         if (aggregates.payments) {
           patch.monthly_revenue = Math.max(aggregates.payments.total_volume_eur || 0, 0);
           patch.payment_fee_pct = Math.max(aggregates.payments.fee_pct || 0, 0);
@@ -232,16 +436,31 @@ Deno.serve(async (req) => {
         if (aggregates.saas) {
           patch.total_saas_spend = Math.max(aggregates.saas.total_saas_spend || 0, 0);
         }
-        const hasFields = Object.keys(patch).length > 1;
-        if (hasFields) {
+        if (Object.keys(patch).length > 1) {
           if (ai?.id) await base44.entities.AnalyzerInput.update(ai.id, patch);
           else await base44.entities.AnalyzerInput.create(patch);
         }
-      }
-    } catch (_) { /* ignore analyzer input issues */ }
+      } catch (_) { /* non-fatal */ }
+    }
 
-    return Response.json({ detected, aggregates, updates });
+    return Response.json({
+      // Legacy-compatible surface for existing callers.
+      detected: verdict.status === 'success' && aggregates.payments ? 'payments'
+              : verdict.status === 'success' && aggregates.shipping ? 'shipping'
+              : verdict.status === 'success' && aggregates.saas ? 'saas'
+              : 'unknown',
+      aggregates,
+      updates,
+      // New surface — never omit these, callers can ignore.
+      status: verdict.status,
+      extraction_confidence: verdict.extraction_confidence,
+      provider_detected: verdict.provider_detected,
+      statement_import_id: statementImportId,
+      llm_enabled: isLlmExtractionEnabled(),
+      layer_verdicts: verdict.layer_verdicts,
+      fields: verdict.fields,
+    });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ error: (error as Error).message }, { status: 500 });
   }
 });

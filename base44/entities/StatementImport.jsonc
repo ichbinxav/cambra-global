@@ -26,18 +26,24 @@
         "xlsx",
         "api",
         "json",
+        "pdf",
+        "image",
         "other"
       ],
-      "default": "csv"
+      "default": "csv",
+      "description": "How the file was parsed. `pdf`/`image` route through the layered extractor (LLM Layer 1 \u2192 deterministic Layer 2 \u2192 cross-check Layer 3)."
     },
     "parsed_status": {
       "type": "string",
       "enum": [
         "pending",
         "success",
-        "error"
+        "error",
+        "format_unknown",
+        "needs_review"
       ],
-      "default": "pending"
+      "default": "pending",
+      "description": "`format_unknown` = layered extractor could not recognize the document as a supported invoice type; NO numbers were persisted. `needs_review` = layered extractor produced a result but at least one field failed cross-validation and is being flagged rather than silently accepted."
     },
     "row_count": {
       "type": "number"
@@ -52,8 +58,48 @@
       "type": "string",
       "format": "date-time"
     },
+    "extraction_confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "unverified"
+      ],
+      "description": "Overall confidence from the layered extractor. `high` = Layer 1 confident AND Layer 2 sanity checks passed AND Layer 3 cross-check agreed. `medium` = Layer 1 + Layer 2 passed but Layer 3 not run or disagreed within tolerance. `low` = at least one field flagged; individual fields keep their own confidence in metadata_json.fields. `unverified` = extractor did not run (e.g. document persisted before LLM was enabled \u2014 the current default while the privacy gate is closed)."
+    },
+    "provider_detected": {
+      "type": "string",
+      "description": "Provider inferred from the document (e.g. 'stripe', 'shopify_payments', 'sumup'). Empty string when unknown \u2014 never fill with a guess."
+    },
     "metadata_json": {
-      "type": "object"
+      "type": "object",
+      "description": "Structured record of what was extracted, per field, with per-field confidence + evidence + which layer rejected the value if any. Read/written only by the layered extractor. Never contains raw file bytes.",
+      "properties": {
+        "layer1": {
+          "type": "object",
+          "description": "Raw LLM extraction output (as returned by Layer 1). Kept for auditability of what the model actually said before any validation."
+        },
+        "layer2": {
+          "type": "object",
+          "description": "Layer 2 verdict per field: { passed: bool, reason?: string, checks_run: string[] }. Deterministic \u2014 reproducible from layer1 + document context."
+        },
+        "layer3": {
+          "type": "object",
+          "description": "Layer 3 cross-check verdict: { ran: bool, second_model?: string, agreements: string[], disagreements: string[] }."
+        },
+        "fields": {
+          "type": "object",
+          "description": "Per-field final result: { <field>: { value: number|null, confidence: 'high'|'medium'|'low'|'rejected', evidence?: string, rejected_by_layer?: 1|2|3 } }. `value: null` means the extractor deliberately refused to fill it \u2014 NEVER a fabricated number."
+        },
+        "format_detected": {
+          "type": "string"
+        },
+        "llm_enabled": {
+          "type": "boolean",
+          "description": "Whether the LLM extraction layer was actually invoked for this import. False while the privacy gate is closed \u2014 the file is persisted but no numbers are extracted."
+        }
+      }
     }
   },
   "required": [
