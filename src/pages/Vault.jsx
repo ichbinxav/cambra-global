@@ -78,7 +78,7 @@ export default function Vault() {
               <SelectContent>{CATEGORIES.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}</SelectContent>
             </Select>
             <input ref={fileRef} type="file" onChange={onUpload} className="hidden" />
-            <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-10 rounded-full px-5 bg-card text-[#06080F] hover:bg-white/90 font-bold">{uploading ? 'Uploading…' : 'Upload file'}</Button>
+            <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-10 rounded-full px-5 bg-white text-[#06080F] hover:bg-white/90 font-bold">{uploading ? 'Uploading…' : 'Upload file'}</Button>
           </div>
         }
       />

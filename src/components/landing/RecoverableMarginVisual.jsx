@@ -301,7 +301,7 @@ export default function RecoverableMarginVisual() {
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
-                className="relative h-11 px-5 rounded-full bg-card text-[#06080F] text-sm font-bold inline-flex items-center justify-center gap-2 hover:bg-white/95 transition overflow-hidden"
+                className="relative h-11 px-5 rounded-full bg-white text-[#06080F] text-sm font-bold inline-flex items-center justify-center gap-2 hover:bg-white/95 transition overflow-hidden"
               >
                 {/* Shimmer sweep */}
                 <motion.span

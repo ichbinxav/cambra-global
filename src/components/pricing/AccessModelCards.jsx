@@ -268,7 +268,7 @@ export default function AccessModelCards() {
           {/* CTA */}
           <div className="mt-auto">
             <Link to="/Contact" className="block">
-              <button className="group/btn relative w-full h-12 rounded-full font-bold text-sm bg-card text-[#06080F] hover:bg-white/90 transition flex items-center justify-center gap-2 overflow-hidden">
+              <button className="group/btn relative w-full h-12 rounded-full font-bold text-sm bg-white text-[#06080F] hover:bg-white/90 transition flex items-center justify-center gap-2 overflow-hidden">
                 <motion.span
                   aria-hidden
                   className="absolute inset-0 pointer-events-none"

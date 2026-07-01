@@ -217,7 +217,7 @@ export default function PricingSection() {
 
               <div className="mt-auto">
                 <Link to="/Pricing">
-                  <button className="w-full h-10 rounded-full font-bold text-xs bg-card text-[#06080F] hover:bg-white/90 transition flex items-center justify-center gap-1.5">
+                  <button className="w-full h-10 rounded-full font-bold text-xs bg-white text-[#06080F] hover:bg-white/90 transition flex items-center justify-center gap-1.5">
                     How it works <ArrowRight className="h-3.5 w-3.5" />
                   </button>
                 </Link>

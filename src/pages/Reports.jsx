@@ -71,7 +71,7 @@ export default function Reports() {
         icon={TrendingUp}
         actions={
           <Link to="/Analyzer">
-            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold bg-card text-[#06080F] hover:bg-white/90 gap-1.5">
+            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-1.5">
               <Sparkles className="h-3.5 w-3.5" /> New scan <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
@@ -109,7 +109,7 @@ export default function Reports() {
               Run your first infrastructure audit to see margin recovery opportunities mapped here.
             </p>
             <Link to="/Analyzer">
-              <Button className="rounded-full px-7 h-11 text-sm font-bold bg-card text-[#06080F] hover:bg-white/90 gap-2">
+              <Button className="rounded-full px-7 h-11 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2">
                 <Sparkles className="h-3.5 w-3.5" /> Run Analyzer <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>

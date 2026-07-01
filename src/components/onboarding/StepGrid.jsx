@@ -19,7 +19,7 @@ export default function StepGrid({ statuses }) {
       desc: "Name, country, category.",
       cta: (
         <Link to="/BrandProfile" className="w-full">
-          <Button className="w-full h-10 rounded-xl gap-1.5 bg-card text-[#06080F] hover:bg-white/90 font-semibold">
+          <Button className="w-full h-10 rounded-xl gap-1.5 bg-white text-[#06080F] hover:bg-white/90 font-semibold">
             Open profile <ArrowRight size={14} />
           </Button>
         </Link>
@@ -34,7 +34,7 @@ export default function StepGrid({ statuses }) {
       tone: "#52EBA4",
       cta: (
         <Link to="/Analyzer" className="w-full">
-          <Button className="w-full h-10 rounded-xl gap-1.5 bg-card text-[#06080F] hover:bg-white/90 font-semibold">
+          <Button className="w-full h-10 rounded-xl gap-1.5 bg-white text-[#06080F] hover:bg-white/90 font-semibold">
             Run the analyzer <ArrowRight size={14} />
           </Button>
         </Link>

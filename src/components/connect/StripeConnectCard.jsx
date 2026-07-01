@@ -177,7 +177,7 @@ export default function StripeConnectCard({ redirectAfter } = {}) {
 
   if (connection) {
     return (
-      <div className="rounded-2xl border border-emerald-500/30 bg-white p-4">
+      <div className="rounded-2xl border border-emerald-500/30 bg-card p-4">
         <Header>
           Connected · last sync{" "}
           {connection.last_sync_at
