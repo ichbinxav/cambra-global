@@ -16,10 +16,10 @@ export default function CategoryGrid() {
     <section className="py-12 px-5">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-baseline justify-between mb-8">
-          <h2 className="text-2xl md:text-3xl font-black tracking-[-0.03em]">
+          <h2 className="text-2xl md:text-3xl font-black tracking-[-0.03em] text-white">
             Explore the knowledge base.
           </h2>
-          <p className="hidden md:block text-xs text-muted-foreground/50">
+          <p className="hidden md:block text-xs text-white/50">
             {CATEGORIES.length} categories · Continuously updated
           </p>
         </div>
@@ -37,7 +37,8 @@ export default function CategoryGrid() {
               >
                 <Link
                   to={`/Help/${cat.slug}`}
-                  className="group relative block h-full p-5 rounded-2xl border border-border/50 bg-card hover:border-foreground/30 transition-all overflow-hidden"
+                  className="group relative block h-full p-5 rounded-2xl transition-all overflow-hidden backdrop-blur-sm"
+                  style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
                 >
                   {/* Hover glow */}
                   <div
@@ -56,11 +57,11 @@ export default function CategoryGrid() {
                       <Icon className="w-4 h-4" style={{ color: cat.accent }} />
                     </div>
 
-                    <h3 className="text-[15px] font-bold tracking-tight mb-1.5 flex items-center gap-1.5">
+                    <h3 className="text-[15px] font-bold tracking-tight mb-1.5 flex items-center gap-1.5 text-white">
                       {cat.title}
-                      <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                      <ArrowUpRight className="w-3.5 h-3.5 text-white/40 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                     </h3>
-                    <p className="text-xs text-muted-foreground/70 leading-relaxed">
+                    <p className="text-xs text-white/60 leading-relaxed">
                       {cat.description}
                     </p>
                   </div>

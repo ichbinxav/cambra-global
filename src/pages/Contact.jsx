@@ -68,16 +68,29 @@ export default function Contact() {
       <div className="relative pt-24 pb-20">
         <div className="max-w-3xl mx-auto px-5">
           <div className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+            <div
+              className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full backdrop-blur-sm"
+              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">
                 Contact · We're here to help
               </span>
             </div>
-            <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-4">
-              Get in <span className="text-saas-gradient">touch.</span>
+            <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-4 text-white">
+              Get in{" "}
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                touch.
+              </span>
             </h1>
-            <p className="text-base text-foreground/65 max-w-md mx-auto">
+            <p className="text-base text-white/60 max-w-md mx-auto">
               Questions about CAMBRA? We're here to help.
             </p>
           </div>
@@ -90,60 +103,84 @@ export default function Contact() {
               <a
                 key={i}
                 href={c.href}
-                className="group rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm p-6 text-center hover:border-foreground/30 hover:-translate-y-0.5 transition shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_14px_30px_rgba(0,0,0,0.08)]"
+                className="group rounded-2xl p-6 text-center transition hover:-translate-y-0.5 backdrop-blur-sm"
+                style={{
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  background: "rgba(255,255,255,0.03)",
+                }}
               >
-                <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4 group-hover:bg-foreground group-hover:text-background transition-colors">
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-colors"
+                  style={{
+                    border: "1px solid rgba(34,211,238,0.25)",
+                    background: "rgba(34,211,238,0.10)",
+                    color: "#67e8f9",
+                  }}
+                >
                   <c.icon className="w-5 h-5" />
                 </div>
-                <p className="text-sm font-semibold mb-1">{c.label}</p>
-                <p className="text-sm text-foreground/65">{c.value}</p>
+                <p className="text-sm font-semibold mb-1 text-white">{c.label}</p>
+                <p className="text-sm text-white/60">{c.value}</p>
               </a>
             ))}
           </div>
 
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-border/60 bg-card/95 backdrop-blur-md p-8 shadow-[0_18px_50px_rgba(0,0,0,0.06)]">
-            <div className="pointer-events-none absolute -top-24 -right-24 w-56 h-56 rounded-full blur-3xl bg-ambient-mint opacity-[0.18]" />
+          <div
+            className="relative overflow-hidden rounded-[1.75rem] p-8 backdrop-blur-md"
+            style={{
+              border: "1px solid rgba(255,255,255,0.10)",
+              background: "rgba(255,255,255,0.03)",
+              boxShadow: "0 24px 60px -20px rgba(0,0,0,0.5)",
+            }}
+          >
+            <div
+              className="pointer-events-none absolute -top-24 -right-24 w-56 h-56 rounded-full blur-3xl"
+              style={{ background: "radial-gradient(closest-side, rgba(34,211,238,0.25), transparent 70%)" }}
+            />
             <div className="relative">
-              <h2 className="font-display text-xl font-black tracking-[-0.03em] mb-6">Send us a message</h2>
+              <h2 className="font-display text-xl font-black tracking-[-0.03em] mb-6 text-white">Send us a message</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold block mb-2">Name</label>
+                  <label className="text-sm font-semibold block mb-2 text-white/80">Name</label>
                   <Input
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Your name"
-                    className="h-12 border-border/60"
+                    className="h-12 text-white placeholder:text-white/30"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold block mb-2">Email</label>
+                  <label className="text-sm font-semibold block mb-2 text-white/80">Email</label>
                   <Input
                     name="email"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="your@email.com"
-                    className="h-12 border-border/60"
+                    className="h-12 text-white placeholder:text-white/30"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold block mb-2">Message</label>
+                  <label className="text-sm font-semibold block mb-2 text-white/80">Message</label>
                   <textarea
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
                     placeholder="Tell us how we can help..."
-                    className="w-full min-h-32 p-4 rounded-lg border border-border/60 bg-background text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full min-h-32 p-4 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-cyan-300/50"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
                     required
                   />
                 </div>
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="w-full h-12 rounded-full font-bold gap-2"
+                  className="w-full h-12 rounded-full font-bold gap-2 bg-white text-black hover:bg-white/90"
                 >
                   {submitting
                     ? <>Sending... <Loader2 className="w-4 h-4 animate-spin" /></>
@@ -152,7 +189,7 @@ export default function Contact() {
                       : <>Send message <ArrowRight className="w-4 h-4" /></>}
                 </Button>
                 {error && (
-                  <p className="text-xs text-rose-600 mt-2 text-center">{error}</p>
+                  <p className="text-xs text-red-300 mt-2 text-center">{error}</p>
                 )}
               </form>
             </div>

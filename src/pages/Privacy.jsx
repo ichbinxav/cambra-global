@@ -6,30 +6,47 @@ import Navbar from "@/components/landing/Navbar";
 
 export default function Privacy() {
   return (
-    <div className="relative min-h-screen bg-background font-inter overflow-hidden">
+    <div
+      className="relative min-h-screen font-inter overflow-hidden text-white"
+      style={{
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+      }}
+    >
       <Navbar />
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 dot-grid opacity-40" />
-        <div className="absolute -top-32 left-1/4 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-lilac opacity-[0.10]" />
-      </div>
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          opacity: 0.35,
+          maskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+        }}
+      />
       <div className="relative max-w-3xl mx-auto px-6 pt-24 pb-16">
         <Link to="/">
-          <Button variant="ghost" size="sm" className="mb-8 -ml-2 h-8 text-xs rounded-full px-3 text-muted-foreground">
+          <Button variant="ghost" size="sm" className="mb-8 -ml-2 h-8 text-xs rounded-full px-3 text-white/60 hover:text-white hover:bg-white/5">
             <ArrowLeft size={13} className="mr-1.5" /> Back
           </Button>
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Legal · GDPR compliant</span>
+          <div
+            className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full backdrop-blur-sm"
+            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">Legal · GDPR compliant</span>
           </div>
-          <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.9] mb-3 text-foreground">
+          <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.9] mb-3 text-white">
             Privacy Policy.
           </h1>
-          <p className="text-muted-foreground text-sm mb-14">Last updated: {new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p className="text-white/50 text-sm mb-14">Last updated: {new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
 
-          <div className="space-y-10 text-sm text-muted-foreground leading-relaxed">
+          <div className="space-y-10 text-sm text-white/65 leading-relaxed">
             {[
               { title: "1. Data controller", content: "CAMBRA is the data controller responsible for the personal data processed through this platform. For any data-related request, contact us at privacy@cambra.io." },
               { title: "2. What we collect", content: "We collect information you provide directly: name, professional email, brand information, infrastructure cost data, uploaded statements and operational metrics entered through the Analyzer. We also collect non-identifying usage telemetry to improve the platform." },
@@ -43,8 +60,8 @@ export default function Privacy() {
               { title: "10. International transfers", content: "Where data is transferred outside the EEA (e.g. for AI inference), we rely on Standard Contractual Clauses approved by the European Commission and apply equivalent safeguards." },
               { title: "11. Contact", content: "For any privacy-related question, request or complaint: privacy@cambra.io. You also have the right to lodge a complaint with your local data protection authority." },
             ].map((section, i) => (
-              <div key={i} className="pb-10 border-b border-border/40 last:border-0">
-                <h2 className="text-base font-bold text-foreground mb-3">{section.title}</h2>
+              <div key={i} className="pb-10 last:border-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                <h2 className="text-base font-bold text-white mb-3">{section.title}</h2>
                 <p>{section.content}</p>
               </div>
             ))}

@@ -63,16 +63,29 @@ export default function Testimonials() {
       <div className="relative pt-24 pb-20">
         <div className="max-w-6xl mx-auto px-5">
           <div className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+            <div
+              className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full backdrop-blur-sm"
+              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">
                 Testimonials · From real operators
               </span>
             </div>
-            <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-4">
-              What brands say <br className="hidden sm:inline" /> about <span className="text-saas-gradient">CAMBRA.</span>
+            <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-4 text-white">
+              What brands say <br className="hidden sm:inline" /> about{" "}
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                CAMBRA.
+              </span>
             </h1>
-            <p className="text-base text-foreground/65 max-w-xl mx-auto">
+            <p className="text-base text-white/60 max-w-xl mx-auto">
               Real results from independent commerce brands across Europe.
             </p>
           </div>
@@ -81,23 +94,32 @@ export default function Testimonials() {
             {TESTIMONIALS.map((t, i) => (
               <div
                 key={i}
-                className="relative overflow-hidden rounded-[1.75rem] border border-border/60 bg-card/95 backdrop-blur-sm p-7 flex flex-col shadow-[0_14px_40px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 hover:shadow-[0_22px_60px_rgba(0,0,0,0.09)] hover:border-foreground/30 transition"
+                className="relative overflow-hidden rounded-[1.75rem] p-7 flex flex-col transition hover:-translate-y-0.5"
+                style={{
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  background: "rgba(255,255,255,0.03)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                }}
               >
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(t.rating)].map((_, j) => (
-                    <Star key={j} size={14} className="fill-chart-3 text-chart-3" />
+                    <Star key={j} size={14} className="fill-cyan-300 text-cyan-300" />
                   ))}
                 </div>
 
-                <p className="text-sm text-foreground/80 mb-6 flex-1 leading-relaxed">"{t.text}"</p>
+                <p className="text-sm text-white/80 mb-6 flex-1 leading-relaxed">"{t.text}"</p>
 
-                <div className="flex items-center gap-3 pt-4 border-t border-border/40">
-                  <div className="w-10 h-10 rounded-full bg-foreground text-background flex items-center justify-center shrink-0 font-bold text-xs">
+                <div
+                  className="flex items-center gap-3 pt-4"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shrink-0 font-bold text-xs">
                     {t.avatar}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold">{t.name}</p>
-                    <p className="text-[11px] text-foreground/60">
+                    <p className="text-sm font-semibold text-white">{t.name}</p>
+                    <p className="text-[11px] text-white/55">
                       {t.role} at {t.company}
                     </p>
                   </div>

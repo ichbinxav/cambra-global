@@ -51,17 +51,30 @@ export default function Pricing() {
       <div className="relative pt-24 pb-20">
         <div className="max-w-6xl mx-auto px-5">
           <div className="text-center mb-14 md:mb-16">
-            <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+            <div
+              className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full backdrop-blur-sm"
+              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">
                 The 2-step path · Aligned with your margin
               </span>
             </div>
 
-            <h1 className="font-display text-[clamp(2.4rem,6vw,4.4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5">
-              First analyze. <span className="text-saas-gradient">Then recover.</span>
+            <h1 className="font-display text-[clamp(2.4rem,6vw,4.4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5 text-white">
+              First analyze.{" "}
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                Then recover.
+              </span>
             </h1>
-            <p className="text-base md:text-lg text-foreground/65 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
               Not two pricing tiers — two inevitable steps. Step 01 is the free audit. Step 02 is when we help you actually recover the margin we found.
             </p>
           </div>
@@ -70,21 +83,31 @@ export default function Pricing() {
 
           <div className="mt-20 md:mt-24 max-w-3xl mx-auto">
             <div className="mb-8 text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/70 mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45 mb-3">
                 Frequently asked
               </p>
-              <h2 className="font-display text-2xl md:text-3xl font-black tracking-[-0.03em]">
+              <h2 className="font-display text-2xl md:text-3xl font-black tracking-[-0.03em] text-white">
                 Clarity, not fine print.
               </h2>
             </div>
 
-            <div className="divide-y divide-border/50 rounded-2xl border border-border/50 bg-card/70 backdrop-blur-sm overflow-hidden">
+            <div
+              className="rounded-2xl overflow-hidden backdrop-blur-sm"
+              style={{
+                border: "1px solid rgba(255,255,255,0.10)",
+                background: "rgba(255,255,255,0.03)",
+              }}
+            >
               {FAQ.map((item, i) => (
-                <div key={i} className="px-6 py-5 sm:px-7 sm:py-6">
-                  <p className="text-[15px] font-semibold tracking-tight text-foreground mb-1.5">
+                <div
+                  key={i}
+                  className="px-6 py-5 sm:px-7 sm:py-6"
+                  style={{ borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  <p className="text-[15px] font-semibold tracking-tight text-white mb-1.5">
                     {item.q}
                   </p>
-                  <p className="text-[13.5px] text-foreground/65 leading-relaxed">{item.a}</p>
+                  <p className="text-[13.5px] text-white/65 leading-relaxed">{item.a}</p>
                 </div>
               ))}
             </div>

@@ -6,30 +6,47 @@ import Navbar from "@/components/landing/Navbar";
 
 export default function Terms() {
   return (
-    <div className="relative min-h-screen bg-background font-inter overflow-hidden">
+    <div
+      className="relative min-h-screen font-inter overflow-hidden text-white"
+      style={{
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+      }}
+    >
       <Navbar />
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 dot-grid opacity-40" />
-        <div className="absolute -top-32 right-1/4 w-[36rem] h-[36rem] rounded-full blur-3xl bg-ambient-mint opacity-[0.10]" />
-      </div>
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          opacity: 0.35,
+          maskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+        }}
+      />
       <div className="relative max-w-3xl mx-auto px-6 pt-24 pb-16">
         <Link to="/">
-          <Button variant="ghost" size="sm" className="mb-8 -ml-2 h-8 text-xs rounded-full px-3 text-muted-foreground">
+          <Button variant="ghost" size="sm" className="mb-8 -ml-2 h-8 text-xs rounded-full px-3 text-white/60 hover:text-white hover:bg-white/5">
             <ArrowLeft size={13} className="mr-1.5" /> Back
           </Button>
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">Legal</span>
+          <div
+            className="inline-flex items-center gap-2 mb-5 px-2.5 py-1.5 rounded-full backdrop-blur-sm"
+            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">Legal</span>
           </div>
-          <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.9] mb-3 text-foreground">
+          <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.9] mb-3 text-white">
             Terms &amp; Conditions.
           </h1>
-          <p className="text-muted-foreground text-sm mb-14">Last updated: {new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p className="text-white/50 text-sm mb-14">Last updated: {new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
 
-          <div className="space-y-10 text-sm text-muted-foreground leading-relaxed">
+          <div className="space-y-10 text-sm text-white/65 leading-relaxed">
             {[
               { title: "1. Acceptance", content: "By accessing or using the CAMBRA platform, you agree to be bound by these Terms & Conditions. If you do not agree, do not use the platform. CAMBRA reserves the right to update these terms with reasonable advance notice." },
               { title: "2. Platform purpose", content: "CAMBRA provides infrastructure intelligence, cost analysis, benchmarking and network access for independent commerce brands. The platform is intended for business use only. You must be authorized to represent the brand or entity you register." },
@@ -43,8 +60,8 @@ export default function Terms() {
               { title: "10. Governing law", content: "These terms are governed by the laws of France and the European Union. Any dispute will first be addressed through good-faith negotiation; if unresolved, jurisdiction lies with the competent courts of Paris, France." },
               { title: "11. Contact", content: "For any contractual question: legal@cambra.io." },
             ].map((section, i) => (
-              <div key={i} className="pb-10 border-b border-border/40 last:border-0">
-                <h2 className="text-base font-bold text-foreground mb-3">{section.title}</h2>
+              <div key={i} className="pb-10 last:border-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                <h2 className="text-base font-bold text-white mb-3">{section.title}</h2>
                 <p>{section.content}</p>
               </div>
             ))}

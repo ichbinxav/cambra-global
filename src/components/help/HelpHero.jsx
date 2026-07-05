@@ -25,10 +25,11 @@ export default function HelpHero({ onSearchOpen }) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 mb-7 px-3 py-1.5 rounded-full border border-border/50 bg-background/80 backdrop-blur-sm"
+          className="inline-flex items-center gap-2 mb-7 px-3 py-1.5 rounded-full backdrop-blur-sm"
+          style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-cambra-mint animate-pulse" />
-          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/70">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white/60">
             Help Center · Infrastructure Intelligence
           </span>
         </motion.div>
@@ -37,17 +38,27 @@ export default function HelpHero({ onSearchOpen }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="text-[clamp(2.5rem,6.5vw,5.5rem)] font-black tracking-[-0.045em] leading-[0.9] mb-5"
+          className="text-white text-[clamp(2.5rem,6.5vw,5.5rem)] font-black tracking-[-0.045em] leading-[0.9] mb-5"
         >
           Questions, answers,{" "}
-          <span className="text-saas-gradient inline-block">and operating insights.</span>
+          <span
+            className="inline-block"
+            style={{
+              background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            and operating insights.
+          </span>
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-[clamp(1rem,1.6vw,1.2rem)] text-muted-foreground/70 max-w-2xl mx-auto leading-relaxed mb-10"
+          className="text-[clamp(1rem,1.6vw,1.2rem)] text-white/60 max-w-2xl mx-auto leading-relaxed mb-10"
         >
           CAMBRA helps modern commerce brands analyze infrastructure costs, identify
           inefficiencies, benchmark performance, and unlock optimization opportunities
@@ -67,12 +78,20 @@ export default function HelpHero({ onSearchOpen }) {
             onClick={onSearchOpen}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.995 }}
-            className="relative w-full flex items-center gap-4 h-16 px-6 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-xl text-left"
+            className="relative w-full flex items-center gap-4 h-16 px-6 rounded-2xl backdrop-blur-xl text-left"
+            style={{
+              border: "1px solid rgba(255,255,255,0.10)",
+              background: "rgba(255,255,255,0.03)",
+              boxShadow: "0 24px 60px -20px rgba(0,0,0,0.5)",
+            }}
             aria-label="Open search"
           >
-            <Search className="w-5 h-5 text-muted-foreground/50 shrink-0" />
+            <Search className="w-5 h-5 text-white/45 shrink-0" />
             <RotatingPlaceholder placeholders={PLACEHOLDERS} />
-            <span className="ml-auto hidden sm:inline-flex items-center gap-1 h-7 px-2 rounded-md border border-border/60 bg-secondary/60 text-[10px] font-bold text-muted-foreground/70 shrink-0">
+            <span
+              className="ml-auto hidden sm:inline-flex items-center gap-1 h-7 px-2 rounded-md text-[10px] font-bold text-white/70 shrink-0"
+              style={{ border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.05)" }}
+            >
               <Command className="w-3 h-3" /> K
             </span>
           </motion.button>
@@ -85,12 +104,13 @@ export default function HelpHero({ onSearchOpen }) {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs"
         >
-          <span className="text-muted-foreground/40 font-medium">Trending:</span>
+          <span className="text-white/40 font-medium">Trending:</span>
           {["Infrastructure Score", "Stripe", "Benchmarks", "GDPR", "Success fee"].map((t) => (
             <button
               key={t}
               onClick={onSearchOpen}
-              className="px-3 py-1 rounded-full border border-border/40 bg-background/60 text-muted-foreground/70 hover:text-foreground hover:border-foreground/30 transition-colors"
+              className="px-3 py-1 rounded-full text-white/65 hover:text-white transition-colors"
+              style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
             >
               {t}
             </button>
@@ -107,7 +127,7 @@ function RotatingPlaceholder({ placeholders }) {
       {placeholders.map((p, i) => (
         <motion.span
           key={i}
-          className="absolute inset-0 text-sm text-muted-foreground/50 truncate"
+          className="absolute inset-0 text-sm text-white/50 truncate"
           initial={{ y: 28, opacity: 0 }}
           animate={{
             y: [28, 0, 0, -28],

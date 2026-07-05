@@ -73,17 +73,30 @@ export default function HowItWorks() {
 
           {/* Hero */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full border border-border/60 bg-background/80 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-cambra-mint" />
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+            <div
+              className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full backdrop-blur-sm"
+              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">
                 How it works · 4 steps
               </span>
             </div>
 
-            <h1 className="font-display text-[clamp(2.4rem,6vw,4.4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5">
-              From cost data to <span className="text-saas-gradient">recovered margin.</span>
+            <h1 className="font-display text-[clamp(2.4rem,6vw,4.4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5 text-white">
+              From cost data to{" "}
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                recovered margin.
+              </span>
             </h1>
-            <p className="text-base md:text-lg text-foreground/65 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
               A structured infrastructure audit — built for independent operators. No upfront fees, no lock-in.
             </p>
           </div>
@@ -152,11 +165,11 @@ export default function HowItWorks() {
           {/* CTA */}
           <div className="mt-16 text-center">
             <Link to="/Analyzer">
-              <Button className="h-12 rounded-full px-8 text-sm font-bold gap-2 bg-foreground text-background hover:opacity-90">
+              <Button className="h-12 rounded-full px-8 text-sm font-bold gap-2 bg-white text-black hover:opacity-90">
                 Run your free audit <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <p className="text-xs text-muted-foreground mt-4">
+            <p className="text-xs text-white/50 mt-4">
               Free forever for early operators · No credit card required
             </p>
           </div>
