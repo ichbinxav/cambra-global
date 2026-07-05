@@ -1,6 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 /**
+ * Endpoint classification: PUBLIC_OK (session-id-gated).
+ * asServiceRole justification: the caller has no user identity (yet); the
+ * session_id (UUID v4, ~122 bits of entropy) is the access token. RLS on
+ * AnalyzerResult/Brand/AnalyzerInput requires created_by, so we can't read
+ * these as a user. We hard-allowlist the response fields (see the note below)
+ * — the internal record is never spread into the response.
+ *
  * getAnonResultTeaser — The ONLY way an unauthenticated client can read an
  * anonymous Analyzer result. Returns a hard-allowlisted 5-field subset.
  *

@@ -4,6 +4,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 // Email 6: Analyzer follow-up (D+2) — users who ran analyzer but have no active deals
 // Email 7: Contract expiring soon (30 days)
 // Email 8: Monthly savings digest
+//
+// Endpoint classification: INTERNAL_ONLY (invoked by a scheduled automation).
+// No auth gate is enforced by the function because Base44's automation runner
+// is the intended caller. If someone else hits this URL, worst case they
+// re-trigger an idempotent-ish digest run — but the payload MUST include a
+// recognized `type`, otherwise it 400s.
+// asServiceRole justification: iterates AnalyzerResult / UserDeal across all
+// tenants to send each user their own summary. Never returns cross-tenant data
+// to the caller; only sends email to the record's own owner.
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);

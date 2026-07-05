@@ -74,6 +74,31 @@ Deno.serve(async (req) => {
     const result = await base44.asServiceRole.entities.AnalyzerResult.get(resultId);
     if (!result) return Response.json({ error: "AnalyzerResult not found" }, { status: 404 });
 
+    // ─── ANONYMOUS QUARANTINE (poisoning defense) ─────────────────────────
+    //
+    // Records with an active `anon_session_id` were submitted by unauthenticated
+    // callers via submitAnonymousAnalysis. Their savings/score numbers come
+    // straight from the CLIENT (see the trust-boundary note in that function)
+    // and MUST NOT feed the network learning loop — one attacker could
+    // otherwise poison every cohort's benchmark values with a single POST.
+    //
+    // The `claimAnonymousAnalysis` function clears anon_session_id when the
+    // record is claimed by a signed-in user. At that point the record becomes
+    // eligible for the learning loop — but only after we've added server-side
+    // recalculation of savings/score (see the TODO in submitAnonymousAnalysis).
+    // Until that recalculation exists, we still return early here even for
+    // claimed records, and the network benchmark is fed only from AnalyzerResult
+    // rows produced by the authenticated Analyzer path.
+    //
+    // Defense in depth: this check protects even against direct invocations
+    // of benchmarkLearningEngine that bypass onAnalyzerCompleted.
+    if (result.anon_session_id) {
+      return Response.json({
+        ok: false,
+        reason: "anonymous_result_quarantined",
+      });
+    }
+
     let input: any = null;
     if (result.input_id) {
       input = await base44.asServiceRole.entities.AnalyzerInput.get(result.input_id).catch(() => null);

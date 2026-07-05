@@ -7,6 +7,19 @@
 //     refresh_token? (for refresh_token grant)
 //
 // Returns: { access_token, token_type:"Bearer", expires_in, refresh_token, scope }
+//
+// Endpoint classification: PUBLIC_OK (by RFC 6749 — token endpoints are public
+// by design). Authentication is per-request via one of:
+//   - client_secret for confidential OAuth apps (constant-time compare against
+//     the stored SHA-256 hash);
+//   - PKCE code_verifier that must hash back to the stored code_challenge for
+//     public OAuth apps.
+// Authorization codes are single-use (marked `used=true` on redemption) and
+// hard-expire; refresh tokens are rotated on every refresh_token grant.
+// asServiceRole justification: OAuthApp / OAuthAuthorizationCode / OAuthToken
+// are admin-write RLS entities. The token endpoint has no user session — it
+// has a client_id and, if applicable, a client_secret. Every access to these
+// entities passes the client_id/secret+PKCE checks above.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 
 const ACCESS_TTL_SECONDS = 3600;            // 1h

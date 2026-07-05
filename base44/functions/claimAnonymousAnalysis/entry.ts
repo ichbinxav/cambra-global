@@ -1,6 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 /**
+ * Endpoint classification: AUTH_REQUIRED.
+ * asServiceRole justification: reassigning ownership to a newly-signed-in
+ * user requires writing records that currently have no owner (created_by is
+ * a service_* principal). The service-role write is gated by:
+ *   1. base44.auth.me() returning a real user with an email (401 otherwise);
+ *   2. UUID v4 shape validation on the session_id;
+ *   3. an explicit created_by check to refuse re-claiming a record that
+ *      already has a different owner.
+ *
  * claimAnonymousAnalysis — Reassigns the 3 anonymous records (Brand,
  * AnalyzerInput, AnalyzerResult) to the currently signed-in user.
  *

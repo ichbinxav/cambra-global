@@ -5,22 +5,32 @@ import IntegrationsLogos from "@/components/landing/IntegrationsLogos";
 
 /**
  * 4-stat grid card — dark navy, gradient numbers.
- * 98% Accuracy / Real-time Data Freshness / 60+ Integrations / OAuth Secure Access.
+ *
+ * Copy discipline: only claims we can defend end up here.
+ *   - "Estimated → Verified" replaces the old "98% accuracy" — every number
+ *     shown to the user starts as an estimate and hardens into a confirmed
+ *     figure once tools connect. That's the actual, honest product promise.
+ *   - "20+" integrations reflects the current live count in the registry.
+ *   - "OAuth · Read-only" spells out the access model instead of just "OAuth".
+ *   - The "Real-time" freshness line is gone — sync latency depends on the
+ *     underlying provider (webhooks vs. polling) and we don't ship a
+ *     hard-coded SLA we can point to. Replaced with a factual line about
+ *     the sync cadence.
  */
 const STATS = [
-  { value: "98%",       label: "Accuracy" },
-  { value: "Real-time", label: "Data Freshness" },
-  { value: "60+",       label: "Integrations" },
-  { value: "OAuth",     label: "Secure Access" },
+  { value: "Estimated",  suffix: " → Verified", label: "Every number, confirmed" },
+  { value: "20+",        suffix: "",            label: "Integrations live" },
+  { value: "Read-only",  suffix: "",            label: "OAuth · revocable" },
+  { value: "Daily+",     suffix: "",            label: "Sync cadence" },
 ];
 
-function Stat({ value, label }) {
+function Stat({ value, suffix, label }) {
   return (
     <div className="text-center px-4 py-10 sm:py-14">
       <div
         className="font-black tabular-nums"
         style={{
-          fontSize: "clamp(36px, 5vw, 64px)",
+          fontSize: "clamp(28px, 4vw, 52px)",
           letterSpacing: "-0.04em",
           lineHeight: 1,
           background:
@@ -32,6 +42,7 @@ function Stat({ value, label }) {
         }}
       >
         {value}
+        {suffix && <span className="opacity-70">{suffix}</span>}
       </div>
       <div
         className="mt-3 text-[11px] uppercase tracking-[0.24em] font-bold"
@@ -83,7 +94,7 @@ export default function StatsGrid() {
               lineHeight: 1.05,
             }}
           >
-            60+ integrations.{" "}
+            Every number, confirmed against{" "}
             <span
               style={{
                 background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
@@ -92,11 +103,11 @@ export default function StatsGrid() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Plug in, recover faster.
+              your real data.
             </span>
           </h2>
           <p className="mt-4 text-[14px] max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.55)", lineHeight: 1.6 }}>
-            Stripe, Shopify, DHL, Klaviyo, Notion and dozens more — securely connected via OAuth so we can benchmark every cost line in real time.
+            Stripe, Shopify, DHL, Klaviyo, Notion and more — connected via read-only OAuth. Every estimate becomes a confirmed euro figure.
           </p>
         </div>
 
@@ -171,7 +182,7 @@ export default function StatsGrid() {
             <ArrowRight size={16} />
           </Link>
           <p className="mt-4 text-[11px] uppercase tracking-[0.22em] font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Bank-level encryption · Read-only access · Revoke anytime
+            Encrypted credentials · Read-only access · Revoke anytime
           </p>
         </div>
       </div>

@@ -1,5 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
+// Endpoint classification: AUTH_REQUIRED (bootstrap-gated ADMIN_REQUIRED).
+// This is the ONLY function that can elevate a user to admin. Auth is layered:
+//   1. Caller must be authenticated (401 otherwise).
+//   2. If no admin exists yet (bootstrap), caller must match FOUNDER_EMAIL or
+//      ADMIN_ALLOWLIST_EMAILS, or present the ADMIN_SETUP_TOKEN.
+//   3. If an admin already exists, caller must both be in ADMIN_ALLOWLIST_EMAILS
+//      AND present the ADMIN_SETUP_TOKEN — two-factor by policy.
+// asServiceRole justification: role elevation writes to User which is
+// admin-write RLS. All the policy gates run before the service-role write.
+
 function parseList(v){ return (v||'').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean); }
 
 Deno.serve(async (req) => {

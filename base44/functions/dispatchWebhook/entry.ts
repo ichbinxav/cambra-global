@@ -2,6 +2,15 @@
 // Supports retry with exponential backoff (up to 3 attempts) inline,
 // and falls back to "pending" delivery rows for the scheduled retry job.
 // Invoked from other backend functions when domain events happen.
+//
+// Endpoint classification: INTERNAL_ONLY (invoked by other backend functions
+// via base44.functions.invoke). No auth gate here because callers are
+// server-to-server — a malicious external caller could only trigger deliveries
+// to webhooks THEY themselves registered (WebhookEndpoint is admin-write RLS),
+// which is not useful. If we ever expose this from an unauthenticated frontend
+// path, add auth here first.
+// asServiceRole justification: reads all active WebhookEndpoints across tenants
+// (event dispatch is a platform-level concern) and writes delivery/DLQ audit rows.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 
 const SUPPORTED_EVENTS = [

@@ -21,10 +21,14 @@ const TOOLS = [
   { name: "Gorgias", url: "https://www.google.com/s2/favicons?domain=gorgias.com&sz=64" },
 ];
 
+// Copy discipline: only defensible claims. "98% accuracy" and "<3s freshness"
+// are not measurable stats we can back with public data — replaced with the
+// honest ones: what the product actually does + what the current integration
+// count is. Keep this list in sync with StatsGrid.jsx.
 const STATS = [
-  { value: "98", suffix: "%", label: "Accuracy", sub: "vs. raw statements", Icon: Gauge },
-  { value: "<3", suffix: "s", label: "Data freshness", sub: "real-time sync", Icon: Activity },
-  { value: "12", suffix: "+", label: "Integrations", sub: "PSPs · carriers · commerce", Icon: Plug },
+  { value: "Est.", suffix: "→ Verified", label: "Every number", sub: "Confirmed against your data", Icon: Gauge },
+  { value: "Daily", suffix: "+", label: "Sync cadence", sub: "Fresh on each connect", Icon: Activity },
+  { value: "20", suffix: "+", label: "Integrations", sub: "PSPs · carriers · commerce", Icon: Plug },
   { value: "OAuth", suffix: "", label: "Secure access", sub: "read-only · revocable", Icon: ShieldCheck },
 ];
 
@@ -45,7 +49,9 @@ const PILLARS = [
     Icon: ShieldCheck,
     eyebrow: "Security",
     title: "Read-only, encrypted",
-    detail: "We never move money, never store credentials. Revoke access anytime.",
+    // Honest phrasing: we DO store OAuth tokens/API keys — but AES-GCM encrypted,
+    // never in plaintext. "Never store credentials" was factually wrong.
+    detail: "We never move money. Credentials encrypted, never in plain text. Revoke access anytime.",
   },
 ];
 

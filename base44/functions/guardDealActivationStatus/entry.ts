@@ -1,5 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
+// Endpoint classification: INTERNAL_ONLY (invoked by the DealActivation update
+// automation). The check here is idempotent — if the mandate is present, do
+// nothing; if it's missing, revert `status` back to what it was.
+// asServiceRole justification: needs to overwrite a status change made by any
+// user, and to write an AuthorizationLog row that is admin-write RLS.
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
