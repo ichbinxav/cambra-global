@@ -18,18 +18,11 @@ export default function AdminWaitlist() {
   const load = async () => {
     setLoading(true);
     try {
-      // Pull recent leads, then filter to waitlist sources in memory
-      // (Base44 filter operators don't support $in on the current SDK
-      // version we've been using; keeping it simple + reliable).
-      const all = await base44.entities.Lead.list("-created_date", 500);
-      const waitlist = (all || []).filter((l) =>
-        typeof l.source_page === "string" &&
-        (l.source_page === "landing_waitlist" ||
-         l.source_page === "analyzer_teaser_waitlist" ||
-         l.source_page.startsWith("landing_waitlist") ||
-         l.source_page.startsWith("analyzer_teaser_waitlist"))
-      );
-      setLeads(waitlist);
+      // Backend function reads with service role (waitlist leads are created
+      // by anonymous public visitors, so a user-scoped read wouldn't see them).
+      const res = await base44.functions.invoke("getWaitlistLeads", {});
+      const payload = res?.data || res;
+      setLeads(Array.isArray(payload?.leads) ? payload.leads : []);
     } finally {
       setLoading(false);
     }

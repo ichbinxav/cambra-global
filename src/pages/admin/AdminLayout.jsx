@@ -56,22 +56,16 @@ export default function AdminLayout() {
     let cancelled = false;
     const loadCount = async () => {
       try {
-        const [approvals, questions, recentLeads] = await Promise.all([
+        const [approvals, questions, waitlistRes] = await Promise.all([
           base44.entities.Approval.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
           base44.entities.AgentQuestion.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
-          base44.entities.Lead.list("-created_date", 100).catch(() => []),
+          base44.functions.invoke("getWaitlistLeads", {}).catch(() => null),
         ]);
         if (!cancelled) {
           setPendingApprovals(Array.isArray(approvals) ? approvals.length : 0);
           setPendingQuestions(Array.isArray(questions) ? questions.length : 0);
-          // Waitlist badge = signups from last 24h (fresh, not-yet-reviewed vibe)
-          const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-          const freshWaitlist = (recentLeads || []).filter(l =>
-            typeof l.source_page === "string" &&
-            (l.source_page.startsWith("landing_waitlist") || l.source_page.startsWith("analyzer_teaser_waitlist")) &&
-            l.created_date && new Date(l.created_date).getTime() >= cutoff
-          ).length;
-          setNewWaitlist(freshWaitlist);
+          const wPayload = waitlistRes?.data || waitlistRes;
+          setNewWaitlist(Number(wPayload?.fresh_24h) || 0);
         }
       } catch { /* non-fatal */ }
     };
