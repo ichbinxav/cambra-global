@@ -4,7 +4,7 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import Navbar from "@/components/landing/Navbar";
-import { useTranslation } from "@/lib/i18n.jsx";
+import { useTranslation } from "@/lib/i18n.jsx"; // used by HowItWorksSection + LandingFooter
 import AuroraBackground from "@/components/landing/AuroraBackground";
 import AnimatedSection from "@/components/landing/AnimatedSection";
 import SavingsCurveChart from "@/components/landing/SavingsCurveChart";
@@ -15,6 +15,7 @@ import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
 import OneScanSection from "@/components/landing/OneScanSection";
+import IntegrationsLogos from "@/components/landing/IntegrationsLogos";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
@@ -72,8 +73,6 @@ function LandingJsonLd() {
 }
 
 function Hero() {
-  // Reserved for i18n copy — Hero currently uses hardcoded EN strings.
-  useTranslation();
   return (
     <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "#ffffff", paddingTop: 80 }}>
       {/* Cinematic ambient layers */}
@@ -297,7 +296,19 @@ function HowItWorksSection() {
         <AnimatedSection>
           <div className="text-center mb-10">
             <SectionLabel className="mb-6 inline-block">{t("how_label")}</SectionLabel>
-            <h2 className="text-display text-white max-w-3xl mx-auto">{t("how_label")}</h2>
+            <h2 className="text-display text-white max-w-3xl mx-auto">
+              Four steps from{" "}
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                estimate to recovered margin.
+              </span>
+            </h2>
           </div>
         </AnimatedSection>
 
@@ -445,6 +456,7 @@ export default function Landing() {
         <StatsGrid />
         <TestimonialsCarousel />
         <FounderLetter />
+        <IntegrationsLogos />
         <PricingDual />
         <StopLeavingMarginCTA />
       </main>

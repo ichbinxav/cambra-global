@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, Activity } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 
 /**
@@ -93,7 +93,9 @@ export default function StopLeavingMarginCTA() {
           Turn operating costs into recovered margin. Verified. Immediate. Aligned incentives.
         </p>
 
-        {/* Buttons */}
+        {/* Buttons — two distinct actions:
+              1. Primary: run the free audit (Analyzer).
+              2. Secondary: join the recovery waitlist (visual-only email capture). */}
         <div className="mt-10 flex flex-col gap-3 max-w-md">
           <Link
             to="/Analyzer"
@@ -111,24 +113,7 @@ export default function StopLeavingMarginCTA() {
             <ArrowRight size={16} />
           </Link>
 
-          <Link
-            to="/Analyzer"
-            className="inline-flex items-center justify-center gap-3 rounded-full font-bold text-[15px] transition-colors hover:bg-white/[0.04]"
-            style={{
-              padding: "18px 28px",
-              border: "1px solid rgba(255,255,255,0.20)",
-              color: "rgba(255,255,255,0.95)",
-            }}
-          >
-            <Activity size={16} className="text-cyan-400" />
-            Join CAMBRA
-            <ArrowRight size={16} />
-          </Link>
-
-          {/* Waitlist entry point — visual only until Stripe validation lands */}
-          <div className="mt-2">
-            <JoinWaitlistButton variant="ghost" label="Join to recover" />
-          </div>
+          <JoinWaitlistButton variant="ghost" label="Join to recover" fullWidth />
         </div>
 
         {/* Trust row */}

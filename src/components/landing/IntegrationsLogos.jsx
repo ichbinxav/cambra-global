@@ -164,9 +164,6 @@ export default function IntegrationsLogos() {
           </p>
         </div>
 
-        {/* Foot note under logos — honest security disclosure */}
-        {/* (kept minimal on purpose — full pledge lives on the Security page) */}
-
         {/* Marquee */}
         <div
           className="relative overflow-hidden"

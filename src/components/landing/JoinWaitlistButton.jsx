@@ -15,7 +15,7 @@ import { ArrowRight, Check } from "lucide-react";
  *   - "primary" (default) — white pill, blue text, glow (for prominent placements)
  *   - "ghost" — outlined pill for secondary contexts
  */
-export default function JoinWaitlistButton({ variant = "primary", label = "Join to recover" }) {
+export default function JoinWaitlistButton({ variant = "primary", label = "Join to recover", fullWidth = false }) {
   const [state, setState] = useState("idle"); // idle | form | done
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -94,6 +94,7 @@ export default function JoinWaitlistButton({ variant = "primary", label = "Join 
       ? {
           background: "#ffffff",
           color: "#0a0f1e",
+          padding: fullWidth ? "18px 28px" : undefined,
           boxShadow:
             "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(34,211,238,0.55), 0 0 28px rgba(34,211,238,0.22)",
         }
@@ -101,17 +102,18 @@ export default function JoinWaitlistButton({ variant = "primary", label = "Join 
           background: "transparent",
           color: "rgba(255,255,255,0.95)",
           border: "1px solid rgba(255,255,255,0.20)",
+          padding: fullWidth ? "18px 28px" : undefined,
         };
 
   return (
     <button
       type="button"
       onClick={() => setState("form")}
-      className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[14px] font-bold transition-transform hover:scale-[1.02]"
+      className={`${fullWidth ? "flex w-full" : "inline-flex"} items-center justify-center gap-2 rounded-full text-[15px] font-bold transition-transform hover:scale-[1.02] ${fullWidth ? "" : "px-6 py-3 text-[14px]"}`}
       style={commonStyle}
     >
       {label}
-      <ArrowRight size={14} />
+      <ArrowRight size={16} />
     </button>
   );
 }
