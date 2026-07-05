@@ -15,7 +15,6 @@ import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
 import OneScanSection from "@/components/landing/OneScanSection";
-import IntegrationsLogos from "@/components/landing/IntegrationsLogos";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
@@ -456,7 +455,6 @@ export default function Landing() {
         <StatsGrid />
         <TestimonialsCarousel />
         <FounderLetter />
-        <IntegrationsLogos />
         <PricingDual />
         <StopLeavingMarginCTA />
       </main>
