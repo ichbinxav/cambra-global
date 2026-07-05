@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { TrendingDown, Truck, Layers, AlertTriangle } from "lucide-react";
+import { TrendingDown, Truck, Layers, AlertTriangle, ArrowRight } from "lucide-react";
 import SectionLabel from "@/components/shared/SectionLabel";
 import AnimatedSection from "@/components/landing/AnimatedSection";
 
@@ -35,6 +36,12 @@ const ITEMS = [
     body: "Avg. independent brand pays for 4–6 overlapping or underused tools.",
     accent: "rgba(236,72,153,0.65)",
     glow: "rgba(236,72,153,0.08)",
+    // Only the SaaS card gets a CTA: SaaS savings are a pure win for the brand
+    // (free margin, 0% fee) — worth surfacing an entry point right here.
+    cta: {
+      label: "Audit your stack — free, 0% fee",
+      href: "/Analyzer",
+    },
   },
 ];
 
@@ -185,6 +192,16 @@ function Card({ item, index }) {
       </div>
 
       <p className="relative text-[13px] text-white/55 leading-relaxed">{item.body}</p>
+
+      {item.cta && (
+        <Link
+          to={item.cta.href}
+          className="relative mt-5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-white/70 hover:text-white transition-colors group/cta"
+        >
+          <span>{item.cta.label}</span>
+          <ArrowRight size={12} className="transition-transform group-hover/cta:translate-x-0.5" />
+        </Link>
+      )}
     </motion.div>
   );
 }
