@@ -1,36 +1,61 @@
 import React, { useState } from "react";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 /**
- * JoinWaitlistButton — visual-only CTA for the "Join to recover" flow.
+ * JoinWaitlistButton — "Join to recover" CTA.
  *
- * MVP scope on purpose:
- *   - Renders a pill button "Join to recover".
- *   - On click, expands into a single email input.
- *   - On submit (valid email), shows "You're on the list — we'll be in touch".
- *   - No entity, no backend call, no aggregate demand counter yet.
- *     That waitlist infra is a separate feature, built after Stripe validation.
+ * Flow:
+ *   - idle → user clicks pill button → expands to email input
+ *   - submitting → posts to submitWaitlistSignup (saves Lead + emails admin)
+ *   - done → confirmation state
  *
- * Accepts `variant`:
- *   - "primary" (default) — white pill, blue text, glow (for prominent placements)
- *   - "ghost" — outlined pill for secondary contexts
+ * Props:
+ *   - variant: "primary" (default) | "ghost"
+ *   - label: button text
+ *   - fullWidth: full-width layout
+ *   - source: where the signup came from (for lead attribution)
+ *   - context: optional { brand_name, total_savings, session_id } — used
+ *     by the teaser to enrich the admin notification email.
  */
-export default function JoinWaitlistButton({ variant = "primary", label = "Join to recover", fullWidth = false }) {
-  const [state, setState] = useState("idle"); // idle | form | done
+export default function JoinWaitlistButton({
+  variant = "primary",
+  label = "Join to recover",
+  fullWidth = false,
+  source = "landing_waitlist",
+  context = null,
+}) {
+  const [state, setState] = useState("idle"); // idle | form | submitting | done
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
 
   const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isValidEmail(email)) {
       setError("Enter a valid email");
       return;
     }
     setError("");
-    // Visual-only: no backend call. Waitlist entity is a separate feature.
-    setState("done");
+    setState("submitting");
+    try {
+      const res = await base44.functions.invoke("submitWaitlistSignup", {
+        email: email.trim(),
+        source,
+        context: context || {},
+      });
+      const payload = res?.data || res;
+      if (payload?.ok) {
+        setState("done");
+      } else {
+        setError(payload?.error === "invalid_email" ? "Enter a valid email" : "Something went wrong, try again");
+        setState("form");
+      }
+    } catch {
+      setError("Something went wrong, try again");
+      setState("form");
+    }
   };
 
   if (state === "done") {
@@ -51,7 +76,8 @@ export default function JoinWaitlistButton({ variant = "primary", label = "Join 
     );
   }
 
-  if (state === "form") {
+  if (state === "form" || state === "submitting") {
+    const submitting = state === "submitting";
     return (
       <form
         onSubmit={handleSubmit}
@@ -63,7 +89,8 @@ export default function JoinWaitlistButton({ variant = "primary", label = "Join 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@brand.com"
-          className="flex-1 rounded-full px-5 py-3 text-[14px] text-white placeholder:text-white/40 outline-none"
+          disabled={submitting}
+          className="flex-1 rounded-full px-5 py-3 text-[14px] text-white placeholder:text-white/40 outline-none disabled:opacity-60"
           style={{
             background: "rgba(255,255,255,0.04)",
             border: `1px solid ${error ? "rgba(239,68,68,0.45)" : "rgba(255,255,255,0.14)"}`,
@@ -73,13 +100,14 @@ export default function JoinWaitlistButton({ variant = "primary", label = "Join 
         />
         <button
           type="submit"
-          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[14px] font-bold bg-white text-black hover:bg-white/90"
+          disabled={submitting}
+          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[14px] font-bold bg-white text-black hover:bg-white/90 disabled:opacity-70"
           style={{
             boxShadow:
               "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(34,211,238,0.55)",
           }}
         >
-          Join <ArrowRight size={14} />
+          {submitting ? <><Loader2 size={14} className="animate-spin" /> Joining…</> : <>Join <ArrowRight size={14} /></>}
         </button>
         {error && (
           <span className="text-[12px] text-red-300 sm:hidden">{error}</span>

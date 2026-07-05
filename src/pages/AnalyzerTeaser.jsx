@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Lock, ShieldCheck, Sparkles, Layers, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import Navbar from "@/components/landing/Navbar";
+import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
@@ -250,6 +251,28 @@ export default function AnalyzerTeaser() {
                     Sign in
                   </button>
                 </p>
+
+                {/* Secondary CTA — waitlist. For brands not ready to create
+                    an account yet. Captures email + notifies admin, with the
+                    savings estimate + brand context pre-filled from teaser. */}
+                <div
+                  className="mt-5 pt-5 flex flex-col items-center gap-3"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  <p className="text-[12px] text-white/50 text-center">
+                    Not ready to create an account? Join the waitlist and we'll reach out.
+                  </p>
+                  <JoinWaitlistButton
+                    variant="ghost"
+                    label="Join the waitlist"
+                    source="analyzer_teaser_waitlist"
+                    context={{
+                      brand_name: teaser.brand_name || null,
+                      total_savings: teaser.total_savings || 0,
+                      session_id: sessionId,
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Trust microcopy */}
