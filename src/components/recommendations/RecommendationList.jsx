@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import RecoveryBadge from '@/components/recommendations/RecoveryBadge';
 
 export default function RecommendationList(){
   const [items, setItems] = useState([]);
@@ -107,6 +108,7 @@ export default function RecommendationList(){
                   {typeof total === 'number' && (
                     <span className={`text-[10px] px-2 py-0.5 rounded-full border ${priorityColors(prio)}`}>{prio}</span>
                   )}
+                  <RecoveryBadge vertical={r.vertical} size="xs" />
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{r.description}</p>
               </div>

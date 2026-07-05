@@ -1,5 +1,7 @@
 import { Lock, CreditCard, Truck, Package, Calendar, ArrowRight, Sparkles } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
+import RecoveryBadge from "@/components/recommendations/RecoveryBadge";
+import { getRecoveryType } from "@/lib/recoveryModel";
 
 /**
  * RecommendedActionsLocked
@@ -30,10 +32,14 @@ export default function RecommendedActionsLocked({
   const { t } = useTranslation();
 
   // Build only actions with >0 savings, then keep top 3 by impact.
+  // The `vertical` field mirrors scoreEngine keys and drives the recovery
+  // badge — it's the ONLY source of truth for "free self-serve" vs
+  // "CAMBRA-recovered with success fee". No new field, no duplication.
   const allActions = [
     {
       icon: CreditCard,
       category: t("payments_title") || "Payments",
+      vertical: "payments",
       title: "Renegotiate your payment processor",
       savings: paymentSavings,
       // The blurred lines mimic the structure of a real playbook entry
@@ -47,6 +53,7 @@ export default function RecommendedActionsLocked({
     {
       icon: Truck,
       category: t("shipping_title") || "Shipping",
+      vertical: "shipping",
       title: "Re-bid your carrier contract",
       savings: shippingSavings,
       blurred: [
@@ -58,6 +65,7 @@ export default function RecommendedActionsLocked({
     {
       icon: Package,
       category: t("saas_title") || "SaaS",
+      vertical: "saas",
       title: "Consolidate your SaaS stack",
       savings: saasSavings,
       blurred: [
@@ -77,6 +85,11 @@ export default function RecommendedActionsLocked({
 
   const totalActionSavings = actions.reduce((s, a) => s + Number(a.savings || 0), 0);
 
+  // Split by recovery model so the section header can honestly say
+  // "X we recover for you · Y you can recover yourself".
+  const recoveredCount  = actions.filter(a => getRecoveryType(a.vertical) === "cambra_recovered").length;
+  const selfServeCount  = actions.filter(a => getRecoveryType(a.vertical) === "self_serve").length;
+
   return (
     <section className="space-y-3">
       {/* Section header */}
@@ -94,7 +107,11 @@ export default function RecommendedActionsLocked({
             <span className="text-muted-foreground/50 font-normal text-sm">/yr</span>
           </h2>
           <p className="text-sm text-muted-foreground/70 mt-1">
-            We've identified what to do. The exact playbook unlocks on the strategy call.
+            {recoveredCount > 0 && selfServeCount > 0
+              ? `${recoveredCount} we recover for you · ${selfServeCount} you recover yourself. Playbook unlocks on the call.`
+              : recoveredCount > 0
+                ? "We negotiate and verify. You only pay on real savings recovered."
+                : "Free insight — execute yourself. Playbook unlocks on the call."}
           </p>
         </div>
       </div>
@@ -130,6 +147,11 @@ export default function RecommendedActionsLocked({
                           /yr
                         </span>
                       </span>
+                    </div>
+
+                    {/* Recovery model badge — free self-serve vs 25% success fee */}
+                    <div className="mb-2">
+                      <RecoveryBadge vertical={a.vertical} />
                     </div>
 
                     {/* Title — visible */}
