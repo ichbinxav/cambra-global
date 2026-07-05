@@ -184,7 +184,7 @@ function Hero() {
                 background: "rgba(255,255,255,0.02)",
               }}
             >
-              See a sample report
+              Discover real brands savings
             </motion.a>
           </motion.div>
 
