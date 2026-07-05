@@ -162,7 +162,7 @@ export default function SavingsCurveChart({
               15%
             </div>
             <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "rgba(255,255,255,0.40)" }}>
-              cost cut
+              efficiency gain
             </div>
           </div>
           <div style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }} className="pl-3">
