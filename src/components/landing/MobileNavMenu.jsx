@@ -1,11 +1,15 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, ScanSearch, Workflow, Plug, LineChart, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Users, Settings, BookOpen, Shield, Activity } from "lucide-react";
+import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Users, Settings, BookOpen, Shield, Activity, MessageSquareQuote } from "lucide-react";
 
 // ─────────────────────────────────────────────
 // Premium grouped structure — fintech editorial
 // ─────────────────────────────────────────────
 
+// Every href here MUST resolve to a PUBLIC route in src/App.jsx. Member-only
+// routes (Insights, ConnectTools, Dashboard, …) live in the member sidebar,
+// not the public mobile menu — including them here would bounce anonymous
+// visitors to /LoginGate on tap.
 const PUBLIC_GROUPS = [
   {
     label: "Home",
@@ -17,15 +21,14 @@ const PUBLIC_GROUPS = [
     label: "Platform",
     items: [
       { label: "Infrastructure audit", sub: "Run the Analyzer", href: "/Analyzer", Icon: ScanSearch },
-      { label: "Margin intelligence", sub: "Insights & research", href: "/Insights", Icon: LineChart },
-      { label: "Connect infrastructure data", sub: "Read-only integrations", href: "/ConnectTools", Icon: Plug },
+      { label: "Audit workflow", sub: "How Cambra works", href: "/HowItWorks", Icon: Workflow },
+      { label: "Access & recovery", sub: "Economic model", href: "/Pricing", Icon: Receipt },
     ],
   },
   {
-    label: "Workflow",
+    label: "Proof",
     items: [
-      { label: "Audit workflow", sub: "How Cambra works", href: "/HowItWorks", Icon: Workflow },
-      { label: "Access & recovery", sub: "Economic model", href: "/Pricing", Icon: Receipt },
+      { label: "Testimonials", sub: "Real brand results", href: "/Testimonials", Icon: MessageSquareQuote },
     ],
   },
   {

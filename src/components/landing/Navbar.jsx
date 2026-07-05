@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ArrowRight, Plug, BookOpen, Tag, HelpCircle, Mail, Shield, Sparkles, Activity } from "lucide-react";
+import { Menu, X, ArrowRight, Tag, HelpCircle, Mail, Shield, Sparkles, Activity, MessageSquareQuote } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import MobileNavMenu from "@/components/landing/MobileNavMenu";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
@@ -8,18 +8,21 @@ import { useTranslation } from "@/lib/i18n.jsx";
 
 // CAMBRA public navigation — SAME set of links in every public page, whether
 // the visitor is signed in or not. Member navigation (Dashboard, Reports,
-// Network, Account, …) lives inside DashboardLayout, not here — so the top
-// navbar stays consistent across Landing, Pricing, HowItWorks, Contact, etc.
-// Access-gated links (Connect tools, Insights) are protected by their routes;
-// unauthenticated clicks land on /LoginGate automatically.
+// Network, Account, Insights, Connect tools, …) lives inside DashboardLayout,
+// not here — so the top navbar stays consistent across Landing, Pricing,
+// HowItWorks, Contact, etc.
+// Every href below MUST resolve to a PUBLIC route in src/App.jsx (routes that
+// don't sit under a <ProtectedRoute>). Protected routes (Insights, ConnectTools,
+// Dashboard, …) belong in the member sidebar, not the public navbar — putting
+// them here breaks the flow for signed-out visitors (they get bounced to
+// /LoginGate on click).
 const NAV_PUBLIC = [
-  { label: "Analyzer",            href: "/Analyzer",     icon: Activity,    desc: "Scan your infrastructure" },
-  { label: "How it works",        href: "/HowItWorks",   icon: Sparkles,    desc: "The 4-step audit" },
-  { label: "Connect your tools",  href: "/ConnectTools", icon: Plug,        desc: "Connect or upload data" },
-  { label: "Insights",            href: "/Insights",     icon: BookOpen,    desc: "Margin intelligence" },
-  { label: "Pricing",             href: "/Pricing",      icon: Tag },
-  { label: "Help",                href: "/Help",         icon: HelpCircle },
-  { label: "Contact",             href: "/Contact",      icon: Mail },
+  { label: "Analyzer",     href: "/Analyzer",     icon: Activity,           desc: "Scan your infrastructure" },
+  { label: "How it works", href: "/HowItWorks",   icon: Sparkles,           desc: "The 4-step audit" },
+  { label: "Testimonials", href: "/Testimonials", icon: MessageSquareQuote, desc: "Real brand results" },
+  { label: "Pricing",      href: "/Pricing",      icon: Tag },
+  { label: "Help",         href: "/Help",         icon: HelpCircle },
+  { label: "Contact",      href: "/Contact",      icon: Mail },
 ];
 
 export default function Navbar() {
@@ -34,7 +37,6 @@ export default function Navbar() {
   const labelKey = {
     Analyzer: "nav_analyzer",
     "How it works": "nav_how",
-    "Connect your tools": "nav_connect",
     Pricing: "nav_pricing",
     Dashboard: "nav_dashboard",
     Reports: "nav_reports",
