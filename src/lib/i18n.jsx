@@ -50,8 +50,8 @@ export function formatDate(date, lang = "en") {
 const DICT = {
   en: {
     /* meta */
-    meta_title:       "CAMBRA — Infrastructure Cost Intelligence for Independent Brands",
-    meta_description: "CAMBRA benchmarks your payment fees, shipping costs and SaaS spend against 400+ European brands. Find where you overpay and recover margin automatically. Free analysis.",
+    meta_title:       "CAMBRA — Efficient infrastructure for independent commerce",
+    meta_description: "CAMBRA — efficient infrastructure for independent commerce. We benchmark your payment fees, shipping costs and SaaS spend against European brands, and recover the margin you're overpaying. Free analysis.",
 
     /* navigation */
     nav_dashboard:    "Dashboard",
@@ -116,7 +116,7 @@ const DICT = {
     pricing_trust:        "Trusted by independent brands across France, Spain and the UK.",
 
     /* footer */
-    footer_tagline:       "Infrastructure Intelligence for independent brands.",
+    footer_tagline:       "Efficient infrastructure for independent commerce.",
     footer_privacy:       "Privacy Policy",
     footer_terms:         "Terms of Service",
     footer_contact:       "Contact",
@@ -453,8 +453,8 @@ const DICT = {
   },
 
   fr: {
-    meta_title:       "CAMBRA — Optimisation des Coûts d'Infrastructure pour Marques Indépendantes",
-    meta_description: "CAMBRA compare vos frais de paiement, coûts d'expédition et dépenses SaaS avec plus de 400 marques européennes. Identifiez où vous payez trop et récupérez vos marges. Analyse gratuite.",
+    meta_title:       "CAMBRA — Infrastructure efficace pour le commerce indépendant",
+    meta_description: "CAMBRA — infrastructure efficace pour le commerce indépendant. Nous comparons vos frais de paiement, coûts d'expédition et dépenses SaaS avec les marques européennes, et récupérons la marge que vous payez en trop. Analyse gratuite.",
 
     nav_dashboard:    "Tableau de bord",
     nav_analyzer:     "Analyseur",
@@ -512,7 +512,7 @@ const DICT = {
     pricing_cta:          "Obtenir votre analyse gratuite →",
     pricing_trust:        "Utilisé par des marques indépendantes en France, Espagne et au Royaume-Uni.",
 
-    footer_tagline:       "Intelligence d'infrastructure pour marques indépendantes.",
+    footer_tagline:       "Infrastructure efficace pour le commerce indépendant.",
     footer_privacy:       "Politique de confidentialité",
     footer_terms:         "Conditions d'utilisation",
     footer_contact:       "Contact",
@@ -834,8 +834,8 @@ const DICT = {
   },
 
   es: {
-    meta_title:       "CAMBRA — Inteligencia de Costes de Infraestructura para Marcas Independientes",
-    meta_description: "CAMBRA compara tus comisiones de pago, costes de envío y gasto en SaaS con más de 400 marcas europeas. Descubre dónde pagas de más y recupera tu margen automáticamente. Análisis gratuito.",
+    meta_title:       "CAMBRA — Infraestructura eficiente para el comercio independiente",
+    meta_description: "CAMBRA — infraestructura eficiente para el comercio independiente. Comparamos tus comisiones de pago, costes de envío y gasto en SaaS con marcas europeas, y recuperamos el margen que estás pagando de más. Análisis gratuito.",
 
     nav_dashboard:    "Panel",
     nav_analyzer:     "Analizador",
@@ -893,7 +893,7 @@ const DICT = {
     pricing_cta:          "Obtener tu análisis gratuito →",
     pricing_trust:        "Utilizado por marcas independientes en Francia, España y el Reino Unido.",
 
-    footer_tagline:       "Inteligencia de infraestructura para marcas independientes.",
+    footer_tagline:       "Infraestructura eficiente para el comercio independiente.",
     footer_privacy:       "Política de privacidad",
     footer_terms:         "Términos de servicio",
     footer_contact:       "Contacto",

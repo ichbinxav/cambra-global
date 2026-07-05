@@ -22,7 +22,8 @@ const LANDING_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "CAMBRA",
-  "description": "Infrastructure cost intelligence platform for independent European brands. Benchmarks payment fees, shipping costs and SaaS spend.",
+  "slogan": "Efficient infrastructure for independent commerce",
+  "description": "CAMBRA — efficient infrastructure for independent commerce. Benchmarks payment fees, shipping costs and SaaS spend against European brands and recovers the margin.",
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web",
   "offers": {
