@@ -10,7 +10,6 @@ import AnimatedSection from "@/components/landing/AnimatedSection";
 import SavingsCurveChart from "@/components/landing/SavingsCurveChart";
 import TestimonialsCarousel from "@/components/landing/TestimonialsCarousel";
 import FounderLetter from "@/components/landing/FounderLetter";
-import StatsGrid from "@/components/landing/StatsGrid";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
@@ -452,7 +451,6 @@ export default function Landing() {
         <ProblemSectionWow />
         <OneScanSection />
         <HowItWorksSection />
-        <StatsGrid />
         <TestimonialsCarousel />
         <FounderLetter />
         <PricingDual />
