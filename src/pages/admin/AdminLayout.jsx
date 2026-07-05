@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search
+  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -15,6 +15,7 @@ const NAV = [
   { path: "/admin/discovery", label: "Discovery", icon: Search },
   { path: "/admin/overview", label: "Overview", icon: BarChart3 },
   { path: "/admin/users", label: "Users & Companies", icon: Users },
+  { path: "/admin/waitlist", label: "Waitlist", icon: Mail, showWaitlistBadge: true },
   { path: "/admin/applications", label: "Deal Applications", icon: FileText },
   { path: "/admin/pipeline", label: "Pipeline", icon: GitBranch },
   { path: "/admin/deals", label: "Deals", icon: Handshake },
@@ -38,6 +39,7 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingApprovals, setPendingApprovals] = useState(0);
   const [pendingQuestions, setPendingQuestions] = useState(0);
+  const [newWaitlist, setNewWaitlist] = useState(0);
   const location = useLocation();
 
   useEffect(() => {
@@ -54,13 +56,22 @@ export default function AdminLayout() {
     let cancelled = false;
     const loadCount = async () => {
       try {
-        const [approvals, questions] = await Promise.all([
+        const [approvals, questions, recentLeads] = await Promise.all([
           base44.entities.Approval.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
           base44.entities.AgentQuestion.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
+          base44.entities.Lead.list("-created_date", 100).catch(() => []),
         ]);
         if (!cancelled) {
           setPendingApprovals(Array.isArray(approvals) ? approvals.length : 0);
           setPendingQuestions(Array.isArray(questions) ? questions.length : 0);
+          // Waitlist badge = signups from last 24h (fresh, not-yet-reviewed vibe)
+          const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+          const freshWaitlist = (recentLeads || []).filter(l =>
+            typeof l.source_page === "string" &&
+            (l.source_page.startsWith("landing_waitlist") || l.source_page.startsWith("analyzer_teaser_waitlist")) &&
+            l.created_date && new Date(l.created_date).getTime() >= cutoff
+          ).length;
+          setNewWaitlist(freshWaitlist);
         }
       } catch { /* non-fatal */ }
     };
@@ -160,6 +171,13 @@ export default function AdminLayout() {
                     active ? "bg-background text-foreground" : "bg-amber-500 text-white"
                   }`}>
                     {pendingQuestions > 99 ? "99+" : pendingQuestions}
+                  </span>
+                )}
+                {item.showWaitlistBadge && newWaitlist > 0 && (
+                  <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full text-[10px] font-black tabular-nums ${
+                    active ? "bg-background text-foreground" : "bg-cyan-500 text-white"
+                  }`}>
+                    {newWaitlist > 99 ? "99+" : newWaitlist}
                   </span>
                 )}
               </Link>

@@ -69,6 +69,7 @@ import Help from '@/pages/Help';
 import HelpCategory from '@/pages/HelpCategory';
 import Snapshot from '@/pages/Snapshot';
 import AdminInvoices from '@/pages/admin/AdminInvoices';
+import AdminWaitlist from '@/pages/admin/AdminWaitlist';
 import Invoices from '@/pages/Invoices';
 import Vault from '@/pages/Vault';
 import ConnectIntegrations from '@/pages/ConnectIntegrations';
@@ -258,6 +259,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/activation" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/activation/:id" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/invoices" element={withBoundary(<AdminInvoices />)} />
+          <Route path="/admin/waitlist" element={withBoundary(<AdminWaitlist />)} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>
