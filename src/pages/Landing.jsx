@@ -412,6 +412,7 @@ function LandingFooter() {
           <Link to="/Privacy" className="hover:text-white transition-colors">{t("footer_privacy")}</Link>
           <Link to="/Terms" className="hover:text-white transition-colors">{t("footer_terms")}</Link>
           <Link to="/Contact" className="hover:text-white transition-colors">{t("footer_contact")}</Link>
+          <Link to="/ForProviders" className="hover:text-white transition-colors">For Providers</Link>
         </div>
       </div>
     </footer>

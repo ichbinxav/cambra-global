@@ -65,6 +65,7 @@ import DevelopersMCP from '@/pages/DevelopersMCP.jsx';
 import HowItWorks from '@/pages/HowItWorks';
 import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
+import ForProviders from '@/pages/ForProviders';
 import Help from '@/pages/Help';
 import HelpCategory from '@/pages/HelpCategory';
 import Snapshot from '@/pages/Snapshot';
@@ -206,6 +207,9 @@ const AuthenticatedApp = () => {
         <Route path="/testimonials" element={<Navigate to="/Testimonials" replace />} />
         <Route path="/Contact" element={withBoundary(<Contact />)} />
         <Route path="/contact" element={<Navigate to="/Contact" replace />} />
+        <Route path="/ForProviders" element={withBoundary(<ForProviders />)} />
+        <Route path="/forproviders" element={<Navigate to="/ForProviders" replace />} />
+        <Route path="/for-providers" element={<Navigate to="/ForProviders" replace />} />
         <Route path="/Help" element={withBoundary(<Help />)} />
         <Route path="/help" element={<Navigate to="/Help" replace />} />
         <Route path="/Help/:slug" element={withBoundary(<HelpCategory />)} />
