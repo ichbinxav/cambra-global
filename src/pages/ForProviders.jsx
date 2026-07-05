@@ -242,31 +242,29 @@ export default function ForProviders() {
 
                   <h2
                     className="text-white font-black tracking-tight leading-[1.05] mb-6"
-                    style={{ fontSize: "clamp(28px, 4vw, 48px)" }}
+                    style={{ fontSize: "clamp(28px, 4vw, 44px)" }}
                   >
-                    We always recommend the{" "}
-                    <span style={{ color: "#6ee7b7" }}>best rate for the brand.</span>
-                    <br />
-                    Revenue share never influences the recommendation.
+                    Recommendations follow the{" "}
+                    <span style={{ color: "#6ee7b7" }}>brand's best interest.</span>
                   </h2>
 
                   <p className="text-white/70 text-[16px] leading-relaxed max-w-3xl mb-8">
-                    CAMBRA is a buy-side platform. Our alignment is with the merchant, not the provider. When we surface an option to a brand, it's because it's the best fit for their infrastructure and their savings — not because of what a partner pays us.
+                    CAMBRA is buy-side. When we surface an option to a brand, it's because it fits their infrastructure and their savings profile. Partnership economics are a separate conversation.
                   </p>
 
                   <ul className="space-y-3 max-w-3xl">
                     {[
                       {
                         Icon: ShieldCheck,
-                        text: "Rankings are driven by fit and verified savings for the brand — never by revenue share tier.",
+                        text: "Rankings are driven by fit and savings — not by partnership tier.",
                       },
                       {
                         Icon: Lock,
-                        text: "Providers cannot pay to be recommended, ranked higher, or hide competing options.",
+                        text: "No pay-to-be-recommended, no paid placement.",
                       },
                       {
                         Icon: Users,
-                        text: "The brand always sees the full comparison, including options that don't pay CAMBRA a share.",
+                        text: "Brands see the full comparison, including non-partner options.",
                       },
                     ].map((r) => (
                       <li key={r.text} className="flex items-start gap-3 text-[14px] text-white/80">
@@ -276,8 +274,8 @@ export default function ForProviders() {
                     ))}
                   </ul>
 
-                  <p className="mt-8 text-[13px] text-white/45 italic">
-                    This is what makes the model work. Break it and we lose the brands — which means we lose the aggregated demand you're partnering with us for. So we don't break it.
+                  <p className="mt-8 text-[13px] text-white/50">
+                    It's the only way an aggregated demand network holds up over time — for the brands, and for the providers who partner with us.
                   </p>
                 </div>
               </motion.div>
