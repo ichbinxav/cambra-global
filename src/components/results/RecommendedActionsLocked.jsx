@@ -108,10 +108,10 @@ export default function RecommendedActionsLocked({
           </h2>
           <p className="text-sm text-muted-foreground/70 mt-1">
             {recoveredCount > 0 && selfServeCount > 0
-              ? `${recoveredCount} we recover for you · ${selfServeCount} you recover yourself. Playbook unlocks on the call.`
+              ? `${selfServeCount} free margin, yours to keep · ${recoveredCount} we recover for you. Playbook unlocks on the call.`
               : recoveredCount > 0
                 ? "We negotiate and verify. You only pay on real savings recovered."
-                : "Free insight — execute yourself. Playbook unlocks on the call."}
+                : "Free margin — yours to keep, 0% fee. Playbook unlocks on the call."}
           </p>
         </div>
       </div>

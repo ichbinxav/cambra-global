@@ -54,10 +54,10 @@ export function getRecoveryCopy(recoveryType) {
   }
   if (recoveryType === "self_serve") {
     return {
-      label: "Self-serve",
-      shortHint: "Free · you execute",
+      label: "Free margin",
+      shortHint: "Yours to keep · 0% fee",
       fullFrame:
-        "You execute this yourself using CAMBRA's insight. No fee, ever — this is value we give away to prove the model.",
+        "This margin is yours to recover, free. CAMBRA finds it and shows you exactly what to do — no fee, no share, no strings. Our way of proving the model before you trust us with payments and shipping.",
       accent: "emerald",
     };
   }
