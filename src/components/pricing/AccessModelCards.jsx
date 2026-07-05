@@ -74,9 +74,6 @@ export default function AccessModelCards() {
 
           {/* Price block */}
           <div className="mb-2 flex items-baseline gap-3">
-            <span className="text-base text-muted-foreground/60 line-through tabular-nums">€60/month</span>
-          </div>
-          <div className="mb-2 flex items-baseline gap-3">
             <span
               className="font-display text-[clamp(3rem,6vw,4.5rem)] font-black tracking-[-0.05em] leading-none"
               style={{
@@ -88,9 +85,10 @@ export default function AccessModelCards() {
             >
               Free
             </span>
+            <span className="text-sm text-muted-foreground/70">during early access</span>
           </div>
           <p className="text-[12px] text-muted-foreground mb-7">
-            Free for early founding brands.
+            No card. No commitment. See what you're overpaying — at zero risk.
           </p>
 
           {/* Value anchor */}
@@ -231,10 +229,11 @@ export default function AccessModelCards() {
             >
               25%
             </span>
+            <span className="text-sm text-white/60">of verified savings · 24 months</span>
           </div>
-          <p className="text-[13px] text-white/70 mb-2">of verified savings recovered</p>
+          <p className="text-[13px] text-white/70 mb-2">Only on savings we help recover and verify against your real provider data.</p>
           <p className="text-[12px] text-white/55 mb-7">
-            No upfront fee. CAMBRA only participates in verified savings we help unlock.
+            No upfront fee. No savings, no fee. After 24 months, 100% of the recovered margin is yours.
           </p>
 
           {/* Aligned incentives anchor */}

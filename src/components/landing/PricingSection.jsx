@@ -85,9 +85,9 @@ export default function PricingSection() {
               <div className="mb-5 pb-5 border-b border-border/40">
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-4xl md:text-5xl font-black tracking-tight text-foreground leading-none">Free</span>
-                  <span className="text-xs text-muted-foreground/60 line-through tabular-nums">€60/mo</span>
+                  <span className="text-xs text-muted-foreground/60">during early access</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground/60">For early operators</p>
+                <p className="text-[11px] text-muted-foreground/60">No card · No commitment</p>
               </div>
 
               <ul className="space-y-2.5 mb-6">
@@ -196,9 +196,9 @@ export default function PricingSection() {
                     }}>
                     25%
                   </span>
-                  <span className="text-xs text-white/55">of verified savings</span>
+                  <span className="text-xs text-white/55">of verified savings · 24 mo</span>
                 </div>
-                <p className="text-[11px] text-white/45">No upfront. Only on real recovery.</p>
+                <p className="text-[11px] text-white/45">No upfront. No savings, no fee.</p>
               </div>
 
               <ul className="space-y-2.5 mb-6">

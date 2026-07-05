@@ -28,7 +28,7 @@ const LANDING_JSON_LD = {
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "EUR",
-    "description": "Free analysis. 25% success fee on verified savings only."
+    "description": "Free infrastructure audit during early access. Optional recovery service earns 25% of verified savings over 24 months — only when CAMBRA actually recovers margin against your real provider data. No upfront fee, no subscription."
   },
   "featureList": [
     "Payment fee benchmarking",

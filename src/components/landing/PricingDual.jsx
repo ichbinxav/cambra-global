@@ -275,10 +275,8 @@ export default function PricingDual() {
             <Tier
               eyebrow="Audit"
               eyebrowAccent="white"
-              price="€0"
-              priceSuffix="/forever"
-              strike="€60/mo"
-              caption="For early operators"
+              price="Free"
+              caption="Early access · No card"
               features={FREE_FEATURES}
               ctaText="Run audit"
               ctaPrimary={false}
@@ -287,9 +285,9 @@ export default function PricingDual() {
               eyebrow="Recovery"
               eyebrowAccent="cyan"
               price="25%"
-              priceSuffix="of savings"
+              priceSuffix="of verified savings · 24 mo"
               priceGradient
-              caption="Only on verified savings"
+              caption="No savings, no fee"
               features={RECOVERY_FEATURES}
               ctaText="Start recovering"
               ctaPrimary={true}

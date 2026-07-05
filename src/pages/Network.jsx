@@ -69,7 +69,7 @@ export default function Network() {
       setSubscribed(true);
       toast.success('Access activated — early partners free for life.');
     } else if (status === 'requires_checkout') {
-      toast.info('Free seats are over. We will enable paid plan (€60/mo) soon.');
+      toast.info('Early-access seats are full for now — we will reopen soon.');
     } else if (res?.data?.error) {
       toast.error(res.data.error);
     }

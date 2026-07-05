@@ -8,11 +8,15 @@ const FAQ = [
   },
   {
     q: "How does the recovery model work?",
-    a: "When CAMBRA actively helps you recover verified margin, we participate in 25% of those savings. You keep the majority. No upfront fee, ever.",
+    a: "When CAMBRA actively helps you recover margin, we participate in 25% of the verified savings for 24 months. You keep the majority. No upfront fee, no subscription, no minimum. If we don't recover anything, you pay nothing — the risk is entirely on us. After 24 months, 100% of the recovered margin stays with you.",
   },
   {
     q: "What counts as 'verified savings'?",
-    a: "Recovered margin that is measurable, attributable to CAMBRA's negotiation or migration support, and reconciled against your real provider statements.",
+    a: "Recovered margin that is measurable, attributable to CAMBRA's negotiation or migration support, and reconciled against your real provider statements. Estimates from the audit are never charged — only what shows up on your actual bills once the change is live.",
+  },
+  {
+    q: "So what does it actually cost me?",
+    a: "The audit and estimate are free during early access. You only pay if you activate the recovery service AND we successfully lower a real cost that shows up on your provider statements. The fee is a share of what we save you — never more than what you actually gain.",
   },
   {
     q: "Can I stop at any time?",

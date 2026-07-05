@@ -57,7 +57,7 @@ export default function InsightDetail() {
       setSubscribed(true);
       toast.success('Access activated — early partners free for life.');
     } else if (status === 'requires_checkout') {
-      toast.info('Free seats are over. We will enable paid plan (€60/mo) soon.');
+      toast.info('Early-access seats are full for now — we will reopen soon.');
     } else if (res?.data?.error) {
       toast.error(res.data.error);
     }
@@ -77,7 +77,7 @@ export default function InsightDetail() {
             <p className="text-sm font-semibold">Members-only research</p>
             <p className="text-xs text-muted-foreground/60">Unlock this insight — early partners join for free.</p>
           </div>
-          <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold">Unlock access — <span className="mx-1 line-through opacity-80">€60</span> <span className="font-semibold">Free</span></Button>
+          <Button onClick={handleSubscribe} className="h-9 rounded-full px-5 text-xs font-bold">Unlock access — Free</Button>
         </div>
       )}
 
