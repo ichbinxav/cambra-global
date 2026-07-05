@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Mail, Copy, Check, RefreshCw, Users, Sparkles, TrendingUp } from "lucide-react";
+import AggregateDemandPanel from "@/components/admin/waitlist/AggregateDemandPanel";
 
 /**
  * AdminWaitlist — dedicated admin view for "Join to recover" signups.
@@ -86,6 +87,11 @@ export default function AdminWaitlist() {
         <StatCard icon={TrendingUp} label="From report" value={fromReport} />
         <StatCard icon={Sparkles} label="From landing" value={fromLanding} />
       </div>
+
+      {/* Aggregate demand — negotiation ammunition, admin-only.
+          Reads AnalyzerResult / AnalyzerInput via getWaitlistAggregate
+          (single source of truth: scoreEngine outputs, never recomputed here). */}
+      <AggregateDemandPanel />
 
       {/* Table */}
       <div
