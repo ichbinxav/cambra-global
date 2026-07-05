@@ -102,7 +102,15 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: "invalid_email" }, { status: 400 });
     }
 
-    // Persist as Lead (service-role — anonymous public users)
+    // Persist as Lead (service-role — anonymous public users).
+    //
+    // The session_id is written to BOTH:
+    //   - `notes` (human-readable, unchanged for backward compat with old
+    //     tooling that grepped the string)
+    //   - `anon_session_id` (structured field — the source of truth for
+    //     joining this Lead back to its AnalyzerResult in aggregates).
+    // Downstream readers MUST prefer `anon_session_id` and only fall back to
+    // parsing `notes` for leads created before this field existed.
     const notes = [
       `Waitlist signup: ${source}`,
       context.brand_name ? `Brand: ${context.brand_name}` : null,
@@ -110,11 +118,18 @@ Deno.serve(async (req) => {
       context.session_id ? `Session: ${context.session_id}` : null,
     ].filter(Boolean).join(" · ");
 
+    // Validate the session_id before storing it structurally — refuse to
+    // persist garbage into a field that other code will trust.
+    const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const rawSid = typeof context.session_id === "string" ? context.session_id.trim() : "";
+    const anonSessionId = UUID_V4.test(rawSid) ? rawSid : "";
+
     const lead = await base44.asServiceRole.entities.Lead.create({
       email,
       consent: true, // user explicitly opted in by submitting the form
       source_page: source,
       notes,
+      ...(anonSessionId ? { anon_session_id: anonSessionId } : {}),
     });
 
     // Notify admin — best-effort, never block the signup on email failure.

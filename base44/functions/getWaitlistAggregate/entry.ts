@@ -71,13 +71,22 @@ Deno.serve(async (req) => {
        l.source_page.startsWith('analyzer_teaser_waitlist'))
     );
 
-    // 2. Extract distinct session_ids from `notes`. Landing signups have no
-    //    session_id (visitor never ran the Analyzer) — they count towards
-    //    total_signups but not towards combined_volume/savings.
+    // 2. Extract distinct session_ids per Lead.
+    //    PRIMARY source: the structured `anon_session_id` field on Lead —
+    //    populated at signup time by submitWaitlistSignup.
+    //    FALLBACK: regex-parse the human-readable `notes` field. Used only
+    //    for leads created before `anon_session_id` existed. New signups
+    //    should always go through the structured path.
+    //    Landing-only signups have no session_id in either place (visitor
+    //    hadn't run the Analyzer yet) — they count towards total_signups but
+    //    not towards combined_volume/savings.
     const sessionIds = new Set<string>();
     const leadBySession = new Map<string, any>();
     for (const l of waitlist) {
-      const sid = parseSessionId(l.notes);
+      const structured = typeof l?.anon_session_id === "string" && UUID_V4.test(l.anon_session_id)
+        ? l.anon_session_id
+        : null;
+      const sid = structured || parseSessionId(l.notes);
       if (sid) {
         sessionIds.add(sid);
         // Keep the most recent Lead per session (list is already -created_date)

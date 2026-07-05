@@ -21,6 +21,10 @@
     },
     "notes": {
       "type": "string"
+    },
+    "anon_session_id": {
+      "type": "string",
+      "description": "Structured link back to the anonymous Analyzer session that produced this signup. Populated by submitWaitlistSignup when the caller provides context.session_id (the UUID v4 anon_session_id that tagged the original Brand/AnalyzerInput/AnalyzerResult triple). SINGLE SOURCE OF TRUTH for joining a Lead to its AnalyzerResult \u2014 replaces the fragile regex-parse of `notes`. Empty for landing-page-only signups (visitor hadn't run the Analyzer yet). Getters (getWaitlistAggregate) prefer this field and fall back to parsing `notes` only for leads created before this field existed."
     }
   },
   "required": [
