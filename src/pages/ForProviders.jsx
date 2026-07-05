@@ -229,54 +229,40 @@ export default function ForProviders() {
                 />
                 <div className="relative">
                   <div
-                    className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-6 text-[10px] uppercase tracking-[0.22em] font-bold"
+                    className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-6 text-[10px] uppercase tracking-[0.22em] font-semibold"
                     style={{
-                      background: "rgba(52,211,153,0.14)",
-                      border: "1px solid rgba(52,211,153,0.35)",
+                      background: "rgba(52,211,153,0.10)",
+                      border: "1px solid rgba(52,211,153,0.25)",
                       color: "#6ee7b7",
                     }}
                   >
                     <Scale size={11} />
-                    The Golden Rule
+                    How we work
                   </div>
 
                   <h2
-                    className="text-white font-black tracking-tight leading-[1.05] mb-6"
-                    style={{ fontSize: "clamp(28px, 4vw, 44px)" }}
+                    className="text-white font-bold tracking-tight leading-[1.1] mb-5"
+                    style={{ fontSize: "clamp(24px, 3.2vw, 36px)" }}
                   >
-                    Recommendations follow the{" "}
-                    <span style={{ color: "#6ee7b7" }}>brand's best interest.</span>
+                    Recommendations follow the brand's best interest.
                   </h2>
 
-                  <p className="text-white/70 text-[16px] leading-relaxed max-w-3xl mb-8">
-                    CAMBRA is buy-side. When we surface an option to a brand, it's because it fits their infrastructure and their savings profile. Partnership economics are a separate conversation.
+                  <p className="text-white/65 text-[15px] leading-relaxed max-w-3xl mb-7">
+                    When we surface an option to a brand, it's because it fits their infrastructure and their savings profile. Partnership economics stay separate.
                   </p>
 
-                  <ul className="space-y-3 max-w-3xl">
+                  <ul className="space-y-2.5 max-w-3xl">
                     {[
-                      {
-                        Icon: ShieldCheck,
-                        text: "Rankings are driven by fit and savings — not by partnership tier.",
-                      },
-                      {
-                        Icon: Lock,
-                        text: "No pay-to-be-recommended, no paid placement.",
-                      },
-                      {
-                        Icon: Users,
-                        text: "Brands see the full comparison, including non-partner options.",
-                      },
+                      { Icon: ShieldCheck, text: "Rankings are driven by fit and savings — not by partnership tier." },
+                      { Icon: Lock, text: "No paid placement." },
+                      { Icon: Users, text: "Brands see the full comparison, including non-partner options." },
                     ].map((r) => (
-                      <li key={r.text} className="flex items-start gap-3 text-[14px] text-white/80">
-                        <r.Icon size={14} className="mt-1 shrink-0" style={{ color: "#34d399" }} strokeWidth={2.5} />
+                      <li key={r.text} className="flex items-start gap-3 text-[14px] text-white/75">
+                        <r.Icon size={13} className="mt-1 shrink-0 text-white/50" strokeWidth={2} />
                         <span>{r.text}</span>
                       </li>
                     ))}
                   </ul>
-
-                  <p className="mt-8 text-[13px] text-white/50">
-                    It's the only way an aggregated demand network holds up over time — for the brands, and for the providers who partner with us.
-                  </p>
                 </div>
               </motion.div>
             </AnimatedSection>
