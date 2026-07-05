@@ -34,7 +34,7 @@ export default function OneScanSection() {
             lineHeight: 1.02,
           }}
         >
-          One scan.{" "}
+          Connect. Confirm.{" "}
           <span
             style={{
               background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
@@ -43,16 +43,24 @@ export default function OneScanSection() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            Every leak surfaced.
+            Recover.
           </span>
         </h2>
 
         <p
-          className="text-white/55 max-w-2xl mx-auto mb-12"
+          className="text-white/55 max-w-2xl mx-auto mb-4"
           style={{ fontSize: "clamp(15px, 1.6vw, 18px)", lineHeight: 1.6 }}
         >
-          The CAMBRA Analyzer is the engine behind everything. It maps your stack,
-          benchmarks your costs, and quantifies the margin you're leaving on the table.
+          An intelligence layer, not a calculator. Connect your payments, accounting and store,
+          or upload your invoices, and your estimate becomes confirmed. Read only, we never
+          touch your funds.
+        </p>
+
+        <p
+          className="text-white/40 mb-12"
+          style={{ fontSize: "13px", letterSpacing: "0.02em" }}
+        >
+          Independent brands, negotiating as one.
         </p>
 
         {/* Feature card */}

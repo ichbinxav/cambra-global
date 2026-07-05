@@ -144,7 +144,7 @@ export default function IntegrationsLogos() {
             }}
           >
             <span className="text-[10px] uppercase tracking-[0.24em] font-bold text-white/70">
-              60+ integrations
+              Connect the tools you already use
             </span>
           </span>
           <h3
@@ -160,9 +160,12 @@ export default function IntegrationsLogos() {
             Connects with the tools you already use.
           </h3>
           <p className="mt-3 text-[13px] text-white/45 max-w-md mx-auto">
-            One-click OAuth or read-only API. We never touch funds, never store credentials.
+            OAuth read-only. Credentials encrypted, never in plain text. We never touch funds.
           </p>
         </div>
+
+        {/* Foot note under logos — honest security disclosure */}
+        {/* (kept minimal on purpose — full pledge lives on the Security page) */}
 
         {/* Marquee */}
         <div

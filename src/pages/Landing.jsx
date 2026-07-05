@@ -15,6 +15,7 @@ import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
 import OneScanSection from "@/components/landing/OneScanSection";
+import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
 const LANDING_JSON_LD = {
@@ -202,7 +203,7 @@ function Hero() {
             </span>
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck size={13} className="text-cyan-300/80" />
-              Bank-level data security
+              Credentials encrypted, never in plain text
             </span>
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck size={13} className="text-cyan-300/80" />
@@ -253,10 +254,31 @@ function Hero() {
 
 function HowItWorksSection() {
   const { t } = useTranslation();
+  // NOTE: 4-step story — Tell us → See gap → Connect to confirm → Join to recover.
+  // Kept in-file (single language) on purpose: the copy is honest about what we
+  // measure vs. what we confirm, and dictionaries can be updated later.
   const steps = [
-    { n: "01", title: t("step1_title"), desc: t("step1_desc") },
-    { n: "02", title: t("step2_title"), desc: t("step2_desc") },
-    { n: "03", title: t("step3_title"), desc: t("step3_desc") },
+    {
+      n: "01",
+      title: "Tell us what you pay",
+      desc: "Your revenue, and what you spend on payments, shipping and software. Two minutes. Nothing to connect.",
+    },
+    {
+      n: "02",
+      title: "See what you're overpaying",
+      desc: "Live cost intelligence against brands your size, not list prices. Your savings in euros, instantly.",
+    },
+    {
+      n: "03",
+      title: "Connect to confirm",
+      desc: "Link your payments, accounting and store, or upload your invoices. Read only. Your estimate becomes a confirmed number.",
+    },
+    {
+      n: "04",
+      title: "Join to recover it",
+      desc: "Claim your savings and join the brands negotiating as one. Together we bring enterprise leverage to independent brands, and unlock rates none of us could get alone.",
+      cta: true,
+    },
   ];
 
   return (
@@ -342,6 +364,11 @@ function HowItWorksSection() {
                   </div>
                   <h3 className="text-title text-white mb-3">{s.title}</h3>
                   <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.55)" }}>{s.desc}</p>
+                  {s.cta && (
+                    <div className="mt-5">
+                      <JoinWaitlistButton />
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </AnimatedSection>

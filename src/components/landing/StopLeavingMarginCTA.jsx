@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, Activity } from "lucide-react";
+import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 
 /**
  * Final CTA block — "Stop leaving margin on the table".
@@ -123,6 +124,11 @@ export default function StopLeavingMarginCTA() {
             Join CAMBRA
             <ArrowRight size={16} />
           </Link>
+
+          {/* Waitlist entry point — visual only until Stripe validation lands */}
+          <div className="mt-2">
+            <JoinWaitlistButton variant="ghost" label="Join to recover" />
+          </div>
         </div>
 
         {/* Trust row */}
