@@ -196,14 +196,15 @@ function Card({ item, index }) {
       {item.cta && (
         <Link
           to={item.cta.href}
-          className="relative mt-5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-white/80 hover:text-white transition-colors group/cta"
+          className="relative mt-5 inline-flex items-center gap-1.5 text-[12px] font-bold rounded-full px-3.5 py-2 transition-all group/cta hover:scale-[1.02]"
+          style={{
+            background: `linear-gradient(135deg, ${item.accent.replace("0.65", "0.18")} 0%, ${item.accent.replace("0.65", "0.08")} 100%)`,
+            border: `1px solid ${item.accent.replace("0.65", "0.45")}`,
+            color: "#ffffff",
+            boxShadow: `0 8px 24px -12px ${item.accent}, inset 0 1px 0 rgba(255,255,255,0.08)`,
+          }}
         >
-          <span
-            className="pb-0.5"
-            style={{ borderBottom: "1px solid rgba(255,255,255,0.25)" }}
-          >
-            {item.cta.label}
-          </span>
+          {item.cta.label}
           <ArrowRight size={12} className="transition-transform group-hover/cta:translate-x-0.5" />
         </Link>
       )}
