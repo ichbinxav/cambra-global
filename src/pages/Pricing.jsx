@@ -1,5 +1,5 @@
 import Navbar from "@/components/landing/Navbar";
-import AccessModelCards from "@/components/pricing/AccessModelCards";
+import PricingDual from "@/components/landing/PricingDual";
 
 const FAQ = [
   {
@@ -83,7 +83,7 @@ export default function Pricing() {
             </p>
           </div>
 
-          <AccessModelCards />
+          <PricingDual />
 
           <div className="mt-20 md:mt-24 max-w-3xl mx-auto">
             <div className="mb-8 text-center">
