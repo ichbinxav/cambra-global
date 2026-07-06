@@ -452,8 +452,8 @@ export default function Landing() {
       <main className="relative">
         <Hero />
         <ProblemSectionWow />
-        <FreeMarginSection />
         <HowItWorksSection />
+        <FreeMarginSection />
         <OneScanSection />
         <TestimonialsCarousel />
         <FounderLetter />
