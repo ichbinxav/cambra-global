@@ -99,7 +99,7 @@ export default function Cookies() {
 
             <section>
               <h2 className="text-base font-bold text-white mb-3">5. Contact</h2>
-              <p>Questions about how CAMBRA uses cookies: privacy@cambra.io.</p>
+              <p>Questions about how CAMBRA uses cookies: privacy@cambra.global. Publisher: CAMBRA GLOBAL SASU, SIREN 105 452 916, 42 rue Vivienne, 75002 Paris, France.</p>
             </section>
           </div>
         </motion.div>

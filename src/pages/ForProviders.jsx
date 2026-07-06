@@ -50,7 +50,7 @@ export default function ForProviders() {
       setSubmitted(true);
       setFormData({ company: "", name: "", email: "", category: "", message: "" });
     } catch (err) {
-      setError(err?.message || "Could not send. Please email partnerships@cambra.io directly.");
+      setError(err?.message || "Could not send. Please email partnerships@cambra.global directly.");
     } finally {
       setSubmitting(false);
     }
@@ -391,7 +391,7 @@ export default function ForProviders() {
                     <p className="text-xs text-red-300 text-center">{error}</p>
                   )}
                   <p className="text-[11px] text-white/40 text-center pt-1">
-                    Or email us directly at <a href="mailto:partnerships@cambra.io" className="underline hover:text-white/70">partnerships@cambra.io</a>
+                    Or email us directly at <a href="mailto:partnerships@cambra.global" className="underline hover:text-white/70">partnerships@cambra.global</a>
                   </p>
                 </form>
               )}
