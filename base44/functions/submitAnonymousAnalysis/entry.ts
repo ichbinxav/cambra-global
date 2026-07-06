@@ -244,6 +244,9 @@ Deno.serve(async (req) => {
       brand_id: createdBrand.id,
       input_id: createdInput.id,
       anon_session_id,
+      // Sticky origin flag — persists forever, even after claim clears anon_session_id.
+      // Read by benchmarkLearningEngine to enforce the anonymous quarantine end-to-end.
+      was_anonymous: true,
       anon_tools_count: safeToolsCount,
     });
 

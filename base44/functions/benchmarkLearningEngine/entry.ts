@@ -76,23 +76,30 @@ Deno.serve(async (req) => {
 
     // ─── ANONYMOUS QUARANTINE (poisoning defense) ─────────────────────────
     //
+    // Two gates, both must pass, checked as a single OR:
+    //
+    //   (a) anon_session_id — still set while the record is un-claimed.
+    //       Cleared by claimAnonymousAnalysis on first claim.
+    //   (b) was_anonymous — sticky origin flag, set to true by
+    //       submitAnonymousAnalysis at creation. NEVER cleared, including
+    //       after claim.
+    //
     // Records with an active `anon_session_id` were submitted by unauthenticated
     // callers via submitAnonymousAnalysis. Their savings/score numbers come
     // straight from the CLIENT (see the trust-boundary note in that function)
     // and MUST NOT feed the network learning loop — one attacker could
     // otherwise poison every cohort's benchmark values with a single POST.
     //
-    // The `claimAnonymousAnalysis` function clears anon_session_id when the
-    // record is claimed by a signed-in user. At that point the record becomes
-    // eligible for the learning loop — but only after we've added server-side
-    // recalculation of savings/score (see the TODO in submitAnonymousAnalysis).
-    // Until that recalculation exists, we still return early here even for
-    // claimed records, and the network benchmark is fed only from AnalyzerResult
-    // rows produced by the authenticated Analyzer path.
+    // Once claimed, `anon_session_id` is cleared but the client-provided numbers
+    // are still in the record. `was_anonymous` stays true so the quarantine
+    // continues to hold. This record becomes eligible for the learning loop only
+    // after we add server-side recalculation of savings/score (see the TODO in
+    // submitAnonymousAnalysis) — at that point the recalculation path would
+    // create a fresh, trusted AnalyzerResult, not re-use this one.
     //
     // Defense in depth: this check protects even against direct invocations
     // of benchmarkLearningEngine that bypass onAnalyzerCompleted.
-    if (result.anon_session_id) {
+    if (result.anon_session_id || result.was_anonymous) {
       return Response.json({
         ok: false,
         reason: "anonymous_result_quarantined",

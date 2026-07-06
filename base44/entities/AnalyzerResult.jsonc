@@ -120,6 +120,11 @@
       "type": "string",
       "description": "Set when this AnalyzerResult was created during an anonymous Analyzer session, before the user signed up. Cleared on claim. The teaser endpoint exposes ONLY a 4-field subset of this record to clients with a matching anon_session_id."
     },
+    "was_anonymous": {
+      "type": "boolean",
+      "default": false,
+      "description": "STICKY origin flag \u2014 set to true by submitAnonymousAnalysis when the record is created from an unauthenticated caller (client-provided savings/score). Unlike anon_session_id, this field is NEVER cleared, including after claimAnonymousAnalysis reassigns ownership. benchmarkLearningEngine reads it to keep such records out of the network benchmark loop even after they've been claimed \u2014 because their numbers still originated from the client trust boundary. Records produced by the authenticated Analyzer path leave this false (default)."
+    },
     "anon_tools_count": {
       "type": "number",
       "description": "Number of tools detected/confirmed during the anonymous session \u2014 used by the teaser to show 'X tools detected' without revealing which tools."
