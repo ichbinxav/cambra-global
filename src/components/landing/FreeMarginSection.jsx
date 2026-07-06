@@ -103,7 +103,7 @@ export default function FreeMarginSection() {
               </h3>
 
               <p className="mt-3 text-white/65 text-[13px] leading-relaxed">
-                We audit your software stack, find the duplicates, the wrong tiers, the tools you forgot about. Every euro we surface, you keep.
+                We audit your stack: duplicates, wrong tiers, forgotten tools. Every euro we surface is yours.
               </p>
 
               <ul className="mt-5 space-y-2">
@@ -111,7 +111,6 @@ export default function FreeMarginSection() {
                   "Full SaaS audit — free during early access",
                   "Concrete cancel & downgrade list",
                   "No fee, ever, on this margin",
-                  "Our way of proving we save you money before you trust us",
                 ].map((line) => (
                   <li key={line} className="flex items-start gap-2.5 text-[13px] text-white/80">
                     <Check size={13} className="mt-0.5 shrink-0" style={{ color: "#34d399" }} strokeWidth={3} />
@@ -182,15 +181,14 @@ export default function FreeMarginSection() {
               </h3>
 
               <p className="mt-3 text-white/65 text-[13px] leading-relaxed">
-                We negotiate with your processors and carriers using the network's collective volume. You pay 25% of what we recover — verified against your real data. No savings, no fee.
+                We negotiate with your processors and carriers using the network's collective volume. 25% of verified savings — no savings, no fee.
               </p>
 
               <ul className="mt-5 space-y-2">
                 {[
-                  "We negotiate the contracts — you sign nothing you don't approve",
-                  "25% of savings we verify against your provider data",
-                  "Fee runs for 24 months from recovery — then 100% is yours forever",
-                  "No savings, no fee. Zero risk to you.",
+                  "25% of savings verified against your provider data",
+                  "Runs 24 months — then 100% is yours forever",
+                  "No savings, no fee. Zero risk.",
                 ].map((line) => (
                   <li key={line} className="flex items-start gap-2.5 text-[13px] text-white/80">
                     <Check size={13} className="mt-0.5 shrink-0" style={{ color: "#22d3ee" }} strokeWidth={3} />
