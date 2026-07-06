@@ -39,7 +39,7 @@ const ITEMS = [
     // Only the SaaS card gets a CTA: SaaS savings are a pure win for the brand
     // (free margin, 0% fee) — worth surfacing an entry point right here.
     cta: {
-      label: "Reclaim your SaaS margin",
+      label: "Recover free · 0% fee",
       href: "/Analyzer",
     },
   },
