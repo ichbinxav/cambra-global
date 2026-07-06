@@ -452,10 +452,10 @@ export default function Landing() {
         <Hero />
         <ProblemSectionWow />
         <HowItWorksSection />
+        <PricingDual />
         <OneScanSection />
         <TestimonialsCarousel />
         <FounderLetter />
-        <PricingDual />
         <StopLeavingMarginCTA />
       </main>
       <LandingFooter />
