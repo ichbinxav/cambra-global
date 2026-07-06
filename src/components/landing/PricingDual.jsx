@@ -10,13 +10,13 @@ import { ArrowUpRight, Check } from "lucide-react";
 const FREE_FEATURES = [
   "Infrastructure audit & scoring",
   "Real network benchmarks",
-  "SaaS stack optimization — 0% fee",
   "AI-powered recommendations",
+  "Your savings estimate in euros",
 ];
 const RECOVERY_FEATURES = [
+  "SaaS stack optimization — 0% fee",
   "Payments & shipping negotiation",
-  "Savings verification",
-  "Migration support",
+  "Savings verification & migration",
   "We win when you do",
 ];
 
