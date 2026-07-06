@@ -68,16 +68,16 @@ function Tier({
   ctaPrimary,
 }) {
   return (
-    <div className="relative flex flex-col p-5 sm:p-8 h-full">
+    <div className="relative flex flex-col p-6 sm:p-8 h-full">
       <Eyebrow accent={eyebrowAccent}>{eyebrow}</Eyebrow>
 
       {/* Price block */}
-      <div className="mt-5 sm:mt-7 flex items-baseline gap-2">
+      <div className="mt-5 sm:mt-7">
         <div
           className="font-black tabular-nums"
           style={{
             fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(44px, 6.5vw, 72px)",
+            fontSize: "clamp(48px, 6vw, 72px)",
             letterSpacing: "-0.055em",
             lineHeight: 0.9,
             ...(priceGradient
@@ -95,13 +95,13 @@ function Tier({
           {price}
         </div>
         {priceSuffix && (
-          <span className="text-[13px] font-semibold text-white/45 tracking-tight">
+          <p className="mt-2 text-[12px] font-medium text-white/50 leading-snug">
             {priceSuffix}
-          </span>
+          </p>
         )}
       </div>
 
-      <div className="mt-2 flex items-center gap-2 min-h-[18px]">
+      <div className="mt-3 flex items-center gap-2 min-h-[18px]">
         {strike && (
           <span
             className="text-[11px] text-white/35"
@@ -111,7 +111,7 @@ function Tier({
           </span>
         )}
         {caption && (
-          <span className="text-[11px] text-white/55">{caption}</span>
+          <span className="text-[11px] font-medium text-white/60">{caption}</span>
         )}
       </div>
 
@@ -262,14 +262,23 @@ export default function PricingDual() {
             }}
           />
 
-          <div className="relative grid grid-cols-2 divide-x" style={{ borderColor: "transparent" }}>
-            {/* vertical hairline divider */}
+          <div className="relative grid grid-cols-1 md:grid-cols-2">
+            {/* vertical hairline divider (desktop) */}
             <div
               aria-hidden
-              className="absolute left-1/2 top-6 bottom-6 w-px pointer-events-none"
+              className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px pointer-events-none"
               style={{
                 background:
                   "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.10) 50%, transparent 100%)",
+              }}
+            />
+            {/* horizontal hairline divider (mobile) */}
+            <div
+              aria-hidden
+              className="md:hidden absolute left-6 right-6 top-1/2 h-px pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.10) 50%, transparent 100%)",
               }}
             />
             <Tier
