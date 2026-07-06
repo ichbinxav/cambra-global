@@ -218,8 +218,8 @@ export default function PricingDual() {
             </span>
             <span className="text-white">.</span>
           </h2>
-          <p className="mt-4 text-[13px] sm:text-[14px] text-white/50 max-w-md mx-auto">
-            No upfront fees. No subscription. We earn only when verified savings land.
+          <p className="mt-4 text-[13px] sm:text-[14px] text-white/50 max-w-lg mx-auto">
+            No upfront fees. No subscription. SaaS savings stay 100% yours. On payments &amp; shipping we take 25% of verified savings — only if we recover them.
           </p>
         </div>
 

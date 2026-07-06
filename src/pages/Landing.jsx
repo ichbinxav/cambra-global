@@ -15,7 +15,6 @@ import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
 import OneScanSection from "@/components/landing/OneScanSection";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
-import FreeMarginSection from "@/components/landing/FreeMarginSection";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
 const LANDING_JSON_LD = {
@@ -453,7 +452,6 @@ export default function Landing() {
         <Hero />
         <ProblemSectionWow />
         <HowItWorksSection />
-        <FreeMarginSection />
         <OneScanSection />
         <TestimonialsCarousel />
         <FounderLetter />
