@@ -10,11 +10,11 @@ import { ArrowUpRight, Check } from "lucide-react";
 const FREE_FEATURES = [
   "Infrastructure audit & scoring",
   "Real network benchmarks",
-  "Dashboard & reporting",
+  "SaaS stack optimization — 0% fee",
   "AI-powered recommendations",
 ];
 const RECOVERY_FEATURES = [
-  "Provider negotiation",
+  "Payments & shipping negotiation",
   "Savings verification",
   "Migration support",
   "We win when you do",
@@ -223,66 +223,36 @@ export default function PricingDual() {
           </p>
         </div>
 
-        {/* Unified card with center divider */}
-        <div
-          className="relative rounded-3xl overflow-hidden"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(13,18,36,0.95) 0%, rgba(6,8,15,0.95) 100%)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            boxShadow:
-              "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
-          }}
-        >
-          {/* corner halos */}
+        {/* Two separate pill-cards — step 1 (Analyze) → step 2 (Recover) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+          {/* STEP 1 — Analyze (free, includes SaaS optimization 0% fee) */}
           <div
-            aria-hidden
-            className="absolute pointer-events-none"
+            className="relative rounded-3xl overflow-hidden"
             style={{
-              width: 320,
-              height: 320,
-              left: "-15%",
-              top: "-25%",
               background:
-                "radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)",
-              filter: "blur(60px)",
+                "linear-gradient(180deg, rgba(13,18,36,0.95) 0%, rgba(6,8,15,0.95) 100%)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow:
+                "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
             }}
-          />
-          <div
-            aria-hidden
-            className="absolute pointer-events-none"
-            style={{
-              width: 360,
-              height: 360,
-              right: "-15%",
-              bottom: "-25%",
-              background:
-                "radial-gradient(circle, rgba(34,211,238,0.16) 0%, transparent 70%)",
-              filter: "blur(60px)",
-            }}
-          />
-
-          <div className="relative grid grid-cols-1 md:grid-cols-2">
-            {/* vertical hairline divider (desktop) */}
+          >
             <div
               aria-hidden
-              className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px pointer-events-none"
+              className="absolute pointer-events-none"
               style={{
-                background:
-                  "linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.10) 50%, transparent 100%)",
+                width: 320, height: 320, left: "-15%", top: "-25%",
+                background: "radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)",
+                filter: "blur(60px)",
               }}
             />
-            {/* horizontal hairline divider (mobile) */}
-            <div
+            <span
+              className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em] text-white/40"
               aria-hidden
-              className="md:hidden absolute left-6 right-6 top-1/2 h-px pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.10) 50%, transparent 100%)",
-              }}
-            />
+            >
+              Step 1
+            </span>
             <Tier
-              eyebrow="Audit"
+              eyebrow="Analyze"
               eyebrowAccent="white"
               price="Free"
               caption="Early access · No card"
@@ -290,8 +260,36 @@ export default function PricingDual() {
               ctaText="Run audit"
               ctaPrimary={false}
             />
+          </div>
+
+          {/* STEP 2 — Recover (25% success fee) */}
+          <div
+            className="relative rounded-3xl overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(13,18,36,0.95) 0%, rgba(6,8,15,0.95) 100%)",
+              border: "1px solid rgba(34,211,238,0.18)",
+              boxShadow:
+                "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 40px -20px rgba(34,211,238,0.35)",
+            }}
+          >
+            <div
+              aria-hidden
+              className="absolute pointer-events-none"
+              style={{
+                width: 360, height: 360, right: "-15%", bottom: "-25%",
+                background: "radial-gradient(circle, rgba(34,211,238,0.18) 0%, transparent 70%)",
+                filter: "blur(60px)",
+              }}
+            />
+            <span
+              className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em] text-cyan-300/70"
+              aria-hidden
+            >
+              Step 2
+            </span>
             <Tier
-              eyebrow="Recovery"
+              eyebrow="Recover"
               eyebrowAccent="cyan"
               price="25%"
               priceSuffix="of verified savings · 24 mo"
