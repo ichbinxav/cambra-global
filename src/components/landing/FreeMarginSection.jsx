@@ -24,7 +24,7 @@ import AnimatedSection from "@/components/landing/AnimatedSection";
  */
 export default function FreeMarginSection() {
   return (
-    <section id="model" className="relative py-20 sm:py-28 overflow-hidden">
+    <section id="model" className="relative py-12 sm:py-16 overflow-hidden">
       {/* Ambient dual glow — emerald on left, cyan on right */}
       <div
         aria-hidden
@@ -47,9 +47,9 @@ export default function FreeMarginSection() {
 
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
-          <div className="text-center mb-14">
-            <SectionLabel className="mb-6 inline-block">The model</SectionLabel>
-            <h2 className="text-display text-white max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <SectionLabel className="mb-4 inline-block">The model</SectionLabel>
+            <h2 className="text-white max-w-3xl mx-auto" style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
               Half your savings are{" "}
               <span
                 style={{
@@ -63,8 +63,8 @@ export default function FreeMarginSection() {
               </span>{" "}
               The other half, we recover for you.
             </h2>
-            <p className="mt-6 text-white/60 text-[16px] max-w-2xl mx-auto leading-relaxed">
-              We only charge when we do the negotiation and the recovery — and only on savings we can verify against your real data. Everything else is free margin, ours to give away to prove the model.
+            <p className="mt-4 text-white/60 text-[14px] max-w-2xl mx-auto leading-relaxed">
+              We only charge when we do the negotiation and recovery — and only on savings verified against your real data.
             </p>
           </div>
         </AnimatedSection>
@@ -75,7 +75,7 @@ export default function FreeMarginSection() {
             <motion.div
               whileHover={{ y: -3 }}
               transition={{ duration: 0.3 }}
-              className="relative h-full p-8 sm:p-10 rounded-3xl overflow-hidden"
+              className="relative h-full p-6 sm:p-7 rounded-2xl overflow-hidden"
               style={{
                 background:
                   "linear-gradient(180deg, rgba(52,211,153,0.06) 0%, rgba(255,255,255,0.02) 100%)",
@@ -85,7 +85,7 @@ export default function FreeMarginSection() {
               }}
             >
               <div
-                className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-6 text-[10px] uppercase tracking-[0.22em] font-bold"
+                className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 mb-4 text-[10px] uppercase tracking-[0.22em] font-bold"
                 style={{
                   background: "rgba(52,211,153,0.12)",
                   border: "1px solid rgba(52,211,153,0.30)",
@@ -96,42 +96,42 @@ export default function FreeMarginSection() {
                 Free margin
               </div>
 
-              <h3 className="text-white font-black tracking-tight leading-[1.05]" style={{ fontSize: "clamp(28px, 3.4vw, 40px)" }}>
+              <h3 className="text-white font-black tracking-tight leading-[1.05]" style={{ fontSize: "clamp(22px, 2.6vw, 30px)" }}>
                 SaaS savings.
                 <br />
                 <span style={{ color: "#6ee7b7" }}>Yours. 0% fee.</span>
               </h3>
 
-              <p className="mt-5 text-white/65 text-[15px] leading-relaxed">
-                We audit your software stack, find the duplicates, the wrong tiers, the tools you forgot about. Every euro we surface, you keep. Forever. No share, no strings.
+              <p className="mt-3 text-white/65 text-[13px] leading-relaxed">
+                We audit your software stack, find the duplicates, the wrong tiers, the tools you forgot about. Every euro we surface, you keep.
               </p>
 
-              <ul className="mt-8 space-y-3">
+              <ul className="mt-5 space-y-2">
                 {[
                   "Full SaaS audit — free during early access",
                   "Concrete cancel & downgrade list",
                   "No fee, ever, on this margin",
                   "Our way of proving we save you money before you trust us",
                 ].map((line) => (
-                  <li key={line} className="flex items-start gap-3 text-[14px] text-white/80">
-                    <Check size={14} className="mt-1 shrink-0" style={{ color: "#34d399" }} strokeWidth={3} />
+                  <li key={line} className="flex items-start gap-2.5 text-[13px] text-white/80">
+                    <Check size={13} className="mt-0.5 shrink-0" style={{ color: "#34d399" }} strokeWidth={3} />
                     <span>{line}</span>
                   </li>
                 ))}
               </ul>
 
               <div
-                className="mt-10 pt-6 flex items-end justify-between gap-4"
+                className="mt-6 pt-4 flex items-end justify-between gap-4"
                 style={{ borderTop: "1px solid rgba(52,211,153,0.15)" }}
               >
                 <div>
-                  <div className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/40 mb-1">
+                  <div className="text-[9px] uppercase tracking-[0.22em] font-bold text-white/40 mb-1">
                     You keep
                   </div>
                   <div
                     className="font-black tabular-nums"
                     style={{
-                      fontSize: 44,
+                      fontSize: 32,
                       lineHeight: 1,
                       background: "linear-gradient(135deg, #ffffff 0%, #6ee7b7 100%)",
                       WebkitBackgroundClip: "text",
@@ -142,7 +142,7 @@ export default function FreeMarginSection() {
                     100%
                   </div>
                 </div>
-                <div className="text-right text-[11px] text-white/40 max-w-[10rem] leading-snug">
+                <div className="text-right text-[10px] text-white/40 max-w-[10rem] leading-snug">
                   Zero fee on SaaS savings. Ever.
                 </div>
               </div>
@@ -154,7 +154,7 @@ export default function FreeMarginSection() {
             <motion.div
               whileHover={{ y: -3 }}
               transition={{ duration: 0.3 }}
-              className="relative h-full p-8 sm:p-10 rounded-3xl overflow-hidden"
+              className="relative h-full p-6 sm:p-7 rounded-2xl overflow-hidden"
               style={{
                 background:
                   "linear-gradient(180deg, rgba(34,211,238,0.06) 0%, rgba(255,255,255,0.02) 100%)",
@@ -164,7 +164,7 @@ export default function FreeMarginSection() {
               }}
             >
               <div
-                className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-6 text-[10px] uppercase tracking-[0.22em] font-bold"
+                className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 mb-4 text-[10px] uppercase tracking-[0.22em] font-bold"
                 style={{
                   background: "rgba(34,211,238,0.12)",
                   border: "1px solid rgba(34,211,238,0.35)",
@@ -175,42 +175,42 @@ export default function FreeMarginSection() {
                 Recovery
               </div>
 
-              <h3 className="text-white font-black tracking-tight leading-[1.05]" style={{ fontSize: "clamp(28px, 3.4vw, 40px)" }}>
+              <h3 className="text-white font-black tracking-tight leading-[1.05]" style={{ fontSize: "clamp(22px, 2.6vw, 30px)" }}>
                 Payments & shipping.
                 <br />
                 <span style={{ color: "#67e8f9" }}>We recover. You share.</span>
               </h3>
 
-              <p className="mt-5 text-white/65 text-[15px] leading-relaxed">
-                We negotiate directly with your processors and carriers using the network's collective volume. You pay us 25% of what we actually recover — measured against your real, connected data. If we recover nothing, you pay nothing.
+              <p className="mt-3 text-white/65 text-[13px] leading-relaxed">
+                We negotiate with your processors and carriers using the network's collective volume. You pay 25% of what we recover — verified against your real data. No savings, no fee.
               </p>
 
-              <ul className="mt-8 space-y-3">
+              <ul className="mt-5 space-y-2">
                 {[
                   "We negotiate the contracts — you sign nothing you don't approve",
                   "25% of savings we verify against your provider data",
                   "Fee runs for 24 months from recovery — then 100% is yours forever",
                   "No savings, no fee. Zero risk to you.",
                 ].map((line) => (
-                  <li key={line} className="flex items-start gap-3 text-[14px] text-white/80">
-                    <Check size={14} className="mt-1 shrink-0" style={{ color: "#22d3ee" }} strokeWidth={3} />
+                  <li key={line} className="flex items-start gap-2.5 text-[13px] text-white/80">
+                    <Check size={13} className="mt-0.5 shrink-0" style={{ color: "#22d3ee" }} strokeWidth={3} />
                     <span>{line}</span>
                   </li>
                 ))}
               </ul>
 
               <div
-                className="mt-10 pt-6 flex items-end justify-between gap-4"
+                className="mt-6 pt-4 flex items-end justify-between gap-4"
                 style={{ borderTop: "1px solid rgba(34,211,238,0.15)" }}
               >
                 <div>
-                  <div className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/40 mb-1">
+                  <div className="text-[9px] uppercase tracking-[0.22em] font-bold text-white/40 mb-1">
                     You keep
                   </div>
                   <div
                     className="font-black tabular-nums"
                     style={{
-                      fontSize: 44,
+                      fontSize: 32,
                       lineHeight: 1,
                       background: "linear-gradient(135deg, #ffffff 0%, #67e8f9 100%)",
                       WebkitBackgroundClip: "text",
@@ -221,7 +221,7 @@ export default function FreeMarginSection() {
                     75%
                   </div>
                 </div>
-                <div className="text-right text-[11px] text-white/40 max-w-[10rem] leading-snug">
+                <div className="text-right text-[10px] text-white/40 max-w-[10rem] leading-snug">
                   Of verified savings, for 24 months. Then 100%.
                 </div>
               </div>
@@ -231,20 +231,20 @@ export default function FreeMarginSection() {
 
         {/* Footer CTA row */}
         <AnimatedSection delay={0.4}>
-          <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
-            <p className="text-white/50 text-[13px] max-w-lg">
-              Zero upfront. Zero subscription. You only pay when we've actually recovered margin against your real numbers.
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 text-center">
+            <p className="text-white/50 text-[12px] max-w-md">
+              Zero upfront. Zero subscription. You only pay when we've recovered margin against your real numbers.
             </p>
             <Link
               to="/Analyzer"
-              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-6 py-3 font-bold text-[13px] transition-transform hover:scale-[1.02] whitespace-nowrap"
+              className="inline-flex items-center gap-2 rounded-full bg-white text-black px-5 py-2.5 font-bold text-[12px] transition-transform hover:scale-[1.02] whitespace-nowrap"
               style={{
                 boxShadow:
                   "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(34,211,238,0.55)",
               }}
             >
               See what you're overpaying
-              <ArrowRight size={14} />
+              <ArrowRight size={13} />
             </Link>
           </div>
         </AnimatedSection>
