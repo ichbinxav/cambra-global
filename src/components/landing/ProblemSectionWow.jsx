@@ -39,7 +39,7 @@ const ITEMS = [
     // Only the SaaS card gets a CTA: SaaS savings are a pure win for the brand
     // (free margin, 0% fee) — worth surfacing an entry point right here.
     cta: {
-      label: "Audit your stack — free, 0% fee",
+      label: "Reclaim your SaaS margin",
       href: "/Analyzer",
     },
   },
@@ -196,15 +196,15 @@ function Card({ item, index }) {
       {item.cta && (
         <Link
           to={item.cta.href}
-          className="relative mt-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-bold text-white transition-all hover:scale-[1.02] group/cta"
-          style={{
-            background: `linear-gradient(135deg, ${item.accent.replace("0.65", "0.18")} 0%, ${item.accent.replace("0.65", "0.10")} 100%)`,
-            border: `1px solid ${item.accent.replace("0.65", "0.45")}`,
-            boxShadow: `0 8px 24px -8px ${item.accent.replace("0.65", "0.35")}`,
-          }}
+          className="relative mt-5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-white/80 hover:text-white transition-colors group/cta"
         >
-          <span>{item.cta.label}</span>
-          <ArrowRight size={13} className="transition-transform group-hover/cta:translate-x-0.5" />
+          <span
+            className="pb-0.5"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.25)" }}
+          >
+            {item.cta.label}
+          </span>
+          <ArrowRight size={12} className="transition-transform group-hover/cta:translate-x-0.5" />
         </Link>
       )}
     </motion.div>
