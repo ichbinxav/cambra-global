@@ -72,24 +72,25 @@ Deno.serve(async (req) => {
 
       await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "running" });
 
-      const instantlyKey = Deno.env.get("INSTANTLY_API_KEY");
-      if (!instantlyKey) {
-        throw new Error("TOOL_NOT_CONFIGURED: añade INSTANTLY_API_KEY a Base44 secrets para enviar emails");
+      const resendKey = Deno.env.get("RESEND_API_KEY");
+      if (!resendKey) {
+        throw new Error("TOOL_NOT_CONFIGURED: añade RESEND_API_KEY a Base44 secrets para enviar emails");
       }
 
       const payload = ap.draft_payload_json || {};
-      const res = await fetch("https://api.instantly.ai/api/v2/emails", {
+      const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hola@cambra.global>";
+      const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${instantlyKey}` },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
         body: JSON.stringify({
+          from: fromAddress,
           to: payload.to,
           subject: payload.subject,
-          body: payload.body,
-          campaign_id: payload.campaign_id,
+          text: payload.body,
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(`Instantly API error: ${data?.error?.message || res.statusText}`);
+      if (!res.ok) throw new Error(`Resend API error: ${data?.message || data?.error?.message || res.statusText}`);
 
       // Mark lead as contacted
       if (payload.lead_id) {
@@ -101,7 +102,7 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.AgentTask.update(task.id, {
         status: "completed",
         output_summary: `Sent outreach email to ${payload.to}`,
-        output_payload_json: { instantly_response: data, approval_id: ap.id },
+        output_payload_json: { resend_response: data, approval_id: ap.id },
         completed_at: new Date().toISOString(),
       });
 
