@@ -283,24 +283,122 @@ RULES:
  * A malformed JSON response from OpenAI never throws — it degrades to
  * "L3 did not run" and the extractor falls back to Layer 1 + Layer 2 only.
  */
-async function runLayer3OpenAI(_fileUrl: string, _fileName: string) {
+async function runLayer3OpenAI(fileUrl: string, fileName: string) {
   // GATE — no bytes leave the tenant while this returns null.
   if (!isLlmExtractionEnabled()) {
     return null;
   }
 
-  // ── Enabled path (blocked pending privacy sign-off) ─────────────────────
-  // Intentionally left un-executed. Do NOT enable without confirming with
-  // OpenAI (via platform.openai.com enterprise settings):
-  //   (a) which model id + endpoint we hit
-  //   (b) zero-retention / no-training flag is active for the OpenAI account
-  //   (c) DPA covering financial documents is signed
-  //
-  // When those three are green, replace this line with the real fetch() to
-  // https://api.openai.com/v1/chat/completions using OPENAI_API_KEY and the
-  // schema documented in the doc-comment above. Everything downstream is
-  // ready — compareLayers() and the fusion logic are proveder-agnostic.
-  return null;
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!apiKey) return null;
+
+  // OpenAI's vision endpoint supports images natively; PDFs are handled via
+  // the `file` content part (Responses API / gpt-4o). We only cross-check
+  // formats OpenAI can read directly — PDFs and images.
+  const lower = (fileName || fileUrl).toLowerCase();
+  const isPdf = lower.endsWith('.pdf');
+  const isImage = /\.(png|jpe?g|webp|gif)$/i.test(lower);
+  if (!isPdf && !isImage) return null;
+
+  const systemPrompt = `You extract structured data from commerce invoices (payment processor statements, shipping carrier invoices, SaaS bills).
+
+RULES:
+- Return valid JSON ONLY, matching the schema exactly. No prose, no markdown.
+- For every field you cannot extract with certainty, set value = null. NEVER guess.
+- confidence is one of: "high" | "medium" | "low".
+- evidence is a short string quoting the line/label you read the number from.
+- Amounts in EUR, as raw numbers (no currency symbols, no thousand separators).
+- provider_detected: lowercase slug (e.g. "stripe", "shopify_payments", "sumup", "adyen", "ups", "dhl", "colissimo"). Empty string if unknown.
+- period_start/period_end: ISO date strings (YYYY-MM-DD) if visible on the invoice, else null.`;
+
+  const schemaText = `{
+  "provider_detected": "string (lowercase slug or empty string)",
+  "fields": {
+    "fees":                    { "value": number|null, "confidence": "high|medium|low", "evidence": "string" },
+    "gross_volume":            { "value": number|null, "confidence": "high|medium|low", "evidence": "string" },
+    "period_start":            { "value": "YYYY-MM-DD"|null, "confidence": "high|medium|low", "evidence": "string" },
+    "period_end":              { "value": "YYYY-MM-DD"|null, "confidence": "high|medium|low", "evidence": "string" },
+    "shipping_total_cost":     { "value": number|null, "confidence": "high|medium|low", "evidence": "string" },
+    "shipping_shipment_count": { "value": number|null, "confidence": "high|medium|low", "evidence": "string" },
+    "monthly_saas_spend":      { "value": number|null, "confidence": "high|medium|low", "evidence": "string" }
+  }
+}`;
+
+  // Build the content parts. For images: image_url with the direct URL
+  // (OpenAI fetches it). For PDFs: fetch bytes → base64 → file part.
+  let contentParts: any[];
+  if (isImage) {
+    contentParts = [
+      { type: 'text', text: `Extract fields per this schema:\n${schemaText}` },
+      { type: 'image_url', image_url: { url: fileUrl } },
+    ];
+  } else {
+    // PDF path — fetch + base64 inline as a file part.
+    try {
+      const fileRes = await fetch(fileUrl);
+      if (!fileRes.ok) return null;
+      const buf = new Uint8Array(await fileRes.arrayBuffer());
+      let bin = '';
+      const chunk = 0x8000;
+      for (let i = 0; i < buf.length; i += chunk) {
+        bin += String.fromCharCode.apply(null, Array.from(buf.subarray(i, i + chunk)) as any);
+      }
+      const base64Data = btoa(bin);
+      contentParts = [
+        { type: 'text', text: `Extract fields per this schema:\n${schemaText}` },
+        {
+          type: 'file',
+          file: {
+            filename: fileName || 'invoice.pdf',
+            file_data: `data:application/pdf;base64,${base64Data}`,
+          },
+        },
+      ];
+    } catch {
+      return null;
+    }
+  }
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        temperature: 0,
+        max_tokens: 1024,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: contentParts },
+        ],
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.error('OpenAI Layer 3 error', res.status, data?.error?.message);
+      return null;
+    }
+    const raw = data?.choices?.[0]?.message?.content || '';
+    let parsed: any;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      console.error('OpenAI Layer 3 returned non-JSON', raw.slice(0, 200));
+      return null;
+    }
+    return {
+      provider_detected: parsed?.provider_detected || '',
+      fields: parsed?.fields || {},
+      raw_response: raw,
+    };
+  } catch (err) {
+    console.error('OpenAI Layer 3 fetch failed', (err as Error).message);
+    return null;
+  }
 }
 
 /** Compare Layer 1 and Layer 3 field-by-field, within numeric tolerance. */
