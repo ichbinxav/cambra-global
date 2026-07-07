@@ -34,8 +34,10 @@ Deno.serve(async (req) => {
       throw new Error("TOOL_NOT_CONFIGURED: añade APOLLO_API_KEY a Base44 secrets para activar este agente");
     }
 
-    // Apollo People Search
-    const res = await fetch("https://api.apollo.io/v1/mixed_people/search", {
+    // Apollo People Search (api_search endpoint — the v1/mixed_people/search
+    // endpoint was deprecated for API callers in 2026; api_search is the
+    // supported replacement per https://docs.apollo.io/reference/people-api-search)
+    const res = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
