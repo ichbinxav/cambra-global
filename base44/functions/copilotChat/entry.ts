@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('OPENAI_API_KEY') || '';
+    const apiKey = Deno.env.get('ANTHROPIC_API_KEY') || '';
     const body = await req.json();
     const payload = body?.payload || body || {};
     const question = payload?.question || '';
@@ -187,32 +187,33 @@ ${brandInfo}`;
       return Response.json({ answer: fallbackAnswer, fallback: true });
     }
 
-    // Direct fetch to OpenAI (same pattern as founderCopilotAgent → Anthropic).
-    // The npm:openai SDK swallows errors silently inside Deno's runtime;
-    // fetch gives us real error surfaces + zero package resolution overhead.
+    // Direct fetch to Anthropic (same pattern as founderCopilotAgent).
+    // Claude Haiku 3.5 = fast, cheap, great for short user-facing answers.
+    // Note: Anthropic's Messages API uses a top-level `system` field (not a
+    // system message in `messages[]`) — that's the correct shape.
     try {
-      const oaRes = await fetch('https://api.openai.com/v1/chat/completions', {
+      const anRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
+          model: 'claude-sonnet-4-5',
+          max_tokens: 512,
           temperature: 0.4,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }],
         }),
       });
-      const data = await oaRes.json();
-      if (!oaRes.ok) {
-        console.error('OpenAI error', oaRes.status, data?.error?.message || data);
+      const data = await anRes.json();
+      if (!anRes.ok) {
+        console.error('Claude error', anRes.status, data?.error?.message || data);
         const fallbackAnswer = buildFallbackAnswer(question, pageTitle, pageDescription, nextStep);
-        return Response.json({ answer: fallbackAnswer, fallback: true, upstream_error: data?.error?.message || `HTTP ${oaRes.status}` });
+        return Response.json({ answer: fallbackAnswer, fallback: true, upstream_error: data?.error?.message || `HTTP ${anRes.status}` });
       }
-      const answer = data?.choices?.[0]?.message?.content || buildFallbackAnswer(question, pageTitle, pageDescription, nextStep);
+      const answer = data?.content?.[0]?.text || buildFallbackAnswer(question, pageTitle, pageDescription, nextStep);
       return Response.json(
         { answer },
         {
@@ -223,8 +224,8 @@ ${brandInfo}`;
           },
         },
       );
-    } catch (openaiError) {
-      console.error('OpenAI fetch failed', openaiError?.message);
+    } catch (claudeError) {
+      console.error('Claude fetch failed', claudeError?.message);
       const fallbackAnswer = buildFallbackAnswer(question, pageTitle, pageDescription, nextStep);
       return Response.json({ answer: fallbackAnswer, fallback: true });
     }
