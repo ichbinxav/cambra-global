@@ -1,5 +1,58 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import OpenAI from 'npm:openai@4.104.0';
+
+// ─── CAMBRA product knowledge base ────────────────────────────────────────
+//
+// Injected verbatim into the copilot's system prompt so it can answer ANY
+// user question about what CAMBRA is, how it works, pricing, verticals,
+// data policy, and what to do next — without hallucinating.
+// Keep this concise, factual, and aligned with the public Landing / Pricing
+// / HowItWorks / Terms pages. When those pages change, update this block.
+const CAMBRA_KNOWLEDGE = `
+ABOUT CAMBRA
+- CAMBRA GLOBAL (SASU, SIREN 105 452 916, France) — economic infrastructure for independent commerce brands.
+- Tagline: "Efficient infrastructure for independent commerce."
+- Mission: recover margin brands lose on payments, shipping, SaaS and banking, by pooling their volume and negotiating collectively.
+
+WHAT USERS GET
+1. Free infrastructure audit (Analyzer) — 5 minutes, no card. Scores payments, shipping, SaaS.
+2. Real network benchmarks — how their rates compare to similar brands.
+3. AI recommendations — concrete next actions in euros.
+4. Savings verification + migration (optional recovery service).
+
+PRICING MODEL — critical to communicate correctly
+- Analyzer: FREE during early access. No credit card.
+- SaaS optimization: FREE (0% fee, savings stay 100% with the brand).
+- Payments & Shipping recovery: 25% of VERIFIED savings, over 24 months.
+- Conditional / no-risk: if we don't recover savings, there is no fee.
+- NEVER quote 25% in isolation — always add "of verified savings, 24 months, no savings = no fee".
+
+HOW IT WORKS (4 steps)
+1. Analyze — quick brand profile + tools used (5 min).
+2. Detect — we identify overpayment across payments, shipping, SaaS.
+3. Verify — connect accounts (read-only) or upload invoices; we prove savings.
+4. Recover — we negotiate with providers, migrate, and track savings monthly.
+
+DATA & SECURITY
+- Read-only access to connected accounts (Stripe, Shopify, shipping providers, etc.).
+- Encrypted at rest (AES-256-GCM), never shared with third parties.
+- GDPR-compliant, data controller = CAMBRA GLOBAL SASU.
+
+TPE / IN-STORE TERMINALS
+- The Analyzer also covers physical card terminals (retail, pop-ups, showrooms).
+- We ask: TPE provider, terminal count, monthly rental, per-transaction fee, in-store GMV, average ticket, card mix, contract duration, fixed banking/maintenance fees.
+- Output: effective in-store payment rate vs collective benchmark + savings estimate.
+
+GOOD NEXT ACTIONS TO SUGGEST
+- Run the Analyzer (/Analyzer) — if they haven't done it.
+- Connect tools (/ConnectIntegrations) — to move from estimate to verified.
+- View Results / Dashboard — if they already ran the audit.
+- Sign up (waitlist) — for anonymous visitors ready to recover.
+
+TONE
+- Direct, brief, practical. No hype. No jargon.
+- Answer in the user's language. Prefer short sentences.
+- Always end with a concrete next step.
+`;
 
 // ─── Rate limiting (per user, hourly) ─────────────────────────────────────
 //
@@ -102,7 +155,6 @@ Deno.serve(async (req) => {
     }
 
     const apiKey = Deno.env.get('OPENAI_API_KEY') || '';
-    const openai = apiKey ? new OpenAI({ apiKey }) : null;
     const body = await req.json();
     const payload = body?.payload || body || {};
     const question = payload?.question || '';
@@ -115,26 +167,52 @@ Deno.serve(async (req) => {
       ? `\n\nBrand context: ${brandContext.brandName || "Unknown"} (${brandContext.country || "EU"}), category: ${brandContext.category || "unknown"}, infra score: ${brandContext.infraScore ?? "not analyzed yet"}, estimated savings: €${Math.round(brandContext.totalSavings || 0)}/yr, data source: ${brandContext.dataSource || "manual"}.`
       : "";
 
-    const systemPrompt = `You are Cambra Copilot, a sleek and sharp in-app assistant for Cambra. Answer in the same language as the user. Be direct, brief, practical, and never ramble. Prioritize quick and easy actions. Your main goal is to guide the user to do the Analyzer and connect their tools. Explain the current page in one simple sentence if useful, then answer the question with crisp guidance. Prefer short sentences. Suggest concrete next actions like starting the Analyzer, uploading a file, or connecting tools. Also include TPE / in-store card terminals in the Analyzer. The audit should not only cover online PSP costs, but also physical payment terminals used in retail stores, pop-ups, showrooms or events. Ask users about their TPE provider, monthly rental fees, transaction fees, contract duration, terminal count, in-store GMV, average ticket, card mix and any fixed banking/maintenance fees. The Analyzer should calculate the effective in-store payment rate, compare it with benchmark collective rates, estimate savings, and show TPE as a separate line inside the Payments Audit.${brandInfo}`;
+    const systemPrompt = `You are Cambra Copilot — the in-app assistant for CAMBRA. You know the product deeply (see knowledge base below) and answer any user question about it: what CAMBRA does, how it works, pricing, security, verticals, and next steps.
+
+Rules:
+- Answer in the same language as the user.
+- Be direct, brief, practical. No hype, no jargon, no rambling. Short sentences.
+- Ground every answer in the knowledge base — never invent features, prices, or claims.
+- Always end with one concrete next action (e.g. "Run the Analyzer", "Connect your Stripe", "Upload an invoice").
+- If the user asks pricing: quote the FULL rule — "Analyzer is free · SaaS savings 0% fee · Payments & Shipping = 25% of verified savings over 24 months, no savings no fee". Never quote 25% alone.
+- If unsure, say so and point to /Contact or /Help.
+
+${CAMBRA_KNOWLEDGE}
+${brandInfo}`;
 
     const userPrompt = `Current page title: ${pageTitle}. Current page description: ${pageDescription}. Suggested next step: ${nextStep}. User question: ${question}`;
 
-    if (!openai) {
+    if (!apiKey) {
       const fallbackAnswer = buildFallbackAnswer(question, pageTitle, pageDescription, nextStep);
       return Response.json({ answer: fallbackAnswer, fallback: true });
     }
 
+    // Direct fetch to OpenAI (same pattern as founderCopilotAgent → Anthropic).
+    // The npm:openai SDK swallows errors silently inside Deno's runtime;
+    // fetch gives us real error surfaces + zero package resolution overhead.
     try {
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.4,
+      const oaRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.4,
+        }),
       });
-
-      const answer = response.choices?.[0]?.message?.content || buildFallbackAnswer(question, pageTitle, pageDescription, nextStep);
+      const data = await oaRes.json();
+      if (!oaRes.ok) {
+        console.error('OpenAI error', oaRes.status, data?.error?.message || data);
+        const fallbackAnswer = buildFallbackAnswer(question, pageTitle, pageDescription, nextStep);
+        return Response.json({ answer: fallbackAnswer, fallback: true, upstream_error: data?.error?.message || `HTTP ${oaRes.status}` });
+      }
+      const answer = data?.choices?.[0]?.message?.content || buildFallbackAnswer(question, pageTitle, pageDescription, nextStep);
       return Response.json(
         { answer },
         {
@@ -145,7 +223,8 @@ Deno.serve(async (req) => {
           },
         },
       );
-    } catch (_openaiError) {
+    } catch (openaiError) {
+      console.error('OpenAI fetch failed', openaiError?.message);
       const fallbackAnswer = buildFallbackAnswer(question, pageTitle, pageDescription, nextStep);
       return Response.json({ answer: fallbackAnswer, fallback: true });
     }
