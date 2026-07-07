@@ -131,26 +131,123 @@ function validateSaasSpendVsRevenue({ monthly_saas_spend, monthly_revenue }: any
  * A malformed JSON response from Anthropic never throws — it degrades to a
  * "format_unknown" verdict at the extractor level.
  */
-async function runLayer1Anthropic(_fileUrl: string, _fileName: string) {
+async function runLayer1Anthropic(fileUrl: string, fileName: string) {
   // GATE — no bytes leave the tenant while this returns null.
   if (!isLlmExtractionEnabled()) {
     return null;
   }
 
-  // ── Enabled path (blocked pending privacy sign-off) ─────────────────────
-  // Intentionally left un-executed. When you flip the flag, replace this
-  // stub with the Anthropic call — the surrounding code already knows how
-  // to consume the shape documented above (see the runExtraction() flow).
-  //
-  // Do NOT enable this without confirming with Anthropic:
-  //   (a) which model id + endpoint we hit
-  //   (b) zero-retention is active for the Anthropic account/key
-  //   (c) DPA covering financial documents is signed
-  //
-  // The moment those three are green, replace the following line with the
-  // real fetch() to https://api.anthropic.com/v1/messages using the schema
-  // documented in the doc-comment above. Everything downstream is ready.
-  return null;
+  const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
+  if (!apiKey) return null;
+
+  // Detect media type from filename — Anthropic's document/image blocks need it.
+  const lower = (fileName || fileUrl).toLowerCase();
+  const isPdf = lower.endsWith('.pdf');
+  const isImage = /\.(png|jpe?g|webp|gif)$/i.test(lower);
+  if (!isPdf && !isImage) return null; // CSV/XLSX/JSON go through other paths
+
+  const mediaType = isPdf ? 'application/pdf'
+    : lower.endsWith('.png') ? 'image/png'
+    : lower.endsWith('.webp') ? 'image/webp'
+    : lower.endsWith('.gif') ? 'image/gif'
+    : 'image/jpeg';
+
+  // Fetch the file bytes and base64-encode — Anthropic requires inline base64
+  // for both PDF (document block) and images (image block).
+  let base64Data: string;
+  try {
+    const fileRes = await fetch(fileUrl);
+    if (!fileRes.ok) return null;
+    const buf = new Uint8Array(await fileRes.arrayBuffer());
+    // Chunked base64 to avoid call-stack blowup on large PDFs.
+    let bin = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < buf.length; i += chunk) {
+      bin += String.fromCharCode.apply(null, Array.from(buf.subarray(i, i + chunk)) as any);
+    }
+    base64Data = btoa(bin);
+  } catch {
+    return null;
+  }
+
+  const systemPrompt = `You extract structured data from commerce invoices (payment processor statements, shipping carrier invoices, SaaS bills).
+
+RULES:
+- Return valid JSON ONLY, matching the schema exactly. No prose, no markdown.
+- For every field you cannot extract with certainty, set value = null. NEVER guess.
+- confidence is one of: "high" | "medium" | "low".
+- evidence is a short string quoting the line/label you read the number from.
+- Amounts in EUR, as raw numbers (no currency symbols, no thousand separators).
+- provider_detected: lowercase slug (e.g. "stripe", "shopify_payments", "sumup", "adyen", "ups", "dhl", "colissimo"). Empty string if unknown.
+- period_start/period_end: ISO date strings (YYYY-MM-DD) if visible on the invoice, else null.`;
+
+  const userPrompt = `Extract the following fields from this invoice. Return the JSON object exactly matching this schema:
+
+{
+  "provider_detected": "string (lowercase slug or empty string)",
+  "fields": {
+    "fees":                    { "value": number|null, "confidence": "high|medium|low", "evidence": "string" },
+    "gross_volume":            { "value": number|null, "confidence": "high|medium|low", "evidence": "string" },
+    "period_start":            { "value": "YYYY-MM-DD"|null, "confidence": "high|medium|low", "evidence": "string" },
+    "period_end":              { "value": "YYYY-MM-DD"|null, "confidence": "high|medium|low", "evidence": "string" },
+    "shipping_total_cost":     { "value": number|null, "confidence": "high|medium|low", "evidence": "string" },
+    "shipping_shipment_count": { "value": number|null, "confidence": "high|medium|low", "evidence": "string" },
+    "monthly_saas_spend":      { "value": number|null, "confidence": "high|medium|low", "evidence": "string" }
+  }
+}
+
+- fees / gross_volume: fill for PAYMENT processor invoices only.
+- shipping_*: fill for SHIPPING carrier invoices only.
+- monthly_saas_spend: fill for SaaS/software subscription invoices only.
+- All other fields on a mismatched invoice type: value = null.`;
+
+  const contentBlock = isPdf
+    ? { type: 'document', source: { type: 'base64', media_type: mediaType, data: base64Data } }
+    : { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } };
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 1024,
+        temperature: 0,
+        system: systemPrompt,
+        messages: [{
+          role: 'user',
+          content: [contentBlock, { type: 'text', text: userPrompt }],
+        }],
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.error('Anthropic Layer 1 error', res.status, data?.error?.message);
+      return null;
+    }
+    const raw = data?.content?.[0]?.text || '';
+    // Strip markdown fences if the model wrapped the JSON despite the prompt.
+    const clean = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+    let parsed: any;
+    try {
+      parsed = JSON.parse(clean);
+    } catch {
+      console.error('Anthropic Layer 1 returned non-JSON', raw.slice(0, 200));
+      return null;
+    }
+    return {
+      provider_detected: parsed?.provider_detected || '',
+      fields: parsed?.fields || {},
+      raw_response: raw,
+    };
+  } catch (err) {
+    console.error('Anthropic Layer 1 fetch failed', (err as Error).message);
+    return null;
+  }
 }
 
 // ─── Layer 3 — cross-check with OpenAI (GATED) ───────────────────────────────
