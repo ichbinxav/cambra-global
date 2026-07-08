@@ -55,7 +55,7 @@ export default function FounderLetter() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="text-center text-white mb-12 sm:mb-16"
+          className="text-center text-white mx-auto max-w-3xl mb-12 sm:mb-16"
           style={{
             fontFamily: "'Space Grotesk', 'Inter', sans-serif",
             fontSize: "clamp(36px, 5.5vw, 60px)",

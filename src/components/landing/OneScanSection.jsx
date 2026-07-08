@@ -160,13 +160,13 @@ export default function OneScanSection() {
           </span>
 
           <h2
-            className="text-white mb-6"
+            className="text-white text-center mx-auto max-w-3xl mb-6"
             style={{
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(38px, 6vw, 72px)",
+              fontSize: "clamp(36px, 5.5vw, 60px)",
               fontWeight: 900,
               letterSpacing: "-0.04em",
-              lineHeight: 1.02,
+              lineHeight: 1.05,
             }}
           >
             Connect. Confirm.{" "}

@@ -72,10 +72,10 @@ export default function TestimonialsCarousel() {
         </div>
 
         <h2
-          className="text-white text-center mb-8"
+          className="text-white text-center mx-auto max-w-3xl mb-8"
           style={{
             fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(28px, 4.2vw, 44px)",
+            fontSize: "clamp(36px, 5.5vw, 60px)",
             fontWeight: 900,
             letterSpacing: "-0.04em",
             lineHeight: 1.05,

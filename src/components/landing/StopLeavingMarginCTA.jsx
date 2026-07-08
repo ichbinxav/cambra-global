@@ -43,9 +43,9 @@ export default function StopLeavingMarginCTA() {
         </span>
       </div>
 
-      <div className="relative max-w-3xl mx-auto px-6 sm:px-10">
+      <div className="relative max-w-3xl mx-auto px-6 sm:px-10 text-center">
         {/* eyebrow */}
-        <div className="mb-8">
+        <div className="mb-8 flex justify-center">
           <span
             className="inline-flex items-center gap-2 rounded-full px-4 py-2"
             style={{
@@ -64,12 +64,13 @@ export default function StopLeavingMarginCTA() {
         </div>
 
         <h2
-          className="text-white"
+          className="text-white text-center mx-auto max-w-3xl"
           style={{
-            fontSize: "clamp(48px, 8vw, 96px)",
+            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+            fontSize: "clamp(36px, 5.5vw, 60px)",
             fontWeight: 900,
-            letterSpacing: "-0.05em",
-            lineHeight: 0.95,
+            letterSpacing: "-0.04em",
+            lineHeight: 1.05,
           }}
         >
           Stop leaving{" "}
@@ -87,7 +88,7 @@ export default function StopLeavingMarginCTA() {
         </h2>
 
         <p
-          className="mt-8 text-[17px] sm:text-[19px]"
+          className="mt-8 text-[17px] sm:text-[19px] mx-auto"
           style={{ color: "rgba(255,255,255,0.60)", lineHeight: 1.55, maxWidth: 560 }}
         >
           Turn operating costs into recovered margin. Verified. Immediate. Aligned incentives.
@@ -96,7 +97,7 @@ export default function StopLeavingMarginCTA() {
         {/* Buttons — two distinct actions:
               1. Primary: run the free audit (Analyzer).
               2. Secondary: join the recovery waitlist (visual-only email capture). */}
-        <div className="mt-10 flex flex-col gap-3 max-w-md">
+        <div className="mt-10 flex flex-col gap-3 max-w-md mx-auto">
           <Link
             to="/Analyzer"
             className="group inline-flex items-center justify-center gap-3 rounded-full font-bold text-[15px] transition-transform hover:scale-[1.02]"
@@ -118,7 +119,7 @@ export default function StopLeavingMarginCTA() {
 
         {/* Trust row */}
         <div
-          className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] uppercase tracking-[0.22em] font-bold"
+          className="mt-8 flex flex-wrap justify-center items-center gap-x-3 gap-y-2 text-[11px] uppercase tracking-[0.22em] font-bold"
           style={{ color: "rgba(255,255,255,0.40)" }}
         >
           <span>3 minutes</span>

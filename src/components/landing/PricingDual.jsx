@@ -196,13 +196,13 @@ export default function PricingDual() {
             </span>
           </span>
           <h2
-            className="text-white"
+            className="text-white text-center mx-auto max-w-3xl"
             style={{
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(32px, 4.8vw, 52px)",
+              fontSize: "clamp(36px, 5.5vw, 60px)",
               fontWeight: 900,
-              letterSpacing: "-0.045em",
-              lineHeight: 1.02,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.05,
             }}
           >
             Free until we{" "}

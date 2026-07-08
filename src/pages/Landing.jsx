@@ -295,7 +295,16 @@ function HowItWorksSection() {
         <AnimatedSection>
           <div className="text-center mb-10">
             <SectionLabel className="mb-6 inline-block">{t("how_label")}</SectionLabel>
-            <h2 className="text-display text-white max-w-3xl mx-auto">
+            <h2
+              className="text-white max-w-3xl mx-auto text-center"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(36px, 5.5vw, 60px)",
+                fontWeight: 900,
+                letterSpacing: "-0.04em",
+                lineHeight: 1.05,
+              }}
+            >
               Four steps from{" "}
               <span
                 style={{

@@ -244,15 +244,17 @@ export default function ProblemSectionWow() {
 
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
-          <SectionLabel className="mb-6">The hidden cost problem</SectionLabel>
+          <div className="text-center">
+            <SectionLabel className="mb-6 inline-block">The hidden cost problem</SectionLabel>
+          </div>
           <h2
-            className="text-white max-w-3xl mb-4"
+            className="text-white max-w-3xl mx-auto mb-4 text-center"
             style={{
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(36px, 5.5vw, 64px)",
+              fontSize: "clamp(36px, 5.5vw, 60px)",
               fontWeight: 900,
               letterSpacing: "-0.04em",
-              lineHeight: 1.02,
+              lineHeight: 1.05,
             }}
           >
             Independent brands overpay by{" "}
