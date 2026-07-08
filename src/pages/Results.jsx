@@ -10,6 +10,9 @@ import { base44 } from "@/api/base44Client";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 import RecommendedActionsLocked from "@/components/results/RecommendedActionsLocked";
 import VerifiedResultCTA from "@/components/results/VerifiedResultCTA";
+import VerificationHeroBadge from "@/components/results/VerificationHeroBadge";
+import VerticalConfidenceLine from "@/components/results/VerticalConfidenceLine";
+import { getVerificationStatus } from "@/lib/verificationStatus";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
 
@@ -251,15 +254,11 @@ export default function Results() {
   const tier = getRevenueTier(monthlyRev);
   const country = input?.country || "";
 
-  // Hero confidence
-  const verticalConfidences = {
-    payments: stripeConnected ? "verified" : "estimated",
-    shipping: "estimated",
-    saas: "estimated",
-  };
-  const allVerified = Object.values(verticalConfidences).every(v => v === "verified");
-  const someVerified = Object.values(verticalConfidences).some(v => v === "verified");
-  const heroConfidence = allVerified ? "verified" : someVerified ? "mixed" : "estimated";
+  // Chunk 6 — verification state derived from what 5A/4/1 already persisted
+  // on the AnalyzerResult (verification_status, verification_scope,
+  // data_confidence in assumptions). Pure read; no re-computation. Falls
+  // back gracefully to "estimated" for rows that predate the verified flow.
+  const verification = getVerificationStatus(result, input);
 
   // Per-card values
   const payCurrent = result.details?.payment_current_rate ?? null;
@@ -321,12 +320,6 @@ export default function Results() {
     verticalsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const heroBadge = heroConfidence === "verified"
-    ? { label: t("badge_verified"), cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25", dot: "bg-emerald-500" }
-    : heroConfidence === "mixed"
-    ? { label: t("badge_mixed"),    cls: "bg-blue-500/10 text-blue-600 border-blue-500/25",          dot: "bg-blue-500" }
-    : { label: t("badge_estimated"), cls: "bg-amber-500/10 text-amber-600 border-amber-500/25",      dot: "bg-amber-500" };
-
   /* ── render ──────────────────────────────────────────────── */
   return (
     <div className="relative min-h-screen font-inter bg-background text-foreground overflow-x-hidden">
@@ -356,10 +349,9 @@ export default function Results() {
 
         {/* ═══ HERO ════════════════════════════════════════════ */}
         <section className="text-center">
-          <div className={`inline-flex items-center gap-1.5 mb-5 px-3 py-1.5 rounded-full border text-[11px] font-bold ${heroBadge.cls}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${heroBadge.dot}`} />
-            {heroBadge.label}
-          </div>
+          {/* Chunk 6 — verification hero badge. Replaces the inline pill that
+              used to display just Verified/Mixed/Estimated with no nuance. */}
+          <VerificationHeroBadge verification={verification} />
 
           <p className="text-sm text-muted-foreground mb-3">{t("analysis_label")}</p>
 
@@ -389,11 +381,13 @@ export default function Results() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Payments card */}
             <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
                   <CreditCard size={14} className="text-foreground" />
                 </div>
                 <h3 className="text-sm font-bold">{t("payments_title")}</h3>
+                {/* Chunk 6 — per-vertical confidence pill (verified / estimated) */}
+                <VerticalConfidenceLine info={verification.verticals.payments} />
               </div>
 
               <div className="space-y-2">
@@ -446,11 +440,13 @@ export default function Results() {
 
             {/* Shipping card */}
             <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
                   <Truck size={14} className="text-foreground" />
                 </div>
                 <h3 className="text-sm font-bold">{t("shipping_title")}</h3>
+                {/* Chunk 6 — per-vertical confidence pill (verified / estimated) */}
+                <VerticalConfidenceLine info={verification.verticals.shipping} />
               </div>
 
               <div className="space-y-2">
@@ -488,11 +484,13 @@ export default function Results() {
 
             {/* SaaS card */}
             <div className="p-5 rounded-2xl border border-border/60 bg-card space-y-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <div className="w-9 h-9 rounded-xl bg-secondary border border-border/60 flex items-center justify-center">
                   <Package size={14} className="text-foreground" />
                 </div>
                 <h3 className="text-sm font-bold">{t("saas_title")}</h3>
+                {/* Chunk 6 — per-vertical confidence pill (verified / estimated) */}
+                <VerticalConfidenceLine info={verification.verticals.saas} />
               </div>
 
               <div className="space-y-2">

@@ -426,6 +426,16 @@ const DICT = {
     benchmark_static_note:"Benchmark based on CAMBRA reference data — network sample growing",
     benchmark_seed_note:"Benchmark from CAMBRA seeded reference cohort — not yet backed by network data",
 
+    /* Chunk 6 — verification confidence badges on Results */
+    hero_verified_high:        "Verified over your last 3 months",
+    hero_verified_provisional: "Verified on partial data",
+    hero_partially_verified:   "Partially verified — {verified} verified, {estimated} estimated",
+    vconf_verified_stripe:     "Verified · Stripe",
+    vconf_verified_partial:    "Verified · partial data",
+    vertical_payments:         "payments",
+    vertical_shipping:         "shipping",
+    vertical_saas:             "SaaS",
+
     /* Login gate */
     login_gate_headline:    "Your infrastructure audit is ready.",
     login_gate_sub:         "Create a free account or sign in to see your results.",
@@ -807,6 +817,16 @@ const DICT = {
     benchmark_static_note:"Benchmark basé sur les données de référence CAMBRA — échantillon réseau en croissance",
     benchmark_seed_note:"Benchmark issu d'une cohorte de référence CAMBRA — pas encore adossé à des données réseau",
 
+    /* Chunk 6 — verification confidence badges on Results */
+    hero_verified_high:        "Vérifié sur vos 3 derniers mois",
+    hero_verified_provisional: "Vérifié sur des données partielles",
+    hero_partially_verified:   "Partiellement vérifié — {verified} vérifié, {estimated} estimé",
+    vconf_verified_stripe:     "Vérifié · Stripe",
+    vconf_verified_partial:    "Vérifié · données partielles",
+    vertical_payments:         "paiements",
+    vertical_shipping:         "expédition",
+    vertical_saas:             "SaaS",
+
     /* Login gate */
     login_gate_headline:    "Votre audit d'infrastructure est prêt.",
     login_gate_sub:         "Créez un compte gratuit ou connectez-vous pour voir vos résultats.",
@@ -1187,6 +1207,16 @@ const DICT = {
     /* FIX 7 — Results static benchmark note */
     benchmark_static_note:"Benchmark basado en datos de referencia CAMBRA — muestra de red en crecimiento",
     benchmark_seed_note:"Benchmark de cohorte de referencia CAMBRA — aún no respaldado por datos de red",
+
+    /* Chunk 6 — verification confidence badges on Results */
+    hero_verified_high:        "Verificado sobre tus últimos 3 meses",
+    hero_verified_provisional: "Verificado sobre datos parciales",
+    hero_partially_verified:   "Parcialmente verificado — {verified} verificado, {estimated} estimado",
+    vconf_verified_stripe:     "Verificado · Stripe",
+    vconf_verified_partial:    "Verificado · datos parciales",
+    vertical_payments:         "pagos",
+    vertical_shipping:         "envíos",
+    vertical_saas:             "SaaS",
 
     /* Login gate */
     login_gate_headline:    "Tu auditoría de infraestructura está lista.",
