@@ -24,65 +24,48 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
 
-// Whitelist of tools the chat can invoke. Each tool maps to a real
-// backend function. risk_level decides whether we force draft mode.
+// ────────────────────────────────────────────────────────────────
+// A + B1 EXPANSION: Chief Orchestrator now has full operational reach.
+//
+//   • READ tools: `read_state` exposes every entity for observation.
+//     Nothing here mutates. Used to answer "what's happening" questions.
+//   • WRITE tools: every real agent/orchestrator in the app is exposed.
+//     Gate 1 stays intact — anything risk_level >= 2 is forced to draft
+//     and lands in the Approval Inbox. No email/publication/deal
+//     activation ever leaves this process without your approve.
+//
+// If you want to allow silent L2 execution or full root, change the
+// forced_draft threshold in executeToolWithGates() — never here.
+// ────────────────────────────────────────────────────────────────
+
+// Entities the read_state tool can query. Everything is admin-scoped
+// (asServiceRole below), so add/remove entries here to control visibility.
+const READ_ENTITIES = [
+  "AgentTask", "AgentQuestion", "Approval", "Event", "ChatMessage",
+  "Brand", "AnalyzerInput", "AnalyzerResult",
+  "Integration", "IntegrationCatalog",
+  "OutboundLead", "Lead", "ProviderLead",
+  "BenchmarkContribution", "BenchmarkCohort",
+  "StatementImport", "Recommendation",
+  "User",
+];
+
 const CHAT_TOOLS = [
+  // ═══ READ (L1) ═══════════════════════════════════════════════════
   {
-    name: "discover_leads",
-    description: "Search for outbound leads matching a topic/industry/country. Read-only — never contacts anyone. Use for 'find me leads' / 'search prospects' requests.",
-    function: "leadDiscoveryAgent",
+    name: "read_state",
+    description: "READ-ONLY. Query any entity in the system to answer questions about state (tasks, approvals, leads, brands, integrations, benchmarks, events, users…). Use this instead of guessing. Supports filter, sort, limit. Returns raw rows.",
+    function: "__READ_STATE__", // handled inline, not a real function
     risk_level: 1,
-    bulk_field: "limit",
     input_schema: {
       type: "object",
       properties: {
-        topic:    { type: "string", description: "Industry, segment or product (e.g. 'fashion DTC France')." },
-        country:  { type: "string", description: "Country filter (e.g. 'France')." },
-        limit:    { type: "number", description: "Max leads to return. Default 20." },
+        entity: { type: "string", enum: READ_ENTITIES, description: "Which entity to read." },
+        filter: { type: "object", description: "Optional filter object, e.g. {status: 'pending'}." },
+        sort:   { type: "string", description: "Optional sort, e.g. '-created_date'." },
+        limit:  { type: "number", description: "Max rows to return. Default 25, hard cap 100." },
       },
-      required: ["topic"],
-    },
-  },
-  {
-    name: "draft_linkedin_post",
-    description: "Drafts a LinkedIn post about a topic. Always a draft — never published. L2: produces an Approval.",
-    function: "linkedinAgent",
-    risk_level: 2,
-    input_schema: {
-      type: "object",
-      properties: {
-        topic: { type: "string", description: "What the post is about." },
-        angle: { type: "string", description: "Optional angle/hook for the post." },
-      },
-      required: ["topic"],
-    },
-  },
-  {
-    name: "draft_newsletter",
-    description: "Drafts a newsletter on a topic. Always a draft — never sent. L2: produces an Approval.",
-    function: "newsletterAgent",
-    risk_level: 2,
-    input_schema: {
-      type: "object",
-      properties: {
-        topic: { type: "string" },
-      },
-      required: ["topic"],
-    },
-  },
-  {
-    name: "draft_outreach_emails",
-    description: "Drafts cold outreach emails for a set of leads. L3 — ALWAYS produces drafts in the Approval queue. Never sends. If founder asks to send N emails, this drafts N emails for review.",
-    function: "outreachAgent",
-    risk_level: 3,
-    bulk_field: "lead_count",
-    input_schema: {
-      type: "object",
-      properties: {
-        lead_count: { type: "number", description: "How many leads to draft emails for." },
-        angle:      { type: "string", description: "Optional pitch angle." },
-      },
-      required: ["lead_count"],
+      required: ["entity"],
     },
   },
   {
@@ -92,17 +75,412 @@ const CHAT_TOOLS = [
     risk_level: 1,
     input_schema: { type: "object", properties: {} },
   },
+  {
+    name: "system_health_check",
+    description: "Runs the system health agent — read-only report of failing agents, stalled tasks, missed schedules, stuck events.",
+    function: "systemHealthAgent",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "command_center_pulse",
+    description: "Read-only snapshot of the command center: KPIs, recent activity, significant events.",
+    function: "getCommandCenterPulse",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "discover_leads",
+    description: "Search for outbound leads matching a topic/industry/country. Read-only — never contacts anyone.",
+    function: "leadDiscoveryAgent",
+    risk_level: 1,
+    bulk_field: "limit",
+    input_schema: {
+      type: "object",
+      properties: {
+        topic:    { type: "string", description: "Industry, segment or product." },
+        country:  { type: "string" },
+        limit:    { type: "number", description: "Max leads. Default 20." },
+      },
+      required: ["topic"],
+    },
+  },
+  {
+    name: "enrich_leads",
+    description: "Enriches existing OutboundLead rows with company/contact data. Read-only augmentation.",
+    function: "leadEnrichmentAgent",
+    risk_level: 1,
+    input_schema: {
+      type: "object",
+      properties: { limit: { type: "number" } },
+    },
+  },
+  {
+    name: "score_leads",
+    description: "Scores existing OutboundLead rows with a 0-100 fit score. Read-only.",
+    function: "leadScoringAgent",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "discover_company_infrastructure",
+    description: "Reads a company website + public signals to infer its stack. Read-only.",
+    function: "discoverCompanyInfrastructure",
+    risk_level: 1,
+    input_schema: {
+      type: "object",
+      properties: {
+        website_url: { type: "string" },
+        brand_id:    { type: "string" },
+      },
+      required: ["website_url"],
+    },
+  },
+  {
+    name: "spend_intelligence",
+    description: "Computes spend intelligence for a brand from its verified data. Read-only.",
+    function: "spendIntelligenceAgent",
+    risk_level: 1,
+    input_schema: {
+      type: "object",
+      properties: { brand_id: { type: "string" } },
+      required: ["brand_id"],
+    },
+  },
+  {
+    name: "recommendation_engine",
+    description: "Runs the recommendation engine for a brand and produces Recommendation rows. Read-only for the engine itself; recommendations are proposals, never executed.",
+    function: "recommendationEngineAgent",
+    risk_level: 1,
+    input_schema: {
+      type: "object",
+      properties: { brand_id: { type: "string" } },
+      required: ["brand_id"],
+    },
+  },
+  {
+    name: "brain_orchestrator",
+    description: "Runs the deterministic brain loop for a brand: sync → bridge → score. Read-only in effect; only writes verified AnalyzerResults.",
+    function: "brainOrchestrator",
+    risk_level: 1,
+    input_schema: {
+      type: "object",
+      properties: { brand_id: { type: "string" } },
+      required: ["brand_id"],
+    },
+  },
+  {
+    name: "run_qa",
+    description: "Runs the QA agent across the app. Read-only.",
+    function: "qaAgent",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "run_security_audit",
+    description: "Runs the security agent. Read-only.",
+    function: "securityAgent",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "run_compliance_check",
+    description: "Runs the compliance agent for a brand or globally. Read-only.",
+    function: "complianceAgent",
+    risk_level: 1,
+    input_schema: {
+      type: "object",
+      properties: { brand_id: { type: "string" } },
+    },
+  },
+  {
+    name: "run_gdpr_audit",
+    description: "Runs the GDPR audit agent. Read-only.",
+    function: "gdprAgent",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "provider_research",
+    description: "Researches infrastructure providers in a category. Read-only.",
+    function: "providerResearchAgent",
+    risk_level: 1,
+    input_schema: {
+      type: "object",
+      properties: { category: { type: "string" } },
+    },
+  },
+  {
+    name: "competitor_monitor",
+    description: "Runs the competitor monitoring agent. Read-only.",
+    function: "competitorMonitorAgent",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "provider_monitor",
+    description: "Runs the provider monitoring agent. Read-only.",
+    function: "providerMonitorAgent",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "engineering_report",
+    description: "Generates an engineering status report. Read-only.",
+    function: "engineeringReportAgent",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "code_review",
+    description: "Runs the code review agent. Read-only.",
+    function: "codeReviewAgent",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "qa_monitor",
+    description: "Runs the QA monitor agent. Read-only.",
+    function: "qaMonitorAgent",
+    risk_level: 1,
+    input_schema: { type: "object", properties: {} },
+  },
+
+  // ═══ DRAFT-PRODUCING (L2 — forced draft → Inbox) ═════════════════
+  {
+    name: "draft_linkedin_post",
+    description: "Drafts a LinkedIn post. L2 — forced draft. Never published.",
+    function: "linkedinAgent",
+    risk_level: 2,
+    input_schema: {
+      type: "object",
+      properties: {
+        topic: { type: "string" },
+        angle: { type: "string" },
+      },
+      required: ["topic"],
+    },
+  },
+  {
+    name: "draft_x_twitter_post",
+    description: "Drafts an X/Twitter post. L2 — forced draft.",
+    function: "xTwitterAgent",
+    risk_level: 2,
+    input_schema: {
+      type: "object",
+      properties: {
+        topic: { type: "string" },
+        angle: { type: "string" },
+      },
+      required: ["topic"],
+    },
+  },
+  {
+    name: "draft_newsletter",
+    description: "Drafts a newsletter. L2 — forced draft.",
+    function: "newsletterAgent",
+    risk_level: 2,
+    input_schema: {
+      type: "object",
+      properties: { topic: { type: "string" } },
+      required: ["topic"],
+    },
+  },
+  {
+    name: "draft_blog_post",
+    description: "Drafts a blog post. L2 — forced draft.",
+    function: "blogAgent",
+    risk_level: 2,
+    input_schema: {
+      type: "object",
+      properties: {
+        topic: { type: "string" },
+        angle: { type: "string" },
+      },
+      required: ["topic"],
+    },
+  },
+  {
+    name: "draft_seo_content",
+    description: "Drafts SEO content. L2 — forced draft.",
+    function: "seoAgent",
+    risk_level: 2,
+    input_schema: {
+      type: "object",
+      properties: { topic: { type: "string" } },
+      required: ["topic"],
+    },
+  },
+  {
+    name: "draft_investor_update",
+    description: "Drafts an investor update. L2 — forced draft.",
+    function: "investorUpdateAgent",
+    risk_level: 2,
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "draft_meeting_notes",
+    description: "Drafts meeting notes / prep. L2 — forced draft.",
+    function: "meetingAgent",
+    risk_level: 2,
+    input_schema: {
+      type: "object",
+      properties: {
+        topic:   { type: "string" },
+        context: { type: "string" },
+      },
+    },
+  },
+  {
+    name: "legal_review",
+    description: "Runs legal review on a document / draft. L2 — produces review notes as draft.",
+    function: "legalReviewAgent",
+    risk_level: 2,
+    input_schema: {
+      type: "object",
+      properties: {
+        document_id: { type: "string" },
+        topic:       { type: "string" },
+      },
+    },
+  },
+  {
+    name: "contract_ip_review",
+    description: "Reviews a contract / IP question. L2 — draft output.",
+    function: "contractIPAgent",
+    risk_level: 2,
+    input_schema: {
+      type: "object",
+      properties: { topic: { type: "string" } },
+    },
+  },
+  {
+    name: "fix_validator",
+    description: "Runs the fix validator agent on a recent engineering change. L2 — draft verdict.",
+    function: "fixValidatorAgent",
+    risk_level: 2,
+    input_schema: { type: "object", properties: {} },
+  },
+
+  // ═══ EXTERNAL-ACTION (L3 — always draft, Approval required) ══════
+  {
+    name: "draft_outreach_emails",
+    description: "Drafts cold outreach emails. L3 — ALWAYS produces drafts in the Approval queue. Never sends.",
+    function: "outreachAgent",
+    risk_level: 3,
+    bulk_field: "lead_count",
+    input_schema: {
+      type: "object",
+      properties: {
+        lead_count: { type: "number" },
+        angle:      { type: "string" },
+      },
+      required: ["lead_count"],
+    },
+  },
+  {
+    name: "draft_follow_up",
+    description: "Drafts follow-up messages to leads/contacts. L3 — draft only.",
+    function: "followUpAgent",
+    risk_level: 3,
+    bulk_field: "lead_count",
+    input_schema: {
+      type: "object",
+      properties: {
+        lead_count: { type: "number" },
+        context:    { type: "string" },
+      },
+    },
+  },
+  {
+    name: "push_to_crm",
+    description: "Prepares CRM push (Attio). L3 — always draft, requires Approval before real push.",
+    function: "crmAgent",
+    risk_level: 3,
+    bulk_field: "lead_count",
+    input_schema: {
+      type: "object",
+      properties: { lead_count: { type: "number" } },
+    },
+  },
+  {
+    name: "run_marketing_orchestrator",
+    description: "Runs the marketing orchestrator chain. L3 — every produced artifact lands as a draft in the Approval queue.",
+    function: "marketingOrchestrator",
+    risk_level: 3,
+    input_schema: {
+      type: "object",
+      properties: { topic: { type: "string" } },
+    },
+  },
+  {
+    name: "run_outreach_orchestrator",
+    description: "Runs the outreach orchestrator chain. L3 — every produced artifact is drafted for approval.",
+    function: "outreachOrchestrator",
+    risk_level: 3,
+    input_schema: {
+      type: "object",
+      properties: { lead_count: { type: "number" } },
+    },
+  },
+  {
+    name: "run_lead_orchestrator",
+    description: "Runs the lead orchestrator chain (discover → enrich → score → CRM). L3 — CRM push part is drafted.",
+    function: "leadOrchestrator",
+    risk_level: 3,
+    input_schema: {
+      type: "object",
+      properties: {
+        topic:   { type: "string" },
+        country: { type: "string" },
+        limit:   { type: "number" },
+      },
+      required: ["topic"],
+    },
+  },
+  {
+    name: "run_research_orchestrator",
+    description: "Runs the research orchestrator. L2 — outputs drafted.",
+    function: "researchOrchestrator",
+    risk_level: 2,
+    input_schema: {
+      type: "object",
+      properties: { topic: { type: "string" } },
+    },
+  },
 ];
 
+// Inline handler for read_state. Returns raw entity rows, admin-scoped.
+async function handleReadState(base44: any, input: any) {
+  const entity = String(input?.entity || "");
+  if (!READ_ENTITIES.includes(entity)) {
+    return { error: `Entity '${entity}' not in read-allowed list.` };
+  }
+  const filter = (input && typeof input.filter === "object" && input.filter) ? input.filter : {};
+  const sort   = typeof input?.sort === "string" ? input.sort : "-created_date";
+  const limit  = Math.min(Math.max(Number(input?.limit || 25), 1), 100);
+  try {
+    const rows = Object.keys(filter).length > 0
+      ? await base44.asServiceRole.entities[entity].filter(filter, sort, limit)
+      : await base44.asServiceRole.entities[entity].list(sort, limit);
+    return { ok: true, entity, count: rows.length, rows };
+  } catch (e) {
+    return { ok: false, error: (e as Error).message };
+  }
+}
+
 const BULK_THRESHOLD = 5;
-const SYSTEM_PROMPT = `You are CAMBRA's Chief Orchestrator chat. You help the founder run the business by deciding which agents to launch.
+const SYSTEM_PROMPT = `You are CAMBRA's Chief Orchestrator chat. You help the founder run the business by picking the right tool.
+
+You have full read access to the system via read_state (AgentTask, Approval, AgentQuestion, Brand, Integration, OutboundLead, Event, Recommendation, User, benchmarks, imports, …) and you can launch every agent and orchestrator we have.
 
 Strict rules you must follow:
-1. NEVER claim to have sent, emailed, contacted, published, or paid. You can only DRAFT — actual sending is a separate human step in the Approval Inbox.
-2. If you are not sure what the founder wants, ASK ONE concise clarifying question instead of guessing.
-3. Pick AT MOST one tool per turn. Prefer reading state and explaining over launching tools.
-4. For lists/counts ("how many approvals?", "show pending questions?") answer from your knowledge of the system — do not invoke tools.
-5. If the founder asks for something we do not have a tool for, say so honestly. Do not invent capabilities.`;
+1. NEVER claim to have sent, emailed, contacted, published, or paid. Any risk_level >= 2 tool is structurally forced to DRAFT mode by the platform — the artifact lands in the Approval Inbox and requires human approve before anything external happens. Say "drafted" or "prepared for approval", not "sent".
+2. For state / count questions ("how many approvals pending?", "show me the last 10 failed tasks", "which brands are connected to Stripe?"), USE read_state — do not guess and do not answer from memory.
+3. Pick AT MOST one tool per turn. If the answer only requires reading, use read_state and stop — do not chain into a write.
+4. If the founder's request is ambiguous, ASK ONE concise clarifying question instead of picking a tool.
+5. If we truly do not have a tool for what the founder asks, say so honestly. Do not invent capabilities.
+6. For bulk operations (>= 5 items), the platform will ask the founder to confirm before executing. Just call the tool with the requested count — the confirmation step is automatic.`;
 
 async function callClaude(messages, tools) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -243,6 +621,34 @@ async function executeToolWithGates({ base44, conversation_id, toolName, toolInp
       tool_calls_json: [{ name: toolName, status: "refused", reason: "not_in_whitelist" }],
     });
     return Response.json({ ok: true, assistant_text: text, tool_calls: [{ name: toolName, status: "refused" }], blocked_by_gate: "tool_not_allowed" });
+  }
+
+  // Special-case: read_state runs inline, no agent invocation.
+  if (tool.function === "__READ_STATE__") {
+    const readResult = await handleReadState(base44, toolInput);
+    const preview = readResult?.ok
+      ? `Leí ${readResult.count} filas de ${readResult.entity}.`
+      : `No pude leer ${toolInput?.entity}: ${readResult?.error || "error"}.`;
+    const rowsSummary = readResult?.ok && readResult.rows?.length
+      ? "\n\n" + JSON.stringify(readResult.rows.slice(0, 10), null, 2).slice(0, 3000)
+      : "";
+    await base44.asServiceRole.entities.ChatMessage.create({
+      conversation_id, role: "assistant", content: preview + rowsSummary,
+      tool_calls_json: [{
+        name: toolName,
+        status: readResult?.ok ? "executed" : "failed",
+        input: toolInput,
+        risk_level: 1,
+        forced_draft: false,
+        error: readResult?.ok ? null : readResult?.error,
+      }],
+    });
+    return Response.json({
+      ok: !!readResult?.ok,
+      assistant_text: preview,
+      read_result: readResult,
+      tool_calls: [{ name: toolName, status: readResult?.ok ? "executed" : "failed" }],
+    });
   }
 
   // GATE 2 — bulk confirmation
