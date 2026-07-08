@@ -22,7 +22,7 @@ const PUBLIC_GROUPS = [
     items: [
       { label: "Infrastructure audit", sub: "Run the Analyzer", href: "/Analyzer", Icon: ScanSearch },
       { label: "Audit workflow", sub: "How Cambra works", href: "/HowItWorks", Icon: Workflow },
-      { label: "Pricing", sub: "Economic model", href: "/Pricing", Icon: Receipt },
+      { label: "Pricing model", sub: "How we get paid", href: "/Pricing", Icon: Receipt },
     ],
   },
   {

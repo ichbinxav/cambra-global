@@ -20,7 +20,7 @@ const NAV_PUBLIC = [
   { label: "Analyzer",     href: "/Analyzer",     icon: Activity,           desc: "Scan your infrastructure" },
   { label: "How it works", href: "/HowItWorks",   icon: Sparkles,           desc: "The 4-step audit" },
   { label: "Testimonials", href: "/Testimonials", icon: MessageSquareQuote, desc: "Real brand results" },
-  { label: "Pricing",      href: "/Pricing",      icon: Tag },
+  { label: "Pricing model", href: "/Pricing",     icon: Tag },
   { label: "Help",         href: "/Help",         icon: HelpCircle },
   { label: "Contact",      href: "/Contact",      icon: Mail },
 ];
@@ -37,7 +37,7 @@ export default function Navbar() {
   const labelKey = {
     Analyzer: "nav_analyzer",
     "How it works": "nav_how",
-    Pricing: "nav_pricing",
+    "Pricing model": "nav_pricing",
     Dashboard: "nav_dashboard",
     Reports: "nav_reports",
     Account: "nav_settings",
