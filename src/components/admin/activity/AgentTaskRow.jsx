@@ -41,6 +41,60 @@ function shortId(id) {
   return id.length > 10 ? `${id.slice(0, 6)}…${id.slice(-4)}` : id;
 }
 
+const SEVERITY_CLS = {
+  critical: "bg-rose-500/10 text-rose-700 border-rose-500/30",
+  warning:  "bg-amber-500/10 text-amber-700 border-amber-500/30",
+  info:     "bg-blue-500/10 text-blue-700 border-blue-500/30",
+};
+
+function FindingCard({ f }) {
+  const cls = SEVERITY_CLS[f.severity] || SEVERITY_CLS.info;
+  return (
+    <div className="rounded-lg border border-border/60 bg-card p-3 space-y-1.5">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full border text-[9px] font-bold uppercase ${cls}`}>
+          {f.severity || "info"}
+        </span>
+        {f.area && <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{f.area}</span>}
+        {f.affected_entity_type && (
+          <span className="text-[10px] text-muted-foreground">
+            {f.affected_entity_type}{f.affected_entity_id ? ` · ${f.affected_entity_id}` : ""}
+          </span>
+        )}
+      </div>
+      {f.summary && <p className="text-[12px] text-foreground leading-relaxed">{f.summary}</p>}
+      {f.recommendation && (
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          <span className="font-bold text-foreground">Recomendación: </span>{f.recommendation}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function PayloadView({ payload }) {
+  const findings = Array.isArray(payload?.findings) ? payload.findings : null;
+  return (
+    <div className="space-y-2">
+      {payload?.disclaimer && (
+        <div className="text-[11px] text-amber-700 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
+          {payload.disclaimer}
+        </div>
+      )}
+      {findings && findings.length > 0 && (
+        <div className="space-y-2">
+          {findings.map((f, i) => <FindingCard key={i} f={f} />)}
+        </div>
+      )}
+      {(!findings || findings.length === 0) && (
+        <pre className="text-[11px] font-mono bg-card border border-border/60 rounded-lg p-3 overflow-x-auto max-h-96 whitespace-pre-wrap break-words text-foreground">
+          {JSON.stringify(payload, null, 2)}
+        </pre>
+      )}
+    </div>
+  );
+}
+
 export default function AgentTaskRow({ task }) {
   const [open, setOpen] = useState(false);
   const sMeta = STATUS_META[task.status] || STATUS_META.queued;
@@ -123,6 +177,15 @@ export default function AgentTaskRow({ task }) {
               {task.approval_id && <span>approval: <span className="font-mono text-foreground">{shortId(task.approval_id)}</span></span>}
             </div>
           </div>
+
+          {/* Full payload — shows GDPR findings, compliance issues, agent outputs, etc.
+              Rendered as findings list when the payload has that shape, otherwise raw JSON. */}
+          {task.output_payload_json && (
+            <div className="md:col-span-2">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">Full result</p>
+              <PayloadView payload={task.output_payload_json} />
+            </div>
+          )}
         </div>
       )}
     </div>
