@@ -14,7 +14,7 @@ const FREE_FEATURES = [
   "Your savings estimate in euros",
 ];
 const RECOVERY_FEATURES = [
-  "SaaS stack optimization — 0% fee",
+  "SaaS recovery — 100% free, always 0% fee",
   "Payments & shipping negotiation",
   "Savings verification & migration",
   "We win when you do",
@@ -292,7 +292,7 @@ export default function PricingDual() {
               eyebrow="Recover"
               eyebrowAccent="cyan"
               price="25%"
-              priceSuffix="of verified savings · 24 mo"
+              priceSuffix="of verified savings on payments & shipping · 24 mo · SaaS recovery is free"
               priceGradient
               caption="No savings, no fee"
               features={RECOVERY_FEATURES}

@@ -42,7 +42,7 @@ function SplitVisual() {
     <div className="relative max-w-4xl mx-auto mb-16 sm:mb-20">
       <div className="text-center mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45 mb-3">
-          The split
+          Pricing model
         </p>
         <h2
           className="text-white"
