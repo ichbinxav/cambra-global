@@ -111,16 +111,24 @@ Deno.serve(async (req) => {
         by_currency: byCurrency,
       },
       null_reporting_category_sample: nullCategory.slice(0, 5),
-      raw_sample: rows.slice(0, 3).map(r => ({
+      // FULL row dump — every txn with provenance fields so we can trace
+      // where each amount came from (manual dashboard payment, CLI trigger,
+      // fixture, webhook replay, etc). `source` is the id of the object that
+      // produced this balance_transaction (ch_..., pi_..., py_..., etc).
+      all_rows: rows.map(r => ({
         id: r.id,
         type: r.type,
         reporting_category: r.reporting_category,
         amount: r.amount,
+        amount_major: r.amount / 100,
         fee: r.fee,
         net: r.net,
         currency: r.currency,
         created: new Date(r.created * 1000).toISOString(),
         description: r.description,
+        source: r.source,             // e.g. "ch_3TqtLr..." — the object producing this txn
+        status: r.status,
+        available_on: r.available_on ? new Date(r.available_on * 1000).toISOString() : null,
       })),
     });
   } catch (error) {
