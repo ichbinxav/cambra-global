@@ -128,6 +128,28 @@
     "anon_tools_count": {
       "type": "number",
       "description": "Number of tools detected/confirmed during the anonymous session \u2014 used by the teaser to show 'X tools detected' without revealing which tools."
+    },
+    "source_integration_id": {
+      "type": "string",
+      "description": "OPTIONAL provenance link \u2014 set ONLY on AnalyzerResults materialized from a connected Integration (the Integration\u2192Analyzer bridge). Points to the Integration row (e.g. the Stripe connection) whose synced data produced the verified savings figures. Null / absent on every AnalyzerResult produced by the classic wizard path (manual, file upload, anonymous submission) \u2014 those remain the sole source of truth for estimated results and are untouched by this field. Purely aditive: no unique constraint, no cross-row validation, no migration for existing records (which stay null). Read by downstream consumers (Results.jsx confidence badge, benchmarkLearningEngine origin tag, admin audit) to distinguish 'this figure came from a live integration sync' from 'this figure came from a form'."
+    },
+    "verification_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "payments",
+          "shipping",
+          "saas",
+          "banking",
+          "insurance",
+          "telecom",
+          "finance_ops",
+          "hr"
+        ]
+      },
+      "default": [],
+      "description": "OPTIONAL list of verticals whose figures in THIS AnalyzerResult are backed by verified (integration-synced) data rather than estimation. Empty array = fully estimated (the default for every existing record and every wizard-produced record \u2014 no migration needed). Example: a Stripe-materialized result would carry ['payments']; a future Shopify+Sendcloud bridge would carry ['payments','shipping'].\n\nBILLING NOTE 1 \u2014 aditivo entre filas del mismo brand.\nVerification is per-AnalyzerResult, but a brand's overall verified coverage is the UNION of verification_scope across its AnalyzerResults. E.g. brand X has result R1 with ['payments'] from Stripe and result R2 with ['shipping'] from Sendcloud \u2192 brand X is considered verified on {payments, shipping}. Downstream aggregators (dashboard status, billing eligibility, recommendation confidence) MUST compute this union on read; a single row's scope is never the whole picture. Do not add a brand-level cache field \u2014 the union is cheap and staleness would create silent billing bugs.\n\nBILLING NOTE 2 \u2014 reloj por-vertical v\u00eda min(created_date).\nWhen the per-vertical billing clock ships (future work \u2014 do not implement here), the moment a brand becomes eligible for a given vertical is the earliest created_date of any AnalyzerResult belonging to that brand whose verification_scope contains that vertical. In SQL-shape terms: `MIN(created_date) WHERE brand_id = X AND vertical IN verification_scope`. This gives an auditable, replay-safe anchor per (brand, vertical) without a separate clock table. Kept as documentation only for now \u2014 no code, no field, no automation depends on it yet.\n\nPuramente aditivo: no unique constraint, no cross-row validation, no migration. Historical rows and every future wizard row default to []."
     }
   },
   "required": [],
