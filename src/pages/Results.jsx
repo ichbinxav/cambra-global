@@ -9,6 +9,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 import RecommendedActionsLocked from "@/components/results/RecommendedActionsLocked";
+import VerifiedResultCTA from "@/components/results/VerifiedResultCTA";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
 
@@ -83,6 +84,11 @@ export default function Results() {
   const [result, setResult] = useState(null);
   const [input, setInput] = useState(null);
   const [stripeConn, setStripeConn] = useState(null);
+  // Stripe Integration row (the Chunk 4 world — the "integrations" table).
+  // Distinct from stripeConn (legacy StripeConnection). When present + status
+  // 'connected', it's the signal that we can offer the verified path via
+  // bridgeToAnalyzer. Absent → keep the classic UpgradeToVerified upsell.
+  const [stripeIntegration, setStripeIntegration] = useState(null);
   const [benchmarks, setBenchmarks] = useState({ payments: null, shipping: null, saas: null });
   const [graphNodes, setGraphNodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -145,6 +151,20 @@ export default function Results() {
             .filter({ brand_id: r.brand_id, connection_status: "connected" }, "-last_sync_at", 1);
           setStripeConn(sc[0] || null);
         } catch { /* RLS may block — treat as not connected */ }
+      }
+
+      // Load Stripe Integration (the Chunk 4 world). Any of the three Stripe
+      // registry entries counts as a source for the verified bridge.
+      if (r.brand_id) {
+        try {
+          const integs = await base44.entities.Integration
+            .filter({ brand_id: r.brand_id, status: "connected" }, "-connected_at", 20)
+            .catch(() => []);
+          const stripeInteg = (integs || []).find(i =>
+            i.provider === "stripe" || i.provider === "stripe_self" || i.provider === "stripe_self_test"
+          ) || null;
+          setStripeIntegration(stripeInteg);
+        } catch { /* RLS may block — treat as absent */ }
       }
 
       // Load benchmarks per vertical
@@ -400,13 +420,28 @@ export default function Results() {
                 <p className="text-2xl font-black tabular-nums">{formatEur(result.payment_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/{t("per_yr_short")}</span></p>
               </div>
 
-              <UpgradeToVerified
-                vertical="payments"
-                currentConfidence={stripeConnected ? "verified" : "estimated"}
-                isConnected={stripeConnected}
-                onConnect={() => { window.location.href = "/ConnectTools"; }}
-                compact
-              />
+              {stripeIntegration ? (
+                <VerifiedResultCTA
+                  brand_id={result.brand_id}
+                  integration_id={stripeIntegration.id}
+                  on_materialized={(newId) => {
+                    // Navigate to the new verified Result so the hero + cards
+                    // reflect the verified numbers. Same pattern the wizard
+                    // uses on submit — nothing bespoke here.
+                    if (newId && newId !== result.id) {
+                      window.location.href = `/Results?id=${newId}`;
+                    }
+                  }}
+                />
+              ) : (
+                <UpgradeToVerified
+                  vertical="payments"
+                  currentConfidence={stripeConnected ? "verified" : "estimated"}
+                  isConnected={stripeConnected}
+                  onConnect={() => { window.location.href = "/ConnectTools"; }}
+                  compact
+                />
+              )}
             </div>
 
             {/* Shipping card */}
