@@ -28,8 +28,8 @@ export default function ChatMessageBubble({ message, onConfirm }) {
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
         isUser
-          ? "bg-foreground text-background"
-          : "bg-white border border-border/60 text-foreground"
+          ? "bg-white text-neutral-900"
+          : "bg-neutral-900 border border-white/10 text-white"
       }`}>
         {message.content && <p className="text-sm whitespace-pre-wrap">{message.content}</p>}
 
