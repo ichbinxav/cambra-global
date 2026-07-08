@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
       }
 
       const payload = ap.draft_payload_json || {};
-      const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hola@cambra.global>";
+      const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hello@cambra.global>";
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },

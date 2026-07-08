@@ -98,7 +98,7 @@ export default function Contact() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
             {[
               { icon: Mail, label: "General", value: "support@cambra.global", href: "mailto:support@cambra.global" },
-              { icon: MessageSquare, label: "Operators", value: "operators@cambra.global", href: "mailto:operators@cambra.global" },
+              { icon: MessageSquare, label: "Support", value: "support@cambra.global", href: "mailto:support@cambra.global" },
             ].map((c, i) => (
               <a
                 key={i}
