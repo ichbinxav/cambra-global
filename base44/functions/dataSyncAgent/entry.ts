@@ -86,6 +86,33 @@ const REGISTRY = {
     rate_limit: { rps: 25 },
     demo_mode: false,
   },
+  // stripe_self — Admin-only dogfooding path. Reads CAMBRA's own Stripe account
+  // as a data source using the platform's own STRIPE_SECRET_KEY (read-only).
+  // Not for clients — this bypasses Stripe Connect OAuth entirely.
+  // Reuses the stripe_transactions normalizer, cursor_stripe pagination,
+  // date-range and rate-limit already validated by the mainline `stripe` slug.
+  // ⚠️ DEUDA (dogfooding-only): `admin_only` is SEMANTIC ONLY today — the
+  // engine does not currently gate creation or invocation on it. Before
+  // client cohabitation, add a real check in dataSyncAgent handler and in
+  // whatever UI/backend surfaces let a user create Integrations, refusing
+  // provider slugs where cfg.admin_only === true unless user.role === "admin".
+  stripe_self: {
+    display_name: "Stripe (CAMBRA self)",
+    category: "payments",
+    logo: null,
+    description: "Static-secret bypass for connecting CAMBRA's own Stripe account (dogfooding). Uses STRIPE_SECRET_KEY as Bearer directly — no OAuth. Read-only.",
+    auth_method: "static_secret",
+    static_secret_env: "STRIPE_SECRET_KEY",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api.stripe.com/v1/balance_transactions?limit=100", method: "GET", normalize_as: "stripe_transactions" },
+    ],
+    pagination: { style: "cursor_stripe" },
+    date_range: { since_param: "created[gte]", until_param: "created[lte]", format: "unix" },
+    rate_limit: { rps: 25 },
+    admin_only: true,
+    demo_mode: false,
+  },
   mollie: {
     display_name: "Mollie",
     category: "payments",
@@ -556,6 +583,21 @@ async function buildAuthHeaders(cfg, integ) {
     return {
       headers: { "Authorization": `Basic ${btoa(combined)}` },
       plaintextToken: combined,
+    };
+  }
+  if (authMethod === "static_secret") {
+    // Admin-only dogfooding path. Reads the secret directly from Deno.env —
+    // NEVER from the DB (integ.access_token is unused for this auth method).
+    // Used for connecting CAMBRA's own accounts as data sources without
+    // building the full OAuth Connect flow. Read-only — the sync engine
+    // only issues GET requests. See registry entry `stripe_self`.
+    const envName = cfg.static_secret_env;
+    if (!envName) throw new Error("static_secret auth requires static_secret_env in registry");
+    const key = Deno.env.get(envName);
+    if (!key) throw new Error(`Missing env var ${envName} for static_secret auth`);
+    return {
+      headers: { "Authorization": `Bearer ${key}` },
+      plaintextToken: key,
     };
   }
   throw new Error(`Unsupported auth_method: ${authMethod}`);
