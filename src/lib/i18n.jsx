@@ -436,6 +436,11 @@ const DICT = {
     vertical_shipping:         "shipping",
     vertical_saas:             "SaaS",
 
+    /* Chunk 5C — auto-materialize toasts after manual sync */
+    auto_verify_running:    "Calculating your verified savings…",
+    auto_verify_ready:      "Verified savings updated",
+    auto_verify_collecting: "Connected — collecting your payment data",
+
     /* Login gate */
     login_gate_headline:    "Your infrastructure audit is ready.",
     login_gate_sub:         "Create a free account or sign in to see your results.",
@@ -827,6 +832,11 @@ const DICT = {
     vertical_shipping:         "expédition",
     vertical_saas:             "SaaS",
 
+    /* Chunk 5C — auto-materialize toasts after manual sync */
+    auto_verify_running:    "Calcul de votre économie vérifiée…",
+    auto_verify_ready:      "Économies vérifiées mises à jour",
+    auto_verify_collecting: "Connecté — collecte de vos données de paiement",
+
     /* Login gate */
     login_gate_headline:    "Votre audit d'infrastructure est prêt.",
     login_gate_sub:         "Créez un compte gratuit ou connectez-vous pour voir vos résultats.",
@@ -1217,6 +1227,11 @@ const DICT = {
     vertical_payments:         "pagos",
     vertical_shipping:         "envíos",
     vertical_saas:             "SaaS",
+
+    /* Chunk 5C — auto-materialize toasts after manual sync */
+    auto_verify_running:    "Calculando tu ahorro verificado…",
+    auto_verify_ready:      "Ahorro verificado actualizado",
+    auto_verify_collecting: "Conectado — recopilando tus datos de pago",
 
     /* Login gate */
     login_gate_headline:    "Tu auditoría de infraestructura está lista.",

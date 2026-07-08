@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { CheckCircle2, RefreshCw, LogOut, Clock } from "lucide-react";
+import { CheckCircle2, RefreshCw, LogOut, Clock, Loader2 } from "lucide-react";
 import { useToast } from "@/components/shared/Toast.jsx";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { useAutoMaterialize } from "@/hooks/useAutoMaterialize";
 
 /**
  * M3 — Stripe Connect card.
@@ -16,6 +17,10 @@ export default function StripeConnectCard({ redirectAfter } = {}) {
   const [busy, setBusy] = useState(false);
   const [setupRequired, setSetupRequired] = useState(false);
   const [error, setError] = useState("");
+  // 5C (A2) — auto-materialize after successful sync. Failure is silent
+  // toward the user: the sync stays saved and the manual 5B button on
+  // /Results remains as fallback.
+  const { state: autoState, run: runAutoMaterialize } = useAutoMaterialize();
 
   const loadConnection = async () => {
     setLoading(true);
@@ -116,6 +121,19 @@ export default function StripeConnectCard({ redirectAfter } = {}) {
       if (data?.setup_required) setSetupRequired(true);
       else if (!data?.ok) setError(data?.error || "Sync failed");
       await loadConnection();
+
+      // 5C (A2) — encadena bridge → materialize si el sync fue OK.
+      // No await bloqueante en un try/catch propio: el sync ya está guardado,
+      // un fallo del auto-trigger no debe pintarse como fallo de sync.
+      if (data?.ok && connection?.brand_id) {
+        const outcome = await runAutoMaterialize(connection.brand_id).catch(() => null);
+        if (outcome?.status === "materialized") {
+          toast.success(t("auto_verify_ready"));
+        } else if (outcome?.status === "collecting") {
+          toast.info(t("auto_verify_collecting"));
+        }
+        // skipped / failed → silencio hacia el usuario. Fallback manual sigue disponible.
+      }
     } catch (e) {
       setError(e.message || "Sync failed");
     } finally {
@@ -196,6 +214,12 @@ export default function StripeConnectCard({ redirectAfter } = {}) {
             <RefreshCw size={12} className={busy ? "animate-spin" : ""} />
             Sync now
           </button>
+          {autoState.status === "running" && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <Loader2 size={11} className="animate-spin" />
+              {t("auto_verify_running")}
+            </span>
+          )}
           <button
             onClick={handleDisconnect}
             disabled={busy}
