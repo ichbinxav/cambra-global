@@ -45,9 +45,57 @@ Deno.serve(async (req) => {
       5000
     );
 
-    // Group by cohort_key + metric_key + month
-    const groups = new Map();
+    // ─── Per-brand precedence pre-filter (Chunk 3, Option A) ──────────────
+    //
+    // Rule: for a given (brand, cohort, metric, month), if ANY row exists with
+    // contribution_source === "verified", ONLY the verified rows of that brand
+    // count for that cohort-month. The estimated rows of the SAME brand for
+    // that key are dropped from aggregation. Other brands in the cohort are
+    // NOT affected — they keep whatever contribution_source they have.
+    //
+    // Why this lives in the aggregator (not the producer):
+    //   - Both estimated and verified rows remain persisted in the DB, so the
+    //     history is fully auditable. An admin can inspect "this brand
+    //     started estimated at 2.8%, later verified at 1.65% via Stripe" as
+    //     two rows with different created_date and contribution_source.
+    //   - The producer (benchmarkLearningEngine) does not mutate existing
+    //     rows when a new one lands. No cross-row side effects, no backfills.
+    //   - Retrocompat: rows created before contribution_source existed carry
+    //     the default "estimated" (schema default). If any such brand later
+    //     produces a verified row, this filter drops the legacy estimated —
+    //     no data migration needed.
+    //
+    // Complexity: O(n) pre-pass over the contributions array. 5000 rows fit
+    // comfortably in memory. If future scale needs it, this can be pushed
+    // into the DB filter later.
+    const perBrandKeyMap = new Map<string, { hasVerified: boolean; rows: any[] }>();
     for (const c of contributions || []) {
+      const brandKey = `${c.source_anon_id}::${c.cohort_key}::${c.metric_key}::${c.month}`;
+      let entry = perBrandKeyMap.get(brandKey);
+      if (!entry) {
+        entry = { hasVerified: false, rows: [] };
+        perBrandKeyMap.set(brandKey, entry);
+      }
+      entry.rows.push(c);
+      // Missing contribution_source (legacy rows) treated as "estimated".
+      if (c.contribution_source === "verified") entry.hasVerified = true;
+    }
+    const filteredContributions: any[] = [];
+    for (const entry of perBrandKeyMap.values()) {
+      if (entry.hasVerified) {
+        // Keep only verified rows of this brand for this key; drop estimated.
+        for (const r of entry.rows) {
+          if (r.contribution_source === "verified") filteredContributions.push(r);
+        }
+      } else {
+        // No verified for this brand-key — keep everything as before.
+        for (const r of entry.rows) filteredContributions.push(r);
+      }
+    }
+
+    // Group by cohort_key + metric_key + month (unchanged aggregation path)
+    const groups = new Map();
+    for (const c of filteredContributions) {
       const key = `${c.cohort_key}::${c.metric_key}::${c.month}`;
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(c);

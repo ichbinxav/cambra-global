@@ -124,6 +124,29 @@ Deno.serve(async (req) => {
 
     const source_anon_id = await sha256Hex(SALT + brandId);
 
+    // ─── Contribution source classification ──────────────────────────────
+    //
+    // 'verified' when the AnalyzerResult was materialized from a connected
+    // integration (Integration→Analyzer bridge, e.g. Stripe balance_transactions).
+    // 'estimated' otherwise — anonymous submission, manual wizard, admin-created.
+    //
+    // This value is:
+    //   1. Included in the contribution_hash → estimated + verified for the
+    //      same brand-cohort-month coexist as separate rows.
+    //   2. Persisted on each BenchmarkContribution row.
+    //   3. Used to segment the outlier detector: a verified is compared only
+    //      to other verified peers, an estimated only to other estimated peers.
+    //      Otherwise a legitimately different verified rate (which is exactly
+    //      what we want to learn from) would be flagged as an outlier against
+    //      noisy estimated peers and auto-excluded from the cohort.
+    //
+    // Aggregation precedence — "verified beats estimated for the same brand-
+    // cohort-month" — lives downstream in scheduledBenchmarkRecompute, NOT here.
+    // This function is the producer; it does not mutate estimated rows when a
+    // verified arrives. Both persist; the aggregator decides who counts.
+    const contribution_source: "estimated" | "verified" =
+      result.verification_status === "verified" ? "verified" : "estimated";
+
     // Build candidate metrics
     const candidates: Array<{ vertical: string; metric_key: string; metric_value: number }> = [];
 
@@ -153,9 +176,16 @@ Deno.serve(async (req) => {
 
     for (const c of candidates) {
       const cohort_key = `${tier}|${country}|${c.vertical}`;
-      const contribution_hash = await sha256Hex(source_anon_id + cohort_key + c.metric_key + month);
+      // contribution_source is part of the hash so estimated and verified from
+      // the same brand-cohort-month DO NOT collide and are BOTH persisted.
+      // The aggregator (scheduledBenchmarkRecompute) enforces precedence.
+      const contribution_hash = await sha256Hex(
+        source_anon_id + cohort_key + c.metric_key + month + contribution_source
+      );
 
-      // Dedup
+      // Dedup — retries with the same (brand, cohort, metric, month, source)
+      // are still idempotent. Only a switch from estimated → verified (or the
+      // reverse, which shouldn't happen) creates a second row.
       const existing = await base44.asServiceRole.entities.BenchmarkContribution.filter(
         { contribution_hash },
         "-created_date",
@@ -166,9 +196,23 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Outlier detection vs existing cohort contributions
+      // Outlier detection — segmented by contribution_source.
+      // A verified is compared ONLY to other verified peers; an estimated
+      // ONLY to other estimated peers. Without this segmentation, the first
+      // real verified rate to hit a cohort (which is precisely the highest-
+      // quality signal we want) would be flagged as an outlier against the
+      // noisier estimated peers already there, and silently auto-excluded
+      // by the `flagged: false` filter in scheduledBenchmarkRecompute —
+      // reintroducing the same "verified gets buried" bug we just fixed at
+      // the dedup layer, via a different pathway.
       const cohortPeers = await base44.asServiceRole.entities.BenchmarkContribution.filter(
-        { cohort_key, metric_key: c.metric_key, validated: true, flagged: false },
+        {
+          cohort_key,
+          metric_key: c.metric_key,
+          validated: true,
+          flagged: false,
+          contribution_source,
+        },
         "-created_date",
         500
       );
@@ -198,6 +242,7 @@ Deno.serve(async (req) => {
         flagged,
         flag_reason,
         validated: true,
+        contribution_source,
       });
 
       created.push(c.metric_key);

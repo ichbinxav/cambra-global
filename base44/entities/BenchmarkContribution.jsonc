@@ -51,7 +51,7 @@
     },
     "contribution_hash": {
       "type": "string",
-      "description": "SHA-256(source_anon_id + cohort_key + metric_key + month) for idempotent dedup"
+      "description": "SHA-256(source_anon_id + cohort_key + metric_key + month + contribution_source) for idempotent dedup. Including contribution_source in the hash lets estimated and verified from the same brand-cohort-month coexist as separate rows (the aggregator in scheduledBenchmarkRecompute then keeps only the verified one via a per-brand precedence pre-filter). Historical rows (created before contribution_source existed) used the legacy hash without the source segment; those keep their old hash and are treated as contribution_source='estimated' by default."
     },
     "month": {
       "type": "string",
@@ -60,7 +60,7 @@
     "flagged": {
       "type": "boolean",
       "default": false,
-      "description": "True if outlier detection fired (modified Z-score > 3.5)"
+      "description": "True if outlier detection fired (modified Z-score > 3.5). Outlier detection compares against peers of the SAME contribution_source only \u2014 verified compared to verified, estimated to estimated \u2014 so a legitimately different verified rate is not marked outlier against noisy estimated peers."
     },
     "flag_reason": {
       "type": "string"
@@ -68,6 +68,15 @@
     "validated": {
       "type": "boolean",
       "default": true
+    },
+    "contribution_source": {
+      "type": "string",
+      "enum": [
+        "estimated",
+        "verified"
+      ],
+      "default": "estimated",
+      "description": "Origin of the AnalyzerResult that produced this contribution. 'verified' = derived from a connected integration (e.g. Stripe balance_transactions via dataSyncAgent). 'estimated' = derived from the manual wizard flow or the anonymous submission path. Historical rows (created before this field existed) get the default 'estimated' \u2014 which is semantically correct because no verified AnalyzerResult existed before the Integration\u2192Analyzer bridge. Aggregation precedence lives in scheduledBenchmarkRecompute: for a given (brand, cohort, metric, month), if any verified row exists it wins and the estimated rows of the SAME brand for that key are dropped from the aggregate (other brands untouched)."
     }
   },
   "required": [
