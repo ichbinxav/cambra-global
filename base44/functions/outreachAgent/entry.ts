@@ -78,13 +78,15 @@ Deno.serve(async (req) => {
       }
 
       const payload = ap.draft_payload_json || {};
-      const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hello@cambra.global>";
+      const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hello@contact.cambra.global>";
+      const replyTo = Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "hello@cambra.global";
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
         body: JSON.stringify({
           from: fromAddress,
           to: payload.to,
+          reply_to: replyTo,
           subject: payload.subject,
           text: payload.body,
         }),

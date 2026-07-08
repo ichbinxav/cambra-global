@@ -152,12 +152,28 @@ Deno.serve(async (req) => {
           `Lead ID: ${lead.id}`,
         ].filter(Boolean).join("\n");
 
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: adminEmail,
-          subject,
-          body: bodyText,
-          from_name: "CAMBRA Waitlist",
-        });
+        // Send via Resend directly so the notification inherits the verified
+        // RESEND_FROM sender (contact.cambra.global) and carries a Reply-To to
+        // the monitored root-domain inbox. Falls back silently on any error —
+        // the Lead is already persisted and visible in the admin dashboard.
+        const resendKey = Deno.env.get("RESEND_API_KEY");
+        const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hello@contact.cambra.global>";
+        if (resendKey) {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${resendKey}`,
+            },
+            body: JSON.stringify({
+              from: fromAddress,
+              to: adminEmail,
+              reply_to: adminEmail,
+              subject,
+              text: bodyText,
+            }),
+          });
+        }
       } catch (emailErr) {
         console.warn("Admin notification email failed:", (emailErr as any)?.message);
       }
