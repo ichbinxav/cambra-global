@@ -113,6 +113,29 @@ const REGISTRY = {
     admin_only: true,
     demo_mode: false,
   },
+  // stripe_self_test — Admin-only VALIDATION path against Stripe test mode.
+  // Same shape as stripe_self but reads STRIPE_TEST_SECRET_KEY (sk_test_...).
+  // Purpose: feed the sync engine + normalizer with a controlled dataset that
+  // has real fees, refunds, disputes → assert sum(amount)/sum(fee) match
+  // Stripe's own Dashboard totals for the same window. Read-only. Aditivo puro.
+  // Same admin_only semantic caveat as stripe_self (see comment above).
+  stripe_self_test: {
+    display_name: "Stripe (CAMBRA test-mode validation)",
+    category: "payments",
+    logo: null,
+    description: "Static-secret bypass targeting Stripe TEST mode for engine validation. Uses STRIPE_TEST_SECRET_KEY (sk_test_...). Read-only.",
+    auth_method: "static_secret",
+    static_secret_env: "STRIPE_TEST_SECRET_KEY",
+    data_type: "transactions",
+    data_endpoints: [
+      { url: "https://api.stripe.com/v1/balance_transactions?limit=100", method: "GET", normalize_as: "stripe_transactions" },
+    ],
+    pagination: { style: "cursor_stripe" },
+    date_range: { since_param: "created[gte]", until_param: "created[lte]", format: "unix" },
+    rate_limit: { rps: 25 },
+    admin_only: true,
+    demo_mode: false,
+  },
   mollie: {
     display_name: "Mollie",
     category: "payments",
