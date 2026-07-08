@@ -30,8 +30,19 @@
 //       see its Stripe activity from day 1. Insufficient is the honest label
 //       for that case, not a rejection.
 //
-//   R4. Multi-currency: filter to the dominant currency by gross charge sum;
-//       log any excluded currencies as a visible assumption on the input.
+//   R4. Multi-currency: filter to the dominant currency by gross charge sum,
+//       and REQUIRE the dominant to represent ≥85% of the gross charge volume
+//       in the window. If dominant_share < 0.85 we DO NOT publish a verified
+//       rate/revenue — the row is persisted as the same shell used for the
+//       insufficient case (brand_id / payment_provider / data_source only)
+//       with a honest label naming the actual share, and data_confidence
+//       forced to 'insufficient'. Rationale: on a mixed-currency account a
+//       single-currency rate is a lie by omission. Waiting for real
+//       multi-currency support beats publishing a number that looks verified
+//       but ignores 20 %+ of the volume.
+//       The dominant_share value is ALWAYS returned in the response so it is
+//       observable regardless of outcome.
+//       Any excluded currencies are still logged as a visible assumption.
 //
 // ═══ Frenos (invariants) ═════════════════════════════════════════════════
 //
@@ -135,6 +146,11 @@ function toNum(v: any, fallback = 0): number {
   if (v === null || v === undefined || v === "") return fallback;
   const n = typeof v === "number" ? v : parseFloat(v);
   return Number.isFinite(n) ? n : fallback;
+}
+// Currency-agnostic 2-decimal formatter for assumption strings. Not a number
+// formatter for display — just tidy round-halves so audit logs read cleanly.
+function nice(n: number): string {
+  return (Math.round((n || 0) * 100) / 100).toFixed(2);
 }
 function mapType(rawType: any): string | null {
   if (typeof rawType !== "string") return null;
@@ -339,13 +355,57 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Multi-currency assumption.
+    // ─── R4 dominance guard ─────────────────────────────────────────────
+    // Compute the dominant share on GROSS charge volume across ALL currencies.
+    // If it falls below 85 %, we refuse to publish a single-currency rate/
+    // revenue and degrade to the insufficient shell path — same code shape
+    // the "no data at all" branch uses just above. The rate we would have
+    // computed only sees the dominant slice; publishing it would misrepresent
+    // an account where 15 %+ of volume is in other currencies.
+    const totalGrossAllCurrencies = Object.values(totalsByCurrency).reduce((a, b) => a + b, 0);
+    const dominant_share = totalGrossAllCurrencies > 0
+      ? (totalsByCurrency[dominant] || 0) / totalGrossAllCurrencies
+      : 0;
+
+    if (dominant_share < 0.85) {
+      const sharePct = Math.round(dominant_share * 100);
+      const analyzerInput = await base44.asServiceRole.entities.AnalyzerInput.create({
+        brand_id: integ.brand_id,
+        payment_provider: "Stripe",
+        data_source: "api",
+      });
+      return Response.json({
+        ok: true,
+        analyzer_input_id: analyzerInput.id,
+        brand_id: integ.brand_id,
+        source_integration_id: integ.id,
+        dominant_currency: dominant,
+        dominant_share,
+        active_days: 0,
+        charge_count: 0,
+        data_confidence: "insufficient",
+        data_confidence_label:
+          `Connected. Your account mixes currencies (dominant ${dominant} = ${sharePct}% of volume) ` +
+          `— verified rate withheld until multi-currency support.`,
+        assumptions: [
+          `Dominant ${dominant} covers ${sharePct}% of gross charge volume (${nice(totalsByCurrency[dominant] || 0)} of ${nice(totalGrossAllCurrencies)}). ` +
+          `Below the 85% threshold — refused to publish a single-currency verified rate.`,
+        ],
+        totals_by_currency: totalsByCurrency,
+        malformed_row_count: malformed,
+      });
+    }
+
+    // Multi-currency assumption (dominant ≥85 % — safe to publish, but still
+    // disclose that non-dominant charges were excluded from the calculation).
     const nonDominantCount = normRows.filter(r => r.type === "charge" && r.currency !== dominant).length;
     if (nonDominantCount > 0) {
       const others = Object.keys(totalsByCurrency).filter(c => c !== dominant);
+      const sharePct = Math.round(dominant_share * 100);
       assumptions.push(
         `Non-${dominant} transactions excluded from verified calculation ` +
-        `(${nonDominantCount} charge(s) in ${others.join(", ")}). Multi-currency FX not applied.`
+        `(${nonDominantCount} charge(s) in ${others.join(", ")}). ` +
+        `Dominant ${dominant} covers ${sharePct}% of gross volume. Multi-currency FX not applied.`
       );
     }
 
@@ -408,6 +468,7 @@ Deno.serve(async (req) => {
       brand_id: integ.brand_id,
       source_integration_id: integ.id,
       dominant_currency: dominant,
+      dominant_share,
       active_days: agg.active_days,
       charge_count: agg.charge_count,
       refund_count: agg.refund_count,

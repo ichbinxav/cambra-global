@@ -20,10 +20,19 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  *
  *   Layer 3 — cross-check with a different model family.
  *     Calls OpenAI (GPT) directly via the tenant's own OPENAI_API_KEY over
- *     the same document, compares field-by-field. Same privacy gate as
- *     Layer 1 — off by default. Chosen over Gemini-via-InvokeLLM so BOTH
- *     legs of the pipeline stay under direct legal control (own keys, own
- *     DPAs) while preserving cross-family diversity (Claude vs GPT).
+ *     the same document, compares field-by-field. Chosen over Gemini-via-
+ *     InvokeLLM so BOTH legs of the pipeline stay under direct legal control
+ *     (own keys, own DPAs) while preserving cross-family diversity (Claude
+ *     vs GPT).
+ *
+ * Two INDEPENDENT gates (fixed 2026-07-08 audit):
+ *   • EXTRACTION_LLM_ENABLED='true' → allows Layer 1 (Anthropic) to run.
+ *   • EXTRACTION_L3_ENABLED='true'  → allows Layer 3 (OpenAI) to run.
+ * Missing/absent env var means gate is CLOSED. Layer 3 being off is a
+ * legitimate operating mode: the extractor still runs L1 + L2 and degrades
+ * to "L3 did not run" — never an error. This lets us adopt Anthropic first
+ * and only enable OpenAI once its retention/DPA is confirmed (one less
+ * provider seeing tenant invoices until then).
  *
  * Rule of gold: if any layer rejects a field, that field NEVER enters the
  * canonical AnalyzerInput / *Profile writes. The record is stored with
@@ -37,12 +46,23 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
  * with fabricated numbers.
  */
 
-// ─── Feature gate: no document reaches any LLM while this is off ─────────────
-// Flipped from an env var to keep it out of source control. When absent the
-// gate stays closed — safest possible default while the privacy review of
-// Anthropic's retention / DPA is still pending.
+// ─── Feature gates ───────────────────────────────────────────────────────────
+// Two INDEPENDENT env-var gates. Both flipped from env so nothing lives in
+// source control, and both default to CLOSED when absent — safest possible
+// posture while retention/DPA reviews are pending.
+//
+//   isLlmExtractionEnabled()      → Layer 1 (Anthropic).
+//   isValidationLayerEnabled()    → Layer 3 (OpenAI cross-check).
+//
+// Splitting the gates lets us turn Anthropic on for real usage while keeping
+// OpenAI off until its DPA is confirmed — one fewer provider seeing tenant
+// invoices in the meantime. When L3 is off the extractor still runs L1 + L2
+// and simply reports "L3 did not run" in the verdict, degrading gracefully.
 function isLlmExtractionEnabled(): boolean {
   return Deno.env.get('EXTRACTION_LLM_ENABLED') === 'true';
+}
+function isValidationLayerEnabled(): boolean {
+  return Deno.env.get('EXTRACTION_L3_ENABLED') === 'true';
 }
 
 // ─── Layer 2 duplicated inline (Deno cannot import from src/) ────────────────
@@ -284,8 +304,10 @@ RULES:
  * "L3 did not run" and the extractor falls back to Layer 1 + Layer 2 only.
  */
 async function runLayer3OpenAI(fileUrl: string, fileName: string) {
-  // GATE — no bytes leave the tenant while this returns null.
-  if (!isLlmExtractionEnabled()) {
+  // GATE — independent from Layer 1. When EXTRACTION_L3_ENABLED !== 'true'
+  // no bytes are sent to OpenAI and the extractor keeps running with L1+L2
+  // only (the "L3 did not run" path in compareLayers/runExtraction).
+  if (!isValidationLayerEnabled()) {
     return null;
   }
 
