@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { CheckCircle2, Sparkles, Loader2, Zap } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import {
-  calculateSavings,
-  computeInfraScore,
-  ENGINE_VERSION,
-} from "@/lib/scoreEngine";
+import { materializeVerifiedResult } from "@/lib/verifiedMaterializer";
 import { useToast } from "@/components/shared/Toast.jsx";
 
 /**
@@ -73,7 +69,7 @@ const COPY = {
   },
   provisional: {
     badge: "Partial data",
-    title: "See your ahorro verified",
+    title: "See your verified savings",
     body: "Verified on partial data — connect more history for higher precision.",
     cta: "See my verified savings",
   },
@@ -133,92 +129,48 @@ export default function VerifiedResultCTA({
 
   // ── Step B: on explicit click, materialize a verified AnalyzerResult.
   //
-  // The math is the SAME the wizard uses:
-  //   - calculateSavings(inputData)  →  payment/shipping/saas savings + details
-  //   - computeInfraScore(inputData, "connected")  →  score
-  // These functions live in @/lib/scoreEngine and are shared with Analyzer.jsx.
-  // We do NOT reimplement any formula here — that's the whole point of Chunk 2.
+  // ⚠️  ZERO logic here — the whole materialization is delegated to
+  // `materializeVerifiedResult` (Chunk 5A), the pure, test-covered module.
+  // This component is pure UI: it invokes 5A, translates the returned
+  // status into a visual state, and never recomputes savings.
   const handleMaterialize = async () => {
     if (!bridge?.analyzer_input_id || materializing) return;
     setMaterializing(true);
     setMaterializeError(null);
     try {
-      // Idempotency guard — Rule 5. If a verified AnalyzerResult already
-      // exists for this input, reuse it. This is the "two clicks = one
-      // result" contract. Filtering by input_id + verification_status is
-      // authoritative because bridgeToAnalyzer creates a fresh AnalyzerInput
-      // per call, so multiple verified Results against the same input can
-      // only come from double-clicks of THIS button.
-      const existing = await base44.entities.AnalyzerResult.filter(
-        { input_id: bridge.analyzer_input_id, verification_status: "verified" },
-        "-created_date",
-        1
-      ).catch(() => []);
-      if (existing.length) {
-        setMaterializedId(existing[0].id);
-        if (typeof on_materialized === "function") on_materialized(existing[0].id);
-        return;
-      }
-
-      // Load the AnalyzerInput row bridgeToAnalyzer just produced.
+      // Load the AnalyzerInput row that bridgeToAnalyzer produced. This is
+      // the ONE remaining SDK call the UI needs — to hand 5A the row it
+      // will feed into the shared engine. Idempotency, engine call, and
+      // AnalyzerResult creation all live inside 5A.
       const inputRow = await base44.entities.AnalyzerInput.get(bridge.analyzer_input_id);
       if (!inputRow) throw new Error("Verified input row not found");
 
-      // Feed the SAME engine the wizard uses. No re-implementation.
-      const savings = calculateSavings(inputRow);
-      const scoreReport = computeInfraScore(inputRow, "connected");
-
-      // Data completeness — reuse the wizard's own heuristic shape but keep
-      // it minimal here because a verified integration is de facto high on
-      // the payments axis. This is display-only; nothing downstream depends
-      // on the exact number.
-      const completeness = 95;
-
-      // Persist the verified AnalyzerResult. The three NEW fields — carrying
-      // Chunk 1's schema additions — communicate provenance and scope:
-      //   source_integration_id  — links this Result back to the Integration
-      //                            row (Stripe) whose data produced it.
-      //   verification_scope     — ["payments"] because this bridge only
-      //                            verifies the payments vertical. Shipping/
-      //                            SaaS remain estimated in this same row.
-      //   verification_status    — "verified" (unlike the wizard, which
-      //                            emits "estimated" or "pending_verification").
-      //
-      // data_confidence + active_days + charge_count travel via the
-      // `assumptions` array — they are display-only signals for the front,
-      // not persisted as first-class columns until we know a downstream
-      // consumer needs them structurally. Aditivo: no schema change here.
-      const assumptions = [
-        ...(bridge.assumptions || []),
-        `data_confidence: ${bridge.data_confidence} (${bridge.active_days} active day(s), ${bridge.charge_count} charges).`,
-      ];
-
-      const created = await base44.entities.AnalyzerResult.create({
-        brand_id,
-        input_id: bridge.analyzer_input_id,
-        payment_savings: savings.paymentSavings,
-        shipping_savings: savings.shippingSavings,
-        saas_savings: savings.saasSavings,
-        total_savings: savings.totalSavings,
-        infra_score: scoreReport.total,
-        details: savings.details,
-        confidence_level: bridge.data_confidence === "high" ? "high" : "medium",
-        data_completeness_score: completeness,
-        score_engine_version:  ENGINE_VERSION.score,
-        savings_model_version: ENGINE_VERSION.savings,
-        benchmark_version:     ENGINE_VERSION.benchmark,
-        methodology: "Verified via Stripe integration bridge. Rate = sum(fee)/sum(amount) on successful charges; monthly_revenue net of refunds. Same savings/score engine as the estimated flow (single source of truth).",
-        assumptions,
-        benchmark_source: "network_internal",
-        verification_status: "verified",
-        source_integration_id: integration_id,
-        verification_scope: ["payments"],
-        next_best_action: "Connect carriers to extend verified coverage to shipping.",
+      const outcome = await materializeVerifiedResult({
+        analyzerInput: inputRow,
+        integrationId: integration_id,
+        dataConfidence: bridge.data_confidence,
+        activeDays: bridge.active_days,
+        chargeCount: bridge.charge_count,
+        entities: base44.entities,
       });
 
-      setMaterializedId(created.id);
-      toast.success("Verified savings ready");
-      if (typeof on_materialized === "function") on_materialized(created.id);
+      // 5A returns one of four statuses. Map each to a UI signal.
+      // "insufficient" and "missing_input" should never reach here because
+      // the button is only rendered for provisional/high — but we handle
+      // them defensively so an unexpected input state doesn't crash the UI.
+      if (outcome.status === "created" || outcome.status === "reused") {
+        setMaterializedId(outcome.result.id);
+        toast.success(outcome.status === "created"
+          ? "Verified savings ready"
+          : "Verified savings already available");
+        if (typeof on_materialized === "function") on_materialized(outcome.result.id);
+      } else if (outcome.status === "insufficient") {
+        setMaterializeError("Not enough Stripe activity yet to compute a verified result.");
+      } else if (outcome.status === "missing_input") {
+        setMaterializeError("Your verified input is missing required fields — reconnect Stripe to refresh.");
+      } else {
+        setMaterializeError("Unexpected verification state.");
+      }
     } catch (e) {
       setMaterializeError(e?.message || String(e));
     } finally {
