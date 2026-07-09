@@ -1,0 +1,115 @@
+{
+  "name": "PaymentsRateTable",
+  "type": "object",
+  "properties": {
+    "cohort_key": {
+      "type": "string",
+      "description": "Row identity: '<provider_slug>|<tier>|<region>'. Provider is 'stripe','paypal','shopify_payments','ANY' (regional fallback). Tier is currently always 'ANY' (Chunk 1b decision \u2014 tier segmentation happens in the engine's savings band, not in the row). Region is 'EU','UK','US','RoW'. Unique per row. Engine lookup: exact match first (e.g. 'stripe|ANY|EU'), then fallback to 'ANY|ANY|<region>' if no exact match."
+    },
+    "provider_slug": {
+      "type": "string",
+      "description": "Stable slug matching the analyzer's provider detection (stripe, paypal, shopify_payments, adyen, mollie, ...). Set to 'ANY' for regional fallback rows."
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "ANY",
+        "micro",
+        "small",
+        "mid",
+        "large"
+      ],
+      "default": "ANY",
+      "description": "Revenue tier. Chunk 1b: always 'ANY' \u2014 Stripe/PayPal/Shopify don't publish tiered pricing publicly. Future rows may segment when a provider does (e.g. Shopify tiering by plan)."
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "EU",
+        "UK",
+        "US",
+        "RoW"
+      ],
+      "description": "Geographic region the row applies to."
+    },
+    "percent_bps": {
+      "type": "number",
+      "description": "Percent component of the effective rate, in basis points. E.g. Stripe EU standard = 150 (1.5%). This is the ATOMIC published percentage \u2014 NEVER blend the fixed fee into this number. The engine amortizes the fixed fee separately using the merchant's real avg ticket at runtime."
+    },
+    "fixed_fee_minor_units": {
+      "type": "number",
+      "description": "Fixed component of the effective rate, in MINOR units of fixed_fee_currency (cents / pence). E.g. Stripe EU = 25 (i.e. 0.25 EUR). The engine amortizes this against the user's avg_ticket at runtime \u2014 merchants with low tickets pay a much higher effective rate. NEVER pre-amortize into percent_bps."
+    },
+    "fixed_fee_currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "GBP",
+        "USD"
+      ],
+      "description": "Currency of fixed_fee_minor_units. Determines which minor-unit is used (100 cents = 1 EUR/GBP/USD)."
+    },
+    "achievable_percent_bps": {
+      "type": "number",
+      "description": "OPTIONAL \u2014 Achievable percent component in bps for the same provider/region after negotiation, in a documented bottom-up breakdown (interchange_cap + scheme_fees + assumed_processor_margin). Null on rows where we have no defensible breakdown. Engine uses this + achievable_fixed_fee_minor_units + same runtime amortization to compute achievable effective rate."
+    },
+    "achievable_fixed_fee_minor_units": {
+      "type": "number",
+      "description": "OPTIONAL \u2014 Achievable fixed component (usually same or slightly lower than the published fixed fee \u2014 hard to negotiate below scheme minimums). Null when achievable_percent_bps is null."
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = numbers cited verbatim from a public pricing page URL, verified by a human on verified_at. false = regional-average estimate. Engine widens the savings band and injects a mandatory assumption 'Estimate based on regional averages, not provider-verified rates. Connect your PSP for exact figures.' when verified is false."
+    },
+    "source_url": {
+      "type": "string",
+      "description": "The exact URL where percent_bps and fixed_fee_minor_units were read. Required when verified=true. For fallback rows, points to the reference used to derive the average."
+    },
+    "source_quote": {
+      "type": "string",
+      "description": "Verbatim quote from source_url showing the numbers. Required when verified=true. Provides audit trail \u2014 if Stripe changes pricing, we grep this field to find stale rows."
+    },
+    "source_notes": {
+      "type": "string",
+      "description": "Free-form notes: caveats, related premium rates not seeded, TODOs, tier context (e.g. 'Shopify Basic plan rate; Grow/Advanced/Plus tiers not seeded until form asks Shopify plan')."
+    },
+    "achievable_breakdown_json": {
+      "type": "object",
+      "description": "Documented components of achievable_percent_bps. Shape: { interchange_bps: number, scheme_fees_bps: number, processor_margin_bps: number, processor_margin_band_bps: number, sources: [{ label, url }] }. Read by the engine to expose transparency in the output assumptions."
+    },
+    "savings_band_pct": {
+      "type": "number",
+      "description": "Half-width of the savings uncertainty band, as a fraction. 0.20 = \u00b120% (narrow, verified rows), 0.35 = \u00b135% (wide, fallback rows). Engine uses this to compute lo/hi around the point estimate."
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the human validator confirmed source_quote against source_url. Set by seeder on creation. Rows older than 90 days should be re-validated (future job \u2014 not implemented in Chunk 1b)."
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Soft-delete flag. Engine only reads active=true rows."
+    }
+  },
+  "required": [
+    "cohort_key",
+    "provider_slug",
+    "tier",
+    "region",
+    "percent_bps",
+    "fixed_fee_minor_units",
+    "fixed_fee_currency",
+    "verified",
+    "savings_band_pct"
+  ],
+  "rls": {
+    "read": {},
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

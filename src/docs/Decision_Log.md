@@ -5,6 +5,36 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-09 — Chunk 1b · PaymentsRateTable creada y sembrada (10 filas)
+
+Entidad `PaymentsRateTable` creada con schema de **componentes atómicos** — corrigiendo un error de diseño del reporte 1a: guardar tarifas blended a un AOV asumido (100€) habría producido resultados erróneos para todo merchant fuera de ese ticket. Ahora `percent_bps` y `fixed_fee_minor_units` se almacenan por separado; el motor `calculatePaymentsGap` (Chunk 2) amortiza el fee fijo con el `avg_ticket` real del usuario en runtime.
+
+**Seeded rows (10):**
+- **7 verified rows** (con `source_url` + `source_quote` verbatim):
+  - Stripe EU, Stripe UK, Stripe US
+  - PayPal EU (ES market), PayPal UK, PayPal US
+  - Shopify Payments US (Basic plan)
+- **4 fallback rows** (`verified: false`, banda ±35%, assumption obligatoria en output): EU / UK / US / RoW
+
+**Decisiones aplicadas:**
+- **Sin tier segmentation por fila**: Stripe/PayPal no publican tiering; el tier afecta a la banda de savings en el motor, no a la fila (`tier: 'ANY'` en todas).
+- **Fórmula achievable transparente**: cada fila verificada guarda `achievable_breakdown_json` con `{ interchange_bps, scheme_fees_bps, processor_margin_bps, processor_margin_band_bps, sources }`. El componente `processor_margin` está explícitamente marcado como assumption con banda ±20-25 bps.
+- **IFR (EU 2015/751)** citado como fuente legal del suelo de interchange en filas EU/UK.
+
+**Documentado en `source_notes` como TODO para futuras iteraciones (NO seeded ahora):**
+- Stripe EEA premium cards (1,9% + 0,25€) — cuando el motor soporte mix premium (Fase 6+)
+- Stripe UK premium cards (1.9% + 20p)
+- Shopify Grow/Advanced/Plus (2.7%/2.5%/2.25% + 30¢) — cuando el formulario pregunte plan Shopify
+- Shopify premium cards (3.5% + 30¢)
+- PayPal Checkout US (3.49% + 49¢) — distinto flow que Standard Card
+- Adyen, Mollie, Checkout.com, Braintree, Worldpay — sin pricing público claro; caen a fallback regional hasta que se seedee cada uno con fuente
+
+**Idempotencia:** el seeder (`seedPaymentsRateTable`, admin-only) hace upsert por `cohort_key`. Re-ejecutable sin duplicar. Rows existentes → UPDATE. Rows nuevos → CREATE.
+
+**Habit for future rate updates:** Ninguna cifra entra a la tabla sin URL + cita literal verificada por humano. Cuando Stripe/PayPal cambien pricing, grep `source_quote` para localizar la fila stale y re-validar.
+
+---
+
 ## 2026-07-09 — Fase 1.3 · Purga multi-vertical (payments-only)
 
 Purged multi-vertical (shipping / SaaS / banking / insurance / telecom / HR) branches from all conserved files. Two large files (`scoreEngine.js`, `Results.jsx`) intentionally left untouched — marked FROZEN-UNTIL-CUTOVER, they will die whole when `/PaymentsAnalyzer` + `calculatePaymentsGap` + new results view ship.
