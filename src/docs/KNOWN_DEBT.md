@@ -67,10 +67,20 @@ lift de brand activo, no antes.
 
 ## BUG-2 — Badge "Verified" del héroe se enciende sin AnalyzerResult
 
-**Estado:** activa
+**Estado:** RESUELTA 2026-07-09 (cierre de sesión)
 **Detectado:** 2026-07-09 durante validación FASE 2 (Opción B)
 **Fichero:** `src/pages/Dashboard.jsx`
-**Líneas:** 209-211 (definición de `heroBadge`)
+**Líneas:** 209-231 (definición de `heroBadge` / `heroSubtitle`)
+
+### Resolución
+El gate del héroe ahora deriva de `latest.verification_status` (AnalyzerResult
+activo) y no de `stripeConnected`. Tres estados: `verified` (emerald),
+`pending_verification` (blue "Provisional"), `estimated` (amber). Chip lateral
+sincronizado con la misma variable. Ver Dashboard.jsx:224-247.
+
+---
+
+## BUG-2 (histórico) — condiciones originales
 
 ### Síntoma
 El héroe del Dashboard muestra "Verified — based on real Stripe data" con
@@ -116,7 +126,7 @@ Verified sea real y no cosmético.
 
 ## BUG-3 — Contador de header "0 connected" mientras la card dice Connected
 
-**Estado:** activa
+**Estado:** activa (pendiente re-verificación visual en `/ConnectTools`)
 **Detectado:** 2026-07-09 durante validación FASE 1.5
 **Fichero:** `src/pages/ConnectTools.jsx`
 **Líneas:** ~285-293 (resumen `detectedCount` / `connectedCount` / `availableCount`)
@@ -146,3 +156,70 @@ subcuenta.
 Prioridad más baja que el 500 en curso; misma familia de scoping post-FASE-1
 que ya está bajo trabajo. Se arregla junto con el lift de fuente única de
 "connected" cuando cerremos FASE 1.5/3.
+
+---
+
+## BUG-4 — `dataSyncAgent` avanza `last_synced_until` a "ahora" en cada sync
+
+**Estado:** activa
+**Detectado:** 2026-07-09 durante validación FASE 3 (auto-materialize)
+**Fichero:** `base44/functions/dataSyncAgent/entry.ts`
+**Líneas:** lógica de actualización de `sync_state.last_synced_until`
+
+### Síntoma
+Tras un primer sync exitoso (que trae ~90 días de histórico Stripe), los
+siguientes syncs devuelven **0 records nuevos**, incluso cuando hay actividad
+en Stripe posterior al primer sync. El bridge downstream ve 0 charges en
+ventana y degrada a `insufficient`.
+
+### Causa
+`dataSyncAgent` avanza el cursor `last_synced_until` al momento del sync
+(`Date.now()`), no al `created` del último balance_transaction procesado.
+El siguiente sync arranca su ventana desde ese punto — que ya fue cubierto —
+y no captura los events que llegaron entre el primer sync y "ahora" con
+delay de settlement.
+
+### Fix cuando toque
+`last_synced_until` = max(`created`) real observado en la página final de
+`balance_transactions`, no `Date.now()`. Además dejar un solape mínimo
+(24h) para absorber settlement delay.
+
+### Por qué no se arregla ahora
+Requiere test controlado con Stripe test-mode + tocar `dataSyncAgent` que
+está funcionando para el escenario de primer-sync (nuestro caso actual).
+Se arregla al preparar sync recurrente / cron.
+
+---
+
+## BUG-5 — `handleDisconnect` apunta a entidad legacy `StripeConnection`
+
+**Estado:** activa
+**Detectado:** 2026-07-09 (documentado en FASE 1.5)
+**Fichero:** `src/components/connect/StripeConnectCard.jsx`
+**Líneas:** función `handleDisconnect` (~línea 195)
+
+### Síntoma
+Al pulsar "Disconnect" desde la Stripe card, la llamada a `stripeDisconnect`
+devuelve 404 en connections Integration-backed (post-FASE-1). El estado
+local se limpia (`setConnection(null)`) pero el registro Integration
+subyacente permanece `status: "connected"` — al recargar, la card vuelve a
+mostrar Connected.
+
+### Causa
+`stripeDisconnect` (backend) fue escrito para la entidad legacy
+`StripeConnection`. Cuando la fuente de verdad pasó a `Integration` (FASE 1),
+`handleSync` se ruteó al endpoint correcto (`dataSyncAgent`) pero
+`handleDisconnect` se quedó apuntando al viejo. Misma familia que el fix
+de `handleSync` que ya está desplegado.
+
+### Fix cuando toque
+Rutear `handleDisconnect` como `handleSync`: si `connection.provider` está
+presente → invoke nueva función `integrationDisconnect({ integration_id })`
+que marca la row Integration como `status: "disconnected"` y limpia
+`access_token`. Fallback a `stripeDisconnect` sólo para connections legacy.
+
+### Por qué no se arregla ahora
+Requiere crear una nueva backend function (`integrationDisconnect`) y no es
+crítica en flujo actual (usuarios connect → sync → results, no
+disconnect). Se arregla junto con el resto del limpieza post-FASE-1 de
+endpoints legacy.
