@@ -1992,12 +1992,27 @@ const PAGE_BUFFER_LIMIT = 5000;
 // ─── Handler ───────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
+  // ─── PRE-TASK INSTRUMENTATION (2026-07-09) ────────────────────────────────
+  // Wrap everything from handler start through `AgentTask.create` in its own
+  // try/catch so a 500 in that window returns a STRUCTURED body with the
+  // exact `stage` that failed + stack. Purely observational: happy path is
+  // untouched (falls through to the existing sync loop below). The generic
+  // outer catch (bottom of file) remains as a last-resort net.
+  // Purpose: hunt the "phantom 500" — a failure with no AgentTask row + no
+  // legible log, suspected to live in the user-session code path (which
+  // service-role tests can't reproduce). Remove once the culprit is caught.
+  let base44, user, body, integration_id, integ, cfg, task;
+  let stage = "handler_start";
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    stage = "create_client";
+    base44 = createClientFromRequest(req);
+
+    stage = "auth_me";
+    user = await base44.auth.me();
     if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
-    const body = await req.json().catch(() => ({}));
+    stage = "parse_body";
+    body = await req.json().catch(() => ({}));
 
     // Read-only introspection mode: returns the REGISTRY so verifyRegistrySync
     // can compare it against oauthConnector's copy. Never touches integrations
@@ -2007,24 +2022,28 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, registry: REGISTRY, source: "dataSyncAgent" });
     }
 
-    const { integration_id } = body;
+    integration_id = body.integration_id;
     if (!integration_id) {
       return Response.json({ ok: false, error: "integration_id is required" }, { status: 400 });
     }
 
-    const integ = await base44.asServiceRole.entities.Integration.get(integration_id);
+    stage = "integration_get";
+    integ = await base44.asServiceRole.entities.Integration.get(integration_id);
     if (!integ) return Response.json({ ok: false, error: "Integration not found" }, { status: 404 });
 
+    stage = "assert_brand_owned";
     await assertBrandOwnedByUser(base44, integ.brand_id, user);
 
     if (integ.status !== "connected") {
       return Response.json({ ok: false, error: `Integration is ${integ.status}, not connected` }, { status: 400 });
     }
 
-    const cfg = getProviderConfig(integ.provider);
+    stage = "get_provider_config";
+    cfg = getProviderConfig(integ.provider);
     if (!cfg) return Response.json({ ok: false, error: "Provider not in registry" }, { status: 500 });
 
-    const task = await base44.asServiceRole.entities.AgentTask.create({
+    stage = "agent_task_create";
+    task = await base44.asServiceRole.entities.AgentTask.create({
       brand_id: integ.brand_id,
       agent_name: "data_sync",
       task_type: "sync_integration_data",
@@ -2037,6 +2056,29 @@ Deno.serve(async (req) => {
       started_at: new Date().toISOString(),
     });
 
+    stage = "post_task_create";
+  } catch (preTaskErr) {
+    // ─── PRE-TASK CATCH ────────────────────────────────────────────────
+    // Anything from handler_start → agent_task_create failing lands here.
+    // console.error dumps the stack to function logs so we can trace which
+    // line blew up. The response body carries the `stage` label so the
+    // client (StripeConnectCard → error toast/state) surfaces it too.
+    // No AgentTask row exists yet in this window — no need to mark one
+    // failed. Integration row is left untouched (last_sync_status not
+    // flipped to "failed" for a pre-task blow-up — that's for real sync
+    // failures, not plumbing failures).
+    console.error(`[dataSyncAgent] pre-task failure at stage="${stage}":`, preTaskErr);
+    console.error(preTaskErr?.stack || "(no stack)");
+    return Response.json({
+      ok: false,
+      stage,
+      error: preTaskErr?.message || String(preTaskErr),
+      stack: preTaskErr?.stack || null,
+    }, { status: 500 });
+  }
+
+  // From here on, `base44`, `user`, `integ`, `cfg`, `task` are all populated.
+  try {
     // ─── New sync flow: pagination + date-range + rate-limit ─────────────
     //
     // Behavior matrix:
