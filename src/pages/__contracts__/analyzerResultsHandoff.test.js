@@ -24,7 +24,13 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+// ESM-safe __dirname replacement — the vitest runner treats test files as ESM
+// and `__dirname` is not defined there. `import.meta.url` gives us the file
+// URL; fileURLToPath converts it to a filesystem path.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '../../..');
 
 function read(rel) {
