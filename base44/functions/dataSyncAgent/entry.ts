@@ -1860,12 +1860,24 @@ function getPaginator(style) {
 // SYNC-START: dateRange
 // --- date range -------------------------------------------------------------
 const TWELVE_MONTHS_MS = 365 * 24 * 60 * 60 * 1000;
+// BUG-4 FIX (2026-07-09) — settlement-delay overlap for incremental syncs.
+// Providers like Stripe backdate balance_transactions by hours (payout batch,
+// dispute resolution). Reading strictly from the persisted cursor would miss
+// those late arrivals. We subtract 24h at READ time (not stored in the cursor
+// value itself — the cursor stays the true high-water mark). Downstream
+// dedupes by external_id, so a small re-read window is free.
+const CURSOR_READ_OVERLAP_MS = 24 * 60 * 60 * 1000;
 function computeSyncWindow({ lastSyncedUntil, now = new Date() }) {
   const until = new Date(now.getTime());
   let since;
   if (lastSyncedUntil) {
     const parsed = new Date(lastSyncedUntil);
-    since = Number.isFinite(parsed.getTime()) ? parsed : new Date(now.getTime() - TWELVE_MONTHS_MS);
+    if (Number.isFinite(parsed.getTime())) {
+      // Apply overlap in the READ, not in the stored value.
+      since = new Date(parsed.getTime() - CURSOR_READ_OVERLAP_MS);
+    } else {
+      since = new Date(now.getTime() - TWELVE_MONTHS_MS);
+    }
   } else {
     since = new Date(now.getTime() - TWELVE_MONTHS_MS);
   }
@@ -2124,6 +2136,11 @@ Deno.serve(async (req) => {
         const norm = normalizers[epKey];
         if (!norm) throw new Error(`No normalizer for data_type=${epKey}`);
 
+        // BUG-4 FIX (2026-07-09) — snapshot the record count BEFORE this
+        // endpoint's pages start pushing. Used later to isolate THIS
+        // endpoint's contribution when computing its high-water mark.
+        const recordsBeforeEndpoint = allRecords.length;
+
         // Resolve sync window for this endpoint (per-endpoint last_synced_until).
         const epState = syncState[epKey] || {};
         const window = computeSyncWindow({ lastSyncedUntil: epState.last_synced_until || null });
@@ -2215,14 +2232,50 @@ Deno.serve(async (req) => {
           pageIdx++;
         }
 
-        // Persist per-endpoint sync state. last_synced_until advances to the
-        // window's `until` ONLY when we finished without hitting a cap; on a
-        // partial sync we keep the previous last_synced_until so the next run
-        // re-tries the same window. last_cursor is informational (the cursor
-        // of the last page we read).
+        // BUG-4 FIX (2026-07-09) — advance last_synced_until to the REAL
+        // high-water mark (max occurred_at among records processed for THIS
+        // endpoint), not to `window.until` (which was clock-now at sync start
+        // and caused the next sync to open a ~0s window → 0 records).
+        //
+        // Guards:
+        //   1. Only records emitted by THIS endpoint's normalizer count
+        //      (allRecords accumulates across endpoints; slice out the new
+        //      tail added in this iteration).
+        //   2. Missing occurred_at → skipped (never invents a timestamp).
+        //   3. Zero valid timestamps in the batch → keep previous cursor
+        //      (don't regress, don't drift forward to clock-now).
+        //   4. MONOTONICITY GUARD: newCursor = max(computedHwm, epState.last_synced_until).
+        //      A batch of only-old records (backfill, clock skew, upstream
+        //      reordering) can NEVER move the cursor backwards.
+        //   5. Partial syncs (cap hit) still freeze the cursor to previous,
+        //      unchanged from before — this fix only affects the success path.
+        // The 24h overlap lives at READ time (computeSyncWindow), NOT baked
+        // into the stored value — the cursor stays the true HWM.
+        //
+        // Endpoint's own records only: normalizers push into `allRecords`
+        // incrementally, so records added during THIS endpoint iteration are
+        // allRecords.slice(recordsBeforeEndpoint).
+        let newCursor = epState.last_synced_until || null;
+        if (!partialReason) {
+          const endpointRecords = allRecords.slice(recordsBeforeEndpoint);
+          let maxOccurredMs = 0;
+          for (const r of endpointRecords) {
+            if (!r?.occurred_at) continue;
+            const t = new Date(r.occurred_at).getTime();
+            if (Number.isFinite(t) && t > maxOccurredMs) maxOccurredMs = t;
+          }
+          if (maxOccurredMs > 0) {
+            const hwm = new Date(maxOccurredMs).toISOString();
+            // Monotonicity guard: never regress.
+            const prev = epState.last_synced_until ? new Date(epState.last_synced_until).getTime() : 0;
+            newCursor = maxOccurredMs >= prev ? hwm : epState.last_synced_until;
+          }
+          // else: no valid timestamps → keep previous cursor (line initial value).
+        }
+
         syncState[epKey] = {
           last_cursor: lastCursor,
-          last_synced_until: partialReason ? (epState.last_synced_until || null) : window.until.toISOString(),
+          last_synced_until: newCursor,
           last_window_since: window.since.toISOString(),
           last_pages_fetched: pageIdx,
         };

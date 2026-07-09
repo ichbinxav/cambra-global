@@ -23,18 +23,22 @@
 
 // SYNC-START: dateRange
 const TWELVE_MONTHS_MS = 365 * 24 * 60 * 60 * 1000;
+// BUG-4 FIX (2026-07-09) — settlement-delay overlap for incremental syncs.
+// Cursor almacenado = true high-water mark (max occurred_at real).
+// Solape aplicado en lectura, NO horneado en el valor persistido.
+export const CURSOR_READ_OVERLAP_MS = 24 * 60 * 60 * 1000;
 
 export function computeSyncWindow({ lastSyncedUntil, now = new Date() }) {
-  // `until` siempre es "now" en UTC (decisión del usuario). El sync nunca
-  // pide datos en el futuro.
   const until = new Date(now.getTime());
   let since;
   if (lastSyncedUntil) {
-    // Modo incremental: desde el last_synced_until persistido.
     const parsed = new Date(lastSyncedUntil);
-    since = Number.isFinite(parsed.getTime())
-      ? parsed
-      : new Date(now.getTime() - TWELVE_MONTHS_MS);
+    if (Number.isFinite(parsed.getTime())) {
+      // Aplica solape en lectura, no en el valor almacenado.
+      since = new Date(parsed.getTime() - CURSOR_READ_OVERLAP_MS);
+    } else {
+      since = new Date(now.getTime() - TWELVE_MONTHS_MS);
+    }
   } else {
     // Backfill inicial: 12 meses.
     since = new Date(now.getTime() - TWELVE_MONTHS_MS);

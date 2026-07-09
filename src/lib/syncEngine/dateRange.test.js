@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeSyncWindow, applyDateRangeToUrl } from './dateRange.js';
+import { computeSyncWindow, applyDateRangeToUrl, CURSOR_READ_OVERLAP_MS } from './dateRange.js';
 
 describe('computeSyncWindow — backfill vs incremental', () => {
   const NOW = new Date('2026-06-30T12:00:00Z');
@@ -12,11 +12,18 @@ describe('computeSyncWindow — backfill vs incremental', () => {
     expect(days).toBe(365);
   });
 
-  it('incremental → since = last_synced_until', () => {
+  it('incremental → since = last_synced_until MINUS 24h overlap (BUG-4 fix)', () => {
+    // Stored cursor = true high-water mark. Read applies 24h overlap
+    // to absorb provider settlement delay (e.g. Stripe backdates).
     const last = '2026-05-01T00:00:00.000Z';
     const { since, until } = computeSyncWindow({ lastSyncedUntil: last, now: NOW });
-    expect(since.toISOString()).toBe(last);
+    const expectedSince = new Date(new Date(last).getTime() - CURSOR_READ_OVERLAP_MS);
+    expect(since.toISOString()).toBe(expectedSince.toISOString());
     expect(until.toISOString()).toBe(NOW.toISOString());
+  });
+
+  it('overlap constant is 24 hours', () => {
+    expect(CURSOR_READ_OVERLAP_MS).toBe(24 * 60 * 60 * 1000);
   });
 
   it('garbage last_synced_until → falls back to 12-month backfill (defensive)', () => {

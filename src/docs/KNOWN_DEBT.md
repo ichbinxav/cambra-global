@@ -175,10 +175,37 @@ que ya está bajo trabajo. Se arregla junto con el lift de fuente única de
 
 ## BUG-4 — `dataSyncAgent` avanza `last_synced_until` a "ahora" en cada sync
 
-**Estado:** activa
+**Estado:** RESUELTA 2026-07-09 (cierre de sesión, estrategia b aprobada)
 **Detectado:** 2026-07-09 durante validación FASE 3 (auto-materialize)
 **Fichero:** `base44/functions/dataSyncAgent/entry.ts`
-**Líneas:** lógica de actualización de `sync_state.last_synced_until`
+
+### Resolución
+Cursor-con-confirmación:
+1. `last_synced_until` avanza al high-water mark REAL (max `occurred_at`
+   entre los records procesados por ESE endpoint), no a `window.until`
+   (= clock-now del inicio del sync).
+2. **Guarda de monotonía**: `newCursor = max(hwm, epState.last_synced_until)` —
+   un lote de records antiguos (backfill / clock skew / reordering)
+   NUNCA retrocede el cursor.
+3. Semántica limpia: el cursor persistido es el HWM real (no lleva el
+   solape horneado dentro). El solape de 24h se aplica en LECTURA
+   (`computeSyncWindow`: `since = cursor - 24h`) para absorber
+   settlement delay (Stripe backdates balance_transactions).
+4. Sin ocurrencias válidas en el lote → conserva el cursor previo
+   (nunca deriva a clock-now).
+5. Partial syncs (cap hit) → cursor previo intacto (comportamiento previo).
+
+**Fuente-de-verdad de la lógica de ventana**: `src/lib/syncEngine/dateRange.js`
+(módulo test-verificado). El bloque `SYNC-START: dateRange` en
+`dataSyncAgent/entry.ts` es su duplicado verbatim (limitación Deno). El
+`__sync_check__.test.js` detecta drift.
+
+**Auditoría normalizers**: los 24 normalizers activos emiten `occurred_at`
+con guarda null. Verificado el 2026-07-09.
+
+---
+
+## BUG-4 (histórico) — síntoma original
 
 ### Síntoma
 Tras un primer sync exitoso (que trae ~90 días de histórico Stripe), los
