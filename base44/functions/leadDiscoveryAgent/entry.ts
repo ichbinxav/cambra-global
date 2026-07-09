@@ -57,6 +57,11 @@ Deno.serve(async (req) => {
     if (!res.ok) throw new Error(`Apollo API error: ${data?.error || data?.message || res.statusText}`);
 
     const people = Array.isArray(data?.people) ? data.people : [];
+    // GDPR Art. 6(1)(f) — every Apollo-sourced lead ships with an explicit
+    // legal basis and an LIA summary, closing the two warnings raised by
+    // gdprAgent (Apollo source without documented base legal + retroactive
+    // audit exposure). Do NOT remove these fields.
+    const LIA_NOTE = `B2B outreach to publicly listed decision-maker (${titles.join("/")}) at a ${industry} brand in ${country}. Contact obtained from Apollo.io under their DPA (SCC/DPF). Legitimate interest documented; opt-out honored in every outreach; no special-category data processed.`;
     const leads = people.map(p => ({
       company_name: p?.organization?.name || null,
       company_domain: p?.organization?.website_url || p?.organization?.primary_domain || null,
@@ -68,6 +73,8 @@ Deno.serve(async (req) => {
       industry,
       source: "apollo",
       stage: "lead",
+      legal_basis: "legitimate_interest",
+      legal_basis_note: LIA_NOTE,
       raw_json: p,
     }));
 
