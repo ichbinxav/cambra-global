@@ -9,7 +9,7 @@ import { useAutoMaterialize } from "@/hooks/useAutoMaterialize";
  * M3 — Stripe Connect card.
  * Three states: not_connected · connected · coming_soon (env vars missing).
  */
-export default function StripeConnectCard({ redirectAfter } = {}) {
+export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [connection, setConnection] = useState(null);
@@ -22,17 +22,35 @@ export default function StripeConnectCard({ redirectAfter } = {}) {
   // /Results remains as fallback.
   const { state: autoState, run: runAutoMaterialize } = useAutoMaterialize();
 
+  // FASE 1 — Integration is now the source of truth for "connected" state.
+  // We read Integration rows with any of the 3 Stripe provider slugs
+  // (stripe / stripe_self / stripe_self_test) scoped to the active brand.
+  // StripeConnection (legacy) is only consulted as a fallback for older data.
   const loadConnection = async () => {
     setLoading(true);
     try {
-      // FIX 9 — RLS already scopes this to created_by (the current user).
-      // For multi-brand users we should also pass brand_id once the card receives one as a prop.
-      const list = await base44.entities.StripeConnection.filter(
-        { connection_status: "connected" },
-        "-last_sync_at",
-        1
+      const filter = { status: "connected" };
+      if (brandId) filter.brand_id = brandId;
+      const integrations = await base44.entities.Integration.filter(
+        filter, "-last_sync_at", 20
+      ).catch(() => []);
+      const stripeIntegration = integrations.find(i =>
+        i.provider === "stripe" || i.provider === "stripe_self" || i.provider === "stripe_self_test"
       );
-      setConnection(list[0] || null);
+      if (stripeIntegration) {
+        setConnection({
+          id: stripeIntegration.id,
+          brand_id: stripeIntegration.brand_id,
+          last_sync_at: stripeIntegration.last_sync_at,
+          provider: stripeIntegration.provider,
+        });
+      } else {
+        // Fallback: legacy StripeConnection (kept while migration completes)
+        const list = await base44.entities.StripeConnection.filter(
+          { connection_status: "connected" }, "-last_sync_at", 1
+        ).catch(() => []);
+        setConnection(list[0] || null);
+      }
     } catch {
       setConnection(null);
     } finally {

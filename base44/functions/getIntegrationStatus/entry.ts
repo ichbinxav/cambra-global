@@ -60,12 +60,17 @@ Deno.serve(async (req) => {
     const catalog = await svc.entities.IntegrationCatalog.list('priority', 100).catch(() => []);
 
     // Per-brand signals
-    const [detected, sessions, stripeConn, infraNodes] = await Promise.all([
+    // FASE 1 — Integration is the source of truth for "connected"; StripeConnection is legacy fallback.
+    const [detected, sessions, stripeConn, stripeIntegrations, infraNodes] = await Promise.all([
       brand_id ? svc.entities.DetectedIntegration.filter({ brand_id }).catch(() => []) : [],
       brand_id ? svc.entities.ConnectionSession.filter({ brand_id }, '-created_date', 200).catch(() => []) : [],
       brand_id ? svc.entities.StripeConnection.filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []) : [],
+      brand_id ? svc.entities.Integration.filter({ brand_id, status: 'connected' }, '-last_sync_at', 50).catch(() => []) : [],
       brand_id ? svc.entities.InfrastructureNode.filter({ brand_id }).catch(() => []) : [],
     ]);
+    const stripeIntegrationRow = stripeIntegrations.find(i =>
+      i.provider === 'stripe' || i.provider === 'stripe_self' || i.provider === 'stripe_self_test'
+    );
 
     const detectedMap = new Map(detected.map(d => [d.integration_id, d]));
     const latestSessionMap = new Map();
@@ -81,7 +86,8 @@ Deno.serve(async (req) => {
       const session = latestSessionMap.get(c.integration_id);
 
       // Stripe live connection (M3)
-      const isStripeConnected = c.integration_id === 'stripe' && stripeConn.length > 0;
+      // FASE 1 — either the new Integration row OR the legacy StripeConnection counts as connected.
+      const isStripeConnected = c.integration_id === 'stripe' && (stripeConn.length > 0 || !!stripeIntegrationRow);
 
       // Stripe-inferred match: did vendor inference detect this catalog item?
       const inferredNode = stripeInferredNodes.find(n => nodeMatchesIntegration(n, c)) || null;
@@ -121,7 +127,9 @@ Deno.serve(async (req) => {
         display_status,
         confidence_score,
         detection_source: d?.detection_source || (inferredFromPayments ? 'stripe_inference' : null),
-        connected_at: isStripeConnected ? stripeConn[0].last_sync_at : (d?.connected_at || null),
+        connected_at: isStripeConnected
+          ? (stripeConn[0]?.last_sync_at || stripeIntegrationRow?.last_sync_at || null)
+          : (d?.connected_at || null),
         last_verified_at: d?.last_verified_at || inferredNode?.last_verified_at || null,
         latest_session_id: session?.id || null,
         latest_session_status: session?.status || null,

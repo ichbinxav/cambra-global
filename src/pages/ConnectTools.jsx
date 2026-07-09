@@ -285,11 +285,21 @@ export default function ConnectTools() {
 
         if (!bId) { setLoading(false); return; }
 
-        // Check Stripe
+        // FASE 1 — Integration is the source of truth for "connected"; fall back to StripeConnection.
         try {
-          const sc = await base44.entities.StripeConnection
-            .filter({ brand_id: bId, connection_status: "connected" }, "-last_sync_at", 1);
-          setStripeConnected(sc.length > 0);
+          const integrations = await base44.entities.Integration.filter(
+            { brand_id: bId, status: "connected" }, "-last_sync_at", 20
+          ).catch(() => []);
+          const hasStripeIntegration = integrations.some(i =>
+            i.provider === "stripe" || i.provider === "stripe_self" || i.provider === "stripe_self_test"
+          );
+          if (hasStripeIntegration) {
+            setStripeConnected(true);
+          } else {
+            const sc = await base44.entities.StripeConnection
+              .filter({ brand_id: bId, connection_status: "connected" }, "-last_sync_at", 1);
+            setStripeConnected(sc.length > 0);
+          }
         } catch {}
 
         // Get grouped integration status
@@ -341,7 +351,7 @@ export default function ConnectTools() {
 
         {/* Stripe — always first */}
         <div>
-          <StripeConnectCard />
+          <StripeConnectCard brandId={brandId} />
         </div>
 
         {/* Loading */}
