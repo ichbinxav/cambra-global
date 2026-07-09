@@ -46,11 +46,16 @@ import { fileURLToPath } from "node:url";
 const THIS_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(THIS_DIR, "..", "..", "..");
 const DENO_FILE = path.join(REPO_ROOT, "base44/functions/dataSyncAgent/entry.ts");
+// Second Deno target — calculatePaymentsGap holds an inline copy of the pure
+// engine (src/lib/paymentsGap.js) between SYNC-START/SYNC-END markers, same
+// pattern as dataSyncAgent's helpers. See the paymentsGap pair below.
+const PAYMENTS_GAP_DENO_FILE = path.join(REPO_ROOT, "base44/functions/calculatePaymentsGap/entry.ts");
 
 // Each pair declares: a logical key (must match the SYNC-START/END markers
-// in BOTH files), the src/lib/ file holding the testable copy, and the
-// description shown if the assertion fails. The Deno copy is ALWAYS the
-// same big file (dataSyncAgent/entry.ts).
+// in BOTH files), the src/lib/ file holding the testable copy, an optional
+// `deno` override (defaults to DENO_FILE = dataSyncAgent) so a new engine
+// can plug in without touching the surrounding test, and the description
+// shown if the assertion fails.
 // Each pair declares: a logical key (must match the SYNC-START/END markers
 // in BOTH files), the src/lib/ file holding the testable copy, and an
 // optional `skip` flag with a reason — used for pieces that DO have drift
@@ -116,6 +121,15 @@ const PAIRS = [
     key: "bigcommerceNormalizer",
     src: "src/lib/normalizers/bigcommerce.js",
     skip: "STRUCTURAL DRIFT — Deno wraps the body in object-method-shorthand (`bigcommerce_orders: (raw) => {…},`) as a property of the NORMALIZERS object; src declares it as a named export (`export function normalizeBigCommerceOrders(raw)`). The function bodies are byte-identical; the wrapper SHAPES are not, and the test's wrapper-unifier regex doesn't fully collapse the trailing `,` of the object-property form. NOT cosmetic alone — it's the same architectural divergence as stripeNormalizer. Realignment pending dedicated decision.",
+  },
+  // paymentsGap: pure ES6 engine (src/lib/paymentsGap.js) mirrored verbatim
+  // inside base44/functions/calculatePaymentsGap/entry.ts between the same
+  // SYNC-START/SYNC-END markers. Uses the `deno` override so the pair
+  // compares against calculatePaymentsGap instead of dataSyncAgent.
+  {
+    key: "paymentsGap",
+    src: "src/lib/paymentsGap.js",
+    deno: "base44/functions/calculatePaymentsGap/entry.ts",
   },
 ];
 
@@ -384,7 +398,11 @@ describe("Sync-check — duplicated copies (src/lib/ vs base44/functions/dataSyn
       ? `pair "${pair.key}" — SKIPPED (${pair.skip.split(" — ")[0]})`
       : `pair "${pair.key}" — Deno copy matches ${path.basename(pair.src)}`;
     runner(label, () => {
-      const denoContent = readFileSafe(DENO_FILE);
+      // Each pair may override the Deno file target. Defaults to
+      // dataSyncAgent (the historical target); paymentsGap uses
+      // calculatePaymentsGap.
+      const denoTarget = pair.deno ? path.join(REPO_ROOT, pair.deno) : DENO_FILE;
+      const denoContent = readFileSafe(denoTarget);
       const srcContent  = readFileSafe(path.join(REPO_ROOT, pair.src));
 
       const denoBlock = extractBlock(denoContent, pair.key);
@@ -405,7 +423,7 @@ describe("Sync-check — duplicated copies (src/lib/ vs base44/functions/dataSyn
         // more readable in CI output.
         throw new Error(
           `DRIFT DETECTED on "${pair.key}":\n` +
-          `  Deno file: base44/functions/dataSyncAgent/entry.ts\n` +
+          `  Deno file: ${pair.deno || "base44/functions/dataSyncAgent/entry.ts"}\n` +
           `  src file:  ${pair.src}\n` +
           `  Divergence at normalized position ${snippet.position}:\n` +
           `    Deno: …${snippet.a_excerpt}…\n` +

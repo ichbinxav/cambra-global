@@ -5,6 +5,45 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-09 — Chunk 2 · calculatePaymentsGap motor + tests
+
+Motor puro `src/lib/paymentsGap.js` + endpoint Deno `base44/functions/calculatePaymentsGap` con **doble candado** de acceso. Todos los cálculos se derivan de la `PaymentsRateTable` sembrada en Chunk 1b — cero cifras hardcoded en el motor.
+
+**Doble candado verificado:**
+- **LOCK #1 (auth):** `base44.auth.me()` obligatorio → llamadas anónimas → 401. Verificado indirectamente: sin token de servicio la request no llega al handler.
+- **LOCK #2 (header):** `X-Cambra-Internal-Call` == `INTERNAL_CALL_SECRET` (env). Verificado directo: `test_backend_function` (auth admin) sin header → **403 Forbidden**. La única forma de atravesar es una llamada backend→backend por subdominio del app añadiendo el header — patrón que usará `submitPaymentsAnalysis` en Chunk 3.
+
+**Núcleo del motor (SYNC-verified):**
+- Bloque entre `SYNC-START: paymentsGap` / `SYNC-END: paymentsGap` **byte-normalized IDÉNTICO** entre `src/lib/paymentsGap.js` y `base44/functions/calculatePaymentsGap/entry.ts` (5596 chars normalizados, cero divergencia). Se añadió la pareja al `__sync_check__.test.js` con soporte para `deno` override (segundo target Deno además de `dataSyncAgent`).
+- Componentes atómicos (`percent_bps` + `fixed_fee_minor_units`) leídos de la tabla y **amortizados con `avg_ticket_eur` REAL** en runtime — la corrección estructural del 1b. Verificado end-to-end: mismo cohorte Stripe EU con ticket €30 vs €250 produce `current_effective_bps` de **233.33 vs 181.25** (mismos savings porque el gap se preserva, pero el `current` refleja el ticket real, no un blend).
+- Cascada de selección: exacto → fallback regional. Merchant en Adyen EU → cae a `ANY|ANY|EU` (verified=false, banda ±35%, assumption fallback presente).
+- Gate de completitud: motor exige las 4 filas regionales fallback presentes ANTES de calcular. Si faltan → `rate_table_incomplete`. Módulo-cache con retry de 400ms contra el issue de eventual-consistency observado en 1b.
+
+**Tests Vitest (`src/lib/paymentsGap.test.js`, 22 casos):**
+- `validateRateTable`: 5 casos (tabla completa, missing fallback EU, fallback inactive, no-array, contrato REQUIRED_FALLBACK_KEYS)
+- `computeEffectiveBps`: 3 casos (Stripe EU @€30 → ~233 bps, @€250 → ~160 bps, diferencia = ~73 bps)
+- `selectRow`: 4 casos (exact match Stripe EU, Adyen EU→fallback, Mollie RoW→fallback, checkout.com no leaks a Stripe)
+- `calculateGap` E2E: 8 casos (rechazo GMV inválido, rechazo ticket negativo, refuse partial table, amortización proof E2E, banda ±20% verificado, banda ±35% + fallback assumption, achievable breakdown en output, annual = 12× monthly, región desconocida → RoW, normalización provider)
+- Edge cases GMV: 4 casos (GMV €500, GMV €10M lineal, PayPal EU > Stripe EU savings, merchant al benchmark → 0 savings)
+- Helpers: 3 casos (applyBand con band=0, applyBand clampa lo≥0, computeMonthlySavings nunca negativo)
+
+**Verificación end-to-end con 5 payloads reales** (via harness temporal que replicaba el patrón que usará submitPaymentsAnalysis — luego borrado):
+- `stripe|EU` ticket €80 → 181.25 bps current / 117.25 achievable / **€640/mo point** / cohort exact verified
+- `stripe|EU` ticket €30 → 233.33 bps current / 169.33 achievable / **€640/mo point** (mismo gap, distinto current — amortización probada)
+- `stripe|EU` ticket €250 → 160.00 bps current / 96.00 achievable / **€640/mo point**
+- `adyen|EU` ticket €80 → fallback ANY|ANY|EU, banda ±35%, assumption fallback presente
+- `paypal|US` GMV €10M → escalado lineal correcto
+
+**Config añadida:**
+- Secret `INTERNAL_CALL_SECRET` (32-hex, generado local con `openssl rand -hex 32`).
+
+**Deudas conocidas de Chunk 2 (documentadas, no bugs):**
+- FX cross-currency: motor asume EUR/GBP/USD ≈ 1:1 para el componente `fixed_fee` (magnitudes <€0.50). Es correcto para primera-pasada; cuando entren datos live de Stripe se refinará con tipo de cambio real.
+- Field `intl_pct` normalizado y aceptado pero NO consumido aún — reservado para uplift de tarjetas internacionales cuando se seedeen filas premium/intl en Fase 6.
+- `BPS_PER_PCT` const declarada pero no usada (guardián por si evoluciona el output — 3 líneas de código a limpiar si molesta).
+
+---
+
 ## 2026-07-09 — Chunk 1b · PaymentsRateTable creada y sembrada (10 filas)
 
 Entidad `PaymentsRateTable` creada con schema de **componentes atómicos** — corrigiendo un error de diseño del reporte 1a: guardar tarifas blended a un AOV asumido (100€) habría producido resultados erróneos para todo merchant fuera de ese ticket. Ahora `percent_bps` y `fixed_fee_minor_units` se almacenan por separado; el motor `calculatePaymentsGap` (Chunk 2) amortiza el fee fijo con el `avg_ticket` real del usuario en runtime.
