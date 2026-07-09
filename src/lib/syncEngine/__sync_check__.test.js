@@ -123,25 +123,17 @@ const PAIRS = [
     skip: "STRUCTURAL DRIFT — Deno wraps the body in object-method-shorthand (`bigcommerce_orders: (raw) => {…},`) as a property of the NORMALIZERS object; src declares it as a named export (`export function normalizeBigCommerceOrders(raw)`). The function bodies are byte-identical; the wrapper SHAPES are not, and the test's wrapper-unifier regex doesn't fully collapse the trailing `,` of the object-property form. NOT cosmetic alone — it's the same architectural divergence as stripeNormalizer. Realignment pending dedicated decision.",
   },
   // paymentsGap: pure ES6 engine (src/lib/paymentsGap.js) mirrored verbatim
-  // inside base44/functions/calculatePaymentsGap/entry.ts between the same
-  // SYNC-START/SYNC-END markers. Uses the `deno` override so the pair
-  // compares against calculatePaymentsGap instead of dataSyncAgent.
-  {
-    key: "paymentsGap",
-    src: "src/lib/paymentsGap.js",
-    deno: "base44/functions/calculatePaymentsGap/entry.ts",
-  },
-  // paymentsGap_submitCopy: THIRD copy of the same engine lives inline in
-  // base44/functions/submitPaymentsAnalysis/entry.ts. That endpoint runs the
-  // engine in-process (anonymous callers can't hold a bearer token to reach
-  // the HTTP calculatePaymentsGap endpoint through LOCK #1). We pair it
-  // AGAINST THE SAME src/lib/paymentsGap.js — if all three normalize
-  // identically pair-by-pair, they're transitively identical to each other.
+  // inside base44/functions/submitPaymentsAnalysis/entry.ts between the same
+  // SYNC-START/SYNC-END markers. The HTTP endpoint calculatePaymentsGap was
+  // DELETED on 2026-07-09 — with no cross-function service token available
+  // in Base44, an anonymous public endpoint (submitPaymentsAnalysis) cannot
+  // reach it through LOCK #1, so it had zero production consumers. The
+  // inline-copy + sync-check pattern IS the platform-supported way to share
+  // engine logic across functions. See src/docs/Decision_Log.md 2026-07-09.
   {
     key: "paymentsGap",
     src: "src/lib/paymentsGap.js",
     deno: "base44/functions/submitPaymentsAnalysis/entry.ts",
-    label: "paymentsGap_submitCopy",
   },
 ];
 

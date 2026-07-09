@@ -5,6 +5,34 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-09 — Chunk 3 CIERRE · `calculatePaymentsGap` HTTP endpoint eliminado + patrón oficial "inline + sync-check"
+
+**Endpoint borrado.** `base44/functions/calculatePaymentsGap/entry.ts` eliminado del árbol. Motivo estructural, no cosmético: Base44 no expone service token cross-function, así que un endpoint público anónimo (`submitPaymentsAnalysis`) NO puede atravesar LOCK #1 del endpoint interno. Con la copia inline del motor viviendo dentro de `submitPaymentsAnalysis`, el endpoint HTTP quedó sin ningún consumidor de producción — mantenerlo "por si acaso" es exactamente la deuda que luego nadie se atreve a tocar. Se mata ahora que está tibio.
+
+Verificaciones previas al borrado (todas positivas):
+- `grep -r "calculatePaymentsGap"` sobre `src/`, `base44/functions/`, `base44/agents/`, `base44/entities/`: cero referencias en imports, fetches, automations, agents, o tests que sean consumidores reales. Las únicas menciones supervivientes son documentales (Decision_Log, comentario del propio `submitPaymentsAnalysis` explicando por qué se movió a inline, sync-check test).
+- Sync-check `paymentsGap_submitCopy` (par temporal añadido en el paso anterior para verificar transitividad de las 3 copias) retirado. Par simple `paymentsGap` reconfigurado: `src/lib/paymentsGap.js` ↔ `base44/functions/submitPaymentsAnalysis/entry.ts`. Verificación triple final antes del borrado: 5657 = 5657 = 5657 chars normalizados. Por transitividad, las dos copias supervivientes también son idénticas.
+
+**Patrón oficial documentado — REGLA PARA EL FUTURO:**
+> **En Base44, lógica compartida entre backend functions = copia inline entre marcadores `SYNC-START: <key>` / `SYNC-END: <key>` + par en el sync-check test suite. NO llamadas HTTP inter-function.**
+
+Motivos consolidados:
+1. No hay service token compartido → cualquier gating en el callee rechaza al caller anónimo.
+2. Aun con auth, un fetch inter-function suma latencia y superficie de fallo sin dar aislamiento útil para cálculo puro.
+3. El sync-check convierte la duplicación en segura: cualquier edit que no se replique verbatim rompe CI antes del merge.
+
+**Consecuencia para el futuro bridge de Fase 6** (path verified, cuando el motor consuma datos reales de Stripe en lugar de inputs de formulario): la copia inline vive donde vive la función que la ejecuta. No se debe re-introducir un endpoint HTTP centralizado del motor; se debe añadir una tercera pareja de copias con su propio par en el sync-check cuando llegue el momento. El patrón escala añadiendo pares, no fetches.
+
+**Off-by-one del rate limit — diagnosticado y descartado.**
+El primer harness reportó `first_429_at: 10` con límite 10/h; parecía off-by-one del limiter. Al leer el código (`if (count >= limitPerHour)` en `submitPaymentsAnalysis` línea 334) el gate es correcto: la 11ª petición lee `count=10` y rechaza. El origen real era **contaminación del bucket entre test 1 y test 3**: test 1 consumió 1 slot del mismo bucket-IP-hora, dejando 9 disponibles para el burst → la 10ª del burst (que era la 11ª absoluta del bucket) rechazó correctamente. Fix aplicado en el harness: `purgeSubmitCounters()` entre tests. Resultado empírico confirmado post-fix (ver verificación abajo). Contrato `10 permitidas/hora, 429 en la 11ª` intacto en producción.
+
+**LOCK residual — resuelto por eliminación.**
+El test 4 del harness anterior (fetch anónimo sin header interno contra `calculatePaymentsGap`) devolvía 401 (LOCK #1 auth-gate disparó antes que LOCK #2 header-gate — comportamiento correcto y coherente con el endurecimiento del propio LOCK #1). Con el endpoint borrado, la verificación pasa a ser trivial y estructural: la ruta ya no existe → 404. El test se retira del harness (no hay endpoint que probar).
+
+**Vitest suite** sigue siendo el gate obligatorio del Chunk 6 — cero cambios en su alcance por este cierre.
+
+---
+
 ## 2026-07-09 — Chunk 2 CIERRE · LOCK #1 sealed + verification model
 
 **LOCK #1 hardened.** El wrapper HTTP de `calculatePaymentsGap` envolvía `base44.auth.me()` sin try/catch — la SDK arroja `Base44Error("Authentication required to view users")` para callers anónimos en lugar de devolver null, y el outer catch echoing `error.stack` filtraba implementación al body de la respuesta (visto empíricamente en harness Chunk 2). Fix:

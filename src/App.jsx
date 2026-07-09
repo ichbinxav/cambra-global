@@ -13,6 +13,7 @@ import LoadingScreen from '@/components/shared/LoadingScreen';
 import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding.jsx';
 import Analyzer from '@/pages/Analyzer';
+import PaymentsAnalyzer from '@/pages/PaymentsAnalyzer';
 import AnalyzerTeaser from '@/pages/AnalyzerTeaser';
 import LoginGate from '@/pages/LoginGate';
 import HealthCheck from '@/pages/HealthCheck.jsx';
@@ -175,6 +176,11 @@ const AuthenticatedApp = () => {
             Results/ConnectTools/StripeAnalyzer remain auth-walled. */}
         <Route path="/Analyzer" element={withBoundary(<Analyzer />)} />
         <Route path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
+        {/* Chunk 4 — payments-only analyzer running in parallel to the legacy
+            /Analyzer while we cut over. Chunk 6 will retire /Analyzer and
+            promote /PaymentsAnalyzer to the primary path. */}
+        <Route path="/PaymentsAnalyzer" element={withBoundary(<PaymentsAnalyzer />)} />
+        <Route path="/paymentsanalyzer" element={<Navigate to="/PaymentsAnalyzer" replace />} />
         <Route path="/AnalyzerTeaser" element={withBoundary(<AnalyzerTeaser />)} />
         <Route path="/analyzerteaser" element={<Navigate to="/AnalyzerTeaser" replace />} />
         <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />

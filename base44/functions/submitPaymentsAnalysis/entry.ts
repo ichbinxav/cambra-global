@@ -8,9 +8,14 @@
 //     PAYMENTS_ANALYSIS_RATE_LIMIT_PER_HOUR.
 //   - Hard-range validation per contract §2.1. No silent clamping — out of
 //     range → 400 with { error, field, reason } naming the offending field.
-//   - Invokes calculatePaymentsGap over HTTP with X-Cambra-Internal-Call so
-//     the engine's double-lock stays intact (this endpoint is the ONLY caller
-//     that legitimately holds the header from a server-side context).
+//   - Runs the engine IN-PROCESS via a verbatim SYNC-block copy of
+//     src/lib/paymentsGap.js (see block below). The former HTTP endpoint
+//     calculatePaymentsGap was DELETED on 2026-07-09: Base44 functions don't
+//     share a service token, so an anonymous public endpoint couldn't
+//     legitimately pass LOCK #1 to reach it. In this platform, shared engine
+//     logic across functions = inline copy + sync-check test enforcement,
+//     NOT inter-function HTTP calls. This is the pattern the future Fase 6
+//     bridge (verified path) must follow too.
 //   - Persists a PaymentsAnalysisSession row so Chunk 5's teaser can recover
 //     the result later by anon_session_id (URL-shareable).
 //
@@ -20,15 +25,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // ─── SYNC block — verbatim copy of src/lib/paymentsGap.js ───────────────────
-// This endpoint invokes the engine IN-PROCESS instead of over HTTP for two
-// reasons:
-//   1. Anonymous callers have no bearer token to forward, so a fetch to
-//      calculatePaymentsGap would always die at LOCK #1 (auth).
-//   2. Even if we could forge auth, an inter-function fetch adds latency + a
-//      failure surface for a computation that's pure math over rate-table rows.
-// The calculatePaymentsGap HTTP endpoint remains behind double-lock as an
-// audit/debug surface; production traffic uses the copy below. Both copies
-// stay identical via the paymentsGap pair in the sync-check test suite.
+// Base44 functions cannot share code via imports and do not share a service
+// token across functions. Consequences:
+//   1. Anonymous callers have no bearer token, so an inter-function fetch
+//      would die at any auth gate on the callee side (LOCK #1 pattern).
+//   2. Even authenticated callers gain nothing from inter-function HTTP for
+//      pure math: extra latency, extra failure surface, no isolation benefit.
+// So the platform-supported pattern for sharing engine logic across functions
+// is: INLINE COPY + sync-check test enforcement. The former HTTP endpoint
+// calculatePaymentsGap was deleted on 2026-07-09 for this reason. The
+// sync-check pair in src/lib/syncEngine/__sync_check__.test.js guarantees the
+// two remaining copies (src/lib/paymentsGap.js + this file) stay byte-normalized
+// identical between edits.
 
 // SYNC-START: paymentsGap
 
