@@ -154,20 +154,12 @@ export default function DriftMonitor({ results = [] }) {
         })}
       </div>
 
-      {/* CTA */}
-      {hasDrift ? (
-        <Link to="/Network">
-          <button className="w-full h-9 rounded-full bg-white text-[#06080F] text-[11px] font-bold inline-flex items-center justify-center gap-1.5 hover:bg-white/90 transition">
-            Contact your account manager <ArrowRight className="h-3 w-3" />
-          </button>
-        </Link>
-      ) : (
-        <Link to="/Reports">
-          <button className="w-full h-9 rounded-full border border-white/15 bg-white/[0.04] text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 hover:bg-white/[0.08] transition">
-            View full drift history <ArrowRight className="h-3 w-3" />
-          </button>
-        </Link>
-      )}
+      {/* CTA — FASE 1.2 — /Network deprecated, both branches route to Reports. */}
+      <Link to="/Reports">
+        <button className="w-full h-9 rounded-full border border-white/15 bg-white/[0.04] text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 hover:bg-white/[0.08] transition">
+          {hasDrift ? "Review drift" : "View full drift history"} <ArrowRight className="h-3 w-3" />
+        </button>
+      </Link>
     </motion.div>
   );
 }

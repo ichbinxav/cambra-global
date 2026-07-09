@@ -111,9 +111,9 @@ Body:
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1.5">Claude Desktop config</div>
           <CodeBlock>{mcpConfig}</CodeBlock>
         </div>
-        <a href="/Developers/MCP" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-cambra-blue hover:underline">
-          Full MCP setup guide <ExternalLink className="h-3 w-3" />
-        </a>
+        {/* FASE 1.2 — /Developers/MCP frontend page deprecated. MCP setup guide
+            link removed until the developer surface is re-launched. The
+            mcpServer backend function remains untouched. */}
       </div>
 
       {/* REST */}

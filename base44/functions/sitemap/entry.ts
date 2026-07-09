@@ -16,13 +16,13 @@ const SITE_URL = resolveSiteUrl();
 
 // [path, changefreq, priority] — path is what appears after the domain.
 // Only include routes that DON'T require authentication.
+// FASE 1.2 — /Developers, /Developers/MCP, /ForProviders removed from sitemap
+// (frontend pages redirect to home). Re-add when developer surface re-launches.
 const PUBLIC_ROUTES: Array<[string, string, string]> = [
   ["/",              "weekly",  "1.0"],
   ["/Analyzer",      "weekly",  "0.9"],
   ["/HowItWorks",    "monthly", "0.8"],
   ["/Pricing",       "monthly", "0.8"],
-  ["/Developers",    "monthly", "0.7"],
-  ["/Developers/MCP","monthly", "0.6"],
   ["/Testimonials",  "monthly", "0.6"],
   ["/Contact",       "monthly", "0.6"],
   ["/Help",          "weekly",  "0.7"],
@@ -53,13 +53,10 @@ Disallow: /admin
 Disallow: /Dashboard
 Disallow: /Account
 Disallow: /Reports
-Disallow: /Network
-Disallow: /Insights
 Disallow: /Vault
 Disallow: /Invoices
 Disallow: /ConnectIntegrations
 Disallow: /ConnectTools
-Disallow: /StripeAnalyzer
 Disallow: /Results
 Disallow: /AnalyzerTeaser
 Disallow: /IntegrationsCallback

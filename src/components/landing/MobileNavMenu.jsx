@@ -49,13 +49,7 @@ const MEMBER_GROUPS = [
       { label: "Infrastructure audit", sub: "Run new scan", href: "/Analyzer", Icon: ScanSearch },
     ],
   },
-  {
-    label: "Intelligence",
-    items: [
-      { label: "Margin intelligence", sub: "Insights & research", href: "/Insights", Icon: BookOpen },
-      { label: "Operator network", sub: "Peer directory", href: "/Network", Icon: Users },
-    ],
-  },
+  // FASE 1.2 — Intelligence group deprecated (multi-vertical, pre-pivot).
   {
     label: "Account",
     items: [

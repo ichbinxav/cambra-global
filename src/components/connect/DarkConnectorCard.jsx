@@ -73,9 +73,10 @@ export default function DarkConnectorCard({ connector, connected, onToggle }) {
             <CheckCircle2 size={11} /> Connected
           </button>
         ) : c.name === "Stripe" && !isSoon ? (
-          <Link to="/StripeAnalyzer">
+          // FASE 1.2 — /StripeAnalyzer deprecated. Stripe now flows through /ConnectTools.
+          <Link to="/ConnectTools">
             <button className="h-8 px-4 rounded-full text-xs font-bold shrink-0 transition-all flex items-center gap-1.5 text-foreground border border-border/60 hover:border-foreground/40 bg-white">
-              <Plug size={11} /> Analyze <ArrowRight size={10} />
+              <Plug size={11} /> Connect <ArrowRight size={10} />
             </button>
           </Link>
         ) : (

@@ -22,9 +22,8 @@ const Results       = lazy(() => import('@/pages/Results'));
 const Dashboard     = lazy(() => import('@/pages/Dashboard'));
 const ConnectTools  = lazy(() => import('@/pages/ConnectTools'));
 import Reports from '@/pages/Reports';
-import Network from '@/pages/Network';
-import Insights from '@/pages/Insights';
-import InsightDetail from '@/pages/InsightDetail';
+// FASE 1.2 — /Network, /Insights, /InsightDetail deprecated (multi-vertical /
+// pre-pivot collective model). Components kept dormant in src/pages/.
 import Account from '@/pages/Account';
 // FASE 1.2 — /UnlockSavings & /RecoveryTracker deprecated with redirect to home.
 // Components kept in src/pages/ (dormant) — imports removed so the pages no
@@ -32,7 +31,7 @@ import Account from '@/pages/Account';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import Cookies from '@/pages/Cookies';
-import StripeAnalyzer from '@/pages/StripeAnalyzer';
+// FASE 1.2 — /StripeAnalyzer deprecated (superseded by /Analyzer + /ConnectTools + /Results).
 import DevExport from '@/pages/DevExport';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import AdminLayout from '@/pages/admin/AdminLayout';
@@ -61,15 +60,13 @@ import AdminChat from '@/pages/admin/AdminChat';
 import AdminDiscovery from '@/pages/admin/AdminDiscovery';
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing.jsx';
-import Developers from '@/pages/Developers.jsx';
-import DevelopersMCP from '@/pages/DevelopersMCP.jsx';
+// FASE 1.2 — /Developers, /Developers/MCP, /ForProviders, /Snapshot deprecated.
+// Frontend pages redirect to home; backend mcpServer function untouched.
 import HowItWorks from '@/pages/HowItWorks';
 import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
-import ForProviders from '@/pages/ForProviders';
 import Help from '@/pages/Help';
 import HelpCategory from '@/pages/HelpCategory';
-import Snapshot from '@/pages/Snapshot';
 import AdminInvoices from '@/pages/admin/AdminInvoices';
 import AdminWaitlist from '@/pages/admin/AdminWaitlist';
 import Invoices from '@/pages/Invoices';
@@ -182,8 +179,6 @@ const AuthenticatedApp = () => {
         <Route path="/analyzerteaser" element={<Navigate to="/AnalyzerTeaser" replace />} />
         <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />
         <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
-        <Route path="/StripeAnalyzer" element={<ProtectedRoute>{withBoundary(<StripeAnalyzer />)}</ProtectedRoute>} />
-        <Route path="/stripeanalyzer" element={<Navigate to="/StripeAnalyzer" replace />} />
         <Route path="/Results" element={<ProtectedRoute>{withBoundary(<Results />)}</ProtectedRoute>} />
         <Route path="/results" element={<Navigate to="/Results" replace />} />
         <Route path="/Privacy" element={withBoundary(<Privacy />)} />
@@ -192,30 +187,39 @@ const AuthenticatedApp = () => {
         <Route path="/terms" element={<Navigate to="/Terms" replace />} />
         <Route path="/Cookies" element={withBoundary(<Cookies />)} />
         <Route path="/cookies" element={<Navigate to="/Cookies" replace />} />
-        <Route path="/Snapshot" element={withBoundary(<Snapshot />)} />
-        <Route path="/snapshot" element={<Navigate to="/Snapshot" replace />} />
-        {/* FASE 1.2 — payments-only phase: deals/unlock/recovery redirect to home. */}
+        {/* FASE 1.2 — payments-only phase: deprecated routes redirect to home.
+            Components kept dormant in src/pages/, restore by re-importing. */}
         <Route path="/Deals" element={<Navigate to="/" replace />} />
         <Route path="/deals" element={<Navigate to="/" replace />} />
         <Route path="/UnlockSavings" element={<Navigate to="/" replace />} />
         <Route path="/unlocksavings" element={<Navigate to="/" replace />} />
         <Route path="/RecoveryTracker" element={<Navigate to="/" replace />} />
         <Route path="/recoverytracker" element={<Navigate to="/" replace />} />
+        <Route path="/Network" element={<Navigate to="/" replace />} />
+        <Route path="/network" element={<Navigate to="/" replace />} />
+        <Route path="/Insights" element={<Navigate to="/" replace />} />
+        <Route path="/insights" element={<Navigate to="/" replace />} />
+        <Route path="/InsightDetail" element={<Navigate to="/" replace />} />
+        <Route path="/insightdetail" element={<Navigate to="/" replace />} />
+        <Route path="/StripeAnalyzer" element={<Navigate to="/" replace />} />
+        <Route path="/stripeanalyzer" element={<Navigate to="/" replace />} />
+        <Route path="/Snapshot" element={<Navigate to="/" replace />} />
+        <Route path="/snapshot" element={<Navigate to="/" replace />} />
+        <Route path="/ForProviders" element={<Navigate to="/" replace />} />
+        <Route path="/forproviders" element={<Navigate to="/" replace />} />
+        <Route path="/for-providers" element={<Navigate to="/" replace />} />
+        <Route path="/Developers" element={<Navigate to="/" replace />} />
+        <Route path="/developers" element={<Navigate to="/" replace />} />
+        <Route path="/Developers/MCP" element={<Navigate to="/" replace />} />
+        <Route path="/developers/mcp" element={<Navigate to="/" replace />} />
         <Route path="/Pricing" element={withBoundary(<Pricing />)} />
         <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
-        <Route path="/Developers" element={withBoundary(<Developers />)} />
-        <Route path="/developers" element={<Navigate to="/Developers" replace />} />
-        <Route path="/Developers/MCP" element={withBoundary(<DevelopersMCP />)} />
-        <Route path="/developers/mcp" element={<Navigate to="/Developers/MCP" replace />} />
         <Route path="/HowItWorks" element={withBoundary(<HowItWorks />)} />
         <Route path="/howitworks" element={<Navigate to="/HowItWorks" replace />} />
         <Route path="/Testimonials" element={withBoundary(<Testimonials />)} />
         <Route path="/testimonials" element={<Navigate to="/Testimonials" replace />} />
         <Route path="/Contact" element={withBoundary(<Contact />)} />
         <Route path="/contact" element={<Navigate to="/Contact" replace />} />
-        <Route path="/ForProviders" element={withBoundary(<ForProviders />)} />
-        <Route path="/forproviders" element={<Navigate to="/ForProviders" replace />} />
-        <Route path="/for-providers" element={<Navigate to="/ForProviders" replace />} />
         <Route path="/Help" element={withBoundary(<Help />)} />
         <Route path="/help" element={<Navigate to="/Help" replace />} />
         <Route path="/Help/:slug" element={withBoundary(<HelpCategory />)} />
@@ -230,9 +234,6 @@ const AuthenticatedApp = () => {
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path="/Dashboard" element={withBoundary(<Dashboard />)} />
           <Route path="/Reports" element={withBoundary(<Reports />)} />
-          <Route path="/Network" element={withBoundary(<Network />)} />
-          <Route path="/Insights" element={withBoundary(<Insights />)} />
-          <Route path="/InsightDetail" element={withBoundary(<InsightDetail />)} />
           <Route path="/Account" element={withBoundary(<Account />)} />
           <Route path="/Invoices" element={withBoundary(<Invoices />)} />
           <Route path="/Vault" element={withBoundary(<Vault />)} />
