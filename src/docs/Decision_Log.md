@@ -5,6 +5,23 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-09 — Chunk 2 CIERRE · LOCK #1 sealed + verification model
+
+**LOCK #1 hardened.** El wrapper HTTP de `calculatePaymentsGap` envolvía `base44.auth.me()` sin try/catch — la SDK arroja `Base44Error("Authentication required to view users")` para callers anónimos en lugar de devolver null, y el outer catch echoing `error.stack` filtraba implementación al body de la respuesta (visto empíricamente en harness Chunk 2). Fix:
+- `auth.me()` en try/catch → cualquier fallo (thrown o null) devuelve **401 con body exacto `{"error":"Unauthorized"}`**, cero campos extra.
+- Outer catch ya no incluye `error.stack` ni `error.message`; loguea a `console.error` para operators y responde `{"error":"internal_error"}` genérico con 500.
+- Cambio confinado al wrapper HTTP (fuera del bloque `SYNC-START/SYNC-END: paymentsGap`). Sync-check re-verificado: **5596 chars vs 5596 chars, idéntico**.
+
+Verificación empírica (harness temporal, luego borrado):
+- Fetch sin `Authorization` header → `status: 401`, `body: {"error":"Unauthorized"}`, `body_keys: ["error"]`, `has_stack: false`.
+
+**Modelo de verificación de Chunk 2 — decisión pragmática.**
+La verificación empírica vía harness Deno (amortización runtime probada en tres tickets €30/€80/€250 contra la fila real, fallback cascade, doble candado con fetch real) sustituye a Vitest local para el cierre de Chunk 2. Los 22 tests Vitest (`src/lib/paymentsGap.test.js`) quedan como **gate obligatorio del Chunk 6** junto con la suite completa (sync-check + normalizers + syncEngine + verificationStatus + scoreEngine + verifiedMaterializer + …). Sin ese verde local no se cierra el proyecto.
+
+Discrepancia payload #3 del reporte anterior resuelta como error de transcripción (no de motor): el JSON crudo devuelve `current_effective_bps: 160` para Stripe EU ticket €250 (150 percent + 10 bps de amortización de €0.25 sobre €250), aritméticamente correcto. Los tres payloads muestran `monthly_savings_eur.point = 640` idéntico porque el fixed fee es igual en `current` y `achievable` (25 minor en ambos), por lo que se cancela en la resta y el gap queda constante en 64 bps — es la propiedad correcta de la fila sembrada, no un bug.
+
+---
+
 ## 2026-07-09 — Chunk 2 · calculatePaymentsGap motor + tests
 
 Motor puro `src/lib/paymentsGap.js` + endpoint Deno `base44/functions/calculatePaymentsGap` con **doble candado** de acceso. Todos los cálculos se derivan de la `PaymentsRateTable` sembrada en Chunk 1b — cero cifras hardcoded en el motor.

@@ -344,8 +344,19 @@ async function fetchRateTable(base44: any): Promise<{ ok: boolean; rows?: any[];
 Deno.serve(async (req) => {
   try {
     // LOCK #1 — Base44 authentication. External anonymous callers die here.
+    // We wrap auth.me() in try/catch because the SDK throws a Base44Error
+    // ("Authentication required to view users") on missing/invalid bearer
+    // tokens rather than returning null. Without this catch, the raw error +
+    // stack trace would surface to the caller (leaking implementation). We
+    // normalize any auth failure — thrown or null — to a clean 401 with only
+    // { error: 'Unauthorized' } in the body.
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    let user: any = null;
+    try {
+      user = await base44.auth.me();
+    } catch {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     // LOCK #2 — Internal-call header. Even authenticated users cannot probe
@@ -386,6 +397,11 @@ Deno.serve(async (req) => {
     }
     return Response.json(result);
   } catch (error) {
-    return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
+    // Never leak stack traces to callers — the engine sits behind two locks,
+    // but the outer catch used to happily echo `error.stack` which is the
+    // same class of implementation-leak we just closed on LOCK #1. Log to
+    // server console for operators; return a generic body to callers.
+    console.error('calculatePaymentsGap:', error?.message, error?.stack);
+    return Response.json({ error: 'internal_error' }, { status: 500 });
   }
 });
