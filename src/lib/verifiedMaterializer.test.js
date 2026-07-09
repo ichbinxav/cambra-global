@@ -55,6 +55,20 @@ function makeFakeEntities() {
         store.AnalyzerResult.push(row);
         return row;
       },
+      async update(id, payload) {
+        const idx = store.AnalyzerResult.findIndex(r => r.id === id);
+        if (idx === -1) throw new Error(`update: id ${id} not found`);
+        // Preserve id + created_date, apply payload on top. Bump a
+        // synthetic updated marker so tests can distinguish before/after.
+        seq += 1;
+        store.AnalyzerResult[idx] = {
+          ...store.AnalyzerResult[idx],
+          ...payload,
+          id, // ensure id survives
+          updated_date: new Date(Date.now() + seq).toISOString(),
+        };
+        return store.AnalyzerResult[idx];
+      },
     },
   };
 
@@ -153,31 +167,57 @@ describe("materializeVerifiedResult — 5A", () => {
     });
   });
 
-  describe("idempotency — two calls, one row", () => {
-    it("returns the SAME AnalyzerResult on a second call for the same input_id", async () => {
-      const input = makeVerifiedInput();
+  describe("dedup / upsert — A2 patch (2026-07-09)", () => {
+    it("second sync UPDATES the existing row in place (same id, no new row)", async () => {
+      // Two sequential syncs for the same (brand, integration). Each sync
+      // creates a FRESH AnalyzerInput row (bridgeToAnalyzer never upserts
+      // the input); the materializer must nonetheless collapse them to a
+      // single AnalyzerResult "current state" row per (brand+integration).
+      const inputA = makeVerifiedInput({ id: "input_first" });
+      const inputB = makeVerifiedInput({ id: "input_second", payment_fee_pct: 3.1 });
 
       const first = await materializeVerifiedResult({
-        analyzerInput: input,
-        integrationId: "int_1",
+        analyzerInput: inputA,
+        integrationId: "int_stripe_42",
         dataConfidence: "high",
         entities,
       });
       const second = await materializeVerifiedResult({
-        analyzerInput: input,
-        integrationId: "int_1",
+        analyzerInput: inputB,
+        integrationId: "int_stripe_42",
         dataConfidence: "high",
         entities,
       });
 
       expect(first.status).toBe("created");
-      expect(second.status).toBe("reused");
+      expect(second.status).toBe("updated");
+      // Same row id survives — downstream FKs stay valid.
       expect(second.result.id).toBe(first.result.id);
-      // And the store contains exactly one verified row for this input.
-      const verifiedRows = store.AnalyzerResult.filter(
-        r => r.input_id === input.id && r.verification_status === "verified"
+      // Exactly one row in the store for this (brand + integration).
+      const rows = store.AnalyzerResult.filter(
+        r => r.brand_id === inputA.brand_id && r.source_integration_id === "int_stripe_42"
       );
-      expect(verifiedRows).toHaveLength(1);
+      expect(rows).toHaveLength(1);
+      // The updated row reflects the SECOND input's fee (fresher engine
+      // output wins — this is the "banking_savings poblado" contract).
+      const expectedSecond = calculateSavings(inputB);
+      expect(rows[0].payment_savings).toBe(expectedSecond.paymentSavings);
+      // And input_id points to the fresher AnalyzerInput.
+      expect(rows[0].input_id).toBe("input_second");
+    });
+
+    it("different (brand, integration) → separate rows (no accidental collapse)", async () => {
+      const inputA = makeVerifiedInput({ id: "input_a", brand_id: "brand_A" });
+      const inputB = makeVerifiedInput({ id: "input_b", brand_id: "brand_B" });
+
+      await materializeVerifiedResult({
+        analyzerInput: inputA, integrationId: "int_1", dataConfidence: "high", entities,
+      });
+      await materializeVerifiedResult({
+        analyzerInput: inputB, integrationId: "int_1", dataConfidence: "high", entities,
+      });
+
+      expect(store.AnalyzerResult).toHaveLength(2);
     });
   });
 
@@ -210,7 +250,13 @@ describe("materializeVerifiedResult — 5A", () => {
       expect(store.AnalyzerResult).toHaveLength(0);
     });
 
-    it("DOES materialize when dataConfidence='provisional'", async () => {
+    it("DOES materialize when dataConfidence='provisional' (as pending_verification)", async () => {
+      // Honesty gate — see verifiedMaterializer.js:244. Provisional inputs
+      // (enough signal to materialize, but < 45 active days / < 30 charges)
+      // persist as `pending_verification` so the UI can render an honest
+      // "verified on partial data" state instead of a green "Verified"
+      // badge over shallow history. The row IS still materialized (savings
+      // + score are computed from real integration data).
       const input = makeVerifiedInput();
 
       const res = await materializeVerifiedResult({
@@ -221,7 +267,7 @@ describe("materializeVerifiedResult — 5A", () => {
       });
 
       expect(res.status).toBe("created");
-      expect(res.result.verification_status).toBe("verified");
+      expect(res.result.verification_status).toBe("pending_verification");
       // The label survives — provisional confidence maps to "medium".
       expect(res.result.confidence_level).toBe("medium");
     });

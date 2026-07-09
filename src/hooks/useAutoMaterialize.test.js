@@ -27,7 +27,7 @@ vi.mock("@/api/base44Client", () => ({
     entities: {
       Integration:    { filter: vi.fn() },
       AnalyzerInput:  { get: vi.fn() },
-      AnalyzerResult: { filter: vi.fn(), create: vi.fn() },
+      AnalyzerResult: { filter: vi.fn(), create: vi.fn(), update: vi.fn() },
     },
     functions: { invoke: vi.fn() },
   },
@@ -57,6 +57,11 @@ beforeEach(() => {
   base44.entities.AnalyzerResult.create.mockImplementation(async (payload) => ({
     id: `result_${Math.random().toString(36).slice(2, 8)}`,
     ...payload,
+  }));
+  // A2 patch (2026-07-09): the materializer now upserts. Mock update to
+  // preserve id + apply payload — same shape the fake SDK does in prod.
+  base44.entities.AnalyzerResult.update.mockImplementation(async (id, payload) => ({
+    id, ...payload, updated_at: new Date().toISOString(),
   }));
 });
 
@@ -118,14 +123,19 @@ describe("runAutoMaterializePipeline — 5C (A2)", () => {
     expect(out.status).toBe("materialized");
     expect(out.resultId).toMatch(/^result_/);
     expect(base44.entities.AnalyzerResult.create).toHaveBeenCalledTimes(1);
-    // Confirm the row was tagged verified with the right provenance.
+    // Confirm the row was tagged with the right provenance. Note:
+    // `provisional` confidence maps to `pending_verification` (not
+    // `verified`) — see verifiedMaterializer.js:244 honesty gate.
     const createdArg = base44.entities.AnalyzerResult.create.mock.calls[0][0];
-    expect(createdArg.verification_status).toBe("verified");
+    expect(createdArg.verification_status).toBe("pending_verification");
     expect(createdArg.source_integration_id).toBe(STRIPE_INTEG.id);
     expect(createdArg.verification_scope).toEqual(["payments"]);
   });
 
-  it("reuses the existing verified row on a second run for the same input_id", async () => {
+  it("upserts (updates in place) on a second run for the same (brand, integration)", async () => {
+    // A2 patch (2026-07-09): the second sync must NOT create a new row —
+    // it updates the existing "current state" row in place, preserving
+    // its id. This is the contract that closes the accumulation bug.
     base44.entities.AnalyzerInput.get.mockResolvedValue(makeAnalyzerInput());
     base44.functions.invoke.mockResolvedValue({
       data: {
@@ -141,16 +151,21 @@ describe("runAutoMaterializePipeline — 5C (A2)", () => {
     expect(out1.status).toBe("materialized");
     const firstId = out1.resultId;
 
-    // Second run — 5A's idempotency returns the same row, no create.
+    // Second run — dedup filter finds the existing row → update path.
     base44.entities.AnalyzerResult.filter.mockResolvedValueOnce([
-      { id: firstId, verification_status: "verified" },
+      { id: firstId, brand_id: "brand_1", source_integration_id: STRIPE_INTEG.id },
     ]);
     base44.entities.AnalyzerResult.create.mockClear();
+    base44.entities.AnalyzerResult.update.mockClear();
 
     const out2 = await runAutoMaterializePipeline("brand_1");
     expect(out2.status).toBe("materialized");
     expect(out2.resultId).toBe(firstId);
+    // No new row.
     expect(base44.entities.AnalyzerResult.create).not.toHaveBeenCalled();
+    // Update WAS called on the existing id.
+    expect(base44.entities.AnalyzerResult.update).toHaveBeenCalledTimes(1);
+    expect(base44.entities.AnalyzerResult.update.mock.calls[0][0]).toBe(firstId);
   });
 
   it("returns failed defensively when AnalyzerInput.get returns null", async () => {

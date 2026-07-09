@@ -9,23 +9,88 @@ empezando por A2.
 
 ## DEUDA A2 — Auto-materialize accumulation
 
-**Estado:** activa
+**Estado:** RESUELTA al 90% 2026-07-09 (patch dedup upsert)
 **Origen:** FASE 5C (Auto-materialize, approach A2, frontend-only accumulative)
 
-`useAutoMaterialize` acumula filas de `AnalyzerInput` y `AnalyzerResult` cada
-vez que corre bajo el mismo brand — no deduplica por (brand_id, source_hash).
-En operación normal el hook corre 1x por Sync manual, así que la acumulación
-es lenta. En un flujo automatizado (cron o retries agresivos) crece rápido.
+### Síntoma histórico
+`useAutoMaterialize` acumulaba filas de `AnalyzerResult` cada vez que corría
+bajo el mismo brand — no deduplicaba. `bridgeToAnalyzer` produce un
+`AnalyzerInput` fresco por llamada, así que la idempotency key original
+(`input_id + verification_status="verified"`) nunca matcheaba cross-sync.
+Resultado: una fila nueva por cada Sync manual. Bit hard el 2026-07-09
+cuando un deploy amplió el schema (`banking_savings`, `banking_fx_*`) mid-day
+y una poda de "duplicados viejos" eliminó justamente las filas post-schema-
+extension (que eran las que llevaban FX poblado).
 
-**Fix cuando toque:**
-- Antes de crear un nuevo `AnalyzerResult`, comprobar si existe uno reciente
-  (< 24h) para el mismo `brand_id` con `source_integration_id` idéntico y, si
-  sí, `update()` en vez de `create()`.
-- Alternativa: mover el trigger a un backend function `materializeVerified`
-  con lógica de upsert transaccional (más limpio pero requiere 5C-A1).
+### Resolución
+`verifiedMaterializer.js` — nueva clave de dedup:
+```
+(brand_id, source_integration_id)  [más created_by de facto: cada usuario
+crea sus propias filas por RLS]
+```
 
-**No arreglar sin confirmación de producto** — se acepta la acumulación como
-coste conocido mientras el trigger sea manual (botón Sync).
+Antes del `create`, filtra por esa clave, ordena por `-created_date`, limit 1.
+Si existe → `entities.AnalyzerResult.update(existingRow.id, payload)`. Si
+no → `create`. **El `id` sobrevive** al update, así que cualquier FK
+downstream (`Recommendation.related_entity_id`, etc.) sigue resolviendo, y
+el row canónico siempre lleva el output más reciente del engine
+(banking_savings poblado, details completo).
+
+Contrato del status: `{ status: "created" | "updated" | "insufficient" |
+"missing_input", ... }`. `reused` desaparece — nunca queríamos "reused" en
+la práctica (era el side-effect de que la old key nunca matcheaba salvo en
+double-click). Tests actualizados en `verifiedMaterializer.test.js`.
+
+`AnalyzerInput` sí sigue acumulándose (una por Sync) — es aceptable: son
+snapshots inmutables del estado en ese sync, útiles para audit trail. Solo
+el `AnalyzerResult` (el "current state" que el usuario ve) se consolida.
+
+---
+
+## A2-RESIDUAL — Materialize multi-usuario contra el mismo brand
+
+**Estado:** activa (documentada, no arreglada)
+**Origen:** el patch A2 del 2026-07-09 cierra los re-syncs de un mismo
+usuario, pero deja abierto el caso de dos usuarios reales.
+
+### Síntoma
+Si dos `created_by` distintos (dos cuentas humanas, no dos sesiones de la
+misma persona) tienen acceso al mismo brand y ambos disparan Sync, la RLS
+de `AnalyzerResult` (`created_by = user.email` OR admin) segmenta las
+filas por creador. El filter del materializer devuelve solo las filas del
+usuario actual → cada usuario mantiene su propia "current state row" para
+el mismo brand+integration.
+
+Consecuencia observable: el Dashboard de cada usuario ve un `total_savings`
+posiblemente distinto (diferencias mínimas entre ventanas de sync, pero
+distinto id), y en admin overview aparecen 2 filas para el mismo brand.
+
+### Fix cuando toque (sesión dedicada)
+Dos cambios acoplados:
+
+1. **Portar `materializeVerifiedResult` a backend/service-role.**
+   Nuevo `base44/functions/materializeVerifiedResult/entry.ts` que corre
+   bajo `base44.asServiceRole`. `created_by` se estabiliza al primer
+   creador (o a un pseudo-user "system"), y el update in-place es
+   RLS-neutral — cualquier usuario del mismo brand actualiza la MISMA
+   fila.
+
+2. **Extender el fix de BUG-1 al read canónico del Dashboard.**
+   `Dashboard.jsx:71` sigue filtrando `AnalyzerResult` por
+   `created_by_id: u.id`. Ese fue el patrón original (per-usuario) y
+   sigue siendo semánticamente sostenible mientras las filas sean
+   per-usuario. En cuanto A2-residual se cierre (filas per-brand), el
+   read debe cambiar a `brand_id: activeBrand.id` — mismo lift que ya
+   se hizo en `AIInsightsPanel.jsx` (BUG-1 resuelta). Sin ese cambio,
+   el usuario dejaría de ver su propia fila post-refactor.
+
+### Por qué no se arregla ahora
+Requiere port a backend + refactor del read del Dashboard + validar que
+`Recommendation.related_entity_id` sigue resolviendo tras el cambio de
+propietario del row. Sesión dedicada, no un one-liner. Impacto del bug
+en producción actual es bajo: hoy solo hay un usuario real (xavi) por
+brand — el multi-user es un caso hipotético hasta que invitemos
+co-founders/admins al mismo brand.
 
 ---
 

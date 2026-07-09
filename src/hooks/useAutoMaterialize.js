@@ -99,7 +99,10 @@ export async function runAutoMaterializePipeline(brandId) {
       entities: base44.entities,
     });
 
-    if (outcome.status === "created" || outcome.status === "reused") {
+    // A2 patch (2026-07-09): "reused" no longer emitted — "updated" is the
+    // new upsert outcome (same id, refreshed payload). Both "created" and
+    // "updated" map to the user-facing "materialized" state.
+    if (outcome.status === "created" || outcome.status === "updated" || outcome.status === "reused") {
       return { status: "materialized", resultId: outcome.result.id };
     }
     if (outcome.status === "insufficient" || outcome.status === "missing_input") {

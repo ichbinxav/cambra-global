@@ -152,20 +152,37 @@ export async function materializeVerifiedResult(args) {
     return { status: "missing_input", missing };
   }
 
-  // ── Idempotency check ───────────────────────────────────────────────
-  // The uniqueness key is (input_id, verification_status="verified").
-  // Because bridgeToAnalyzer produces a FRESH AnalyzerInput row per call,
-  // multiple verified results for the same input can only come from
-  // repeated calls of THIS function — i.e. the exact double-click case
-  // the CTO asked us to test.
+  // ── Dedup / idempotency (A2 patch, 2026-07-09) ─────────────────────
+  // Uniqueness key: (brand_id, source_integration_id, created_by).
+  // RATIONALE (see KNOWN_DEBT.md § A2):
+  //   The old key was (input_id, verification_status="verified"). Because
+  //   bridgeToAnalyzer produces a FRESH AnalyzerInput row per call, that
+  //   key never matched cross-sync — every Sync therefore created a NEW
+  //   AnalyzerResult row and the "current" fila for a brand accumulated
+  //   silently (one per successful sync). Bit us hard when a schema
+  //   extension (banking_savings + banking_fx_*) shipped mid-day and
+  //   pruning the "older" duplicates dropped the ones with the richer
+  //   `details` payload.
+  //
+  //   New behavior: 1 fila "current state" per (brand + integration +
+  //   creator). Second sync UPDATES in place — same `id` survives, so
+  //   downstream FKs (Recommendation.related_entity_id, etc.) don't go
+  //   stale, and the row always carries the latest engine output
+  //   (banking_savings poblado, details completo).
+  //
+  //   RESIDUAL DEBT (documented, not fixed here): if two DIFFERENT users
+  //   sync the same brand, the key splits by `created_by` → two rows.
+  //   Requires porting this module to backend/service-role. Tracked in
+  //   KNOWN_DEBT.md § A2-residual.
   const existing = await entities.AnalyzerResult.filter(
-    { input_id: analyzerInput.id, verification_status: "verified" },
+    {
+      brand_id: analyzerInput.brand_id,
+      source_integration_id: integrationId,
+    },
     "-created_date",
     1
   );
-  if (Array.isArray(existing) && existing.length > 0) {
-    return { status: "reused", result: existing[0] };
-  }
+  const existingRow = Array.isArray(existing) && existing.length > 0 ? existing[0] : null;
 
   // ── Compute savings + score via the SHARED engine ───────────────────
   // These two calls are the entire "materialization" step. Both are pure
@@ -249,6 +266,18 @@ export async function materializeVerifiedResult(args) {
 
     next_best_action: "Connect carriers to extend verified coverage to shipping.",
   };
+
+  // Upsert: update in place if a "current" row already exists for this
+  // (brand + integration + creator), else create fresh. The `update` path
+  // preserves the row id, so any Recommendation / downstream reference
+  // keeps resolving.
+  if (existingRow) {
+    if (typeof entities.AnalyzerResult.update !== "function") {
+      throw new Error("materializeVerifiedResult: `entities.AnalyzerResult.update` is required for A2 dedup.");
+    }
+    const updated = await entities.AnalyzerResult.update(existingRow.id, payload);
+    return { status: "updated", result: updated || { ...existingRow, ...payload } };
+  }
 
   const created = await entities.AnalyzerResult.create(payload);
   return { status: "created", result: created };
