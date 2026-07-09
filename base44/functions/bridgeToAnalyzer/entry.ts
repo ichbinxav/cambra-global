@@ -403,11 +403,7 @@ function aggregate(rows: NormRow[], dominantCurrency: string) {
 //                so the front can render the "collecting your data" state)
 function classifyConfidence(activeDays: number, chargeCount: number): "high" | "provisional" | "insufficient" {
   if (activeDays >= 45 && chargeCount >= 30) return "high";
-  // TEMP DEBUG 2026-07-09 — gate bajado de 3 a 2 días para validar el patch A2
-  // de dedup end-to-end contra el brand real del self-test (solo 2 días
-  // activos disponibles en Stripe test-mode ahora). REVERTIR a >=3 tras
-  // verificación.
-  if (activeDays >= 2 && chargeCount >= 10) return "provisional";
+  if (activeDays >= 3 && chargeCount >= 10) return "provisional";
   return "insufficient";
 }
 function confidenceLabel(level: "high" | "provisional" | "insufficient", activeDays: number, chargeCount: number): string {

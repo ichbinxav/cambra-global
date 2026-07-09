@@ -9,7 +9,41 @@ empezando por A2.
 
 ## DEUDA A2 — Auto-materialize accumulation
 
-**Estado:** RESUELTA al 90% 2026-07-09 (patch dedup upsert)
+**Estado:** RESUELTA 2026-07-09 (patch dedup upsert + validación e2e en producción)
+
+### Validación end-to-end (2026-07-09)
+Ejercido contra el brand real `6a4f6f79f7b0fe4103c18d39` + Integration
+`6a4e2e6bd5456d2088c2f6de` (stripe_self_test, 15 charges / 2 active days,
+provisional confidence tras bajar el gate temporalmente a `>=2` para poder
+disparar el path — revertido inmediatamente después de la validación):
+
+- `before_count: 1` → `between_count: 1` → `after_count: 1` — dos runs
+  consecutivos del materializer no producen filas nuevas.
+- `same_id_across_runs: true` — ambos runs devolvieron `status: "updated"`
+  sobre `6a4f8e97b34c18e619ca9e43` (la fila canónica preservada tras la
+  poda anterior). El `id` sobrevive al update → FKs downstream
+  (`Recommendation.related_entity_id`, exports, admin audit) siguen
+  resolviendo sin cambio.
+- Path `created` NO se ejerció en esta validación (ya había una fila
+  canónica preexistente); su corrección está cubierta por
+  `verifiedMaterializer.test.js` (21/21 verde), incluido el test
+  específico "reuses row across syncs via upsert" que ejercita
+  create → update en el mismo test.
+
+### Discrepancia menor observada (no bloqueante, registrada aparte)
+El `AnalyzerInput` producido por el bridge en esta validación
+(`6a4fa9cfe6a6f07f3e19cf74`) reportó `intl_pct: 2.43` y
+`bank_fx_spread_pct: 2` en el response del handler, pero al releer el row
+persistido esos campos aparecen ausentes. La lógica de escritura del
+bridge en `bridgeToAnalyzer/entry.ts:602` solo persiste esos campos
+`if (agg.intl_pct > 0)` — con 2.43% > 0 debería haber pasado el guard,
+así que hay una divergencia menor entre el response y el row persistido.
+No bloquea A2 (el materializer se comporta correctamente con o sin esos
+campos: el dedup upsert es independiente del cómputo de banking). Se
+audita en una sesión separada de la vertical Banking; hasta entonces
+`banking_savings` puede quedar en 0 para runs donde el input no tenga
+esos campos persistidos, y `total_savings` refleja solo las verticales
+completas.
 **Origen:** FASE 5C (Auto-materialize, approach A2, frontend-only accumulative)
 
 ### Síntoma histórico
