@@ -10,7 +10,8 @@ import Navbar from "@/components/landing/Navbar";
 import StripeConnectCard from "@/components/connect/StripeConnectCard.jsx";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
-import { useAutoMaterialize } from "@/hooks/useAutoMaterialize";
+// Chunk 6 CUTOVER — useAutoMaterialize removed alongside the legacy Analyzer
+// wizard. Fase 6 rebuilds the verified flow with PaymentsAnalysisSession.
 import { CONNECTORS } from "@/lib/connectors.config";
 
 // E(a) — OAuth-backed integrations that are still pending real workspace OAuth
@@ -207,8 +208,6 @@ export default function ConnectTools() {
   const [stripeConnected, setStripeConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [brandId, setBrandId] = useState(null);
-  // 5C (A2) — auto-materialize after Stripe sync from this page's Sync button.
-  const { run: runAutoMaterialize } = useAutoMaterialize();
 
   // Handle connect button. coming_soon → friendly info + record interest lead.
   const handleConnect = async (integration) => {
@@ -256,18 +255,7 @@ export default function ConnectTools() {
         }
       }
       toast.success(t("sync_success"));
-
-      // 5C (A2) — chain bridge → materialize for Stripe syncs only. The
-      // sync toast already fired above; any auto-trigger failure stays
-      // silent (manual 5B button on /Results remains the fallback).
-      if (integration.integration_id === "stripe" && brandId) {
-        const outcome = await runAutoMaterialize(brandId).catch(() => null);
-        if (outcome?.status === "materialized") {
-          toast.success(t("auto_verify_ready"));
-        } else if (outcome?.status === "collecting") {
-          toast.info(t("auto_verify_collecting"));
-        }
-      }
+      // Chunk 6 CUTOVER — auto-materialize removed; Fase 6 rebuilds it.
     } catch (err) {
       toast.error(t("sync_error"), err?.message || undefined);
     }

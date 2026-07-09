@@ -12,15 +12,17 @@ import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding.jsx';
-import Analyzer from '@/pages/Analyzer';
+// Chunk 6 CUTOVER — /Analyzer and /Results now serve the Payments-only
+// components. The legacy multi-vertical Analyzer / Results / AnalyzerTeaser
+// were deleted with the entire wizard + score engine consumer surface.
 import PaymentsAnalyzer from '@/pages/PaymentsAnalyzer';
 import PaymentsResults from '@/pages/PaymentsResults';
-import AnalyzerTeaser from '@/pages/AnalyzerTeaser';
 import LoginGate from '@/pages/LoginGate';
 import HealthCheck from '@/pages/HealthCheck.jsx';
 import CookieConsent from '@/components/shared/CookieConsent';
-// FIX 13 — Lazy load heavy pages (Results, Dashboard, ConnectTools + heavy admin pages)
-const Results       = lazy(() => import('@/pages/Results'));
+// FIX 13 — Lazy load heavy pages (Dashboard + ConnectTools + heavy admin pages).
+// Note: /Results was previously lazy (imported Results.jsx). Post-cutover
+// /Results renders PaymentsResults directly (eager) — it's small.
 const Dashboard     = lazy(() => import('@/pages/Dashboard'));
 const ConnectTools  = lazy(() => import('@/pages/ConnectTools'));
 import Reports from '@/pages/Reports';
@@ -173,25 +175,24 @@ const AuthenticatedApp = () => {
         <Route path="/onboarding" element={<Navigate to="/Onboarding" replace />} />
         <Route path="/BrandProfile" element={withBoundary(<BrandProfile />)} />
         <Route path="/brandprofile" element={<Navigate to="/BrandProfile" replace />} />
-        {/* Analyzer is now PUBLIC — anonymous users complete the audit and see a teaser.
-            Results/ConnectTools/StripeAnalyzer remain auth-walled. */}
-        <Route path="/Analyzer" element={withBoundary(<Analyzer />)} />
+        {/* CUTOVER — /Analyzer and /Results serve the Payments-only pages.
+            Canonical URLs remain unchanged for SEO continuity. */}
+        <Route path="/Analyzer" element={withBoundary(<PaymentsAnalyzer />)} />
         <Route path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
-        {/* Chunk 4 — payments-only analyzer running in parallel to the legacy
-            /Analyzer while we cut over. Chunk 6 will retire /Analyzer and
-            promote /PaymentsAnalyzer to the primary path. */}
-        <Route path="/PaymentsAnalyzer" element={withBoundary(<PaymentsAnalyzer />)} />
-        <Route path="/paymentsanalyzer" element={<Navigate to="/PaymentsAnalyzer" replace />} />
-        {/* Anonymous results page — reads a PaymentsAnalysisSession by
-            anon_session_id via getPaymentsGapTeaser. Public, shareable. */}
-        <Route path="/PaymentsResults" element={withBoundary(<PaymentsResults />)} />
-        <Route path="/paymentsresults" element={<Navigate to="/PaymentsResults" replace />} />
-        <Route path="/AnalyzerTeaser" element={withBoundary(<AnalyzerTeaser />)} />
-        <Route path="/analyzerteaser" element={<Navigate to="/AnalyzerTeaser" replace />} />
+        {/* /PaymentsAnalyzer kept as an alias — anything linking to it during
+            the transition (marketing, docs, external) still resolves. */}
+        <Route path="/PaymentsAnalyzer" element={<Navigate to="/Analyzer" replace />} />
+        <Route path="/paymentsanalyzer" element={<Navigate to="/Analyzer" replace />} />
+        <Route path="/Results" element={withBoundary(<PaymentsResults />)} />
+        <Route path="/results" element={<Navigate to="/Results" replace />} />
+        <Route path="/PaymentsResults" element={<Navigate to="/Results" replace />} />
+        <Route path="/paymentsresults" element={<Navigate to="/Results" replace />} />
+        {/* AnalyzerTeaser deleted in the cutover — public share links now go
+            straight to /Results (which handles the missing-session state). */}
+        <Route path="/AnalyzerTeaser" element={<Navigate to="/Analyzer" replace />} />
+        <Route path="/analyzerteaser" element={<Navigate to="/Analyzer" replace />} />
         <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />
         <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
-        <Route path="/Results" element={<ProtectedRoute>{withBoundary(<Results />)}</ProtectedRoute>} />
-        <Route path="/results" element={<Navigate to="/Results" replace />} />
         <Route path="/Privacy" element={withBoundary(<Privacy />)} />
         <Route path="/privacy" element={<Navigate to="/Privacy" replace />} />
         <Route path="/Terms" element={withBoundary(<Terms />)} />

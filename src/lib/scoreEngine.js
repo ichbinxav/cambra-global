@@ -1,3 +1,28 @@
+// ════════════════════════════════════════════════════════════════════════════
+// FROZEN-UNTIL-BENCHMARKS-MIGRATION (marked at Chunk 6 CUTOVER, 2026-07-09)
+// ════════════════════════════════════════════════════════════════════════════
+//
+// The legacy multi-vertical Analyzer / Results / Auto-materialize surface was
+// deleted in the Chunk 6 CUTOVER. `calculateSavings` + `computeInfraScore` no
+// longer have any consumer inside the primary Payments funnel — that runs on
+// `src/lib/paymentsGap.js` (payments-gap-1.2.0) exclusively.
+//
+// However, three legitimate CURRENT consumers keep this file alive:
+//   1. src/pages/admin/AdminBenchmarks.jsx  → getBenchmarks
+//   2. src/pages/Reports.jsx                → getBenchmarks
+//   3. src/lib/__benchmark_sync__.test.js   → sync-check pair (37 tests)
+//
+// Its removal is deliberately deferred and BLOCKED behind the
+// "AdminBenchmarks + Reports migration to the new benchmarks engine" chunk.
+// Do NOT delete this file, `scoreEngine.test.js`, or `__benchmark_sync__.test.js`
+// before that migration ships — the tests would break and the admin surface
+// would 500 on load.
+//
+// The `SavingsEstimator.jsx` landing component still imports `calculateSavings`
+// + `computeInfraScore` but is ORPHANED at the router level (Landing.jsx does
+// not render it) — kept dormant for the same eventual purge.
+// ════════════════════════════════════════════════════════════════════════════
+
 /**
  * CAMBRA — Infrastructure Score Engine v4
  *

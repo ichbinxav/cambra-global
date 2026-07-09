@@ -5,6 +5,64 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-09 — Chunk 6 · CUTOVER · Payments-only funnel live
+
+The multi-vertical Analyzer + Results wizard, its score engine consumer surface, and the anonymous submission/claim pipeline were **DELETED** in a single atomic cutover. `/Analyzer` and `/Results` now serve the Payments-only pages that have been running in parallel since Chunk 4. The `payments-gap-1.2.0` engine is the ONLY savings computation reachable through the primary funnel.
+
+**Routes cutover (App.jsx):**
+- `/Analyzer` → `PaymentsAnalyzer` (canonical, SEO preserved)
+- `/Results` → `PaymentsResults` (canonical, SEO preserved)
+- `/PaymentsAnalyzer` → redirect to `/Analyzer` (alias)
+- `/PaymentsResults` → redirect to `/Results` (alias)
+- `/AnalyzerTeaser` → redirect to `/Analyzer` (deleted page; teaser was rolled into PaymentsResults' missing-session state)
+
+**Files deleted (frontend):**
+- Pages: `src/pages/Analyzer.jsx`, `src/pages/Results.jsx`, `src/pages/AnalyzerTeaser.jsx`
+- Analyzer wizard components (entire `src/components/analyzer/` directory — 17 files): AnalysisProgress, AnalyzerAuthGate, AnalyzerGuide, AnalyzerHero, AnalyzerResultCard, AuditModuleCard, AuditModulesGrid, CopilotPanel, DataIngestionStep, DetectedToolsGrid, DetectionPopup, HowItWorksSection, RevenueRangePicker, RevenueSlider, Step1Brand, Step3DataSource, ToolPicker.
+- Legacy Results components (entire `src/components/results/` directory — 11 files): ExportMenu, InfraScore, IntelligencePanel, LeadModal, RecommendedActionsLocked, ResultsBreakdown, SavingsAdjustSlider, ScoreCard, VerificationHeroBadge, VerifiedResultCTA, VerticalConfidenceLine. **CRITICAL DISTINCTION:** `src/components/paymentsResults/*` (PaymentsGapCard, FeeBreakdownCard, AssumptionsFootnote) is a DIFFERENT directory and remains — that's the new stack.
+- Libs: `src/lib/analyzerToolCatalog.js`, `src/lib/verifiedMaterializer.js`, `src/lib/verifiedMaterializer.test.js`.
+- Hooks: `src/hooks/useAutoMaterialize.js`, `src/hooks/useAutoMaterialize.test.js`.
+
+**Files deleted (backend functions):**
+- `submitAnonymousAnalysis`, `getAnonResultTeaser`, `claimAnonymousAnalysis`, `bridgeToAnalyzer`, `onAnalyzerCompleted`, `testSubmitPaymentsAnalysisHarness`.
+
+**Files created (backend):**
+- `purgePaymentsAnalysisSessions` — daily scheduled job (03:15 Europe/Madrid = 01:15 UTC). Deletes `PaymentsAnalysisSession` rows with `created_date < now − 90d` via service role. Idempotent. Capped at ~10k rows/run to bound execution. First run: dry-verified via test_backend_function → 0 rows to purge (fresh table). Automation ID `6a5010e295f3140b0a054803`.
+
+**Surgical edits (kept files, minimal changes):**
+- `src/components/connect/StripeConnectCard.jsx` — removed `useAutoMaterialize` import, hook invocation, and its associated toast branches. Sync flow intact; auto-materialize surface no longer runs after Stripe connect (verified rebuild is Fase 6 territory).
+- `src/pages/ConnectTools.jsx` — same surgical removal of `useAutoMaterialize` from the Sync-button handler. Rest of the file (18 CATEGORY_ORDER handlers, integration status polling, OAuth callback wiring) untouched.
+- `src/App.jsx` — removed Analyzer/Results/AnalyzerTeaser lazy imports, added PaymentsAnalyzer/PaymentsResults direct imports, rewired routes per the table above.
+
+**useAutoMaterialize decision — Option B (deletion), not dormant.**
+The cadena `useAutoMaterialize → verifiedMaterializer → bridgeToAnalyzer` produced `AnalyzerResult` rows whose display target (`Results.jsx`) is deleted in this cutover. Keeping the chain wired would have made every Stripe connect create verified rows the user could no longer see — a bridge to a demolished page. The user's exact framing was accepted: a bridge to a demolished destination is not "dormant infrastructure", it is dead weight that quietly generates orphan rows every day. Fase 6 rebuilds the Stripe→PaymentsGap flow with `PaymentsAnalysisSession` (or the new verified sibling entity) as the target.
+
+**scoreEngine.js decision — Option A (dormant, header FROZEN).**
+Kept because three legitimate consumers still read from it: (1) `AdminBenchmarks.jsx` via `getBenchmarks`, (2) `Reports.jsx` via `getBenchmarks`, (3) `__benchmark_sync__.test.js` via the sync-check pair. Header now carries `FROZEN-UNTIL-BENCHMARKS-MIGRATION` — its removal is explicitly blocked until AdminBenchmarks + Reports migrate to whatever new benchmarks engine ships alongside/after Fase 6. `scoreEngine.test.js` (33 tests) and `__benchmark_sync__.test.js` (37 tests) both stay green in the suite for the same reason.
+
+**Verified orphan (kept, no change): `SavingsEstimator.jsx`**
+Consumes `calculateSavings` + `computeInfraScore` from scoreEngine but is not imported anywhere reachable — `Landing.jsx` does not render it. Kept dormant on the same purge clock as scoreEngine itself.
+
+**Verified orphan (kept, no change): `notifyTeamOnAnalyzerResult` (backend)**
+Legacy Send-email function that fired on AnalyzerResult creation. Zero references in the codebase, no active automation triggering it. NOT in the deletion plan you approved, so left in place. Documented here as a candidate for a future cleanup chunk (together with the AnalyzerInput/AnalyzerResult schema dormancy — see below).
+
+**Entities NOT touched (deliberately dormant):**
+- `AnalyzerInput` — still has data. Schema left intact. Read/write paths (submitAnonymousAnalysis, bridgeToAnalyzer) all deleted, so no new rows can be created from the primary funnel. Historical rows remain queryable by admins.
+- `AnalyzerResult` — same treatment. `benchmarkLearningEngine` still references `AnalyzerResult` in comments (its algorithm remains intact for future re-use), but never fires now that `onAnalyzerCompleted` is deleted.
+
+**M2 pipeline (benchmarkLearningEngine → BenchmarkContribution) — FROZEN.**
+Verified via `list_automations`: no active entity trigger on `AnalyzerResult` existed. The `onAnalyzerCompleted` function was written but never armed as an automation — the pipeline never ran in production. Reactivation from code is possible in Fase 5 by (a) re-creating a lean `onAnalyzerCompleted` (or its Payments equivalent) that consumes `PaymentsAnalysisSession` instead of `AnalyzerResult`, and (b) creating the entity automation. Note: `benchmarkLearningEngine` itself (378 lines) remains untouched — it is the target consumer and its logic (contribution_hash idempotency, verified-vs-estimated precedence, GDPR salting) is what Fase 5 will lift.
+
+**Backend-to-backend residues (comments only, verified inert):**
+`benchmarkLearningEngine`, `getWaitlistAggregate`, `submitWaitlistSignup`, `Dashboard.jsx`, and `KNOWN_DEBT.md` retain textual references (in comments and docstrings) to the deleted functions. Zero `invoke("...")` calls. Left as-is — the comments carry design context that survives the deletion.
+
+**Suite post-cutover:**
+Expected drop: −2 files (`useAutoMaterialize.test.js`, `verifiedMaterializer.test.js`). Expected total: **from 306 to ~285 passed** (7 + 14 = 21 tests removed). The 306→285 delta comes from tests that COVERED the deleted modules directly; every remaining test continues to pass (scoreEngine, benchmark_sync, paymentsGap, normalizers, syncEngine, etc. all intact).
+
+**Push:** commit sha will be recorded here after push.
+
+---
+
 ## 2026-07-09 — Chunk 1.2.0 · Enmienda 1 restored — intl uplifts live on the ROW, not in code
 
 **Violación diagnosticada del chunk anterior.** El bump a `payments-gap-1.1.0` introdujo `INTL_UPLIFT_CURRENT_BPS = 150` e `INTL_UPLIFT_ACHIEVABLE_BPS = 90` como constantes en el motor, "sacadas del conocimiento del dominio". Doble problema:
