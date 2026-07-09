@@ -222,7 +222,15 @@ export async function materializeVerifiedResult(args) {
     benchmark_source: "network_internal",
 
     // The three fields that make this row a VERIFIED row.
-    verification_status: "verified",
+    // Honesty gate: only `high` confidence (≥45 active days AND ≥30 charges)
+    // earns the "verified" badge. `provisional` inputs — enough signal to
+    // materialize, but not enough history to trust as ground truth — persist
+    // as "pending_verification" so the UI can render a truthful "verified on
+    // partial data" state instead of a green "Verified" over 2 days of data.
+    // The row is still materialized (savings + score are computed from real
+    // integration data, not estimation), which is why `source_integration_id`
+    // and `verification_scope` remain populated.
+    verification_status: dataConfidence === "high" ? "verified" : "pending_verification",
     source_integration_id: integrationId,
     verification_scope: ["payments"],
 
