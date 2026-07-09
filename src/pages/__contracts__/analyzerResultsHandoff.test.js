@@ -127,3 +127,83 @@ describe('CONTRACT — Analyzer → Results session handoff', () => {
     }
   });
 });
+
+// ── Brand-block metadata (brand_name / website / sector) ─────────────────────
+//
+// Independent describe() so failures here point straight at the brand block
+// without noise from the routing block above.
+//
+// Contract: the "About your brand" block adds THREE metadata fields to the
+// anonymous session — brand_name (required), website (optional), sector
+// (optional). These are lead-intelligence metadata, NOT engine inputs. The
+// motor must not read them; downstream aggregators must be able to join on
+// them without the client being able to inject nonsense.
+describe('CONTRACT — Brand-block metadata (name / website / sector)', () => {
+  const analyzer   = fs.readFileSync(path.join(ROOT, 'src/pages/PaymentsAnalyzer.jsx'), 'utf-8');
+  const brandBlock = fs.readFileSync(path.join(ROOT, 'src/components/paymentsAnalyzer/BrandBlock.jsx'), 'utf-8');
+  const submit     = fs.readFileSync(path.join(ROOT, 'base44/functions/submitPaymentsAnalysis/entry.ts'), 'utf-8');
+
+  // 1. Client → server field names match verbatim.
+  it('Client sends brand_name (required) in the payload', () => {
+    expect(analyzer).toMatch(/brand_name:\s*brandName\.trim\(\)/);
+  });
+
+  it('Client sends website and sector only when the user filled them', () => {
+    // Both must be guarded by a non-empty check — this is the difference
+    // between "user left blank" (send nothing) vs. "user typed garbage"
+    // (send empty string, server rejects as invalid_type). We want the
+    // former, always.
+    expect(analyzer).toMatch(/website\.trim\(\)\s*!==\s*""/);
+    expect(analyzer).toMatch(/sector\s*!==\s*""/);
+  });
+
+  // 2. Server treats brand_name as required with the exact same 2-80 range.
+  it('submitPaymentsAnalysis requires brand_name (missing → invalid_input)', () => {
+    // The validation block must reject a missing brand_name explicitly
+    // (rather than letting it slip through as an empty string).
+    expect(submit).toMatch(/field:\s*'brand_name',\s*reason:\s*'missing'/);
+  });
+
+  it('submitPaymentsAnalysis enforces the 2-80 character range on brand_name', () => {
+    expect(submit).toMatch(/brand_name:\s*\{\s*minLen:\s*2,\s*maxLen:\s*80\s*\}/);
+  });
+
+  // 3. Sector enum is IDENTICAL between client (BrandBlock) and server. This
+  //    is the same drift risk the provider enum has — we lock it the same way.
+  it('Sector enum matches verbatim between BrandBlock and submitPaymentsAnalysis', () => {
+    // Extract each list independently and compare as sorted sets. We match
+    // 'value' pairs to be robust to formatting changes inside BrandBlock.
+    const clientMatches = [...brandBlock.matchAll(/value:\s*"([a-z_]+)"/g)].map((m) => m[1]);
+    // ALLOWED_SECTOR_SLUGS on the server is a TS `as const` tuple of strings.
+    const serverBlock = submit.match(/ALLOWED_SECTOR_SLUGS = \[([\s\S]*?)\]/);
+    expect(serverBlock, 'server sector enum block not found').toBeTruthy();
+    const serverMatches = [...serverBlock[1].matchAll(/'([a-z_]+)'/g)].map((m) => m[1]);
+
+    expect(clientMatches.length).toBeGreaterThan(0);
+    expect(serverMatches.length).toBeGreaterThan(0);
+    expect([...clientMatches].sort()).toEqual([...serverMatches].sort());
+  });
+
+  // 4. Website normalization exists server-side and produces bare hostnames.
+  //    We assert the function name — the unit-level behavior would belong in
+  //    a dedicated normalizer test if this ever grew beyond 5 lines.
+  it('submitPaymentsAnalysis normalizes website to a bare hostname', () => {
+    expect(submit).toMatch(/function normalizeWebsite\(/);
+    // And the validator actually calls it (not just declares it).
+    expect(submit).toMatch(/normalizeWebsite\(raw\.website\)/);
+  });
+
+  // 5. Brand metadata is NOT fed to the engine — critical for sync-check
+  //    stability. If a future refactor accidentally passes brand_name into
+  //    engineInput, this test catches it before the sync-check does.
+  it('engineInput does not include brand_name / website / sector', () => {
+    // engineInput is built right before calculateGap(). Grab that literal
+    // and assert it contains only the 5 engine fields.
+    const engineInputBlock = submit.match(/const engineInput = \{([\s\S]*?)\};/);
+    expect(engineInputBlock, 'engineInput block not found').toBeTruthy();
+    const body = engineInputBlock[1];
+    expect(body).not.toMatch(/brand_name/);
+    expect(body).not.toMatch(/website/);
+    expect(body).not.toMatch(/\bsector\b/);
+  });
+});

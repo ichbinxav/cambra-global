@@ -263,7 +263,23 @@ const VALIDATION = {
   avg_ticket_eur:  { min: 5,        max: 5_000 },
   intl_pct:        { min: 0,        max: 100 },
   card_mix_debit_pct: { min: 0,     max: 100 }, // optional; validated only when present
+  brand_name:      { minLen: 2,     maxLen: 80 },
+  website:         { maxLen: 200 },              // optional
 };
+
+// Sector enum — VERBATIM copy of BRAND_SECTOR_SLUGS in
+// src/components/paymentsAnalyzer/BrandBlock.jsx. Kept in sync by the contract
+// test in src/pages/__contracts__/analyzerResultsHandoff.test.js.
+const ALLOWED_SECTOR_SLUGS = [
+  'fashion',
+  'beauty',
+  'food_beverage',
+  'home_living',
+  'electronics',
+  'health_wellness',
+  'other',
+] as const;
+const ALLOWED_SECTOR_SET = new Set<string>(ALLOWED_SECTOR_SLUGS);
 
 // Provider slug enum — SINGLE SOURCE for the Chunk 4 form selector.
 // Order + slugs must be reproduced verbatim in the UI (do NOT reorder or
@@ -303,6 +319,35 @@ function countryToRegion(iso2: string): 'EU' | 'UK' | 'US' | 'RoW' {
   if (UK_COUNTRIES.has(iso2)) return 'UK';
   if (US_COUNTRIES.has(iso2)) return 'US';
   return 'RoW';
+}
+
+// ─── Website normalization ──────────────────────────────────────────────────
+// Accepts inputs like "aimestudio.com", "www.aimestudio.com",
+// "https://aimestudio.com/shop", "http://…" and reduces to a bare hostname
+// (lowercase, no protocol, no path, no www.). We normalize server-side so:
+//   1. Lead intelligence has a stable join key across sessions.
+//   2. The stored value never leaks a full URL with query params/PII.
+//   3. Downstream auto-detection can hit `https://<hostname>` deterministically.
+// Returns null on unrecoverable garbage (spaces, no dot, no host).
+function normalizeWebsite(raw: string): string | null {
+  if (!raw || typeof raw !== 'string') return null;
+  let s = raw.trim();
+  if (s === '') return null;
+  if (/\s/.test(s)) return null;
+  // Strip protocol if present.
+  s = s.replace(/^https?:\/\//i, '');
+  // Strip path / query / fragment.
+  s = s.split('/')[0].split('?')[0].split('#')[0];
+  // Strip leading www.
+  s = s.replace(/^www\./i, '');
+  s = s.toLowerCase();
+  // Sanity: needs at least one dot, at least 3 chars total, only URL-safe host chars.
+  if (s.length < 3) return null;
+  if (!s.includes('.')) return null;
+  if (!/^[a-z0-9.-]+$/.test(s)) return null;
+  // Reject leading/trailing dot or hyphen.
+  if (/^[-.]|[-.]$/.test(s)) return null;
+  return s;
 }
 
 // ─── IP salt derivation — decoupled from BENCHMARK_ANON_SALT ────────────────
@@ -427,6 +472,33 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
     card_mix_debit_pct = debit;
   }
 
+  // brand_name — required (2-80 chars after trim).
+  const brand_name_raw = typeof raw.brand_name === 'string' ? raw.brand_name.trim() : '';
+  if (!brand_name_raw) return { ok: false, failure: { field: 'brand_name', reason: 'missing' } };
+  if (brand_name_raw.length < VALIDATION.brand_name.minLen || brand_name_raw.length > VALIDATION.brand_name.maxLen) {
+    return { ok: false, failure: { field: 'brand_name', reason: 'out_of_range' } };
+  }
+
+  // website — optional; normalized to bare hostname. Non-empty garbage is
+  // rejected rather than silently dropped so the client can course-correct.
+  let website: string | undefined = undefined;
+  if (raw.website !== undefined && raw.website !== null && raw.website !== '') {
+    if (typeof raw.website !== 'string') return { ok: false, failure: { field: 'website', reason: 'invalid_type' } };
+    if (raw.website.length > VALIDATION.website.maxLen) return { ok: false, failure: { field: 'website', reason: 'out_of_range' } };
+    const normalized = normalizeWebsite(raw.website);
+    if (!normalized) return { ok: false, failure: { field: 'website', reason: 'invalid_type' } };
+    website = normalized;
+  }
+
+  // sector — optional; must be in the shared enum when present.
+  let sector: string | undefined = undefined;
+  if (raw.sector !== undefined && raw.sector !== null && raw.sector !== '') {
+    if (typeof raw.sector !== 'string') return { ok: false, failure: { field: 'sector', reason: 'invalid_type' } };
+    const s = raw.sector.trim().toLowerCase();
+    if (!ALLOWED_SECTOR_SET.has(s)) return { ok: false, failure: { field: 'sector', reason: 'not_in_enum' } };
+    sector = s;
+  }
+
   const region = countryToRegion(country);
 
   return {
@@ -438,7 +510,10 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
       provider_slug: provider,
       country,
       region,
+      brand_name: brand_name_raw,
       ...(card_mix_debit_pct !== undefined ? { card_mix_debit_pct } : {}),
+      ...(website !== undefined ? { website } : {}),
+      ...(sector !== undefined ? { sector } : {}),
     },
   };
 }
@@ -496,6 +571,10 @@ Deno.serve(async (req) => {
       console.error('submitPaymentsAnalysis rate table error:', table.error, table.missing);
       return Response.json({ error: 'engine_unavailable' }, { status: 503 });
     }
+    // Engine input is a strict subset of v.clean — brand_name / website /
+    // sector are session metadata for lead intelligence, NEVER engine inputs
+    // (they don't affect the savings calculation, and mixing them in would
+    // silently drift the sync-check block from src/lib/paymentsGap.js).
     const engineInput = {
       monthly_gmv_eur: v.clean.monthly_gmv_eur,
       avg_ticket_eur: v.clean.avg_ticket_eur,

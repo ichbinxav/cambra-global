@@ -1,12 +1,15 @@
 // PaymentsAnalyzer — Chunk 5 upgrade.
 //
-// Payload contract (unchanged from Chunk 4, mirrors submitPaymentsAnalysis §2.1):
+// Payload contract (mirrors submitPaymentsAnalysis §2.1):
 //   monthly_gmv_eur         500 .. 10_000_000  (required)
 //   avg_ticket_eur          5   .. 5_000       (required)
 //   intl_pct                0   .. 100         (required; 0 valid)
 //   provider_slug           enum, exact order below (required)
 //   country                 ISO-3166-1 alpha-2 (required)
+//   brand_name              2-80 chars         (required — lead intelligence)
 //   card_mix_debit_pct      0   .. 100         (optional)
+//   website                 URL-ish, ≤200 chars (optional)
+//   sector                  enum (see BrandBlock.SECTOR_OPTIONS) (optional)
 //
 // UX changes only. NO business logic changes: same validation ranges, same
 // payload shape, same enum in the same order. Every slider produces a value
@@ -24,6 +27,7 @@ import AvgTicketInput  from "@/components/paymentsAnalyzer/AvgTicketInput";
 import IntlSlider      from "@/components/paymentsAnalyzer/IntlSlider";
 import ProviderGrid    from "@/components/paymentsAnalyzer/ProviderGrid";
 import CardMixSlider   from "@/components/paymentsAnalyzer/CardMixSlider";
+import BrandBlock, { BRAND_SECTOR_SLUGS } from "@/components/paymentsAnalyzer/BrandBlock";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
 //    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
@@ -85,6 +89,10 @@ export default function PaymentsAnalyzer() {
   const [country, setCountry]           = useState("");
   const [cardMixOpen, setCardMixOpen]   = useState(false);
   const [cardMixDebit, setCardMixDebit] = useState("");
+  // ── About your brand (required: name; optional: website, sector) ──────
+  const [brandName, setBrandName]       = useState("");
+  const [website, setWebsite]           = useState("");
+  const [sector, setSector]             = useState("");
 
   const [submitting, setSubmitting]   = useState(false);
   const [errorBanner, setErrorBanner] = useState("");
@@ -104,26 +112,52 @@ export default function PaymentsAnalyzer() {
     if (!providerSlug) errors.push("Payment provider is required.");
     if (!country) errors.push("Country is required.");
 
+    // Brand name — required (2-80 chars, same range as backend).
+    const trimmedBrand = brandName.trim();
+    if (trimmedBrand === "") errors.push("Brand name is required.");
+    else if (trimmedBrand.length < 2 || trimmedBrand.length > 80) {
+      errors.push("Brand name: must be between 2 and 80 characters.");
+    }
+
+    // Website — optional; light URL sanity check only (backend does the
+    // authoritative normalization). Reject only obvious garbage like spaces
+    // or missing domain dot; leave real validation to the server so we don't
+    // block users on edge-case TLDs.
+    if (website.trim() !== "") {
+      const w = website.trim();
+      if (/\s/.test(w) || !/\./.test(w)) {
+        errors.push("Website: enter a domain like aimestudio.com.");
+      } else if (w.length > 200) {
+        errors.push("Website: must be 200 characters or fewer.");
+      }
+    }
+
+    // Sector — optional; if set, must be in the shared enum.
+    if (sector !== "" && !BRAND_SECTOR_SLUGS.includes(sector)) {
+      errors.push("Sector: pick one of the listed options.");
+    }
+
     if (cardMixDebit !== "") {
       const e = fieldRangeError("card_mix_debit_pct", cardMixDebit);
       if (e) errors.push(e);
     }
 
     return { valid: errors.length === 0, errors };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit, brandName, website, sector]);
 
-  // ── Progress counter (5 required fields + 1 optional shown when open) ──
-  // Used by the header pill so the user has a sense of momentum. The optional
-  // field contributes to "6 of 6" only when the drawer is open — otherwise
-  // "5 of 5" reads as complete.
+  // ── Progress counter — 6 required fields (5 payment + brand name) plus 1
+  //    optional (card mix) when the drawer is open. Website and sector are
+  //    intentionally NOT counted so the pill doesn't nag users into filling
+  //    optional fields.
   const progress = useMemo(() => {
     const filled = [gmv, avgTicket, intlPct, providerSlug, country].filter((v) => v !== "" && v !== undefined && v !== null).length;
+    const brandFilled = brandName.trim() !== "" ? 1 : 0;
     const optionalCounts = cardMixOpen;
     const optionalFilled = optionalCounts && cardMixDebit !== "" ? 1 : 0;
-    const total = 5 + (optionalCounts ? 1 : 0);
-    const done = filled + optionalFilled;
+    const total = 6 + (optionalCounts ? 1 : 0);
+    const done = filled + brandFilled + optionalFilled;
     return { done, total, pct: Math.round((done / total) * 100) };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName]);
 
   // ── Submit → submitPaymentsAnalysis → /PaymentsResults?session=<id>
   const handleSubmit = async () => {
@@ -141,7 +175,10 @@ export default function PaymentsAnalyzer() {
         intl_pct: Number(intlPct),
         provider_slug: providerSlug,
         country,
+        brand_name: brandName.trim(),
         ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
+        ...(website.trim() !== "" ? { website: website.trim() } : {}),
+        ...(sector !== "" ? { sector } : {}),
       };
       const resp = await base44.functions.invoke("submitPaymentsAnalysis", payload);
       const body = resp?.data || resp;
@@ -343,6 +380,20 @@ export default function PaymentsAnalyzer() {
               </div>
             )}
           </div>
+
+          {/* About your brand — REQUIRED brand name, optional website + sector.
+              Placed at the end of the form on purpose: cost-per-field is
+              highest here (users have already answered the payment questions
+              and are committed), so this is where we can afford to ask for
+              lead-intelligence metadata without hurting conversion. */}
+          <BrandBlock
+            brandName={brandName}
+            onBrandNameChange={setBrandName}
+            website={website}
+            onWebsiteChange={setWebsite}
+            sector={sector}
+            onSectorChange={setSector}
+          />
 
           {/* Privacy microcopy */}
           <div className="flex items-start gap-2 pt-2 text-[11px] text-white/40">
