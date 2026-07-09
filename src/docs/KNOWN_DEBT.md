@@ -111,3 +111,38 @@ nuevo. Si flipamos la condición ahora, bloqueamos el paso de estimated →
 verified que estamos justo a punto de habilitar. Se arregla **después** de
 que FASE 3 pueda producir el `AnalyzerResult` verified, para que el flip a
 Verified sea real y no cosmético.
+
+---
+
+## BUG-3 — Contador de header "0 connected" mientras la card dice Connected
+
+**Estado:** activa
+**Detectado:** 2026-07-09 durante validación FASE 1.5
+**Fichero:** `src/pages/ConnectTools.jsx`
+**Líneas:** ~285-293 (resumen `detectedCount` / `connectedCount` / `availableCount`)
+
+### Síntoma
+En `/ConnectTools`, la `StripeConnectCard` muestra correctamente
+"Connected · last sync ..." (post-FASE-1). Sin embargo, la barra de resumen
+inmediatamente encima sigue mostrando "0 connected". Discrepancia visible:
+la card dice connected, el contador dice 0.
+
+### Causa
+`ConnectTools.jsx` cuenta connected/detected/available desde el array
+`sourceList = flatList.length ? flatList : allIntegrations`, que viene del
+endpoint `getIntegrationStatus` — el cual, hasta FASE 1, agregaba
+`StripeConnection` (legacy) y no incluía las filas `Integration` como
+"connected" en el conteo. Misma familia de scoping/counting que BUG-1 y
+BUG-2: se leía la fuente antigua después del cambio de source-of-truth.
+
+### Fix cuando toque
+Alinear `getIntegrationStatus` (backend) para que también contribuya al
+conteo desde `Integration` (mismos 3 slugs Stripe + resto de providers
+Integration-backed). No es solo cosmético — otras vistas que dependan del
+mismo agregado (dashboard KPI de "tools connected") sufren la misma
+subcuenta.
+
+### Por qué no se arregla ahora
+Prioridad más baja que el 500 en curso; misma familia de scoping post-FASE-1
+que ya está bajo trabajo. Se arregla junto con el lift de fuente única de
+"connected" cuando cerremos FASE 1.5/3.
