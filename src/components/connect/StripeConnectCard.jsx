@@ -168,7 +168,15 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
         // skipped / failed → silencio hacia el usuario. Fallback manual sigue disponible.
       }
     } catch (e) {
-      setError(e.message || "Sync failed");
+      // TEMP DEBUG — revertir tras diagnosticar
+      // Surface backend structured error (stage + real message) instead of
+      // axios's generic "Request failed with status code 500".
+      const backend = e?.response?.data;
+      setError(
+        backend?.stage
+          ? `[${backend.stage}] ${backend.error}`
+          : (backend?.error || e.message || "Sync failed")
+      );
     } finally {
       setBusy(false);
     }
