@@ -414,6 +414,32 @@ export default function Results() {
                 <p className="text-2xl font-black tabular-nums">{formatEur(result.payment_savings)}<span className="text-xs text-muted-foreground/50 font-normal ml-1">/{t("per_yr_short")}</span></p>
               </div>
 
+              {/* FX line — only shown when the bridge detected non-domestic
+                  charges (intl_pct > 0) AND the engine computed a banking
+                  savings figure. Sits inside the Payments card because the
+                  underlying data source is the same Stripe integration; a
+                  dedicated Banking card would be premature until non-FX
+                  banking data (account fees) is also verified.
+                  Reads directly from persisted fields — no recomputation. */}
+              {Number(result.banking_savings) > 0 && Number(input?.intl_pct) > 0 && (
+                <div className="pt-3 border-t border-border/40">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+                      FX conversion · {Number(input.intl_pct).toFixed(1)}% intl
+                    </p>
+                    <span className="text-[10px] text-muted-foreground/60 tabular-nums">
+                      {result.details?.banking_fx_current != null
+                        ? `${Number(result.details.banking_fx_current).toFixed(2)}% spread`
+                        : ""}
+                    </span>
+                  </div>
+                  <p className="text-lg font-black tabular-nums">
+                    {formatEur(result.banking_savings)}
+                    <span className="text-xs text-muted-foreground/50 font-normal ml-1">/{t("per_yr_short")}</span>
+                  </p>
+                </div>
+              )}
+
               {stripeIntegration ? (
                 <VerifiedResultCTA
                   brand_id={result.brand_id}

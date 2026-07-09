@@ -29,6 +29,10 @@
     "saas_savings": {
       "type": "number"
     },
+    "banking_savings": {
+      "type": "number",
+      "description": "OPTIONAL \u2014 savings recoverable in the Banking vertical (account fees excess + FX conversion spread). Populated by the shared score engine (scoreEngine.calculateSavings.bankingSavings). Historical rows and rows produced before the Stripe FX line existed leave it undefined; downstream reads MUST treat undefined as 0 (never render '\u2014'). NOT part of any total_savings recomputation \u2014 the persisted total_savings already includes this figure from the same engine call. Purely additive: no migration."
+    },
     "total_savings": {
       "type": "number"
     },
@@ -65,6 +69,14 @@
         },
         "saas_optimal_total": {
           "type": "number"
+        },
+        "banking_fx_current": {
+          "type": "number",
+          "description": "Effective FX conversion spread on international charges, as % of intl GMV. Derived by bridgeToAnalyzer from Stripe's fee_details (currency conversion component). Absent on rows produced before the FX split existed \u2014 treat undefined as 'not measured' rather than 0."
+        },
+        "banking_fx_optimal": {
+          "type": "number",
+          "description": "Benchmark target FX spread (%) for the brand's cohort. Absent on legacy rows."
         }
       }
     },

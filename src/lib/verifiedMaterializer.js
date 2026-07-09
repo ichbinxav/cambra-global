@@ -196,10 +196,15 @@ export async function materializeVerifiedResult(args) {
     brand_id: analyzerInput.brand_id,
     input_id: analyzerInput.id,
 
-    // Savings — straight from the shared engine.
+    // Savings — straight from the shared engine. banking_savings is a
+    // separate scalar (NOT recomputed downstream — total_savings already
+    // includes it) so the UI can surface the FX line without inferring it
+    // from a total-minus-parts subtraction. Falls back to 0 for engine
+    // versions that predate the field so existing readers stay unaffected.
     payment_savings: savings.paymentSavings,
     shipping_savings: savings.shippingSavings,
     saas_savings: savings.saasSavings,
+    banking_savings: savings.bankingSavings || 0,
     total_savings: savings.totalSavings,
 
     // Score — same engine.
@@ -230,9 +235,17 @@ export async function materializeVerifiedResult(args) {
     // The row is still materialized (savings + score are computed from real
     // integration data, not estimation), which is why `source_integration_id`
     // and `verification_scope` remain populated.
+    //
+    // Banking scope: when the bridge published intl_pct / bank_fx_spread_pct
+    // on this input (Stripe expand[]=data.source detected non-domestic
+    // charges + fee_details carried a "currency conversion" line), the FX
+    // portion of Banking savings is ALSO backed by integration data — so
+    // 'banking' joins the scope. Absent intl signal → payments only.
     verification_status: dataConfidence === "high" ? "verified" : "pending_verification",
     source_integration_id: integrationId,
-    verification_scope: ["payments"],
+    verification_scope: (Number(analyzerInput.intl_pct) > 0 || Number(analyzerInput.bank_fx_spread_pct) > 0)
+      ? ["payments", "banking"]
+      : ["payments"],
 
     next_best_action: "Connect carriers to extend verified coverage to shipping.",
   };
