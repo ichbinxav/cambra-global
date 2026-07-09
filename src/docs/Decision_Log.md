@@ -5,6 +5,25 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-09 — CUTOVER PAYMENTS-ONLY COMPLETADO · Milestone M1 sealed
+
+**Commit `8900364` pushed to `origin/main`.** End-to-end verification: **HECHA — todo OK.**
+
+**Estado final del producto:**
+- **`/Analyzer` y `/Results`** sirven el producto nuevo (PaymentsAnalyzer + PaymentsResults). Aliases redirigen a las canónicas. SEO preservado.
+- **`payments-gap-1.2.0`** es la **ÚNICA fuente de verdad** para el cálculo de savings alcanzable desde el funnel primario. Las tarifas viven en `PaymentsRateTable` con URL + cita literal por fila (Enmienda 1). Cero constantes de tarifa en código.
+- **`scoreEngine.js` — dormant, FROZEN-UNTIL-BENCHMARKS-MIGRATION.** Consumido por AdminBenchmarks + Reports + `__benchmark_sync__.test.js`. Su borrado queda **explícitamente ligado** a la migración de esos dos consumidores al futuro motor de benchmarks (post-Fase 6).
+- **M2 pipeline** (`benchmarkLearningEngine` → `BenchmarkContribution`): nunca armado en producción (verificado por `list_automations`, cero triggers activos). `onAnalyzerCompleted` borrado con el resto. **Reactivable en Fase 5 desde código** — `benchmarkLearningEngine` (378 líneas) intacto, sólo requiere (a) re-crear un `onPaymentsSessionCompleted` que consuma `PaymentsAnalysisSession`, (b) crear la entity automation.
+- **Cadena verified (`useAutoMaterialize` → `verifiedMaterializer` → `bridgeToAnalyzer`)**: **eliminada entera**. Motivo estructural: materializaba `AnalyzerResult` cuyo visor (`Results.jsx` viejo) fue demolido en este cutover — mantenerla cableada habría creado filas huérfanas invisibles cada Stripe connect. **Fase 6 reconstruye el flujo Stripe→PaymentsGap** con destino en `PaymentsAnalysisSession` (o entidad verified-sibling nueva).
+- **`SavingsEstimator.jsx`**: verificado huérfano en Landing.jsx (cero imports). No requiere acción en este chunk. Purgará junto a `scoreEngine.js` cuando se migre AdminBenchmarks/Reports.
+- **`notifyTeamOnAnalyzerResult`**: huérfano dormant (cero callers, cero automation). Candidato futuro cleanup junto con la purga de schemas `AnalyzerInput` / `AnalyzerResult`.
+
+**Métrica del cutover:** commit `8900364` = **+177 / −8940 líneas** en 48 archivos. Suite **285 passed / 5 skipped / 0 failed** (−21 tests, exactamente los dos archivos borrados).
+
+**Milestone M1 (payments-only funnel end-to-end) — CERRADO.** Próximo milestone en el pipeline: **M3 Stripe Connect** (ver plan separado).
+
+---
+
 ## 2026-07-09 — Chunk 6 · CUTOVER · Payments-only funnel live
 
 The multi-vertical Analyzer + Results wizard, its score engine consumer surface, and the anonymous submission/claim pipeline were **DELETED** in a single atomic cutover. `/Analyzer` and `/Results` now serve the Payments-only pages that have been running in parallel since Chunk 4. The `payments-gap-1.2.0` engine is the ONLY savings computation reachable through the primary funnel.
