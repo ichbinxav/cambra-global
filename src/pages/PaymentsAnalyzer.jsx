@@ -373,6 +373,19 @@ export default function PaymentsAnalyzer() {
                 </>
               )}
             </Button>
+            {/* Missing-fields hint — only shown when the CTA is disabled AND
+                the user hasn't been shown a hard error banner yet. Answers
+                the "why is this button grey?" question on mobile, where the
+                required fields above scroll off-screen. UX-only, no logic
+                change: the validation itself is unchanged. */}
+            {!validation.valid && !submitting && !errorBanner && (
+              <p className="text-center text-[11.5px] text-white/50 leading-relaxed">
+                Still needed: <span className="text-white/80">{validation.errors[0].replace(/[.!]$/, "")}</span>
+                {validation.errors.length > 1 && (
+                  <span className="text-white/40"> · +{validation.errors.length - 1} more above</span>
+                )}
+              </p>
+            )}
             <button
               type="button"
               onClick={() => navigate("/")}
