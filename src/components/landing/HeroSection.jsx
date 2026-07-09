@@ -270,9 +270,9 @@ export default function HeroSection() {
                 </Link>
               )}
               {isAuthenticated && (
-                <Link to="/Deals">
+                <Link to="/Dashboard">
                   <button className="text-[10px] font-bold text-cambra-mint hover:opacity-90 transition-colors flex items-center gap-1">
-                    View deals <ArrowRight size={9} />
+                    Open dashboard <ArrowRight size={9} />
                   </button>
                 </Link>
               )}

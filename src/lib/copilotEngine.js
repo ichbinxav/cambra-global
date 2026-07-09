@@ -16,11 +16,6 @@ const PAGE_META = {
     title: 'Reports',
     description: 'This page tracks analysis history, verification progress and what has already been measured.',
   },
-  '/Deals': {
-    key: 'deals',
-    title: 'Deals',
-    description: 'This page shows which commercial opportunities are available, active or still blocked.',
-  },
   '/Results': {
     key: 'results',
     title: 'Results',
@@ -59,8 +54,9 @@ const JOURNEY_META = {
   shipping: { label: 'Shipping audit', href: '/Analyzer?mode=questionnaire&module=shipping' },
   saas: { label: 'SaaS audit', href: '/Analyzer?mode=questionnaire&module=saas' },
   savings: { label: 'Savings estimate', href: '/Results' },
-  eligibility: { label: 'Deal eligibility', href: '/Deals' },
-  activation: { label: 'Deal activation', href: '/Deals' },
+  // FASE 1.2 — /Deals deprecated; eligibility/activation route to Dashboard.
+  eligibility: { label: 'Deal eligibility', href: '/Dashboard' },
+  activation: { label: 'Deal activation', href: '/Dashboard' },
 };
 
 function pathKey(pathname) {
@@ -173,7 +169,7 @@ function buildGuidance(state, page, journey, missing, blockers) {
       unlocks: 'This unlocks deal activation and realized savings.',
       ctas: journey.eligibility === 'blocked'
         ? [cta('Run analysis', '/Analyzer'), cta('View results', '/Results')]
-        : [cta('Check eligibility', '/Deals'), cta('Activate deal', '/Deals')],
+        : [cta('Check eligibility', '/Dashboard'), cta('Activate deal', '/Dashboard')],
       nudges: [state.userDeals.length ? 'Some commercial paths are already open.' : 'Deal readiness follows audit clarity.'],
     };
   }

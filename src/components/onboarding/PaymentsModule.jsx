@@ -190,7 +190,6 @@ export default function PaymentsModule(){
 
       <div className="flex items-center gap-2">
         <Button onClick={save} disabled={saving}>{saving? 'Saving…':'Save module'}</Button>
-        <a href="/Deals?vertical=payments" className="text-sm underline">View deals</a>
         <a href="/Analyzer" className="text-sm underline">Go to Analyzer</a>
       </div>
     </div>

@@ -26,8 +26,9 @@ import Network from '@/pages/Network';
 import Insights from '@/pages/Insights';
 import InsightDetail from '@/pages/InsightDetail';
 import Account from '@/pages/Account';
-import UnlockSavings from '@/pages/UnlockSavings';
-import RecoveryTracker from '@/pages/RecoveryTracker';
+// FASE 1.2 — /UnlockSavings & /RecoveryTracker deprecated with redirect to home.
+// Components kept in src/pages/ (dormant) — imports removed so the pages no
+// longer ship in the bundle. Restore by re-importing when negotiation ships.
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import Cookies from '@/pages/Cookies';
@@ -193,8 +194,13 @@ const AuthenticatedApp = () => {
         <Route path="/cookies" element={<Navigate to="/Cookies" replace />} />
         <Route path="/Snapshot" element={withBoundary(<Snapshot />)} />
         <Route path="/snapshot" element={<Navigate to="/Snapshot" replace />} />
-        <Route path="/Deals" element={<Navigate to="/UnlockSavings" replace />} />
-        <Route path="/deals" element={<Navigate to="/UnlockSavings" replace />} />
+        {/* FASE 1.2 — payments-only phase: deals/unlock/recovery redirect to home. */}
+        <Route path="/Deals" element={<Navigate to="/" replace />} />
+        <Route path="/deals" element={<Navigate to="/" replace />} />
+        <Route path="/UnlockSavings" element={<Navigate to="/" replace />} />
+        <Route path="/unlocksavings" element={<Navigate to="/" replace />} />
+        <Route path="/RecoveryTracker" element={<Navigate to="/" replace />} />
+        <Route path="/recoverytracker" element={<Navigate to="/" replace />} />
         <Route path="/Pricing" element={withBoundary(<Pricing />)} />
         <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
         <Route path="/Developers" element={withBoundary(<Developers />)} />
@@ -228,8 +234,6 @@ const AuthenticatedApp = () => {
           <Route path="/Insights" element={withBoundary(<Insights />)} />
           <Route path="/InsightDetail" element={withBoundary(<InsightDetail />)} />
           <Route path="/Account" element={withBoundary(<Account />)} />
-          <Route path="/UnlockSavings" element={withBoundary(<UnlockSavings />)} />
-          <Route path="/RecoveryTracker" element={withBoundary(<RecoveryTracker />)} />
           <Route path="/Invoices" element={withBoundary(<Invoices />)} />
           <Route path="/Vault" element={withBoundary(<Vault />)} />
           <Route path="/ConnectIntegrations" element={withBoundary(<ConnectIntegrations />)} />

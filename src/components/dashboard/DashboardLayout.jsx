@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BarChart3, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Home, ShieldCheck, Zap, FolderOpen, TrendingUp } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Home, ShieldCheck, FolderOpen } from "lucide-react";
 import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
 // MVP navigation — focused, minimal. Advanced API/OAuth/Webhook screens are admin-only.
+// FASE 1.2 — Unlock Savings + Recovery Tracker removed from sidebar (negotiation
+// out of scope for payments-only phase). Routes redirect to home in App.jsx.
 const NAV_ITEMS = [
   { path: "/Dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/Analyzer", label: "Analyzer", icon: BarChart3 },
   { path: "/Results", label: "Results", icon: FileText },
-  { path: "/UnlockSavings", label: "Unlock Savings", icon: Zap },
-  { path: "/RecoveryTracker", label: "Recovery Tracker", icon: TrendingUp },
   { path: "/Vault", label: "Documents", icon: FolderOpen },
   { path: "/Account", label: "Account", icon: Settings },
 ];

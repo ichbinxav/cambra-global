@@ -38,8 +38,9 @@ function Insight({ item }){
   const action = (()=>{
     switch(item.action_key){
       case 'connect_data': return <Link to="/ConnectTools"><Button size="sm" className="h-8 rounded-full text-xs gap-1.5"><Zap className="h-3 w-3"/> Connect data</Button></Link>;
-      case 'view_deals_payments': return <Link to="/Deals"><Button size="sm" variant="outline" className="h-8 rounded-full text-xs">View payment deals</Button></Link>;
-      case 'view_deals_shipping': return <Link to="/Deals"><Button size="sm" variant="outline" className="h-8 rounded-full text-xs">View shipping deals</Button></Link>;
+      // FASE 1.2 — /Deals deprecated. Insight actions now route to Dashboard.
+      case 'view_deals_payments': return <Link to="/Dashboard"><Button size="sm" variant="outline" className="h-8 rounded-full text-xs">Open dashboard</Button></Link>;
+      case 'view_deals_shipping': return <Link to="/Dashboard"><Button size="sm" variant="outline" className="h-8 rounded-full text-xs">Open dashboard</Button></Link>;
       case 'complete_onboarding': return <Link to="/Onboarding"><Button size="sm" variant="outline" className="h-8 rounded-full text-xs">Complete onboarding</Button></Link>;
       default: return null;
     }

@@ -209,11 +209,7 @@ export default function StripeResults({ data }) {
               Start saving <ArrowRight size={13} />
             </Button>
           </Link>
-          <Link to="/Deals">
-            <button className="h-11 px-6 rounded-xl border border-background/20 text-background/60 text-sm font-medium hover:bg-background/10 transition-colors">
-              View all deals
-            </button>
-          </Link>
+
         </div>
       </div>
 
