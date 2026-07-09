@@ -179,7 +179,7 @@ export default function PaymentsResults() {
           title={status === "invalid" ? "This link isn't valid" : "We couldn't find that audit"}
           message="Your session may have expired, or the link was mistyped. Run a fresh analysis in about two minutes — no account needed."
           ctaLabel="Run your analysis"
-          onCta={() => navigate("/PaymentsAnalyzer")}
+          onCta={() => navigate("/Analyzer")}
         />
       </ResultsShell>
     );
@@ -225,7 +225,7 @@ export default function PaymentsResults() {
     <ResultsShell>
       {/* Back link — desktop shows text, mobile just chevron */}
       <button
-        onClick={() => navigate("/PaymentsAnalyzer")}
+        onClick={() => navigate("/Analyzer")}
         className="mb-6 inline-flex items-center gap-1.5 text-[12px] text-white/50 hover:text-white transition-colors"
       >
         <ArrowLeft size={12} /> Run a new analysis
@@ -263,7 +263,7 @@ export default function PaymentsResults() {
               </p>
             </div>
             <Button
-              onClick={() => navigate("/LoginGate?next=/PaymentsAnalyzer")}
+              onClick={() => navigate("/LoginGate?next=/Analyzer")}
               className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
               style={{
                 background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",

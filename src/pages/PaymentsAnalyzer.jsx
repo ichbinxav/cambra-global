@@ -163,7 +163,10 @@ export default function PaymentsAnalyzer() {
         setSubmitting(false);
         return;
       }
-      navigate(`/PaymentsResults?session=${encodeURIComponent(body.anon_session_id)}`);
+      // Navigate to the CANONICAL /Results route — not /PaymentsResults, which
+      // is an alias that <Navigate replace> resolves to /Results but STRIPS the
+      // query string in the process, breaking the session handoff.
+      navigate(`/Results?session=${encodeURIComponent(body.anon_session_id)}`);
     } catch {
       setErrorBanner("We couldn't reach the server. Please check your connection and try again.");
       setSubmitting(false);
