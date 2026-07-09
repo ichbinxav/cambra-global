@@ -73,18 +73,14 @@
     "legal_basis": {
       "type": "string",
       "enum": [
-        "consent",
-        "contract",
         "legitimate_interest",
-        "legal_obligation",
-        "vital_interests",
-        "public_task"
+        "consent"
       ],
-      "description": "GDPR Art. 6(1) legal basis for processing this personal data. REQUIRED for every OutboundLead produced from now on. Populated at ingestion time by whichever agent creates the lead (e.g. leadDiscoveryAgent tags Apollo-sourced leads as 'legitimate_interest' with a documented LIA note). Historical rows created before this field existed leave it empty \u2014 those are the ones the GDPR agent flagged as needing retroactive audit."
+      "description": "GDPR Art. 6(1) legal basis for processing this personal data. Purely additive \u2014 no migration, historical rows leave it null. Populated at ingestion time by whichever agent creates the lead (leadDiscoveryAgent tags Apollo-sourced leads as 'legitimate_interest' with a documented note)."
     },
     "legal_basis_note": {
       "type": "string",
-      "description": "Human-readable justification supporting the chosen legal_basis. For 'legitimate_interest' this doubles as the LIA (Legitimate Interest Assessment) summary \u2014 e.g. 'B2B outreach to publicly listed decision-maker at a commerce brand; contact from Apollo under their DPA; opt-out available in every outreach.'"
+      "description": "Human-readable justification supporting the chosen legal_basis. For 'legitimate_interest' this doubles as the LIA (Legitimate Interest Assessment) summary."
     }
   },
   "required": [],
