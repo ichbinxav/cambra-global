@@ -14,6 +14,7 @@ import Landing from '@/pages/Landing';
 import Onboarding from '@/pages/Onboarding.jsx';
 import Analyzer from '@/pages/Analyzer';
 import PaymentsAnalyzer from '@/pages/PaymentsAnalyzer';
+import PaymentsResults from '@/pages/PaymentsResults';
 import AnalyzerTeaser from '@/pages/AnalyzerTeaser';
 import LoginGate from '@/pages/LoginGate';
 import HealthCheck from '@/pages/HealthCheck.jsx';
@@ -181,6 +182,10 @@ const AuthenticatedApp = () => {
             promote /PaymentsAnalyzer to the primary path. */}
         <Route path="/PaymentsAnalyzer" element={withBoundary(<PaymentsAnalyzer />)} />
         <Route path="/paymentsanalyzer" element={<Navigate to="/PaymentsAnalyzer" replace />} />
+        {/* Anonymous results page — reads a PaymentsAnalysisSession by
+            anon_session_id via getPaymentsGapTeaser. Public, shareable. */}
+        <Route path="/PaymentsResults" element={withBoundary(<PaymentsResults />)} />
+        <Route path="/paymentsresults" element={<Navigate to="/PaymentsResults" replace />} />
         <Route path="/AnalyzerTeaser" element={withBoundary(<AnalyzerTeaser />)} />
         <Route path="/analyzerteaser" element={<Navigate to="/AnalyzerTeaser" replace />} />
         <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />

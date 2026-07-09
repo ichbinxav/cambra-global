@@ -1,37 +1,34 @@
-// PaymentsAnalyzer — Chunk 4 (payments-only pivot).
+// PaymentsAnalyzer — Chunk 5 upgrade.
 //
-// Single-screen, 6-field form that submits to submitPaymentsAnalysis and
-// redirects to /PaymentsResults?session=<anon_session_id>. Runs in parallel
-// to the legacy /Analyzer route while we cut over. When Chunk 6 ships and the
-// legacy path is retired, this becomes the sole analyzer entry point.
+// Payload contract (unchanged from Chunk 4, mirrors submitPaymentsAnalysis §2.1):
+//   monthly_gmv_eur         500 .. 10_000_000  (required)
+//   avg_ticket_eur          5   .. 5_000       (required)
+//   intl_pct                0   .. 100         (required; 0 valid)
+//   provider_slug           enum, exact order below (required)
+//   country                 ISO-3166-1 alpha-2 (required)
+//   card_mix_debit_pct      0   .. 100         (optional)
 //
-// Contract mirror — MUST stay in sync with the backend (base44/functions/
-// submitPaymentsAnalysis/entry.ts §2.1):
-//   - monthly_gmv_eur         500 .. 10_000_000  (required)
-//   - avg_ticket_eur          5   .. 5_000       (required)
-//   - intl_pct                0   .. 100         (required; 0 valid)
-//   - provider_slug           enum, exact order below (required)
-//   - country                 ISO-3166-1 alpha-2 (required)
-//   - card_mix_debit_pct      0   .. 100         (optional, collapsed)
-//
-// The client validates the same ranges before submit. Anything the client
-// lets through, the backend re-validates and rejects with a named-field 400.
-// Client validation is a UX layer only, never a trust boundary.
+// UX changes only. NO business logic changes: same validation ranges, same
+// payload shape, same enum in the same order. Every slider produces a value
+// that lives inside the contract by construction — no clamping needed.
 
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
-import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, ChevronDown, ChevronUp, Lock } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Lock, ChevronDown, ChevronUp } from "lucide-react";
+
+import GmvSlider       from "@/components/paymentsAnalyzer/GmvSlider";
+import AvgTicketInput  from "@/components/paymentsAnalyzer/AvgTicketInput";
+import IntlSlider      from "@/components/paymentsAnalyzer/IntlSlider";
+import ProviderGrid    from "@/components/paymentsAnalyzer/ProviderGrid";
+import CardMixSlider   from "@/components/paymentsAnalyzer/CardMixSlider";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
-//    submitPaymentsAnalysis/entry.ts. Order matters (product decision, not
-//    technical): stripe/paypal/shopify_payments first because they map to
-//    verified rate-table rows; the rest fall to the regional fallback and
-//    render a "regional estimate" note in results. DO NOT reorder or rename.
+//    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
+//    Verified rows first (stripe/paypal/shopify_payments), fallback-only
+//    providers after. DO NOT reorder or rename.
 const PROVIDER_OPTIONS = [
   { slug: "stripe",           label: "Stripe" },
   { slug: "paypal",           label: "PayPal" },
@@ -40,15 +37,12 @@ const PROVIDER_OPTIONS = [
   { slug: "mollie",           label: "Mollie" },
   { slug: "checkout_com",     label: "Checkout.com" },
   { slug: "sumup",            label: "SumUp" },
-  { slug: "other",            label: "Other / not listed" },
+  { slug: "other",            label: "Other" },
 ];
 
-// ── Country list — kept intentionally short and payments-relevant. The
-// backend uses the country to derive region (EU/UK/US/RoW); it does NOT
-// consume the country beyond that mapping. So this list can grow later
-// without any backend change.
+// ── Country list — kept short and payments-relevant. Backend uses country
+//    only to derive region (EU/UK/US/RoW).
 const COUNTRY_OPTIONS = [
-  // EU (SEPA + EEA)
   { code: "ES", name: "Spain" },        { code: "FR", name: "France" },
   { code: "DE", name: "Germany" },      { code: "IT", name: "Italy" },
   { code: "PT", name: "Portugal" },     { code: "NL", name: "Netherlands" },
@@ -58,18 +52,12 @@ const COUNTRY_OPTIONS = [
   { code: "PL", name: "Poland" },       { code: "CZ", name: "Czech Republic" },
   { code: "GR", name: "Greece" },       { code: "LU", name: "Luxembourg" },
   { code: "NO", name: "Norway" },       { code: "CH", name: "Switzerland" },
-  // UK
   { code: "GB", name: "United Kingdom" },
-  // US
   { code: "US", name: "United States" },
-  // RoW (falls to regional fallback row on the backend)
   { code: "CA", name: "Canada" },       { code: "AU", name: "Australia" },
-  { code: "OT", name: "Other" },
 ];
 
-// ── Contract §2.1 hard ranges. Client-side check runs BEFORE fetch so users
-// see the error inline instead of a 400 flash. Values must exactly match
-// VALIDATION in the backend entry — mirror, do not diverge.
+// ── Contract §2.1 hard ranges — mirror of backend VALIDATION. UX-only guard.
 const RANGES = {
   monthly_gmv_eur:    { min: 500, max: 10_000_000, label: "Monthly GMV (EUR)" },
   avg_ticket_eur:     { min: 5,   max: 5_000,      label: "Average ticket (EUR)" },
@@ -77,8 +65,6 @@ const RANGES = {
   card_mix_debit_pct: { min: 0,   max: 100,        label: "Debit card share (%)" },
 };
 
-// Localizable message helper. Returns null when valid, otherwise a short
-// user-facing string naming the offending field.
 function fieldRangeError(key, value) {
   const r = RANGES[key];
   const n = Number(value);
@@ -92,40 +78,33 @@ function fieldRangeError(key, value) {
 export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
 
-  // ── Form state
-  const [gmv, setGmv]                     = useState("");
-  const [avgTicket, setAvgTicket]         = useState("");
-  const [intlPct, setIntlPct]             = useState("");
-  const [providerSlug, setProviderSlug]   = useState("");
-  const [country, setCountry]             = useState("");
-  // Optional — collapsed by default. Empty string = "not provided" and the
-  // backend will simply omit the field from the persisted input snapshot.
-  const [cardMixOpen, setCardMixOpen]     = useState(false);
-  const [cardMixDebit, setCardMixDebit]   = useState("");
+  const [gmv, setGmv]                   = useState("");
+  const [avgTicket, setAvgTicket]       = useState("");
+  const [intlPct, setIntlPct]           = useState("");
+  const [providerSlug, setProviderSlug] = useState("");
+  const [country, setCountry]           = useState("");
+  const [cardMixOpen, setCardMixOpen]   = useState(false);
+  const [cardMixDebit, setCardMixDebit] = useState("");
 
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting]   = useState(false);
   const [errorBanner, setErrorBanner] = useState("");
 
-  // ── Client-side validation. Same 5 required fields + optional cardmix. We
-  // never clamp — a value outside the contract is a hard error, same as the
-  // backend behaviour, so the two layers can never disagree.
+  // ── Client-side validation — same ranges + fields as the backend.
   const validation = useMemo(() => {
     const errors = [];
-    if (gmv === "" || gmv === null || gmv === undefined) errors.push("Monthly GMV is required.");
+    if (gmv === "") errors.push("Monthly GMV is required.");
     else { const e = fieldRangeError("monthly_gmv_eur", gmv); if (e) errors.push(e); }
 
-    if (avgTicket === "" || avgTicket === null || avgTicket === undefined) errors.push("Average ticket is required.");
+    if (avgTicket === "") errors.push("Average ticket is required.");
     else { const e = fieldRangeError("avg_ticket_eur", avgTicket); if (e) errors.push(e); }
 
-    // intl_pct: 0 is a valid input, so we require the field but accept 0.
-    if (intlPct === "" || intlPct === null || intlPct === undefined) errors.push("International % is required (enter 0 if none).");
+    if (intlPct === "") errors.push("International share is required (0% is valid).");
     else { const e = fieldRangeError("intl_pct", intlPct); if (e) errors.push(e); }
 
     if (!providerSlug) errors.push("Payment provider is required.");
     if (!country) errors.push("Country is required.");
 
-    // Optional field: only validated when the user typed something.
-    if (cardMixDebit !== "" && cardMixDebit !== null && cardMixDebit !== undefined) {
+    if (cardMixDebit !== "") {
       const e = fieldRangeError("card_mix_debit_pct", cardMixDebit);
       if (e) errors.push(e);
     }
@@ -133,11 +112,20 @@ export default function PaymentsAnalyzer() {
     return { valid: errors.length === 0, errors };
   }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit]);
 
-  // ── Submit → submitPaymentsAnalysis → redirect to /PaymentsResults with
-  //    the anon_session_id the backend generated for us. The endpoint itself
-  //    is rate-limited server-side (10/h/IP) — surfacing that 429 to the user
-  //    if it happens is more useful than silently swallowing it, so we render
-  //    the retry_after seconds in the banner.
+  // ── Progress counter (5 required fields + 1 optional shown when open) ──
+  // Used by the header pill so the user has a sense of momentum. The optional
+  // field contributes to "6 of 6" only when the drawer is open — otherwise
+  // "5 of 5" reads as complete.
+  const progress = useMemo(() => {
+    const filled = [gmv, avgTicket, intlPct, providerSlug, country].filter((v) => v !== "" && v !== undefined && v !== null).length;
+    const optionalCounts = cardMixOpen;
+    const optionalFilled = optionalCounts && cardMixDebit !== "" ? 1 : 0;
+    const total = 5 + (optionalCounts ? 1 : 0);
+    const done = filled + optionalFilled;
+    return { done, total, pct: Math.round((done / total) * 100) };
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit]);
+
+  // ── Submit → submitPaymentsAnalysis → /PaymentsResults?session=<id>
   const handleSubmit = async () => {
     setErrorBanner("");
     if (!validation.valid) {
@@ -158,7 +146,6 @@ export default function PaymentsAnalyzer() {
       const resp = await base44.functions.invoke("submitPaymentsAnalysis", payload);
       const body = resp?.data || resp;
 
-      // Rate-limited from the same IP bucket. Show the retry hint and stop.
       if (body?.error === "rate_limited") {
         const secs = Number(body.retry_after_seconds) || 0;
         const mins = Math.max(1, Math.ceil(secs / 60));
@@ -166,8 +153,6 @@ export default function PaymentsAnalyzer() {
         setSubmitting(false);
         return;
       }
-      // Field-level validation echoed back — should already have been caught
-      // by client validation, but the backend is the source of truth.
       if (body?.error === "invalid_input") {
         setErrorBanner(`Please review "${body.field}" — the value is out of range.`);
         setSubmitting(false);
@@ -178,11 +163,6 @@ export default function PaymentsAnalyzer() {
         setSubmitting(false);
         return;
       }
-
-      // Success — hand off to the results screen. That page reads the anon
-      // session id and calls getAnonResultTeaser (Chunk 5) to render the
-      // saved engine_result. Nothing about the number is passed via URL —
-      // the URL only carries the pointer.
       navigate(`/PaymentsResults?session=${encodeURIComponent(body.anon_session_id)}`);
     } catch {
       setErrorBanner("We couldn't reach the server. Please check your connection and try again.");
@@ -199,7 +179,7 @@ export default function PaymentsAnalyzer() {
           "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
       }}
     >
-      {/* Fixed ambient grid + cyan halo — matches legacy Analyzer for visual continuity */}
+      {/* Ambient grid + halo — matches Analyzer/Results for visual continuity */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"
@@ -224,16 +204,33 @@ export default function PaymentsAnalyzer() {
 
       <Navbar />
 
-      <main className="relative z-10 flex-1 max-w-lg mx-auto w-full px-5 pt-24 pb-36">
-        {/* Eyebrow pill */}
-        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5"
-          style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
-        >
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+      {/* Thin progress bar under navbar */}
+      <div className="fixed top-14 left-0 right-0 z-40 h-[2px]" style={{ background: "rgba(255,255,255,0.05)" }}>
+        <div
+          className="h-full transition-all duration-500"
+          style={{
+            width: `${progress.pct}%`,
+            background: "linear-gradient(90deg, #3b82f6 0%, #22d3ee 100%)",
+            boxShadow: "0 0 12px rgba(34,211,238,0.55)",
+          }}
+        />
+      </div>
+
+      <main className="relative z-10 flex-1 max-w-lg mx-auto w-full px-5 pt-20 pb-16">
+        {/* Header pill + counter */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1"
+            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+          >
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Payments audit · anonymous</span>
+          </div>
+          <span className="text-[11px] font-bold tabular-nums text-white/50">
+            {progress.done} <span className="text-white/30">of {progress.total}</span>
           </span>
-          <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Payments audit · anonymous</span>
         </div>
 
         <h1
@@ -249,16 +246,15 @@ export default function PaymentsAnalyzer() {
           What are you overpaying on payments?
         </h1>
         <p className="text-[14px] text-white/55 mb-8">
-          Six quick fields. No account required, no data connected. We estimate the gap between what you pay today
+          A few quick answers. No account required, no data connected. We estimate the gap between what you pay today
           and what a merchant of your size + region should be paying.
         </p>
 
-        {/* Error banner */}
         {errorBanner && (
           <div
             role="alert"
             aria-live="polite"
-            className="mb-5 rounded-xl px-4 py-3 flex items-start gap-2.5"
+            className="mb-6 rounded-xl px-4 py-3 flex items-start gap-2.5"
             style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}
           >
             <AlertTriangle size={14} className="text-red-300 mt-0.5 shrink-0" aria-hidden="true" />
@@ -266,87 +262,41 @@ export default function PaymentsAnalyzer() {
           </div>
         )}
 
-        {/* ─────────────── Form (single screen) ─────────────── */}
-        <div className="space-y-5">
-          {/* Monthly GMV */}
-          <div className="space-y-1.5">
-            <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
-              Monthly card GMV (EUR)
-            </Label>
-            <Input
-              type="number" min={0} inputMode="numeric"
-              value={gmv}
-              onChange={(e) => setGmv(e.target.value)}
-              placeholder="e.g. 100000"
-              className="h-11 text-sm text-white placeholder:text-white/30"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
-            />
-            <p className="text-[11px] text-white/35">Approximate total processed via card in a typical month.</p>
+        {/* ─────────────── Form ─────────────── */}
+        <div className="space-y-8">
+          <GmvSlider value={gmv} onChange={setGmv} />
+          <AvgTicketInput value={avgTicket} onChange={setAvgTicket} />
+          <IntlSlider value={intlPct} onChange={setIntlPct} />
+
+          {/* Provider grid */}
+          <div className="space-y-2.5">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                Payment provider
+              </span>
+              <span className="text-[10px] text-white/35">One tap</span>
+            </div>
+            <ProviderGrid options={PROVIDER_OPTIONS} value={providerSlug} onChange={setProviderSlug} />
           </div>
 
-          {/* Average ticket */}
-          <div className="space-y-1.5">
-            <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
-              Average ticket (EUR)
-            </Label>
-            <Input
-              type="number" min={0} step="0.01" inputMode="decimal"
-              value={avgTicket}
-              onChange={(e) => setAvgTicket(e.target.value)}
-              placeholder="e.g. 80"
-              className="h-11 text-sm text-white placeholder:text-white/30"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
-            />
-            <p className="text-[11px] text-white/35">The fixed fee (e.g. €0.25) hits low-ticket merchants much harder — this changes the answer.</p>
-          </div>
-
-          {/* International % */}
-          <div className="space-y-1.5">
-            <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
-              International share (%)
-            </Label>
-            <Input
-              type="number" min={0} max={100} inputMode="numeric"
-              value={intlPct}
-              onChange={(e) => setIntlPct(e.target.value)}
-              placeholder="e.g. 10 (or 0 if you sell only domestically)"
-              className="h-11 text-sm text-white placeholder:text-white/30"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
-            />
-          </div>
-
-          {/* Provider */}
-          <div className="space-y-1.5">
-            <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
-              Payment provider
-            </Label>
-            <select
-              value={providerSlug}
-              onChange={(e) => setProviderSlug(e.target.value)}
-              className="w-full h-11 px-3 rounded-md text-sm text-white"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
-            >
-              <option value="" className="bg-neutral-900">Select your provider…</option>
-              {PROVIDER_OPTIONS.map((p) => (
-                <option key={p.slug} value={p.slug} className="bg-neutral-900">{p.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Country */}
-          <div className="space-y-1.5">
-            <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
-              Country
-            </Label>
+          {/* Country — kept as a select (single-choice from 22 options; a grid
+              would be visually noisy for a low-frequency choice). */}
+          <div className="space-y-2.5">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                Country
+              </span>
+              <span className="text-[10px] text-white/35">Determines your region benchmark</span>
+            </div>
             <select
               value={country}
-              onChange={(e) => setCountry(e.target.value === "OT" ? "" : e.target.value)}
-              className="w-full h-11 px-3 rounded-md text-sm text-white"
+              onChange={(e) => setCountry(e.target.value)}
+              className="w-full h-11 px-3 rounded-md text-sm text-white focus:outline-none focus:border-cyan-400/60 transition-colors"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
             >
               <option value="" className="bg-neutral-900">Select your country…</option>
               {COUNTRY_OPTIONS.map((c) => (
-                <option key={c.code} value={c.code === "OT" ? "" : c.code} className="bg-neutral-900">{c.name}</option>
+                <option key={c.code} value={c.code} className="bg-neutral-900">{c.name}</option>
               ))}
             </select>
           </div>
@@ -366,23 +316,10 @@ export default function PaymentsAnalyzer() {
             </button>
             {cardMixOpen && (
               <div
-                className="mt-3 space-y-1.5 rounded-2xl p-4"
+                className="mt-3 rounded-2xl p-4"
                 style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}
               >
-                <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
-                  Debit card share (%)
-                </Label>
-                <Input
-                  type="number" min={0} max={100} inputMode="numeric"
-                  value={cardMixDebit}
-                  onChange={(e) => setCardMixDebit(e.target.value)}
-                  placeholder="e.g. 40"
-                  className="h-11 text-sm text-white placeholder:text-white/30"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
-                />
-                <p className="text-[11px] text-white/35">
-                  Leave blank if unsure — today's engine doesn't consume this yet, but we store it for future rate refinements.
-                </p>
+                <CardMixSlider value={cardMixDebit} onChange={setCardMixDebit} />
               </div>
             )}
           </div>
@@ -392,49 +329,42 @@ export default function PaymentsAnalyzer() {
             <Lock size={11} className="mt-0.5 shrink-0" />
             <span>No account, no data connected, nothing shared. Results are stored with an anonymous session id you can revisit from this device.</span>
           </div>
+
+          {/* Primary CTA — inline, full width, at the end of the form.
+              Replaces the floating footer button that was clipping on some
+              viewports. Secondary Back link sits right below. */}
+          <div className="pt-2 space-y-3">
+            <Button
+              onClick={handleSubmit}
+              disabled={!validation.valid || submitting}
+              className="w-full h-12 rounded-full text-sm font-bold gap-2 text-white hover:opacity-90 disabled:opacity-40 transition-opacity"
+              style={{
+                background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                boxShadow: "0 0 32px rgba(34,211,238,0.45), 0 12px 32px -12px rgba(34,211,238,0.6)",
+              }}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Running audit…
+                </>
+              ) : (
+                <>
+                  See my payments gap <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              disabled={submitting}
+              className="w-full h-11 rounded-full text-[13px] font-medium text-white/50 hover:text-white/85 transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-40"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back
+            </button>
+          </div>
         </div>
       </main>
-
-      {/* Footer actions — same glass strip as the legacy Analyzer */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 py-3"
-        style={{
-          background: "rgba(10,10,10,0.78)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-        }}
-      >
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="h-11 rounded-full px-4 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5"
-          disabled={submitting}
-        >
-          <ArrowLeft className="mr-1.5 h-4 w-4" />
-          Back
-        </Button>
-
-        <Button
-          onClick={handleSubmit}
-          disabled={!validation.valid || submitting}
-          className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 disabled:opacity-40"
-          style={{
-            background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
-            boxShadow: "0 0 32px rgba(34,211,238,0.45), 0 12px 32px -12px rgba(34,211,238,0.6)",
-          }}
-        >
-          {submitting ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Running audit…
-            </>
-          ) : (
-            <>
-              See my payments gap <ArrowRight className="h-4 w-4" />
-            </>
-          )}
-        </Button>
-      </div>
     </div>
   );
 }
