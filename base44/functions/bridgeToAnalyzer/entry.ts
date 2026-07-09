@@ -10,9 +10,25 @@
 //
 // ═══ Product rules ═══════════════════════════════════════════════════════
 //
-//   R1. payment_fee_pct = sum(fee) / sum(amount) over SUCCESSFUL CHARGES ONLY.
-//       Denominator = GROSS GMV. Excluded from the rate: refunds, payouts,
-//       transfers, stripe_fees, application_fees, disputes, adjustments.
+//   R1. payment_fee_pct = sum(fee_base) / sum(charge_amount) on SUCCESSFUL
+//       CHARGES ONLY, where fee_base is the NEGOTIABLE component of the
+//       Stripe fee (processing fee proper). Excluded from fee_base:
+//         - fee_fx        = currency conversion markup (goes to FX line)
+//         - fee_intl_card = cross-border card scheme pass-through (NOT counted
+//                           as savings — non-negotiable network cost)
+//       Denominator = GROSS GMV of dominant-currency successful charges.
+//       Excluded rows: refunds, payouts, transfers, stripe_fees,
+//       application_fees, disputes, adjustments.
+//
+//   R1b. FX line (populates scoreEngine's Banking vertical, NOT Payments):
+//         intl_pct           = % of gross charge volume where the underlying
+//                              charge.currency (from expand[]=data.source)
+//                              != dominant currency. This is the ONLY signal
+//                              we trust for multi-currency — fee_intl_card
+//                              is a DIFFERENT phenomenon (EEE tarjeta
+//                              extranjera en EUR) and would inflate intl_pct.
+//         bank_fx_spread_pct = sum(fee_fx) / sum(intl_gmv) * 100.
+//       These two feed scoreEngine.calculateSavings() unchanged.
 //
 //   R2. monthly_revenue = NET of refunds (charges + signed refunds), divided
 //       by activeDays/30 (adaptive), not a fixed 3. A brand with 15 active
@@ -122,6 +138,12 @@ async function fetchAllBalanceTransactions(bearer: string, sinceMs: number, unti
       "created[gte]": String(sinceSec),
       "created[lte]": String(untilSec),
     });
+    // Expand the underlying source (usually a charge) so we can read
+    // charge.currency — the ONLY reliable signal of "this charge was in a
+    // non-domestic currency" (fee_intl_card is a different phenomenon and
+    // would inflate intl_pct if used as proxy). One extra path segment in
+    // the URLSearchParams, zero extra requests per page.
+    params.append("expand[]", "data.source");
     if (startingAfter) params.set("starting_after", startingAfter);
     const res = await fetch(`https://api.stripe.com/v1/balance_transactions?${params.toString()}`, {
       headers: { Authorization: `Bearer ${bearer}` },
@@ -158,16 +180,42 @@ function mapType(rawType: any): string | null {
   if (KNOWN_TYPES.includes(rawType)) return rawType;
   return null;
 }
-type NormRow = { external_id: string; amount: number; fee: number; net: number; currency: string; type: string | null; occurred_at: string };
+type NormRow = {
+  external_id: string;
+  amount: number;
+  fee: number;              // TOP-LEVEL fee (kept for reconciliation only)
+  net: number;
+  currency: string;         // balance_transaction currency (settlement)
+  type: string | null;
+  occurred_at: string;
+  // ── FX/intl decomposition (populated only when the row is a charge) ──
+  charge_currency: string | null;   // charge.currency from expand[]=data.source
+  fee_base: number;                 // negotiable — Stripe processing proper
+  fee_intl_card: number;            // pass-through cross-border card fee
+  fee_fx: number;                   // currency-conversion markup (reducible)
+};
 
-function normalizeStripeRows(raw: any[]): { rows: NormRow[]; malformed: number } {
+// Classify a single fee_details entry into { base | intl_card | fx } based on
+// its description string. Stripe does not give a clean enum — matching by
+// substring is the officially documented approach in their support forum and
+// the practice used by every third-party Stripe fee decomposer (Baremetrics,
+// ProfitWell). Keep the regexes narrow to avoid over-attributing to fx.
+function classifyFeeDetail(description: string): "intl_card" | "fx" | "base" {
+  const d = (description || "").toLowerCase();
+  // Order matters: "cross border" appears in both intl-card AND fx contexts,
+  // so check the more specific labels first.
+  if (d.includes("currency conversion")) return "fx";
+  if (d.includes("international card") || d.includes("cross border")) return "intl_card";
+  return "base";
+}
+
+function normalizeStripeRows(raw: any[]): { rows: NormRow[]; malformed: number; fee_detail_reconciliation_mismatches: number } {
   const rows: NormRow[] = [];
   let malformed = 0;
+  let feeMismatches = 0;
   for (const tx of raw) {
     if (!tx || typeof tx !== "object") { malformed++; continue; }
     const id = tx?.id;
-    // Required-field check per invariant: if the API drops something we
-    // count on, skip the row AND count it — never invent it.
     if (id === null || id === undefined || id === "") { malformed++; continue; }
     const rawType = tx?.reporting_category ?? tx?.type ?? null;
     const type = mapType(rawType);
@@ -175,6 +223,38 @@ function normalizeStripeRows(raw: any[]): { rows: NormRow[]; malformed: number }
     if (typeof rawCurrency !== "string" || rawCurrency.length === 0) { malformed++; continue; }
     const createdSec = toNum(tx?.created, 0);
     if (createdSec <= 0) { malformed++; continue; }
+
+    // Decompose fee_details (charges only — refunds/etc. have fee=0).
+    let fee_base = 0, fee_intl_card = 0, fee_fx = 0;
+    if (type === "charge" && Array.isArray(tx.fee_details)) {
+      for (const fd of tx.fee_details) {
+        const amt = toNum(fd?.amount, 0) / 100;
+        if (amt === 0) continue;
+        const bucket = classifyFeeDetail(String(fd?.description || ""));
+        if (bucket === "fx") fee_fx += amt;
+        else if (bucket === "intl_card") fee_intl_card += amt;
+        else fee_base += amt;
+      }
+      // Reconciliation guard: sum of buckets must equal top-level fee (within
+      // 1 cent for rounding). If it doesn't, we count the row and fall back
+      // to attributing the WHOLE fee to fee_base — safer than double-counting.
+      const topFee = toNum(tx?.fee, 0) / 100;
+      const sumBuckets = fee_base + fee_intl_card + fee_fx;
+      if (Math.abs(sumBuckets - topFee) > 0.011) {
+        feeMismatches++;
+        fee_base = topFee;
+        fee_intl_card = 0;
+        fee_fx = 0;
+      }
+    }
+
+    // charge.currency from the expanded source (only meaningful when
+    // reporting_category === "charge" AND source was expanded successfully).
+    let charge_currency: string | null = null;
+    if (type === "charge" && tx?.source && typeof tx.source === "object" && typeof tx.source.currency === "string") {
+      charge_currency = tx.source.currency.toUpperCase();
+    }
+
     rows.push({
       external_id: String(id),
       amount: toNum(tx?.amount) / 100,
@@ -183,9 +263,13 @@ function normalizeStripeRows(raw: any[]): { rows: NormRow[]; malformed: number }
       currency: rawCurrency.toUpperCase(),
       type,
       occurred_at: new Date(createdSec * 1000).toISOString(),
+      charge_currency,
+      fee_base,
+      fee_intl_card,
+      fee_fx,
     });
   }
-  return { rows, malformed };
+  return { rows, malformed, fee_detail_reconciliation_mismatches: feeMismatches };
 }
 
 // ─── R4 — dominant currency ───────────────────────────────────────────────
@@ -218,19 +302,26 @@ function aggregate(rows: NormRow[], dominantCurrency: string) {
   const refunds = rows.filter(r => r.type === "refund" && r.currency === dominantCurrency);
 
   const sumChargeAmount = charges.reduce((a, r) => a + r.amount, 0);
-  const sumChargeFee    = charges.reduce((a, r) => a + r.fee, 0);
+  const sumChargeFee    = charges.reduce((a, r) => a + r.fee, 0);         // top-level fee (reconciliation)
+  const sumFeeBase      = charges.reduce((a, r) => a + r.fee_base, 0);    // negotiable
+  const sumFeeIntlCard  = charges.reduce((a, r) => a + r.fee_intl_card, 0); // pass-through (NOT ahorro)
+  const sumFeeFx        = charges.reduce((a, r) => a + r.fee_fx, 0);      // currency conversion (reducible)
   const chargeCount     = charges.length;
   const sumRefundAmount = refunds.reduce((a, r) => a + r.amount, 0); // negative or 0
 
-  const rateRaw = sumChargeAmount > 0 ? (sumChargeFee / sumChargeAmount) * 100 : 0;
-  const payment_fee_pct = Math.round(rateRaw * 100) / 100;
+  // Rate NOW = base processing only. Everything the network passes through
+  // (intl card) or Stripe charges for FX conversion is excluded from this
+  // rate and surfaced separately (FX only, per user directive).
+  const rateBaseRaw = sumChargeAmount > 0 ? (sumFeeBase / sumChargeAmount) * 100 : 0;
+  const payment_fee_pct = Math.round(rateBaseRaw * 100) / 100;
+
+  // Kept for observability only — the OLD blended rate (all fees / gross).
+  const rateBlendedRaw = sumChargeAmount > 0 ? (sumChargeFee / sumChargeAmount) * 100 : 0;
+  const legacy_blended_fee_pct = Math.round(rateBlendedRaw * 100) / 100;
 
   const netAll = sumChargeAmount + sumRefundAmount;
 
   const activeDays = countActiveDays(charges);
-  // R2 adaptive monthly scale: divide by activeDays/30, not by 3.
-  // Guard: activeDays === 0 → keep monthly_revenue at 0 (there is no signal
-  // to monthly-ize). This only happens in the insufficient case with 0 charges.
   const monthly_revenue = activeDays > 0
     ? Math.round((netAll / (activeDays / 30)) * 100) / 100
     : 0;
@@ -244,6 +335,30 @@ function aggregate(rows: NormRow[], dominantCurrency: string) {
     ? Math.round((sumChargeAmount / chargeCount) * 100) / 100
     : 0;
 
+  // ── Intl / FX signals (feed scoreEngine's Banking vertical) ─────────────
+  // intl_pct uses charge.currency (expanded source) as the ONLY signal — not
+  // fee_intl_card, which is a separate phenomenon (foreign card in domestic
+  // currency). If expand didn't return a charge_currency for some rows, we
+  // fall back to the balance_transaction currency for those (best-effort);
+  // that fallback treats them as domestic and can only UNDER-count intl_pct,
+  // never over-count it — matches the "under-promise" invariant.
+  const intlCharges = charges.filter(r => {
+    const cc = r.charge_currency || r.currency;
+    return cc !== dominantCurrency;
+  });
+  const sumIntlGmv = intlCharges.reduce((a, r) => a + r.amount, 0);
+  const intl_pct = sumChargeAmount > 0
+    ? Math.round((sumIntlGmv / sumChargeAmount) * 10000) / 100  // 2 decimals
+    : 0;
+
+  // bank_fx_spread_pct = FX conversion cost as % of intl GMV.
+  // Denominator = intl GMV (not total GMV) — otherwise a low intl_pct dilutes
+  // the spread into invisibility. scoreEngine multiplies by intl_gmv again
+  // downstream, so the semantic is "spread ON the intl slice".
+  const bank_fx_spread_pct = sumIntlGmv > 0
+    ? Math.round((sumFeeFx / sumIntlGmv) * 10000) / 100
+    : 0;
+
   return {
     payment_fee_pct,
     monthly_revenue,
@@ -253,11 +368,20 @@ function aggregate(rows: NormRow[], dominantCurrency: string) {
     charge_count: chargeCount,
     refund_count: refunds.length,
     active_days: activeDays,
+    // New: fields scoreEngine's Banking vertical consumes
+    intl_pct,
+    bank_fx_spread_pct,
     debug: {
       sum_gross_charges: Math.round(sumChargeAmount * 100) / 100,
-      sum_processing_fees: Math.round(sumChargeFee * 100) / 100,
+      sum_processing_fees_top_level: Math.round(sumChargeFee * 100) / 100,
+      sum_fee_base: Math.round(sumFeeBase * 100) / 100,
+      sum_fee_intl_card: Math.round(sumFeeIntlCard * 100) / 100,
+      sum_fee_fx: Math.round(sumFeeFx * 100) / 100,
+      legacy_blended_fee_pct,
       sum_refunds_signed: Math.round(sumRefundAmount * 100) / 100,
       net_all_charges_and_refunds: Math.round(netAll * 100) / 100,
+      intl_charge_count: intlCharges.length,
+      sum_intl_gmv: Math.round(sumIntlGmv * 100) / 100,
       excluded_counts: {
         payouts:          rows.filter(r => r.type === "payout").length,
         transfers:        rows.filter(r => r.type === "transfer").length,
@@ -326,7 +450,7 @@ Deno.serve(async (req) => {
     // Fetch + normalize.
     const bearer = await resolveStripeBearer(integ);
     const rawRows = await fetchAllBalanceTransactions(bearer, sinceMs, untilMs);
-    const { rows: normRows, malformed } = normalizeStripeRows(rawRows);
+    const { rows: normRows, malformed, fee_detail_reconciliation_mismatches } = normalizeStripeRows(rawRows);
 
     // Dominant currency + assumptions.
     const { dominant, totalsByCurrency } = pickDominantCurrency(normRows);
@@ -431,16 +555,30 @@ Deno.serve(async (req) => {
 
     // Assumptions the input carries.
     assumptions.push(
-      `Rate = sum(fee)/sum(amount) on successful charges only (${agg.charge_count} charges); ` +
-      `refunds/payouts/transfers/stripe_fees/application_fees/disputes/adjustments excluded from the rate.`,
-      `monthly_revenue is net of refunds (${agg.debug.sum_gross_charges} gross − ` +
-      `${Math.abs(agg.debug.sum_refunds_signed)} refunds), scaled to monthly via ` +
-      `${agg.active_days} active day(s) / 30.`,
+      `payment_fee_pct = sum(fee_base) / sum(charge_amount) on ${agg.charge_count} successful charges. ` +
+      `fee_base = Stripe processing (negotiable). Excluded from this rate: currency conversion ` +
+      `(€${nice(agg.debug.sum_fee_fx)} → FX line) and cross-border card pass-through ` +
+      `(€${nice(agg.debug.sum_fee_intl_card)} → not counted as savings, non-negotiable network cost).`,
+      `Legacy blended rate (all fees / gross) would have been ${agg.debug.legacy_blended_fee_pct}% — kept for audit.`,
+      `intl_pct = ${agg.intl_pct}% derived from charge.currency via expand[]=data.source ` +
+      `(${agg.debug.intl_charge_count} of ${agg.charge_count} charges non-domestic; ` +
+      `€${nice(agg.debug.sum_intl_gmv)} of €${nice(agg.debug.sum_gross_charges)} gross).`,
+      agg.intl_pct > 0
+        ? `bank_fx_spread_pct = ${agg.bank_fx_spread_pct}% (sum fee_fx / intl_gmv).`
+        : `No FX conversion in window — bank_fx_spread_pct not published.`,
+      `monthly_revenue net of refunds (${agg.debug.sum_gross_charges} gross − ` +
+      `${Math.abs(agg.debug.sum_refunds_signed)} refunds), scaled via ${agg.active_days} active day(s) / 30.`,
       `Active-day window ends ${new Date(untilMs).toISOString()} UTC; ` +
       `${agg.active_days} distinct UTC dates carried at least one charge.`,
     );
     if (malformed > 0) {
       assumptions.push(`${malformed} malformed Stripe row(s) skipped (missing required field). Not included in any total.`);
+    }
+    if (fee_detail_reconciliation_mismatches > 0) {
+      assumptions.push(
+        `${fee_detail_reconciliation_mismatches} charge(s) had fee_details not summing to top-level fee ` +
+        `— attributed 100% to fee_base as safe fallback (no double-count).`
+      );
     }
 
     // Build the AnalyzerInput payload. Only include fields we actually
@@ -462,6 +600,13 @@ Deno.serve(async (req) => {
       payload.monthly_transactions = agg.monthly_transactions;
       payload.avg_order_value = agg.avg_order_value;
       payload.payment_fee_pct = agg.payment_fee_pct;
+      // Feed scoreEngine's Banking vertical (FX line). Only publish when we
+      // actually detected intl activity — otherwise leave the fields absent
+      // so the engine's defaults (0) apply cleanly.
+      if (agg.intl_pct > 0) {
+        payload.intl_pct = agg.intl_pct;
+        payload.bank_fx_spread_pct = agg.bank_fx_spread_pct;
+      }
     }
 
     const analyzerInput = await base44.asServiceRole.entities.AnalyzerInput.create(payload);
@@ -484,6 +629,8 @@ Deno.serve(async (req) => {
         avg_order_value: agg.avg_order_value,
         payment_fee_pct: agg.payment_fee_pct,
         monthly_gmv_gross: agg.monthly_gmv_gross,
+        intl_pct: agg.intl_pct,
+        bank_fx_spread_pct: agg.bank_fx_spread_pct,
       } : null,
       window: {
         since_iso: new Date(sinceMs).toISOString(),
