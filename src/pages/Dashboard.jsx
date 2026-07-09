@@ -206,27 +206,32 @@ export default function Dashboard() {
   }
 
   /* ───── STATE B / C: result exists ───── */
-  // ⚠️ BUG-2 (documented, not fixed — see src/docs/KNOWN_DEBT.md)
-  // The "Verified — based on real Stripe data" hero badge is driven ONLY by
-  // `stripeConnected` (Integration.status === "connected"), introduced in
-  // FASE 1. That means: as soon as a Stripe Integration row exists in
-  // "connected" state, the hero flips to Verified — even when NO
-  // AnalyzerResult with verification_scope containing "payments" exists for
-  // the active brand. Symptom in the wild: hero shows "Verified — €0/yr",
-  // reading as "we verified you save €0" instead of "we can't verify yet".
-  // FIX: the Verified state must require BOTH (a) Integration connected AND
-  // (b) at least one AnalyzerResult for this brand with
-  // verification_scope.includes("payments") (or the equivalent per-vertical
-  // union documented in AnalyzerResult.verification_scope). Until FASE 3
-  // materializes verified AnalyzerResults, this stays estimated.
-  // Do NOT flip the condition until FASE 3 lands, otherwise we'll block the
-  // legitimate "verified after Sync + auto-materialize" path we're building.
-  const heroBadge = stripeConnected
-    ? { label: t("state_c_badge"), cls: "bg-emerald-400/10 text-emerald-300 border-emerald-400/25", dot: "bg-emerald-400" }
-    : { label: t("state_b_badge"), cls: "bg-amber-400/10 text-amber-300 border-amber-400/25", dot: "bg-amber-400" };
+  // BUG-2 FIX (2026-07-09) — the hero badge now derives from the ACTIVE
+  // AnalyzerResult's `verification_status`, not from Integration connectivity.
+  // Rationale: connecting Stripe is necessary but not sufficient — a row
+  // materialized on provisional data (2 active days, 15 charges) is honestly
+  // labeled "provisional", not "verified". Only `verification_status ===
+  // "verified"` (which verifiedMaterializer emits at high confidence — ≥45
+  // active days AND ≥30 charges) earns the emerald "Verified" pill.
+  //
+  // Three states:
+  //   • verified          → emerald "Verified — based on real Stripe data"
+  //   • pending_verification → blue "Provisional — verified on partial data"
+  //   • estimated (or missing) → amber "Estimated — connect Stripe to verify"
+  //
+  // stripeConnected is intentionally NOT part of the gate anymore: an
+  // Integration without a materialized AnalyzerResult ≠ verified savings.
+  const verificationStatus = latest.verification_status || "estimated";
+  const heroBadge =
+    verificationStatus === "verified"
+      ? { label: t("state_c_badge"), cls: "bg-emerald-400/10 text-emerald-300 border-emerald-400/25", dot: "bg-emerald-400" }
+    : verificationStatus === "pending_verification"
+      ? { label: t("state_c_badge_provisional"), cls: "bg-blue-400/10 text-blue-300 border-blue-400/25", dot: "bg-blue-400" }
+      : { label: t("state_b_badge"), cls: "bg-amber-400/10 text-amber-300 border-amber-400/25", dot: "bg-amber-400" };
 
-  const heroSubtitle = stripeConnected
-    ? t("hero_confidence_verified")
+  const heroSubtitle =
+    verificationStatus === "verified"       ? t("hero_confidence_verified")
+    : verificationStatus === "pending_verification" ? t("hero_confidence_provisional")
     : t("hero_confidence_estimated");
 
   // Group nodes by category
@@ -251,7 +256,7 @@ export default function Dashboard() {
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
             </span>
             <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/65">
-              {stripeConnected ? t("state_c_badge") : t("state_b_badge")}
+              {heroBadge.label}
             </span>
           </div>
           <h1
@@ -330,9 +335,13 @@ export default function Dashboard() {
           </div>
 
           <div className="shrink-0 w-full sm:w-auto sm:max-w-xs">
-            {stripeConnected ? (
+            {verificationStatus === "verified" ? (
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 text-emerald-300 text-xs font-bold">
                 <CheckCircle2 size={11} /> {t("payments_verified")}
+              </div>
+            ) : verificationStatus === "pending_verification" ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-400/25 bg-blue-400/10 text-blue-300 text-xs font-bold">
+                <Sparkles size={11} /> {t("payments_provisional")}
               </div>
             ) : (
               <UpgradeToVerified
