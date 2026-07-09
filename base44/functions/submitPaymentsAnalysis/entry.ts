@@ -19,6 +19,205 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
+// ─── SYNC block — verbatim copy of src/lib/paymentsGap.js ───────────────────
+// This endpoint invokes the engine IN-PROCESS instead of over HTTP for two
+// reasons:
+//   1. Anonymous callers have no bearer token to forward, so a fetch to
+//      calculatePaymentsGap would always die at LOCK #1 (auth).
+//   2. Even if we could forge auth, an inter-function fetch adds latency + a
+//      failure surface for a computation that's pure math over rate-table rows.
+// The calculatePaymentsGap HTTP endpoint remains behind double-lock as an
+// audit/debug surface; production traffic uses the copy below. Both copies
+// stay identical via the paymentsGap pair in the sync-check test suite.
+
+// SYNC-START: paymentsGap
+
+const ENGINE_VERSION = "v1";
+
+const MINOR_PER_MAJOR = 100;
+
+const BPS_PER_PCT = 100;
+const BPS_PER_UNIT = 10000;
+
+const REQUIRED_FALLBACK_KEYS = [
+  "ANY|ANY|EU",
+  "ANY|ANY|UK",
+  "ANY|ANY|US",
+  "ANY|ANY|RoW",
+];
+
+const DEFAULT_INTL_PCT = 0;
+
+const KNOWN_REGIONS = new Set(["EU", "UK", "US", "RoW"]);
+
+const KNOWN_PROVIDERS = new Set(["stripe", "paypal", "shopify_payments"]);
+
+function normalizeInput(raw) {
+  if (!raw || typeof raw !== "object") {
+    return { ok: false, reason: "input_missing" };
+  }
+  const monthly_gmv_eur = Number(raw.monthly_gmv_eur);
+  if (!isFinite(monthly_gmv_eur) || monthly_gmv_eur <= 0) {
+    return { ok: false, reason: "monthly_gmv_eur_invalid" };
+  }
+  const avg_ticket_eur = Number(raw.avg_ticket_eur);
+  if (!isFinite(avg_ticket_eur) || avg_ticket_eur <= 0) {
+    return { ok: false, reason: "avg_ticket_eur_invalid" };
+  }
+  const region = KNOWN_REGIONS.has(raw.region) ? raw.region : "RoW";
+  const providerRaw = typeof raw.provider_slug === "string" ? raw.provider_slug.trim().toLowerCase() : "";
+  const provider_slug = providerRaw.length > 0 ? providerRaw : "unknown";
+  const intl_pctRaw = Number(raw.intl_pct);
+  const intl_pct = isFinite(intl_pctRaw) && intl_pctRaw >= 0 && intl_pctRaw <= 100
+    ? intl_pctRaw
+    : DEFAULT_INTL_PCT;
+  return {
+    ok: true,
+    input: {
+      monthly_gmv_eur,
+      avg_ticket_eur,
+      region,
+      provider_slug,
+      intl_pct,
+    },
+  };
+}
+
+function validateRateTable(rows) {
+  if (!Array.isArray(rows)) {
+    return { ok: false, reason: "rate_table_not_array", missing: REQUIRED_FALLBACK_KEYS };
+  }
+  const activeByKey = new Map();
+  for (const r of rows) {
+    if (!r || r.active === false) continue;
+    if (typeof r.cohort_key === "string") activeByKey.set(r.cohort_key, r);
+  }
+  const missing = REQUIRED_FALLBACK_KEYS.filter((k) => !activeByKey.has(k));
+  if (missing.length > 0) {
+    return { ok: false, reason: "rate_table_incomplete", missing };
+  }
+  return { ok: true };
+}
+
+function selectRow(rows, provider_slug, region) {
+  const exactKey = KNOWN_PROVIDERS.has(provider_slug)
+    ? `${provider_slug}|ANY|${region}`
+    : null;
+  const fallbackKey = `ANY|ANY|${region}`;
+  let exact = null;
+  let fallback = null;
+  for (const r of rows) {
+    if (!r || r.active === false) continue;
+    if (exactKey && r.cohort_key === exactKey) exact = r;
+    else if (r.cohort_key === fallbackKey) fallback = r;
+  }
+  if (exact) return { row: exact, matched: "exact" };
+  if (fallback) return { row: fallback, matched: "fallback" };
+  return { row: null, matched: "none" };
+}
+
+function computeEffectiveBps({ percent_bps, fixed_fee_minor_units }, avg_ticket_eur) {
+  const fixedMajor = fixed_fee_minor_units / MINOR_PER_MAJOR;
+  const amortizedBps = (fixedMajor / avg_ticket_eur) * BPS_PER_UNIT;
+  return percent_bps + amortizedBps;
+}
+
+function computeMonthlySavings({ current_bps, achievable_bps, monthly_gmv_eur }) {
+  const gapBps = current_bps - achievable_bps;
+  if (gapBps <= 0) return 0;
+  return (gapBps / BPS_PER_UNIT) * monthly_gmv_eur;
+}
+
+function applyBand(point, band_pct) {
+  const half = point * band_pct;
+  return { lo: Math.max(0, point - half), point, hi: point + half };
+}
+
+const FALLBACK_ASSUMPTION = "Estimate based on regional averages, not provider-verified rates. Connect your PSP for exact figures.";
+const AMORTIZATION_NOTE = (fixedMinor, currency, avgTicket) =>
+  `Fixed fee of ${(fixedMinor / MINOR_PER_MAJOR).toFixed(2)} ${currency} amortized over an average ticket of €${avgTicket.toFixed(2)}.`;
+
+const ACHIEVABLE_NOTE = (breakdown) => {
+  if (!breakdown) return null;
+  const { interchange_bps, scheme_fees_bps, processor_margin_bps, processor_margin_band_bps } = breakdown;
+  return (
+    `Achievable rate composition: interchange ${interchange_bps} bps + scheme fees ${scheme_fees_bps} bps + ` +
+    `assumed processor margin ${processor_margin_bps} bps (±${processor_margin_band_bps} bps assumption).`
+  );
+};
+
+function calculateGap(rawInput, rateTable) {
+  const tableCheck = validateRateTable(rateTable);
+  if (!tableCheck.ok) {
+    return { ok: false, error: tableCheck.reason, missing: tableCheck.missing };
+  }
+  const parsed = normalizeInput(rawInput);
+  if (!parsed.ok) {
+    return { ok: false, error: parsed.reason };
+  }
+  const { input } = parsed;
+
+  const { row, matched } = selectRow(rateTable, input.provider_slug, input.region);
+  if (!row) {
+    return { ok: false, error: "rate_table_incomplete", missing: [`ANY|ANY|${input.region}`] };
+  }
+
+  const current_bps = computeEffectiveBps(
+    { percent_bps: row.percent_bps, fixed_fee_minor_units: row.fixed_fee_minor_units },
+    input.avg_ticket_eur
+  );
+
+  const hasAchievable =
+    typeof row.achievable_percent_bps === "number" &&
+    typeof row.achievable_fixed_fee_minor_units === "number";
+  const achievable_bps = hasAchievable
+    ? computeEffectiveBps(
+        {
+          percent_bps: row.achievable_percent_bps,
+          fixed_fee_minor_units: row.achievable_fixed_fee_minor_units,
+        },
+        input.avg_ticket_eur
+      )
+    : current_bps;
+
+  const pointSavings = computeMonthlySavings({
+    current_bps,
+    achievable_bps,
+    monthly_gmv_eur: input.monthly_gmv_eur,
+  });
+  const band_pct = typeof row.savings_band_pct === "number" ? row.savings_band_pct : 0.35;
+  const monthly = applyBand(pointSavings, band_pct);
+  const annual = {
+    lo: monthly.lo * 12,
+    point: monthly.point * 12,
+    hi: monthly.hi * 12,
+  };
+
+  const assumptions = [];
+  assumptions.push(
+    AMORTIZATION_NOTE(row.fixed_fee_minor_units, row.fixed_fee_currency, input.avg_ticket_eur)
+  );
+  const achievableNote = ACHIEVABLE_NOTE(row.achievable_breakdown_json);
+  if (achievableNote) assumptions.push(achievableNote);
+  if (row.verified !== true) assumptions.push(FALLBACK_ASSUMPTION);
+
+  return {
+    ok: true,
+    engine_version: ENGINE_VERSION,
+    current_effective_bps: current_bps,
+    achievable_effective_bps: achievable_bps,
+    monthly_savings_eur: monthly,
+    annual_savings_eur: annual,
+    cohort: {
+      key: row.cohort_key,
+      verified: row.verified === true,
+      matched,
+    },
+    assumptions,
+  };
+}
+// SYNC-END: paymentsGap
+
 // ─── Validation constants — hard contract §2.1, no silent clamping ──────────
 // The engine's own normalizeInput() is more permissive (it accepts any
 // positive number) because the engine is a pure math box. Endpoint-level
@@ -211,32 +410,23 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
   };
 }
 
-// ─── Engine invocation via HTTP with internal header ────────────────────────
-async function invokeEngine(engineInput: any): Promise<{ ok: boolean; status: number; body: any }> {
-  let appDomain = (Deno.env.get('APP_DOMAIN') || '').trim().replace(/\/$/, '');
-  if (appDomain && !/^https?:\/\//i.test(appDomain)) appDomain = `https://${appDomain}`;
-  if (!appDomain) return { ok: false, status: 500, body: { error: 'app_domain_missing' } };
-
-  const internalSecret = Deno.env.get('INTERNAL_CALL_SECRET');
-  if (!internalSecret) return { ok: false, status: 500, body: { error: 'internal_secret_missing' } };
-
-  const svcToken = Deno.env.get('BASE44_SERVICE_TOKEN')
-    || Deno.env.get('BASE44_SERVICE_ROLE_KEY')
-    || '';
-
-  const resp = await fetch(`${appDomain}/functions/calculatePaymentsGap`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Cambra-Internal-Call': internalSecret,
-      ...(svcToken ? { 'Authorization': `Bearer ${svcToken}` } : {}),
-    },
-    body: JSON.stringify(engineInput),
-  });
-  const text = await resp.text();
-  let parsed: any = null;
-  try { parsed = JSON.parse(text); } catch { parsed = text; }
-  return { ok: resp.ok, status: resp.status, body: parsed };
+// ─── Rate table loader ──────────────────────────────────────────────────────
+// Anonymous callers can't invoke calculatePaymentsGap over HTTP (no bearer to
+// forward), so we run the engine in-process using the SYNC-block copy above
+// and load the rate table directly with asServiceRole (the anonymous request
+// path here doesn't need per-user RLS because PaymentsRateTable rows are
+// public knowledge — verified pricing pages).
+async function loadRateTable(base44: any): Promise<{ ok: boolean; rows?: any[]; error?: string; missing?: string[] }> {
+  let rows = await base44.asServiceRole.entities.PaymentsRateTable.list('-created_date', 500);
+  let check = validateRateTable(rows);
+  if (!check.ok) {
+    // Same eventual-consistency retry as the HTTP endpoint uses.
+    await new Promise((r) => setTimeout(r, 400));
+    rows = await base44.asServiceRole.entities.PaymentsRateTable.list('-created_date', 500);
+    check = validateRateTable(rows);
+  }
+  if (!check.ok) return { ok: false, error: check.reason, missing: check.missing };
+  return { ok: true, rows };
 }
 
 // ─── HTTP handler ───────────────────────────────────────────────────────────
@@ -267,7 +457,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'rate_limited', retry_after_seconds: rl.retry_after_seconds }, { status: 429 });
     }
 
-    // Invoke engine.
+    // Load rate table + run engine in-process.
+    const table = await loadRateTable(base44);
+    if (!table.ok) {
+      console.error('submitPaymentsAnalysis rate table error:', table.error, table.missing);
+      return Response.json({ error: 'engine_unavailable' }, { status: 503 });
+    }
     const engineInput = {
       monthly_gmv_eur: v.clean.monthly_gmv_eur,
       avg_ticket_eur: v.clean.avg_ticket_eur,
@@ -275,32 +470,26 @@ Deno.serve(async (req) => {
       provider_slug: v.clean.provider_slug,
       intl_pct: v.clean.intl_pct,
     };
-    const eng = await invokeEngine(engineInput);
-    if (!eng.ok) {
-      // Bubble a sanitized error — never echo internal fields.
-      console.error('submitPaymentsAnalysis engine error:', eng.status, eng.body);
-      return Response.json({ error: 'engine_unavailable' }, { status: 502 });
-    }
-    if (!eng.body || eng.body.ok !== true) {
-      console.error('submitPaymentsAnalysis engine returned not-ok:', eng.body);
+    const engineResult = calculateGap(engineInput, table.rows!);
+    if (!engineResult.ok) {
+      console.error('submitPaymentsAnalysis engine returned not-ok:', engineResult);
       return Response.json({ error: 'engine_error' }, { status: 502 });
     }
 
     // Persist session.
     const anon_session_id = crypto.randomUUID();
-    const engineVersion = eng.body.engine_version || 'unknown';
     await base44.asServiceRole.entities.PaymentsAnalysisSession.create({
       anon_session_id,
       input_snapshot: v.clean,
-      engine_result: eng.body,
-      engine_version: engineVersion,
+      engine_result: engineResult,
+      engine_version: engineResult.engine_version,
       ip_hash: ipHash,
     });
 
     return Response.json({
       ok: true,
       anon_session_id,
-      engine_result: eng.body,
+      engine_result: engineResult,
     });
   } catch (error) {
     console.error('submitPaymentsAnalysis:', (error as any)?.message, (error as any)?.stack);

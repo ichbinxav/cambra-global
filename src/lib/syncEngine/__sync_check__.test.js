@@ -131,6 +131,18 @@ const PAIRS = [
     src: "src/lib/paymentsGap.js",
     deno: "base44/functions/calculatePaymentsGap/entry.ts",
   },
+  // paymentsGap_submitCopy: THIRD copy of the same engine lives inline in
+  // base44/functions/submitPaymentsAnalysis/entry.ts. That endpoint runs the
+  // engine in-process (anonymous callers can't hold a bearer token to reach
+  // the HTTP calculatePaymentsGap endpoint through LOCK #1). We pair it
+  // AGAINST THE SAME src/lib/paymentsGap.js — if all three normalize
+  // identically pair-by-pair, they're transitively identical to each other.
+  {
+    key: "paymentsGap",
+    src: "src/lib/paymentsGap.js",
+    deno: "base44/functions/submitPaymentsAnalysis/entry.ts",
+    label: "paymentsGap_submitCopy",
+  },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -394,9 +406,10 @@ describe("Sync-check — duplicated copies (src/lib/ vs base44/functions/dataSyn
   // exact location it will fire from once the pair is realigned.
   for (const pair of PAIRS) {
     const runner = pair.skip ? it.skip : it;
+    const displayKey = pair.label || pair.key;
     const label = pair.skip
-      ? `pair "${pair.key}" — SKIPPED (${pair.skip.split(" — ")[0]})`
-      : `pair "${pair.key}" — Deno copy matches ${path.basename(pair.src)}`;
+      ? `pair "${displayKey}" — SKIPPED (${pair.skip.split(" — ")[0]})`
+      : `pair "${displayKey}" — Deno copy matches ${path.basename(pair.src)}`;
     runner(label, () => {
       // Each pair may override the Deno file target. Defaults to
       // dataSyncAgent (the historical target); paymentsGap uses
