@@ -70,6 +70,7 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [brand, setBrand] = useState(null);
   const [latest, setLatest] = useState(null);
+  const [activeDays, setActiveDays] = useState(null);
   const [stripeConn, setStripeConn] = useState(null);
   const [graphNodes, setGraphNodes] = useState([]);
   const [hasLiveDeal, setHasLiveDeal] = useState(false);
@@ -87,7 +88,18 @@ export default function Dashboard() {
 
         const results = await base44.entities.AnalyzerResult
           .filter({ created_by_id: u.id }, "-created_date", 1);
-        setLatest(results[0] || null);
+        const latestResult = results[0] || null;
+        setLatest(latestResult);
+
+        // Extract `active_days` from the latest result's assumptions to
+        // power the honesty caption in the provisional/estimated hero.
+        // bridgeToAnalyzer writes "...N active day(s)..." into the string.
+        // Non-fatal on parse miss — the caption just hides.
+        if (Array.isArray(latestResult?.assumptions)) {
+          const line = latestResult.assumptions.find(a => /active day/i.test(a));
+          const m = line?.match(/(\d+)\s+active day/i);
+          if (m) setActiveDays(Number(m[1]));
+        }
 
         if (b) {
           // FASE 1 — Integration is the source of truth for "connected"; StripeConnection is legacy fallback.
@@ -332,6 +344,13 @@ export default function Dashboard() {
               {formatEur(latest.total_savings)}<span className="text-[0.35em] font-bold text-white/40 ml-2" style={{ WebkitTextFillColor: "rgba(255,255,255,0.4)" }}>/{t("per_yr_short")}</span>
             </p>
             <p className="text-sm text-white/60 mt-3 max-w-md">{heroSubtitle}</p>
+            {/* Honesty caption — only when not verified. Uses `active_days`
+                parsed from the AnalyzerResult's assumptions string. */}
+            {verificationStatus !== "verified" && activeDays != null && (
+              <p className="text-[11px] text-white/40 mt-2 max-w-md italic">
+                Extrapolado desde {activeDays} {activeDays === 1 ? "día activo" : "días activos"} — conecta más histórico para consolidar
+              </p>
+            )}
           </div>
 
           <div className="shrink-0 w-full sm:w-auto sm:max-w-xs">

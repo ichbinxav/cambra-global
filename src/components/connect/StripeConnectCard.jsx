@@ -178,7 +178,20 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
     setBusy(true);
     setError("");
     try {
-      await base44.functions.invoke("stripeDisconnect", {});
+      // BUG-5 fix — route to Integration entity when the connection is
+      // Integration-backed (post-FASE-1 source of truth). Only fall back to
+      // the legacy `stripeDisconnect` endpoint when we're truly looking at a
+      // legacy StripeConnection row (no `provider` field on the loaded shape).
+      const isIntegrationBacked = !!connection?.provider;
+      if (isIntegrationBacked) {
+        await base44.entities.Integration.update(connection.id, {
+          status: "disconnected",
+          access_token: null,
+          refresh_token: null,
+        });
+      } else {
+        await base44.functions.invoke("stripeDisconnect", {});
+      }
       setConnection(null);
     } catch (e) {
       setError(e.message || "Disconnect failed");
