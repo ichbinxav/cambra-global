@@ -216,9 +216,11 @@ export default function PaymentsAnalyzer() {
         />
       </div>
 
-      {/* Container widens on desktop so the form feels like a proper tool,
-          not a phone screen stretched vertically. Mobile stays at max-w-lg. */}
-      <main className="relative z-10 flex-1 max-w-lg lg:max-w-3xl mx-auto w-full px-5 lg:px-8 pt-20 pb-16">
+      {/* Container widens progressively — mobile stays at max-w-lg (phone-
+          shaped form), lg lifts to max-w-3xl, xl uses max-w-5xl so the
+          desktop layout can afford a 3-column row (ticket + intl + country)
+          without stretching sliders past the useful width. */}
+      <main className="relative z-10 flex-1 max-w-lg lg:max-w-3xl xl:max-w-5xl mx-auto w-full px-5 lg:px-8 pt-20 pb-16">
         {/* Header pill + counter */}
         <div className="flex items-center justify-between mb-5">
           <div className="inline-flex items-center gap-2 rounded-full px-3 py-1"
@@ -269,15 +271,39 @@ export default function PaymentsAnalyzer() {
           {/* GMV always spans full width — it's the anchor number. */}
           <GmvSlider value={gmv} onChange={setGmv} />
 
-          {/* Ticket + International share sit side-by-side on desktop; stack on mobile. */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-8">
+          {/* Ticket + International share + Country live in one responsive
+              row. On mobile they stack; on lg they pair (2 cols); on xl they
+              spread to 3 cols so the extra desktop width actually earns its
+              keep instead of leaving dead space on the right. */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-8">
             <AvgTicketInput value={avgTicket} onChange={setAvgTicket} />
             <IntlSlider value={intlPct} onChange={setIntlPct} />
+            {/* Country — kept as a native <select>: single-choice from 22
+                options, low frequency, no need for a grid. Lifted from its
+                own row into this one to reclaim the desktop width. */}
+            <div className="space-y-2.5">
+              <div className="flex items-baseline justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                  Country
+                </span>
+                <span className="text-[10px] text-white/35">Region benchmark</span>
+              </div>
+              <select
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className="w-full h-11 px-3 rounded-md text-sm text-white focus:outline-none focus:border-cyan-400/60 transition-colors"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+              >
+                <option value="" className="bg-neutral-900">Select your country…</option>
+                {COUNTRY_OPTIONS.map((c) => (
+                  <option key={c.code} value={c.code} className="bg-neutral-900">{c.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Provider grid — 2 cols on mobile, 4 cols on desktop.
-              The card component itself is layout-agnostic; grid density is
-              a page-level decision. */}
+          {/* Provider grid — ProviderGrid owns responsive density internally
+              (2 / 3 / 4 cols). Same enum + same order as the backend contract. */}
           <div className="space-y-2.5">
             <div className="flex items-baseline justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
@@ -285,41 +311,11 @@ export default function PaymentsAnalyzer() {
               </span>
               <span className="text-[10px] text-white/35">One tap</span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-              {PROVIDER_OPTIONS.map((opt) => (
-                <ProviderGrid
-                  key={opt.slug}
-                  // Render each option individually so the grid density lives
-                  // at the page level (mobile 2, tablet 3, desktop 4) without
-                  // duplicating the ProviderGrid component's styles.
-                  options={[opt]}
-                  value={providerSlug}
-                  onChange={setProviderSlug}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Country — kept as a select (single-choice from 22 options; a grid
-              would be visually noisy for a low-frequency choice). */}
-          <div className="space-y-2.5">
-            <div className="flex items-baseline justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
-                Country
-              </span>
-              <span className="text-[10px] text-white/35">Determines your region benchmark</span>
-            </div>
-            <select
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className="w-full h-11 px-3 rounded-md text-sm text-white focus:outline-none focus:border-cyan-400/60 transition-colors"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
-            >
-              <option value="" className="bg-neutral-900">Select your country…</option>
-              {COUNTRY_OPTIONS.map((c) => (
-                <option key={c.code} value={c.code} className="bg-neutral-900">{c.name}</option>
-              ))}
-            </select>
+            <ProviderGrid
+              options={PROVIDER_OPTIONS}
+              value={providerSlug}
+              onChange={setProviderSlug}
+            />
           </div>
 
           {/* Card mix — optional, collapsed */}
