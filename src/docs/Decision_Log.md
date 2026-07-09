@@ -5,6 +5,32 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-09 — Chunk 5 CLOSE · Copy rule: "verified" is reserved for real-data analyses
+
+**BINDING VOCABULARY RULE — applies to all future copy, badges, tooltips, marketing, PDF exports, and investor materials:**
+
+> The word **"verified"** is RESERVED in the CAMBRA product for analyses whose numbers are backed by REAL CONNECTED DATA from the merchant's own systems (PSP integration, bank feed, invoice import). It describes the merchant's rate/spend, NOT the rate table.
+
+An analysis produced by the anonymous PaymentsAnalyzer path (or any future form-driven audit) is DECLARATIVE — it is based on what the user typed. It can never be called "verified", even when it uses a rate table row whose public pricing was human-verified against Stripe's/PayPal's docs.
+
+**Distinction to enforce in UI:**
+- **Rate table row `verified: true`** (row has `source_url` + verbatim `source_quote`) → badge reads **"PUBLIC PRICING"** (with optional tooltip: "Calculated against [PSP]'s publicly published pricing, verified [last_verified]"). This is a statement ABOUT the row, not about the merchant.
+- **Rate table row `verified: false`** (regional fallback average) → badge reads **"REGIONAL ESTIMATE"**.
+- **Merchant path** (Fase 6+, real connected PSP data) → badge may read **"VERIFIED"** — this is the only place the word is allowed.
+
+**Fix applied in this chunk:** `PaymentsGapCard.jsx` was showing "Verified rate" on all `cohort.verified === true` results, which is misleading — that flag reflects rate-table-row provenance, not merchant-data provenance. Changed to "Public pricing" / "Regional estimate" with tooltip context. The engine field `cohort.verified` stays as-is (it correctly describes the ROW); only the UI copy changed.
+
+**Why this rule is worth codifying:** promising "verified" on an estimate is exactly the kind of detail that burns credibility with an investor or the first paying customer who spots the gap between the badge and the disclosure. It is also the code-vs-real-data confusion we have spent this whole project designing away — the rule keeps it out of copy forever.
+
+**Companion layout fix in the same chunk:** PaymentsAnalyzer and PaymentsResults both used a narrow single-column layout that stretched vertically on desktop. On `≥lg` breakpoints:
+- PaymentsResults → 2-column grid (hero + CTA on the left, breakdown + assumptions on the right).
+- PaymentsAnalyzer → wider container (`max-w-3xl`), avg-ticket + international-share paired, provider grid 4-col.
+Mobile layout intact. No functionality changed.
+
+**GMV default display:** GmvSlider now shows a dimmed €25,000 preview while `value === ""`, so the number and the slider position match from first render. The parent's `value` stays empty until the user interacts — validation still requires user intent before submit.
+
+---
+
 ## 2026-07-09 — Chunk 3 CIERRE · `calculatePaymentsGap` HTTP endpoint eliminado + patrón oficial "inline + sync-check"
 
 **Endpoint borrado.** `base44/functions/calculatePaymentsGap/entry.ts` eliminado del árbol. Motivo estructural, no cosmético: Base44 no expone service token cross-function, así que un endpoint público anónimo (`submitPaymentsAnalysis`) NO puede atravesar LOCK #1 del endpoint interno. Con la copia inline del motor viviendo dentro de `submitPaymentsAnalysis`, el endpoint HTTP quedó sin ningún consumidor de producción — mantenerlo "por si acaso" es exactamente la deuda que luego nadie se atreve a tocar. Se mata ahora que está tibio.

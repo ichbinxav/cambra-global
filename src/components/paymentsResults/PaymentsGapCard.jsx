@@ -40,20 +40,30 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot }) {
         WebkitBackdropFilter: "blur(20px)",
       }}
     >
-      {/* Eyebrow — cohort label + verified/estimate flag */}
+      {/* Eyebrow — cohort label + public-pricing / estimate flag.
+          COPY RULE (Decision_Log 2026-07-09): the word "verified" is
+          RESERVED in this app for analyses backed by real connected data
+          (post-PSP-connect, Fase 6+). The anonymous form path can NEVER
+          call itself "verified" — what's verified is the rate-table row
+          (public published pricing with a source URL), not the user's
+          actual effective rate. So:
+            cohort.verified === true  → "PUBLIC PRICING"
+            cohort.verified === false → "REGIONAL ESTIMATE" */}
       <div className="flex items-center gap-2 mb-4">
         <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
           Payments gap · {inputSnapshot?.country || "—"}
         </span>
         {verified ? (
           <span
+            title="Calculated against your PSP's publicly published pricing."
             className="text-[9px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full"
             style={{ background: "rgba(34,211,238,0.12)", color: "rgb(34,211,238)", border: "1px solid rgba(34,211,238,0.35)" }}
           >
-            Verified rate
+            Public pricing
           </span>
         ) : (
           <span
+            title="No public pricing available for this cohort — we used regional averages."
             className="text-[9px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full"
             style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", border: "1px solid rgba(255,255,255,0.15)" }}
           >

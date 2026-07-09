@@ -46,15 +46,26 @@ function formatEur(n) {
   return "€" + Math.round(n).toLocaleString("en-US");
 }
 
+// Default seed value shown while the user hasn't touched the slider yet.
+// Chosen to be a plausible mid-size merchant — big enough to feel real,
+// small enough not to intimidate a small-shop user. This is DISPLAY ONLY:
+// the parent's `value` stays empty until the user interacts, so validation
+// still rejects submits without user intent.
+const DEFAULT_DISPLAY_EUR = 25_000;
+
 export default function GmvSlider({ value, onChange }) {
-  // value is a string OR number (whatever the parent stores). We treat empty
-  // as "not set yet" and default the slider to €10k for a sensible start.
+  // isSet distinguishes "user hasn't touched it" (show default in the big
+  // number so the slider position matches) from "user typed / dragged".
+  // The parent's payload still tracks the raw `value` string exactly.
   const numericValue = useMemo(() => {
     const n = Number(value);
     return isFinite(n) && n > 0 ? n : 0;
   }, [value]);
+  const isSet = numericValue > 0;
 
-  const sliderPosition = numericValue > 0 ? eurToPosition(numericValue) : eurToPosition(10_000);
+  // Display number = user's real value once they touch it, else the default.
+  const displayValue = isSet ? numericValue : DEFAULT_DISPLAY_EUR;
+  const sliderPosition = eurToPosition(displayValue);
 
   const handleSliderChange = (e) => {
     const eur = positionToEur(Number(e.target.value));
@@ -79,14 +90,18 @@ export default function GmvSlider({ value, onChange }) {
       {/* Hero value + exact input, side by side */}
       <div className="flex items-baseline gap-3">
         <div
-          className="tabular-nums text-white font-black leading-none"
+          className="tabular-nums font-black leading-none"
           style={{
             fontFamily: "'Space Grotesk', 'Inter', sans-serif",
             fontSize: "clamp(28px, 6vw, 36px)",
             letterSpacing: "-0.03em",
+            // Dimmer color while it's a default placeholder — the moment the
+            // user drags or types, it becomes fully white. Zero cognitive
+            // load, clearly signals "this is a preview".
+            color: isSet ? "#ffffff" : "rgba(255,255,255,0.42)",
           }}
         >
-          {formatEur(numericValue)}
+          {formatEur(displayValue)}
         </div>
         <span className="text-[12px] text-white/40 shrink-0">/ mo</span>
         <div className="ml-auto flex items-center gap-1.5 shrink-0">

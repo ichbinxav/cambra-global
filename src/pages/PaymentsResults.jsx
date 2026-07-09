@@ -61,7 +61,9 @@ function ResultsShell({ children }) {
         }}
       />
       <Navbar />
-      <main className="relative z-10 flex-1 max-w-2xl mx-auto w-full px-5 pt-24 pb-16">
+      {/* Container widens on desktop so the results grid has room to breathe.
+          Mobile stays visually identical (max-w-2xl equivalent at that size). */}
+      <main className="relative z-10 flex-1 max-w-2xl lg:max-w-6xl mx-auto w-full px-5 pt-24 pb-16">
         {children}
       </main>
     </div>
@@ -229,51 +231,62 @@ export default function PaymentsResults() {
         <ArrowLeft size={12} /> Run a new analysis
       </button>
 
-      <div className="space-y-5">
-        <PaymentsGapCard engineResult={engineResult} inputSnapshot={inputSnapshot} />
+      {/* Desktop layout (≥lg): 2-column grid.
+            LEFT  = hero (gap card) + CTA — the emotional payload
+            RIGHT = fee breakdown + assumptions — the "show your work"
+          On mobile & tablet everything stacks in a single column, unchanged
+          from before. `lg:items-start` prevents the grid from stretching
+          both columns to the tallest — each card keeps its natural height. */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-6 lg:items-start gap-5">
+        {/* LEFT column — hero + CTA */}
+        <div className="lg:col-span-3 space-y-5">
+          <PaymentsGapCard engineResult={engineResult} inputSnapshot={inputSnapshot} />
 
-        {/* Primary CTA — single "Stop overpaying" action.
-            Sends the user through the existing sign-in flow. On the other
-            side they can either connect Stripe (Chunk 6, verified path) or
-            join the waitlist. No claim of the anonymous session here — that
-            requires the claim function that ships in a later chunk. */}
-        <div
-          className="rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4"
-          style={{
-            background:
-              "radial-gradient(120% 100% at 100% 0%, rgba(34,211,238,0.12) 0%, transparent 60%), rgba(255,255,255,0.03)",
-            border: "1px solid rgba(34,211,238,0.20)",
-          }}
-        >
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-1.5">Next step</p>
-            <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
-              Ready to stop overpaying?
-            </p>
-            <p className="text-[13px] text-white/60 mt-1">
-              Create an account to connect your PSP, verify the number, and start the recovery.
-            </p>
-          </div>
-          <Button
-            onClick={() => navigate("/LoginGate?next=/PaymentsAnalyzer")}
-            className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
+          {/* Primary CTA — single "Stop overpaying" action.
+              Sends the user through the existing sign-in flow. Claim of the
+              anonymous session ships in a later chunk. */}
+          <div
+            className="rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4"
             style={{
-              background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
-              boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
+              background:
+                "radial-gradient(120% 100% at 100% 0%, rgba(34,211,238,0.12) 0%, transparent 60%), rgba(255,255,255,0.03)",
+              border: "1px solid rgba(34,211,238,0.20)",
             }}
           >
-            Stop overpaying <ArrowRight className="h-4 w-4" />
-          </Button>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-1.5">Next step</p>
+              <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
+                Ready to stop overpaying?
+              </p>
+              <p className="text-[13px] text-white/60 mt-1">
+                Create an account to connect your PSP, verify the number, and start the recovery.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate("/LoginGate?next=/PaymentsAnalyzer")}
+              className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
+              }}
+            >
+              Stop overpaying <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
-        <FeeBreakdownCard engineResult={engineResult} />
-        <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
-
-        {/* Footer line — snapshot of what the user submitted, for transparency */}
-        <div className="pt-2 text-[11px] text-white/35 text-center">
-          Analysis run on {inputSnapshot?.monthly_gmv_eur ? `€${Number(inputSnapshot.monthly_gmv_eur).toLocaleString("en-US")}` : "—"} monthly GMV
-          {inputSnapshot?.avg_ticket_eur ? `, €${inputSnapshot.avg_ticket_eur} average ticket` : ""} · {inputSnapshot?.provider_slug || "—"} · {inputSnapshot?.country || "—"}
+        {/* RIGHT column — breakdown + assumptions */}
+        <div className="lg:col-span-2 space-y-5">
+          <FeeBreakdownCard engineResult={engineResult} />
+          <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
         </div>
+      </div>
+
+      {/* Footer line — snapshot of what the user submitted, for transparency.
+          Full-width under the grid so it reads as a single closing note. */}
+      <div className="pt-6 text-[11px] text-white/35 text-center">
+        Analysis run on {inputSnapshot?.monthly_gmv_eur ? `€${Number(inputSnapshot.monthly_gmv_eur).toLocaleString("en-US")}` : "—"} monthly GMV
+        {inputSnapshot?.avg_ticket_eur ? `, €${inputSnapshot.avg_ticket_eur} average ticket` : ""} · {inputSnapshot?.provider_slug || "—"} · {inputSnapshot?.country || "—"}
       </div>
     </ResultsShell>
   );
