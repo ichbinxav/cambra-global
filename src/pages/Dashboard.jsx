@@ -206,6 +206,21 @@ export default function Dashboard() {
   }
 
   /* ───── STATE B / C: result exists ───── */
+  // ⚠️ BUG-2 (documented, not fixed — see src/docs/KNOWN_DEBT.md)
+  // The "Verified — based on real Stripe data" hero badge is driven ONLY by
+  // `stripeConnected` (Integration.status === "connected"), introduced in
+  // FASE 1. That means: as soon as a Stripe Integration row exists in
+  // "connected" state, the hero flips to Verified — even when NO
+  // AnalyzerResult with verification_scope containing "payments" exists for
+  // the active brand. Symptom in the wild: hero shows "Verified — €0/yr",
+  // reading as "we verified you save €0" instead of "we can't verify yet".
+  // FIX: the Verified state must require BOTH (a) Integration connected AND
+  // (b) at least one AnalyzerResult for this brand with
+  // verification_scope.includes("payments") (or the equivalent per-vertical
+  // union documented in AnalyzerResult.verification_scope). Until FASE 3
+  // materializes verified AnalyzerResults, this stays estimated.
+  // Do NOT flip the condition until FASE 3 lands, otherwise we'll block the
+  // legitimate "verified after Sync + auto-materialize" path we're building.
   const heroBadge = stripeConnected
     ? { label: t("state_c_badge"), cls: "bg-emerald-400/10 text-emerald-300 border-emerald-400/25", dot: "bg-emerald-400" }
     : { label: t("state_b_badge"), cls: "bg-amber-400/10 text-amber-300 border-amber-400/25", dot: "bg-amber-400" };
