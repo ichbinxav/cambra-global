@@ -63,6 +63,10 @@
       "type": "number",
       "description": "% of international orders"
     },
+    "bank_fx_spread_pct": {
+      "type": "number",
+      "description": "FX conversion spread (%) applied on the intl portion of GMV. Populated by bridgeToAnalyzer when Stripe fee_details reveal a currency-conversion component (fee_fx / intl GMV). Fed to scoreEngine's Banking vertical (FX line). Purely additive \u2014 legacy rows without this field are treated by the engine as 'not measured'; scoreEngine's fallback (1.5% assumed when intl_pct > 0) still applies in that case."
+    },
     "payment_provider": {
       "type": "string"
     },
