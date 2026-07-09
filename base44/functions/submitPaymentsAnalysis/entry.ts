@@ -40,15 +40,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // SYNC-START: paymentsGap
 
-// payments-gap-1.1.0 — see src/lib/paymentsGap.js version-history header.
-const ENGINE_VERSION = "payments-gap-1.1.0";
+// payments-gap-1.2.0 — see src/lib/paymentsGap.js version-history header.
+const ENGINE_VERSION = "payments-gap-1.2.0";
 
 const MINOR_PER_MAJOR = 100;
 
 const BPS_PER_UNIT = 10000;
-
-const INTL_UPLIFT_CURRENT_BPS = 150;
-const INTL_UPLIFT_ACHIEVABLE_BPS = 90;
 
 const REQUIRED_FALLBACK_KEYS = [
   "ANY|ANY|EU",
@@ -134,7 +131,8 @@ function computeEffectiveBps(
 ) {
   const fixedMajor = fixed_fee_minor_units / MINOR_PER_MAJOR;
   const amortizedBps = (fixedMajor / avg_ticket_eur) * BPS_PER_UNIT;
-  const intlBps = (intl_pct / 100) * intl_uplift_bps;
+  const upliftBps = isFinite(intl_uplift_bps) ? intl_uplift_bps : 0;
+  const intlBps = (intl_pct / 100) * upliftBps;
   return percent_bps + intlBps + amortizedBps;
 }
 
@@ -150,6 +148,9 @@ function applyBand(point, band_pct) {
 }
 
 const FALLBACK_ASSUMPTION = "Estimate based on regional averages, not provider-verified rates. Connect your PSP for exact figures.";
+
+const INTL_UPLIFT_NOT_MODELED_ASSUMPTION = "Cross-border card uplift not modeled for this provider/region cohort — the published cross-border rate for this PSP is not seeded. Effective savings for the intl portion of GMV may be understated. Connect your PSP for exact figures.";
+
 const AMORTIZATION_NOTE = (fixedMinor, currency, avgTicket) =>
   `Fixed fee of ${(fixedMinor / MINOR_PER_MAJOR).toFixed(2)} ${currency} amortized over an average ticket of €${avgTicket.toFixed(2)}.`;
 
@@ -162,8 +163,8 @@ const ACHIEVABLE_NOTE = (breakdown) => {
   );
 };
 
-const INTL_UPLIFT_NOTE = (intl_pct) =>
-  `${intl_pct.toFixed(0)}% of GMV assumed cross-border: +${(INTL_UPLIFT_CURRENT_BPS / 100).toFixed(2)}% uplift on the current rate and +${(INTL_UPLIFT_ACHIEVABLE_BPS / 100).toFixed(2)}% on the achievable rate for that portion (schemes' cross-border interchange is not negotiable).`;
+const INTL_UPLIFT_NOTE = (intl_pct, current_uplift_bps, achievable_uplift_bps) =>
+  `${intl_pct.toFixed(0)}% of GMV assumed cross-border: +${(current_uplift_bps / 100).toFixed(2)}% uplift on the current rate and +${(achievable_uplift_bps / 100).toFixed(2)}% on the achievable rate for that portion (schemes' cross-border interchange is not negotiable).`;
 
 function calculateGap(rawInput, rateTable) {
   const tableCheck = validateRateTable(rateTable);
@@ -181,10 +182,14 @@ function calculateGap(rawInput, rateTable) {
     return { ok: false, error: "rate_table_incomplete", missing: [`ANY|ANY|${input.region}`] };
   }
 
+  const rowCurrentUplift = typeof row.intl_uplift_bps === "number" ? row.intl_uplift_bps : 0;
+  const rowAchievableUplift = typeof row.achievable_intl_uplift_bps === "number" ? row.achievable_intl_uplift_bps : 0;
+  const intlModeled = typeof row.intl_uplift_bps === "number";
+
   const current_bps = computeEffectiveBps(
     { percent_bps: row.percent_bps, fixed_fee_minor_units: row.fixed_fee_minor_units },
     input.avg_ticket_eur,
-    { intl_pct: input.intl_pct, intl_uplift_bps: INTL_UPLIFT_CURRENT_BPS }
+    { intl_pct: input.intl_pct, intl_uplift_bps: rowCurrentUplift }
   );
 
   const hasAchievable =
@@ -197,7 +202,7 @@ function calculateGap(rawInput, rateTable) {
           fixed_fee_minor_units: row.achievable_fixed_fee_minor_units,
         },
         input.avg_ticket_eur,
-        { intl_pct: input.intl_pct, intl_uplift_bps: INTL_UPLIFT_ACHIEVABLE_BPS }
+        { intl_pct: input.intl_pct, intl_uplift_bps: rowAchievableUplift }
       )
     : current_bps;
 
@@ -220,7 +225,13 @@ function calculateGap(rawInput, rateTable) {
   );
   const achievableNote = ACHIEVABLE_NOTE(row.achievable_breakdown_json);
   if (achievableNote) assumptions.push(achievableNote);
-  if (input.intl_pct > 0) assumptions.push(INTL_UPLIFT_NOTE(input.intl_pct));
+  if (input.intl_pct > 0) {
+    if (intlModeled) {
+      assumptions.push(INTL_UPLIFT_NOTE(input.intl_pct, rowCurrentUplift, rowAchievableUplift));
+    } else {
+      assumptions.push(INTL_UPLIFT_NOT_MODELED_ASSUMPTION);
+    }
+  }
   if (row.verified !== true) assumptions.push(FALLBACK_ASSUMPTION);
 
   return {

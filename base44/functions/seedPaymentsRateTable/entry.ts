@@ -1,11 +1,23 @@
 // Admin-only, idempotent seeder for the PaymentsRateTable entity.
 // Idempotency: upserts by cohort_key. Existing rows are UPDATED (never
 // duplicated) so re-running after correcting a cited number is safe.
-// Chunk 1b: seeds 6 verified rows (Stripe EU/UK/US, PayPal EU/UK/US,
+//
+// Chunk 1b: seeds 7 verified rows (Stripe EU/UK/US, PayPal EU/UK/US,
 // Shopify US Basic) + 4 regional fallback rows. Every verified row carries a
 // source_url + source_quote for audit — if a rate changes, grep source_quote
 // to find the stale row.
-// Component-atomic format (Enmienda estructural del Chunk 1a):
+//
+// Chunk 1.2.0 (Enmienda 1 fix): every row now also carries intl_uplift_bps
+// and achievable_intl_uplift_bps, with intl_uplift_source_url +
+// intl_uplift_source_quote when a PSP publishes a distinct cross-border rate,
+// or intl_uplift_assumption_notes when the value is derived. NO intl uplift
+// constants live in the engine — the seeder is the single source of truth.
+//
+// Rows without a published cross-border rate leave intl_uplift_bps null
+// deliberately. The engine treats that as 0 and emits "intl uplift not
+// modeled for this cohort" — this is honest silence rather than invention.
+//
+// Component-atomic format (Enmienda structural del Chunk 1a):
 // - percent_bps and fixed_fee_minor_units stored SEPARATELY
 // - Engine amortizes fixed_fee against merchant's real avg_ticket at runtime
 // - No blended-to-AOV numbers ever leave this file
@@ -22,8 +34,25 @@ Deno.serve(async (req) => {
     const NOW = new Date().toISOString();
 
     // -------------------------------------------------------------------
+    // ACHIEVABLE INTL UPLIFT — shared derivation notes
+    //
+    // No PSP publishes a "negotiated cross-border rate" — the closest public
+    // reference is Visa/Mastercard's cross-border interchange schedules, which
+    // are NOT negotiable (schemes set them and processors pass them through).
+    // A well-negotiated processor can compress its OWN cross-border margin,
+    // but the scheme floor remains. We model achievable ≈ ~50% of the
+    // published uplift as a conservative assumption:
+    //   - Below 50% would imply negotiating away the scheme floor (impossible).
+    //   - Above 50% (say 70-80%) would mean assuming little negotiation
+    //     leverage, undercounting the achievable gap.
+    // Every row that carries an achievable_intl_uplift_bps documents this
+    // derivation in intl_uplift_assumption_notes. NEVER move the ~50% ratio
+    // into code — it lives on the row.
+    // -------------------------------------------------------------------
+
+    // -------------------------------------------------------------------
     // VERIFIED ROWS — every number cited verbatim from the source URL
-    // Sondeo: 2026-07-09
+    // Sondeo: 2026-07-09 (all Stripe pricing pages verified this day)
     // -------------------------------------------------------------------
     const verified = [
       // --- Stripe EU (EEA standard consumer cards) ---
@@ -35,17 +64,21 @@ Deno.serve(async (req) => {
         percent_bps: 150,           // 1.5%
         fixed_fee_minor_units: 25,  // 0.25 EUR
         fixed_fee_currency: 'EUR',
-        // Achievable breakdown (bottom-up, documented in achievable_breakdown_json):
-        //   interchange 26 bps (IFR mix débito 40% × 20 bps + crédito 60% × 30 bps)
-        //   + scheme_fees 20 bps (public Visa/MC schedules, conservative)
-        //   + processor_margin 40 bps (ASSUMPTION, band ±20 bps)
-        //   = 86 bps
         achievable_percent_bps: 86,
-        achievable_fixed_fee_minor_units: 25, // fixed fee rarely negotiated below scheme minimums
+        achievable_fixed_fee_minor_units: 25,
+        // Intl uplift: Stripe EU publishes "3.25% + €0.25 for international
+        // cards" ⇒ +175 bps over 1.5% domestic (fixed fee unchanged).
+        intl_uplift_bps: 175,
+        // Achievable intl uplift: 90 bps ≈ 51% of 175. Conservative floor
+        // documented below.
+        achievable_intl_uplift_bps: 90,
+        intl_uplift_source_url: 'https://stripe.com/en-es/pricing',
+        intl_uplift_source_quote: '3.25% + €0.25 for international cards',
+        intl_uplift_assumption_notes: 'Verified 2026-07-09 on stripe.com/en-es/pricing. Achievable uplift (90 bps ≈ 51% of 175) is an ASSUMPTION derived from: scheme cross-border interchange floor (Visa/MC cross-border consumer credit ≈ 100 bps for EU→EU-off-EEA, non-negotiable) + assumed 25% negotiated processor-margin compression. Above this floor is dominated by processor cross-border margin, which IS negotiable. NEVER move this ratio into code — every future re-calibration edits this field.',
         verified: true,
         source_url: 'https://stripe.com/es/pricing',
         source_quote: '1,5 % + 0,25 € para tarjetas estándar del Espacio Económico Europeo',
-        source_notes: 'EEA consumer standard cards. Premium EEA (1,9% + 0,25€) NOT seeded — added when form asks card mix (Fase 6). Also verified verbatim on https://stripe.com/fr/pricing.',
+        source_notes: 'EEA consumer standard cards. Premium EEA (1,9% + 0,25€) NOT seeded — added when form asks card mix (Fase 6). Also verified verbatim on https://stripe.com/fr/pricing and https://stripe.com/en-es/pricing.',
         achievable_breakdown_json: {
           interchange_bps: 26,
           scheme_fees_bps: 20,
@@ -71,10 +104,20 @@ Deno.serve(async (req) => {
         fixed_fee_currency: 'GBP',
         achievable_percent_bps: 86,
         achievable_fixed_fee_minor_units: 20,
+        // Intl uplift: Stripe UK publishes "3.25% + 20p for international
+        // cards" ⇒ +175 bps over 1.5% domestic. UK also publishes "2.5% + 20p
+        // for EEA cards" (a nearer neighbor at +100 bps) — we seed the true
+        // international uplift here; EEA-neighbor pricing would need its own
+        // dimension (not seeded).
+        intl_uplift_bps: 175,
+        achievable_intl_uplift_bps: 90,
+        intl_uplift_source_url: 'https://stripe.com/gb/pricing',
+        intl_uplift_source_quote: '3.25% + 20p for international cards',
+        intl_uplift_assumption_notes: 'Verified 2026-07-09 on stripe.com/gb/pricing. Achievable derivation same as stripe|ANY|EU (scheme floor non-negotiable, ~50% margin compression assumption). Stripe UK also publishes 2.5% + 20p for EEA cards (a +100 bps "near-intl" tier) — NOT seeded (would need distinct near-intl vs far-intl split in the input form).',
         verified: true,
         source_url: 'https://stripe.com/gb/pricing',
         source_quote: '1.5% + 20p for standard UK cards',
-        source_notes: 'UK consumer standard cards. Premium UK (1.9% + 20p) and EEA cards from UK (2.5% + 20p) NOT seeded — added when form asks card mix (Fase 6). UK IFR caps mirror EU IFR post-Brexit (0.2%/0.3%).',
+        source_notes: 'UK consumer standard cards. Premium UK (1.9% + 20p) NOT seeded — added when form asks card mix (Fase 6). UK IFR caps mirror EU IFR post-Brexit (0.2%/0.3%).',
         achievable_breakdown_json: {
           interchange_bps: 26,
           scheme_fees_bps: 20,
@@ -97,14 +140,19 @@ Deno.serve(async (req) => {
         percent_bps: 290,           // 2.9%
         fixed_fee_minor_units: 30,  // $0.30
         fixed_fee_currency: 'USD',
-        // US has no IFR-style cap — Durbin (regulated debit) caps only ~24 bps + 22c for debit at large issuers, but most cards are unregulated credit.
-        // Achievable: ~180 bps (interchange 110 bps blended + scheme 25 + margin 45 assumed).
         achievable_percent_bps: 180,
         achievable_fixed_fee_minor_units: 30,
+        // Intl uplift: Stripe US publishes "+1.5% for international cards"
+        // explicitly (as a delta, not a full rate) ⇒ +150 bps flat.
+        intl_uplift_bps: 150,
+        achievable_intl_uplift_bps: 75,
+        intl_uplift_source_url: 'https://stripe.com/pricing',
+        intl_uplift_source_quote: '+1.5% for international cards',
+        intl_uplift_assumption_notes: 'Verified 2026-07-09 on stripe.com/pricing (US home). Stripe US quotes the intl uplift as a delta (+1.5%), not a full rate. Achievable 75 bps = 50% of 150 (scheme floor non-negotiable, ~50% margin compression assumption). US intl uplift is LOWER than EU/UK (150 vs 175) because US cross-border volumes are dominated by Visa/MC issued abroad rather than premium-loaded card mix; documented delta is smaller.',
         verified: true,
         source_url: 'https://stripe.com/pricing',
         source_quote: '2.9% + 30¢ per successful transaction for domestic cards',
-        source_notes: 'US domestic consumer cards. International +1.5%, currency conversion +1% NOT seeded. No US IFR — achievable interchange is a blended market estimate, not a legal cap.',
+        source_notes: 'US domestic consumer cards. Currency conversion (+1%) NOT seeded — modeled separately. No US IFR — achievable interchange is a blended market estimate, not a legal cap.',
         achievable_breakdown_json: {
           interchange_bps: 110,
           scheme_fees_bps: 25,
@@ -114,7 +162,7 @@ Deno.serve(async (req) => {
             { label: 'Assumption — US blended interchange, no IFR cap', url: null }
           ]
         },
-        savings_band_pct: 0.25, // wider than EU/UK — no legal floor
+        savings_band_pct: 0.25,
         verified_at: NOW,
         active: true
       },
@@ -127,10 +175,18 @@ Deno.serve(async (req) => {
         percent_bps: 290,           // 2.90%
         fixed_fee_minor_units: 35,  // 0.35 EUR
         fixed_fee_currency: 'EUR',
-        // PayPal doesn't offer IC++ pricing. Achievable ≈ Stripe EU verified rate (86 bps)
-        // as merchants can migrate. Represents "what you could pay if you moved off PayPal".
         achievable_percent_bps: 86,
         achievable_fixed_fee_minor_units: 25,
+        // PayPal EU publishes an intl surcharge on its business-fees page but
+        // in a table format we cannot cite verbatim without visiting each
+        // country's fee table. Rather than invent a number in code, we leave
+        // it null — the engine emits "intl uplift not modeled" and the intl
+        // portion of GMV is understated (documented + honest).
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'PayPal EU publishes cross-border surcharges as country-pair tables on paypal.com/es/business/paypal-business-fees. Not seeded verbatim because a single number would misrepresent country-pair variance (EU→UK ≠ EU→US ≠ EU→BR). When a merchant has significant intl volume the engine falls to "intl uplift not modeled" and understates the intl portion — safer than fabricating a blended number. TODO Fase 6: parse the country-pair table into a separate PayPalCrossBorderRate entity.',
         verified: true,
         source_url: 'https://www.paypal.com/es/business/paypal-business-fees',
         source_quote: 'Todas las demás transacciones comerciales — 2,90% + tarifa fija (0,35 EUR)',
@@ -160,6 +216,11 @@ Deno.serve(async (req) => {
         fixed_fee_currency: 'GBP',
         achievable_percent_bps: 86,
         achievable_fixed_fee_minor_units: 20,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'PayPal UK cross-border surcharges are country-pair tables. Same treatment as paypal|ANY|EU — not seeded. Engine emits "intl uplift not modeled" for intl volume.',
         verified: true,
         source_url: 'https://www.paypal.com/uk/business/paypal-business-fees',
         source_quote: 'All Other Commercial Transactions — 2.9% + fixed fee (0.30 GBP)',
@@ -188,6 +249,11 @@ Deno.serve(async (req) => {
         fixed_fee_currency: 'USD',
         achievable_percent_bps: 180,
         achievable_fixed_fee_minor_units: 30,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'PayPal US cross-border surcharges are country-pair tables. Same treatment as paypal|ANY|EU — not seeded.',
         verified: true,
         source_url: 'https://www.paypal.com/us/webapps/mpp/merchant-fees',
         source_quote: 'Standard Credit and Debit Card Payments — 2.99% + fixed fee (0.49 USD)',
@@ -216,6 +282,11 @@ Deno.serve(async (req) => {
         fixed_fee_currency: 'USD',
         achievable_percent_bps: 180,
         achievable_fixed_fee_minor_units: 30,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Shopify Payments quotes premium/international cards at 3.5% + 30¢ on shopify.com/pricing but does not separately publish a domestic-vs-intl delta (bundles premium + intl). Not seeded verbatim — would need form to ask card mix (Fase 6). Engine emits "intl uplift not modeled" for intl volume.',
         verified: true,
         source_url: 'https://www.shopify.com/pricing',
         source_quote: 'Basic — Card rates from 2.9% + 30¢ USD',
@@ -241,6 +312,12 @@ Deno.serve(async (req) => {
     // Checkout/Braintree/Worldpay, and any unrecognized provider slug).
     // Wide savings band (±35%), verified=false triggers the mandatory
     // "Estimate — connect your PSP" assumption in engine output.
+    //
+    // Fallback intl uplifts: seeded as a regional AVERAGE of the intl
+    // uplifts we DO have published data for. Stripe is currently the only
+    // PSP publishing a distinct cross-border rate as a clean delta, so we
+    // use its regional value as the fallback proxy. Documented as assumption
+    // (verified=false), widest band applies.
     // -------------------------------------------------------------------
     const fallback = [
       {
@@ -253,6 +330,11 @@ Deno.serve(async (req) => {
         fixed_fee_currency: 'EUR',
         achievable_percent_bps: 100, // interchange+scheme+margin, IFR-anchored
         achievable_fixed_fee_minor_units: 25,
+        intl_uplift_bps: 175,
+        achievable_intl_uplift_bps: 90,
+        intl_uplift_source_url: 'https://stripe.com/en-es/pricing',
+        intl_uplift_source_quote: '3.25% + €0.25 for international cards',
+        intl_uplift_assumption_notes: 'Fallback EU intl uplift proxied from Stripe EU (+175 bps, verified 2026-07-09). Applied because Stripe is the only major PSP publishing a distinct cross-border delta in the EU market. Widest band (±35%) already flags this as an estimate. Achievable ≈ 51% of published (scheme floor non-negotiable, ~50% margin compression assumption).',
         verified: false,
         source_url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html',
         source_quote: 'IFR caps at 0.2% debit / 0.3% credit consumer cards — used as achievable floor',
@@ -280,6 +362,11 @@ Deno.serve(async (req) => {
         fixed_fee_currency: 'GBP',
         achievable_percent_bps: 100,
         achievable_fixed_fee_minor_units: 20,
+        intl_uplift_bps: 175,
+        achievable_intl_uplift_bps: 90,
+        intl_uplift_source_url: 'https://stripe.com/gb/pricing',
+        intl_uplift_source_quote: '3.25% + 20p for international cards',
+        intl_uplift_assumption_notes: 'Fallback UK intl uplift proxied from Stripe UK (+175 bps, verified 2026-07-09). Same reasoning as ANY|ANY|EU. Achievable ≈ 51% of published.',
         verified: false,
         source_url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html',
         source_quote: 'Retained UK IFR mirrors EU caps 0.2%/0.3%',
@@ -307,6 +394,11 @@ Deno.serve(async (req) => {
         fixed_fee_currency: 'USD',
         achievable_percent_bps: 200,
         achievable_fixed_fee_minor_units: 30,
+        intl_uplift_bps: 150,
+        achievable_intl_uplift_bps: 75,
+        intl_uplift_source_url: 'https://stripe.com/pricing',
+        intl_uplift_source_quote: '+1.5% for international cards',
+        intl_uplift_assumption_notes: 'Fallback US intl uplift proxied from Stripe US (+150 bps, verified 2026-07-09). Stripe US quotes the intl uplift as a delta (+1.5%), lower than EU/UK because US cross-border volumes have a different card-mix composition. Achievable ≈ 50% of published (~50% margin compression assumption).',
         verified: false,
         source_url: null,
         source_quote: null,
@@ -334,6 +426,14 @@ Deno.serve(async (req) => {
         fixed_fee_currency: 'USD',
         achievable_percent_bps: 220,
         achievable_fixed_fee_minor_units: 30,
+        // RoW: no reliable single reference. Blend of US (150) and EU (175)
+        // published rates as a conservative midpoint. Widest band absorbs
+        // the extra uncertainty.
+        intl_uplift_bps: 165,
+        achievable_intl_uplift_bps: 85,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'RoW default. No published cross-border rate applies globally. Seeded as an ASSUMPTION blending Stripe US (+150) and Stripe EU (+175) published uplifts to a mid-point of +165 bps. Achievable ≈ 52% of published (scheme floor non-negotiable). Widest band (±35%) already absorbs the extra uncertainty. Re-calibrate per-region (BR/AU/JP/etc.) when a merchant lands in one of those markets and a public source is available.',
         verified: false,
         source_url: null,
         source_quote: null,

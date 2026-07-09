@@ -5,17 +5,23 @@
 // This file has NO Base44 SDK imports and NO backend dependencies. It exports
 // pure functions that operate on plain inputs and a plain rate-table array.
 //
-// The Deno backend function (base44/functions/calculatePaymentsGap) contains a
-// verbatim copy of the block between SYNC-START/SYNC-END markers. The
+// The Deno backend function (base44/functions/submitPaymentsAnalysis) contains
+// a verbatim copy of the block between SYNC-START/SYNC-END markers. The
 // `paymentsGap` pair in src/lib/syncEngine/__sync_check__.test.js enforces
 // that the two copies stay in sync. When you edit logic here, edit the Deno
 // copy too — the test will fail loud if you don't.
 //
-// KEY STRUCTURAL DECISION (from Chunk 1a → 1b):
-//   Rate rows store ATOMIC components (percent_bps + fixed_fee_minor_units).
-//   The engine amortizes the fixed fee against the merchant's REAL avg_ticket
-//   at runtime. A merchant with a €30 ticket sees ~2.33% effective on Stripe
-//   EU; a merchant with €250 sees ~1.6%. Rows do NOT bake in an AOV.
+// KEY STRUCTURAL DECISIONS
+//   Chunk 1b: Rate rows store ATOMIC components (percent_bps + fixed_fee_minor_units).
+//             The engine amortizes the fixed fee against the merchant's REAL
+//             avg_ticket at runtime.
+//   Enmienda 1 (Chunk 1.2.0): ZERO tariff constants in the engine. Every rate
+//             — including the international (cross-border) uplift — lives on
+//             the PaymentsRateTable row with its own source_url + source_quote
+//             (or an intl_uplift_assumption_notes when derived). If a row does
+//             not carry intl_uplift_bps, the engine treats it as 0 and emits
+//             an assumption "intl uplift not modeled for this cohort". The
+//             engine NEVER invents a rate at runtime.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // SYNC-START: paymentsGap
@@ -27,16 +33,20 @@
 //
 // Version history:
 //   payments-gap-1.0.0 (Chunk 2)  — atomic components + runtime amortization.
-//                                    Formerly tagged "v1" in code; renamed to
-//                                    the plan's SemVer format on 1.1.0.
-//   payments-gap-1.1.0 (this bump) — intl_pct now materially consumed:
-//                                    percent_bps carries a cross-border uplift
-//                                    on the intl share of GMV, on BOTH current
-//                                    and achievable sides (the schemes' cross-
-//                                    border interchange is not negotiable).
-//                                    Domestic-only merchants (intl_pct=0) are
-//                                    unchanged from 1.0.0 by construction.
-const ENGINE_VERSION = "payments-gap-1.1.0";
+//   payments-gap-1.1.0 (bumped 2026-07-09, later reverted architecturally in
+//                       1.2.0) — first attempt at intl uplift, incorrectly
+//                       hardcoded as engine constants (+150/+90 bps). Violated
+//                       Enmienda 1 and the numbers themselves were wrong for
+//                       Stripe EU/UK (published cross-border is +175 bps, not
+//                       +150; +150 is Stripe US). Superseded by 1.2.0.
+//   payments-gap-1.2.0 (this bump) — intl uplift lives on the RATE-TABLE ROW,
+//                       not in code. Engine reads intl_uplift_bps and
+//                       achievable_intl_uplift_bps from the selected row.
+//                       Missing values are treated as 0 with an explicit
+//                       assumption ("intl uplift not modeled for this cohort")
+//                       — the engine never fills in a number the seeder
+//                       didn't provide.
+const ENGINE_VERSION = "payments-gap-1.2.0";
 
 // Currency minor-unit divisor. All PaymentsRateTable rows store fixed fees
 // in minor units (cents / pence). 100 minor units = 1 major (EUR / GBP / USD).
@@ -46,37 +56,6 @@ const MINOR_PER_MAJOR = 100;
 // so integer arithmetic stays honest; conversion to percentage happens only
 // at output boundaries.
 const BPS_PER_UNIT = 10000;
-
-// ─── International (cross-border) card uplift ────────────────────────────────
-//
-// Cards issued outside the merchant's region carry a higher interchange +
-// scheme fee than domestic cards. Every major PSP surfaces this as a separate
-// "international" or "cross-border" rate on their public pricing page:
-//
-//   • Stripe EU/UK "International cards": +1.50% over the domestic rate
-//     (https://stripe.com/en-gb/pricing — verified 2026-07 seed).
-//   • PayPal EU "Cross-border": commonly quoted between +1.30% and +1.50%.
-//   • Shopify Payments premium/international cards: +1.0% to +1.5% band.
-//
-// We take the median of the publicly published uplifts as the CURRENT-side
-// assumption. It is applied ONLY to the intl portion of GMV — a merchant with
-// intl_pct=0 gets zero uplift (behavior unchanged from 1.0.0), a merchant
-// with intl_pct=100 gets the full uplift.
-//
-// Achievable-side uplift is LOWER but NOT zero: the interchange component of
-// cross-border is set by the card schemes (Visa/Mastercard) and cannot be
-// negotiated away. What CAN be negotiated is the processor's own cross-border
-// margin. We model the achievable cross-border uplift at 60% of the current
-// uplift — i.e., a well-negotiated processor closes ~40% of the cross-border
-// premium but the scheme floor still applies. This preserves the property
-// that domestic-only merchants are unaffected while giving a defensible
-// (non-zero) delta for intl-heavy merchants.
-//
-// Values are in basis points, applied to percent_bps. Fixed fees are NOT
-// scaled by intl_pct — that would over-count for a component the schemes
-// don't charge separately.
-const INTL_UPLIFT_CURRENT_BPS = 150;      // +1.50% on the intl portion
-const INTL_UPLIFT_ACHIEVABLE_BPS = 90;    // +0.90% on the intl portion (60% of current)
 
 // Regional fallback cohort keys the engine falls back to when the exact
 // (provider|tier|region) cohort is not seeded. The rate-table cache validates
@@ -202,13 +181,13 @@ function selectRow(rows, provider_slug, region) {
 //   effective_bps = (percent_bps + intl_uplift) + (fixed_fee_major / avg_ticket_eur) * 10000
 //
 // where fixed_fee_major = fixed_fee_minor_units / 100 and
-// intl_uplift is the mix-weighted cross-border premium (see v1.1.0 header):
-//
 //   intl_uplift = (intl_pct / 100) * uplift_bps
 //
-// Callers pass a DIFFERENT uplift_bps for the current vs achievable rails
-// (INTL_UPLIFT_CURRENT_BPS vs INTL_UPLIFT_ACHIEVABLE_BPS). When intl_pct=0
-// the uplift is zero and the function reduces to the 1.0.0 behavior.
+// The caller passes uplift_bps read directly from the selected row (either
+// intl_uplift_bps for the current side or achievable_intl_uplift_bps for the
+// achievable side). Missing → 0. When both sides are 0 the function reduces
+// to the pre-1.1.0 behavior. The engine does NOT own a default uplift
+// constant — every value must come from the row (Enmienda 1).
 //
 // The caller is responsible for currency alignment. We do NOT do FX here:
 // PaymentsRateTable stores the fixed fee in the provider's native currency,
@@ -222,7 +201,8 @@ function computeEffectiveBps(
 ) {
   const fixedMajor = fixed_fee_minor_units / MINOR_PER_MAJOR;
   const amortizedBps = (fixedMajor / avg_ticket_eur) * BPS_PER_UNIT;
-  const intlBps = (intl_pct / 100) * intl_uplift_bps;
+  const upliftBps = isFinite(intl_uplift_bps) ? intl_uplift_bps : 0;
+  const intlBps = (intl_pct / 100) * upliftBps;
   return percent_bps + intlBps + amortizedBps;
 }
 
@@ -256,6 +236,13 @@ function applyBand(point, band_pct) {
 const FALLBACK_ASSUMPTION =
   "Estimate based on regional averages, not provider-verified rates. Connect your PSP for exact figures.";
 
+// Emitted when the selected row lacks a modeled intl uplift and the merchant
+// has intl_pct > 0 — makes it explicit that cross-border volume is present
+// but the cohort has no source-quoted uplift, so the engine leaves it out
+// rather than inventing a rate.
+const INTL_UPLIFT_NOT_MODELED_ASSUMPTION =
+  "Cross-border card uplift not modeled for this provider/region cohort — the published cross-border rate for this PSP is not seeded. Effective savings for the intl portion of GMV may be understated. Connect your PSP for exact figures.";
+
 const AMORTIZATION_NOTE = (fixedMinor, currency, avgTicket) =>
   `Fixed fee of ${(fixedMinor / MINOR_PER_MAJOR).toFixed(2)} ${currency} amortized over an average ticket of €${avgTicket.toFixed(2)}.`;
 
@@ -268,11 +255,10 @@ const ACHIEVABLE_NOTE = (breakdown) => {
   );
 };
 
-// Emitted only when intl_pct > 0, so domestic-only merchants (the majority
-// of small merchants) don't see a note about a component that didn't move
-// their number.
-const INTL_UPLIFT_NOTE = (intl_pct) =>
-  `${intl_pct.toFixed(0)}% of GMV assumed cross-border: +${(INTL_UPLIFT_CURRENT_BPS / 100).toFixed(2)}% uplift on the current rate and +${(INTL_UPLIFT_ACHIEVABLE_BPS / 100).toFixed(2)}% on the achievable rate for that portion (schemes' cross-border interchange is not negotiable).`;
+// Emitted only when intl_pct > 0 AND the row carries a modeled uplift. Both
+// numbers come from the row (never from code) — the engine only formats them.
+const INTL_UPLIFT_NOTE = (intl_pct, current_uplift_bps, achievable_uplift_bps) =>
+  `${intl_pct.toFixed(0)}% of GMV assumed cross-border: +${(current_uplift_bps / 100).toFixed(2)}% uplift on the current rate and +${(achievable_uplift_bps / 100).toFixed(2)}% on the achievable rate for that portion (schemes' cross-border interchange is not negotiable).`;
 
 // ─── Public entry point ──────────────────────────────────────────────────────
 
@@ -284,7 +270,7 @@ const INTL_UPLIFT_NOTE = (intl_pct) =>
 //     avg_ticket_eur:  number > 0,
 //     region:          'EU' | 'UK' | 'US' | 'RoW',    (unknown → 'RoW')
 //     provider_slug:   'stripe' | 'paypal' | 'shopify_payments' | ...,
-//     intl_pct:        0..100                          (default 0, reserved for future intl uplift)
+//     intl_pct:        0..100                          (default 0)
 //   }
 //   rateTable: array of PaymentsRateTable rows (as returned by base44 SDK)
 //
@@ -315,19 +301,22 @@ function calculateGap(rawInput, rateTable) {
     return { ok: false, error: "rate_table_incomplete", missing: [`ANY|ANY|${input.region}`] };
   }
 
+  // Read intl uplifts DIRECTLY from the row. Missing → 0 (engine never fills
+  // in a number from code). We track "modeled" separately so we can emit the
+  // right assumption when the merchant has intl volume but the row doesn't
+  // carry an uplift.
+  const rowCurrentUplift = typeof row.intl_uplift_bps === "number" ? row.intl_uplift_bps : 0;
+  const rowAchievableUplift = typeof row.achievable_intl_uplift_bps === "number" ? row.achievable_intl_uplift_bps : 0;
+  const intlModeled = typeof row.intl_uplift_bps === "number";
+
   const current_bps = computeEffectiveBps(
     { percent_bps: row.percent_bps, fixed_fee_minor_units: row.fixed_fee_minor_units },
     input.avg_ticket_eur,
-    { intl_pct: input.intl_pct, intl_uplift_bps: INTL_UPLIFT_CURRENT_BPS }
+    { intl_pct: input.intl_pct, intl_uplift_bps: rowCurrentUplift }
   );
 
   // Achievable — use row's achievable components if present, else fall back
   // to the current row's own atomic components (i.e. "no measurable gap").
-  // NOTE: the intl uplift on the achievable side is INTENTIONALLY smaller
-  // than the current side (see v1.1.0 header). The delta between the two
-  // uplifts is what creates the intl-driven gap component: a merchant with
-  // more cross-border volume has a real, measurable additional gap that
-  // negotiation can close only partially.
   const hasAchievable =
     typeof row.achievable_percent_bps === "number" &&
     typeof row.achievable_fixed_fee_minor_units === "number";
@@ -338,7 +327,7 @@ function calculateGap(rawInput, rateTable) {
           fixed_fee_minor_units: row.achievable_fixed_fee_minor_units,
         },
         input.avg_ticket_eur,
-        { intl_pct: input.intl_pct, intl_uplift_bps: INTL_UPLIFT_ACHIEVABLE_BPS }
+        { intl_pct: input.intl_pct, intl_uplift_bps: rowAchievableUplift }
       )
     : current_bps;
 
@@ -361,7 +350,13 @@ function calculateGap(rawInput, rateTable) {
   );
   const achievableNote = ACHIEVABLE_NOTE(row.achievable_breakdown_json);
   if (achievableNote) assumptions.push(achievableNote);
-  if (input.intl_pct > 0) assumptions.push(INTL_UPLIFT_NOTE(input.intl_pct));
+  if (input.intl_pct > 0) {
+    if (intlModeled) {
+      assumptions.push(INTL_UPLIFT_NOTE(input.intl_pct, rowCurrentUplift, rowAchievableUplift));
+    } else {
+      assumptions.push(INTL_UPLIFT_NOT_MODELED_ASSUMPTION);
+    }
+  }
   if (row.verified !== true) assumptions.push(FALLBACK_ASSUMPTION);
 
   return {
@@ -394,5 +389,6 @@ export {
   REQUIRED_FALLBACK_KEYS,
   KNOWN_PROVIDERS,
   FALLBACK_ASSUMPTION,
+  INTL_UPLIFT_NOT_MODELED_ASSUMPTION,
   ENGINE_VERSION,
 };

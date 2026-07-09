@@ -5,6 +5,52 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-09 — Chunk 1.2.0 · Enmienda 1 restored — intl uplifts live on the ROW, not in code
+
+**Violación diagnosticada del chunk anterior.** El bump a `payments-gap-1.1.0` introdujo `INTL_UPLIFT_CURRENT_BPS = 150` e `INTL_UPLIFT_ACHIEVABLE_BPS = 90` como constantes en el motor, "sacadas del conocimiento del dominio". Doble problema:
+
+1. **Arquitectura**: rompe la Enmienda 1 — toda cifra de tarifa vive en `PaymentsRateTable` con `source_url` + `source_quote` + `verified_at`, NUNCA en código.
+2. **Cifras incorrectas**: `+150 bps` es la cifra de **Stripe US** (cita literal: "+1.5% for international cards" en `stripe.com/pricing`), no la de EU/UK. Stripe EU/UK publican **"3.25% + €0.25 for international cards"** = **+175 bps** sobre 1.5% domestic (verificado directamente 2026-07-09 en `stripe.com/en-es/pricing` y `stripe.com/gb/pricing`). Los `+90 bps` del achievable no tenían fuente ninguna.
+
+**Fix aplicado (bump a `payments-gap-1.2.0`):**
+
+- **Schema `PaymentsRateTable` extendido** con 5 campos nuevos (todos opcionales, aditivos, cero migración de filas antiguas):
+  - `intl_uplift_bps` (percent-only cross-border uplift, en bps)
+  - `achievable_intl_uplift_bps`
+  - `intl_uplift_source_url`
+  - `intl_uplift_source_quote`
+  - `intl_uplift_assumption_notes` (obligatorio cuando la cifra sea derivada, no source-quoted)
+
+- **Motor sin ninguna constante de tarifa**: `computeEffectiveBps` recibe `intl_uplift_bps` como parámetro; `calculateGap` lo lee **directamente de la fila seleccionada** (`row.intl_uplift_bps` y `row.achievable_intl_uplift_bps`). Cuando la fila no tiene esos campos (o son null), el motor los trata como 0 y emite `INTL_UPLIFT_NOT_MODELED_ASSUMPTION` cuando el merchant tiene `intl_pct > 0`. **Nunca inventa una cifra en runtime.**
+
+- **Valores finales sembrados** (siempre con URL + cita literal o notes justificando la derivación):
+
+| Fila                     | intl_uplift_bps | achievable_intl_uplift_bps | Fuente / assumption |
+|--------------------------|-----------------|----------------------------|---------------------|
+| `stripe\|ANY\|EU`        | 175             | 90                          | Cita: "3.25% + €0.25 for international cards" (stripe.com/en-es/pricing) |
+| `stripe\|ANY\|UK`        | 175             | 90                          | Cita: "3.25% + 20p for international cards" (stripe.com/gb/pricing) |
+| `stripe\|ANY\|US`        | 150             | 75                          | Cita: "+1.5% for international cards" (stripe.com/pricing) |
+| `paypal\|ANY\|EU`        | **null**        | **null**                    | Publican por país-par en tabla; no seedeable sin dimensión adicional → "not modeled" |
+| `paypal\|ANY\|UK`        | **null**        | **null**                    | Idem |
+| `paypal\|ANY\|US`        | **null**        | **null**                    | Idem |
+| `shopify_payments\|ANY\|US` | **null**     | **null**                    | Bundlan premium+intl como "3.5% + 30¢" — no publican delta domestic-vs-intl aislado |
+| `ANY\|ANY\|EU` (fallback) | 175            | 90                          | Proxy de Stripe EU (verified=false, banda ±35%) |
+| `ANY\|ANY\|UK` (fallback) | 175            | 90                          | Proxy de Stripe UK |
+| `ANY\|ANY\|US` (fallback) | 150            | 75                          | Proxy de Stripe US |
+| `ANY\|ANY\|RoW` (fallback)| 165            | 85                          | Assumption: media entre US (150) y EU (175). Banda ±35% absorbe incertidumbre. |
+
+- **Derivación del achievable intl uplift** (~50% del published) documentada VERBATIM en cada `intl_uplift_assumption_notes`, no en código. Razonamiento: el interchange cross-border de las schemes (Visa/MC) es NO negociable — solo el margen del processor cross-border sí lo es. Un procesador bien-negociado comprime ~50% del uplift, el resto es suelo estructural. Si esta ratio se re-calibra en el futuro, se edita CADA fila afectada, nunca el código.
+
+- **Tests reescritos para leer del fixture** (`getRow(cohort_key).intl_uplift_bps` en lugar de constantes). Test explícito nuevo: **"Stripe EU vs Stripe US produce DIFFERENT intl-driven gap deltas"** — si el motor volviera a hardcodear una constante única, este test rompería inmediatamente porque EU (85 bps de gap intl) y US (75 bps de gap intl) tienen que diferir en la dirección que dicta el seeder. Test complementario: "PayPal EU con `intl_pct=100` → assumption 'not modeled' presente Y cero movimiento en current/achievable" (garantía de que el motor no inventa cuando la fila calla).
+
+- **Sync-check `paymentsGap`** re-verificado: copia inline en `submitPaymentsAnalysis` byte-normalized idéntica a `src/lib/paymentsGap.js` (5877 chars). Cero constantes de tarifa en ninguna de las dos copias.
+
+**Suite: 306 passed / 5 skipped / 0 failed** (+2 desde 304: dos nuevos tests de contrato Enmienda 1 sumaron, dos tests obsoletos de constantes engine-side salieron).
+
+**Consecuencia arquitectónica permanente:** ningún futuro chunk puede volver a introducir una constante de tarifa en el motor. Si un cambio necesita una cifra nueva, la cifra vive en una fila de `PaymentsRateTable` con su fuente. El sync-check y estos tests son el candado.
+
+---
+
 ## 2026-07-09 — Chunk intl_pct · Engine bump to `payments-gap-1.1.0` + obsolete-test fix
 
 **Motor: intl_pct materialmente consumido.** Hasta 1.0.0 el campo `intl_pct` viajaba en el bloque SYNC (normalizado + persistido) pero no afectaba al cálculo — quedaba reservado para cuando se sembraran filas premium/intl. Este chunk introduce el **uplift cross-border sobre `percent_bps`**, aplicado a la porción intl de GMV, con constantes documentadas:

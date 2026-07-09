@@ -11,6 +11,9 @@
 //      Chunk 1b spot-check).
 //   4. Standard input contract — malformed inputs rejected with named errors.
 //   5. Edge cases at the extremes of the seeded matrix (GMV 500 → 10M).
+//   6. Enmienda 1: intl uplift lives on the ROW, not in code. Every intl
+//      test reads its expected number from the fixture — never from an
+//      engine-side constant.
 
 import { describe, it, expect } from 'vitest';
 import {
@@ -22,6 +25,8 @@ import {
   applyBand,
   REQUIRED_FALLBACK_KEYS,
   FALLBACK_ASSUMPTION,
+  INTL_UPLIFT_NOT_MODELED_ASSUMPTION,
+  ENGINE_VERSION,
 } from './paymentsGap.js';
 
 // ─── Test fixtures — a minimal rate table that mirrors the seeded schema ───
@@ -39,6 +44,9 @@ function row(overrides) {
     fixed_fee_currency: overrides.fixed_fee_currency,
     achievable_percent_bps: overrides.achievable_percent_bps ?? null,
     achievable_fixed_fee_minor_units: overrides.achievable_fixed_fee_minor_units ?? null,
+    // v1.2.0 — intl uplift fields. Test rows mirror what the seeder writes.
+    intl_uplift_bps: overrides.intl_uplift_bps ?? null,
+    achievable_intl_uplift_bps: overrides.achievable_intl_uplift_bps ?? null,
     verified: overrides.verified,
     savings_band_pct: overrides.savings_band_pct,
     achievable_breakdown_json: overrides.achievable_breakdown_json ?? null,
@@ -47,46 +55,72 @@ function row(overrides) {
 }
 
 // A complete-enough table for tests. Numbers mirror the seeded values from
-// Chunk 1b so ratios and cross-checks against real production stay honest.
+// Chunk 1b + 1.2.0 so ratios and cross-checks against real production stay
+// honest. Intl uplifts on Stripe rows use the VERIFIED numbers from stripe.com
+// pricing pages (Stripe EU/UK: +175/+90; Stripe US: +150/+75). PayPal /
+// Shopify rows leave intl uplift null (source-quoted absence — engine must
+// emit "not modeled" when intl_pct > 0). Fallback rows carry the regional
+// intl uplift (proxied from the regional Stripe number, verified=false).
 const FULL_TABLE = [
   row({ cohort_key: 'stripe|ANY|EU', provider_slug: 'stripe', region: 'EU',
         percent_bps: 150, fixed_fee_minor_units: 25, fixed_fee_currency: 'EUR',
         achievable_percent_bps: 86, achievable_fixed_fee_minor_units: 25,
+        intl_uplift_bps: 175, achievable_intl_uplift_bps: 90,
         verified: true, savings_band_pct: 0.20,
         achievable_breakdown_json: { interchange_bps: 26, scheme_fees_bps: 20, processor_margin_bps: 40, processor_margin_band_bps: 20 } }),
   row({ cohort_key: 'stripe|ANY|UK', provider_slug: 'stripe', region: 'UK',
         percent_bps: 150, fixed_fee_minor_units: 20, fixed_fee_currency: 'GBP',
         achievable_percent_bps: 86, achievable_fixed_fee_minor_units: 20,
+        intl_uplift_bps: 175, achievable_intl_uplift_bps: 90,
         verified: true, savings_band_pct: 0.20 }),
   row({ cohort_key: 'stripe|ANY|US', provider_slug: 'stripe', region: 'US',
         percent_bps: 290, fixed_fee_minor_units: 30, fixed_fee_currency: 'USD',
         achievable_percent_bps: 180, achievable_fixed_fee_minor_units: 30,
+        intl_uplift_bps: 150, achievable_intl_uplift_bps: 75,
         verified: true, savings_band_pct: 0.25 }),
   row({ cohort_key: 'paypal|ANY|EU', provider_slug: 'paypal', region: 'EU',
         percent_bps: 290, fixed_fee_minor_units: 35, fixed_fee_currency: 'EUR',
         achievable_percent_bps: 86, achievable_fixed_fee_minor_units: 25,
+        // Deliberately null — PayPal EU publishes intl as country-pair tables,
+        // seeder documents "not modeled" (see seedPaymentsRateTable).
+        intl_uplift_bps: null, achievable_intl_uplift_bps: null,
         verified: true, savings_band_pct: 0.20 }),
   row({ cohort_key: 'shopify_payments|ANY|US', provider_slug: 'shopify_payments', region: 'US',
         percent_bps: 290, fixed_fee_minor_units: 30, fixed_fee_currency: 'USD',
         achievable_percent_bps: 180, achievable_fixed_fee_minor_units: 30,
+        intl_uplift_bps: null, achievable_intl_uplift_bps: null,
         verified: true, savings_band_pct: 0.25 }),
   row({ cohort_key: 'ANY|ANY|EU', provider_slug: 'ANY', region: 'EU',
         percent_bps: 200, fixed_fee_minor_units: 25, fixed_fee_currency: 'EUR',
         achievable_percent_bps: 100, achievable_fixed_fee_minor_units: 25,
+        intl_uplift_bps: 175, achievable_intl_uplift_bps: 90,
         verified: false, savings_band_pct: 0.35 }),
   row({ cohort_key: 'ANY|ANY|UK', provider_slug: 'ANY', region: 'UK',
         percent_bps: 200, fixed_fee_minor_units: 25, fixed_fee_currency: 'GBP',
         achievable_percent_bps: 100, achievable_fixed_fee_minor_units: 20,
+        intl_uplift_bps: 175, achievable_intl_uplift_bps: 90,
         verified: false, savings_band_pct: 0.35 }),
   row({ cohort_key: 'ANY|ANY|US', provider_slug: 'ANY', region: 'US',
         percent_bps: 280, fixed_fee_minor_units: 30, fixed_fee_currency: 'USD',
         achievable_percent_bps: 200, achievable_fixed_fee_minor_units: 30,
+        intl_uplift_bps: 150, achievable_intl_uplift_bps: 75,
         verified: false, savings_band_pct: 0.35 }),
   row({ cohort_key: 'ANY|ANY|RoW', provider_slug: 'ANY', region: 'RoW',
         percent_bps: 320, fixed_fee_minor_units: 30, fixed_fee_currency: 'USD',
         achievable_percent_bps: 220, achievable_fixed_fee_minor_units: 30,
+        intl_uplift_bps: 165, achievable_intl_uplift_bps: 85,
         verified: false, savings_band_pct: 0.35 }),
 ];
+
+// Helper — resolve a row from FULL_TABLE by cohort_key so intl_pct tests read
+// their expected numbers from the fixture, not from local constants. This is
+// the Enmienda 1 guarantee at the TEST layer: no intl uplift number is
+// duplicated between the row and the assertion.
+function getRow(cohort_key) {
+  const r = FULL_TABLE.find(x => x.cohort_key === cohort_key);
+  if (!r) throw new Error(`fixture missing cohort ${cohort_key}`);
+  return r;
+}
 
 // ─── validateRateTable ──────────────────────────────────────────────────────
 
@@ -105,7 +139,6 @@ describe('validateRateTable', () => {
   });
 
   it('rejects a table where a required fallback is present but inactive', () => {
-    // Deep-clone so we don't mutate the shared FULL_TABLE.
     const withInactive = FULL_TABLE.map(r =>
       r.cohort_key === 'ANY|ANY|UK' ? { ...r, active: false } : r
     );
@@ -121,7 +154,6 @@ describe('validateRateTable', () => {
   });
 
   it('exposes REQUIRED_FALLBACK_KEYS with exactly the 4 canonical keys', () => {
-    // Snapshot the contract publicly — the seeder + engine share this list.
     expect(REQUIRED_FALLBACK_KEYS).toEqual([
       'ANY|ANY|EU', 'ANY|ANY|UK', 'ANY|ANY|US', 'ANY|ANY|RoW',
     ]);
@@ -150,8 +182,6 @@ describe('computeEffectiveBps — runtime amortization of fixed fee', () => {
   });
 
   it('same cohort, different ticket → different effective rate (structural correction proof)', () => {
-    // This is the exact test the user asked for: prove the fixed fee is not
-    // pre-blended, and that the engine uses the user's real ticket at runtime.
     const bps30  = computeEffectiveBps({ percent_bps: 150, fixed_fee_minor_units: 25 }, 30);
     const bps250 = computeEffectiveBps({ percent_bps: 150, fixed_fee_minor_units: 25 }, 250);
     // The difference should be dominated by the amortization delta:
@@ -172,8 +202,6 @@ describe('selectRow — provider → regional fallback cascade', () => {
   });
 
   it('unknown provider (adyen) on EU falls back to ANY|ANY|EU with verified=false', () => {
-    // The exact behavior the user asked to test: adyen|ANY|EU is not seeded
-    // → the engine picks up ANY|ANY|EU (unverified, wide band).
     const { row: r, matched } = selectRow(FULL_TABLE, 'adyen', 'EU');
     expect(r.cohort_key).toBe('ANY|ANY|EU');
     expect(r.verified).toBe(false);
@@ -188,8 +216,6 @@ describe('selectRow — provider → regional fallback cascade', () => {
   });
 
   it('unrecognized provider on a known region does NOT accidentally hit a same-region verified row', () => {
-    // Regression guard: a merchant on 'checkout_com' must NOT be scored using
-    // stripe|ANY|EU just because they're in the same region.
     const { row: r } = selectRow(FULL_TABLE, 'checkout_com', 'EU');
     expect(r.cohort_key).not.toBe('stripe|ANY|EU');
     expect(r.cohort_key).toBe('ANY|ANY|EU');
@@ -215,8 +241,6 @@ describe('calculateGap — end-to-end', () => {
   });
 
   it('refuses to calculate against a rate table missing a fallback row', () => {
-    // The eventual-consistency defense: if the table lands with any of the 4
-    // fallback rows missing, the engine must return rate_table_incomplete.
     const partial = FULL_TABLE.filter(r => r.cohort_key !== 'ANY|ANY|US');
     const result = calculateGap(
       { monthly_gmv_eur: 50000, avg_ticket_eur: 80, region: 'US', provider_slug: 'stripe' },
@@ -228,13 +252,6 @@ describe('calculateGap — end-to-end', () => {
   });
 
   it('Stripe EU (achievable_fixed == current_fixed) → different effective rates, IDENTICAL savings', () => {
-    // Structural correction proven at the ENGINE boundary. The seeded
-    // Stripe|EU row has current fixed 25c AND achievable fixed 25c — same
-    // fixed, so the fee cancels in (current − achievable) and savings are
-    // constant across tickets. THAT is the correct behavior of the seeded
-    // row. Amortization is proven by the EFFECTIVE rates differing, not by
-    // savings differing (see the next test for the case where they differ).
-    // See Decision Log 2026-07-09 · Chunk 2 CIERRE for the empirical proof.
     const base = { monthly_gmv_eur: 50000, region: 'EU', provider_slug: 'stripe' };
     const r30 = calculateGap({ ...base, avg_ticket_eur: 30 }, FULL_TABLE);
     const r250 = calculateGap({ ...base, avg_ticket_eur: 250 }, FULL_TABLE);
@@ -250,15 +267,8 @@ describe('calculateGap — end-to-end', () => {
   });
 
   it('Stripe EU with achievable_fixed < current_fixed → savings DO differ across tickets (complementary case)', () => {
-    // Complementary test: force a row where achievable_fixed_fee_minor_units
-    // is smaller than current_fixed_fee_minor_units. Now the fee does NOT
-    // cancel — its amortized contribution to the gap is larger at low tickets
-    // than at high ones, so savings MUST differ. This is the case that
-    // exercises the full amortization path end-to-end.
     const asymTable = FULL_TABLE.map(r =>
       r.cohort_key === 'stripe|ANY|EU'
-        // Same percent_bps (150 → 86 gap) but achievable_fixed drops from 25c
-        // to 10c. Now every ticket sees a real fixed-fee gap component.
         ? { ...r, achievable_fixed_fee_minor_units: 10 }
         : r
     );
@@ -267,15 +277,9 @@ describe('calculateGap — end-to-end', () => {
     const r250 = calculateGap({ ...base, avg_ticket_eur: 250 }, asymTable);
     expect(r30.ok).toBe(true);
     expect(r250.ok).toBe(true);
-    // Effective rates still differ (unchanged by the asymmetry).
     expect(r30.current_effective_bps).toBeGreaterThan(r250.current_effective_bps);
-    // AND now savings differ too — the low-ticket merchant recovers more of
-    // the fixed-fee gap per euro of GMV than the high-ticket one does.
     expect(r30.monthly_savings_eur.point).toBeGreaterThan(r250.monthly_savings_eur.point);
-    // The delta should be dominated by the amortized fixed-fee gap:
-    //   at €30:  (0.25 − 0.10) / 30  * 10000 = 50 bps
-    //   at €250: (0.25 − 0.10) / 250 * 10000 = 6 bps
-    // → extra gap of ~44 bps at €30 vs €250 → on 50k GMV ≈ €220/mo extra.
+    // Delta ≈ 44 bps of extra gap at €30 vs €250 → on 50k GMV ≈ €220/mo.
     const delta = r30.monthly_savings_eur.point - r250.monthly_savings_eur.point;
     expect(delta).toBeGreaterThan(200);
     expect(delta).toBeLessThan(240);
@@ -289,10 +293,8 @@ describe('calculateGap — end-to-end', () => {
     expect(result.ok).toBe(true);
     expect(result.cohort.verified).toBe(true);
     expect(result.cohort.matched).toBe('exact');
-    // Band is ±20% around the point estimate.
     const point = result.monthly_savings_eur.point;
     expect(result.monthly_savings_eur.hi - point).toBeCloseTo(point * 0.20, 2);
-    // Assumptions must NOT include the fallback disclaimer.
     expect(result.assumptions).not.toContain(FALLBACK_ASSUMPTION);
   });
 
@@ -305,10 +307,8 @@ describe('calculateGap — end-to-end', () => {
     expect(result.cohort.verified).toBe(false);
     expect(result.cohort.matched).toBe('fallback');
     expect(result.cohort.key).toBe('ANY|ANY|EU');
-    // ±35% band
     const point = result.monthly_savings_eur.point;
     expect(result.monthly_savings_eur.hi - point).toBeCloseTo(point * 0.35, 2);
-    // Fallback assumption must be present verbatim.
     expect(result.assumptions).toContain(FALLBACK_ASSUMPTION);
   });
 
@@ -318,8 +318,6 @@ describe('calculateGap — end-to-end', () => {
       FULL_TABLE
     );
     expect(result.ok).toBe(true);
-    // Stripe EU row carries interchange/scheme/margin breakdown; the string
-    // must reference that composition.
     const hasBreakdownAssumption = result.assumptions.some(a => a.includes('interchange 26 bps'));
     expect(hasBreakdownAssumption).toBe(true);
   });
@@ -353,21 +351,18 @@ describe('calculateGap — end-to-end', () => {
     expect(result.cohort.matched).toBe('exact');
   });
 
-  // ─── engine v1.1.0 — intl_pct now materially consumed ─────────────────────
+  // ─── Enmienda 1 — intl uplift reads from row, not from code ───────────────
   //
-  // Contract of the intl uplift (see paymentsGap.js version-history header):
+  // Contract:
   //   • intl_pct = 0  → behavior IDENTICAL to v1.0.0 (regression guard).
-  //   • intl_pct > 0  → current AND achievable rates both climb, but the
-  //                     current-side uplift (+150 bps) is higher than the
-  //                     achievable-side uplift (+90 bps), so the gap widens
-  //                     and savings grow monotonically with intl_pct.
-  //   • intl_pct > 0  → assumptions include the intl-uplift disclosure.
-  //   • Fixed fees are NOT scaled by intl_pct (schemes don't charge that
-  //     component per-card-origin).
+  //   • intl_pct > 0 AND row.intl_uplift_bps set → current/achievable both
+  //     climb by their ROW-specified uplift. Gap widens by
+  //     (intl_uplift_bps − achievable_intl_uplift_bps) on the intl portion.
+  //   • intl_pct > 0 AND row.intl_uplift_bps null → engine emits
+  //     "intl uplift not modeled" assumption, does NOT invent an uplift.
+  //   • Fixed fees are NEVER scaled by intl_pct.
 
   it('intl_pct=0 is unchanged from pre-1.1.0 behavior (regression guard)', () => {
-    // The number produced when intl_pct is unset must equal the number
-    // produced when intl_pct is explicitly 0 — no silent nonzero default.
     const base = { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' };
     const unset = calculateGap(base, FULL_TABLE);
     const zero = calculateGap({ ...base, intl_pct: 0 }, FULL_TABLE);
@@ -376,32 +371,32 @@ describe('calculateGap — end-to-end', () => {
     expect(zero.current_effective_bps).toBeCloseTo(unset.current_effective_bps, 8);
     expect(zero.achievable_effective_bps).toBeCloseTo(unset.achievable_effective_bps, 8);
     expect(zero.monthly_savings_eur.point).toBeCloseTo(unset.monthly_savings_eur.point, 6);
-    // Assumptions carry NO intl note when intl_pct=0.
     expect(zero.assumptions.some(a => a.includes('cross-border'))).toBe(false);
+    expect(zero.assumptions).not.toContain(INTL_UPLIFT_NOT_MODELED_ASSUMPTION);
   });
 
-  it('intl_pct=100 raises both current and achievable, but current climbs MORE → savings grow', () => {
-    // Full-intl merchant: 100% of GMV is cross-border. Current-side uplift
-    // is +150 bps, achievable-side is +90 bps, so the additional gap is
-    // +60 bps applied to 100% of GMV. On €100k GMV that's ~€600/mo extra
-    // savings vs a domestic-only merchant with the same profile.
+  it('intl_pct=100 raises both rates by exactly the ROW-specified uplift (Enmienda 1 contract)', () => {
+    // Read the expected numbers FROM the fixture row — never duplicate them
+    // in the assertion. This is the guarantee that intl uplifts live on the
+    // row and only on the row.
+    const stripeEu = getRow('stripe|ANY|EU');
+    const expectedCurrentDelta = stripeEu.intl_uplift_bps;           // 175
+    const expectedAchievableDelta = stripeEu.achievable_intl_uplift_bps; // 90
     const base = { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' };
     const domestic = calculateGap({ ...base, intl_pct: 0 }, FULL_TABLE);
     const intl = calculateGap({ ...base, intl_pct: 100 }, FULL_TABLE);
     expect(domestic.ok).toBe(true);
     expect(intl.ok).toBe(true);
-    // Both rates climb by exactly their uplift constant (fixed_fee unchanged).
-    expect(intl.current_effective_bps - domestic.current_effective_bps).toBeCloseTo(150, 6);
-    expect(intl.achievable_effective_bps - domestic.achievable_effective_bps).toBeCloseTo(90, 6);
-    // → gap widens by 60 bps → on 100k GMV that's €600/mo extra point savings.
+    expect(intl.current_effective_bps - domestic.current_effective_bps).toBeCloseTo(expectedCurrentDelta, 6);
+    expect(intl.achievable_effective_bps - domestic.achievable_effective_bps).toBeCloseTo(expectedAchievableDelta, 6);
+    // Gap widens by (current_uplift − achievable_uplift) on 100% of GMV.
+    const expectedExtraSavings = ((expectedCurrentDelta - expectedAchievableDelta) / 10000) * 100000;
     const extra = intl.monthly_savings_eur.point - domestic.monthly_savings_eur.point;
-    expect(extra).toBeCloseTo(600, 0);
-    // Assumptions carry the intl note.
+    expect(extra).toBeCloseTo(expectedExtraSavings, 0);
     expect(intl.assumptions.some(a => a.includes('cross-border'))).toBe(true);
   });
 
   it('intl_pct scales linearly between 0 and 100 (25% → quarter of the extra gap)', () => {
-    // Contract check: extra_gap(intl_pct) = intl_pct / 100 * 60 bps.
     const base = { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' };
     const p0 = calculateGap({ ...base, intl_pct: 0 }, FULL_TABLE);
     const p25 = calculateGap({ ...base, intl_pct: 25 }, FULL_TABLE);
@@ -409,11 +404,56 @@ describe('calculateGap — end-to-end', () => {
     const g0 = p0.monthly_savings_eur.point;
     const g25 = p25.monthly_savings_eur.point;
     const g100 = p100.monthly_savings_eur.point;
-    // 25% is exactly a quarter of the way from 0 to 100.
     expect(g25 - g0).toBeCloseTo((g100 - g0) * 0.25, 4);
   });
 
-  it('engine_version reports the SemVer-tagged 1.1.0 name (not the legacy "v1")', () => {
+  it('Stripe EU vs Stripe US produce DIFFERENT intl-driven gap deltas (per-row uplift proof)', () => {
+    // Stripe EU: +175/+90 → 85 bps gap delta.
+    // Stripe US: +150/+75 → 75 bps gap delta.
+    // If the engine used a single hardcoded constant, both would produce
+    // the same intl delta on equal GMV. The Enmienda 1 fix REQUIRES them to
+    // differ, and to differ in the direction the seeder dictates.
+    const stripeEu = getRow('stripe|ANY|EU');
+    const stripeUs = getRow('stripe|ANY|US');
+    const expectedEuDelta = stripeEu.intl_uplift_bps - stripeEu.achievable_intl_uplift_bps;   // 85
+    const expectedUsDelta = stripeUs.intl_uplift_bps - stripeUs.achievable_intl_uplift_bps;   // 75
+    expect(expectedEuDelta).toBeGreaterThan(expectedUsDelta);
+
+    const gmv = 100000;
+    const euDom = calculateGap({ monthly_gmv_eur: gmv, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe', intl_pct: 0 }, FULL_TABLE);
+    const euIntl = calculateGap({ monthly_gmv_eur: gmv, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe', intl_pct: 100 }, FULL_TABLE);
+    const usDom = calculateGap({ monthly_gmv_eur: gmv, avg_ticket_eur: 80, region: 'US', provider_slug: 'stripe', intl_pct: 0 }, FULL_TABLE);
+    const usIntl = calculateGap({ monthly_gmv_eur: gmv, avg_ticket_eur: 80, region: 'US', provider_slug: 'stripe', intl_pct: 100 }, FULL_TABLE);
+    const euExtra = euIntl.monthly_savings_eur.point - euDom.monthly_savings_eur.point;
+    const usExtra = usIntl.monthly_savings_eur.point - usDom.monthly_savings_eur.point;
+    // Expected: EU extra = 85 bps × 100k GMV = €850/mo; US extra = 75 bps × 100k = €750/mo.
+    expect(euExtra).toBeCloseTo((expectedEuDelta / 10000) * gmv, 0);
+    expect(usExtra).toBeCloseTo((expectedUsDelta / 10000) * gmv, 0);
+    // AND the EU extra is strictly larger than the US extra — the direct
+    // evidence that per-row uplifts are being read.
+    expect(euExtra).toBeGreaterThan(usExtra);
+  });
+
+  it('intl_pct > 0 on a row with intl_uplift_bps=null → engine emits "not modeled" assumption, no invented uplift', () => {
+    // PayPal EU fixture leaves intl_uplift_bps null (source-quoted absence).
+    // The engine MUST NOT invent a value — savings against intl_pct=0 must
+    // be effectively identical (only floating-point noise from an intl
+    // contribution of zero), and the assumption must be present.
+    const base = { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'paypal' };
+    const domestic = calculateGap({ ...base, intl_pct: 0 }, FULL_TABLE);
+    const intl = calculateGap({ ...base, intl_pct: 100 }, FULL_TABLE);
+    expect(domestic.ok).toBe(true);
+    expect(intl.ok).toBe(true);
+    // No hidden uplift: both current & achievable are unchanged by intl_pct.
+    expect(intl.current_effective_bps).toBeCloseTo(domestic.current_effective_bps, 8);
+    expect(intl.achievable_effective_bps).toBeCloseTo(domestic.achievable_effective_bps, 8);
+    // Assumption present.
+    expect(intl.assumptions).toContain(INTL_UPLIFT_NOT_MODELED_ASSUMPTION);
+    // And the modeled-uplift assumption is ABSENT (double-guard).
+    expect(intl.assumptions.some(a => a.includes('cross-border interchange is not negotiable'))).toBe(false);
+  });
+
+  it('engine_version reports the SemVer-tagged 1.2.0 name', () => {
     // Explicit contract check — this string is persisted verbatim on every
     // PaymentsAnalysisSession row. Downstream benchmark aggregators filter
     // by engine_version, so silent renames would corrupt cohorts.
@@ -422,7 +462,8 @@ describe('calculateGap — end-to-end', () => {
       FULL_TABLE
     );
     expect(result.ok).toBe(true);
-    expect(result.engine_version).toBe('payments-gap-1.1.0');
+    expect(result.engine_version).toBe('payments-gap-1.2.0');
+    expect(ENGINE_VERSION).toBe('payments-gap-1.2.0');
   });
 });
 
@@ -436,7 +477,6 @@ describe('calculateGap — edge cases at GMV extremes', () => {
     );
     expect(result.ok).toBe(true);
     expect(result.monthly_savings_eur.point).toBeGreaterThan(0);
-    // Savings should never exceed the entire GMV — sanity ceiling.
     expect(result.monthly_savings_eur.hi).toBeLessThan(500);
   });
 
@@ -451,13 +491,10 @@ describe('calculateGap — edge cases at GMV extremes', () => {
     );
     expect(small.ok).toBe(true);
     expect(huge.ok).toBe(true);
-    // 100× GMV → 100× savings (same cohort, same ticket).
     expect(huge.monthly_savings_eur.point / small.monthly_savings_eur.point).toBeCloseTo(100, 1);
   });
 
   it('PayPal EU (highest verified current rate) shows the largest gap-to-achievable', () => {
-    // PayPal EU 290 bps + 35c vs Stripe-EU-benchmark achievable 86 bps + 25c
-    // → the PayPal gap is dramatically larger than the Stripe gap at same GMV.
     const paypal = calculateGap(
       { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'paypal' },
       FULL_TABLE
@@ -472,10 +509,16 @@ describe('calculateGap — edge cases at GMV extremes', () => {
   });
 
   it('merchant already at benchmark → zero savings, no negative numbers', () => {
-    // Custom row where current == achievable: gap is 0, savings must be 0.
     const flatTable = FULL_TABLE.map(r =>
       r.cohort_key === 'stripe|ANY|EU'
-        ? { ...r, achievable_percent_bps: r.percent_bps, achievable_fixed_fee_minor_units: r.fixed_fee_minor_units }
+        ? {
+            ...r,
+            achievable_percent_bps: r.percent_bps,
+            achievable_fixed_fee_minor_units: r.fixed_fee_minor_units,
+            // Also flatten the intl uplift — otherwise the +175/+90 delta
+            // creates a residual intl gap the caller doesn't want.
+            achievable_intl_uplift_bps: r.intl_uplift_bps,
+          }
         : r
     );
     const result = calculateGap(
@@ -500,7 +543,7 @@ describe('helpers', () => {
   });
 
   it('applyBand clamps lo at 0 (never negative)', () => {
-    const { lo } = applyBand(50, 5.0); // absurd 500% band
+    const { lo } = applyBand(50, 5.0);
     expect(lo).toBe(0);
   });
 

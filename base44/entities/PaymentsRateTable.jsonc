@@ -57,6 +57,26 @@
       "type": "number",
       "description": "OPTIONAL \u2014 Achievable fixed component (usually same or slightly lower than the published fixed fee \u2014 hard to negotiate below scheme minimums). Null when achievable_percent_bps is null."
     },
+    "intl_uplift_bps": {
+      "type": "number",
+      "description": "OPTIONAL \u2014 Cross-border card uplift (in bps) charged by this PSP for cards issued outside the merchant's region. Applied to the intl portion of GMV only (percent component; the fixed fee is NOT scaled \u2014 schemes don't charge a separate fixed fee per card origin). Cited verbatim from the PSP's public pricing page via intl_uplift_source_url + intl_uplift_source_quote when known. NULL when the provider does not publish a distinct cross-border rate we could verify \u2014 the engine treats null as 'not modeled' and emits an assumption to that effect (never invents a value in code). Enmienda 1: NEVER hardcode uplift constants in the engine."
+    },
+    "achievable_intl_uplift_bps": {
+      "type": "number",
+      "description": "OPTIONAL \u2014 Achievable cross-border uplift (in bps) after negotiation. There is NO public benchmark for negotiated cross-border rates, so this is ALWAYS an assumption \u2014 the row must document the derivation in intl_uplift_assumption_notes (typically: scheme cross-border interchange floor is not negotiable, only the processor's cross-border margin is; achievable \u2248 40-55% of intl_uplift_bps). Null when intl_uplift_bps is null. Engine uses this + intl_uplift_bps to widen the gap on the intl portion of GMV."
+    },
+    "intl_uplift_source_url": {
+      "type": "string",
+      "description": "OPTIONAL \u2014 Public pricing URL where intl_uplift_bps was cited verbatim. Required when intl_uplift_bps is set and the row is verified=true. Null for rows where the intl uplift is an assumption (fallback rows, or providers without a published cross-border rate)."
+    },
+    "intl_uplift_source_quote": {
+      "type": "string",
+      "description": "OPTIONAL \u2014 Verbatim quote from intl_uplift_source_url showing the cross-border rate. Required when intl_uplift_source_url is set. Provides audit trail \u2014 if the PSP changes cross-border pricing, we grep this field to find stale rows."
+    },
+    "intl_uplift_assumption_notes": {
+      "type": "string",
+      "description": "OPTIONAL \u2014 Free-form justification of the intl uplift assumption. REQUIRED when intl_uplift_bps or achievable_intl_uplift_bps carries a derived (not source-quoted) value. Explains the reasoning so the number is auditable in-row, not in code. Enmienda 1: no in-code justification, every assumption lives on the row."
+    },
     "verified": {
       "type": "boolean",
       "default": false,
