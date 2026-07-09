@@ -72,21 +72,21 @@ export default function AIInsightsPanel() {
         const me = await base44.auth.me();
         if (cancelled) return;
         setIsAdmin(me?.role === "admin");
-        // ⚠️ BUG-1 (documented, not fixed — see src/docs/KNOWN_DEBT.md)
-        // This query scopes AgentRuns by USER (via RLS + .list()), not by the
-        // ACTIVE brand. In multi-brand accounts (e.g. xavi owns both `H` and
-        // `CAMBRA (self-test)`), the panel surfaces runs from ANY of the user's
-        // brands — a Northpine Home / H run from 14 days ago shows up under
-        // the freshly-created CAMBRA self-test brand and misleads the viewer
-        // ("this brand has €9816/yr recommendations" when it has none).
-        // Same scoping mistake pattern as the pre-FASE-2 brand-H leakage.
-        // FIX: must filter by `brand_id: <active brand.id>` — active brand
-        // needs to be lifted from Dashboard.jsx (line 84-86) or via a shared
-        // BrandContext. Do NOT patch here until the active-brand plumbing
-        // exists, otherwise we'll re-scatter the same fragile logic.
-        // RLS already scopes to the user's runs; we just take the last 3 by created_date.
+        // BUG-1 FIX (2026-07-09) — scope AgentRuns to the ACTIVE brand of the
+        // user, not just to the user. Same source-of-truth for "active brand"
+        // as Dashboard.jsx (most recent Brand created_by_id === me.id).
+        // If no active brand → empty list, no fallback to `.list()` (that was
+        // the leak: showing runs from OTHER brands the user also owns).
+        const brands = await base44.entities.Brand
+          .filter({ created_by_id: me.id }, "-created_date", 1)
+          .catch(() => []);
+        const activeBrand = brands[0] || null;
+        if (!activeBrand) {
+          if (!cancelled) setRuns([]);
+          return;
+        }
         const list = await base44.entities.AgentRun
-          .list("-created_date", 3)
+          .filter({ brand_id: activeBrand.id }, "-created_date", 3)
           .catch(() => []);
         if (!cancelled) setRuns(list);
       } catch {

@@ -31,10 +31,24 @@ coste conocido mientras el trigger sea manual (botón Sync).
 
 ## BUG-1 — AI Insights filtra por usuario, no por brand activo
 
-**Estado:** activa
+**Estado:** RESUELTA 2026-07-09 (cierre de sesión)
 **Detectado:** 2026-07-09 durante validación FASE 2 (Opción B)
 **Fichero:** `src/components/dashboard/AIInsightsPanel.jsx`
-**Líneas:** ~76-78 (query `base44.entities.AgentRun.list("-created_date", 3)`)
+**Líneas resueltas:** ~68-95 (bloque `useEffect` load)
+
+### Resolución
+El panel resuelve primero el brand activo del usuario
+(`Brand.filter({ created_by_id: me.id }, "-created_date", 1)` — misma fuente
+que Dashboard.jsx) y luego consulta
+`AgentRun.filter({ brand_id: activeBrand.id }, "-created_date", 3)`.
+Si no hay brand activo → lista vacía (sin fallback a `.list()`, que era la
+fuga). No se introduce BrandContext compartido — se difiere hasta un lift
+más amplio; el fix aislado aquí es correcto porque la fuente de brand
+activo es la misma constante usada en el Dashboard.
+
+---
+
+## BUG-1 (histórico) — descripción original
 
 ### Síntoma
 El panel "Latest agent runs" del Dashboard muestra runs que NO pertenecen al
