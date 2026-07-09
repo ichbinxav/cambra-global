@@ -203,6 +203,17 @@ Cursor-con-confirmación:
 **Auditoría normalizers**: los 24 normalizers activos emiten `occurred_at`
 con guarda null. Verificado el 2026-07-09.
 
+### Validación end-to-end (2026-07-09)
+Sobre Integration `stripe_self_test` (`6a4e2e6bd5456d2088c2f6de`):
+- Sync 1 (frío, ventana 12 meses): 19 records, `last_synced_until = 2026-07-09T09:01:14.000Z` = HWM real (max `occurred_at`), NO clock-now.
+- Sync 2 (encadenado): 19 records (todos dentro del solape de 24h), `last_window_since = 2026-07-08T09:01:14.000Z` = `cursor − 24h`. Cursor intacto (guarda de monotonía activa).
+- Antes del fix, sync 2 devolvía **0**. Ahora devuelve **19**. Síntoma original muerto en comportamiento.
+
+### Red de seguridad
+- Extracted `computeNewCursor` a `src/lib/syncEngine/cursorAdvance.js` (función pura, testeable).
+- 10 tests unitarios en `cursorAdvance.test.js` cubren: max advance, monotonicity guard (batch older → cursor unchanged), empty batch, todos-inválidos, partial=true, primer sync (null prev), mixed batch, identidad al valor previo, garbage prev.
+- Pareado `SYNC-START: cursorAdvance` en `dataSyncAgent/entry.ts` ↔ `cursorAdvance.js` verificado byte-idéntico bajo normalizador. `__sync_check__.test.js` detectará drift futuro.
+
 ---
 
 ## BUG-4 (histórico) — síntoma original

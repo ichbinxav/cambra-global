@@ -2255,23 +2255,28 @@ Deno.serve(async (req) => {
         // Endpoint's own records only: normalizers push into `allRecords`
         // incrementally, so records added during THIS endpoint iteration are
         // allRecords.slice(recordsBeforeEndpoint).
-        let newCursor = epState.last_synced_until || null;
-        if (!partialReason) {
-          const endpointRecords = allRecords.slice(recordsBeforeEndpoint);
+        // SYNC-START: cursorAdvance
+        function computeNewCursor({ endpointRecords, previousCursor, partial }) {
+          const prevIso = previousCursor || null;
+          if (partial) return prevIso;
+          if (!Array.isArray(endpointRecords) || endpointRecords.length === 0) return prevIso;
           let maxOccurredMs = 0;
           for (const r of endpointRecords) {
             if (!r?.occurred_at) continue;
             const t = new Date(r.occurred_at).getTime();
             if (Number.isFinite(t) && t > maxOccurredMs) maxOccurredMs = t;
           }
-          if (maxOccurredMs > 0) {
-            const hwm = new Date(maxOccurredMs).toISOString();
-            // Monotonicity guard: never regress.
-            const prev = epState.last_synced_until ? new Date(epState.last_synced_until).getTime() : 0;
-            newCursor = maxOccurredMs >= prev ? hwm : epState.last_synced_until;
-          }
-          // else: no valid timestamps → keep previous cursor (line initial value).
+          if (maxOccurredMs === 0) return prevIso;
+          const prevMs = prevIso ? new Date(prevIso).getTime() : 0;
+          const prevMsSafe = Number.isFinite(prevMs) ? prevMs : 0;
+          return maxOccurredMs >= prevMsSafe ? new Date(maxOccurredMs).toISOString() : prevIso;
         }
+        // SYNC-END: cursorAdvance
+        const newCursor = computeNewCursor({
+          endpointRecords: allRecords.slice(recordsBeforeEndpoint),
+          previousCursor: epState.last_synced_until || null,
+          partial: !!partialReason,
+        });
 
         syncState[epKey] = {
           last_cursor: lastCursor,

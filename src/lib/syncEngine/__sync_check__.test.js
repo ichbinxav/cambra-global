@@ -91,6 +91,7 @@ const DENO_FILE = path.join(REPO_ROOT, "base44/functions/dataSyncAgent/entry.ts"
 const PAIRS = [
   { key: "mergeStaticHeaders",     src: "src/lib/syncEngine/mergeStaticHeaders.js" },
   { key: "dateRange",              src: "src/lib/syncEngine/dateRange.js" },
+  { key: "cursorAdvance",          src: "src/lib/syncEngine/cursorAdvance.js" },
   {
     key: "paginators",
     src: "src/lib/syncEngine/paginators.js",
