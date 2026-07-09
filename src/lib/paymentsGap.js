@@ -20,6 +20,12 @@
 
 // SYNC-START: paymentsGap
 
+// Engine version. Bumped when the SYNC block's arithmetic/logic changes.
+// Persisted verbatim on every session by callers — the session reflects what
+// the engine said, never a caller-side constant. Keep in one place inside the
+// SYNC block so both the src copy and the Deno copy agree by construction.
+const ENGINE_VERSION = "v1";
+
 // Currency minor-unit divisor. All PaymentsRateTable rows store fixed fees
 // in minor units (cents / pence). 100 minor units = 1 major (EUR / GBP / USD).
 const MINOR_PER_MAJOR = 100;
@@ -292,6 +298,7 @@ function calculateGap(rawInput, rateTable) {
 
   return {
     ok: true,
+    engine_version: ENGINE_VERSION,
     current_effective_bps: current_bps,
     achievable_effective_bps: achievable_bps,
     monthly_savings_eur: monthly,
@@ -319,4 +326,5 @@ export {
   REQUIRED_FALLBACK_KEYS,
   KNOWN_PROVIDERS,
   FALLBACK_ASSUMPTION,
+  ENGINE_VERSION,
 };

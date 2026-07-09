@@ -1,0 +1,44 @@
+{
+  "name": "PaymentsAnalysisSession",
+  "type": "object",
+  "properties": {
+    "anon_session_id": {
+      "type": "string",
+      "description": "UUID v4 generated server-side by submitPaymentsAnalysis (crypto.randomUUID()). Primary key by which the Chunk 5 teaser retrieves this result. No uniqueness constraint at the entity level (Base44 does not support them); collision probability at UUID v4 scale is negligible for our volume. Never exposed to authenticated users through general RLS \u2014 read path is service-role-only via getAnonResultTeaser."
+    },
+    "input_snapshot": {
+      "type": "object",
+      "description": "The post-validation, sanitized inputs that produced this session's engine_result. Fields: monthly_gmv_eur (number), avg_ticket_eur (number), region (EU|UK|US|RoW derived server-side from country), country (ISO-3166-1 alpha-2), provider_slug (from the sanctioned enum), intl_pct (0-100), card_mix_debit_pct (0-100, optional \u2014 may be omitted when the caller did not supply it). Stored post-validation so audits show what the engine actually saw, not the raw payload. card_mix_debit_pct is persisted for future engine versions that will consume it; today's engine (v1) ignores it and its presence does not affect the computed savings."
+    },
+    "engine_result": {
+      "type": "object",
+      "description": "Full verbatim output of calculatePaymentsGap: engine_version, current_effective_bps, achievable_effective_bps, monthly_savings_eur {lo,point,hi}, annual_savings_eur {lo,point,hi}, cohort {key,verified,matched}, assumptions[]. Persisted as-returned so the Chunk 5 teaser can render the session without any recomputation."
+    },
+    "engine_version": {
+      "type": "string",
+      "description": "Version tag persisted from engine_result.engine_version. The session records what the engine said \u2014 never a caller-side constant. Chunk 5 may use this to filter out sessions produced by a prior engine version if the SYNC block's arithmetic ever changes."
+    },
+    "ip_hash": {
+      "type": "string",
+      "description": "SHA-256(IP_SALT + client_ip) where IP_SALT is itself SHA-256(BENCHMARK_ANON_SALT + ':ip-hashing') \u2014 a derived salt, not the raw benchmark salt. This decouples the rate-limiting/audit domain from the (irrotable) benchmark pseudonymization domain: rotating one salt does not corrupt the other's history. Client IP is never stored in the clear. Used for rate-limit accounting and (future) abuse forensics only."
+    }
+  },
+  "required": [
+    "anon_session_id",
+    "input_snapshot",
+    "engine_result",
+    "engine_version"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
