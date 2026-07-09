@@ -15,7 +15,7 @@ import { useLocation } from "react-router-dom";
 
 const OBSERVATIONS_BY_PATH = {
   "/": [
-    "2 redundant SaaS tools detected.",
+    "Interchange delta above cohort median.",
     "Stripe fees above peer median.",
     "Drift detected · payments layer.",
     "FX exposure unbenchmarked.",
@@ -26,8 +26,8 @@ const OBSERVATIONS_BY_PATH = {
     "Upload one statement to lock numbers.",
   ],
   "/Dashboard": [
-    "Drift detected · shipping layer.",
-    "SaaS stack fragmented.",
+    "Drift detected · payments layer.",
+    "Effective fee drifting from floor.",
     "Benchmark refreshed.",
   ],
   "/Results": [

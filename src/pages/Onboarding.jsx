@@ -3,8 +3,7 @@ import { TabsContent } from '@/components/ui/tabs';
 import OnboardingLayout from '@/components/onboarding/OnboardingLayout';
 import StepGrid from '@/components/onboarding/StepGrid.jsx';
 import PaymentsModule from '@/components/onboarding/PaymentsModule';
-import ShippingModule from '@/components/onboarding/ShippingModule';
-import SaasModule from '@/components/onboarding/SaasModule';
+// FASE 1.3 — ShippingModule + SaasModule deprecated (payments-only phase).
 import { base44 } from '@/api/base44Client';
 import Navbar from '@/components/landing/Navbar';
 
@@ -45,16 +44,6 @@ export default function Onboarding(){
           <TabsContent value="payments">
             <div className="space-y-6">
               <PaymentsModule />
-            </div>
-          </TabsContent>
-          <TabsContent value="logistics">
-            <div className="space-y-6">
-              <ShippingModule />
-            </div>
-          </TabsContent>
-          <TabsContent value="saas">
-            <div className="space-y-6">
-              <SaasModule />
             </div>
           </TabsContent>
         </OnboardingLayout>

@@ -7,39 +7,39 @@ import { Button } from "@/components/ui/button";
 const STEPS = [
   {
     n: "01",
-    eyebrow: "ingest",
-    icon: Plug,
-    title: "Connect your stack",
-    detail: "Link Payments, Logistics & Commerce SaaS tools — or upload statements. Read-only, encrypted, never shared.",
-    points: ["OAuth integrations", "PDF/CSV ingestion", "Manual fallback"],
-    cta: { label: "Connect your tools", href: "/ConnectTools" },
+    eyebrow: "analyze",
+    icon: Activity,
+    title: "Analyze anonymously",
+    detail: "Answer a few quick questions about your revenue, provider and volumes. No account, no connection, no card. Sixty seconds.",
+    points: ["No signup required", "No credentials shared", "60 seconds"],
+    cta: { label: "Start the audit", href: "/Analyzer" },
   },
   {
     n: "02",
-    eyebrow: "analyze",
-    icon: Activity,
-    title: "We scan your infrastructure",
-    detail: "CAMBRA maps your real rates, volumes and costs across 3 operational pillars — automatically.",
-    points: ["Effective payment rates", "Carrier & 3PL benchmarks", "Commerce SaaS spend audit"],
+    eyebrow: "diagnose",
+    icon: BarChart3,
+    title: "See your real payment costs",
+    detail: "We compare your effective fee against the achievable floor for your tier and geography, and split the delta by interchange, scheme fees and processor margin — the three layers that actually leak money.",
+    points: ["Effective vs floor rate", "Interchange · scheme · margin split", "Peer-tier benchmark"],
     cta: { label: "Run the analyzer", href: "/Analyzer" },
   },
   {
     n: "03",
-    eyebrow: "compare",
-    icon: BarChart3,
-    title: "Benchmark against the network",
-    detail: "Your numbers are compared against operators of similar scale — surfacing exact savings opportunities.",
-    points: ["Peer benchmarks", "Infrastructure score", "Margin leak alerts"],
-    cta: { label: "See your score", href: "/Dashboard" },
+    eyebrow: "verify",
+    icon: Plug,
+    title: "Connect Stripe for exact numbers",
+    detail: "Go from estimation to calculation. Read-only Stripe connection turns your declared inputs into transaction-level truth — same benchmark, verified figures.",
+    points: ["Read-only access", "Transaction-level accuracy", "Encrypted, never shared"],
+    cta: { label: "Connect Stripe", href: "/ConnectTools" },
   },
   {
     n: "04",
-    eyebrow: "save",
+    eyebrow: "recover",
     icon: Sparkles,
-    title: "Activate better terms",
-    detail: "Move into stronger commercial conditions through CAMBRA's network — performance-based, no upfront fee.",
-    points: ["Negotiated terms", "Recovery verification", "Aligned incentives"],
-    cta: { label: "Unlock your savings", href: "/Dashboard" },
+    title: "Recover margin",
+    detail: "When the gap is real and material, CAMBRA helps you close it — through renegotiation or migration — on a performance-based fee. If we don't recover anything, you pay nothing.",
+    points: ["Performance-based fee", "No upfront cost", "24-month duration"],
+    cta: { label: "See recovery model", href: "/Pricing" },
   },
 ];
 
@@ -97,7 +97,7 @@ export default function HowItWorks() {
               </span>
             </h1>
             <p className="text-base md:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
-              A structured infrastructure audit — built for independent operators. No upfront fees, no lock-in.
+              A structured payments audit — built for independent operators. No upfront fees, no lock-in.
             </p>
           </div>
 

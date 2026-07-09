@@ -139,11 +139,11 @@ function SplitVisual() {
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/40 mb-1.5">
-                SaaS savings
+                Already at benchmark
               </p>
-              <p className="text-[14px] font-semibold text-white">100% yours</p>
+              <p className="text-[14px] font-semibold text-white">You pay €0</p>
               <p className="text-[11.5px] text-white/50 mt-0.5">
-                Zero fee, always
+                No gap, no fee — ever
               </p>
             </div>
             <div>

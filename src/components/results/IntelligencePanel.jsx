@@ -39,8 +39,8 @@ function Insight({ item }){
     switch(item.action_key){
       case 'connect_data': return <Link to="/ConnectTools"><Button size="sm" className="h-8 rounded-full text-xs gap-1.5"><Zap className="h-3 w-3"/> Connect data</Button></Link>;
       // FASE 1.2 — /Deals deprecated. Insight actions now route to Dashboard.
+      // FASE 1.3 — view_deals_shipping removed (payments-only phase).
       case 'view_deals_payments': return <Link to="/Dashboard"><Button size="sm" variant="outline" className="h-8 rounded-full text-xs">Open dashboard</Button></Link>;
-      case 'view_deals_shipping': return <Link to="/Dashboard"><Button size="sm" variant="outline" className="h-8 rounded-full text-xs">Open dashboard</Button></Link>;
       case 'complete_onboarding': return <Link to="/Onboarding"><Button size="sm" variant="outline" className="h-8 rounded-full text-xs">Complete onboarding</Button></Link>;
       default: return null;
     }
@@ -60,9 +60,10 @@ function Insight({ item }){
 }
 
 export default function IntelligencePanel({ intelligence }){
+  // FASE 1.3 — payments-only. Shipping/SaaS metric reads removed;
+  // the intelligence prop may still contain those keys (Results.jsx frozen
+  // until PaymentsAnalyzer cutover) — they're simply ignored on render.
   const pm = intelligence?.metrics?.payments?.effective_rate;
-  const sm = intelligence?.metrics?.shipping?.avg_cost;
-  const ss = intelligence?.metrics?.saas?.pct_revenue;
   const breakdown = intelligence?.infra_breakdown || [];
   const insights = intelligence?.insights || [];
 
@@ -91,8 +92,6 @@ export default function IntelligencePanel({ intelligence }){
           {['Metric','Yours','p50','p75','Gap'].map((h,i)=>(<span key={i} className={`text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 ${i>0?'text-center':''} ${i===4?'text-right':''}`}>{h}</span>))}
         </div>
         <Row label="Payment fee" yours={pm?.value ?? null} p50={pm?.p50 ?? null} p75={pm?.p75 ?? null} unit="%" />
-        <Row label="Cost/shipment" yours={sm?.value ?? null} p50={sm?.p50 ?? null} p75={sm?.p75 ?? null} unit="€" />
-        <Row label="SaaS / revenue" yours={ss?.value ?? null} p50={ss?.p50 ?? null} p75={ss?.p75 ?? null} unit="%" />
       </div>
 
       {/* Breakdown */}

@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
 
+// PLACEHOLDER testimonials — replace with real customer quotes before public launch.
 const TESTIMONIALS = [
   {
     name: "Emma Rossi",
@@ -14,7 +15,7 @@ const TESTIMONIALS = [
     name: "Marco Blanc",
     company: "Beauty E-commerce",
     role: "Operations Lead",
-    text: "The infrastructure audit was eye-opening. We had no idea we were overpaying on SaaS by 40%. Already cut costs by €8K/month.",
+    text: "The audit surfaced a 0.4-point gap between our effective fee and the achievable floor. Once we saw the breakdown, negotiating with our PSP became a factual conversation, not a guessing game.",
     rating: 5,
     avatar: "MB",
   },
@@ -30,7 +31,7 @@ const TESTIMONIALS = [
     name: "Luca Moretti",
     company: "Food & Beverage",
     role: "CFO",
-    text: "The deal negotiation support is incredible. CAMBRA's network leverage got us shipping rates we could never negotiate alone.",
+    text: "The interchange and scheme fee decomposition is what sold us. Every other tool showed us a single 'effective rate'. CAMBRA showed us which layer was actually leaking margin.",
     rating: 5,
     avatar: "LM",
   },

@@ -38,11 +38,10 @@ const PAGE_META = {
   },
 };
 
+// FASE 1.3 — payments-only. Shipping/SaaS journey steps removed.
 const JOURNEY_ORDER = [
   'profile',
   'payments',
-  'shipping',
-  'saas',
   'savings',
   'eligibility',
   'activation',
@@ -50,9 +49,7 @@ const JOURNEY_ORDER = [
 
 const JOURNEY_META = {
   profile: { label: 'Profile setup', href: '/Account' },
-  payments: { label: 'Payments audit', href: '/Analyzer?mode=questionnaire&module=payments' },
-  shipping: { label: 'Shipping audit', href: '/Analyzer?mode=questionnaire&module=shipping' },
-  saas: { label: 'SaaS audit', href: '/Analyzer?mode=questionnaire&module=saas' },
+  payments: { label: 'Payments audit', href: '/Analyzer' },
   savings: { label: 'Savings estimate', href: '/Results' },
   // FASE 1.2 — /Deals deprecated; eligibility/activation route to Dashboard.
   eligibility: { label: 'Deal eligibility', href: '/Dashboard' },
@@ -67,8 +64,6 @@ function pathKey(pathname) {
 function buildJourney(state) {
   const profileDone = !!state.brand;
   const paymentsDone = !!state.paymentsProfile;
-  const shippingDone = !!state.shippingProfile;
-  const saasDone = !!state.saasProfile;
   const savingsDone = !!state.latestResult;
   const eligibilityDone = state.userDeals.length > 0;
   const activationDone = state.userDeals.some((deal) => ['active', 'activated', 'live'].includes(deal.status));
@@ -76,9 +71,7 @@ function buildJourney(state) {
   return {
     profile: profileDone ? 'done' : 'pending',
     payments: paymentsDone ? 'done' : 'recommended',
-    shipping: shippingDone ? 'done' : (paymentsDone ? 'recommended' : 'pending'),
-    saas: saasDone ? 'done' : (paymentsDone || shippingDone ? 'recommended' : 'pending'),
-    savings: savingsDone ? 'done' : ((paymentsDone || shippingDone || saasDone) ? 'recommended' : 'blocked'),
+    savings: savingsDone ? 'done' : (paymentsDone ? 'recommended' : 'blocked'),
     eligibility: eligibilityDone ? 'done' : (savingsDone ? 'recommended' : 'blocked'),
     activation: activationDone ? 'done' : (eligibilityDone ? 'recommended' : 'blocked'),
   };
@@ -89,9 +82,6 @@ function getMissingData(state) {
   if (!state.brand?.name) missing.push('brand profile');
   if (!state.paymentsProfile?.current_psp && !state.paymentsProfile?.psp_actual) missing.push('payment provider');
   if (!state.paymentsProfile?.monthly_volume_eur && !state.paymentsProfile?.vol_mensual) missing.push('monthly payment volume');
-  if (!state.shippingProfile?.monthly_orders && !state.shippingProfile?.pedidos_mensuales) missing.push('shipping volume');
-  if (!state.shippingProfile?.served_countries?.length && !state.shippingProfile?.paises_serv?.length) missing.push('shipping geography');
-  if (!state.saasProfile?.monthly_spend_map && !state.saasProfile?.gasto_mensual_map) missing.push('saas spend map');
   if (!state.documents.length) missing.push('supporting documents');
   return missing;
 }
@@ -134,15 +124,15 @@ function buildGuidance(state, page, journey, missing, blockers) {
   if (page.key === 'analyzer') {
     return {
       status: 'ready',
-      nextStep: state.paymentsProfile ? 'Finish the next audit module and then connect your tools.' : 'Start the Payments audit now.',
+      nextStep: state.paymentsProfile ? 'Connect Stripe to verify your numbers.' : 'Start the Payments audit now.',
       why: state.paymentsProfile
-        ? 'You already started. One more quick step gets you to better savings visibility.'
+        ? 'You already have a payments estimate. Connecting Stripe turns it into a verified figure.'
         : 'This is the fastest way to get a clear savings estimate.',
       unlocks: 'This gets you to results faster and makes tool connection more useful.',
       ctas: state.paymentsProfile
-        ? [cta('Continue audit', '/Analyzer?mode=questionnaire&module=shipping'), cta('Connect tools', '/ConnectTools')]
-        : [cta('Start analyzer', '/Analyzer?mode=questionnaire&module=payments'), cta('Connect tools', '/ConnectTools')],
-      nudges: ['Do the Analyzer first. Then connect tools to improve accuracy.'],
+        ? [cta('Connect Stripe', '/ConnectTools'), cta('View results', '/Results')]
+        : [cta('Start analyzer', '/Analyzer'), cta('Connect tools', '/ConnectTools')],
+      nudges: ['Do the Analyzer first. Then connect Stripe to verify.'],
     };
   }
 
@@ -192,7 +182,7 @@ function buildGuidance(state, page, journey, missing, blockers) {
       ? 'You already have signal. Now make it stronger with better data.'
       : 'The Analyzer is the fastest way to get value from Cambra.',
     unlocks: state.latestResult ? 'This makes your next action clearer.' : 'This gets you to your first savings estimate fast.',
-    ctas: [cta('Start analyzer', '/Analyzer?mode=questionnaire&module=payments'), cta('Connect tools', '/ConnectTools')],
+    ctas: [cta('Start analyzer', '/Analyzer'), cta('Connect tools', '/ConnectTools')],
     nudges: ['Keep it simple: Analyzer first, tools next.'],
   };
 }
@@ -202,15 +192,14 @@ export async function getCopilotState({ pathname }) {
   const user = isAuthenticated ? await base44.auth.me() : null;
   const email = user?.email;
 
-  const [brands, paymentsProfiles, shippingProfiles, saasProfiles, results, documents, userDeals] = email ? await Promise.all([
+  // FASE 1.3 — payments-only. ShippingProfile/SaaSProfile reads removed.
+  const [brands, paymentsProfiles, results, documents, userDeals] = email ? await Promise.all([
     base44.entities.Brand.filter({ created_by: email }, '-created_date', 1),
     base44.entities.PaymentsProfile.filter({ created_by: email }, '-created_date', 1),
-    base44.entities.ShippingProfile.filter({ created_by: email }, '-created_date', 1),
-    base44.entities.SaaSProfile.filter({ created_by: email }, '-created_date', 1),
     base44.entities.AnalyzerResult.filter({ created_by: email }, '-created_date', 3),
     base44.entities.Document.filter({ created_by: email }, '-created_date', 10),
     base44.entities.UserDeal.filter({ user_email: email }, '-created_date', 10),
-  ]) : [[], [], [], [], [], [], []];
+  ]) : [[], [], [], [], []];
 
   const page = PAGE_META[pathKey(pathname)] || {
     key: 'platform',
@@ -222,8 +211,6 @@ export async function getCopilotState({ pathname }) {
     user,
     brand: brands[0] || null,
     paymentsProfile: paymentsProfiles[0] || null,
-    shippingProfile: shippingProfiles[0] || null,
-    saasProfile: saasProfiles[0] || null,
     latestResult: results[0] || null,
     documents,
     userDeals,
@@ -244,8 +231,6 @@ export async function getCopilotState({ pathname }) {
       current_page: page.title,
       profile_complete: !!state.brand,
       payments_audit: journey.payments,
-      shipping_audit: journey.shipping,
-      saas_audit: journey.saas,
       documents_uploaded: state.documents.length > 0,
       savings_estimate: !!state.latestResult,
       deal_eligibility: journey.eligibility,
