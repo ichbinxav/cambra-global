@@ -40,12 +40,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // SYNC-START: paymentsGap
 
-const ENGINE_VERSION = "v1";
+// payments-gap-1.1.0 — see src/lib/paymentsGap.js version-history header.
+const ENGINE_VERSION = "payments-gap-1.1.0";
 
 const MINOR_PER_MAJOR = 100;
 
-const BPS_PER_PCT = 100;
 const BPS_PER_UNIT = 10000;
+
+const INTL_UPLIFT_CURRENT_BPS = 150;
+const INTL_UPLIFT_ACHIEVABLE_BPS = 90;
 
 const REQUIRED_FALLBACK_KEYS = [
   "ANY|ANY|EU",
@@ -124,10 +127,15 @@ function selectRow(rows, provider_slug, region) {
   return { row: null, matched: "none" };
 }
 
-function computeEffectiveBps({ percent_bps, fixed_fee_minor_units }, avg_ticket_eur) {
+function computeEffectiveBps(
+  { percent_bps, fixed_fee_minor_units },
+  avg_ticket_eur,
+  { intl_pct = 0, intl_uplift_bps = 0 } = {}
+) {
   const fixedMajor = fixed_fee_minor_units / MINOR_PER_MAJOR;
   const amortizedBps = (fixedMajor / avg_ticket_eur) * BPS_PER_UNIT;
-  return percent_bps + amortizedBps;
+  const intlBps = (intl_pct / 100) * intl_uplift_bps;
+  return percent_bps + intlBps + amortizedBps;
 }
 
 function computeMonthlySavings({ current_bps, achievable_bps, monthly_gmv_eur }) {
@@ -154,6 +162,9 @@ const ACHIEVABLE_NOTE = (breakdown) => {
   );
 };
 
+const INTL_UPLIFT_NOTE = (intl_pct) =>
+  `${intl_pct.toFixed(0)}% of GMV assumed cross-border: +${(INTL_UPLIFT_CURRENT_BPS / 100).toFixed(2)}% uplift on the current rate and +${(INTL_UPLIFT_ACHIEVABLE_BPS / 100).toFixed(2)}% on the achievable rate for that portion (schemes' cross-border interchange is not negotiable).`;
+
 function calculateGap(rawInput, rateTable) {
   const tableCheck = validateRateTable(rateTable);
   if (!tableCheck.ok) {
@@ -172,7 +183,8 @@ function calculateGap(rawInput, rateTable) {
 
   const current_bps = computeEffectiveBps(
     { percent_bps: row.percent_bps, fixed_fee_minor_units: row.fixed_fee_minor_units },
-    input.avg_ticket_eur
+    input.avg_ticket_eur,
+    { intl_pct: input.intl_pct, intl_uplift_bps: INTL_UPLIFT_CURRENT_BPS }
   );
 
   const hasAchievable =
@@ -184,7 +196,8 @@ function calculateGap(rawInput, rateTable) {
           percent_bps: row.achievable_percent_bps,
           fixed_fee_minor_units: row.achievable_fixed_fee_minor_units,
         },
-        input.avg_ticket_eur
+        input.avg_ticket_eur,
+        { intl_pct: input.intl_pct, intl_uplift_bps: INTL_UPLIFT_ACHIEVABLE_BPS }
       )
     : current_bps;
 
@@ -207,6 +220,7 @@ function calculateGap(rawInput, rateTable) {
   );
   const achievableNote = ACHIEVABLE_NOTE(row.achievable_breakdown_json);
   if (achievableNote) assumptions.push(achievableNote);
+  if (input.intl_pct > 0) assumptions.push(INTL_UPLIFT_NOTE(input.intl_pct));
   if (row.verified !== true) assumptions.push(FALLBACK_ASSUMPTION);
 
   return {

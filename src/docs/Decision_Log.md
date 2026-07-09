@@ -5,6 +5,36 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-09 — Chunk intl_pct · Engine bump to `payments-gap-1.1.0` + obsolete-test fix
+
+**Motor: intl_pct materialmente consumido.** Hasta 1.0.0 el campo `intl_pct` viajaba en el bloque SYNC (normalizado + persistido) pero no afectaba al cálculo — quedaba reservado para cuando se sembraran filas premium/intl. Este chunk introduce el **uplift cross-border sobre `percent_bps`**, aplicado a la porción intl de GMV, con constantes documentadas:
+
+- **INTL_UPLIFT_CURRENT_BPS = 150** (+1.50%) — mediana de los uplifts publicados: Stripe EU/UK "International cards" +1.50% (verificado en pricing público 2026-07), PayPal EU "Cross-border" +1.30-1.50%, Shopify Payments premium/intl +1.0-1.5%.
+- **INTL_UPLIFT_ACHIEVABLE_BPS = 90** (+0.90%) — 60% del uplift current. La componente de interchange cross-border la fijan las schemes (Visa/Mastercard) y NO es negociable; solo el margen del processor sí lo es. Este 60/40 modela un procesador bien-negociado que cierra ~40% del premium pero deja el suelo de scheme intacto.
+
+**Propiedades del contrato verificadas por tests:**
+- `intl_pct = 0` → comportamiento **byte-idéntico a 1.0.0** (regression guard, testeado).
+- `intl_pct = 100` → current sube +150 bps, achievable sube +90 bps, gap se ensancha 60 bps sobre 100% de GMV.
+- Escalado **lineal** entre 0 y 100 (testeado con 25% = un cuarto del extra gap).
+- Fixed fees **NO se escalan** por intl_pct — las schemes no cobran esa componente por origen de tarjeta.
+- Assumption `INTL_UPLIFT_NOTE` emitida solo cuando `intl_pct > 0` (domestic-only merchants no ven ruido).
+
+**ENGINE_VERSION renombrado.** El código llevaba `"v1"` mientras el plan de producto documenta `payments-gap-1.0.0` como formato canónico. Unificado al SemVer del plan: `payments-gap-1.1.0`. Este string se persiste verbatim en cada `PaymentsAnalysisSession.engine_version` — es crítico para que futuros agregadores de benchmark puedan filtrar por versión de motor. Un test explícito ancla ese contrato (`engine_version === 'payments-gap-1.1.0'`).
+
+**Fix del test obsoleto de amortización.** El caso "Stripe EU with €30 ticket vs €250 ticket → different savings" contradecía la propiedad estructural documentada en el cierre del Chunk 2: cuando `achievable_fixed == current_fixed` (como en la fila sembrada de Stripe EU: 25c en ambos lados), el fixed fee se cancela en la resta `current − achievable` → savings idénticos entre tickets. Lo que sí difiere son los **effective rates** (233 bps @ €30 vs 160 bps @ €250 — delta ≈ 73 bps). El test se reescribió para afirmar:
+1. Los effective rates difieren entre €30 y €250 → **eso** es la prueba de amortización.
+2. Los savings son **iguales** cuando `achievable_fixed == current_fixed` (contrato correcto).
+
+**Caso complementario añadido** — donde `achievable_fixed_fee_minor_units = 10` mientras `current_fixed_fee_minor_units = 25` (asimetría forzada). Ahí el fee **NO se cancela** y los savings sí difieren entre tickets. Delta esperado: `(0.25 − 0.10) × 10000 × (1/30 − 1/250) = 44 bps` de gap extra @ €30 vs €250 → sobre 50k GMV ≈ €220/mo extra. Test verifica que el delta cae en [200, 240] EUR/mo.
+
+**Sync-check.** Copia inline en `submitPaymentsAnalysis/entry.ts` actualizada verbatim: nuevas constantes (`INTL_UPLIFT_CURRENT_BPS`, `INTL_UPLIFT_ACHIEVABLE_BPS`), `computeEffectiveBps` con tercer argumento `{ intl_pct, intl_uplift_bps }`, ambas llamadas en `calculateGap` pasando el uplift diferenciado, `INTL_UPLIFT_NOTE` emitida cuando `intl_pct > 0`, ENGINE_VERSION renombrado. Sync-check pair `paymentsGap` **VERDE** — motor y copia byte-normalized idénticos. `BPS_PER_PCT` (constante huérfana declarada pero nunca usada) eliminada en el proceso; la constante `PAYMENTS_GAP_DENO_FILE` huérfana en `__sync_check__.test.js` (apuntaba al endpoint borrado en el Chunk 3) también limpiada.
+
+**Suite completa: 304 passed / 5 skipped / 0 failed** (subida desde 265 passed). +32 tests en `paymentsGap.test.js` (los 22 originales + 5 de intl_pct + 2 de amortización [reescrito + complementario] + 1 de engine_version + 2 pre-existentes que se colaron).
+
+**Regla permanente adoptada.** Todo cierre de chunk termina con **push al repo `github.com/ichbinxav/cambra-global`**. Documentado aquí como convención vinculante — el estado de "chunk cerrado" en el Decision Log SIN el push correspondiente al remote deja de ser un cierre válido.
+
+---
+
 ## 2026-07-09 — Chunk 5 CLOSE · Copy rule: "verified" is reserved for real-data analyses
 
 **BINDING VOCABULARY RULE — applies to all future copy, badges, tooltips, marketing, PDF exports, and investor materials:**

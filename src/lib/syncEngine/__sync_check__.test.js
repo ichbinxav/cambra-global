@@ -46,10 +46,8 @@ import { fileURLToPath } from "node:url";
 const THIS_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(THIS_DIR, "..", "..", "..");
 const DENO_FILE = path.join(REPO_ROOT, "base44/functions/dataSyncAgent/entry.ts");
-// Second Deno target — calculatePaymentsGap holds an inline copy of the pure
-// engine (src/lib/paymentsGap.js) between SYNC-START/SYNC-END markers, same
-// pattern as dataSyncAgent's helpers. See the paymentsGap pair below.
-const PAYMENTS_GAP_DENO_FILE = path.join(REPO_ROOT, "base44/functions/calculatePaymentsGap/entry.ts");
+// Additional Deno targets (submitPaymentsAnalysis for paymentsGap) are
+// declared per-pair via the `deno` override on their PAIRS entry.
 
 // Each pair declares: a logical key (must match the SYNC-START/END markers
 // in BOTH files), the src/lib/ file holding the testable copy, an optional

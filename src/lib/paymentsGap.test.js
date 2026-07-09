@@ -227,17 +227,58 @@ describe('calculateGap — end-to-end', () => {
     expect(result.missing).toContain('ANY|ANY|US');
   });
 
-  it('Stripe EU with €30 ticket vs €250 ticket → different savings (amortization proof, E2E)', () => {
-    // Structural correction proven at the ENGINE boundary, not just the helper.
+  it('Stripe EU (achievable_fixed == current_fixed) → different effective rates, IDENTICAL savings', () => {
+    // Structural correction proven at the ENGINE boundary. The seeded
+    // Stripe|EU row has current fixed 25c AND achievable fixed 25c — same
+    // fixed, so the fee cancels in (current − achievable) and savings are
+    // constant across tickets. THAT is the correct behavior of the seeded
+    // row. Amortization is proven by the EFFECTIVE rates differing, not by
+    // savings differing (see the next test for the case where they differ).
+    // See Decision Log 2026-07-09 · Chunk 2 CIERRE for the empirical proof.
     const base = { monthly_gmv_eur: 50000, region: 'EU', provider_slug: 'stripe' };
     const r30 = calculateGap({ ...base, avg_ticket_eur: 30 }, FULL_TABLE);
     const r250 = calculateGap({ ...base, avg_ticket_eur: 250 }, FULL_TABLE);
     expect(r30.ok).toBe(true);
     expect(r250.ok).toBe(true);
-    // Effective rate for low-ticket merchant is materially higher, and so is
-    // the gap vs achievable — hence savings monotonically bigger.
+    // Effective rate for the low-ticket merchant is materially higher — the
+    // amortization delta between €30 and €250 on a 25c fixed is ~73 bps.
+    expect(r30.current_effective_bps - r250.current_effective_bps).toBeGreaterThan(70);
+    expect(r30.current_effective_bps - r250.current_effective_bps).toBeLessThan(76);
+    // Savings are IDENTICAL because the same 25c fixed appears in both
+    // current and achievable — the fee cancels in the subtraction.
+    expect(r30.monthly_savings_eur.point).toBeCloseTo(r250.monthly_savings_eur.point, 6);
+  });
+
+  it('Stripe EU with achievable_fixed < current_fixed → savings DO differ across tickets (complementary case)', () => {
+    // Complementary test: force a row where achievable_fixed_fee_minor_units
+    // is smaller than current_fixed_fee_minor_units. Now the fee does NOT
+    // cancel — its amortized contribution to the gap is larger at low tickets
+    // than at high ones, so savings MUST differ. This is the case that
+    // exercises the full amortization path end-to-end.
+    const asymTable = FULL_TABLE.map(r =>
+      r.cohort_key === 'stripe|ANY|EU'
+        // Same percent_bps (150 → 86 gap) but achievable_fixed drops from 25c
+        // to 10c. Now every ticket sees a real fixed-fee gap component.
+        ? { ...r, achievable_fixed_fee_minor_units: 10 }
+        : r
+    );
+    const base = { monthly_gmv_eur: 50000, region: 'EU', provider_slug: 'stripe' };
+    const r30 = calculateGap({ ...base, avg_ticket_eur: 30 }, asymTable);
+    const r250 = calculateGap({ ...base, avg_ticket_eur: 250 }, asymTable);
+    expect(r30.ok).toBe(true);
+    expect(r250.ok).toBe(true);
+    // Effective rates still differ (unchanged by the asymmetry).
     expect(r30.current_effective_bps).toBeGreaterThan(r250.current_effective_bps);
+    // AND now savings differ too — the low-ticket merchant recovers more of
+    // the fixed-fee gap per euro of GMV than the high-ticket one does.
     expect(r30.monthly_savings_eur.point).toBeGreaterThan(r250.monthly_savings_eur.point);
+    // The delta should be dominated by the amortized fixed-fee gap:
+    //   at €30:  (0.25 − 0.10) / 30  * 10000 = 50 bps
+    //   at €250: (0.25 − 0.10) / 250 * 10000 = 6 bps
+    // → extra gap of ~44 bps at €30 vs €250 → on 50k GMV ≈ €220/mo extra.
+    const delta = r30.monthly_savings_eur.point - r250.monthly_savings_eur.point;
+    expect(delta).toBeGreaterThan(200);
+    expect(delta).toBeLessThan(240);
   });
 
   it('exact-match cohort (Stripe EU, verified) → narrow band ±20%', () => {
@@ -310,6 +351,78 @@ describe('calculateGap — end-to-end', () => {
     );
     expect(result.ok).toBe(true);
     expect(result.cohort.matched).toBe('exact');
+  });
+
+  // ─── engine v1.1.0 — intl_pct now materially consumed ─────────────────────
+  //
+  // Contract of the intl uplift (see paymentsGap.js version-history header):
+  //   • intl_pct = 0  → behavior IDENTICAL to v1.0.0 (regression guard).
+  //   • intl_pct > 0  → current AND achievable rates both climb, but the
+  //                     current-side uplift (+150 bps) is higher than the
+  //                     achievable-side uplift (+90 bps), so the gap widens
+  //                     and savings grow monotonically with intl_pct.
+  //   • intl_pct > 0  → assumptions include the intl-uplift disclosure.
+  //   • Fixed fees are NOT scaled by intl_pct (schemes don't charge that
+  //     component per-card-origin).
+
+  it('intl_pct=0 is unchanged from pre-1.1.0 behavior (regression guard)', () => {
+    // The number produced when intl_pct is unset must equal the number
+    // produced when intl_pct is explicitly 0 — no silent nonzero default.
+    const base = { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' };
+    const unset = calculateGap(base, FULL_TABLE);
+    const zero = calculateGap({ ...base, intl_pct: 0 }, FULL_TABLE);
+    expect(unset.ok).toBe(true);
+    expect(zero.ok).toBe(true);
+    expect(zero.current_effective_bps).toBeCloseTo(unset.current_effective_bps, 8);
+    expect(zero.achievable_effective_bps).toBeCloseTo(unset.achievable_effective_bps, 8);
+    expect(zero.monthly_savings_eur.point).toBeCloseTo(unset.monthly_savings_eur.point, 6);
+    // Assumptions carry NO intl note when intl_pct=0.
+    expect(zero.assumptions.some(a => a.includes('cross-border'))).toBe(false);
+  });
+
+  it('intl_pct=100 raises both current and achievable, but current climbs MORE → savings grow', () => {
+    // Full-intl merchant: 100% of GMV is cross-border. Current-side uplift
+    // is +150 bps, achievable-side is +90 bps, so the additional gap is
+    // +60 bps applied to 100% of GMV. On €100k GMV that's ~€600/mo extra
+    // savings vs a domestic-only merchant with the same profile.
+    const base = { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' };
+    const domestic = calculateGap({ ...base, intl_pct: 0 }, FULL_TABLE);
+    const intl = calculateGap({ ...base, intl_pct: 100 }, FULL_TABLE);
+    expect(domestic.ok).toBe(true);
+    expect(intl.ok).toBe(true);
+    // Both rates climb by exactly their uplift constant (fixed_fee unchanged).
+    expect(intl.current_effective_bps - domestic.current_effective_bps).toBeCloseTo(150, 6);
+    expect(intl.achievable_effective_bps - domestic.achievable_effective_bps).toBeCloseTo(90, 6);
+    // → gap widens by 60 bps → on 100k GMV that's €600/mo extra point savings.
+    const extra = intl.monthly_savings_eur.point - domestic.monthly_savings_eur.point;
+    expect(extra).toBeCloseTo(600, 0);
+    // Assumptions carry the intl note.
+    expect(intl.assumptions.some(a => a.includes('cross-border'))).toBe(true);
+  });
+
+  it('intl_pct scales linearly between 0 and 100 (25% → quarter of the extra gap)', () => {
+    // Contract check: extra_gap(intl_pct) = intl_pct / 100 * 60 bps.
+    const base = { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' };
+    const p0 = calculateGap({ ...base, intl_pct: 0 }, FULL_TABLE);
+    const p25 = calculateGap({ ...base, intl_pct: 25 }, FULL_TABLE);
+    const p100 = calculateGap({ ...base, intl_pct: 100 }, FULL_TABLE);
+    const g0 = p0.monthly_savings_eur.point;
+    const g25 = p25.monthly_savings_eur.point;
+    const g100 = p100.monthly_savings_eur.point;
+    // 25% is exactly a quarter of the way from 0 to 100.
+    expect(g25 - g0).toBeCloseTo((g100 - g0) * 0.25, 4);
+  });
+
+  it('engine_version reports the SemVer-tagged 1.1.0 name (not the legacy "v1")', () => {
+    // Explicit contract check — this string is persisted verbatim on every
+    // PaymentsAnalysisSession row. Downstream benchmark aggregators filter
+    // by engine_version, so silent renames would corrupt cohorts.
+    const result = calculateGap(
+      { monthly_gmv_eur: 50000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' },
+      FULL_TABLE
+    );
+    expect(result.ok).toBe(true);
+    expect(result.engine_version).toBe('payments-gap-1.1.0');
   });
 });
 
