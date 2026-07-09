@@ -134,7 +134,22 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
     setBusy(true);
     setError("");
     try {
-      const res = await base44.functions.invoke("stripeDataSync", {});
+      // FASE 1.5 — Route Sync to the right endpoint based on connection type.
+      //   • Integration-backed (stripe / stripe_self / stripe_self_test):
+      //     use `dataSyncAgent` with the integration_id. `stripeDataSync`
+      //     was written for the legacy StripeConnection entity and returns
+      //     404 when no StripeConnection row exists (post-FASE-1 the source
+      //     of truth is Integration, so this is now the common case).
+      //   • Legacy StripeConnection: fall back to `stripeDataSync` (no
+      //     connection.provider present → row came from the legacy filter
+      //     branch in loadConnection()).
+      // NOTE (deuda documentada): handleDisconnect below still calls
+      // `stripeDisconnect` on Integration-backed connections and can 404.
+      // Intentionally NOT patched here — separate follow-up.
+      const isIntegrationBacked = !!connection?.provider;
+      const res = isIntegrationBacked
+        ? await base44.functions.invoke("dataSyncAgent", { integration_id: connection.id })
+        : await base44.functions.invoke("stripeDataSync", {});
       const data = res?.data || res;
       if (data?.setup_required) setSetupRequired(true);
       else if (!data?.ok) setError(data?.error || "Sync failed");
