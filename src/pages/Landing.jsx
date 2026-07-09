@@ -13,7 +13,6 @@ import FounderLetter from "@/components/landing/FounderLetter";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
-import OneScanSection from "@/components/landing/OneScanSection";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
@@ -21,23 +20,21 @@ const LANDING_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "CAMBRA",
-  "slogan": "Efficient infrastructure for independent commerce",
-  "description": "CAMBRA — efficient infrastructure for independent commerce. Benchmarks payment fees, shipping costs and SaaS spend against European brands and recovers the margin.",
+  "slogan": "Pay less for card payments",
+  "description": "CAMBRA helps independent brands reduce what they pay for card payments. Anonymous 60-second analysis compares your effective payment rate against interchange floors and recovers the negotiable margin.",
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web",
   "offers": {
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "EUR",
-    "description": "Free infrastructure audit during early access. Optional recovery service earns 25% of verified savings over 24 months — only when CAMBRA actually recovers margin against your real provider data. No upfront fee, no subscription."
+    "description": "Free anonymous payments analysis during early access. Optional recovery service earns 25% of verified savings over 24 months — only when CAMBRA actually recovers margin. No upfront fee, no subscription."
   },
   "featureList": [
     "Payment fee benchmarking",
-    "Shipping cost analysis",
-    "SaaS spend audit",
-    "Infrastructure graph",
-    "Stripe integration",
-    "AI-powered recommendations"
+    "Interchange floor analysis",
+    "Effective rate calculation",
+    "Anonymous 60-second audit"
   ],
   "audience": {
     "@type": "BusinessAudience",
@@ -149,7 +146,7 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
           >
-            Most independent brands overpay <span className="text-white">15–30%</span> on payments, shipping and SaaS. CAMBRA benchmarks every line against our network and recovers what's yours. <span className="text-white">You keep 75%. We only get paid when you do.</span>
+            Most independent brands overpay <span className="text-white">30–60%</span> on card payments — hidden inside blended rates. CAMBRA measures your effective rate against the interchange floor and recovers what's negotiable. <span className="text-white">You keep 75%. We only get paid when you do.</span>
           </motion.p>
 
           <motion.div
@@ -258,23 +255,23 @@ function HowItWorksSection() {
   const steps = [
     {
       n: "01",
-      title: "Tell us what you pay",
-      desc: "Your revenue, and what you spend on payments, shipping and software. Two minutes. Nothing to connect.",
+      title: "Tell us what you process",
+      desc: "Your annual GMV, average ticket, and current PSP. Sixty seconds. Nothing to connect.",
     },
     {
       n: "02",
-      title: "See what you're overpaying",
-      desc: "Live cost intelligence against brands your size, not list prices. Your savings in euros, instantly.",
+      title: "See your effective rate",
+      desc: "We compare what you actually pay against the interchange floor — the real minimum for cards your size.",
     },
     {
       n: "03",
-      title: "Connect to confirm",
-      desc: "Link your payments, accounting and store, or upload your invoices. Read only. Your estimate becomes a confirmed number.",
+      title: "Connect Stripe to confirm",
+      desc: "Read-only. Your estimate becomes a confirmed number from real transaction data.",
     },
     {
       n: "04",
       title: "Join to recover it",
-      desc: "Claim your savings and join the brands negotiating as one. Together we bring enterprise leverage to independent brands, and unlock rates none of us could get alone.",
+      desc: "Claim your savings and join the brands negotiating as one. Together we unlock rates none of us could get alone.",
       cta: true,
     },
   ];
@@ -465,7 +462,6 @@ export default function Landing() {
         <ProblemSectionWow />
         <HowItWorksSection />
         <PricingDual />
-        <OneScanSection />
         <TestimonialsCarousel />
         <FounderLetter />
         <StopLeavingMarginCTA />

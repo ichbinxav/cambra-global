@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight, CheckCircle2, Sparkles,
-  CreditCard, Truck, Package, Plug, Building2, Store, Mail, Headphones, Users, Wifi, Layers,
+  CreditCard, Plug, Store, Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
@@ -26,32 +26,19 @@ function formatEurLocal(n, lang) {
   }
 }
 
-// FIX 2 — Each category carries its own i18n key so its header renders translated.
+// FASE 1.1 — Payments-only UI. We keep NODE_CATEGORY / CATEGORY_ORDER as
+// tiny objects but only render payments (+ commerce, since commerce
+// platform detection is what surfaces the payment provider node in the
+// first place). Other verticals are intentionally omitted from the UI —
+// their data may still exist in the graph but stays hidden.
 const NODE_CATEGORY = {
   payment_provider:   { key: "Payments",  i18n: "cat_payments",  icon: CreditCard },
   commerce_platform:  { key: "Commerce",  i18n: "cat_commerce",  icon: Store },
-  shipping_carrier:   { key: "Shipping",  i18n: "cat_shipping",  icon: Truck },
-  logistics:          { key: "Shipping",  i18n: "cat_shipping",  icon: Truck },
-  marketing:          { key: "Marketing", i18n: "cat_marketing", icon: Mail },
-  saas_tool:          { key: "SaaS",      i18n: "saas_title",    icon: Package },
-  analytics:          { key: "SaaS",      i18n: "saas_title",    icon: Package },
-  support:            { key: "Support",   i18n: "cat_support",   icon: Headphones },
-  bank:               { key: "Banking",   i18n: "cat_banking",   icon: Building2 },
-  insurance:          { key: "Banking",   i18n: "cat_banking",   icon: Building2 },
-  telecom:            { key: "Telecom",   i18n: "cat_telecom",   icon: Wifi },
-  hr_tool:            { key: "HR",        i18n: "cat_hr",        icon: Users },
 };
-const CATEGORY_ORDER = ["Payments", "Commerce", "Shipping", "Marketing", "SaaS", "Banking", "Support", "HR", "Telecom"];
+const CATEGORY_ORDER = ["Payments", "Commerce"];
 const CATEGORY_I18N_KEY = {
   Payments: "cat_payments",
   Commerce: "cat_commerce",
-  Shipping: "cat_shipping",
-  Marketing: "cat_marketing",
-  SaaS:     "saas_title",
-  Banking:  "cat_banking",
-  Support:  "cat_support",
-  HR:       "cat_hr",
-  Telecom:  "cat_telecom",
 };
 
 function nodeBadge(node, t) {
@@ -374,12 +361,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {/* Quick stats — payments only (FASE 1.1) */}
+      <div className="grid grid-cols-1 gap-3">
         {[
           { label: t("payments_title"), value: latest.payment_savings, icon: CreditCard },
-          { label: t("shipping_title"), value: latest.shipping_savings, icon: Truck },
-          { label: t("saas_title"),     value: latest.saas_savings,     icon: Package },
         ].map(s => (
           <div
             key={s.label}
