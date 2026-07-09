@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { LayoutDashboard, RefreshCw, FlaskConical } from "lucide-react";
+import { LayoutDashboard, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import PulseBar from "@/components/admin/command/PulseBar";
@@ -17,27 +17,6 @@ export default function AdminCommand() {
   const [pendingQuestions, setPendingQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  // FASE 2 (Opción B) — dev-only self-test brand creator. Fires
-  // `createSelfTestBrand` from the admin's authenticated session so the
-  // resulting Brand row is owned by the caller (created_by_id = xavi.id).
-  // Displays the returned brand_id so it can be re-pointed from the
-  // Integration side by a follow-up service-role step.
-  const [selfTestState, setSelfTestState] = useState({ status: "idle", result: null, error: null });
-
-  const createSelfTestBrand = async () => {
-    setSelfTestState({ status: "running", result: null, error: null });
-    try {
-      const res = await base44.functions.invoke("createSelfTestBrand", {});
-      const data = res?.data || res;
-      if (data?.ok) {
-        setSelfTestState({ status: "done", result: data, error: null });
-      } else {
-        setSelfTestState({ status: "error", result: null, error: data?.error || "Unknown error" });
-      }
-    } catch (e) {
-      setSelfTestState({ status: "error", result: null, error: e.message });
-    }
-  };
 
   const totalAgents = useMemo(() => CLUSTERS.reduce((acc, c) => acc + c.agents.length, 0), []);
   const activeAgents = useMemo(() => {
@@ -180,42 +159,6 @@ export default function AdminCommand() {
 
       {/* 4. Recent activity */}
       <RecentActivity tasks={pulse?.recent_activity || []} />
-
-      {/* FASE 2 (Opción B) — dev-only harness. Remove after the self-test
-          brand infrastructure stabilizes post-FASE-3. */}
-      <div className="rounded-2xl border border-dashed border-amber-300/60 bg-amber-50/30 p-4">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-start gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0">
-              <FlaskConical size={14} className="text-amber-700" />
-            </div>
-            <div>
-              <p className="text-sm font-black tracking-tight">Dev · Self-test brand</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                Creates <code className="text-[10px] bg-secondary px-1 rounded">CAMBRA (self-test)</code> under your identity (idempotent). FASE 2 · Opción B.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={createSelfTestBrand}
-            disabled={selfTestState.status === "running"}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-foreground text-background text-xs font-bold hover:opacity-90 disabled:opacity-50"
-          >
-            {selfTestState.status === "running" ? "Creating…" : "Create self-test brand"}
-          </button>
-        </div>
-        {selfTestState.result && (
-          <div className="mt-3 text-[11px] font-mono bg-white/60 border border-amber-200 rounded-lg p-2.5 space-y-1">
-            <p><span className="text-muted-foreground">brand_id:</span> <span className="font-bold">{selfTestState.result.brand_id}</span></p>
-            <p><span className="text-muted-foreground">created_by_id:</span> {selfTestState.result.created_by_id}</p>
-            <p><span className="text-muted-foreground">reused:</span> {selfTestState.result.reused ? "yes (already existed)" : "no (fresh create)"}</p>
-          </div>
-        )}
-        {selfTestState.error && (
-          <p className="mt-3 text-[11px] text-red-600 font-mono">{selfTestState.error}</p>
-        )}
-      </div>
     </div>
   );
 }
