@@ -5,6 +5,53 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-10 — M3.6 · Coherencia de la banda del gap (Opción B — dos ± independientes, documentados)
+
+**Diagnóstico.** El producto emitía dos "±" que el merchant leía como si fueran el mismo, y no lo son:
+
+1. **Banda del gap mostrada** — deriva de `row.savings_band_pct` vía `applyBand()` (paymentsGap.js:257). Verified rows llevan 0.20 (±20% relativo sobre el punto); fallback rows llevan 0.35. Es la incertidumbre AGREGADA del ahorro para ese cohorte (table drift + mix de tarjetas + tickets + gaps de modelado del uplift intl, todo rolled up).
+
+2. **`±N bps assumption`** dentro del `ACHIEVABLE_NOTE` — deriva de `row.achievable_breakdown_json.processor_margin_band_bps` (20 bps para Stripe EU). Es la variación del COMPONENTE `processor_margin` dentro de la composición del achievable. Sólo describe ese sub-elemento del achievable; nunca escala savings.
+
+Sobre el caso FR de referencia (Stripe EU, GMV €432k/mes, point €3,205/mes):
+- Banda del gap ANTES: lo=€2,564 / hi=€3,847 (±20% relativo sobre point).
+- "±20 bps" ANTES: implícito en la assumption pero sin contexto de escala. Sobre €432k = €864/mes — un número distinto que el merchant hacía la cuenta y no le cuadraba.
+- Banda del gap DESPUÉS: **idéntica**, €2,564 – €3,847. Zero cambio numérico.
+- "±20 bps" DESPUÉS: se sigue mostrando en la misma línea del assumption (parser preservado), pero con clarificador adjunto: *"The ± applies to that component of the achievable rate only — separate from the savings range, which reflects overall confidence in the benchmark for this cohort."* Y bajo la lista de assumptions aparece una línea de contexto explicando explícitamente que las dos ± miden cosas distintas.
+
+**Decisión: Opción B, con corrección obligatoria del copy para no romper el parser.**
+
+Razonamiento:
+- Opción A (derivar la banda del `processor_margin_band_bps`) convierte un juicio editorial (±20 bps "asumidos") en la incertidumbre estadística del producto — una promesa más fuerte de la que el dataset actual respalda. Además, fallback rows y filas sin `achievable_breakdown_json` (PayPal, Shopify) no tienen ese campo → reintroduce un default por otra puerta.
+- Opción B mantiene la separación estructural (banda editorial cohorte-nivel vs banda component-level del breakdown) y elimina la confusión aclarando el copy. Cero mentira al usuario que haga la cuenta: los dos ± miden cosas diferentes y se etiquetan como tal.
+
+**Corrección obligatoria vs propuesta inicial (identificada durante la implementación).** El rewrite inicial de `ACHIEVABLE_NOTE` eliminaba el paréntesis `(±N bps assumption)`, sustituyéndolo por la frase larga. Habría roto `FeeBreakdownCard.parseAchievableBreakdown()` — un regex estricto que matchea exactamente ese patrón — silenciosamente, colapsando el desglose visual al fallback "we don't have a public breakdown" en todos los paths. El copy final CONSERVA el trailer parseable y añade el clarificador como frase posterior en la misma línea:
+
+```
+"Achievable rate composition: interchange 26 bps + scheme fees 20 bps + assumed processor margin 40 bps (±20 bps assumption). The ± applies to that component of the achievable rate only — separate from the savings range, which reflects overall confidence in the benchmark for this cohort."
+```
+
+**Archivos tocados (cero cambio funcional — solo copy + docs + tests):**
+
+- `src/lib/paymentsGap.js` — docstring extenso en `applyBand` describiendo las dos ± y por qué no se reconcilian; rewrite de `ACHIEVABLE_NOTE` preservando el trailer parseable y añadiendo el clarificador. Sync-check pair `paymentsGap` cubre las 3 copias transitivamente.
+- `base44/functions/submitPaymentsAnalysis/entry.ts` — mismo docstring en `applyBand`, mismo rewrite de `ACHIEVABLE_NOTE` verbatim.
+- `base44/functions/computeStripeVerifiedGap/entry.ts` — mismo docstring en `applyBand`, mismo rewrite de `ACHIEVABLE_NOTE` verbatim (path verified también recibe el copy nuevo — la restricción del prompt era sobre números y lógica; el copy es aditivo).
+- `src/components/paymentsResults/AssumptionsFootnote.jsx` — línea contextual bajo la lista de assumptions, derivada del `monthly_savings_eur` (hi/point - 1), explicando que la banda mostrada y cualquier "±N bps" de un assumption son cantidades distintas. Renderizada como frase, no como bullet más — evitando que se lea como una assumption más para saltar.
+- `src/lib/paymentsGap.test.js` — 3 tests nuevos:
+  1. **Contract copy↔parser**: pasa el `ACHIEVABLE_NOTE` real por una copia local del regex de `FeeBreakdownCard.parseAchievableBreakdown()` y verifica que los 4 campos se extraen correctamente (interchange 26 / scheme 20 / margin 40 / band 20 en la fixture Stripe EU). Este es el candado más importante — el nuevo estado del arte donde el copy y el parser están sincronizados.
+  2. **Clarifier presence**: verifica que el string "separate from the savings range" aparece en la assumption — para que un merge accidental no borre el clarificador sin más.
+  3. **Two-bands sanity FR**: sobre el caso FR de referencia (GMV €432k, ticket €80, Stripe EU) verifica que (a) la banda de la savings es 20% × point verbatim, (b) el processor-margin ± traducido a EUR (20 bps × 432k = €864/mes) NO coincide con la savings-range half-width — demostración empírica de que las dos ± miden cantidades distintas y el motor no las reconcilia. Adicionalmente re-afirma la invariante `annual = 12 × monthly` sobre lo, point y hi.
+
+**Restricción respetada — cero cambios funcionales:** `applyBand`, `savings_band_pct`, `processor_margin_band_bps` y todos los agregadores intactos. `current_effective_bps`, `achievable_effective_bps`, `monthly_savings_eur` y `annual_savings_eur` byte-idénticos vs pre-M3.6. Verificable trivialmente contra el caso FR: mismo point (€3,205), misma banda (€2,564 – €3,847). Solo el copy de assumptions cambió + la línea contextual del footnote.
+
+**Path verified — copy compartido, autorizado explícitamente.** Xavi autorizó el cambio de copy sobre el path verified también — la restricción del chunk era sobre números y lógica, no sobre copy user-facing. La copia SYNC del motor (idéntica en las 3 ubicaciones) hace que el `ACHIEVABLE_NOTE` sea el mismo string en estimated y verified, lo cual es correcto: la naturaleza de las dos ± (una editorial per cohort, otra component-level del breakdown) es idéntica en ambos modos.
+
+**Estado del chunk:** SELLADO backend + frontend + tests + docs. Suite verde local por confirmar (sandbox no ejecuta Vitest — Xavi hace `pnpm vitest run` para verificar antes de push). Delta esperado: +3 tests en `paymentsGap.test.js` (de 45 a 48), suite total 336 passed / 2 skipped si no hay drift adicional. Contract test copy↔parser es el candado clave — si alguien re-edita `ACHIEVABLE_NOTE` y colapsa el paréntesis, CI rompe antes del merge.
+
+**Push:** commit sha se anota tras push al remote (`github.com/ichbinxav/cambra-global`).
+
+---
+
 ## 2026-07-10 — M3.5 · Limpieza post-cutover (safe subset)
 
 Chunk corto de saneamiento post-M3, ejecutado con auditoría empírica caller-por-caller antes de cualquier borrado. El propio Decision_Log había marcado como orphans varios artefactos que la auditoría demostró vivos — el chunk se REDUJO al subset con cero-consumidores verificado.

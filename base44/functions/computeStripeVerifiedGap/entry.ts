@@ -186,6 +186,32 @@ function computeMonthlySavings({ current_bps, achievable_bps, monthly_gmv_eur })
   return (gapBps / BPS_PER_UNIT) * monthly_gmv_eur;
 }
 
+// Apply the row's savings band to a point estimate to yield lo/hi.
+//
+// TWO INDEPENDENT ± IN THIS ENGINE — do not conflate them.
+//
+//   1. `savings_band_pct` (this function's input) — RELATIVE band on the
+//      point ahorro, editorial per cohort. Reflects overall confidence in
+//      the achievable BENCHMARK for that (provider|region) — table drift,
+//      mix of card types, tickets, cross-border modeling gaps, all rolled
+//      into one number. Verified rows carry 0.20 (±20% relative). Fallback
+//      rows carry 0.35 (±35%). This is the band the UI shows around the
+//      point savings.
+//
+//   2. `processor_margin_band_bps` (lives inside `achievable_breakdown_json`,
+//      formatted by ACHIEVABLE_NOTE) — ABSOLUTE band on the processor-margin
+//      COMPONENT of the achievable rate composition, in bps. Reflects how
+//      much a well-negotiated processor margin varies for that cohort.
+//      Only meaningful ABOUT the achievable breakdown; NEVER used to scale
+//      savings.
+//
+// The two bands measure different quantities and are not designed to
+// reconcile. The engine emits both, the UI shows both, and the copy in
+// ACHIEVABLE_NOTE plus the contextual line rendered under the assumptions
+// list in AssumptionsFootnote.jsx makes the distinction explicit for the
+// merchant. Any future attempt to derive one from the other should first
+// revisit Decision_Log 2026-07-10 M3.6 — the trade-offs were argued once
+// and this is the sealed outcome.
 function applyBand(point, band_pct) {
   const half = point * band_pct;
   return { lo: Math.max(0, point - half), point, hi: point + half };
@@ -201,9 +227,16 @@ const AMORTIZATION_NOTE = (fixedMinor, currency, avgTicket) =>
 const ACHIEVABLE_NOTE = (breakdown) => {
   if (!breakdown) return null;
   const { interchange_bps, scheme_fees_bps, processor_margin_bps, processor_margin_band_bps } = breakdown;
+  // The trailing "(±N bps assumption)" pattern MUST be preserved — it is
+  // parsed by FeeBreakdownCard.parseAchievableBreakdown() with a regex that
+  // matches this exact shape. The clarifying sentence that follows is FREE
+  // text (not parsed) and is what separates the two ± in the product
+  // (see applyBand docstring). If you rewrite this string, run the
+  // "ACHIEVABLE_NOTE stays parseable by FeeBreakdownCard" contract test.
   return (
     `Achievable rate composition: interchange ${interchange_bps} bps + scheme fees ${scheme_fees_bps} bps + ` +
-    `assumed processor margin ${processor_margin_bps} bps (±${processor_margin_band_bps} bps assumption).`
+    `assumed processor margin ${processor_margin_bps} bps (±${processor_margin_band_bps} bps assumption). ` +
+    `The ± applies to that component of the achievable rate only — separate from the savings range, which reflects overall confidence in the benchmark for this cohort.`
   );
 };
 

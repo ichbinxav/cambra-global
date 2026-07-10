@@ -322,6 +322,89 @@ describe('calculateGap — end-to-end', () => {
     expect(hasBreakdownAssumption).toBe(true);
   });
 
+  // ─── Two-bands contract (M3.6) ────────────────────────────────────────────
+  //
+  // Locks the outcome of Decision_Log 2026-07-10 M3.6: the engine emits TWO
+  // independent ± that measure different things, and they must not be
+  // silently reconciled. The savings range comes from `savings_band_pct`
+  // (editorial per cohort, applied by applyBand); the "±N bps assumption"
+  // inside ACHIEVABLE_NOTE comes from `processor_margin_band_bps` on the
+  // row's achievable_breakdown_json. These tests are the candado.
+  //
+  // ALSO CRITICAL: the frontend FeeBreakdownCard parses ACHIEVABLE_NOTE with
+  // a strict regex to render the interchange / scheme / margin bars. The
+  // regex requires the "(±N bps assumption)" trailer to be preserved. If a
+  // future edit collapses that trailer into free text, the card silently
+  // falls back to the "no public breakdown" copy — a visible regression the
+  // suite currently would not catch. The parseable-shape test below is the
+  // candado against that specific rot.
+
+  it('ACHIEVABLE_NOTE stays parseable by FeeBreakdownCard.parseAchievableBreakdown() — candado copy↔parser', () => {
+    // Same regex FeeBreakdownCard uses. If someone rewrites ACHIEVABLE_NOTE
+    // in paymentsGap.js and drops the "(±N bps assumption)" trailer, this
+    // will fail — before the visual regression makes it into a build.
+    const PARSER_RE = /interchange (\d+(?:\.\d+)?) bps \+ scheme fees (\d+(?:\.\d+)?) bps \+ assumed processor margin (\d+(?:\.\d+)?) bps \(±(\d+(?:\.\d+)?) bps assumption\)/;
+    const result = calculateGap(
+      { monthly_gmv_eur: 100000, avg_ticket_eur: 100, region: 'EU', provider_slug: 'stripe' },
+      FULL_TABLE
+    );
+    expect(result.ok).toBe(true);
+    const line = result.assumptions.find(a => typeof a === 'string' && a.startsWith('Achievable rate composition:'));
+    expect(line).toBeDefined();
+    const m = line.match(PARSER_RE);
+    expect(m).not.toBeNull();
+    // Numbers extract to the fixture's breakdown values, verbatim.
+    const breakdown = getRow('stripe|ANY|EU').achievable_breakdown_json;
+    expect(Number(m[1])).toBe(breakdown.interchange_bps);           // 26
+    expect(Number(m[2])).toBe(breakdown.scheme_fees_bps);           // 20
+    expect(Number(m[3])).toBe(breakdown.processor_margin_bps);      // 40
+    expect(Number(m[4])).toBe(breakdown.processor_margin_band_bps); // 20
+  });
+
+  it('ACHIEVABLE_NOTE carries the two-bands clarifier — savings range vs component ± are called out as different', () => {
+    // Second candado (weaker but complementary): the free-text clarifier
+    // that lives AFTER the parseable segment must remain, so a reader of
+    // just the assumption line understands the two ± are not the same
+    // uncertainty. If someone deletes it without also updating
+    // AssumptionsFootnote's contextual line, both signals would vanish.
+    const result = calculateGap(
+      { monthly_gmv_eur: 100000, avg_ticket_eur: 100, region: 'EU', provider_slug: 'stripe' },
+      FULL_TABLE
+    );
+    expect(result.ok).toBe(true);
+    const line = result.assumptions.find(a => typeof a === 'string' && a.startsWith('Achievable rate composition:'));
+    expect(line).toBeDefined();
+    expect(line).toMatch(/separate from the savings range/);
+  });
+
+  it('two-bands sanity: monthly range width and processor_margin ± come from DIFFERENT sources', () => {
+    // Empirical verification of the M3.6 invariant on the FR/stripe cohort
+    // shape (verified row, band_pct=0.20, breakdown band=20 bps). Over
+    // GMV=€432k (Xavi's FR reference case), the two half-widths should
+    // NOT coincide — proving they measure different things and are not
+    // reconciled by the engine.
+    const gmv = 432000;
+    const result = calculateGap(
+      { monthly_gmv_eur: gmv, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' },
+      FULL_TABLE
+    );
+    expect(result.ok).toBe(true);
+    const point = result.monthly_savings_eur.point;
+    const savingsRangeHalfEur = result.monthly_savings_eur.hi - point;
+    // Editorial band = 20% × point (the Stripe EU verified row).
+    expect(savingsRangeHalfEur).toBeCloseTo(point * 0.20, 2);
+    // Processor-margin ± = 20 bps ABSOLUTE. Sanity check that this does NOT
+    // equal the savings range half-width when we translate it back to EUR
+    // over the merchant's GMV (20 bps × €432k = €864, materially different
+    // from 0.20 × point).
+    const processorMarginBandEur = (getRow('stripe|ANY|EU').achievable_breakdown_json.processor_margin_band_bps / 10000) * gmv;
+    expect(Math.abs(processorMarginBandEur - savingsRangeHalfEur)).toBeGreaterThan(1);
+    // Annual is 12× monthly on BOTH endpoints (invariant re-affirmed under
+    // the M3.6 lens — the range is applied once, at the monthly point).
+    expect(result.annual_savings_eur.lo).toBeCloseTo(result.monthly_savings_eur.lo * 12, 2);
+    expect(result.annual_savings_eur.hi).toBeCloseTo(result.monthly_savings_eur.hi * 12, 2);
+  });
+
   it('annual savings is 12× monthly (lo, point, hi consistent)', () => {
     const result = calculateGap(
       { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' },

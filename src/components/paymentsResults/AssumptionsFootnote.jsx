@@ -12,6 +12,17 @@ export default function AssumptionsFootnote({ engineResult, engineVersion }) {
   const verified = engineResult?.cohort?.verified === true;
   const cohortKey = engineResult?.cohort?.key;
   const matched = engineResult?.cohort?.matched;
+  // Derive the savings-range half-width shown in the hero card, purely for
+  // the "two ± are different things" clarifier line rendered under the
+  // assumptions list. Both endpoints (mensual/annual) apply the same
+  // symmetric band around the point, so hi/point − 1 is the fraction.
+  // Falls back to null (line hidden) when the point is 0 or missing —
+  // there's no range to explain in that case.
+  const point = engineResult?.monthly_savings_eur?.point;
+  const hi = engineResult?.monthly_savings_eur?.hi;
+  const bandPct = (typeof point === 'number' && point > 0 && typeof hi === 'number')
+    ? Math.round(((hi / point) - 1) * 100)
+    : null;
 
   return (
     <div className="space-y-4">
@@ -52,6 +63,18 @@ export default function AssumptionsFootnote({ engineResult, engineVersion }) {
               </li>
             ))}
           </ul>
+        )}
+
+        {/* Two-bands clarifier — the savings range around the point (this
+            card, ±{bandPct}% relative, editorial per cohort) is a DIFFERENT
+            quantity from the ±N bps that appears inside the processor-margin
+            assumption above. Rendering this as a contextual line (not another
+            bullet) keeps it from being read as one more assumption to skim
+            past — it's meta-context about the numbers themselves. */}
+        {bandPct !== null && (
+          <p className="mt-3 pt-3 text-[11px] text-white/45 leading-relaxed border-t border-white/8">
+            The savings range shown above is ±{bandPct}% around the point — our overall confidence in the achievable benchmark for this cohort. That is a different quantity from any "±N bps" mentioned inside an individual assumption, which measures uncertainty on a single component (e.g. processor margin), not on the total.
+          </p>
         )}
 
         {/* Engine + cohort metadata — tiny, monospace, honest */}
