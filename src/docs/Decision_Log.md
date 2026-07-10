@@ -1142,10 +1142,11 @@ Purged multi-vertical (shipping / SaaS / banking / insurance / telecom / HR) bra
 **Testimonials placeholder policy:**
 Testimonials in `src/pages/Testimonials.jsx` are illustrative only. Must be replaced with real customer quotes before public launch, investor demo, or fundraising round.
 
-**Frozen-until-cutover (do NOT edit):**
-- `src/lib/scoreEngine.js` — 647-line multi-vertical engine, dies whole at PaymentsAnalyzer cutover.
-- `src/pages/Results.jsx` — 661-line consumer of scoreEngine, dies whole at cutover.
-Any refactor of these two before the cutover is forbidden — the replacement (`calculatePaymentsGap` + new results view) is already planned.
+**Frozen-until-benchmarks-migration (do NOT edit):**
+- `src/lib/scoreEngine.js` — 647-line multi-vertical engine. Post-M3.5 (2026-07-10) its purge is blocked by 6 consumidores vivos que la auditoría empírica identificó: **3 en frontend** (`AdminBenchmarks.jsx`, `Reports.jsx`, `src/lib/__benchmark_sync__.test.js`) + **3 mirrors verbatim en backend Deno** (`base44/functions/getBenchmarkForReport/entry.ts`, `base44/functions/recommendationEngineAgent/entry.ts`, `base44/functions/spendIntelligenceAgent/entry.ts` — recientemente añadido `base44/functions/activateDealOrchestrator/entry.ts` como cuarto mirror pendiente de auditar). Migración requiere chunk M4-tier dedicado al motor de benchmarks v2 que reemplace los 6+ consumidores en un solo pase.
+- ~~`src/pages/Results.jsx`~~ — **BORRADO en M3.5 (2026-07-10)**, ver entrada M3.5 en este mismo log ("Frontend: src/pages/Results.jsx — 1 hit residual, era un comentario en App.jsx, no un import. Post-cutover el router sirve PaymentsResults en /Results."). El router ahora resuelve `/Results` a `PaymentsResults.jsx` (payments-only stack).
+
+Any refactor of `scoreEngine.js` before el chunk de migración de benchmarks está prohibido — el borrado del engine bloquea también la migración de los mirrors Deno, y hacerlo aislado en un fichero rompería sync-check y los 3 endpoints backend.
 
 **Dormant / orphan candidates (accumulated across Fase 1.2 + 1.3 — backend cleanup phase):**
 
