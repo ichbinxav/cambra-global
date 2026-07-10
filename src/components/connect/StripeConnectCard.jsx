@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { CheckCircle2, RefreshCw, LogOut, Clock } from "lucide-react";
+import { CheckCircle2, RefreshCw, LogOut, Clock, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/components/shared/Toast.jsx";
 import { useTranslation } from "@/lib/i18n.jsx";
-// Chunk 6 CUTOVER — useAutoMaterialize was removed alongside the legacy
-// Analyzer/Results wizard. The verified flow (Stripe sync → PaymentsGap) is
-// reconstructed in Fase 6 with PaymentsAnalysisSession as the target.
+// M3-Chunk 6 — Verified analysis is an EXPLICIT user action, not an
+// automatic post-sync side effect (the auto-materialize cadena was retired
+// in the payments-only cutover, see Decision_Log 2026-07-09). After the
+// merchant syncs Stripe, they get a "Run verified analysis" button that
+// invokes computeStripeVerifiedGap and navigates to /Results?verified=<id>.
+// This keeps the user in control of when the compute (2-8s + credit cost)
+// runs, and mirrors the mental model of the anonymous funnel (form →
+// explicit submit → results page).
 
 /**
  * M3 — Stripe Connect card.
@@ -14,11 +20,18 @@ import { useTranslation } from "@/lib/i18n.jsx";
 export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
   const { toast } = useToast();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [connection, setConnection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [setupRequired, setSetupRequired] = useState(false);
   const [error, setError] = useState("");
+  // Verified-analysis action state — kept separate from `busy` so the sync/
+  // disconnect buttons don't get disabled while the compute is running (and
+  // vice-versa). We show a distinct spinner + message ("Measuring your real
+  // rates from Stripe…") because the wait is meaningful (2-8s) and users
+  // deserve to know what's happening rather than seeing a blank spinner.
+  const [computing, setComputing] = useState(false);
 
   // FASE 1 — Integration is now the source of truth for "connected" state.
   // We read Integration rows with any of the 3 Stripe provider slugs
@@ -160,6 +173,50 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
     }
   };
 
+  // M3-Chunk 6 — Explicit "Run verified analysis" action.
+  //
+  // Contract:
+  //   - Requires an Integration-backed Stripe connection (legacy StripeConnection
+  //     alone can't reach the bridge — Chunk 4 sealed it against Integration).
+  //   - Reused rows (idempotency hit) are TRANSPARENT to the user: same UX,
+  //     same navigation. computeStripeVerifiedGap returns reused:true with
+  //     the same verified_id, and we route to /Results?verified=<id> either
+  //     way. The results page decides what to show.
+  //   - Navigation ALWAYS targets the canonical `/Results` (not the alias
+  //     `/PaymentsResults`) — <Navigate replace> on the alias strips the
+  //     query string, which is exactly the bug analyzerResultsHandoff.test.js
+  //     locks against for `?session=`. Same rule for `?verified=`.
+  const handleRunVerifiedAnalysis = async () => {
+    if (computing) return;
+    if (!connection?.brand_id) {
+      setError("Missing brand context — please refresh the page.");
+      return;
+    }
+    setComputing(true);
+    setError("");
+    try {
+      const res = await base44.functions.invoke("computeStripeVerifiedGap", {
+        brand_id: connection.brand_id,
+      });
+      const data = res?.data || res;
+      if (!data?.ok || !data.verified_id) {
+        const msg = data?.error || "We couldn't run the verified analysis. Please try again.";
+        setError(msg);
+        toast.error("Verified analysis failed", msg);
+        setComputing(false);
+        return;
+      }
+      // CANONICAL route only — never navigate to /PaymentsResults (alias
+      // that drops the query string via <Navigate replace>).
+      navigate(`/Results?verified=${encodeURIComponent(data.verified_id)}`);
+    } catch (e) {
+      const msg = e?.message || "We couldn't reach the verified-analysis service.";
+      setError(msg);
+      toast.error("Verified analysis failed", msg);
+      setComputing(false);
+    }
+  };
+
   const handleDisconnect = async () => {
     setBusy(true);
     setError("");
@@ -226,6 +283,11 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
   }
 
   if (connection) {
+    // Verified analysis is only reachable through the Integration-backed
+    // path (Chunk 4 explicitly uses base44.entities.Integration.filter to
+    // find the Stripe row; a legacy-only StripeConnection returns 404
+    // no_stripe_integration). We surface the button only when it will work.
+    const canRunVerified = !!connection?.provider;
     return (
       <div className="rounded-2xl border border-emerald-500/30 bg-card p-4">
         <Header>
@@ -240,7 +302,7 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
           </span>
           <button
             onClick={handleSync}
-            disabled={busy}
+            disabled={busy || computing}
             className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-border/60 text-[11px] font-medium text-foreground hover:border-foreground/40 disabled:opacity-50"
           >
             <RefreshCw size={12} className={busy ? "animate-spin" : ""} />
@@ -248,13 +310,60 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
           </button>
           <button
             onClick={handleDisconnect}
-            disabled={busy}
+            disabled={busy || computing}
             className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-medium text-muted-foreground hover:text-foreground disabled:opacity-50"
           >
             <LogOut size={12} />
             Disconnect
           </button>
         </div>
+
+        {/* Verified analysis — primary post-sync action.
+            Full-width block so it doesn't get lost among the utility buttons
+            above. The "Run" call is where CAMBRA's real product value lands:
+            it measures the merchant's actual effective rate from real Stripe
+            data (canonical fees ÷ net volume over the last 90d) and shows
+            the VERIFIED badge over that number on /Results. */}
+        {canRunVerified && (
+          <div
+            className="mt-3 rounded-xl p-3 flex items-center justify-between gap-3"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(34,211,238,0.08) 0%, rgba(31,78,216,0.06) 100%)",
+              border: "1px solid rgba(34,211,238,0.30)",
+            }}
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                <Sparkles size={11} className="text-cyan-500" />
+                Run verified analysis
+              </p>
+              <p className="text-[10.5px] text-muted-foreground mt-0.5">
+                {computing
+                  ? "Measuring your real rates from Stripe…"
+                  : "Measure your effective rate from real Stripe data (last 90 days)."}
+              </p>
+            </div>
+            <button
+              onClick={handleRunVerifiedAnalysis}
+              disabled={computing || busy}
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[11px] font-bold text-white disabled:opacity-60 shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                boxShadow: "0 6px 20px -8px rgba(34,211,238,0.55)",
+              }}
+            >
+              {computing ? (
+                <>
+                  <Loader2 size={12} className="animate-spin" /> Running…
+                </>
+              ) : (
+                <>Run</>
+              )}
+            </button>
+          </div>
+        )}
+
         {error && <p className="mt-2 text-[11px] text-red-600">{error}</p>}
       </div>
     );

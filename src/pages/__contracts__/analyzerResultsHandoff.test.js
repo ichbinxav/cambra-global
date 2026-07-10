@@ -118,13 +118,83 @@ describe('CONTRACT — Analyzer → Results session handoff', () => {
   //    inbound links; internal code paths must never round-trip through them
   //    because <Navigate replace> silently drops the query string.
   it('No internal navigate() call in the payments funnel targets an alias route', () => {
-    const files = { analyzer, results };
+    // Extended in M3-Chunk 6 to include StripeConnectCard, which post-Chunk 6
+    // owns the second navigate() into /Results (verified path). Any drift
+    // there would break the same way the analyzer bug did.
+    const stripeCard = read('src/components/connect/StripeConnectCard.jsx');
+    const files = { analyzer, results, stripeCard };
     for (const [name, src] of Object.entries(files)) {
       // Match navigate("/PaymentsAnalyzer…") or navigate("/PaymentsResults…"),
       // in either single-quote, double-quote, or backtick form.
       const aliasNav = src.match(/navigate\(\s*[`'"]\/(PaymentsAnalyzer|PaymentsResults)/);
       expect(aliasNav, `${name}: navigate() targets alias route ${aliasNav?.[0]}`).toBeNull();
     }
+  });
+});
+
+// ── M3-Chunk 6+7 · Verified path handoff ─────────────────────────────────────
+//
+// Locks the SECOND funnel: Stripe connect → computeStripeVerifiedGap →
+// /Results?verified=<id>. Same failure surface as the estimated path (drift
+// between the produced URL and the consumed query key, alias vs canonical
+// navigation), so it gets the same style of contract lockdown.
+describe('CONTRACT — Verified analysis handoff (M3-Chunk 6+7)', () => {
+  const stripeCard = fs.readFileSync(path.join(ROOT, 'src/components/connect/StripeConnectCard.jsx'), 'utf-8');
+  const results    = fs.readFileSync(path.join(ROOT, 'src/pages/PaymentsResults.jsx'), 'utf-8');
+  const reader     = fs.readFileSync(path.join(ROOT, 'base44/functions/getPaymentsAnalysisVerified/entry.ts'), 'utf-8');
+  const bridge     = fs.readFileSync(path.join(ROOT, 'base44/functions/computeStripeVerifiedGap/entry.ts'), 'utf-8');
+  const gapCard    = fs.readFileSync(path.join(ROOT, 'src/components/paymentsResults/PaymentsGapCard.jsx'), 'utf-8');
+
+  // 1. StripeConnectCard invokes computeStripeVerifiedGap with brand_id.
+  it('StripeConnectCard invokes computeStripeVerifiedGap with { brand_id }', () => {
+    expect(stripeCard).toMatch(/invoke\("computeStripeVerifiedGap",\s*\{\s*brand_id:/);
+  });
+
+  // 2. StripeConnectCard navigates to /Results?verified=<id> — canonical, never alias.
+  it('StripeConnectCard navigates to canonical /Results?verified=<id>', () => {
+    expect(stripeCard).toMatch(/navigate\(`\/Results\?verified=/);
+    expect(stripeCard).not.toMatch(/navigate\(`\/PaymentsResults\?verified=/);
+  });
+
+  // 3. Results page reads the `verified` query param.
+  it('PaymentsResults reads the "verified" query param', () => {
+    expect(results).toMatch(/params\.get\("verified"\)/);
+  });
+
+  // 4. Results page invokes getPaymentsAnalysisVerified with { verified_id }.
+  it('PaymentsResults sends verified_id (not id) to getPaymentsAnalysisVerified', () => {
+    expect(results).toMatch(/invoke\("getPaymentsAnalysisVerified",\s*\{\s*verified_id:\s*verifiedId\s*\}\)/);
+  });
+
+  // 5. Reader accepts verified_id in the POST body.
+  it('getPaymentsAnalysisVerified accepts { verified_id } in the POST body', () => {
+    expect(reader).toMatch(/body\?\.verified_id/);
+  });
+
+  // 6. Bridge returns `verified_id` — the exact key the client reads.
+  //    The bridge response shape is: { ok, reused, verified_id, engine_result, ... }
+  it('computeStripeVerifiedGap returns verified_id in the success response', () => {
+    // Bridge uses Response.json with a variable holding the row id — assert
+    // the key appears in a response payload construction.
+    expect(bridge).toMatch(/verified_id/);
+  });
+
+  // 7. The VERIFIED badge is gated on engine_result.mode === "verified".
+  //    Vocabulary Rule: the word "verified" (as a user-facing badge) is
+  //    reserved for the measured path. This test locks the gate so nobody
+  //    can flip it back to cohort.verified by accident — a rate-table row
+  //    being verified does NOT make the merchant's analysis verified.
+  it('PaymentsGapCard gates the "Verified" badge on engine_result.mode === "verified"', () => {
+    expect(gapCard).toMatch(/engineResult\?\.mode === "verified"/);
+  });
+
+  // 8. The two paths NEVER cross — session and verified are mutually exclusive.
+  //    Reading them into two separate variables (not one) is the invariant
+  //    that keeps the reader from silently reusing session logic on a
+  //    verified id (or vice versa).
+  it('PaymentsResults reads verifiedId and sessionId into DISTINCT variables', () => {
+    expect(results).toMatch(/const verifiedId = params\.get\("verified"\)/);
+    expect(results).toMatch(/const sessionId\s+= params\.get\("session"\)/);
   });
 });
 

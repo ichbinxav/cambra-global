@@ -21,14 +21,22 @@ function eur(n) {
   return "€" + Math.round(n).toLocaleString("en-US");
 }
 
-export default function PaymentsGapCard({ engineResult, inputSnapshot }) {
+export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMetrics, measurementWindow }) {
   const current = engineResult?.current_effective_bps;
   const achievable = engineResult?.achievable_effective_bps;
   const annual = engineResult?.annual_savings_eur || {};
   const monthly = engineResult?.monthly_savings_eur || {};
-  const verified = engineResult?.cohort?.verified === true;
+  const cohortVerifiedRow = engineResult?.cohort?.verified === true;
+  // M3-Chunk 7 — the ONLY badge in the app that reads "VERIFIED" (Vocabulary
+  // Rule, Decision_Log 2026-07-09). Gated on engine_result.mode, which the
+  // motor stamps as "verified" ONLY when computeStripeVerifiedGap ran on
+  // real Stripe balance-transaction data. The form path never reaches
+  // mode==="verified" — it stops at "estimated".
+  const isMeasured = engineResult?.mode === "verified";
 
   const gapPct = isFinite(current) && isFinite(achievable) ? ((current - achievable) / 100).toFixed(2) : null;
+  const txCount = sampleMetrics?.tx_count_charges_90d;
+  const daysCovered = measurementWindow?.days_covered;
 
   return (
     <div
@@ -40,20 +48,37 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot }) {
         WebkitBackdropFilter: "blur(20px)",
       }}
     >
-      {/* Eyebrow — cohort label + public-pricing / estimate flag.
-          COPY RULE (Decision_Log 2026-07-09): the word "verified" is
-          RESERVED in this app for analyses backed by real connected data
-          (post-PSP-connect, Fase 6+). The anonymous form path can NEVER
-          call itself "verified" — what's verified is the rate-table row
-          (public published pricing with a source URL), not the user's
-          actual effective rate. So:
-            cohort.verified === true  → "PUBLIC PRICING"
-            cohort.verified === false → "REGIONAL ESTIMATE" */}
+      {/* Eyebrow — cohort label + verification tier.
+          VOCABULARY RULE (Decision_Log 2026-07-09 + M3-Chunk 7): the word
+          "VERIFIED" is RESERVED in this app for analyses backed by REAL
+          CONNECTED DATA (mode === "verified"). Three tiers, one truth:
+            engine_result.mode === "verified" → "VERIFIED"        (measured)
+            cohort.verified === true          → "PUBLIC PRICING"  (estimated)
+            cohort.verified === false         → "REGIONAL ESTIMATE"
+          Order matters: mode check FIRST — a verified row still carries
+          cohort.verified === true from its rate-table row, so without the
+          mode gate every verified analysis would land on the weaker badge. */}
       <div className="flex items-center gap-2 mb-4">
         <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
           Payments gap · {inputSnapshot?.country || "—"}
         </span>
-        {verified ? (
+        {isMeasured ? (
+          <span
+            title="Measured from your real Stripe transaction data over the last 90 days."
+            className="text-[9px] uppercase tracking-[0.14em] font-black px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+            style={{
+              background: "linear-gradient(135deg, rgba(34,211,238,0.22) 0%, rgba(59,130,246,0.18) 100%)",
+              color: "rgb(103,232,249)",
+              border: "1px solid rgba(34,211,238,0.55)",
+              boxShadow: "0 0 12px rgba(34,211,238,0.25)",
+            }}
+          >
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Verified
+          </span>
+        ) : cohortVerifiedRow ? (
           <span
             title="Calculated against your PSP's publicly published pricing."
             className="text-[9px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full"
@@ -109,7 +134,18 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot }) {
           >
             {pctFromBps(current)}
           </p>
-          <p className="text-[10px] text-white/45 mt-0.5">effective, on {inputSnapshot?.provider_slug || "your PSP"}</p>
+          {/* Verified mode: the subtitle explains this is a MEASURED figure
+              (fees ÷ net volume over real Stripe charges), not the form
+              input. Falls back to the estimated copy if the sample fields
+              are missing (defensive — shouldn't happen with M3-Chunk 5
+              reader, which always returns sample_metrics + window). */}
+          <p className="text-[10px] text-white/45 mt-0.5">
+            {isMeasured && txCount && daysCovered ? (
+              <>Your rate, measured from {txCount} charges over {daysCovered} days</>
+            ) : (
+              <>effective, on {inputSnapshot?.provider_slug || "your PSP"}</>
+            )}
+          </p>
         </div>
 
         <div

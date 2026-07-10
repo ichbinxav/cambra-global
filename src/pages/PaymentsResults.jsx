@@ -1,30 +1,41 @@
-// PaymentsResults — anonymous, shareable results page for the Payments
-// Analyzer (Chunk 5B). Loads a PaymentsAnalysisSession by anon_session_id
-// via getPaymentsGapTeaser and renders three cards:
-//   1. PaymentsGapCard   — hero: current vs achievable, annual savings RANGE
-//   2. FeeBreakdownCard  — interchange / scheme / margin decomposition
+// PaymentsResults — dual-mode results page.
+//
+// TWO reader paths, chosen by URL query param — never both, never fallback:
+//   A) ?session=<uuid>   → anonymous form path (getPaymentsGapTeaser)
+//                          engine_result.mode === "estimated"
+//                          Badge: "PUBLIC PRICING" or "REGIONAL ESTIMATE"
+//   B) ?verified=<oid>   → authenticated real-data path
+//                          (getPaymentsAnalysisVerified, M3-Chunk 5)
+//                          engine_result.mode === "verified"
+//                          Badge: "VERIFIED" — the one legitimate use of
+//                          the word in the whole app (Decision_Log vocabulary rule)
+//
+// Renders three cards:
+//   1. PaymentsGapCard    — hero: current vs achievable, annual savings RANGE
+//   2. FeeBreakdownCard   — interchange / scheme / margin (achievable side only)
 //   3. AssumptionsFootnote — always-visible, with regional-fallback banner
 //
 // States: loading skeleton, session not found (→ /PaymentsAnalyzer),
-// network error (retry), rate-limited (soft banner). Never a blank screen.
+// network error (retry), rate-limited (soft banner), unauthorized (only in
+// verified mode → prompt to sign in). Never a blank screen.
 //
 // CTA: single primary — "Stop overpaying" → /LoginGate?next=/PaymentsAnalyzer
-// (Chunk 5 does NOT ship the claim flow; we route to the existing signup
-// wall so the user can create an account and re-run the audit as themselves.
-// The claim/persist-across-devices flow is Chunk 6+).
+// on the estimated path. The verified path shows a different CTA (the user
+// is already signed in and connected — they need next-steps, not a signup).
 
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
-import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Search } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Search, Lock } from "lucide-react";
 
 import PaymentsGapCard from "@/components/paymentsResults/PaymentsGapCard";
 import FeeBreakdownCard from "@/components/paymentsResults/FeeBreakdownCard";
 import AssumptionsFootnote from "@/components/paymentsResults/AssumptionsFootnote";
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const OBJECT_ID = /^[0-9a-f]{24}$/i;
 
 // Page-level wrapper that installs the same navy-glass background we use on
 // the analyzer, so a user landing directly on this URL (shared link) sees
@@ -121,15 +132,45 @@ function EmptyState({ title, message, ctaLabel, onCta, icon: Icon = Search }) {
 export default function PaymentsResults() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const sessionId = params.get("session") || params.get("anon_session_id") || "";
+  // Two mutually-exclusive URL contracts:
+  //   ?session=<uuid>   → anonymous form path (estimated)
+  //   ?verified=<oid>   → authenticated real-data path (verified)
+  // If both are present, verified wins (real data > form data). If neither
+  // is present, the page is "invalid" — never a blank screen.
+  const verifiedId = params.get("verified") || "";
+  const sessionId  = params.get("session") || params.get("anon_session_id") || "";
+  const isVerifiedPath = !!verifiedId;
 
   const [status, setStatus] = useState("loading");
-  // 'loading' | 'ready' | 'not_found' | 'invalid' | 'rate_limited' | 'error'
+  // 'loading' | 'ready' | 'not_found' | 'invalid' | 'rate_limited' | 'error' | 'unauthorized'
   const [payload, setPayload] = useState(null);
   const [retryAfter, setRetryAfter] = useState(0);
   const [attempt, setAttempt] = useState(0); // manual retry counter
 
   useEffect(() => {
+    // ── PATH B — verified (authenticated real-data read) ───────────────
+    if (isVerifiedPath) {
+      if (!OBJECT_ID.test(verifiedId)) { setStatus("invalid"); return; }
+      let cancelled = false;
+      setStatus("loading");
+      (async () => {
+        try {
+          const resp = await base44.functions.invoke("getPaymentsAnalysisVerified", { verified_id: verifiedId });
+          if (cancelled) return;
+          const body = resp?.data || resp;
+          if (body?.error === "Unauthorized") { setStatus("unauthorized"); return; }
+          if (body?.error === "invalid_verified_id" || body?.error === "invalid_input") { setStatus("invalid"); return; }
+          if (body?.error === "not_found" || !body?.ok) { setStatus("not_found"); return; }
+          setPayload(body);
+          setStatus("ready");
+        } catch {
+          if (!cancelled) setStatus("error");
+        }
+      })();
+      return () => { cancelled = true; };
+    }
+
+    // ── PATH A — estimated (anonymous teaser read) — unchanged ─────────
     if (!sessionId) { setStatus("invalid"); return; }
     if (!UUID_V4.test(sessionId)) { setStatus("invalid"); return; }
 
@@ -154,7 +195,7 @@ export default function PaymentsResults() {
       }
     })();
     return () => { cancelled = true; };
-  }, [sessionId, attempt]);
+  }, [sessionId, verifiedId, isVerifiedPath, attempt]);
 
   // ── loading
   if (status === "loading") {
@@ -216,10 +257,43 @@ export default function PaymentsResults() {
     );
   }
 
+  // ── unauthorized (verified path only — verified rows are private)
+  if (status === "unauthorized") {
+    return (
+      <ResultsShell>
+        <EmptyState
+          icon={Lock}
+          title="Sign in to view this audit"
+          message="Verified analyses are private to the merchant who ran them. Sign in with the account that connected Stripe."
+          ctaLabel="Sign in"
+          onCta={() => navigate(`/LoginGate?next=${encodeURIComponent("/Results?verified=" + verifiedId)}`)}
+        />
+      </ResultsShell>
+    );
+  }
+
   // ── ready
   const engineResult = payload?.engine_result;
-  const inputSnapshot = payload?.input_snapshot;
+  // In verified mode there's no input_snapshot (the row was materialized
+  // from real Stripe data, not a form). We synthesize a lightweight object
+  // from sample_metrics so PaymentsGapCard / footer can read the same
+  // fields (country, provider, GMV) without knowing which path produced them.
+  const inputSnapshot = isVerifiedPath
+    ? {
+        // The verified path doesn't carry country in the reader response
+        // (see allowlist — Chunk 5). We show the cohort key's region instead,
+        // extracted from the engine result — the cohort is what the user's
+        // rate is actually being compared against.
+        country: engineResult?.cohort?.key?.split("|")?.[2] || null,
+        provider_slug: engineResult?.cohort?.key?.split("|")?.[0] || null,
+        monthly_gmv_eur: payload?.sample_metrics?.gmv_eur_monthly ?? null,
+        avg_ticket_eur: payload?.sample_metrics?.avg_ticket_eur ?? null,
+      }
+    : payload?.input_snapshot;
   const engineVersion = payload?.engine_version;
+  const isVerifiedMode = engineResult?.mode === "verified";
+  const measurementWindow = payload?.measurement_window;
+  const sampleMetrics = payload?.sample_metrics;
 
   return (
     <ResultsShell>
@@ -240,11 +314,17 @@ export default function PaymentsResults() {
       <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-6 lg:items-start gap-5">
         {/* LEFT column — hero + CTA */}
         <div className="lg:col-span-3 space-y-5">
-          <PaymentsGapCard engineResult={engineResult} inputSnapshot={inputSnapshot} />
+          <PaymentsGapCard
+            engineResult={engineResult}
+            inputSnapshot={inputSnapshot}
+            sampleMetrics={sampleMetrics}
+            measurementWindow={measurementWindow}
+          />
 
-          {/* Primary CTA — single "Stop overpaying" action.
-              Sends the user through the existing sign-in flow. Claim of the
-              anonymous session ships in a later chunk. */}
+          {/* Primary CTA — content changes per mode.
+              Estimated: sign-in wall (form → account → connect).
+              Verified: user is already signed in and connected — the next
+              step is the recovery workflow, not another signup. */}
           <div
             className="rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4"
             style={{
@@ -255,22 +335,35 @@ export default function PaymentsResults() {
           >
             <div className="flex-1 min-w-0">
               <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-1.5">Next step</p>
-              <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
-                Ready to stop overpaying?
-              </p>
-              <p className="text-[13px] text-white/60 mt-1">
-                Create an account to connect your PSP, verify the number, and start the recovery.
-              </p>
+              {isVerifiedMode ? (
+                <>
+                  <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
+                    This gap is measured, not estimated.
+                  </p>
+                  <p className="text-[13px] text-white/60 mt-1">
+                    Head back to your dashboard to review your integrations and start the recovery workflow.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
+                    Ready to stop overpaying?
+                  </p>
+                  <p className="text-[13px] text-white/60 mt-1">
+                    Create an account to connect your PSP, verify the number, and start the recovery.
+                  </p>
+                </>
+              )}
             </div>
             <Button
-              onClick={() => navigate("/LoginGate?next=/Analyzer")}
+              onClick={() => navigate(isVerifiedMode ? "/Dashboard" : "/LoginGate?next=/Analyzer")}
               className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
               style={{
                 background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
                 boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
               }}
             >
-              Stop overpaying <ArrowRight className="h-4 w-4" />
+              {isVerifiedMode ? "Go to dashboard" : "Stop overpaying"} <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -282,11 +375,23 @@ export default function PaymentsResults() {
         </div>
       </div>
 
-      {/* Footer line — snapshot of what the user submitted, for transparency.
-          Full-width under the grid so it reads as a single closing note. */}
+      {/* Footer line — snapshot of what produced the number, for transparency.
+          Full-width under the grid so it reads as a single closing note.
+          Verified mode shows the measurement window ("measured from N charges
+          over M days"); estimated mode keeps the "run on X GMV" line. */}
       <div className="pt-6 text-[11px] text-white/35 text-center">
-        Analysis run on {inputSnapshot?.monthly_gmv_eur ? `€${Number(inputSnapshot.monthly_gmv_eur).toLocaleString("en-US")}` : "—"} monthly GMV
-        {inputSnapshot?.avg_ticket_eur ? `, €${inputSnapshot.avg_ticket_eur} average ticket` : ""} · {inputSnapshot?.provider_slug || "—"} · {inputSnapshot?.country || "—"}
+        {isVerifiedMode ? (
+          <>
+            Measured from {sampleMetrics?.tx_count_charges_90d ?? "—"} charges over {measurementWindow?.days_covered ?? "—"} days ·
+            {sampleMetrics?.gmv_eur_monthly ? ` €${Math.round(sampleMetrics.gmv_eur_monthly).toLocaleString("en-US")}/mo GMV ` : " "}·
+            {" "}{inputSnapshot?.provider_slug || "—"} · {inputSnapshot?.country || "—"}
+          </>
+        ) : (
+          <>
+            Analysis run on {inputSnapshot?.monthly_gmv_eur ? `€${Number(inputSnapshot.monthly_gmv_eur).toLocaleString("en-US")}` : "—"} monthly GMV
+            {inputSnapshot?.avg_ticket_eur ? `, €${inputSnapshot.avg_ticket_eur} average ticket` : ""} · {inputSnapshot?.provider_slug || "—"} · {inputSnapshot?.country || "—"}
+          </>
+        )}
       </div>
     </ResultsShell>
   );
