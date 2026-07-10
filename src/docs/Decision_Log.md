@@ -5,6 +5,118 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-10 — M3-Chunk 4 · Reconciliación evidencia contradictoria + fix idempotencia + sellado final
+
+**Contexto.** El cierre inicial del Chunk 4 quedó bloqueado por dos hallazgos que exigían prueba antes del sellado: (a) contradicción sospechada entre la distribución de países del bridge (FR: 0) y la evidencia "v2" del Chunk 1b (charge `pm_card_fr → country: FR`), (b) la mejora de labels de unidades en `sample_metrics`. Ambas se cerraron con evidencia empírica; adicionalmente el proceso reveló un bug real de idempotencia que se arregló en el mismo pase.
+
+**1. Reconciliación de la contradicción — evidencia definitiva.**
+
+Ejecuté un diagnóstico v2 (`_diagIntlDistribution2`, temporal, borrado post-sellado) con instrumento correcto: paginación completa con `has_more`, búsqueda del marcador M3-1b **tanto en `description` (dónde el 1b dice que lo puso) como en `metadata.seed_run`**, fingerprint de la clave usada, `livemode` per-charge, y sample de las charges más antiguas para detectar truncamiento. Trazas literales:
+
+```
+key_prefix:   sk_test_51Tq...8eNRmx (genuina sk_test_, no restricted-live)
+account:      acct_1TqWzFJtkNunlMvz (FR, EUR) — la misma del 1b
+window:       2026-04-11 → 2026-07-10 (90d)
+pagination:   1 página, has_more=false, total=41 charges — NO truncado
+livemode:     41/41 explícito false (TEST-mode confirmado charge-level)
+status:       41/41 succeeded
+distribution: US: 39, GB: 2, null: 0, FR: 0
+seed markers in description (M3-1b-seed):   0 matches
+seed markers in metadata.seed_run:          0 matches
+oldest 5:     todas creadas 2026-07-08 11:06-11:08, descriptions ad-hoc
+              ("dal", "s", "algo", "payments", "shipping"), metadata_keys=[]
+```
+
+**Conclusión reconciliada:** las 41 charges de la ventana son ruido creado manualmente el 2026-07-08 en batch de <2 minutos (Stripe dashboard), sin marcadores. Ninguna proviene del harness `seedStripeTestData` del 1b. Grep exhaustivo del `Decision_Log.md` completo confirma **cero menciones de `pm_card_fr` o `country: "FR"` en la entrada del 1b** — esa "verificación v2 con `pm_card_fr → country: FR`" apareció en la conversación pero NO fue sellada en el log. El sellado del 1b fue sobre la rotación de clave y el guard PaymentMethod probe (v1 rechazada, v2 adoptada) — todo eso sí queda documentado y sigue vigente. Los datos seeded del 1b eran instrumentales, no contract; nunca fueron parte del sellado.
+
+**No hay contradicción con evidencia sellada.** La distribución US:39 / GB:2 / null:0 / FR:0 sobre `acct_1TqWzFJtkNunlMvz` en la ventana actual es la realidad de Stripe. `intl_pct: 100` para cuenta FR es correcto (ningún charge con country=FR). Los €729/mo no están inflados por bug.
+
+**2. Fix de idempotencia — bug real detectado en la re-verificación.**
+
+Al re-ejecutar `computeStripeVerifiedGap` dos veces seguidas para verificar idempotencia con los nuevos labels, ambas llamadas devolvieron `reused: false` con hashes **diferentes** (`edc44948...` → `1c6ef881...`) sobre exactamente la misma cuenta, ventana, y counts (41 charges, 49 balance_txns, 47 canonical). Eso rompe el contrato §6 del Chunk 4.
+
+**Causa raíz diagnosticada:** el hash se computaba sobre `agg.source_charge_ids` derivado de `balance_transaction.source` (FK del BT a la charge). Los endpoints `/v1/charges` y `/v1/balance_transactions` filtran por **timestamps `created` distintos** — `charge.created` vs `bt.created` (Stripe emite el BT con retraso post-authorization). Runs separados por segundos pueden incluir sets sutilmente diferentes de source charge IDs derivados de `bt.source` incluso cuando el resultado de `/v1/charges` es idéntico. La ventana rodante (`Math.floor(Date.now()/1000)`) más el desfase temporal entre ambas APIs produce hash no-determinístico.
+
+**Fix aplicado (mínimo, quirúrgico):** hashear directamente los IDs de CHARGES succeeded (lo que la lógica materialmente consume), no los `bt.source`. Cambio confinado a un bloque de 6 líneas en `fetchAndAggregate`:
+
+```ts
+// ANTES: hasheaba bt.source sobre canonicalRows (charges + refunds + partials)
+const sourceIdSet = new Set<string>();
+for (const t of canonicalRows) {
+  const src = t.source;
+  if (typeof src === 'string' && src) sourceIdSet.add(src);
+}
+const source_charge_ids = Array.from(sourceIdSet).sort();
+
+// DESPUÉS: hashea directamente charges succeeded del endpoint /v1/charges
+const succeededChargeIds = charges
+  .filter((c: any) => c.status === 'succeeded')
+  .map((c: any) => c.id)
+  .filter((id: unknown): id is string => typeof id === 'string' && !!id);
+const source_charge_ids = Array.from(new Set(succeededChargeIds)).sort();
+```
+
+**Verificación empírica post-fix:**
+- Run 1 (fila fresca): `reused: false`, `verified_id: 6a50af119a0fd331e1787346`, `hash: a098b417520aad9db4e217e6c3f34d643bb441b7467157879bfa39d0d2866947`.
+- Run 2 (~1s después): `reused: true`, MISMO `verified_id: 6a50af119a0fd331e1787346`, MISMO hash. Cero fila duplicada. Contract §6 cumplido.
+
+**3. Labels explícitos en `sample_metrics` — mejora aplicada.**
+
+Rename determinista sobre los tres puntos de salida (`create()`, response verified, response `no_stripe_activity_in_window`). El label `gmv_eur` (ambiguo entre "monthly proxy" y "gross de la ventana") se separó explícitamente:
+
+```
+gmv_eur          → gmv_eur_monthly           (44,682 — el proxy 30d que consume el motor)
+                 + gross_volume_eur_90d      (134,046 — sum crudo Stripe, sin escalar)
+tx_count         → tx_count_charges_90d      (41 — charges succeeded en la ventana)
+intl_pct         → intl_pct_of_gmv           (100 — % del GMV cross-border)
+canonical_rows   → canonical_rows_90d
+```
+
+`avg_ticket_eur` se dejó sin sufijo (es un promedio per-charge, sin base temporal). El path `reused: true` devuelve `sample_metrics` verbatim del row histórico (schema aditivo — rows viejos con labels antiguos no requieren migración; nuevos rows llevan labels explícitos desde ya).
+
+**4. Trazas del run final sellado (post-fix, con labels nuevos):**
+
+```
+engine_version:                payments-gap-1.3.0
+mode:                          verified
+current_effective_bps:         340 (3.40% all-in measured verbatim)
+achievable_effective_bps:      176.74
+monthly_savings_eur.point:     729.46
+annual_savings_eur.point:      8753.57
+cohort:                        stripe|ANY|EU, verified=true, matched=exact
+window:                        2026-04-11 → 2026-07-10 (90d)
+sample_metrics.gmv_eur_monthly:      44,682.27
+sample_metrics.gross_volume_eur_90d: 134,046.81  (ratio ×3 vs monthly, sanity ✓)
+sample_metrics.tx_count_charges_90d: 41
+sample_metrics.avg_ticket_eur:       3,359.11
+sample_metrics.intl_pct_of_gmv:      100
+sample_metrics.identified_charges_for_intl: 41
+sample_metrics.pagination_capped:    false
+source_charges_hash:                 a098b417...2866947
+```
+
+Aritmética end-to-end intacta: gap = 340 − 176.74 = 163.26 bps sobre €44.7k GMV = €729/mo. Idéntica al primer sellado del Chunk 4 (mismo cohorte, misma composición de tabla, mismo current medido).
+
+**5. Cleanup post-sellado ejecutado:**
+- `PaymentsAnalysisVerified` — fila `6a50af11...` borrada. `list().length === 0` para el brand del self-test.
+- `Integration stripe_self_test` temporal borrada. `Integration.filter({brand_id: '6a50868a4983b042c1b26cc2'}).length === 0`.
+- Función diagnóstica `_diagIntlDistribution2` borrada del árbol.
+- `StripeConnection` legacy del self-test intacta (existía antes del Chunk 4).
+
+**Estado del chunk:** SELLADO CON EVIDENCIA RECONCILIADA. Los cuatro puntos que bloqueaban el sellado quedaron resueltos con trazas ejecutadas, no con narrativa:
+- (a) contradicción → refutada empíricamente, era una verificación de conversación no sellada en log
+- (b) instrumento equivocado (metadata.seed_run vs description) → rehecho correctamente, cero seed markers presentes en ninguno de los dos campos
+- (c) intl_pct=100 → confirmado correcto sobre `acct_1TqWzFJtkNunlMvz` FR
+- (d) idempotencia → bug real detectado, arreglado, verificado con dos llamadas consecutivas `reused: false`/`reused: true`
+
+**Bug arreglado como consecuencia:** el patrón "hash de bt.source" era vulnerable a la desalineación temporal de dos APIs Stripe con ventanas `created` distintas. Cambiar a "hash de charge.id" es estructuralmente correcto (identifica lo que el motor materialmente consumió) y determinístico entre replays.
+
+**Consecuencia arquitectónica documentada:** todo cálculo de idempotencia futuro que combine múltiples endpoints Stripe con ventanas `created` distintas debe hashear sobre el conjunto derivado de UN solo endpoint (el que representa la unidad de análisis — para nosotros, /v1/charges). No sobre FKs cruzadas entre endpoints. Registrado aquí como regla para futuras integraciones (PayPal orders vs balance events, Shopify orders vs transactions, etc.).
+
+**Push:** commit sha se anotará tras push al remote.
+
+---
+
 ## 2026-07-10 — M3-Chunk 4 · Bridge `computeStripeVerifiedGap` — Stripe→motor→PaymentsAnalysisVerified
 
 **Alcance.** Sella el puente estructural del M3: función backend `computeStripeVerifiedGap` que orquesta (a) verificación de propiedad vía `_tenantGuard`, (b) invocación de `stripeDataSync` para producir `measured_current_bps` canónico + `sample_metrics` sobre ventana 90d, (c) ejecución del motor `payments-gap-1.3.0` en modo `verified` (path desbloqueado en Chunk 3 con `measured_current_bps` presente), (d) persistencia en `PaymentsAnalysisVerified` con `owner_email` denormalizado (patrón Chunk 2) e idempotencia por `source_charges_hash`. La función NO es HTTP-alcanzable por app-users sin proceso — es el bridge que Fase 6 llamará desde una acción "Verify with Stripe" en el frontend cuando ese path se cablee al UI.
