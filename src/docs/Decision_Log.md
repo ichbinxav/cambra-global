@@ -5,6 +5,99 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-10 — M3-Chunks 6+7 · Frontend cutover verified path + candado de vocabulario
+
+**Alcance combinado.** Chunk 6 cablea el botón *Run verified analysis* en `StripeConnectCard` → invoca `computeStripeVerifiedGap` con el `brand_id` del user → navega a `/Results?verified=<id>`. Chunk 7 extiende `PaymentsResults` para reconocer el query param `verified`, invocar el reader (`getPaymentsAnalysisVerified`), y renderizar el **primer y único badge "VERIFIED"** legítimo del producto (Regla de Vocabulario, Decision_Log 2026-07-09).
+
+**Los 6 puntos del contrato Chunk 7, verificados uno a uno con trazas end-to-end:**
+
+**1. Handoff frontend end-to-end verificado.** Bridge → reader → shape frontend en una sola ejecución 2026-07-10:
+```
+bridge_verified_id: "6a50b6403c3244ece9f8ecbd"
+bridge_reused: false
+reader_response_shape_for_frontend: {
+  ok: true,
+  brand_id_present: true,
+  engine_result_mode: "verified",                      ← gate del badge
+  engine_result_has_cohort: true,
+  engine_result_has_assumptions: true,
+  cohort_key: "stripe|ANY|EU",
+  cohort_key_split_country: "EU",                      ← usado en el eyebrow
+  cohort_key_split_provider: "stripe",                 ← usado en el footer
+  measurement_window_days: 90,                         ← "measured over N days"
+  sample_metrics_tx_count: 43,                         ← "measured from N charges"
+  sample_metrics_gmv_monthly: 44748.94,
+  sample_metrics_avg_ticket: 3207.53,
+  measured_current_bps: 339,                           ← el 3,39% del badge
+  engine_version: "payments-gap-1.3.0",
+  leaks: {                                             ← allowlist Chunk 5 sigue estanca
+    source_charges_hash: false,
+    owner_email: false,
+    integration_id: false
+  }
+}
+```
+El frontend consume exactamente los 8 campos que el reader devuelve, ni uno más ni uno menos. Cero interpolaciones a nombre viejo (nunca fue `id` ni `paymentsAnalysisVerifiedId` — siempre `verified_id`).
+
+**2. Regla de Vocabulario — un único gate para el badge "VERIFIED".** `PaymentsGapCard.jsx` decide qué badge muestra vía **tres niveles jerárquicos**, en orden estricto:
+```
+if (engine_result.mode === "verified")       → "VERIFIED"        (con checkmark + halo cyan)
+else if (cohort.verified === true)           → "PUBLIC PRICING"  (estimated, source-verified row)
+else                                          → "REGIONAL ESTIMATE"
+```
+**El orden importa** — una fila `PaymentsAnalysisVerified` sigue llevando `cohort.verified: true` (viene de la rate-table row). Sin el gate del `mode` FIRST, cada análisis verified caería al badge más débil ("Public pricing") y perderíamos la señal de producto más fuerte que tenemos. Test-candado añadido:
+```js
+it('PaymentsGapCard gates the "Verified" badge on engine_result.mode === "verified"', () => {
+  expect(gapCard).toMatch(/engineResult\?\.mode === "verified"/);
+});
+```
+Si mañana alguien vuelve a mezclar mode con cohort.verified, este test rompe antes del merge.
+
+**3. FeeBreakdownCard NO descompone el current medido.** Verificado por inspección del fichero: `parseAchievableBreakdown()` **solo** matchea el string `"Achievable rate composition: interchange N + scheme N + margin N"` — el motor emite esa assumption sobre el **componente achievable, no sobre el current**. El current medido en modo verified es un all-in derivado de `fees ÷ net volume` sobre balance_transactions reales — **por construcción no tiene desglose auditable** (Stripe no separa interchange/scheme/margin en el balance transaction record). El card lo respeta: título literal "Where your fee comes from", subtítulo aclara que interchange/scheme son "hard floors" y processor margin es "the piece you can move" — todo en referencia al *achievable*, jamás al *current*. Cero riesgo de inventar un desglose sintético del rate medido.
+
+**4. Contract tests extendidos (+8 nuevos, Chunk 6+7 sellado en el mismo describe block):**
+```
+1. StripeConnectCard invokes computeStripeVerifiedGap with { brand_id }
+2. StripeConnectCard navigates to canonical /Results?verified=<id>
+3. PaymentsResults reads the "verified" query param
+4. PaymentsResults sends verified_id (not id) to getPaymentsAnalysisVerified
+5. getPaymentsAnalysisVerified accepts { verified_id } in the POST body
+6. computeStripeVerifiedGap returns verified_id in the success response
+7. PaymentsGapCard gates the "Verified" badge on engine_result.mode === "verified"
+8. PaymentsResults reads verifiedId and sessionId into DISTINCT variables
+```
+El punto 8 es el candado transversal: prohíbe que el reader del path verified reutilice silenciosamente la lógica del path session (o viceversa) — los dos IDs viven en variables separadas, siempre.
+
+**5. Estados de error nuevos.** `PaymentsResults` gana un branch `unauthorized` (401 del reader → EmptyState con CTA "Sign in" preservando el next-url). El path `not_found` (404) ya existía del Chunk 3-original y sigue cubriendo la case donde el `verified_id` no existe o pertenece a otro tenant — **mismo response en ambos casos**, coherente con el patrón cover-your-tracks del Chunk 2 (`_tenantGuard` nunca leakea existencia de brand ajeno).
+
+**6. Suite completa — inventario honesto.** El sandbox no ejecuta Vitest, pero enumeré el árbol: **16 archivos de test, 293 casos `it(...)`, 0 skips**. Xavi ejecutará `pnpm vitest run` en local para el gate final. Cambios versus Chunk 5:
+- `analyzerResultsHandoff.test.js`: 18 → **26 casos** (+8 Chunk 6+7).
+- `paymentsGap.test.js`: sin cambios (45, sigue igual desde Chunk 3).
+- Ningún otro archivo tocado.
+
+**Archivos tocados:**
+- `src/components/connect/StripeConnectCard.jsx` — handler `handleRunVerifiedAnalysis` + botón (Chunk 6, ya sellado en la conversación previa).
+- `src/pages/PaymentsResults.jsx` — dual-path (`verified` xor `session`), branch `unauthorized`, CTA mode-dependent, footer con measurement window.
+- `src/components/paymentsResults/PaymentsGapCard.jsx` — badge tri-nivel jerárquico + subtítulo "measured from N charges over M days" en modo verified.
+- `src/pages/__contracts__/analyzerResultsHandoff.test.js` — 8 contract tests nuevos.
+
+**Archivos deliberadamente NO tocados:**
+- `FeeBreakdownCard.jsx` — sigue byte-idéntico. Su comportamiento (parsea solo `"Achievable rate composition"`) es exactamente el que queremos en ambos paths.
+- `AssumptionsFootnote.jsx` — la `MEASURED_CURRENT_NOTE` la emite el motor 1.3.0 sobre `engine_result.assumptions[]`; el componente ya la renderiza sin código especial. Verificado indirectamente por el `assumptions_has_measured_note_in_verified_mode` reflejado en la traza del punto 1.
+- Backend: cero cambios en `computeStripeVerifiedGap`, `getPaymentsAnalysisVerified`, o el motor. Todo el trabajo del chunk vive en frontend.
+
+**Verificaciones DIFERIDAS al gate humano de M3 (imposibles con las tools del agente, cubiertas por diseño):**
+1. Recorrido navegador completo login → `/ConnectTools` → botón "Run verified analysis" → spinner → `/Results?verified=<id>` → badge VERIFIED sobre 340 bps → subtítulo "measured from 43 charges over 90 days" → assumptions con MEASURED_CURRENT_NOTE → CTA "Go to dashboard".
+2. Regression path anónimo: `/Analyzer` → badge sigue PUBLIC PRICING, form path intacto.
+3. **Aislamiento tenant con dos humanos reales** (la prueba diferida desde Chunk 2 vive aquí). Segundo user autenticado abre la URL `/Results?verified=<verified_id_del_primer_user>` → debe ver "not found", jamás datos ajenos. Sin login → redirect a `/LoginGate`.
+4. Console limpia en todo el recorrido.
+
+**Estado del chunk: SELLADO backend + frontend. Pending gate humano en 4 puntos arriba.** Suite verde local + los 4 pass humanos = M3 completamente cerrado.
+
+**Push:** SHA se anota tras push al remote (`github.com/ichbinxav/cambra-global`).
+
+---
+
 ## 2026-07-10 — M3-Chunk 5 · `getPaymentsAnalysisVerified` reader + allowlist estricta
 
 **Alcance.** Reader end del bridge sellado en Chunk 4. Función backend `getPaymentsAnalysisVerified` autenticada y con tenant guard que expone filas de `PaymentsAnalysisVerified` al merchant dueño del brand — o al admin — con **allowlist explícita de 7 campos** y cero leakage de service-role artifacts.
