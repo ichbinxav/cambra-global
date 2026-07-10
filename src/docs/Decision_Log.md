@@ -5,6 +5,43 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-10 — M3-Chunk 1a · Sync-check verde (3 pares realineados)
+
+**Alcance del chunk:** cerrar 3 de las 5 divergencias que llevaban skipped en `__sync_check__.test.js` desde antes del M2. Los 3 pares realineados son deuda cosmética que se acumuló durante la construcción de `dataSyncAgent` — no drift funcional. La red de seguridad tras este chunk detecta cualquier futuro drift en las 5 piezas activas del sync engine (`mergeStaticHeaders`, `dateRange`, `cursorAdvance`, `rateLimit`, `refreshOn401`) + el motor de payments (`paymentsGap`).
+
+**Fixes aplicados:**
+- `bigcommerceNormalizer` — el normalizador del test no colapsaba la coma trailing propia del wrapper object-property de Deno (`bigcommerce_orders: (raw) => {...},` con `,` final). Añadida regla `s = s.replace(/,\s*$/g, "")` al final del pass de trailing commas. Cero cambio en el archivo Deno ni en el `src/lib/normalizers/bigcommerce.js`.
+- `rateLimit` — el src estaba escrito en estilo verbose (multi-line, `resolve` como param del Promise, `const wait = X; await sleep(wait)`); Deno en estilo compacto inline (`r` como param, `await sleep(X)` directo). Realineado el src al estilo compacto — semántica preservada (tests unitarios propios de `rateLimit.test.js` siguen verdes 13/13). Motivo del alineamiento contra Deno: la copia autoritativa que se ejecuta en producción es la Deno, y editar el src para converger a ella es el patrón que hemos validado en chunks anteriores del sync engine.
+- `refreshOn401` — la firma destructurada del src tenía una **trailing comma** cosmética (`  state,\n}`) que el regex de arity del test contaba como parámetro fantasma → arity=6 vs arity=5 en Deno. Retirada la coma en el src. Cero cambio funcional. JSDoc se conserva (el normalizador del test los limpia antes de comparar).
+
+**Ficheros tocados:**
+- `src/lib/syncEngine/__sync_check__.test.js` — quitados los 3 `.skip` de `PAIRS`; añadida la regla de trailing-comma final al normalizer.
+- `src/lib/syncEngine/rateLimit.js` — reescrito el bloque `SYNC-START/END: rateLimit` en estilo inline Deno.
+- `src/lib/syncEngine/refreshOn401.js` — quitada la trailing comma en la firma destructurada.
+
+**Ficheros deliberadamente NO tocados:**
+- `base44/functions/dataSyncAgent/entry.ts` — el archivo Deno gigante NO se ha tocado en este chunk. El realineamiento fue exclusivamente en el src → esto minimiza el riesgo de romper la superficie de ejecución (todos los tests contra Deno viven en su propio hosting; los tests locales cubren el src). Esta decisión es consistente con el patrón que ya usaba `mergeStaticHeaders`, `dateRange` y `cursorAdvance`.
+
+**Pares que SIGUEN skipped (2, documentados como drift arquitectural real, NO cosmético):**
+- `paginators` — Deno prefija cada helper con `_` para evitar colisiones en el archivo gigante (`_paginatorCursorStripe`, `_engineSyncWithQueryParam`); el RENAMES actual del normalizer no cubre todos los casos, y `_engineSyncWithQueryParam` colisiona por substring con `_engineSyncWithQueryParams`. Realinear exige o (a) desprefijar en Deno verificando ausencia de colisiones en un archivo de 2366 líneas que sólo se ejecuta al desplegar, o (b) hacer el RENAMES más granular. Ambas rutas son riesgo suficiente como para justificar sesión dedicada. Behavior verified equivalente sobre 17 fixtures.
+- `stripeNormalizer` — Deno lo declara como object-method-shorthand dentro del objeto `NORMALIZERS` con helpers (`KNOWN_TYPES`, `toNum`, `mapType`) declarados INSIDE the arrow; src los expone como top-level exports para testabilidad. Realinear requiere refactor del dispatcher `NORMALIZERS` completo. Fuera del alcance de M3.
+
+**Corrección de KNOWN_DEBT.md (implícita al chunk):**
+El troceo M3-3 originalmente listaba "ventana 2min vs 90d" como deuda pendiente de `stripeDataSync`. Verificación empírica del pre-vuelo del Chunk 1b: **no existe tal ventana en el código actual** — `stripeDataSync/entry.ts:58` usa ventana de 30 días. Lo que sí existía era el BUG-4 del dataSyncAgent (cursor avanzando a Date.now()), que aparece en `KNOWN_DEBT.md` marcado `RESUELTA 2026-07-09`. La confusión venía del contexto histórico condensado, no del archivo fuente — no se toca `KNOWN_DEBT.md` en este chunk (el archivo ya está correcto).
+
+**Regla de vocabulario reforzada (recordatorio):** el término "verified" se reserva para análisis con datos reales conectados. Rate table `verified: true` → badge UI = **PUBLIC PRICING** (no "Verified"). Solo el path de M3 (stripe connect → measured_current_bps) podrá encender el badge "VERIFIED" real. Esta regla se aplicará estrictamente en el Chunk 7 del M3 (path verified visible en `/Results`).
+
+**Verificación empírica cerrada:**
+- Suite completa: **306 passed / 2 skipped / 0 failed** (fue 303 → 306; los 3 skipped de este chunk se activaron y pasaron, los 2 restantes siguen skipped).
+- `dataSyncAgent` responde `400 { integration_id is required }` a payload mínimo — boot limpio, sin errores de módulo (validación de que la refactor del src no rompió el archivo Deno gigante).
+- Motor sync-check `paymentsGap` **intacto** (byte-normalized igual entre `src/lib/paymentsGap.js` y `base44/functions/submitPaymentsAnalysis/entry.ts`). Es el candado del motor de savings que no debe moverse en este chunk ni en los siguientes hasta el bump a 1.3.0 (Chunk 3 del M3).
+
+**Push:** commit sha se anotará al final del chunk.
+
+**Próximo chunk:** M3-Chunk 1b (Ruta A + definición canónica de `measured_current_bps`).
+
+---
+
 ## 2026-07-09 — CUTOVER PAYMENTS-ONLY COMPLETADO · Milestone M1 sealed
 
 **Commit `8900364` pushed to `origin/main`.** End-to-end verification: **HECHA — todo OK.**

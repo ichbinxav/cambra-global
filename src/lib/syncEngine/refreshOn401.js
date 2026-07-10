@@ -82,7 +82,7 @@ export async function fetchPageWithMaybeRefresh({
   refreshFn,
   rebuildHeaders,
   eligible,
-  state,
+  state
 }) {
   const firstRes = await doFetch();
 

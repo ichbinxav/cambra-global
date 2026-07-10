@@ -16,88 +16,54 @@
 // Errores estructurales (4xx que no son 429, p.ej. 401, 400) NO se reintentan
 // — son fallos de configuración del cliente, retry solo gasta cuota.
 //
-// IMPORTANTE: este módulo es la FUENTE DE VERDAD lógica. La copia Deno en
-// base44/functions/dataSyncAgent/entry.ts es FUNCIONALMENTE EQUIVALENTE pero
-// NO byte-verbatim — la copia Deno comprime las ramas en one-liners y usa
-// nombres con prefijo `_` (`_sleep`, `_parseRetryAfter`, etc.) por la misma
-// razón que paginators. Misma arquitectura de un solo archivo Deno gigante,
-// misma decisión consciente. El test de sincronía la tiene en skip con razón
-// documentada.
+// SYNC contract: el bloque entre SYNC-START/SYNC-END debe permanecer
+// byte-normalized idéntico a base44/functions/dataSyncAgent/entry.ts.
+// Realineado el 2026-07-10 (Chunk 1a M3): forma compacta inline al estilo
+// del archivo Deno gigante para que ambas copias converjan tras el
+// normalizador del test.
 
 // SYNC-START: rateLimit
-const DEFAULT_MAX_RETRIES = 4;
+// --- rate limit + backoff ---------------------------------------------------
 const BASE_BACKOFF_MS = 500;
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function parseRetryAfter(headerValue) {
-  if (!headerValue) return null;
-  // RFC 7231: Retry-After can be seconds (integer) OR HTTP-date. Soportamos seconds primero.
-  const asInt = parseInt(headerValue, 10);
+const DEFAULT_MAX_RETRIES = 4;
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function parseRetryAfter(v) {
+  if (!v) return null;
+  const asInt = parseInt(v, 10);
   if (Number.isFinite(asInt) && asInt >= 0) return asInt * 1000;
-  const asDate = Date.parse(headerValue);
-  if (Number.isFinite(asDate)) {
-    const delta = asDate - Date.now();
-    return delta > 0 ? delta : 0;
-  }
+  const asDate = Date.parse(v);
+  if (Number.isFinite(asDate)) { const d = asDate - Date.now(); return d > 0 ? d : 0; }
   return null;
 }
-
-// Devuelve la pausa mínima en ms entre llamadas para no superar `rps`. Cuando
-// rps es falsy o <= 0, no hay throttle.
-function minDelayMs(rateLimitCfg) {
-  const rps = rateLimitCfg?.rps;
+function minDelayMs(rl) {
+  const rps = rl?.rps;
   if (!rps || typeof rps !== "number" || rps <= 0) return 0;
   return Math.ceil(1000 / rps);
 }
-
-// Wrapper: ejecuta `fetchFn` (que debe devolver una Response). Aplica throttle
-// proactivo (si rate_limit.rps está declarado) y backoff reactivo en 429/5xx.
-// Devuelve la Response final (o lanza si todos los retries fallan).
-//
-// `state` permite mantener el timestamp de la última llamada entre invocaciones
-// dentro del mismo sync (un objeto opaco que el caller crea con createRateState()
-// y reutiliza en todas las páginas del mismo sync).
-export async function fetchWithBackoff(fetchFn, rateLimitCfg, state, maxRetries = DEFAULT_MAX_RETRIES) {
-  // 1) Throttle proactivo entre llamadas del mismo sync.
-  const minDelay = minDelayMs(rateLimitCfg);
+export function createRateState() { return { lastCallAt: 0 }; }
+export async function fetchWithBackoff(fetchFn, rlCfg, state, maxRetries = DEFAULT_MAX_RETRIES) {
+  const minDelay = minDelayMs(rlCfg);
   if (minDelay > 0 && state?.lastCallAt) {
     const elapsed = Date.now() - state.lastCallAt;
     if (elapsed < minDelay) await sleep(minDelay - elapsed);
   }
-
   let attempt = 0;
   while (true) {
     if (state) state.lastCallAt = Date.now();
     let res;
-    try {
-      res = await fetchFn();
-    } catch (err) {
-      // Network error / DNS / TLS — also retryable up to max.
+    try { res = await fetchFn(); }
+    catch (err) {
       if (attempt >= maxRetries) throw err;
-      const wait = BASE_BACKOFF_MS * Math.pow(2, attempt);
-      await sleep(wait);
-      attempt++;
-      continue;
+      await sleep(BASE_BACKOFF_MS * Math.pow(2, attempt));
+      attempt++; continue;
     }
-
-    // OK or non-retryable client error → return immediately.
     if (res.ok) return res;
     const retryable = res.status === 429 || (res.status >= 500 && res.status < 600);
     if (!retryable || attempt >= maxRetries) return res;
-
-    // 429 / 5xx → backoff. Respect Retry-After if present.
     const retryAfter = parseRetryAfter(res.headers?.get?.("Retry-After"));
-    const wait = retryAfter !== null ? retryAfter : BASE_BACKOFF_MS * Math.pow(2, attempt);
-    await sleep(wait);
+    await sleep(retryAfter !== null ? retryAfter : BASE_BACKOFF_MS * Math.pow(2, attempt));
     attempt++;
   }
-}
-
-export function createRateState() {
-  return { lastCallAt: 0 };
 }
 // SYNC-END: rateLimit
 
