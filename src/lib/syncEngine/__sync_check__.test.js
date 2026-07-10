@@ -109,17 +109,29 @@ const PAIRS = [
   },
   { key: "bigcommerceNormalizer", src: "src/lib/normalizers/bigcommerce.js" },
   // paymentsGap: pure ES6 engine (src/lib/paymentsGap.js) mirrored verbatim
-  // inside base44/functions/submitPaymentsAnalysis/entry.ts between the same
-  // SYNC-START/SYNC-END markers. The HTTP endpoint calculatePaymentsGap was
-  // DELETED on 2026-07-09 — with no cross-function service token available
-  // in Base44, an anonymous public endpoint (submitPaymentsAnalysis) cannot
-  // reach it through LOCK #1, so it had zero production consumers. The
-  // inline-copy + sync-check pattern IS the platform-supported way to share
-  // engine logic across functions. See src/docs/Decision_Log.md 2026-07-09.
+  // inside TWO Deno consumers (as of M3-Chunk 4):
+  //   1. base44/functions/submitPaymentsAnalysis/entry.ts (anonymous public
+  //      path — added Chunk 3).
+  //   2. base44/functions/computeStripeVerifiedGap/entry.ts (verified path,
+  //      the Stripe→PaymentsGap bridge — added Chunk 4).
+  // Both copies live between the same SYNC-START/SYNC-END: paymentsGap
+  // markers. The former HTTP endpoint calculatePaymentsGap was DELETED on
+  // 2026-07-09 — with no cross-function service token available in Base44,
+  // shared engine logic is inlined + guarded by this sync-check instead of
+  // fetched over HTTP. See src/docs/Decision_Log.md 2026-07-09 (rule) and
+  // 2026-07-10 M3-Chunk 4 (second consumer).
+  //
+  // `extraDenos` extends the assertion transitively: for each pair with
+  // extraDenos, we normalize the src block once and compare against each
+  // Deno target. Transitivity guarantees all N copies stay identical
+  // without an N² fanout.
   {
     key: "paymentsGap",
     src: "src/lib/paymentsGap.js",
     deno: "base44/functions/submitPaymentsAnalysis/entry.ts",
+    extraDenos: [
+      "base44/functions/computeStripeVerifiedGap/entry.ts",
+    ],
   },
 ];
 
@@ -394,41 +406,42 @@ describe("Sync-check — duplicated copies (src/lib/ vs base44/functions/dataSyn
       ? `pair "${displayKey}" — SKIPPED (${pair.skip.split(" — ")[0]})`
       : `pair "${displayKey}" — Deno copy matches ${path.basename(pair.src)}`;
     runner(label, () => {
-      // Each pair may override the Deno file target. Defaults to
-      // dataSyncAgent (the historical target); paymentsGap uses
-      // calculatePaymentsGap.
-      const denoTarget = pair.deno ? path.join(REPO_ROOT, pair.deno) : DENO_FILE;
-      const denoContent = readFileSafe(denoTarget);
-      const srcContent  = readFileSafe(path.join(REPO_ROOT, pair.src));
+      // Each pair may override the primary Deno file target. Defaults to
+      // dataSyncAgent (the historical target). Pairs may also declare
+      // `extraDenos: [...]` for additional Deno consumers that must ALL
+      // stay identical to the src block (transitive comparison).
+      const primaryDeno = pair.deno ? path.join(REPO_ROOT, pair.deno) : DENO_FILE;
+      const extraDenos = Array.isArray(pair.extraDenos)
+        ? pair.extraDenos.map(p => path.join(REPO_ROOT, p))
+        : [];
+      const allDenoTargets = [primaryDeno, ...extraDenos];
 
-      const denoBlock = extractBlock(denoContent, pair.key);
-      const srcBlock  = extractBlock(srcContent,  pair.key);
+      const srcContent = readFileSafe(path.join(REPO_ROOT, pair.src));
+      const srcBlock   = extractBlock(srcContent, pair.key);
+      expect(srcBlock.found, `src:  ${srcBlock.reason || "ok"}`).toBe(true);
+      const srcNorm = normalize(srcBlock.body);
 
-      // Both files MUST carry the markers. If either is missing, that's a
-      // setup error, not a drift error — separate failure mode.
-      expect(denoBlock.found, `Deno: ${denoBlock.reason || "ok"}`).toBe(true);
-      expect(srcBlock.found,  `src:  ${srcBlock.reason || "ok"}`).toBe(true);
-
-      const denoNorm = normalize(denoBlock.body);
-      const srcNorm  = normalize(srcBlock.body);
-
-      if (denoNorm !== srcNorm) {
-        const snippet = diffSnippet(denoNorm, srcNorm);
-        // Throw a rich error so the test runner shows it verbatim. expect
-        // .toEqual on long strings prints terrible diffs; this is much
-        // more readable in CI output.
-        throw new Error(
-          `DRIFT DETECTED on "${pair.key}":\n` +
-          `  Deno file: ${pair.deno || "base44/functions/dataSyncAgent/entry.ts"}\n` +
-          `  src file:  ${pair.src}\n` +
-          `  Divergence at normalized position ${snippet.position}:\n` +
-          `    Deno: …${snippet.a_excerpt}…\n` +
-          `    src:  …${snippet.b_excerpt}…\n` +
-          `  Total normalized length: Deno=${snippet.a_total_length}, src=${snippet.b_total_length}\n` +
-          `  Fix: realign the diverged copy by hand. If the difference is a\n` +
-          `  legitimate mechanical rename (e.g. new helper prefixed in Deno\n` +
-          `  to avoid collision), add it to the RENAMES array in this test.`
-        );
+      // Compare src against EACH Deno target. First divergence throws.
+      for (const denoTarget of allDenoTargets) {
+        const denoContent = readFileSafe(denoTarget);
+        const denoBlock   = extractBlock(denoContent, pair.key);
+        expect(denoBlock.found, `Deno (${denoTarget}): ${denoBlock.reason || "ok"}`).toBe(true);
+        const denoNorm = normalize(denoBlock.body);
+        if (denoNorm !== srcNorm) {
+          const snippet = diffSnippet(denoNorm, srcNorm);
+          throw new Error(
+            `DRIFT DETECTED on "${pair.key}":\n` +
+            `  Deno file: ${path.relative(REPO_ROOT, denoTarget)}\n` +
+            `  src file:  ${pair.src}\n` +
+            `  Divergence at normalized position ${snippet.position}:\n` +
+            `    Deno: …${snippet.a_excerpt}…\n` +
+            `    src:  …${snippet.b_excerpt}…\n` +
+            `  Total normalized length: Deno=${snippet.a_total_length}, src=${snippet.b_total_length}\n` +
+            `  Fix: realign the diverged copy by hand. If the difference is a\n` +
+            `  legitimate mechanical rename (e.g. new helper prefixed in Deno\n` +
+            `  to avoid collision), add it to the RENAMES array in this test.`
+          );
+        }
       }
     });
   }
