@@ -804,9 +804,12 @@ Deno.serve(async (req) => {
         measured: {
           current_bps: existing[0].measured_current_bps,
           fixed_fee_minor: existing[0].measured_fixed_fee_minor ?? null,
-          intl_pct: existing[0].measured_intl_pct ?? null,
+          intl_pct_of_gmv: existing[0].measured_intl_pct ?? null,
         },
         window: existing[0].measurement_window,
+        // Historical rows may carry legacy unit labels (gmv_eur, tx_count,
+        // intl_pct). Return them unchanged — the schema doesn't force
+        // migration of past rows and the new labels are additive.
         sample_metrics: existing[0].sample_metrics,
         source_charges_hash,
       });
@@ -820,11 +823,12 @@ Deno.serve(async (req) => {
         error: 'no_stripe_activity_in_window',
         window: agg.window,
         sample_metrics: {
-          gmv_eur: agg.monthly_gmv_eur,
-          tx_count: agg.counts.charge,
+          gmv_eur_monthly: agg.monthly_gmv_eur,
+          tx_count_charges_90d: agg.counts.charge,
           avg_ticket_eur: agg.avg_ticket_eur,
-          intl_pct: agg.intl.intl_share_pct,
+          intl_pct_of_gmv: agg.intl.intl_share_pct,
           identified_charges_for_intl: agg.intl.identified,
+          window_days: WINDOW_DAYS,
         },
       });
     }
@@ -871,6 +875,27 @@ Deno.serve(async (req) => {
 
     // Persist via service role. owner_email is what makes this row readable
     // by the human owner through RLS (see PaymentsAnalysisVerified schema).
+    // sample_metrics with EXPLICIT UNIT LABELS. Rationale (Chunk 4 review):
+    // "44,682 EUR monthly" next to "avg_ticket_eur computed over 90d gross"
+    // invites confusion. Every numeric field now carries a suffix that names
+    // its unit + time basis. `gmv_eur_monthly` = the value fed to the engine
+    // (the 30d proxy) — this is what the engine's savings math consumed.
+    // `gross_volume_eur_90d` = the raw sum from Stripe over the window (no
+    // scaling). `avg_ticket_eur` is a per-charge mean, no time basis.
+    const gross_volume_eur_90d = Math.round((agg.denominator_cents / MINOR_PER_MAJOR) * 100) / 100;
+    const sampleMetricsCommon = {
+      gmv_eur_monthly: agg.monthly_gmv_eur,
+      gross_volume_eur_90d,
+      tx_count_charges_90d: agg.counts.charge,
+      avg_ticket_eur: agg.avg_ticket_eur,
+      intl_pct_of_gmv: agg.intl.intl_share_pct,
+      identified_charges_for_intl: agg.intl.identified,
+      canonical_rows_90d: agg.counts.charge + agg.counts.refund + agg.counts.partial_capture_reversal,
+      raw_counts: agg.raw_counts,
+      currency: agg.currency,
+      pagination_capped: agg.pagination_capped,
+      window_days: WINDOW_DAYS,
+    };
     const created = await base44.asServiceRole.entities.PaymentsAnalysisVerified.create({
       brand_id,
       owner_email,
@@ -881,21 +906,7 @@ Deno.serve(async (req) => {
       measured_fixed_fee_minor,
       measured_intl_pct: agg.intl.intl_share_pct,
       engine_result: engineResult,
-      sample_metrics: {
-        gmv_eur: agg.monthly_gmv_eur,
-        tx_count: agg.counts.charge,
-        avg_ticket_eur: agg.avg_ticket_eur,
-        intl_pct: agg.intl.intl_share_pct,
-        // Audit fields the schema doesn't require but the caller wants for
-        // trust: how many charges had a country populated (denominator of
-        // intl_share_pct), and whether pagination hit its cap.
-        identified_charges_for_intl: agg.intl.identified,
-        canonical_rows: agg.counts.charge + agg.counts.refund + agg.counts.partial_capture_reversal,
-        raw_counts: agg.raw_counts,
-        currency: agg.currency,
-        pagination_capped: agg.pagination_capped,
-        window_days: WINDOW_DAYS,
-      },
+      sample_metrics: sampleMetricsCommon,
       source_charges_hash,
     });
 
@@ -907,16 +918,10 @@ Deno.serve(async (req) => {
       measured: {
         current_bps: agg.measured_current_bps,
         fixed_fee_minor: measured_fixed_fee_minor,
-        intl_pct: agg.intl.intl_share_pct,
+        intl_pct_of_gmv: agg.intl.intl_share_pct,
       },
       window: agg.window,
-      sample_metrics: {
-        gmv_eur: agg.monthly_gmv_eur,
-        tx_count: agg.counts.charge,
-        avg_ticket_eur: agg.avg_ticket_eur,
-        intl_pct: agg.intl.intl_share_pct,
-        identified_charges_for_intl: agg.intl.identified,
-      },
+      sample_metrics: sampleMetricsCommon,
       source_charges_hash,
     });
   } catch (error) {
