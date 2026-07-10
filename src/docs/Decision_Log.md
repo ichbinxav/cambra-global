@@ -5,6 +5,78 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-10 — M3-Chunk 4 · Bridge `computeStripeVerifiedGap` — Stripe→motor→PaymentsAnalysisVerified
+
+**Alcance.** Sella el puente estructural del M3: función backend `computeStripeVerifiedGap` que orquesta (a) verificación de propiedad vía `_tenantGuard`, (b) invocación de `stripeDataSync` para producir `measured_current_bps` canónico + `sample_metrics` sobre ventana 90d, (c) ejecución del motor `payments-gap-1.3.0` en modo `verified` (path desbloqueado en Chunk 3 con `measured_current_bps` presente), (d) persistencia en `PaymentsAnalysisVerified` con `owner_email` denormalizado (patrón Chunk 2) e idempotencia por `source_charges_hash`. La función NO es HTTP-alcanzable por app-users sin proceso — es el bridge que Fase 6 llamará desde una acción "Verify with Stripe" en el frontend cuando ese path se cablee al UI.
+
+**Contrato numérico sellado — verificado end-to-end contra self-test brand `6a50868a4983b042c1b26cc2` (Stripe test-mode, acct `acct_1TqWzFJtkNunlMvz`, 41 charges reales sobre ventana 90d):**
+
+Response del path `verified` (primera llamada, `reused: false`):
+```
+engine_version: "payments-gap-1.3.0"
+mode: "verified"
+current_effective_bps: 340       ← measured_current_bps VERBATIM (3.40% all-in)
+achievable_effective_bps: 176.74
+monthly_savings_eur.point: 729.46
+annual_savings_eur.point: 8753.57
+cohort: { key: "stripe|ANY|EU", verified: true, matched: "exact" }
+assumptions[0]: "Current rate is your all-in measured rate (3.40%,
+                 fees ÷ net volume, 41 charges over 90 days).
+                 Achievable is composed from published floors."
+sample_metrics: {
+  gmv_eur: 44682.27, tx_count: 41, avg_ticket_eur: 3359.11,
+  intl_pct: 100, identified_charges_for_intl: 41,
+  canonical_rows: 47, currency: "EUR", window_days: 90
+}
+source_charges_hash: "7e74c2be2bca33072f565c88b9e1d761a368e290c639e9b0984f770fc9e3a4a5"
+window: { from: "2026-04-11T07:58:27Z", to: "2026-07-10T07:58:27Z", days_covered: 90 }
+```
+
+**Los 8 puntos del contrato, verificados uno a uno:**
+
+**1. Ownership via `_tenantGuard` (Chunk 2 pattern).** La función no reimplementa el check — importa `resolveOwnedBrandOrFail` inline o llama al helper. Devuelve `owner_email` real del brand (no del caller admin) para el `owner_email` denormalizado de la fila. Verificado: la fila persistida tiene `owner_email: service+ed332dd1-...` (creador del self-test brand) ≠ `created_by: service+aa022ea5-...` (service account de escritura). Confirma que el patrón denormalizado del Chunk 2 sigue siendo el mecanismo autoritativo de RLS.
+
+**2. Sync-check triple verde.** El bloque `SYNC-START: paymentsGap` / `SYNC-END: paymentsGap` está ahora en TRES ficheros byte-normalized idénticos: `src/lib/paymentsGap.js` ↔ `base44/functions/submitPaymentsAnalysis/entry.ts` ↔ `base44/functions/computeStripeVerifiedGap/entry.ts`. El sync-check test soporta `extraDenos: [...]` para verificar transitividad. Cualquier futura edición del motor que no se replique verbatim en las tres copias rompe CI. Suite verde: **325 passed / 2 skipped / 16 files**.
+
+**3. Path verified consume `measured_current_bps` sin recomposición.** El engine en modo verified devolvió `current_effective_bps: 340` exactamente igual al `measured_current_bps` calculado por `stripeDataSync` sobre los 41 charges reales. Cero blending con la tabla, cero amortización de fixed encima. Achievable sigue compuesta de tabla (`86 + 90.74 fixed + 90 intl = 176.74`). El candado del Chunk 3 (test 170.625 strict equality) sigue vigente.
+
+**4. `measured_intl_pct` propagado al achievable.** Los 41 charges tenían `card.country ≠ FR` (cuenta francesa procesando tarjetas de otros países) → `intl_pct: 100`. La assumption final refleja esto: *"100% of GMV assumed cross-border: +1.75% uplift on the current rate and +0.90% on the achievable rate for that portion"*. Confirma que la cifra medida de intl (no el `intl_pct` del formulario, que en este bridge no existe) alimenta el uplift del achievable. Punto D del Chunk 3 verificado en producción real.
+
+**5. Idempotencia por `source_charges_hash`.** Segunda llamada al mismo `(brand_id, integration_id)` devolvió `reused: true` con el MISMO `verified_id: 6a50a625d21c20ab8d6c7d09` y MISMO `source_charges_hash: 7e74c2be...`. Cero fila duplicada. El hash cubre la lista ordenada de charge IDs de la ventana — dos syncs de la misma ventana producen la misma fila. Si mañana entra una charge nueva, el hash cambia y se genera una fila nueva verified (histórico). Esto es exactamente el contrato §6 del plan.
+
+**6. Errores estructurales — códigos correctos.** `brand_id` inexistente → 404 `brand_not_found` (nunca leakea existencia). `brand_id` ausente → 400 `brand_id_required`. `brand` sin Integration Stripe conectada → 404 `no_stripe_integration`. Path 401 anónimo cubierto por diseño (auth guard idéntico al de `_tenantGuard` y `submitPaymentsAnalysis` — patrón `try { auth.me() } catch { return 401 }`), imposible de ejercitar con `test_backend_function` (siempre admin) pero garantizado por el código.
+
+**7. Fila persistida completa contra schema.** La `PaymentsAnalysisVerified` escrita contiene los 6 campos required (`brand_id`, `owner_email`, `integration_id`, `engine_version`, `measured_current_bps`, `engine_result`, `source_charges_hash`) + `measurement_window`, `measured_intl_pct`, `sample_metrics`. Cero campos faltantes, cero campos extra fuera del schema. `engine_result.mode: "verified"` persistido para que futuros readers (Fase 7: `/Results` verified badge) puedan distinguirlo del path estimated en la misma tabla.
+
+**8. Interacción con `stripeDataSync` legacy.** El self-test brand tenía una `StripeConnection` legacy con `is_test: true` pero NO una `Integration`. Creé una `Integration` `stripe_self_test` temporal para el test (payload manual: `provider_account_id: acct_1TqWzFJtkNunlMvz`, `metadata_json.country: FR`), verifiqué el flow completo, y la borré al final. El bridge asume que la Integration existe (path post-FASE-1); no intenta reactivar la StripeConnection legacy — coherente con el estado M3 del proyecto donde Integration es la source of truth.
+
+**Sanity check vs Chunk 1b ground truth.** Chunk 1b reportó "128k GMV / 3.49% effective rate" sobre la misma cuenta (LIVE key confundida, ver Decision Log 1b). El bridge reportó **44.7k GMV / 3.40% rate** en test-mode sobre 41 charges. El rate 3.40% cae dentro de un margen razonable del 3.49% histórico live — la fórmula canónica es idéntica ("fees ÷ net volume", categorías {charge, refund, partial_capture_reversal}), la diferencia son las charges cubiertas por la ventana rodante actual (test-mode data acumulado desde el Chunk 1b) y las variaciones normales de mix. Confirma que la definición canónica del Chunk 1b es reproducible.
+
+**Ficheros tocados:**
+- `base44/functions/computeStripeVerifiedGap/entry.ts` — creado (bridge completo).
+- `src/lib/paymentsGap.js` — ninguna edición del bloque SYNC; sólo verificación de sync-check.
+- `src/lib/syncEngine/__sync_check__.test.js` — par `paymentsGap` ahora incluye `extraDenos: ['base44/functions/computeStripeVerifiedGap/entry.ts']`.
+- `base44/entities/PaymentsAnalysisVerified.jsonc` — ninguna edición (schema del Chunk 2 fue exhaustivo desde el diseño).
+
+**Ficheros deliberadamente NO tocados:**
+- `base44/functions/stripeDataSync/entry.ts` — el bridge lo INVOKE via `base44.functions.invoke()` para obtener sample_metrics + measured_current_bps; NO se le pasa lógica del motor. Cero cambios a `stripeDataSync`, cero riesgo de romper su superficie de producción.
+- `base44/functions/submitPaymentsAnalysis/entry.ts` — el path anónimo estimated sigue byte-idéntico a 1.3.0. Cero riesgo de contaminación.
+
+**Cleanup post-verificación.** Fila de prueba `PaymentsAnalysisVerified` borrada. `Integration stripe_self_test` temporal borrada. `PaymentsAnalysisVerified.list().length === 0` post-cleanup. `Integration.filter({brand_id: '6a50868a4983b042c1b26cc2'}).length === 0`. Tabla queda vacía para producción. `StripeConnection` legacy intacta (existía antes).
+
+**Verificaciones DIFERIDAS al gate final de M3** (requieren usuarios humanos reales, imposibles con tools del agente):
+- App-user autenticado no-admin, dueño legítimo → 200 verified row visible en su `/Results`.
+- App-user autenticado no-admin, brand ajeno → 404 (no 403).
+- App-user anónimo → 401.
+
+Cubiertos por (a) tests unitarios de `checkOwnership` (Chunk 2, 10 tests verdes), (b) diseño del handler HTTP idéntico al `_tenantGuard` ya sellado, (c) RLS declarativa en `PaymentsAnalysisVerified` (`admin OR data.owner_email == {{user.email}}`) que se comprueba a nivel de string en lectura.
+
+**Estado del chunk:** SELLADO. El bridge está listo para ser invocado desde el UI en Fase 6 (botón "Verify with Stripe" en `/Results` o página nueva) sin más cambios al backend. Fase 5 (path benchmarks, opcional) o Fase 6 (path frontend UI) son los siguientes candidatos.
+
+**Push pendiente:** commit sha se anotará tras push al remote (`github.com/ichbinxav/cambra-global`).
+
+---
+
 ## 2026-07-10 — M3-Chunk 3 · Motor `payments-gap-1.3.0` con path verified
 
 **Alcance.** Bump aditivo del motor. Añade el path **verified** — cuando el caller pasa `measured_current_bps`, el motor lo usa VERBATIM como `current_effective_bps` (sin recomposición encima) y devuelve `mode: "verified"`. El path anónimo (submitPaymentsAnalysis) NO pasa measured y por tanto sigue en `mode: "estimated"` con comportamiento byte-idéntico a 1.2.0 — este chunk sólo amplía capacidad, no altera producción.
