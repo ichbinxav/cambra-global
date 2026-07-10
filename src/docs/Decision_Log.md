@@ -5,6 +5,33 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-10 — M3-Chunk 1b · Hallazgo crítico: STRIPE_TEST_SECRET_KEY era LIVE + regla permanente
+
+**Hallazgo.** Durante la fase de siembra del Chunk 1b (harness de validación empírica de `stripeDataSync` contra ground truth conocido), la clave almacenada en el secret `STRIPE_TEST_SECRET_KEY` **NO era una `sk_test_...` genuina** — era una **restricted LIVE key** apuntando a la cuenta operativa de CAMBRA GLOBAL SAS (`acct_1TqWzFJtkNunlMvz`, país FR, EUR, `charges_enabled: true`, `details_submitted: true`, statement descriptor "CAMBRA GLOBAL SAS"). El diagnóstico apareció porque el guard defensivo del harness (`livemode !== false`) rechazó la clave antes de sembrar; una ejecución sin ese guard habría creado **charges reales cobrables** contra la cuenta de la empresa.
+
+**Origen del confusion.** Una `sk_test_...` genuina devuelve `livemode: false` **explícito** en el top level de `/v1/account`. Una restricted live key omite ese campo. Comparar contra `livemode === true` (o simplemente asumir "si no dice live, es test") es incorrecto — la única comprobación segura es `livemode === false` **explícito**.
+
+**Rotación efectuada.** Secret `STRIPE_TEST_SECRET_KEY` rotado el 2026-07-10 a una `sk_test_...` genuina generada en el dashboard de Stripe (Developers → toggle "Viewing test data" ON → API keys → Reveal test key). La descripción del secret ahora documenta el formato esperado y el guard obligatorio.
+
+**Data histórica corrompida (etiquetada, no borrada).**
+- `stripeTestGroundTruth` en el pre-vuelo del Chunk 1b reportó **128k GMV / 3.49% effective rate** sobre la ventana canónica de 90d. Esa cifra proviene de la **cuenta LIVE de CAMBRA GLOBAL SAS**, no de datos de test. Cualquier decisión de producto que se apoye en ella (calibración de benchmark, cita en investor deck, comparativa con rate table) debe re-verificarse contra la nueva ejecución post-rotación. Registrado aquí para trazabilidad — el número queda invalidado como "test data" pero es legítimamente informativo del negocio real (con las advertencias de privacidad correspondientes: PII de clientes reales, no compartir).
+- Ninguna otra función escribió contra Stripe con la clave anterior — `seedStripeTestData` fue rechazada por el guard antes de mutar nada. `stripeDataSync` estaba lockeado detrás de `is_test=true` en la StripeConnection y el path test-mode nunca se ejecutó hasta este chunk. No hay charges/refunds/mandates espurios creados por el sistema.
+
+**REGLA PERMANENTE — vinculante para toda función Base44 que hable con Stripe usando una clave "test":**
+
+> Antes de cualquier operación **de escritura o mutación** (crear payment_intents, refunds, customers, subscriptions, webhooks, mandates, etc.) contra Stripe usando un secret cuyo nombre o rol sea "test", la función DEBE:
+> 1. Hacer `GET /v1/account` con la clave.
+> 2. Comprobar que la respuesta tiene `livemode === false` **explícito** (el field debe estar presente Y ser exactamente `false`).
+> 3. Abortar con `403` + mensaje explicativo si `livemode` está ausente, es `true`, o cualquier otro valor.
+>
+> Rationale: una restricted live key sobre la cuenta operativa puede pasarse por "test" en el nombre del secret pero cobrará dinero real. El campo `livemode` es la única señal autoritativa que Stripe expone. Ausencia ≠ test.
+>
+> Excepción documentada: funciones **read-only** (`stripeTestGroundTruth`, `stripeHealthCheck`) están exentas del abort, pero DEBEN loggear un warning claro cuando `livemode !== false`. Esto permite diagnóstico rápido sin bloquear análisis legítimos de la cuenta live.
+
+Guard implementado verbatim en `base44/functions/seedStripeTestData/entry.ts` con referencia a esta entrada del Decision Log. Cualquier función futura que caiga en la categoría "test-key writer" debe copiar el patrón — el sync-check no cubre esto todavía; queda como TODO permanente en `KNOWN_DEBT.md`.
+
+---
+
 ## 2026-07-10 — M3-Chunk 1a · Sync-check verde (3 pares realineados)
 
 **Alcance del chunk:** cerrar 3 de las 5 divergencias que llevaban skipped en `__sync_check__.test.js` desde antes del M2. Los 3 pares realineados son deuda cosmética que se acumuló durante la construcción de `dataSyncAgent` — no drift funcional. La red de seguridad tras este chunk detecta cualquier futuro drift en las 5 piezas activas del sync engine (`mergeStaticHeaders`, `dateRange`, `cursorAdvance`, `rateLimit`, `refreshOn401`) + el motor de payments (`paymentsGap`).
