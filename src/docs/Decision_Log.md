@@ -40,7 +40,18 @@ window: { from: "2026-04-11T07:58:27Z", to: "2026-07-10T07:58:27Z", days_covered
 
 **3. Path verified consume `measured_current_bps` sin recomposición.** El engine en modo verified devolvió `current_effective_bps: 340` exactamente igual al `measured_current_bps` calculado por `stripeDataSync` sobre los 41 charges reales. Cero blending con la tabla, cero amortización de fixed encima. Achievable sigue compuesta de tabla (`86 + 90.74 fixed + 90 intl = 176.74`). El candado del Chunk 3 (test 170.625 strict equality) sigue vigente.
 
-**4. `measured_intl_pct` propagado al achievable.** Los 41 charges tenían `card.country ≠ FR` (cuenta francesa procesando tarjetas de otros países) → `intl_pct: 100`. La assumption final refleja esto: *"100% of GMV assumed cross-border: +1.75% uplift on the current rate and +0.90% on the achievable rate for that portion"*. Confirma que la cifra medida de intl (no el `intl_pct` del formulario, que en este bridge no existe) alimenta el uplift del achievable. Punto D del Chunk 3 verificado en producción real.
+**4. `measured_intl_pct` propagado al achievable — política de exclusión null verificada.** La distribución literal de `payment_method_details.card.country` sobre los 41 charges de la ventana (evidencia empírica capturada vía diagnóstico admin-only, luego borrado):
+
+```
+US: 39
+GB: 2
+null: 0
+FR: 0
+```
+
+Cuenta = FR, → 41/41 charges son cross-border → `measured_intl_pct: 100` correcto. Ninguna semilla `M3-1b-seed-v2` con `pm_card_fr` aparece en la ventana (verificación adicional: sample de las 8 charges más recientes tiene `metadata.seed_run: null` — todo es ruido de siembras anteriores sin metadata; las cards son 4242 US y 0000 GB). Esto también invalida una hipótesis que quedó del Chunk 1b — "las tarjetas genéricas emiten country null": Stripe test-mode SÍ popula `card.country` para cards genéricas (4242 → US, 0000 → GB). La política de exclusión null implementada en `fetchAndAggregate` (líneas 555-568: `if (!cardCountry) continue`) sigue siendo el diseño defensivo correcto, pero de facto en test-mode nunca dispara. En LIVE puede seguir siendo relevante (charges viejos anteriores a la enrichment de PMD, o payment methods no-card).
+
+**Consecuencia sobre los €729/mo:** correctos. Achievable = 86 + 90.74 fixed + (100/100 × 90) intl uplift = **176.74 bps**. Gap = 340 − 176.74 = 163.26 bps sobre €44.7k GMV = **€729/mes**. La assumption final del engine refleja verbatim esta composición: *"100% of GMV assumed cross-border: +1.75% uplift on the current rate and +0.90% on the achievable rate for that portion"*.
 
 **5. Idempotencia por `source_charges_hash`.** Segunda llamada al mismo `(brand_id, integration_id)` devolvió `reused: true` con el MISMO `verified_id: 6a50a625d21c20ab8d6c7d09` y MISMO `source_charges_hash: 7e74c2be...`. Cero fila duplicada. El hash cubre la lista ordenada de charge IDs de la ventana — dos syncs de la misma ventana producen la misma fila. Si mañana entra una charge nueva, el hash cambia y se genera una fila nueva verified (histórico). Esto es exactamente el contrato §6 del plan.
 
