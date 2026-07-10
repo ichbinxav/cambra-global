@@ -46,8 +46,9 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
-    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
-    if (!stripeKey) {
+    const liveKey = Deno.env.get('STRIPE_SECRET_KEY');
+    const testKey = Deno.env.get('STRIPE_TEST_SECRET_KEY');
+    if (!liveKey) {
       return Response.json({
         ok: false,
         error: 'Stripe not configured',
@@ -92,13 +93,31 @@ Deno.serve(async (req) => {
     const untilTs = Math.floor(Date.now() / 1000);
     const sinceTs = untilTs - WINDOW_DAYS * 24 * 60 * 60;
 
-    // Read-only fetches — Stripe-Account header scopes to the connected account
-    // when the platform's secret is used. For self-test setups (acct owned by
-    // the platform) the header is a no-op; either way we're read-only.
-    const stripeHeaders = {
-      'Authorization': `Bearer ${stripeKey}`,
-      'Stripe-Account': conn.stripe_account_id,
-    };
+    // Read-only auth mode.
+    //
+    // TEST-MODE BRIDGE — remove when per-merchant Connect OAuth ships.
+    // Real merchants will connect via Connect OAuth, at which point the
+    // platform's live key + Stripe-Account header is the only path. Until
+    // then we need to talk to Stripe test-mode accounts (M3 validation
+    // harness) with STRIPE_TEST_SECRET_KEY directly and no Stripe-Account
+    // header (test-mode keys authenticate against the test account directly
+    // and reject Stripe-Account headers that don't match).
+    //
+    // Flag lives on the DATA (StripeConnection.is_test), never on the code —
+    // avoids magic-string account matching and makes the branch auditable
+    // per-row. See KNOWN_DEBT.md → BUG-6 for retirement condition.
+    let stripeHeaders: Record<string, string>;
+    if (conn.is_test === true) {
+      if (!testKey) {
+        return Response.json({ ok: false, error: 'STRIPE_TEST_SECRET_KEY required for test-mode connection', setup_required: true });
+      }
+      stripeHeaders = { 'Authorization': `Bearer ${testKey}` };
+    } else {
+      stripeHeaders = {
+        'Authorization': `Bearer ${liveKey}`,
+        'Stripe-Account': conn.stripe_account_id,
+      };
+    }
 
     // ── Fetch charges (paginated, up to 1000 for the window) ─────────────
     // We fetch charges primarily to enrich WITH card.country (the international

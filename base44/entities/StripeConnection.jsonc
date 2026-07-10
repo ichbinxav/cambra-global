@@ -25,11 +25,11 @@
     },
     "monthly_volume": {
       "type": "number",
-      "description": "Last 30d total successful charge volume."
+      "description": "Last window total charge volume (net, in major units)."
     },
     "effective_fee_pct": {
       "type": "number",
-      "description": "Computed effective rate = total_fees / monthly_volume * 100."
+      "description": "Computed effective rate (canonical measured_current_bps / 100) \u2014 CANONICAL M3 definition: fees / net volume over rows whose reporting_category \u2208 {charge, refund, partial_capture_reversal}."
     },
     "total_fees_monthly": {
       "type": "number"
@@ -74,6 +74,11 @@
         "verified"
       ],
       "default": "connected"
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "TEST-MODE BRIDGE \u2014 when true, stripeDataSync authenticates with STRIPE_TEST_SECRET_KEY and DOES NOT send the Stripe-Account header. Used exclusively by the M3 validation harness against Stripe test-mode accounts. Retire when per-merchant Connect OAuth ships (real merchants connect their own Stripe via OAuth; no need for a test bypass in production)."
     }
   },
   "required": [
