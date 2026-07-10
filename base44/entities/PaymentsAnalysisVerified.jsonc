@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Tenant isolation key. Every PaymentsAnalysisVerified row belongs to exactly one Brand. Populated at write time by the backend function that materializes the row (Chunk 4). Never mutated after creation."
     },
+    "owner_email": {
+      "type": "string",
+      "description": "DENORMALIZED tenant-isolation field. Populated at write time via service role with the email of Brand.created_by (the human owner of the tenant brand). This field \u2014 NOT the system-managed created_by \u2014 is what the read RLS compares against user.email. Rationale: Base44 SDK forces created_by to the service account on every asServiceRole.create() (verified empirically 2026-07-10 during M3-Chunk 2 setup \u2014 the override is silently ignored). Because RLS on the created_by field would therefore never match any human user, we denormalize owner_email onto the row itself. This is Base44's officially documented pattern for multi-tenant isolation of entities written by service role (docs.base44.com \u2014 'Multi-tenant app FAQ'). Every write path MUST populate this field via resolveOwnedBrandOrFail(user, brand_id) to guarantee it matches the caller."
+    },
     "integration_id": {
       "type": "string",
       "description": "FK to the Integration row (Stripe connection) whose synced data produced this verified result. Required \u2014 a verified row without a provenance link is meaningless. Used by admin/audit to trace back which sync run produced which numbers."
@@ -45,6 +49,7 @@
   },
   "required": [
     "brand_id",
+    "owner_email",
     "integration_id",
     "engine_version",
     "measured_current_bps",
@@ -60,7 +65,7 @@
           }
         },
         {
-          "created_by": "{{user.email}}"
+          "data.owner_email": "{{user.email}}"
         }
       ]
     },
