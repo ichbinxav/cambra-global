@@ -569,17 +569,21 @@ async function fetchAndAggregate(
 
   // ── Source charge IDs for idempotency (contract §6) ─────────────────────
   // The canonical set is what the engine consumed → hash the set of Stripe
-  // charge IDs *that produced canonical fees* (i.e. the `source` of each
-  // canonical row when it's a charge or refund pointing back to a charge).
-  // We use balance_transaction.source when available — that's the FK to the
-  // charge (or refund → charge). Sorted lexicographically for deterministic
-  // hashing across runs.
-  const sourceIdSet = new Set<string>();
-  for (const t of canonicalRows) {
-    const src = t.source;
-    if (typeof src === 'string' && src) sourceIdSet.add(src);
-  }
-  const source_charge_ids = Array.from(sourceIdSet).sort();
+  // CHARGE IDs directly (not balance_transaction.source). Rationale
+  // (Chunk 4 idempotency fix, 2026-07-10): the /v1/charges and
+  // /v1/balance_transactions endpoints filter by different `created`
+  // timestamps (charge.created vs bt.created — Stripe emits the BT with
+  // a delay). Two runs seconds apart can therefore include a slightly
+  // different set of source charge IDs derived from `bt.source` even when
+  // the /v1/charges result is identical. Hashing the CHARGE list directly
+  // (only succeeded charges, the ones that produced canonical fees) is
+  // deterministic across close-in-time replays and is what the engine
+  // materially consumed. Sorted lexicographically for stable ordering.
+  const succeededChargeIds = charges
+    .filter((c: any) => c.status === 'succeeded')
+    .map((c: any) => c.id)
+    .filter((id: unknown): id is string => typeof id === 'string' && !!id);
+  const source_charge_ids = Array.from(new Set(succeededChargeIds)).sort();
 
   return {
     ok: true,
