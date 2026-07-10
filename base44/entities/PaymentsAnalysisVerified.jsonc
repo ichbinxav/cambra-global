@@ -1,0 +1,73 @@
+{
+  "name": "PaymentsAnalysisVerified",
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string",
+      "description": "Tenant isolation key. Every PaymentsAnalysisVerified row belongs to exactly one Brand. Populated at write time by the backend function that materializes the row (Chunk 4). Never mutated after creation."
+    },
+    "integration_id": {
+      "type": "string",
+      "description": "FK to the Integration row (Stripe connection) whose synced data produced this verified result. Required \u2014 a verified row without a provenance link is meaningless. Used by admin/audit to trace back which sync run produced which numbers."
+    },
+    "engine_version": {
+      "type": "string",
+      "description": "Version tag persisted verbatim from engine_result.engine_version (e.g. 'payments-gap-1.2.0'). Recorded at write time so future engine bumps can filter historical rows produced by an older arithmetic. Never derived on read."
+    },
+    "measurement_window": {
+      "type": "object",
+      "description": "The exact time window covered by the Stripe sync that produced this row. Shape: { from: ISO-8601, to: ISO-8601, days_covered: number }. Enables audit ('this rate was computed over the last N days ending X'). Populated verbatim from stripeDataSync's window boundaries."
+    },
+    "measured_current_bps": {
+      "type": "number",
+      "description": "The canonical measured effective rate in basis points \u2014 the M3 signature metric. Definition (canonical, per Decision_Log 2026-07-10 M3-Chunk 1b): numerator = sum of fees over balance transactions where reporting_category \u2208 {charge, refund, partial_capture_reversal}; denominator = net volume (gross \u2212 refunded). Excludes non-processing fees (application_fee, stripe_fee, etc.). This is the number the merchant is actually paying today, computed from their own Stripe data."
+    },
+    "measured_fixed_fee_minor": {
+      "type": "number",
+      "description": "Optional \u2014 the amortized fixed-fee component in minor units of the account currency, if the sync can decompose it (Stripe balance transactions carry fee_details). Enables the engine's downstream comparison against PaymentsRateTable.fixed_fee_minor_units without re-fetching. Null when the sync could not decompose reliably; downstream reads must treat null as 'not measured' rather than 0."
+    },
+    "measured_intl_pct": {
+      "type": "number",
+      "description": "Percent of GMV (0-100) coming from international cards over the measurement_window, computed from charge metadata (card_country \u2260 account_country). Feeds the engine's intl_uplift multiplier (Enmienda 1: uplift comes from the rate-table row, never hardcoded). Null when the sync ran before country metadata was populated (see BUG-6 in KNOWN_DEBT \u2014 test-mode general cards emit no country)."
+    },
+    "engine_result": {
+      "type": "object",
+      "description": "Full verbatim output of calculatePaymentsGap run on the measured inputs: engine_version, current_effective_bps, achievable_effective_bps, monthly_savings_eur {lo,point,hi}, annual_savings_eur {lo,point,hi}, cohort {key,verified,matched}, assumptions[]. Persisted as-returned so the /Results view can render without re-computing \u2014 same contract as PaymentsAnalysisSession.engine_result but sourced from real data instead of form inputs."
+    },
+    "sample_metrics": {
+      "type": "object",
+      "description": "The raw aggregates the engine consumed, kept for audit: { gmv_eur: number, tx_count: number, avg_ticket_eur: number, intl_pct: number }. Sourced from stripeDataSync's aggregation pass over the measurement_window. Enables re-derivation of measured_current_bps if a future audit needs to inspect the arithmetic."
+    },
+    "source_charges_hash": {
+      "type": "string",
+      "description": "Idempotency key for Chunk 4's materialization. SHA-256 over the sorted list of Stripe charge IDs that entered the aggregation for this measurement_window. Chunk 4 checks this hash before writing \u2014 if the same (brand_id, integration_id, source_charges_hash) already exists, the row is skipped rather than duplicated. Enables safe replay of stripeDataSync without polluting the verified table."
+    }
+  },
+  "required": [
+    "brand_id",
+    "integration_id",
+    "engine_version",
+    "measured_current_bps",
+    "engine_result",
+    "source_charges_hash"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
