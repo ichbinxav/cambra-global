@@ -34,7 +34,14 @@ Estos tres casos están cubiertos por la lógica pura de `checkOwnership` (tests
 **Regla de plataforma vinculante (adoptada aquí, aplicable a TODO el proyecto):**
 > Toda entidad futura que almacene datos por-brand escritos vía service role debe seguir el patrón `owner_email` + `_tenantGuard`. Prohibido reimplementar el filter de propiedad en cada función — un solo sitio para auditar. La RLS `created_by == {{user.email}}` queda vetada para writes de service role en cualquier entidad nueva; entidades legacy con esa cláusula (Integration, AnalyzerInput, AnalyzerResult, etc.) quedan documentadas como BUG-6 y migrarán en sesión dedicada.
 
-**Estado del chunk:** cerrado con evidencia empírica, entidad creada y vacía, helper desplegado y testeado, tests unitarios pasando (a verificar en la próxima ejecución local de la suite). Chunk 4 (materialización desde `stripeDataSync`) ya tiene el mecanismo de propiedad listo para consumir.
+**Limitación conocida y aceptada de la Opción D — `owner_email` congelado al escribir.** El patrón denormaliza el email del dueño en la fila al momento del write. Si el email del `Brand.created_by` cambiara en el futuro (rename de dueño, migración de cuentas, transferencia de brand a otro founder), las filas antiguas de `PaymentsAnalysisVerified` seguirían apuntando al email anterior → **el nuevo dueño no las vería vía RLS** (solo un admin podría). Aceptable hoy: Base44 no expone un flujo de cambio de `user.email` ni de transferencia de propiedad de brand, y no tenemos ningún plan de producto que lo requiera. Documentado como aviso estructural: **si algún día se introduce cambio de ownership o rename de email, hay que migrar `owner_email` en todas las filas huérfanas (script service-role) O trasladar la resolución al helper `_tenantGuard` a nivel de read** (opción más elegante pero requiere que las lecturas dejen de confiar en RLS declarativa y pasen todas por función backend). Ningún cambio hoy — solo registro para que el futuro no lo redescubra en frío.
+
+**Verificación de sellado (ejecutada 2026-07-10, tools reales):**
+- Suite completa: **316 passed / 2 skipped / 16 files / 4.14s**. Los 10 tests nuevos de `tenantGuard.test.js` verdes. Ningún regression en los 306 pre-existentes.
+- Git: tree limpio en `main`, todos los cambios del chunk sincronizados al remote (`github.com/ichbinxav/cambra-global`) vía auto-commit de Base44.
+- Estado de `PaymentsAnalysisVerified` en producción: **0 filas** (limpieza de la fila de prueba confirmada).
+
+**Estado del chunk:** SELLADO. Chunk 3 (motor `payments-gap-1.3.0`) ya tiene el mecanismo de propiedad listo para consumir cuando llegue el momento de materializar filas verified.
 
 ---
 
