@@ -34,13 +34,32 @@ Deno.serve(async (req) => {
       return json;
     }
 
-    // Confirm we're on a TEST account before mutating anything.
+    // ── LIVEMODE GUARD (permanent — applies to ANY future function that
+    //    writes against Stripe with a "test" key). Rule:
+    //      /v1/account MUST return livemode === false EXPLICITLY.
+    //      Absence of the field ≠ test. A restricted live key omits
+    //      livemode at the top level; we discovered this the hard way
+    //      on 2026-07-10 when STRIPE_TEST_SECRET_KEY contained a
+    //      restricted LIVE key against CAMBRA GLOBAL SAS (acct_1TqWzFJ…).
+    //    Documented as a binding rule in src/docs/Decision_Log.md
+    //    (2026-07-10 entry). Any function that CREATES or MUTATES
+    //    Stripe objects with a "test" key MUST run this exact guard
+    //    before any write. Read-only tools (stripeTestGroundTruth)
+    //    are exempt but should log a warning.
     const acctRes = await fetch("https://api.stripe.com/v1/account", {
       headers: { "Authorization": `Bearer ${testKey}` },
     });
     const acct = await acctRes.json();
-    if (!acctRes.ok || acct.livemode !== false) {
-      return Response.json({ error: "test key does not resolve to a test account", acct }, { status: 500 });
+    if (!acctRes.ok) {
+      return Response.json({ error: "could not resolve /v1/account", status: acctRes.status, acct }, { status: 500 });
+    }
+    if (acct.livemode !== false) {
+      return Response.json({
+        error: "REFUSING TO SEED — key does not resolve to a TEST account",
+        reason: "livemode !== false (absence or true means this is a live/restricted key). Rotate STRIPE_TEST_SECRET_KEY to a genuine sk_test_… key.",
+        acct_id: acct.id ?? null,
+        acct_livemode_field: acct.livemode ?? "ABSENT",
+      }, { status: 403 });
     }
 
     const seedPlan = [
