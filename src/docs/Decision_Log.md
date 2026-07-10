@@ -104,6 +104,8 @@ Chunk corto de saneamiento post-M3, ejecutado con auditoría empírica caller-po
    - `base44/functions/spendIntelligenceAgent/entry.ts` (identificado por Xavi durante el review)
    - Consecuencia: el header de `scoreEngine.js` se actualizó para listar los 3 mirrors backend además de los 3 consumidores frontend. Su borrado requiere un chunk M4-tier dedicado a la migración de los 6 consumidores; NO es cleanup.
 
+   > **NOTA POST-M3.7 (2026-07-10):** el inventario canónico y sellado de consumidores es **7 = 3 frontend + 4 mirrors Deno** (se identificó `activateDealOrchestrator` como cuarto mirror por grep externo). Ver "Frozen-until-benchmarks-migration" en la entrada Fase 1.3 al final de este log para la lista exhaustiva con rutas. Esta entrada M3.5 se conserva verbatim (log append-only) pero su cifra "6 / 3 mirrors" está superada.
+
 2. **`SaaSProfile` / `ShippingProfile` NO son purgables.** Auditoría: 9 hits vivos en `computeIntelligenceForBrand`, `computeVerticalStatus`, más. La cadena de consumidores toca `getOnboardingStatus` (marcado explícitamente como "no tocar sin verificar"). Diferido.
 
 **Borrado ejecutado (cero-consumidores verificado con grep anclado por regex, no substring):**
@@ -138,7 +140,7 @@ Backend:
 **Deudas pendientes documentadas (chunks futuros — NO en este):**
 - Punto 3 (banda del gap ±€641 vs ±20 bps assumption declarada): trazar propagación del ± en `paymentsGap.js`. Chunk propio.
 - Punto 4 (2 `it.skip` en `__sync_check__`): decisión pendiente entre realinear Deno↔src (alto riesgo de romper mirrors silenciosamente) vs sellar drift como permanente con normalizer mejorado. Chunk propio con propuesta previa.
-- Migración de `scoreEngine.js` + sus 3 mirrors Deno + `AdminBenchmarks`/`Reports`/`__benchmark_sync__` a benchmarks-engine v2: chunk M4-tier.
+- Migración de `scoreEngine.js` + sus mirrors Deno + `AdminBenchmarks`/`Reports`/`__benchmark_sync__` a benchmarks-engine v2: chunk M4-tier. (Inventario canónico post-M3.7: 4 mirrors Deno — ver "Frozen-until-benchmarks-migration" en Fase 1.3.)
 - Purga de `SaaSProfile` / `ShippingProfile` + `getOnboardingStatus` + `computeVerticalStatus`: requiere refactor previo del onboarding para desacoplar la cadena.
 
 **Push:** commit sha se anota post-verificación empírica local.
@@ -838,7 +840,7 @@ El troceo M3-3 originalmente listaba "ventana 2min vs 90d" como deuda pendiente 
 **Estado final del producto:**
 - **`/Analyzer` y `/Results`** sirven el producto nuevo (PaymentsAnalyzer + PaymentsResults). Aliases redirigen a las canónicas. SEO preservado.
 - **`payments-gap-1.2.0`** es la **ÚNICA fuente de verdad** para el cálculo de savings alcanzable desde el funnel primario. Las tarifas viven en `PaymentsRateTable` con URL + cita literal por fila (Enmienda 1). Cero constantes de tarifa en código.
-- **`scoreEngine.js` — dormant, FROZEN-UNTIL-BENCHMARKS-MIGRATION.** Consumido por AdminBenchmarks + Reports + `__benchmark_sync__.test.js`. Su borrado queda **explícitamente ligado** a la migración de esos dos consumidores al futuro motor de benchmarks (post-Fase 6).
+- **`scoreEngine.js` — dormant, FROZEN-UNTIL-BENCHMARKS-MIGRATION.** Consumido por AdminBenchmarks + Reports + `__benchmark_sync__.test.js` (inventario frontend en el momento del cutover — post-M3.5 la auditoría empírica añadió 4 mirrors Deno al inventario, ver "Frozen-until-benchmarks-migration" en Fase 1.3 para el inventario canónico de 7). Su borrado queda **explícitamente ligado** a la migración de esos dos consumidores al futuro motor de benchmarks (post-Fase 6).
 - **M2 pipeline** (`benchmarkLearningEngine` → `BenchmarkContribution`): nunca armado en producción (verificado por `list_automations`, cero triggers activos). `onAnalyzerCompleted` borrado con el resto. **Reactivable en Fase 5 desde código** — `benchmarkLearningEngine` (378 líneas) intacto, sólo requiere (a) re-crear un `onPaymentsSessionCompleted` que consuma `PaymentsAnalysisSession`, (b) crear la entity automation.
 - **Cadena verified (`useAutoMaterialize` → `verifiedMaterializer` → `bridgeToAnalyzer`)**: **eliminada entera**. Motivo estructural: materializaba `AnalyzerResult` cuyo visor (`Results.jsx` viejo) fue demolido en este cutover — mantenerla cableada habría creado filas huérfanas invisibles cada Stripe connect. **Fase 6 reconstruye el flujo Stripe→PaymentsGap** con destino en `PaymentsAnalysisSession` (o entidad verified-sibling nueva).
 - **`SavingsEstimator.jsx`**: verificado huérfano en Landing.jsx (cero imports). No requiere acción en este chunk. Purgará junto a `scoreEngine.js` cuando se migre AdminBenchmarks/Reports.
@@ -883,7 +885,7 @@ The multi-vertical Analyzer + Results wizard, its score engine consumer surface,
 The cadena `useAutoMaterialize → verifiedMaterializer → bridgeToAnalyzer` produced `AnalyzerResult` rows whose display target (`Results.jsx`) is deleted in this cutover. Keeping the chain wired would have made every Stripe connect create verified rows the user could no longer see — a bridge to a demolished page. The user's exact framing was accepted: a bridge to a demolished destination is not "dormant infrastructure", it is dead weight that quietly generates orphan rows every day. Fase 6 rebuilds the Stripe→PaymentsGap flow with `PaymentsAnalysisSession` (or the new verified sibling entity) as the target.
 
 **scoreEngine.js decision — Option A (dormant, header FROZEN).**
-Kept because three legitimate consumers still read from it: (1) `AdminBenchmarks.jsx` via `getBenchmarks`, (2) `Reports.jsx` via `getBenchmarks`, (3) `__benchmark_sync__.test.js` via the sync-check pair. Header now carries `FROZEN-UNTIL-BENCHMARKS-MIGRATION` — its removal is explicitly blocked until AdminBenchmarks + Reports migrate to whatever new benchmarks engine ships alongside/after Fase 6. `scoreEngine.test.js` (33 tests) and `__benchmark_sync__.test.js` (37 tests) both stay green in the suite for the same reason.
+Kept because three legitimate consumers still read from it: (1) `AdminBenchmarks.jsx` via `getBenchmarks`, (2) `Reports.jsx` via `getBenchmarks`, (3) `__benchmark_sync__.test.js` via the sync-check pair. Header now carries `FROZEN-UNTIL-BENCHMARKS-MIGRATION` — its removal is explicitly blocked until AdminBenchmarks + Reports migrate to whatever new benchmarks engine ships alongside/after Fase 6. `scoreEngine.test.js` (33 tests) and `__benchmark_sync__.test.js` (37 tests) both stay green in the suite for the same reason. **Post-M3.5 update:** la auditoría empírica identificó además 4 mirrors Deno del engine que también bloquean el borrado — el inventario canónico sellado post-M3.7 es 7 consumidores (3 frontend + 4 mirrors Deno). Ver "Frozen-until-benchmarks-migration" en Fase 1.3.
 
 **Verified orphan (kept, no change): `SavingsEstimator.jsx`**
 Consumes `calculateSavings` + `computeInfraScore` from scoreEngine but is not imported anywhere reachable — `Landing.jsx` does not render it. Kept dormant on the same purge clock as scoreEngine itself.
@@ -1143,7 +1145,11 @@ Purged multi-vertical (shipping / SaaS / banking / insurance / telecom / HR) bra
 Testimonials in `src/pages/Testimonials.jsx` are illustrative only. Must be replaced with real customer quotes before public launch, investor demo, or fundraising round.
 
 **Frozen-until-benchmarks-migration (do NOT edit):**
-- `src/lib/scoreEngine.js` — 647-line multi-vertical engine. Post-M3.5 (2026-07-10) its purge is blocked by 6 consumidores vivos que la auditoría empírica identificó: **3 en frontend** (`AdminBenchmarks.jsx`, `Reports.jsx`, `src/lib/__benchmark_sync__.test.js`) + **3 mirrors verbatim en backend Deno** (`base44/functions/getBenchmarkForReport/entry.ts`, `base44/functions/recommendationEngineAgent/entry.ts`, `base44/functions/spendIntelligenceAgent/entry.ts` — recientemente añadido `base44/functions/activateDealOrchestrator/entry.ts` como cuarto mirror pendiente de auditar). Migración requiere chunk M4-tier dedicado al motor de benchmarks v2 que reemplace los 6+ consumidores en un solo pase.
+- `src/lib/scoreEngine.js` — 647-line multi-vertical engine. Post-M3.5 (2026-07-10) its purge is blocked por **7 consumidores vivos** verificados por grep externo (2026-07-10, Xavi):
+  - **3 en frontend**: `src/pages/admin/AdminBenchmarks.jsx`, `src/pages/Reports.jsx`, `src/lib/__benchmark_sync__.test.js`.
+  - **4 mirrors verbatim en backend Deno**: `base44/functions/getBenchmarkForReport/entry.ts`, `base44/functions/recommendationEngineAgent/entry.ts`, `base44/functions/spendIntelligenceAgent/entry.ts`, `base44/functions/activateDealOrchestrator/entry.ts`.
+
+  Migración requiere chunk M4-tier dedicado al motor de benchmarks v2 que reemplace los 7 consumidores en un solo pase (los 4 mirrors Deno dimensionan la parte cara del chunk — cada uno lleva su propia copia del engine que hay que reescribir/borrar en el mismo commit para no romper sync-check).
 - ~~`src/pages/Results.jsx`~~ — **BORRADO en M3.5 (2026-07-10)**, ver entrada M3.5 en este mismo log ("Frontend: src/pages/Results.jsx — 1 hit residual, era un comentario en App.jsx, no un import. Post-cutover el router sirve PaymentsResults en /Results."). El router ahora resuelve `/Results` a `PaymentsResults.jsx` (payments-only stack).
 
 Any refactor of `scoreEngine.js` before el chunk de migración de benchmarks está prohibido — el borrado del engine bloquea también la migración de los mirrors Deno, y hacerlo aislado en un fichero rompería sync-check y los 3 endpoints backend.
