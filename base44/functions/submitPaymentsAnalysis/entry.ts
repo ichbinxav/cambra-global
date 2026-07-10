@@ -40,8 +40,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 // SYNC-START: paymentsGap
 
-// payments-gap-1.2.0 — see src/lib/paymentsGap.js version-history header.
-const ENGINE_VERSION = "payments-gap-1.2.0";
+// payments-gap-1.3.0 — see src/lib/paymentsGap.js version-history header.
+const ENGINE_VERSION = "payments-gap-1.3.0";
 
 const MINOR_PER_MAJOR = 100;
 
@@ -79,6 +79,22 @@ function normalizeInput(raw) {
   const intl_pct = isFinite(intl_pctRaw) && intl_pctRaw >= 0 && intl_pctRaw <= 100
     ? intl_pctRaw
     : DEFAULT_INTL_PCT;
+  // v1.3.0 — verified path. Optional measured fields describing the merchant's
+  // real all-in rate over a real time window. When present, the engine uses
+  // measured_current_bps as current_effective_bps VERBATIM (no composition on
+  // top) and measured_intl_pct in place of the form intl_pct for the
+  // achievable side. Absent → 1.2.0 estimated behavior byte-identical.
+  const measured_current_bpsRaw = raw.measured_current_bps;
+  const measured_current_bps = (measured_current_bpsRaw !== undefined && measured_current_bpsRaw !== null && isFinite(Number(measured_current_bpsRaw)))
+    ? Number(measured_current_bpsRaw)
+    : null;
+  const measured_intl_pctRaw = raw.measured_intl_pct;
+  const measured_intl_pct = (measured_intl_pctRaw !== undefined && measured_intl_pctRaw !== null && isFinite(Number(measured_intl_pctRaw)) && Number(measured_intl_pctRaw) >= 0 && Number(measured_intl_pctRaw) <= 100)
+    ? Number(measured_intl_pctRaw)
+    : null;
+  const measured_sample = (raw.measured_sample && typeof raw.measured_sample === "object")
+    ? raw.measured_sample
+    : null;
   return {
     ok: true,
     input: {
@@ -87,6 +103,9 @@ function normalizeInput(raw) {
       region,
       provider_slug,
       intl_pct,
+      measured_current_bps,
+      measured_intl_pct,
+      measured_sample,
     },
   };
 }
@@ -166,6 +185,21 @@ const ACHIEVABLE_NOTE = (breakdown) => {
 const INTL_UPLIFT_NOTE = (intl_pct, current_uplift_bps, achievable_uplift_bps) =>
   `${intl_pct.toFixed(0)}% of GMV assumed cross-border: +${(current_uplift_bps / 100).toFixed(2)}% uplift on the current rate and +${(achievable_uplift_bps / 100).toFixed(2)}% on the achievable rate for that portion (schemes' cross-border interchange is not negotiable).`;
 
+// v1.3.0 verified-path assumption. Emitted verbatim ONLY when the caller
+// supplied measured_current_bps. The sample descriptor comes from the caller
+// (measured_sample.charge_count / measured_sample.days_covered) — the engine
+// only formats it, never invents counts. When the sample descriptor is absent,
+// a shorter form is emitted so the assumption still ships alongside the number.
+const MEASURED_CURRENT_NOTE = (measured_bps, sample) => {
+  const rate = `${(measured_bps / 100).toFixed(2)}%`;
+  if (sample && isFinite(Number(sample.charge_count)) && isFinite(Number(sample.days_covered))) {
+    const n = Math.round(Number(sample.charge_count));
+    const m = Math.round(Number(sample.days_covered));
+    return `Current rate is your all-in measured rate (${rate}, fees ÷ net volume, ${n} charges over ${m} days). Achievable is composed from published floors.`;
+  }
+  return `Current rate is your all-in measured rate (${rate}, fees ÷ net volume from your synced PSP data). Achievable is composed from published floors.`;
+};
+
 function calculateGap(rawInput, rateTable) {
   const tableCheck = validateRateTable(rateTable);
   if (!tableCheck.ok) {
@@ -182,15 +216,44 @@ function calculateGap(rawInput, rateTable) {
     return { ok: false, error: "rate_table_incomplete", missing: [`ANY|ANY|${input.region}`] };
   }
 
+  // Read intl uplifts DIRECTLY from the row. Missing → 0 (engine never fills
+  // in a number from code). We track "modeled" separately so we can emit the
+  // right assumption when the merchant has intl volume but the row doesn't
+  // carry an uplift.
   const rowCurrentUplift = typeof row.intl_uplift_bps === "number" ? row.intl_uplift_bps : 0;
   const rowAchievableUplift = typeof row.achievable_intl_uplift_bps === "number" ? row.achievable_intl_uplift_bps : 0;
   const intlModeled = typeof row.intl_uplift_bps === "number";
 
-  const current_bps = computeEffectiveBps(
-    { percent_bps: row.percent_bps, fixed_fee_minor_units: row.fixed_fee_minor_units },
-    input.avg_ticket_eur,
-    { intl_pct: input.intl_pct, intl_uplift_bps: rowCurrentUplift }
-  );
+  // v1.3.0 verified-path split.
+  //
+  // measured_current_bps present ("verified" mode):
+  //   • current_effective_bps = measured_current_bps DIRECT (all-in by canonical
+  //     definition — fees ÷ net volume from real PSP data). NO recomposition on
+  //     top: no fixed amortization, no intl uplift added. This is the
+  //     anti-double-counting lock — the caller must NEVER measure something
+  //     that then has extras stacked on.
+  //   • achievable side: composed from the table (published floors) using
+  //     measured_intl_pct when the caller supplied it (real cross-border share
+  //     over the measurement window), else the form input.intl_pct.
+  //
+  // measured_current_bps absent ("estimated" mode):
+  //   • Byte-identical 1.2.0 behavior. Both sides composed from the row via
+  //     computeEffectiveBps with input.intl_pct. Anti-regression lock for the
+  //     anonymous submitPaymentsAnalysis path (Chunk 4 will start passing
+  //     measured; Chunk 3 does not).
+  const measured = input.measured_current_bps;
+  const isMeasured = typeof measured === "number" && isFinite(measured);
+  const achievableIntlPct = (isMeasured && typeof input.measured_intl_pct === "number")
+    ? input.measured_intl_pct
+    : input.intl_pct;
+
+  const current_bps = isMeasured
+    ? measured
+    : computeEffectiveBps(
+        { percent_bps: row.percent_bps, fixed_fee_minor_units: row.fixed_fee_minor_units },
+        input.avg_ticket_eur,
+        { intl_pct: input.intl_pct, intl_uplift_bps: rowCurrentUplift }
+      );
 
   const hasAchievable =
     typeof row.achievable_percent_bps === "number" &&
@@ -202,7 +265,7 @@ function calculateGap(rawInput, rateTable) {
           fixed_fee_minor_units: row.achievable_fixed_fee_minor_units,
         },
         input.avg_ticket_eur,
-        { intl_pct: input.intl_pct, intl_uplift_bps: rowAchievableUplift }
+        { intl_pct: achievableIntlPct, intl_uplift_bps: rowAchievableUplift }
       )
     : current_bps;
 
@@ -220,16 +283,42 @@ function calculateGap(rawInput, rateTable) {
   };
 
   const assumptions = [];
-  assumptions.push(
-    AMORTIZATION_NOTE(row.fixed_fee_minor_units, row.fixed_fee_currency, input.avg_ticket_eur)
-  );
-  const achievableNote = ACHIEVABLE_NOTE(row.achievable_breakdown_json);
-  if (achievableNote) assumptions.push(achievableNote);
-  if (input.intl_pct > 0) {
-    if (intlModeled) {
-      assumptions.push(INTL_UPLIFT_NOTE(input.intl_pct, rowCurrentUplift, rowAchievableUplift));
-    } else {
-      assumptions.push(INTL_UPLIFT_NOT_MODELED_ASSUMPTION);
+  if (isMeasured) {
+    // Verified path — mandatory assumption naming the measured rate and, when
+    // provided, the sample descriptor. This is the audit trail: the user's
+    // Results view must show WHY current is that exact number.
+    assumptions.push(MEASURED_CURRENT_NOTE(measured, input.measured_sample));
+    // Achievable side is still composed from the table (fixed fee is amortized
+    // against the same avg_ticket_eur the caller passed — the merchant's real
+    // ticket in the measurement window when going through Chunk 4). So the
+    // amortization note stays, but it now describes ONLY the achievable side.
+    assumptions.push(
+      AMORTIZATION_NOTE(row.achievable_fixed_fee_minor_units ?? row.fixed_fee_minor_units, row.fixed_fee_currency, input.avg_ticket_eur)
+    );
+    // Achievable breakdown assumption unchanged.
+    const achievableNote = ACHIEVABLE_NOTE(row.achievable_breakdown_json);
+    if (achievableNote) assumptions.push(achievableNote);
+    // Intl uplift on the ACHIEVABLE side only (the current side is verbatim).
+    if (achievableIntlPct > 0) {
+      if (intlModeled) {
+        assumptions.push(INTL_UPLIFT_NOTE(achievableIntlPct, rowCurrentUplift, rowAchievableUplift));
+      } else {
+        assumptions.push(INTL_UPLIFT_NOT_MODELED_ASSUMPTION);
+      }
+    }
+  } else {
+    // Estimated path — 1.2.0 behavior verbatim.
+    assumptions.push(
+      AMORTIZATION_NOTE(row.fixed_fee_minor_units, row.fixed_fee_currency, input.avg_ticket_eur)
+    );
+    const achievableNote = ACHIEVABLE_NOTE(row.achievable_breakdown_json);
+    if (achievableNote) assumptions.push(achievableNote);
+    if (input.intl_pct > 0) {
+      if (intlModeled) {
+        assumptions.push(INTL_UPLIFT_NOTE(input.intl_pct, rowCurrentUplift, rowAchievableUplift));
+      } else {
+        assumptions.push(INTL_UPLIFT_NOT_MODELED_ASSUMPTION);
+      }
     }
   }
   if (row.verified !== true) assumptions.push(FALLBACK_ASSUMPTION);
@@ -246,6 +335,11 @@ function calculateGap(rawInput, rateTable) {
       verified: row.verified === true,
       matched,
     },
+    // Engine mode — "verified" when current came from a real measurement,
+    // "estimated" when both sides were composed from the table. Consumed by
+    // Results.jsx (badge copy) and future benchmark aggregators (filter by
+    // origin). Persisted verbatim on every session row.
+    mode: isMeasured ? "verified" : "estimated",
     assumptions,
   };
 }

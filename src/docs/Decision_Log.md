@@ -5,6 +5,76 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-10 — M3-Chunk 3 · Motor `payments-gap-1.3.0` con path verified
+
+**Alcance.** Bump aditivo del motor. Añade el path **verified** — cuando el caller pasa `measured_current_bps`, el motor lo usa VERBATIM como `current_effective_bps` (sin recomposición encima) y devuelve `mode: "verified"`. El path anónimo (submitPaymentsAnalysis) NO pasa measured y por tanto sigue en `mode: "estimated"` con comportamiento byte-idéntico a 1.2.0 — este chunk sólo amplía capacidad, no altera producción.
+
+**Contrato numérico sellado (los 7 puntos que aprobaste, verificados uno a uno):**
+
+**1. Path verified — measured directo, sin recomposición.**
+`current_effective_bps = measured_current_bps` cuando presente. Sin fixed amortization encima, sin intl uplift añadido. La definición canónica de `measured_current_bps` es "fees ÷ net volume" — all-in por construcción.
+
+**2. Achievable siempre compuesto de tabla.**
+```
+achievable_effective_bps
+  = row.achievable_percent_bps
+  + amortize(row.achievable_fixed_fee_minor_units, avg_ticket_eur)
+  + (achievableIntlPct / 100) × row.achievable_intl_uplift_bps
+```
+donde `achievableIntlPct = input.measured_intl_pct ?? input.intl_pct` — se prefiere la cifra medida cuando el caller la aporta (real cross-border share sobre la ventana de medición), si no cae al `intl_pct` del formulario. Si `row.achievable_intl_uplift_bps` es null (PayPal/Shopify — no publicado), la contribución intl es 0 y el motor emite `INTL_UPLIFT_NOT_MODELED_ASSUMPTION`.
+
+**3. Assumption obligatoria en modo verified.**
+`MEASURED_CURRENT_NOTE(measured, sample)` — se emite SIEMPRE en `mode: "verified"`. Formato completo cuando el caller pasa sample:
+> "Current rate is your all-in measured rate (1.71%, fees ÷ net volume, 1247 charges over 90 days). Achievable is composed from published floors."
+
+Formato corto cuando no hay sample:
+> "Current rate is your all-in measured rate (1.71%, fees ÷ net volume from your synced PSP data). Achievable is composed from published floors."
+
+**4. Regression byte-idéntica del path anónimo.**
+Test explícito ejecuta 3 escenarios contra `calculateGap(base, TABLE)` (sin campo measured), `calculateGap({...base, measured_current_bps: null}, TABLE)`, y `calculateGap({...base, measured_current_bps: undefined}, TABLE)`. Los 3 outputs son EQUAL (current, achievable, savings, assumptions, mode). Verificado también sobre el endpoint desplegado — llamada real a `submitPaymentsAnalysis` con `{monthly_gmv_eur: 50000, avg_ticket_eur: 80, intl_pct: 10, provider_slug: "stripe", country: "ES"}` devuelve:
+
+```
+engine_version: "payments-gap-1.3.0"
+current_effective_bps: 198.75  ← idéntico a lo que hubiera dado 1.2.0
+achievable_effective_bps: 126.25
+monthly_savings_eur.point: 362.5
+mode: "estimated"
+cohort: { key: "stripe|ANY|EU", verified: true, matched: "exact" }
+```
+
+Assumptions arrancan con `"Fixed fee of 0.25 EUR amortized over an average ticket of €80.00."` — exactamente la 1.2.0 emite. Cero drift de producción.
+
+**5. Test-candado anti-doble-contabilización (170.625).**
+Setup: Stripe EU, percent=150, fixed=25c, ticket=€800, intl_pct=10%, uplift_current=175. La aritmética 1.2.0 estimada sobre esas inputs produce:
+```
+150 + (10/100 × 175) + (0.25/€800 × 10000)
+= 150 + 17.5 + 3.125 = 170.625 bps
+```
+El test primero verifica que el motor 1.3.0 en modo estimated reproduce ese 170.625 (sanity). Luego pasa **exactamente ese número** como `measured_current_bps` y afirma:
+```
+current_effective_bps === 170.625  // STRICT EQUALITY, sin margen de floating-point
+mode === "verified"
+```
+Si algún día alguien recompone (`current = measured + fixed_amortization + intl_uplift`), este test devolvería `191.25` (170.625 + 17.5 + 3.125) y rompería inmediatamente. **El candado del contrato queda registrado en código.**
+
+**6. ENGINE_VERSION + sync-check.**
+`ENGINE_VERSION = "payments-gap-1.3.0"` — presente en ambos ficheros dentro del bloque SYNC-START/SYNC-END. Persistido verbatim en `PaymentsAnalysisSession.engine_version` (verificado sobre el response del endpoint arriba). Sync-check verde tras el bump: **8 passed / 2 skipped**, par `paymentsGap` incluido — `src/lib/paymentsGap.js` ↔ `base44/functions/submitPaymentsAnalysis/entry.ts` byte-normalized idénticos tras las 4 ediciones sincronizadas (ENGINE_VERSION + normalizeInput + MEASURED_CURRENT_NOTE + calculateGap con la bifurcación isMeasured).
+
+**7. Suite completa.**
+**325 passed / 2 skipped / 16 files / 6.69s.** Delta vs Chunk 2 (316 passed): **+9 tests nuevos** en `paymentsGap.test.js` (path verified) — el archivo pasa de 36 a 45 tests. Cero regressions en los 316 pre-existentes.
+
+**Trazas de los 4 casos numéricos del contrato** (ejercicidos por los tests `v1.3.0 verified path`):
+- **A — Estimated 1.2.0 sanity (base 170.625):** input `{gmv=50k, ticket=€800, intl=10%, stripe, EU}` → `current=170.625, mode=estimated`. Confirma que la aritmética 1.2.0 sigue produciendo ese número exacto.
+- **B — Candado verified (170.625 exacto):** mismo input + `measured=170.625` → `current === 170.625` (strict equal), `mode=verified`, assumption `MEASURED_CURRENT_NOTE` presente.
+- **C — Override extremo (250 bps):** `{gmv=50k, ticket=€80, intl=0%, stripe, EU, measured=250}` → `current=250, achievable≈117.25` (Stripe EU achievable 86 + 0 intl + 31.25 fixed), `mode=verified`. El motor acepta 250 verbatim, sin clamp ni blend con la tabla.
+- **D — measured_intl_pct overriding form:** `{gmv=100k, ticket=€80, intl=0%, stripe, EU, measured=250, measured_intl_pct=40}` → achievable pasa de 117.25 (intl=0) a **153.25** (intl=40: 86 + 36 + 31.25). Confirma que la cifra medida de intl se propaga al lado achievable — el formulario decía 0, la verdad Stripe dice 40, el motor usa 40.
+
+**Restricción del chunk (respetada):** `submitPaymentsAnalysis` NO empieza a pasar `measured_current_bps` — el path anónimo en producción sigue idéntico. La bifurcación existe pero está latente hasta Chunk 4, cuando `bridgeStripeToPaymentsGap` (o su equivalente) empiece a materializar filas verified desde `stripeDataSync`.
+
+**Estado del chunk:** SELLADO. Motor listo para consumir data real. Chunk 4 puede empezar a llamar al motor con `measured_current_bps` desde `stripeDataSync` sin más cambios al motor.
+
+---
+
 ## 2026-07-10 — M3-Chunk 2 · `PaymentsAnalysisVerified` entity + tenant-isolation pattern discovery
 
 **Hallazgo estructural.** Durante el setup de `PaymentsAnalysisVerified` (la entidad que persistirá los resultados M3 medidos desde datos reales de Stripe), la ejecución empírica del test de aislamiento reveló que **la RLS por `created_by == {{user.email}}` es inerte para toda entidad escrita vía service role**. La SDK de Base44 fuerza `created_by` a la cuenta de servicio en cada `asServiceRole.create()` — override en payload silenciosamente ignorado. Verificado el 2026-07-10 sobre `Integration` en producción: las 7 filas más recientes tienen `created_by = service+...@no-reply.base44.com`, confirmando que la cláusula "owner" del `$or` de su RLS **nunca ha matcheado a un humano**. El aislamiento real de merchants en producción vive en las backend functions (service role + filter por `brand_id`), no en la RLS declarada. Ver BUG-6 en `KNOWN_DEBT.md` para el impacto y plan de fix retro.

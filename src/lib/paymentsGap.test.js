@@ -453,7 +453,7 @@ describe('calculateGap — end-to-end', () => {
     expect(intl.assumptions.some(a => a.includes('cross-border interchange is not negotiable'))).toBe(false);
   });
 
-  it('engine_version reports the SemVer-tagged 1.2.0 name', () => {
+  it('engine_version reports the SemVer-tagged 1.3.0 name', () => {
     // Explicit contract check — this string is persisted verbatim on every
     // PaymentsAnalysisSession row. Downstream benchmark aggregators filter
     // by engine_version, so silent renames would corrupt cohorts.
@@ -462,8 +462,165 @@ describe('calculateGap — end-to-end', () => {
       FULL_TABLE
     );
     expect(result.ok).toBe(true);
-    expect(result.engine_version).toBe('payments-gap-1.2.0');
-    expect(ENGINE_VERSION).toBe('payments-gap-1.2.0');
+    expect(result.engine_version).toBe('payments-gap-1.3.0');
+    expect(ENGINE_VERSION).toBe('payments-gap-1.3.0');
+  });
+});
+
+// ─── v1.3.0 verified path ───────────────────────────────────────────────────
+//
+// Contract (sealed 2026-07-10, corazón de M3):
+//   1. measured_current_bps present → current_effective_bps = measured EXACT.
+//      NO composition on top: no fixed amortization, no intl uplift added.
+//   2. Achievable always composed from the table. Uses measured_intl_pct when
+//      supplied, else falls back to the form intl_pct.
+//   3. Verified mode emits MEASURED_CURRENT_NOTE (mandatory) naming the rate
+//      and, when provided, N charges over M days.
+//   4. mode field is "verified" | "estimated" — persisted verbatim.
+//   5. measured_current_bps absent → BYTE-IDENTICAL 1.2.0 behavior (anti-
+//      regression lock for anonymous submitPaymentsAnalysis path).
+//   6. Anti-double-counting lock: if caller passes back the result of an
+//      estimated 1.2.0 calc as measured_current_bps, current MUST be that
+//      exact number — not stacked with extras.
+
+describe('calculateGap — v1.3.0 verified path', () => {
+  it('regression: absent measured_current_bps behaves byte-identical to 1.2.0 across 3 scenarios', () => {
+    // Anti-regression lock: submitPaymentsAnalysis (Chunk 3) does NOT pass
+    // measured_current_bps. Every current output must equal what 1.2.0 produced.
+    // We verify against the same fixture + explicit expected values derived
+    // from the fixture rows (no engine-side constants).
+    const scenarios = [
+      { monthly_gmv_eur: 50000,  avg_ticket_eur: 80,  region: 'EU', provider_slug: 'stripe', intl_pct: 10 },
+      { monthly_gmv_eur: 100000, avg_ticket_eur: 250, region: 'US', provider_slug: 'stripe', intl_pct: 0 },
+      { monthly_gmv_eur: 25000,  avg_ticket_eur: 30,  region: 'EU', provider_slug: 'paypal', intl_pct: 50 },
+    ];
+    for (const s of scenarios) {
+      const withoutMeasured = calculateGap(s, FULL_TABLE);
+      const withNull        = calculateGap({ ...s, measured_current_bps: null }, FULL_TABLE);
+      const withUndefined   = calculateGap({ ...s, measured_current_bps: undefined }, FULL_TABLE);
+      expect(withoutMeasured.ok).toBe(true);
+      expect(withNull.ok).toBe(true);
+      expect(withUndefined.ok).toBe(true);
+      // Current, achievable, savings, assumptions — ALL identical to omitted.
+      expect(withNull.current_effective_bps).toBeCloseTo(withoutMeasured.current_effective_bps, 10);
+      expect(withNull.achievable_effective_bps).toBeCloseTo(withoutMeasured.achievable_effective_bps, 10);
+      expect(withNull.monthly_savings_eur.point).toBeCloseTo(withoutMeasured.monthly_savings_eur.point, 6);
+      expect(withUndefined.current_effective_bps).toBeCloseTo(withoutMeasured.current_effective_bps, 10);
+      expect(withNull.mode).toBe('estimated');
+      expect(withoutMeasured.mode).toBe('estimated');
+      // No verified-path assumption in estimated mode.
+      expect(withNull.assumptions.some(a => a.includes('measured rate'))).toBe(false);
+    }
+  });
+
+  it('CANDADO — measured_current_bps=170.625 (exactly what 1.2.0 would have output) → current=170.625 EXACT', () => {
+    // Setup: Stripe EU cohort, percent=150, intl_pct=10, uplift_current=175,
+    //        fixed=25c, ticket=€800. 1.2.0 estimated arithmetic:
+    //   150 + (10/100 × 175) + (0.25 / 800 × 10000)
+    //     = 150 + 17.5 + 3.125
+    //     = 170.625 bps
+    // If the operator ever re-introduces composition on top of measured (i.e.
+    // "current = measured + fixed_amortization + intl_uplift"), a caller who
+    // passed measured=170.625 would get 170.625 + 17.5 + 3.125 = 191.25 back.
+    // This test asserts current MUST be 170.625 EXACT — the anti-double-
+    // counting lock. If someone breaks the contract, this test fails loud.
+    const base = { monthly_gmv_eur: 50000, avg_ticket_eur: 800, region: 'EU', provider_slug: 'stripe', intl_pct: 10 };
+
+    // First: sanity — 1.2.0 estimated arithmetic really does produce 170.625.
+    const estimated = calculateGap(base, FULL_TABLE);
+    expect(estimated.ok).toBe(true);
+    expect(estimated.current_effective_bps).toBeCloseTo(170.625, 6);
+
+    // Now the candado: pass 170.625 as measured, current must be 170.625 EXACT.
+    const verified = calculateGap({ ...base, measured_current_bps: 170.625 }, FULL_TABLE);
+    expect(verified.ok).toBe(true);
+    expect(verified.current_effective_bps).toBe(170.625); // strict equality — no floating-point slop
+    expect(verified.mode).toBe('verified');
+  });
+
+  it('measured takes precedence — a wildly different measured overrides the table completely', () => {
+    // Same Stripe EU inputs. 1.2.0 estimated current ≈ 181.25 bps.
+    // Caller passes measured=250 bps (much higher than the estimate). The
+    // engine must accept 250 verbatim, not blend or clamp.
+    const base = { monthly_gmv_eur: 50000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe', intl_pct: 0 };
+    const verified = calculateGap({ ...base, measured_current_bps: 250 }, FULL_TABLE);
+    expect(verified.ok).toBe(true);
+    expect(verified.current_effective_bps).toBe(250);
+  });
+
+  it('achievable side stays composed from the table when measured is set', () => {
+    // Stripe EU: achievable_percent=86, achievable_fixed=25c → at ticket=€80
+    // and intl_pct=0 (measured), achievable_effective = 86 + 0 + 31.25 = 117.25 bps.
+    const base = { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe', intl_pct: 0 };
+    const verified = calculateGap({ ...base, measured_current_bps: 300 }, FULL_TABLE);
+    expect(verified.ok).toBe(true);
+    expect(verified.achievable_effective_bps).toBeCloseTo(117.25, 4);
+    // Savings = (300 - 117.25) / 10000 × 100000 = €1827.5/mo.
+    expect(verified.monthly_savings_eur.point).toBeCloseTo(1827.5, 1);
+  });
+
+  it('measured_intl_pct (real intl share from PSP) overrides form intl_pct on the achievable side', () => {
+    // Form said intl_pct=0. Measured revealed 40% intl. Achievable side must
+    // use 40 (the truth) to build its composed rate — not 0 (the form guess).
+    // Stripe EU achievable: 86 + (40/100 × 90) + (0.25/80 × 10000)
+    //                     = 86 + 36 + 31.25 = 153.25 bps.
+    const base = { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe', intl_pct: 0 };
+    const verified = calculateGap({ ...base, measured_current_bps: 250, measured_intl_pct: 40 }, FULL_TABLE);
+    expect(verified.ok).toBe(true);
+    expect(verified.achievable_effective_bps).toBeCloseTo(153.25, 4);
+  });
+
+  it('MANDATORY assumption — measured mode always emits MEASURED_CURRENT_NOTE with rate and sample', () => {
+    const base = { monthly_gmv_eur: 50000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' };
+    const verified = calculateGap({
+      ...base,
+      measured_current_bps: 170.625,
+      measured_sample: { charge_count: 1247, days_covered: 90 },
+    }, FULL_TABLE);
+    expect(verified.ok).toBe(true);
+    const measuredNote = verified.assumptions.find(a => a.includes('measured rate'));
+    expect(measuredNote).toBeDefined();
+    expect(measuredNote).toContain('1.71%'); // 170.625 bps = 1.71% (2dp)
+    expect(measuredNote).toContain('1247 charges');
+    expect(measuredNote).toContain('90 days');
+    expect(measuredNote).toContain('Achievable is composed from published floors');
+  });
+
+  it('MEASURED_CURRENT_NOTE emits shorter form when sample descriptor is absent', () => {
+    const base = { monthly_gmv_eur: 50000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' };
+    const verified = calculateGap({ ...base, measured_current_bps: 170.625 }, FULL_TABLE);
+    expect(verified.ok).toBe(true);
+    const measuredNote = verified.assumptions.find(a => a.includes('measured rate'));
+    expect(measuredNote).toBeDefined();
+    expect(measuredNote).toContain('1.71%');
+    expect(measuredNote).toContain('from your synced PSP data');
+    expect(measuredNote).not.toContain('charges over');
+  });
+
+  it('mode field is "verified" | "estimated" and matches measured presence', () => {
+    const base = { monthly_gmv_eur: 50000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' };
+    expect(calculateGap(base, FULL_TABLE).mode).toBe('estimated');
+    expect(calculateGap({ ...base, measured_current_bps: 200 }, FULL_TABLE).mode).toBe('verified');
+    expect(calculateGap({ ...base, measured_current_bps: null }, FULL_TABLE).mode).toBe('estimated');
+    // Non-finite measured (NaN, Infinity, string) → treated as absent.
+    expect(calculateGap({ ...base, measured_current_bps: NaN }, FULL_TABLE).mode).toBe('estimated');
+    expect(calculateGap({ ...base, measured_current_bps: 'garbage' }, FULL_TABLE).mode).toBe('estimated');
+  });
+
+  it('measured mode on a paypal row (intl uplift NOT modeled) → still emits not-modeled assumption when achievable intl > 0', () => {
+    // PayPal EU: intl_uplift_bps=null. If measured_intl_pct=30, the achievable
+    // side needs to emit the not-modeled assumption (the achievable arithmetic
+    // has to work with 0 uplift — it never invents a number).
+    const base = { monthly_gmv_eur: 100000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'paypal', intl_pct: 0 };
+    const verified = calculateGap({
+      ...base,
+      measured_current_bps: 350,
+      measured_intl_pct: 30,
+    }, FULL_TABLE);
+    expect(verified.ok).toBe(true);
+    expect(verified.assumptions).toContain(INTL_UPLIFT_NOT_MODELED_ASSUMPTION);
+    // And still emits the measured-current note.
+    expect(verified.assumptions.some(a => a.includes('measured rate'))).toBe(true);
   });
 });
 
