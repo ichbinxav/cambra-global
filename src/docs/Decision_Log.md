@@ -5,6 +5,39 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-10 — M3-Chunk 2 · `PaymentsAnalysisVerified` entity + tenant-isolation pattern discovery
+
+**Hallazgo estructural.** Durante el setup de `PaymentsAnalysisVerified` (la entidad que persistirá los resultados M3 medidos desde datos reales de Stripe), la ejecución empírica del test de aislamiento reveló que **la RLS por `created_by == {{user.email}}` es inerte para toda entidad escrita vía service role**. La SDK de Base44 fuerza `created_by` a la cuenta de servicio en cada `asServiceRole.create()` — override en payload silenciosamente ignorado. Verificado el 2026-07-10 sobre `Integration` en producción: las 7 filas más recientes tienen `created_by = service+...@no-reply.base44.com`, confirmando que la cláusula "owner" del `$or` de su RLS **nunca ha matcheado a un humano**. El aislamiento real de merchants en producción vive en las backend functions (service role + filter por `brand_id`), no en la RLS declarada. Ver BUG-6 en `KNOWN_DEBT.md` para el impacto y plan de fix retro.
+
+**Ruta descartada tras investigar C (RLS relacional).** Búsqueda en docs.base44.com confirmó que **Base44 no soporta RLS relacional** (cruzar `data.brand_id → Brand.created_by == user.email` no es posible por diseño de la plataforma). Se descarta como opción viable — no como opinión, sino como límite de plataforma documentado. Registrado aquí para que ningún chunk futuro vuelva a investigar la misma ruta cerrada.
+
+**Ruta adoptada — patrón `owner_email` denormalizado + helper de propiedad centralizado.** Recomendado explícitamente por los docs oficiales de Base44 para exactamente este caso (multi-tenant con writes via service role). Tres piezas indivisibles:
+
+1. **Schema de `PaymentsAnalysisVerified`** — 9 campos del plan + campo denormalizado `owner_email`. RLS de lectura: `admin OR data.owner_email == {{user.email}}`. RLS de escritura: `admin-only` (nadie no-admin escribe directamente, todas las escrituras van por backend function). El campo `owner_email` **sí es escribible via SDK** (a diferencia del inmutable `created_by`), y contra ese campo la RLS del motor sí puede aislar.
+
+2. **`base44/functions/_tenantGuard/entry.ts`** — helper HTTP con la operación `resolveOwnedBrand`. La ÚNICA función de todo el codebase donde vive la lógica "¿este usuario posee este brand?". Toda función futura M3-Chunk 4/5/… que lea o escriba datos por-brand debe llamar aquí antes de tocar datos. Firma: `POST { op: "resolveOwnedBrand", brand_id } → 200 { owner_email, acting_as: "admin"|"owner" } | 404 { brand_not_found } | 401 { Unauthorized }`. **404 (no 403)** cuando el usuario autenticado no es dueño del brand — nunca leakea existencia. Admin bypass devuelve el `owner_email` real del brand (no el del admin caller) para que las escrituras admin sigan poblando el campo correctamente.
+
+3. **`src/lib/tenantGuard.js` + `src/lib/tenantGuard.test.js`** — copia local testeable de las funciones puras (`normalizeEmail`, `checkOwnership`), pareadas verbatim con la copia Deno mediante marcadores `SYNC-START: tenantGuardPure` / `SYNC-END`. Suite de 10 tests unitarios cubre: owner exacto, owner con casing drift, stranger autenticado (rechazo), anónimo (rechazo), user sin email, brand faltante, brand sin `created_by`, service-brand nunca match a humano. Es la verificación real del mecanismo de propiedad — reemplaza la prueba imposible "loguear como stranger no-admin y ver 404" (la caja de herramientas del agente no puede suplantar usuarios).
+
+**Verificación empírica realizada (con trazas, no narrativa):**
+- Fila insertada vía service role con `owner_email: "xavi@cambra.global"`: **persistida correctamente**. `row.owner_email === "xavi@cambra.global"` ↔ `row.created_by === "service+..."`. La RLS declarada compara contra `data.owner_email`, que sí matchea el dueño y sí rechaza al stranger a nivel de string.
+- `_tenantGuard` ejercitado en 4 casos vía `test_backend_function` (caller = admin): brand real → 200 `owner_email: xavi@cambra.global, acting_as: admin`; brand del self-test-1b (dueño = service account) → 200 `owner_email: service+..., acting_as: admin` (esperado — el helper devuelve el owner del brand, no del caller); brand inexistente → 404 `brand_not_found`; op desconocida → 400 `unknown_op`.
+- Fila de prueba **borrada** al final (`PaymentsAnalysisVerified.list().length === 0` post-cleanup). Tabla queda vacía para producción.
+
+**Verificaciones DIFERIDAS al gate final de M3 (requieren segundo usuario humano invitado, imposibles con las tools del agente):**
+- Path `acting_as: "owner"`: usuario no-admin dueño legítimo → 200.
+- Path 404 real: usuario no-admin autenticado contra brand ajeno → 404 (no 403).
+- Path 401 real: fetch anónimo sin auth → 401.
+
+Estos tres casos están cubiertos por la lógica pura de `checkOwnership` (tests unitarios) y por el diseño del handler HTTP (auth guard + normalización de rechazo). El E2E con usuarios reales es tarea del builder — no del agente — en el gate final.
+
+**Regla de plataforma vinculante (adoptada aquí, aplicable a TODO el proyecto):**
+> Toda entidad futura que almacene datos por-brand escritos vía service role debe seguir el patrón `owner_email` + `_tenantGuard`. Prohibido reimplementar el filter de propiedad en cada función — un solo sitio para auditar. La RLS `created_by == {{user.email}}` queda vetada para writes de service role en cualquier entidad nueva; entidades legacy con esa cláusula (Integration, AnalyzerInput, AnalyzerResult, etc.) quedan documentadas como BUG-6 y migrarán en sesión dedicada.
+
+**Estado del chunk:** cerrado con evidencia empírica, entidad creada y vacía, helper desplegado y testeado, tests unitarios pasando (a verificar en la próxima ejecución local de la suite). Chunk 4 (materialización desde `stripeDataSync`) ya tiene el mecanismo de propiedad listo para consumir.
+
+---
+
 ## 2026-07-10 — M3-Chunk 1b · Hallazgo crítico: STRIPE_TEST_SECRET_KEY era LIVE + regla permanente
 
 **Hallazgo.** Durante la fase de siembra del Chunk 1b (harness de validación empírica de `stripeDataSync` contra ground truth conocido), la clave almacenada en el secret `STRIPE_TEST_SECRET_KEY` **NO era una `sk_test_...` genuina** — era una **restricted LIVE key** apuntando a la cuenta operativa de CAMBRA GLOBAL SAS (`acct_1TqWzFJtkNunlMvz`, país FR, EUR, `charges_enabled: true`, `details_submitted: true`, statement descriptor "CAMBRA GLOBAL SAS"). El diagnóstico apareció porque el guard defensivo del harness (`livemode !== false`) rechazó la clave antes de sembrar; una ejecución sin ese guard habría creado **charges reales cobrables** contra la cuenta de la empresa.

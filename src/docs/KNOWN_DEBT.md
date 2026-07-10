@@ -342,6 +342,42 @@ Se arregla al preparar sync recurrente / cron.
 
 ---
 
+## BUG-6 — RLS `created_by == {{user.email}}` es inerte para entidades escritas por service role
+
+**Estado:** activa (documentada, mitigada estructuralmente vía `owner_email` + `_tenantGuard` en `PaymentsAnalysisVerified`; NO retro-arreglada en Integration ni en el resto de entidades)
+**Detectado:** 2026-07-10 durante M3-Chunk 2 (setup de `PaymentsAnalysisVerified`)
+**Entidades afectadas:** `Integration`, `AnalyzerInput`, `AnalyzerResult`, `StatementImport`, `ChatMessage`, `AgentQuestion`, `Approval`, `Event`, `AgentTask`, `Brand` — todas las que declaran `created_by == {{user.email}}` en su RLS de lectura mientras sus escrituras van por `base44.asServiceRole.entities.X.create()`.
+
+### Síntoma
+La cláusula `{ "created_by": "{{user.email}}" }` en la RLS de estas entidades **nunca matchea a un usuario humano en producción**. Auditoría empírica el 2026-07-10 sobre `Integration`: las 7 filas más recientes tienen `created_by = service+...@no-reply.base44.com`. Consecuencia: la única cláusula del `$or` que evalúa true es `user_condition.role == "admin"`. Lecturas de merchants no-admin desde el frontend NO están protegidas por esa RLS — lo que les permite ver "sus" datos es que las funciones que leen (ej. `getIntegrationStatus`) corren en service role y filtran por `brand_id` internamente.
+
+### Causa
+La SDK de Base44 fuerza `created_by` a la identidad ejecutora en cada `create()`. Cuando la escritura va por `asServiceRole`, `created_by` queda en la cuenta de servicio pase-lo-que-pase — el override explícito en el payload se ignora silenciosamente. Verificado empíricamente 2026-07-10 (M3-Chunk 2): payload con `created_by: "xavi@cambra.global"` produjo fila persistida con `created_by: "service+ed332dd1-1b57-4179-8ef0-925fee70df46@no-reply.base44.com"`. Confirma dead-end histórico del proyecto ("Updating created_by/created_by_id fields via SDK — failed; fields are system-level read-only").
+
+### Impacto real en producción HOY
+Bajo. Todas las lecturas de merchant sobre estas entidades van vía backend functions con service role que ya filtran por `brand_id`/`brand_owner`. La RLS-teatro es una segunda capa que no está sujetando peso — si un consumidor futuro llamara `base44.entities.Integration.list()` directamente desde el frontend confiando en la RLS declarada, no obtendría filas (porque `created_by` no matchea) pero **tampoco fugaría cross-tenant** (mismo motivo). El riesgo real es aspiracional: el `.jsonc` documenta una garantía que la plataforma no cumple → falsa sensación de seguridad para código futuro.
+
+### Regla de plataforma adoptada 2026-07-10 (M3-Chunk 2)
+> En Base44, entidades con datos por-brand escritas vía service role NO pueden usar `created_by == {{user.email}}` como cláusula de aislamiento. Patrón obligatorio para nuevas entidades:
+>
+> 1. Añadir campo denormalizado `owner_email` al schema.
+> 2. RLS de lectura: `admin OR data.owner_email == {{user.email}}`.
+> 3. Toda escritura poblará `owner_email` con el resultado de `resolveOwnedBrandOrFail(user, brand_id)` (ver `base44/functions/_tenantGuard/entry.ts`). Nunca reimplementar la resolución de propiedad en cada función.
+
+Aplicada verbatim a `PaymentsAnalysisVerified` como piloto del patrón (M3-Chunk 2 cierre).
+
+### Fix retro cuando toque (NO ahora)
+Migrar `Integration`, `AnalyzerInput`, `AnalyzerResult`, `StatementImport`, y las entidades de agent/chat/approval a `owner_email`. Cada una:
+1. Añadir `owner_email` al schema.
+2. Backfill: script service-role que rellene `owner_email` desde `Brand.get(row.brand_id).created_by` para filas existentes.
+3. Cambiar la RLS a `admin OR data.owner_email == {{user.email}}`.
+4. Actualizar TODAS las funciones que escriben la entidad para poblar `owner_email` vía `_tenantGuard`.
+
+### Por qué no se arregla ahora
+Migración cross-cutting a 10+ entidades + backfill + audit de callers. Sesión dedicada. En producción actual el aislamiento real vive en las backend functions (service role + filter por brand_id) — arreglar la RLS declarativa sin cambiar los callers es cosmético; hacerlo con los callers a la vez es la sesión dedicada. Mientras tanto: **ninguna función nueva puede confiar en la RLS de estas entidades para aislar por tenant** — debe filtrar explícitamente por `brand_id` tras resolver propiedad vía `_tenantGuard`.
+
+---
+
 ## BUG-5 — `handleDisconnect` apunta a entidad legacy `StripeConnection`
 
 **Estado:** activa
