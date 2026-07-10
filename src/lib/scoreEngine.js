@@ -7,20 +7,25 @@
 // longer have any consumer inside the primary Payments funnel — that runs on
 // `src/lib/paymentsGap.js` (payments-gap-1.2.0) exclusively.
 //
-// However, three legitimate CURRENT consumers keep this file alive:
+// CURRENT consumers keeping this file alive (verified 2026-07-10 M3.5):
 //   1. src/pages/admin/AdminBenchmarks.jsx  → getBenchmarks
 //   2. src/pages/Reports.jsx                → getBenchmarks
 //   3. src/lib/__benchmark_sync__.test.js   → sync-check pair (37 tests)
+//   4. Backend Deno mirrors (verbatim copies — MUST stay in sync):
+//        - base44/functions/getBenchmarkForReport/entry.ts (STATIC_BENCHMARKS)
+//        - base44/functions/recommendationEngineAgent/entry.ts (mirrored block)
+//        - base44/functions/spendIntelligenceAgent/entry.ts
 //
-// Its removal is deliberately deferred and BLOCKED behind the
-// "AdminBenchmarks + Reports migration to the new benchmarks engine" chunk.
-// Do NOT delete this file, `scoreEngine.test.js`, or `__benchmark_sync__.test.js`
-// before that migration ships — the tests would break and the admin surface
-// would 500 on load.
+// Its removal is deliberately deferred and BLOCKED behind a dedicated
+// "benchmarks-engine migration" chunk that must also migrate the 3 Deno
+// mirrors above. Do NOT delete this file, `scoreEngine.test.js`, or
+// `__benchmark_sync__.test.js` before that migration ships — the tests
+// would break, the admin surface would 500, and the Deno mirrors would
+// silently drift.
 //
-// The `SavingsEstimator.jsx` landing component still imports `calculateSavings`
-// + `computeInfraScore` but is ORPHANED at the router level (Landing.jsx does
-// not render it) — kept dormant for the same eventual purge.
+// Historical note: `SavingsEstimator.jsx` was purged in M3.5 (2026-07-10).
+// It was the last orphan importer of `calculateSavings` + `computeInfraScore`;
+// current live consumers only need `getBenchmarks`.
 // ════════════════════════════════════════════════════════════════════════════
 
 /**

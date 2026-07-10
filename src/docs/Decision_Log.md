@@ -691,6 +691,61 @@ El troceo M3-3 originalmente listaba "ventana 2min vs 90d" como deuda pendiente 
 
 ---
 
+## 2026-07-10 — M3.5 · Limpieza post-cutover (safe subset)
+
+Chunk corto de saneamiento post-M3, ejecutado con auditoría empírica caller-por-caller antes de cualquier borrado. El propio Decision_Log había marcado como orphans varios artefactos que la auditoría demostró vivos — el chunk se REDUJO al subset con cero-consumidores verificado.
+
+**Alcance (aprobado por Xavi):** solo lo que la auditoría empírica confirmó huérfano. Los puntos 3 (banda del gap) y 4 (2 skips del sync-check) se difieren a chunks propios.
+
+**Auditoría empírica — hallazgos que corrigen el Decision_Log previo:**
+
+1. **`scoreEngine.js` NO es purgable en este chunk.** El Decision_Log del 2026-07-09 (cutover) listaba 3 consumidores; la auditoría empírica encontró **57 hits, 20+ consumidores vivos**. Consumidores frontend confirmados (`AdminBenchmarks.jsx`, `Reports.jsx`, `__benchmark_sync__.test.js`) + **3 espejos verbatim en backend Deno no documentados antes**:
+   - `base44/functions/getBenchmarkForReport/entry.ts` (STATIC_BENCHMARKS)
+   - `base44/functions/recommendationEngineAgent/entry.ts` (mirrored block explícito)
+   - `base44/functions/spendIntelligenceAgent/entry.ts` (identificado por Xavi durante el review)
+   - Consecuencia: el header de `scoreEngine.js` se actualizó para listar los 3 mirrors backend además de los 3 consumidores frontend. Su borrado requiere un chunk M4-tier dedicado a la migración de los 6 consumidores; NO es cleanup.
+
+2. **`SaaSProfile` / `ShippingProfile` NO son purgables.** Auditoría: 9 hits vivos en `computeIntelligenceForBrand`, `computeVerticalStatus`, más. La cadena de consumidores toca `getOnboardingStatus` (marcado explícitamente como "no tocar sin verificar"). Diferido.
+
+**Borrado ejecutado (cero-consumidores verificado con grep anclado por regex, no substring):**
+
+Frontend:
+- `src/pages/Results.jsx` — 1 hit residual, era un comentario en `App.jsx`, no un import. Post-cutover el router sirve `PaymentsResults` en `/Results`.
+- `src/components/landing/SavingsEstimator.jsx` — 0 importers. Era el último consumer huérfano de `calculateSavings` + `computeInfraScore` desde el cutover.
+
+Backend:
+- `base44/functions/runShippingAgent/entry.ts` — 1 hit residual en Decision_Log (docs), 0 callers vivos.
+- `base44/functions/notifyTeamOnAnalyzerResult/entry.ts` — 2 hits residuales en Decision_Log, 0 callers vivos, 0 automations.
+
+10 páginas deprecated (auditoría con pattern anclado — dos "hits" reportados por grep simple eran substring collisions con `NetworkDataBadge` y `AIInsightsPanel`, NO importers reales):
+- `src/pages/UnlockSavings.jsx`
+- `src/pages/RecoveryTracker.jsx`
+- `src/pages/Network.jsx`
+- `src/pages/Insights.jsx`
+- `src/pages/InsightDetail.jsx`
+- `src/pages/StripeAnalyzer.jsx`
+- `src/pages/Snapshot.jsx`
+- `src/pages/ForProviders.jsx`
+- `src/pages/Developers.jsx`
+- `src/pages/DevelopersMCP.jsx`
+
+**Rutas Navigate mantenidas intactas en `App.jsx`.** Los 10 paths siguen sirviendo `<Navigate to="/" replace />` para preservar deep-links viejos y SEO — el router ya no toca los archivos, solo despacha el redirect.
+
+**Ediciones surgicales (kept files, minimal changes):**
+- `src/lib/scoreEngine.js` — header actualizado: (a) inventario ampliado a 6 consumidores (3 frontend + 3 mirrors Deno documentados por primera vez), (b) nota histórica sobre `SavingsEstimator.jsx` purgado, (c) advertencia explícita de que el borrado del engine ahora bloquea la migración de los mirrors también.
+
+**Delta de suite esperado:** cero cambios en el conteo de tests. Ningún archivo `.test.js` borrado. Los tests de `scoreEngine.test.js` (33 casos) y `__benchmark_sync__.test.js` siguen intactos porque el engine sigue vivo. Si vitest reporta ≠ 333 passed / 2 skipped / 0 failed post-chunk, hay regresión que investigar.
+
+**Deudas pendientes documentadas (chunks futuros — NO en este):**
+- Punto 3 (banda del gap ±€641 vs ±20 bps assumption declarada): trazar propagación del ± en `paymentsGap.js`. Chunk propio.
+- Punto 4 (2 `it.skip` en `__sync_check__`): decisión pendiente entre realinear Deno↔src (alto riesgo de romper mirrors silenciosamente) vs sellar drift como permanente con normalizer mejorado. Chunk propio con propuesta previa.
+- Migración de `scoreEngine.js` + sus 3 mirrors Deno + `AdminBenchmarks`/`Reports`/`__benchmark_sync__` a benchmarks-engine v2: chunk M4-tier.
+- Purga de `SaaSProfile` / `ShippingProfile` + `getOnboardingStatus` + `computeVerticalStatus`: requiere refactor previo del onboarding para desacoplar la cadena.
+
+**Push:** commit sha se anota post-verificación empírica local.
+
+---
+
 ## 2026-07-09 — CUTOVER PAYMENTS-ONLY COMPLETADO · Milestone M1 sealed
 
 **Commit `8900364` pushed to `origin/main`.** End-to-end verification: **HECHA — todo OK.**
