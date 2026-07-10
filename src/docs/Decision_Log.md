@@ -5,6 +5,44 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-10 — M3.7 · Realineación de los 2 skips del sync-check (Opción iii-bis para ambos pares)
+
+**Contexto.** El sync-check (`src/lib/syncEngine/__sync_check__.test.js`) cazaba 7 pares de código duplicado Deno↔src. 5 en verde, **2 en `it.skip` como deuda documentada**: `paginators` y `stripeNormalizer`. El chunk analiza las 3 rutas por par (realinear Deno → src, realinear src → Deno, o mejorar el normalizer) y ejecuta la ruta de menor riesgo con verificación externa por Xavi (comprobación empírica del comportamiento de `\b` en JavaScript + grep de `toNum` en `dataSyncAgent`).
+
+**Hallazgos del análisis (relevantes para el futuro).**
+
+1. **Mal-diagnóstico del `\b` en el skip original de `paginators`.** El skip afirmaba que "los underscore prefixes collide con each other (`_engineSyncWithQueryParam` substring-matches `_engineSyncWithQueryParams`)". **Falso** — verificado empíricamente: el regex `/\\b_engineSyncWithQueryParam\\b/g` NO matchea dentro de `_engineSyncWithQueryParams` porque `\b` (boundary de palabra) no aplica entre dos caracteres `\w` (la `m` de `...Param` y la `s` que sigue son ambos `\w`, así que no hay boundary ahí). El motor de matching del sync-check YA era correcto. La razón REAL por la que el par estaba skipped es la divergencia del dispatcher: `src` usa `const PAGINATORS = { cursor_stripe: cursorStripe, ... }` + `getPaginator(style) { return PAGINATORS[style] || nullPaginator; }`, mientras Deno usa una cadena de `if (style === "cursor_stripe") return _paginatorCursorStripe` (líneas 1850-1857 de `dataSyncAgent/entry.ts`). El normalizer no puede colapsar ambas formas sin abrir la puerta a **falsos verdes** — si se añade un estilo nuevo en `src.PAGINATORS` pero se olvida el `if` correspondiente en Deno (o al revés), un normalizador "genérico" del dispatcher no lo cazaría.
+
+2. **Inviabilidad de la ruta (i) para `stripeNormalizer`.** Extraer `toNum` de dentro del arrow function a top-level del Deno colisionaría con **22 sibling normalizers** que cada uno redeclara su propia versión local de `toNum` (verificado: payplug, lexoffice, sevdesk, odoo, sage, quickbooks, xero, holded, bigcommerce, woocommerce, klarna, square, zettle, pennylane × 2, shopify, paypal, mollie, freshbooks, sendcloud, sevdesk_invoices, sevdesk_vouchers). Refactorizar los 22 juntos excede el alcance de este chunk y arriesga romper providers en producción (los normalizers sólo se ejecutan en el deploy real). Descartada.
+
+**Decisión: Opción iii-bis para ambos pares.** Mantener los `it.skip` con razones actualizadas (mencionando los tests paralelos por nombre exacto) y añadir dos tests nuevos que cubran el drift SEMÁNTICO — no el estructural — sin tocar código de producción.
+
+**Archivos creados / modificados:**
+
+- **`src/lib/syncEngine/paginators-dispatcher-parity.test.js`** (nuevo, 3 tests):
+  1. Ambos archivos existen y son legibles.
+  2. Extrae las keys del objeto `PAGINATORS` de `src` con regex sobre `const PAGINATORS = { ... };` + extrae los string literals de los `if (style === "X")` de Deno del bloque SYNC delimitado, y verifica que **el conjunto ordenado de estilos soportados es idéntico**. Compara conjuntos, no forma. Un futuro developer que añada `webhook_pagination` en uno pero no en el otro tendrá un fallo con la lista diff en el mensaje.
+  3. Guard defensivo: verifica que el set extraído de `src` es no-vacío — protege contra un futuro rewrite del dispatcher que rompa el regex y haga que el test pase trivialmente con dos arrays vacíos.
+
+- **`src/lib/normalizers/stripe-parity.test.js`** (nuevo, 9 tests: 7 fixtures + null-safety + freshness guard):
+  Estrategia: mantener una **PARITY-COPY inline verbatim del arrow function del Deno** (delimitado por markers `PARITY-COPY-START/END: stripeNormalizer`), sin `eval` ni `import` dinámico. Los tests hacen:
+  1. **Behavior parity** — corren `normalizeStripeBalanceTransactions` (src) y `denoParityCopy.stripe_transactions` (inline verbatim del Deno) sobre los 7 fixtures canónicos (`charges`, `refunds`, `disputes`, `payouts_and_transfers`, `application_fees`, `multi_currency`, `edge_cases`) y afirman `deepEqual` sobre cada uno. Un cambio semántico en cualquiera de las dos copias rompe el test con el output diff.
+  2. **Null-safety parity** — mismo `deepEqual` sobre `null`, `undefined`, `{}`, `{ data: null }`, `{ data: "nope" }`.
+  3. **Freshness guard** — lee el bloque real entre `SYNC-START: stripeNormalizer` y `SYNC-END: stripeNormalizer` de `dataSyncAgent/entry.ts`, lee el bloque `PARITY-COPY-START/END: stripeNormalizer` del propio archivo del test, normaliza AMBOS línea-a-línea (trim + filtro de líneas en blanco/comentarios) y compara. Rationale (ajuste de Xavi al plan original): la comparación byte-a-byte fallaría por indentación — el arrow del Deno vive anidado dentro del objeto `normalizers` gigante, el parity copy vive dentro de nuestro propio objeto pequeño. La normalización por línea es indentation-tolerant pero **cualquier cambio SEMÁNTICO (statement añadido, borrado, o modificado) rompe el guard**. El mensaje de error apunta a la primera línea divergente con snippet + instrucciones exactas para regenerar la PARITY-COPY desde el Deno.
+
+- **`src/lib/syncEngine/__sync_check__.test.js`** (modificado, 3 sitios):
+  1. Sort long-first en la aplicación de RENAMES: `const orderedRenames = [...RENAMES].sort((a, b) => b[0].length - a[0].length);` antes del bucle. **Blindaje puro** — no arregla ninguna colisión existente (el `\b` ya las prevenía), pero elimina toda una clase de bugs futuros si alguien añade a la tabla `_foo` y `_fooBar` sin `\b`-safe boundary. Sort estable sobre copia local; el `RENAMES` original queda intacto.
+  2. Razón del skip de `paginators` actualizada: menciona el dispatcher divergente, aclara que el `\b` sí funciona correctamente, referencia `paginators-dispatcher-parity.test.js` por nombre exacto.
+  3. Razón del skip de `stripeNormalizer` actualizada: menciona la inviabilidad de extraer helpers en Deno (colisión con 22 hermanos), la pérdida de testabilidad si se anidan en src, y referencia `stripe-parity.test.js` por nombre exacto + explica el mecanismo de freshness guard.
+
+**Alcance respetado — cero cambios en producción.** `paginators.js`, `stripe.js`, `dataSyncAgent/entry.ts` (Deno) intactos. Ningún byte de código que corra en un provider real cambia. Los dos skips permanecen como `it.skip` (siguen documentando el drift estructural en el lugar correcto), pero el drift SEMÁNTICO — el que importaba — queda cubierto por los tests paralelos con nombres explícitos referenciados desde las razones de skip.
+
+**Suite esperada tras el chunk:** ~339 passed / 0 failed / 2 skipped. Delta: 336 (post M3.6) + 3 tests dispatcher-parity + 9 tests stripe-parity = 348 nominales; algunos tests del stripe-parity comparten `describe` blocks — Vitest cuenta cada `it` individualmente, así que el número exacto depende de cómo Xavi corra el reporter. La condición dura es **0 failed** y **2 skipped** (los mismos dos de siempre, con las nuevas razones).
+
+**Push:** commit sha se anota tras push al remote (`github.com/ichbinxav/cambra-global`).
+
+---
+
 ## 2026-07-10 — M3.6 · Coherencia de la banda del gap (Opción B — dos ± independientes, documentados)
 
 **Diagnóstico.** El producto emitía dos "±" que el merchant leía como si fueran el mismo, y no lo son:

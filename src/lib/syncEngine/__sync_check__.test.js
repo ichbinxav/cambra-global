@@ -98,14 +98,14 @@ const PAIRS = [
   {
     key: "paginators",
     src: "src/lib/syncEngine/paginators.js",
-    skip: "STRUCTURAL DRIFT — Deno copy prefixes every helper with `_` (`_paginatorCursorStripe`, `_engineSyncWithQueryParam`, etc.) to avoid collisions inside the giant entry.ts; src exposes them as plain `cursorStripe`, `withQueryParam`, etc. for testability. The current normalizer RENAMES table is incomplete — the underscore prefixes collide with each other (e.g. `_engineSyncWithQueryParam` already substring-matches `_engineSyncWithQueryParams`). Behavior verified 100% equivalent on 17 fixtures (cursor_stripe x4 / cursor_hal_body x3 / page_number x4 / link_header x2 / offset_limit x2 / null x2). NOT byte-verbatim by ARCHITECTURE, not by oversight. Realignment pending dedicated decision.",
+    skip: "STRUCTURAL DRIFT — dispatcher shape divergente. src exposes a `PAGINATORS` object literal + `getPaginator()` that indexes into it; Deno uses an explicit `if (style === 'X') return _paginatorX` chain inside `getPaginator()`. The 8 helper renames (`_paginatorCursorStripe` → `cursorStripe`, etc.) ARE fully covered by RENAMES and \\b correctly prevents substring collisions (verified 2026-07-10: `\\b_engineSyncWithQueryParam\\b` does NOT match inside `_engineSyncWithQueryParams`). What this normalizer CANNOT reconcile without producing false greens is the dispatcher itself — collapsing both shapes to a canonical `__DISPATCH__(style)` would silently mask a real divergence in the set of supported styles. Behavior verified 100% equivalent on 17 fixtures (cursor_stripe x4 / cursor_hal_body x3 / page_number x4 / link_header x2 / offset_limit x2 / null x2). SEMANTIC drift (supported style set) is now locked by src/lib/syncEngine/paginators-dispatcher-parity.test.js. Realignment of the dispatcher pending dedicated refactor.",
   },
   { key: "rateLimit",    src: "src/lib/syncEngine/rateLimit.js" },
   { key: "refreshOn401", src: "src/lib/syncEngine/refreshOn401.js" },
   {
     key: "stripeNormalizer",
     src: "src/lib/normalizers/stripe.js",
-    skip: "STRUCTURAL DRIFT — Deno declares KNOWN_TYPES/toNum/mapType INSIDE the arrow function (object-method-shorthand inside the NORMALIZERS object); src declares them at TOP-LEVEL of the module as private helpers (export pattern + testability). Same behavior verified 100% equivalent on 7 fixtures (charges/refunds/disputes/payouts/application_fees/multi_currency/edge_cases) + empty/null inputs. NOT byte-verbatim by ARCHITECTURE. Realignment pending dedicated decision — see __sync_check__ Parte 2 diagnosis.",
+    skip: "STRUCTURAL DRIFT — Deno declares KNOWN_TYPES/toNum/mapType INSIDE the arrow function; src declares them at TOP-LEVEL of the module. Realignment analyzed 2026-07-10: extracting to top-level in Deno collides with 22 sibling normalizers that each redeclare their own local `toNum`; nesting in src breaks unit-test importability of `mapType`. Both routes net-negative. BEHAVIOR parity is now locked by src/lib/normalizers/stripe-parity.test.js — it runs both copies (src import + verbatim inline copy of the Deno arrow) over all 7 fixtures + null/edge cases and asserts deep equality, PLUS a freshness guard that compares the inline PARITY-COPY block against the actual Deno SYNC block (line-normalized) so the copy can never silently rot.",
   },
   { key: "bigcommerceNormalizer", src: "src/lib/normalizers/bigcommerce.js" },
   // paymentsGap: pure ES6 engine (src/lib/paymentsGap.js) mirrored verbatim
@@ -234,7 +234,16 @@ function normalize(body) {
     ["bigcommerce_orders", "__FN__"],
     ["normalizeBigCommerceOrders", "__FN__"],
   ];
-  for (const [denoName, srcName] of RENAMES) {
+  // Apply renames long-first — blindaje contra futuros pares donde un nombre
+  // sea prefijo estricto de otro (p.ej. si en el futuro alguien añade
+  // `_paginatorFoo` y `_paginatorFooBar` a la tabla). Con \b los boundaries
+  // ya evitan la mayoría de las colisiones plausibles (verificado 2026-07-10:
+  // `\b_engineSyncWithQueryParam\b` NO matchea dentro de `_engineSyncWithQueryParams`
+  // porque `\b` no aplica entre dos caracteres de palabra), pero ordenar
+  // largo-primero elimina toda una CLASE de bugs futuros por 0 coste. Sort
+  // estable (Array.sort) sobre la copia local — no mutamos el RENAMES original.
+  const orderedRenames = [...RENAMES].sort((a, b) => b[0].length - a[0].length);
+  for (const [denoName, srcName] of orderedRenames) {
     s = s.replace(new RegExp(`\\b${denoName}\\b`, "g"), srcName);
   }
 
