@@ -20,15 +20,21 @@ Order: most recent on top.
 **REGLA PERMANENTE — vinculante para toda función Base44 que hable con Stripe usando una clave "test":**
 
 > Antes de cualquier operación **de escritura o mutación** (crear payment_intents, refunds, customers, subscriptions, webhooks, mandates, etc.) contra Stripe usando un secret cuyo nombre o rol sea "test", la función DEBE:
-> 1. Hacer `GET /v1/account` con la clave.
+> 1. Crear un `PaymentMethod` probe (endpoint gratuito, no cobra nada) vía `POST /v1/payment_methods` con `type=card&card[token]=tok_visa`.
 > 2. Comprobar que la respuesta tiene `livemode === false` **explícito** (el field debe estar presente Y ser exactamente `false`).
 > 3. Abortar con `403` + mensaje explicativo si `livemode` está ausente, es `true`, o cualquier otro valor.
 >
-> Rationale: una restricted live key sobre la cuenta operativa puede pasarse por "test" en el nombre del secret pero cobrará dinero real. El campo `livemode` es la única señal autoritativa que Stripe expone. Ausencia ≠ test.
+> **Por qué NO usar `/v1/account`:** Stripe omite `livemode` en el top-level de `/v1/account` en AMBOS modos (empíricamente verificado 2026-07-10 sobre una `sk_test_...` genuina sobre `acct_1TqWzFJtkNunlMvz` — el field aparece como `ABSENT`). El campo autoritativo vive en los objetos de DATOS (charges, refunds, payment_methods), no en el account object. Un guard contra `/v1/account.livemode` rechaza tanto restricted-live keys (correcto) como sk_test_ genuinas (falso positivo). Usar PaymentMethod probe evita ambos.
 >
-> Excepción documentada: funciones **read-only** (`stripeTestGroundTruth`, `stripeHealthCheck`) están exentas del abort, pero DEBEN loggear un warning claro cuando `livemode !== false`. Esto permite diagnóstico rápido sin bloquear análisis legítimos de la cuenta live.
+> **Rationale del riesgo:** una restricted live key sobre la cuenta operativa puede pasarse por "test" en el nombre del secret pero cobrará dinero real. El PaymentMethod probe cuesta 0€ y valida en 1 llamada tanto el modo como los permisos de escritura antes del loop de siembra.
+>
+> Excepción documentada: funciones **read-only** (`stripeTestGroundTruth`, `stripeHealthCheck`) están exentas del abort, pero DEBEN loggear un warning claro cuando cualquier objeto de datos devuelto contenga `livemode:true`.
 
 Guard implementado verbatim en `base44/functions/seedStripeTestData/entry.ts` con referencia a esta entrada del Decision Log. Cualquier función futura que caiga en la categoría "test-key writer" debe copiar el patrón — el sync-check no cubre esto todavía; queda como TODO permanente en `KNOWN_DEBT.md`.
+
+**Historial de la iteración del guard (2026-07-10):**
+- v1 (rechazada): `/v1/account.livemode === false` → falso positivo sobre keys sk_test_ genuinas.
+- v2 (adoptada): PaymentMethod probe con `tok_visa` → verifica `livemode:false` sobre un data object real.
 
 ---
 

@@ -35,30 +35,45 @@ Deno.serve(async (req) => {
     }
 
     // ── LIVEMODE GUARD (permanent — applies to ANY future function that
-    //    writes against Stripe with a "test" key). Rule:
-    //      /v1/account MUST return livemode === false EXPLICITLY.
-    //      Absence of the field ≠ test. A restricted live key omits
-    //      livemode at the top level; we discovered this the hard way
-    //      on 2026-07-10 when STRIPE_TEST_SECRET_KEY contained a
-    //      restricted LIVE key against CAMBRA GLOBAL SAS (acct_1TqWzFJ…).
-    //    Documented as a binding rule in src/docs/Decision_Log.md
-    //    (2026-07-10 entry). Any function that CREATES or MUTATES
-    //    Stripe objects with a "test" key MUST run this exact guard
-    //    before any write. Read-only tools (stripeTestGroundTruth)
-    //    are exempt but should log a warning.
-    const acctRes = await fetch("https://api.stripe.com/v1/account", {
-      headers: { "Authorization": `Bearer ${testKey}` },
+    //    writes against Stripe with a "test" key). Rule + rationale:
+    //
+    //    /v1/account is NOT authoritative for livemode — Stripe omits the
+    //    field there in BOTH modes (empirically verified 2026-07-10 with
+    //    a confirmed sk_test_ key on acct_1TqWzFJtkNunlMvz test-sibling).
+    //    The authoritative signal is `livemode` on DATA OBJECTS (charges,
+    //    refunds, payment_methods) — which Stripe always populates.
+    //
+    //    Guard implementation: create a PaymentMethod probe (free, no
+    //    charge) with pm_card_visa and require pm.livemode === false
+    //    explicitly. If missing/true → abort with 403. This also validates
+    //    the key has write permissions before we start the real loop.
+    //
+    //    History: on 2026-07-10 STRIPE_TEST_SECRET_KEY briefly contained
+    //    a restricted LIVE key against CAMBRA GLOBAL SAS. The earlier
+    //    guard (against /v1/account) caught it but ALSO false-rejected
+    //    the first genuine sk_test_ key because /v1/account omits
+    //    livemode in test-mode too. See src/docs/Decision_Log.md (2026-07-10).
+    //
+    //    Read-only tools (stripeTestGroundTruth) exempt but should log a
+    //    warning when they see livemode:true on any returned row.
+    const probeRes = await fetch("https://api.stripe.com/v1/payment_methods", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${testKey}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({ type: "card", "card[token]": "tok_visa" }).toString(),
     });
-    const acct = await acctRes.json();
-    if (!acctRes.ok) {
-      return Response.json({ error: "could not resolve /v1/account", status: acctRes.status, acct }, { status: 500 });
+    const probe = await probeRes.json();
+    if (!probeRes.ok) {
+      return Response.json({ error: "livemode probe failed", status: probeRes.status, probe }, { status: 500 });
     }
-    if (acct.livemode !== false) {
+    if (probe.livemode !== false) {
       return Response.json({
-        error: "REFUSING TO SEED — key does not resolve to a TEST account",
-        reason: "livemode !== false (absence or true means this is a live/restricted key). Rotate STRIPE_TEST_SECRET_KEY to a genuine sk_test_… key.",
-        acct_id: acct.id ?? null,
-        acct_livemode_field: acct.livemode ?? "ABSENT",
+        error: "REFUSING TO SEED — key is not TEST-mode",
+        reason: "PaymentMethod probe returned livemode !== false. This is a LIVE or restricted-live key. Rotate STRIPE_TEST_SECRET_KEY to a sk_test_… key with 'Viewing test data' ON in the Stripe dashboard.",
+        probe_pm_id: probe.id ?? null,
+        probe_livemode: probe.livemode ?? "ABSENT",
       }, { status: 403 });
     }
 
@@ -104,7 +119,7 @@ Deno.serve(async (req) => {
 
     return Response.json({
       ok: true,
-      acct: { id: acct.id, livemode: acct.livemode, country: acct.country },
+      livemode_probe: { pm_id: probe.id, livemode: probe.livemode },
       seeded_count: created.length,
       charges: created,
       refunds: [
