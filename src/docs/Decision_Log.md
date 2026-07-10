@@ -5,6 +5,128 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-10 — M3-Chunk 5 · `getPaymentsAnalysisVerified` reader + allowlist estricta
+
+**Alcance.** Reader end del bridge sellado en Chunk 4. Función backend `getPaymentsAnalysisVerified` autenticada y con tenant guard que expone filas de `PaymentsAnalysisVerified` al merchant dueño del brand — o al admin — con **allowlist explícita de 7 campos** y cero leakage de service-role artifacts.
+
+**Contrato de entrada.** Dos paths mutuamente exclusivos:
+- **A) `{ verified_id }`** — fetch de fila específica por id.
+- **B) `{ brand_id, latest: true }`** — fila más reciente por `-created_date` (limit 1) para ese brand.
+
+Combinar ambos → 400 `invalid_input` con `detail: 'cannot combine verified_id with brand_id+latest'`. Ni A ni B → 400 con `detail: 'provide { verified_id } or { brand_id, latest: true }'`. Validación de shape (regex `/^[0-9a-f]{24}$/i`) ANTES del hit a DB — rechazo barato de basura.
+
+**Auth + tenant guard.** Patrón exacto del Chunk 4:
+- `auth.me()` en try/catch → 401 `{"error":"Unauthorized"}` limpio, sin stack en el body.
+- Row cargada via `asServiceRole` (bypasea la RLS admin-only de la entidad, que es correcto — el gate lo pone la función, no el schema).
+- Brand del row cargado; si el brand no existe (huérfano) → 404 (nunca 500).
+- Admin bypass propiedad. Non-admin: `checkOwnership(user, brand)` inline (misma función pura sellada en Chunk 2). Falla → **404 `not_found`** (nunca 403 — jamás leakear existencia de brand ajeno).
+
+**Allowlist — SOLO estos 7 campos salen** (copia explícita field-by-field, cero spread/destructure):
+
+| Campo returned | Fuente | Notas |
+|---|---|---|
+| `ok: true` | constante | Marker de éxito consistente con teaser. |
+| `brand_id` | row.brand_id | Necesario para que el UI multi-brand agrupe. |
+| `engine_version` | row.engine_version | Ancla de versión (Chunk 3: `payments-gap-1.3.0`). |
+| `engine_result` | row.engine_result | Payload completo del motor — no lleva PII. |
+| `measurement_window` | row.measurement_window | Sub-objeto reconstruido explícito (from/to/days_covered). |
+| `sample_metrics` | row.sample_metrics | Verbatim — solo agregados numéricos con labels Chunk 4. |
+| `measured_current_bps` | row.measured_current_bps | Métrica canónica M3. |
+| `measured_intl_pct` | row.measured_intl_pct | Necesario para explicar el uplift en el UI. |
+
+**Fuera de la allowlist (verificado empíricamente — traza literal abajo):** `source_charges_hash`, `owner_email`, `integration_id`, `id`, `created_by`, `created_by_id`, `created_date`, `updated_date`, `measured_fixed_fee_minor`, `is_sample`.
+
+**Traza de verificación de allowlist (ejecutada 2026-07-10):**
+```
+raw_row_all_keys: [brand_id, created_by, created_by_id, created_date, engine_result,
+                   engine_version, id, integration_id, is_sample, measured_current_bps,
+                   measured_fixed_fee_minor, measured_intl_pct, measurement_window,
+                   owner_email, sample_metrics, source_charges_hash, updated_date]
+endpoint_returned_keys: [ok, brand_id, engine_result, engine_version, measurement_window,
+                         measured_current_bps, measured_intl_pct, sample_metrics]
+raw_row_has_source_charges_hash: "chunk5_seed_A_hash_should_be_s..."  ← existe en la fila
+raw_row_has_owner_email: "service+ed332dd1-...@no-reply.base44.com"  ← existe en la fila
+raw_row_has_integration_id: "integ_test_chunk5_a"                    ← existe en la fila
+forbidden_fields_leaked_in_response: []                              ← LEAKAGE = 0
+allowlist_verdict: "PASS — no forbidden fields leaked"
+```
+
+**Los 4 casos del contrato + 2 extras, ejercitados vía `test_backend_function` (caller admin) con trazas literales:**
+
+**1. Path A — `{ verified_id }` válido → 200 con allowlist.**
+Sembradas 2 filas (`6a50b332...` current_bps 339 e `6a50b333...` current_bps 341) sobre brand `6a50868a...`. Response de A por id de la primera:
+```
+status: 200
+body: {
+  ok: true,
+  brand_id: "6a50868a4983b042c1b26cc2",
+  engine_version: "payments-gap-1.3.0",
+  engine_result: { current_effective_bps: 339, ... mode: "verified", ... },
+  measurement_window: { from: "2026-04-11T00:00:00Z", to: "2026-07-10T00:00:00Z", days_covered: 90 },
+  sample_metrics: { gmv_eur_monthly: 44748.94, gross_volume_eur_90d: 134246.81, tx_count_charges_90d: 43, ... },
+  measured_current_bps: 339,
+  measured_intl_pct: 95.35
+}
+```
+
+**2. Path B — `{ brand_id, latest: true }` con 2 filas → devuelve la MÁS RECIENTE.**
+Response literal (nótese `current_effective_bps: 341` — la fila B, más nueva por 481ms):
+```
+status: 200
+body.engine_result.current_effective_bps: 341   ← row B, no row A
+body.measured_current_bps: 341
+body.measured_intl_pct: 96.1
+body.measurement_window.from: "2026-04-12T00:00:00Z"   ← ventana +1 día de row B
+```
+Ordenación `'-created_date'` limit 1 verificada. `rowB.created_date: 2026-07-10T08:54:11.438Z` > `rowA.created_date: 2026-07-10T08:54:10.957Z` (delta 481ms — suficiente para orden estable).
+
+**3. `verified_id` malformado → 400.**
+```
+input: { verified_id: "not_a_valid_id" }
+status: 400
+body: { error: "invalid_verified_id" }
+```
+Regex `/^[0-9a-f]{24}$/i` rechaza ANTES del DB hit.
+
+**4. `brand_id` inexistente (formato válido, no existe) → 404.**
+```
+input: { brand_id: "000000000000000000000000", latest: true }
+status: 404
+body: { error: "not_found" }
+```
+`filter([])` returns empty → 404 uniforme. Merchant ajeno vería el MISMO 404 (patrón cover-your-tracks Chunk 2).
+
+**5. Ni A ni B → 400.**
+```
+input: {}
+status: 400
+body: { error: "invalid_input", detail: "provide { verified_id } or { brand_id, latest: true }" }
+```
+
+**6. A y B simultáneos → 400.**
+```
+input: { verified_id: "6a50b332...", brand_id: "6a5086...", latest: true }
+status: 400
+body: { error: "invalid_input", detail: "cannot combine verified_id with brand_id+latest" }
+```
+
+**Verificaciones DIFERIDAS al gate final de M3** (requieren usuarios humanos reales — imposibles con las tools del agente, cubiertas por (a) el patrón de auth ya sellado en Chunk 4, (b) los 10 tests unitarios de `checkOwnership` del Chunk 2, (c) el diseño del handler):
+- Path 401 con fetch anónimo real (no admin) → response body `{"error":"Unauthorized"}`.
+- Path 404 con non-admin autenticado contra brand ajeno → jamás 403.
+- Path 200 con owner legítimo non-admin → mismo response que admin (misma allowlist).
+
+**Ficheros tocados:**
+- `base44/functions/getPaymentsAnalysisVerified/entry.ts` — creado (7079 chars). Handler puro, cero dependencias fuera de `@base44/sdk`.
+- Cero cambios en schema, entities, motor, o cualquier otra función.
+
+**Cleanup post-verificación.** 2 filas seed borradas (`6a50b332...`, `6a50b333...`). `PaymentsAnalysisVerified.list().length === 0` post-cleanup. Tabla vacía para producción.
+
+**Estado del chunk: SELLADO.** Consumidor listo para Fase 6-7 (frontend del badge VERIFIED). El motor produce, la entidad persiste con aislamiento denormalizado, el reader expone sin leakage — la cadena backend M3 está completa.
+
+**Push:** commit sha se anotará tras push al remote.
+
+---
+
 ## 2026-07-10 — M3-Chunk 4 · Rama doméstica verificada + fabricación 1b confirmada + sellado definitivo
 
 **Este cierre resuelve el agujero real que dejó la fabricación del 1b: la rama doméstica de la clasificación intl NUNCA se había ejercitado con datos reales. Ahora sí, con trazas literales.**
