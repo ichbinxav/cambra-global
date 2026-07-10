@@ -59,9 +59,30 @@ Deno.serve(async (req) => {
     }
 
     // Aggregates in cents (integer math — no float drift).
+    // We compute TWO rate figures side by side:
+    //   1. all_in:            all balance_transactions in the window — the raw
+    //                         all-inclusive number (includes application_fee,
+    //                         stripe_fee, payout, adjustment, etc). Historical
+    //                         reference — NOT what the merchant experiences as
+    //                         per-transaction cost.
+    //   2. charge_only_filtered: canonical M3 filter — rows whose
+    //                         reporting_category ∈ {charge, refund,
+    //                         partial_capture_reversal}. Refund rows carry
+    //                         negative amount and positive fee (Stripe's model)
+    //                         → the SUM naturally gives numerator=fees on
+    //                         processing and denominator=NET volume. This is
+    //                         the number stripeDataSync must reproduce exactly
+    //                         over the same window.
+    const CANONICAL_CATEGORIES = new Set(["charge", "refund", "partial_capture_reversal"]);
+
     let sumAmountCents = 0;
     let sumFeeCents = 0;
     let sumNetCents = 0;
+    let canonAmountCents = 0;   // Σ amount over canonical rows (= NET volume with signs)
+    let canonFeeCents = 0;      // Σ fee over canonical rows (= processing fees)
+    let canonCountCharge = 0;
+    let canonCountRefund = 0;
+    let canonCountPartial = 0;
     const byCategory = {};
     const byType = {};
     const byCurrency = {};
@@ -77,7 +98,22 @@ Deno.serve(async (req) => {
       byType[r.type] = (byType[r.type] || 0) + 1;
       const cur = r.currency || "__null__";
       byCurrency[cur] = (byCurrency[cur] || 0) + 1;
+
+      if (CANONICAL_CATEGORIES.has(r.reporting_category)) {
+        canonAmountCents += Number(r.amount || 0);
+        canonFeeCents += Number(r.fee || 0);
+        if (r.reporting_category === "charge") canonCountCharge++;
+        else if (r.reporting_category === "refund") canonCountRefund++;
+        else if (r.reporting_category === "partial_capture_reversal") canonCountPartial++;
+      }
     }
+
+    const allInRateBps = sumAmountCents > 0
+      ? Math.round((sumFeeCents / sumAmountCents) * 10000)
+      : 0;
+    const canonRateBps = canonAmountCents > 0
+      ? Math.round((canonFeeCents / canonAmountCents) * 10000)
+      : 0;
 
     return Response.json({
       ok: true,
@@ -104,6 +140,30 @@ Deno.serve(async (req) => {
         amount: sumAmountCents / 100,
         fee: sumFeeCents / 100,
         net: sumNetCents / 100,
+      },
+      // Two rate figures — the raw all-in (historical / diagnostic) and the
+      // canonical charge-only filtered (the number stripeDataSync computes).
+      rate: {
+        all_in: {
+          numerator_cents: sumFeeCents,
+          denominator_cents: sumAmountCents,
+          bps: allInRateBps,
+          pct: Math.round(allInRateBps) / 100,
+          note: "Diagnostic only — includes application_fee, stripe_fee, payouts, adjustments. NOT what the merchant experiences per transaction.",
+        },
+        charge_only_filtered: {
+          categories_included: ["charge", "refund", "partial_capture_reversal"],
+          numerator_cents: canonFeeCents,
+          denominator_cents: canonAmountCents,
+          bps: canonRateBps,
+          pct: Math.round(canonRateBps) / 100,
+          counts: {
+            charge: canonCountCharge,
+            refund: canonCountRefund,
+            partial_capture_reversal: canonCountPartial,
+          },
+          note: "CANONICAL M3 definition — this is the number stripeDataSync must reproduce over the same window.",
+        },
       },
       breakdown: {
         by_reporting_category: byCategory,
