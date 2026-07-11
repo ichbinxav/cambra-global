@@ -39,7 +39,29 @@ Order: most recent on top.
 
 **Suite esperada tras el chunk:** ~339 passed / 0 failed / 2 skipped. Delta: 336 (post M3.6) + 3 tests dispatcher-parity + 9 tests stripe-parity = 348 nominales; algunos tests del stripe-parity comparten `describe` blocks — Vitest cuenta cada `it` individualmente, así que el número exacto depende de cómo Xavi corra el reporter. La condición dura es **0 failed** y **2 skipped** (los mismos dos de siempre, con las nuevas razones).
 
-**Push:** commit sha se anota tras push al remote (`github.com/ichbinxav/cambra-global`).
+**Suite verificada externamente (2026-07-10, Mac local):** **348 passed / 0 failed / 2 skipped**, incluyendo test de mutación del freshness guard (alterar 1 char dentro del bloque SYNC del Deno → guard rojo con línea exacta de divergencia; restaurado → verde 9/9). El guard no es no-op — caza drift real con diagnóstico útil. Desglose confirmado: `stripe-parity` = 9 tests (7 fixtures + null-safety + guard), `dispatcher-parity` = 3 tests.
+
+**Push:** pendiente de tag anotado desde el Mac (ruta 3 acordada — cero riesgo con el sync de Base44, hitos sellados como metadata git permanente, no reescribe historial de `origin/main`). Bloque completo autocontenido:
+
+```bash
+cd cambra-global
+git pull origin main
+git log --oneline -5        # confirma que el head incluye lo último de M3.7
+git tag -a m3.7-sealed -m "M3.5 + M3.6 + M3.7 — cleanup post-cutover, gap-band coherence, sync-check realignment
+
+M3.5: purge 14 orphan artifacts (Results.jsx, SavingsEstimator, 10 deprecated pages, 2 backend functions). Empirical audit trail per file.
+
+M3.6: decouple savings_band_pct (cohort-level uncertainty ±20/±35%) from processor_margin_band_bps (component-level ±N bps) in ACHIEVABLE_NOTE + AssumptionsFootnote. Copy preserves parser contract via FeeBreakdownCard regex. +3 tests lock the copy↔parser sync forever.
+
+M3.7: retire the 2 documented sync-check skips (paginators dispatcher, stripe normalizer) with parallel behavior-parity tests instead of risky Deno refactors. Freshness guard on stripe normalizer scoped to arrow body only (wrapper stripped). RENAMES sorted long-first as future-proofing. Zero production code touched.
+
+Sync-check pairs still skipped: 2 (structural drift, covered by parity tests).
+Suite: 348 passed / 0 failed / 2 skipped (externally verified, incl. mutation test on freshness guard)."
+git push origin m3.7-sealed
+git rev-parse m3.7-sealed   # este es el SHA para anotar aquí
+```
+
+**SHA del tag:** _pendiente de `git rev-parse m3.7-sealed` desde el Mac — se anota aquí cuando llegue (ver KNOWN_DEBT tarea manual "Tag anotado m3.7-sealed")._
 
 ---
 

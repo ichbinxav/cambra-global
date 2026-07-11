@@ -378,6 +378,23 @@ Migración cross-cutting a 10+ entidades + backfill + audit de callers. Sesión 
 
 ---
 
+## TASK-MANUAL-1 — Tag anotado `m3.7-sealed` pendiente de ejecutar desde el Mac
+
+**Estado:** pendiente (tarea manual, prioridad BAJA)
+**Origen:** cierre M3.7 (2026-07-10). La superficie de tools del agente Base44 no expone git CLI ni push con mensaje custom, así que el sellado del hito M3.5+M3.6+M3.7 quedó en manos del builder.
+
+### Qué hacer
+Ejecutar desde el Mac local el bloque de comandos que vive **verbatim en la entrada M3.7 del `Decision_Log.md`** (sección "Push: pendiente de tag anotado desde el Mac"). El bloque es autocontenido: `git pull` + `git tag -a m3.7-sealed -m "…"` + `git push origin m3.7-sealed` + `git rev-parse`.
+
+### Por qué es baja prioridad
+El código, tests, y documentación de M3.5+M3.6+M3.7 ya están en `origin/main` vía los auto-commits de Base44. El tag es metadata git — hito sellado y punto de referencia para dimensionar M4, pero no bloquea ningún trabajo funcional. Cero riesgo de desincronización: la ruta 1 (squash + `--force-with-lease`) fue descartada explícitamente porque force-push sobre una rama que Base44 sincroniza puede provocar conflictos raros; los tags no tocan `main`.
+
+### Al cerrar
+- El SHA de `git rev-parse m3.7-sealed` se anota en el placeholder final de la entrada M3.7 del `Decision_Log.md` (línea "SHA del tag: pendiente…").
+- Esta entrada se cierra con `RESUELTA <fecha>` una vez el tag esté en el remote.
+
+---
+
 ## BUG-5 — `handleDisconnect` apunta a entidad legacy `StripeConnection`
 
 **Estado:** activa
