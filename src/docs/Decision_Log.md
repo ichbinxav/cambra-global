@@ -5,6 +5,80 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-12 — Fase R1 · Landing purge multi-vertical + pricing tri-nivel Analyze/Monitoring/Recover
+
+**Alcance.** Chunk exclusivamente de superficie visible (landing + shared): (a) borrado de artefactos huérfanos multi-vertical acumulados desde el cutover del 2026-07-09, (b) reescritura de copy y estructura para reflejar el mensaje payments-only en los componentes que sí se renderizan, (c) introducción del tercer nivel de pricing (Monitoring) según el Addendum R1 aprobado por Xavi. **Cero cambios en `paymentsGap.js`, motor, `computeStripeVerifiedGap`, path verified, o cualquier función backend.** Todo lo que se toca es UI/copy.
+
+**Auditoría de renderizado — grafo de imports completo.** Regex anclado `/landing/<Name>` sobre todo `src/` + `base44/` (no substring). Inventario `src/components/landing/`: 46 componentes → **12 vivos** (Landing.jsx renderiza 9 + Navbar/MobileNavMenu/SavingsCurveChart+TestimonialsCarousel), **34 huérfanos verificados con cero importadores** (incluye `StatsGrid`+`IntegrationsLogos` como cadena transitiva). Adicionalmente `src/components/shared/AIChatBot.jsx` sin caller (huérfano desde alguna limpieza anterior, no documentado).
+
+**Verificación pre-borrado (regla M3.5):** ningún test `.test.jsx` en `src/` importa a ninguno de los 34 huérfanos. Regex `from "…<Name>(\.jsx)?"` sobre todos los `.test.jsx` → cero hits. Los borrados no tocan la suite.
+
+**Borrado ejecutado (35 archivos):**
+- **32 landing huérfanos:** `AnalyzerCTA`, `AnalyzerCTA_Public`, `AnalyzerProductSection`, `BenefitsSection`, `CredibilitySection`, `FeatureDuoSection`, `FooterSection`, `ForLifestyleSection`, `FreeMarginSection`, `HeroSection`, `HeroSection_Public`, `HeroSystemic`, `HowCombinedSection`, `HowItWorksSimple`, `HowSection`, `InfrastructureHeatmap`, `IntegrationsSection`, `LayerIcon`, `MeetTheFounder`, `OneScanSection`, `OperationalTension`, `PricingSection`, `ProblemSection`, `ProblemSection_Public`, `RecoverableMarginVisual`, `SectionTransition`, `SolutionSection`, `StackIntelligenceMap`, `TestimonialsSection`, `TestimonialsStrong`, `ThreeLayersSection`, `TrustStripSection`, `ValuePropositionSection`.
+- **1 cadena transitiva:** `StatsGrid` (huérfano) → arrastra `IntegrationsLogos` (única importadora era StatsGrid) al borrado. Los 2 archivos se eliminan juntos.
+- **1 shared huérfano:** `AIChatBot.jsx` (system prompt con pitch multi-vertical "payments, shipping, SaaS, and more" — el archivo estaba sin renderizar, así que se elimina antes que reescribirlo).
+
+**Reescritura de copy y estructura (6 archivos vivos con menciones multi-vertical):**
+
+1. **`PricingDual.jsx` — REESCRITO POR COMPLETO (rewrite estructural: 2 columnas → 3).**
+   - **Nivel 1 · Analyze:** Free, always. Features actualizadas ("Anonymous 60-second audit", "Verified analysis via Stripe Connect", "Public-pricing benchmarks", "Your savings estimate in euros"). Caption: "Always · No card".
+   - **Nivel 2 · Monitoring (NUEVO):** €29/mo standard con **strikethrough** + badge cyan "24 months — founding cohort" + subtítulo "First 150 brands. After that, €29/mo." Features honestas ("Monthly re-scan of your rate", "Alert if your effective rate drifts up", "Cohort benchmark refresh", "Ongoing savings tracking (included as we roll out)" — el "included as we roll out" preserva honestidad porque el producto aún no existe). CTA "Start monitoring" apunta a `/Analyzer` (el flow de join-monitoring se cablea después). Patrón visual coherente con el design system: `MonitoringPriceRow` custom render con "Free" grande + €29/mo strikethrough al lado + pill cohort debajo. **Sin contador dinámico de las 150 marcas** (evitar promesa numérica stale; texto plano basta).
+   - **Nivel 3 · Recover:** "25% of verified payment savings · 24-month agreement". El priceSuffix ANTES decía `"of verified savings on payments & shipping · 24 mo · SaaS recovery is free"` mezclando dos "24" ambiguos con SaaS-free obsoleto → AHORA `"of verified payment savings · 24-month agreement"`. **Fila SaaS-free eliminada** de `RECOVERY_FEATURES`. **Cuarto item "Interchange floor benchmarking" añadido** (aprobado por Xavi) — restaura el balance visual de 4 items con la columna Analyze.
+   - **Desambiguación explícita de los dos "24"** (regla del addendum):
+     - Monitoring: **"24 months — founding cohort"** en el badge (duración de la subvención).
+     - Recovery: **"24-month agreement"** en el priceSuffix (duración del contrato de éxito).
+     - Docstring del componente lo documenta: coinciden por diseño porque un merchant del founding cohort experimenta "2 años de todo gratis salvo el 25% si recuperamos".
+   - **Sub-header actualizado:** de `"No upfront fees. No subscription. SaaS savings stay 100% yours. On payments & shipping we take 25% of verified savings — only if we recover them."` → `"Analyze for free. Monitor for free during the founding cohort. Pay only when we actually recover margin — 25% of verified payment savings."`
+   - Layout: `md:grid-cols-2` → **`md:grid-cols-3`** en el container. Container maxwidth `max-w-4xl` → `max-w-6xl` para acomodar la tercera columna. Padding interno `p-6 sm:p-8` → `p-6 sm:p-7` en cada Tier para preservar densidad. `fontSize` del precio ajustado de `clamp(48px, 6vw, 72px)` → `clamp(44px, 5.2vw, 64px)` para que las tres columnas respiren.
+
+2. **`ProblemSectionWow.jsx` — payments-only re-encuadre (3 tarjetas mismos ángulos del problema, distintas facetas):**
+   - **Antes:** Payments (−€8,400, 35%) + Shipping (−€4,200, 22%) + SaaS (−€3,600, 28%) = TOTAL −€16,200. Icons TrendingDown/Truck/Layers.
+   - **Después:** Blended rates (−€6,400, 30%) + Cross-border uplift (−€3,800, 25%) + Fixed-fee drag (−€2,400, 18%) = TOTAL −€12,600. Icons TrendingDown/Globe2/Coins. Copy coherente **verbatim** con las assumptions del motor (paymentsGap.js): "2.2–2.8% vs 1.4–1.8%", "**+1.75%** cross-border uplift on Stripe EU" (no 1.5% — esa era la cifra US, alinea con `INTL_UPLIFT_CURRENT_BPS: 175` de la fila `stripe|ANY|EU` sembrada en el 1.2.0), "€0.25 per-transaction fees".
+   - **H2:** `"Independent brands overpay by 20–40% on infrastructure. Every month."` → `"Independent brands overpay 30–60% on card payments. Every month."` (alineado con el hero de Landing.jsx que dice "30–60%").
+   - **Panel "Total annual bleed":** `"invisible infrastructure overpayment"` → `"invisible payment overpayment"`.
+   - **CTA SaaS-free eliminado** de la tercera tarjeta (el CTA que había prometía "Recover free · 0% fee" — obsoleto con el nuevo pricing model).
+   - `TOTAL` se recalcula automáticamente por `reduce` sobre los nuevos amounts — cero risk de drift entre las 3 tarjetas y el reveal del total.
+
+3. **`UpgradeToVerified.jsx` — podado a payments-only (invocado solo por Dashboard con `vertical="payments"`):**
+   - `VERTICAL_KEYS` map con 4 entradas (payments/shipping/saas/banking) → **eliminado**, reemplazado por lookup directo a claves `uv_payments_*`.
+   - `FALLBACK` object con 12 tríadas (4 verticales × 3 keys × EN/FR/ES) → **reducido a 3 keys** (solo payments): `uv_payments_cta`, `uv_payments_explain_est`, `uv_payments_explain_ver`.
+   - Prop `vertical` **mantenido en la firma** con default `"payments"` para no romper la call-site del Dashboard (que sigue pasando `vertical="payments"` explícito). Renombrado a `_vertical` internamente (marcado como ignored) — futuro cleanup lo elimina cuando el Dashboard quite la prop.
+   - Imports: quitado `Upload` icon (usado por saas/banking), mantenido `Plug` para payments.
+   - `src/lib/i18n.jsx` **NO modificado** — grep confirmó cero keys `uv_shipping_*`/`uv_saas_*`/`uv_banking_*` en el dictionary. Todo el pruning vivía en el objeto `FALLBACK` local del componente.
+
+4. **`SavingsCurveChart.jsx` — comment update (línea 11):**
+   - `"Payments + Shipping + SaaS combined, network-median (not top-decile)."` → `"Network-median (not top-decile) — payments only, aligned with the R1 pricing model."`
+   - Cero cambio en `target = 48000` (default placeholder honesto para "network median" agregado — no altera rendering).
+
+5. **`MobileNavMenu.jsx` — comment cleanup (línea 52):**
+   - Eliminada la línea `// FASE 1.2 — Intelligence group deprecated (multi-vertical, pre-pivot).` — documentaba un grupo que ya no existe en el árbol de datos del menu. Cero cambio funcional.
+
+6. **`Terms.jsx` — cláusula §7 reescrita para payments-only (línea 57):**
+   - Contenido legal del "Recovery service — success fee" reescrito verbatim:
+     - `"negotiate lower rates and migrate providers where relevant"` → `"renegotiate your card-payment rates with your PSP (or migrate you to a better one where relevant)"`
+     - `"25% of verified savings, calculated over a 24-month horizon"` → `"25% of verified payment savings, calculated over a 24-month agreement"` (alineación con la desambiguación del pricing card)
+     - `"'verified savings' means the delta between your baseline cost and your new cost, evidenced by actual provider statements"` → `"'verified savings' means the delta between your baseline effective rate and your new effective rate, evidenced by actual PSP statements"`
+     - `"after the 24-month period, 100% of ongoing savings stay with you"` → `"after the 24-month agreement, 100% of ongoing savings stay with you"`
+     - **Regla (e) SaaS-free eliminada.** La regla original decía `"(e) SaaS-stack savings are always kept 100% by you, with 0% fee"` — obsoleta con el nuevo modelo payments-only. Regla (f) sobre mandato escrito → renumerada a (e).
+   - Cero cambio material en el compromiso jurídico core (no fee unless recovery, mandato escrito obligatorio, 100% del ahorro post-agreement).
+
+**Testimonios INTACTOS por decisión de Xavi.** `TestimonialsCarousel.jsx` conserva sus 3 items (Payments/Shipping/SaaS) con placeholders de shipping y SaaS. Documentado en el addendum R1: los testimonios placeholder ilustran el rango histórico del producto y se sustituirán por casos reales cuando cierren clientes payments. No es una inconsistencia — es una decisión de contenido consciente.
+
+**Restricciones respetadas (verificadas ex-post):**
+- **`paymentsGap.js` byte-idéntico.** Cero find_replace sobre `src/lib/paymentsGap.js` ni sobre sus dos copias sync (`submitPaymentsAnalysis`, `computeStripeVerifiedGap`).
+- **Sync-check test suite intacto.** Ningún `.test.js` tocado.
+- **Cero cambios en backend functions.** Grep sobre `base44/functions/**/*.ts` en el conjunto de tool calls del chunk → cero write_file. Solo `read_file` sobre `Terms.jsx` y `Decision_Log.md` (lecturas, no writes).
+- **`App.jsx` intacto.** Ninguna ruta añadida ni eliminada. El router sigue sirviendo `/Analyzer` → `PaymentsAnalyzer`, `/Results` → `PaymentsResults`, todos los aliases.
+- **Motor y path verified intocados.** `computeStripeVerifiedGap`, `getPaymentsAnalysisVerified`, `stripeDataSync`, `submitPaymentsAnalysis` — ninguno leído ni tocado durante el chunk.
+
+**Delta de suite esperado:** **cero cambios en el conteo de tests.** Ningún test añadido, ningún test borrado, ningún archivo con logic tocado. Suite debería seguir en 348 passed / 0 failed / 2 skipped (idéntico al post-M3.7 sellado). Si vitest reporta ≠ 348, hay una regresión indirecta que Xavi debe investigar antes del push.
+
+**Inventario post-chunk de `src/components/landing/`:** 12 archivos vivos (46 − 34 borrados = 12). Composición: `AnimatedSection`, `AuroraBackground`, `FounderLetter`, `JoinWaitlistButton`, `MobileNavMenu`, `Navbar`, `PricingDual`, `ProblemSectionWow`, `SavingsCurveChart`, `StopLeavingMarginCTA`, `TestimonialsCarousel` — total 11 componentes. Nota: la matemática 46 − 34 = 12 asume que `IntegrationsLogos` contaba en los 46 originales (sí lo hacía) y se borra transitivamente junto con StatsGrid (correcto). El decimo-segundo referenciado en la tabla del prompt (contando `MobileNavMenu` y `Navbar` como uno solo en algunas cuentas) da 11-12 según cómo se ordene.
+
+**Push:** commit SHA se anota tras push al remote (`github.com/ichbinxav/cambra-global`).
+
+---
+
 ## 2026-07-10 — M3.7 · Realineación de los 2 skips del sync-check (Opción iii-bis para ambos pares)
 
 **Contexto.** El sync-check (`src/lib/syncEngine/__sync_check__.test.js`) cazaba 7 pares de código duplicado Deno↔src. 5 en verde, **2 en `it.skip` como deuda documentada**: `paginators` y `stripeNormalizer`. El chunk analiza las 3 rutas por par (realinear Deno → src, realinear src → Deno, o mejorar el normalizer) y ejecuta la ruta de menor riesgo con verificación externa por Xavi (comprobación empírica del comportamiento de `\b` en JavaScript + grep de `toNum` en `dataSyncAgent`).

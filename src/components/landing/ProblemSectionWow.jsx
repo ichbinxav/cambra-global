@@ -1,47 +1,48 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { TrendingDown, Truck, Layers, AlertTriangle, ArrowRight } from "lucide-react";
+import { TrendingDown, Globe2, Coins, AlertTriangle } from "lucide-react";
 import SectionLabel from "@/components/shared/SectionLabel";
 import AnimatedSection from "@/components/landing/AnimatedSection";
 
 /**
- * Problem section — WOW edition.
- * Animated counters, overpay bars, glow accents, cinematic total reveal.
+ * Problem section — payments-only edition (Fase R1, 2026-07-12).
+ *
+ * Three angles of the SAME problem — hidden overpayment on card payments.
+ * Numbers deliberately chosen to be consistent with the engine's own
+ * assumptions (see paymentsGap.js: Stripe EU standard 2.2–2.8%, achievable
+ * floor 1.4–1.8%, +1.75% cross-border uplift on Stripe EU/UK).
+ *
+ * Total bleed = €12,600/yr — the sum of the three components below,
+ * NOT an editorial number; changes automatically if the individual amounts
+ * are re-tuned.
  */
 const ITEMS = [
   {
     icon: TrendingDown,
-    category: "Payments",
-    amount: 8400,
-    overpayPct: 35, // % over the optimal rate
-    body: "Most brands pay 2.2–2.8% in fees. Optimised rate for your volume: 1.4–1.8%.",
+    category: "Blended rates",
+    amount: 6400,
+    overpayPct: 30,
+    body: "Blended pricing hides the interchange floor. Most brands pay 2.2–2.8% when their real minimum is 1.4–1.8%.",
     accent: "rgba(239,68,68,0.65)",
     glow: "rgba(239,68,68,0.08)",
   },
   {
-    icon: Truck,
-    category: "Shipping",
-    amount: 4200,
-    overpayPct: 22,
-    body: "Carriers charge brands without collective leverage 15–30% more.",
+    icon: Globe2,
+    category: "Cross-border uplift",
+    amount: 3800,
+    overpayPct: 25,
+    body: "International cards add +1.75% on the wrong PSP. On the right one, the schemes' floor is the same — the margin isn't.",
     accent: "rgba(249,115,22,0.65)",
     glow: "rgba(249,115,22,0.08)",
   },
   {
-    icon: Layers,
-    category: "SaaS & Tools",
-    amount: 3600,
-    overpayPct: 28,
-    body: "Avg. independent brand pays for 4–6 overlapping or underused tools.",
+    icon: Coins,
+    category: "Fixed-fee drag",
+    amount: 2400,
+    overpayPct: 18,
+    body: "€0.25 per-transaction fees compound on low-ticket flows. Amortized against your real ticket size, they quietly change your effective rate.",
     accent: "rgba(236,72,153,0.65)",
     glow: "rgba(236,72,153,0.08)",
-    // Only the SaaS card gets a CTA: SaaS savings are a pure win for the brand
-    // (free margin, 0% fee) — worth surfacing an entry point right here.
-    cta: {
-      label: "Recover free · 0% fee",
-      href: "/Analyzer",
-    },
   },
 ];
 
@@ -192,22 +193,6 @@ function Card({ item, index }) {
       </div>
 
       <p className="relative text-[13px] text-white/55 leading-relaxed">{item.body}</p>
-
-      {item.cta && (
-        <Link
-          to={item.cta.href}
-          className="relative mt-5 inline-flex items-center gap-1.5 text-[12px] font-bold rounded-full px-3.5 py-2 transition-all group/cta hover:scale-[1.02]"
-          style={{
-            background: `linear-gradient(135deg, ${item.accent.replace("0.65", "0.18")} 0%, ${item.accent.replace("0.65", "0.08")} 100%)`,
-            border: `1px solid ${item.accent.replace("0.65", "0.45")}`,
-            color: "#ffffff",
-            boxShadow: `0 8px 24px -12px ${item.accent}, inset 0 1px 0 rgba(255,255,255,0.08)`,
-          }}
-        >
-          {item.cta.label}
-          <ArrowRight size={12} className="transition-transform group-hover/cta:translate-x-0.5" />
-        </Link>
-      )}
     </motion.div>
   );
 }
@@ -257,7 +242,7 @@ export default function ProblemSectionWow() {
               lineHeight: 1.05,
             }}
           >
-            Independent brands overpay by{" "}
+            Independent brands overpay{" "}
             <span
               style={{
                 background: "linear-gradient(135deg, #ef4444 0%, #f97316 50%, #ec4899 100%)",
@@ -267,9 +252,9 @@ export default function ProblemSectionWow() {
                 filter: "drop-shadow(0 0 24px rgba(239,68,68,0.35))",
               }}
             >
-              20–40%
+              30–60%
             </span>{" "}
-            on infrastructure.{" "}
+            on card payments.{" "}
             <span style={{ color: "rgba(255,255,255,0.55)" }}>Every month.</span>
           </h2>
         </AnimatedSection>
@@ -324,7 +309,7 @@ export default function ProblemSectionWow() {
                   Total annual bleed
                 </p>
                 <p className="text-[13px] text-white/55 max-w-md">
-                  The average independent brand loses this to invisible infrastructure overpayment.
+                  The average independent brand loses this to invisible payment overpayment.
                 </p>
               </div>
             </div>

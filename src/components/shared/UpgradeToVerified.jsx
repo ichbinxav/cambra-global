@@ -1,90 +1,56 @@
-import { CheckCircle2, Sparkles, Plug, Upload } from "lucide-react";
+import { CheckCircle2, Sparkles, Plug } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
- * UpgradeToVerified — confidence + upgrade CTA per vertical.
+ * UpgradeToVerified — confidence + upgrade CTA for the payments vertical.
+ *
+ * Post-R1 (2026-07-12): pruned to payments-only. Legacy shipping/saas/banking
+ * config branches deleted — none had live callers (verified via grep; only
+ * consumer is Dashboard.jsx passing vertical="payments"). The `vertical` prop
+ * defaults to "payments" and is kept in the signature so the Dashboard call
+ * site (which still passes vertical="payments" explicitly) doesn't need to
+ * change.
  *
  * Props:
- *  - vertical: "payments" | "shipping" | "saas" | "banking"
+ *  - vertical: "payments" (default and only supported value)
  *  - currentConfidence: "estimated" | "connected" | "verified"
  *  - onConnect: function (optional)
  *  - isConnected: boolean
  *  - compact: boolean
  */
 
-const VERTICAL_KEYS = {
-  payments: {
-    ctaKey: "uv_payments_cta", explainEstKey: "uv_payments_explain_est", explainVerKey: "uv_payments_explain_ver",
-    icon: Plug,
-  },
-  shipping: {
-    ctaKey: "uv_shipping_cta", explainEstKey: "uv_shipping_explain_est", explainVerKey: "uv_shipping_explain_ver",
-    icon: Plug,
-  },
-  saas: {
-    ctaKey: "uv_saas_cta", explainEstKey: "uv_saas_explain_est", explainVerKey: "uv_saas_explain_ver",
-    icon: Upload,
-  },
-  banking: {
-    ctaKey: "uv_banking_cta", explainEstKey: "uv_banking_explain_est", explainVerKey: "uv_banking_explain_ver",
-    icon: Upload,
-  },
-};
-
-/* Inline fallback copy — used because these strings aren't in the main flat dictionary.
-   t() falls back to English when a key isn't found; we layer hard fallbacks below. */
+/* Inline fallback copy — the main i18n dictionary doesn't ship these keys.
+   t() returns the key itself on miss; the fallback below covers that case. */
 const FALLBACK = {
-  uv_payments_cta:           { en: "Connect Stripe", fr: "Connecter Stripe",     es: "Conectar Stripe" },
-  uv_payments_explain_est:   { en: "Connect Stripe to verify your payment rate.",
-                                fr: "Connectez Stripe pour vérifier votre taux de paiement.",
-                                es: "Conecta Stripe para verificar tu tasa de pago." },
-  uv_payments_explain_ver:   { en: "Verified with live Stripe data.",
-                                fr: "Vérifié avec les données Stripe en direct.",
-                                es: "Verificado con datos de Stripe en vivo." },
-  uv_shipping_cta:           { en: "Connect carrier", fr: "Connecter le transporteur", es: "Conectar transportista" },
-  uv_shipping_explain_est:   { en: "Add carrier data to verify shipping costs.",
-                                fr: "Ajoutez les données du transporteur pour vérifier les coûts d'expédition.",
-                                es: "Añade los datos del transportista para verificar los costes de envío." },
-  uv_shipping_explain_ver:   { en: "Verified with carrier data.",
-                                fr: "Vérifié avec les données du transporteur.",
-                                es: "Verificado con datos del transportista." },
-  uv_saas_cta:               { en: "Add data", fr: "Ajouter des données", es: "Añadir datos" },
-  uv_saas_explain_est:       { en: "Add your software stack to verify SaaS costs.",
-                                fr: "Ajoutez votre stack logicielle pour vérifier les coûts SaaS.",
-                                es: "Añade tu stack de software para verificar los costes de SaaS." },
-  uv_saas_explain_ver:       { en: "Verified with connected billing data.",
-                                fr: "Vérifié avec les données de facturation connectées.",
-                                es: "Verificado con datos de facturación conectados." },
-  uv_banking_cta:            { en: "Add data", fr: "Ajouter des données", es: "Añadir datos" },
-  uv_banking_explain_est:    { en: "Add banking statements to verify fees.",
-                                fr: "Ajoutez vos relevés bancaires pour vérifier les frais.",
-                                es: "Añade extractos bancarios para verificar las comisiones." },
-  uv_banking_explain_ver:    { en: "Verified with bank data.",
-                                fr: "Vérifié avec les données bancaires.",
-                                es: "Verificado con datos bancarios." },
+  uv_payments_cta:         { en: "Connect Stripe", fr: "Connecter Stripe",     es: "Conectar Stripe" },
+  uv_payments_explain_est: { en: "Connect Stripe to verify your payment rate.",
+                              fr: "Connectez Stripe pour vérifier votre taux de paiement.",
+                              es: "Conecta Stripe para verificar tu tasa de pago." },
+  uv_payments_explain_ver: { en: "Verified with live Stripe data.",
+                              fr: "Vérifié avec les données Stripe en direct.",
+                              es: "Verificado con datos de Stripe en vivo." },
 };
 
 export default function UpgradeToVerified({
-  vertical = "payments",
   currentConfidence = "estimated",
   onConnect,
   isConnected = false,
   compact = false,
+  // `vertical` accepted but ignored — kept in signature for backward
+  // compatibility with Dashboard.jsx passing vertical="payments" explicitly.
+  vertical: _vertical = "payments",
 }) {
   const { t, lang } = useTranslation();
-  const cfg = VERTICAL_KEYS[vertical] || VERTICAL_KEYS.payments;
   const state = isConnected ? "verified" : currentConfidence;
-  const Icon = cfg.icon;
 
   const txt = (key) => {
     const v = t(key);
-    // If the dictionary returned the key itself (missing), use legacy fallback object
     if (v === key && FALLBACK[key]) return FALLBACK[key][lang] || FALLBACK[key].en;
     return v;
   };
-  const ctaLabel       = txt(cfg.ctaKey);
-  const explainEst     = txt(cfg.explainEstKey);
-  const explainVer     = txt(cfg.explainVerKey);
+  const ctaLabel       = txt("uv_payments_cta");
+  const explainEst     = txt("uv_payments_explain_est");
+  const explainVer     = txt("uv_payments_explain_ver");
   const labelVerified  = t("badge_verified");
   const labelEstimated = t("badge_estimated");
   const labelConnected = t("badge_connected");
@@ -113,7 +79,7 @@ export default function UpgradeToVerified({
           onClick={onConnect}
           className="inline-flex items-center gap-1 h-7 px-3 rounded-full bg-foreground text-background text-[10px] font-bold hover:opacity-90 whitespace-nowrap"
         >
-          <Icon size={9} /> {ctaLabel}
+          <Plug size={9} /> {ctaLabel}
         </button>
       </div>
     );
@@ -132,7 +98,7 @@ export default function UpgradeToVerified({
         onClick={onConnect}
         className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-full bg-foreground text-background text-xs font-bold hover:opacity-90 self-start min-h-[44px] sm:min-h-0"
       >
-        <Icon size={11} /> {ctaLabel}
+        <Plug size={11} /> {ctaLabel}
       </button>
     </div>
   );

@@ -49,7 +49,6 @@ const MEMBER_GROUPS = [
       { label: "Infrastructure audit", sub: "Run new scan", href: "/Analyzer", Icon: ScanSearch },
     ],
   },
-  // FASE 1.2 — Intelligence group deprecated (multi-vertical, pre-pivot).
   {
     label: "Account",
     items: [

@@ -3,19 +3,45 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, Check } from "lucide-react";
 
 /**
- * Pricing — sleek edition.
- * One unified dark editorial surface, split by a hairline divider.
- * Cleaner typography, smaller pills, refined CTAs.
+ * Pricing — three-tier edition (Addendum R1, 2026-07-12).
+ *
+ * Three visually distinct cards on one row:
+ *   1. Analyze      — free, always. Anonymous 60s + verified analysis via Stripe.
+ *   2. Monitoring   — €29/mo standard; founding cohort (first 150 brands) locks in
+ *                     24 months free, price shown struck-through with badge.
+ *   3. Recovery     — 25% of verified savings, 24-month agreement, only if we recover.
+ *
+ * The two "24"s deliberately live in different columns and read differently:
+ *   • Monitoring   — "Free for 24 months — founding cohort" (grant duration).
+ *   • Recovery     — "24-month agreement" (contract duration for success fee).
+ * They coincide by design (see Decision_Log R1 close): the founding cohort's
+ * 24 free months of monitoring line up with the recovery agreement so a
+ * founding-cohort merchant experiences "2 years of everything free unless we
+ * actually recover margin, in which case we take 25%". The copy on each card
+ * disambiguates them explicitly so a reader scanning both columns doesn't
+ * confuse them.
+ *
+ * NO monitoring product yet, NO subscription entities, NO dynamic 150-counter.
+ * The founding-cohort promise is TEXTUAL only. The Monitoring CTA points at
+ * the analyzer (same as Analyze) — the actual join-monitoring flow ships later.
  */
 const FREE_FEATURES = [
-  "Infrastructure audit & scoring",
-  "Real network benchmarks",
-  "AI-powered recommendations",
+  "Anonymous 60-second audit",
+  "Verified analysis via Stripe Connect",
+  "Public-pricing benchmarks",
   "Your savings estimate in euros",
 ];
+
+const MONITORING_FEATURES = [
+  "Monthly re-scan of your rate",
+  "Alert if your effective rate drifts up",
+  "Cohort benchmark refresh",
+  "Ongoing savings tracking (included as we roll out)",
+];
+
 const RECOVERY_FEATURES = [
-  "SaaS recovery — 100% free, always 0% fee",
-  "Payments & shipping negotiation",
+  "Interchange floor benchmarking",
+  "Payments rate negotiation",
   "Savings verification & migration",
   "We win when you do",
 ];
@@ -55,12 +81,22 @@ function FeatureRow({ children }) {
   );
 }
 
+/**
+ * Tier — one pricing column.
+ *
+ * `priceRow` overrides the default single `price` render — used by Monitoring
+ * to show the strikethrough €29/mo alongside the "Free for 24 months" claim
+ * plus the founding-cohort badge below it, all inside the same block that
+ * `price`/`priceSuffix` would normally occupy. Keeps every other tier
+ * (Analyze, Recovery) rendering unchanged.
+ */
 function Tier({
   eyebrow,
   eyebrowAccent,
   price,
   priceSuffix,
   priceGradient,
+  priceRow,
   strike,
   caption,
   features,
@@ -68,36 +104,42 @@ function Tier({
   ctaPrimary,
 }) {
   return (
-    <div className="relative flex flex-col p-6 sm:p-8 h-full">
+    <div className="relative flex flex-col p-6 sm:p-7 h-full">
       <Eyebrow accent={eyebrowAccent}>{eyebrow}</Eyebrow>
 
       {/* Price block */}
-      <div className="mt-5 sm:mt-7">
-        <div
-          className="font-black tabular-nums"
-          style={{
-            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(48px, 6vw, 72px)",
-            letterSpacing: "-0.055em",
-            lineHeight: 0.9,
-            ...(priceGradient
-              ? {
-                  background:
-                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #22d3ee 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 18px rgba(34,211,238,0.28))",
-                }
-              : { color: "#ffffff" }),
-          }}
-        >
-          {price}
-        </div>
-        {priceSuffix && (
-          <p className="mt-2 text-[12px] font-medium text-white/50 leading-snug">
-            {priceSuffix}
-          </p>
+      <div className="mt-5 sm:mt-6">
+        {priceRow ? (
+          priceRow
+        ) : (
+          <>
+            <div
+              className="font-black tabular-nums"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(44px, 5.2vw, 64px)",
+                letterSpacing: "-0.055em",
+                lineHeight: 0.9,
+                ...(priceGradient
+                  ? {
+                      background:
+                        "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #22d3ee 100%)",
+                      WebkitBackgroundClip: "text",
+                      backgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      filter: "drop-shadow(0 0 18px rgba(34,211,238,0.28))",
+                    }
+                  : { color: "#ffffff" }),
+              }}
+            >
+              {price}
+            </div>
+            {priceSuffix && (
+              <p className="mt-2 text-[12px] font-medium text-white/50 leading-snug">
+                {priceSuffix}
+              </p>
+            )}
+          </>
         )}
       </div>
 
@@ -158,6 +200,64 @@ function Tier({
   );
 }
 
+/**
+ * MonitoringPriceRow — bespoke price block for the Monitoring tier.
+ * Renders "Free" as the headline number, with €29/mo struck-through as
+ * strike context, and a founding-cohort pill below explaining the grant
+ * duration in plain English ("24 months — founding cohort").
+ */
+function MonitoringPriceRow() {
+  return (
+    <div>
+      <div className="flex items-baseline gap-3 flex-wrap">
+        <div
+          className="font-black tabular-nums"
+          style={{
+            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+            fontSize: "clamp(44px, 5.2vw, 64px)",
+            letterSpacing: "-0.055em",
+            lineHeight: 0.9,
+            background:
+              "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #22d3ee 100%)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            filter: "drop-shadow(0 0 18px rgba(34,211,238,0.28))",
+          }}
+        >
+          Free
+        </div>
+        <span
+          className="text-[15px] font-bold tabular-nums text-white/40"
+          style={{ textDecoration: "line-through" }}
+        >
+          €29/mo
+        </span>
+      </div>
+      <div className="mt-3">
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1"
+          style={{
+            border: "1px solid rgba(34,211,238,0.25)",
+            background: "rgba(34,211,238,0.06)",
+          }}
+        >
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+          </span>
+          <span className="text-[10px] uppercase font-bold tracking-[0.22em] text-cyan-200">
+            24 months — founding cohort
+          </span>
+        </span>
+      </div>
+      <p className="mt-2 text-[12px] font-medium text-white/50 leading-snug">
+        First 150 brands. After that, €29/mo.
+      </p>
+    </div>
+  );
+}
+
 export default function PricingDual() {
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
@@ -177,7 +277,7 @@ export default function PricingDual() {
         }}
       />
 
-      <div className="relative max-w-4xl mx-auto px-6 sm:px-10">
+      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         {/* Header */}
         <div className="text-center mb-12 sm:mb-14">
           <span
@@ -219,13 +319,13 @@ export default function PricingDual() {
             <span className="text-white">.</span>
           </h2>
           <p className="mt-4 text-[13px] sm:text-[14px] text-white/50 max-w-lg mx-auto">
-            No upfront fees. No subscription. SaaS savings stay 100% yours. On payments &amp; shipping we take 25% of verified savings — only if we recover them.
+            Analyze for free. Monitor for free during the founding cohort. Pay only when we actually recover margin — 25% of verified payment savings.
           </p>
         </div>
 
-        {/* Two separate pill-cards — step 1 (Analyze) → step 2 (Recover) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-          {/* STEP 1 — Analyze (free, includes SaaS optimization 0% fee) */}
+        {/* Three columns — Analyze · Monitoring · Recover */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+          {/* STEP 1 — Analyze (free, always) */}
           <div
             className="relative rounded-3xl overflow-hidden"
             style={{
@@ -255,14 +355,50 @@ export default function PricingDual() {
               eyebrow="Analyze"
               eyebrowAccent="white"
               price="Free"
-              caption="Early access · No card"
+              caption="Always · No card"
               features={FREE_FEATURES}
               ctaText="Run audit"
               ctaPrimary={false}
             />
           </div>
 
-          {/* STEP 2 — Recover (25% success fee) */}
+          {/* STEP 2 — Monitoring (founding cohort: free 24mo, then €29/mo) */}
+          <div
+            className="relative rounded-3xl overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(13,18,36,0.95) 0%, rgba(6,8,15,0.95) 100%)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              boxShadow:
+                "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
+            }}
+          >
+            <div
+              aria-hidden
+              className="absolute pointer-events-none"
+              style={{
+                width: 320, height: 320, left: "50%", top: "-25%", transform: "translateX(-50%)",
+                background: "radial-gradient(circle, rgba(96,165,250,0.10) 0%, transparent 70%)",
+                filter: "blur(60px)",
+              }}
+            />
+            <span
+              className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em] text-white/40"
+              aria-hidden
+            >
+              Step 2
+            </span>
+            <Tier
+              eyebrow="Monitoring"
+              eyebrowAccent="white"
+              priceRow={<MonitoringPriceRow />}
+              features={MONITORING_FEATURES}
+              ctaText="Start monitoring"
+              ctaPrimary={false}
+            />
+          </div>
+
+          {/* STEP 3 — Recover (25% success fee, 24-month agreement) */}
           <div
             className="relative rounded-3xl overflow-hidden"
             style={{
@@ -286,13 +422,13 @@ export default function PricingDual() {
               className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em] text-cyan-300/70"
               aria-hidden
             >
-              Step 2
+              Step 3
             </span>
             <Tier
               eyebrow="Recover"
               eyebrowAccent="cyan"
               price="25%"
-              priceSuffix="of verified savings on payments & shipping · 24 mo · SaaS recovery is free"
+              priceSuffix="of verified payment savings · 24-month agreement"
               priceGradient
               caption="No savings, no fee"
               features={RECOVERY_FEATURES}

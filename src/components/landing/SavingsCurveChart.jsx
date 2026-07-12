@@ -7,8 +7,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
  * number. Realistic cohort figures.
  */
 export default function SavingsCurveChart({
-  // Realistic median cumulative recovery over 12 months for a DTC €1M–€10M brand.
-  // Payments + Shipping + SaaS combined, network-median (not top-decile).
+  // Median cumulative payment recovery over 12 months for a DTC €1M–€10M brand.
+  // Network-median (not top-decile) — payments only, aligned with the R1 pricing model.
   target = 48000,
   months = 12,
   // Slight organic wave, monotonically increasing to 1.0.
