@@ -5,6 +5,45 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-12 — Chunk custom domain (`cambra.global`) + inventario de email · SOLO DOCS
+
+**Alcance.** Cero código de producto tocado. Este chunk entrega un runbook DNS y un inventario empírico de senders. La ejecución del DNS es acción manual del usuario en el UI de IONOS + Base44 dashboard.
+
+**Diagnóstico del apex.** Fetch a `https://cambra.global` confirma que hoy sirve la app vieja Base44 (landing multi-vertical pre-pivot, con secciones y CTAs que la app nueva ya purgó en Fase R1). El registrar es IONOS. La app nueva no está registrada en `cambra.global` — es un cambio de mapeo, no una creación desde cero.
+
+**Setup DNS elegido — ANAME (ALIAS en IONOS) + CNAME.** IONOS soporta ANAME/ALIAS en apex desde 2022, así que se sigue el path recomendado por Base44 (ALIAS `@ → base44.onrender.com`) en vez del fallback A record. Menos records que mantener, y evita el problema clásico "A al apex + IP cambia en el backend = downtime silencioso". `www` va con CNAME al mismo destino.
+
+**`contact.cambra.global` (Resend) — regla vinculante.** El subdominio ya verificado en Resend con SPF/DKIM en IONOS **no se toca en ningún paso** del runbook. Cualquier record cuyo host contenga `.contact` o `contact.` queda listado como "existing — do not touch". El runbook lo hace explícito porque el UI de IONOS los muestra en la misma vista que el apex y el error humano es fácil.
+
+**Ventana anti-downtime — orden estricto.** Registrar el dominio en la app **nueva** ANTES de tocar IONOS. Base44 emite el cert SSL cuando (a) el DNS resuelve al backend Y (b) hay ownership registrado. Si se toca DNS primero, hay ventana de minutos con error SSL para todo el mundo. Si se registra el dominio primero, Base44 queda "esperando" el DNS y emite el cert en segundos cuando el DNS aterrice. **Retirar el dominio de la app vieja se hace AL FINAL**, solo tras confirmar que la nueva ya sirve `cambra.global` en HTTPS.
+
+**Inventario de email (punto 4 del chunk).** Grep exhaustivo de todos los senders en `base44/functions/**/entry.ts`:
+
+| Sender | Transport | From-address | ¿Depende del dominio Resend? |
+|---|---|---|---|
+| `sendMonthlySavingsSummary:155` | `Core.SendEmail` | `from_name: 'CAMBRA'` (plataforma pone el sender) | **NO** |
+| `submitWaitlistSignup:160` | Resend REST directo | `RESEND_FROM` env, default `'CAMBRA <hello@contact.cambra.global>'` | **SÍ** |
+| `scheduledEmails:49` (`analyzer_followup`) | `Core.SendEmail` | `from_name: 'CAMBRA'` | **NO** |
+| `scheduledEmails:92` (`expiring_contracts`) | `Core.SendEmail` | `from_name: 'CAMBRA'` | **NO** |
+| `scheduledEmails:139` (`monthly_digest`) | `Core.SendEmail` | `from_name: 'CAMBRA'` | **NO** |
+
+**Resultado del inventario: 0 correcciones de string necesarias.** El único sender Resend-directo (`submitWaitlistSignup`) ya tiene el default correcto `@contact.cambra.global` en el código. Ninguna función usa `@cambra.global` a secas como from-address. La única acción pendiente para el usuario es **verificación manual** del valor literal de la env var `RESEND_FROM` en el dashboard Base44 — exec_tool corre en Node CommonJS y no puede leer `Deno.env`. Si el env var contradice el default, el env var gana.
+
+**Hallazgo lateral — URLs muertas en scheduledEmails.** El HTML de los 3 emails de `scheduledEmails/entry.ts` contiene CTAs con URL literal `https://cambra.co/...` (dominio del pivot anterior, muerto). Líneas 63, 110, 178. **NO se corrigen en este chunk** — fuera del scope estricto de "from-address / email inventory". Reportado en `DNS_MIGRATION.md §7.3` para chunk aparte tras confirmar DNS + rutas finales post-Fase-1.2.
+
+**To-addresses.** Ninguna hardcoded a `@cambra.global` en código de envío. La única mención `xavi@cambra.global` es dato (backfill del self-test brand en el chunk A2 del mismo día, `Brand.contact_email`). Ese buzón deberá existir en IONOS cuando el DNS aterrice o `sendMonthlySavingsSummary` bounceará al mandarle el resumen mensual — advertencia registrada en el runbook §7.2 y en KNOWN_DEBT desde el chunk A2.
+
+**Restricciones respetadas (verificadas ex-post):**
+- Cero cambios en código de producto (`.js` / `.ts` / `.jsx` / entities / functions).
+- Cero cambios en suite de tests (esperado: 348 / 0 / 2 intacto).
+- Cero acciones ejecutadas en IONOS (el runbook lo hace el usuario tras revisar la tabla).
+- Cero registros DNS de `contact.*` mencionados como editables.
+- Motor payments-gap, sync-check, scoreEngine y sus 7 consumidores intactos.
+
+**Entregable:** `src/docs/DNS_MIGRATION.md` con tabla IONOS + runbook por pasos + verificación + rollback + inventario. Este chunk cierra con el docs escrito y **espera aprobación del usuario** antes de que él ejecute el paso 4.2 (touch DNS) en IONOS.
+
+---
+
 ## 2026-07-12 — Chunk A2 · Helper `getMyActiveBrand` + 12 migraciones (11 frontend + 1 backend) + backfill segmentado
 
 **Alcance.** Cerrar el frente A2 del diagnóstico BUG-5 + A2. Cero cambios en motor, entities, sync-check, tests locales, paths verified/estimated o backend functions más allá de `sendMonthlySavingsSummary`. Todo el trabajo vive en la resolución de "el brand del usuario actual" desde el frontend, y en el filtro correcto sobre `AnalyzerResult` desde el único job que lo iteraba per-usuario.
