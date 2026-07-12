@@ -391,22 +391,44 @@ export default function PaymentsResults() {
             </div>
             <Button
               onClick={() => {
-                // #1 FIX (2026-07-12) — funnel-critical.
-                // Before: `next=/Analyzer` sent the just-signed-up user to an
-                // EMPTY analyzer form and their anonymous result was lost. That
-                // was the conversion break: user runs anonymous audit → sees
-                // the gap → hits "Stop overpaying" → creates account → lands
-                // in blank form → confusion → abandons. Now we preserve the
-                // current URL (which carries ?session=<anon_session_id>) so
-                // after Base44 login the user comes back to THIS SAME Results
-                // page, populated with THEIR audit. Reader endpoint
-                // (getPaymentsGapTeaser) already runs service-role and accepts
-                // the session id regardless of auth state, so the same URL
-                // works both before and after login.
+                // #1 FIX (2026-07-12, revisited) — funnel-critical, two layers.
+                //
+                // Diagnosis of the "user lands on / after signup" bug, RAW cited
+                // from @base44/sdk/dist/modules/auth.js:2961 redirectToLogin():
+                //   loginUrl = `${appBaseUrl}/login?from_url=${encoded(nextUrl)}`;
+                //   window.location.href = loginUrl;
+                // Base44's /login endpoint honors from_url for the LOGIN branch
+                // (existing account). The SIGNUP branch (new account creation)
+                // can drop from_url and default to the app root — that behavior
+                // is server-side and not controllable from the SDK.
+                //
+                // Layer A (URL) — pass ?next=/Results?session=<uuid> so the
+                //   login branch returns the user to their populated report.
+                // Layer B (localStorage) — persist the anon_session_id right
+                //   before we leave. If Base44 drops from_url on signup and the
+                //   user lands on "/" or "/Dashboard", AuthContext detects the
+                //   pending session and redirects to /Results?session=<uuid>.
+                //
+                // Zero backend change. getPaymentsGapTeaser is service-role and
+                // accepts the session id both pre- and post-auth (verified RAW
+                // 2026-07-12: teaser_endpoint_requires_auth=false).
                 if (isVerifiedMode) {
                   navigate("/Dashboard");
                   return;
                 }
+                // Layer B — persist for signup-path rescue.
+                try {
+                  const search = new URLSearchParams(window.location.search);
+                  const sessionId =
+                    search.get("session") || search.get("anon_session_id");
+                  if (sessionId) {
+                    localStorage.setItem(
+                      "cambra_pending_anon_session",
+                      sessionId
+                    );
+                  }
+                } catch { /* localStorage unavailable — Layer A still applies */ }
+                // Layer A — canonical URL preservation for the login path.
                 const currentPath =
                   window.location.pathname + window.location.search;
                 navigate(`/LoginGate?next=${encodeURIComponent(currentPath)}`);

@@ -276,6 +276,39 @@ onClick={() => {
 - `FeeBreakdownCard` parsea assumptions independientemente y sigue funcionando (no toca `AssumptionsFootnote`).
 - El hero (`PaymentsGapCard`, `CombinedGapHero`, `OptimizedHero`) y el CTA principal, intactos.
 
+### 11.1.bis · Ampliación (2026-07-12, misma sesión) — el redirect post-signup sí perdía la URL
+
+Xavi reprodujo el bug en vivo tras aplicar la 11.1 y confirmó el síntoma: análisis anónimo → CTA "Stop overpaying" → login/signup con email nuevo → aterriza en `/` (landing), no en su Results. El fix 11.1 preservaba `?session=<uuid>` en `next=`, pero el usuario seguía perdiéndose.
+
+**Causa raíz definitiva — RAW cita del SDK Base44, `node_modules/@base44/sdk/dist/modules/auth.js` línea 2961:**
+
+```js
+redirectToLogin(nextUrl) {
+    const redirectUrl = nextUrl
+        ? new URL(nextUrl, window.location.origin).toString()
+        : window.location.href;
+    const loginUrl = `${options.appBaseUrl}/login?from_url=${encodeURIComponent(redirectUrl)}`;
+    window.location.href = loginUrl;
+}
+```
+
+El SDK codifica el `nextUrl` como `from_url` en la URL de `/login` de Base44. La plataforma Base44 respeta `from_url` **en la rama de LOGIN** (usuario con cuenta existente), pero **puede descartarlo en la rama de SIGNUP** (creación de cuenta nueva) — que es exactamente el caso del CTA "Stop overpaying" cuyo propósito es convertir anónimos en usuarios. Ese comportamiento es server-side de Base44 y no controlable desde el SDK.
+
+**Fix — defensa en profundidad, dos capas.**
+
+- **Capa A (URL — ya en 11.1):** `?next=/Results?session=<uuid>` cubre la rama de login existente.
+- **Capa B (localStorage — nueva):** justo antes de disparar `redirectToLogin`, `PaymentsResults` persiste el `anon_session_id` en `localStorage.cambra_pending_anon_session`. `AuthContext.checkUserAuth` lee esa clave inmediatamente después de confirmar autenticación, la borra, valida shape UUID v4, y si el usuario NO está ya en `/Results?session=...` lo redirige con `window.location.replace`. Cubre la rama de signup donde `from_url` se pierde.
+
+**Idempotencia y no-loops.**
+- `removeItem` se ejecuta ANTES del navigate → un segundo login no reintenta el rescate.
+- Guardia `onResults` → si Base44 SÍ respetó `from_url` (rama login OK), no re-navega encima.
+- Guardia UUID v4 → un valor manipulado en localStorage no produce navegación arbitraria (el reader `getPaymentsGapTeaser` ya valida UUID v4 server-side; el guard cliente-side es defensa adicional).
+- Cero backend: `getPaymentsGapTeaser` sigue siendo service-role y agnóstico de auth (verified RAW: `teaser_endpoint_requires_auth: false`).
+
+**Alternativas descartadas.**
+- Backend-side: guardar `anon_session_id → user_email` post-signup vía webhook de Base44 → complejidad alta, requiere hook en auth flow de plataforma no expuesto en SDK, no escala a signups Google (no email hasta después de OAuth).
+- Cookie con SameSite=Lax: rechaza cross-site en Safari ITP, y el signup redirige a un origin distinto de la app; `localStorage` es más simple y sobrevive la ida-vuelta de mismo origen.
+
 ### 11.3 · Verificación RAW (post-fix)
 
 Ejecutada por `exec_tool` sobre los archivos modificados:
@@ -289,3 +322,35 @@ Ejecutada por `exec_tool` sobre los archivos modificados:
 | `fix2_conditional_render` (`{isVerifiedMode ? (` presente) | ✅ true |
 | `teaser_endpoint_requires_auth` (getPaymentsGapTeaser gate de auth) | ✅ false — session-only |
 | `teaser_endpoint_uses_service_role` (asServiceRole) | ✅ true — funciona ambos lados del login |
+
+**Verificación adicional Capa B (11.1.bis):**
+
+| Check | Valor |
+|---|---|
+| `layerB_writes_pending_key` (`localStorage.setItem("cambra_pending_anon_session", …)` en Results) | ✅ true |
+| `layerB_reads_pending_key` (`localStorage.getItem` en AuthContext) | ✅ true |
+| `layerB_removes_after_read` (removeItem antes de navigate — no re-loop) | ✅ true |
+| `layerB_uuid_guard` (regex UUID v4 antes de aceptar) | ✅ true |
+| `layerB_avoids_pingpong_on_results` (skip si ya está en `/Results?session=…`) | ✅ true |
+| `layerB_navigates_to_results` (`window.location.replace('/Results?session=…')`) | ✅ true |
+| `layerB_only_after_auth_succeeds` (rescate tras `setIsAuthenticated(true)`) | ✅ true |
+
+### 11.4 · Flujo end-to-end tras el doble fix
+
+**Rama LOGIN (cuenta existente, `from_url` respetado por Base44):**
+1. `/Results?session=<uuid>` → click "Stop overpaying".
+2. Layer B escribe `localStorage.cambra_pending_anon_session = <uuid>`.
+3. Layer A: `navigate("/LoginGate?next=%2FResults%3Fsession%3D<uuid>")`.
+4. `LoginGate.redirectToLogin("/Results?session=<uuid>")` → SDK arma `/login?from_url=/Results?session=<uuid>`.
+5. Base44 login → callback vuelve a `/Results?session=<uuid>`.
+6. `AuthContext.checkUserAuth` OK, lee `pending`, ve que ya está en `/Results?session=…`, no re-navega, sólo borra la clave.
+7. `PaymentsResults` monta, lee `session` de la URL, rehidrata → **report poblado**.
+
+**Rama SIGNUP (cuenta nueva, `from_url` descartado por Base44):**
+1. Pasos 1-4 idénticos.
+2. Base44 signup con email nuevo → callback devuelve al usuario a `/` (landing, `from_url` perdido).
+3. Landing es pública, `AuthContext.checkUserAuth` corre igual y setea `isAuthenticated=true`.
+4. Layer B detecta `pending`, borra la clave, no está en `/Results`, hace `window.location.replace('/Results?session=<uuid>')`.
+5. `PaymentsResults` monta con `session=<uuid>` → **report poblado**.
+
+Cero pérdida en ambas ramas, cero ping-pong si el rescate se dispara sobre un `/Results` ya bueno, cero backend, motor 1.5.0 intocado.

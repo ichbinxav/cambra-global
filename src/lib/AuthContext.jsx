@@ -125,6 +125,43 @@ export const AuthProvider = ({ children }) => {
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
+
+      // #1 FIX Layer B (2026-07-12) — rescue anonymous-audit continuity.
+      //
+      // Root cause: base44.auth.redirectToLogin(nextUrl) encodes nextUrl into
+      // /login?from_url=...; that from_url is respected by the LOGIN branch
+      // but can be dropped by the SIGNUP branch (new-account creation, which
+      // is exactly what the "Stop overpaying" CTA is designed to trigger).
+      // When that happens, the freshly-authenticated user lands on "/" (the
+      // landing page) instead of their /Results?session=<uuid> — the
+      // conversion moment breaks and the audit appears "lost".
+      //
+      // Layer A (URL ?next=) handles the login branch. This layer handles the
+      // signup branch: PaymentsResults writes `cambra_pending_anon_session`
+      // to localStorage right before firing redirectToLogin. As soon as the
+      // user finishes signup and this AuthContext confirms authentication,
+      // we detect that pending id and route them to their Results page.
+      //
+      // Idempotent: the key is removed immediately after read, so a second
+      // login (later) doesn't ping-pong the user. Only fires when NOT already
+      // on /Results (avoids interfering with the normal login-branch flow
+      // that already lands the user on the right URL via from_url).
+      try {
+        const pending = localStorage.getItem("cambra_pending_anon_session");
+        if (pending && typeof window !== "undefined") {
+          localStorage.removeItem("cambra_pending_anon_session");
+          const onResults =
+            window.location.pathname === "/Results" &&
+            window.location.search.includes("session=");
+          // UUID v4 shape check — same regex as PaymentsResults reader guard.
+          const looksLikeUuid =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(pending);
+          if (looksLikeUuid && !onResults) {
+            window.location.replace(`/Results?session=${encodeURIComponent(pending)}`);
+            return;
+          }
+        }
+      } catch { /* storage unavailable → Layer A / from_url still applies */ }
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
