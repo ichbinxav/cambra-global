@@ -66,10 +66,14 @@ Deno.serve(async (req) => {
     // Enumeration-safety: the "brand exists but you don't own it" case and
     // the "brand does not exist" case MUST return the same status + body.
     // Otherwise a non-admin caller can distinguish valid brand_ids from
-    // invalid ones by probing (existing → 403, missing → 404). Both paths
-    // collapse to 404 "Brand not found" for non-owners. Admins are exempt —
-    // they legitimately see across tenants and rely on 404 vs 403 for
-    // their own diagnostics.
+    // invalid ones by probing (originally: existing → 403, missing → 404).
+    // Both paths collapse to 404 "Brand not found" for non-owners.
+    //
+    // Admins: no distinction preserved. Admins BYPASS the ownership guard
+    // entirely (isAdmin skips the second 404 branch) and proceed to the
+    // happy path, so an admin only ever sees the 404 when the brand truly
+    // does not exist — not when the brand exists under another owner.
+    // There is no admin-only 403 branch anywhere in this function.
     const brand = await base44.asServiceRole.entities.Brand.get(brand_id).catch(() => null);
     const isAdmin = user.role === 'admin';
     const isOwner = brand &&
