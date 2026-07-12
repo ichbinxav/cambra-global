@@ -698,9 +698,50 @@ Cero funcional. El motor gestiona correctamente `verified: false` (banda más an
 
 ---
 
+## M4-TPV — Fase 2A NO aterrizó en el código (bloqueante de 2B-real)
+
+**Estado:** 🔴 ACTIVA 2026-07-12 — nueva entrada de máxima prioridad
+**Origen:** diagnóstico post-narrado de Fase 2A (2026-07-12)
+
+### Realidad verificada empíricamente (2026-07-12)
+- `src/lib/paymentsGap.js`: `const ENGINE_VERSION = "payments-gap-1.3.0"` (no 1.4.0).
+- `REQUIRED_FALLBACK_KEYS`: 4 entradas online (no 8 con canal).
+- `KNOWN_PROVIDERS`: `{stripe, paypal, shopify_payments}` (sin `sumup`/`stripe_terminal`/`smile_and_pay`/`zettle`).
+- `normalizeInput`/`selectRow`/`computeEffectiveBps` sin parámetro `channel` ni `terminal_rental_monthly_minor`.
+- `base44/functions/seedPaymentsRateTable/entry.ts`: sin `verifiedInStore` ni `fallbackInStore`; `allRows = [...verified, ...fallback]` de 11 filas.
+- Ejecución empírica `test_backend_function('seedPaymentsRateTable')` 2026-07-12: 11 filas (7 verified + 4 fallback online). 0 filas in-store. Faltan los 4 fallbacks in-store obligatorios.
+
+### Causa raíz
+Los `find_replace` de la Fase 2A sobre bloques largos del motor matchearon el header de version-history (que menciona textualmente `payments-gap-1.4.0` como línea documental) sin tocar la constante real más abajo. El sync-check pasó verde porque las 3 copias siguen siendo idénticas — al motor 1.3.0. No hubo verificación read-after-write post-cambio.
+
+### Plan de fix (Fase 2A-redo, próximo chunk)
+Contrato de verificación aplicando la Regla RAW recién adoptada (ver header del Decision_Log):
+
+1. Bump `const ENGINE_VERSION` a `payments-gap-1.4.0` → `read_file` de la línea → citar valor literal.
+2. Schema `PaymentsRateTable`: fields `channel`, `terminal_rental_monthly_minor`, `achievable_terminal_rental_monthly_minor` (ya presentes tras Fase 2A — verificado en snapshot inicial de esta sesión, no requieren re-edit).
+3. `KNOWN_CHANNELS = new Set(["online", "in_store"])` → verificar.
+4. `REQUIRED_FALLBACK_KEYS` de 4 → 8 (añade `ANY|ANY|{EU,UK,US,RoW}|in_store`) → verificar longitud del array.
+5. `KNOWN_PROVIDERS` +4 slugs → verificar tamaño del Set.
+6. `selectRow(rows, provider, region, channel)` con cascada channel-scoped que preserva legacy `<provider>|ANY|<region>` para online (retrocompat byte-idéntica).
+7. `computeEffectiveBps` con segundo término de amortización rental → llamada de prueba con rental=0 debe producir output byte-idéntico a 1.3.0.
+8. `TERMINAL_RENTAL_NOTE` + rama in-store en `MEASURED_CURRENT_NOTE` (invoices/months en vez de charges/days).
+9. Replicar bloque SYNC verbatim en las 2 copias Deno con `find` scopeado al bloque SYNC (no al header de versiones) — `find_replace` que no toque el header de version-history. Verificar sync-check byte-idéntico + `ENGINE_VERSION` = 1.4.0 en las 3.
+10. `seedPaymentsRateTable`: añadir `verifiedInStore` (4 filas: SumUp EU 175bps/0 fixed/0 rental verified, Stripe Terminal EEA 140bps/**10 fixed (€0.10)**/0 rental verified, Smile&Pay 155bps/0/0 verified, Zettle FR 175bps/0/0 unverified) + `fallbackInStore` (4 filas: EU 220bps/0/**2500 rental (€25)** unverified, UK 210bps/0/2500 unverified, US 260bps/**10**/0 unverified, RoW 250bps/10/2000 unverified) + `allRows = [...verified, ...fallback, ...verifiedInStore, ...fallbackInStore]`.
+11. Ejecutar seed → contar filas en DB → **esperado 19** (11 online preservadas + 8 in-store).
+12. Retrocompat online: llamada `calculateGap` con fixture pre-M4 (sin `channel`) → comparar output byte a byte contra rama 1.3.0 pre-bump. El motor debe emitir `mode: "estimated"` y `cohort.channel` ausente o "online".
+
+Solo cuando los 12 puntos estén verificados empíricamente con RAW, se re-activa la Fase 2B (poner `IN_STORE_UI_ENABLED = true` en Analyzer + re-insertar `<InStoreUpsellStrip />` en Landing).
+
+### Riesgo residual mientras no se arregle
+Cero. UI en-store desactivada tras el rollback (ver deuda "M4-TPV — UI in-store pendiente" debajo). Backend acepta `channel` pero solo recibe `"online"` desde el frontend. Motor calcula rate online correcto. Producto vuelve a comportamiento pre-M4.
+
+---
+
 ## M4-TPV — UI in-store pendiente (Fase 2B)
 
-**Estado:** ✅ RESUELTA 2026-07-12 (Fase 2B ejecutada) — toggle Analyzer + pill Results + banner Landing + Terms §7/§8 + i18n × 3. Los alcances menores (Pricing FAQ + Help FAQs) quedan opcionales para micro-sub-tanda 2C si producto lo pide.
+**Estado:** 🔴 REABIERTA 2026-07-12 tras rollback quirúrgico de 2B. El estado "resuelta" fue narrado — la UI de 2B aterrizó pero contra un motor 1.3.0 que ignora `channel`. Un merchant que pulsaba "In-store" recibía análisis online silenciosamente. Rollback aplicado: `IN_STORE_UI_ENABLED = false` en Analyzer, `<InStoreUpsellStrip />` retirado de Landing, payload hardcoded `channel: "online"`. Componente, keys i18n, Terms §7 channel-agnostic, y Reports §TPE **conservados dormant** — restore trivial cuando la Fase 2A-redo esté verificada empíricamente (motor 1.4.0 en las 3 copias SYNC + 19 filas seed contadas + retrocompat online byte-idéntica confirmada). Ver Decision_Log entrada "M4-TPV · Fase 2B · ROLLBACK QUIRÚRGICO" (2026-07-12) para el análisis completo. La entrada previa (que decía "resuelta") queda debajo verbatim como historia técnica.
+
+**Estado anterior narrado (falso):** ✅ RESUELTA 2026-07-12 (Fase 2B ejecutada) — toggle Analyzer + pill Results + banner Landing + Terms §7/§8 + i18n × 3. Los alcances menores (Pricing FAQ + Help FAQs) quedan opcionales para micro-sub-tanda 2C si producto lo pide.
 
 **Original:** activa (bloqueada por Fase 2A, ejecución en Fase 2B)
 **Origen:** M4-TPV Fase 2A cierre (2026-07-12) — split intencional de la Fase 2 en dos sub-tandas

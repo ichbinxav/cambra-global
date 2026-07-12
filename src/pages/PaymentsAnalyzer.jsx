@@ -95,12 +95,19 @@ function fieldRangeError(key, value) {
 export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
 
-  // M4-TPV Fase 2B — channel dimension. Default 'online' preserves original
-  // funnel behavior byte-for-byte. When channel === 'in_store', the intl
-  // slider is hidden (cross-border in-store is negligible for the ICP —
-  // seed rows leave intl_uplift_bps null), the provider grid switches to
-  // TPV options, and the payload sends channel to submitPaymentsAnalysis
-  // which threads it through the engine (v1.4.0).
+  // M4-TPV Fase 2B — ROLLBACK QUIRÚRGICO 2026-07-12.
+  // Feature flag OFF: la Fase 2A no aterrizó en el código (motor sigue en
+  // 1.3.0 sin dimensión channel, seed sin filas in-store — verificado
+  // empíricamente). Publicar el toggle contra ese estado hacía que un
+  // merchant que elegía "In-store" recibiera análisis calculado con la fila
+  // ONLINE del mismo cohort silenciosamente. Peor bug posible del producto.
+  // Ver Decision_Log 2026-07-12 (entrada de corrección bajo M4-TPV Fase 2A).
+  //
+  // Reactivar: cuando Fase 2A-redo esté verificada de punta a punta
+  // (motor 1.4.0 en las 3 copias SYNC + 19 filas seed contadas + retrocompat
+  // online byte-idéntica confirmada), poner IN_STORE_UI_ENABLED = true.
+  // La UI ya escrita queda intacta debajo — solo el toggle queda oculto.
+  const IN_STORE_UI_ENABLED = false;
   const [channel, setChannel]           = useState("online");
   const [gmv, setGmv]                   = useState("");
   const [avgTicket, setAvgTicket]       = useState("");
@@ -202,14 +209,12 @@ export default function PaymentsAnalyzer() {
       const payload = {
         monthly_gmv_eur: Number(gmv),
         avg_ticket_eur: Number(avgTicket),
-        // In-store: intl is treated as 0 (backend accepts 0 as a valid value;
-        // card-present cross-border is negligible for the ICP — engine's
-        // seed rows leave intl_uplift_bps null so the intl term contributes
-        // nothing on the achievable side either).
-        intl_pct: channel === "in_store" ? 0 : Number(intlPct),
+        // ROLLBACK 2B: channel forzado a 'online' hasta 2A-redo (ver comment
+        // del useState). intl_pct siempre pedido en online (única rama viva).
+        intl_pct: Number(intlPct),
         provider_slug: providerSlug,
         country,
-        channel,
+        channel: "online",
         brand_name: brandName.trim(),
         ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
         ...(website.trim() !== "" ? { website: website.trim() } : {}),
@@ -329,51 +334,50 @@ export default function PaymentsAnalyzer() {
           and what a merchant of your size + region should be paying.
         </p>
 
-        {/* Channel toggle — M4-TPV Fase 2B.
-            Placed above the form so the rest of the fields adapt (provider
-            grid switches to TPV options; intl slider hides for in-store). */}
-        <div
-          role="tablist"
-          aria-label="Payment channel"
-          className="mb-8 inline-flex items-center rounded-full p-1"
-          style={{
-            border: "1px solid rgba(255,255,255,0.10)",
-            background: "rgba(255,255,255,0.02)",
-          }}
-        >
-          {[
-            { key: "online",   label: "Online" },
-            { key: "in_store", label: "In-store" },
-          ].map((opt) => {
-            const active = channel === opt.key;
-            return (
-              <button
-                key={opt.key}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => {
-                  // Reset provider on channel switch — the two grids don't
-                  // overlap ("stripe" online vs "stripe_terminal" in-store).
-                  if (opt.key !== channel) setProviderSlug("");
-                  setChannel(opt.key);
-                }}
-                className="h-8 px-4 rounded-full text-[12px] font-bold transition-colors"
-                style={
-                  active
-                    ? {
-                        background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
-                        color: "#ffffff",
-                        boxShadow: "0 4px 12px -4px rgba(34,211,238,0.55)",
-                      }
-                    : { background: "transparent", color: "rgba(255,255,255,0.55)" }
-                }
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
+        {/* Channel toggle — M4-TPV Fase 2B — OCULTO tras IN_STORE_UI_ENABLED
+            hasta Fase 2A-redo. Ver comentario del useState de `channel`. */}
+        {IN_STORE_UI_ENABLED && (
+          <div
+            role="tablist"
+            aria-label="Payment channel"
+            className="mb-8 inline-flex items-center rounded-full p-1"
+            style={{
+              border: "1px solid rgba(255,255,255,0.10)",
+              background: "rgba(255,255,255,0.02)",
+            }}
+          >
+            {[
+              { key: "online",   label: "Online" },
+              { key: "in_store", label: "In-store" },
+            ].map((opt) => {
+              const active = channel === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => {
+                    if (opt.key !== channel) setProviderSlug("");
+                    setChannel(opt.key);
+                  }}
+                  className="h-8 px-4 rounded-full text-[12px] font-bold transition-colors"
+                  style={
+                    active
+                      ? {
+                          background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                          color: "#ffffff",
+                          boxShadow: "0 4px 12px -4px rgba(34,211,238,0.55)",
+                        }
+                      : { background: "transparent", color: "rgba(255,255,255,0.55)" }
+                  }
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {errorBanner && (
           <div

@@ -13,7 +13,10 @@ import FounderLetter from "@/components/landing/FounderLetter";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
-import InStoreUpsellStrip from "@/components/landing/InStoreUpsellStrip";
+// InStoreUpsellStrip — ROLLBACK 2B 2026-07-12: componente ya no se renderiza
+// hasta Fase 2A-redo (motor no acepta channel='in_store' aún). Import quitado
+// para no shippear el bundle. Restaurar: reimportar + reinsertar en <main>.
+// import InStoreUpsellStrip from "@/components/landing/InStoreUpsellStrip";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
@@ -463,10 +466,10 @@ export default function Landing() {
       <Navbar />
       <main className="relative">
         <Hero />
-        {/* M4-TPV Fase 2B — narrow banner signaling in-store channel coverage
-            right after the hero, before Problem section. Positions in-store as
-            a CHANNEL of the same product, not a separate vertical. */}
-        <InStoreUpsellStrip />
+        {/* M4-TPV Fase 2B — ROLLBACK 2026-07-12. <InStoreUpsellStrip /> retirado
+            hasta Fase 2A-redo. El motor no puede aún calcular in-store, así que
+            prometerlo en landing sería mentir. Ver Decision_Log corrección
+            bajo M4-TPV Fase 2A. */}
         <ProblemSectionWow />
         <HowItWorksSection />
         <PricingDual />

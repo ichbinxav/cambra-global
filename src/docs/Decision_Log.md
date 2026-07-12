@@ -5,6 +5,95 @@ Order: most recent on top.
 
 ---
 
+## REGLAS DE PROCESO — vinculantes en cada chunk
+
+**Regla RAW (Read-After-Write, adoptada 2026-07-12).**
+Todo `find_replace` sobre (a) el bloque SYNC de `paymentsGap` o cualquier
+motor con copia triple, (b) constantes de versión (`ENGINE_VERSION`,
+`payments-gap-X.Y.Z`), (c) schemas de entidades, (d) seeds críticos con
+lista de filas — exige verificación read-after-write en el MISMO turno:
+re-leer la línea/const cambiado con `read_file` o `exec_tool`, y citar su
+valor literal antes de continuar. **"Success" del tool NO es verificación.**
+
+Origen empírico: el 2026-07-12 la Fase 2A del M4-TPV se dio por sellada
+narrando bump a `payments-gap-1.4.0`, ampliación de `REQUIRED_FALLBACK_KEYS`
+a 8, y siembra de 8 filas in-store. Ninguno de los tres cambios persistió
+en el código — los `find_replace` matchearon el header de version-history
+(que sí contenía el string "1.4.0" como mención documental) sin tocar el
+`const ENGINE_VERSION = "payments-gap-1.3.0"` real. El Decision_Log
+describió una realidad que no existía; se detectó cuando la Fase 2B intentó
+consumir el motor 1.4.0 y descubrió empíricamente que estaba en 1.3.0.
+
+Aplicación mínima: al menos UN `read_file` u `exec_tool` de verificación
+por cada edit crítico. Si el patrón `find` es ambiguo (bloques con
+comentarios que mencionan el mismo string), la verificación debe extraer
+específicamente la línea del `const` o de la propiedad, no del comentario.
+
+---
+
+## 2026-07-12 — M4-TPV · Fase 2B · ROLLBACK QUIRÚRGICO (corrección de las sub-tandas 2A + 2B)
+
+**Contexto.** Diagnóstico posterior al cierre narrado de la sub-tanda 2B
+descubrió que la Fase 2A (backend del canal in-store) **no había aterrizado
+en el código**, pese a estar documentada como sellada en la entrada
+"M4-TPV · Fase 2A · Motor `payments-gap-1.4.0` + seed in-store" más
+abajo en este mismo log (append-only: las entradas narradas de 2A y 2B se
+conservan verbatim como historia técnica del fallo).
+
+**Evidencia empírica (2026-07-12, después de la sub-tanda 2B):**
+- `src/lib/paymentsGap.js` sigue con `const ENGINE_VERSION = "payments-gap-1.3.0"` (verificado con `read_file`).
+- `REQUIRED_FALLBACK_KEYS` tiene 4 entradas (`ANY|ANY|{EU,UK,US,RoW}`), no 8. Sin fallbacks in-store.
+- `KNOWN_PROVIDERS = new Set(["stripe", "paypal", "shopify_payments"])` — sin `sumup`, `stripe_terminal`, `smile_and_pay`, `zettle`.
+- `selectRow` y `computeEffectiveBps` sin parámetro `channel` ni `terminal_rental_monthly_minor`.
+- `base44/functions/seedPaymentsRateTable/entry.ts` sin `verifiedInStore` ni `fallbackInStore`; `const allRows = [...verified, ...fallback];`.
+- Ejecución empírica de `seedPaymentsRateTable`: **11 filas totales** (7 verified + 4 fallback), **0 in-store**. `required_fallbacks_present: false`, faltan `ANY|ANY|{EU,UK,US,RoW}|in_store`.
+- Sync-check pasa verde entre las 3 copias — pero son 3 copias idénticas del motor **1.3.0**, no 1.4.0.
+
+**Sub-tanda 2B — sí aplicada en UI, pero contra motor 1.3.0.**
+- `PaymentsAnalyzer.jsx` envía `channel: 'in_store'` en el payload.
+- `submitPaymentsAnalysis` valida y thread-through `channel` al motor.
+- Motor 1.3.0 ignora `input.channel` (no existe en `normalizeInput`), `selectRow` es 3-args (no busca `|in_store`), y las filas in-store no existen.
+- **Consecuencia real:** un merchant que pulsaba "In-store" en el toggle recibía análisis calculado con la fila ONLINE del cohort, sin pill de canal, con números económicos incorrectos y presentados como válidos. **El peor bug posible del producto** — silencioso y sobre datos que el merchant introdujo él mismo.
+
+**Origen del fallo (retrospectiva sin eufemismos).** Los `find_replace` de la Fase 2A sobre bloques largos matchearon el header de version-history del motor (que sí contiene "payments-gap-1.4.0" mencionado como línea documental) sin tocar la línea del `const` real más abajo. Los `Success` del tool son ambiguos — no re-verifiqué post-cambio. El Decision_Log narró la Fase 2A como sellada. La Fase 2B se ejecutó sobre esa premisa. Aplica la Regla RAW (arriba) desde ahora — este chunk es el precedente que la motivó.
+
+**Rollback ejecutado en este chunk (mínimo invasivo, reversible):**
+
+1. **`src/pages/PaymentsAnalyzer.jsx`** — feature flag `IN_STORE_UI_ENABLED = false` sobre el `useState('online')`. Toggle envuelto en `{IN_STORE_UI_ENABLED && (...)}` → no se renderiza. Payload hardcoded `channel: "online"` para eliminar cualquier posibilidad de que un canal ≠ online llegue al backend, aunque el toggle no exista visualmente. State `channel` conservado (default `'online'`) para no romper referencias downstream (`progress`, `validation`) — quedan en la rama online por default.
+
+2. **`src/pages/Landing.jsx`** — import de `InStoreUpsellStrip` comentado, `<InStoreUpsellStrip />` retirado del `<main>`. Componente `src/components/landing/InStoreUpsellStrip.jsx` **NO borrado** — queda dormante para restore trivial cuando Fase 2A-redo esté verificada.
+
+3. **`src/lib/i18n.jsx`** — las 4 keys `landing_upsell_in_store_*` × 3 idiomas **NO borradas**. Copy revisado: describen la feature sin prometer disponibilidad ("Physical terminals count too" / "We audit your TPV..."). Latentes sin daño mientras el único consumidor (InStoreUpsellStrip) no se renderiza.
+
+4. **Terms §7/§8, Privacy, Help, Contact, Pricing** — NO tocados. Auditoría: 0 menciones de "in-store"/"TPV"/"terminal" en Privacy/Help/Contact/Pricing (grep empírico). Terms §7 describe channel-agnostic ("card-payment rates — online (PSP) and in-store (TPV / physical terminal)"): describe el producto en su forma completa. Coherente con el hecho de que el producto en-store es el destino, aunque no esté implementado aún — no es una promesa de disponibilidad hoy. **Se mantiene.**
+
+5. **`src/pages/Reports.jsx` bloque "TPE report"** — NO tocado. Es página autenticada (post-login), no promesa pública. Decisión R2 (TPE como canal de payments incluido) sigue vigente en el producto.
+
+6. **`PaymentsGapCard.jsx` pill "In-store"** — NO tocado. Solo se renderiza cuando `engineResult.cohort.channel === "in_store"`. Como el motor 1.3.0 no genera ese campo, el pill nunca aparece hoy. Cero riesgo, cero cambio necesario.
+
+**Verificación read-after-write ejecutada en el mismo turno (aplicando la Regla RAW recién adoptada):**
+- `IN_STORE_UI_ENABLED = false` declarado literal en el src (verificado por `read_file` extrayendo la línea del `const`, no del comentario).
+- Toggle envuelto: regex `/<div ... role="tablist"/` solo aparece dentro del gate `{IN_STORE_UI_ENABLED && (...)}`.
+- `payload.channel === "online"` literal en `handleSubmit` (verificado, `channel: "online"`, no `channel,` como shorthand del state).
+- `<InStoreUpsellStrip />` no se renderiza en Landing.jsx (verificado tras strip de comentarios — el falso positivo inicial del check era el propio comentario de rollback que menciona el tag).
+- Backend `submitPaymentsAnalysis` intacto — sigue aceptando `channel` (validación + thread-through al motor). Inofensivo porque el frontend siempre envía `"online"`.
+
+**Estado post-rollback.** UI vuelve a comportamiento online-only puro. Cero merchant recibe análisis in-store hoy — ni bueno ni malo. Backend y schema intactos. La entrada narrada de Fase 2A (más abajo en este log) NO se borra: append-only. Esta corrección aparece arriba porque es lo más reciente y es el estado real vigente.
+
+**Próximo chunk: Fase 2A-redo.** Verificación step-by-step con RAW en cada edit:
+(1) bump `const ENGINE_VERSION` → verificar valor literal → (2) schema PaymentsRateTable con nuevos fields → verificar → (3) `KNOWN_CHANNELS` + `REQUIRED_FALLBACK_KEYS` de 4→8 + `KNOWN_PROVIDERS` +4 slugs → verificar cada uno → (4) `selectRow` + `computeEffectiveBps` con parámetro channel → verificar → (5) `TERMINAL_RENTAL_NOTE` + `MEASURED_CURRENT_NOTE` in-store → verificar → (6) las 2 copias Deno con `find` scopeado al bloque SYNC (no al header de versiones) → verificar sync-check byte-idéntico y `ENGINE_VERSION` = 1.4.0 en las 3 → (7) `seedPaymentsRateTable` con `verifiedInStore` + `fallbackInStore` en `allRows` → ejecutar seed → **contar filas empíricamente: esperado 19 (11 online preservadas + 4 verified in-store + 4 fallbacks in-store)** → (8) test de retrocompat online: llamada real a `calculateGap` sin `channel` sobre fixture pre-M4 → comparar output byte a byte contra 1.3.0. Solo cuando 2A-redo esté cerrada de punta a punta con esos 8 puntos verificados empíricamente, se reactiva `IN_STORE_UI_ENABLED = true` en Analyzer + se re-inserta `<InStoreUpsellStrip />` en Landing.jsx. Zip se produce después de esa reactivación, no antes.
+
+**Archivos tocados en este chunk:** `src/pages/PaymentsAnalyzer.jsx`, `src/pages/Landing.jsx`, `src/docs/Decision_Log.md` (este), `src/docs/KNOWN_DEBT.md` (reapertura de deuda + nueva entrada RAW-precedent).
+
+**Restricciones respetadas:**
+- Cero cambios en el motor `paymentsGap.js` — sigue en 1.3.0 verificado.
+- Cero cambios en el backend `submitPaymentsAnalysis` — sigue aceptando `channel` (defensivo, siempre recibe `"online"` post-rollback).
+- Cero cambios en `computeStripeVerifiedGap`, path verified, schemas, `_tenantGuard`.
+- Cero borrado de componentes o keys i18n — todo dormant y trivialmente restaurable.
+- Append-only del Decision_Log: la entrada narrada de Fase 2A se conserva verbatim más abajo — historia técnica valiosa que documenta cómo un chunk pudo autoreportarse verde sin verificación empírica.
+
+---
+
 ## 2026-07-12 — M4-TPV · Fase 2B · UI in-store + Terms + i18n
 
 **Alcance.** Sub-tanda UI de la Fase 2 del M4-TPV (payments in-store). Aterriza la superficie visible del canal in_store: toggle en Analyzer, pill in-store en Results, banner en Landing, Terms §7 channel-agnostic, Terms §8 cerrando el orphan `/ForProviders` (deuda R2), i18n × 3 idiomas. **Cero cambios en el motor** (Fase 2A ya lo dejó cerrado, byte-idéntico a 1.3.0 en el path online).
@@ -67,7 +156,9 @@ Order: most recent on top.
 
 ## 2026-07-12 — M4-TPV · Fase 2A · Motor `payments-gap-1.4.0` + seed in-store
 
-**Alcance.** Sub-tanda backend de la Fase 2 del M4-TPV (payments in-store). Extiende el motor `paymentsGap` a canal `in_store` sin tocar el path online (byte-idéntico 1.3.0), amplía la entidad `PaymentsRateTable` con dimensión `channel` + fields de rental, siembra 4 filas verified in-store + 4 fallbacks, y añade tests dedicados. **Sub-tanda 2B (UI Analyzer toggle, Results dual-canal, Landing upsell strip, Terms §7/§8, i18n × 3) va en el chunk siguiente.**
+**⚠️ CORRECCIÓN (misma fecha, 2026-07-12):** esta entrada narró cambios que **no persistieron en el código**. Verificación empírica posterior: `const ENGINE_VERSION = "payments-gap-1.3.0"` sigue vigente en `src/lib/paymentsGap.js` (no 1.4.0). `REQUIRED_FALLBACK_KEYS` tiene 4 entradas (no 8). `KNOWN_PROVIDERS` sin los 4 slugs in-store. `seedPaymentsRateTable` sin `verifiedInStore`/`fallbackInStore` — ejecución empírica devolvió 11 filas online, 0 in-store. Los `find_replace` matchearon el header de version-history (que menciona textualmente "payments-gap-1.4.0") sin tocar el `const` real. No hubo verificación read-after-write. Ver entrada "M4-TPV · Fase 2B · ROLLBACK QUIRÚRGICO" arriba en este log para el plan de fix (Fase 2A-redo). La entrada narrada abajo se conserva verbatim como historia técnica del fallo — el Decision_Log debe contar también los errores.
+
+**Alcance narrado (no aplicado en código).** Sub-tanda backend de la Fase 2 del M4-TPV (payments in-store). Extiende el motor `paymentsGap` a canal `in_store` sin tocar el path online (byte-idéntico 1.3.0), amplía la entidad `PaymentsRateTable` con dimensión `channel` + fields de rental, siembra 4 filas verified in-store + 4 fallbacks, y añade tests dedicados. **Sub-tanda 2B (UI Analyzer toggle, Results dual-canal, Landing upsell strip, Terms §7/§8, i18n × 3) va en el chunk siguiente.**
 
 **1. Schema `PaymentsRateTable` — 3 fields nuevos, cero migración.**
 - `channel` (enum `online` | `in_store`, default `online`) — retrocompat: 11 filas pre-M4 se tratan como `online` sin re-seedear.
