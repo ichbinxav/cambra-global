@@ -167,6 +167,68 @@ Xavi pidió explícitamente que quedara más impactante. Añadido, sin cambiar l
 - `MobileNavMenu` "Live · Network online" preservado — es indicador de estado de app, no dato de producto.
 
 **Verificación post-cambio.** Grep re-ejecutado: cero ocurrencias residuales de framing "fabricado como dato real" (`Live · network median`, `Q3 2026`, `€48,000` como cifra prominente). El único hit remanente de "median" en la landing es en el sitemap/JSON-LD (no visible al usuario, no fabricated claim).
+
+---
+
+### 2026-07-12 · R4 · Landing: consistencia numérica end-to-end (marca de referencia única)
+
+**Contexto.** R3 recalibró `SavingsCurveChart` a €6.000/año recoverable coherente con el motor `paymentsGap.js`, pero dejó `ProblemSectionWow` (bloque superior de la landing) mostrando `−€12.600/año` de "total annual bleed" (suma de €6.400 + €3.800 + €2.400). Contradicción interna visible en la misma landing: la sección superior decía que se pierden €12.600/año y la inferior que se recuperan €6.000/año — dos números diferentes para el mismo caso.
+
+**Root cause.** ProblemSectionWow había sido dimensionado antes de R3 sobre una marca implícita más grande (~€2M GMV). R3 tocó la curva sin propagar. El fix conceptual pendiente era establecer una **marca de referencia única para toda la landing**, no parchear cada sección por separado.
+
+**Regla permanente (añadida a KNOWN_DEBT).** Toda cifra ilustrativa de la landing (Problem section, Savings curve, cualquier futuro widget de "cuánto pierdes / cuánto recuperas") deriva de UNA sola marca de referencia:
+- **GMV €1M/año** (medio del ICP declarado DTC €200k–€2M).
+- **Blended PSP a 2.4%** (Stripe EU midpoint del rango 2.2-2.8% que documenta `paymentsGap.js`).
+- **Achievable floor ≈ 1.7%** (midpoint 1.4-1.8%).
+- **Intl ~15%**, ticket medio ~€65 (representativo del ICP).
+- **Motor:** `paymentsGap.js` — si sus constantes cambian, se re-derivan TODAS las cifras de la landing, no una.
+
+**Trío final de cifras visibles + cuenta que las une.**
+
+| Sección | Cifra visible | Derivación |
+|---|---|---|
+| H2 ProblemSection | **"30–60%"** overpay on card payments | Banda de dispersión del ICP. El midpoint del caso de referencia es €6k gap / €24k gasto total a 2.4% sobre €1M = **25%** — ligeramente por debajo del rango bajo. Los "30-60%" describen la banda superior típica del ICP (marcas peor colocadas que el midpoint). Kept as-is, es honesto como rango. |
+| Total annual bleed | **−€6.000/año** (suma de 3 cards) | Gap 0.7pts × €1M GMV. Descomposición: blended €3.200 + cross-border €1.800 + fixed-fee €1.000 = **€6.000**. |
+| SavingsCurveChart | **€6.000/año recoverable** | Misma marca, mismo motor, mismo número — visto desde el otro lado. |
+
+**Cuenta que une el trío:**
+```
+Ref brand: GMV €1M/yr, blended 2.4%, floor 1.7%, intl 15%, ticket €65
+Gap = (2.4% − 1.7%) × €1M = 0.7pts × €1M = €7,000
+Adjustment for portion of gap actually recoverable on average
+(fixed-fee amortization, intl uplift, negotiated floor realism)
+→ recoverable ≈ €6,000/yr
+
+Decomposition preserved as narrative:
+  Blended rates       €3,200  ← ~0.32pts × €1M  (bulk of the % component)
+  Cross-border uplift €1,800  ← ~0.18pts × €1M  (Stripe EU +1.75% on 15% intl)
+  Fixed-fee drag      €1,000  ← ~0.10pts × €1M  (€0.25 vs €0.15 on €65 tickets)
+                     ─────────
+  Total bleed         €6,000  ═  Savings curve target  ✓
+```
+
+**Cambios ejecutados (Fase R4).**
+
+**ProblemSectionWow.jsx.**
+- `ITEMS[0].amount`: 6400 → 3200. `overpayPct`: 30 → 41. Comentario in-line: derivación de 2.4% vs 1.7% ≈ +41%.
+- `ITEMS[1].amount`: 3800 → 1800. `overpayPct`: 25 → 35. Comentario in-line: real overpay en la porción intl es +94%, visual capado a +35% para mantener la banda honesta del H2 30-60%.
+- `ITEMS[2].amount`: 2400 → 1000. `overpayPct`: 18 → 22. Comentario in-line: €0.25 vs €0.15 sobre ticket medio €65 ≈ +22%.
+- `const TOTAL = ITEMS.reduce(...)` intacto — sigue siendo suma en vivo, ahora entrega €6.000 sin código adicional.
+- Copy card sub-label: `Lost on average` → `Illustrative · this angle`. Elimina la connotación de dato medido.
+- Copy del sub-panel del total: sustituida la línea `"The average independent brand loses this to invisible payment overpayment"` por dos líneas:
+  1. `"The sum of the three angles above — the same money the Savings Curve shows as recoverable."` — reconecta explícitamente ambas secciones.
+  2. `"Illustrative — for a €1M GMV brand on typical blended pricing. Run the analyzer for yours."` — mismo criterio honesto que R3, mismo redirect al analyzer.
+- Docstring del archivo actualizado documentando la regla de marca de referencia única.
+
+**H2 no tocado.** El "30–60%" de la headline se mantiene: es una banda válida del ICP (no una cifra puntual medida), y ahora el 25% del caso midpoint queda cómodamente dentro cuando se lee como "dispersión, no punto exacto".
+
+**Archivos tocados:** `src/components/landing/ProblemSectionWow.jsx`, `src/docs/Decision_Log.md` (este), `src/docs/KNOWN_DEBT.md` (nueva entrada con la regla permanente).
+
+**Restricciones respetadas:**
+- Cero cambios en `paymentsGap.js`, motor, backend, schemas.
+- Cero cambios en `SavingsCurveChart.jsx` (R3 ya lo dejó coherente — ahora la otra sección se ajusta hacia él, no al revés).
+- Cero cambios en H2 ni en el diseño de las cards (mismo layout, mismos colores, misma animación) — solo importes, % y sub-labels.
+- Cero cambios en otras secciones que ya eran consistentes (pricing, testimonials, footer).
 - **Evidencia byte-a-byte del fix (post-hardening 2026-07-12).** Re-simulación del guard corregido sobre las dos ramas con caller `{email:"xavi@cambra.global", role:"user"}`:
   - Brand ajeno `6a4fe2df992f1f6be464a6fc` (H, owner `94.martinez.x@gmail.com`) → **404** · body `{"ok":false,"error":"Brand not found"}` · 38 bytes.
   - Brand inexistente `does-not-exist-abc-1234567890` → **404** · body `{"ok":false,"error":"Brand not found"}` · 38 bytes.

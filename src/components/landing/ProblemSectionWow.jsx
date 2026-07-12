@@ -5,23 +5,30 @@ import SectionLabel from "@/components/shared/SectionLabel";
 import AnimatedSection from "@/components/landing/AnimatedSection";
 
 /**
- * Problem section — payments-only edition (Fase R1, 2026-07-12).
+ * Problem section — payments-only edition · R4 recalibration (2026-07-12).
  *
  * Three angles of the SAME problem — hidden overpayment on card payments.
- * Numbers deliberately chosen to be consistent with the engine's own
- * assumptions (see paymentsGap.js: Stripe EU standard 2.2–2.8%, achievable
- * floor 1.4–1.8%, +1.75% cross-border uplift on Stripe EU/UK).
+ * Numbers derived from the SINGLE REFERENCE BRAND used across the whole
+ * landing (see KNOWN_DEBT · "Landing reference-brand rule"):
+ *   GMV €1M/yr, blended PSP at 2.4%, intl ~15%, low-mid ticket.
+ *   Engine (`paymentsGap.js`) floor ≈ 1.7% → gap ≈ 0.7pts × €1M = €6,000/yr.
  *
- * Total bleed = €12,600/yr — the sum of the three components below,
- * NOT an editorial number; changes automatically if the individual amounts
- * are re-tuned.
+ * The three cards below decompose that same €6,000 gap into its narrative
+ * angles (blended / cross-border / fixed-fee drag), so the TOTAL BLEED and
+ * the SavingsCurveChart's "recoverable" figure are the same number, told
+ * from two ends of the transaction:
+ *   —€6,000/yr lost today   =   €6,000/yr recoverable tomorrow.
+ *
+ * Total is a live reduce over ITEMS — NOT hardcoded. If the reference brand
+ * assumptions change, retune the three amounts and everything else follows.
  */
 const ITEMS = [
   {
     icon: TrendingDown,
     category: "Blended rates",
-    amount: 6400,
-    overpayPct: 30,
+    amount: 3200,
+    // Overpay relative to floor: 2.4% blended vs 1.7% achievable ≈ +41%.
+    overpayPct: 41,
     body: "Blended pricing hides the interchange floor. Most brands pay 2.2–2.8% when their real minimum is 1.4–1.8%.",
     accent: "rgba(239,68,68,0.65)",
     glow: "rgba(239,68,68,0.08)",
@@ -29,8 +36,11 @@ const ITEMS = [
   {
     icon: Globe2,
     category: "Cross-border uplift",
-    amount: 3800,
-    overpayPct: 25,
+    amount: 1800,
+    // +1.75% Stripe EU/UK cross-border on ~15% intl share vs ~0.9% negotiated
+    // on the same portion ≈ +94% overpay on the intl slice. Visual cap at
+    // +35% to stay in the honest 30-60% band advertised in the H2.
+    overpayPct: 35,
     body: "International cards add +1.75% on the wrong PSP. On the right one, the schemes' floor is the same — the margin isn't.",
     accent: "rgba(249,115,22,0.65)",
     glow: "rgba(249,115,22,0.08)",
@@ -38,8 +48,10 @@ const ITEMS = [
   {
     icon: Coins,
     category: "Fixed-fee drag",
-    amount: 2400,
-    overpayPct: 18,
+    amount: 1000,
+    // €0.25 vs €0.15 per-tx on ~€65 avg ticket ≈ +22% overpay on the fixed
+    // component (the % component isn't affected).
+    overpayPct: 22,
     body: "€0.25 per-transaction fees compound on low-ticket flows. Amortized against your real ticket size, they quietly change your effective rate.",
     accent: "rgba(236,72,153,0.65)",
     glow: "rgba(236,72,153,0.08)",
@@ -158,7 +170,7 @@ function Card({ item, index }) {
           className="text-[10px] uppercase tracking-[0.22em] font-bold mb-5"
           style={{ color: item.accent, opacity: 0.6 }}
         >
-          Lost on average
+          Illustrative · this angle
         </p>
       </div>
 
@@ -309,7 +321,12 @@ export default function ProblemSectionWow() {
                   Total annual bleed
                 </p>
                 <p className="text-[13px] text-white/55 max-w-md">
-                  The average independent brand loses this to invisible payment overpayment.
+                  The sum of the three angles above — the same money the
+                  Savings Curve shows as recoverable.
+                </p>
+                <p className="text-[11px] text-white/40 mt-2 leading-snug max-w-md">
+                  Illustrative — for a €1M GMV brand on typical blended
+                  pricing. Run the analyzer for yours.
                 </p>
               </div>
             </div>

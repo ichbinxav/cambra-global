@@ -527,6 +527,42 @@ Todo coherente con posicionamiento payments-only + in-store. **No requiere ajust
 
 ---
 
+### 2026-07-12 · R4 · REGLA PERMANENTE — Landing reference-brand rule
+
+**Regla.** Toda cifra ilustrativa visible en la landing (Problem section, Savings curve, futuros widgets de "cuánto pierdes / cuánto ahorras / cuánto recuperas") **DEBE derivar de UNA sola marca de referencia**. Cambiar el motor → re-derivar TODAS las cifras, no una.
+
+**Marca de referencia canónica (2026-07-12):**
+- **GMV:** €1.000.000/año (midpoint del ICP declarado DTC €200k–€2M).
+- **Blended PSP rate:** 2.4% (Stripe EU midpoint del rango 2.2-2.8% que documenta `paymentsGap.js` en su tabla de referencia).
+- **Achievable floor:** ≈ 1.7% (midpoint 1.4-1.8%).
+- **Intl share:** ~15%.
+- **Avg ticket:** ~€65 (representativo del ICP low-mid ticket).
+- **Motor de verdad:** `src/lib/paymentsGap.js`. Cualquier cambio en sus constantes obliga a re-derivar.
+
+**Consecuencias derivadas (a mantener sincronizadas):**
+- Gap total: 0.7pts × €1M ≈ **€6.000/año recoverable**.
+- Descomposición narrativa 3-angle: blended €3.200 + cross-border €1.800 + fixed-fee €1.000 = **€6.000**.
+- Overpay % del caso midpoint: **25%**. La banda "30-60%" del H2 describe dispersión del ICP, no el punto exacto.
+
+**Consumers de la regla (auditar cada vez que se toque el motor):**
+1. `src/components/landing/ProblemSectionWow.jsx` — `ITEMS` array + `TOTAL` reduce.
+2. `src/components/landing/SavingsCurveChart.jsx` — `target` prop default + stats strip derivadas.
+3. Cualquier future landing widget con cifra ilustrativa.
+
+**Cómo re-derivar cuando el motor cambie.**
+1. Recomputar el gap: `(blended − floor) × GMV` con los nuevos rates.
+2. Distribuir la descomposición manteniendo la proporción narrativa (~53% blended, ~30% cross-border, ~17% fixed-fee).
+3. Actualizar `overpayPct` de cada card: cada uno es `(current_rate − floor) / floor` en su dimensión, visualmente capado si supera el rango 30-60% del H2.
+4. `SavingsCurveChart.target` = el nuevo total.
+5. Actualizar copy del H2 si el nuevo gap saca el 25% fuera de la banda 30-60% (recolocar rango si es necesario).
+6. Reflejar el cambio en el Decision_Log con el trío final + la cuenta que los une (formato R4).
+
+**Regla anti-drift.** Nunca hardcodear un total en ProblemSectionWow — siempre `ITEMS.reduce`. Nunca hardcodear stats derivados en SavingsCurveChart — siempre `target / 12` para €/mes, `target / 2` para tick medio, etc. R3 y R4 dejaron ambos archivos ya cumpliendo esta subregla.
+
+**Estado.** ACTIVA. Vive aquí porque KNOWN_DEBT es el sitio donde el próximo humano/agente que toque el motor irá a comprobar qué se rompe.
+
+---
+
 ### 2026-07-12 · R2 · Terms §8 — referencia legal huérfana a `/ForProviders`
 
 **Contexto.** Detectado durante R2 al leer `Terms.jsx` completo. §8 "Provider compensation" cierra con:
