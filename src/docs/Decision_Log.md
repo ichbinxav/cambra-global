@@ -5,7 +5,39 @@ Order: most recent on top.
 
 ---
 
-## 2026-07-12 — Chunk custom domain (`cambra.global`) + inventario de email · SOLO DOCS
+## 2026-07-12 (v2) — Chunk custom domain (`cambra.global`) revisado post-review Xavi
+
+**Motivo del v2.** Xavi verificó dos afirmaciones DNS del v1 y una era incorrecta, otra dudosa:
+
+1. **ANAME/ALIAS en apex → RETIRADO.** El panel clásico de IONOS Domains & SSL (donde vive `cambra.global`) NO expone ALIAS/ANAME. Esa opción existe únicamente en IONOS Cloud DNS, un producto distinto. La ayuda oficial del panel es explícita: CNAME solo en subdominios, apex se conecta con A/AAAA a IPs estáticas, y desaconseja CNAME en root. La fila "ANAME @ → base44.onrender.com" del v1 era inconstruible en el UI real.
+
+2. **`base44.onrender.com` como target → MARCADO PENDIENTE.** El hostname autoritativo del CNAME lo debe emitir el dashboard de Base44 al registrar el dominio en NUESTRA app concreta (suele ser específico por app). Usar el default de la doc genérica corría el riesgo clásico de apuntar el dominio al vacío.
+
+**Estrategia v2.**
+- **Path A (recomendada) — A record apex al IP estática de Base44 `216.24.57.1`** (fuente autoritativa: docs.base44.com/Setting-up-your-app/Connecting-an-external-domain y /Community-and-support/Troubleshooting, ambos consultados 2026-07-12). Path 100% construible desde Domains & SSL panel de IONOS. CNAME `www` al target literal que muestre el panel Base44 al registrar el dominio — hasta que Xavi lo lea allí, va como `<PENDIENTE>` en la tabla.
+- **Path B (fallback) — Domain forwarding 301 `cambra.global → www.cambra.global`** + CNAME `www` al target Base44. En este caso `www` se convierte en canonical, con impacto en CTAs/OpenGraph que habría que abordar en chunk aparte. Documentado pero no ejecutado salvo aviso.
+
+**Riesgo Path A.** Base44 podría cambiar la IP estática algún día; a mitigar con TTL 3600 (no menor por rate-limit de DNS negativo) y monitoreo pasivo. Aceptable frente a la simplicidad del setup.
+
+**Ampliación de scope — hallazgo lateral corregido.** Xavi aprobó arreglar en el mismo chunk los 3 CTAs con URL literal `https://cambra.co/...` (dominio del pivot anterior, muerto) en `base44/functions/scheduledEmails/entry.ts` líneas 63, 110, 178. Corregidos a `https://cambra.global/...`. Cambio de string, sin lógica; las rutas `/Onboarding` y `/Dashboard` existen en el router actual (`src/App.jsx`). El cambio no toca ningún bloque SYNC ni mirror; sync-check no se activa. Riesgo residual documentado en DNS_MIGRATION §8.3: los emails enviados entre este chunk y la ejecución del DNS apuntarán a `cambra.global` que aún sirve la app vieja — como la vieja también tiene `/Onboarding`, los links no fallan, solo llevan al UI viejo durante el lapso corto.
+
+**Entregable v2.** `src/docs/DNS_MIGRATION.md` reescrito con:
+- Estrategia dual Path A / Path B explícita, con recomendación y fallback.
+- Tabla IONOS SIN ANAME, con la celda del CNAME target marcada `<PENDIENTE — leer del panel Base44>` y §5.1 punto 6 dando la instrucción exacta de dónde lo lee Xavi.
+- Runbook actualizado — orden anti-downtime intacto (registrar en Base44 ANTES de tocar DNS).
+- §6 (verificación `dig`) reflejando Path A: `dig +short cambra.global A` → `216.24.57.1`, `dig +short www.cambra.global CNAME` → `<valor del panel>`.
+- §7.3 rollback → Path B como escape si Path A falla en la validación de Base44.
+
+**Restricciones respetadas (v2).**
+- Cero cambios en lógica de código de producto.
+- Único cambio de código: 3 strings de href en `scheduledEmails/entry.ts` (aprobado explícitamente por Xavi en la review).
+- Cero cambios en tests (esperado 348/0/2 intacto — el cambio de href no cruza ningún bloque SYNC).
+- Cero cambios en records `contact.*` de Resend.
+- Cero acciones ejecutadas en IONOS ni en el dashboard Base44 — sigue siendo runbook para Xavi.
+
+---
+
+## 2026-07-12 — Chunk custom domain (`cambra.global`) + inventario de email · SOLO DOCS · SUPERADO POR v2
 
 **Alcance.** Cero código de producto tocado. Este chunk entrega un runbook DNS y un inventario empírico de senders. La ejecución del DNS es acción manual del usuario en el UI de IONOS + Base44 dashboard.
 

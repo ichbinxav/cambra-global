@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
             <p style="color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 32px;">
               Join CAMBRA to unlock your savings and access preferred infrastructure conditions.
             </p>
-            <a href="https://cambra.co/Onboarding" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
+            <a href="https://cambra.global/Onboarding" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
               Join CAMBRA to unlock savings →
             </a>
             <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #eee;">
@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
               ${deal.estimated_savings ? `<p style="color: #16a34a; font-weight: 700;">€${deal.estimated_savings.toLocaleString()}/yr estimated benefit</p>` : ""}
               <p style="color: #ea580c; font-size: 13px; font-weight: 600; margin-top: 8px;">Expires: ${endFormatted}</p>
             </div>
-            <a href="https://cambra.co/Dashboard" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
+            <a href="https://cambra.global/Dashboard" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
               Renew contract →
             </a>
             <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #eee;">
@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
               </div>`).join("")}
             </div>` : ""}
 
-            <a href="https://cambra.co/Dashboard" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
+            <a href="https://cambra.global/Dashboard" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
               ${active.length === 0 ? "Join CAMBRA to unlock savings →" : "View your dashboard →"}
             </a>
 
