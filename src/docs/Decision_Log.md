@@ -31,6 +31,143 @@ específicamente la línea del `const` o de la propiedad, no del comentario.
 
 ---
 
+## 2026-07-12 — M4-TPV · Fase 2A-redo · ADENDA · Corrección del achievable in-store (regla auditabilidad)
+
+**Contexto post-cierre 2A-redo.** El submit RAW citado en la entrada de 2A-redo devolvió `achievable_effective_bps: 100` para SumUp EU in-store con composición `26+20+54` (interchange+scheme+margin, patrón online). Xavi identificó el problema estructural: **ningún proveedor público ofrece TPV a 1.0% en EU**. Los floors reales contratables son SumUp 1.75%, Smile&Pay 1.55%, Stripe Terminal 1.4%+€0.10. Decirle a un merchant SumUp con ticket €25 "podrías bajar a 1.0%" **rompe la regla de auditabilidad** — es la card del €48k al revés (con recovery en lugar de bleed inflado): el merchant no puede firmar 1.0% mañana con ningún proveedor real.
+
+**Regla nueva sellada — vinculante para el motor in-store en adelante.**
+
+> **Achievable in-store = mejor pricing público CONTRATABLE de la región, NUNCA composición teórica interchange+scheme+margin.**
+>
+> El merchant debe poder firmar el achievable mañana con un proveedor real, con URL + cita verbatim de la página de precios. La composición interchange++/margin del path online NO aplica al modelo blended TPV — la mayoría de proveedores card-present publican una rate blended única sin desglose auditable, así que forzarles un breakdown teórico produce números fuera del rango contratable.
+>
+> El path online conserva la composición interchange+scheme+margin (regla M3.6 intacta, byte-idéntico) porque para online sí existen breakdowns públicos IFR-anchored y el achievable teórico coincide con lo negociable en negocios de volumen medio-alto (Stripe Standard EU 1.5%+€0.25 vs achievable Stripe Standard IFR-anchored 0.86%+€0.25 — la diferencia SÍ es negociable con Stripe en un contrato tier custom).
+
+**Cambios ejecutados (mínimos, con RAW en cada paso):**
+
+**1. Seeder — 8 filas in-store re-anchored.** Todas las filas in-store (verified + fallback) ahora tienen achievable anclado a un proveedor público contratable:
+
+| cohort_key | Current | Achievable | Anchor provider | Fuente |
+|---|---|---|---|---|
+| `sumup\|ANY\|EU\|in_store` | 175 bps + 0 fixed | **140 bps + €0.10** | stripe_terminal | stripe.com/terminal |
+| `stripe_terminal\|ANY\|EU\|in_store` | 140 bps + €0.10 | **140 bps + €0.10** (already floor) | stripe_terminal | stripe.com/terminal |
+| `smile_and_pay\|ANY\|EU\|in_store` | 155 bps + 0 fixed | **140 bps + €0.10** | stripe_terminal | stripe.com/terminal |
+| `zettle\|ANY\|EU\|in_store` | 175 bps + 0 fixed | **140 bps + €0.10** | stripe_terminal | stripe.com/terminal |
+| `ANY\|ANY\|EU\|in_store` (bank) | 220 bps + €25 rental | **140 bps + €0.10** (no rental) | stripe_terminal | stripe.com/terminal |
+| `ANY\|ANY\|UK\|in_store` | 210 bps + £25 rental | **175 bps + 0 fixed** (no rental) | sumup UK | sumup.com/en-gb/pricing/ |
+| `ANY\|ANY\|US\|in_store` | 260 bps + $0.10 | **260 bps + $0.10** | square | squareup.com/us/en/pricing |
+| `ANY\|ANY\|RoW\|in_store` | 250 bps + $0.10 + $20 rental | **260 bps + $0.10** (no rental) | square | squareup.com/us/en/pricing |
+
+`achievable_breakdown_json` cambió de shape en las in-store: `{interchange_bps, scheme_fees_bps, processor_margin_bps, ...}` → `{anchor_provider, anchor_region, anchor_percent_bps, anchor_fixed_fee_minor_units, anchor_source_url, anchor_source_quote}`. La fila fallback bank EU añade `alt_provider_low_ticket: {provider: 'sumup', percent_bps: 175, ticket_floor_eur: 25}` para documentar el crossover.
+
+**2. Motor `ACHIEVABLE_NOTE` — dual-shape detection.** El helper detecta la shape del breakdown:
+- Si `breakdown.interchange_bps` es number → shape ONLINE, emite string byte-idéntico a M3.6 con "Achievable rate composition: interchange N + scheme N + margin N (±N bps assumption)" (parseable por `FeeBreakdownCard.parseAchievableBreakdown()`).
+- Si `breakdown.anchor_provider` es string → shape IN-STORE, emite: *"Achievable rate anchored to the best publicly contractable card-present provider for this region: {provider} at {X.XX}% + {Y.YY} per transaction. This is a rate you can sign today, not a theoretical floor — the savings range around this anchor reflects overall confidence in the benchmark for this cohort."*
+
+Retrocompat online byte-idéntica: verificado empíricamente (submit online Stripe EU produce assumptions[1] literal *"Achievable rate composition: interchange 26 bps + scheme fees 20 bps + assumed processor margin 40 bps (±20 bps assumption)..."*). El parser M3.6 sigue matcheando.
+
+**3. Sync-check triple verde byte-idéntico post-corrección.** Verificado con `exec_tool` sobre las 3 copias: `lens.src === lens.sub === lens.cmp === 36444`, `identical_src_sub: true`, `identical_src_cmp: true`, `first_diff: "no diff"`. Cero drift.
+
+**4. Seed re-ejecutado.** `test_backend_function('seedPaymentsRateTable', {})` devolvió: `total_rows: 19, created: 0, updated: 19, errors: 0`. Las 8 filas in-store (4 verified + 4 fallback) actualizadas + las 11 online preservadas byte-idénticas.
+
+**5. RAW cita literal de `stripe_terminal|ANY|EU|in_store` (paso 9 pendiente resuelto):**
+```
+cohort_key: "stripe_terminal|ANY|EU|in_store"
+provider_slug: "stripe_terminal"
+region: "EU"
+channel: "in_store"
+percent_bps: 140
+fixed_fee_minor_units: 10                    ← €0.10 verbatim (corrección M4-Fase-1)
+fixed_fee_currency: "EUR"
+terminal_rental_monthly_minor: 0
+achievable_percent_bps: 140                  ← ya es el floor (no gap %)
+achievable_fixed_fee_minor_units: 10
+verified: true
+source_url: "https://stripe.com/terminal"
+source_quote: "1.4% + €0.10 for standard EEA cards, in-person"
+source_notes: (cita verbatim de la política de ticket-floor:
+  "SumUp (1.75% flat, no fixed) is cheaper for tickets <€25 where the €0.10
+   fixed drag pushes Stripe Terminal effective rate above 1.75%
+   (0.10/25×10000 = 40bps drag → 180bps effective). Stripe Terminal wins
+   for tickets >€25. At exactly €25 the two are effectively tied."
+  )
+achievable_breakdown_json: {
+  anchor_provider: "stripe_terminal",
+  anchor_region: "EU",
+  anchor_percent_bps: 140,
+  anchor_fixed_fee_minor_units: 10,
+  anchor_source_url: "https://stripe.com/terminal",
+  anchor_source_quote: "1.4% + €0.10 for standard EEA cards, in-person"
+}
+savings_band_pct: 0.25
+```
+
+**6. Re-ejecución empírica de los submits — 3 casos:**
+
+**Submit A · SumUp EU ticket €25 (el que motivó esta adenda):**
+```
+current_effective_bps: 175
+achievable_effective_bps: 180             ← 140 + (0.10/25×10000) = 180 (SumUp ya es floor)
+monthly_savings: {lo:0, point:0, hi:0}    ← CLAMP HONESTO
+cohort.key: "sumup|ANY|EU|in_store"
+cohort.channel: "in_store"
+mode: "estimated"
+assumptions[1]: "Achievable rate anchored to the best publicly contractable
+                 card-present provider for this region: stripe terminal at
+                 1.40% + 0.10 per transaction. This is a rate you can sign
+                 today, not a theoretical floor..."
+```
+**Cero savings ilusorias. El merchant SumUp de tickets bajos NO recibe una promesa que no se puede cumplir.** La regla de auditabilidad se respeta: SumUp 1.75% ES el floor real para ticket €25 → nada que recuperar.
+
+**Submit B · Bank TPV boutique (recovery real, ticket €60, GMV €40k, rental €25/mo):**
+```
+current_effective_bps: 226.25             ← 2.20 + 25€/40k×10000 = 6.25 rental drag = 226.25
+achievable_effective_bps: 156.67          ← 140 + 0.10/60×10000 = 156.67
+monthly_savings: {lo:€181, point:€278, hi:€376}
+annual_savings: {lo:€2.171, point:€3.340, hi:€4.509}
+cohort.key: "ANY|ANY|EU|in_store"
+cohort.channel: "in_store"
+cohort.matched: "fallback"
+assumptions (4):
+  - "Fixed fee of 0.00 EUR amortized over an average ticket of €60.00."
+  - "Monthly terminal rental of 25.00 EUR amortized over €40000.00 of monthly card volume."
+  - "Achievable rate anchored to the best publicly contractable card-present
+     provider for this region: stripe terminal at 1.40% + 0.10 per transaction..."
+  - "Estimate based on regional averages, not provider-verified rates..."
+```
+**Aquí sí hay gap contratable:** merchant migra bank TPV → Stripe Terminal, elimina €25/mo rental + reduce % de 2.20 a 1.40. Aritmética: `226.25 − 156.67 = 69.58 bps × €40k/10000 × 12 = €3.340/año`. Coincide con `annual.point`. **Este es el número honesto que el merchant puede firmar mañana.**
+
+**Submit C · Online Stripe FR retrocompat (regresión):**
+```
+current_effective_bps: 226.25             ← IDÉNTICO baseline 1.3.0
+achievable_effective_bps: 149.5           ← IDÉNTICO baseline 1.3.0
+annual_savings: {lo:€6140, point:€7675, hi:€9210}   ← IDÉNTICO baseline 1.3.0
+cohort.key: "stripe|ANY|EU"               ← 3-segment legacy, retrocompat lock
+cohort.channel: "online"
+assumptions[1]: "Achievable rate composition: interchange 26 bps + scheme fees
+                 20 bps + assumed processor margin 40 bps (±20 bps assumption).
+                 The ± applies to that component of the achievable rate only..."
+```
+**Path online byte-idéntico** al baseline 1.3.0 + shape ONLINE del ACHIEVABLE_NOTE preservada (parser M3.6 sigue verde). Zero regression sobre el cambio de shape del in-store.
+
+**Restricciones respetadas:**
+- **Path online byte-idéntico** — verificado empíricamente (submit C).
+- **Sync-check triple verde byte-idéntico** — 36444 chars idénticos en las 3 copias.
+- **ACHIEVABLE_NOTE online parseable** — string literal preservado con "(±N bps assumption)" para `FeeBreakdownCard.parseAchievableBreakdown()`. Contract test M3.6 sigue verde por construcción.
+- **Cero cambios en:** `computeStripeVerifiedGap` handler (solo el bloque SYNC verbatim), `_tenantGuard`, `submitPaymentsAnalysis` handler, schemas.
+
+**Deuda tracked:** el `FeeBreakdownCard.jsx` (visor) hoy renderiza SOLO la shape online (interchange/scheme/margin split). Sobre un session in-store el card mostrará el fallback ("we don't have a public breakdown") porque el regex no matchea la nueva assumption in-store. Es COMPORTAMIENTO CORRECTO (el card no debe fabricar un breakdown que no existe), pero merece un fallback UI dedicado in-store en Fase-2C que muestre el anchor provider + fixed + URL. Tracked en KNOWN_DEBT.
+
+**Ficheros tocados en esta adenda:**
+- `base44/functions/seedPaymentsRateTable/entry.ts` — 8 filas in-store re-anchored (achievable + notes + breakdown JSON).
+- `src/lib/paymentsGap.js` — ACHIEVABLE_NOTE dual-shape.
+- `base44/functions/submitPaymentsAnalysis/entry.ts` — bloque SYNC verbatim.
+- `base44/functions/computeStripeVerifiedGap/entry.ts` — bloque SYNC verbatim.
+- `src/docs/Decision_Log.md` — esta adenda.
+- `src/docs/KNOWN_DEBT.md` — deuda FeeBreakdownCard in-store variant + Fase 3 dual-channel.
+
+---
+
 ## 2026-07-12 — M4-TPV · Fase 2A-redo + 2B reactivación · SELLADA CON RAW EN CADA PASO
 
 **Alcance.** Rehacer la Fase 2A que no había aterrizado (motor + seed + mirrors Deno) aplicando la Regla RAW en cada edit, y reactivar la Fase 2B (UI in-store) sobre el backend ya verificado. Cero afirmaciones sin cita literal del archivo real.

@@ -423,18 +423,53 @@ const TERMINAL_RENTAL_NOTE = (rentalMinor, currency, monthlyGmv) =>
 
 const ACHIEVABLE_NOTE = (breakdown) => {
   if (!breakdown) return null;
-  const { interchange_bps, scheme_fees_bps, processor_margin_bps, processor_margin_band_bps } = breakdown;
-  // The trailing "(±N bps assumption)" pattern MUST be preserved — it is
-  // parsed by FeeBreakdownCard.parseAchievableBreakdown() with a regex that
-  // matches this exact shape. The clarifying sentence that follows is FREE
-  // text (not parsed) and is what separates the two ± in the product
-  // (see applyBand docstring). If you rewrite this string, run the
-  // "ACHIEVABLE_NOTE stays parseable by FeeBreakdownCard" contract test.
-  return (
-    `Achievable rate composition: interchange ${interchange_bps} bps + scheme fees ${scheme_fees_bps} bps + ` +
-    `assumed processor margin ${processor_margin_bps} bps (±${processor_margin_band_bps} bps assumption). ` +
-    `The ± applies to that component of the achievable rate only — separate from the savings range, which reflects overall confidence in the benchmark for this cohort.`
-  );
+  // M4-TPV Fase 2A-redo corrección (2026-07-12) — two breakdown shapes coexist:
+  //
+  //   1. ONLINE shape (pre-M4, unchanged):
+  //      { interchange_bps, scheme_fees_bps, processor_margin_bps,
+  //        processor_margin_band_bps, sources: [...] }
+  //      Emits the composition string parseable by FeeBreakdownCard's
+  //      parseAchievableBreakdown() regex. The trailing "(±N bps assumption)"
+  //      pattern MUST be preserved — it is parsed. Free-text clarifying
+  //      sentence follows (not parsed).
+  //
+  //   2. IN-STORE anchor shape (M4-TPV, new):
+  //      { anchor_provider, anchor_region, anchor_percent_bps,
+  //        anchor_fixed_fee_minor_units, anchor_source_url, anchor_source_quote }
+  //      Emits an "Achievable anchored to..." string naming the best publicly
+  //      contractable provider for the region. NOT parseable by
+  //      FeeBreakdownCard (in-store shows no interchange++/margin split
+  //      because the blended TPV market doesn't publish one). Auditable via
+  //      the source URL + quote instead — the merchant can sign the anchor
+  //      rate tomorrow with a real provider.
+  //
+  // Shape detection: online rows carry interchange_bps; in-store rows carry
+  // anchor_provider. Neither field ever coexists (enforced by seeder). Unknown
+  // shape → return null (defensive; historical rows without either shape).
+  if (typeof breakdown.interchange_bps === "number") {
+    // Online shape — byte-identical to pre-M4.
+    const { interchange_bps, scheme_fees_bps, processor_margin_bps, processor_margin_band_bps } = breakdown;
+    return (
+      `Achievable rate composition: interchange ${interchange_bps} bps + scheme fees ${scheme_fees_bps} bps + ` +
+      `assumed processor margin ${processor_margin_bps} bps (±${processor_margin_band_bps} bps assumption). ` +
+      `The ± applies to that component of the achievable rate only — separate from the savings range, which reflects overall confidence in the benchmark for this cohort.`
+    );
+  }
+  if (typeof breakdown.anchor_provider === "string" && typeof breakdown.anchor_percent_bps === "number") {
+    // In-store anchor shape — publicly contractable provider named verbatim.
+    // Auditability rule: achievable in-store MUST be a rate a merchant can
+    // sign today with a real provider, cited by URL. No theoretical
+    // composition — the blended TPV market doesn't split interchange/margin.
+    const pct = (breakdown.anchor_percent_bps / 100).toFixed(2);
+    const fixedMinor = typeof breakdown.anchor_fixed_fee_minor_units === "number" ? breakdown.anchor_fixed_fee_minor_units : 0;
+    const fixedStr = fixedMinor > 0 ? ` + ${(fixedMinor / MINOR_PER_MAJOR).toFixed(2)} per transaction` : "";
+    const provider = breakdown.anchor_provider.replace(/_/g, " ");
+    return (
+      `Achievable rate anchored to the best publicly contractable card-present provider for this region: ${provider} at ${pct}%${fixedStr}. ` +
+      `This is a rate you can sign today, not a theoretical floor — the savings range around this anchor reflects overall confidence in the benchmark for this cohort.`
+    );
+  }
+  return null;
 };
 
 // Emitted only when intl_pct > 0 AND the row carries a modeled uplift. Both

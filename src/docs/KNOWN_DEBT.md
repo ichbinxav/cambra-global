@@ -745,6 +745,32 @@ Cero. UI en-store desactivada tras el rollback (ver deuda "M4-TPV — UI in-stor
 
 **Deuda residual abierta — combinado online+in-store (Fase 3).** El diseño actual del toggle es **Either/Or**: un merchant declara UN solo canal por análisis. Es v1 documentada e intencional para validar la superficie in-store en aislamiento. El diseño final para merchants dual-channel (majority del ICP DTC: online + pop-up store / physical retail) es **combinado en el mismo análisis** con desglose por canal en `/Results`. Precondición para arrancar Fase 3: esta entrada cerrada + suite verde local + confirmación Xavi. Alcance conceptual estimado: (1) Analyzer permite declarar GMV split entre canales + provider per canal, (2) motor calculaGap dual invocado dos veces y agrega, (3) Results renderiza cards separadas por canal + total combinado, (4) session persiste ambos snapshots. Cero cambios en el motor `paymentsGap` per se (v1.4.0 ya cubre ambos canales aislados) — el trabajo es de composición en el orquestador + UI. Tracked como próximo bloque M4-TPV Fase 3 tras zip.
 
+---
+
+## M4-TPV — Fase 2A-redo · Adenda 2026-07-12 · Achievable in-store corregido a pricing público contratable
+
+**Estado:** ✅ RESUELTA 2026-07-12 en la misma sesión post-2A-redo.
+
+**Contexto.** La entrada 2A-redo se cerró con achievable in-store = 100 bps (26+20+54 composición estilo online) en las 4 filas verified. Xavi identificó el problema tras auditar la cita RAW: ningún proveedor público ofrece TPV a 1.0% en EU (floors reales: SumUp 1.75%, Smile 1.55%, Stripe Terminal 1.4%+€0.10). Prometerle a un merchant SumUp con ticket €25 "podrías bajar a 1.0%" viola auditabilidad (no contratable = no auditable).
+
+**Fix aplicado en misma sesión.** Regla nueva: achievable in-store = mejor pricing público contratable por región (URL + cita verbatim), NUNCA composición teórica. Path online conserva composición interchange+scheme+margin byte-idéntica (regla M3.6 intacta). Motor `ACHIEVABLE_NOTE` con dual-shape detection: `breakdown.interchange_bps` → shape online parseable; `breakdown.anchor_provider` → shape in-store anchored. Las 8 filas in-store re-anchored: EU verified anclado a Stripe Terminal 140+€0.10, UK fallback a SumUp UK 175 flat, US/RoW a Square 260+$0.10.
+
+**Verificación empírica RAW:** SumUp EU ticket €25 → `savings: {lo:0, point:0, hi:0}` (SumUp ya es floor real). Bank TPV boutique ticket €60 GMV €40k rental €25/mo → `annual_savings: {lo:€2171, point:€3340, hi:€4509}` con `TERMINAL_RENTAL_NOTE` emitida. Path online byte-idéntico (submit Stripe EU: current 226.25 / achievable 149.5 / annual €7675 idéntico a 1.3.0). Sync-check triple verde byte-idéntico (36444 chars, cero diffs). Ver Decision_Log entrada "M4-TPV · Fase 2A-redo · ADENDA · Corrección del achievable in-store" (2026-07-12).
+
+---
+
+## FeeBreakdownCard — variante in-store pendiente (Fase 2C UI)
+
+**Estado:** 🟡 DEUDA UI TRACKED · no bloqueante para zip.
+
+`src/components/paymentsResults/FeeBreakdownCard.jsx` hoy renderiza el desglose achievable **solo** para la shape ONLINE (interchange+scheme+margin, matcheado por regex sobre "Achievable rate composition: interchange N + scheme N + margin N (±N bps assumption)"). Post-corrección 2A-redo, las sessions in-store llevan `assumptions[1]` con shape distinta ("Achievable rate anchored to the best publicly contractable card-present provider for this region: {provider} at {X.XX}% + {Y.YY} per transaction..."). El parser online no matchea → el card cae a su fallback ("we don't have a public breakdown for this cohort").
+
+**Comportamiento actual (correcto).** El card NO fabrica un breakdown teórico que no existe — el modelo blended TPV no publica splits interchange/scheme/margin. El fallback text es honesto.
+
+**Mejora pendiente Fase 2C.** Añadir una variante in-store del card que renderice: (1) provider anchor nombrado (SumUp / Stripe Terminal / Square...), (2) percent + fixed del anchor, (3) URL clicable a la página de precios pública, (4) mensaje "This is a rate you can sign today". Detección: parsear el string "Achievable rate anchored to..." o (mejor) surface `engineResult.cohort.channel === 'in_store'` como flag adicional que el card ya recibe y renderizar variante alternativa. Precondición: 2C es post-zip, tras validar UX de la shape actual en producción con merchants reales.
+
+**Alcance:** ~40 líneas en FeeBreakdownCard.jsx + un contract test. No requiere cambios en motor ni en schema.
+
 **Estado histórico:** 🔴 REABIERTA 2026-07-12 tras rollback quirúrgico de 2B. El estado "resuelta" fue narrado — la UI de 2B aterrizó pero contra un motor 1.3.0 que ignora `channel`. Un merchant que pulsaba "In-store" recibía análisis online silenciosamente. Rollback aplicado: `IN_STORE_UI_ENABLED = false` en Analyzer, `<InStoreUpsellStrip />` retirado de Landing, payload hardcoded `channel: "online"`. Componente, keys i18n, Terms §7 channel-agnostic, y Reports §TPE **conservados dormant** — restore trivial cuando la Fase 2A-redo esté verificada empíricamente (motor 1.4.0 en las 3 copias SYNC + 19 filas seed contadas + retrocompat online byte-idéntica confirmada). Ver Decision_Log entrada "M4-TPV · Fase 2B · ROLLBACK QUIRÚRGICO" (2026-07-12) para el análisis completo. La entrada previa (que decía "resuelta") queda debajo verbatim como historia técnica.
 
 **Estado anterior narrado (falso):** ✅ RESUELTA 2026-07-12 (Fase 2B ejecutada) — toggle Analyzer + pill Results + banner Landing + Terms §7/§8 + i18n × 3. Los alcances menores (Pricing FAQ + Help FAQs) quedan opcionales para micro-sub-tanda 2C si producto lo pide.

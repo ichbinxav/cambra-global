@@ -485,8 +485,17 @@ Deno.serve(async (req) => {
         fixed_fee_minor_units: 0,   // no per-tx fixed fee
         fixed_fee_currency: 'EUR',
         terminal_rental_monthly_minor: 0,
-        achievable_percent_bps: 100,  // IFR-anchored floor same as online EU
-        achievable_fixed_fee_minor_units: 0,
+        // M4-TPV Fase 2A-redo corrección (2026-07-12) — achievable in-store
+        // = mejor pricing público CONTRATABLE de la región, no composición
+        // teórica interchange+scheme+margin. Regla auditable: el merchant
+        // debe poder firmar el achievable mañana con un proveedor real.
+        // EU floor = Stripe Terminal 1.4% + €0.10 (contratable en stripe.com
+        // hoy). A tickets bajos (<€25) el fixed drag empuja el achievable
+        // POR ENCIMA del current SumUp — computeMonthlySavings clampa a 0
+        // cuando gap <= 0 (comportamiento correcto: cero savings honestas
+        // si SumUp ya es el floor real para ese ticket).
+        achievable_percent_bps: 140,   // Stripe Terminal EEA
+        achievable_fixed_fee_minor_units: 10,  // €0.10 Stripe Terminal
         achievable_terminal_rental_monthly_minor: 0,
         intl_uplift_bps: null,
         achievable_intl_uplift_bps: null,
@@ -496,15 +505,14 @@ Deno.serve(async (req) => {
         verified: true,
         source_url: 'https://sumup.com/en-gb/pricing/',
         source_quote: 'Card and contactless payments: 1.75%',
-        source_notes: 'SumUp UK page cited verbatim 2026-07-12; SumUp harmonizes EU rate at 1.75% per company policy (same rate applies FR/DE/ES/IT). Hardware one-off (Solo €89, Air €59), no monthly rental, no per-transaction fixed fee. Best in-store floor for low tickets (<€25) where fixed-fee amortization dominates.',
+        source_notes: 'SumUp UK page cited verbatim 2026-07-12; SumUp harmonizes EU rate at 1.75% per company policy (same rate applies FR/DE/ES/IT). Hardware one-off (Solo €89, Air €59), no monthly rental, no per-transaction fixed fee. Ticket-dependent floor: SumUp is cheapest below ~€25 ticket (fixed-fee drag on Stripe Terminal dominates); Stripe Terminal is cheapest above ~€25 ticket (1.4% % component wins). At €25 the two are ~equal (1.75% vs 1.4%+€0.10/€25=1.8%). Engine sets achievable = Stripe Terminal composition; savings clamp to 0 when SumUp is already the floor for the merchant ticket.',
         achievable_breakdown_json: {
-          interchange_bps: 26,
-          scheme_fees_bps: 20,
-          processor_margin_bps: 54,
-          processor_margin_band_bps: 25,
-          sources: [
-            { label: 'IFR (EU 2015/751)', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
-          ]
+          anchor_provider: 'stripe_terminal',
+          anchor_region: 'EU',
+          anchor_percent_bps: 140,
+          anchor_fixed_fee_minor_units: 10,
+          anchor_source_url: 'https://stripe.com/terminal',
+          anchor_source_quote: '1.4% + €0.10 for standard EEA cards, in-person'
         },
         savings_band_pct: 0.25,
         verified_at: NOW,
@@ -521,7 +529,12 @@ Deno.serve(async (req) => {
         fixed_fee_minor_units: 10,  // €0.10 per transaction
         fixed_fee_currency: 'EUR',
         terminal_rental_monthly_minor: 0,  // hardware one-off (BBPOS €59, Verifone €249)
-        achievable_percent_bps: 86,
+        // Stripe Terminal EU is ALREADY the floor for the region — achievable
+        // = same rate (no better publicly contractable rate exists for a
+        // standard EEA card-present cohort). Savings on this cohort come only
+        // from removing terminal rental if the merchant is on a bank TPV
+        // migrating TO Stripe Terminal (handled by the fallback bank row).
+        achievable_percent_bps: 140,
         achievable_fixed_fee_minor_units: 10,
         achievable_terminal_rental_monthly_minor: 0,
         intl_uplift_bps: null,
@@ -532,15 +545,14 @@ Deno.serve(async (req) => {
         verified: true,
         source_url: 'https://stripe.com/terminal',
         source_quote: '1.4% + €0.10 for standard EEA cards, in-person',
-        source_notes: 'Stripe Terminal EEA card-present rate cited verbatim 2026-07-12. Beats SumUp above ~€25 ticket (fixed-fee amortization crosses over). Hardware one-off. No monthly rental on standard EEA setup.',
+        source_notes: 'Stripe Terminal EEA card-present rate cited verbatim 2026-07-12 from stripe.com/terminal. Ticket-dependent floor position: SumUp (1.75% flat, no fixed) is cheaper for tickets <€25 where the €0.10 fixed drag pushes Stripe Terminal effective rate above 1.75% (0.10/25×10000 = 40bps drag → 180bps effective). Stripe Terminal wins for tickets >€25 (drag falls below 40bps). At exactly €25 the two are effectively tied. Merchants ALREADY on Stripe Terminal have no achievable gap on the % side — engine returns 0 savings which is honest.',
         achievable_breakdown_json: {
-          interchange_bps: 26,
-          scheme_fees_bps: 20,
-          processor_margin_bps: 40,
-          processor_margin_band_bps: 20,
-          sources: [
-            { label: 'IFR (EU 2015/751)', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
-          ]
+          anchor_provider: 'stripe_terminal',
+          anchor_region: 'EU',
+          anchor_percent_bps: 140,
+          anchor_fixed_fee_minor_units: 10,
+          anchor_source_url: 'https://stripe.com/terminal',
+          anchor_source_quote: '1.4% + €0.10 for standard EEA cards, in-person'
         },
         savings_band_pct: 0.25,
         verified_at: NOW,
@@ -557,8 +569,12 @@ Deno.serve(async (req) => {
         fixed_fee_minor_units: 0,
         fixed_fee_currency: 'EUR',
         terminal_rental_monthly_minor: 0,
-        achievable_percent_bps: 100,
-        achievable_fixed_fee_minor_units: 0,
+        // Smile&Pay 1.55% is already close to the EU floor for a no-fixed-fee
+        // TPV. Achievable = Stripe Terminal (140 + €0.10) — cheaper on % but
+        // adds fixed drag. Merchant benefits at higher tickets; at lower
+        // tickets Smile&Pay is already the floor (gap clamps to 0).
+        achievable_percent_bps: 140,
+        achievable_fixed_fee_minor_units: 10,
         achievable_terminal_rental_monthly_minor: 0,
         intl_uplift_bps: null,
         achievable_intl_uplift_bps: null,
@@ -568,15 +584,14 @@ Deno.serve(async (req) => {
         verified: true,
         source_url: 'https://smileandpay.com/tarifs',
         source_quote: '1,55 % par transaction — sans abonnement, sans engagement',
-        source_notes: 'Smile & Pay FR page cited verbatim 2026-07-12. FR-focused, expanding EU. Hardware one-off (Smile Basic €59). Same footprint as SumUp: zero fixed fee, zero rental. Positioned slightly cheaper than SumUp on the % component.',
+        source_notes: 'Smile & Pay FR page cited verbatim 2026-07-12. FR-focused, expanding EU. Hardware one-off (Smile Basic €59). Zero fixed fee, zero rental. Ticket crossover with Stripe Terminal: Smile&Pay wins below ~€67 ticket (0.10/67×10000 = 15bps drag → 155bps effective for Stripe Terminal, tied with Smile); Stripe Terminal wins above €67. Achievable anchor = Stripe Terminal to give merchants at higher tickets a real recovery path.',
         achievable_breakdown_json: {
-          interchange_bps: 26,
-          scheme_fees_bps: 20,
-          processor_margin_bps: 54,
-          processor_margin_band_bps: 25,
-          sources: [
-            { label: 'IFR (EU 2015/751)', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
-          ]
+          anchor_provider: 'stripe_terminal',
+          anchor_region: 'EU',
+          anchor_percent_bps: 140,
+          anchor_fixed_fee_minor_units: 10,
+          anchor_source_url: 'https://stripe.com/terminal',
+          anchor_source_quote: '1.4% + €0.10 for standard EEA cards, in-person'
         },
         savings_band_pct: 0.25,
         verified_at: NOW,
@@ -593,8 +608,10 @@ Deno.serve(async (req) => {
         fixed_fee_minor_units: 0,
         fixed_fee_currency: 'EUR',
         terminal_rental_monthly_minor: 0,
-        achievable_percent_bps: 100,
-        achievable_fixed_fee_minor_units: 0,
+        // Same anchor as sumup|EU|in_store (identical positioning at 1.75%
+        // with no fixed fee).
+        achievable_percent_bps: 140,
+        achievable_fixed_fee_minor_units: 10,
         achievable_terminal_rental_monthly_minor: 0,
         intl_uplift_bps: null,
         achievable_intl_uplift_bps: null,
@@ -609,13 +626,12 @@ Deno.serve(async (req) => {
         source_quote: 'Card and contactless payments: 1.75%',
         source_notes: 'Zettle GB page cited verbatim 2026-07-12. Zettle harmonizes rate across EU per PayPal policy (same rate FR/DE/ES) but FR page NOT re-verified in this sondeo — verified=false + savings_band 0.30 until FR page is re-cited. Fix documented in KNOWN_DEBT.',
         achievable_breakdown_json: {
-          interchange_bps: 26,
-          scheme_fees_bps: 20,
-          processor_margin_bps: 54,
-          processor_margin_band_bps: 25,
-          sources: [
-            { label: 'IFR (EU 2015/751)', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
-          ]
+          anchor_provider: 'stripe_terminal',
+          anchor_region: 'EU',
+          anchor_percent_bps: 140,
+          anchor_fixed_fee_minor_units: 10,
+          anchor_source_url: 'https://stripe.com/terminal',
+          anchor_source_quote: '1.4% + €0.10 for standard EEA cards, in-person'
         },
         savings_band_pct: 0.30,
         verified_at: NOW,
@@ -641,8 +657,11 @@ Deno.serve(async (req) => {
         fixed_fee_minor_units: 0,
         fixed_fee_currency: 'EUR',
         terminal_rental_monthly_minor: 2500,  // €25/mo — median bank rental
-        achievable_percent_bps: 100,          // IFR-anchored floor
-        achievable_fixed_fee_minor_units: 0,
+        // Achievable = Stripe Terminal EEA (140 + €0.10, no rental). The
+        // recovery narrative for bank-TPV merchants: migrate to a modern
+        // publicly-contractable rate + drop the €25/mo rental drag.
+        achievable_percent_bps: 140,
+        achievable_fixed_fee_minor_units: 10,
         achievable_terminal_rental_monthly_minor: 0,  // modern TPV = no rental
         intl_uplift_bps: null,
         achievable_intl_uplift_bps: null,
@@ -652,15 +671,15 @@ Deno.serve(async (req) => {
         verified: false,
         source_url: null,
         source_quote: null,
-        source_notes: 'Regional average for traditional bank acquirers (BNP, CA, SG, BPCE, ...). Rental €25/mo is the observed median of the FR bank market (2026 sondeo). Achievable assumes migration to a modern TPV with no rental — the recovery narrative.',
+        source_notes: 'Regional average for traditional bank acquirers (BNP, CA, SG, BPCE, CM-CIC, LBP, LCL, HSBC-FR). Rental €25/mo is the observed median of the FR bank market (2026 sondeo). Ticket-floor rules for achievable side: for tickets <€25 the achievable optimum is SumUp/Smile (1.55-1.75%, zero fixed) because Stripe Terminal fixed-fee drag dominates; for tickets ≥€25 Stripe Terminal (1.4%+€0.10) is the achievable floor. We anchor achievable to Stripe Terminal for both consistency and the strongest recovery narrative — merchants on low tickets simply see a smaller (but still positive) gap because the terminal rental removal dominates the savings.',
         achievable_breakdown_json: {
-          interchange_bps: 26,
-          scheme_fees_bps: 20,
-          processor_margin_bps: 54,
-          processor_margin_band_bps: 30,
-          sources: [
-            { label: 'IFR — floor', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
-          ]
+          anchor_provider: 'stripe_terminal',
+          anchor_region: 'EU',
+          anchor_percent_bps: 140,
+          anchor_fixed_fee_minor_units: 10,
+          anchor_source_url: 'https://stripe.com/terminal',
+          anchor_source_quote: '1.4% + €0.10 for standard EEA cards, in-person',
+          alt_provider_low_ticket: { provider: 'sumup', percent_bps: 175, ticket_floor_eur: 25 }
         },
         savings_band_pct: 0.35,
         verified_at: NOW,
@@ -676,7 +695,11 @@ Deno.serve(async (req) => {
         fixed_fee_minor_units: 0,
         fixed_fee_currency: 'GBP',
         terminal_rental_monthly_minor: 2500,  // £25/mo
-        achievable_percent_bps: 100,
+        // UK achievable anchor = SumUp UK 1.75% (page verbatim already
+        // cited). SumUp has no fixed fee → simplest audit trail for UK
+        // merchants. Stripe Terminal UK also available but SumUp is the
+        // reference the marketing/product already talks about.
+        achievable_percent_bps: 175,
         achievable_fixed_fee_minor_units: 0,
         achievable_terminal_rental_monthly_minor: 0,
         intl_uplift_bps: null,
@@ -687,15 +710,14 @@ Deno.serve(async (req) => {
         verified: false,
         source_url: null,
         source_quote: null,
-        source_notes: 'UK bank TPV blended average. UK IFR floor applies (0.2/0.3 caps).',
+        source_notes: 'UK bank TPV blended average (Barclaycard, Lloyds, HSBC UK). UK IFR floor applies (0.2/0.3 caps). Achievable anchored to SumUp UK 1.75% (publicly contractable, no fixed fee, no rental — cleanest audit trail).',
         achievable_breakdown_json: {
-          interchange_bps: 26,
-          scheme_fees_bps: 20,
-          processor_margin_bps: 54,
-          processor_margin_band_bps: 30,
-          sources: [
-            { label: 'UK IFR — floor', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
-          ]
+          anchor_provider: 'sumup',
+          anchor_region: 'UK',
+          anchor_percent_bps: 175,
+          anchor_fixed_fee_minor_units: 0,
+          anchor_source_url: 'https://sumup.com/en-gb/pricing/',
+          anchor_source_quote: 'Card and contactless payments: 1.75%'
         },
         savings_band_pct: 0.35,
         verified_at: NOW,
@@ -711,7 +733,11 @@ Deno.serve(async (req) => {
         fixed_fee_minor_units: 10,   // $0.10 typical CP fixed
         fixed_fee_currency: 'USD',
         terminal_rental_monthly_minor: 0,   // US market is mostly no-rental
-        achievable_percent_bps: 200,
+        // US achievable anchor = Square 2.6% + $0.10 (published card-present
+        // rate at squareup.com/us/en/pricing, industry reference floor for
+        // US in-store SMB). No IFR in the US — the achievable is the market
+        // reference floor, not a regulatory floor.
+        achievable_percent_bps: 260,
         achievable_fixed_fee_minor_units: 10,
         achievable_terminal_rental_monthly_minor: 0,
         intl_uplift_bps: null,
@@ -722,15 +748,14 @@ Deno.serve(async (req) => {
         verified: false,
         source_url: null,
         source_quote: null,
-        source_notes: 'US in-store blended average. No IFR, achievable is a market estimate.',
+        source_notes: 'US in-store blended average. Achievable anchored to Square 2.6% + $0.10 (industry reference for US card-present SMB). Because we set fallback current at 2.60% too, savings on this cohort come primarily from rental removal (already 0 in most US bank setups) — for US bank customers still on legacy contracts with rentals, the fallback rate itself may be higher; those cases are captured by narrowing per real merchant data.',
         achievable_breakdown_json: {
-          interchange_bps: 110,
-          scheme_fees_bps: 25,
-          processor_margin_bps: 65,
-          processor_margin_band_bps: 35,
-          sources: [
-            { label: 'Assumption — US in-store blended', url: null }
-          ]
+          anchor_provider: 'square',
+          anchor_region: 'US',
+          anchor_percent_bps: 260,
+          anchor_fixed_fee_minor_units: 10,
+          anchor_source_url: 'https://squareup.com/us/en/pricing',
+          anchor_source_quote: '2.6% + 10¢ per tap, dip, or swipe'
         },
         savings_band_pct: 0.35,
         verified_at: NOW,
@@ -746,7 +771,11 @@ Deno.serve(async (req) => {
         fixed_fee_minor_units: 10,
         fixed_fee_currency: 'USD',
         terminal_rental_monthly_minor: 2000,  // $20/mo — RoW bank average
-        achievable_percent_bps: 200,
+        // RoW achievable = Square-tier anchor. No public global floor exists
+        // — Square 2.6%+$0.10 is the most cited SMB card-present reference,
+        // used as a defensible upper bound. Savings on RoW come mostly from
+        // rental removal, not from % reduction.
+        achievable_percent_bps: 260,
         achievable_fixed_fee_minor_units: 10,
         achievable_terminal_rental_monthly_minor: 0,
         intl_uplift_bps: null,
@@ -757,15 +786,14 @@ Deno.serve(async (req) => {
         verified: false,
         source_url: null,
         source_quote: null,
-        source_notes: 'RoW in-store default. No published global reference. Widest band.',
+        source_notes: 'RoW in-store default. No published global reference; achievable anchored to Square 2.6%+$0.10 as an SMB reference floor. Widest band. Savings for this cohort come primarily from rental removal ($20/mo drag), not from % reduction — this is honest for a merchant on a legacy RoW bank contract.',
         achievable_breakdown_json: {
-          interchange_bps: 130,
-          scheme_fees_bps: 30,
-          processor_margin_bps: 60,
-          processor_margin_band_bps: 40,
-          sources: [
-            { label: 'Assumption — RoW in-store default', url: null }
-          ]
+          anchor_provider: 'square',
+          anchor_region: 'US',
+          anchor_percent_bps: 260,
+          anchor_fixed_fee_minor_units: 10,
+          anchor_source_url: 'https://squareup.com/us/en/pricing',
+          anchor_source_quote: '2.6% + 10¢ per tap, dip, or swipe'
         },
         savings_band_pct: 0.35,
         verified_at: NOW,
