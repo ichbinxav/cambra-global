@@ -30,7 +30,12 @@ export default function HelpCategory() {
 
   if (!category) return <Navigate to="/Help" replace />;
 
-  const relatedCategories = CATEGORIES.filter((c) => c.slug !== slug).slice(0, 4);
+  // M4-TPV Fase 3 iter 2 — also filter `hidden` categories out of related,
+  // so a visitor on /Help/payments doesn't get "Shipping & Logistics" as a
+  // suggested next topic when the category itself is hidden from the grid.
+  const relatedCategories = CATEGORIES
+    .filter((c) => c.slug !== slug && !c.hidden)
+    .slice(0, 4);
 
   return (
     <div

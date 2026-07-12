@@ -40,13 +40,13 @@ export const CATEGORIES = [
     icon: "Activity",
     accent: "#2CA7C1",
   },
-  {
-    slug: "infrastructure-score",
-    title: "Infrastructure Score",
-    description: "Understand your stack maturity and efficiency.",
-    icon: "Gauge",
-    accent: "#1F4ED8",
-  },
+  // ── REMOVED 2026-07-12 (M4-TPV Fase 3 coherence patch, iteración 2).
+  // The "Infrastructure Score" was a multi-vertical concept (composite 0-100
+  // across payments, logistics, SaaS, insurance...) that no longer exists in
+  // the payments-only product. Today's product surfaces a per-channel gap
+  // in bps plus a savings range — not a stack-maturity score. Category
+  // removed entirely rather than retoned: the concept itself is dead, not
+  // just the wording.
   {
     slug: "savings",
     title: "Savings & Optimization",
@@ -141,15 +141,15 @@ export const FAQ_GROUPS = [
     items: [
       {
         q: "What is CAMBRA?",
-        a: "CAMBRA is an infrastructure intelligence platform for modern commerce businesses. We analyze operating costs across payments, shipping, SaaS, insurance, telecom and banking — surface inefficiencies, benchmark performance, and reveal optimization opportunities hidden inside your operational stack.",
+        a: "CAMBRA analyzes your card-payment costs — online (PSP) and in-store (TPV / physical terminal) — measures your effective rate against verifiable public benchmarks, and helps you recover what you're overpaying. Independent commerce brands typically overpay 30–60% on card processing without knowing it.",
       },
       {
         q: "Who is CAMBRA built for?",
-        a: "Modern commerce brands — DTC, omnichannel, marketplace-led — typically between €500K and €50M annual revenue, where infrastructure costs have grown faster than visibility. CAMBRA is designed for operators, founders and CFOs who suspect margin is leaking but lack a structured way to prove it.",
+        a: "Independent commerce brands — DTC, omnichannel, marketplace-led — typically between €500K and €50M annual revenue, where card-processing costs have grown faster than visibility. CAMBRA is designed for operators, founders and CFOs who suspect margin is leaking on payments but lack a structured way to prove it.",
       },
       {
         q: "What kinds of costs does CAMBRA analyze?",
-        a: "Payments processing, card-present terminals, shipping and logistics, SaaS subscriptions, commerce platform fees, banking and FX, business insurance, and increasingly telecom and operational infrastructure. Anything that can be measured, benchmarked, and optimized.",
+        a: "Card-payment costs, in both channels: online payments (Stripe, PayPal, Shopify Payments, Adyen, Mollie, Checkout.com, and other PSPs) and in-store terminal payments (SumUp, Stripe Terminal, Smile & Pay, Zettle, and traditional bank TPVs). Effective rates, interchange, scheme fees, cross-border uplift, fixed-fee drag, and terminal rental — every component of your all-in cost per transaction.",
       },
       {
         q: "Is CAMBRA a procurement platform?",
@@ -178,16 +178,16 @@ export const FAQ_GROUPS = [
     title: "Infrastructure Analyzer",
     items: [
       {
-        q: "What is the Infrastructure Analyzer?",
-        a: "The Analyzer is CAMBRA's core engine. It audits your operating cost structure across multiple verticals, benchmarks each component against comparable brands, and produces an Infrastructure Score plus a list of optimization opportunities — typically in under 3 minutes.",
+        q: "What is the Payments Analyzer?",
+        a: "The Analyzer is CAMBRA's core engine. It audits your card-payment cost structure — online, in-store, or both — benchmarks it against verifiable public pricing for comparable providers, and produces a per-channel gap in basis points plus an estimated monthly and annual savings range. Typically under 60 seconds.",
       },
       {
         q: "How does the Analyzer work?",
-        a: "You answer a structured sequence of questions about revenue, channels, payments, shipping, SaaS, terminals and insurance. CAMBRA combines those inputs with benchmark datasets, provider pricing models, and operational heuristics to estimate where you stand vs. comparable infrastructure.",
+        a: "You answer a short sequence about your monthly GMV, average ticket, provider, country, and cross-border share. CAMBRA combines those inputs with public provider pricing (Stripe, PayPal, Shopify Payments, SumUp, Stripe Terminal, and others we've verified) to estimate the gap between what you pay today and what your cohort's floor rate is.",
       },
       {
         q: "What is analyzed?",
-        a: "Payments effective rates, shipping cost per unit, SaaS spend ratios, terminal economics, insurance baselines, and stack-level coherence. Each vertical is benchmarked independently and then composed into your overall Infrastructure Score.",
+        a: "Your effective processing rate (%), fixed-fee drag amortized against your real ticket size, cross-border uplift on the international portion of your GMV, terminal rental for in-store channels, and the composition of achievable rates (interchange + scheme fees + processor margin). Each channel — online and in-store — is benchmarked independently against the appropriate verified provider row.",
       },
       {
         q: "How accurate are estimates?",
@@ -203,32 +203,9 @@ export const FAQ_GROUPS = [
       },
     ],
   },
-  {
-    category: "infrastructure-score",
-    title: "Infrastructure Score",
-    items: [
-      {
-        q: "What is the Infrastructure Score?",
-        a: "A composite measure (0–100) of how efficient, coherent, and competitively priced your operational stack is — across payments, logistics, SaaS, and supporting infrastructure. It reflects maturity, not just cost.",
-      },
-      {
-        q: "What does the score measure?",
-        a: "Pricing competitiveness, infrastructure efficiency, operational optimization, tooling coherence, cost alignment, and stack maturity. A high score means your stack is performing close to the best-in-class benchmark for your tier.",
-      },
-      {
-        q: "Is a low score bad?",
-        a: "It means there's recoverable margin. Most brands score between 50 and 70 on first analysis. The score is a starting point — not a verdict.",
-      },
-      {
-        q: "How are benchmark ranges calculated?",
-        a: "From a continuously updated dataset of comparable commerce brands segmented by revenue tier, geography, channel mix and category. Each benchmark is statistically modeled — not anecdotal.",
-      },
-      {
-        q: "Does the score account for my industry?",
-        a: "Yes. Benchmarks adjust for category (fashion, beauty, food, tech, etc.), revenue tier, and channel mix — so the comparison is always against your real peer group.",
-      },
-    ],
-  },
+  // ── REMOVED 2026-07-12 (see CATEGORIES comment). Infrastructure Score
+  // was a multi-vertical composite concept that doesn't exist in the
+  // payments-only product. The 5 FAQs it held are gone rather than retoned.
   {
     category: "savings",
     title: "Savings & Optimization",
@@ -243,7 +220,7 @@ export const FAQ_GROUPS = [
       },
       {
         q: "What happens after analysis?",
-        a: "You receive a structured report: Infrastructure Score, vertical-by-vertical breakdown, and a prioritized list of optimization opportunities. From there you can act independently, or use CAMBRA's optimization workflows.",
+        a: "You receive a structured report: your per-channel effective rate, the benchmark for your cohort, the gap in basis points, and an estimated monthly and annual savings range. From there you can act independently on your provider, or use CAMBRA's optimization workflows.",
       },
       {
         q: "What is CAMBRA's success fee?",
@@ -251,11 +228,11 @@ export const FAQ_GROUPS = [
       },
       {
         q: "Do I pay upfront?",
-        a: "No. The Analyzer, Infrastructure Score, and benchmark reports are free during the Founding period. Optimization workflows are activated on a success-fee basis.",
+        a: "No. The Analyzer, benchmarks, and gap reports are free during the Founding period. Optimization workflows are activated on a success-fee basis.",
       },
       {
         q: "What if no savings are found?",
-        a: "You still walk away with a benchmarked Infrastructure Score and a clear picture of where your stack stands. That visibility is the foundation of every future decision.",
+        a: "You still walk away with a benchmarked picture of your card-payment costs and a clear read on where you stand vs. your cohort's floor rate. That visibility is the foundation of every future negotiation.",
       },
       {
         q: "Can CAMBRA optimize existing provider contracts?",
@@ -359,7 +336,7 @@ export const FAQ_GROUPS = [
     items: [
       {
         q: "Which integrations are supported?",
-        a: "Stripe, Shopify, Adyen, QuickBooks, Xero, Pennylane, Holded, DHL, UPS, Sendcloud, Klaviyo, Gorgias, Mollie, PayPal, FedEx, DPD — with WooCommerce, Wix, Sage, Zendesk, Colissimo and PostNL on the roadmap.",
+        a: "Payment providers first — Stripe is live today (read-only OAuth: balance transactions, charges, fee breakdown). PayPal, Mollie, Adyen, Checkout.com and Shopify Payments are on the near-term roadmap. Statement uploads (PDF / CSV / Excel) work for any provider today, including in-store TPV providers not on the connected list.",
       },
       {
         q: "Are integrations read-only?",
@@ -381,7 +358,7 @@ export const FAQ_GROUPS = [
     items: [
       {
         q: "Can I upload invoices?",
-        a: "Yes. Upload statements from any provider — payments processors, carriers, SaaS vendors, banks — and CAMBRA extracts the relevant economics automatically using AI.",
+        a: "Yes. Upload monthly statements from your payment provider — PSP (Stripe, PayPal, Adyen, Mollie, Shopify Payments...) or in-store TPV (SumUp, Stripe Terminal, Zettle, traditional bank acquirer) — and CAMBRA extracts the relevant fields (total fees, volume, transaction count, fixed fees, terminal rental) automatically using AI.",
       },
       {
         q: "Which file formats are supported?",
@@ -389,11 +366,11 @@ export const FAQ_GROUPS = [
       },
       {
         q: "How does invoice analysis work?",
-        a: "Uploaded files are parsed for rates, volumes, line-item fees, and provider terms. Extracted data feeds directly into your Analyzer, replacing manual estimates with real numbers.",
+        a: "Uploaded statements are parsed for effective rates, processed volume, transaction counts, and any separately listed fixed fees or terminal rental. Extracted data feeds directly into your Analyzer, replacing form estimates with real measured numbers.",
       },
       {
         q: "Can I combine uploads with manual inputs?",
-        a: "Absolutely. CAMBRA is designed to handle any combination of connected tools, uploaded statements, and manual entries — and intelligently merges them into a unified analysis.",
+        a: "Yes. CAMBRA handles any combination of a connected Stripe account, uploaded statements from other providers, and form inputs — merging them into a single per-channel analysis.",
       },
     ],
   },
@@ -437,11 +414,11 @@ export const FAQ_GROUPS = [
     items: [
       {
         q: "Is CAMBRA free?",
-        a: "Yes. The Analyzer, Infrastructure Score, benchmarks and core insights are free during the Founding period. There's no credit card required to run a full audit.",
+        a: "Yes. The Analyzer, benchmarks and core insights are free during the Founding period. There's no credit card required to run a full audit.",
       },
       {
         q: "What's included in free access?",
-        a: "Full infrastructure analysis, Infrastructure Score, vertical-by-vertical benchmarks, optimization opportunities, and access to the Insights library.",
+        a: "Full card-payment analysis (online and in-store), your per-channel effective rate, the benchmark for your cohort, the gap in basis points, and an estimated monthly and annual savings range.",
       },
       {
         q: "What is CAMBRA Pro?",
@@ -470,8 +447,8 @@ export const FAQ_GROUPS = [
         a: "Try re-uploading a cleaner version of the document. If extraction continues to fail, send the file to support — we'll process it manually and improve the model.",
       },
       {
-        q: "My Infrastructure Score seems off.",
-        a: "The score is most sensitive to revenue tier, channel mix and geography. Double-check those inputs first. If something still looks wrong, contact support with your analysis ID.",
+        q: "My savings estimate seems off.",
+        a: "The gap is most sensitive to your monthly GMV, average ticket, provider, country, and international share. Double-check those inputs first — a wrong avg ticket in particular can shift the fixed-fee drag significantly. If something still looks wrong after re-running with corrected inputs, contact support with your analysis ID.",
       },
     ],
   },
@@ -493,7 +470,7 @@ export const FAQ_GROUPS = [
 
 export const POPULAR = [
   { title: "How does CAMBRA estimate savings?", slug: "estimate-savings", category: "savings", read: "3 min" },
-  { title: "What is the Infrastructure Score?", slug: "infrastructure-score", category: "infrastructure-score", read: "2 min" },
+  { title: "Do you audit in-store card payments (TPV)?", slug: "in-store-audit", category: "payments", read: "2 min" },
   { title: "How accurate are benchmark estimates?", slug: "benchmark-accuracy", category: "benchmarks", read: "4 min" },
   { title: "Do I need to switch providers?", slug: "switching-providers", category: "savings", read: "3 min" },
   { title: "Is my data secure?", slug: "data-security", category: "security", read: "3 min" },
@@ -501,7 +478,7 @@ export const POPULAR = [
 ];
 
 export const TRENDING_SEARCHES = [
-  "Infrastructure Score",
+  "In-store TPV",
   "Stripe integration",
   "Benchmark accuracy",
   "Success fee",

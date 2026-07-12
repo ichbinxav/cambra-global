@@ -162,6 +162,64 @@ Idioma: EN (el Help Center hoy solo soporta EN — traducción FR/ES sigue track
 - `src/components/help/HelpSearch.jsx` — filtro `!c.hidden` en FAQs de búsqueda y en la grilla "Browse categories".
 - `src/docs/KNOWN_DEBT.md` — deuda del punto 10 reformulada (ya no incluye lo hecho).
 
+---
+
+### Iteración 3 (misma fecha, 2026-07-12) — cuerpo de FAQs visibles retoneado a payments-only
+
+**Trigger de Xavi (bloqueante pre-lanzamiento):** La iteración 2 ocultó las categorías `shipping`/`saas` de la grilla, pero dejó intacto el CUERPO de FAQs en categorías VISIBLES (`getting-started`, `analyzer`, y sobre todo la categoría `infrastructure-score` entera). Un visitante que aterrizaba de la landing payments-only y abría Ayuda leía en la primera FAQ: *"CAMBRA analyzes operating costs across payments, shipping, SaaS, insurance, telecom and banking"*. Incoherencia pública directa — no deuda diferible, la iteración 2 había clasificado esto como "refactor del cuerpo, deuda", clasificación revocada por Xavi en revisión.
+
+**Diagnóstico previo al fix — grep de barrido inicial** sobre `helpCenterData.js` buscando `shipping|saas|insurance|telecom|logistics|Infrastructure Score` en categorías NO hidden:
+1. `getting-started` L144 · "What is CAMBRA?" → *"payments, shipping, SaaS, insurance, telecom and banking"* (multi-vertical entero).
+2. `getting-started` L152 · "What kinds of costs does CAMBRA analyze?" → 8 verticales enumerados.
+3. `analyzer` L186 · "How does the Analyzer work?" → *"payments, shipping, SaaS, terminals and insurance"*.
+4. `analyzer` L190 · "What is analyzed?" → *"Payments effective rates, shipping cost per unit, SaaS spend ratios, terminal economics, insurance baselines"*.
+5. `infrastructure-score` **categoría ENTERA (5 FAQs)** — concepto multi-vertical composite 0-100 que no existe en el producto payments-only actual (hoy la superficie es gap en bps + savings range, NO un score de madurez de stack).
+6. `savings` L222, L230, L233 · 3 menciones a "Infrastructure Score" como output del análisis.
+7. `pricing` L416, L420 · 2 menciones a "Infrastructure Score" como parte del acceso gratuito.
+8. `troubleshooting` L449 · "My Infrastructure Score seems off" (FAQ entera sobre el score muerto).
+9. `integrations` L362 · lista integrations shipping/support (DHL, UPS, Sendcloud, Klaviyo, Gorgias, FedEx, DPD, Zendesk, Colissimo, PostNL).
+10. `uploads` L384 · *"payments processors, carriers, SaaS vendors, banks"*.
+11. `POPULAR` array · un entry apuntaba a la categoría `infrastructure-score` (ahora inexistente).
+12. `TRENDING_SEARCHES` array · entry "Infrastructure Score".
+
+**Decisiones aplicadas:**
+
+- **Categoría `infrastructure-score` ELIMINADA en vez de retoneada** — el concepto entero (score composite 0-100 sobre payments+logistics+SaaS+infra) no aplica al producto actual. Instrucción explícita de Xavi: *"si no existe en el producto actual, quítala en vez de maquillarla"*. Eliminada de `CATEGORIES` (con comentario justificando la ausencia para futuros lectores del código) y de `FAQ_GROUPS` (5 FAQs borradas, no movidas). La lucide icon `Gauge` queda huérfana en `ICON_MAP` de `CategoryGrid.jsx` — es un mapa lookup con fallback, no rompe; y borrarlo tocaba lógica del componente cuando la restricción del chunk era "solo copy". Se deja.
+- **6 FAQs reescritas payments-only** en categorías visibles (getting-started ×2, analyzer ×3, savings ×3 collated en 1 find_replace, pricing ×2, troubleshooting ×1, integrations ×1, uploads ×2). Todas las menciones a shipping/SaaS/insurance/telecom/logistics/Infrastructure Score reemplazadas por descripción de lo que el producto HACE hoy: card payments online (PSP: Stripe/PayPal/Shopify Payments/Adyen/Mollie/Checkout.com) + in-store (TPV: SumUp/Stripe Terminal/Smile & Pay/Zettle/bank acquirers), effective rate en %, gap en bps, savings range mensual y anual, per-channel breakdown en modo Combined.
+- **POPULAR entry actualizado** — el que apuntaba a `infrastructure-score` reemplazado por "Do you audit in-store card payments (TPV)?" apuntando a `payments` (es la primera de las 3 FAQs in-store que la iteración anterior añadió — coherencia con Combined mode y con el pivot).
+- **TRENDING_SEARCHES actualizado** — "Infrastructure Score" reemplazado por "In-store TPV". El search modal ya no propone al visitante buscar por un concepto muerto.
+- **`HelpCategory.jsx` — `relatedCategories` ahora filtra `hidden`** — un visitante en `/Help/payments` ya no ve "Shipping & Logistics" como topic relacionado (bug residual de la iteración 2). +5 LOC.
+
+**Grep final tras el fix — cero menciones multi-vertical en categorías visibles:**
+
+Script ejecutado (via `exec_tool`): busca `shipping|saas|insurance|telecom|logistics|infrastructure score|vertical` en `helpCenterData.js`, agrupa por contexto de categoría, marca las que caen dentro de bloques `hidden: true` como `HIDDEN`.
+
+Resultado literal:
+```json
+{
+  "total_hits": 14,
+  "visible_hits": 5,
+  "visible": [
+    { "line": 71, "category": "top-level", "keyword": "shipping",   "text": "slug: \"shipping\"," },
+    { "line": 72, "category": "top-level", "keyword": "Shipping",   "text": "title: \"Shipping & Logistics\"," },
+    { "line": 73, "category": "top-level", "keyword": "shipping",   "text": "description: \"Carrier benchmarks and shipping economics.\"," },
+    { "line": 79, "category": "top-level", "keyword": "saas",        "text": "slug: \"saas\"," },
+    { "line": 80, "category": "top-level", "keyword": "SaaS",        "text": "title: \"SaaS & Commerce Stack\"," }
+  ]
+}
+```
+
+Los 5 "visible_hits" restantes son las **entries de las CATEGORIES `shipping` y `saas` en el array `CATEGORIES`, que están marcadas `hidden: true`** — datos intencionalmente preservados para que deep-links legacy (`/Help/shipping`, `/Help/saas`) resuelvan vía `getCategory(slug)` en lugar de dar 404, pero excluidos del render en `CategoryGrid`, `HelpSearch` y `HelpCategory` (related) por el filtro `!c.hidden`. **Cero menciones a los dead verticals en el TEXTO DE RESPUESTAS de FAQs de categorías visibles**, que era la restricción.
+
+Los 9 hits totales ocultos (14 - 5) están todos dentro de los bloques `category: "shipping"` / `category: "saas"` de `FAQ_GROUPS`, que el usuario nunca ve (misma protección `hidden: true` + filtros consumidores).
+
+**Ficheros tocados en la iteración 3:**
+- `src/lib/helpCenterData.js` — 6 FAQs reescritas, categoría `infrastructure-score` eliminada de `CATEGORIES` y `FAQ_GROUPS`, POPULAR y TRENDING_SEARCHES retoneados.
+- `src/pages/HelpCategory.jsx` — `relatedCategories` filtra `!c.hidden`.
+- `src/docs/KNOWN_DEBT.md` — punto 10 CERRADO parcialmente. Queda solo "traducción FR/ES" — el refactor de copy multi-vertical residual ya no es deuda porque está hecho.
+
+**Restricción cumplida:** solo copy + eliminación de bloques muertos, cero lógica de motor, cero cambios en `paymentsGap`, `submitPaymentsAnalysis`, `computeStripeVerifiedGap`, ni en el trío SYNC. Suite 370/0/2 intacta por construcción (no se tocó ningún fichero que la suite ejercite — solo `helpCenterData.js` y `HelpCategory.jsx`, ambos superficie de UI pública sin tests unitarios).
+
 **Verified in-store status (aclaración pedida en el punto 8 del usuario).**
 Estado real del flag en el código: el path verified in-store aún NO existe en producción — `computeStripeVerifiedGap` es online-only por diseño (bridge Stripe→motor), y no hay una función equivalente `computeTpvVerifiedGap` en el árbol. El motor 1.4.0 acepta `measured_current_bps` sobre canal in_store (tests explícitos en `paymentsGap.inStore.test.js`), pero la materialización real (extracción LLM de facturas TPV → `PaymentsAnalysisVerified` con `channel:"in_store"`) NO está cableada. **Ninguna superficie del producto promete verified in-store disponible ya:**
 - Analyzer: tab "In-store" produce solo path estimated (form → session → getPaymentsGapTeaser).

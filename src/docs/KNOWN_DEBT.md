@@ -949,45 +949,33 @@ Primer email a SumUp/myPOS/Viva/Smile&Pay con URL que enseñar. Pitch limpio: *"
 
 ---
 
-## Help Center — refactor payments-only del cuerpo remanente + traducción FR/ES
+## Help Center — traducción FR/ES
 
-**Estado:** 🟡 activa (reformulada 2026-07-12 tras revisión Xavi del cierre Fase 3)
-**Fichero:** `src/lib/helpCenterData.js` (~530 líneas) + `src/pages/Help.jsx` + componentes `src/components/help/*`
+**Estado:** 🟡 activa (reformulada 2026-07-12 tras iteración 3 del cierre Fase 3)
+**Fichero:** `src/pages/Help.jsx` + `src/pages/HelpCategory.jsx` + componentes `src/components/help/*` + `src/lib/helpCenterData.js`
 
-### Contexto — qué se hizo ya (NO forma parte de esta deuda)
-La primera pasada Fase 3 difirió todo el Help Center como "refactor entero". Xavi corrigió el framing y en la misma iteración se aplicaron dos correcciones que quedan **fuera del alcance de esta deuda residual**:
+### Contexto — qué se hizo ya (fuera del alcance de esta deuda residual)
+La deuda original del punto 10 acumulaba tres piezas. Las **dos primeras están cerradas** después de la revisión Xavi del cierre Fase 3:
 
-1. **3 FAQs in-store añadidas a la categoría `payments`** — HECHO. Cubren: cobertura TPV, invoices requeridas para verified, tratamiento de invoices subidas (cifrado + EU + no reentrenamiento + link Privacy §4). Verified in-store etiquetado explícitamente como "in beta and rolling out to founding-cohort merchants" — no promete disponibilidad que hoy no existe.
-2. **Categorías multi-vertical `shipping` y `saas` ocultadas de la UI pública** vía flag `hidden: true` — HECHO. `CategoryGrid.jsx` y `HelpSearch.jsx` filtran con `!c.hidden`. Data preservada para deep-links legacy; visitantes ya no ven "Shipping help" ni "SaaS help" en la grilla ni en la búsqueda.
+1. **Ocultar categorías muertas (shipping, saas)** — HECHO en iteración 2. Flag `hidden: true` + filtro `!c.hidden` en `CategoryGrid`, `HelpSearch` y `HelpCategory.related`. Data preservada para deep-links legacy; visitantes no ven las categorías en grilla, búsqueda ni related.
+2. **Retonar copy multi-vertical del CUERPO de FAQs visibles** — HECHO en iteración 3. Categoría `infrastructure-score` eliminada (concepto multi-vertical composite que no existe en el producto payments-only actual). 6 FAQs reescritas (getting-started ×2, analyzer ×3, savings ×3, pricing ×2, troubleshooting ×1, integrations ×1, uploads ×2). POPULAR y TRENDING_SEARCHES retoneados. Grep final `exec_tool` sobre `helpCenterData.js` confirmó: 0 menciones a shipping/saas/insurance/telecom/logistics/Infrastructure Score en el texto de respuestas de categorías visibles (los 5 hits residuales son las entries `hidden: true` en el array CATEGORIES, preservadas a propósito). Ver Decision_Log iteración 3 (2026-07-12) para el detalle completo + cita del grep.
 
-Ver Decision_Log entrada Fase 3 punto 10 (2026-07-12) para el reporte completo con ficheros tocados y cita de las 3 FAQs.
+3. **Traducción FR/ES completa del Help Center** — SIGUE PENDIENTE. Es lo que queda de esta deuda.
 
-### Deuda residual (esto es lo que queda pendiente)
+### Deuda residual — traducción FR/ES
 
-**Refactor de copy multi-vertical residual dentro del CUERPO de FAQs remanentes.**
-Después de ocultar las categorías shipping/saas, siguen apareciendo menciones a verticales muertos dentro del texto libre de FAQs que SÍ son visibles:
-- `getting-started` categoría, FAQ "What is CAMBRA?" (L112): *"payments, shipping, SaaS, insurance, telecom and banking"* — enumera 6 verticales, 5 muertos.
-- Misma categoría, FAQ "What kinds of costs does CAMBRA analyze?" (L120): *"Payments processing, card-present terminals, shipping and logistics, SaaS subscriptions, commerce platform fees, banking and FX, business insurance, and increasingly telecom and operational infrastructure"* — enumeración explícita multi-vertical.
-- `analyzer` FAQ "How does the Analyzer work?" (L154): *"revenue, channels, payments, shipping, SaaS, terminals and insurance"*.
-- `savings` FAQ "How does CAMBRA estimate savings?": alusiones al modelo multi-vertical (verificar).
-- `benchmarks` FAQ "How does CAMBRA compare businesses?": stack composition (verificar).
-- `uploads` categoría (L328-348) habla de invoices genéricas — no distingue online vs in-store en el contexto que las nuevas FAQs de payments SÍ distinguen.
+Ni `Help.jsx`, ni `HelpCategory.jsx`, ni ninguno de los 6 componentes `src/components/help/*` (`HelpHero`, `HelpSearch`, `CategoryGrid`, `PopularArticles`, `HelpCTA`, `FAQAccordion`) consumen `useTranslation()`. El fichero de contenido `helpCenterData.js` es EN puro — CATEGORIES.title/description, FAQ_GROUPS.title, y todas las items.q / items.a están escritas inline en inglés.
 
-Estas menciones no bloquean superficie (visitante que aterriza en /Help ya no ve las categorías muertas), pero SÍ son incoherentes con el pivot payments-only cuando el visitante abre una categoría visible y lee el detalle.
+Los otros 3 idiomas del producto (EN/ES/FR según `src/lib/i18n.jsx`) NO aplican al Help Center. Un merchant ES o FR que abre `/Help` desde la landing (que sí está traducida) aterriza en inglés — desconexión de idioma cross-página. El contenido nuevo (las 3 FAQs in-store añadidas en iteración 2 + el retoneado payments-only de iteración 3) también nace en EN — la traducción del delta debe hacerse a la vez que el resto, no en piezas.
 
-**Traducción FR/ES del Help Center completo.**
-`Help.jsx` y sus 8 componentes (`HelpHero`, `HelpSearch`, `CategoryGrid`, `PopularArticles`, `HelpCTA`, `HelpCategory`, `FAQAccordion`, y helpers) no consumen `useTranslation()`. `helpCenterData.js` es EN puro. Los otros 3 idiomas del producto no aplican aquí. Contenido nuevo (las 3 FAQs in-store añadidas) también está en EN — la traducción de las 3 nuevas debe hacerse a la vez que el resto del refactor lingüístico, no en piezas.
-
-**Purga definitiva de categorías `hidden: true`.**
-Una vez confirmado (analytics / server logs) que cero tráfico legítimo aterriza en `/Help/shipping` o `/Help/saas`, borrar las entries de `CATEGORIES` y `FAQ_GROUPS`. Hasta entonces preservadas para no romper deep-links externos que puedan existir. Bajo urgencia — el flag `hidden: true` ya elimina el problema visible.
+**Purga definitiva de categorías `hidden: true`** — sub-tarea. Una vez confirmado (analytics / server logs) que cero tráfico legítimo aterriza en `/Help/shipping` o `/Help/saas`, borrar las entries `hidden: true` de `CATEGORIES` y sus bloques huérfanos en `FAQ_GROUPS`. Hasta entonces preservadas para no romper deep-links externos que puedan existir. Bajo urgencia — el flag `hidden: true` ya elimina el problema visible.
 
 ### Por qué no se arregla ahora
-Alcance ~3-4 horas:
-1. **Retonar copy** (~1h): grep `shipping|saas|insurance|telecom|banking` dentro de `helpCenterData.js`, reescribir cada mención en context de FAQ visible para reflejar payments-only sin perder narrative del getting-started (que sigue teniendo sentido si "CAMBRA audits card payments across online and in-store" reemplaza la lista de verticales).
-2. **i18n scaffolding** (~2h): introducir `useTranslation()` en los 8 componentes del Help + splitear el dictionary `src/lib/i18n.jsx` (que ya está en 2000+ líneas, considerar per-page para no engordar más) + añadir ~80+ keys nuevas × 3 idiomas. La estructura de `helpCenterData.js` misma requiere decisión: pasar a keyed strings vs mantener EN inline con overlays FR/ES.
-3. **Verificación cross-idioma** (~30min): revisar cada FAQ en FR y ES con ojo humano — el contenido legal/técnico no se traduce automáticamente sin revisión.
+Alcance ~2-2.5 horas (reducido tras iteración 3, que absorbió la parte del refactor de copy):
+1. **i18n scaffolding** (~1.5h): introducir `useTranslation()` en los 8 componentes del Help + splitear el dictionary `src/lib/i18n.jsx` (que ya está en 2000+ líneas — considerar splitear por página para no engordar el fichero más allá del límite blando de 2500) + añadir ~70+ keys nuevas × 3 idiomas. La estructura de `helpCenterData.js` requiere decisión de arquitectura previa: (a) migrar todo el contenido a keyed strings referenciando i18n, o (b) mantener EN inline en `helpCenterData.js` con dos overlays FR/ES adicionales (menos disruptivo, más lugares que mantener sincronizados).
+2. **Verificación cross-idioma** (~1h): revisar cada FAQ en FR y ES con ojo humano — el contenido técnico (fees, bps, interchange, TPV, PSP) y legal (Privacy §4, GDPR retention 30d) NO se traduce automáticamente sin revisión.
 
-Chunk propio (post-Fase-3 o paralelo si Xavi lo prioriza).
+Chunk propio (post-Fase-3, prioridad Xavi).
 
 ### Riesgo residual mientras no se arregle
-Bajo pero no cero. El escenario peor-caso ya no ocurre (visitante que ve categorías muertas en la grilla — cerrado con el flag `hidden: true`). Queda el escenario intermedio: visitante que abre `/Help/getting-started` y lee menciones a "shipping, SaaS, insurance" en el texto de "What kinds of costs does CAMBRA analyze?". Efecto: primer momento de duda ("¿ofrecen shipping y no lo veo?"). Impacto: primary SEO + first-impression, no funcional. La superficie payments-only del resto del producto (landing, analyzer, results, pricing, terms) es coherente — el Help Center es la única ventana donde el pivot no ha aterrizado del todo.
+Bajo. El escenario peor-caso (categorías muertas visibles + FAQs describiendo el producto multi-vertical) YA está cerrado. Queda solo el desalineamiento de idioma: merchant ES/FR que aterriza en /Help lee EN. Impacto: primary SEO + friction en el mercado no-anglófono (Xavi's FR/ES ICP), no funcional. La superficie funcional payments-only está 100% coherente hoy en EN.
