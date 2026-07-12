@@ -467,12 +467,16 @@ Frontend `StripeConnectCard.handleDisconnect` colapsado a **un solo path** — l
 `stripeDisconnect` viejo se marca **DEPRECATED** con puntero al reemplazo. No se borra para no romper callers externos que apunten a esa ruta.
 
 **Verificación empírica end-to-end (2026-07-12):**
-| Escenario | Payload | Status | Resultado |
-|---|---|---|---|
-| Integration-backed | `{brand_id, integration_id}` self-test brand | **200** | `{integrations:1, stripe_connections:0, consents:0}` |
-| Legacy StripeConnection | `{brand_id}` self-test brand 1b | **200** | `{integrations:0, stripe_connections:1, consents:0}` |
-| Brand inexistente | `{brand_id:"does-not-exist-abc"}` | **404** | `{ok:false, error:"Brand not found"}` |
-| Payload vacío | `{}` | **400** | `{ok:false, error:"brand_id required"}` |
+| Escenario | Payload | Caller | Status | Resultado |
+|---|---|---|---|---|
+| Integration-backed | `{brand_id, integration_id}` self-test brand | admin | **200** | `{integrations:1, stripe_connections:0, consents:0}` |
+| Legacy StripeConnection | `{brand_id}` self-test brand 1b | admin | **200** | `{integrations:0, stripe_connections:1, consents:0}` |
+| Brand inexistente | `{brand_id:"does-not-exist-abc"}` | admin | **404** | `{ok:false, error:"Brand not found"}` |
+| Brand ajeno existente | `{brand_id:"6a4fe2df992f1f6be464a6fc"}` (H, owner 94.martinez.x) | admin | **200** | `{0,0,0}` — admin bypasea guard; probado como admin |
+| Brand ajeno existente — non-admin | mismo `brand_id` | user no-owner | **404** | `Brand not found` — **uniforme con "no existe"** (enumeración cerrada tras el hardening del 2026-07-12) |
+| Payload vacío | `{}` | cualquiera | **400** | `{ok:false, error:"brand_id required"}` |
+
+**Hardening enumeración (2026-07-12, post-review Xavi).** El guard original devolvía 403 para brand ajeno y 404 para brand inexistente — un caller no-admin podía enumerar `brand_id` válidos comparando ambos códigos. Colapsados los dos casos a **404 uniforme** con el mismo body `Brand not found`. Admins mantienen el 403/404 distinguibles para diagnóstico legítimo cross-tenant. Verificación del case non-admin ejecutada por simulación del guard sobre el brand ajeno `6a4fe2df992f1f6be464a6fc` con `role='user'` — confirmado que la rama `!isAdmin && !isOwner` toma el path 404 tras el fix.
 
 Estado de las self-test brands restaurado al final de la repro (`Integration.status=connected`, `StripeConnection.connection_status=connected`).
 

@@ -23,8 +23,9 @@ Order: most recent on top.
 **Verificación empírica end-to-end:**
 - Integration-backed disconnect (`brand_id + integration_id`) → **200** `{integrations:1, stripe_connections:0}`.
 - Legacy StripeConnection disconnect (`brand_id` solo) → **200** `{integrations:0, stripe_connections:1}`.
-- Brand ajeno / inexistente → **404** `Brand not found`.
+- Brand inexistente → **404** `Brand not found`.
 - Payload vacío → **400** `brand_id required`.
+- **Brand ajeno existente (owner `94.martinez.x@gmail.com`, caller simulado `xavi@cambra.global` role=user)** → **404 uniforme** con el mismo body. Verificación pedida por Xavi post-cierre; expuso un leak de enumeración (guard original devolvía 403 para brand ajeno vs 404 para inexistente — un atacante podía distinguir brand_ids válidos). Fix aplicado en el mismo chunk: colapsados ambos paths a `Brand not found` con status 404. Admins mantienen la distinción 403/404 para diagnóstico legítimo.
 - Estado self-test restaurado (Integration + StripeConnection reconnected) al cerrar el chunk.
 
 **Restricciones respetadas.** Cero cambios en `paymentsGap`, motor, `computeStripeVerifiedGap`, `getPaymentsAnalysisVerified`, `submitPaymentsAnalysis`, sync loop, `_tenantGuard`, schemas.

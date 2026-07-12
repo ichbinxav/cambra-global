@@ -62,16 +62,25 @@ Deno.serve(async (req) => {
 
     // Step 2 — Ownership check (service-role read; RLS on Brand would hide
     // service-owned rows from the human even though contact_email matches).
+    //
+    // Enumeration-safety: the "brand exists but you don't own it" case and
+    // the "brand does not exist" case MUST return the same status + body.
+    // Otherwise a non-admin caller can distinguish valid brand_ids from
+    // invalid ones by probing (existing → 403, missing → 404). Both paths
+    // collapse to 404 "Brand not found" for non-owners. Admins are exempt —
+    // they legitimately see across tenants and rely on 404 vs 403 for
+    // their own diagnostics.
     const brand = await base44.asServiceRole.entities.Brand.get(brand_id).catch(() => null);
+    const isAdmin = user.role === 'admin';
+    const isOwner = brand &&
+      (brand.contact_email === user.email || brand.created_by === user.email);
+
     if (!brand) {
       return Response.json({ ok: false, error: 'Brand not found' }, { status: 404 });
     }
-
-    const isAdmin = user.role === 'admin';
-    const isOwner =
-      brand.contact_email === user.email || brand.created_by === user.email;
     if (!isAdmin && !isOwner) {
-      return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+      // Same shape as the "not found" response — do not leak existence.
+      return Response.json({ ok: false, error: 'Brand not found' }, { status: 404 });
     }
 
     // Step 3+4 — Dual-row disconnect via service role.
