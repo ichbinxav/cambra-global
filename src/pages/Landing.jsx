@@ -13,10 +13,7 @@ import FounderLetter from "@/components/landing/FounderLetter";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
-// InStoreUpsellStrip — ROLLBACK 2B 2026-07-12: componente ya no se renderiza
-// hasta Fase 2A-redo (motor no acepta channel='in_store' aún). Import quitado
-// para no shippear el bundle. Restaurar: reimportar + reinsertar en <main>.
-// import InStoreUpsellStrip from "@/components/landing/InStoreUpsellStrip";
+import InStoreUpsellStrip from "@/components/landing/InStoreUpsellStrip";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
@@ -466,10 +463,12 @@ export default function Landing() {
       <Navbar />
       <main className="relative">
         <Hero />
-        {/* M4-TPV Fase 2B — ROLLBACK 2026-07-12. <InStoreUpsellStrip /> retirado
-            hasta Fase 2A-redo. El motor no puede aún calcular in-store, así que
-            prometerlo en landing sería mentir. Ver Decision_Log corrección
-            bajo M4-TPV Fase 2A. */}
+        {/* M4-TPV Fase 2B — RESTAURADO 2026-07-12 tras Fase 2A-redo verificada
+            (motor 1.4.0 en las 3 copias SYNC + 19 filas seed + retrocompat
+            online byte-idéntica). Strip señala que payments cubre ambos canales
+            (online + in-store TPV) sin prometer números que el motor no puede
+            calcular todavía — el CTA lleva al Analyzer donde el toggle real vive. */}
+        <InStoreUpsellStrip />
         <ProblemSectionWow />
         <HowItWorksSection />
         <PricingDual />

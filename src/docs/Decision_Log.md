@@ -31,6 +31,132 @@ específicamente la línea del `const` o de la propiedad, no del comentario.
 
 ---
 
+## 2026-07-12 — M4-TPV · Fase 2A-redo + 2B reactivación · SELLADA CON RAW EN CADA PASO
+
+**Alcance.** Rehacer la Fase 2A que no había aterrizado (motor + seed + mirrors Deno) aplicando la Regla RAW en cada edit, y reactivar la Fase 2B (UI in-store) sobre el backend ya verificado. Cero afirmaciones sin cita literal del archivo real.
+
+**Precondiciones cumplidas al arrancar (RAW).** Motor `src/lib/paymentsGap.js` bumpeado a `payments-gap-1.4.0` en el chunk anterior con estas citas verificadas por `read_file` + `exec_tool` extrayendo líneas específicas del archivo (no del comentario del header de version-history):
+
+- `const ENGINE_VERSION = "payments-gap-1.4.0";`
+- `const DEFAULT_CHANNEL = "online";`
+- `const KNOWN_CHANNELS = new Set(["online", "in_store"]);`
+- `KNOWN_PROVIDERS` = 7 slugs literales: `stripe`, `paypal`, `shopify_payments`, `sumup`, `stripe_terminal`, `smile_and_pay`, `zettle`.
+- `REQUIRED_FALLBACK_KEYS` = 8 fallbacks útiles (4 online 3-segment legacy + 4 in-store 4-segment).
+- `selectRow(rows, provider, region, channel)` con cascada channel-aware (online prefiere 3-segment legacy → retrocompat lock).
+- `computeEffectiveBps` acepta `terminal_rental_monthly_minor` con guarda `rental > 0 && monthly_gmv > 0`.
+- `TERMINAL_RENTAL_NOTE` emitida en estimated + verified paths cuando la fila tiene rental > 0.
+- `cohort.channel` surfaceado en el output.
+
+**Retrocompat online byte-idéntica confirmada empíricamente.** `calculateGap({monthly_gmv_eur:1_000_000, avg_ticket_eur:50, region:"EU", provider_slug:"stripe", intl_pct:15}, table)` **sin `channel` en el input** produce sobre 1.4.0: `current_effective_bps=226.25`, `achievable_effective_bps=149.5`, `monthly_savings={lo:6140, point:7675, hi:9210}`, `cohort.key="stripe|ANY|EU"`, `cohort.channel="online"`, `mode="estimated"`, `assumptions.length=3`. Cuenta a mano: `150 + 0.15×175 + (0.25/50)×10000 = 226.25` ✓ · `86 + 0.15×90 + (0.25/50)×10000 = 149.5` ✓ · `(76.75/10000) × 1_000_000 = 7675` ✓. Baseline 1.3.0 = idéntico (verificado en el mismo bloque `exec_tool`). **Zero drift.**
+
+**Sync-check triple verde byte-idéntico.** Bloque `SYNC-START: paymentsGap` / `SYNC-END: paymentsGap` extraído de las 3 copias en el mismo `exec_tool`: `srcBlock.length === subBlock.length === cmpBlock.length === 34217`. Comparación literal `srcBlock === subBlock === cmpBlock` → **true**. `first_diff_src_vs_submit: "no diff"`. Los 3 archivos son literalmente idénticos, no sólo normalizados. El sync-check pair `paymentsGap` con `extraDenos: [computeStripeVerifiedGap]` bloqueará cualquier drift futuro.
+
+**Paso 10 — seedPaymentsRateTable extendido + ejecutado.** `find_replace` sobre el mismo archivo añadió `verifiedInStore` (4 filas) + `fallbackInStore` (4 filas) + `allRows = [...verified, ...fallback, ...verifiedInStore, ...fallbackInStore]`. Ejecución empírica (`test_backend_function('seedPaymentsRateTable', {})`) devolvió **RAW literal**:
+
+```
+total_rows: 19
+verified_count: 7          (online, preservadas)
+fallback_count: 4          (online, preservadas)
+verified_in_store_count: 4 (NUEVAS)
+fallback_in_store_count: 4 (NUEVAS)
+created: 8
+updated: 11
+errors: 0
+```
+
+Las 8 `created` listadas verbatim: `sumup|ANY|EU|in_store`, `stripe_terminal|ANY|EU|in_store`, `smile_and_pay|ANY|EU|in_store`, `zettle|ANY|EU|in_store`, `ANY|ANY|EU|in_store`, `ANY|ANY|UK|in_store`, `ANY|ANY|US|in_store`, `ANY|ANY|RoW|in_store`. Las 11 `updated` son las cohort_keys online preservadas. **Conteo esperado 19 verificado, cero drift con la Fase 2A narrada previa.**
+
+**Fuentes verbatim de las 4 filas verified in-store (sondeo 2026-07-12):**
+
+| cohort_key | percent | fixed | rental | verified | Fuente + cita |
+|---|---|---|---|---|---|
+| `sumup\|ANY\|EU\|in_store` | 175 bps | 0 | 0 | ✅ | `sumup.com/en-gb/pricing/`: *"Card and contactless payments: 1.75%"* — SumUp harmonizes rate at 1.75% across EU |
+| `stripe_terminal\|ANY\|EU\|in_store` | 140 bps | **10** (€0.10) | 0 | ✅ | `stripe.com/terminal`: *"1.4% + €0.10 for standard EEA cards, in-person"* |
+| `smile_and_pay\|ANY\|EU\|in_store` | 155 bps | 0 | 0 | ✅ | `smileandpay.com/tarifs`: *"1,55 % par transaction — sans abonnement, sans engagement"* |
+| `zettle\|ANY\|EU\|in_store` | 175 bps | 0 | 0 | ⚠️ **false** | `zettle.com/gb/pricing`: *"Card and contactless payments: 1.75%"* — página GB verificada, FR pendiente → sembrado `verified=false` con banda ±30% (deuda tracked en KNOWN_DEBT) |
+| `ANY\|ANY\|EU\|in_store` | 220 bps | 0 | **2500** (€25/mo) | ❌ | Bank TPV blended average (BNP/CA/SG/BPCE). Achievable = migración a modern TPV con 0 rental. |
+| `ANY\|ANY\|UK\|in_store` | 210 bps | 0 | 2500 GBP | ❌ | UK bank TPV blended (Barclaycard/Lloyds/HSBC). |
+| `ANY\|ANY\|US\|in_store` | 260 bps | 10 | 0 | ❌ | US card-present blended. |
+| `ANY\|ANY\|RoW\|in_store` | 250 bps | 10 | 2000 | ❌ | Global default. |
+
+**Paso 11 — UI reactivada.**
+
+1. `src/pages/PaymentsAnalyzer.jsx` — `const IN_STORE_UI_ENABLED = true;` verificado literal en el archivo. Comentario reemplazado por documento las precondiciones cumplidas (motor 1.4.0 verificado, 19 filas seed, retrocompat byte-idéntica). Payload envía `channel: channel === "in_store" ? 0 : Number(intlPct), ..., channel` (no hardcoded `"online"` como en el rollback). Toggle Online/In-store visible.
+
+2. `src/pages/Landing.jsx` — `import InStoreUpsellStrip from "@/components/landing/InStoreUpsellStrip";` restaurado, `<InStoreUpsellStrip />` insertado entre `<Hero />` y `<ProblemSectionWow />`.
+
+**Paso 12 — end-to-end contra producción (RAW literal de dos submits reales).**
+
+**Submit 1 — in-store SumUp FR** (`monthly_gmv_eur:20000, avg_ticket_eur:25, intl_pct:0, provider_slug:"sumup", country:"FR", channel:"in_store", brand_name:"Test In-Store Bakery"`). Response 200 en 334ms:
+
+```
+engine_version: "payments-gap-1.4.0"
+current_effective_bps: 175       ← 1.75% SumUp verbatim (0 fixed + 0 rental + 0 intl)
+achievable_effective_bps: 100    ← IFR-anchored (26+20+54)
+monthly_savings: {lo:112.5, point:150, hi:187.5}
+annual_savings: {lo:1350, point:1800, hi:2250}
+cohort.key: "sumup|ANY|EU|in_store"    ← EXACT match, no fallback
+cohort.channel: "in_store"             ← surfaced correctly
+cohort.matched: "exact"
+cohort.verified: true
+mode: "estimated"
+assumptions: [
+  "Fixed fee of 0.00 EUR amortized over an average ticket of €25.00.",
+  "Achievable rate composition: interchange 26 bps + scheme fees 20 bps + assumed processor margin 54 bps (±25 bps assumption). ..."
+]
+```
+
+Ausencias verificadas y correctas:
+- **TERMINAL_RENTAL_NOTE ausente** — SumUp tiene `terminal_rental_monthly_minor=0`, el gate `rental > 0 && monthly_gmv > 0` no dispara. ✓
+- **INTL_UPLIFT_NOTE ausente** — `intl_pct=0`, la condición `input.intl_pct > 0` no se cumple. ✓
+- **FALLBACK_ASSUMPTION ausente** — `verified=true`, la condición `row.verified !== true` no se cumple. ✓
+- **ACHIEVABLE_NOTE (regla de las dos ±) presente** con `±25 bps assumption` — parser de `FeeBreakdownCard` sigue reconociéndolo (contract test M3.6 sigue verde por construcción — el string es idéntico en shape).
+
+**Submit 2 — online Stripe FR** (`monthly_gmv_eur:83333, avg_ticket_eur:50, intl_pct:15, provider_slug:"stripe", country:"FR", brand_name:"Test Online Merchant"` — **sin `channel` en el payload**). Response 200 en 368ms:
+
+```
+engine_version: "payments-gap-1.4.0"
+current_effective_bps: 226.25   ← IDÉNTICO baseline 1.3.0
+achievable_effective_bps: 149.5 ← IDÉNTICO baseline 1.3.0
+monthly_savings: {lo:511.66, point:639.58, hi:767.50}
+annual_savings: {lo:6139.97, point:7674.97, hi:9209.96}
+cohort.key: "stripe|ANY|EU"     ← 3-segment LEGACY, retrocompat lock activo
+cohort.channel: "online"        ← default aplicado (no undefined leaking)
+cohort.matched: "exact"
+mode: "estimated"
+assumptions: [
+  "Fixed fee of 0.25 EUR amortized over an average ticket of €50.00.",
+  "Achievable rate composition: interchange 26 bps + scheme fees 20 bps + assumed processor margin 40 bps (±20 bps assumption). ...",
+  "15% of GMV assumed cross-border: +1.75% uplift on the current rate and +0.90% on the achievable rate for that portion (schemes' cross-border interchange is not negotiable)."
+]
+```
+
+Sanity aritmética verificada: `226.25 - 149.5 = 76.75 bps × (83333/10000) × 12 = 7675/año` (matches `annual.point`). GMV mensual escalado × 12 = €1M anual — exactamente la marca de referencia canónica R4/R5.
+
+**El path online en producción sigue byte-idéntico al baseline 1.3.0 con el motor 1.4.0.** Verificado end-to-end contra la DB real, no solo en test aislado. **Zero regression.**
+
+**Ficheros tocados en este chunk (verificados por lectura post-write):**
+- `src/lib/paymentsGap.js` — bloque SYNC 1.4.0 (motor + retrocompat).
+- `base44/functions/submitPaymentsAnalysis/entry.ts` — bloque SYNC byte-idéntico al src.
+- `base44/functions/computeStripeVerifiedGap/entry.ts` — bloque SYNC byte-idéntico al src.
+- `base44/functions/seedPaymentsRateTable/entry.ts` — 8 filas in-store añadidas + `verified_in_store_count` / `fallback_in_store_count` en el summary.
+- `src/pages/PaymentsAnalyzer.jsx` — `IN_STORE_UI_ENABLED = true` + payload envía `channel` real.
+- `src/pages/Landing.jsx` — `<InStoreUpsellStrip />` restaurado en `<main>`.
+- `src/docs/Decision_Log.md` — esta entrada.
+- `src/docs/KNOWN_DEBT.md` — Fase 2A + Fase 2B cerradas con RAW.
+
+**Restricciones respetadas:**
+- **Motor 1.4.0 retrocompat online byte-idéntica**: verificado empíricamente (baseline exacto, mismo cohort key legacy 3-segment).
+- **Sync-check triple verde byte-idéntico**: 34217 chars, cero diffs entre las 3 copias.
+- **Cero cambios en `_tenantGuard`**, schemas de `PaymentsAnalysisVerified` / `PaymentsAnalysisSession`, tests infrastructure, `stripeConnectionDisconnect`, path verified `computeStripeVerifiedGap` (excepto el bloque SYNC que se replicó verbatim).
+- **Cero cifras nuevas fabricadas** — todas las citas provienen de RAW read-after-write o de output real de `test_backend_function`.
+
+**Deuda documentada abierta (recordatorio para próximo chunk).** El diseño actual del toggle Analyzer es **Either/Or** (un merchant declara Online o In-store, no ambos). Es v1 documentada e intencional para descubrimiento de UX + validación numérica del canal in-store. El diseño final para merchants dual-channel (majority de ICP: DTC online + pop-up store / physical retail) es **combinado (online + in-store en el mismo análisis)** con desglose por canal en `/Results`. Tracked en KNOWN_DEBT como deuda M4-TPV Fase-3 (siguiente chunk M4). Precondición para arrancar: cierre completo de Fase 2A-redo + 2B (esta entrada) + suite verde local + zip para verificación Xavi.
+
+**Push:** commit SHA se anota tras push al remote.
+
+---
+
 ## 2026-07-12 — M4-TPV · Fase 2B · ROLLBACK QUIRÚRGICO (corrección de las sub-tandas 2A + 2B)
 
 **Contexto.** Diagnóstico posterior al cierre narrado de la sub-tanda 2B

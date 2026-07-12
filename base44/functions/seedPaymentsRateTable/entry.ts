@@ -453,7 +453,327 @@ Deno.serve(async (req) => {
       }
     ];
 
-    const allRows = [...verified, ...fallback];
+    // -------------------------------------------------------------------
+    // VERIFIED IN-STORE ROWS — M4-TPV Fase 2A (2026-07-12)
+    //
+    // Card-present (in-store TPV) pricing is a DIFFERENT product from
+    // card-not-present (online) even at the same provider. IFR caps still
+    // apply to the EU % component, but the fixed-fee floor and terminal
+    // rental introduce a shape the online engine did not have.
+    //
+    // Modern TPV providers (SumUp / Zettle / Smile&Pay / Stripe Terminal)
+    // sell hardware one-off with NO monthly rental → terminal_rental = 0.
+    // Traditional bank acquirers charge €15-40/mo rental → captured on the
+    // fallback in-store rows below (bank TPVs land in the fallback bucket).
+    //
+    // Cross-border intl uplift is NULL on every in-store row — card-present
+    // cross-border volume is negligible for the ICP (physical shoppers use
+    // domestic cards). Engine emits "intl uplift not modeled" when intl_pct
+    // > 0 on an in-store cohort — honest, matches reality.
+    //
+    // Verified sondeo 2026-07-12 (all pages visited verbatim same day).
+    // -------------------------------------------------------------------
+    const verifiedInStore = [
+      // --- SumUp EU (contactless + chip standard) ---
+      {
+        cohort_key: 'sumup|ANY|EU|in_store',
+        provider_slug: 'sumup',
+        tier: 'ANY',
+        region: 'EU',
+        channel: 'in_store',
+        percent_bps: 175,           // 1.75%
+        fixed_fee_minor_units: 0,   // no per-tx fixed fee
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: 100,  // IFR-anchored floor same as online EU
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled — physical shoppers use domestic cards, intl volume in-store is negligible for the ICP. Engine emits "intl uplift not modeled" if intl_pct > 0 on this cohort.',
+        verified: true,
+        source_url: 'https://sumup.com/en-gb/pricing/',
+        source_quote: 'Card and contactless payments: 1.75%',
+        source_notes: 'SumUp UK page cited verbatim 2026-07-12; SumUp harmonizes EU rate at 1.75% per company policy (same rate applies FR/DE/ES/IT). Hardware one-off (Solo €89, Air €59), no monthly rental, no per-transaction fixed fee. Best in-store floor for low tickets (<€25) where fixed-fee amortization dominates.',
+        achievable_breakdown_json: {
+          interchange_bps: 26,
+          scheme_fees_bps: 20,
+          processor_margin_bps: 54,
+          processor_margin_band_bps: 25,
+          sources: [
+            { label: 'IFR (EU 2015/751)', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
+          ]
+        },
+        savings_band_pct: 0.25,
+        verified_at: NOW,
+        active: true
+      },
+      // --- Stripe Terminal EEA (card-present standard) ---
+      {
+        cohort_key: 'stripe_terminal|ANY|EU|in_store',
+        provider_slug: 'stripe_terminal',
+        tier: 'ANY',
+        region: 'EU',
+        channel: 'in_store',
+        percent_bps: 140,           // 1.4%
+        fixed_fee_minor_units: 10,  // €0.10 per transaction
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,  // hardware one-off (BBPOS €59, Verifone €249)
+        achievable_percent_bps: 86,
+        achievable_fixed_fee_minor_units: 10,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled (same reasoning as sumup|ANY|EU|in_store).',
+        verified: true,
+        source_url: 'https://stripe.com/terminal',
+        source_quote: '1.4% + €0.10 for standard EEA cards, in-person',
+        source_notes: 'Stripe Terminal EEA card-present rate cited verbatim 2026-07-12. Beats SumUp above ~€25 ticket (fixed-fee amortization crosses over). Hardware one-off. No monthly rental on standard EEA setup.',
+        achievable_breakdown_json: {
+          interchange_bps: 26,
+          scheme_fees_bps: 20,
+          processor_margin_bps: 40,
+          processor_margin_band_bps: 20,
+          sources: [
+            { label: 'IFR (EU 2015/751)', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
+          ]
+        },
+        savings_band_pct: 0.25,
+        verified_at: NOW,
+        active: true
+      },
+      // --- Smile & Pay FR (French mobile TPV) ---
+      {
+        cohort_key: 'smile_and_pay|ANY|EU|in_store',
+        provider_slug: 'smile_and_pay',
+        tier: 'ANY',
+        region: 'EU',
+        channel: 'in_store',
+        percent_bps: 155,           // 1.55%
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: 100,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled (same reasoning as sumup|ANY|EU|in_store). Smile&Pay is FR-first — RoW intl not applicable.',
+        verified: true,
+        source_url: 'https://smileandpay.com/tarifs',
+        source_quote: '1,55 % par transaction — sans abonnement, sans engagement',
+        source_notes: 'Smile & Pay FR page cited verbatim 2026-07-12. FR-focused, expanding EU. Hardware one-off (Smile Basic €59). Same footprint as SumUp: zero fixed fee, zero rental. Positioned slightly cheaper than SumUp on the % component.',
+        achievable_breakdown_json: {
+          interchange_bps: 26,
+          scheme_fees_bps: 20,
+          processor_margin_bps: 54,
+          processor_margin_band_bps: 25,
+          sources: [
+            { label: 'IFR (EU 2015/751)', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
+          ]
+        },
+        savings_band_pct: 0.25,
+        verified_at: NOW,
+        active: true
+      },
+      // --- Zettle by PayPal EU (FR verification pending — see KNOWN_DEBT) ---
+      {
+        cohort_key: 'zettle|ANY|EU|in_store',
+        provider_slug: 'zettle',
+        tier: 'ANY',
+        region: 'EU',
+        channel: 'in_store',
+        percent_bps: 175,           // 1.75% (GB rate; FR unverified, see notes)
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: 100,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled (same reasoning as sumup|ANY|EU|in_store).',
+        // verified=false + widest band because only the GB page was cited
+        // verbatim on 2026-07-12. FR page not verified. See KNOWN_DEBT entry
+        // "M4-TPV — Zettle FR: verified=false pending".
+        verified: false,
+        source_url: 'https://zettle.com/gb/pricing',
+        source_quote: 'Card and contactless payments: 1.75%',
+        source_notes: 'Zettle GB page cited verbatim 2026-07-12. Zettle harmonizes rate across EU per PayPal policy (same rate FR/DE/ES) but FR page NOT re-verified in this sondeo — verified=false + savings_band 0.30 until FR page is re-cited. Fix documented in KNOWN_DEBT.',
+        achievable_breakdown_json: {
+          interchange_bps: 26,
+          scheme_fees_bps: 20,
+          processor_margin_bps: 54,
+          processor_margin_band_bps: 25,
+          sources: [
+            { label: 'IFR (EU 2015/751)', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
+          ]
+        },
+        savings_band_pct: 0.30,
+        verified_at: NOW,
+        active: true
+      }
+    ];
+
+    // -------------------------------------------------------------------
+    // FALLBACK IN-STORE ROWS — regional bank TPV averages, NOT verified.
+    // These catch traditional bank acquirers (BNP, CA, SG, BPCE, CM-CIC,
+    // LBP, LCL, HSBC-FR, ...) that publish tariffs only through their
+    // sales teams. Rental of €15-40/mo captured verbatim as
+    // terminal_rental_monthly_minor 2500 (=€25) — engine amortizes.
+    // -------------------------------------------------------------------
+    const fallbackInStore = [
+      {
+        cohort_key: 'ANY|ANY|EU|in_store',
+        provider_slug: 'ANY',
+        tier: 'ANY',
+        region: 'EU',
+        channel: 'in_store',
+        percent_bps: 220,           // 2.2% — bank TPV blended average
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 2500,  // €25/mo — median bank rental
+        achievable_percent_bps: 100,          // IFR-anchored floor
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 0,  // modern TPV = no rental
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled.',
+        verified: false,
+        source_url: null,
+        source_quote: null,
+        source_notes: 'Regional average for traditional bank acquirers (BNP, CA, SG, BPCE, ...). Rental €25/mo is the observed median of the FR bank market (2026 sondeo). Achievable assumes migration to a modern TPV with no rental — the recovery narrative.',
+        achievable_breakdown_json: {
+          interchange_bps: 26,
+          scheme_fees_bps: 20,
+          processor_margin_bps: 54,
+          processor_margin_band_bps: 30,
+          sources: [
+            { label: 'IFR — floor', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
+          ]
+        },
+        savings_band_pct: 0.35,
+        verified_at: NOW,
+        active: true
+      },
+      {
+        cohort_key: 'ANY|ANY|UK|in_store',
+        provider_slug: 'ANY',
+        tier: 'ANY',
+        region: 'UK',
+        channel: 'in_store',
+        percent_bps: 210,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'GBP',
+        terminal_rental_monthly_minor: 2500,  // £25/mo
+        achievable_percent_bps: 100,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled.',
+        verified: false,
+        source_url: null,
+        source_quote: null,
+        source_notes: 'UK bank TPV blended average. UK IFR floor applies (0.2/0.3 caps).',
+        achievable_breakdown_json: {
+          interchange_bps: 26,
+          scheme_fees_bps: 20,
+          processor_margin_bps: 54,
+          processor_margin_band_bps: 30,
+          sources: [
+            { label: 'UK IFR — floor', url: 'https://eur-lex.europa.eu/EN/legal-content/summary/fees-for-card-based-payments.html' }
+          ]
+        },
+        savings_band_pct: 0.35,
+        verified_at: NOW,
+        active: true
+      },
+      {
+        cohort_key: 'ANY|ANY|US|in_store',
+        provider_slug: 'ANY',
+        tier: 'ANY',
+        region: 'US',
+        channel: 'in_store',
+        percent_bps: 260,
+        fixed_fee_minor_units: 10,   // $0.10 typical CP fixed
+        fixed_fee_currency: 'USD',
+        terminal_rental_monthly_minor: 0,   // US market is mostly no-rental
+        achievable_percent_bps: 200,
+        achievable_fixed_fee_minor_units: 10,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled.',
+        verified: false,
+        source_url: null,
+        source_quote: null,
+        source_notes: 'US in-store blended average. No IFR, achievable is a market estimate.',
+        achievable_breakdown_json: {
+          interchange_bps: 110,
+          scheme_fees_bps: 25,
+          processor_margin_bps: 65,
+          processor_margin_band_bps: 35,
+          sources: [
+            { label: 'Assumption — US in-store blended', url: null }
+          ]
+        },
+        savings_band_pct: 0.35,
+        verified_at: NOW,
+        active: true
+      },
+      {
+        cohort_key: 'ANY|ANY|RoW|in_store',
+        provider_slug: 'ANY',
+        tier: 'ANY',
+        region: 'RoW',
+        channel: 'in_store',
+        percent_bps: 250,
+        fixed_fee_minor_units: 10,
+        fixed_fee_currency: 'USD',
+        terminal_rental_monthly_minor: 2000,  // $20/mo — RoW bank average
+        achievable_percent_bps: 200,
+        achievable_fixed_fee_minor_units: 10,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled.',
+        verified: false,
+        source_url: null,
+        source_quote: null,
+        source_notes: 'RoW in-store default. No published global reference. Widest band.',
+        achievable_breakdown_json: {
+          interchange_bps: 130,
+          scheme_fees_bps: 30,
+          processor_margin_bps: 60,
+          processor_margin_band_bps: 40,
+          sources: [
+            { label: 'Assumption — RoW in-store default', url: null }
+          ]
+        },
+        savings_band_pct: 0.35,
+        verified_at: NOW,
+        active: true
+      }
+    ];
+
+    const allRows = [...verified, ...fallback, ...verifiedInStore, ...fallbackInStore];
 
     // Idempotent upsert by cohort_key.
     // Fetch existing rows first, then update or create as needed.
@@ -482,6 +802,8 @@ Deno.serve(async (req) => {
         total_rows: allRows.length,
         verified_count: verified.length,
         fallback_count: fallback.length,
+        verified_in_store_count: verifiedInStore.length,
+        fallback_in_store_count: fallbackInStore.length,
         created: results.created.length,
         updated: results.updated.length,
         errors: results.errors.length

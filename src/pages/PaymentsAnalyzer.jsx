@@ -95,19 +95,15 @@ function fieldRangeError(key, value) {
 export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
 
-  // M4-TPV Fase 2B — ROLLBACK QUIRÚRGICO 2026-07-12.
-  // Feature flag OFF: la Fase 2A no aterrizó en el código (motor sigue en
-  // 1.3.0 sin dimensión channel, seed sin filas in-store — verificado
-  // empíricamente). Publicar el toggle contra ese estado hacía que un
-  // merchant que elegía "In-store" recibiera análisis calculado con la fila
-  // ONLINE del mismo cohort silenciosamente. Peor bug posible del producto.
-  // Ver Decision_Log 2026-07-12 (entrada de corrección bajo M4-TPV Fase 2A).
-  //
-  // Reactivar: cuando Fase 2A-redo esté verificada de punta a punta
-  // (motor 1.4.0 en las 3 copias SYNC + 19 filas seed contadas + retrocompat
-  // online byte-idéntica confirmada), poner IN_STORE_UI_ENABLED = true.
-  // La UI ya escrita queda intacta debajo — solo el toggle queda oculto.
-  const IN_STORE_UI_ENABLED = false;
+  // M4-TPV Fase 2B — REACTIVADO 2026-07-12 tras Fase 2A-redo verificada.
+  // Precondiciones cumplidas: motor 1.4.0 en las 3 copias SYNC byte-idénticas
+  // (RAW: paymentsGap.js src + submitPaymentsAnalysis + computeStripeVerifiedGap,
+  // 34217 chars cada uno, cero diffs), 19 filas seeded en PaymentsRateTable
+  // (11 online preservadas + 4 verified in-store + 4 fallback in-store),
+  // retrocompat online byte-idéntica confirmada (Stripe EU GMV€1M ticket€50
+  // intl15% → 226.25 bps / 149.5 bps / {lo:6140, point:7675, hi:9210}
+  // idéntico a 1.3.0). Toggle visible + payload envía channel real.
+  const IN_STORE_UI_ENABLED = true;
   const [channel, setChannel]           = useState("online");
   const [gmv, setGmv]                   = useState("");
   const [avgTicket, setAvgTicket]       = useState("");
@@ -209,12 +205,13 @@ export default function PaymentsAnalyzer() {
       const payload = {
         monthly_gmv_eur: Number(gmv),
         avg_ticket_eur: Number(avgTicket),
-        // ROLLBACK 2B: channel forzado a 'online' hasta 2A-redo (ver comment
-        // del useState). intl_pct siempre pedido en online (única rama viva).
-        intl_pct: Number(intlPct),
+        // In-store: cross-border volume is negligible for the ICP (card-
+        // present shoppers use domestic cards) → intl_pct forced to 0 in
+        // the payload. Online: intl_pct is required and comes from the form.
+        intl_pct: channel === "in_store" ? 0 : Number(intlPct),
         provider_slug: providerSlug,
         country,
-        channel: "online",
+        channel,
         brand_name: brandName.trim(),
         ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
         ...(website.trim() !== "" ? { website: website.trim() } : {}),
