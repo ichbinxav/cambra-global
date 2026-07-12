@@ -759,6 +759,22 @@ Cero. UI en-store desactivada tras el rollback (ver deuda "M4-TPV — UI in-stor
 
 ---
 
+## seedPaymentsRateTable — `.update()` reporta `updated` sin persistir campos de texto largo
+
+**Estado:** 🔴 BUG SILENCIOSO · segunda instancia del mismo patrón · diagnóstico pendiente.
+
+**Reproducción empírica (2026-07-12).** Tras editar `source_notes` en el fichero del seeder (frase corregida "clamped to zero…"), la ejecución de `test_backend_function('seedPaymentsRateTable', {})` devolvió `total_rows: 19, created: 0, updated: 19, errors: 0` — reporte optimista. Lectura inmediata post-seed de `PaymentsRateTable.filter({ cohort_key: 'ANY|ANY|EU|in_store' })[0].source_notes` devolvió el string VIEJO ("smaller (but still positive) gap"). El fichero del seeder tenía el string nuevo (`hasNew: true, hasOld: false`), pero la DB no. Un `update(id, { source_notes: newNotes })` explícito vía `exec_tool` sí persistió, verificado con read-after-write (`persisted_has_new: true, persisted_has_old: false`).
+
+**Hipótesis:** el `.update()` del SDK service-role, cuando el seeder pasa el objeto completo (incluyendo `source_notes` largo), hace algún tipo de diff shallow o caché que salta campos de texto largo sin cambios de shape. Otras hipótesis abiertas: caché del proxy Base44, comparación por referencia en lugar de por valor, o límite de bytes por operación bulk. No diagnosticado todavía.
+
+**Segunda instancia del patrón.** La primera fue en la M4-Fase-1 con el `fixed_fee_minor_units` de la fila `stripe_terminal|ANY|EU|in_store` que se seedeó a `0` y no reflejaba los `€0.10` del source_quote — se descubrió por auditoría manual, no por el proceso. Ahora sabemos que el patrón se repite. Merece registro, no memoria.
+
+**Mitigación obligatoria hasta diagnóstico.** Todo write de `source_notes` (o cualquier campo de texto largo) vía `seedPaymentsRateTable` requiere **read-after-write explícito desde DB** en la misma sesión, citando el fragmento verbatim. No confiar en el `updated: N` count del reporte del seeder — es optimista. Preferir `exec_tool` con `.update()` directo cuando el cambio es en un solo registro.
+
+**Diagnóstico pendiente (no bloqueante para zip).** Alcance de la investigación futura: (1) inspeccionar el código del seeder para confirmar si pasa el objeto entero o solo campos diff, (2) reproducir con un campo dummy `_test_field` de texto largo, (3) verificar si `bulkUpdate` sufre del mismo patrón, (4) revisar changelog del SDK Base44 por optimizaciones de diff. Si se confirma que es shallow-diff del SDK, todos los seeders del proyecto que tocan campos de texto largo (`seedIntegrationCatalog`, `seedBenchmarkCohorts`, `seedComplianceRules`) están potencialmente afectados y requieren auditoría de sus campos `description`/`source_notes`/similares.
+
+---
+
 ## Achievable in-store — ticket-dependent multi-anchor selection (Fase 3+)
 
 **Estado:** 🟡 DEUDA DE PRECISIÓN · no de honestidad · no bloqueante.
