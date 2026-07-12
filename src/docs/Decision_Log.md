@@ -15,6 +15,45 @@ lista de filas — exige verificación read-after-write en el MISMO turno:
 re-leer la línea/const cambiado con `read_file` o `exec_tool`, y citar su
 valor literal antes de continuar. **"Success" del tool NO es verificación.**
 
+**Regla POST-DEPLOY (Post-Edit-Verification of Backend Functions, adoptada 2026-07-12).**
+Tras editar cualquier `base44/functions/**/entry.ts`, la primera ejecución
+de prueba (`test_backend_function`, `functions.invoke`, curl real) puede
+correr contra la VERSIÓN ANTERIOR del código por **hot-reload asíncrono**
+del runtime — el `write_file` retorna "Success" antes de que el runtime
+haya cargado los bytes nuevos. Por tanto:
+
+1. **Toda verificación crítica post-edit de backend lee el RESULTADO desde
+   la fuente de verdad final (DB via `exec_tool`, output real del endpoint,
+   fichero en disco via `read_file`), NUNCA confía en el reporte de la
+   ejecución** (contadores optimistas, `ok: true`, códigos 200).
+2. **Ante discrepancia entre lo esperado y lo observado (p.ej. `updated: N`
+   pero DB sin cambios) → re-ejecutar la función una segunda vez ANTES de
+   diagnosticar un bug del código.** El 99% de los casos se resuelven en la
+   segunda ejecución (runtime ya cargó los bytes nuevos). Solo tras dos
+   ejecuciones consistentes con el mismo síntoma se puede empezar a
+   sospechar del código.
+3. **Para seeds con campos de texto largo (`source_notes`, `description`),
+   la verificación DB obligatoria cita el fragmento verbatim** — no basta
+   con confirmar que el registro existe.
+
+Origen empírico: dos sustos el 2026-07-12 con el mismo patrón raíz:
+- Fase 2A del M4-TPV se dio por sellada narrando bump a `payments-gap-1.4.0`
+  cuando el `const` real seguía en 1.3.0 (find_replace matcheó el header
+  de version-history, no la constante activa). Detectado por Fase 2B al
+  intentar consumir el motor 1.4.0.
+- La corrección de `source_notes` de la fila `ANY|ANY|EU|in_store` reportó
+  `updated: 19 / errors: 0` con el string viejo aún en DB, luego persistió
+  correctamente con un force-update explícito. Investigación empírica
+  (reproducción del patrón exacto del seeder con `exec_tool`) confirmó
+  que el SDK `.update()` con texto largo persiste sin problemas → causa
+  raíz probable: hot-reload asíncrono corriendo contra la versión anterior
+  del código. **NO era bug del seeder.**
+
+**La regla anterior (RAW) protege contra find_replace que no persiste en
+disco. Esta regla (POST-DEPLOY) protege contra bytes en disco que no
+persisten en el runtime.** Son complementarias y ambas vinculantes en
+cada chunk que toque motor, seeds, o funciones backend críticas.
+
 Origen empírico: el 2026-07-12 la Fase 2A del M4-TPV se dio por sellada
 narrando bump a `payments-gap-1.4.0`, ampliación de `REQUIRED_FALLBACK_KEYS`
 a 8, y siembra de 8 filas in-store. Ninguno de los tres cambios persistió
