@@ -8,18 +8,13 @@ import { ArrowUpRight, Check } from "lucide-react";
  * Three visually distinct cards on one row:
  *   1. Analyze      — free, always. Anonymous 60s + verified analysis via Stripe.
  *   2. Monitoring   — €29/mo standard; founding cohort (first 150 brands) locks in
- *                     24 months free, price shown struck-through with badge.
+ *                     12 months free, price shown struck-through with badge.
  *   3. Recovery     — 25% of verified savings, 24-month agreement, only if we recover.
  *
- * The two "24"s deliberately live in different columns and read differently:
- *   • Monitoring   — "Free for 24 months — founding cohort" (grant duration).
+ * The two durations live in different columns and read differently — kept
+ * separate on purpose so no reader confuses them:
+ *   • Monitoring   — "Free for 12 months — founding cohort" (grant duration).
  *   • Recovery     — "24-month agreement" (contract duration for success fee).
- * They coincide by design (see Decision_Log R1 close): the founding cohort's
- * 24 free months of monitoring line up with the recovery agreement so a
- * founding-cohort merchant experiences "2 years of everything free unless we
- * actually recover margin, in which case we take 25%". The copy on each card
- * disambiguates them explicitly so a reader scanning both columns doesn't
- * confuse them.
  *
  * NO monitoring product yet, NO subscription entities, NO dynamic 150-counter.
  * The founding-cohort promise is TEXTUAL only. The Monitoring CTA points at
@@ -247,7 +242,7 @@ function MonitoringPriceRow() {
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
           </span>
           <span className="text-[10px] uppercase font-bold tracking-[0.22em] text-cyan-200">
-            24 months — founding cohort
+            12 months — founding cohort
           </span>
         </span>
       </div>
