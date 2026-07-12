@@ -10,7 +10,7 @@
 // string (e.g. cohort was a regional fallback with no breakdown attached),
 // we render a simpler, quieter version rather than dropping the card.
 
-import { Sparkles } from "lucide-react";
+import { Sparkles, Lock } from "lucide-react";
 
 // Try to parse "interchange N bps + scheme fees N bps + assumed processor
 // margin N bps (±N bps assumption)" out of the assumption line the engine
@@ -54,7 +54,7 @@ function Bar({ label, bps, color, note, negotiable }) {
   );
 }
 
-export default function FeeBreakdownCard({ engineResult }) {
+export default function FeeBreakdownCard({ engineResult, locked = false }) {
   const breakdown = parseAchievableBreakdown(engineResult?.assumptions);
   // Channel-aware fallback (M4-TPV Fase 3). ACHIEVABLE_NOTE has two shapes:
   //   - Online: "interchange N + scheme N + margin N (±N bps assumption)"
@@ -93,26 +93,57 @@ export default function FeeBreakdownCard({ engineResult }) {
       </p>
 
       {breakdown ? (
-        <div className="space-y-4">
-          <Bar
-            label="Interchange"
-            bps={breakdown.interchange_bps}
-            color="rgba(255,255,255,0.55)"
-            note="Regulated floor (EU IFR 2015/751 / regional equivalents)"
-          />
-          <Bar
-            label="Scheme fees"
-            bps={breakdown.scheme_fees_bps}
-            color="rgba(255,255,255,0.4)"
-            note="Card network (Visa / Mastercard) — non-negotiable"
-          />
-          <Bar
-            label="Processor margin"
-            bps={breakdown.processor_margin_bps}
-            color="linear-gradient(90deg, #22d3ee 0%, #3b82f6 100%)"
-            note={`Assumed ±${breakdown.processor_margin_band_bps} bps — this is where the savings live`}
-            negotiable
-          />
+        <div className="relative">
+          {/* Locked mode (anonymous teaser): show the SHAPE of the breakdown
+              (labels, bars, negotiable pill) but blur the numeric values and
+              stack a padlock overlay. The audit trail — exact bps, band,
+              regulatory citations — is one of the biggest reasons users
+              create an account, so we tease it without giving it away. */}
+          <div
+            className={`space-y-4 transition-all ${locked ? "select-none pointer-events-none" : ""}`}
+            style={locked ? { filter: "blur(5px)", opacity: 0.55 } : undefined}
+            aria-hidden={locked || undefined}
+          >
+            <Bar
+              label="Interchange"
+              bps={breakdown.interchange_bps}
+              color="rgba(255,255,255,0.55)"
+              note="Regulated floor (EU IFR 2015/751 / regional equivalents)"
+            />
+            <Bar
+              label="Scheme fees"
+              bps={breakdown.scheme_fees_bps}
+              color="rgba(255,255,255,0.4)"
+              note="Card network (Visa / Mastercard) — non-negotiable"
+            />
+            <Bar
+              label="Processor margin"
+              bps={breakdown.processor_margin_bps}
+              color="linear-gradient(90deg, #22d3ee 0%, #3b82f6 100%)"
+              note={`Assumed ±${breakdown.processor_margin_band_bps} bps — this is where the savings live`}
+              negotiable
+            />
+          </div>
+          {locked && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+              <div
+                className="inline-flex items-center justify-center h-10 w-10 rounded-full mb-2"
+                style={{
+                  background: "rgba(34,211,238,0.14)",
+                  border: "1px solid rgba(34,211,238,0.45)",
+                  boxShadow: "0 0 20px rgba(34,211,238,0.3)",
+                }}
+              >
+                <Lock size={16} className="text-cyan-300" />
+              </div>
+              <p className="text-white text-[13px] font-bold mb-0.5">
+                Full breakdown in your report
+              </p>
+              <p className="text-[11px] text-white/55 max-w-[240px]">
+                Create a free account to see exact interchange, scheme &amp; margin bps.
+              </p>
+            </div>
+          )}
         </div>
       ) : isInStore && anchorLine ? (
         <div

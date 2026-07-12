@@ -43,6 +43,92 @@ const LOGO_PATHS = {
   adyen: (
     <path d="M11.64703 9.88245v2.93377c0 .13405.10867.24271.24272.24271h.46316V9.88245h1.76474v5.1503c0 .46916-.38033.8495-.8495.8495H9.94303v-1.23507h2.40991v-.52942h-1.62108c-.46917 0-.8495-.38033-.8495-.8495V9.88245h1.76467Zm-8.26124.00001c.46917 0 .8495.38034.8495.8495v3.3858H.8495c-.46916 0-.8495-.38033-.8495-.8495v-.94805c0-.46917.38034-.8495.8495-.8495h.91521v1.3455c0 .13406.10867.24272.24272.24272h.46316V11.184c0-.13405-.10867-.24271-.24272-.24271l-2.16719-.00002V9.88246Zm5.79068-1.76471v6.00001H5.79068c-.46917 0-.8495-.38033-.8495-.8495v-2.53631c0-.46917.38033-.8495.8495-.8495h.91515v2.93377c0 .13405.10867.24271.24272.24271h.46316l.00005-4.94118h1.76471Zm9.03286 1.76471a.8495.8495 0 0 1 .8495.8495v.94805c0 .46917-.38033.8495-.8495.8495h-.9152v-1.3455c0-.13404-.10868-.2427-.24272-.2427h-.46317v1.8749c0 .13406.10867.24272.24272.24272h2.16719v1.05883h-3.32511c-.46917 0-.8495-.38033-.8495-.8495v-3.3858Zm4.94117 0c.46916 0 .8495.38034.8495.8495v3.3858h-1.7647V11.184c-.0004-.13388-.10884-.24232-.24272-.24272h-.46316v3.1765H19.7647V9.88245Z" />
   ),
+  // Simple, geometric monochrome marks. NOT the exact brand SVG (Simple
+  // Icons doesn't ship all of these yet with a matching slug) — they are
+  // clean generic marks that fit the monochrome grid family. Nominative
+  // use: paired with the visible label ("Mollie", "SumUp", …) which
+  // carries the actual identification.
+  mollie: (
+    // Two circles forming an "M" silhouette — the brand's core visual cue
+    <path d="M6 6 L6 18 M6 12 Q6 6 12 6 Q18 6 18 12 L18 18 M12 6 L12 12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+  ),
+  checkout_com: (
+    // Checkmark inside rounded square — nods to the brand's checkmark motif
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8 12 L11 15 L16 9" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
+  sumup: (
+    // Bold "S" stroke inside a rounded square — SumUp's block-letter feel
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M15 8 Q15 7 13 7 L11 7 Q9 7 9 9 Q9 11 11 11 L13 11 Q15 11 15 13 Q15 15 13 15 L11 15 Q9 15 9 14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+    </>
+  ),
+  stripe_terminal: (
+    // Same S-swoosh as Stripe (parent brand) — Terminal shares the visual DNA
+    <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.594-7.305h.003z" />
+  ),
+  smile_and_pay: (
+    // Smile arc + coin — matches brand ethos (payments + smile)
+    <>
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8 14 Q12 17 16 14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <circle cx="9" cy="10" r="1" fill="currentColor" />
+      <circle cx="15" cy="10" r="1" fill="currentColor" />
+    </>
+  ),
+  zettle: (
+    // Bold Z inside rounded square — Zettle's iconic Z-mark
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8 8 L16 8 L8 16 L16 16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
+  square: (
+    // Square's iconic rounded square
+    <>
+      <rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="2.2" />
+      <rect x="9" y="9" width="6" height="6" rx="0.5" fill="currentColor" />
+    </>
+  ),
+  revolut_reader: (
+    // Revolut's R glyph — stylized
+    <>
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M9 17 L9 7 L13 7 Q16 7 16 10 Q16 13 13 13 L10 13 M13 13 L16 17" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
+  mypos: (
+    // Bold M
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M7 17 L7 8 L12 13 L17 8 L17 17" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
+  viva: (
+    // V stroke
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M7 8 L12 17 L17 8" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
+  klarna: (
+    // Klarna's K — bold letter
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8 7 L8 17 M8 12 L14 7 M8 12 L14 17" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
+  worldpay: (
+    // Globe (worldpay = world)
+    <>
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <ellipse cx="12" cy="12" rx="4" ry="9" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M3 12 L21 12" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    </>
+  ),
 };
 
 export function hasProviderLogo(slug) {

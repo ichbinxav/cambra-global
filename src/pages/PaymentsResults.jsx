@@ -447,7 +447,15 @@ export default function PaymentsResults() {
 
         {/* RIGHT column — breakdown + assumptions */}
         <div className="lg:col-span-2 space-y-5">
-          <FeeBreakdownCard engineResult={engineResult} />
+          {/* Locked in anonymous/estimated mode (mode !== "verified"): the
+              audit trail is one of the main conversion drivers for signup,
+              so we render the SHAPE + blur the numbers + show a padlock.
+              Verified mode (real Stripe data) unlocks it — the user is
+              already signed in and connected. */}
+          <FeeBreakdownCard
+            engineResult={engineResult}
+            locked={engineResult?.mode !== "verified"}
+          />
           <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
         </div>
       </div>

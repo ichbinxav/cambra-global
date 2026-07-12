@@ -30,34 +30,60 @@ import ProviderGrid    from "@/components/paymentsAnalyzer/ProviderGrid";
 import CardMixSlider   from "@/components/paymentsAnalyzer/CardMixSlider";
 import BrandBlock, { BRAND_SECTOR_SLUGS } from "@/components/paymentsAnalyzer/BrandBlock";
 import CombinedChannelBlock from "@/components/paymentsAnalyzer/CombinedChannelBlock";
+import AnalyzerEntryCards from "@/components/paymentsAnalyzer/AnalyzerEntryCards";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
 //    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
 //    Verified rows first (stripe/paypal/shopify_payments), fallback-only
 //    providers after. DO NOT reorder or rename.
+// UX widening (2026-07-12): the grid shows the ~10 most common providers
+// per channel PLUS an "Other" catch-all. Engine contract is UNCHANGED —
+// the backend's ALLOWED_PROVIDER_SLUGS enum is strict, so any slug not
+// in that list is mapped at submit time to `other` (see mapSlugForSubmit).
+// This keeps the visual catalog wide (better recognition, better funnel)
+// while the pricing model stays exactly the same. Slugs with a real seed
+// row in PaymentsRateTable carry `.hasSeed: true` — they submit as-is.
+// Slugs without a seed row (Klarna, Square online, Revolut, myPOS, …)
+// carry `.hasSeed: false` — they submit as `other` which routes to the
+// regional fallback (ANY|ANY|<region>|<channel>).
 const PROVIDER_OPTIONS_ONLINE = [
-  { slug: "stripe",           label: "Stripe" },
-  { slug: "paypal",           label: "PayPal" },
-  { slug: "shopify_payments", label: "Shopify Payments" },
-  { slug: "adyen",            label: "Adyen" },
-  { slug: "mollie",           label: "Mollie" },
-  { slug: "checkout_com",     label: "Checkout.com" },
-  { slug: "sumup",            label: "SumUp" },
-  { slug: "other",            label: "Other" },
+  { slug: "stripe",           label: "Stripe",           hasSeed: true  },
+  { slug: "paypal",           label: "PayPal",           hasSeed: true  },
+  { slug: "shopify_payments", label: "Shopify Payments", hasSeed: true  },
+  { slug: "adyen",            label: "Adyen",            hasSeed: true  },
+  { slug: "mollie",           label: "Mollie",           hasSeed: true  },
+  { slug: "checkout_com",     label: "Checkout.com",     hasSeed: true  },
+  { slug: "sumup",            label: "SumUp",            hasSeed: true  },
+  { slug: "klarna",           label: "Klarna",           hasSeed: false },
+  { slug: "worldpay",         label: "Worldpay",         hasSeed: false },
+  { slug: "square",           label: "Square",           hasSeed: false },
+  { slug: "other",            label: "Other",            hasSeed: true  },
 ];
 
-// M4-TPV Fase 2B — provider enum for in-store channel. Mirrors the 4 verified
-// in-store seed rows (SumUp / Stripe Terminal / Smile&Pay / Zettle) + a
-// fallback bucket for traditional bank TPVs. Slugs that DO have a verified
-// in-store row in PaymentsRateTable come first; "other" routes to the
-// regional in-store fallback (ANY|ANY|<region>|in_store).
+// M4-TPV Fase 2B + 2026-07-12 UX widening. Verified in-store rows first
+// (SumUp / Stripe Terminal / Smile&Pay / Zettle), then common providers
+// that submit as `other` → routed to ANY|ANY|<region>|in_store fallback.
 const PROVIDER_OPTIONS_IN_STORE = [
-  { slug: "sumup",           label: "SumUp" },
-  { slug: "stripe_terminal", label: "Stripe Terminal" },
-  { slug: "smile_and_pay",   label: "Smile & Pay" },
-  { slug: "zettle",          label: "Zettle by PayPal" },
-  { slug: "other",           label: "Traditional bank TPV" },
+  { slug: "sumup",           label: "SumUp",              hasSeed: true  },
+  { slug: "stripe_terminal", label: "Stripe Terminal",    hasSeed: true  },
+  { slug: "smile_and_pay",   label: "Smile & Pay",        hasSeed: true  },
+  { slug: "zettle",          label: "Zettle by PayPal",   hasSeed: true  },
+  { slug: "square",          label: "Square",             hasSeed: false },
+  { slug: "revolut_reader",  label: "Revolut Reader",     hasSeed: false },
+  { slug: "mypos",           label: "myPOS",              hasSeed: false },
+  { slug: "viva",            label: "Viva Wallet",        hasSeed: false },
+  { slug: "adyen",           label: "Adyen (in-store)",   hasSeed: false },
+  { slug: "other",           label: "Traditional bank TPV", hasSeed: true },
 ];
+
+// Map a UI slug to the exact string the backend allowlist accepts.
+// UI-catalog-only slugs (hasSeed=false) collapse to "other" — the backend
+// then routes them to the regional in-store/online fallback. Contract-safe.
+function mapSlugForSubmit(uiSlug, options) {
+  const opt = options.find((o) => o.slug === uiSlug);
+  if (!opt) return "other";
+  return opt.hasSeed ? opt.slug : "other";
+}
 
 // ── Country list — kept short and payments-relevant. Backend uses country
 //    only to derive region (EU/UK/US/RoW).
@@ -256,14 +282,14 @@ export default function PaymentsAnalyzer() {
           channels: [
             {
               channel: "online",
-              provider_slug: combinedOnline.provider_slug,
+              provider_slug: mapSlugForSubmit(combinedOnline.provider_slug, PROVIDER_OPTIONS_ONLINE),
               monthly_gmv_eur: Number(combinedOnline.monthly_gmv_eur),
               avg_ticket_eur: Number(combinedOnline.avg_ticket_eur),
               intl_pct: Number(combinedOnline.intl_pct),
             },
             {
               channel: "in_store",
-              provider_slug: combinedInStore.provider_slug,
+              provider_slug: mapSlugForSubmit(combinedInStore.provider_slug, PROVIDER_OPTIONS_IN_STORE),
               monthly_gmv_eur: Number(combinedInStore.monthly_gmv_eur),
               avg_ticket_eur: Number(combinedInStore.avg_ticket_eur),
             },
@@ -279,7 +305,10 @@ export default function PaymentsAnalyzer() {
           // present shoppers use domestic cards) → intl_pct forced to 0 in
           // the payload. Online: intl_pct is required and comes from the form.
           intl_pct: channel === "in_store" ? 0 : Number(intlPct),
-          provider_slug: providerSlug,
+          provider_slug: mapSlugForSubmit(
+            providerSlug,
+            channel === "in_store" ? PROVIDER_OPTIONS_IN_STORE : PROVIDER_OPTIONS_ONLINE
+          ),
           country,
           channel,
           brand_name: brandName.trim(),
@@ -401,6 +430,19 @@ export default function PaymentsAnalyzer() {
           A few quick answers. No account required, no data connected. We estimate the gap between what you pay today
           and what a merchant of your size + region should be paying.
         </p>
+
+        {/* 3-way entry cards — Connect / Upload / Manual. Presentational only:
+            selecting Connect routes to /ConnectTools (protected → login gate),
+            Upload is disabled (surface for now, not wired to anonymous flow),
+            Manual keeps the current form visible below (default state). */}
+        <AnalyzerEntryCards
+          selected="manual"
+          onSelect={(mode) => {
+            if (mode === "connect") navigate("/ConnectTools");
+            // "manual" is already the default — nothing to do.
+            // "upload" is disabled at the component level and can't fire.
+          }}
+        />
 
         {/* Channel toggle — M4-TPV Fase 2B — OCULTO tras IN_STORE_UI_ENABLED
             hasta Fase 2A-redo. Ver comentario del useState de `channel`. */}
