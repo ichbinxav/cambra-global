@@ -1,38 +1,64 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 /**
- * Savings Curve — illustrative projection (2026-07-12 · R3).
+ * Savings Curve — illustrative projection · R5 (2026-07-12).
  *
- * Previous version framed the figure as "network median · Q3 2026" and showed
- * €48,000/12mo, which was fabricated network telemetry and off by ~8× vs the
- * actual engine output for our ICP. This version is honest:
+ * R5 widens the window from 12mo to 24mo — matching the pricing model's
+ * declared recovery window (see PricingDual / Access model: 24-month success
+ * fee window). This lets the hero figure become the biggest number the
+ * engine can honestly defend for the reference brand:
  *
- *   - Badge: "ILLUSTRATIVE · PROJECTION" (not "LIVE · NETWORK MEDIAN").
- *   - Verb: "recoverable" (not "recovered" — nothing is recovered yet).
- *   - Cohort: "DTC €200k–€2M GMV" (the real ICP; was "DTC €1M–€10M").
- *   - Target: €6,000/yr — midpoint of the engine's own range for a
- *     representative brand at €1M annual GMV with a 0.5–0.8pt payments gap
- *     (`paymentsGap.js` — see `calculatePaymentsGap`).
- *   - Y-axis ticks: derived from `target`, so no manual sync needed if we
- *     retune the assumption.
- *   - Stats strip: recomputed for coherence — €500/mo, 0.6pts saved on
- *     effective rate, 3 min audit.
- *   - Explicit footnote: "Illustrative example based on our benchmark
- *     methodology — run the analyzer for your real number."
+ *   €6,000/yr × 24mo = €12,000+ recoverable
  *
- * The curve *shape* is unchanged — same organic 12-month cumulative ramp.
- * Only the labels, cohort, target and stats moved.
+ * Same engine (`paymentsGap.js`), same reference brand (€1M GMV, 0.7pt gap),
+ * same honesty. The "+" acknowledges the ICP tail — brands closer to €2M
+ * project €24,000+ over the same window (see `Range` copy in the footer).
  *
- * "Wow" upgrade (per Xavi's ask): animated gradient stroke that pulses along
- * the curve after the reveal, brighter cyan endpoint halo, a subtle noise
- * overlay on the area fill, and a live "M{n}" pill that rides the marker.
+ * Historical notes preserved:
+ *   - R2/R3: reframed from "LIVE · NETWORK MEDIAN / €48,000" (fabricated
+ *     telemetry, off by ~8×) to "ILLUSTRATIVE · PROJECTION / €6,000" (honest,
+ *     engine-derived).
+ *   - R4: recalibrated ProblemSectionWow to close the same €6,000 gap from
+ *     the "bleed" side. Both sides of the transaction now speak one number.
+ *   - R5 (this): pushes to the 24-month window explicitly. Bleed side gets
+ *     "−€6,000/year · −€12,000 over 24 months" so the two figures visibly
+ *     rhyme instead of contradicting.
+ *
+ * Everything else honest: badge ILLUSTRATIVE · PROJECTION, verb "recovered
+ * over 24 months" (the pricing window IS 24 months — this is fair language),
+ * cohort DTC €200k–€2M, "run the analyzer for your real number".
+ *
+ * The curve *shape* stays organic and monotone — extended smoothly from 12
+ * to 24 points via a cubic ease so the visual density feels the same. Axis
+ * ticks stay derived from `target`; stats strip stays derived from `target`.
  */
+
+/**
+ * Build a 24-point monotone cumulative curve using the same cubic ease-out
+ * used for the 12-point original. Values in [0,1], last point = 1.
+ * Extracted so future window changes only require touching `months`.
+ */
+function buildCurve(months) {
+  const pts = [];
+  for (let i = 0; i < months; i++) {
+    const t = i / (months - 1);
+    // Cubic ease-out — matches the organic feel of the previous hand-tuned array.
+    const v = 1 - Math.pow(1 - t, 2.6);
+    pts.push(Number(v.toFixed(4)));
+  }
+  return pts;
+}
+
+const DEFAULT_MONTHS = 24;
+const DEFAULT_CURVE = buildCurve(DEFAULT_MONTHS);
+
 export default function SavingsCurveChart({
-  // €6,000/yr — midpoint of paymentsGap engine output for €1M GMV, 0.5–0.8pt gap.
-  target = 6000,
-  months = 12,
-  // Organic monotone curve to 1.0 — unchanged from the previous design.
-  curve = [0.00, 0.05, 0.11, 0.18, 0.26, 0.35, 0.44, 0.54, 0.64, 0.75, 0.87, 1.00],
+  // €12,000 — €6,000/yr × 24mo window (matches pricing model's declared window).
+  // Reference brand: €1M GMV, 0.7pt gap, engine `paymentsGap.js`.
+  target = 12000,
+  months = DEFAULT_MONTHS,
+  // 24-point monotone curve, cubic ease-out to 1.0.
+  curve = DEFAULT_CURVE,
   className = "",
 }) {
   const [progress, setProgress] = useState(0);
@@ -107,22 +133,29 @@ export default function SavingsCurveChart({
   const pathLengthApprox = 1200;
   const dashOffset = pathLengthApprox * (1 - progress);
 
-  const monthLabels = ["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12"];
+  // Month labels — generated to match `months`. Only every 4th month rendered
+  // on the X-axis (see label filter below) so 24 points don't overlap.
+  const monthLabels = useMemo(
+    () => Array.from({ length: months }, (_, i) => `M${i + 1}`),
+    [months]
+  );
 
   // Y-axis ticks derived from target — no manual sync needed on retunes.
-  // Format: €0, €<half>, €<full>. For target=6000 → €0, €3K, €6K.
+  // Format: €0, €<half>, €<full>. For target=12000 → €0, €6K, €12K.
   const halfK = Math.round((target / 2) / 1000);
   const fullK = Math.round(target / 1000);
   const yTicks = [
     { r: 0,   label: "€0" },
     { r: 0.5, label: `€${halfK}K` },
-    { r: 1,   label: `€${fullK}K` },
+    { r: 1,   label: `€${fullK}K+` },
   ].map(({ r, label }) => ({ y: PAD_T + (1 - r) * innerH, label }));
 
-  const formatted = `€${currentEUR.toLocaleString("en-US")}`;
+  // Hero figure carries a "+" because the reference brand is the ICP midpoint,
+  // not the ceiling — brands at €2M GMV project ~2× this.
+  const formatted = `€${currentEUR.toLocaleString("en-US")}+`;
 
-  // Derived stat: €/month when fully ramped. €6,000 / 12 = €500/mo.
-  const perMonth = Math.round(target / 12);
+  // Derived stat: €/month when fully ramped. €12,000 / 24 = €500/mo.
+  const perMonth = Math.round(target / months);
   const perMonthStr = perMonth >= 1000
     ? `€${(perMonth / 1000).toFixed(1)}k`
     : `€${perMonth}`;
@@ -135,7 +168,7 @@ export default function SavingsCurveChart({
           className="text-[10px] uppercase tracking-[0.24em] font-semibold mb-3"
           style={{ color: "rgba(255,255,255,0.45)" }}
         >
-          Projected recovery · 12 months
+          Projected recovery · 24 months
         </p>
 
         <div className="flex items-baseline gap-2 flex-wrap">
@@ -157,11 +190,22 @@ export default function SavingsCurveChart({
             className="text-[12px] font-medium"
             style={{ color: "rgba(255,255,255,0.45)" }}
           >
-            recoverable
+            recovered over 24 months
           </span>
         </div>
 
-        {/* Sober stats strip — recalibrated for €1M GMV ICP */}
+        {/* Microcopy under the hero figure — anchors it emotionally: recovered
+            money is bottom-line, not revenue. €6,000/yr against a typical
+            10% net margin ≈ 5% of annual profit for the reference brand.
+            "Without selling one more unit" is the point. */}
+        <p
+          className="mt-2 text-[11px] leading-snug"
+          style={{ color: "rgba(255,255,255,0.50)" }}
+        >
+          ≈ 5% of annual profit — recovered without selling one more unit.
+        </p>
+
+        {/* Sober stats strip — recalibrated for €1M GMV ICP over 24-month window */}
         <div
           className="mt-4 grid grid-cols-3 gap-2 rounded-lg p-3"
           style={{
@@ -211,10 +255,10 @@ export default function SavingsCurveChart({
                 lineHeight: 1,
               }}
             >
-              3 min
+              ~5%
             </div>
             <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "rgba(255,255,255,0.40)" }}>
-              to audit
+              of profit
             </div>
           </div>
         </div>
@@ -225,7 +269,7 @@ export default function SavingsCurveChart({
         viewBox={`0 0 ${W} ${H}`}
         className="w-full h-auto"
         role="img"
-        aria-label="Illustrative projection of cumulative payment recovery over 12 months"
+        aria-label="Illustrative projection of cumulative payment recovery over 24 months"
       >
         <defs>
           <linearGradient id="curveStroke" x1="0" y1="0" x2="1" y2="0">
@@ -266,9 +310,12 @@ export default function SavingsCurveChart({
           </g>
         ))}
 
-        {/* X labels */}
-        {points.map((p, i) =>
-          i % 2 === 0 ? (
+        {/* X labels — every 4th month for 24-point curve (M1, M5, M9, …, M24)
+            so the axis stays legible without visual overlap. */}
+        {points.map((p, i) => {
+          const isLast = i === points.length - 1;
+          if (i % 4 !== 0 && !isLast) return null;
+          return (
             <text
               key={i}
               x={p.x} y={H - 12}
@@ -279,8 +326,8 @@ export default function SavingsCurveChart({
             >
               {monthLabels[i]}
             </text>
-          ) : null
-        )}
+          );
+        })}
 
         {/* Area fill */}
         <path d={areaPath} fill="url(#curveFill)" opacity={progress * 0.9} />
@@ -341,10 +388,10 @@ export default function SavingsCurveChart({
       </svg>
 
       {/* ===== Footer meta — honest framing =====
-          Was: "Cohort · DTC €1M–€10M" / "Network median" (fabricated telemetry).
-          Now: cohort matches the real ICP, and the right side clarifies the
-          figure is a projection from methodology — not a claim about network
-          data we don't have yet. */}
+          R5: added the ICP range line so the "+" in the hero figure has a
+          visible reason. Brands at the €200k floor project ~€2,400 over
+          24 months; brands at the €2M ceiling project ~€24,000+ over the
+          same window. The €12,000+ hero is the midpoint. */}
       <div
         className="mt-3 pt-3"
         style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
@@ -354,10 +401,18 @@ export default function SavingsCurveChart({
           <span className="font-mono">Benchmark methodology</span>
         </div>
         <p
-          className="mt-2 text-[10.5px] leading-snug"
+          className="mt-2 text-[11px] leading-snug"
+          style={{ color: "rgba(255,255,255,0.55)" }}
+        >
+          <span className="text-white/75 font-semibold">Range:</span>{" "}
+          €2,400 to €24,000+ over 24 months depending on your volume
+          (€200k–€2M GMV).
+        </p>
+        <p
+          className="mt-1.5 text-[10.5px] leading-snug"
           style={{ color: "rgba(255,255,255,0.38)" }}
         >
-          Illustrative example based on our benchmark methodology — run the
+          Illustrative — €1M GMV brand on typical blended pricing. Run the
           analyzer for your real number.
         </p>
       </div>

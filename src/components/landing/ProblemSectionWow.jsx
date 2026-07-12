@@ -321,12 +321,18 @@ export default function ProblemSectionWow() {
                   Total annual bleed
                 </p>
                 <p className="text-[13px] text-white/55 max-w-md">
-                  The sum of the three angles above — the same money the
-                  Savings Curve shows as recoverable.
+                  <span className="text-white/85 font-semibold">
+                    −€6,000/year
+                  </span>
+                  {" · "}
+                  <span className="text-red-300/85 font-semibold">
+                    −€12,000 over 24 months
+                  </span>
+                  {" — the same money the Savings Curve shows as recoverable."}
                 </p>
                 <p className="text-[11px] text-white/40 mt-2 leading-snug max-w-md">
-                  Illustrative — for a €1M GMV brand on typical blended
-                  pricing. Run the analyzer for yours.
+                  Illustrative — €1M GMV brand on typical blended pricing.
+                  Run the analyzer for yours.
                 </p>
               </div>
             </div>

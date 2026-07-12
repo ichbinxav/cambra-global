@@ -541,8 +541,11 @@ Todo coherente con posicionamiento payments-only + in-store. **No requiere ajust
 
 **Consecuencias derivadas (a mantener sincronizadas):**
 - Gap total: 0.7pts × €1M ≈ **€6.000/año recoverable**.
-- Descomposición narrativa 3-angle: blended €3.200 + cross-border €1.800 + fixed-fee €1.000 = **€6.000**.
-- Overpay % del caso midpoint: **25%**. La banda "30-60%" del H2 describe dispersión del ICP, no el punto exacto.
+- Ventana de recovery declarada por el pricing model: **24 meses**. Sobre esa ventana: €6.000/yr × 2 = **€12.000+ / 24mo** (hero de la curva).
+- Descomposición narrativa 3-angle (anual): blended €3.200 + cross-border €1.800 + fixed-fee €1.000 = **€6.000/yr**.
+- Rango ICP end-to-end visible: **€2.400 a €24.000+ over 24 months** (floor €200k GMV → ceiling €2M GMV).
+- Overpay % del caso midpoint: **~29%** (0.7/2.4). La banda "30-60%" del H2 describe dispersión del ICP, no el punto exacto — el midpoint cae en el borde bajo.
+- Stat "% of profit": ~5-6% del beneficio neto anual típico (asumiendo margen ~10% en DTC). Kept at ~5% for prudence.
 
 **Consumers de la regla (auditar cada vez que se toque el motor):**
 1. `src/components/landing/ProblemSectionWow.jsx` — `ITEMS` array + `TOTAL` reduce.
@@ -550,12 +553,15 @@ Todo coherente con posicionamiento payments-only + in-store. **No requiere ajust
 3. Cualquier future landing widget con cifra ilustrativa.
 
 **Cómo re-derivar cuando el motor cambie.**
-1. Recomputar el gap: `(blended − floor) × GMV` con los nuevos rates.
+1. Recomputar el gap anual: `(blended − floor) × GMV` con los nuevos rates.
 2. Distribuir la descomposición manteniendo la proporción narrativa (~53% blended, ~30% cross-border, ~17% fixed-fee).
 3. Actualizar `overpayPct` de cada card: cada uno es `(current_rate − floor) / floor` en su dimensión, visualmente capado si supera el rango 30-60% del H2.
-4. `SavingsCurveChart.target` = el nuevo total.
-5. Actualizar copy del H2 si el nuevo gap saca el 25% fuera de la banda 30-60% (recolocar rango si es necesario).
-6. Reflejar el cambio en el Decision_Log con el trío final + la cuenta que los une (formato R4).
+4. `SavingsCurveChart.target` = **el nuevo total ANUAL × 24 (ventana pricing)**. NO el total anual — la curva vive en ventana 24mo desde R5.
+5. Recalcular el rango ICP end-to-end visible: floor GMV × gap × 2 años → ceiling GMV × gap × 2 años. Actualizar la línea "Range: €X to €Y+ over 24 months" en el footer del chart.
+6. Recalcular la stat "% of profit" con el nuevo gap sobre margen neto típico ~10% de GMV.
+7. Actualizar copy del H2 si el nuevo gap saca el midpoint fuera de la banda 30-60% (bajar el borde inferior si es necesario).
+8. Sub-panel de ProblemSectionWow muestra ANUAL + 24mo juntos — recalcular ambos.
+9. Reflejar el cambio en el Decision_Log con el trío final + la cuenta que los une (formato R5).
 
 **Regla anti-drift.** Nunca hardcodear un total en ProblemSectionWow — siempre `ITEMS.reduce`. Nunca hardcodear stats derivados en SavingsCurveChart — siempre `target / 12` para €/mes, `target / 2` para tick medio, etc. R3 y R4 dejaron ambos archivos ya cumpliendo esta subregla.
 

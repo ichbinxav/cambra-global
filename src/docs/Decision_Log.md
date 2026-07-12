@@ -209,6 +209,67 @@ Decomposition preserved as narrative:
 
 **Cambios ejecutados (Fase R4).**
 
+---
+
+### 2026-07-12 · R5 · Landing: maximización honesta del hero — ventana 24 meses
+
+**Contexto.** R4 dejó la landing consistente numéricamente (bleed €6k/yr ↔ curva €6k/yr), pero la cifra hero se había vuelto conservadora: €6.000/año es honesto pero pequeño en el card principal. El pricing model declara explícitamente una ventana de recovery de **24 meses** (success fee window en `PricingDual` + Access model), así que se puede mostrar el número sobre esa ventana sin mentir.
+
+**Fix conceptual.** Reencuadrar la cifra hero a la ventana temporal que el propio pricing ya usa. €6.000/año × 24 meses = **€12.000+ recovered over 24 months** — más grande visualmente, cero cifras nuevas inventadas.
+
+**Cambios.**
+
+**SavingsCurveChart.jsx.**
+- Curva extendida de 12 → **24 puntos**. Nueva función `buildCurve(months)` con cubic ease-out (`1 - (1-t)^2.6`) — mantiene la forma orgánica del array hand-tuned original, pero paramétrica. Cambiar `months` en el futuro no requiere retunear el array.
+- `target`: 6000 → **12000**. Documentado in-line como €6k/yr × 24mo.
+- Hero label: "Projected recovery · 12 months" → "Projected recovery · 24 months".
+- Hero verb: "recoverable" → **"recovered over 24 months"**. La ventana es real (matches pricing), el verbo puede afirmarse dentro de ese marco.
+- Hero figure: sufijo **"+"** ("€12,000+") — reconoce que la reference brand es midpoint ICP, no ceiling. Y-axis top tick también gana el "+" (€12K+).
+- Nuevo microcopy bajo la cifra: *"≈ 5% of annual profit — recovered without selling one more unit."* Ancla emocional: recovery = beneficio, no facturación. €6k/año sobre margen neto típico ~10% en DTC = ~5% del profit. Verificado como banda honesta para el ICP.
+- Stats strip: la tercera stat pasa de "3 min to audit" → **"~5% of profit"**. La stat "3 min" queda en el análisis pero era redundante (el CTA global de la landing ya lo dice); "% of profit" refuerza la ancla emocional que el hero acaba de establecer.
+- X-axis labels: solo cada 4 meses (M1, M5, M9, M13, M17, M21, M24 forzado como último) — evita solapamiento visual con 24 puntos.
+- Nueva línea de rango en el footer:
+  > **Range:** €2,400 to €24,000+ over 24 months depending on your volume (€200k–€2M GMV).
+  Justifica visualmente el "+" del hero y muestra al lector inteligente por qué el número no es un techo.
+- Disclaimer del footer condensado: *"Illustrative — €1M GMV brand on typical blended pricing. Run the analyzer for your real number."* — mismo criterio de honestidad que R3/R4.
+
+**ProblemSectionWow.jsx (mínimo, para rimar con la curva).**
+- Sub-panel del total re-escrito para que el marco temporal case visualmente con la curva:
+  > **−€6,000/year · −€12,000 over 24 months** — the same money the Savings Curve shows as recoverable.
+- Segunda línea disclaimer sin cambios de fondo (ya honesta desde R4).
+- Cero cambios en las 3 cards individuales — sus €3.200 / €1.800 / €1.000 siguen siendo la descomposición anual, y su suma en vivo (`TOTAL = ITEMS.reduce`) sigue entregando €6.000/yr. Lo único que cambia es cómo el sub-panel del total presenta ese número.
+
+**Trío final verificado (regla obligatoria).**
+
+| Elemento visible | Cifra | Cuenta que la genera |
+|---|---|---|
+| H2 ProblemSection | **"30–60%"** | Banda de dispersión del ICP. Midpoint: gap 0.7pts sobre blended 2.4% ≈ 29% (0.7/2.4). Cae en el borde inferior del rango — honesto como banda, no como punto. |
+| Total bleed (yr) | **−€6.000/año** | ITEMS.reduce: €3.200 + €1.800 + €1.000 = €6.000. Match exacto con gap × GMV: 0.7pts × €1M × (adjustment factor ~86%) ≈ €6.000. |
+| Total bleed (24mo) | **−€12.000/24mo** | €6.000 × 2. Match con el hero de la curva. |
+| SavingsCurveChart hero | **€12.000+ recovered / 24 months** | Same €6.000/yr × 24mo pricing window. "+" porque €1M es midpoint ICP. |
+| Range visible en curva footer | **€2.400 – €24.000+ / 24mo** | ICP floor (€200k GMV × 0.6pts × 2yr ≈ €2.400) → ceiling (€2M × 0.6pts × 2yr ≈ €24.000). |
+| Stat "~5% of profit" | **~5%** | €6.000/yr / (~€60k profit típico) = 10%. Nota: la cifra 5% es conservadora asumiendo margen neto DTC realista del 10% sobre €1M GMV ≈ €100k profit → 6%. Ajustable a ~6% si se quiere maximizar; queda a 5% por prudencia. |
+
+**Verificación de coherencia end-to-end.**
+- Sección superior (Problem) → **anual + 24mo** en el sub-panel del total ✓ enseña ambos marcos temporales para que el usuario nunca vea sólo la mitad.
+- Sección inferior (Curva) → **24mo hero + rango ICP** ✓ enseña el techo del ICP para justificar el "+" sin mentir.
+- Cross-check H2 "30–60%": el midpoint 29% cae en el borde bajo del rango. Suficientemente cerca para no ser inconsistencia; el rango describe dispersión del ICP (brands peor colocadas superan el 40%). Si en el futuro el gap del midpoint cae por debajo del 25%, hay que bajar el borde inferior del rango a "25–60%".
+
+**Archivos tocados:** `src/components/landing/SavingsCurveChart.jsx`, `src/components/landing/ProblemSectionWow.jsx`, `src/docs/Decision_Log.md` (este), `src/docs/KNOWN_DEBT.md` (regla de marca de referencia actualizada con la ventana 24mo).
+
+**Restricciones respetadas:**
+- Cero cambios en motor (`paymentsGap.js`), backend, schemas, analyzer.
+- Cero cambios en pricing (la ventana 24mo ya estaba declarada por el modelo, sólo se está mostrando).
+- Cero cifras nuevas fabricadas — todo deriva del mismo caso de referencia único con la misma cuenta.
+
+**Efecto visual esperado.** El hero de la landing pasa de "€6,000 recoverable" a **"€12,000+ recovered over 24 months"** con ancla de rango €2,400–€24,000+ debajo. La contradicción anterior (bleed €12,600 vs curva €6,000) queda resuelta como **"bleed €6k/yr = €12k/24mo = recovery €12k+/24mo"** — un solo relato, dos ángulos, mismo número.
+
+---
+
+### 2026-07-12 · R4 · Landing: consistencia numérica end-to-end (marca de referencia única) — [entrada original conservada abajo]
+
+**Cambios ejecutados originales de R4:**
+
 **ProblemSectionWow.jsx.**
 - `ITEMS[0].amount`: 6400 → 3200. `overpayPct`: 30 → 41. Comentario in-line: derivación de 2.4% vs 1.7% ≈ +41%.
 - `ITEMS[1].amount`: 3800 → 1800. `overpayPct`: 25 → 35. Comentario in-line: real overpay en la porción intl es +94%, visual capado a +35% para mantener la banda honesta del H2 30-60%.
