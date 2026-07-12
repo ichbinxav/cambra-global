@@ -671,7 +671,7 @@ Deno.serve(async (req) => {
         verified: false,
         source_url: null,
         source_quote: null,
-        source_notes: 'Regional average for traditional bank acquirers (BNP, CA, SG, BPCE, CM-CIC, LBP, LCL, HSBC-FR). Rental €25/mo is the observed median of the FR bank market (2026 sondeo). Ticket-floor rules for achievable side: for tickets <€25 the achievable optimum is SumUp/Smile (1.55-1.75%, zero fixed) because Stripe Terminal fixed-fee drag dominates; for tickets ≥€25 Stripe Terminal (1.4%+€0.10) is the achievable floor. We anchor achievable to Stripe Terminal for both consistency and the strongest recovery narrative — merchants on low tickets simply see a smaller (but still positive) gap because the terminal rental removal dominates the savings.',
+        source_notes: 'Regional average for traditional bank acquirers (BNP, CA, SG, BPCE, CM-CIC, LBP, LCL, HSBC-FR). Rental €25/mo is the observed median of the FR bank market (2026 sondeo). Ticket-floor rules for achievable side: for tickets <€25 the achievable optimum is SumUp/Smile (1.55-1.75%, zero fixed) because Stripe Terminal fixed-fee drag dominates; for tickets ≥€25 Stripe Terminal (1.4%+€0.10) is the achievable floor. We anchor achievable to Stripe Terminal for both consistency and the strongest recovery narrative — merchants on low tickets simply see a smaller gap, clamped to zero when they already sit at or below the contractable floor.',
         achievable_breakdown_json: {
           anchor_provider: 'stripe_terminal',
           anchor_region: 'EU',

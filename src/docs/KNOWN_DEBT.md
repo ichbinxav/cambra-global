@@ -759,6 +759,64 @@ Cero. UI en-store desactivada tras el rollback (ver deuda "M4-TPV — UI in-stor
 
 ---
 
+## Achievable in-store — ticket-dependent multi-anchor selection (Fase 3+)
+
+**Estado:** 🟡 DEUDA DE PRECISIÓN · no de honestidad · no bloqueante.
+
+**Contexto post-adenda 2A-redo (2026-07-12).** El achievable in-store se ancla a UN solo proveedor por región (EU → Stripe Terminal 140+€0.10, UK → SumUp 175 flat, US/RoW → Square 260+$0.10). El anchor se eligió por narrativa recovery + consistencia. Es correcto para el ticket medio del ICP (~€25-€60), pero **conservador en los extremos de ticket**.
+
+**Ejemplo concreto del sub-óptimo.** Merchant bank EU con ticket €12:
+- Current: 220 bps + €25 rental/€GMV drag (cohort `ANY|ANY|EU|in_store`).
+- Achievable calculado hoy: `140 + (0.10/12)×10000 = 140 + 83 = 223 bps` (Stripe Terminal dominado por el fixed drag a ticket €12).
+- Achievable REAL contratable a ticket €12: **SumUp 175 bps flat** (no fixed, pública en sumup.com).
+- Gap prometido hoy vs gap real: **infra-promesa de ~48 bps** en el % component (más las savings del rental removal que sí se prometen).
+
+**Dirección del error:** infra-promesa, no sobre-promesa. Auditabilidad respetada — el número prometido SIGUE siendo contratable (Stripe Terminal es real, firmable, con URL). El merchant no puede decir "prometisteis lo imposible"; puede decir "me habéis prometido menos de lo que realmente hay ahí fuera". Aceptable como v1, corregible en v2.
+
+**Mejora Fase 3+.** El engine evalúa 2-3 anchors candidatos por región + ticket:
+```
+EU in-store: candidates = [
+  { provider: 'stripe_terminal', percent_bps: 140, fixed: 10 },
+  { provider: 'sumup', percent_bps: 175, fixed: 0 },
+  { provider: 'smile_and_pay', percent_bps: 155, fixed: 0 },
+]
+achievable = min(candidates, computeEffectiveBps(cand, ticket))
+```
+Cada fila del seeder añadiría un campo `achievable_anchor_candidates: [...]`. `ACHIEVABLE_NOTE` in-store nombraría el ganador del ticket concreto: *"Achievable rate anchored to the cheapest publicly contractable provider for your ticket size: SumUp at 1.75%. (Alternative for higher tickets: Stripe Terminal 1.4% + €0.10, cheaper above €25 ticket.)"*
+
+**No bloqueante para el zip actual.** La v1 (single anchor per region) es honesta y auditable — sub-promete en los extremos, nunca sobre-promete. Fase 3+ lo refina cuando llegue el volumen que justifique la complejidad.
+
+---
+
+## Fase 3 UX — comunicar el clamp a €0 como victoria (no como fallo)
+
+**Estado:** 🟡 UX DEBT · Fase 3.
+
+**Contexto.** Con el achievable in-store anclado a pricing contratable (adenda 2A-redo, 2026-07-12), un submit puede devolver `savings: {lo:0, point:0, hi:0}` cuando el merchant ya está en o bajo el floor real (ej. SumUp EU ticket €25 → clamp por diseño). Empíricamente verificado en submit A de la adenda.
+
+**Problema UX.** Un merchant que ve `€0` en `/Results` sin contexto pensará que la herramienta falló ("¿por qué me está dando cero?"). En realidad es la **respuesta más valiosa** que la herramienta puede dar — "estás ya en el mejor sitio", con audit trail.
+
+**Fix Fase 3.** Cuando `engine_result.monthly_savings_eur.point === 0` (clamp activo), `PaymentsResults` renderiza una variante hero dedicada en lugar del card estándar:
+
+```
+✓ You're already at the best publicly contractable rate for your ticket size.
+
+  Current:    1.75% (SumUp EU)
+  Achievable: 1.75% (SumUp is the floor for tickets under €25)
+
+  We audit 4 EU in-store providers publicly. None is cheaper than what
+  you're paying for a €25 ticket. This is a good sign — you already made
+  the right pick. If your average ticket ever climbs above €25, Stripe
+  Terminal becomes cheaper (1.4% + €0.10). We'll notify you if that
+  crossover happens.
+```
+
+**Por qué esto vale el trabajo.** Una herramienta de ahorro que te dice "no tienes nada que ahorrar" con evidencia auditable ES el momento de confianza brutal — se gana el "verified" mucho más que un card mostrando €50k anuales. Es el opuesto exacto del anti-patrón "€48k dijo Xavi" que motivó la R3. Registrado como Fase 3 prioridad UX alta.
+
+**Alcance estimado.** Componente nuevo `PaymentsGapCardZero.jsx` (~80 líneas) + gate en `PaymentsResults.jsx` (`engine_result.monthly_savings_eur.point <= 0 ? <PaymentsGapCardZero /> : <PaymentsGapCard />`) + copy variable por canal (in-store vs online). No requiere cambios en motor ni en schema.
+
+---
+
 ## FeeBreakdownCard — variante in-store pendiente (Fase 2C UI)
 
 **Estado:** 🟡 DEUDA UI TRACKED · no bloqueante para zip.
