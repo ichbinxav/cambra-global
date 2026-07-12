@@ -442,7 +442,43 @@ No hay urgencia — 2 rows en producción, cero impacto funcional. Se decide pol
 
 ## BUG-5 — Disconnect Stripe roto en dos capas: 500 en backend legacy y ruteo obsoleto en frontend
 
-**Estado:** diagnosticada — pendiente de fix
+**Estado:** ✅ CERRADA (2026-07-12) — Fix en `stripeConnectionDisconnect` + `StripeConnectCard.handleDisconnect`.
+
+### Resolución (2026-07-12)
+
+**Causa real (corrección de la hipótesis del diagnóstico).** La repro empírica confirmó que **ambos caminos** del frontend fallaban, no solo el legacy:
+
+| Camino | Resultado real | Motivo |
+|---|---|---|
+| A · `Integration.update()` como user | `Permission denied for update operation on Integration entity` | `Integration.rls.write = user_condition role=admin` — bloquea a cualquier user no-admin, incluyendo al owner por contact_email. |
+| B · `functions.invoke('stripeDisconnect')` | **500** `Authentication required to view users` (NO 404) | `base44.auth.me()` falla en el contexto del caller, la función devuelve 500 con body JSON. La nota original "404" leía el toast genérico del axios, no el status real. |
+
+El diagnóstico del 2026-07-11 subestimó el problema: pensó que la rama A funcionaba (probó con Integration creada por service *y* leída por el mismo service). Cuando la rama A se ejecuta desde el frontend del user, la RLS admin-only la corta también.
+
+**Fix aplicado.** Nueva función `stripeConnectionDisconnect` (patrón M3 sellado):
+- `base44.auth.me()` con guard defensivo (try/catch → 401, no 500).
+- Ownership: `role==='admin' OR Brand.contact_email===user.email OR Brand.created_by===user.email`.
+- Todas las escrituras vía `asServiceRole` — bypass de la RLS admin-only tanto de Integration como de StripeConnection.
+- **Cleanup dual-row** en un solo call: cierra la Integration (por `integration_id` explícito o auto-detect) Y toda StripeConnection legacy del mismo `brand_id`. Nunca deja el estado a medias.
+- Revoca `ConsentRecord` activos (best-effort).
+
+Frontend `StripeConnectCard.handleDisconnect` colapsado a **un solo path** — llama a `stripeConnectionDisconnect` siempre, pasando `brand_id` y (si aplica) `integration_id`. Se retiró la bifurcación `!!connection.provider`.
+
+`stripeDisconnect` viejo se marca **DEPRECATED** con puntero al reemplazo. No se borra para no romper callers externos que apunten a esa ruta.
+
+**Verificación empírica end-to-end (2026-07-12):**
+| Escenario | Payload | Status | Resultado |
+|---|---|---|---|
+| Integration-backed | `{brand_id, integration_id}` self-test brand | **200** | `{integrations:1, stripe_connections:0, consents:0}` |
+| Legacy StripeConnection | `{brand_id}` self-test brand 1b | **200** | `{integrations:0, stripe_connections:1, consents:0}` |
+| Brand inexistente | `{brand_id:"does-not-exist-abc"}` | **404** | `{ok:false, error:"Brand not found"}` |
+| Payload vacío | `{}` | **400** | `{ok:false, error:"brand_id required"}` |
+
+Estado de las self-test brands restaurado al final de la repro (`Integration.status=connected`, `StripeConnection.connection_status=connected`).
+
+### (Diagnóstico histórico — conservado por trazabilidad)
+
+**Estado histórico:** diagnosticada — pendiente de fix
 **Detectado:** 2026-07-09 (documentado en FASE 1.5) · **Repro empírica:** 2026-07-12
 **Fichero frontend:** `src/components/connect/StripeConnectCard.jsx` · función `handleDisconnect`
 **Fichero backend:** `base44/functions/stripeDisconnect/entry.ts`

@@ -5,6 +5,41 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-12 — BUG-5 sellado: `stripeConnectionDisconnect` unifica los dos caminos rotos
+
+**Contexto.** Cierre del diagnóstico BUG-5 abierto el 2026-07-11 (StripeConnectCard "disconnect" que se veía como 404 en UI pero se re-conectaba al recargar).
+
+**Repro empírica (previa al fix, como pidió Xavi).** Preparé el escenario con dos self-test brands: uno con Integration `stripe_self_test` (owner service, `contact_email=xavi@cambra.global`) y otro con StripeConnection legacy (mismo perfil). Ejecuté los dos caminos del frontend actual y capturé status/body literales:
+
+| Camino | Método | Status | Body / error |
+|---|---|---|---|
+| A · Integration.update como user | `base44.entities.Integration.update({status:'disconnected'})` | — | `Permission denied for update operation on Integration entity` |
+| B · legacy stripeDisconnect | `functions.invoke('stripeDisconnect', {brand_id})` | **500** | `{"ok":false,"error":"Authentication required to view users"}` |
+
+**Corrección de hipótesis.** El diagnóstico del 2026-07-11 pensaba que la rama A funcionaba para el user; la evidencia dice que no. `Integration.rls.write = user_condition role=admin` — la escritura se bloquea también para el owner por `contact_email`. El "404" reportado en UI era en realidad un **500** enmascarado por el toast genérico. Comunicado a Xavi antes de implementar.
+
+**Ruta elegida:** función nueva `stripeConnectionDisconnect` con patrón M3 sellado (`auth.me()` guardado, ownership `admin OR contact_email OR created_by`, escritura `asServiceRole`). Cleanup dual-row en un solo call: cierra Integration y todas las StripeConnection legacy del mismo `brand_id`. Frontend colapsado a un solo path — se retira la bifurcación `!!connection.provider`. `stripeDisconnect` viejo → DEPRECATED con puntero, no se borra.
+
+**Verificación empírica end-to-end:**
+- Integration-backed disconnect (`brand_id + integration_id`) → **200** `{integrations:1, stripe_connections:0}`.
+- Legacy StripeConnection disconnect (`brand_id` solo) → **200** `{integrations:0, stripe_connections:1}`.
+- Brand ajeno / inexistente → **404** `Brand not found`.
+- Payload vacío → **400** `brand_id required`.
+- Estado self-test restaurado (Integration + StripeConnection reconnected) al cerrar el chunk.
+
+**Restricciones respetadas.** Cero cambios en `paymentsGap`, motor, `computeStripeVerifiedGap`, `getPaymentsAnalysisVerified`, `submitPaymentsAnalysis`, sync loop, `_tenantGuard`, schemas.
+
+**Entregable.**
+- `base44/functions/stripeConnectionDisconnect/entry.ts` — nueva, con guard defensivo y cleanup dual-row.
+- `base44/functions/stripeDisconnect/entry.ts` — docstring DEPRECATED apuntando al reemplazo; código legacy intacto.
+- `src/components/connect/StripeConnectCard.jsx` — `handleDisconnect` colapsado a un único invoke con `brand_id` y `integration_id` opcional.
+- `src/docs/KNOWN_DEBT.md` — BUG-5 cerrada con la causa real (el "404" era 500 `Authentication required to view users`) y la resolución empírica.
+- `src/docs/DNS_MIGRATION.md` v2 — sección de rotación de IP añadida (TTL 3600, signo clínico "apex cae pero www funciona" → releer panel Base44).
+
+**Con esto A2 + BUG-5 quedan sellados enteros.**
+
+---
+
 ## 2026-07-12 (v2) — Chunk custom domain (`cambra.global`) revisado post-review Xavi
 
 **Motivo del v2.** Xavi verificó dos afirmaciones DNS del v1 y una era incorrecta, otra dudosa:
