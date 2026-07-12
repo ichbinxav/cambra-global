@@ -80,7 +80,7 @@ function FeatureRow({ children }) {
  * Tier — one pricing column.
  *
  * `priceRow` overrides the default single `price` render — used by Monitoring
- * to show the strikethrough €29/mo alongside the "Free for 24 months" claim
+ * to show the strikethrough €29/mo alongside the "Free for 12 months" claim
  * plus the founding-cohort badge below it, all inside the same block that
  * `price`/`priceSuffix` would normally occupy. Keeps every other tier
  * (Analyze, Recovery) rendering unchanged.
@@ -199,7 +199,7 @@ function Tier({
  * MonitoringPriceRow — bespoke price block for the Monitoring tier.
  * Renders "Free" as the headline number, with €29/mo struck-through as
  * strike context, and a founding-cohort pill below explaining the grant
- * duration in plain English ("24 months — founding cohort").
+ * duration in plain English ("12 months — founding cohort").
  */
 function MonitoringPriceRow() {
   return (
