@@ -41,6 +41,10 @@ Ventajas:
 Desventaja:
 - Si Base44 algún día cambia la IP estática, hay que actualizar el A record manualmente (a mitigar con TTL bajo — 3600, no menos por rate-limit de DNS negativo).
 
+**Mitigación de rotación de IP (Render / Base44).** El backend de Base44 corre sobre Render, cuyas IPs pueden cambiar sin aviso público. Dos capas de defensa:
+- **TTL del A record fijado a 3600** en la tabla §3.1 (no menor: TTLs por debajo de ~600 empiezan a chocar con caché de resolvers negativos, lo que degrada la propagación en vez de acelerarla). 3600 da un peor-caso de ~1 h para propagar un cambio de IP.
+- **Signo clínico de diagnóstico** — si algún día `cambra.global` cae pero `www.cambra.global` sigue sirviendo (o al revés), la sospecha por defecto es **rotación de la IP estática de Render**. Acción: abrir el panel de Base44 (`Settings → Domain`) y releer la IP recomendada — si es distinta de `216.24.57.1`, actualizar el A record del §3.1 al nuevo valor. NO cambiar el CNAME `www` en ese caso (el CNAME se resuelve dinámicamente y no sufre rotación).
+
 ### Path B — Domain forwarding 301 + CNAME www (FALLBACK)
 
 Solo si Path A falla (p. ej. Base44 rechaza la IP para nuestra app concreta o el registro de custom domain nos exige TXT + CNAME sin A). En este caso:
