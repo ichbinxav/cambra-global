@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { getMyActiveBrand } from '@/lib/getMyActiveBrand';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,9 +20,11 @@ export default function CompanyBlock({ onCreated, autoRedirect = true } = {}){
   const { toast } = useToast();
 
   useEffect(()=>{ (async()=>{
-    const me = await base44.auth.me();
-    // Use built-in created_by_id (Brand entity stores it automatically)
-    const [b] = await base44.entities.Brand.filter({ created_by_id: me.id }, '-created_date', 1);
+    // A2 migration — resolve brand by contact_email (single source of truth).
+    // NOTE: for BRAND-NEW users with zero brands yet, we still pre-fill the
+    // form's contact_email from the auth user — that's what the create path
+    // needs, and it's also what the helper will look up on the next load.
+    const { user: me, brand: b } = await getMyActiveBrand();
     setBrand(b || {
       name: '', website: '', country: '', category: '', size: '',
       contact_email: me?.email || '', bio: '', instagram_url: '', linkedin_url: '', twitter_url: '', tiktok_url: '', youtube_url: '', accept_terms: false,

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyActiveBrand } from '@/lib/getMyActiveBrand';
 import PageHero from '@/components/shared/PageHero';
 import { Receipt } from 'lucide-react';
 
@@ -12,9 +13,7 @@ export default function Invoices() {
       setLoading(true);
       const authed = await base44.auth.isAuthenticated();
       if (!authed) { setItems([]); setLoading(false); return; }
-      const me = await base44.auth.me();
-      const brands = await base44.entities.Brand.filter({ created_by_id: me.id }, '-created_date', 1);
-      const brand = brands?.[0];
+      const { brand } = await getMyActiveBrand();
       const invs = brand ? await base44.entities.Invoice.filter({ brand_id: brand.id }, '-issued_at', 200) : [];
       setItems(invs || []);
       setLoading(false);

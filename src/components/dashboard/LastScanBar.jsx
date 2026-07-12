@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { getMyActiveBrand } from "@/lib/getMyActiveBrand";
 import { RefreshCw, Activity, Sparkles } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 
@@ -28,13 +29,11 @@ export default function LastScanBar() {
 
   const loadLatest = async () => {
     try {
-      const me = await base44.auth.me();
-      const brands = await base44.entities.Brand
-        .filter({ created_by_id: me.id }, "-created_date", 1);
-      if (!brands.length) return;
-      setBrandId(brands[0].id);
+      const { brand } = await getMyActiveBrand();
+      if (!brand) return;
+      setBrandId(brand.id);
       const runs = await base44.entities.ContinuousDiscoveryRun
-        .filter({ brand_id: brands[0].id }, "-started_at", 1).catch(() => []);
+        .filter({ brand_id: brand.id }, "-started_at", 1).catch(() => []);
       setRun(runs[0] || null);
     } catch { /* silent */ }
   };

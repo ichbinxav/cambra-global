@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
+import { getMyActiveBrand } from "@/lib/getMyActiveBrand";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 
 import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
@@ -66,15 +67,20 @@ export default function Dashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const u = await base44.auth.me();
+        // A2 migration — resolve brand via contact_email (see getMyActiveBrand
+        // docstring). Fixes the self-test / service-role brand empty-state hit.
+        const { user: u, brand: b } = await getMyActiveBrand();
         setUser(u);
-
-        const brands = await base44.entities.Brand.filter({ created_by_id: u.id }, "-created_date", 1);
-        const b = brands[0] || null;
         setBrand(b);
 
-        const results = await base44.entities.AnalyzerResult
-          .filter({ created_by_id: u.id }, "-created_date", 1);
+        // AnalyzerResult remains scoped by brand_id when the brand exists —
+        // that's the correct tenant boundary. Falls back to `[]` for users
+        // without a brand, same visible behavior as the previous empty case.
+        const results = b
+          ? await base44.entities.AnalyzerResult
+              .filter({ brand_id: b.id }, "-created_date", 1)
+              .catch(() => [])
+          : [];
         const latestResult = results[0] || null;
         setLatest(latestResult);
 

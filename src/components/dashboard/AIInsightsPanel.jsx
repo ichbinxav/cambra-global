@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { getMyActiveBrand } from "@/lib/getMyActiveBrand";
 import { Sparkles, Loader2, CheckCircle2, Clock, AlertCircle, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -69,18 +70,16 @@ export default function AIInsightsPanel() {
     let cancelled = false;
     (async () => {
       try {
-        const me = await base44.auth.me();
-        if (cancelled) return;
-        setIsAdmin(me?.role === "admin");
         // BUG-1 FIX (2026-07-09) — scope AgentRuns to the ACTIVE brand of the
-        // user, not just to the user. Same source-of-truth for "active brand"
-        // as Dashboard.jsx (most recent Brand created_by_id === me.id).
+        // user, not just to the user. A2 migration (2026-07-12) — active brand
+        // is now resolved via contact_email through getMyActiveBrand, so
+        // service-role-created brands (self-test, admin invite) are visible to
+        // their owners. Same source-of-truth as Dashboard.jsx.
         // If no active brand → empty list, no fallback to `.list()` (that was
         // the leak: showing runs from OTHER brands the user also owns).
-        const brands = await base44.entities.Brand
-          .filter({ created_by_id: me.id }, "-created_date", 1)
-          .catch(() => []);
-        const activeBrand = brands[0] || null;
+        const { user: me, brand: activeBrand } = await getMyActiveBrand();
+        if (cancelled) return;
+        setIsAdmin(me?.role === "admin");
         if (!activeBrand) {
           if (!cancelled) setRuns([]);
           return;

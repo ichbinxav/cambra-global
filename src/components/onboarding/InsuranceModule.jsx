@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyActiveBrand } from '@/lib/getMyActiveBrand';
 import { Button } from '@/components/ui/button';
 import OptionTiles from './OptionTiles';
 import SmartNumberField from '@/components/inputs/SmartNumberField.jsx';
@@ -13,8 +14,7 @@ export default function InsuranceModule() {
 
   useEffect(() => {
     (async () => {
-      const me = await base44.auth.me();
-      const [b] = await base44.entities.Brand.filter({ created_by_id: me.id }, '-created_date', 1);
+      const { brand: b } = await getMyActiveBrand();
       setBrandId(b?.id);
       if (b?.insurance_profile) setItem(b.insurance_profile);
     })();

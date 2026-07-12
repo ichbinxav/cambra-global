@@ -60,9 +60,23 @@ Deno.serve(async (req) => {
     const results = [];
     for (const u of targets) {
       try {
-        // Latest analysis for this user
+        // A2 migration (2026-07-12) — resolve the user's brand via
+        // contact_email (same pivot as the frontend getMyActiveBrand helper),
+        // then scope AnalyzerResult reads by brand_id. Previously this used
+        // { created_by_id: u.id } which silently skipped every user whose
+        // brand (and therefore whose AnalyzerResult rows) were written by
+        // service role. Skip semantics preserved: users without a brand get
+        // 'skipped_no_data', just like before, but for the right reason.
+        const brands = await base44.asServiceRole.entities.Brand.filter(
+          { contact_email: u.email }, '-created_date', 1
+        );
+        const brand = brands[0] || null;
+        if (!brand) {
+          results.push({ email: u.email, status: 'skipped_no_brand' });
+          continue;
+        }
         const analyses = await base44.asServiceRole.entities.AnalyzerResult.filter(
-          { created_by_id: u.id }, '-created_date', 12
+          { brand_id: brand.id }, '-created_date', 12
         );
         if (!analyses.length) {
           results.push({ email: u.email, status: 'skipped_no_data' });

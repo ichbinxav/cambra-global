@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { getMyActiveBrand } from '@/lib/getMyActiveBrand';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -19,8 +20,11 @@ export default function PaymentsModule(){
   const [status, setStatus] = useState(null);
 
   useEffect(()=>{ (async()=>{
-    const me = await base44.auth.me();
-    const [b] = await base44.entities.Brand.filter({ created_by_id: me.id }, '-created_date', 1);
+    // A2 migration — this is the payments-vertical onboarding gateway, so
+    // the fix here matters end-to-end: a user whose brand was written by
+    // service role could not reach Stripe connect from here because brandId
+    // stayed null forever.
+    const { brand: b } = await getMyActiveBrand();
     setBrandId(b?.id);
     if (!b?.id) return;
     const [pp] = await base44.entities.PaymentsProfile.filter({ brand_id: b.id }, '-updated_date', 1);
