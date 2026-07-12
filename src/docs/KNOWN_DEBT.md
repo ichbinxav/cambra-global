@@ -759,19 +759,22 @@ Cero. UI en-store desactivada tras el rollback (ver deuda "M4-TPV — UI in-stor
 
 ---
 
-## seedPaymentsRateTable — `.update()` reporta `updated` sin persistir campos de texto largo
+## seedPaymentsRateTable — falso positivo del diagnóstico anterior · el seeder NO tiene bug
 
-**Estado:** 🔴 BUG SILENCIOSO · segunda instancia del mismo patrón · diagnóstico pendiente.
+**Estado:** ✅ DESCARTADO empíricamente (2026-07-12) · reclasificado a deuda de proceso, no de código.
 
-**Reproducción empírica (2026-07-12).** Tras editar `source_notes` en el fichero del seeder (frase corregida "clamped to zero…"), la ejecución de `test_backend_function('seedPaymentsRateTable', {})` devolvió `total_rows: 19, created: 0, updated: 19, errors: 0` — reporte optimista. Lectura inmediata post-seed de `PaymentsRateTable.filter({ cohort_key: 'ANY|ANY|EU|in_store' })[0].source_notes` devolvió el string VIEJO ("smaller (but still positive) gap"). El fichero del seeder tenía el string nuevo (`hasNew: true, hasOld: false`), pero la DB no. Un `update(id, { source_notes: newNotes })` explícito vía `exec_tool` sí persistió, verificado con read-after-write (`persisted_has_new: true, persisted_has_old: false`).
+**Historia.** El 2026-07-12 se sospechó que `seedPaymentsRateTable.update()` reportaba `updated: 19` sin persistir campos de texto largo (`source_notes`). Se registró como bug silencioso · segunda instancia del patrón.
 
-**Hipótesis:** el `.update()` del SDK service-role, cuando el seeder pasa el objeto completo (incluyendo `source_notes` largo), hace algún tipo de diff shallow o caché que salta campos de texto largo sin cambios de shape. Otras hipótesis abiertas: caché del proxy Base44, comparación por referencia en lugar de por valor, o límite de bytes por operación bulk. No diagnosticado todavía.
+**Reproducción intentada empíricamente en la misma sesión.** Vía `exec_tool` se replicó el patrón EXACTO del seeder (list → find por `cohort_key` → `update(id, fullRow)` con el objeto entero, incluyendo `source_notes` de 667 chars con un marcador único `DIAGNOSTIC_MARKER_<timestamp>`). Read-after-write inmediato desde DB devolvió `persisted: true`, `notes_length_after: 667`. El SDK persistió el texto largo sin problemas.
 
-**Segunda instancia del patrón.** La primera fue en la M4-Fase-1 con el `fixed_fee_minor_units` de la fila `stripe_terminal|ANY|EU|in_store` que se seedeó a `0` y no reflejaba los `€0.10` del source_quote — se descubrió por auditoría manual, no por el proceso. Ahora sabemos que el patrón se repite. Merece registro, no memoria.
+**Conclusión revertida.** El `.update()` del SDK service-role **funciona correctamente** con texto largo y con el objeto entero. La causa raíz del incidente original vive en el pipeline de edición/despliegue, no en el seeder. Hipótesis plausibles (ninguna confirmada, todas fuera del alcance del seeder):
+1. Race condition entre `write_file` a `entry.ts` y el hot-reload del runtime — el `test_backend_function` corrió contra la versión antigua del código todavía cacheada.
+2. Un `find_replace` previo pegó en un comentario del header en vez del constant activo (deadend ya registrado en el long_term summary como "Fase 2A/2B Find-Replace Logic").
+3. Doble edición silenciosa del fichero en la misma sesión.
 
-**Mitigación obligatoria hasta diagnóstico.** Todo write de `source_notes` (o cualquier campo de texto largo) vía `seedPaymentsRateTable` requiere **read-after-write explícito desde DB** en la misma sesión, citando el fragmento verbatim. No confiar en el `updated: N` count del reporte del seeder — es optimista. Preferir `exec_tool` con `.update()` directo cuando el cambio es en un solo registro.
+**Mitigación (proceso, no código).** La regla ya existente en `<decisions>` sigue vigente y es suficiente: *"Todo edit sobre motor/schema/seed exige read-after-write verification en la misma turn; 'Success' del tool es insuficiente."* No se necesita cambio de código. El seeder queda tal cual.
 
-**Diagnóstico pendiente (no bloqueante para zip).** Alcance de la investigación futura: (1) inspeccionar el código del seeder para confirmar si pasa el objeto entero o solo campos diff, (2) reproducir con un campo dummy `_test_field` de texto largo, (3) verificar si `bulkUpdate` sufre del mismo patrón, (4) revisar changelog del SDK Base44 por optimizaciones de diff. Si se confirma que es shallow-diff del SDK, todos los seeders del proyecto que tocan campos de texto largo (`seedIntegrationCatalog`, `seedBenchmarkCohorts`, `seedComplianceRules`) están potencialmente afectados y requieren auditoría de sus campos `description`/`source_notes`/similares.
+**Nota para el futuro.** Si el patrón vuelve a aparecer con un tercer caso, la investigación debe empezar por el pipeline de despliegue (hot-reload asíncrono, revisión de logs de deploy), NO por el SDK. Este falso positivo se preserva aquí como advertencia contra atribuir bugs al SDK sin reproducción empírica del mecanismo exacto sospechado.
 
 ---
 
