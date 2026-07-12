@@ -440,35 +440,88 @@ No hay urgencia — 2 rows en producción, cero impacto funcional. Se decide pol
 
 ---
 
-## BUG-5 — `handleDisconnect` apunta a entidad legacy `StripeConnection`
+## BUG-5 — Disconnect Stripe roto en dos capas: 500 en backend legacy y ruteo obsoleto en frontend
 
-**Estado:** activa
-**Detectado:** 2026-07-09 (documentado en FASE 1.5)
-**Fichero:** `src/components/connect/StripeConnectCard.jsx`
-**Líneas:** función `handleDisconnect` (~línea 195)
+**Estado:** diagnosticada — pendiente de fix
+**Detectado:** 2026-07-09 (documentado en FASE 1.5) · **Repro empírica:** 2026-07-12
+**Fichero frontend:** `src/components/connect/StripeConnectCard.jsx` · función `handleDisconnect`
+**Fichero backend:** `base44/functions/stripeDisconnect/entry.ts`
 
-### Síntoma
-Al pulsar "Disconnect" desde la Stripe card, la llamada a `stripeDisconnect`
-devuelve 404 en connections Integration-backed (post-FASE-1). El estado
-local se limpia (`setConnection(null)`) pero el registro Integration
-subyacente permanece `status: "connected"` — al recargar, la card vuelve a
-mostrar Connected.
+### Síntoma reportado
+Al pulsar "Disconnect", la card se limpia visualmente pero al recargar vuelve
+a mostrar Connected. Se documentó como "404" en la nota original, y el fix
+`handleSync` (que se aplicó a `dataSyncAgent` en FASE 1.5) hizo pensar que
+`handleDisconnect` era el mismo problema. **La repro empírica del 2026-07-12
+demuestra que el bug es doble.**
 
-### Causa
-`stripeDisconnect` (backend) fue escrito para la entidad legacy
-`StripeConnection`. Cuando la fuente de verdad pasó a `Integration` (FASE 1),
-`handleSync` se ruteó al endpoint correcto (`dataSyncAgent`) pero
-`handleDisconnect` se quedó apuntando al viejo. Misma familia que el fix
-de `handleSync` que ya está desplegado.
+### Repro empírica (2026-07-12, self-test brand `6a50868a4983b042c1b26cc2`)
 
-### Fix cuando toque
-Rutear `handleDisconnect` como `handleSync`: si `connection.provider` está
-presente → invoke nueva función `integrationDisconnect({ integration_id })`
-que marca la row Integration como `status: "disconnected"` y limpia
-`access_token`. Fallback a `stripeDisconnect` sólo para connections legacy.
+Estado inicial verificado antes de tocar nada:
+- 0 rows `Integration` con provider stripe* para el brand.
+- 1 row `StripeConnection` legacy `6a50868a35c6627cd55d8b59`, `connection_status="connected"`, `is_test=true`, `stripe_account_id="acct_1TqWzFJtkNunlMvz"`.
 
-### Por qué no se arregla ahora
-Requiere crear una nueva backend function (`integrationDisconnect`) y no es
-crítica en flujo actual (usuarios connect → sync → results, no
-disconnect). Se arregla junto con el resto del limpieza post-FASE-1 de
-endpoints legacy.
+Como el brand solo tiene la row legacy, `StripeConnectCard.loadConnection`
+cae al fallback y setea `connection.provider = undefined` → `handleDisconnect`
+toma la **rama else** (`stripeDisconnect` backend). Ese es exactamente el
+camino que el usuario ejecuta desde el navegador.
+
+**Traza cruda del invoke:**
+- `base44.functions.invoke("stripeDisconnect", {})` → **HTTP 500**, body `{"ok": false, "error": "Authentication required to view users"}`, content-type `application/json`.
+- Idem con `{ brand_id }` explícito → mismo 500, mismo body.
+
+Rama A (fix candidato — `Integration.update` directo desde entity SDK):
+probada creando una Integration `stripe_self_test` temporal → `update({ status: "disconnected", access_token: null, refresh_token: null })` → **ok, `after_status: "disconnected"`, token limpio**. Rollback ejecutado (delete de la Integration temporal). La StripeConnection legacy permanece intacta.
+
+### Causa raíz confirmada — dos bugs superpuestos
+
+**Bug backend (500).** `stripeDisconnect/entry.ts:22` hace
+`await base44.entities.Brand.list('-created_date', 1)` cuando el caller no
+pasa `brand_id`. Ese `.list()` sin filtro es la operación que Base44 trata
+como "ver todos los users/brands" a nivel SDK — devuelve `"Authentication
+required to view users"` para llamadas que no vienen con una sesión de user
+plenamente resuelta en la SDK layer. En navegador con user autenticado el
+error persiste (repro con axios pasa el mismo token que el navegador). El
+handler no debería usar `Brand.list()` como fallback: si `brand_id` no
+viene, debería devolver 400 pidiéndolo. Además, si un día se arregla el
+500, el handler solo mira `StripeConnection` — ni siquiera toca `Integration`.
+
+**Bug frontend (ruteo).** `StripeConnectCard.handleDisconnect` (líneas ~195-215)
+distingue por `!!connection.provider`. Para brands legacy `provider` es
+undefined y siempre cae al `stripeDisconnect` roto. Para brands
+Integration-backed sí ejecuta `Integration.update` directo (rama A) — que
+la repro demuestra que funciona. **Los dos bugs se enmascaraban mutuamente:**
+la nota original culpó al ruteo frontend porque el 500 se leía como "404"
+en la UI (toast genérico), y el frontend nunca podía llegar a probar la
+rama que sí funciona porque cargaba brands legacy.
+
+### Fix propuesto (siguiente chunk)
+
+Doble, en paralelo, mínimo:
+
+1. **Frontend — colapsar las dos ramas en una.**
+   `handleDisconnect` migra a **entity SDK directo, sin backend function**:
+   - Si `connection.provider` está → `Integration.update(id, { status: "disconnected", access_token: null, refresh_token: null })` (ya funciona, ver rama A).
+   - Si no → `StripeConnection.update(id, { connection_status: "disconnected" })` (funciona empíricamente en rama B-bis del test del 2026-07-12).
+   
+   Esto elimina totalmente la dependencia de `stripeDisconnect` desde la UI y quita el 500 del path de usuario.
+
+2. **Backend — `stripeDisconnect` no muere pero deja de ser el path principal.**
+   Se mantiene el endpoint (evita romper llamadas externas), pero
+   sustituir la línea 22 `Brand.list('-created_date', 1)` por un **400 explícito** cuando `brand_id` no venga (no más "guess the brand"). Y — cuando toque — extenderlo para tocar también `Integration` además de `StripeConnection`, aunque con el fix frontend esto pasa a segunda prioridad.
+
+3. **RLS caveat a validar antes del fix.**
+   `StripeConnection.rls.write` = `admin only`. Cuando el frontend haga
+   `.update()` como user no-admin, la escritura será rechazada. Dos
+   caminos: (a) relajar la RLS a `owner_email == user.email` (patrón
+   Chunk 2 M3, requiere denormalización) o (b) invocar un backend
+   function nuevo `integrationDisconnect` que valida ownership y hace el
+   update service-role. Decisión = (b): backend function delgado, no
+   depende de `Brand.list`, recibe `integration_id` o `stripe_connection_id`
+   explícito. `Integration.rls.write = admin only` tiene el mismo
+   problema — igual: mismo backend function cubre ambos.
+
+### Por qué no se arregla en el mismo chunk que el diagnóstico
+Requiere crear `integrationDisconnect` (backend nuevo), tocar `StripeConnectCard`, y validar RLS user-side desde navegador con `xavi@cambra.global` logueado — cadena de pasos que caben mejor en un chunk propio con push+tag propio. Diagnóstico limpio y sellado en este chunk; fix en el siguiente.
+
+### Contexto histórico
+La nota original apuntó solo a la rama frontend porque en aquel momento no se había capturado el body del 500 (aparecía como error genérico axios). El chunk A2 del 2026-07-12 destapó el body real al reproducir con la StripeConnection legacy del self-test brand — sin A2, Xavi caía al empty state y nunca podía disparar el disconnect roto.
