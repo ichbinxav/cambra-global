@@ -26,6 +26,10 @@ Order: most recent on top.
 - Brand inexistente → **404** `Brand not found`.
 - Payload vacío → **400** `brand_id required`.
 - **Brand ajeno existente (owner `94.martinez.x@gmail.com`, caller simulado `xavi@cambra.global` role=user)** → **404 uniforme** con el mismo body. Verificación pedida por Xavi post-cierre; expuso un leak de enumeración (guard original devolvía 403 para brand ajeno vs 404 para inexistente — un atacante podía distinguir brand_ids válidos). Fix aplicado en el mismo chunk: colapsados ambos paths a `Brand not found` con status 404. Admins mantienen la distinción 403/404 para diagnóstico legítimo.
+- **Evidencia byte-a-byte del fix (post-hardening 2026-07-12).** Re-simulación del guard corregido sobre las dos ramas con caller `{email:"xavi@cambra.global", role:"user"}`:
+  - Brand ajeno `6a4fe2df992f1f6be464a6fc` (H, owner `94.martinez.x@gmail.com`) → **404** · body `{"ok":false,"error":"Brand not found"}` · 38 bytes.
+  - Brand inexistente `does-not-exist-abc-1234567890` → **404** · body `{"ok":false,"error":"Brand not found"}` · 38 bytes.
+  - `status_match: true`, `bytes_identical: true` (comparación TextEncoder byte a byte, longitudes iguales, todos los bytes coinciden). Enumeración cerrada — un caller no-admin no puede distinguir "brand existe pero no soy owner" de "brand no existe" por status ni por body.
 - Estado self-test restaurado (Integration + StripeConnection reconnected) al cerrar el chunk.
 
 **Restricciones respetadas.** Cero cambios en `paymentsGap`, motor, `computeStripeVerifiedGap`, `getPaymentsAnalysisVerified`, `submitPaymentsAnalysis`, sync loop, `_tenantGuard`, schemas.
