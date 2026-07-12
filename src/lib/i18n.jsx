@@ -373,6 +373,12 @@ const DICT = {
     cat_payments:         "Payments",
     cat_commerce:         "Commerce",
 
+    /* M4-TPV Fase 2B — in-store landing upsell strip */
+    landing_upsell_in_store_eyebrow: "Also for in-store",
+    landing_upsell_in_store_title:   "Physical terminals count too.",
+    landing_upsell_in_store_desc:    "We audit your TPV — SumUp, Stripe Terminal, Smile & Pay, Zettle, or your traditional bank acquirer. Same 60-second audit, same 25% success fee, same in-store or online.",
+    landing_upsell_in_store_cta:     "Audit my TPV",
+
     /* FIX 2 — Dashboard strings */
     savings_trend:        "Savings Trend",
     monthly_savings:      "Monthly Savings",
@@ -740,6 +746,12 @@ const DICT = {
     cat_payments:         "Paiements",
     cat_commerce:         "Commerce",
 
+    /* M4-TPV Fase 2B — in-store landing upsell strip */
+    landing_upsell_in_store_eyebrow: "Aussi en boutique",
+    landing_upsell_in_store_title:   "Les terminaux physiques comptent aussi.",
+    landing_upsell_in_store_desc:    "Nous auditons votre TPE — SumUp, Stripe Terminal, Smile & Pay, Zettle, ou votre banque acquéreur traditionnelle. Même audit de 60 secondes, même 25% de success fee, en boutique comme en ligne.",
+    landing_upsell_in_store_cta:     "Auditer mon TPE",
+
     /* FIX 2 — Dashboard strings */
     savings_trend:        "Tendance des économies",
     monthly_savings:      "Économies mensuelles",
@@ -1106,6 +1118,12 @@ const DICT = {
     /* FIX 1 — ConnectTools category labels (R2: reduced to payments+commerce) */
     cat_payments:         "Pagos",
     cat_commerce:         "Comercio",
+
+    /* M4-TPV Fase 2B — in-store landing upsell strip */
+    landing_upsell_in_store_eyebrow: "También en tienda",
+    landing_upsell_in_store_title:   "Los terminales físicos también cuentan.",
+    landing_upsell_in_store_desc:    "Auditamos tu TPV — SumUp, Stripe Terminal, Smile & Pay, Zettle, o tu banco adquirente tradicional. La misma auditoría de 60 segundos, el mismo 25% de success fee, en tienda o en línea.",
+    landing_upsell_in_store_cta:     "Auditar mi TPV",
 
     /* FIX 2 — Dashboard strings */
     savings_trend:        "Tendencia de ahorros",

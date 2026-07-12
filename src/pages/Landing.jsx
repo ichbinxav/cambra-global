@@ -13,6 +13,7 @@ import FounderLetter from "@/components/landing/FounderLetter";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
+import InStoreUpsellStrip from "@/components/landing/InStoreUpsellStrip";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
@@ -462,6 +463,10 @@ export default function Landing() {
       <Navbar />
       <main className="relative">
         <Hero />
+        {/* M4-TPV Fase 2B — narrow banner signaling in-store channel coverage
+            right after the hero, before Problem section. Positions in-store as
+            a CHANNEL of the same product, not a separate vertical. */}
+        <InStoreUpsellStrip />
         <ProblemSectionWow />
         <HowItWorksSection />
         <PricingDual />

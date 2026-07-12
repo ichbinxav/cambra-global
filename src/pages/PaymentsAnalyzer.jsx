@@ -33,7 +33,7 @@ import BrandBlock, { BRAND_SECTOR_SLUGS } from "@/components/paymentsAnalyzer/Br
 //    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
 //    Verified rows first (stripe/paypal/shopify_payments), fallback-only
 //    providers after. DO NOT reorder or rename.
-const PROVIDER_OPTIONS = [
+const PROVIDER_OPTIONS_ONLINE = [
   { slug: "stripe",           label: "Stripe" },
   { slug: "paypal",           label: "PayPal" },
   { slug: "shopify_payments", label: "Shopify Payments" },
@@ -42,6 +42,19 @@ const PROVIDER_OPTIONS = [
   { slug: "checkout_com",     label: "Checkout.com" },
   { slug: "sumup",            label: "SumUp" },
   { slug: "other",            label: "Other" },
+];
+
+// M4-TPV Fase 2B — provider enum for in-store channel. Mirrors the 4 verified
+// in-store seed rows (SumUp / Stripe Terminal / Smile&Pay / Zettle) + a
+// fallback bucket for traditional bank TPVs. Slugs that DO have a verified
+// in-store row in PaymentsRateTable come first; "other" routes to the
+// regional in-store fallback (ANY|ANY|<region>|in_store).
+const PROVIDER_OPTIONS_IN_STORE = [
+  { slug: "sumup",           label: "SumUp" },
+  { slug: "stripe_terminal", label: "Stripe Terminal" },
+  { slug: "smile_and_pay",   label: "Smile & Pay" },
+  { slug: "zettle",          label: "Zettle by PayPal" },
+  { slug: "other",           label: "Traditional bank TPV" },
 ];
 
 // ── Country list — kept short and payments-relevant. Backend uses country
@@ -82,6 +95,13 @@ function fieldRangeError(key, value) {
 export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
 
+  // M4-TPV Fase 2B — channel dimension. Default 'online' preserves original
+  // funnel behavior byte-for-byte. When channel === 'in_store', the intl
+  // slider is hidden (cross-border in-store is negligible for the ICP —
+  // seed rows leave intl_uplift_bps null), the provider grid switches to
+  // TPV options, and the payload sends channel to submitPaymentsAnalysis
+  // which threads it through the engine (v1.4.0).
+  const [channel, setChannel]           = useState("online");
   const [gmv, setGmv]                   = useState("");
   const [avgTicket, setAvgTicket]       = useState("");
   const [intlPct, setIntlPct]           = useState("");
@@ -106,8 +126,13 @@ export default function PaymentsAnalyzer() {
     if (avgTicket === "") errors.push("Average ticket is required.");
     else { const e = fieldRangeError("avg_ticket_eur", avgTicket); if (e) errors.push(e); }
 
-    if (intlPct === "") errors.push("International share is required (0% is valid).");
-    else { const e = fieldRangeError("intl_pct", intlPct); if (e) errors.push(e); }
+    // In-store channel: cross-border volume is negligible in card-present
+    // for the ICP, so we skip the intl question entirely and treat it as 0
+    // in the payload. Online channel: intl_pct is required (0 is valid).
+    if (channel === "online") {
+      if (intlPct === "") errors.push("International share is required (0% is valid).");
+      else { const e = fieldRangeError("intl_pct", intlPct); if (e) errors.push(e); }
+    }
 
     if (!providerSlug) errors.push("Payment provider is required.");
     if (!country) errors.push("Country is required.");
@@ -143,21 +168,26 @@ export default function PaymentsAnalyzer() {
     }
 
     return { valid: errors.length === 0, errors };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit, brandName, website, sector]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit, brandName, website, sector, channel]);
 
   // ── Progress counter — 6 required fields (5 payment + brand name) plus 1
   //    optional (card mix) when the drawer is open. Website and sector are
   //    intentionally NOT counted so the pill doesn't nag users into filling
   //    optional fields.
+  //    In-store channel: intl_pct is not asked, so the counter drops to 5
+  //    payment fields + brand = 5 required.
   const progress = useMemo(() => {
-    const filled = [gmv, avgTicket, intlPct, providerSlug, country].filter((v) => v !== "" && v !== undefined && v !== null).length;
+    const paymentFields = channel === "in_store"
+      ? [gmv, avgTicket, providerSlug, country]           // no intl
+      : [gmv, avgTicket, intlPct, providerSlug, country]; // classic online
+    const filled = paymentFields.filter((v) => v !== "" && v !== undefined && v !== null).length;
     const brandFilled = brandName.trim() !== "" ? 1 : 0;
     const optionalCounts = cardMixOpen;
     const optionalFilled = optionalCounts && cardMixDebit !== "" ? 1 : 0;
-    const total = 6 + (optionalCounts ? 1 : 0);
+    const total = paymentFields.length + 1 + (optionalCounts ? 1 : 0);
     const done = filled + brandFilled + optionalFilled;
     return { done, total, pct: Math.round((done / total) * 100) };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName, channel]);
 
   // ── Submit → submitPaymentsAnalysis → /PaymentsResults?session=<id>
   const handleSubmit = async () => {
@@ -172,9 +202,14 @@ export default function PaymentsAnalyzer() {
       const payload = {
         monthly_gmv_eur: Number(gmv),
         avg_ticket_eur: Number(avgTicket),
-        intl_pct: Number(intlPct),
+        // In-store: intl is treated as 0 (backend accepts 0 as a valid value;
+        // card-present cross-border is negligible for the ICP — engine's
+        // seed rows leave intl_uplift_bps null so the intl term contributes
+        // nothing on the achievable side either).
+        intl_pct: channel === "in_store" ? 0 : Number(intlPct),
         provider_slug: providerSlug,
         country,
+        channel,
         brand_name: brandName.trim(),
         ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
         ...(website.trim() !== "" ? { website: website.trim() } : {}),
@@ -289,10 +324,56 @@ export default function PaymentsAnalyzer() {
         >
           What are you overpaying on payments?
         </h1>
-        <p className="text-[14px] text-white/55 mb-8">
+        <p className="text-[14px] text-white/55 mb-6">
           A few quick answers. No account required, no data connected. We estimate the gap between what you pay today
           and what a merchant of your size + region should be paying.
         </p>
+
+        {/* Channel toggle — M4-TPV Fase 2B.
+            Placed above the form so the rest of the fields adapt (provider
+            grid switches to TPV options; intl slider hides for in-store). */}
+        <div
+          role="tablist"
+          aria-label="Payment channel"
+          className="mb-8 inline-flex items-center rounded-full p-1"
+          style={{
+            border: "1px solid rgba(255,255,255,0.10)",
+            background: "rgba(255,255,255,0.02)",
+          }}
+        >
+          {[
+            { key: "online",   label: "Online" },
+            { key: "in_store", label: "In-store" },
+          ].map((opt) => {
+            const active = channel === opt.key;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => {
+                  // Reset provider on channel switch — the two grids don't
+                  // overlap ("stripe" online vs "stripe_terminal" in-store).
+                  if (opt.key !== channel) setProviderSlug("");
+                  setChannel(opt.key);
+                }}
+                className="h-8 px-4 rounded-full text-[12px] font-bold transition-colors"
+                style={
+                  active
+                    ? {
+                        background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                        color: "#ffffff",
+                        boxShadow: "0 4px 12px -4px rgba(34,211,238,0.55)",
+                      }
+                    : { background: "transparent", color: "rgba(255,255,255,0.55)" }
+                }
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
 
         {errorBanner && (
           <div
@@ -315,9 +396,15 @@ export default function PaymentsAnalyzer() {
               row. On mobile they stack; on lg they pair (2 cols); on xl they
               spread to 3 cols so the extra desktop width actually earns its
               keep instead of leaving dead space on the right. */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-8">
+          <div className={`grid grid-cols-1 lg:grid-cols-2 ${channel === "online" ? "xl:grid-cols-3" : ""} gap-x-8 gap-y-8`}>
             <AvgTicketInput value={avgTicket} onChange={setAvgTicket} />
-            <IntlSlider value={intlPct} onChange={setIntlPct} />
+            {/* Intl share — online only. In-store: card-present cross-border
+                is negligible for the ICP and none of the seeded in-store rows
+                carry a modeled intl_uplift_bps (all null). Asking would only
+                add noise and produce an "intl uplift not modeled" assumption. */}
+            {channel === "online" && (
+              <IntlSlider value={intlPct} onChange={setIntlPct} />
+            )}
             {/* Country — kept as a native <select>: single-choice from 22
                 options, low frequency, no need for a grid. Lifted from its
                 own row into this one to reclaim the desktop width. */}
@@ -343,16 +430,17 @@ export default function PaymentsAnalyzer() {
           </div>
 
           {/* Provider grid — ProviderGrid owns responsive density internally
-              (2 / 3 / 4 cols). Same enum + same order as the backend contract. */}
+              (2 / 3 / 4 cols). Same enum + same order as the backend contract.
+              Options swap based on channel: online providers vs. in-store TPVs. */}
           <div className="space-y-2.5">
             <div className="flex items-baseline justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
-                Payment provider
+                {channel === "in_store" ? "In-store terminal (TPV)" : "Payment provider"}
               </span>
               <span className="text-[10px] text-white/35">One tap</span>
             </div>
             <ProviderGrid
-              options={PROVIDER_OPTIONS}
+              options={channel === "in_store" ? PROVIDER_OPTIONS_IN_STORE : PROVIDER_OPTIONS_ONLINE}
               value={providerSlug}
               onChange={setProviderSlug}
             />

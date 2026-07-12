@@ -418,6 +418,7 @@ const ALLOWED_SECTOR_SET = new Set<string>(ALLOWED_SECTOR_SLUGS);
 // three, so every other slug in this enum matches ANY|ANY|<region> without
 // ever accidentally borrowing a stripe/paypal/shopify_payments row.
 const ALLOWED_PROVIDER_SLUGS = [
+  // Online providers (unchanged from pre-M4).
   'stripe',
   'paypal',
   'shopify_payments',
@@ -425,9 +426,21 @@ const ALLOWED_PROVIDER_SLUGS = [
   'mollie',
   'checkout_com',
   'sumup',
+  // M4-TPV Fase 2B — in-store TPV providers. Mirror the 4 verified in-store
+  // seed rows. 'sumup' is DUAL-CHANNEL (already listed above): the engine
+  // segments by (provider_slug, channel), so sumup online resolves to the
+  // regional fallback (no verified online sumup row exists) and sumup in_store
+  // hits the verified in-store row. This is safe — no cross-channel leakage.
+  'stripe_terminal',
+  'smile_and_pay',
+  'zettle',
   'other',
 ] as const;
 const ALLOWED_PROVIDER_SET = new Set<string>(ALLOWED_PROVIDER_SLUGS);
+
+// M4-TPV Fase 2B — channel enum. Default 'online' preserves pre-M4 behavior:
+// callers that omit the field get byte-identical results to v1.3.0.
+const ALLOWED_CHANNELS = new Set<string>(['online', 'in_store']);
 
 // Country → region mapping. Region is DERIVED server-side from country; the
 // caller only provides country. This prevents the client from picking a region
@@ -590,6 +603,16 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
   if (!country) return { ok: false, failure: { field: 'country', reason: 'missing' } };
   if (!/^[A-Z]{2}$/.test(country)) return { ok: false, failure: { field: 'country', reason: 'invalid_type' } };
 
+  // channel — optional, default 'online'. When present must be in the enum.
+  // Reserving 'online' as the default ensures pre-M4 callers (no channel in
+  // payload) produce byte-identical results to v1.3.0 for the online cohort.
+  let channel: 'online' | 'in_store' = 'online';
+  if (raw.channel !== undefined && raw.channel !== null && raw.channel !== '') {
+    const chRaw = typeof raw.channel === 'string' ? raw.channel.trim().toLowerCase() : '';
+    if (!ALLOWED_CHANNELS.has(chRaw)) return { ok: false, failure: { field: 'channel', reason: 'not_in_enum' } };
+    channel = chRaw as 'online' | 'in_store';
+  }
+
   // card_mix_debit_pct — optional
   let card_mix_debit_pct: number | undefined = undefined;
   if (raw.card_mix_debit_pct !== undefined && raw.card_mix_debit_pct !== null && raw.card_mix_debit_pct !== '') {
@@ -637,6 +660,7 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
       provider_slug: provider,
       country,
       region,
+      channel,
       brand_name: brand_name_raw,
       ...(card_mix_debit_pct !== undefined ? { card_mix_debit_pct } : {}),
       ...(website !== undefined ? { website } : {}),
@@ -708,6 +732,9 @@ Deno.serve(async (req) => {
       region: v.clean.region,
       provider_slug: v.clean.provider_slug,
       intl_pct: v.clean.intl_pct,
+      // M4-TPV Fase 2B — channel threads through to the engine (v1.4.0).
+      // Default 'online' when the caller omits it is set in validateInput.
+      channel: v.clean.channel,
     };
     const engineResult = calculateGap(engineInput, table.rows!);
     if (!engineResult.ok) {

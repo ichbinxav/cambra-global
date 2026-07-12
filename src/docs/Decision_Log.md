@@ -5,6 +5,66 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-12 — M4-TPV · Fase 2B · UI in-store + Terms + i18n
+
+**Alcance.** Sub-tanda UI de la Fase 2 del M4-TPV (payments in-store). Aterriza la superficie visible del canal in_store: toggle en Analyzer, pill in-store en Results, banner en Landing, Terms §7 channel-agnostic, Terms §8 cerrando el orphan `/ForProviders` (deuda R2), i18n × 3 idiomas. **Cero cambios en el motor** (Fase 2A ya lo dejó cerrado, byte-idéntico a 1.3.0 en el path online).
+
+**Frentes ejecutados:**
+
+**1. `PaymentsAnalyzer.jsx` — toggle canal + form adaptativo.**
+- Nuevo state `channel` (default `"online"` — retrocompat total).
+- Toggle pill "Online / In-store" arriba del form. Cambiar de canal resetea `providerSlug` (los dos grids no se solapan — un merchant que eligió Stripe online no puede quedarse con "stripe_terminal" activo al cambiar a in-store).
+- `PROVIDER_OPTIONS_ONLINE` vs `PROVIDER_OPTIONS_IN_STORE`: dos enums separados. In-store lista los 4 seeded verified + "Traditional bank TPV" como fallback (routea a `ANY|ANY|<region>|in_store` sin colisionar con las verified rows).
+- `IntlSlider` **oculto** en canal in_store — el motor seeded lleva `intl_uplift_bps: null` en todas las in-store rows (Fase 2A), así que preguntar generaría solo la assumption "not modeled" sin afectar el número. Se envía `intl_pct: 0` al backend en ese caso.
+- `progress` recalculado según canal: online = 6 required, in_store = 5 required.
+- Payload al backend incluye `channel` explícito.
+- Grid del sub-row responsive: `xl:grid-cols-3` en online (ticket + intl + country) → `lg:grid-cols-2` en in_store (ticket + country solamente, sin dead space por el intl que ya no está).
+
+**2. `submitPaymentsAnalysis/entry.ts` — validación + thread-through al motor.**
+- `ALLOWED_PROVIDER_SLUGS` ampliado con 3 in-store: `stripe_terminal`, `smile_and_pay`, `zettle`. `sumup` era ya dual-channel (existía para online → ahora routea correcto: online → regional fallback / in_store → verified row). `zettle` es dual también en el enum (útil si un día alguien quiere Zettle online; hoy solo aterriza en in-store real).
+- Nuevo enum runtime `ALLOWED_CHANNELS = {online, in_store}`. Validación: campo opcional con default `online` — request pre-M4 sin `channel` es byte-idéntico a antes.
+- `v.clean.channel` incluido en `engineInput` → llega al motor v1.4.0 (Fase 2A ya lo acepta).
+- Persistido en `input_snapshot` de `PaymentsAnalysisSession` implícitamente vía el spread de `v.clean` — el schema es `type: object` sin enum lock, así que aditivo sin migración.
+
+**3. `PaymentsGapCard.jsx` — pill in-store en Results.**
+- Lee `engineResult.cohort.channel` (nuevo field en Fase 2A). Default `online` cuando ausente → pre-M4 rows no ven pill (byte-idéntico visualmente).
+- Pill morada "In-store" solo se renderiza cuando `channel === "in_store"`. Convive con VERIFIED / PUBLIC PRICING / REGIONAL ESTIMATE sin desplazar el layout (flex-wrap añadido al eyebrow row).
+
+**4. `Landing.jsx` + `InStoreUpsellStrip.jsx` — banner posicionamiento.**
+- Componente nuevo focused (86 líneas): glass panel cyan, icono Store, eyebrow + título + lista provider + CTA "Auditar mi TPV" → `/Analyzer`.
+- Insertado en Landing entre `<Hero />` y `<ProblemSectionWow />` — el orden narrativo (audit works for TPV too → problem → how it works → pricing → recovery) queda coherente.
+- Sin cifras ilustrativas: el floor in-store es ticket-dependent (SumUp < €25 vs Stripe Terminal ≥ €25), simplificar sería mentir. La cifra real se obtiene del Analyzer.
+
+**5. `Terms.jsx` — §7 channel-agnostic + §8 cierre del orphan `/ForProviders`.**
+- §7 reescrito: `"renegotiate your card-payment rates with your PSP"` → `"renegotiate your card-payment rates — online (PSP) and in-store (TPV / physical terminal) — with your current provider, or migrate you to a better one where relevant"`. Regla (c) también: `"evidenced by actual PSP statements"` → `"evidenced by actual PSP or TPV provider statements"`. Cero cambios sustantivos en el compromiso legal (25%, 24-month agreement, no fee unless recovery, mandate escrito) — solo se explicita que TPV cuenta como canal cubierto.
+- §8 cierra la deuda R2: `"Details of the provider program are described on our For Providers page (/ForProviders)."` → `"Provider partnership terms are disclosed to any interested provider upon written request to support@cambra.global."` — reemplaza el link muerto por un canal de contacto directo. La entrada de KNOWN_DEBT R2 §8 pasa a resuelta.
+
+**6. i18n × 3 idiomas — 4 keys nuevas por idioma.**
+- Bloque nuevo `landing_upsell_in_store_*` con keys `eyebrow`, `title`, `desc`, `cta` en EN / FR / ES. Traducciones nativas honestas — el desc lista los proveedores literales del seed (SumUp / Stripe Terminal / Smile & Pay / Zettle / traditional bank acquirer) sin cambio semántico entre idiomas.
+- Cero keys existentes tocadas — todo aditivo.
+
+**Restricciones respetadas:**
+- **Cero cambios en el motor.** `paymentsGap.js` byte-idéntico a la sub-tanda 2A. Los 3 SYNC blocks (`src` + `submitPaymentsAnalysis` + `computeStripeVerifiedGap`) siguen consistentes tras esta sub-tanda porque ninguno se ha tocado.
+- **Cero cambios en `computeStripeVerifiedGap`** (verified path). El canal in-store por vía verified (invoice-averaged desde TPV provider statements) es Fase futura — no en 2B.
+- **Cero cambios en tests** — el motor no se ha tocado, así que `paymentsGap.inStore.test.js` (Fase 2A) sigue verde y `paymentsGap.test.js` original también. Suite delta esperado: 0.
+- **Cero cambios en `PricingDual`, `ProblemSectionWow`, `HowItWorksSection`, `SavingsCurveChart`, `TestimonialsCarousel`, `FounderLetter`, `StopLeavingMarginCTA`** — la landing conserva la marca de referencia única R5 (€1M GMV → €12k+/24mo) intacta. In-store no crea una segunda cifra ilustrativa; solo señala que el canal está cubierto.
+- **Cero cambios en Privacy, Help, Pricing FAQ.** Los alcances 5-7 del plan 2B original (pricing FAQ + help FAQs) se aplazan a una micro-sub-tanda 2C dedicada si el usuario lo pide — no son bloqueantes para el path visible del in-store.
+
+**Estado post-Fase 2B.** Path in-store 100% alcanzable end-to-end desde la UI:
+1. Merchant hace click en "Audit my TPV" en la landing → llega a `/Analyzer`.
+2. Toggle activa canal in_store → provider grid muestra SumUp / Stripe Terminal / Smile & Pay / Zettle / Traditional bank TPV.
+3. Merchant introduce GMV mensual (in-store), ticket medio, país, provider → submit.
+4. `submitPaymentsAnalysis` valida canal + persiste session + invoca motor v1.4.0.
+5. Motor selecciona row in-store correcta según `(provider, region, channel='in_store')`, amortiza rental si aplica, emite assumption con `TERMINAL_RENTAL_NOTE` cuando la fila tiene rental > 0.
+6. Redirige a `/Results?session=<id>` → PaymentsGapCard muestra pill "In-store" + gap correcto.
+
+**Deudas descubiertas en 2B (tracked en KNOWN_DEBT):**
+- Ninguna nueva. Las 2 deudas ya listadas de Fase 2A (Zettle FR pending + UI in-store) — la segunda queda **resuelta** con esta sub-tanda.
+
+**Archivos tocados:** `src/pages/PaymentsAnalyzer.jsx`, `src/components/paymentsResults/PaymentsGapCard.jsx`, `src/components/landing/InStoreUpsellStrip.jsx` (nuevo), `src/pages/Landing.jsx`, `src/pages/Terms.jsx`, `src/lib/i18n.jsx`, `base44/functions/submitPaymentsAnalysis/entry.ts`, `src/docs/Decision_Log.md` (este), `src/docs/KNOWN_DEBT.md` (deuda 2B cerrada).
+
+---
+
 ## 2026-07-12 — M4-TPV · Fase 2A · Motor `payments-gap-1.4.0` + seed in-store
 
 **Alcance.** Sub-tanda backend de la Fase 2 del M4-TPV (payments in-store). Extiende el motor `paymentsGap` a canal `in_store` sin tocar el path online (byte-idéntico 1.3.0), amplía la entidad `PaymentsRateTable` con dimensión `channel` + fields de rental, siembra 4 filas verified in-store + 4 fallbacks, y añade tests dedicados. **Sub-tanda 2B (UI Analyzer toggle, Results dual-canal, Landing upsell strip, Terms §7/§8, i18n × 3) va en el chunk siguiente.**

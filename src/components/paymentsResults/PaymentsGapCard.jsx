@@ -33,6 +33,9 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
   // real Stripe balance-transaction data. The form path never reaches
   // mode==="verified" — it stops at "estimated".
   const isMeasured = engineResult?.mode === "verified";
+  // M4-TPV Fase 2B — channel from cohort. Default 'online' preserves pre-M4
+  // behavior for legacy verified rows without the field.
+  const channel = engineResult?.cohort?.channel === "in_store" ? "in_store" : "online";
 
   const gapPct = isFinite(current) && isFinite(achievable) ? ((current - achievable) / 100).toFixed(2) : null;
   const txCount = sampleMetrics?.tx_count_charges_90d;
@@ -58,10 +61,25 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
           Order matters: mode check FIRST — a verified row still carries
           cohort.verified === true from its rate-table row, so without the
           mode gate every verified analysis would land on the weaker badge. */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
         <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
           Payments gap · {inputSnapshot?.country || "—"}
         </span>
+        {/* M4-TPV Fase 2B — channel pill (in-store / online). Only shown for
+            in_store to keep online results visually unchanged (default state). */}
+        {channel === "in_store" && (
+          <span
+            title="Analysis based on in-store (physical terminal) payment rates."
+            className="text-[9px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full"
+            style={{
+              background: "rgba(168,85,247,0.12)",
+              color: "rgb(216,180,254)",
+              border: "1px solid rgba(168,85,247,0.35)",
+            }}
+          >
+            In-store
+          </span>
+        )}
         {isMeasured ? (
           <span
             title="Measured from your real Stripe transaction data over the last 90 days."

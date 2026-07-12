@@ -571,7 +571,9 @@ Todo coherente con posicionamiento payments-only + in-store. **No requiere ajust
 
 ### 2026-07-12 · R2 · Terms §8 — referencia legal huérfana a `/ForProviders`
 
-**Contexto.** Detectado durante R2 al leer `Terms.jsx` completo. §8 "Provider compensation" cierra con:
+**Estado:** ✅ RESUELTA 2026-07-12 en la Fase 2B del M4-TPV — §8 reescrito eliminando el link muerto: `"Details of the provider program are described on our For Providers page (/ForProviders)."` → `"Provider partnership terms are disclosed to any interested provider upon written request to support@cambra.global."` Aprovechado el mismo chunk que actualizaba §7 para el canal in-store.
+
+**Contexto histórico.** Detectado durante R2 al leer `Terms.jsx` completo. §8 "Provider compensation" cerraba con:
 > *"Details of the provider program are described on our For Providers page (/ForProviders)."*
 
 **Problema.** La ruta `/ForProviders` fue redirigida a `/` en Fase R1 (deprecación del multi-vertical). Un usuario que haga click en el link desde Terms cae en la landing en vez de en la página del programa de proveedores (que ya no existe).
@@ -698,7 +700,9 @@ Cero funcional. El motor gestiona correctamente `verified: false` (banda más an
 
 ## M4-TPV — UI in-store pendiente (Fase 2B)
 
-**Estado:** activa (bloqueada por Fase 2A, ejecución en Fase 2B)
+**Estado:** ✅ RESUELTA 2026-07-12 (Fase 2B ejecutada) — toggle Analyzer + pill Results + banner Landing + Terms §7/§8 + i18n × 3. Los alcances menores (Pricing FAQ + Help FAQs) quedan opcionales para micro-sub-tanda 2C si producto lo pide.
+
+**Original:** activa (bloqueada por Fase 2A, ejecución en Fase 2B)
 **Origen:** M4-TPV Fase 2A cierre (2026-07-12) — split intencional de la Fase 2 en dos sub-tandas
 
 ### Contexto
