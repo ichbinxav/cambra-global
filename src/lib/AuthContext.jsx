@@ -19,6 +19,40 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = async () => {
+    // #1 FIX Layer B — MUST run BEFORE the public-landing early-return.
+    //
+    // Root cause of the "user lands on / after signup" bug:
+    // Base44's SIGNUP path drops from_url and returns the user to "/". The
+    // landing is public → AuthContext hits the early-return below and NEVER
+    // calls checkUserAuth. Layer B rescue that used to live inside
+    // checkUserAuth was therefore unreachable exactly when it was needed.
+    //
+    // Fix: read the pending anon session id here (synchronous localStorage
+    // access, no network) BEFORE any short-circuit. If present + valid UUID
+    // v4 + we're not already on /Results, redirect immediately. Idempotent:
+    // the key is removed before navigating so a second landing does nothing.
+    try {
+      if (typeof window !== 'undefined') {
+        const pending = localStorage.getItem('cambra_pending_anon_session');
+        if (pending) {
+          const looksLikeUuid =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(pending);
+          const onResults =
+            window.location.pathname === '/Results' &&
+            window.location.search.includes('session=');
+          if (looksLikeUuid && !onResults) {
+            localStorage.removeItem('cambra_pending_anon_session');
+            window.location.replace(`/Results?session=${encodeURIComponent(pending)}`);
+            return;
+          }
+          // Invalid shape or already on Results → clean up silently.
+          if (!looksLikeUuid || onResults) {
+            localStorage.removeItem('cambra_pending_anon_session');
+          }
+        }
+      }
+    } catch { /* storage unavailable → nothing we can do, fall through */ }
+
     // Hard stop for public homepage: no auth or app calls on '/'
     const isPublicLandingPath = typeof window !== 'undefined' && (
       window.location.pathname === '/' ||
@@ -126,42 +160,11 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
 
-      // #1 FIX Layer B (2026-07-12) — rescue anonymous-audit continuity.
-      //
-      // Root cause: base44.auth.redirectToLogin(nextUrl) encodes nextUrl into
-      // /login?from_url=...; that from_url is respected by the LOGIN branch
-      // but can be dropped by the SIGNUP branch (new-account creation, which
-      // is exactly what the "Stop overpaying" CTA is designed to trigger).
-      // When that happens, the freshly-authenticated user lands on "/" (the
-      // landing page) instead of their /Results?session=<uuid> — the
-      // conversion moment breaks and the audit appears "lost".
-      //
-      // Layer A (URL ?next=) handles the login branch. This layer handles the
-      // signup branch: PaymentsResults writes `cambra_pending_anon_session`
-      // to localStorage right before firing redirectToLogin. As soon as the
-      // user finishes signup and this AuthContext confirms authentication,
-      // we detect that pending id and route them to their Results page.
-      //
-      // Idempotent: the key is removed immediately after read, so a second
-      // login (later) doesn't ping-pong the user. Only fires when NOT already
-      // on /Results (avoids interfering with the normal login-branch flow
-      // that already lands the user on the right URL via from_url).
-      try {
-        const pending = localStorage.getItem("cambra_pending_anon_session");
-        if (pending && typeof window !== "undefined") {
-          localStorage.removeItem("cambra_pending_anon_session");
-          const onResults =
-            window.location.pathname === "/Results" &&
-            window.location.search.includes("session=");
-          // UUID v4 shape check — same regex as PaymentsResults reader guard.
-          const looksLikeUuid =
-            /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(pending);
-          if (looksLikeUuid && !onResults) {
-            window.location.replace(`/Results?session=${encodeURIComponent(pending)}`);
-            return;
-          }
-        }
-      } catch { /* storage unavailable → Layer A / from_url still applies */ }
+      // Layer B rescue for anonymous-audit continuity now lives at the top
+      // of checkAppState() so it runs BEFORE the public-landing early-return.
+      // That path is exactly what Base44's signup branch triggers (drops
+      // from_url → lands user on "/") and the previous placement here was
+      // never reached for that case.
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
