@@ -24,13 +24,20 @@ import ShopDomainCaptureForm from "@/components/connect/ShopDomainCaptureForm";
  * No business logic touched. Pure UX wired to oauthConnector + dataSyncAgent.
  */
 
+// R2 (2026-07-12) — payments-only surface.
+// Removed: shipping, banking, accounting, marketing, saas — the platform is
+// payments-only and these categories advertised a multi-vertical product that
+// no longer exists. Only payments + commerce remain (commerce covers the
+// e-commerce platforms whose OAuth data feeds the payments analysis: Shopify,
+// WooCommerce, BigCommerce).
+// The `CLIENT_REGISTRY_MIRROR` entries for `accounting` providers (QuickBooks,
+// Xero, Sage, FreshBooks, Odoo) and `shipping` demo provider are ALSO removed
+// below — a provider with a category no longer in this map falls into
+// `other` and pollutes the UI. Payments providers today: demo_provider (test
+// harness), and the real Stripe connection which lives on its own card in
+// `/ConnectTools`, not in this legacy Connect surface.
 const CATEGORY_META = {
   payments:   { label: "Payments",   icon: CreditCard },
-  shipping:   { label: "Shipping",   icon: Truck },
-  banking:    { label: "Banking",    icon: Building2 },
-  accounting: { label: "Accounting", icon: Building2 },
-  marketing:  { label: "Marketing",  icon: Mail },
-  saas:       { label: "Tools",      icon: Layers },
   commerce:   { label: "Commerce",   icon: Layers },
   other:      { label: "Other",      icon: Layers },
 };
@@ -61,7 +68,12 @@ const CLIENT_REGISTRY_MIRROR = {
   },
   demo_apikey_provider: {
     display_name: "Demo API Key Provider",
-    category: "shipping",
+    // R2 — re-homed from "shipping" (deleted category) to "payments". This is
+    // the test-harness provider for the api_key connect path; its category is
+    // an implementation detail, not a customer-facing vertical. Placing it in
+    // "payments" keeps the harness reachable in the UI without reintroducing
+    // shipping as a category.
+    category: "payments",
     description: "Fictional API-key provider to verify the api_key path.",
     auth_method: "api_key",
     api_key_help_url: "https://demo.example.invalid/account/api-keys",
@@ -114,67 +126,13 @@ const CLIENT_REGISTRY_MIRROR = {
     api_key_help_url: "https://developer.bigcommerce.com/docs/start/authentication/api-accounts",
     api_key_help_text: "In BigCommerce → Settings → API Accounts create an account with read scope on Orders, then paste the Access Token.",
   },
-  quickbooks: {
-    display_name: "QuickBooks",
-    category: "accounting",
-    description: "Reads supplier bills (= brand expenses).",
-    auth_method: "oauth",
-    requires_shop_domain: true,
-    shop_domain_field_label: "Company ID (realmId)",
-    shop_domain_placeholder: "9341452991318123",
-    shop_domain_help_text: "Your QuickBooks Company ID (also called realmId) — a long numeric string. Find it in QuickBooks Online → Settings (gear icon) → Account and settings → Billing & subscription.",
-    shop_domain_help_url: "https://developer.intuit.com/app/developer/qbo/docs/learn/explore-the-quickbooks-online-api/explore-quickbooks-online-data#whats-the-company-id",
-  },
-  odoo: {
-    display_name: "Odoo",
-    category: "accounting",
-    description: "Reads supplier bills. Requires Odoo Custom plan (REST API).",
-    auth_method: "api_key",
-    requires_shop_domain: true,
-    shop_domain_field_label: "Your Odoo domain",
-    shop_domain_placeholder: "miempresa.odoo.com",
-    shop_domain_help_text: "Your full Odoo instance domain (e.g. \"miempresa.odoo.com\"). No scheme, no path.",
-    shop_domain_help_url: "https://www.odoo.com/documentation/17.0/developer/reference/external_api.html",
-    api_key_help_url: "https://www.odoo.com/documentation/17.0/developer/reference/external_api.html",
-    api_key_help_text: "In Odoo → Preferences → Account Security → New API Key. Requires Odoo Custom plan — the external REST API is not available on Free/Standard.",
-  },
-  freshbooks: {
-    display_name: "FreshBooks",
-    category: "accounting",
-    description: "Reads expenses (= brand expenses).",
-    auth_method: "oauth",
-    requires_shop_domain: true,
-    shop_domain_field_label: "FreshBooks accountId",
-    shop_domain_placeholder: "AbC123dEf456",
-    shop_domain_help_text: "Your FreshBooks accountId — an alphanumeric string from /auth/api/v1/users/me → business_memberships[].business.account_id. NOT the businessId. If you have multiple businesses in FreshBooks, paste the accountId of the one you want to connect.",
-    shop_domain_help_url: "https://www.freshbooks.com/api/me_endpoint",
-  },
-  // Xero / Sage — per-integration identifier rides in a HEADER (not URL).
-  // Captured via the same shop_domain slot used by URL-based providers; the
-  // sync engine interpolates {shop} into static_headers values (Xero-Tenant-Id
-  // for Xero, X-Business for Sage). Same UX pattern as QuickBooks / FreshBooks.
-  xero: {
-    display_name: "Xero",
-    category: "accounting",
-    description: "Reads supplier bills (= brand expenses).",
-    auth_method: "oauth",
-    requires_shop_domain: true,
-    shop_domain_field_label: "Xero Tenant ID",
-    shop_domain_placeholder: "00000000-0000-0000-0000-000000000000",
-    shop_domain_help_text: "Your Xero Tenant ID (UUID). Find it by calling GET https://api.xero.com/connections after authorizing — the response lists every organisation you have access to with its tenantId. If you have multiple organisations in Xero, paste the tenantId of the one you want to connect.",
-    shop_domain_help_url: "https://developer.xero.com/documentation/guides/oauth2/auth-flow/#5-call-the-api",
-  },
-  sage: {
-    display_name: "Sage",
-    category: "accounting",
-    description: "Reads supplier invoices (= brand expenses).",
-    auth_method: "oauth",
-    requires_shop_domain: true,
-    shop_domain_field_label: "Sage Business ID",
-    shop_domain_placeholder: "abc12345-6789-0abc-def0-1234567890ab",
-    shop_domain_help_text: "Your Sage Business ID. Open Sage Accounting → Settings → Business Settings, or call GET https://api.accounting.sage.com/v3.1/businesses to list your businesses. If you have multiple businesses, paste the ID of the one you want to connect.",
-    shop_domain_help_url: "https://developer.sage.com/accounting/guides/getting-started/",
-  },
+  // R2 (2026-07-12) — Accounting providers (QuickBooks, Odoo, FreshBooks,
+  // Xero, Sage) removed from the client mirror. They read supplier bills to
+  // detect brand expenses across verticals — feature of the pre-pivot
+  // multi-vertical product. In payments-only, expense-side accounting data
+  // isn't consumed by any live surface. Backend registry entries are kept
+  // (dormant), so re-enabling later is a one-line mirror addition. Deletion
+  // rationale documented in Decision_Log 2026-07-12 · R2.
 };
 
 export default function ConnectIntegrations() {

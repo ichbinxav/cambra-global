@@ -101,8 +101,6 @@ const DICT = {
     benchmark_label:      "Backed by real data",
     benchmark_headline:   "Built on anonymized data from European independent brands.",
     benchmark_payments:   "Average 1.7% optimised payment rate for EU small brands",
-    benchmark_shipping:   "Average €4.80/pkg for brands shipping 500+ orders/mo",
-    benchmark_saas:       "Average 2.8% of revenue on software tools",
     benchmark_footnote:   "All benchmarks are anonymized and aggregated across brands. No individual company data is ever exposed. Minimum 5 brands per cohort.",
 
     /* landing — pricing/cta */
@@ -156,8 +154,6 @@ const DICT = {
     field_payment_provider: "Who processes your payments?",
     field_payment_fee:    "What % do you pay in payment fees?",
     field_shipments:      "How many orders do you ship per month?",
-    field_shipping_cost:  "Monthly shipping cost?",
-    field_saas_spend:     "How much do you spend on software tools monthly?",
     confirm_cta:          "Confirm my stack →",
 
     /* analyzer — step 3 */
@@ -171,8 +167,6 @@ const DICT = {
     progress_mapping:         "Mapping your infrastructure…",
     progress_benchmarks:      "Loading benchmarks for {country} {tier}…",
     progress_payments:        "Calculating payment savings…",
-    progress_shipping:        "Calculating shipping savings…",
-    progress_saas:            "Calculating SaaS savings…",
     progress_recommendations: "Building your recommendations…",
     progress_ready:           "Your report is ready ✓",
 
@@ -192,17 +186,6 @@ const DICT = {
     payments_cta:                 "Verify with Stripe →",
     payments_verified:            "Verified with Stripe ✓",
     payments_provisional:         "Provisional · partial Stripe data",
-    shipping_title:               "Shipping",
-    shipping_your_cost:           "Your avg cost",
-    shipping_benchmark:           "Network benchmark",
-    shipping_per_shipment:        "/shipment",
-    shipping_opportunity:         "/yr opportunity",
-    shipping_cta:                 "Add shipping data",
-    saas_title:                   "SaaS & Tools",
-    saas_monthly:                 "Monthly spend",
-    saas_detected:                "{n} tools detected",
-    saas_opportunity:             "/yr opportunity",
-    saas_cta:                     "Review detected tools",
     infrastructure_title:         "Your infrastructure",
     infrastructure_sub:           "Tools detected across your stack",
     infrastructure_empty:         "Connect your tools to map your infrastructure",
@@ -305,8 +288,6 @@ const DICT = {
     select_country:       "Select your country",
     select_provider:      "Select a provider",
     select_carrier:       "Select a carrier",
-    field_shipping_provider: "How do you ship orders?",
-    field_saas_tools:     "What software tools do you use?",
     field_banking_fees_label: "Banking fees (monthly)",
     physical_store_q:    "Do you have a physical store?",
     yes:                  "Yes",
@@ -369,8 +350,6 @@ const DICT = {
     ai_confidence:        "Confidence {pct}%",
     ai_pending_review:    "Pending admin review.",
     agent_payments:       "Payments Agent",
-    agent_shipping:       "Shipping Agent",
-    agent_saas:           "SaaS Agent",
     agent_recommendation: "Recommendation Agent",
     agent_general:        "General Agent",
     status_running:       "Running",
@@ -390,18 +369,9 @@ const DICT = {
     hours_ago:            "{n}h ago",
     days_ago:             "{n}d ago",
 
-    /* FIX 1 — ConnectTools category labels */
+    /* FIX 1 — ConnectTools category labels (R2: reduced to payments+commerce) */
     cat_payments:         "Payments",
     cat_commerce:         "Commerce",
-    cat_banking:          "Banking",
-    cat_shipping:         "Shipping",
-    cat_marketing:        "Marketing",
-    cat_finance:          "Finance",
-    cat_support:          "Support",
-    cat_hr:               "HR",
-    cat_telecom:          "Telecom",
-    cat_logistics:        "Logistics",
-    cat_analytics:        "Analytics",
 
     /* FIX 2 — Dashboard strings */
     savings_trend:        "Savings Trend",
@@ -436,8 +406,6 @@ const DICT = {
     vconf_verified_stripe:     "Verified · Stripe",
     vconf_verified_partial:    "Verified · partial data",
     vertical_payments:         "payments",
-    vertical_shipping:         "shipping",
-    vertical_saas:             "SaaS",
 
     /* Chunk 5C — auto-materialize toasts after manual sync */
     auto_verify_running:    "Calculating your verified savings…",
@@ -517,8 +485,6 @@ const DICT = {
     benchmark_label:      "Basé sur des données réelles",
     benchmark_headline:   "Construit sur des données anonymisées de marques indépendantes européennes.",
     benchmark_payments:   "Taux de paiement optimisé moyen de 1,7% pour les petites marques européennes",
-    benchmark_shipping:   "Moyenne de 4,80€/colis pour les marques expédiant 500+ commandes/mois",
-    benchmark_saas:       "Moyenne de 2,8% du CA en outils logiciels",
     benchmark_footnote:   "Tous les benchmarks sont anonymisés et agrégés entre marques. Aucune donnée individuelle n'est jamais exposée. Minimum 5 marques par cohorte.",
 
     pricing_headline:     "Commencez gratuitement. Payez uniquement sur les économies réalisées.",
@@ -568,8 +534,6 @@ const DICT = {
     field_payment_provider: "Qui traite vos paiements ?",
     field_payment_fee:    "Quel % payez-vous en frais de paiement ?",
     field_shipments:      "Combien de commandes expédiez-vous par mois ?",
-    field_shipping_cost:  "Coût d'expédition mensuel ?",
-    field_saas_spend:     "Combien dépensez-vous en outils logiciels par mois ?",
     confirm_cta:          "Confirmer mon stack →",
 
     az_step3_title:       "Passez en données vérifiées",
@@ -581,8 +545,6 @@ const DICT = {
     progress_mapping:         "Cartographie de votre infrastructure…",
     progress_benchmarks:      "Chargement des benchmarks pour {country} {tier}…",
     progress_payments:        "Calcul des économies sur les paiements…",
-    progress_shipping:        "Calcul des économies sur l'expédition…",
-    progress_saas:            "Calcul des économies sur les outils SaaS…",
     progress_recommendations: "Construction de vos recommandations…",
     progress_ready:           "Votre rapport est prêt ✓",
 
@@ -601,17 +563,6 @@ const DICT = {
     payments_cta:                 "Vérifier avec Stripe →",
     payments_verified:            "Vérifié avec Stripe ✓",
     payments_provisional:         "Provisoire · données Stripe partielles",
-    shipping_title:               "Expédition",
-    shipping_your_cost:           "Votre coût moyen",
-    shipping_benchmark:           "Benchmark réseau",
-    shipping_per_shipment:        "/envoi",
-    shipping_opportunity:         "/an d'opportunité",
-    shipping_cta:                 "Ajouter des données d'expédition",
-    saas_title:                   "SaaS & Outils",
-    saas_monthly:                 "Dépenses mensuelles",
-    saas_detected:                "{n} outils détectés",
-    saas_opportunity:             "/an d'opportunité",
-    saas_cta:                     "Examiner les outils détectés",
     infrastructure_title:         "Votre infrastructure",
     infrastructure_sub:           "Outils détectés dans votre stack",
     infrastructure_empty:         "Connectez vos outils pour cartographier votre infrastructure",
@@ -708,8 +659,6 @@ const DICT = {
     select_country:       "Sélectionnez votre pays",
     select_provider:      "Sélectionnez un prestataire",
     select_carrier:       "Sélectionnez un transporteur",
-    field_shipping_provider: "Comment expédiez-vous les commandes ?",
-    field_saas_tools:     "Quels outils logiciels utilisez-vous ?",
     field_banking_fees_label: "Frais bancaires (mensuels)",
     physical_store_q:    "Avez-vous un magasin physique ?",
     yes:                  "Oui",
@@ -769,8 +718,6 @@ const DICT = {
     ai_confidence:        "Confiance {pct}%",
     ai_pending_review:    "En attente de revue admin.",
     agent_payments:       "Agent Paiements",
-    agent_shipping:       "Agent Expédition",
-    agent_saas:           "Agent SaaS",
     agent_recommendation: "Agent Recommandations",
     agent_general:        "Agent Général",
     status_running:       "En cours",
@@ -789,18 +736,9 @@ const DICT = {
     hours_ago:            "il y a {n} h",
     days_ago:             "il y a {n} j",
 
-    /* FIX 1 — ConnectTools category labels */
+    /* FIX 1 — ConnectTools category labels (R2: reduced to payments+commerce) */
     cat_payments:         "Paiements",
     cat_commerce:         "Commerce",
-    cat_banking:          "Banque",
-    cat_shipping:         "Expédition",
-    cat_marketing:        "Marketing",
-    cat_finance:          "Finance",
-    cat_support:          "Support",
-    cat_hr:               "Ressources Humaines",
-    cat_telecom:          "Télécom",
-    cat_logistics:        "Logistique",
-    cat_analytics:        "Analytique",
 
     /* FIX 2 — Dashboard strings */
     savings_trend:        "Tendance des économies",
@@ -835,8 +773,6 @@ const DICT = {
     vconf_verified_stripe:     "Vérifié · Stripe",
     vconf_verified_partial:    "Vérifié · données partielles",
     vertical_payments:         "paiements",
-    vertical_shipping:         "expédition",
-    vertical_saas:             "SaaS",
 
     /* Chunk 5C — auto-materialize toasts after manual sync */
     auto_verify_running:    "Calcul de votre économie vérifiée…",
@@ -916,8 +852,6 @@ const DICT = {
     benchmark_label:      "Basado en datos reales",
     benchmark_headline:   "Construido sobre datos anonimizados de marcas independientes europeas.",
     benchmark_payments:   "Tasa de pago optimizada media del 1,7% para pequeñas marcas europeas",
-    benchmark_shipping:   "Media de 4,80€/paquete para marcas con 500+ envíos/mes",
-    benchmark_saas:       "Media del 2,8% de la facturación en herramientas de software",
     benchmark_footnote:   "Todos los benchmarks son anonimizados y agregados entre marcas. Ningún dato individual se expone jamás. Mínimo 5 marcas por cohorte.",
 
     pricing_headline:     "Empieza gratis. Paga solo cuando ahorres.",
@@ -967,8 +901,6 @@ const DICT = {
     field_payment_provider: "¿Quién procesa tus pagos?",
     field_payment_fee:    "¿Qué % pagas en comisiones de pago?",
     field_shipments:      "¿Cuántos pedidos envías al mes?",
-    field_shipping_cost:  "¿Coste de envío mensual?",
-    field_saas_spend:     "¿Cuánto gastas en herramientas de software al mes?",
     confirm_cta:          "Confirmar mi stack →",
 
     az_step3_title:       "Pasa a datos verificados",
@@ -980,8 +912,6 @@ const DICT = {
     progress_mapping:         "Mapeando tu infraestructura…",
     progress_benchmarks:      "Cargando benchmarks para {country} {tier}…",
     progress_payments:        "Calculando ahorros en pagos…",
-    progress_shipping:        "Calculando ahorros en envíos…",
-    progress_saas:            "Calculando ahorros en SaaS…",
     progress_recommendations: "Construyendo tus recomendaciones…",
     progress_ready:           "Tu informe está listo ✓",
 
@@ -1000,17 +930,6 @@ const DICT = {
     payments_cta:                 "Verificar con Stripe →",
     payments_verified:            "Verificado con Stripe ✓",
     payments_provisional:         "Provisional · datos Stripe parciales",
-    shipping_title:               "Envíos",
-    shipping_your_cost:           "Tu coste medio",
-    shipping_benchmark:           "Benchmark de red",
-    shipping_per_shipment:        "/envío",
-    shipping_opportunity:         "/año de oportunidad",
-    shipping_cta:                 "Añadir datos de envío",
-    saas_title:                   "SaaS y Herramientas",
-    saas_monthly:                 "Gasto mensual",
-    saas_detected:                "{n} herramientas detectadas",
-    saas_opportunity:             "/año de oportunidad",
-    saas_cta:                     "Revisar herramientas detectadas",
     infrastructure_title:         "Tu infraestructura",
     infrastructure_sub:           "Herramientas detectadas en tu stack",
     infrastructure_empty:         "Conecta tus herramientas para mapear tu infraestructura",
@@ -1107,8 +1026,6 @@ const DICT = {
     select_country:       "Selecciona tu país",
     select_provider:      "Selecciona un proveedor",
     select_carrier:       "Selecciona un transportista",
-    field_shipping_provider: "¿Cómo envías los pedidos?",
-    field_saas_tools:     "¿Qué herramientas de software usas?",
     field_banking_fees_label: "Comisiones bancarias (mensuales)",
     physical_store_q:    "¿Tienes tienda física?",
     yes:                  "Sí",
@@ -1168,8 +1085,6 @@ const DICT = {
     ai_confidence:        "Confianza {pct}%",
     ai_pending_review:    "Pendiente de revisión admin.",
     agent_payments:       "Agente de Pagos",
-    agent_shipping:       "Agente de Envíos",
-    agent_saas:           "Agente SaaS",
     agent_recommendation: "Agente de Recomendaciones",
     agent_general:        "Agente General",
     status_running:       "En curso",
@@ -1188,18 +1103,9 @@ const DICT = {
     hours_ago:            "hace {n} h",
     days_ago:             "hace {n} d",
 
-    /* FIX 1 — ConnectTools category labels */
+    /* FIX 1 — ConnectTools category labels (R2: reduced to payments+commerce) */
     cat_payments:         "Pagos",
     cat_commerce:         "Comercio",
-    cat_banking:          "Banca",
-    cat_shipping:         "Envíos",
-    cat_marketing:        "Marketing",
-    cat_finance:          "Finanzas",
-    cat_support:          "Soporte",
-    cat_hr:               "RRHH",
-    cat_telecom:          "Telecom",
-    cat_logistics:        "Logística",
-    cat_analytics:        "Analítica",
 
     /* FIX 2 — Dashboard strings */
     savings_trend:        "Tendencia de ahorros",
@@ -1234,8 +1140,6 @@ const DICT = {
     vconf_verified_stripe:     "Verificado · Stripe",
     vconf_verified_partial:    "Verificado · datos parciales",
     vertical_payments:         "pagos",
-    vertical_shipping:         "envíos",
-    vertical_saas:             "SaaS",
 
     /* Chunk 5C — auto-materialize toasts after manual sync */
     auto_verify_running:    "Calculando tu ahorro verificado…",

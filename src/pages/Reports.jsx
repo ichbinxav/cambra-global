@@ -55,11 +55,15 @@ export default function Reports() {
     })();
   }, []);
 
+  // R2 (2026-07-12) — payments-only chart. Removed Logistics
+  // (r.shipping_savings) and Commerce SaaS (r.saas_savings) series — those
+  // fields still exist on AnalyzerResult for legacy rows but are always 0 in
+  // the payments-only product, and rendering them as chart bars advertised a
+  // multi-vertical offering that no longer exists. The TPE report block below
+  // stays (in-store terminal payments = same product, offline channel).
   const chartData = results.slice().reverse().map(r => ({
     date: format(new Date(r.created_date), "MMM d"),
     Payments: r.payment_savings || 0,
-    Logistics: r.shipping_savings || 0,
-    "Commerce SaaS": r.saas_savings || 0,
   }));
 
   return (
@@ -127,8 +131,8 @@ export default function Reports() {
               <div className="mb-6 flex items-end justify-between gap-4">
                 <div>
                   <p className="cc-eyebrow mb-1.5">Savings history</p>
-                  <p className="text-base font-black text-white tracking-tight">Identified savings by pillar</p>
-                  <p className="text-[11px] text-white/45 font-mono mt-0.5">Annualized · grouped by 3-pillar framework</p>
+                  <p className="text-base font-black text-white tracking-tight">Identified payment savings</p>
+                  <p className="text-[11px] text-white/45 font-mono mt-0.5">Annualized · online + in-store card payments</p>
                 </div>
                 <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.10] bg-white/[0.04]">
                   <span className="h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
@@ -146,8 +150,6 @@ export default function Reports() {
                   />
                   <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16, color: "rgba(255,255,255,0.7)" }} />
                   <Bar dataKey="Payments" fill="#7AA8FF" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="Logistics" fill="#7BD9F0" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="Commerce SaaS" fill="#52EBA4" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               </div>

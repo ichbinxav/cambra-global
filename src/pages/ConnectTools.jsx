@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight, CheckCircle2, RefreshCw, Sparkles, Clock,
-  CreditCard, Truck, Building2, Mail, Headphones, Users, Wifi, Store, Layers,
+  CreditCard, Store, Layers,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import Navbar from "@/components/landing/Navbar";
@@ -32,24 +32,25 @@ function isOAuthPending(integrationId) {
 }
 
 /* ── helpers ─────────────────────────────────────────────────── */
+// R2 (2026-07-12) — payments-only surface.
+// Removed from CATEGORY_ORDER: banking, shipping, marketing, finance, support,
+// hr, telecom, logistics, analytics. Payments-only product; these categories
+// advertised verticals that no longer exist. Only payments + commerce remain
+// (commerce = e-commerce platforms whose OAuth data feeds the payments
+// analysis: Shopify, WooCommerce, BigCommerce). `other` stays as the catch-all
+// bucket for any provider whose category slips through — with the reduced
+// order it will only appear if the backend registry has an unclassified entry.
 const CATEGORY_ORDER = [
-  "payments", "commerce", "banking", "shipping",
-  "marketing", "finance", "support", "hr", "telecom",
+  "payments", "commerce",
 ];
 
 // FIX 1 — each category maps to its own dedicated translation key.
+// R2 — removed banking/shipping/marketing/finance/support/hr/telecom/
+// logistics/analytics rows. Their `labelKey`s (cat_shipping, cat_banking, …)
+// are also deleted from src/lib/i18n.jsx in the same chunk.
 const CATEGORY_META = {
   payments:  { labelKey: "cat_payments",  fallback: "Payments",  icon: CreditCard },
   commerce:  { labelKey: "cat_commerce",  fallback: "Commerce",  icon: Store },
-  banking:   { labelKey: "cat_banking",   fallback: "Banking",   icon: Building2 },
-  shipping:  { labelKey: "cat_shipping",  fallback: "Shipping",  icon: Truck },
-  marketing: { labelKey: "cat_marketing", fallback: "Marketing", icon: Mail },
-  finance:   { labelKey: "cat_finance",   fallback: "Finance",   icon: Layers },
-  support:   { labelKey: "cat_support",   fallback: "Support",   icon: Headphones },
-  hr:        { labelKey: "cat_hr",        fallback: "HR",        icon: Users },
-  telecom:   { labelKey: "cat_telecom",   fallback: "Telecom",   icon: Wifi },
-  logistics: { labelKey: "cat_logistics", fallback: "Logistics", icon: Truck },
-  analytics: { labelKey: "cat_analytics", fallback: "Analytics", icon: Layers },
   other:     { labelKey: "cat_other",     fallback: "Other",     icon: Layers },
 };
 

@@ -11,13 +11,24 @@ import { useTranslation } from "@/lib/i18n.jsx";
  * Read-only here — approval happens in admin tools.
  */
 
+// R2 (2026-07-12) — payments-only surface.
+// Historical AgentRuns of `agent_type ∈ {shipping, saas}` may still exist in
+// the DB (produced by runShippingAgent / runSaasAgent before M3.5), but a
+// payments-only product must not surface them. See ALLOWED_AGENT_TYPES below —
+// runs of other types are filtered out client-side before rendering. The
+// mapping keeps only the agent types that a payments-only user can produce.
 const AGENT_LABEL_KEY = {
   payments:       "agent_payments",
-  shipping:       "agent_shipping",
-  saas:           "agent_saas",
   recommendation: "agent_recommendation",
   general:        "agent_general",
 };
+
+// Whitelist of agent_types the panel is allowed to display. Any run whose
+// agent_type is not in this set is filtered out — safer than blacklisting
+// (a future orchestrator emitting a new type won't leak by default). The
+// filter runs AFTER the tenant-scoped `.filter({ brand_id })` load, so it
+// only trims what the tenant would already see.
+const ALLOWED_AGENT_TYPES = new Set(Object.keys(AGENT_LABEL_KEY));
 
 const STATUS_CONFIG = {
   running:            { key: "status_running",   icon: Loader2,      cls: "text-blue-700 bg-blue-50 border-blue-200",         spin: true },
@@ -84,10 +95,17 @@ export default function AIInsightsPanel() {
           if (!cancelled) setRuns([]);
           return;
         }
-        const list = await base44.entities.AgentRun
-          .filter({ brand_id: activeBrand.id }, "-created_date", 3)
+        // Load a wider window (15) then filter to payments-only agent types,
+        // and finally keep the top 3. Widening the fetch avoids the case
+        // where the last 3 runs are all legacy shipping/saas and the panel
+        // renders empty even though newer payments runs exist further back.
+        const rawList = await base44.entities.AgentRun
+          .filter({ brand_id: activeBrand.id }, "-created_date", 15)
           .catch(() => []);
-        if (!cancelled) setRuns(list);
+        const filtered = rawList
+          .filter(r => ALLOWED_AGENT_TYPES.has(r.agent_type))
+          .slice(0, 3);
+        if (!cancelled) setRuns(filtered);
       } catch {
         /* silent — panel will show empty state */
       } finally {

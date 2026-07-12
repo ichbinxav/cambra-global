@@ -48,6 +48,62 @@ Order: most recent on top.
 Cuerpo del doc conservado sin editar bajo la nota, como registro histórico del razonamiento antes de la aclaración.
 
 **Deuda asociada.** El "clon multi-vertical sin uso" que motivó parte del diagnóstico DNS pasa a ser en realidad "código legacy en la propia app pendiente de purgar o archivar" — tracked como candidato de limpieza en `KNOWN_DEBT.md` (entrada nueva de esta fecha).
+
+---
+
+### 2026-07-12 · R2 · Refoco payments-only: superficie interna + legal
+
+**Contexto.** R1 dejó payments-only la landing, pricing y componentes compartidos, verificado externamente. Un barrido posterior sobre el zip encontró que las páginas internas (post-registro) seguían enseñando el producto multi-vertical: tabs Shipping/Tools en Connect, series Logistics/SaaS en Reports, Terms prometiendo "infrastructure intelligence" en general. R2 cierra esa deuda antes del Publish a producción.
+
+**Método.** Auditoría previa de si cada página tocada estaba viva (rutas + importadores), grep exhaustivo de i18n keys shipping/saas para determinar consumers vivos vs muertos. Todas las páginas del alcance resultaron vivas. Ejecución paralela de los 5 frentes tras confirmar plan con Xavi. Ajuste crítico en instrucciones: filtrar `AIInsightsPanel` a agent_types payments-only ANTES de borrar `agent_shipping`/`agent_saas` (key borrada + consumer vivo + AgentRun histórico de tipo shipping/saas en DB = label roto en runtime).
+
+**Inventario de cambios por frente:**
+
+**Frente 1 — `ConnectIntegrations.jsx` (ruta viva `/ConnectIntegrations`).**
+- `CATEGORY_META`: reducido de 8 categorías (payments, shipping, banking, accounting, marketing, saas, commerce, other) a 3 (payments, commerce, other).
+- `CLIENT_REGISTRY_MIRROR`: eliminados 5 proveedores accounting (QuickBooks, Odoo, FreshBooks, Xero, Sage). Backend registry se mantiene (dormant) — re-habilitación futura es one-liner en el mirror.
+- `demo_apikey_provider`: re-hosted de `category:"shipping"` a `category:"payments"` (es el test harness del path api_key; su categoría es implementation detail, no vertical).
+
+**Frente 2 — `ConnectTools.jsx` (ruta viva `/ConnectTools`, lazy-loaded).**
+- `CATEGORY_ORDER`: reducido de `[payments, commerce, banking, shipping, marketing, finance, support, hr, telecom]` a `[payments, commerce]`.
+- `CATEGORY_META`: reducido a 3 entradas (payments, commerce, other).
+- Imports lucide-react correspondientes limpiados (Truck, Building2, Mail, Headphones, Users, Wifi — no más usos).
+
+**Frente 3 — `Reports.jsx` (ruta viva `/Reports`).**
+- `chartData` mapping: eliminadas series `Logistics: r.shipping_savings` y `"Commerce SaaS": r.saas_savings`. Solo queda `Payments`.
+- Dos `<Bar>` correspondientes eliminados del `<BarChart>`.
+- Copy del header del chart: "Identified savings by pillar" → "Identified payment savings". Sub: "Annualized · grouped by 3-pillar framework" → "Annualized · online + in-store card payments".
+- **NO tocado:** bloque "TPE report" (líneas 203-244). Decisión de Xavi en el mismo chunk: **TPE = canal in-store de payments, incluido en el producto**. Copy del bloque revisado: `"Improve payment infrastructure terms"` y `"Include rental, contract renewal and banking fees"` — coherente con payments-only, no requiere ajuste.
+
+**Frente 4 — `Terms.jsx` §3 y §4.**
+- §3 "Platform purpose": `"CAMBRA provides infrastructure intelligence, cost analysis, benchmarking and network access for independent commerce brands"` → `"CAMBRA provides payment-cost analysis, benchmarking and recovery services for independent commerce brands, covering both online and in-store card payments"`. Añade explícitamente los dos canales (online + TPE) alineado con la decisión de producto.
+- §4 "Audit outputs": `"savings estimates, infrastructure scores and benchmark comparisons"` → `"payment savings estimates and benchmark comparisons"`. Removido "infrastructure scores" (ya no se calcula ninguno en el producto payments-only).
+- **NO tocado:** §7 (success fee, ya revisado en R1), §8 (Provider compensation — referencia `/ForProviders` a ruta muerta redirigida a `/` en R1). §8 anotado como deuda residual en KNOWN_DEBT.
+- **NO tocado Privacy.jsx:** revisado, sin promesas multi-vertical. La mención a Shopify como ejemplo de OAuth es correcta (Shopify alimenta datos de payments).
+
+**Frente 5 — `AIInsightsPanel.jsx` + i18n barrido.**
+- **AIInsightsPanel.jsx (pre-condición para borrar keys):**
+  - `AGENT_LABEL_KEY`: eliminados `shipping: "agent_shipping"` y `saas: "agent_saas"`.
+  - Añadido `ALLOWED_AGENT_TYPES` (whitelist derivada de AGENT_LABEL_KEY keys).
+  - Filter runtime: fetch ampliado de 3 → 15 runs, luego `.filter(r => ALLOWED_AGENT_TYPES.has(r.agent_type)).slice(0, 3)`. Justificación: evita el caso donde los 3 runs más recientes son legacy shipping/saas y el panel se ve vacío pese a existir runs payments más antiguos.
+  - Tenant scope intacto (filter previo por `brand_id`). El filtro post-fetch solo trima lo que el tenant ya vería.
+- **i18n.jsx keys borradas (24 únicas × 3 idiomas = 72 líneas):**
+  - `benchmark_shipping`, `benchmark_saas`, `field_shipping_cost`, `field_saas_spend`, `progress_shipping`, `progress_saas`, `shipping_title`, `shipping_your_cost`, `shipping_benchmark`, `shipping_per_shipment`, `shipping_opportunity`, `shipping_cta`, `saas_title`, `saas_monthly`, `saas_detected`, `saas_opportunity`, `saas_cta`, `field_shipping_provider`, `field_saas_tools`, `vertical_shipping`, `vertical_saas`, `cat_shipping`, `agent_shipping`, `agent_saas`.
+- **i18n.jsx keys `cat_*` adicionales borradas (8 únicas × 3 idiomas = 24 líneas):**
+  - `cat_banking`, `cat_marketing`, `cat_finance`, `cat_support`, `cat_hr`, `cat_telecom`, `cat_logistics`, `cat_analytics`. Sus consumers en `ConnectTools.CATEGORY_META` se eliminaron en el Frente 2.
+- **Total i18n:** 32 keys únicas × 3 idiomas = 96 líneas borradas.
+
+**Verificación final ejecutada tras los 5 frentes:**
+- Grep exhaustivo de las 32 keys borradas en `src/**/*.{jsx,js,ts}` (excluyendo `i18n.jsx`): **0 consumers vivos**. Único hit residual: mención textual dentro del comentario de deprecación en `ConnectTools.jsx` línea 49 (`"Their labelKeys (cat_shipping, cat_banking, …)"` — string dentro de comentario, no `t()`).
+- Restricciones respetadas: cero cambios en `paymentsGap`, motor, verified path, funciones backend M3, schemas. Cero cambios en Dashboard (ya payments-only). Comentarios históricos "FASE 1.X — deprecated" preservados.
+
+**Archivos tocados:** `src/pages/ConnectIntegrations.jsx`, `src/pages/ConnectTools.jsx`, `src/pages/Reports.jsx`, `src/pages/Terms.jsx`, `src/components/dashboard/AIInsightsPanel.jsx`, `src/lib/i18n.jsx`, `src/docs/Decision_Log.md` (este), `src/docs/KNOWN_DEBT.md` (nuevas entradas: TPE decisión + §8 ForProviders huérfano).
+
+**Archivos borrados:** ninguno. Todas las páginas del alcance eran vivas; el candidato a purga (código dormant multi-vertical) queda tracked en KNOWN_DEBT como precondicionado por Publish.
+
+**Deudas descubiertas durante R2 (tracked en KNOWN_DEBT):**
+1. Terms §8 "Provider compensation" contiene referencia a `/ForProviders`, ruta redirigida a `/` en R1. Legal orphan link.
+2. TPE report (Reports.jsx líneas 203-244): decisión de producto TOMADA — canal in-store de payments, incluido. Anotado como decisión, no como deuda.
 - **Evidencia byte-a-byte del fix (post-hardening 2026-07-12).** Re-simulación del guard corregido sobre las dos ramas con caller `{email:"xavi@cambra.global", role:"user"}`:
   - Brand ajeno `6a4fe2df992f1f6be464a6fc` (H, owner `94.martinez.x@gmail.com`) → **404** · body `{"ok":false,"error":"Brand not found"}` · 38 bytes.
   - Brand inexistente `does-not-exist-abc-1234567890` → **404** · body `{"ok":false,"error":"Brand not found"}` · 38 bytes.

@@ -505,6 +505,39 @@ Frontend `StripeConnectCard.handleDisconnect` colapsado a **un solo path** — l
 
 **Riesgo residual mientras no se purgue.** Cero funcional (rutas ya redirigen). Coste: ~15 páginas y sus componentes cargan como código muerto en el bundle (aunque las páginas están lazy-loaded en algunos casos, otras entran por default en el chunk principal). Impacto en bundle size a estimar en el chunk de purga.
 
+---
+
+### 2026-07-12 · R2 · TPE report — DECISIÓN DE PRODUCTO TOMADA (no es deuda)
+
+**Contexto.** Durante la auditoría R2 se detectó el bloque "TPE report" en `Reports.jsx` (líneas 203-244) que analiza terminales de pago físicos in-store (rental de TPV, comisión por transacción in-store, GMV in-store, contract duration). En una primera lectura pareció ser residuo multi-vertical candidato a ocultar.
+
+**Aclaración de Xavi (2026-07-12).** TPE = terminales de pago físicos = comisiones de tarjeta in-store. Eso **ES payments**, no otro vertical — es el mismo producto en otro canal (offline vs online). El producto CAMBRA cubre payments en **todos los canales**: online + TPV físico.
+
+**Estado.** No es deuda ni candidato a ocultar. Es feature intencional del producto payments-only. `Terms.jsx §3` ha sido actualizado en el mismo chunk R2 para reflejarlo explícitamente: *"covering both online and in-store card payments"*.
+
+**Copy verificado.** El bloque TPE en Reports.jsx dice literalmente:
+- Card 1: *"Current cost"* → effective TPE rate.
+- Card 2: *"Benchmark cost"* → network rate.
+- Card 3: *"Savings opportunity"* → *"Recommendation: renegotiate terminals and fixed fees."*
+- Card 4: *"Next action"* → *"Improve payment infrastructure terms. Include rental, contract renewal and banking fees."*
+
+Todo coherente con posicionamiento payments-only + in-store. **No requiere ajuste.**
+
+**Anotado como referencia** para futuros pases de copy/legal — cualquier revisor externo que vea "TPE" debe entender que es canal in-store del mismo producto, no un vertical separado.
+
+---
+
+### 2026-07-12 · R2 · Terms §8 — referencia legal huérfana a `/ForProviders`
+
+**Contexto.** Detectado durante R2 al leer `Terms.jsx` completo. §8 "Provider compensation" cierra con:
+> *"Details of the provider program are described on our For Providers page (/ForProviders)."*
+
+**Problema.** La ruta `/ForProviders` fue redirigida a `/` en Fase R1 (deprecación del multi-vertical). Un usuario que haga click en el link desde Terms cae en la landing en vez de en la página del programa de proveedores (que ya no existe).
+
+**Por qué no se toca en R2.** El alcance R2 explícito de Xavi es "descripción del servicio, no obligaciones". §8 documenta compensación de terceros (revenue share con proveedores) — es una obligación de disclosure, no descripción de plataforma. Tocarlo requiere decisión de producto: (a) reintroducir la página `/ForProviders` con el contenido correcto payments-only, (b) reescribir §8 sin la referencia al link, o (c) reescribir §8 para eliminar el mecanismo de revenue share si ya no aplica en el modelo payments-only.
+
+**Estado.** Pendiente para siguiente pase de Terms (post-launch, con Xavi + revisor legal). Riesgo residual mientras no se resuelva: click desde Terms lleva a `/`, no rompe la app, pero deja al lector sin la información prometida.
+
 Estado de las self-test brands restaurado al final de la repro (`Integration.status=connected`, `StripeConnection.connection_status=connected`).
 
 ### (Diagnóstico histórico — conservado por trazabilidad)
