@@ -804,3 +804,36 @@ Xavi ejecuta desde local antes de arrancar 2B:
 
 ### Estado de decisión
 2B queda planificado con alcance cerrado. No se toca en 2A. Cuando ejecute 2B, esta entrada de KNOWN_DEBT se cierra con `RESUELTA <fecha>`.
+
+---
+
+## POST-FASE-3 — /ForProviders v2 · programa de dos niveles (Listed / Partner)
+
+**Estado:** 📋 PLANIFICADA (2026-07-12) — bloqueada por cierre de M4-TPV Fase 2/3. NO empezar hasta que las 2 deudas anteriores (`M4-TPV — Fase 2A NO aterrizó` + `M4-TPV — UI in-store pendiente 2B`) estén cerradas con `RESUELTA <fecha>` y suite verde.
+**Origen:** decisión de producto Xavi 2026-07-12 — revierte la resolución §8 de Fase 1 (que había dejado `/ForProviders` redirigido a `/` y §8 huérfano).
+
+### Contexto y decisión
+`/ForProviders` vuelve como página viva, reescrita como el programa de proveedores payments-only (PSPs online + TPVs in-store, ambos canales). Articula el modelo de DOS NIVELES:
+
+- **Nivel 1 — Listed.** Proveedor publica pricing público y verificable → entra en el benchmark achievable de CAMBRA (el que hoy alimenta `PaymentsRateTable`). Gana: visibilidad ante merchants del ICP comparando activamente. Exige CAMBRA: tarifa citable en URL pública (regla Enmienda 1 no negociable).
+- **Nivel 2 — Partner.** Proveedor ofrece **tarifa exclusiva para merchants vía CAMBRA** (mejor que su pricing público) + acuerdo de referral. Gana proveedor: canal de adquisición cualificado (merchants con gap medido, listos para cambiar). La oferta Partner se muestra en `/Results` como oferta destacada CAMBRA, **etiquetada como exclusiva** — NUNCA mezclada en el benchmark como si fuera precio de mercado. El benchmark sigue 100% público y auditable; lo exclusivo se presenta como exclusivo.
+
+### Alcance del chunk cuando toque
+1. **Recuperar la estructura pre-purga** (git history / Decision_Log M3.5) → listar sus secciones → clasificar: adapta / elimina (multi-vertical) / nueva. Tono y calidad visual de la original se mantienen.
+2. **Copy nuevo payments-only** sobre esa estructura: hero para proveedores (*"Merchants are comparing you right now — be the answer"*), explicación de los dos niveles con requisitos y beneficios (tabla o cards), CTA de contacto (`contact@cambra.global` o formulario si la original lo tenía). **Cero cifras de red fabricadas** (nada de "X merchants conectados" inventado; si hace falta prueba social: "founding cohort in progress" honesto). **Cero menciones shipping/SaaS**.
+3. **Ruta y nav:** reactivar `/ForProviders` en `src/App.jsx` (hoy `<Navigate to="/" replace />`) y restaurar el link donde vivía pre-purga (footer probablemente — verificar).
+4. **Terms §8:** la cláusula vuelve a referenciar `/ForProviders` como página viva. Su texto refleja los dos niveles **sin comprometer términos comerciales concretos** (los % de referral y las tarifas exclusivas se negocian por acuerdo, no se publican en Terms). Ajuste mínimo, sin inventar obligaciones.
+5. **Coherencia con Results (solo diseño, NO construir):** documentar en Decision_Log cómo se mostrará una oferta Partner cuando exista la primera — slot "CAMBRA exclusive offer" en `/Results`, etiquetado como exclusivo, separado visualmente del benchmark. Diseño para el futuro; hoy no hay partners → **cero UI nueva en Results en este chunk**.
+6. **KNOWN_DEBT:** cerrar la entrada "R2 · Terms §8" (resuelta por resurrección) y abrir una nueva: "Primer acuerdo Partner pendiente — cuando exista, construir el slot de oferta exclusiva en `/Results` según diseño del Decision_Log".
+7. **i18n** si la página era traducida (verificar en git history); Decision_Log arriba documentando la decisión ("dos niveles Listed/Partner, benchmark público intacto, exclusivas como capa comercial — revierte resolución §8 de Fase 1").
+
+### Restricciones duras
+- **NO empezar hasta cerrar Fase 2 y Fase 3 de M4-TPV.** Precondición explícita.
+- **Cero cambios en motor, benchmark, paths verified, o `/Results`.** El punto 5 es solo documentación de diseño futuro. Ni una línea de código en `/Results` en este chunk.
+- **Suite verde** antes de arrancar y después de cerrar.
+
+### Por qué no ahora
+La superficie payments in-store (Fase 2B) tiene que estar viva y verificada antes de que un proveedor TPV vea `/ForProviders` — el pitch a SumUp/myPOS/Viva depende de que la landing y el analyzer ya cubran in-store visiblemente. Adelantar el chunk crea una página que promete cobertura in-store que la UI aún no entrega.
+
+### Valor cuando exista
+Primer email a SumUp/myPOS/Viva/Smile&Pay con URL que enseñar. Pitch limpio: *"vuestro pricing público ya está en nuestro benchmark; ¿queréis ganar a los demás con una tarifa exclusiva para nuestros merchants?"*. La página es la infraestructura de ese pitch.
