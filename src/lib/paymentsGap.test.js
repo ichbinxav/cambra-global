@@ -536,17 +536,20 @@ describe('calculateGap — end-to-end', () => {
     expect(intl.assumptions.some(a => a.includes('cross-border interchange is not negotiable'))).toBe(false);
   });
 
-  it('engine_version reports the SemVer-tagged 1.3.0 name', () => {
+  it('engine_version reports the SemVer-tagged 1.4.0 name', () => {
     // Explicit contract check — this string is persisted verbatim on every
     // PaymentsAnalysisSession row. Downstream benchmark aggregators filter
     // by engine_version, so silent renames would corrupt cohorts.
+    // Bumped 1.3.0 → 1.4.0 with the M4-TPV Fase 2A-redo in-store channel
+    // work (2026-07-12). The FULL_TABLE fixture below is unchanged — every
+    // online assertion in this file still holds byte-identical to 1.3.0.
     const result = calculateGap(
       { monthly_gmv_eur: 50000, avg_ticket_eur: 80, region: 'EU', provider_slug: 'stripe' },
       FULL_TABLE
     );
     expect(result.ok).toBe(true);
-    expect(result.engine_version).toBe('payments-gap-1.3.0');
-    expect(ENGINE_VERSION).toBe('payments-gap-1.3.0');
+    expect(result.engine_version).toBe('payments-gap-1.4.0');
+    expect(ENGINE_VERSION).toBe('payments-gap-1.4.0');
   });
 });
 

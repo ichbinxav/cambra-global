@@ -100,30 +100,52 @@ const MINOR_PER_MAJOR = 100;
 const BPS_PER_UNIT = 10000;
 
 // Regional fallback cohort keys the engine falls back to when the exact
-// (provider|tier|region) cohort is not seeded. The rate-table cache validates
-// that ALL FOUR of these are present before considering itself warm — this is
-// the defense against the eventual-consistency issue we hit in Chunk 1b
-// (list() immediately after write returned 8 of 11 rows).
-const REQUIRED_FALLBACK_KEYS = [
-  // Online fallbacks — 3-segment legacy shape kept verbatim. Every seeded row
-  // for these keys carries channel='online', but validateRateTable checks by
-  // literal cohort_key equality so the 3-segment key stays canonical for the
-  // online path (byte-identical to pre-1.4.0). NEVER migrate these to the
-  // 4-segment shape "ANY|ANY|<region>|online" — you'd break every historical
-  // session that was persisted with these keys.
+// (provider|tier|region) cohort is not seeded. Split by channel so
+// validateRateTable can be CHANNEL-AWARE: an online-only rate table (every
+// row seeded before 1.4.0) must still validate fine when the caller asks
+// for an online cohort — the in-store fallbacks are only required when
+// somebody actually asks for an in-store lookup. This is the retrocompat
+// lock we lost when 1.4.0 first shipped: the initial version demanded all
+// 8 fallbacks unconditionally, which broke every pre-1.4.0 test fixture
+// and every historical DB snapshot that predates the in-store seed.
+//
+// Design rule the split enforces:
+//   • online request  + table with online fallbacks       → OK (retrocompat).
+//   • online request  + table missing an online fallback  → rate_table_incomplete.
+//   • in_store request + table missing an in_store fallback → rate_table_incomplete.
+//   • in_store request + table with only online fallbacks → rate_table_incomplete
+//     (SAFETY: never silently fall back to an online rate for a card-present
+//      cohort — a physical-terminal merchant would see a made-up number).
+//
+// REQUIRED_FALLBACK_KEYS (the legacy export) intentionally keeps its
+// pre-1.4.0 SHAPE — the 4 online keys — so external callers that captured
+// the list (e.g. test fixtures) don't silently expand behind their back.
+// The in-store list is a SEPARATE export.
+const REQUIRED_FALLBACK_KEYS_ONLINE = [
+  // 3-segment legacy shape kept verbatim. Every seeded row for these keys
+  // carries channel='online', but validateRateTable checks by literal
+  // cohort_key equality so the 3-segment key stays canonical for the online
+  // path (byte-identical to pre-1.4.0). NEVER migrate these to the 4-segment
+  // shape "ANY|ANY|<region>|online" — you'd break every historical session
+  // that was persisted with these keys.
   "ANY|ANY|EU",
   "ANY|ANY|UK",
   "ANY|ANY|US",
   "ANY|ANY|RoW",
-  // In-store fallbacks — 4-segment. Introduced in 1.4.0 with the channel
-  // dimension. Their absence means the engine refuses (rate_table_incomplete)
-  // for any in-store lookup, which is the safe behavior — no silent fallback
-  // to an online rate for a physical-terminal cohort.
+];
+const REQUIRED_FALLBACK_KEYS_IN_STORE = [
+  // 4-segment. Introduced in 1.4.0 with the channel dimension. Only required
+  // by validateRateTable when the caller requests an in_store lookup.
   "ANY|ANY|EU|in_store",
   "ANY|ANY|UK|in_store",
   "ANY|ANY|US|in_store",
   "ANY|ANY|RoW|in_store",
 ];
+// Legacy export — kept AS-IS at the pre-1.4.0 shape (4 online keys) so
+// existing callers that snapshot this list don't silently pick up in-store
+// keys they never asked for. In-store keys live under
+// REQUIRED_FALLBACK_KEYS_IN_STORE. See design rule comment above.
+const REQUIRED_FALLBACK_KEYS = REQUIRED_FALLBACK_KEYS_ONLINE;
 
 // Card-mix defaults. When the input doesn't provide a card mix, we assume
 // 100% domestic (0% intl). This is conservative — intl uplift only widens
@@ -224,20 +246,44 @@ function normalizeInput(raw) {
 // ─── Rate table cache validation ─────────────────────────────────────────────
 
 // Validate a candidate rate-table snapshot before it becomes the warm cache.
-// Returns { ok: true } if all four regional fallback keys are present and
-// active; otherwise { ok: false, reason, missing }.
-// The engine NEVER calculates against a partial table — it either has all the
-// fallbacks or it refuses to answer with rate_table_incomplete.
-function validateRateTable(rows) {
+// Returns { ok: true } if the required fallback keys FOR THE REQUESTED
+// CHANNELS are present and active; otherwise { ok: false, reason, missing }.
+// The engine NEVER calculates against a partial table — it either has all
+// the required fallbacks for the channels the caller cares about, or it
+// refuses to answer with rate_table_incomplete.
+//
+// `opts.channels` (array of "online" | "in_store") lists the channels the
+// caller intends to look up. When omitted, we default to ["online"] — that
+// is the retrocompat lock: every pre-1.4.0 caller passed no options and
+// only asked online questions. Their rate table only had online fallbacks,
+// and the engine validated fine. This code path stays byte-identical to
+// pre-1.4.0 for them.
+//
+// The internal calculateGap entry point calls this AFTER normalizing the
+// input, so a single-channel calculateGap call only requires ITS channel's
+// fallbacks — an in-store request against a table that carries only online
+// fallbacks correctly fails rate_table_incomplete rather than silently
+// borrowing an online rate.
+function validateRateTable(rows, opts) {
+  const channelsRaw = (opts && Array.isArray(opts.channels))
+    ? opts.channels
+    : ["online"];
+  // Dedup + gate to known channels so a caller can't smuggle in a bogus
+  // channel name and get an unexpected required-keys list.
+  const channels = Array.from(new Set(channelsRaw.filter((c) => KNOWN_CHANNELS.has(c))));
+  if (channels.length === 0) channels.push("online");
+  const required = [];
+  if (channels.includes("online")) required.push(...REQUIRED_FALLBACK_KEYS_ONLINE);
+  if (channels.includes("in_store")) required.push(...REQUIRED_FALLBACK_KEYS_IN_STORE);
   if (!Array.isArray(rows)) {
-    return { ok: false, reason: "rate_table_not_array", missing: REQUIRED_FALLBACK_KEYS };
+    return { ok: false, reason: "rate_table_not_array", missing: required };
   }
   const activeByKey = new Map();
   for (const r of rows) {
     if (!r || r.active === false) continue;
     if (typeof r.cohort_key === "string") activeByKey.set(r.cohort_key, r);
   }
-  const missing = REQUIRED_FALLBACK_KEYS.filter((k) => !activeByKey.has(k));
+  const missing = required.filter((k) => !activeByKey.has(k));
   if (missing.length > 0) {
     return { ok: false, reason: "rate_table_incomplete", missing };
   }
@@ -531,15 +577,27 @@ const MEASURED_CURRENT_NOTE = (measured_bps, sample) => {
 //     assumptions: [ ...strings... ]
 //   }
 function calculateGap(rawInput, rateTable) {
-  const tableCheck = validateRateTable(rateTable);
-  if (!tableCheck.ok) {
-    return { ok: false, error: tableCheck.reason, missing: tableCheck.missing };
-  }
+  // Normalize FIRST — we need input.channel to run the channel-aware
+  // rate-table check. Order swap vs pre-1.4.0 is safe because
+  // normalizeInput is pure (no DB), and it only fails on shape errors the
+  // caller must fix anyway. If normalization fails we return before
+  // touching the table.
   const parsed = normalizeInput(rawInput);
   if (!parsed.ok) {
     return { ok: false, error: parsed.reason };
   }
   const { input } = parsed;
+  // Channel-aware table validation: only require the fallback rows for the
+  // channel this call actually needs. Retrocompat lock — an online call
+  // (channel omitted → 'online' default) still checks exactly the 4 legacy
+  // 3-segment keys, so any pre-1.4.0 rate table (test fixture or historical
+  // DB snapshot) validates fine. An in_store call on that same table
+  // correctly fails rate_table_incomplete rather than silently reusing
+  // an online row.
+  const tableCheck = validateRateTable(rateTable, { channels: [input.channel] });
+  if (!tableCheck.ok) {
+    return { ok: false, error: tableCheck.reason, missing: tableCheck.missing };
+  }
 
   const { row, matched } = selectRow(rateTable, input.provider_slug, input.region, input.channel);
   if (!row) {

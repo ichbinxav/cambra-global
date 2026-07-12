@@ -379,6 +379,17 @@ const DICT = {
     landing_upsell_in_store_desc:    "We audit your TPV — SumUp, Stripe Terminal, Smile & Pay, Zettle, or your traditional bank acquirer. Same 60-second audit, same 25% success fee, same in-store or online.",
     landing_upsell_in_store_cta:     "Audit my TPV",
 
+    /* M4-TPV Fase 3 — Analyzer channel tabs + CombinedGapHero strings.
+       Consumed by PaymentsAnalyzer (tab labels) and CombinedGapHero
+       (results page hero for combined submits). */
+    analyzer_channel_online:      "Online",
+    analyzer_channel_in_store:    "In-store",
+    analyzer_channel_combined:    "Both",
+    combined_hero_eyebrow:        "Payments gap · combined",
+    combined_hero_badge:          "Online + In-store",
+    combined_hero_lead:           "Your total overpayment across channels is roughly",
+    combined_hero_month_suffix:   "a month, summed across channels.",
+
     /* FIX 2 — Dashboard strings */
     savings_trend:        "Savings Trend",
     monthly_savings:      "Monthly Savings",

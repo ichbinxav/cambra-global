@@ -132,8 +132,70 @@ Deno.serve(async (req) => {
     // Everything below is copied by name from s. No spread, no destructure.
     // If a new field lands on PaymentsAnalysisSession, it does NOT appear here
     // until it's added explicitly.
-    const engine_result = s.engine_result || null;
-    const engine_version = s.engine_version || engine_result?.engine_version || null;
+    //
+    // M4-TPV Fase 3 (2026-07-12) — combined channel mode. When the persisted
+    // engine_result carries `combined: true` + `channels: [...]`, we surface
+    // the same minimal projection PER CHANNEL that we already do at the top
+    // level, so CombinedGapHero can render the per-channel strip WITHOUT
+    // pulling any raw input_snapshot from the outer session (which may have
+    // grown fields we don't want to leak). No spread, no destructure —
+    // every rendered field is copied by name.
+    const engine_result_raw = s.engine_result || null;
+    const engine_version = s.engine_version || engine_result_raw?.engine_version || null;
+
+    // Base allowlisted engine_result fields the single-channel Results has
+    // always relied on. We ONLY copy these — nothing else leaks even if the
+    // engine grows new fields in a later bump.
+    let engine_result: any = null;
+    if (engine_result_raw && typeof engine_result_raw === 'object') {
+      engine_result = {
+        ok: engine_result_raw.ok === true,
+        engine_version: engine_result_raw.engine_version || null,
+        current_effective_bps: Number.isFinite(engine_result_raw.current_effective_bps) ? engine_result_raw.current_effective_bps : null,
+        achievable_effective_bps: Number.isFinite(engine_result_raw.achievable_effective_bps) ? engine_result_raw.achievable_effective_bps : null,
+        monthly_savings_eur: engine_result_raw.monthly_savings_eur || null,
+        annual_savings_eur: engine_result_raw.annual_savings_eur || null,
+        cohort: engine_result_raw.cohort || null,
+        mode: typeof engine_result_raw.mode === 'string' ? engine_result_raw.mode : null,
+        assumptions: Array.isArray(engine_result_raw.assumptions) ? engine_result_raw.assumptions : [],
+      };
+      // Combined-mode additive fields. Only present when the persisted row
+      // is a combined submit (produced by submitPaymentsAnalysis Fase 3).
+      // We copy `combined` as a strict boolean AND rewrite `channels` through
+      // the same minimal projection so no raw per-channel input leaks
+      // through even if input_snapshot grew fields we haven't audited yet.
+      if (engine_result_raw.combined === true && Array.isArray(engine_result_raw.channels)) {
+        engine_result.combined = true;
+        engine_result.channels = engine_result_raw.channels.map((c: any) => {
+          const chIn = c?.input_snapshot || {};
+          const chEr = c?.engine_result || null;
+          const projectedChannelResult = chEr && typeof chEr === 'object' ? {
+            ok: chEr.ok === true,
+            engine_version: chEr.engine_version || null,
+            current_effective_bps: Number.isFinite(chEr.current_effective_bps) ? chEr.current_effective_bps : null,
+            achievable_effective_bps: Number.isFinite(chEr.achievable_effective_bps) ? chEr.achievable_effective_bps : null,
+            monthly_savings_eur: chEr.monthly_savings_eur || null,
+            annual_savings_eur: chEr.annual_savings_eur || null,
+            cohort: chEr.cohort || null,
+            mode: typeof chEr.mode === 'string' ? chEr.mode : null,
+            assumptions: Array.isArray(chEr.assumptions) ? chEr.assumptions : [],
+          } : null;
+          return {
+            channel: typeof c?.channel === 'string' ? c.channel : null,
+            input_snapshot: {
+              // Same 4-field minimum as the top-level snapshot — never spread.
+              monthly_gmv_eur: Number(chIn.monthly_gmv_eur) || null,
+              avg_ticket_eur: Number(chIn.avg_ticket_eur) || null,
+              provider_slug: typeof chIn.provider_slug === 'string' ? chIn.provider_slug : null,
+              // channel is redundant at this level (already in `channel`) but
+              // some consumers may want it inline — keep it for symmetry.
+              channel: typeof chIn.channel === 'string' ? chIn.channel : null,
+            },
+            engine_result: projectedChannelResult,
+          };
+        });
+      }
+    }
 
     const rawSnap = s.input_snapshot || {};
     const input_snapshot = {
