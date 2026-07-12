@@ -620,23 +620,54 @@ function applyBand(point, band_pct) {
 //   savings_opportunity
 //     Gap is materially above the noise floor. The merchant has money to
 //     recover. This is the default state — every historical estimated
-//     result before v1.5.0 was effectively this state.
+//     result before v1.5.0 was effectively this state. Applies to BOTH
+//     verified-row results (Stripe/Shopify Payments/SumUp/Stripe Terminal/
+//     Smile&Pay in EU) AND fallback-row results (bank TPVs, `other`
+//     providers, RoW regions without seeded anchors) — because the funnel
+//     mission of the ESTIMATED tier is to surface material gaps for the
+//     merchants who most need to hear about them. Fallback rows already
+//     ship the FALLBACK_ASSUMPTION verbatim, so the merchant sees the
+//     "regional average, not provider-verified" caveat next to the number.
 //
 //   already_optimized
 //     Gap is at or below MAX(€200/year, 15 bps × monthly_gmv × 12) AND the
 //     benchmark comes from a VERIFIED row AND the ticket is declared. All
-//     three conditions must be true — a low gap on a fallback row means
-//     "we don't have a defensible benchmark", not "you're optimized".
+//     three conditions must be true — a low gap on a fallback row is NOT
+//     "you're optimized", it's "we don't have a defensible benchmark to
+//     claim victory over". Verified guardrail on this state only.
 //
 //   insufficient_data
-//     Any weakness in the inputs or the benchmark. Includes: fallback row,
-//     multi-anchor pool was empty (in-store regions without seeded verified
-//     anchors), missing ticket. NEVER convert "we don't know" into "you're
-//     optimized" — the whole product's credibility depends on this line.
+//     Two disjoint sub-cases:
+//       (a) The inputs themselves are incomplete (missing ticket → the
+//           arithmetic doesn't run) — no result to interpret.
+//       (b) The result is a ZERO on top of a fallback benchmark. On a
+//           verified row a zero is a legitimate "already optimized" claim;
+//           on a fallback row a zero is un-defensible — we can't tell the
+//           merchant "you're at the floor" when we don't know where the
+//           floor is. Same rationale as sub-case (a): we have no defensible
+//           statement to make.
+//       (c) In-store where multi-anchor selection was attempted but the
+//           regional anchor pool is empty (UK/US/RoW today, until we seed
+//           verified in-store anchors there). Falls to legacy row.achievable_*
+//           which is a documented approximation — a ZERO on top of it is
+//           equally un-defensible.
+//     NEVER convert "we don't know" into "you're optimized" — the whole
+//     product's credibility depends on that line.
 //
-// Precedence when multiple conditions apply: insufficient_data checks FIRST
-// (any data weakness overrides everything), then already_optimized (only on
-// clean inputs), else savings_opportunity.
+// KEY DISTINCTION from an earlier draft (2026-07-12, corrected same day):
+// verified=false does NOT unconditionally route to insufficient_data. It
+// only blocks the already_optimized victory state AND downgrades zeros to
+// insufficient_data. A MATERIAL gap on a fallback row is still
+// savings_opportunity — this is the funnel-preserving fix. The regression
+// case that motivated the correction: bank TPV in EU (fallback row) with
+// €40k GMV, €60 ticket, €25/mo rental → ~€3,340/year gap. Pre-fix that
+// merchant would have seen "insufficient_data" — actively wrong. Post-fix
+// they see the gap with the fallback caveat, which is the honest read.
+//
+// Precedence when multiple conditions apply: insufficient_data (a) FIRST
+// (ticket missing means the number itself is meaningless), then
+// insufficient_data (c) (pool-empty in-store), then the already_optimized /
+// insufficient_data (b) / savings_opportunity trio below.
 function classifyResult({
   annual_point_savings_eur,
   monthly_gmv_eur,
@@ -646,18 +677,13 @@ function classifyResult({
   multi_anchor_empty,
   channel,
 }) {
-  // insufficient_data conditions — checked FIRST.
-  //
-  // 1. Ticket missing — the entire arithmetic depends on it. Should not
-  //    happen with the current validator (validateInput enforces ticket
-  //    range) but defensive.
+  // (a) Ticket missing — the entire arithmetic depends on it. Should not
+  // happen with the current validator (validateInput enforces ticket range)
+  // but defensive.
   if (!ticket_present) return "insufficient_data";
-  // 2. Benchmark comes from a fallback row (verified=false). We can compute
-  //    a number but not defend it as "the floor for your cohort".
-  if (!row_verified) return "insufficient_data";
-  // 3. In-store WITH multi-anchor attempted BUT pool empty (regions without
-  //    seeded verified anchors). Falls to legacy row.achievable_* which is
-  //    a documented approximation — honest label is insufficient_data.
+  // (c) In-store with multi-anchor attempted but pool empty. Falls to legacy
+  // row.achievable_* — even a non-zero gap here is on shaky ground because
+  // there's no verified anchor pool to compare against.
   if (channel === "in_store" && multi_anchor_ran && multi_anchor_empty) {
     return "insufficient_data";
   }
@@ -682,7 +708,19 @@ function classifyResult({
     ALREADY_OPTIMIZED_EUR_ANNUAL_THRESHOLD,
     relativeThresholdEur,
   );
-  if (annual_point_savings_eur <= threshold) return "already_optimized";
+  const belowThreshold = annual_point_savings_eur <= threshold;
+
+  if (belowThreshold) {
+    // At-or-below the noise threshold. Two branches:
+    //   • verified row → we can confidently say "you're already optimized".
+    //   • fallback row → we can NOT — the floor we'd be claiming victory
+    //     over is itself an average, so a zero on top of it is not a
+    //     victory, it's a "we don't know" (sub-case (b) above).
+    return row_verified ? "already_optimized" : "insufficient_data";
+  }
+  // Material gap. This is the funnel-preserving branch: applies to BOTH
+  // verified AND fallback rows. Fallback rows already emit FALLBACK_ASSUMPTION
+  // in the same result, so the merchant sees the caveat next to the number.
   return "savings_opportunity";
 }
 
