@@ -949,6 +949,20 @@ Primer email a SumUp/myPOS/Viva/Smile&Pay con URL que enseñar. Pitch limpio: *"
 
 ---
 
+## Iteración 4 cierre (2026-07-12) — 4 frentes de auditoría cerrados
+
+Ver `src/docs/Decision_Log_Iter4.md` para el reporte completo.
+
+**Cerrado:**
+- **InfrastructureStatus del Dashboard** — componente eliminado tras collapsar a 2 filas post-pivot; información duplicada del KPI + node list.
+- **HelpHero chip "Infrastructure Score"** — sustituido por "In-store payments" (19 + 26 hits en corpus). PLACEHOLDERS también retoneado.
+- **Huérfanos ~15 → 30 ficheros** — grep de imports por fichero con 0 callers verificado; cascada RecommendationList → RecoveryBadge → recoveryModel resuelta paso a paso. `exportResults.js` fuera.
+- **i18n legacy** — 202 keys huérfanas × 3 idiomas = **606 líneas eliminadas exactas** (1360 → 754). 6 call-sites dinámicos `t(variable)` preservados vía safelist de 61 keys extraído por grep sobre los 5 ficheros consumidores.
+
+Suite 370/0/2 intacta por construcción — cero ficheros tocados dentro del scope de tests.
+
+---
+
 ## Help Center — traducción FR/ES
 
 **Estado:** 🟡 activa (reformulada 2026-07-12 tras iteración 3 del cierre Fase 3)

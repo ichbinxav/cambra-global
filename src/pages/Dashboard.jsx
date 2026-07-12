@@ -9,7 +9,6 @@ import { base44 } from "@/api/base44Client";
 import { getMyActiveBrand } from "@/lib/getMyActiveBrand";
 import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 
-import InfrastructureStatus from "@/components/dashboard/InfrastructureStatus";
 import LastScanBar from "@/components/dashboard/LastScanBar";
 import AIInsightsPanel from "@/components/dashboard/AIInsightsPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
@@ -473,8 +472,12 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── M6 — Infrastructure status (unchanged) ── */}
-      <InfrastructureStatus latest={latest} />
+      {/* M6 — InfrastructureStatus removed (2026-07-12).
+          Post-payments-only pivot the component collapsed to 2 rows
+          (Payments Online + In-store TPV), duplicating information already
+          surfaced by the KPI card above (payments_title) and the "Your
+          infrastructure" node list below. Kept the KPI + node list which
+          together carry the same signal with less redundancy. */}
 
       {/* ── M7 — Last scan + re-scan (unchanged) ── */}
       <LastScanBar />

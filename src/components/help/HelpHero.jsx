@@ -3,7 +3,7 @@ import { Search, Command } from "lucide-react";
 
 const PLACEHOLDERS = [
   "How does CAMBRA estimate savings?",
-  "What is the Infrastructure Score?",
+  "Do you audit in-store card payments (TPV)?",
   "Can I upload statements and invoices?",
   "How accurate are benchmarks?",
   "Is my data confidential?",
@@ -105,7 +105,7 @@ export default function HelpHero({ onSearchOpen }) {
           className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs"
         >
           <span className="text-white/40 font-medium">Trending:</span>
-          {["Infrastructure Score", "Stripe", "Benchmarks", "GDPR", "Success fee"].map((t) => (
+          {["In-store payments", "Stripe", "Benchmarks", "GDPR", "Success fee"].map((t) => (
             <button
               key={t}
               onClick={onSearchOpen}
