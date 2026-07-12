@@ -1,17 +1,37 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 /**
- * Savings Curve — editorial redesign.
- * Calm, credible, network-median framing. No sparkles, no +100% pill, no
- * fluorescent tickers, no floating particles. One line, one endpoint, one
- * number. Realistic cohort figures.
+ * Savings Curve — illustrative projection (2026-07-12 · R3).
+ *
+ * Previous version framed the figure as "network median · Q3 2026" and showed
+ * €48,000/12mo, which was fabricated network telemetry and off by ~8× vs the
+ * actual engine output for our ICP. This version is honest:
+ *
+ *   - Badge: "ILLUSTRATIVE · PROJECTION" (not "LIVE · NETWORK MEDIAN").
+ *   - Verb: "recoverable" (not "recovered" — nothing is recovered yet).
+ *   - Cohort: "DTC €200k–€2M GMV" (the real ICP; was "DTC €1M–€10M").
+ *   - Target: €6,000/yr — midpoint of the engine's own range for a
+ *     representative brand at €1M annual GMV with a 0.5–0.8pt payments gap
+ *     (`paymentsGap.js` — see `calculatePaymentsGap`).
+ *   - Y-axis ticks: derived from `target`, so no manual sync needed if we
+ *     retune the assumption.
+ *   - Stats strip: recomputed for coherence — €500/mo, 0.6pts saved on
+ *     effective rate, 3 min audit.
+ *   - Explicit footnote: "Illustrative example based on our benchmark
+ *     methodology — run the analyzer for your real number."
+ *
+ * The curve *shape* is unchanged — same organic 12-month cumulative ramp.
+ * Only the labels, cohort, target and stats moved.
+ *
+ * "Wow" upgrade (per Xavi's ask): animated gradient stroke that pulses along
+ * the curve after the reveal, brighter cyan endpoint halo, a subtle noise
+ * overlay on the area fill, and a live "M{n}" pill that rides the marker.
  */
 export default function SavingsCurveChart({
-  // Median cumulative payment recovery over 12 months for a DTC €1M–€10M brand.
-  // Network-median (not top-decile) — payments only, aligned with the R1 pricing model.
-  target = 48000,
+  // €6,000/yr — midpoint of paymentsGap engine output for €1M GMV, 0.5–0.8pt gap.
+  target = 6000,
   months = 12,
-  // Slight organic wave, monotonically increasing to 1.0.
+  // Organic monotone curve to 1.0 — unchanged from the previous design.
   curve = [0.00, 0.05, 0.11, 0.18, 0.26, 0.35, 0.44, 0.54, 0.64, 0.75, 0.87, 1.00],
   className = "",
 }) {
@@ -82,17 +102,30 @@ export default function SavingsCurveChart({
   const my = points[i0].y + (points[i1].y - points[i0].y) * f;
   const mv = curve[i0] + (curve[i1] - curve[i0]) * f;
   const currentEUR = Math.round(mv * target);
+  const currentMonth = Math.max(1, Math.round(idxFloat) + 1);
 
   const pathLengthApprox = 1200;
   const dashOffset = pathLengthApprox * (1 - progress);
 
   const monthLabels = ["M1","M2","M3","M4","M5","M6","M7","M8","M9","M10","M11","M12"];
-  const yTicks = [0, 0.5, 1].map((r) => ({
-    y: PAD_T + (1 - r) * innerH,
-    label: r === 0 ? "€0" : `€${Math.round((r * target) / 1000)}K`,
-  }));
+
+  // Y-axis ticks derived from target — no manual sync needed on retunes.
+  // Format: €0, €<half>, €<full>. For target=6000 → €0, €3K, €6K.
+  const halfK = Math.round((target / 2) / 1000);
+  const fullK = Math.round(target / 1000);
+  const yTicks = [
+    { r: 0,   label: "€0" },
+    { r: 0.5, label: `€${halfK}K` },
+    { r: 1,   label: `€${fullK}K` },
+  ].map(({ r, label }) => ({ y: PAD_T + (1 - r) * innerH, label }));
 
   const formatted = `€${currentEUR.toLocaleString("en-US")}`;
+
+  // Derived stat: €/month when fully ramped. €6,000 / 12 = €500/mo.
+  const perMonth = Math.round(target / 12);
+  const perMonthStr = perMonth >= 1000
+    ? `€${(perMonth / 1000).toFixed(1)}k`
+    : `€${perMonth}`;
 
   return (
     <div ref={wrapRef} className={`relative ${className}`}>
@@ -102,7 +135,7 @@ export default function SavingsCurveChart({
           className="text-[10px] uppercase tracking-[0.24em] font-semibold mb-3"
           style={{ color: "rgba(255,255,255,0.45)" }}
         >
-          Median recovery · 12 months
+          Projected recovery · 12 months
         </p>
 
         <div className="flex items-baseline gap-2 flex-wrap">
@@ -113,6 +146,9 @@ export default function SavingsCurveChart({
               fontSize: "clamp(40px, 6vw, 64px)",
               letterSpacing: "-0.045em",
               lineHeight: 1,
+              /* Subtle drop-glow so the figure pops on the navy card without
+                 needing a gradient fill (kept white for maximum legibility). */
+              textShadow: "0 0 22px rgba(34,211,238,0.20)",
             }}
           >
             {formatted}
@@ -121,11 +157,11 @@ export default function SavingsCurveChart({
             className="text-[12px] font-medium"
             style={{ color: "rgba(255,255,255,0.45)" }}
           >
-            recovered
+            recoverable
           </span>
         </div>
 
-        {/* Sober stats strip */}
+        {/* Sober stats strip — recalibrated for €1M GMV ICP */}
         <div
           className="mt-4 grid grid-cols-3 gap-2 rounded-lg p-3"
           style={{
@@ -143,7 +179,7 @@ export default function SavingsCurveChart({
                 lineHeight: 1,
               }}
             >
-              €4.0k
+              {perMonthStr}
             </div>
             <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "rgba(255,255,255,0.40)" }}>
               /month
@@ -159,10 +195,10 @@ export default function SavingsCurveChart({
                 lineHeight: 1,
               }}
             >
-              15%
+              0.6pts
             </div>
             <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "rgba(255,255,255,0.40)" }}>
-              efficiency gain
+              rate saved
             </div>
           </div>
           <div style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }} className="pl-3">
@@ -189,17 +225,24 @@ export default function SavingsCurveChart({
         viewBox={`0 0 ${W} ${H}`}
         className="w-full h-auto"
         role="img"
-        aria-label="Median cumulative recovery over 12 months"
+        aria-label="Illustrative projection of cumulative payment recovery over 12 months"
       >
         <defs>
           <linearGradient id="curveStroke" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#3b82f6" />
-            <stop offset="100%" stopColor="#22d3ee" />
+            <stop offset="55%" stopColor="#22d3ee" />
+            <stop offset="100%" stopColor="#a5f3fc" />
           </linearGradient>
           <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(34,211,238,0.18)" />
+            <stop offset="0%" stopColor="rgba(34,211,238,0.22)" />
             <stop offset="100%" stopColor="rgba(59,130,246,0)" />
           </linearGradient>
+          {/* Soft halo around the endpoint marker — brighter than before */}
+          <radialGradient id="endpointHalo" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stopColor="rgba(34,211,238,0.55)" />
+            <stop offset="60%" stopColor="rgba(34,211,238,0.10)" />
+            <stop offset="100%" stopColor="rgba(34,211,238,0)" />
+          </radialGradient>
         </defs>
 
         {/* Grid */}
@@ -247,29 +290,76 @@ export default function SavingsCurveChart({
           d={fullPath}
           fill="none"
           stroke="url(#curveStroke)"
-          strokeWidth="2"
+          strokeWidth="2.25"
           strokeLinecap="round"
           strokeLinejoin="round"
           style={{
             strokeDasharray: pathLengthApprox,
             strokeDashoffset: dashOffset,
+            filter: "drop-shadow(0 0 6px rgba(34,211,238,0.35))",
           }}
         />
 
-        {/* Marker — minimal */}
+        {/* Endpoint halo — grows with progress */}
+        {progress > 0.05 && (
+          <circle
+            cx={mx} cy={my} r={22}
+            fill="url(#endpointHalo)"
+            opacity={progress}
+          />
+        )}
+
+        {/* Marker — minimal, brighter core */}
         <g>
-          <circle cx={mx} cy={my} r="5" fill="#0b1020" stroke="rgba(34,211,238,0.9)" strokeWidth="1.5" />
-          <circle cx={mx} cy={my} r="2" fill="#22d3ee" />
+          <circle cx={mx} cy={my} r="6" fill="#0b1020" stroke="rgba(34,211,238,1)" strokeWidth="1.75" />
+          <circle cx={mx} cy={my} r="2.5" fill="#22d3ee" />
         </g>
+
+        {/* Live M{n} pill riding the marker — only after ~15% progress so it
+            doesn't appear stuck on M1 during the first frames. */}
+        {progress > 0.15 && (
+          <g transform={`translate(${mx + 12}, ${my - 10})`} opacity={progress}>
+            <rect
+              x="0" y="-9" width="30" height="16" rx="8"
+              fill="rgba(11,16,32,0.85)"
+              stroke="rgba(34,211,238,0.5)"
+              strokeWidth="0.75"
+            />
+            <text
+              x="15" y="2.5"
+              textAnchor="middle"
+              fill="#a5f3fc"
+              fontSize="9"
+              fontWeight="700"
+              fontFamily="ui-monospace, SFMono-Regular, monospace"
+              letterSpacing="0.05em"
+            >
+              M{currentMonth}
+            </text>
+          </g>
+        )}
       </svg>
 
-      {/* ===== Footer meta ===== */}
+      {/* ===== Footer meta — honest framing =====
+          Was: "Cohort · DTC €1M–€10M" / "Network median" (fabricated telemetry).
+          Now: cohort matches the real ICP, and the right side clarifies the
+          figure is a projection from methodology — not a claim about network
+          data we don't have yet. */}
       <div
-        className="mt-3 flex items-center justify-between gap-3 pt-3 text-[11px]"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.45)" }}
+        className="mt-3 pt-3"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
       >
-        <span className="font-mono">Cohort · DTC €1M–€10M</span>
-        <span className="font-mono">Network median</span>
+        <div className="flex items-center justify-between gap-3 text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>
+          <span className="font-mono">Cohort · DTC €200k–€2M</span>
+          <span className="font-mono">Benchmark methodology</span>
+        </div>
+        <p
+          className="mt-2 text-[10.5px] leading-snug"
+          style={{ color: "rgba(255,255,255,0.38)" }}
+        >
+          Illustrative example based on our benchmark methodology — run the
+          analyzer for your real number.
+        </p>
       </div>
     </div>
   );

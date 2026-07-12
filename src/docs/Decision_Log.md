@@ -104,6 +104,69 @@ Cuerpo del doc conservado sin editar bajo la nota, como registro histórico del 
 **Deudas descubiertas durante R2 (tracked en KNOWN_DEBT):**
 1. Terms §8 "Provider compensation" contiene referencia a `/ForProviders`, ruta redirigida a `/` en R1. Legal orphan link.
 2. TPE report (Reports.jsx líneas 203-244): decisión de producto TOMADA — canal in-store de payments, incluido. Anotado como decisión, no como deuda.
+
+---
+
+### 2026-07-12 · R3 · Landing card: telemetría fabricada → proyección ilustrativa honesta
+
+**Contexto.** Auditoría de honestidad del hero de la landing. El `<SavingsCurveChart />` en `Landing.jsx` mostraba:
+- Badge externo del card: `Live · network median` + `Q3 2026`.
+- Figura target: `€48,000` recuperados en 12 meses.
+- Stats: `€4.0k/mes`, `15% efficiency gain`.
+- Footer: `Cohort · DTC €1M–€10M` + `Network median`.
+
+Tres problemas encadenados:
+1. **Presentación como live data**: badge "LIVE · NETWORK MEDIAN" + tag fechado "Q3 2026" sugiere telemetría de red actual. Pero no tenemos red — el producto aún no ha lanzado a producción. Es cifra fabricada disfrazada de dato.
+2. **Cifra inconsistente con el motor**: `paymentsGap.js` (motor real que impulsa `/Analyzer`) genera para una marca representativa del ICP (€1M GMV anual, gap 0.5-0.8pts sobre pagos) un rango de €5-8k/año. €48k requiere GMV de ~€8M o gap de 4-5pts — nada creíble para el ICP.
+3. **Cohorte fuera del ICP declarado**: Xavi declara ICP como DTC €200k–€2M GMV. El card decía "€1M–€10M" — dos órdenes de magnitud por encima.
+
+**Método.** Grep exhaustivo por `median`, `network`, `recovered`, `€48`, `Q3 2026`, `€1M–€10M` en `src/**/*.{jsx,js}`. Confirmado que solo tres archivos participan del framing "de red fabricado":
+- `src/pages/Landing.jsx` (badge externo del card).
+- `src/components/landing/SavingsCurveChart.jsx` (target, stats, footer meta, copy).
+- `src/components/landing/MobileNavMenu.jsx` línea 168 → "Live · Network online" — auditado y **no tocado**: es indicador de sesión de app (conectividad de sistema), no dato de red del producto.
+
+Otros hits (`recovered margin`, `RecoveryBadge`, `cambra_recovered`, `Recovery service`) son semántica legítima del producto Recovery, no framing de datos — no tocados.
+
+**Cambios ejecutados:**
+
+**1. Reencuadre honesto (Landing.jsx corner badge).**
+- `Live · network median` → `Illustrative · Projection`.
+- `Q3 2026` → `DTC · €200k–€2M GMV` (mismo espacio, ahora informa cohorte ICP).
+- Comentario in-file documentando el cambio y razón para futuros lectores.
+
+**2. Cifra coherente con el motor (SavingsCurveChart.jsx).**
+- Target: `48000` → `6000` (midpoint del rango €5-8k que produce `paymentsGap.js` para GMV €1M anual con gap 0.5-0.8pts — brand representativa del ICP DTC €200k-€2M).
+- Y-axis ticks: refactor a derivarse de `target` automáticamente (`€0`, `€${halfK}K`, `€${fullK}K`). Ahora un futuro retune del assumption solo requiere cambiar `target` — los ticks se recalculan solos. Elimina drift Y-axis vs figura, que era una fuente potencial de incongruencia.
+- Stats strip recalibradas:
+  - `€4.0k/mes` → **`€500/mes`** (derivado ahora de `target/12` — sin hardcoding).
+  - `15% efficiency gain` → **`0.6pts rate saved`** (más honesto y específico — 15% podía leerse como "% de facturación", inflando la magnitud percibida; 0.6pts se refiere al gap sobre effective rate, que es exactamente lo que mide el motor).
+  - `3 min to audit` → sin cambios.
+- Verbo del counter: `recovered` → `recoverable`. Cambio semántico crítico — nada se ha recuperado hasta que el usuario contrate el servicio; el card muestra potencial, no realización pasada.
+- Copy del header: `Median recovery · 12 months` → `Projected recovery · 12 months`.
+
+**3. Cohorte real (SavingsCurveChart.jsx footer meta).**
+- Reescrito el footer del card: eliminada línea `Network median` (framing de dato inexistente).
+- Nuevo footer: `Cohort · DTC €200k–€2M` (ICP declarado) + `Benchmark methodology` (source honesto).
+- Añadida frase explícita bajo el footer meta: *"Illustrative example based on our benchmark methodology — run the analyzer for your real number."* — corta, sin salir del look editorial del card, y **linkeable emocionalmente** al CTA principal ("run the analyzer") sin duplicar botón.
+
+**4. "Más chulo y wow" (upgrade estético — sin comprometer honestidad).**
+Xavi pidió explícitamente que quedara más impactante. Añadido, sin cambiar la forma de la curva ni las cifras:
+- Gradiente del stroke ampliado a 3-stop (`#3b82f6 → #22d3ee → #a5f3fc`) — el endpoint destaca en cyan claro.
+- `drop-shadow` cyan en la curva (aura suave, no fluorescente).
+- **Endpoint halo animado**: `<radialGradient>` cyan que aparece a partir del 5% de progress, cuya opacidad crece con la animación. Le da presencia al punto de "aquí es donde llegas".
+- **Live pill "M{n}"** que cabalga el marker durante toda la animación (rectángulo redondeado con label M1…M12), en mono cyan claro sobre fondo navy semi-transparente. Aparece a partir del 15% de progress para no verse "estancado" en M1 los primeros frames.
+- `textShadow` cyan sutil sobre la cifra principal (€6,000) — pop discreto sin gradiente de texto (mantenemos blanco puro para máxima legibilidad).
+- Radio del marker: 5→6px + stroke 1.5→1.75px — más presencia sin ruido.
+
+**Archivos tocados:** `src/pages/Landing.jsx`, `src/components/landing/SavingsCurveChart.jsx`, `src/docs/Decision_Log.md` (este).
+
+**Restricciones respetadas:**
+- Cero cambios en `paymentsGap.js`, motor, verified path, backend M3, schemas.
+- Cero cambios en la forma de la curva (mismo array `curve = [0.00, 0.05, ...]` — el shape editorial funcionaba).
+- Cero cambios en otros componentes que usan verbo "recovered" en sentido semántico del producto Recovery (Terms §7, RecoveryBadge, recoveryModel.js, HowItWorks paso 4, StopLeavingMarginCTA, AccessModelCards). No son fabricated network claims — describen mecánica de negocio.
+- `MobileNavMenu` "Live · Network online" preservado — es indicador de estado de app, no dato de producto.
+
+**Verificación post-cambio.** Grep re-ejecutado: cero ocurrencias residuales de framing "fabricado como dato real" (`Live · network median`, `Q3 2026`, `€48,000` como cifra prominente). El único hit remanente de "median" en la landing es en el sitemap/JSON-LD (no visible al usuario, no fabricated claim).
 - **Evidencia byte-a-byte del fix (post-hardening 2026-07-12).** Re-simulación del guard corregido sobre las dos ramas con caller `{email:"xavi@cambra.global", role:"user"}`:
   - Brand ajeno `6a4fe2df992f1f6be464a6fc` (H, owner `94.martinez.x@gmail.com`) → **404** · body `{"ok":false,"error":"Brand not found"}` · 38 bytes.
   - Brand inexistente `does-not-exist-abc-1234567890` → **404** · body `{"ok":false,"error":"Brand not found"}` · 38 bytes.

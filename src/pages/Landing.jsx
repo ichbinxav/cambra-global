@@ -226,16 +226,20 @@ function Hero() {
                 "0 30px 80px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(96,165,250,0.18)",
             }}
           >
-            {/* corner badge */}
-            <div className="flex items-center justify-between mb-2">
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
+            {/* Corner badge — Illustrative projection (2026-07-12 · R3).
+                Was "Live · network median / Q3 2026" — presented a fabricated
+                network figure (€48k) as live telemetry. Reframed as an
+                illustrative projection derived from our benchmark methodology,
+                anchored to the ICP (DTC €200k–€2M). No dated tag anymore. */}
+            <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
                 </span>
-                Live · network median
+                Illustrative · Projection
               </span>
-              <span className="text-[10px] text-white/30 font-mono">Q3 2026</span>
+              <span className="text-[10px] text-white/35 font-mono">DTC · €200k–€2M GMV</span>
             </div>
             <SavingsCurveChart className="mt-6" />
           </div>
