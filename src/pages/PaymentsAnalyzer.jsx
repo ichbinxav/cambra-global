@@ -28,6 +28,7 @@ import IntlSlider      from "@/components/paymentsAnalyzer/IntlSlider";
 import ProviderGrid    from "@/components/paymentsAnalyzer/ProviderGrid";
 import CardMixSlider   from "@/components/paymentsAnalyzer/CardMixSlider";
 import BrandBlock, { BRAND_SECTOR_SLUGS } from "@/components/paymentsAnalyzer/BrandBlock";
+import CombinedChannelBlock from "@/components/paymentsAnalyzer/CombinedChannelBlock";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
 //    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
@@ -104,6 +105,9 @@ export default function PaymentsAnalyzer() {
   // intl15% → 226.25 bps / 149.5 bps / {lo:6140, point:7675, hi:9210}
   // idéntico a 1.3.0). Toggle visible + payload envía channel real.
   const IN_STORE_UI_ENABLED = true;
+  // M4-TPV Fase 3 — three modes now: 'online', 'in_store', 'combined'.
+  // Combined runs two engine passes (one per channel) and aggregates.
+  // Single-channel modes remain byte-identical to Fase 2B behavior.
   const [channel, setChannel]           = useState("online");
   const [gmv, setGmv]                   = useState("");
   const [avgTicket, setAvgTicket]       = useState("");
@@ -112,6 +116,14 @@ export default function PaymentsAnalyzer() {
   const [country, setCountry]           = useState("");
   const [cardMixOpen, setCardMixOpen]   = useState(false);
   const [cardMixDebit, setCardMixDebit] = useState("");
+  // Combined mode holds independent per-channel form state, so switching
+  // back to a single-channel mode preserves nothing (avoids stale data).
+  const [combinedOnline, setCombinedOnline] = useState({
+    monthly_gmv_eur: "", avg_ticket_eur: "", intl_pct: "", provider_slug: "",
+  });
+  const [combinedInStore, setCombinedInStore] = useState({
+    monthly_gmv_eur: "", avg_ticket_eur: "", provider_slug: "",
+  });
   // ── About your brand (required: name; optional: website, sector) ──────
   const [brandName, setBrandName]       = useState("");
   const [website, setWebsite]           = useState("");
@@ -123,21 +135,41 @@ export default function PaymentsAnalyzer() {
   // ── Client-side validation — same ranges + fields as the backend.
   const validation = useMemo(() => {
     const errors = [];
-    if (gmv === "") errors.push("Monthly GMV is required.");
-    else { const e = fieldRangeError("monthly_gmv_eur", gmv); if (e) errors.push(e); }
+    const isCombined = channel === "combined";
 
-    if (avgTicket === "") errors.push("Average ticket is required.");
-    else { const e = fieldRangeError("avg_ticket_eur", avgTicket); if (e) errors.push(e); }
+    if (isCombined) {
+      // Validate ONLINE sub-form.
+      if (combinedOnline.monthly_gmv_eur === "") errors.push("Online: monthly GMV is required.");
+      else { const e = fieldRangeError("monthly_gmv_eur", combinedOnline.monthly_gmv_eur); if (e) errors.push(`Online — ${e}`); }
+      if (combinedOnline.avg_ticket_eur === "") errors.push("Online: average ticket is required.");
+      else { const e = fieldRangeError("avg_ticket_eur", combinedOnline.avg_ticket_eur); if (e) errors.push(`Online — ${e}`); }
+      if (combinedOnline.intl_pct === "") errors.push("Online: international share is required (0% is valid).");
+      else { const e = fieldRangeError("intl_pct", combinedOnline.intl_pct); if (e) errors.push(`Online — ${e}`); }
+      if (!combinedOnline.provider_slug) errors.push("Online: payment provider is required.");
 
-    // In-store channel: cross-border volume is negligible in card-present
-    // for the ICP, so we skip the intl question entirely and treat it as 0
-    // in the payload. Online channel: intl_pct is required (0 is valid).
-    if (channel === "online") {
-      if (intlPct === "") errors.push("International share is required (0% is valid).");
-      else { const e = fieldRangeError("intl_pct", intlPct); if (e) errors.push(e); }
+      // Validate IN-STORE sub-form.
+      if (combinedInStore.monthly_gmv_eur === "") errors.push("In-store: monthly GMV is required.");
+      else { const e = fieldRangeError("monthly_gmv_eur", combinedInStore.monthly_gmv_eur); if (e) errors.push(`In-store — ${e}`); }
+      if (combinedInStore.avg_ticket_eur === "") errors.push("In-store: average ticket is required.");
+      else { const e = fieldRangeError("avg_ticket_eur", combinedInStore.avg_ticket_eur); if (e) errors.push(`In-store — ${e}`); }
+      if (!combinedInStore.provider_slug) errors.push("In-store: terminal provider is required.");
+    } else {
+      if (gmv === "") errors.push("Monthly GMV is required.");
+      else { const e = fieldRangeError("monthly_gmv_eur", gmv); if (e) errors.push(e); }
+
+      if (avgTicket === "") errors.push("Average ticket is required.");
+      else { const e = fieldRangeError("avg_ticket_eur", avgTicket); if (e) errors.push(e); }
+
+      // In-store channel: cross-border volume is negligible in card-present
+      // for the ICP, so we skip the intl question entirely and treat it as 0
+      // in the payload. Online channel: intl_pct is required (0 is valid).
+      if (channel === "online") {
+        if (intlPct === "") errors.push("International share is required (0% is valid).");
+        else { const e = fieldRangeError("intl_pct", intlPct); if (e) errors.push(e); }
+      }
+
+      if (!providerSlug) errors.push("Payment provider is required.");
     }
-
-    if (!providerSlug) errors.push("Payment provider is required.");
     if (!country) errors.push("Country is required.");
 
     // Brand name — required (2-80 chars, same range as backend).
@@ -171,7 +203,7 @@ export default function PaymentsAnalyzer() {
     }
 
     return { valid: errors.length === 0, errors };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit, brandName, website, sector, channel]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit, brandName, website, sector, channel, combinedOnline, combinedInStore]);
 
   // ── Progress counter — 6 required fields (5 payment + brand name) plus 1
   //    optional (card mix) when the drawer is open. Website and sector are
@@ -180,9 +212,18 @@ export default function PaymentsAnalyzer() {
   //    In-store channel: intl_pct is not asked, so the counter drops to 5
   //    payment fields + brand = 5 required.
   const progress = useMemo(() => {
-    const paymentFields = channel === "in_store"
-      ? [gmv, avgTicket, providerSlug, country]           // no intl
-      : [gmv, avgTicket, intlPct, providerSlug, country]; // classic online
+    let paymentFields;
+    if (channel === "combined") {
+      paymentFields = [
+        combinedOnline.monthly_gmv_eur, combinedOnline.avg_ticket_eur, combinedOnline.intl_pct, combinedOnline.provider_slug,
+        combinedInStore.monthly_gmv_eur, combinedInStore.avg_ticket_eur, combinedInStore.provider_slug,
+        country,
+      ];
+    } else if (channel === "in_store") {
+      paymentFields = [gmv, avgTicket, providerSlug, country];           // no intl
+    } else {
+      paymentFields = [gmv, avgTicket, intlPct, providerSlug, country];  // classic online
+    }
     const filled = paymentFields.filter((v) => v !== "" && v !== undefined && v !== null).length;
     const brandFilled = brandName.trim() !== "" ? 1 : 0;
     const optionalCounts = cardMixOpen;
@@ -190,7 +231,7 @@ export default function PaymentsAnalyzer() {
     const total = paymentFields.length + 1 + (optionalCounts ? 1 : 0);
     const done = filled + brandFilled + optionalFilled;
     return { done, total, pct: Math.round((done / total) * 100) };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName, channel]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName, channel, combinedOnline, combinedInStore]);
 
   // ── Submit → submitPaymentsAnalysis → /PaymentsResults?session=<id>
   const handleSubmit = async () => {
@@ -202,21 +243,49 @@ export default function PaymentsAnalyzer() {
 
     setSubmitting(true);
     try {
-      const payload = {
-        monthly_gmv_eur: Number(gmv),
-        avg_ticket_eur: Number(avgTicket),
-        // In-store: cross-border volume is negligible for the ICP (card-
-        // present shoppers use domestic cards) → intl_pct forced to 0 in
-        // the payload. Online: intl_pct is required and comes from the form.
-        intl_pct: channel === "in_store" ? 0 : Number(intlPct),
-        provider_slug: providerSlug,
-        country,
-        channel,
-        brand_name: brandName.trim(),
-        ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
-        ...(website.trim() !== "" ? { website: website.trim() } : {}),
-        ...(sector !== "" ? { sector } : {}),
-      };
+      let payload;
+      if (channel === "combined") {
+        // Combined mode: send `mode: 'combined'` + `channels[]` — backend
+        // runs calculateGap once per channel and aggregates.
+        payload = {
+          mode: "combined",
+          country,
+          brand_name: brandName.trim(),
+          channels: [
+            {
+              channel: "online",
+              provider_slug: combinedOnline.provider_slug,
+              monthly_gmv_eur: Number(combinedOnline.monthly_gmv_eur),
+              avg_ticket_eur: Number(combinedOnline.avg_ticket_eur),
+              intl_pct: Number(combinedOnline.intl_pct),
+            },
+            {
+              channel: "in_store",
+              provider_slug: combinedInStore.provider_slug,
+              monthly_gmv_eur: Number(combinedInStore.monthly_gmv_eur),
+              avg_ticket_eur: Number(combinedInStore.avg_ticket_eur),
+            },
+          ],
+          ...(website.trim() !== "" ? { website: website.trim() } : {}),
+          ...(sector !== "" ? { sector } : {}),
+        };
+      } else {
+        payload = {
+          monthly_gmv_eur: Number(gmv),
+          avg_ticket_eur: Number(avgTicket),
+          // In-store: cross-border volume is negligible for the ICP (card-
+          // present shoppers use domestic cards) → intl_pct forced to 0 in
+          // the payload. Online: intl_pct is required and comes from the form.
+          intl_pct: channel === "in_store" ? 0 : Number(intlPct),
+          provider_slug: providerSlug,
+          country,
+          channel,
+          brand_name: brandName.trim(),
+          ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
+          ...(website.trim() !== "" ? { website: website.trim() } : {}),
+          ...(sector !== "" ? { sector } : {}),
+        };
+      }
       const resp = await base44.functions.invoke("submitPaymentsAnalysis", payload);
       const body = resp?.data || resp;
 
@@ -346,6 +415,7 @@ export default function PaymentsAnalyzer() {
             {[
               { key: "online",   label: "Online" },
               { key: "in_store", label: "In-store" },
+              { key: "combined", label: "Both" },
             ].map((opt) => {
               const active = channel === opt.key;
               return (
@@ -390,6 +460,44 @@ export default function PaymentsAnalyzer() {
 
         {/* ─────────────── Form ─────────────── */}
         <div className="space-y-8">
+          {/* M4-TPV Fase 3 — Combined mode renders a dual-channel block
+              (online + in-store side by side) INSTEAD of the single-channel
+              form. Country + brand + card mix still live at the top level.
+              Both modes flow into the same submit handler. */}
+          {channel === "combined" ? (
+            <>
+              <CombinedChannelBlock
+                onlineValue={combinedOnline}
+                onOnlineChange={setCombinedOnline}
+                inStoreValue={combinedInStore}
+                onInStoreChange={setCombinedInStore}
+                onlineProviders={PROVIDER_OPTIONS_ONLINE}
+                inStoreProviders={PROVIDER_OPTIONS_IN_STORE}
+              />
+              {/* Country lives at the top level — single field shared by
+                  both channels (a merchant is in one country). */}
+              <div className="space-y-2.5">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                    Country
+                  </span>
+                  <span className="text-[10px] text-white/35">Region benchmark</span>
+                </div>
+                <select
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className="w-full h-11 px-3 rounded-md text-sm text-white focus:outline-none focus:border-cyan-400/60 transition-colors"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                >
+                  <option value="" className="bg-neutral-900">Select your country…</option>
+                  {COUNTRY_OPTIONS.map((c) => (
+                    <option key={c.code} value={c.code} className="bg-neutral-900">{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          ) : (
+          <>
           {/* GMV always spans full width — it's the anchor number. */}
           <GmvSlider value={gmv} onChange={setGmv} />
 
@@ -446,8 +554,10 @@ export default function PaymentsAnalyzer() {
               onChange={setProviderSlug}
             />
           </div>
+          </>
+          )}
 
-          {/* Card mix — optional, collapsed */}
+          {/* Card mix — optional, collapsed. Shared across all modes. */}
           <div>
             <button
               type="button"

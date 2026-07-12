@@ -798,6 +798,20 @@ const ALLOWED_PROVIDER_SET = new Set<string>(ALLOWED_PROVIDER_SLUGS);
 // callers that omit the field get byte-identical results to v1.3.0.
 const ALLOWED_CHANNELS = new Set<string>(['online', 'in_store']);
 
+// M4-TPV Fase 3 (2026-07-12) — combined channel mode.
+// Payload shape when the caller wants BOTH channels analyzed in one submit:
+//   { mode: 'combined', country, brand_name, ...leadMetadata,
+//     channels: [
+//       { channel: 'online',   provider_slug, monthly_gmv_eur, avg_ticket_eur, intl_pct },
+//       { channel: 'in_store', provider_slug, monthly_gmv_eur, avg_ticket_eur },
+//     ] }
+// The engine is NOT touched — the handler runs calculateGap ONCE PER CHANNEL
+// on the shared PaymentsRateTable snapshot and aggregates monthly/annual
+// savings. Cero cambios en el bloque SYNC (sigue byte-identical a 1.4.0).
+// Retrocompat lock: cuando el payload NO trae mode='combined', el flujo
+// single-channel (online o in_store) es byte-idéntico al pre-Fase-3.
+const ALLOWED_MODES = new Set<string>(['single', 'combined']);
+
 // Country → region mapping. Region is DERIVED server-side from country; the
 // caller only provides country. This prevents the client from picking a region
 // that mismatches their country and cherry-picking a friendlier fallback row.
@@ -928,6 +942,49 @@ async function checkAndIncrementRateLimit(
 // ─── Input validation — hard ranges, no clamp ───────────────────────────────
 type ValidationFailure = { field: string; reason: 'missing' | 'out_of_range' | 'not_in_enum' | 'invalid_type' };
 
+// M4-TPV Fase 3 — validation for a single per-channel sub-payload inside a
+// combined submit. Runs the SAME per-field checks as validateInput() but
+// scoped to the fields that belong to a channel (no brand_name / country /
+// website / sector at the sub-level — those live at the top level).
+function validateChannelPayload(raw: any, idx: number): { ok: true; clean: any } | { ok: false; failure: ValidationFailure } {
+  const prefix = `channels[${idx}]`;
+  if (!raw || typeof raw !== 'object') return { ok: false, failure: { field: prefix, reason: 'invalid_type' } };
+
+  const chRaw = typeof raw.channel === 'string' ? raw.channel.trim().toLowerCase() : '';
+  if (!chRaw) return { ok: false, failure: { field: `${prefix}.channel`, reason: 'missing' } };
+  if (!ALLOWED_CHANNELS.has(chRaw)) return { ok: false, failure: { field: `${prefix}.channel`, reason: 'not_in_enum' } };
+  const channel = chRaw as 'online' | 'in_store';
+
+  const gmv = Number(raw.monthly_gmv_eur);
+  if (raw.monthly_gmv_eur === undefined || raw.monthly_gmv_eur === null || raw.monthly_gmv_eur === '') return { ok: false, failure: { field: `${prefix}.monthly_gmv_eur`, reason: 'missing' } };
+  if (!isFinite(gmv)) return { ok: false, failure: { field: `${prefix}.monthly_gmv_eur`, reason: 'invalid_type' } };
+  if (gmv < VALIDATION.monthly_gmv_eur.min || gmv > VALIDATION.monthly_gmv_eur.max) return { ok: false, failure: { field: `${prefix}.monthly_gmv_eur`, reason: 'out_of_range' } };
+
+  const ticket = Number(raw.avg_ticket_eur);
+  if (raw.avg_ticket_eur === undefined || raw.avg_ticket_eur === null || raw.avg_ticket_eur === '') return { ok: false, failure: { field: `${prefix}.avg_ticket_eur`, reason: 'missing' } };
+  if (!isFinite(ticket)) return { ok: false, failure: { field: `${prefix}.avg_ticket_eur`, reason: 'invalid_type' } };
+  if (ticket < VALIDATION.avg_ticket_eur.min || ticket > VALIDATION.avg_ticket_eur.max) return { ok: false, failure: { field: `${prefix}.avg_ticket_eur`, reason: 'out_of_range' } };
+
+  // intl_pct — required for online, forced to 0 for in_store (card-present
+  // cross-border is negligible for the ICP; matches the single-channel rule).
+  let intl = 0;
+  if (channel === 'online') {
+    if (raw.intl_pct === undefined || raw.intl_pct === null || raw.intl_pct === '') return { ok: false, failure: { field: `${prefix}.intl_pct`, reason: 'missing' } };
+    intl = Number(raw.intl_pct);
+    if (!isFinite(intl)) return { ok: false, failure: { field: `${prefix}.intl_pct`, reason: 'invalid_type' } };
+    if (intl < VALIDATION.intl_pct.min || intl > VALIDATION.intl_pct.max) return { ok: false, failure: { field: `${prefix}.intl_pct`, reason: 'out_of_range' } };
+  }
+
+  const provider = typeof raw.provider_slug === 'string' ? raw.provider_slug.trim().toLowerCase() : '';
+  if (!provider) return { ok: false, failure: { field: `${prefix}.provider_slug`, reason: 'missing' } };
+  if (!ALLOWED_PROVIDER_SET.has(provider)) return { ok: false, failure: { field: `${prefix}.provider_slug`, reason: 'not_in_enum' } };
+
+  return {
+    ok: true,
+    clean: { channel, monthly_gmv_eur: gmv, avg_ticket_eur: ticket, intl_pct: intl, provider_slug: provider },
+  };
+}
+
 function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failure: ValidationFailure } {
   if (!raw || typeof raw !== 'object') return { ok: false, failure: { field: 'body', reason: 'invalid_type' } };
 
@@ -1057,13 +1114,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'invalid_json_body' }, { status: 400 });
     }
 
-    // Validate.
-    const v = validateInput(raw);
-    if (!v.ok) {
-      return Response.json({ error: 'invalid_input', field: v.failure.field, reason: v.failure.reason }, { status: 400 });
+    // ── Mode detection ──────────────────────────────────────────────────
+    // Payload with `mode: 'combined'` + `channels: [...]` runs the engine
+    // once per channel and aggregates. Anything else (default 'single') is
+    // the pre-Fase-3 path — byte-identical validation + execution.
+    const modeRaw = typeof raw?.mode === 'string' ? raw.mode.trim().toLowerCase() : 'single';
+    if (modeRaw && !ALLOWED_MODES.has(modeRaw)) {
+      return Response.json({ error: 'invalid_input', field: 'mode', reason: 'not_in_enum' }, { status: 400 });
     }
+    const isCombined = modeRaw === 'combined';
 
-    // IP → hash → rate limit.
+    // ── IP → hash → rate limit (shared across modes) ────────────────────
     const ip = extractClientIp(req);
     const ipHash = await hashIp(ip);
     const limitPerHour = Number(Deno.env.get('PAYMENTS_ANALYSIS_RATE_LIMIT_PER_HOUR') || 10);
@@ -1072,11 +1133,157 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'rate_limited', retry_after_seconds: rl.retry_after_seconds }, { status: 429 });
     }
 
-    // Load rate table + run engine in-process.
+    // ── Load rate table (shared across modes) ───────────────────────────
     const table = await loadRateTable(base44);
     if (!table.ok) {
       console.error('submitPaymentsAnalysis rate table error:', table.error, table.missing);
       return Response.json({ error: 'engine_unavailable' }, { status: 503 });
+    }
+
+    if (isCombined) {
+      // ── Combined path: validate top-level lead metadata + each channel ──
+      const country = typeof raw.country === 'string' ? raw.country.trim().toUpperCase() : '';
+      if (!country) return Response.json({ error: 'invalid_input', field: 'country', reason: 'missing' }, { status: 400 });
+      if (!/^[A-Z]{2}$/.test(country)) return Response.json({ error: 'invalid_input', field: 'country', reason: 'invalid_type' }, { status: 400 });
+
+      const brandName = typeof raw.brand_name === 'string' ? raw.brand_name.trim() : '';
+      if (!brandName) return Response.json({ error: 'invalid_input', field: 'brand_name', reason: 'missing' }, { status: 400 });
+      if (brandName.length < VALIDATION.brand_name.minLen || brandName.length > VALIDATION.brand_name.maxLen) {
+        return Response.json({ error: 'invalid_input', field: 'brand_name', reason: 'out_of_range' }, { status: 400 });
+      }
+
+      const channelsRaw = Array.isArray(raw.channels) ? raw.channels : [];
+      if (channelsRaw.length < 2) {
+        return Response.json({ error: 'invalid_input', field: 'channels', reason: 'out_of_range' }, { status: 400 });
+      }
+      // Enforce distinct channels (no double-online, no double-in_store).
+      const seen = new Set<string>();
+      const cleanChannels: any[] = [];
+      for (let i = 0; i < channelsRaw.length; i++) {
+        const cv = validateChannelPayload(channelsRaw[i], i);
+        if (!cv.ok) return Response.json({ error: 'invalid_input', field: cv.failure.field, reason: cv.failure.reason }, { status: 400 });
+        if (seen.has(cv.clean.channel)) {
+          return Response.json({ error: 'invalid_input', field: `channels[${i}].channel`, reason: 'not_in_enum' }, { status: 400 });
+        }
+        seen.add(cv.clean.channel);
+        cleanChannels.push(cv.clean);
+      }
+
+      // Optional lead metadata at top level.
+      let website: string | undefined;
+      if (raw.website !== undefined && raw.website !== null && raw.website !== '') {
+        if (typeof raw.website !== 'string') return Response.json({ error: 'invalid_input', field: 'website', reason: 'invalid_type' }, { status: 400 });
+        if (raw.website.length > VALIDATION.website.maxLen) return Response.json({ error: 'invalid_input', field: 'website', reason: 'out_of_range' }, { status: 400 });
+        const norm = normalizeWebsite(raw.website);
+        if (!norm) return Response.json({ error: 'invalid_input', field: 'website', reason: 'invalid_type' }, { status: 400 });
+        website = norm;
+      }
+      let sector: string | undefined;
+      if (raw.sector !== undefined && raw.sector !== null && raw.sector !== '') {
+        const s = typeof raw.sector === 'string' ? raw.sector.trim().toLowerCase() : '';
+        if (!ALLOWED_SECTOR_SET.has(s)) return Response.json({ error: 'invalid_input', field: 'sector', reason: 'not_in_enum' }, { status: 400 });
+        sector = s;
+      }
+
+      const region = countryToRegion(country);
+
+      // Run engine ONCE PER CHANNEL. Motor is byte-identical to 1.4.0 —
+      // each call goes through the same normalizeInput → selectRow →
+      // computeEffectiveBps pipeline on the same rate-table snapshot.
+      const perChannelResults: any[] = [];
+      for (const c of cleanChannels) {
+        const engineInput = {
+          monthly_gmv_eur: c.monthly_gmv_eur,
+          avg_ticket_eur: c.avg_ticket_eur,
+          region,
+          provider_slug: c.provider_slug,
+          intl_pct: c.intl_pct,
+          channel: c.channel,
+        };
+        const r = calculateGap(engineInput, table.rows!);
+        if (!r.ok) {
+          console.error('submitPaymentsAnalysis combined engine not-ok:', c.channel, r);
+          return Response.json({ error: 'engine_error' }, { status: 502 });
+        }
+        perChannelResults.push({ channel: c.channel, engine_result: r, input_snapshot: c });
+      }
+
+      // Aggregate: sum each band across channels. NEVER treat as a single
+      // point — the whole product refuses single-number precision on
+      // estimates.
+      const sum = (fn: (r: any) => number) => perChannelResults.reduce((acc, x) => acc + (fn(x.engine_result) || 0), 0);
+      const monthly_total = {
+        lo:    sum(r => r.monthly_savings_eur?.lo),
+        point: sum(r => r.monthly_savings_eur?.point),
+        hi:    sum(r => r.monthly_savings_eur?.hi),
+      };
+      const annual_total = {
+        lo:    sum(r => r.annual_savings_eur?.lo),
+        point: sum(r => r.annual_savings_eur?.point),
+        hi:    sum(r => r.annual_savings_eur?.hi),
+      };
+
+      // The primary channel (larger GMV) supplies the top-level cohort +
+      // assumptions in the response — so legacy consumers of engine_result
+      // (older readers) get a sensible shape. `combined: true` flags the
+      // new consumers so they read `channels[]` instead.
+      const sortedByGmv = [...perChannelResults].sort(
+        (a, b) => (b.input_snapshot.monthly_gmv_eur || 0) - (a.input_snapshot.monthly_gmv_eur || 0)
+      );
+      const primary = sortedByGmv[0];
+
+      const engineResult = {
+        ok: true,
+        engine_version: primary.engine_result.engine_version,
+        combined: true,
+        mode: 'estimated',
+        current_effective_bps: primary.engine_result.current_effective_bps,
+        achievable_effective_bps: primary.engine_result.achievable_effective_bps,
+        monthly_savings_eur: monthly_total,
+        annual_savings_eur: annual_total,
+        cohort: primary.engine_result.cohort,
+        assumptions: primary.engine_result.assumptions,
+        channels: perChannelResults.map(x => ({
+          channel: x.channel,
+          input_snapshot: x.input_snapshot,
+          engine_result: x.engine_result,
+        })),
+      };
+
+      // Persist session — input_snapshot carries a "combined"-shaped
+      // structure so the teaser can rehydrate it. getPaymentsGapTeaser's
+      // allowlist reads only the 4 top-level fields (gmv/ticket/provider/
+      // country); for combined those come from the primary channel + top
+      // level country. Full per-channel data lives in engine_result.channels.
+      const anon_session_id = crypto.randomUUID();
+      await base44.asServiceRole.entities.PaymentsAnalysisSession.create({
+        anon_session_id,
+        input_snapshot: {
+          mode: 'combined',
+          country,
+          region,
+          brand_name: brandName,
+          ...(website !== undefined ? { website } : {}),
+          ...(sector !== undefined ? { sector } : {}),
+          // Primary-channel projection at the top level for the teaser's
+          // fixed allowlist (monthly_gmv_eur/avg_ticket_eur/provider_slug).
+          monthly_gmv_eur: primary.input_snapshot.monthly_gmv_eur,
+          avg_ticket_eur: primary.input_snapshot.avg_ticket_eur,
+          provider_slug: primary.input_snapshot.provider_slug,
+          channels: cleanChannels,
+        },
+        engine_result: engineResult,
+        engine_version: engineResult.engine_version,
+        ip_hash: ipHash,
+      });
+
+      return Response.json({ ok: true, anon_session_id, engine_result: engineResult });
+    }
+
+    // ── Single-channel path (pre-Fase-3, byte-identical) ────────────────
+    const v = validateInput(raw);
+    if (!v.ok) {
+      return Response.json({ error: 'invalid_input', field: v.failure.field, reason: v.failure.reason }, { status: 400 });
     }
     // Engine input is a strict subset of v.clean — brand_name / website /
     // sector are session metadata for lead intelligence, NEVER engine inputs

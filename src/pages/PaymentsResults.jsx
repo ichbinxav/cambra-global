@@ -33,6 +33,7 @@ import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Search, Lock } from "luc
 import PaymentsGapCard from "@/components/paymentsResults/PaymentsGapCard";
 import FeeBreakdownCard from "@/components/paymentsResults/FeeBreakdownCard";
 import AssumptionsFootnote from "@/components/paymentsResults/AssumptionsFootnote";
+import CombinedGapHero from "@/components/paymentsResults/CombinedGapHero";
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const OBJECT_ID = /^[0-9a-f]{24}$/i;
@@ -294,6 +295,10 @@ export default function PaymentsResults() {
   const isVerifiedMode = engineResult?.mode === "verified";
   const measurementWindow = payload?.measurement_window;
   const sampleMetrics = payload?.sample_metrics;
+  // M4-TPV Fase 3 — combined submits carry engine_result.combined === true
+  // and a per-channel channels[] array. Detect once here and route to the
+  // combined hero renderer instead of the single-channel gap card.
+  const isCombined = engineResult?.combined === true && Array.isArray(engineResult?.channels);
 
   return (
     <ResultsShell>
@@ -314,12 +319,19 @@ export default function PaymentsResults() {
       <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-6 lg:items-start gap-5">
         {/* LEFT column — hero + CTA */}
         <div className="lg:col-span-3 space-y-5">
-          <PaymentsGapCard
-            engineResult={engineResult}
-            inputSnapshot={inputSnapshot}
-            sampleMetrics={sampleMetrics}
-            measurementWindow={measurementWindow}
-          />
+          {isCombined ? (
+            <CombinedGapHero
+              engineResult={engineResult}
+              country={inputSnapshot?.country}
+            />
+          ) : (
+            <PaymentsGapCard
+              engineResult={engineResult}
+              inputSnapshot={inputSnapshot}
+              sampleMetrics={sampleMetrics}
+              measurementWindow={measurementWindow}
+            />
+          )}
 
           {/* Primary CTA — content changes per mode.
               Estimated: sign-in wall (form → account → connect).
