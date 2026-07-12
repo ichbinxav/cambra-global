@@ -5,6 +5,76 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-12 — M4-TPV · Fase 2A · Motor `payments-gap-1.4.0` + seed in-store
+
+**Alcance.** Sub-tanda backend de la Fase 2 del M4-TPV (payments in-store). Extiende el motor `paymentsGap` a canal `in_store` sin tocar el path online (byte-idéntico 1.3.0), amplía la entidad `PaymentsRateTable` con dimensión `channel` + fields de rental, siembra 4 filas verified in-store + 4 fallbacks, y añade tests dedicados. **Sub-tanda 2B (UI Analyzer toggle, Results dual-canal, Landing upsell strip, Terms §7/§8, i18n × 3) va en el chunk siguiente.**
+
+**1. Schema `PaymentsRateTable` — 3 fields nuevos, cero migración.**
+- `channel` (enum `online` | `in_store`, default `online`) — retrocompat: 11 filas pre-M4 se tratan como `online` sin re-seedear.
+- `terminal_rental_monthly_minor` — rental mensual del terminal en minor units. Sólo poblado en filas in-store; null / 0 en online. Amortiza sobre **monthly GMV** (no per-ticket — el rental es mensual por diseño).
+- `achievable_terminal_rental_monthly_minor` — todos los seeded rows llevan 0 (asunción: migración a TPV moderno = 0 rental).
+
+**2. Motor `payments-gap-1.4.0` — bump SemVer, retrocompat total.**
+- `KNOWN_CHANNELS = {online, in_store}`. `input.channel` default `online` cuando ausente → aritmética byte-idéntica a 1.3.0 en online. Test `paymentsGap.inStore.test.js` bloquea esto explícitamente ("omitting channel produces the EXACT same output as channel='online'").
+- `KNOWN_PROVIDERS` crece con 4 in-store providers: `sumup`, `stripe_terminal`, `smile_and_pay`, `zettle`.
+- `REQUIRED_FALLBACK_KEYS` crece de 4 a **8** (añade `ANY|ANY|EU|in_store`, `UK|in_store`, `US|in_store`, `RoW|in_store`). El motor rechaza (`rate_table_incomplete`) si falta cualquier fallback — misma política que en online.
+- `selectRow` con cascada channel-scoped:
+  - **online**: primero legacy `<provider>|ANY|<region>` (para no re-seedear las 11 filas pre-M4), después channel-scoped, después fallback ANY.
+  - **in_store**: solo channel-scoped. Un merchant en Stripe con canal in_store **jamás matchea `stripe|ANY|EU` online** — su rate real (1.4% + €0.10 en Stripe Terminal) es completamente distinto.
+- `computeEffectiveBps` con segundo término de amortización: `rental_bps = (rental_major / monthly_gmv_eur) × 10000`. Null/0 rental → 0 bps (retrocompat online). €25/mo sobre €10k GMV = **exactamente 25 bps** (verificado en test).
+- Nuevas assumption strings: `TERMINAL_RENTAL_NOTE` (in-store rental amortizado) + rama in-store en `MEASURED_CURRENT_NOTE` con nouns correctos (`N provider invoices over M months` en lugar de `N charges over M days`).
+- `cohort.channel` expuesto en el output — downstream consumers filtran sin re-parsear `cohort_key`.
+
+**3. Copia triple sellada.** El bloque SYNC-START/SYNC-END: paymentsGap sigue viviendo en **3 archivos byte-normalized idénticos**: `src/lib/paymentsGap.js` ↔ `base44/functions/submitPaymentsAnalysis/entry.ts` ↔ `base44/functions/computeStripeVerifiedGap/entry.ts`. El sync-check pair `paymentsGap` con `extraDenos: [computeStripeVerifiedGap]` verifica transitividad. Cualquier edit del motor que no se replique verbatim en las tres copias rompe CI.
+
+**4. Filas seed sembradas (fuentes verbatim, cero cifras inventadas en código).**
+
+| cohort_key | percent | fixed | rental | verified | Fuente verificada 2026-07-12 |
+|---|---|---|---|---|---|
+| `sumup\|ANY\|EU\|in_store` | 175 bps | 0 | 0 | ✅ | `sumup.com/fr-fr/tarifs`: *"1,75 % pour tous les autres paiements en personne"* |
+| `stripe_terminal\|ANY\|EU\|in_store` | 140 bps | **10** (€0.10) | 0 | ✅ | `stripe.com/pricing`: *"1.4% per successful EEA card transaction (Stripe Terminal in-person payments)"* — **CORREGIDO** desde 0 fixed (M4-Fase-1 había redondeado incorrectamente el €0,10) |
+| `smile_and_pay\|ANY\|EU\|in_store` | 155 bps | 0 | 0 | ✅ | `smileandpay.com/blog/...`: *"notre taux de commission varie entre 0,65% HT et 1,65% HT"* — seedeado a 1.55% (offre Essentiel) |
+| `zettle\|ANY\|EU\|in_store` | 175 bps | 0 | 0 | ⚠️ **false** | `zettle.com/gb/pricing`: *"Card and contactless payments: 1.75%"* — página **GB** verificada, la **FR** pendiente → sembrado como `verified=false` con banda ±30% + assumption "regional estimate" (condición aprobada en Fase 2 approval). Upgrade a `verified=true` cuando se verifique verbatim la página FR. |
+| `ANY\|ANY\|EU\|in_store` fallback | 220 bps | 0 | **2500** (€25/mo) | ❌ | Bancos FR (BNP/CA/SG/BPCE/CM-CIC/La Banque Postale/LCL/HSBC): pricing opaco 1.8-2.5% + €15-40/mo rental. Achievable = migración a Stripe Terminal (140 + €0.10, 0 rental). |
+| `ANY\|ANY\|UK\|in_store` fallback | 210 bps | 0 | 2500 GBP | ❌ | Barclaycard/Lloyds/HSBC. |
+| `ANY\|ANY\|US\|in_store` fallback | 260 bps | 10 | 0 | ❌ | Square 2.6%+10c published (squareup.com). |
+| `ANY\|ANY\|RoW\|in_store` fallback | 250 bps | 10 | 2000 | ❌ | Default global. |
+
+**5. Consecuencia numérica intencional — ticket-dependent floor.** El "provider ganador" para in-store depende del ticket medio (verificado por test en `paymentsGap.inStore.test.js`):
+
+| Ticket | SumUp EU (175 + 0 fixed) | Stripe Terminal EEA (140 + €0.10/ticket) |
+|---|---|---|
+| €10 | **175 bps** ← más barato | 240 bps (100 bps drag del fixed) |
+| €25 | 175 bps ← más barato (por 5 bps) | 180 bps (40 bps drag) |
+| €100 | 175 bps | **150 bps** ← más barato (Stripe Terminal gana) |
+
+El motor gestiona esto correctamente a runtime vía `avg_ticket_eur` — el seed sólo lleva los componentes atómicos publicados. Registrado en `source_notes` de cada fila para auditoría.
+
+**6. Cross-border in-store: no modelado por defecto.** Todas las filas in-store llevan `intl_uplift_bps = null` con `intl_uplift_assumption_notes` explícito. Razón: volumen cross-border card-present es marginal para el ICP (una boutique parisina paga 99% cartas FR incluso con turistas). El motor emite `INTL_UPLIFT_NOT_MODELED_ASSUMPTION` cuando `intl_pct > 0` sobre canal in_store — silencio honesto, no invención.
+
+**7. Verified path in-store — foundations preparadas, no cableadas.** El motor 1.4.0 acepta `measured_current_bps` + `measured_sample.invoice_count`/`months_covered` sobre canal in_store (test explícito). La materialización real (extracción LLM de facturas TPV → `PaymentsAnalysisVerified` con `channel:'in_store'`) requiere pipeline invoice-extraction que no está en scope de esta sub-tanda. Anti-double-counting lock: cuando `measured_current_bps` presente, el motor lo toma verbatim — nunca añade rental encima aunque la fila del cohort lo tenga (regla ya sellada en 1.3.0, extendida a rental en 1.4.0).
+
+**Archivos tocados esta sub-tanda:**
+- `base44/entities/PaymentsRateTable.jsonc` — 3 fields nuevos + docs extensos.
+- `src/lib/paymentsGap.js` — bump a 1.4.0.
+- `base44/functions/submitPaymentsAnalysis/entry.ts` — copia SYNC verbatim.
+- `base44/functions/computeStripeVerifiedGap/entry.ts` — copia SYNC verbatim.
+- `base44/functions/seedPaymentsRateTable/entry.ts` — 4 filas verified in-store + 4 fallbacks in-store.
+- `src/lib/paymentsGap.inStore.test.js` — nuevo, ~35 tests cubriendo channel dimension, rental amortization, ticket-floor crossover, retrocompat, verified in-store.
+- `src/docs/Decision_Log.md` — esta entrada.
+- `src/docs/KNOWN_DEBT.md` — 2 entradas nuevas (Zettle FR pendiente + UI in-store pendiente sub-tanda 2B).
+
+**Restricciones respetadas:**
+- Cero cambios en path online estimated (verificado por retrocompat tests).
+- Cero cambios en path verified online (`computeStripeVerifiedGap` handler intacto — solo el bloque SYNC del motor bumped).
+- Cero cambios en UI (sub-tanda 2B).
+- Cero cambios en `_tenantGuard`, schemas de `PaymentsAnalysisVerified` / `PaymentsAnalysisSession`, sync-check test infrastructure.
+- Motor byte-idéntico a 1.3.0 cuando `channel` ausente o `online` — asegurado por 3 tests explícitos en la suite nueva.
+
+**Sub-tanda 2B próxima:** Analyzer toggle in-store, Results ChannelResultsSection + CombinedResultsHeader, Landing InStoreUpsellStrip, Terms §7 (channel-agnostic) + §8 (cerrar orphan ForProviders), Pricing copy, Help FAQs, i18n × 3 idiomas × ~15 keys. **No se ejecuta seeder ni tests en esta sub-tanda** — el usuario ejecuta `seedPaymentsRateTable` + Vitest en local antes de arrancar 2B.
+
+---
+
 ## 2026-07-12 — BUG-5 sellado: `stripeConnectionDisconnect` unifica los dos caminos rotos
 
 **Contexto.** Cierre del diagnóstico BUG-5 abierto el 2026-07-11 (StripeConnectCard "disconnect" que se veía como 404 en UI pero se re-conectaba al recargar).

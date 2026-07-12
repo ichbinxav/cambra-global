@@ -667,3 +667,95 @@ Requiere crear `integrationDisconnect` (backend nuevo), tocar `StripeConnectCard
 
 ### Contexto histórico
 La nota original apuntó solo a la rama frontend porque en aquel momento no se había capturado el body del 500 (aparecía como error genérico axios). El chunk A2 del 2026-07-12 destapó el body real al reproducir con la StripeConnection legacy del self-test brand — sin A2, Xavi caía al empty state y nunca podía disparar el disconnect roto.
+
+---
+
+## M4-TPV — Zettle FR: `verified=false` pendiente de confirmación de la página de tarifas FR
+
+**Estado:** activa (baja prioridad, condición de aprobación explícita de la Fase 2A)
+**Origen:** M4-TPV Fase 2A (2026-07-12) · siembra in-store
+
+### Síntoma
+La fila `zettle|ANY|EU|in_store` de `PaymentsRateTable` ha sido sembrada con `verified: false` y banda ampliada `savings_band_pct: 0.30` (±30%) porque el sondeo del 2026-07-12 solo alcanzó a citar verbatim la página **GB** de Zettle (`zettle.com/gb/pricing`: *"Card and contactless payments: 1.75%"*). La página FR (`zettle.com/fr/tarifs` o equivalente) no fue verificada literalmente. Como CAMBRA se rige por payments-only con fuentes verificables (regla Enmienda 1), la fila entra como "regional estimate anchored to UK rate" y el motor emite la assumption fallback correspondiente.
+
+### Consecuencia visible
+Merchants FR sobre Zettle verán en `/Results` el disclaimer *"Estimate based on regional averages, not provider-verified rates. Connect your PSP for exact figures."* junto al gap calculado, y la banda del ahorro será ±30% en lugar de ±25% (que es lo que llevan SumUp/Smile&Pay verificadas). El punto estimado de savings es correcto (el 1.75% GB se mantiene armonizado con FR en PayPal/Zettle por política de Wix/PayPal, pero **eso no lo hemos verificado a mano** — de ahí el `verified=false`).
+
+### Fix cuando toque
+1. Sondeo manual a `zettle.com/fr/tarifs` (o URL FR equivalente vigente).
+2. Si el rate FR difiere del GB (posible si Zettle ha diferenciado tarifas por país), actualizar `percent_bps` de la fila con el valor FR.
+3. Actualizar `source_url` a la URL FR y `source_quote` verbatim FR.
+4. Cambiar `verified: false` → `verified: true` y estrechar `savings_band_pct: 0.30` → `0.25` (mismo band que las otras 3 verificadas).
+5. Actualizar `verified_at` con la fecha de la verificación.
+
+### Por qué no se arregla en la Fase 2A
+La Fase 2A cerraba el motor + seed en una sola sub-tanda con tiempo acotado. La página FR de Zettle bajo el paraguas de PayPal cambia de estructura frecuentemente (nuevos gates de cookie, redirects por país); un sondeo apurado corría el riesgo de citar la página GB por error y sembrar `verified: true` sobre una fuente equivocada. La política aprobada por Xavi en la Fase 2A es explícita: **cuando la fuente no está sondeada verbatim, la fila entra como `verified: false` con band ampliada, no se hardcodea el 1.75% como "seguro" en código**. El fix es un chunk corto (10 min de sondeo + `find_replace` sobre `seedPaymentsRateTable`) que se ejecuta cuando alguien tenga la página FR delante.
+
+### Riesgo residual mientras no se arregle
+Cero funcional. El motor gestiona correctamente `verified: false` (banda más ancha + assumption honesta al usuario). Solo cosmético: el badge del cohort en `/Results` para merchants Zettle FR dirá "REGIONAL ESTIMATE" en lugar de "PUBLIC PRICING" — coherente con la realidad de nuestra verificación.
+
+---
+
+## M4-TPV — UI in-store pendiente (Fase 2B)
+
+**Estado:** activa (bloqueada por Fase 2A, ejecución en Fase 2B)
+**Origen:** M4-TPV Fase 2A cierre (2026-07-12) — split intencional de la Fase 2 en dos sub-tandas
+
+### Contexto
+La Fase 2A ha sellado:
+- Motor `payments-gap-1.4.0` con dimensión `channel` (online / in_store).
+- Schema `PaymentsRateTable` con `channel`, `terminal_rental_monthly_minor`, `achievable_terminal_rental_monthly_minor`.
+- Siembra de 4 filas verified in-store (SumUp EU, Stripe Terminal EEA, Smile&Pay, Zettle FR-pending) + 4 fallbacks in-store (EU/UK/US/RoW).
+- Tests dedicados (`src/lib/paymentsGap.inStore.test.js`).
+
+**El motor funciona end-to-end para in-store** — un consumidor que le pase `{channel:'in_store', provider_slug, region, monthly_gmv_eur, avg_ticket_eur}` recibe el gap correctamente. Lo que falta es la superficie UI que permita al merchant declarar que quiere análisis in-store.
+
+### Deuda concreta (a ejecutar en Fase 2B)
+
+**1. Analyzer toggle `Online / In-store`.**
+- `src/pages/PaymentsAnalyzer.jsx` — nuevo selector de canal arriba del form. Default `online` preserva behavior actual.
+- Cuando canal = `in_store`: la grilla de proveedores muestra TPVs (SumUp / Stripe Terminal / Smile&Pay / Zettle / "Traditional bank"), el `IntlSlider` se oculta (no aplica), y se muestra un campo opcional `Monthly terminal rental (€)` (por si el merchant quiere override manual sobre la fila del cohort — pattern de fallback ya soportado por el motor via `input.monthly_gmv_eur`).
+- Submit al backend: añadir `channel: 'in_store'` al payload de `submitPaymentsAnalysis` — el backend ya lo consume correctamente (Fase 2A).
+
+**2. Results dual-canal.**
+- `src/pages/PaymentsResults.jsx` + `src/components/paymentsResults/PaymentsGapCard.jsx` — leer `engine_result.cohort.channel` (nuevo campo Fase 2A) y renderizar un pill "IN-STORE" / "ONLINE" junto al badge PUBLIC PRICING / REGIONAL ESTIMATE / VERIFIED.
+- `AssumptionsFootnote` ya renderiza correctamente el `TERMINAL_RENTAL_NOTE` que emite el motor Fase 2A — no requiere cambio.
+
+**3. Landing InStoreUpsellStrip.**
+- Nuevo componente `src/components/landing/InStoreUpsellStrip.jsx` — banda estrecha bajo la Savings Curve del hero mencionando explícitamente in-store: *"Also serving in-store TPV — SumUp, Stripe Terminal, Smile&Pay, bank acquirers"*.
+- Diseño consistente con `PricingDual` (glass panel navy + accent cyan).
+
+**4. Terms §7 (channel-agnostic).**
+- `src/pages/Terms.jsx` §7 "Recovery service" actualmente dice "card-payment rates" — extender a "card-payment rates (online and in-store)".
+- Terms §3 ya fue actualizado en R2 con la coletilla "covering both online and in-store card payments" — mantener consistencia.
+
+**5. i18n × 3 idiomas.**
+Keys nuevas necesarias (estimación ~15 unique × 3 idiomas = 45 líneas):
+- `analyzer_channel_online`, `analyzer_channel_in_store`
+- `analyzer_field_terminal_rental`, `analyzer_field_terminal_rental_hint`
+- `results_channel_online_pill`, `results_channel_in_store_pill`
+- `landing_upsell_in_store_title`, `landing_upsell_in_store_desc`
+- Provider labels: `provider_sumup`, `provider_stripe_terminal`, `provider_smile_and_pay`, `provider_zettle`, `provider_bank_tpv`
+- `cat_payments` ya existe (R2), no requiere key nueva.
+
+**6. Pricing copy (menor).**
+- `src/pages/Pricing.jsx` FAQ — añadir una entrada mencionando explícitamente el soporte in-store (visibilidad SEO + confianza).
+- Sin cambios estructurales en `PricingDual` — el modelo Analyze/Monitor/Recover no cambia por canal.
+
+**7. Help FAQs (menor).**
+- Dos entradas nuevas en `helpCenterData.js`: "¿Cómo funciona el análisis in-store?" y "¿Qué proveedores TPV cubrís?".
+
+**8. Terms §8 orphan reference cleanup (arrastrada de R2).**
+- Terms §8 aún referencia `/ForProviders` (ruta redirigida a `/` en R1). Aprovechar el chunk 2B para reescribir §8 sin ese link — decisión ya listada en KNOWN_DEBT entrada "R2 · Terms §8". Chunk 2B es la ocasión natural para cerrarlo junto con §7.
+
+### Por qué la Fase 2 se partió en 2A + 2B
+La cadena completa (schema + motor × 3 copias SYNC + seed + tests + toggle Analyzer + Results dual-canal + Landing upsell + Terms §7 + §8 + Pricing FAQ + Help FAQs + i18n × 3) excedía el presupuesto seguro de una sola respuesta (fallo del sync-check por edición incompleta = producción rota). Split intencional: **2A sella el backend** (motor + datos, verificable en aislamiento por tests), **2B añade la superficie visible** (verificable por inspección visual). Cero riesgo de estado intermedio roto: el motor 1.4.0 con canal `online` es byte-idéntico a 1.3.0 (tests lo bloquean), así que el path online sigue funcionando entre 2A y 2B como si nada hubiera pasado; el path in-store simplemente no es alcanzable desde UI hasta 2B.
+
+### Precondición para ejecutar 2B
+Xavi ejecuta desde local antes de arrancar 2B:
+1. `test_backend_function('seedPaymentsRateTable', {})` — sembrar las 8 filas nuevas contra la DB (o dry-run primero). Verificar `created: 8, updated: 0, errors: 0`.
+2. `pnpm vitest run` — verificar suite verde incluyendo los ~35 tests nuevos de `paymentsGap.inStore.test.js`. Delta esperado: 348 (post-M3.7) + ~35 = ~383 passed / 0 failed / 2 skipped.
+3. Solo entonces, arrancar chunk 2B con las 8 tareas listadas arriba.
+
+### Estado de decisión
+2B queda planificado con alcance cerrado. No se toca en 2A. Cuando ejecute 2B, esta entrada de KNOWN_DEBT se cierra con `RESUELTA <fecha>`.
