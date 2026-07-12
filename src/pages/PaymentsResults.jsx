@@ -174,9 +174,20 @@ export default function PaymentsResults() {
       return () => { cancelled = true; };
     }
 
-    // ── PATH A — estimated (anonymous teaser read) — unchanged ─────────
+    // ── PATH A — estimated (anonymous teaser read) ─────────────────────
     if (!sessionId) { setStatus("invalid"); return; }
     if (!UUID_V4.test(sessionId)) { setStatus("invalid"); return; }
+
+    // Auto-persist the session id the moment a valid /Results page loads.
+    // Rationale: the localStorage rescue in AuthContext (Layer B) only works
+    // if the key is present when the user lands back on "/" after signup or
+    // login. Previously we only wrote the key inside the "Stop overpaying"
+    // CTA handler, which fails for any user who authenticates via the navbar
+    // or from any other entry point while a valid session is visible.
+    // Writing it on mount makes the rescue robust for every login path.
+    try {
+      localStorage.setItem("cambra_pending_anon_session", sessionId);
+    } catch { /* localStorage unavailable — nothing we can do */ }
 
     let cancelled = false;
     setStatus("loading");

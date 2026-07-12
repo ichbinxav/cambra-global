@@ -41,12 +41,16 @@ export const AuthProvider = ({ children }) => {
             window.location.pathname === '/Results' &&
             window.location.search.includes('session=');
           if (looksLikeUuid && !onResults) {
-            localStorage.removeItem('cambra_pending_anon_session');
+            // NOTE: we do NOT remove the key here. PaymentsResults re-writes
+            // it on mount, so leaving it in place is harmless and keeps the
+            // rescue idempotent if the redirect itself gets interrupted
+            // (flaky network, refresh, etc.). The key is cleaned up when the
+            // user leaves /Results (see below) or when it's malformed.
             window.location.replace(`/Results?session=${encodeURIComponent(pending)}`);
             return;
           }
-          // Invalid shape or already on Results → clean up silently.
-          if (!looksLikeUuid || onResults) {
+          // Malformed key → clean up silently.
+          if (!looksLikeUuid) {
             localStorage.removeItem('cambra_pending_anon_session');
           }
         }
