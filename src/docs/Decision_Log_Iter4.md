@@ -219,3 +219,73 @@ Documentado aquí para el chunk futuro (bloqueado por firma del primer Partner r
 **Combined mode.** Si el submit es combined y hay Partner offers aplicables por canal, cada canal tiene su propio partner slot (o ninguno). La aritmética del combined hero (`combined_savings = sum(opportunity channels)`) NO absorbe los partner deltas — el partner delta se muestra separado por canal, como capa adicional. El total público sigue siendo el total público.
 
 **Cuándo se construye.** Bloqueado por firma del primer acuerdo Partner real. Antes de eso: cero UI, cero entity, cero data. Se construye con el partner real sentado en la mesa para no producir mockups que envejecen ni tests que verifican fixtures ficticios. Ver KNOWN_DEBT entrada `"Primer acuerdo Partner pendiente"`.
+
+## 11 · Funnel fixes pre-launch (2026-07-12)
+
+Dos fixes de UX descubiertos en el walkthrough final del análisis in-store, ambos afectan conversión antes del lanzamiento. Cero cambios de motor, cero cambios de benchmark, cero cambios de paths verified.
+
+### 11.1 · #1 CRÍTICO — Pérdida del análisis anónimo al crear cuenta
+
+**Síntoma.** Merchant anónimo hace el análisis, ve el gap, pulsa el CTA "Stop overpaying" para desbloquear el detalle, entra al signup Base44, vuelve autenticado… y aterriza en el **Analyzer vacío**. El análisis anónimo se pierde en el redirect. Rotura del funnel exactamente en el momento de conversión.
+
+**Causa raíz — RAW cita del bug (pre-fix), `src/pages/PaymentsResults.jsx`:**
+```jsx
+onClick={() => navigate(isVerifiedMode ? "/Dashboard" : "/LoginGate?next=/Analyzer")}
+```
+
+El botón envía al usuario a `/LoginGate?next=/Analyzer`. `LoginGate` lee `?next=` y llama `base44.auth.redirectToLogin("/Analyzer")` — el `anon_session_id` (que estaba en la URL actual `/Results?session=<uuid>`) se descarta al construir el `next=`. Tras el login, Base44 devuelve al usuario a `/Analyzer` limpio.
+
+**Por qué el fix es puramente URL-plumbing.** `getPaymentsGapTeaser/entry.ts` corre bajo `base44.asServiceRole` y **no** verifica auth para leer una session (verified RAW: `teaser_endpoint_requires_auth: false, teaser_endpoint_uses_service_role: true`). Preservar `?session=<uuid>` en el `next=` es suficiente: la misma URL de Results funciona idéntica antes y después del login. Sin cambios de backend, sin cambios de RLS, sin cambios de reader.
+
+**Fix aplicado.** `PaymentsResults.jsx` CTA "Stop overpaying" reescrito:
+```jsx
+onClick={() => {
+  if (isVerifiedMode) { navigate("/Dashboard"); return; }
+  const currentPath = window.location.pathname + window.location.search;
+  navigate(`/LoginGate?next=${encodeURIComponent(currentPath)}`);
+}}
+```
+
+`window.location.search` incluye `?session=<uuid>`; `encodeURIComponent` protege el `?` interno del `next=` para que sobreviva el parse en `LoginGate`. `LoginGate.safeAbsoluteUrl()` ya acepta rutas absolutas del mismo origen (verificado, sin cambios).
+
+**Flujo end-to-end tras el fix.**
+1. Merchant anónimo submite Analyzer → recibe `anon_session_id` → `navigate("/Results?session=<uuid>")`.
+2. Ve el gap en Results (teaser). Pulsa "Stop overpaying".
+3. Handler compone `currentPath = "/Results?session=<uuid>"` → `navigate("/LoginGate?next=%2FResults%3Fsession%3D<uuid>")`.
+4. `LoginGate` decodifica `next` → `redirectToLogin("/Results?session=<uuid>")`.
+5. Base44 login (Google / email) → callback vuelve a `/Results?session=<uuid>` con user autenticado.
+6. `PaymentsResults` monta, lee `session` de la URL, llama `getPaymentsGapTeaser({ anon_session_id })` (mismo endpoint, service-role, agnóstico de auth), rehidrata su gap.
+7. El usuario aterriza en **SU report**, mismo número, ahora firmado. Sin pérdida.
+
+**Nota sobre claim al brand.** El flujo NO ejecuta claim automático del `anon_session_id` al nuevo brand (esa deuda vive en Decision_Log histórico como flujo separado). Preservar el resultado ES el fix del momento de conversión; el claim opcional a un brand persistente es una capa distinta que puede añadirse después sin volver a romper este funnel.
+
+### 11.2 · #2 — Reubicar el detalle de assumptions al gate correcto
+
+**Síntoma.** El bloque "Assumptions" completo (lista de amortización de fixed fee, achievable anchor, clarifier de las dos bandas, engine version + cohort key + match type) se mostraba **igual en el teaser anónimo que en el report completo**. Sobrecarga cognitiva antes del gate de sign-up: el usuario ve el gap → intenta procesar 4 assumptions técnicas y una nota meta sobre bandas ± → se distrae del CTA de conversión.
+
+**Diagnóstico.** El contenido detallado es correcto y auditable (parte del compromiso M4-refinado), pero el LUGAR está mal. El teaser anónimo debe optimizar para conversión ("aquí está tu gap, crea cuenta para ver el detalle"); el detalle vive en el report post-signup donde el usuario está comprometido.
+
+**Fix aplicado — `src/components/paymentsResults/AssumptionsFootnote.jsx`:**
+- Nueva gate `isVerifiedMode = engineResult?.mode === "verified"`.
+- Modo `verified` (usuario autenticado con datos reales de Stripe) → **detalle completo** intacto (lista + clarifier de bandas + engine metadata).
+- Modo `estimated` (teaser anónimo o combined estimated) → **una sola línea con candado**: *"Full audit trail — how we amortized the fixed fee, which anchor we compared against, and the confidence bands — appears in your report after you create a free account."*
+- El disclaimer "regional estimate" cuando `verified=false` (fila fallback) **SIGUE VISIBLE en ambos modos** — es un warning, no metodología. Sin él, el teaser mentiría por omisión.
+
+**Cero cambios en:**
+- El motor emite el mismo array `assumptions[]` en ambos modos (verificado).
+- `FeeBreakdownCard` parsea assumptions independientemente y sigue funcionando (no toca `AssumptionsFootnote`).
+- El hero (`PaymentsGapCard`, `CombinedGapHero`, `OptimizedHero`) y el CTA principal, intactos.
+
+### 11.3 · Verificación RAW (post-fix)
+
+Ejecutada por `exec_tool` sobre los archivos modificados:
+
+| Check | Valor |
+|---|---|
+| `fix1_preserves_url` (currentPath + encodeURIComponent presentes) | ✅ true |
+| `fix1_old_broken_path_still_present` (`"/LoginGate?next=/Analyzer"` literal) | ✅ false — eliminado |
+| `fix2_verified_gate_present` (`isVerifiedMode = engineResult?.mode === "verified"`) | ✅ true |
+| `fix2_teaser_lock_line` (`"Full audit trail —"` presente) | ✅ true |
+| `fix2_conditional_render` (`{isVerifiedMode ? (` presente) | ✅ true |
+| `teaser_endpoint_requires_auth` (getPaymentsGapTeaser gate de auth) | ✅ false — session-only |
+| `teaser_endpoint_uses_service_role` (asServiceRole) | ✅ true — funciona ambos lados del login |

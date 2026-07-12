@@ -390,7 +390,27 @@ export default function PaymentsResults() {
               )}
             </div>
             <Button
-              onClick={() => navigate(isVerifiedMode ? "/Dashboard" : "/LoginGate?next=/Analyzer")}
+              onClick={() => {
+                // #1 FIX (2026-07-12) — funnel-critical.
+                // Before: `next=/Analyzer` sent the just-signed-up user to an
+                // EMPTY analyzer form and their anonymous result was lost. That
+                // was the conversion break: user runs anonymous audit → sees
+                // the gap → hits "Stop overpaying" → creates account → lands
+                // in blank form → confusion → abandons. Now we preserve the
+                // current URL (which carries ?session=<anon_session_id>) so
+                // after Base44 login the user comes back to THIS SAME Results
+                // page, populated with THEIR audit. Reader endpoint
+                // (getPaymentsGapTeaser) already runs service-role and accepts
+                // the session id regardless of auth state, so the same URL
+                // works both before and after login.
+                if (isVerifiedMode) {
+                  navigate("/Dashboard");
+                  return;
+                }
+                const currentPath =
+                  window.location.pathname + window.location.search;
+                navigate(`/LoginGate?next=${encodeURIComponent(currentPath)}`);
+              }}
               className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
               style={{
                 background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
