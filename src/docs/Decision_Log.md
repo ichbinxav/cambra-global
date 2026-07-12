@@ -70,6 +70,84 @@ específicamente la línea del `const` o de la propiedad, no del comentario.
 
 ---
 
+## 2026-07-12 — M4-TPV · Fase 3 · Combined mode (Online + In-store) + regla retrocompat sellada
+
+**Alcance.** Modo combinado (online + in-store en un mismo submit) sobre el motor 1.4.0 ya sellado. Cero cambios en la aritmética del motor: Fase 3 corre `calculateGap` dos veces (una por canal) y agrega los outputs en un `engine_result` compuesto con `channels: [{...}, {...}]`. UI: tercera pestaña "Both" en el toggle del Analyzer + `<CombinedGapHero />` en Results. i18n × 3 idiomas × 7 keys nuevas. Cierra los dos pendientes narrativos del turno anterior (Decision_Log + grep final) y añade la lección estructural que motivó el fix channel-aware de la validación del seed.
+
+**Regla nueva sellada — vinculante para todo cambio de shape en tablas seeded que impacte al motor:**
+
+> **La retrocompat se verifica también contra tablas viejas — los tests locales SON esa tabla vieja.**
+>
+> Cuando el motor añade una dimensión nueva a una tabla persistida (M4-TPV añadió `channel` a `PaymentsRateTable`), la validación de "shape mínima" del motor DEBE reconocer AMBAS shapes: la vieja (retrocompat) y la nueva (M4+). Un test local que sembra una tabla shape-antiguo y llama al motor 1.4.0 debe pasar sin tocar el seed — porque ese test ES el proxy fiel de "cliente que corre el motor sin haber ejecutado el nuevo seeder aún". Si el motor rechaza esa shape, has roto retrocompat en el peor sitio posible (tests locales verdes al añadir la shape nueva, tests rojos al fusionar con main que aún no la tiene).
+>
+> Aplicación operativa: cada vez que se añada una dimensión a una entidad consumida por el motor, hay que preguntar explícitamente "¿qué asume mi validación sobre el conjunto mínimo de filas requeridas?" y **hacerla channel-aware / dimension-aware** — la validación pide 4 filas online cuando request es online-only, 4 in-store cuando request es in-store-only, las 8 cuando request es combined. Nunca 8 fijas.
+
+**Origen empírico de la regla (2026-07-12, mismo día del sellado 2A-redo + 2B):** al cablear el modo combined descubrí que `submitPaymentsAnalysis` validaba `REQUIRED_FALLBACK_KEYS.length === 8` incondicionalmente (todas las regiones × ambos canales). Esto rompía la suite local: `paymentsGap.test.js` sembra sólo las 4 filas online (`ANY|ANY|{EU,UK,US,RoW}`) porque su alcance es online. La validación 1.4.0 pedía las 8 y fallaba con `rate_table_incomplete`. **El test estaba correctamente construido; la validación estaba mal.** Fix: `validateRateTable(rows, {channel})` acepta channel opcional y ajusta el conjunto mínimo exigido:
+- `channel === 'online'`  → exige 4 online 3-segment legacy (retrocompat).
+- `channel === 'in_store'` → exige 4 in-store 4-segment.
+- `channel === 'combined'` o ausente → exige las 8 (union).
+
+**Cambios ejecutados (mínimos, con RAW en cada paso):**
+
+**1. Motor `payments-gap-1.4.0` — sin bump de versión.** El motor 1.4.0 ya expone `calculateGap` y el shape `cohort.channel`. Fase 3 orquesta llamadas al mismo motor desde `submitPaymentsAnalysis` — cero edits sobre `src/lib/paymentsGap.js` (verificado: sync-check triple sigue en 34217 chars byte-idénticos post-Fase-3).
+
+**2. `submitPaymentsAnalysis/entry.ts` — nuevo path `mode: 'combined'`.**
+- Nueva rama en el handler: si `payload.mode === 'combined'`, valida `payload.channels[]` (array de 2 objetos: uno con `channel: 'online'` + `intl_pct` + provider online, otro con `channel: 'in_store'` + provider in-store), corre `calculateGap` sobre cada uno, agrega:
+  - `annual_savings_eur = sum(channels[i].annual_savings_eur)` (por lo/point/hi)
+  - `monthly_savings_eur` idem
+  - `current_effective_bps` y `achievable_effective_bps` NO se agregan (no tienen sentido cruzando canales con GMV diferentes). Se surfacean per-channel dentro de `engine_result.channels[]`.
+  - `assumptions[]` concatenadas de ambos canales, prefijadas por `"Online: "` / `"In-store: "` para desambiguar en Results.
+- Path online-only y in-store-only siguen byte-idénticos al comportamiento Fase 2B (verificado empíricamente: submit online GMV€1M ticket€50 intl15% Stripe FR sigue devolviendo `current_effective_bps=226.25`, `achievable=149.5`, `annual.point=7674.97`, `cohort.key="stripe|ANY|EU"` — idéntico al baseline sellado).
+- **Validación de rate table channel-aware** (regla arriba): `validateRateTable(rows, {mode})` derivado de `payload.mode` o inferido de `payload.channel`.
+
+**3. `getPaymentsGapTeaser/entry.ts` — allowlist ampliada.**
+Nuevos campos en la allowlist del teaser público (para que el Results renderice `<CombinedGapHero>` sin tener acceso al `input_snapshot` privado): `combined`, `channels`. Ambos live dentro del bloque `engine_result` ya expuesto — el teaser ya devolvía `engine_result` completo, sólo se extiende el shape que puede contener.
+
+**4. UI Analyzer — tercera pestaña "Both" (channel: 'combined').**
+- `src/pages/PaymentsAnalyzer.jsx`: enum del toggle amplía a 3 opciones. Estado nuevo `combinedOnline` + `combinedInStore` (form state independiente por canal, no comparten campos — un merchant tiene GMV online distinto de GMV in-store).
+- Nuevo componente `src/components/paymentsAnalyzer/CombinedChannelBlock.jsx`: dos sub-forms lado a lado (online + in-store), cada uno con GMV/ticket/provider/(intl solo online).
+- Country + brand se piden UNA sola vez a nivel top (el merchant es un solo país).
+- Validación: 7 campos required cuando `channel === 'combined'` (GMV+ticket+intl+provider online, GMV+ticket+provider in-store, country) + brand name = 8. Progress counter refleja esto.
+- Payload de submit combinado: `{mode: 'combined', country, brand_name, channels: [{...online}, {...in_store}]}`.
+
+**5. UI Results — `<CombinedGapHero>` en modo combined.**
+- `src/components/paymentsResults/CombinedGapHero.jsx`: hero card grande con total agregado (annual + monthly) + grid de 2 cards debajo (una por canal) con el gap per-channel.
+- `PaymentsResults.jsx` detecta `engine_result.channels?.length > 0` → renderiza `<CombinedGapHero>` en lugar de `<PaymentsGapCard>` normal.
+- Si el session es single-channel (online o in-store), sigue renderizando `<PaymentsGapCard>` — cero regresión visual sobre sessions Fase 2B.
+
+**6. i18n × 3 idiomas × 7 keys nuevas.** Añadidas al final del bloque i18n en EN/FR/ES:
+- `analyzer_channel_online` / `analyzer_channel_in_store` / `analyzer_channel_combined` (labels del toggle)
+- `combined_hero_eyebrow` / `combined_hero_badge` / `combined_hero_lead` / `combined_hero_month_suffix` (strings del hero combinado)
+
+**7. Grep final de keys huérfanas — ejecutado.** Grep de las 7 keys en `src/**/*.{jsx,js,ts}`:
+- Cada key aparece exactamente **3 veces** en `src/lib/i18n.jsx` (una por idioma) + **1 vez** en su único consumidor (`PaymentsAnalyzer.jsx` para las 3 del toggle, `CombinedGapHero.jsx` para las 4 del hero).
+- **Cero keys sueltas** (sin consumer) ni **consumers sin key** (referencia rota). Todas las keys nuevas están cableadas end-to-end en los 3 idiomas.
+- Verificación adicional pedida: **`PaymentsAnalyzer` es página pública** (Landing → `/Analyzer` sin login). Confirmado que `<LanguageProvider>` envuelve el árbol público desde `src/App.jsx` L189 (`<LanguageProvider>` es el outermost wrapper, contiene `<ErrorBoundary>` → `<ToastProvider>` → `<AuthProvider>` → `<Router>` → `<AuthenticatedApp />`). El árbol completo — incluyendo rutas anónimas como `/Analyzer` — tiene acceso a `useTranslation()`. **La tab "Both" no revienta en runtime para anónimos.** Regla implícita ahora explícita: `<LanguageProvider>` DEBE seguir siendo el outermost wrapper — cualquier refactor de `App.jsx` que lo mueva dentro de `<AuthProvider>` rompería toda la landing para no autenticados.
+
+**Restricciones respetadas:**
+- Cero cambios en el motor `paymentsGap.js` (sync-check triple sigue 34217 chars byte-idénticos).
+- Cero cambios en `_tenantGuard`, schemas de `PaymentsAnalysisVerified` / `PaymentsAnalysisSession` (el modo combined vive en `engine_result` que es `type: object` sin enum lock).
+- Cero cifras nuevas fabricadas — todo agregado del combined es suma pura de outputs del motor por canal.
+- Retrocompat sessions single-channel (online o in-store) byte-idéntica.
+
+**Ficheros tocados en Fase 3:**
+- `base44/functions/submitPaymentsAnalysis/entry.ts` — path `mode: 'combined'` + validación channel-aware.
+- `base44/functions/getPaymentsGapTeaser/entry.ts` — allowlist `channels`/`combined`.
+- `src/pages/PaymentsAnalyzer.jsx` — toggle 3-way + form combined.
+- `src/components/paymentsAnalyzer/CombinedChannelBlock.jsx` — nuevo componente dual-channel.
+- `src/pages/PaymentsResults.jsx` — dispatch a `<CombinedGapHero>` cuando `engine_result.channels[]` presente.
+- `src/components/paymentsResults/CombinedGapHero.jsx` — nuevo hero combinado.
+- `src/lib/i18n.jsx` — 7 keys × 3 idiomas (21 líneas nuevas).
+- `src/lib/paymentsGap.inStore.test.js` — 22 tests dedicados al canal in-store + retrocompat.
+- `src/lib/paymentsGap.test.js` — engine_version bump a 1.4.0.
+- `src/docs/Decision_Log.md` — esta entrada.
+
+**Deuda documentada (siguientes chunks):**
+- Verificación manual de producción del flow combined end-to-end (requiere usuario humano — submit → results → screenshot). Cubierto por diseño (backend verified con test_backend_function, i18n grep verde, provider audit).
+- `FeeBreakdownCard` no renderiza en modo combined (fallback a texto plano). Justificable porque un breakdown por-canal-por-fila sería ruido; el hero ya muestra el desglose por canal. Tracked en KNOWN_DEBT como low-priority polish.
+
+---
+
 ## 2026-07-12 — M4-TPV · Fase 2A-redo · ADENDA · Corrección del achievable in-store (regla auditabilidad)
 
 **Contexto post-cierre 2A-redo.** El submit RAW citado en la entrada de 2A-redo devolvió `achievable_effective_bps: 100` para SumUp EU in-store con composición `26+20+54` (interchange+scheme+margin, patrón online). Xavi identificó el problema estructural: **ningún proveedor público ofrece TPV a 1.0% en EU**. Los floors reales contratables son SumUp 1.75%, Smile&Pay 1.55%, Stripe Terminal 1.4%+€0.10. Decirle a un merchant SumUp con ticket €25 "podrías bajar a 1.0%" **rompe la regla de auditabilidad** — es la card del €48k al revés (con recovery en lugar de bleed inflado): el merchant no puede firmar 1.0% mañana con ningún proveedor real.
