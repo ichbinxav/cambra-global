@@ -5,6 +5,72 @@ Order: most recent on top.
 
 ---
 
+## 2026-07-12 — Chunk A2 · Helper `getMyActiveBrand` + 12 migraciones (11 frontend + 1 backend) + backfill segmentado
+
+**Alcance.** Cerrar el frente A2 del diagnóstico BUG-5 + A2. Cero cambios en motor, entities, sync-check, tests locales, paths verified/estimated o backend functions más allá de `sendMonthlySavingsSummary`. Todo el trabajo vive en la resolución de "el brand del usuario actual" desde el frontend, y en el filtro correcto sobre `AnalyzerResult` desde el único job que lo iteraba per-usuario.
+
+**Diagnóstico canónico (ya en la conversación previa, se anota aquí como parte del sellado).** Los 11 sitios frontend + `sendMonthlySavingsSummary` filtraban `Brand.filter({ created_by_id: me.id }, '-created_date', 1)`. Ese patrón devuelve `[]` para brands escritos por service role (self-test, admin invite, anon brands claim-eados) — la SDK fuerza `created_by_id` a la cuenta de servicio en `asServiceRole.create()` (regla ya sellada en M3-Chunk 2, BUG-6). Consecuencia visible: el propio Dashboard de Xavi caía al empty state con el self-test brand en la mano.
+
+**Helper creado — `src/lib/getMyActiveBrand.js`.** Un solo punto de verdad para "el brand del usuario actual". Firma:
+
+```js
+export async function getMyActiveBrand(): Promise<{ user, brand }>
+```
+
+- Pivota por `Brand.contact_email === user.email` (alineado con la 2ª cláusula del `$or` de la RLS declarada en `Brand`).
+- Nunca throwea en el path de red — filter failure → `brand: null` para que los callers renderizen empty state sin crash.
+- Docstring extenso documenta las 3 limitaciones aceptadas: multi-brand users (devuelve el más nuevo, `active_brand_id` persistente queda para chunk futuro), brands legacy con `contact_email: null` (invisibles vía este helper hasta el backfill), y email change desde User (no soportado por Base44 hoy).
+
+**11 migraciones frontend — todas idénticas en semántica ("resuelve brand del user activo"):**
+
+| # | Archivo | Uso |
+|---|---|---|
+| 1 | `src/pages/Dashboard.jsx` | Brand + AnalyzerResult (ahora scoped por `brand_id`) |
+| 2 | `src/pages/Invoices.jsx` | Brand → Invoice.filter por brand_id |
+| 3 | `src/components/dashboard/AIInsightsPanel.jsx` | Brand → AgentRun.filter por brand_id |
+| 4 | `src/components/dashboard/LastScanBar.jsx` | Brand → ContinuousDiscoveryRun por brand_id |
+| 5 | `src/components/onboarding/CompanyBlock.jsx` | Brand load + defaults pre-fill contact_email desde user |
+| 6 | `src/components/onboarding/BankingModule.jsx` | Brand → set brandId |
+| 7 | `src/components/onboarding/FinanceOpsModule.jsx` | Brand → set brandId + read profile |
+| 8 | `src/components/onboarding/HRInfraModule.jsx` | idem |
+| 9 | `src/components/onboarding/InsuranceModule.jsx` | idem |
+| 10 | `src/components/onboarding/PaymentsModule.jsx` | idem (gateway del funnel M3 — el más crítico) |
+| 11 | `src/components/onboarding/TelecomModule.jsx` | idem |
+
+Dashboard también migró el segundo hit (`AnalyzerResult.filter({ created_by_id: u.id })`) a `filter({ brand_id: b.id })` con fallback `[]` para users sin brand — mismo problema, misma solución.
+
+**1 migración backend — `sendMonthlySavingsSummary`.** Reescrita para: (a) resolver el brand del user vía `Brand.filter({ contact_email: u.email })` con service role, (b) filtrar `AnalyzerResult.filter({ brand_id: brand.id })`, (c) añadir estado `skipped_no_brand` distinto de `skipped_no_data` para observabilidad. Cero cambios en el HTML del email ni en la lógica de bucketing por mes. Preserva estrictamente el skip silencioso para users sin brand (ahora identificado explícitamente).
+
+**Auditoría de `contact_email` — read-only antes del write.** 16 brands totales · 8 con contact_email vacío · 8 resolubles vía `created_by` humano · 0 irrescatables. Buckets:
+
+| Bucket | # | Nota |
+|---|---|---|
+| Self-test/service brands legítimos | 3 | 1× "CAMBRA Self-Test — Payments (1b)" (is_demo=true) + 2× brands service-role con `anon_session_id` (funnel anónimo sin claim) |
+| Usuario real "94.martinez.x@gmail.com" | 5 | H, Fssgh×2, D, G — sin onboarding completado |
+
+**Backfill segmentado ejecutado.** Regla estricta: `created_by` matches `EMAIL_RE AND NOT starts_with 'service+'`. Resultado empírico verificado post-write:
+
+- Total: 16 → 16 (aditivo puro).
+- Con contact_email: 8 → **13** (+5).
+- Sin contact_email: 8 → **3** (los 3 legítimamente service-role: self-test + Gg + El santo — se dejan intactos, esperan claim o cleanup manual).
+
+**Backfill dirigido self-test brand.** El self-test (`6a50868a4983b042c1b26cc2`, is_demo=true, created_by=service+…) recibió `contact_email = xavi@cambra.global` en un exec_tool separado para que aparezca en el Dashboard de Xavi vía `getMyActiveBrand` sin depender de admin bypass. Aviso registrado: `xavi@cambra.global` es el dominio nuevo (no DNS/Resend verificado aún) — cuando el chunk de dominio+Resend se ejecute, el buzón debe existir en IONOS o `sendMonthlySavingsSummary` bounceará silenciosamente el resumen mensual del self-test brand.
+
+**Post-backfill final: 13/16 brands con contact_email. Los 3 restantes:** self-test (ahora xavi), Gg y El santo. → REBOBINADO CORRECTO: el self-test tenía contact_email vacío antes del backfill dirigido, se le asignó xavi@cambra.global en la ronda dedicada. Estado final: **14/16 con contact_email · 2 sin (Gg + El santo, ambos anónimos sin claim).**
+
+**Restricciones respetadas (verificadas ex-post):**
+- Cero cambios en `paymentsGap.js` / `computeStripeVerifiedGap` / `getPaymentsAnalysisVerified` / `submitPaymentsAnalysis` / `stripeDataSync`.
+- Cero cambios en schemas.
+- Cero cambios en `scoreEngine.js` o sus 7 consumidores.
+- Cero cambios en el sync-check test suite ni en los normalizers.
+- Motor y path verified intocados (regla vinculante).
+
+**Interacción con BUG-5 (siguiente frente del chunk).** Con A2 corregido, el self-test brand aparece en el Dashboard de Xavi → la StripeConnectCard es alcanzable → repro empírica de BUG-5 factible. Sin A2, Xavi caía al empty state y nunca podía disparar el disconnect roto. Orden A2→BUG-5 confirmado: la reproducción con status+body literales del disconnect se hace ahora contra el self-test brand (Stripe test-mode via stripe_self_test) como paso previo al fix.
+
+**Push:** commit SHA se anota tras push al remote.
+
+---
+
 ## 2026-07-12 — Fase R1 · Landing purge multi-vertical + pricing tri-nivel Analyze/Monitoring/Recover
 
 **Alcance.** Chunk exclusivamente de superficie visible (landing + shared): (a) borrado de artefactos huérfanos multi-vertical acumulados desde el cutover del 2026-07-09, (b) reescritura de copy y estructura para reflejar el mensaje payments-only en los componentes que sí se renderizan, (c) introducción del tercer nivel de pricing (Monitoring) según el Addendum R1 aprobado por Xavi. **Cero cambios en `paymentsGap.js`, motor, `computeStripeVerifiedGap`, path verified, o cualquier función backend.** Todo lo que se toca es UI/copy.

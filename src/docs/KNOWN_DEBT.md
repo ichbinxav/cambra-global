@@ -395,6 +395,51 @@ El código, tests, y documentación de M3.5+M3.6+M3.7 ya están en `origin/main`
 
 ---
 
+## TASK-CLEANUP-1 — Brand "Fssgh" duplicado (doble-submit del wizard)
+
+**Estado:** activa (baja prioridad, cleanup + guard)
+**Detectado:** 2026-07-12 durante auditoría A2 de `contact_email`
+
+### Síntoma
+Dos rows de Brand `Fssgh` para `94.martinez.x@gmail.com` con `created_date` idéntico salvo por 19 ms (`2026-07-01T02:59:51.800` vs `.819`). Ambas persisten en producción con `contact_email` backfilleado por el chunk A2 (2026-07-12).
+
+### Causa probable
+Doble-submit del botón "Create & continue" en `CompanyBlock.jsx` — el handler `saveOrCreate` no bloquea el segundo click mientras el primero está en flight. `setSaving(true)` corre DESPUÉS del `await base44.entities.Brand.create()`, así que un doble-click de <20 ms genera 2 requests.
+
+### Fix cuando toque
+1. Limpieza: borrar la row más antigua (menor `created_date`), preservar la más nueva. Verificar antes que ninguna FK downstream (AnalyzerResult, Integration, PaymentsProfile, …) apunta a la row a borrar; si sí, migrar el FK antes del delete.
+2. Guard anti-doble-submit: en `CompanyBlock.jsx:saveOrCreate` mover `setSaving(true)` al PRIMER statement del handler (antes de la validación), y añadir early-return si `saving === true` al top.
+3. Añadir el mismo guard a los otros módulos de onboarding (`BankingModule`, `PaymentsModule`, etc.) donde el pattern `setSaving → await → setSaving(false)` deja ventana de doble-click.
+
+### Por qué no se arregla ahora
+El fix del guard es una línea por módulo pero requiere revisar 7 handlers similares. La limpieza del duplicado necesita verificar FKs. Ambas cosas caben en un chunk aparte de "hardening de escritura", no en el frente actual BUG-5 + A2.
+
+---
+
+## TASK-CLEANUP-2 — Brands anónimos sin claim (Gg, El santo)
+
+**Estado:** activa (baja prioridad, política de purga)
+**Detectado:** 2026-07-12 durante auditoría A2 de `contact_email`
+
+### Síntoma
+Dos brands (`Gg` id `6a42126723afebb426aa9fce`, `El santo` id `6a41cac93d0cf92f4871ee38`) con `created_by = service+…@no-reply.base44.com` y `anon_session_id` no-nulo. Rows del funnel anónimo (Analyzer sin auth) que nunca completaron el claim — la sesión anónima expiró sin que el visitante se registrara. Contact_email permanece null (correctamente: el chunk A2 no las backfilleó porque `created_by` es token de service role).
+
+### Comportamiento actual
+Invisibles a cualquier usuario humano vía RLS (created_by no matchea) y vía `getMyActiveBrand` (contact_email null). Solo accesibles a admins. AnalyzerInput y AnalyzerResult asociados a esas sesiones anon quedan huérfanos también.
+
+### Fix cuando toque
+Dos opciones no excluyentes:
+
+1. **TTL de purga automática.** Job schedulado (semanal) que borra Brand + AnalyzerInput + AnalyzerResult con `anon_session_id != null` y `created_date < now − 30d` (o el TTL que producto decida). Preserva el funnel anónimo funcionando pero evita acumulación indefinida.
+2. **Extender el claim.** Si un visitante se registra con el mismo email que declaró en el Analyzer anon, el claim ya conecta la sesión al User. La deuda residual son los que nunca vuelven. Un TTL cubre ese caso; un flujo "reclama esta sesión con este magic link" es sobredimensionado para el volumen actual.
+
+Recomendación: opción 1 como default, opción 2 solo si el volumen anónimo crece lo bastante como para que el reclaim tenga valor negocio.
+
+### Por qué no se arregla ahora
+No hay urgencia — 2 rows en producción, cero impacto funcional. Se decide política de retención con producto (30d? 90d?) en sesión aparte antes de escribir el job.
+
+---
+
 ## BUG-5 — `handleDisconnect` apunta a entidad legacy `StripeConnection`
 
 **Estado:** activa
