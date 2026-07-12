@@ -763,6 +763,15 @@ const DICT = {
     landing_upsell_in_store_desc:    "Nous auditons votre TPE — SumUp, Stripe Terminal, Smile & Pay, Zettle, ou votre banque acquéreur traditionnelle. Même audit de 60 secondes, même 25% de success fee, en boutique comme en ligne.",
     landing_upsell_in_store_cta:     "Auditer mon TPE",
 
+    /* M4-TPV Fase 3 — Analyzer channel tabs + CombinedGapHero strings. */
+    analyzer_channel_online:      "En ligne",
+    analyzer_channel_in_store:    "En boutique",
+    analyzer_channel_combined:    "Les deux",
+    combined_hero_eyebrow:        "Écart de paiements · combiné",
+    combined_hero_badge:          "En ligne + Boutique",
+    combined_hero_lead:           "Votre surcoût total sur les deux canaux est d'environ",
+    combined_hero_month_suffix:   "par mois, cumulés sur les deux canaux.",
+
     /* FIX 2 — Dashboard strings */
     savings_trend:        "Tendance des économies",
     monthly_savings:      "Économies mensuelles",
@@ -1135,6 +1144,15 @@ const DICT = {
     landing_upsell_in_store_title:   "Los terminales físicos también cuentan.",
     landing_upsell_in_store_desc:    "Auditamos tu TPV — SumUp, Stripe Terminal, Smile & Pay, Zettle, o tu banco adquirente tradicional. La misma auditoría de 60 segundos, el mismo 25% de success fee, en tienda o en línea.",
     landing_upsell_in_store_cta:     "Auditar mi TPV",
+
+    /* M4-TPV Fase 3 — Analyzer channel tabs + CombinedGapHero strings. */
+    analyzer_channel_online:      "Online",
+    analyzer_channel_in_store:    "En tienda",
+    analyzer_channel_combined:    "Ambos",
+    combined_hero_eyebrow:        "Brecha de pagos · combinada",
+    combined_hero_badge:          "Online + En tienda",
+    combined_hero_lead:           "Tu sobrecoste total en ambos canales es de aproximadamente",
+    combined_hero_month_suffix:   "al mes, sumados en ambos canales.",
 
     /* FIX 2 — Dashboard strings */
     savings_trend:        "Tendencia de ahorros",

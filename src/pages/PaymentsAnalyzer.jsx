@@ -21,6 +21,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Lock, ChevronDown, ChevronUp } from "lucide-react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 import GmvSlider       from "@/components/paymentsAnalyzer/GmvSlider";
 import AvgTicketInput  from "@/components/paymentsAnalyzer/AvgTicketInput";
@@ -95,6 +96,7 @@ function fieldRangeError(key, value) {
 
 export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // M4-TPV Fase 2B — REACTIVADO 2026-07-12 tras Fase 2A-redo verificada.
   // Precondiciones cumplidas: motor 1.4.0 en las 3 copias SYNC byte-idénticas
@@ -413,9 +415,9 @@ export default function PaymentsAnalyzer() {
             }}
           >
             {[
-              { key: "online",   label: "Online" },
-              { key: "in_store", label: "In-store" },
-              { key: "combined", label: "Both" },
+              { key: "online",   label: t("analyzer_channel_online") },
+              { key: "in_store", label: t("analyzer_channel_in_store") },
+              { key: "combined", label: t("analyzer_channel_combined") },
             ].map((opt) => {
               const active = channel === opt.key;
               return (

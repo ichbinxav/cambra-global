@@ -14,6 +14,8 @@
 //     channels: [ { channel, engine_result, input_snapshot }, ... ]
 //   }
 
+import { useTranslation } from "@/lib/i18n.jsx";
+
 function eur(n) {
   if (!isFinite(n)) return "—";
   return "€" + Math.round(n).toLocaleString("en-US");
@@ -43,6 +45,7 @@ const CHANNEL_STYLE = {
 };
 
 export default function CombinedGapHero({ engineResult, country }) {
+  const { t } = useTranslation();
   const annual = engineResult?.annual_savings_eur || {};
   const monthly = engineResult?.monthly_savings_eur || {};
   const channels = Array.isArray(engineResult?.channels) ? engineResult.channels : [];
@@ -59,7 +62,7 @@ export default function CombinedGapHero({ engineResult, country }) {
     >
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
-          Payments gap · combined · {country || "—"}
+          {t("combined_hero_eyebrow")} · {country || "—"}
         </span>
         <span
           title="Analysis combines your online (PSP) and in-store (TPV) channels."
@@ -70,11 +73,11 @@ export default function CombinedGapHero({ engineResult, country }) {
             border: "1px solid rgba(255,255,255,0.20)",
           }}
         >
-          Online + In-store
+          {t("combined_hero_badge")}
         </span>
       </div>
 
-      <p className="text-[13px] text-white/55 mb-2">Your total overpayment across channels is roughly</p>
+      <p className="text-[13px] text-white/55 mb-2">{t("combined_hero_lead")}</p>
       <div className="flex items-baseline gap-3 flex-wrap">
         <span
           className="text-white font-black tabular-nums"
@@ -94,7 +97,7 @@ export default function CombinedGapHero({ engineResult, country }) {
         <span className="text-[13px] text-white/50">/ year</span>
       </div>
       <p className="text-[12px] text-white/45 mt-2">
-        That's about <span className="text-white/75 font-semibold tabular-nums">{eur(monthly.lo)}–{eur(monthly.hi)}</span> a month, summed across channels.
+        <span className="text-white/75 font-semibold tabular-nums">{eur(monthly.lo)}–{eur(monthly.hi)}</span> {t("combined_hero_month_suffix")}
       </p>
 
       {/* Per-channel breakdown strip */}
