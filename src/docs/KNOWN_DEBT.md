@@ -780,7 +780,10 @@ Cero. UI en-store desactivada tras el rollback (ver deuda "M4-TPV — UI in-stor
 
 ## Achievable in-store — ticket-dependent multi-anchor selection (Fase 3+)
 
-**Estado:** 🟡 DEUDA DE PRECISIÓN · no de honestidad · no bloqueante.
+**Estado:** ✅ RESUELTA 2026-07-12 · Motor `payments-gap-1.5.0` (M4-refinado).
+**Fix vive en:** `src/lib/paymentsGap.js` (SYNC block, función `selectMultiAnchorAchievable` + rama in-store de `calculateGap`) + mirrors byte-idénticos en las 2 funciones Deno. Ver `src/docs/Decision_Log_Iter4.md` §5 para las reglas del pool, la exclusión del proveedor actual, y el shape emitido en `benchmark_resolution`. Tests en `src/lib/paymentsGap.classifier.test.js` (familia 2 — pool composition + breakpoint ticket + retrocompat online + confidence high/reduced).
+
+**Contexto histórico (previo al fix):** el achievable in-store se ancoró a UN solo proveedor por región, sub-óptimo en los extremos de ticket (infra-promesa, no sobre-promesa). El motor 1.5.0 evalúa TODA la pool de anchors verified in-store de la región a la vez, escoge el ganador por MIN-EFFECTIVE al ticket del merchant, y emite `benchmark_resolution` con el ganador, los candidatos evaluados, y una confianza `high` / `reduced`.
 
 **Contexto post-adenda 2A-redo (2026-07-12).** El achievable in-store se ancla a UN solo proveedor por región (EU → Stripe Terminal 140+€0.10, UK → SumUp 175 flat, US/RoW → Square 260+$0.10). El anchor se eligió por narrativa recovery + consistencia. Es correcto para el ticket medio del ICP (~€25-€60), pero **conservador en los extremos de ticket**.
 
@@ -809,7 +812,8 @@ Cada fila del seeder añadiría un campo `achievable_anchor_candidates: [...]`. 
 
 ## Fase 3 UX — comunicar el clamp a €0 como victoria (no como fallo)
 
-**Estado:** 🟡 UX DEBT · Fase 3.
+**Estado:** ✅ RESUELTA 2026-07-12 · Motor `payments-gap-1.5.0` (M4-refinado) + UX de Results.
+**Fix vive en:** clasificador `classifyResult` en `src/lib/paymentsGap.js` (state `already_optimized` cuando el gap ≤ MAX(€200, 15 bps × GMV × 12) sobre fila verified) + `src/components/paymentsResults/OptimizedHero.jsx` (nuevo hero verde con copy de victoria + solo CTA secundaria + primary CTA "Stop overpaying" oculta por el gate `hidePrimaryCTA` de `src/pages/PaymentsResults.jsx`). El estado `insufficient_data` (fila fallback + gap zero) tiene su propio copy honesto en las mismas i18n keys. Combined mode mini-victoria: `src/components/paymentsResults/CombinedGapHero.jsx` renderiza pill "✓ Already at the best contractable rate" en canales optimizados, y el hero total suma sólo canales con oportunidad (ver §3 del Decision_Log_Iter4).
 
 **Contexto.** Con el achievable in-store anclado a pricing contratable (adenda 2A-redo, 2026-07-12), un submit puede devolver `savings: {lo:0, point:0, hi:0}` cuando el merchant ya está en o bajo el floor real (ej. SumUp EU ticket €25 → clamp por diseño). Empíricamente verificado en submit A de la adenda.
 

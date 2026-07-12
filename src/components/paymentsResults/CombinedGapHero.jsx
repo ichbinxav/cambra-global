@@ -46,9 +46,21 @@ const CHANNEL_STYLE = {
 
 export default function CombinedGapHero({ engineResult, country }) {
   const { t } = useTranslation();
+  const channels = Array.isArray(engineResult?.channels) ? engineResult.channels : [];
+  // M4-refinado (v1.5.0) — honest top-level totals.
+  //
+  // The engine already emits `annual_savings_eur` / `monthly_savings_eur` as
+  // the sum across ONLY the channels classified as `savings_opportunity`
+  // (see aggregateCombinedClassification). Optimized channels contribute €0
+  // to the total by design — the number the merchant sees is exactly what
+  // we can defend. When every channel is optimized, the total is €0, and we
+  // fall back to the aggregate hero shape but with the "already_optimized"
+  // top-level classification driving the copy.
   const annual = engineResult?.annual_savings_eur || {};
   const monthly = engineResult?.monthly_savings_eur || {};
-  const channels = Array.isArray(engineResult?.channels) ? engineResult.channels : [];
+  const combinedClass = engineResult?.combined_classification;
+  const hasMixedState = channels.some((c) => c.classification === "already_optimized")
+                     && channels.some((c) => c.classification === "savings_opportunity");
 
   return (
     <div
@@ -100,7 +112,16 @@ export default function CombinedGapHero({ engineResult, country }) {
         <span className="text-white/75 font-semibold tabular-nums">{eur(monthly.lo)}–{eur(monthly.hi)}</span> {t("combined_hero_month_suffix")}
       </p>
 
-      {/* Per-channel breakdown strip */}
+      {/* Mixed-state helper — clarifies WHY the top-level number can look
+          smaller than the sum of channel figures a curious merchant would
+          expect. Only shown when we actually have a mixed state. */}
+      {hasMixedState && (
+        <p className="text-[11px] text-emerald-300/85 mt-3 leading-relaxed">
+          {t("combined_mixed_total_note")}
+        </p>
+      )}
+
+      {/* Per-channel breakdown strip — with mini-victory for optimized channels */}
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
         {channels.map((ch) => {
           const style = CHANNEL_STYLE[ch.channel] || CHANNEL_STYLE.online;
@@ -108,6 +129,62 @@ export default function CombinedGapHero({ engineResult, country }) {
           const r = ch.engine_result || {};
           const chMonthly = r.monthly_savings_eur || {};
           const chAnnual = r.annual_savings_eur || {};
+          const chClass = ch.classification;
+          // Mini-victory: when a channel is already_optimized, the card no
+          // longer shows a €0 monetary figure (which would read as "no data"
+          // rather than "you won here"). Instead it shows an emerald "✓
+          // Already at the best contractable rate" pill + the current rate,
+          // so the merchant sees this channel is intentionally optimized.
+          if (chClass === "already_optimized") {
+            return (
+              <div
+                key={ch.channel}
+                className="rounded-xl p-4"
+                style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.30)" }}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] uppercase tracking-[0.15em] font-bold" style={{ color: "rgb(110,231,183)" }}>
+                    {label}
+                  </p>
+                  <span className="text-[10px] text-white/40 tabular-nums">
+                    {pctFromBps(r.current_effective_bps)}
+                  </span>
+                </div>
+                <p className="text-[13px] font-bold text-emerald-300/95 mt-1 leading-snug">
+                  {t("opt_channel_pill")}
+                </p>
+                <p className="text-[10px] text-white/45 mt-1.5">
+                  {ch.input_snapshot?.provider_slug?.replace(/_/g, " ") || "—"}
+                </p>
+              </div>
+            );
+          }
+          // Insufficient-data channel: honest label, no €0 figure.
+          if (chClass === "insufficient_data") {
+            return (
+              <div
+                key={ch.channel}
+                className="rounded-xl p-4"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.12)" }}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-white/60">
+                    {label}
+                  </p>
+                  <span className="text-[10px] text-white/40 tabular-nums">
+                    {pctFromBps(r.current_effective_bps)}
+                  </span>
+                </div>
+                <p className="text-[12px] text-white/55 mt-1 leading-snug">
+                  {t("insufficient_hero_title")}
+                </p>
+                <p className="text-[10px] text-white/40 mt-1.5">
+                  {ch.input_snapshot?.provider_slug?.replace(/_/g, " ") || "—"}
+                </p>
+              </div>
+            );
+          }
+          // savings_opportunity — unchanged rendering.
           return (
             <div
               key={ch.channel}

@@ -29,11 +29,13 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Search, Lock } from "lucide-react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 import PaymentsGapCard from "@/components/paymentsResults/PaymentsGapCard";
 import FeeBreakdownCard from "@/components/paymentsResults/FeeBreakdownCard";
 import AssumptionsFootnote from "@/components/paymentsResults/AssumptionsFootnote";
 import CombinedGapHero from "@/components/paymentsResults/CombinedGapHero";
+import OptimizedHero from "@/components/paymentsResults/OptimizedHero";
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const OBJECT_ID = /^[0-9a-f]{24}$/i;
@@ -132,6 +134,7 @@ function EmptyState({ title, message, ctaLabel, onCta, icon: Icon = Search }) {
 
 export default function PaymentsResults() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   // Two mutually-exclusive URL contracts:
   //   ?session=<uuid>   → anonymous form path (estimated)
@@ -299,6 +302,15 @@ export default function PaymentsResults() {
   // and a per-channel channels[] array. Detect once here and route to the
   // combined hero renderer instead of the single-channel gap card.
   const isCombined = engineResult?.combined === true && Array.isArray(engineResult?.channels);
+  // M4-refinado (v1.5.0) — classification branches the hero.
+  //   single-channel + already_optimized → OptimizedHero + hide primary CTA
+  //   single-channel + savings_opportunity/insufficient_data → PaymentsGapCard (unchanged)
+  //   combined → CombinedGapHero (which handles per-channel mini-victories itself)
+  // The primary "Stop overpaying" CTA is hidden ONLY when the single-channel
+  // result is already_optimized — there's nothing to stop paying.
+  const classification = engineResult?.classification;
+  const isOptimizedSingle = !isCombined && classification === "already_optimized";
+  const hidePrimaryCTA = isOptimizedSingle;
 
   return (
     <ResultsShell>
@@ -324,6 +336,13 @@ export default function PaymentsResults() {
               engineResult={engineResult}
               country={inputSnapshot?.country}
             />
+          ) : isOptimizedSingle ? (
+            <OptimizedHero
+              engineResult={engineResult}
+              inputSnapshot={inputSnapshot}
+              t={t}
+              onRerun={() => navigate("/Analyzer")}
+            />
           ) : (
             <PaymentsGapCard
               engineResult={engineResult}
@@ -336,7 +355,10 @@ export default function PaymentsResults() {
           {/* Primary CTA — content changes per mode.
               Estimated: sign-in wall (form → account → connect).
               Verified: user is already signed in and connected — the next
-              step is the recovery workflow, not another signup. */}
+              step is the recovery workflow, not another signup.
+              HIDDEN when the single-channel result is already_optimized —
+              nothing to stop, no signup wall to push. */}
+          {!hidePrimaryCTA && (
           <div
             className="rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4"
             style={{
@@ -378,6 +400,7 @@ export default function PaymentsResults() {
               {isVerifiedMode ? "Go to dashboard" : "Stop overpaying"} <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
+          )}
         </div>
 
         {/* RIGHT column — breakdown + assumptions */}

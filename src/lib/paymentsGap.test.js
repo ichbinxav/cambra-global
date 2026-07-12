@@ -548,8 +548,13 @@ describe('calculateGap — end-to-end', () => {
       FULL_TABLE
     );
     expect(result.ok).toBe(true);
-    expect(result.engine_version).toBe('payments-gap-1.4.0');
-    expect(ENGINE_VERSION).toBe('payments-gap-1.4.0');
+    // v1.5.0 (M4-refinado): multi-anchor + 3-state classification. See
+    // src/docs/Decision_Log_Iter4.md for the version-bump rationale. Online
+    // arithmetic is byte-identical to 1.4.0 (retrocompat oracle in the
+    // dedicated classifier test file), so THIS test only pins the version
+    // string; the numeric oracle lives in paymentsGap.classifier.test.js.
+    expect(result.engine_version).toBe('payments-gap-1.5.0');
+    expect(ENGINE_VERSION).toBe('payments-gap-1.5.0');
   });
 });
 
