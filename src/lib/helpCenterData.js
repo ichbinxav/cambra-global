@@ -1,5 +1,29 @@
 // CAMBRA Help Center — content & taxonomy
 // Tone: sharp, intelligent, calm, infrastructure-native.
+//
+// M4-TPV Fase 3 · Coherence patch (2026-07-12).
+// ─────────────────────────────────────────────────────────────────────────
+// The Help Center was written pre-R1 for the multi-vertical CAMBRA
+// (payments + shipping + saas + insurance + telecom + banking). Post-R1
+// the product is payments-only, but the Help Center content still ships
+// the old taxonomy — a visitor to /Help sees "Shipping help" and "SaaS &
+// Commerce Stack" categories that don't correspond to anything the
+// product does today.
+//
+// A full refactor (retone every FAQ to payments-only + translate to FR/ES
+// + rework getting-started to stop listing dead verticals) is tracked in
+// KNOWN_DEBT as "Help Center — refactor payments-only + traducción FR/ES".
+//
+// This patch is the minimum surface-correctness fix on top of that debt:
+//   1. Hide dead-vertical categories (shipping, saas) from public UI via
+//      `hidden: true`. The FAQ_GROUPS entries are LEFT IN PLACE so any
+//      deep-link (/Help/shipping) still resolves rather than 404-ing —
+//      but they no longer appear in the category grid, search results,
+//      or nav.
+//   2. Add 3 new in-store FAQs to the `payments` category, including the
+//      one that matters most: "¿qué hacéis con mis facturas?" — merchants
+//      need this answered BEFORE they upload a document.
+// ─────────────────────────────────────────────────────────────────────────
 
 export const CATEGORIES = [
   {
@@ -37,12 +61,19 @@ export const CATEGORIES = [
     icon: "CreditCard",
     accent: "#635BFF",
   },
+  // ── HIDDEN 2026-07-12 (M4-TPV Fase 3 coherence patch).
+  // Shipping / SaaS categories belong to the pre-R1 multi-vertical product.
+  // Kept in the array (not deleted) so any deep-link resolves via
+  // getCategory(slug), but excluded from the public category grid via
+  // `hidden: true`. Consumers (Help.jsx, CategoryGrid, search) filter on
+  // `!c.hidden` to render.
   {
     slug: "shipping",
     title: "Shipping & Logistics",
     description: "Carrier benchmarks and shipping economics.",
     icon: "Truck",
     accent: "#1F4ED8",
+    hidden: true,
   },
   {
     slug: "saas",
@@ -50,6 +81,7 @@ export const CATEGORIES = [
     description: "Tooling redundancy and stack alignment.",
     icon: "Package",
     accent: "#2CA7C1",
+    hidden: true,
   },
   {
     slug: "benchmarks",
@@ -272,6 +304,24 @@ export const FAQ_GROUPS = [
       {
         q: "Can CAMBRA analyze Stripe directly?",
         a: "Yes. Connecting Stripe gives CAMBRA read-only access to your true effective rate, volume mix, and fee breakdown — producing the sharpest possible benchmark.",
+      },
+      // ── M4-TPV Fase 3 (2026-07-12) — in-store FAQs.
+      // Ordered so the "what happens to my invoices?" question sits BEFORE
+      // the invoice-requirements one — a merchant reads them in the order
+      // "do you audit my TPV → what would I have to give you → what would
+      // you do with it", and pulling the trust-critical question last would
+      // ambush them right before the upload step.
+      {
+        q: "Do you audit in-store card payments (TPV terminals)?",
+        a: "Yes. The Analyzer covers both online (PSP) and in-store (TPV / physical terminal) card payments — same 60-second flow, pick your channel at the top. Public pricing is benchmarked verbatim for the four in-store providers we've verified in Europe (SumUp, Stripe Terminal, Smile & Pay, Zettle by PayPal); traditional bank acquirers (BNP, Crédit Agricole, Société Générale, BPCE, etc.) fall back to a regional average with a wider band, clearly labelled as an estimate. Combined mode analyzes both channels in one pass and shows a per-channel breakdown.",
+      },
+      {
+        q: "What invoices do you need to verify my in-store rates?",
+        a: "For an estimated audit — none. The Analyzer gives you a directional gap from your inputs alone (monthly GMV, average ticket, provider, country). To move from estimated to verified in-store, we'd need a monthly TPV provider statement showing: total fees for the period, processed volume, transaction count, and any separately listed fixed fees or terminal rental. PDF, Excel, or CSV — whatever your provider sends you. Verified in-store is currently in beta and rolling out to founding-cohort merchants; the estimated path is live for everyone today.",
+      },
+      {
+        q: "What do you do with invoices I upload?",
+        a: "Strict pipeline, no surprises: (1) files are encrypted in transit (TLS 1.3) and at rest (AES-256), stored on EU infrastructure; (2) processed by AI models (Anthropic + OpenAI cross-check) to extract structured cost fields — total fees, volume, ticket, provider terms — nothing else; (3) your files and extractions are scoped to your account only, never shared with third parties, never used to train provider or public models; (4) you can delete any uploaded file on request, and account deletion removes all uploads within 30 days per our retention policy. Full detail lives in the Privacy notice under 'AI-assisted processing' (Privacy §4).",
       },
     ],
   },

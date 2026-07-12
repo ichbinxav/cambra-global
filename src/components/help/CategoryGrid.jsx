@@ -12,6 +12,11 @@ const ICON_MAP = {
 };
 
 export default function CategoryGrid() {
+  // M4-TPV Fase 3 (2026-07-12) — filter out dead-vertical categories flagged
+  // `hidden: true` (shipping, saas). Deep links to /Help/shipping still
+  // resolve via getCategory(); this only hides them from the public grid.
+  const visibleCategories = CATEGORIES.filter((c) => !c.hidden);
+
   return (
     <section className="py-12 px-5">
       <div className="max-w-6xl mx-auto">
@@ -20,12 +25,12 @@ export default function CategoryGrid() {
             Explore the knowledge base.
           </h2>
           <p className="hidden md:block text-xs text-white/50">
-            {CATEGORIES.length} categories · Continuously updated
+            {visibleCategories.length} categories · Continuously updated
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {CATEGORIES.map((cat, i) => {
+          {visibleCategories.map((cat, i) => {
             const Icon = ICON_MAP[cat.icon] || Sparkles;
             return (
               <motion.div

@@ -7,7 +7,21 @@ import { getAllFAQs, TRENDING_SEARCHES, CATEGORIES } from "@/lib/helpCenterData"
 export default function HelpSearch({ open, onClose }) {
   const [query, setQuery] = useState("");
   const inputRef = useRef(null);
-  const allFaqs = useMemo(() => getAllFAQs(), []);
+  // M4-TPV Fase 3 (2026-07-12) — exclude FAQs whose category is hidden
+  // (shipping, saas). A visitor searching "shipping" from the Help home
+  // should not get results for a dead vertical.
+  const hiddenCategorySlugs = useMemo(
+    () => new Set(CATEGORIES.filter((c) => c.hidden).map((c) => c.slug)),
+    []
+  );
+  const allFaqs = useMemo(
+    () => getAllFAQs().filter((f) => !hiddenCategorySlugs.has(f.category)),
+    [hiddenCategorySlugs]
+  );
+  const visibleCategories = useMemo(
+    () => CATEGORIES.filter((c) => !c.hidden),
+    []
+  );
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
@@ -102,7 +116,7 @@ export default function HelpSearch({ open, onClose }) {
                           <Sparkles className="w-3 h-3" /> Browse categories
                         </p>
                         <div className="grid grid-cols-2 gap-1.5">
-                          {CATEGORIES.slice(0, 8).map((c) => (
+                          {visibleCategories.slice(0, 8).map((c) => (
                             <Link
                               key={c.slug}
                               to={`/Help/${c.slug}`}

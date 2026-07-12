@@ -133,13 +133,34 @@ Citas RAW de `Privacy.jsx`:
 - §8 (L58): `"identifiable data is deleted within 90 days"` — política de borrado aplica a documentos subidos.
 - Legal basis (§3, L53): `"performance of contract (Art. 6(1)(b) GDPR) and legitimate interest for benchmarking (Art. 6(1)(f) GDPR)"` — cubre tratamiento documental.
 
-**10. Help/FAQs — DEUDA parcial documentada.**
-`helpCenterData.js` inspeccionado: 14 categorías (getting-started, analyzer, infrastructure-score, savings, payments, shipping, saas, benchmarks, integrations, uploads, security, pricing, troubleshooting, legal). **Estado real:**
-- Las 3 FAQs pedidas ("¿analizáis TPV?", "¿qué facturas para verificar?", "¿qué hacéis con mis facturas?") **NO existen** en ninguna categoría.
-- Help center completo está en EN únicamente (no traducido FR/ES) — el shell `Help.jsx` no consume `useTranslation()`.
-- Adicionalmente el content es multi-vertical pre-R2 (shipping/saas/insurance/telecom mencionados en payments category L120 y en 3 categorías dedicadas L41-53).
+**10. Help Center — 2 correcciones aplicadas en esta iteración (revisión Xavi).**
 
-**Decisión:** este barrido se limita a coherencia de superficie ya construida. Un refactor payments-only + traducción trilingüe del Help Center completo excede alcance Fase 3 y merece chunk propio. **DEUDA nueva en KNOWN_DEBT:** "Help Center refactor payments-only + traducción FR/ES + 3 FAQs in-store (TPV analysis, invoice requirements, doc handling)". No se toca en este chunk para respetar la restricción dura.
+La primera pasada difirió TODO el punto 10 como deuda ("refactor Help Center completo"). Xavi rechazó ese framing con dos argumentos válidos:
+- **Las 3 FAQs in-store NO son deuda — son requisito.** "¿Qué hacéis con mis facturas?" es la pregunta que un merchant lee ANTES de subir una factura de su negocio; aplazarla junto con un refactor de días mezcla dos cosas de escala distinta.
+- **El Help Center multi-vertical no es "deuda futura" — es superficie pública incoherente HOY.** Un visitante a `/Help` ve categorías "Shipping help" y "SaaS & Commerce Stack" que no corresponden a nada que el producto haga desde R1.
+
+Correcciones aplicadas en esta iteración:
+
+**(a) 3 FAQs in-store añadidas a la categoría `payments` de `helpCenterData.js`** — orden narrativo intencional: primero "do you audit TPV" (afirmativo, cubierta lograda), luego "what invoices do you need" (pre-requisito) y por último "what do you do with my invoices" (trust-critical, deliberadamente el último para que el merchant la lea inmediatamente antes del step de upload):
+- *"Do you audit in-store card payments (TPV terminals)?"* — sí, motor 1.4.0 cubre online + in-store, 4 providers EU verified (SumUp, Stripe Terminal, Smile & Pay, Zettle) + fallback bank TPV con banda ampliada, modo Combined disponible.
+- *"What invoices do you need to verify my in-store rates?"* — statement mensual TPV (fees + volumen + tx count + fixed fees), PDF/Excel/CSV. **Verified in-store etiquetado explícitamente como "currently in beta and rolling out to founding-cohort merchants; the estimated path is live for everyone today"** — refleja el gate real que la Fase 3 identificó.
+- *"What do you do with invoices I upload?"* — cifrado TLS 1.3 + AES-256, EU infrastructure, extracción LLM (Anthropic + OpenAI cross-check) para campos estructurados **nada más**, no compartido con terceros, no usado para reentrenar modelos, borrable on-demand, retention 30 días per Privacy §8, link explícito a Privacy §4.
+
+Idioma: EN (el Help Center hoy solo soporta EN — traducción FR/ES sigue tracked como parte del refactor deuda). Las 3 FAQs viven en `src/lib/helpCenterData.js` categoría `payments`.
+
+**(b) Categorías multi-vertical muertas (shipping, saas) ocultas de la UI pública** vía flag `hidden: true` en `helpCenterData.js`. Consumidores (`CategoryGrid.jsx`, `HelpSearch.jsx`) filtran con `!c.hidden`:
+- `CategoryGrid`: aplica `CATEGORIES.filter(c => !c.hidden)` — el visitante ya no ve las categorías shipping/SaaS en la grilla, count "N categorías" refleja solo las visibles (14 → 12).
+- `HelpSearch`: dos filtros — la grilla "Browse categories" excluye hidden, y `allFaqs` excluye FAQs cuya categoría es hidden. Buscar "shipping" desde el modal no devuelve resultados de un vertical muerto.
+- **Kept in the data** (no borradas): las entries `shipping` y `saas` siguen en `CATEGORIES` y `FAQ_GROUPS` con `hidden: true`. Esto preserva que cualquier deep-link (`/Help/shipping`) resuelva vía `getCategory(slug)` en lugar de dar 404 — degrada limpio en vez de romper enlaces externos que puedan existir. `PopularArticles` intocado (POPULAR solo referencia savings/infrastructure-score/benchmarks/security/pricing — ninguna hidden).
+- Comportamiento HOY para el visitante: **no ve "Shipping help" en /Help ni en la búsqueda**. Único punto donde aún aparecen menciones a shipping/saas es dentro del texto libre de FAQs de otras categorías (ej. getting-started/L112, L120) — eso es el refactor fino de copy que sigue como deuda separada.
+
+**DEUDA residual (reformulada):** "Help Center — refactor payments-only del CUERPO de FAQs remanentes (retonar menciones shipping/saas en getting-started, integrations, uploads) + traducción FR/ES completa + eventual purga definitiva de categorías `hidden: true` cuando se confirme cero tráfico deep-link". La deuda ya no incluye "3 FAQs in-store" (hechas) ni "ocultar verticales muertos" (hechos). Actualizada en KNOWN_DEBT.
+
+**Ficheros tocados en esta iteración correctiva:**
+- `src/lib/helpCenterData.js` — flag `hidden: true` en categorías shipping/saas + 3 FAQs nuevas en `payments`.
+- `src/components/help/CategoryGrid.jsx` — filtro `!c.hidden` en el render y en el count.
+- `src/components/help/HelpSearch.jsx` — filtro `!c.hidden` en FAQs de búsqueda y en la grilla "Browse categories".
+- `src/docs/KNOWN_DEBT.md` — deuda del punto 10 reformulada (ya no incluye lo hecho).
 
 **Verified in-store status (aclaración pedida en el punto 8 del usuario).**
 Estado real del flag en el código: el path verified in-store aún NO existe en producción — `computeStripeVerifiedGap` es online-only por diseño (bridge Stripe→motor), y no hay una función equivalente `computeTpvVerifiedGap` en el árbol. El motor 1.4.0 acepta `measured_current_bps` sobre canal in_store (tests explícitos en `paymentsGap.inStore.test.js`), pero la materialización real (extracción LLM de facturas TPV → `PaymentsAnalysisVerified` con `channel:"in_store"`) NO está cableada. **Ninguna superficie del producto promete verified in-store disponible ya:**

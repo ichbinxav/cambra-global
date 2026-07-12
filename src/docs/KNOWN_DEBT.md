@@ -949,30 +949,45 @@ Primer email a SumUp/myPOS/Viva/Smile&Pay con URL que enseñar. Pitch limpio: *"
 
 ---
 
-## Help Center — refactor payments-only + traducción FR/ES + 3 FAQs in-store
+## Help Center — refactor payments-only del cuerpo remanente + traducción FR/ES
 
-**Estado:** 🟡 activa (identificada en M4-TPV Fase 3 barrido de coherencia, 2026-07-12)
-**Fichero:** `src/lib/helpCenterData.js` (~480 líneas) + `src/pages/Help.jsx` + componentes `src/components/help/*`
+**Estado:** 🟡 activa (reformulada 2026-07-12 tras revisión Xavi del cierre Fase 3)
+**Fichero:** `src/lib/helpCenterData.js` (~530 líneas) + `src/pages/Help.jsx` + componentes `src/components/help/*`
 
-### Síntoma detectado en el barrido Fase 3
-Auditoría del punto 8 del checklist reveló tres problemas en el Help Center:
-1. **Multi-vertical residual pre-R2.** `helpCenterData.js` mantiene 14 categorías incluyendo `shipping` (L41-46), `saas` (L47-53), y menciones explícitas en payments category L120 ("Payments processing, card-present terminals, shipping and logistics, SaaS subscriptions, commerce platform fees, banking and FX, business insurance, and increasingly telecom and operational infrastructure"). Contradicción con el pivot payments-only sellado en R2.
-2. **Cero traducción FR/ES.** `Help.jsx` no consume `useTranslation()`. `helpCenterData.js` es EN puro. Los 3 idiomas soportados en el resto del producto no aplican al Help Center.
-3. **Las 3 FAQs in-store pedidas por Xavi no existen.** Ninguna entry menciona: "¿analizáis TPV?", "¿qué facturas para verificar in-store?", "¿qué hacéis con mis facturas subidas?". La categoría `uploads` L328-348 habla de invoices en general pero no distingue online (Stripe connect) vs in-store (upload TPV statement).
+### Contexto — qué se hizo ya (NO forma parte de esta deuda)
+La primera pasada Fase 3 difirió todo el Help Center como "refactor entero". Xavi corrigió el framing y en la misma iteración se aplicaron dos correcciones que quedan **fuera del alcance de esta deuda residual**:
 
-### Por qué no se arregla en Fase 3
-Alcance excede el barrido de coherencia. Un refactor completo requiere:
-1. Purga de categorías multi-vertical (`shipping`, `saas`) + reescritura de la categoría `payments` para incluir in-store explícitamente + revisión de las 14 categorías restantes filtrando menciones a shipping/SaaS/insurance/telecom/banking.
-2. Introducir `useTranslation()` en `Help.jsx`, `HelpCategory.jsx`, `HelpHero.jsx`, `HelpSearch.jsx`, `HelpCTA.jsx`, `PopularArticles.jsx`, `CategoryGrid.jsx`, `FAQAccordion.jsx` + añadir ~80+ keys nuevas × 3 idiomas al dictionary `src/lib/i18n.jsx` (que ya está en 2000+ líneas — considerar splitear el dict por sección si sigue creciendo).
-3. Añadir las 3 FAQs in-store nuevas (mínimo):
-   - Q: `"¿Analizáis pagos in-store (TPV)?"` — A: sí, motor 1.4.0 cubre 4 verified providers EU (SumUp / Stripe Terminal / Smile&Pay / Zettle) + fallback bank TPV; el gap se calcula sobre GMV + avg ticket + provider + region.
-   - Q: `"¿Qué facturas necesito para verificar in-store?"` — A: statement mensual del TPV provider (SumUp/Stripe Terminal/etc.) mostrando: fees totales del período + volumen procesado + número de transacciones + fixed fees separados si los hay. Formato PDF, Excel, o CSV.
-   - Q: `"¿Qué hacéis con mis facturas subidas?"` — A: extracción LLM (Anthropic + OpenAI cross-check) para pull structured fields (fees, volume, ticket); almacenamiento cifrado con retention según Privacy §8; nunca compartidas con terceros; borrables on-demand; **verified in-store TODAVÍA gated** (flag off en producción, el path solo produce estimated hoy — ver aclaración Fase 3 en Decision_Log).
+1. **3 FAQs in-store añadidas a la categoría `payments`** — HECHO. Cubren: cobertura TPV, invoices requeridas para verified, tratamiento de invoices subidas (cifrado + EU + no reentrenamiento + link Privacy §4). Verified in-store etiquetado explícitamente como "in beta and rolling out to founding-cohort merchants" — no promete disponibilidad que hoy no existe.
+2. **Categorías multi-vertical `shipping` y `saas` ocultadas de la UI pública** vía flag `hidden: true` — HECHO. `CategoryGrid.jsx` y `HelpSearch.jsx` filtran con `!c.hidden`. Data preservada para deep-links legacy; visitantes ya no ven "Shipping help" ni "SaaS help" en la grilla ni en la búsqueda.
+
+Ver Decision_Log entrada Fase 3 punto 10 (2026-07-12) para el reporte completo con ficheros tocados y cita de las 3 FAQs.
+
+### Deuda residual (esto es lo que queda pendiente)
+
+**Refactor de copy multi-vertical residual dentro del CUERPO de FAQs remanentes.**
+Después de ocultar las categorías shipping/saas, siguen apareciendo menciones a verticales muertos dentro del texto libre de FAQs que SÍ son visibles:
+- `getting-started` categoría, FAQ "What is CAMBRA?" (L112): *"payments, shipping, SaaS, insurance, telecom and banking"* — enumera 6 verticales, 5 muertos.
+- Misma categoría, FAQ "What kinds of costs does CAMBRA analyze?" (L120): *"Payments processing, card-present terminals, shipping and logistics, SaaS subscriptions, commerce platform fees, banking and FX, business insurance, and increasingly telecom and operational infrastructure"* — enumeración explícita multi-vertical.
+- `analyzer` FAQ "How does the Analyzer work?" (L154): *"revenue, channels, payments, shipping, SaaS, terminals and insurance"*.
+- `savings` FAQ "How does CAMBRA estimate savings?": alusiones al modelo multi-vertical (verificar).
+- `benchmarks` FAQ "How does CAMBRA compare businesses?": stack composition (verificar).
+- `uploads` categoría (L328-348) habla de invoices genéricas — no distingue online vs in-store en el contexto que las nuevas FAQs de payments SÍ distinguen.
+
+Estas menciones no bloquean superficie (visitante que aterriza en /Help ya no ve las categorías muertas), pero SÍ son incoherentes con el pivot payments-only cuando el visitante abre una categoría visible y lee el detalle.
+
+**Traducción FR/ES del Help Center completo.**
+`Help.jsx` y sus 8 componentes (`HelpHero`, `HelpSearch`, `CategoryGrid`, `PopularArticles`, `HelpCTA`, `HelpCategory`, `FAQAccordion`, y helpers) no consumen `useTranslation()`. `helpCenterData.js` es EN puro. Los otros 3 idiomas del producto no aplican aquí. Contenido nuevo (las 3 FAQs in-store añadidas) también está en EN — la traducción de las 3 nuevas debe hacerse a la vez que el resto del refactor lingüístico, no en piezas.
+
+**Purga definitiva de categorías `hidden: true`.**
+Una vez confirmado (analytics / server logs) que cero tráfico legítimo aterriza en `/Help/shipping` o `/Help/saas`, borrar las entries de `CATEGORIES` y `FAQ_GROUPS`. Hasta entonces preservadas para no romper deep-links externos que puedan existir. Bajo urgencia — el flag `hidden: true` ya elimina el problema visible.
+
+### Por qué no se arregla ahora
+Alcance ~3-4 horas:
+1. **Retonar copy** (~1h): grep `shipping|saas|insurance|telecom|banking` dentro de `helpCenterData.js`, reescribir cada mención en context de FAQ visible para reflejar payments-only sin perder narrative del getting-started (que sigue teniendo sentido si "CAMBRA audits card payments across online and in-store" reemplaza la lista de verticales).
+2. **i18n scaffolding** (~2h): introducir `useTranslation()` en los 8 componentes del Help + splitear el dictionary `src/lib/i18n.jsx` (que ya está en 2000+ líneas, considerar per-page para no engordar más) + añadir ~80+ keys nuevas × 3 idiomas. La estructura de `helpCenterData.js` misma requiere decisión: pasar a keyed strings vs mantener EN inline con overlays FR/ES.
+3. **Verificación cross-idioma** (~30min): revisar cada FAQ en FR y ES con ojo humano — el contenido legal/técnico no se traduce automáticamente sin revisión.
 
 Chunk propio (post-Fase-3 o paralelo si Xavi lo prioriza).
 
-### Alcance estimado
-~4 horas: purga (~30min) + i18n scaffolding (~2h) + reescritura content (~1h) + verificación cross-idioma. No requiere cambios en motor ni schema.
-
 ### Riesgo residual mientras no se arregle
-Bajo. Help Center es página secundaria (2 clicks desde landing). Merchants FR/ES ven contenido EN — funcional pero no ideal. Cero copy in-store hoy — si un merchant TPV busca "how do you audit my TPV?" no encuentra respuesta pero el Analyzer sí produce el resultado correcto. Impact primaryly SEO + first-impression cross-linguistic, no funcional.
+Bajo pero no cero. El escenario peor-caso ya no ocurre (visitante que ve categorías muertas en la grilla — cerrado con el flag `hidden: true`). Queda el escenario intermedio: visitante que abre `/Help/getting-started` y lee menciones a "shipping, SaaS, insurance" en el texto de "What kinds of costs does CAMBRA analyze?". Efecto: primer momento de duda ("¿ofrecen shipping y no lo veo?"). Impacto: primary SEO + first-impression, no funcional. La superficie payments-only del resto del producto (landing, analyzer, results, pricing, terms) es coherente — el Help Center es la única ventana donde el pivot no ha aterrizado del todo.
