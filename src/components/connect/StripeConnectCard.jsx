@@ -221,23 +221,32 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
     setBusy(true);
     setError("");
     try {
-      // BUG-5 fix — route to Integration entity when the connection is
-      // Integration-backed (post-FASE-1 source of truth). Only fall back to
-      // the legacy `stripeDisconnect` endpoint when we're truly looking at a
-      // legacy StripeConnection row (no `provider` field on the loaded shape).
-      const isIntegrationBacked = !!connection?.provider;
-      if (isIntegrationBacked) {
-        await base44.entities.Integration.update(connection.id, {
-          status: "disconnected",
-          access_token: null,
-          refresh_token: null,
-        });
-      } else {
-        await base44.functions.invoke("stripeDisconnect", {});
+      // BUG-5 fix (2026-07-12) — Single unified path.
+      //
+      // Empirical repro showed BOTH previous branches failed for the
+      // real-world case (service-owned rows):
+      //   - Branch A (`Integration.update` as user) → RLS "Permission denied
+      //     for update operation on Integration entity" (write is admin-only
+      //     per schema).
+      //   - Branch B (legacy `stripeDisconnect`) → 500 "Authentication
+      //     required to view users" from base44.auth.me() inside the fn.
+      //
+      // `stripeConnectionDisconnect` runs the M3-sealed ownership check
+      // (contact_email / created_by / admin) and does the write with
+      // asServiceRole. Dual-row: it disconnects the Integration row AND
+      // any legacy StripeConnection rows for the same brand_id in one call,
+      // so we no longer branch on connection.provider here.
+      const payload = { brand_id: connection?.brand_id };
+      if (connection?.provider) payload.integration_id = connection.id;
+      const res = await base44.functions.invoke("stripeConnectionDisconnect", payload);
+      const data = res?.data || res;
+      if (data && data.ok === false) {
+        setError(data.error || "Disconnect failed");
+        return;
       }
       setConnection(null);
     } catch (e) {
-      setError(e.message || "Disconnect failed");
+      setError(e?.response?.data?.error || e?.message || "Disconnect failed");
     } finally {
       setBusy(false);
     }

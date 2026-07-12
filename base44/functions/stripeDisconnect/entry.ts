@@ -1,7 +1,21 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 /**
- * M3 — Stripe Disconnect
+ * ⚠️ DEPRECATED — 2026-07-12 (BUG-5 fix).
+ *
+ * Use `stripeConnectionDisconnect` instead. This endpoint fails empirically
+ * with 500 "Authentication required to view users" from `base44.auth.me()`
+ * in some caller contexts (the reported "404" was a 500 in disguise) and
+ * only covers the legacy StripeConnection row — it never disconnects the
+ * Integration-backed row, which is the source of truth post-Fase-1.
+ *
+ * Kept in place to avoid breaking any external caller that still points
+ * at this path. New frontend code (see src/components/connect/
+ * StripeConnectCard.jsx handleDisconnect) routes through
+ * `stripeConnectionDisconnect`, which uses asServiceRole + the M3 ownership
+ * pattern (contact_email OR created_by OR admin) and cleans BOTH rows.
+ *
+ * M3 — Stripe Disconnect (LEGACY)
  *
  * Marks StripeConnection as disconnected and revokes the ConsentRecord.
  * Does NOT delete historical data — kept for audit.
