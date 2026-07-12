@@ -56,6 +56,24 @@ function Bar({ label, bps, color, note, negotiable }) {
 
 export default function FeeBreakdownCard({ engineResult }) {
   const breakdown = parseAchievableBreakdown(engineResult?.assumptions);
+  // Channel-aware fallback (M4-TPV Fase 3). ACHIEVABLE_NOTE has two shapes:
+  //   - Online: "interchange N + scheme N + margin N (±N bps assumption)"
+  //     → parser above matches, breakdown renders normally.
+  //   - In-store: "Achievable rate anchored to the best publicly contractable
+  //     card-present provider…" → parser returns null. We used to fall back
+  //     to "connect your PSP for a precise decomposition", which is
+  //     online-only advice (in-store merchants upload TPV invoices, not
+  //     connect a PSP). Now we surface the anchor line verbatim from
+  //     assumptions[] instead — auditable, coherent with the in-store
+  //     product's honest "no theoretical breakdown, anchored to a real
+  //     provider" positioning.
+  const channel = engineResult?.cohort?.channel;
+  const isInStore = channel === "in_store";
+  const anchorLine = isInStore
+    ? (engineResult?.assumptions || []).find(
+        (a) => typeof a === "string" && a.startsWith("Achievable rate anchored to")
+      )
+    : null;
 
   return (
     <div
@@ -69,7 +87,9 @@ export default function FeeBreakdownCard({ engineResult }) {
         Where your fee comes from
       </p>
       <p className="text-[12px] text-white/45 mb-5">
-        Interchange and scheme fees are hard floors set by Visa/Mastercard and issuing banks. The processor margin is what your PSP charges on top — that's the piece you can move.
+        {isInStore
+          ? "In-store card-present pricing is usually published as a single blended rate — there's no auditable interchange/scheme split. Instead of inventing one, we anchor the achievable rate to a specific provider you can contract today."
+          : "Interchange and scheme fees are hard floors set by Visa/Mastercard and issuing banks. The processor margin is what your PSP charges on top — that's the piece you can move."}
       </p>
 
       {breakdown ? (
@@ -94,6 +114,25 @@ export default function FeeBreakdownCard({ engineResult }) {
             negotiable
           />
         </div>
+      ) : isInStore && anchorLine ? (
+        <div
+          className="rounded-xl p-4"
+          style={{
+            background: "rgba(34,211,238,0.05)",
+            border: "1px solid rgba(34,211,238,0.20)",
+          }}
+        >
+          <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/80 mb-2">
+            Achievable rate anchor
+          </p>
+          <p className="text-[12.5px] text-white/75 leading-relaxed">
+            {anchorLine}
+          </p>
+        </div>
+      ) : isInStore ? (
+        <p className="text-[12px] text-white/60">
+          For in-store card payments we anchor the achievable rate to the best publicly contractable provider in your region. Upload a TPV provider statement for a precise measured rate.
+        </p>
       ) : (
         <p className="text-[12px] text-white/60">
           For this cohort we don't have a public breakdown of the achievable rate. The savings figure above is derived from regional benchmarks — connect your PSP for a precise decomposition.

@@ -946,3 +946,33 @@ La superficie payments in-store (Fase 2B) tiene que estar viva y verificada ante
 
 ### Valor cuando exista
 Primer email a SumUp/myPOS/Viva/Smile&Pay con URL que enseñar. Pitch limpio: *"vuestro pricing público ya está en nuestro benchmark; ¿queréis ganar a los demás con una tarifa exclusiva para nuestros merchants?"*. La página es la infraestructura de ese pitch.
+
+---
+
+## Help Center — refactor payments-only + traducción FR/ES + 3 FAQs in-store
+
+**Estado:** 🟡 activa (identificada en M4-TPV Fase 3 barrido de coherencia, 2026-07-12)
+**Fichero:** `src/lib/helpCenterData.js` (~480 líneas) + `src/pages/Help.jsx` + componentes `src/components/help/*`
+
+### Síntoma detectado en el barrido Fase 3
+Auditoría del punto 8 del checklist reveló tres problemas en el Help Center:
+1. **Multi-vertical residual pre-R2.** `helpCenterData.js` mantiene 14 categorías incluyendo `shipping` (L41-46), `saas` (L47-53), y menciones explícitas en payments category L120 ("Payments processing, card-present terminals, shipping and logistics, SaaS subscriptions, commerce platform fees, banking and FX, business insurance, and increasingly telecom and operational infrastructure"). Contradicción con el pivot payments-only sellado en R2.
+2. **Cero traducción FR/ES.** `Help.jsx` no consume `useTranslation()`. `helpCenterData.js` es EN puro. Los 3 idiomas soportados en el resto del producto no aplican al Help Center.
+3. **Las 3 FAQs in-store pedidas por Xavi no existen.** Ninguna entry menciona: "¿analizáis TPV?", "¿qué facturas para verificar in-store?", "¿qué hacéis con mis facturas subidas?". La categoría `uploads` L328-348 habla de invoices en general pero no distingue online (Stripe connect) vs in-store (upload TPV statement).
+
+### Por qué no se arregla en Fase 3
+Alcance excede el barrido de coherencia. Un refactor completo requiere:
+1. Purga de categorías multi-vertical (`shipping`, `saas`) + reescritura de la categoría `payments` para incluir in-store explícitamente + revisión de las 14 categorías restantes filtrando menciones a shipping/SaaS/insurance/telecom/banking.
+2. Introducir `useTranslation()` en `Help.jsx`, `HelpCategory.jsx`, `HelpHero.jsx`, `HelpSearch.jsx`, `HelpCTA.jsx`, `PopularArticles.jsx`, `CategoryGrid.jsx`, `FAQAccordion.jsx` + añadir ~80+ keys nuevas × 3 idiomas al dictionary `src/lib/i18n.jsx` (que ya está en 2000+ líneas — considerar splitear el dict por sección si sigue creciendo).
+3. Añadir las 3 FAQs in-store nuevas (mínimo):
+   - Q: `"¿Analizáis pagos in-store (TPV)?"` — A: sí, motor 1.4.0 cubre 4 verified providers EU (SumUp / Stripe Terminal / Smile&Pay / Zettle) + fallback bank TPV; el gap se calcula sobre GMV + avg ticket + provider + region.
+   - Q: `"¿Qué facturas necesito para verificar in-store?"` — A: statement mensual del TPV provider (SumUp/Stripe Terminal/etc.) mostrando: fees totales del período + volumen procesado + número de transacciones + fixed fees separados si los hay. Formato PDF, Excel, o CSV.
+   - Q: `"¿Qué hacéis con mis facturas subidas?"` — A: extracción LLM (Anthropic + OpenAI cross-check) para pull structured fields (fees, volume, ticket); almacenamiento cifrado con retention según Privacy §8; nunca compartidas con terceros; borrables on-demand; **verified in-store TODAVÍA gated** (flag off en producción, el path solo produce estimated hoy — ver aclaración Fase 3 en Decision_Log).
+
+Chunk propio (post-Fase-3 o paralelo si Xavi lo prioriza).
+
+### Alcance estimado
+~4 horas: purga (~30min) + i18n scaffolding (~2h) + reescritura content (~1h) + verificación cross-idioma. No requiere cambios en motor ni schema.
+
+### Riesgo residual mientras no se arregle
+Bajo. Help Center es página secundaria (2 clicks desde landing). Merchants FR/ES ven contenido EN — funcional pero no ideal. Cero copy in-store hoy — si un merchant TPV busca "how do you audit my TPV?" no encuentra respuesta pero el Analyzer sí produce el resultado correcto. Impact primaryly SEO + first-impression cross-linguistic, no funcional.

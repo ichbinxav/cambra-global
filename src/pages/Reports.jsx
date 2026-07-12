@@ -206,8 +206,8 @@ export default function Reports() {
                 <div className="cambra-card p-7 mb-6">
                <div className="relative">
                <div className="mb-4">
-                 <p className="cc-eyebrow mb-1">TPE report</p>
-                 <p className="text-sm font-semibold text-white">In-store terminal benchmark and savings opportunity</p>
+                <p className="cc-eyebrow mb-1">In-store payments</p>
+                <p className="text-sm font-semibold text-white">Terminal (TPV) benchmark and savings opportunity</p>
                </div>
                {(() => {
                  const input = results[0];

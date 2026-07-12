@@ -70,6 +70,98 @@ específicamente la línea del `const` o de la propiedad, no del comentario.
 
 ---
 
+## 2026-07-12 — M4-TPV · Fase 3 · Barrido de coherencia total (10 puntos)
+
+**Alcance.** Chunk de coherencia superficie-a-superficie sobre la base sellada (motor 1.4.0 + combined + retrocompat channel-aware). **Cero cambios en motor, mirrors SYNC, schemas, o paths verified.** Solo copy y fallbacks UI. Reporte punto por punto con citas literales:
+
+**1. Landing — trío de cifras coherente. HECHO.**
+Citas RAW del código:
+- H2 (`ProblemSectionWow.jsx:267`): `"30–60%"` en el gradient span, "on card payments".
+- Total bleed anual (`ProblemSectionWow.jsx:325`): `−€6,000/year`.
+- Total bleed 24mo (`ProblemSectionWow.jsx:329`): `−€12,000 over 24 months`.
+- SavingsCurveChart hero: `€12,000+ recovered / 24 months` (sellado en R5).
+- Cuenta que une el trío (verbatim del comentario en `ProblemSectionWow.jsx:14`): *"GMV €1M/yr, blended PSP at 2.4%, intl ~15%, low-mid ticket. Engine (paymentsGap.js) floor ≈ 1.7% → gap ≈ 0.7pts × €1M = €6,000/yr"* × 24mo = €12k. **Trío cierra: −€6k/yr = −€12k/24mo = €12k+ recovered / 24mo. Cero derivación.**
+
+**2. Landing — InStoreUpsellStrip. HECHO.**
+Citas de `InStoreUpsellStrip.jsx`: L79 `to="/Analyzer"` (ancla correcta), L67 `t("landing_upsell_in_store_title")` → EN dict `"Physical terminals count too."` (afirmativo, sin "coming soon"), L74 desc dict `"We audit your TPV — SumUp, Stripe Terminal, Smile & Pay, Zettle, or your traditional bank acquirer. Same 60-second audit, same 25% success fee, in-store or online."` (afirmativo: el estimador in-store existe hoy, motor 1.4.0 + 19 filas seed). CTA `"Audit my TPV"` afirmativo. Renderizado confirmado (`Landing.jsx:471` `<InStoreUpsellStrip />`).
+
+**3. Landing — cifras online vs in-store no se cruzan. HECHO.**
+`ProblemSectionWow.jsx` ITEMS son las 3 facetas del bleed ONLINE de la reference brand €1M GMV (blended / cross-border / fixed-fee drag — todas online). `InStoreUpsellStrip` no muestra ninguna cifra numérica (verificado L73: solo copy provider list). Cero mezcla numérica cross-canal.
+
+**4. Analyzer — 3 modos coherentes + i18n × 3 idiomas. HECHO.**
+i18n grep sobre keys de las tabs (turno anterior ya verificado):
+- `analyzer_channel_online`: EN `"Online"`, FR `"En ligne"`, ES `"Online"`.
+- `analyzer_channel_in_store`: EN `"In-store"`, FR `"En boutique"`, ES `"En tienda"`.
+- `analyzer_channel_combined`: EN `"Both"`, FR `"Les deux"`, ES `"Ambos"`.
+- 3 × 3 = 9 entradas en `i18n.jsx`, cada una consumida 1× en `PaymentsAnalyzer.jsx:397-399`. Cero huérfanas, cero rotas. Provider `<LanguageProvider>` envuelve el árbol público (`App.jsx:189` outermost wrapper) — tab funcional para anónimos.
+
+**5. Results — badges, footnote in-store, FeeBreakdownCard fallback. HECHO (con fix).**
+- Badges: `PaymentsGapCard.jsx` gate jerárquico intacto (`mode: "verified"` → VERIFIED · Stripe / `mode: "verified"` in-store → VERIFIED · TPV invoice / cohort.verified=true → PUBLIC PRICING / else REGIONAL ESTIMATE — el badge in-store verified es feature-flagged; hoy solo se activa manualmente para pruebas, ver punto 8).
+- CombinedGapHero: verificado en el turno anterior, renderiza total + desglose per-channel.
+- **Fix aplicado a `FeeBreakdownCard.jsx`**: el parser regex online (`interchange N + scheme N + margin N (±N bps assumption)`) NO matchea la assumption in-store (que es "Achievable rate anchored to the best publicly contractable card-present provider…" — cambio de shape sellado en la Fase 2A-redo ADENDA). Antes caía al fallback online "connect your PSP for a precise decomposition" — advice inválido en canal in-store (los merchants suben facturas TPV, no conectan PSP). Ahora:
+  - Header adaptativo: si `cohort.channel === "in_store"`, explica que "In-store card-present pricing is usually published as a single blended rate — there's no auditable interchange/scheme split. Instead of inventing one, we anchor the achievable rate to a specific provider you can contract today."
+  - Body adaptativo: extrae la línea `"Achievable rate anchored to…"` de `assumptions[]` y la renderiza en un card cyan-tinted "Achievable rate anchor" (auditable, cita literal del motor).
+  - Fallback secundario cuando la assumption no está: `"Upload a TPV provider statement for a precise measured rate."` — call-to-action alineado con el producto real (verified in-store vía extractor de facturas).
+- **Fix aplicado a `AssumptionsFootnote.jsx`**: disclaimer "Estimate based on regional averages" ahora branchea por canal. Online: `"Connect your PSP for exact figures."`. In-store: `"Upload a provider statement for exact figures."`.
+
+**6. Reports · bloque TPE. HECHO (relabel minor).**
+Citas de `Reports.jsx`:
+- Eyebrow (L209 pre-fix): `"TPE report"` → ahora `"In-store payments"` (alineado con label de la tab del Analyzer). Sub-header (L210): `"In-store terminal benchmark and savings opportunity"` → `"Terminal (TPV) benchmark and savings opportunity"` (redundancia "In-store" resuelta, mantiene keyword TPV para reconocimiento).
+- Chart header (L134): `"Identified payment savings"` con sub `"Annualized · online + in-store card payments"` — coherente (R2 ya lo dejó así).
+- Cero cambios en KPIs numéricos, en la lógica de `results[0]?.details?.tpe_*`, ni en el link a `/Analyzer`. Solo copy label.
+- Estado del tier estimado: sigue mostrando `verification_status` real del `MonthlySavingsReport` — no promete verified in-store si el flag está off (los savings mostrados vienen del AnalyzerResult manual, no del path verified).
+
+**7. Pricing (PricingDual) — un producto, un deal cubre ambos canales. HECHO (ya coherente).**
+Citas RAW:
+- Sub-header (L317): `"Analyze for free. Monitor for free during the founding cohort. Pay only when we actually recover margin — 25% of verified payment savings."` (channel-agnostic).
+- Recovery tier priceSuffix (L426): `"of verified payment savings · 24-month agreement"` (channel-agnostic).
+- MONITORING_FEATURES (L30-35), RECOVERY_FEATURES (L37-42): ninguna feature dice "online" exclusivamente — todas son channel-agnostic ("Monthly re-scan of your rate", "Payments rate negotiation", "Savings verification & migration").
+- KPIs ilustrativos: intactos (€29/mo strikethrough, 12 months founding, 25%, 24-month agreement). Cero cambio.
+
+**8. Terms — §3/§4/§7/§8 verificado palabra por palabra. HECHO (sin edits).**
+Citas RAW de `Terms.jsx`:
+- §3 (L53): `"CAMBRA provides payment-cost analysis, benchmarking and recovery services for independent commerce brands, covering both online and in-store card payments."` (R2 ya lo dejó así).
+- §4 (L54): `"All Analyzer outputs, payment savings estimates and benchmark comparisons are estimates derived from your inputs and the CAMBRA network dataset."` (channel-agnostic).
+- §7 (L57): `"renegotiate your card-payment rates — online (PSP) and in-store (TPV / physical terminal) — with your current provider, or migrate you to a better one where relevant"`, `"evidenced by actual PSP or TPV provider statements reconciled by CAMBRA"`, `"25% of verified payment savings, calculated over a 24-month agreement"`. **25%/24mo compromiso intacto, cubre ambos canales.**
+- §8 (L58): `"Provider partnership terms are disclosed to any interested provider upon written request to support@cambra.global."` (R2 cerró la referencia a `/ForProviders`). **Confirmado: §8 NO tiene referencia a página viva. La resurrección de `/ForProviders` sigue como deuda POST-Fase-3 en KNOWN_DEBT — no se revive aquí.**
+
+**9. Privacy — cobertura documental. HECHO (sin edits).**
+Citas RAW de `Privacy.jsx`:
+- §2 (L52): `"name, professional email, brand information, infrastructure cost data, uploaded statements and operational metrics entered through the Analyzer"` — cubre facturas TPV.
+- §4 (L54): `"When you upload statements or invoices (PDF, Excel, CSV) through the Analyzer or Connect Tools, they are processed by large language models to extract structured cost and operational data. Uploaded files are stored encrypted and remain your property. AI processing is confined to your account scope and is not used to train provider models."` — cubre extracción documental TPV.
+- §5 (L55): sub-processors listados incluyen `"Anthropic PBC (AI processing — document extraction…)"` y `"OpenAI Ireland Ltd. (AI extraction cross-check)"`. **DPA de Anthropic para extracción documental: DEUDA abierta en KNOWN_DEBT (revisión humana pendiente); no se toca aquí.**
+- §8 (L58): `"identifiable data is deleted within 90 days"` — política de borrado aplica a documentos subidos.
+- Legal basis (§3, L53): `"performance of contract (Art. 6(1)(b) GDPR) and legitimate interest for benchmarking (Art. 6(1)(f) GDPR)"` — cubre tratamiento documental.
+
+**10. Help/FAQs — DEUDA parcial documentada.**
+`helpCenterData.js` inspeccionado: 14 categorías (getting-started, analyzer, infrastructure-score, savings, payments, shipping, saas, benchmarks, integrations, uploads, security, pricing, troubleshooting, legal). **Estado real:**
+- Las 3 FAQs pedidas ("¿analizáis TPV?", "¿qué facturas para verificar?", "¿qué hacéis con mis facturas?") **NO existen** en ninguna categoría.
+- Help center completo está en EN únicamente (no traducido FR/ES) — el shell `Help.jsx` no consume `useTranslation()`.
+- Adicionalmente el content es multi-vertical pre-R2 (shipping/saas/insurance/telecom mencionados en payments category L120 y en 3 categorías dedicadas L41-53).
+
+**Decisión:** este barrido se limita a coherencia de superficie ya construida. Un refactor payments-only + traducción trilingüe del Help Center completo excede alcance Fase 3 y merece chunk propio. **DEUDA nueva en KNOWN_DEBT:** "Help Center refactor payments-only + traducción FR/ES + 3 FAQs in-store (TPV analysis, invoice requirements, doc handling)". No se toca en este chunk para respetar la restricción dura.
+
+**Verified in-store status (aclaración pedida en el punto 8 del usuario).**
+Estado real del flag en el código: el path verified in-store aún NO existe en producción — `computeStripeVerifiedGap` es online-only por diseño (bridge Stripe→motor), y no hay una función equivalente `computeTpvVerifiedGap` en el árbol. El motor 1.4.0 acepta `measured_current_bps` sobre canal in_store (tests explícitos en `paymentsGap.inStore.test.js`), pero la materialización real (extracción LLM de facturas TPV → `PaymentsAnalysisVerified` con `channel:"in_store"`) NO está cableada. **Ninguna superficie del producto promete verified in-store disponible ya:**
+- Analyzer: tab "In-store" produce solo path estimated (form → session → getPaymentsGapTeaser).
+- Results: renderiza PUBLIC PRICING (verified rate table row) o REGIONAL ESTIMATE, nunca VERIFIED · TPV invoice.
+- Terms §7: dice "PSP or TPV provider statements" en cláusula de recovery — describe el compromiso del servicio Recovery (contractual), no promete verified estimator disponible hoy.
+- Landing / Pricing / Reports: cero copy que prometa "verified in-store disponible ya".
+
+**Restricciones respetadas (verificado ex-post):**
+- Cero cambios en `paymentsGap.js`, sync-check triple (34217 chars byte-idénticos verificable), schemas, `computeStripeVerifiedGap`, `submitPaymentsAnalysis` (handler), `getPaymentsAnalysisVerified`, `_tenantGuard`.
+- Cero cambios en tests (motor + validación + parity intocados).
+- Cero cifras nuevas fabricadas — solo copy y branching UI.
+
+**Ficheros tocados en este chunk:**
+- `src/components/paymentsResults/FeeBreakdownCard.jsx` — fallback channel-aware (in-store anchor rendering + copy adaptativo).
+- `src/components/paymentsResults/AssumptionsFootnote.jsx` — disclaimer channel-aware (Connect PSP vs Upload TPV statement).
+- `src/pages/Reports.jsx` — eyebrow label `"TPE report"` → `"In-store payments"`, sub-header alineado.
+- `src/docs/Decision_Log.md` — esta entrada.
+- `src/docs/KNOWN_DEBT.md` — deuda nueva "Help Center refactor payments-only + trilingüe + 3 FAQs in-store".
+
+---
+
 ## 2026-07-12 — M4-TPV · Fase 3 · Combined mode (Online + In-store) + regla retrocompat sellada
 
 **Alcance.** Modo combinado (online + in-store en un mismo submit) sobre el motor 1.4.0 ya sellado. Cero cambios en la aritmética del motor: Fase 3 corre `calculateGap` dos veces (una por canal) y agrega los outputs en un `engine_result` compuesto con `channels: [{...}, {...}]`. UI: tercera pestaña "Both" en el toggle del Analyzer + `<CombinedGapHero />` en Results. i18n × 3 idiomas × 7 keys nuevas. Cierra los dos pendientes narrativos del turno anterior (Decision_Log + grep final) y añade la lección estructural que motivó el fix channel-aware de la validación del seed.

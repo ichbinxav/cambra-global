@@ -12,6 +12,12 @@ export default function AssumptionsFootnote({ engineResult, engineVersion }) {
   const verified = engineResult?.cohort?.verified === true;
   const cohortKey = engineResult?.cohort?.key;
   const matched = engineResult?.cohort?.matched;
+  // M4-TPV Fase 3 — the "connect your PSP" fallback disclaimer is online-only
+  // advice. For an in-store session an equivalent action is "upload a TPV
+  // provider statement". We branch the CTA line based on cohort.channel so
+  // the disclaimer never advises an action the user can't take.
+  const channel = engineResult?.cohort?.channel;
+  const isInStore = channel === "in_store";
   // Derive the savings-range half-width shown in the hero card, purely for
   // the "two ± are different things" clarifier line rendered under the
   // assumptions list. Both endpoints (mensual/annual) apply the same
@@ -36,7 +42,9 @@ export default function AssumptionsFootnote({ engineResult, engineVersion }) {
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-bold text-orange-200">Estimate based on regional averages</p>
             <p className="text-[12px] text-orange-100/85 mt-0.5">
-              We don't have verified public pricing for this PSP in your region yet. Connect your PSP for exact figures.
+              {isInStore
+                ? "We don't have verified public pricing for this TPV provider in your region yet. Upload a provider statement for exact figures."
+                : "We don't have verified public pricing for this PSP in your region yet. Connect your PSP for exact figures."}
             </p>
           </div>
         </div>
