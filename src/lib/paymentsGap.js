@@ -63,7 +63,18 @@
 //                       BYTE-IDENTICAL to 1.2.0 — this is the anti-regression
 //                       lock for the anonymous submitPaymentsAnalysis path,
 //                       which will not start passing measured until Chunk 4.
-const ENGINE_VERSION = "payments-gap-1.3.0";
+// payments-gap-1.4.0 (Fase 2A-redo, 2026-07-12) — IN-STORE CHANNEL. Adds
+// `channel` dimension to cohort selection ("online" | "in_store"). Every
+// rate-table row now carries a channel. selectRow cascade: exact online
+// stays byte-identical for pre-1.4.0 callers (no `channel` in input →
+// default 'online', 3-segment legacy keys still recognized as online).
+// in_store adds terminal-rental amortization (fixed monthly rental spread
+// over monthly_gmv), a distinct MEASURED note (invoices/months vs
+// charges/days), and 4 new required fallback keys for the in-store side.
+// Retrocompat oracle: FR/EU/Stripe/GMV€1M/ticket€50/intl15% (no channel)
+// must produce 2.26%/1.50%/€6140-€9210 on 1.4.0 too (verified empirically
+// in Decision_Log 2026-07-12 Fase 2A-redo entry).
+const ENGINE_VERSION = "payments-gap-1.4.0";
 
 // Currency minor-unit divisor. All PaymentsRateTable rows store fixed fees
 // in minor units (cents / pence). 100 minor units = 1 major (EUR / GBP / USD).
@@ -80,10 +91,24 @@ const BPS_PER_UNIT = 10000;
 // the defense against the eventual-consistency issue we hit in Chunk 1b
 // (list() immediately after write returned 8 of 11 rows).
 const REQUIRED_FALLBACK_KEYS = [
+  // Online fallbacks — 3-segment legacy shape kept verbatim. Every seeded row
+  // for these keys carries channel='online', but validateRateTable checks by
+  // literal cohort_key equality so the 3-segment key stays canonical for the
+  // online path (byte-identical to pre-1.4.0). NEVER migrate these to the
+  // 4-segment shape "ANY|ANY|<region>|online" — you'd break every historical
+  // session that was persisted with these keys.
   "ANY|ANY|EU",
   "ANY|ANY|UK",
   "ANY|ANY|US",
   "ANY|ANY|RoW",
+  // In-store fallbacks — 4-segment. Introduced in 1.4.0 with the channel
+  // dimension. Their absence means the engine refuses (rate_table_incomplete)
+  // for any in-store lookup, which is the safe behavior — no silent fallback
+  // to an online rate for a physical-terminal cohort.
+  "ANY|ANY|EU|in_store",
+  "ANY|ANY|UK|in_store",
+  "ANY|ANY|US|in_store",
+  "ANY|ANY|RoW|in_store",
 ];
 
 // Card-mix defaults. When the input doesn't provide a card mix, we assume
@@ -98,7 +123,27 @@ const KNOWN_REGIONS = new Set(["EU", "UK", "US", "RoW"]);
 // lookup). Everything else routes straight to the regional fallback. This
 // list mirrors the seeded verified rows in PaymentsRateTable — keep in sync
 // when a new provider is seeded.
-const KNOWN_PROVIDERS = new Set(["stripe", "paypal", "shopify_payments"]);
+const KNOWN_PROVIDERS = new Set([
+  // Online (pre-M4)
+  "stripe", "paypal", "shopify_payments",
+  // In-store (M4-TPV Fase 2A-redo, 2026-07-12) — slugs that have a verified
+  // in-store row seeded in PaymentsRateTable. 'sumup' is DUAL-CHANNEL: the
+  // engine segments by (provider_slug, channel), so sumup+online resolves to
+  // the regional fallback (no verified online sumup row exists) and
+  // sumup+in_store hits the verified in-store row. No cross-channel leakage.
+  "sumup", "stripe_terminal", "smile_and_pay", "zettle",
+]);
+
+// M4-TPV Fase 2A-redo — channels the engine understands. Default 'online'
+// preserves pre-M4 behavior byte-identically: normalizeInput assigns 'online'
+// when input.channel is missing/unknown, and selectRow's cascade recognizes
+// legacy 3-segment cohort_keys ("<provider>|ANY|<region>") as online rows.
+const KNOWN_CHANNELS = new Set(["online", "in_store"]);
+
+// M4-TPV Fase 2A-redo — default channel when input omits it. Kept as a named
+// const rather than an inline literal so a future migration to a different
+// default (unlikely, but auditable) touches one place, not scattered branches.
+const DEFAULT_CHANNEL = "online";
 
 // ─── Input normalization ─────────────────────────────────────────────────────
 
@@ -121,6 +166,11 @@ function normalizeInput(raw) {
   const region = KNOWN_REGIONS.has(raw.region) ? raw.region : "RoW";
   const providerRaw = typeof raw.provider_slug === "string" ? raw.provider_slug.trim().toLowerCase() : "";
   const provider_slug = providerRaw.length > 0 ? providerRaw : "unknown";
+  // M4-TPV Fase 2A-redo — channel normalization. Missing/unknown → DEFAULT_CHANNEL
+  // ('online'). This is the retrocompat lock: pre-1.4.0 callers that don't send
+  // `channel` land on the exact same 'online' branch as before.
+  const channelRaw = typeof raw.channel === "string" ? raw.channel.trim().toLowerCase() : "";
+  const channel = KNOWN_CHANNELS.has(channelRaw) ? channelRaw : DEFAULT_CHANNEL;
   const intl_pctRaw = Number(raw.intl_pct);
   const intl_pct = isFinite(intl_pctRaw) && intl_pctRaw >= 0 && intl_pctRaw <= 100
     ? intl_pctRaw
@@ -148,6 +198,7 @@ function normalizeInput(raw) {
       avg_ticket_eur,
       region,
       provider_slug,
+      channel,
       intl_pct,
       measured_current_bps,
       measured_intl_pct,
@@ -181,29 +232,64 @@ function validateRateTable(rows) {
 
 // ─── Row selection with cascade fallback ─────────────────────────────────────
 
-// Look up the best rate-table row for (provider_slug, region).
-// Cascade:
-//   1. exact:    "<provider>|ANY|<region>"           (verified when seeded)
-//   2. fallback: "ANY|ANY|<region>"                  (always seeded, verified=false)
+// Look up the best rate-table row for (provider_slug, region, channel).
+//
+// M4-TPV Fase 2A-redo — channel-aware cascade. Two shapes coexist:
+//
+//   ONLINE (channel='online', or channel omitted → DEFAULT_CHANNEL):
+//     1. exact:    "<provider>|ANY|<region>"                (3-segment, LEGACY)
+//     2. exact_v4: "<provider>|ANY|<region>|online"         (4-segment, NEW)
+//     3. fallback: "ANY|ANY|<region>"                       (3-segment, LEGACY)
+//     4. fallback_v4: "ANY|ANY|<region>|online"             (4-segment, NEW)
+//
+//   IN-STORE (channel='in_store'):
+//     1. exact:    "<provider>|ANY|<region>|in_store"       (4-segment)
+//     2. fallback: "ANY|ANY|<region>|in_store"              (4-segment)
+//
+// Retrocompat lock: online lookups still match the LEGACY 3-segment keys
+// FIRST. Every existing online row keeps working byte-identically without
+// any migration of cohort_key. If someone later seeds a 4-segment online
+// row for the same provider/region, THAT is a data-drift bug (would cause
+// non-determinism), not something the engine needs to reconcile — the
+// seeder is the single source of truth for cohort_key uniqueness.
+//
 // Never returns null when the table passed validateRateTable — the regional
-// fallback is guaranteed to exist.
-function selectRow(rows, provider_slug, region) {
-  // Only look up first-class providers by exact cohort. Anything else routes
-  // straight to the regional fallback — a merchant on Adyen must NOT match
-  // the stripe row just because both are on EU.
-  const exactKey = KNOWN_PROVIDERS.has(provider_slug)
-    ? `${provider_slug}|ANY|${region}`
-    : null;
-  const fallbackKey = `ANY|ANY|${region}`;
-  let exact = null;
-  let fallback = null;
+// fallback for the requested channel is guaranteed to exist (validateRateTable
+// enforces all 8 REQUIRED_FALLBACK_KEYS in 1.4.0).
+function selectRow(rows, provider_slug, region, channel) {
+  const ch = KNOWN_CHANNELS.has(channel) ? channel : DEFAULT_CHANNEL;
+  const isOnline = ch === "online";
+
+  // Build the ordered list of candidate keys (highest-priority first).
+  const candidates = [];
+  if (isOnline) {
+    // Prefer LEGACY 3-segment keys so pre-1.4.0 seeded rows match verbatim
+    // (retrocompat lock — never reorder these first two).
+    if (KNOWN_PROVIDERS.has(provider_slug)) {
+      candidates.push({ key: `${provider_slug}|ANY|${region}`,          matched: "exact" });
+      candidates.push({ key: `${provider_slug}|ANY|${region}|online`,   matched: "exact" });
+    }
+    candidates.push({ key: `ANY|ANY|${region}`,                          matched: "fallback" });
+    candidates.push({ key: `ANY|ANY|${region}|online`,                   matched: "fallback" });
+  } else {
+    // in_store: only 4-segment keys. No legacy path — the channel didn't
+    // exist before 1.4.0, so there's nothing to be retrocompatible with.
+    if (KNOWN_PROVIDERS.has(provider_slug)) {
+      candidates.push({ key: `${provider_slug}|ANY|${region}|in_store`, matched: "exact" });
+    }
+    candidates.push({ key: `ANY|ANY|${region}|in_store`,                 matched: "fallback" });
+  }
+
+  // Index the table once, then walk candidates in priority order.
+  const byKey = new Map();
   for (const r of rows) {
     if (!r || r.active === false) continue;
-    if (exactKey && r.cohort_key === exactKey) exact = r;
-    else if (r.cohort_key === fallbackKey) fallback = r;
+    if (typeof r.cohort_key === "string") byKey.set(r.cohort_key, r);
   }
-  if (exact) return { row: exact, matched: "exact" };
-  if (fallback) return { row: fallback, matched: "fallback" };
+  for (const cand of candidates) {
+    const row = byKey.get(cand.key);
+    if (row) return { row, matched: cand.matched };
+  }
   // Should be impossible after validateRateTable; guard anyway.
   return { row: null, matched: "none" };
 }
@@ -231,15 +317,34 @@ function selectRow(rows, provider_slug, region) {
 // magnitudes involved (fees under €0.50). FX-precise treatment is deferred
 // to when we have live sync data.
 function computeEffectiveBps(
-  { percent_bps, fixed_fee_minor_units },
+  { percent_bps, fixed_fee_minor_units, terminal_rental_monthly_minor },
   avg_ticket_eur,
-  { intl_pct = 0, intl_uplift_bps = 0 } = {}
+  { intl_pct = 0, intl_uplift_bps = 0, monthly_gmv_eur = 0 } = {}
 ) {
   const fixedMajor = fixed_fee_minor_units / MINOR_PER_MAJOR;
   const amortizedBps = (fixedMajor / avg_ticket_eur) * BPS_PER_UNIT;
   const upliftBps = isFinite(intl_uplift_bps) ? intl_uplift_bps : 0;
   const intlBps = (intl_pct / 100) * upliftBps;
-  return percent_bps + intlBps + amortizedBps;
+  // M4-TPV Fase 2A-redo — terminal-rental amortization for in-store rows.
+  // Traditional bank acquirers charge a fixed monthly rental (€15-40) that
+  // sits on top of the per-transaction fees. Modern TPVs (SumUp, Zettle,
+  // Stripe Terminal, Smile&Pay) sell hardware one-off with no rental → 0.
+  // We amortize monthly rental over monthly GMV to express it in bps:
+  //   rental_bps = (rental_major / monthly_gmv_eur) × 10000
+  //
+  // Retrocompat lock: online rows do NOT carry terminal_rental_monthly_minor,
+  // so the field is undefined and rentalBps stays 0 → byte-identical to
+  // pre-1.4.0 for every online caller. Even if a future online row
+  // accidentally seeds a non-null rental, monthly_gmv_eur=0 (the default
+  // when the caller omits it, which happens on every online path today)
+  // ALSO produces rentalBps=0 (division-by-zero guarded below). Belt AND
+  // suspenders — the retrocompat oracle depends on this line.
+  const rentalMinor = isFinite(Number(terminal_rental_monthly_minor)) ? Number(terminal_rental_monthly_minor) : 0;
+  const rentalMajor = rentalMinor / MINOR_PER_MAJOR;
+  const rentalBps = (rentalMajor > 0 && monthly_gmv_eur > 0)
+    ? (rentalMajor / monthly_gmv_eur) * BPS_PER_UNIT
+    : 0;
+  return percent_bps + intlBps + amortizedBps + rentalBps;
 }
 
 // ─── Savings computation ─────────────────────────────────────────────────────
@@ -306,6 +411,15 @@ const INTL_UPLIFT_NOT_MODELED_ASSUMPTION =
 
 const AMORTIZATION_NOTE = (fixedMinor, currency, avgTicket) =>
   `Fixed fee of ${(fixedMinor / MINOR_PER_MAJOR).toFixed(2)} ${currency} amortized over an average ticket of €${avgTicket.toFixed(2)}.`;
+
+// M4-TPV Fase 2A-redo — in-store only. Emitted when a rate row carries a
+// non-zero terminal_rental_monthly_minor AND the merchant has monthly GMV
+// present. The rental (fixed €/month) is spread across GMV, so the note
+// makes the merchant's own volume visible in the rate — otherwise a low-GMV
+// in-store merchant sees a surprisingly high effective rate with no
+// explanation.
+const TERMINAL_RENTAL_NOTE = (rentalMinor, currency, monthlyGmv) =>
+  `Monthly terminal rental of ${(rentalMinor / MINOR_PER_MAJOR).toFixed(2)} ${currency} amortized over €${monthlyGmv.toFixed(2)} of monthly card volume.`;
 
 const ACHIEVABLE_NOTE = (breakdown) => {
   if (!breakdown) return null;
@@ -378,10 +492,16 @@ function calculateGap(rawInput, rateTable) {
   }
   const { input } = parsed;
 
-  const { row, matched } = selectRow(rateTable, input.provider_slug, input.region);
+  const { row, matched } = selectRow(rateTable, input.provider_slug, input.region, input.channel);
   if (!row) {
     // Defensive — validateRateTable already guarantees the regional fallback.
-    return { ok: false, error: "rate_table_incomplete", missing: [`ANY|ANY|${input.region}`] };
+    // The missing-key hint uses the 4-segment shape only for in_store lookups
+    // (where 4-segment is the canonical shape); online falls back to the
+    // 3-segment legacy shape it always used.
+    const missKey = input.channel === "in_store"
+      ? `ANY|ANY|${input.region}|in_store`
+      : `ANY|ANY|${input.region}`;
+    return { ok: false, error: "rate_table_incomplete", missing: [missKey] };
   }
 
   // Read intl uplifts DIRECTLY from the row. Missing → 0 (engine never fills
@@ -419,9 +539,19 @@ function calculateGap(rawInput, rateTable) {
   const current_bps = isMeasured
     ? measured
     : computeEffectiveBps(
-        { percent_bps: row.percent_bps, fixed_fee_minor_units: row.fixed_fee_minor_units },
+        {
+          percent_bps: row.percent_bps,
+          fixed_fee_minor_units: row.fixed_fee_minor_units,
+          // M4-TPV Fase 2A-redo — undefined on online rows → rentalBps=0
+          // inside computeEffectiveBps → byte-identical to pre-1.4.0.
+          terminal_rental_monthly_minor: row.terminal_rental_monthly_minor,
+        },
         input.avg_ticket_eur,
-        { intl_pct: input.intl_pct, intl_uplift_bps: rowCurrentUplift }
+        {
+          intl_pct: input.intl_pct,
+          intl_uplift_bps: rowCurrentUplift,
+          monthly_gmv_eur: input.monthly_gmv_eur,
+        }
       );
 
   // Achievable — use row's achievable components if present, else fall back
@@ -434,9 +564,18 @@ function calculateGap(rawInput, rateTable) {
         {
           percent_bps: row.achievable_percent_bps,
           fixed_fee_minor_units: row.achievable_fixed_fee_minor_units,
+          // Achievable rental — on all seeded in-store rows this is 0
+          // (assumes migration to a modern TPV with no rental). Field is
+          // OPTIONAL on the schema — future negotiated tiers may set a
+          // non-zero achievable rental. Missing → 0 → byte-identical online.
+          terminal_rental_monthly_minor: row.achievable_terminal_rental_monthly_minor,
         },
         input.avg_ticket_eur,
-        { intl_pct: achievableIntlPct, intl_uplift_bps: rowAchievableUplift }
+        {
+          intl_pct: achievableIntlPct,
+          intl_uplift_bps: rowAchievableUplift,
+          monthly_gmv_eur: input.monthly_gmv_eur,
+        }
       )
     : current_bps;
 
@@ -466,6 +605,15 @@ function calculateGap(rawInput, rateTable) {
     assumptions.push(
       AMORTIZATION_NOTE(row.achievable_fixed_fee_minor_units ?? row.fixed_fee_minor_units, row.fixed_fee_currency, input.avg_ticket_eur)
     );
+    // M4-TPV Fase 2A-redo — mirror the estimated-path rental note. On the
+    // verified path the achievable side is still composed from the table,
+    // so if the row's ACHIEVABLE rental is set (rare — all seeded rows are
+    // 0), we amortize it and emit a note. Same gate as estimated: rental > 0
+    // AND monthly_gmv_eur > 0.
+    const rentalMinorAch = Number(row.achievable_terminal_rental_monthly_minor);
+    if (isFinite(rentalMinorAch) && rentalMinorAch > 0 && input.monthly_gmv_eur > 0) {
+      assumptions.push(TERMINAL_RENTAL_NOTE(rentalMinorAch, row.fixed_fee_currency, input.monthly_gmv_eur));
+    }
     // Achievable breakdown assumption unchanged.
     const achievableNote = ACHIEVABLE_NOTE(row.achievable_breakdown_json);
     if (achievableNote) assumptions.push(achievableNote);
@@ -478,10 +626,21 @@ function calculateGap(rawInput, rateTable) {
       }
     }
   } else {
-    // Estimated path — 1.2.0 behavior verbatim.
+    // Estimated path — 1.2.0 behavior verbatim for online rows (rental fields
+    // absent → no rental note emitted). In-store rows may carry a non-zero
+    // terminal_rental_monthly_minor → emit a dedicated rental note so the
+    // merchant sees where that portion of the rate comes from.
     assumptions.push(
       AMORTIZATION_NOTE(row.fixed_fee_minor_units, row.fixed_fee_currency, input.avg_ticket_eur)
     );
+    // M4-TPV Fase 2A-redo — emit rental note when the row carries a non-zero
+    // monthly rental AND the merchant declared monthly GMV. This gates the
+    // note on both signals to avoid a nonsensical amortization message on
+    // rows where rental is null/0 or GMV is 0.
+    const rentalMinor = Number(row.terminal_rental_monthly_minor);
+    if (isFinite(rentalMinor) && rentalMinor > 0 && input.monthly_gmv_eur > 0) {
+      assumptions.push(TERMINAL_RENTAL_NOTE(rentalMinor, row.fixed_fee_currency, input.monthly_gmv_eur));
+    }
     const achievableNote = ACHIEVABLE_NOTE(row.achievable_breakdown_json);
     if (achievableNote) assumptions.push(achievableNote);
     if (input.intl_pct > 0) {
@@ -505,6 +664,15 @@ function calculateGap(rawInput, rateTable) {
       key: row.cohort_key,
       verified: row.verified === true,
       matched,
+      // M4-TPV Fase 2A-redo — surface the channel to the UI (Results pill).
+      // Derived from the row itself when present (canonical), else from the
+      // input (which normalizeInput already defaulted to 'online'). Legacy
+      // 3-segment rows have row.channel undefined → we fall to input.channel,
+      // which is 'online'. Retrocompat lock: an online caller reading the
+      // output on 1.4.0 sees channel='online' — no undefined leaking to UI.
+      channel: (typeof row.channel === "string" && KNOWN_CHANNELS.has(row.channel))
+        ? row.channel
+        : input.channel,
     },
     // Engine mode — "verified" when current came from a real measurement,
     // "estimated" when both sides were composed from the table. Consumed by
@@ -528,6 +696,8 @@ export {
   applyBand,
   REQUIRED_FALLBACK_KEYS,
   KNOWN_PROVIDERS,
+  KNOWN_CHANNELS,
+  DEFAULT_CHANNEL,
   FALLBACK_ASSUMPTION,
   INTL_UPLIFT_NOT_MODELED_ASSUMPTION,
   ENGINE_VERSION,
