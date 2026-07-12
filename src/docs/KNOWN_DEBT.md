@@ -571,7 +571,9 @@ Todo coherente con posicionamiento payments-only + in-store. **No requiere ajust
 
 ### 2026-07-12 · R2 · Terms §8 — referencia legal huérfana a `/ForProviders`
 
-**Estado:** ✅ RESUELTA 2026-07-12 en la Fase 2B del M4-TPV — §8 reescrito eliminando el link muerto: `"Details of the provider program are described on our For Providers page (/ForProviders)."` → `"Provider partnership terms are disclosed to any interested provider upon written request to support@cambra.global."` Aprovechado el mismo chunk que actualizaba §7 para el canal in-store.
+**Estado:** ✅ CERRADA DEFINITIVAMENTE 2026-07-12 (post-M4) — por resurrección de `/ForProviders`. La resolución previa (borrar el link y reescribir §8 sin referencia a la página) queda superseded por la decisión de producto post-M4 de volver a tener la página viva. §8 re-referencia `/ForProviders` correctamente y describe el modelo de dos niveles (Listed / Partner) sin publicar términos comerciales concretos (referral %, tarifas exclusivas — se negocian por acuerdo). Ver nueva entrada abajo `"Primer acuerdo Partner pendiente"` para la deuda residual asociada a esta resurrección.
+
+**Nota histórica.** El "eliminar el link" del 2026-07-12 fue la respuesta correcta MIENTRAS la página estaba redirigida a `/` (Fase R1 payments-only). Al reactivar la página con contenido payments-only (post-M4-cierre 2026-07-12), la referencia legal vuelve a ser válida. Registro conservado para trazabilidad del razonamiento en el momento.
 
 **Contexto histórico.** Detectado durante R2 al leer `Terms.jsx` completo. §8 "Provider compensation" cerraba con:
 > *"Details of the provider program are described on our For Providers page (/ForProviders)."*
@@ -922,7 +924,9 @@ Xavi ejecuta desde local antes de arrancar 2B:
 
 ## POST-FASE-3 — /ForProviders v2 · programa de dos niveles (Listed / Partner)
 
-**Estado:** 📋 PLANIFICADA (2026-07-12) — bloqueada por cierre de M4-TPV Fase 2/3. NO empezar hasta que las 2 deudas anteriores (`M4-TPV — Fase 2A NO aterrizó` + `M4-TPV — UI in-store pendiente 2B`) estén cerradas con `RESUELTA <fecha>` y suite verde.
+**Estado:** ✅ RESUELTA 2026-07-12 (post-M4 cierre) — página viva en `/ForProviders` con estructura Hero + 2 TierCards (Listed / Partner) + 3 Guardrails + CTA email. Ruta reactivada en `src/App.jsx` (raw verification: `<Route path="/ForProviders" element={withBoundary(<ForProviders />)} />`), aliases lowercase + hyphen redirigen al canonical (no a `/`). Link restaurado en el footer de Landing.jsx + MobileNavMenu grupo Company. i18n key `footer_for_providers` × 3 idiomas. Terms §8 reescrito para reflejar los dos niveles sin publicar términos comerciales concretos. Cero cifras de red fabricadas (verified vía grep: solo hit "X merchants" es un comentario describiendo la regla, no una cifra real). Cero cambios en motor, benchmark, paths verified, o `/Results`. Ver nueva entrada abajo `"Primer acuerdo Partner pendiente"` para el trabajo diferido.
+
+### Estado histórico (contexto original del plan)
 **Origen:** decisión de producto Xavi 2026-07-12 — revierte la resolución §8 de Fase 1 (que había dejado `/ForProviders` redirigido a `/` y §8 huérfano).
 
 ### Contexto y decisión
@@ -950,6 +954,35 @@ La superficie payments in-store (Fase 2B) tiene que estar viva y verificada ante
 
 ### Valor cuando exista
 Primer email a SumUp/myPOS/Viva/Smile&Pay con URL que enseñar. Pitch limpio: *"vuestro pricing público ya está en nuestro benchmark; ¿queréis ganar a los demás con una tarifa exclusiva para nuestros merchants?"*. La página es la infraestructura de ese pitch.
+
+---
+
+## Primer acuerdo Partner pendiente — construir slot "CAMBRA exclusive offer" en /Results
+
+**Estado:** 📋 PLANIFICADA (2026-07-12) — abierta al reactivar `/ForProviders` con modelo dos niveles. **Bloqueada por firma del primer acuerdo Partner real** — hasta que exista un partner firmado, `/Results` no lleva UI nueva (regla explícita del chunk de resurrección).
+
+### Contexto
+La página `/ForProviders` v2 (resuelta 2026-07-12) promete a Partners que su oferta exclusiva se mostrará en `/Results` como slot dedicado, etiquetado como exclusivo, visualmente separado del benchmark público. Hoy no hay partners → cero UI construida. Cuando exista el primero, hay que aterrizar el slot.
+
+### Diseño futuro (documentado en Decision_Log_Iter4 §10)
+- Nuevo slot en `/Results` DEBAJO del hero de gap, ANTES de `FeeBreakdownCard`.
+- Card con label pill *"CAMBRA exclusive"* (badge cyan sobre fondo navy — matching de la eyebrow del tier Partner en `/ForProviders`).
+- Contenido: nombre del partner + su tarifa exclusiva (percent + fixed + rental si aplica) + comparativa contra el achievable del benchmark → *"You'd save an additional €X/yr on top of the public floor"* — con la diferencia numérica.
+- Fuente de datos: nueva entity o extensión de `PaymentsRateTable` con flag `is_partner_offer: true` + `partner_display_name` + FK a un `PartnerAgreement` (nuevo).
+- **Regla intocable:** el partner offer se COMPARA con el achievable público que ya emite el motor 1.5.0, **NUNCA lo reemplaza**. El multi-anchor selection sigue eligiendo el winner por MIN-EFFECTIVE sobre pool público; el partner offer se muestra como delta positiva encima. Si el partner NO batiría al achievable público, el slot no se renderiza (auditoría honesta).
+
+### Alcance estimado cuando toque
+1. Entity `PartnerAgreement` (nombre, tarifa exclusiva, canal, región, fechas de vigencia).
+2. Extensión de `submitPaymentsAnalysis` para resolver Partner offer aplicable (por región + canal + provider actual del merchant).
+3. Nuevo componente `src/components/paymentsResults/PartnerOfferSlot.jsx` (~80 líneas).
+4. Gate en `PaymentsResults.jsx` — renderiza el slot solo si `engine_result.partner_offer` viene poblado.
+5. Test contract: partner offer que NO bate al achievable público → slot ausente en response.
+
+### Por qué no ahora
+Cero partners firmados hoy. Construir la UI sin data real produce sea (a) mockups que envejecen, (b) tests que verifican mocks, (c) diseño que se re-hace cuando el primer partner tenga necesidades específicas. Se construye al firmar el primero, con el partner real sentado en la mesa.
+
+### Precondición
+Primer email respondido en `contact@cambra.global` con proveedor dispuesto → borrador de agreement → cifras concretas → aterrizar UI en un chunk propio.
 
 ---
 

@@ -64,8 +64,11 @@ import AdminChat from '@/pages/admin/AdminChat';
 import AdminDiscovery from '@/pages/admin/AdminDiscovery';
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing.jsx';
-// FASE 1.2 — /Developers, /Developers/MCP, /ForProviders, /Snapshot deprecated.
+// FASE 1.2 — /Developers, /Developers/MCP, /Snapshot deprecated.
 // Frontend pages redirect to home; backend mcpServer function untouched.
+// /ForProviders REACTIVADO 2026-07-12 (post-M4) — página viva payments-only
+// (dos niveles Listed/Partner). Ver src/pages/ForProviders.jsx.
+import ForProviders from '@/pages/ForProviders';
 import HowItWorks from '@/pages/HowItWorks';
 import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
@@ -217,9 +220,9 @@ const AuthenticatedApp = () => {
         <Route path="/stripeanalyzer" element={<Navigate to="/" replace />} />
         <Route path="/Snapshot" element={<Navigate to="/" replace />} />
         <Route path="/snapshot" element={<Navigate to="/" replace />} />
-        <Route path="/ForProviders" element={<Navigate to="/" replace />} />
-        <Route path="/forproviders" element={<Navigate to="/" replace />} />
-        <Route path="/for-providers" element={<Navigate to="/" replace />} />
+        <Route path="/ForProviders" element={withBoundary(<ForProviders />)} />
+        <Route path="/forproviders" element={<Navigate to="/ForProviders" replace />} />
+        <Route path="/for-providers" element={<Navigate to="/ForProviders" replace />} />
         <Route path="/Developers" element={<Navigate to="/" replace />} />
         <Route path="/developers" element={<Navigate to="/" replace />} />
         <Route path="/Developers/MCP" element={<Navigate to="/" replace />} />

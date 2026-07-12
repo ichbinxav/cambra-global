@@ -185,3 +185,37 @@ son el oracle de la SELECCIÓN real dada la tabla actual. Ambas están
 coherentes.
 
 **Corte 2 sellado con el motor 1.5.0 verificado en producción, no en disco.**
+
+## 10 · /ForProviders v2 resurrection (2026-07-12 · post-M4)
+
+**Decisión de producto.** Xavi revierte la resolución §8 de Fase 1 (que había dejado `/ForProviders` como `<Navigate to="/" />` y §8 huérfano en Terms). `/ForProviders` vuelve como página viva, payments-only, con modelo de dos niveles (Listed / Partner).
+
+**Modelo articulado en la página.**
+- **Tier 1 — Listed:** pricing público del proveedor → entra en el benchmark achievable (`PaymentsRateTable` verified=true). Auditabilidad no negociable: source URL + source quote citable. Sin fee, sin exclusividad, sin compensación bilateral.
+- **Tier 2 — Partner:** tarifa exclusiva para merchants CAMBRA (mejor que public) + acuerdo referral. La oferta se presenta en Results como slot "CAMBRA exclusive offer" — **etiquetado explícitamente**, visual y semánticamente separado del benchmark público.
+
+**Restricciones DURAS respetadas en el chunk (verified RAW).**
+1. Cero cambios en motor `paymentsGap` (versión sigue `1.5.0`, sync-check triple byte-idéntico).
+2. Cero cambios en `PaymentsRateTable` (schema y contenido intactos).
+3. Cero cambios en paths verified (`getPaymentsAnalysisVerified`, `computeStripeVerifiedGap`, `submitPaymentsAnalysis`).
+4. Cero UI construida en `/Results` — la coherencia con Partner es SOLO documentación de diseño futuro (§10.1 abajo).
+5. Cero cifras de red fabricadas en el copy (grep confirmado: único hit "X merchants" es un comentario negando la regla, no una cifra real).
+6. Cero menciones shipping/SaaS en la página.
+
+### 10.1 · Diseño del slot "CAMBRA exclusive offer" en /Results — SIN CONSTRUIR HOY
+
+Documentado aquí para el chunk futuro (bloqueado por firma del primer Partner real, ver KNOWN_DEBT nueva entrada). El diseño obliga a `/Results` a preservar la auditabilidad del benchmark público:
+
+**Posición.** Slot NUEVO en `/Results`, DEBAJO del hero de gap (`PaymentsGapCard` / `CombinedGapHero` / `OptimizedHero` — según classification), ANTES de `FeeBreakdownCard`. Nunca reemplaza al hero — se añade como capa comercial adicional.
+
+**Contenido.** Card visualmente distinto del hero: fondo navy con acento cyan matching de la eyebrow del tier Partner en `/ForProviders`. Label pill obligatoria *"CAMBRA exclusive"*. Content = nombre del partner + tarifa exclusiva completa (percent + fixed + rental si aplica) + delta contra el achievable del benchmark → *"You'd save an additional €X/yr on top of the public floor"*.
+
+**Regla intocable — auditabilidad.** El motor sigue calculando `achievable_effective_bps` con la lógica multi-anchor sobre el pool público (regla §5 de este documento). El Partner offer NUNCA se pliega en ese cálculo. El slot lo COMPARA con el achievable público y presenta la delta positiva encima. Consecuencia lógica: si el Partner NO batiría al achievable público (ej. su tarifa exclusiva sigue peor que el multi-anchor winner porque el ticket del merchant favorece a otro proveedor), el slot **no se renderiza** — porque no ofrece valor real. Auditoría honesta: la herramienta no muestra Partner offers que no ayudan al merchant, sean quienes sean.
+
+**Datos.** Nueva entity `PartnerAgreement` (nombre, tarifa exclusiva, canal online/in_store, región, fechas de vigencia). `submitPaymentsAnalysis` resolvería el Partner offer aplicable durante el mismo flow del engine result y lo emitiría en `engine_result.partner_offer` (opcional, ausente cuando no aplique).
+
+**Gate frontend.** `PaymentsResults.jsx` renderiza `<PartnerOfferSlot />` solo si `engine_result.partner_offer` viene poblado. Sin partner offer → nada nuevo bajo el hero (`FeeBreakdownCard` sigue directamente).
+
+**Combined mode.** Si el submit es combined y hay Partner offers aplicables por canal, cada canal tiene su propio partner slot (o ninguno). La aritmética del combined hero (`combined_savings = sum(opportunity channels)`) NO absorbe los partner deltas — el partner delta se muestra separado por canal, como capa adicional. El total público sigue siendo el total público.
+
+**Cuándo se construye.** Bloqueado por firma del primer acuerdo Partner real. Antes de eso: cero UI, cero entity, cero data. Se construye con el partner real sentado en la mesa para no producir mockups que envejecen ni tests que verifican fixtures ficticios. Ver KNOWN_DEBT entrada `"Primer acuerdo Partner pendiente"`.

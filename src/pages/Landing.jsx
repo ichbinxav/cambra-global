@@ -421,7 +421,8 @@ function LandingFooter() {
             CAMBRA GLOBAL SASU · SIREN 105 452 916 · 42 rue Vivienne, 75002 Paris, France · support@cambra.global
           </p>
         </div>
-        <div className="flex items-center gap-6 text-[13px]" style={{ color: "rgba(255,255,255,0.45)" }}>
+        <div className="flex items-center gap-6 text-[13px] flex-wrap" style={{ color: "rgba(255,255,255,0.45)" }}>
+          <Link to="/ForProviders" className="hover:text-white transition-colors">{t("footer_for_providers")}</Link>
           <Link to="/Privacy" className="hover:text-white transition-colors">{t("footer_privacy")}</Link>
           <Link to="/Terms" className="hover:text-white transition-colors">{t("footer_terms")}</Link>
           <Link to="/Cookies" className="hover:text-white transition-colors">Cookies</Link>

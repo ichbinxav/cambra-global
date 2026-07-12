@@ -77,6 +77,7 @@ const DICT = {
     footer_privacy:       "Privacy Policy",
     footer_terms:         "Terms of Service",
     footer_contact:       "Contact",
+    footer_for_providers: "For providers",
 
     /* analyzer — step 1 */
 
@@ -285,6 +286,7 @@ const DICT = {
     footer_privacy:       "Politique de confidentialité",
     footer_terms:         "Conditions d'utilisation",
     footer_contact:       "Contact",
+    footer_for_providers: "Pour les prestataires",
 
 
     detected_source_stripe:  "Stripe",
@@ -476,6 +478,7 @@ const DICT = {
     footer_privacy:       "Política de privacidad",
     footer_terms:         "Términos de servicio",
     footer_contact:       "Contacto",
+    footer_for_providers: "Para proveedores",
 
 
     detected_source_stripe:  "Stripe",
