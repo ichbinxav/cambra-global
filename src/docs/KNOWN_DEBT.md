@@ -478,6 +478,33 @@ Frontend `StripeConnectCard.handleDisconnect` colapsado a **un solo path** — l
 
 **Hardening enumeración (2026-07-12, post-review Xavi).** El guard original devolvía 403 para brand ajeno y 404 para brand inexistente — un caller no-admin podía enumerar `brand_id` válidos comparando ambos códigos. Colapsados los dos casos a **404 uniforme** con el mismo body `Brand not found`. Verificación del case non-admin ejecutada por simulación del guard sobre el brand ajeno `6a4fe2df992f1f6be464a6fc` con `role='user'` — confirmado que la rama `!isAdmin && !isOwner` toma el path 404 tras el fix. **Comportamiento admin (aclarado post-review):** admins BYPASEAN el guard de ownership completamente — no hay rama admin que devuelva 403 (auditoría del código: cero `status: 403` en la función). El admin sigue al happy path 200 aunque el brand sea ajeno; solo ve 404 si el brand realmente no existe. Los admins que necesiten distinguir existencia lo hacen por vías legítimas (`Brand.filter` directo), no por status codes de `stripeConnectionDisconnect`.
 
+---
+
+### 2026-07-12 · Clon multi-vertical (versión publicada antigua) — candidato a archivar/purgar
+
+**Aclaración de arquitectura (Xavi, 2026-07-12).** Solo existe UNA app Base44 relevante — esta misma. `cambra.global` ya está conectado a ella en el dashboard y **publicada con una versión antigua del código** (pre-Fase-R1: landing multi-vertical, `/#testimonials`, referencias a shipping/SaaS/banking en el copy de la home, arquitectura de 8 verticales en el AnalyzerResult). Lo que el diagnóstico DNS del chunk anterior interpretó como "app vieja separada reclamando el apex" era en realidad esa versión publicada. Ver `Decision_Log.md` entrada 2026-07-12 · `DNS_MIGRATION.md` NO APLICABLE.
+
+**Naturaleza de la deuda.** No es un deployment separado, no hay backend duplicado, no hay entidades huérfanas de "otra app". Es **código legacy en el propio repo** que sobrevivió a la Fase R1 (payments-only cutover) y que:
+- La versión **publicada** de esta app aún sirve (porque nadie ha hecho Publish del código actual desde la R1).
+- La versión **en desarrollo** (branch main / preview de builder) ya no lo usa: el router (`src/App.jsx`) redirige `/Deals`, `/UnlockSavings`, `/RecoveryTracker`, `/Network`, `/Insights`, `/InsightDetail`, `/StripeAnalyzer`, `/Snapshot`, `/ForProviders`, `/Developers`, `/Developers/MCP` todos a `/`; los componentes de página quedan "dormant" en `src/pages/` sin import.
+
+**Inventario probable de código dormant (a confirmar antes de tocar).**
+- `src/pages/Deals.jsx`, `src/pages/UnlockSavings.jsx`, `src/pages/RecoveryTracker.jsx`, `src/pages/Network.jsx`, `src/pages/Insights.jsx`, `src/pages/InsightDetail.jsx`, `src/pages/StripeAnalyzer.jsx`, `src/pages/Snapshot.jsx`, `src/pages/ForProviders.jsx`, `src/pages/Developers.jsx`, `src/pages/DevelopersMCP.jsx` (o similares).
+- Componentes que solo importaban esas páginas (a detectar vía grep de imports huérfanos).
+- Estados sin uso en `AnalyzerResult` para verticales ≠ payments (shipping/saas/banking/insurance/telecom/finance_ops/hr) — aditivos, no bloquean, pero engordan el schema y las lecturas.
+- `verification_scope` como array multi-vertical en `AnalyzerResult` sigue documentado para uso futuro (ver schema doc) — **eso no se purga**, es aditivo intencional.
+
+**Estado de decisión.** Candidato a purgar/archivar en un chunk dedicado. NO se toca en este chunk porque:
+1. Requiere grep exhaustivo para confirmar que ningún import vivo tira de las páginas dormant (los redirects en `App.jsx` no importan los componentes, pero puede haber `<Link>` o `useNavigate` en componentes activos apuntando a esas rutas — que hoy solo redirigen a `/`, pero borrar la ruta rompería el redirect).
+2. La versión publicada actual (con el código antiguo sirviendo `cambra.global`) es el **fallback vivo** hasta que Xavi haga Publish del código R1. Borrar código dormant del repo antes del Publish no cambia lo que sirve el apex, pero conviene no mezclarlo con el chunk de Publish para tener rollback limpio.
+
+**Precondición para ejecutar la purga.**
+- Xavi ejecuta Publish del código R1 desde el dashboard de Base44 → `cambra.global` sirve la landing payments-only.
+- Verificación en incógnito de que la landing publicada ya no tiene `/#testimonials`, no lista shipping/SaaS/banking en el hero, no expone `/Deals` etc. como rutas navegables.
+- Solo entonces, chunk de purga: `delete_file` de las páginas dormant + limpieza de imports huérfanos + verificación de que sync-check y suite siguen en verde.
+
+**Riesgo residual mientras no se purgue.** Cero funcional (rutas ya redirigen). Coste: ~15 páginas y sus componentes cargan como código muerto en el bundle (aunque las páginas están lazy-loaded en algunos casos, otras entran por default en el chunk principal). Impacto en bundle size a estimar en el chunk de purga.
+
 Estado de las self-test brands restaurado al final de la repro (`Integration.status=connected`, `StripeConnection.connection_status=connected`).
 
 ### (Diagnóstico histórico — conservado por trazabilidad)

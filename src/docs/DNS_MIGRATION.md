@@ -1,5 +1,24 @@
 # DNS Migration — `cambra.global` apex from OLD app → NEW app
 
+> **⚠️ SUPERSEDED — 2026-07-12 (post-review Xavi).**
+> **Este documento NO APLICA.** El diagnóstico original asumía dos apps Base44 distintas ("vieja" y "nueva") con el apex `cambra.global` apuntando a la vieja. Aclaración de arquitectura de Xavi: **solo existe UNA app** — esta misma — que ya tiene `cambra.global` conectado en el dashboard de Base44 y está publicada con una versión antigua del código. Lo que el fetch del 2026-07-12 devolvió como "app vieja" era simplemente **la versión publicada de esta app** (pre-Fase-R1, antes de la purga multi-vertical), no un deployment separado.
+>
+> **Consecuencia:** el paso real para que `cambra.global` sirva el código actual es **Publish** desde el dashboard de Base44, no una migración de DNS. Los A records, la limpieza de AAAA, el runbook IONOS, la ventana anti-downtime y el rollback DNS descritos abajo **no son necesarios** — el DNS ya apunta a donde debe.
+>
+> **Qué del doc sigue vivo (traslado a otros sitios):**
+> - Las 3 URLs `cambra.co` → `cambra.global` corregidas en `scheduledEmails/entry.ts` (§8.3) — ya aplicadas, valen igual.
+> - El inventario de senders/from-addresses (§8.1) — vale como referencia sin acción.
+> - La acción manual "confirmar `RESEND_FROM` en Settings → Secrets" (§8.1) — sigue pendiente para Xavi.
+>
+> **Qué se archiva sin ejecutar:**
+> - Path A (A record apex + CNAME www).
+> - Path B (domain forwarding + CNAME www).
+> - Runbook §5, verificación §6, rollback §7.
+>
+> El resto del doc queda abajo como registro histórico del razonamiento antes de la aclaración.
+
+---
+
 **Fecha:** 2026-07-12 (v2 · post-review Xavi) · **Registrar:** IONOS · **Target:** apex `cambra.global` + `www.cambra.global`
 **Panel donde vive el dominio:** IONOS **Domains & SSL** (panel clásico), NO IONOS Cloud DNS.
 

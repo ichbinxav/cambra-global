@@ -26,6 +26,28 @@ Order: most recent on top.
 - Brand inexistente → **404** `Brand not found`.
 - Payload vacío → **400** `brand_id required`.
 - **Brand ajeno existente (owner `94.martinez.x@gmail.com`, caller simulado `xavi@cambra.global` role=user)** → **404 uniforme** con el mismo body. Verificación pedida por Xavi post-cierre; expuso un leak de enumeración (guard original devolvía 403 para brand ajeno vs 404 para inexistente — un atacante podía distinguir brand_ids válidos). Fix aplicado en el mismo chunk: colapsados ambos paths a `Brand not found` con status 404. **Comportamiento admin (aclaración post-review 2026-07-12):** los admins BYPASEAN el guard de ownership por completo — la rama `!isAdmin && !isOwner` no dispara para ellos y siguen al happy path 200. No existe ninguna rama admin que devuelva 403; auditoría del código confirma cero `status: 403` en la función. El único 404 que un admin observa es cuando el brand realmente no existe (misma respuesta que ve el no-owner). En consecuencia, ni admin ni non-admin pueden distinguir "existe con otro owner" de "no existe" mirando solo status codes de esta función — los admins lo distinguen por otras vías legítimas (list/filter directos sobre `Brand`).
+
+---
+
+### 2026-07-12 · `DNS_MIGRATION.md` marcado como NO APLICABLE (aclaración de arquitectura Xavi)
+
+**Contexto.** El chunk anterior produjo `src/docs/DNS_MIGRATION.md` v2 con runbook IONOS completo (Path A: A record apex `216.24.57.1` + CNAME www + limpieza AAAA/CAA + ventana anti-downtime + rollback). El diagnóstico partía de un fetch a `https://cambra.global` del 2026-07-12 que devolvía la landing pre-pivot (multi-vertical, links a `/#testimonials`), interpretado como "hay una app Base44 vieja reclamando el apex y hay que migrar el DNS a la app nueva".
+
+**Aclaración de Xavi (2026-07-12).** Solo existe **UNA app Base44 relevante** — esta misma. `cambra.global` ya está conectado a ella en el dashboard y publicada con una versión antigua del código (pre-Fase-R1). Lo que el fetch veía como "app vieja" era simplemente **la versión publicada actual de esta app**, no un deployment separado. No hay dos apps que reconciliar.
+
+**Consecuencia operativa.**
+- El paso real para que `cambra.global` sirva el código actual es **Publish** desde el dashboard de Base44 (acción de Xavi, no del code agent).
+- El DNS en IONOS **NO se toca**. Los A/AAAA/CAA/CNAME actuales están correctos — apuntan a Base44, que es donde deben apuntar.
+- Todo el runbook IONOS de `DNS_MIGRATION.md` (Path A + Path B + verificación + rollback) queda archivado sin ejecutar.
+
+**Fix aplicado.** Añadida nota `⚠️ SUPERSEDED` arriba de `DNS_MIGRATION.md` que:
+1. Marca el doc como no aplicable con la razón.
+2. Preserva lo que sí sigue vivo: las 3 URLs `cambra.co` → `cambra.global` corregidas en `scheduledEmails/entry.ts` (ya aplicadas en el chunk previo), el inventario de senders §8.1, y la acción manual pendiente de confirmar `RESEND_FROM` en Secrets.
+3. Explicita qué se archiva: Path A, Path B, runbook §5, verificación §6, rollback §7.
+
+Cuerpo del doc conservado sin editar bajo la nota, como registro histórico del razonamiento antes de la aclaración.
+
+**Deuda asociada.** El "clon multi-vertical sin uso" que motivó parte del diagnóstico DNS pasa a ser en realidad "código legacy en la propia app pendiente de purgar o archivar" — tracked como candidato de limpieza en `KNOWN_DEBT.md` (entrada nueva de esta fecha).
 - **Evidencia byte-a-byte del fix (post-hardening 2026-07-12).** Re-simulación del guard corregido sobre las dos ramas con caller `{email:"xavi@cambra.global", role:"user"}`:
   - Brand ajeno `6a4fe2df992f1f6be464a6fc` (H, owner `94.martinez.x@gmail.com`) → **404** · body `{"ok":false,"error":"Brand not found"}` · 38 bytes.
   - Brand inexistente `does-not-exist-abc-1234567890` → **404** · body `{"ok":false,"error":"Brand not found"}` · 38 bytes.
