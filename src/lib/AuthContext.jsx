@@ -27,31 +27,53 @@ export const AuthProvider = ({ children }) => {
     // calls checkUserAuth. Layer B rescue that used to live inside
     // checkUserAuth was therefore unreachable exactly when it was needed.
     //
-    // Fix: read the pending anon session id here (synchronous localStorage
+    // Fix: read the pending anon session id here (synchronous storage
     // access, no network) BEFORE any short-circuit. If present + valid UUID
-    // v4 + we're not already on /Results, redirect immediately. Idempotent:
-    // the key is removed before navigating so a second landing does nothing.
+    // v4 + we're not already on /Results, redirect immediately.
+    //
+    // We read TWO channels in priority order:
+    //   1) localStorage       — same-tab LOGIN path (fast, always works).
+    //   2) cambra_anon_session cookie — SIGNUP path when Base44 returns
+    //      in a different tab/context (OAuth popup, magic-link opened
+    //      elsewhere), where localStorage of the origin tab isn't shared.
+    // Whichever channel has a valid UUID wins. If both disagree,
+    // localStorage takes precedence (more recent, tighter to the tab).
     try {
       if (typeof window !== 'undefined') {
-        const pending = localStorage.getItem('cambra_pending_anon_session');
+        const uuidRe =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+        // Channel 1 — localStorage
+        let pending = null;
+        try { pending = localStorage.getItem('cambra_pending_anon_session'); }
+        catch { /* fall through to cookie */ }
+
+        // Channel 2 — cookie fallback (only if localStorage was empty/unusable)
+        if (!pending) {
+          try {
+            const raw = document.cookie || '';
+            const match = raw.match(/(?:^|;\s*)cambra_anon_session=([^;]+)/);
+            if (match) pending = decodeURIComponent(match[1]);
+          } catch { /* no cookie access — nothing more to try */ }
+        }
+
         if (pending) {
-          const looksLikeUuid =
-            /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(pending);
+          const looksLikeUuid = uuidRe.test(pending);
           const onResults =
             window.location.pathname === '/Results' &&
             window.location.search.includes('session=');
           if (looksLikeUuid && !onResults) {
-            // NOTE: we do NOT remove the key here. PaymentsResults re-writes
-            // it on mount, so leaving it in place is harmless and keeps the
-            // rescue idempotent if the redirect itself gets interrupted
-            // (flaky network, refresh, etc.). The key is cleaned up when the
-            // user leaves /Results (see below) or when it's malformed.
+            // NOTE: we do NOT clear either channel here. PaymentsResults
+            // re-writes both on mount, so leaving them in place is harmless
+            // and keeps the rescue idempotent if the redirect itself gets
+            // interrupted (flaky network, refresh, etc.).
             window.location.replace(`/Results?session=${encodeURIComponent(pending)}`);
             return;
           }
-          // Malformed key → clean up silently.
+          // Malformed value → clean up silently in both channels.
           if (!looksLikeUuid) {
-            localStorage.removeItem('cambra_pending_anon_session');
+            try { localStorage.removeItem('cambra_pending_anon_session'); } catch {}
+            try { document.cookie = 'cambra_anon_session=; Max-Age=0; Path=/; SameSite=Lax'; } catch {}
           }
         }
       }

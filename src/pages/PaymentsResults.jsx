@@ -179,15 +179,29 @@ export default function PaymentsResults() {
     if (!UUID_V4.test(sessionId)) { setStatus("invalid"); return; }
 
     // Auto-persist the session id the moment a valid /Results page loads.
-    // Rationale: the localStorage rescue in AuthContext (Layer B) only works
-    // if the key is present when the user lands back on "/" after signup or
-    // login. Previously we only wrote the key inside the "Stop overpaying"
-    // CTA handler, which fails for any user who authenticates via the navbar
-    // or from any other entry point while a valid session is visible.
-    // Writing it on mount makes the rescue robust for every login path.
+    // Rationale: the rescue in AuthContext (Layer B) only works if the id
+    // is present when the user lands back on "/" after signup or login.
+    // We persist in TWO channels because Base44's SIGNUP branch can drop
+    // from_url AND the return leg may occur in a different tab/context
+    // (OAuth popup, magic-link opened elsewhere), where localStorage of
+    // the original tab is not shared:
+    //   1) localStorage       — same-tab, same-profile (LOGIN path).
+    //   2) cambra_anon_session cookie (same-origin, path=/, 30min,
+    //      SameSite=Lax) — survives cross-tab returns, OAuth popups,
+    //      and same-profile new tabs (SIGNUP path).
+    // Both channels are read by AuthContext; whichever is available wins.
     try {
       localStorage.setItem("cambra_pending_anon_session", sessionId);
-    } catch { /* localStorage unavailable — nothing we can do */ }
+    } catch { /* localStorage unavailable — cookie still applies */ }
+    try {
+      // 30 minutes is well over the p99 signup latency; short enough that
+      // a stale id can't hijack a later, unrelated signup. path=/ so it's
+      // readable from any route; SameSite=Lax so it survives top-level
+      // navigations from Base44's /login page back to our origin.
+      document.cookie =
+        `cambra_anon_session=${encodeURIComponent(sessionId)}; ` +
+        `Max-Age=1800; Path=/; SameSite=Lax`;
+    } catch { /* document.cookie unavailable — localStorage still applies */ }
 
     let cancelled = false;
     setStatus("loading");
@@ -427,18 +441,27 @@ export default function PaymentsResults() {
                   navigate("/Dashboard");
                   return;
                 }
-                // Layer B — persist for signup-path rescue.
+                // Layer B — persist for signup-path rescue in TWO channels.
+                // localStorage covers same-tab LOGIN; cookie covers cross-tab
+                // SIGNUP (see mount handler above for full rationale).
                 try {
                   const search = new URLSearchParams(window.location.search);
                   const sessionId =
                     search.get("session") || search.get("anon_session_id");
                   if (sessionId) {
-                    localStorage.setItem(
-                      "cambra_pending_anon_session",
-                      sessionId
-                    );
+                    try {
+                      localStorage.setItem(
+                        "cambra_pending_anon_session",
+                        sessionId
+                      );
+                    } catch { /* fall through to cookie */ }
+                    try {
+                      document.cookie =
+                        `cambra_anon_session=${encodeURIComponent(sessionId)}; ` +
+                        `Max-Age=1800; Path=/; SameSite=Lax`;
+                    } catch { /* both channels down — Layer A still applies */ }
                   }
-                } catch { /* localStorage unavailable — Layer A still applies */ }
+                } catch { /* Layer A (URL) still applies */ }
                 // Layer A — canonical URL preservation for the login path.
                 const currentPath =
                   window.location.pathname + window.location.search;
