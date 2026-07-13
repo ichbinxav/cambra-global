@@ -31,6 +31,7 @@ import CardMixSlider   from "@/components/paymentsAnalyzer/CardMixSlider";
 import BrandBlock, { BRAND_SECTOR_SLUGS } from "@/components/paymentsAnalyzer/BrandBlock";
 import CombinedChannelBlock from "@/components/paymentsAnalyzer/CombinedChannelBlock";
 import AnalyzerEntryCards from "@/components/paymentsAnalyzer/AnalyzerEntryCards";
+import PspVerificationOptions from "@/components/paymentsAnalyzer/PspVerificationOptions";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
 //    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
@@ -439,8 +440,13 @@ export default function PaymentsAnalyzer() {
           selected="manual"
           onSelect={(mode) => {
             if (mode === "connect") navigate("/ConnectTools");
+            // "upload" (FASE B) — the real upload path is per-PSP, living
+            // under the provider selector. Scroll the user there to pick
+            // their provider and reveal the Upload-statements card.
+            if (mode === "upload") {
+              document.getElementById("psp-selector")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
             // "manual" is already the default — nothing to do.
-            // "upload" is disabled at the component level and can't fire.
           }}
         />
 
@@ -585,7 +591,7 @@ export default function PaymentsAnalyzer() {
           {/* Provider grid — ProviderGrid owns responsive density internally
               (2 / 3 / 4 cols). Same enum + same order as the backend contract.
               Options swap based on channel: online providers vs. in-store TPVs. */}
-          <div className="space-y-2.5">
+          <div id="psp-selector" className="space-y-2.5 scroll-mt-24">
             <div className="flex items-baseline justify-between">
               <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
                 {channel === "in_store" ? "In-store terminal (TPV)" : "Payment provider"}
@@ -598,6 +604,21 @@ export default function PaymentsAnalyzer() {
               onChange={setProviderSlug}
             />
           </div>
+
+          {/* Fallback universal de facturas (FASE B) — per-PSP verification
+              path. Reacts to the selected provider: Stripe → Connect card
+              (live verified), everything else → Upload statements (in beta,
+              gated by the extractor flag). Presentational + read-only probe;
+              does NOT touch the estimated submit below. Shown only on
+              single-channel modes (combined has two providers, out of scope). */}
+          <PspVerificationOptions
+            providerSlug={providerSlug}
+            providerLabel={
+              (channel === "in_store" ? PROVIDER_OPTIONS_IN_STORE : PROVIDER_OPTIONS_ONLINE)
+                .find((o) => o.slug === providerSlug)?.label
+            }
+            onConnect={() => navigate("/ConnectTools")}
+          />
           </>
           )}
 

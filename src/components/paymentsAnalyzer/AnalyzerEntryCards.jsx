@@ -37,15 +37,20 @@ const CARDS = [
     enabled: true,
   },
   {
+    // Fallback universal de facturas (FASE B) — the Upload path is now REAL
+    // per-PSP: after picking a provider below, any non-Stripe PSP shows an
+    // "Upload your last 3 statements" card (in beta). This entry card scrolls
+    // the user to the provider selector where that option lives. Honest copy —
+    // "in beta", not a promise of an instant verified number.
     id: "upload",
     icon: FileUp,
-    title: "Upload a statement",
-    subtitle: "Invoice or CSV",
-    body: "Drop a Stripe/PayPal/SumUp statement. We extract fees and pre-fill your report.",
+    title: "Upload your statements",
+    subtitle: "Verified — in beta",
+    body: "Pick your provider below, then drop your last statements. We start turning your estimate into a verified number.",
     accent: "blue",
-    badge: "Coming soon",
-    cta: "Notify me",
-    enabled: false,
+    badge: "In beta",
+    cta: "Choose provider",
+    enabled: true,
   },
   {
     id: "manual",
