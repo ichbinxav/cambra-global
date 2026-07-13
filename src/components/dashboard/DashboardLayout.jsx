@@ -6,21 +6,25 @@ import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 // MVP navigation — focused, minimal. Advanced API/OAuth/Webhook screens are admin-only.
 // FASE 1.2 — Unlock Savings + Recovery Tracker removed from sidebar (negotiation
 // out of scope for payments-only phase). Routes redirect to home in App.jsx.
+// labelKey → resolved through t() at render so the sidebar follows the language
+// toggle (previously hardcoded English → didn't translate).
 const NAV_ITEMS = [
-  { path: "/Dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/Analyzer", label: "Analyzer", icon: BarChart3 },
-  { path: "/Results", label: "Results", icon: FileText },
-  { path: "/Vault", label: "Documents", icon: FolderOpen },
-  { path: "/Account", label: "Account", icon: Settings },
+  { path: "/Dashboard", labelKey: "nav_dashboard", icon: LayoutDashboard },
+  { path: "/Analyzer", labelKey: "nav_analyzer", icon: BarChart3 },
+  { path: "/Results", labelKey: "sidebar_results", icon: FileText },
+  { path: "/Vault", labelKey: "sidebar_documents", icon: FolderOpen },
+  { path: "/Account", labelKey: "sidebar_account", icon: Settings },
 ];
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
 
   // user role tracking handled by AuthContext
@@ -71,12 +75,12 @@ export default function DashboardLayout() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
             </span>
-            Network live
+            {t("sidebar_network_live")}
           </span>
         </div>
 
         <nav className="relative flex-1 p-3 pt-2 space-y-0.5">
-          <p className="px-3 mb-1.5 text-[9px] font-bold tracking-[0.24em] uppercase text-white/35">Workspace</p>
+          <p className="px-3 mb-1.5 text-[9px] font-bold tracking-[0.24em] uppercase text-white/35">{t("sidebar_workspace")}</p>
           {NAV_ITEMS.map(item => {
             const active = location.pathname === item.path;
             return (
@@ -96,7 +100,7 @@ export default function DashboardLayout() {
                   transition={{ type: "spring", stiffness: 500, damping: 40 }}
                 >
                   <item.icon size={14} strokeWidth={active ? 2.4 : 1.8} />
-                  {item.label}
+                  {t(item.labelKey)}
                 </motion.div>
               </Link>
             );
@@ -108,7 +112,7 @@ export default function DashboardLayout() {
             <Link to="/admin">
               <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors font-semibold text-red-300 hover:bg-red-500/10">
                 <ShieldCheck size={14} />
-                Admin Panel
+                {t("sidebar_admin")}
               </div>
             </Link>
           )}
@@ -116,7 +120,7 @@ export default function DashboardLayout() {
           <Link to="/Landing">
             <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-white/55 hover:text-white hover:bg-white/5 transition-colors">
               <Home size={14} />
-              Go to homepage
+              {t("sidebar_homepage")}
             </div>
           </Link>
           <button
@@ -124,7 +128,7 @@ export default function DashboardLayout() {
             className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm text-white/55 hover:text-white hover:bg-white/5 transition-colors"
           >
             <LogOut size={14} />
-            Sign out
+            {t("sidebar_signout")}
           </button>
         </div>
       </aside>
@@ -173,7 +177,7 @@ export default function DashboardLayout() {
                         active ? "bg-white text-black font-semibold" : "text-white/60"
                       }`}>
                         <item.icon size={16} />
-                        {item.label}
+                        {t(item.labelKey)}
                       </div>
                     </Link>
                   );
@@ -184,21 +188,21 @@ export default function DashboardLayout() {
                   <Link to="/admin" onClick={() => setSidebarOpen(false)}>
                     <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-red-300 font-semibold">
                       <ShieldCheck size={16} />
-                      Admin Panel
+                      {t("sidebar_admin")}
                     </div>
                   </Link>
                 )}
 
                 <Link to="/Landing" onClick={() => setSidebarOpen(false)}>
                   <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-white/60">
-                    <Home size={16} /> Go to homepage
+                    <Home size={16} /> {t("sidebar_homepage")}
                   </div>
                 </Link>
                 <button
                   onClick={() => base44.auth.logout("/Landing")}
                   className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm text-white/60"
                 >
-                  <LogOut size={16} /> Sign out
+                  <LogOut size={16} /> {t("sidebar_signout")}
                 </button>
               </div>
             </motion.div>

@@ -70,6 +70,7 @@ function LandingJsonLd() {
 }
 
 function Hero() {
+  const { t } = useTranslation();
   return (
     <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "#ffffff", paddingTop: 80 }}>
       {/* Cinematic ambient layers */}
@@ -109,7 +110,7 @@ function Hero() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
             </span>
-            Pay only if we save you money
+            {t("hero_badge")}
           </motion.div>
 
           <motion.h1
@@ -125,7 +126,7 @@ function Hero() {
               textShadow: "0 0 60px rgba(59,130,246,0.18)",
             }}
           >
-            Stop overpaying.
+            {t("hero_h1_line1")}
             <br />
             <span
               style={{
@@ -136,7 +137,7 @@ function Hero() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Recover the margin.
+              {t("hero_h1_line2")}
             </span>
           </motion.h1>
 
@@ -147,7 +148,7 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
           >
-            Most independent brands overpay <span className="text-white">up to 40%</span> on card payments — hidden inside blended rates. CAMBRA measures your effective rate against the interchange floor and recovers what's negotiable. <span className="text-white">You keep 75%. We only get paid when you do.</span>
+            {t("hero_sub")}
           </motion.p>
 
           <motion.div
@@ -165,7 +166,7 @@ function Hero() {
                     "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
                 }}
               >
-                Recover your margin — 3 min
+                {t("hero_cta_primary")}
                 <ArrowRight size={16} />
               </Link>
             </motion.div>
@@ -181,7 +182,7 @@ function Hero() {
                 background: "rgba(255,255,255,0.02)",
               }}
             >
-              Discover real brands savings
+              {t("hero_cta_secondary")}
             </motion.a>
           </motion.div>
 
@@ -195,15 +196,15 @@ function Hero() {
           >
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck size={13} className="text-cyan-300/80" />
-              No retainer · no contract
+              {t("hero_trust_1")}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck size={13} className="text-cyan-300/80" />
-              Credentials encrypted, never in plain text
+              {t("hero_trust_2")}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck size={13} className="text-cyan-300/80" />
-              EU brands only
+              {t("hero_trust_3")}
             </span>
           </motion.div>
         </div>
@@ -254,31 +255,14 @@ function Hero() {
 
 function HowItWorksSection() {
   const { t } = useTranslation();
-  // NOTE: 4-step story — Tell us → See gap → Connect to confirm → Join to recover.
-  // Kept in-file (single language) on purpose: the copy is honest about what we
-  // measure vs. what we confirm, and dictionaries can be updated later.
+  // 4-step story — Tell us → See rate → Connect to confirm → Join to recover.
+  // Copy now flows through the i18n dictionary (how_step*_*) so the section
+  // follows the language toggle. Step 3 is provider-agnostic (des-Stripe).
   const steps = [
-    {
-      n: "01",
-      title: "Tell us what you process",
-      desc: "Your annual GMV, average ticket, and current PSP. Sixty seconds. Nothing to connect.",
-    },
-    {
-      n: "02",
-      title: "See your effective rate",
-      desc: "We compare what you actually pay against the interchange floor — the real minimum for cards your size.",
-    },
-    {
-      n: "03",
-      title: "Connect Stripe to confirm",
-      desc: "Read-only. Your estimate becomes a confirmed number from real transaction data.",
-    },
-    {
-      n: "04",
-      title: "Join to recover it",
-      desc: "Claim your savings and join the brands negotiating as one. Together we unlock rates none of us could get alone.",
-      cta: true,
-    },
+    { n: "01", title: t("how_step1_title"), desc: t("how_step1_desc") },
+    { n: "02", title: t("how_step2_title"), desc: t("how_step2_desc") },
+    { n: "03", title: t("how_step3_title"), desc: t("how_step3_desc") },
+    { n: "04", title: t("how_step4_title"), desc: t("how_step4_desc"), cta: true },
   ];
 
   return (
@@ -307,17 +291,7 @@ function HowItWorksSection() {
                 lineHeight: 1.05,
               }}
             >
-              Four steps from{" "}
-              <span
-                style={{
-                  background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                estimate to recovered margin.
-              </span>
+              {t("how_h2")}
             </h2>
           </div>
         </AnimatedSection>

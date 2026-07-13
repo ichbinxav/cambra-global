@@ -61,6 +61,38 @@ const DICT = {
     nav_pricing:      "Pricing",
     nav_get_started:  "Get started",
 
+    /* sidebar (app shell) */
+    sidebar_results:      "Results",
+    sidebar_documents:    "Documents",
+    sidebar_account:      "Account",
+    sidebar_workspace:    "Workspace",
+    sidebar_network_live: "Network live",
+    sidebar_admin:        "Admin Panel",
+    sidebar_homepage:     "Go to homepage",
+    sidebar_signout:      "Sign out",
+
+    /* landing — hero */
+    hero_badge:           "Pay only if we save you money",
+    hero_h1_line1:        "Stop overpaying.",
+    hero_h1_line2:        "Recover the margin.",
+    hero_sub:             "Most independent brands overpay up to 40% on card payments — hidden inside blended rates. CAMBRA measures your effective rate against the interchange floor and recovers what's negotiable. You keep 75%. We only get paid when you do.",
+    hero_cta_primary:     "Recover your margin — 3 min",
+    hero_cta_secondary:   "Discover real brands savings",
+    hero_trust_1:         "No retainer · no contract",
+    hero_trust_2:         "Credentials encrypted, never in plain text",
+    hero_trust_3:         "EU brands only",
+
+    /* landing — how it works (steps) */
+    how_h2:               "Four steps from estimate to recovered margin.",
+    how_step1_title:      "Tell us what you process",
+    how_step1_desc:       "Your annual GMV, average ticket, and current PSP. Sixty seconds. Nothing to connect.",
+    how_step2_title:      "See your effective rate",
+    how_step2_desc:       "We compare what you actually pay against the interchange floor — the real minimum for cards your size.",
+    how_step3_title:      "Connect your provider to confirm",
+    how_step3_desc:       "Read-only. Your estimate becomes a confirmed number from your real transaction data.",
+    how_step4_title:      "Join to recover it",
+    how_step4_desc:       "Claim your savings and join the brands negotiating as one. Together we unlock rates none of us could get alone.",
+
     /* landing — hero */
 
     /* landing — problem */
@@ -186,6 +218,7 @@ const DICT = {
     last_scan_ago:        "Last scan {time}",
     changes_detected_n:   "{n} change{plural} detected",
     never_label:          "never",
+    last_scan_never:      "Never scanned",
     just_now:             "just now",
     minutes_ago:          "{n}m ago",
     hours_ago:            "{n}h ago",
@@ -277,6 +310,38 @@ const DICT = {
     nav_how:          "Comment ça marche",
     nav_pricing:      "Tarifs",
     nav_get_started:  "Commencer",
+
+    /* sidebar (app shell) */
+    sidebar_results:      "Résultats",
+    sidebar_documents:    "Documents",
+    sidebar_account:      "Compte",
+    sidebar_workspace:    "Espace de travail",
+    sidebar_network_live: "Réseau en direct",
+    sidebar_admin:        "Panneau d'administration",
+    sidebar_homepage:     "Retour à l'accueil",
+    sidebar_signout:      "Se déconnecter",
+
+    /* landing — hero */
+    hero_badge:           "Vous ne payez que si nous vous faisons économiser",
+    hero_h1_line1:        "Arrêtez de trop payer.",
+    hero_h1_line2:        "Récupérez votre marge.",
+    hero_sub:             "La plupart des marques indépendantes paient jusqu'à 40 % de trop sur les paiements par carte — un surcoût dissimulé dans des taux mélangés. CAMBRA mesure votre taux effectif par rapport au plancher d'interchange et récupère ce qui est négociable. Vous gardez 75 %. Nous ne sommes rémunérés que lorsque vous économisez.",
+    hero_cta_primary:     "Récupérez votre marge — 3 min",
+    hero_cta_secondary:   "Découvrez les économies de vraies marques",
+    hero_trust_1:         "Sans honoraires · sans engagement",
+    hero_trust_2:         "Identifiants chiffrés, jamais en clair",
+    hero_trust_3:         "Réservé aux marques de l'UE",
+
+    /* landing — how it works (steps) */
+    how_h2:               "Quatre étapes, de l'estimation à la marge récupérée.",
+    how_step1_title:      "Dites-nous ce que vous encaissez",
+    how_step1_desc:       "Votre volume annuel, votre panier moyen et votre prestataire de paiement actuel. Soixante secondes. Rien à connecter.",
+    how_step2_title:      "Découvrez votre taux effectif",
+    how_step2_desc:       "Nous comparons ce que vous payez réellement au plancher d'interchange — le minimum réel pour une structure de votre taille.",
+    how_step3_title:      "Connectez votre prestataire pour confirmer",
+    how_step3_desc:       "En lecture seule. Votre estimation devient un chiffre confirmé, à partir de vos transactions réelles.",
+    how_step4_title:      "Rejoignez-nous pour la récupérer",
+    how_step4_desc:       "Récupérez vos économies et rejoignez les marques qui négocient d'une seule voix. Ensemble, nous obtenons des taux qu'aucune d'entre nous n'atteindrait seule.",
 
 
 
@@ -382,6 +447,7 @@ const DICT = {
     last_scan_ago:        "Dernier scan {time}",
     changes_detected_n:   "{n} changement{plural} détecté{plural}",
     never_label:          "jamais",
+    last_scan_never:      "Jamais scanné",
     just_now:             "à l'instant",
     minutes_ago:          "il y a {n} min",
     hours_ago:            "il y a {n} h",
@@ -471,6 +537,38 @@ const DICT = {
     nav_how:          "Cómo funciona",
     nav_pricing:      "Precios",
     nav_get_started:  "Empezar",
+
+    /* sidebar (app shell) */
+    sidebar_results:      "Resultados",
+    sidebar_documents:    "Documentos",
+    sidebar_account:      "Cuenta",
+    sidebar_workspace:    "Espacio de trabajo",
+    sidebar_network_live: "Red en directo",
+    sidebar_admin:        "Panel de administración",
+    sidebar_homepage:     "Volver al inicio",
+    sidebar_signout:      "Cerrar sesión",
+
+    /* landing — hero */
+    hero_badge:           "Solo pagas si te ahorramos dinero",
+    hero_h1_line1:        "Deja de pagar de más.",
+    hero_h1_line2:        "Recupera tu margen.",
+    hero_sub:             "La mayoría de las marcas independientes pagan hasta un 40 % de más en los pagos con tarjeta — un sobrecoste oculto en tarifas combinadas. CAMBRA mide tu tasa efectiva frente al suelo de intercambio y recupera lo que es negociable. Te quedas con el 75 %. Solo cobramos cuando tú ahorras.",
+    hero_cta_primary:     "Recupera tu margen — 3 min",
+    hero_cta_secondary:   "Descubre lo que ahorran marcas reales",
+    hero_trust_1:         "Sin cuota fija · sin permanencia",
+    hero_trust_2:         "Credenciales cifradas, nunca en texto plano",
+    hero_trust_3:         "Solo para marcas de la UE",
+
+    /* landing — how it works (steps) */
+    how_h2:               "Cuatro pasos, de la estimación al margen recuperado.",
+    how_step1_title:      "Cuéntanos cuánto facturas",
+    how_step1_desc:       "Tu volumen anual, tu ticket medio y tu proveedor de pagos actual. Sesenta segundos. Nada que conectar.",
+    how_step2_title:      "Descubre tu tasa efectiva",
+    how_step2_desc:       "Comparamos lo que pagas de verdad con el suelo de intercambio — el mínimo real para una empresa de tu tamaño.",
+    how_step3_title:      "Conecta tu proveedor para confirmarlo",
+    how_step3_desc:       "Solo lectura. Tu estimación se convierte en una cifra confirmada, a partir de tus transacciones reales.",
+    how_step4_title:      "Únete para recuperarlo",
+    how_step4_desc:       "Reclama tus ahorros y únete a las marcas que negocian a una sola voz. Juntas conseguimos tarifas que ninguna lograría por separado.",
 
 
 
@@ -576,6 +674,7 @@ const DICT = {
     last_scan_ago:        "Último escaneo {time}",
     changes_detected_n:   "{n} cambio{plural} detectado{plural}",
     never_label:          "nunca",
+    last_scan_never:      "Sin escanear",
     just_now:             "ahora mismo",
     minutes_ago:          "hace {n} min",
     hours_ago:            "hace {n} h",

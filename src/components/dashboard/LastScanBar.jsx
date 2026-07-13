@@ -74,7 +74,11 @@ export default function LastScanBar() {
         <div className="min-w-0">
           <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 font-semibold">{t("continuous_discovery")}</p>
           <p className="text-sm font-semibold tracking-tight truncate">
-            {scanning ? t("scanning") : t("last_scan_ago", { time: timeAgo(lastWhen, t) })}
+            {scanning
+              ? t("scanning")
+              : lastWhen
+                ? t("last_scan_ago", { time: timeAgo(lastWhen, t) })
+                : t("last_scan_never")}
             {!scanning && changes > 0 && (
               <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
                 <Sparkles size={10} /> {t("changes_detected_n", { n: changes, plural: changes === 1 ? "" : "s" })}
