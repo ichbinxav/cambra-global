@@ -1546,10 +1546,17 @@ function extractFixedFeePerCharge(canonicalCharges: any[]): number | null {
 //   - provider == 'stripe_self' → STRIPE_SECRET_KEY (platform live key, no Stripe-Account)
 //   - provider == 'stripe' → STRIPE_SECRET_KEY + Stripe-Account: <acct_id> (Connect OAuth path)
 //
-// We do NOT decrypt Integration.access_token in this chunk. Real Connect
-// OAuth ships in a later phase; today the only two Stripe modes in prod are
-// (a) the self-test brand pointing at Stripe test-mode, and (b) the CAMBRA
-// operational account. Both use env keys, not per-merchant tokens.
+// This function does NOT decrypt Integration.access_token — and it never
+// needs to. For provider=='stripe' (real Connect OAuth, shipped 2026-07-13),
+// the canonical Connect pattern is used: the PLATFORM live key
+// (STRIPE_SECRET_KEY) + a `Stripe-Account: <acct_id>` header, where acct_id
+// is Integration.provider_account_id captured by oauthConnector's callback.
+// The merchant's own OAuth access_token stays encrypted at rest and is not
+// required for read access under Connect. The other two modes still use env
+// keys directly: (a) 'stripe_self_test' → STRIPE_TEST_SECRET_KEY (self-test
+// brand against Stripe test-mode), (b) 'stripe_self' → STRIPE_SECRET_KEY
+// (the CAMBRA operational account). All three are additive branches below —
+// the env-key operator modes are untouched by the Connect path.
 async function resolveStripeAuth(integration: any): Promise<
   | { ok: true; headers: Record<string, string>; is_test: boolean; acct_country_hint: string }
   | { ok: false; error: string; setup_required?: boolean }

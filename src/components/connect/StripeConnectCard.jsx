@@ -71,74 +71,59 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
 
   useEffect(() => {
     loadConnection();
-
-    // FIX 4 — Handle OAuth callback (?code=...) with CSRF state validation
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const returnedState = params.get("state");
-    if (code) {
-      const savedState = sessionStorage.getItem("stripe_oauth_state");
-      if (!returnedState || returnedState !== savedState) {
-        setError("OAuth state mismatch — possible CSRF attack. Please try again.");
-        // Clean URL so the error doesn't reappear on refresh
-        window.history.replaceState({}, "", window.location.pathname);
-        return;
-      }
-      sessionStorage.removeItem("stripe_oauth_state");
-      handleOAuthCallback(code);
-    }
+    // NOTE: the OAuth callback (?state&code) is NO LONGER handled here.
+    // System A (oauthConnector) owns the whole handshake: the callback lands
+    // on /IntegrationsCallback, which invokes oauthConnector mode:"callback".
+    // That page exchanges the code, encrypts + stores the token in
+    // Integration, captures the account country, then bounces back to
+    // redirect_after. This card only kicks off mode:"start". The legacy
+    // stripeOAuthConnect (system B) + its sessionStorage CSRF dance are
+    // retired — the anti-CSRF is now the server-side OAuthState row.
   }, []);
 
-  const handleOAuthCallback = async (code) => {
+  // System A — kick off Stripe Connect OAuth via the generic engine.
+  // oauthConnector mode:"start" creates the anti-CSRF OAuthState row
+  // (server-side, bound to brand_id + user), builds the authorize_url with
+  // the LIVE STRIPE_CLIENT_ID, and returns it. We just open it. The redirect
+  // URI is fixed server-side to {APP_DOMAIN}/IntegrationsCallback — it does
+  // NOT vary per caller, which is why redirect_after (not redirect_uri)
+  // carries the "bring me back here" intent through the OAuthState row.
+  const handleConnect = async () => {
+    if (!brandId) {
+      setError("Missing brand context — please refresh the page.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
-      const res = await base44.functions.invoke("stripeOAuthConnect", { code });
+      const res = await base44.functions.invoke("oauthConnector", {
+        mode: "start",
+        provider: "stripe",
+        brand_id: brandId,
+        redirect_after: redirectAfter || "/ConnectTools",
+      });
       const data = res?.data || res;
-      if (data?.setup_required) {
+      // 503 when STRIPE_CLIENT_ID isn't configured — surface the coming-soon state.
+      if (data?.error && /not configured|missing STRIPE_CLIENT_ID/i.test(data.error)) {
         setSetupRequired(true);
-      } else if (data?.ok) {
-        // FIX 4 — translated success toast on successful Stripe connection
-        toast.success(t("az_step3_verified"), t("connect_success"));
-        window.history.replaceState({}, "", window.location.pathname);
-        await loadConnection();
-      } else {
+        return;
+      }
+      if (!data?.ok || !data.authorize_url) {
         const msg = data?.error || t("connect_error");
         setError(msg);
         toast.error(t("connect_error"), msg);
+        return;
       }
+      // Full-page redirect to connect.stripe.com. Stripe bounces back to
+      // /IntegrationsCallback?state&code, which completes the handshake.
+      window.location.href = data.authorize_url;
     } catch (e) {
-      const msg = e.message || t("connect_error");
+      const msg = e?.message || t("connect_error");
       setError(msg);
       toast.error(t("connect_error"), msg);
     } finally {
       setBusy(false);
     }
-  };
-
-  const handleConnect = () => {
-    const clientId = import.meta.env.VITE_STRIPE_CLIENT_ID;
-    if (!clientId) {
-      setSetupRequired(true);
-      return;
-    }
-    // FIX 4 — random per-session state for CSRF protection
-    const state = (window.crypto && window.crypto.randomUUID)
-      ? window.crypto.randomUUID()
-      : `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    sessionStorage.setItem("stripe_oauth_state", state);
-    // redirectAfter lets callers (e.g. Analyzer Step 3) bring the user back to
-    // their own page after Stripe OAuth instead of the default /ConnectTools.
-    const redirectPath = redirectAfter || "/ConnectTools";
-    const redirectUri = `${window.location.origin}${redirectPath}`;
-    const url =
-      `https://connect.stripe.com/oauth/authorize` +
-      `?response_type=code` +
-      `&client_id=${encodeURIComponent(clientId)}` +
-      `&scope=read_only` +
-      `&state=${encodeURIComponent(state)}` +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}`;
-    window.location.href = url;
   };
 
   const handleSync = async () => {

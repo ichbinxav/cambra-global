@@ -1207,6 +1207,40 @@ async function modeCallback(base44, user, params) {
     ? new Date(Date.now() + tokens.expires_in * 1000).toISOString()
     : null;
 
+  // ── Stripe Connect: capture the connected account's COUNTRY ─────────────
+  // computeStripeVerifiedGap derives the merchant's rate-table region cohort
+  // from Integration.metadata_json.country (resolveStripeAuth →
+  // countryToRegion). Without it, every Connect merchant would fall to the
+  // 'FR' default → wrong cohort for a DE/ES/... merchant. We read it once at
+  // connect time with the PLATFORM live key + Stripe-Account header (the
+  // canonical Connect pattern — no need for the merchant's own token). This
+  // is Stripe-specific on purpose: only the 'stripe' registry entry has a
+  // /v1/accounts endpoint with this shape. Best-effort — a failure here
+  // NEVER blocks the connection (the cohort just falls back to the default).
+  let accountCountry = null;
+  if (row.provider === "stripe" && tokens.account_id && !cfg.demo_mode) {
+    try {
+      const liveKey = Deno.env.get("STRIPE_SECRET_KEY");
+      if (liveKey) {
+        const acctRes = await fetch(
+          `https://api.stripe.com/v1/accounts/${encodeURIComponent(tokens.account_id)}`,
+          {
+            headers: {
+              "Authorization": `Bearer ${liveKey}`,
+              "Stripe-Account": tokens.account_id,
+            },
+          },
+        );
+        if (acctRes.ok) {
+          const acct = await acctRes.json();
+          if (typeof acct.country === "string" && acct.country.length === 2) {
+            accountCountry = acct.country.toUpperCase();
+          }
+        }
+      }
+    } catch (_) { /* country capture is best-effort — never blocks connect */ }
+  }
+
   const update = {
     status: "connected",
     access_token: encryptedAccess,
@@ -1218,10 +1252,13 @@ async function modeCallback(base44, user, params) {
     provider_account_id: tokens.account_id || null,
     // shop_domain persisted in metadata_json so dataSyncAgent + modeRefresh
     // can re-interpolate {shop} on every subsequent call without re-asking.
+    // country (Stripe Connect only) drives the region cohort in the verified
+    // bridge — see the account-country capture above.
     metadata_json: {
       account_id: tokens.account_id,
       demo_mode: !!cfg.demo_mode,
       ...(row.shop_domain ? { shop_domain: row.shop_domain } : {}),
+      ...(accountCountry ? { country: accountCountry } : {}),
     },
     category: cfg.category,
   };
