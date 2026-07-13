@@ -4,11 +4,20 @@
   "properties": {
     "cohort_key": {
       "type": "string",
-      "description": "Row identity: '<provider_slug>|<tier>|<region>'. Provider is 'stripe','paypal','shopify_payments','ANY' (regional fallback). Tier is currently always 'ANY' (Chunk 1b decision \u2014 tier segmentation happens in the engine's savings band, not in the row). Region is 'EU','UK','US','RoW'. Unique per row. Engine lookup: exact match first (e.g. 'stripe|ANY|EU'), then fallback to 'ANY|ANY|<region>' if no exact match."
+      "description": "Row identity. Online rows: '<provider_slug>|<tier>|<region>' (e.g. 'stripe|ANY|EU'). In-store rows append the channel segment: '<provider_slug>|<tier>|<region>|in_store' (e.g. 'sumup|ANY|EU|in_store'). Provider is 'stripe','paypal','shopify_payments','sumup','stripe_terminal','smile_and_pay','zettle','ANY' (regional fallback). Tier is currently always 'ANY' (Chunk 1b decision \u2014 tier segmentation happens in the engine's savings band, not in the row). Region is 'EU','UK','US','RoW'. Unique per row. Engine lookup: exact match first (e.g. 'stripe|ANY|EU'), then fallback to 'ANY|ANY|<region>' (or 'ANY|ANY|<region>|in_store') if no exact match."
     },
     "provider_slug": {
       "type": "string",
-      "description": "Stable slug matching the analyzer's provider detection (stripe, paypal, shopify_payments, adyen, mollie, ...). Set to 'ANY' for regional fallback rows."
+      "description": "Stable slug matching the analyzer's provider detection (stripe, paypal, shopify_payments, sumup, stripe_terminal, smile_and_pay, zettle, adyen, mollie, ...). Set to 'ANY' for regional fallback rows."
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "online",
+        "in_store"
+      ],
+      "default": "online",
+      "description": "Payment channel this row applies to. 'online' = card-not-present (default; every historical/online row leaves this absent and is treated as online). 'in_store' = card-present TPV rows (M4-TPV Fase 2A) \u2014 these carry terminal_rental_monthly_minor + achievable_terminal_rental_monthly_minor and set intl_uplift_bps to null (card-present cross-border volume is negligible for the ICP). The channel is ALSO encoded in cohort_key ('|in_store' suffix) for the engine's exact-match lookup; this declared field makes it queryable/auditable. Purely additive \u2014 no migration."
     },
     "tier": {
       "type": "string",
@@ -49,6 +58,10 @@
       ],
       "description": "Currency of fixed_fee_minor_units. Determines which minor-unit is used (100 cents = 1 EUR/GBP/USD)."
     },
+    "terminal_rental_monthly_minor": {
+      "type": "number",
+      "description": "IN-STORE ONLY (channel='in_store'). Monthly TPV terminal rental in MINOR units of fixed_fee_currency (e.g. 2500 = \u20ac25/mo). 0 for modern TPV providers that sell hardware one-off with no rental (SumUp, Zettle, Smile & Pay, Stripe Terminal). Populated on fallback bank-acquirer rows (BNP, CA, SG, ...) where \u20ac15-40/mo rental is the norm. The engine amortizes this against monthly in-store GMV / ticket at runtime. Absent/null on online rows \u2014 treated as 0. Purely additive \u2014 no migration."
+    },
     "achievable_percent_bps": {
       "type": "number",
       "description": "OPTIONAL \u2014 Achievable percent component in bps for the same provider/region after negotiation, in a documented bottom-up breakdown (interchange_cap + scheme_fees + assumed_processor_margin). Null on rows where we have no defensible breakdown. Engine uses this + achievable_fixed_fee_minor_units + same runtime amortization to compute achievable effective rate."
@@ -57,9 +70,13 @@
       "type": "number",
       "description": "OPTIONAL \u2014 Achievable fixed component (usually same or slightly lower than the published fixed fee \u2014 hard to negotiate below scheme minimums). Null when achievable_percent_bps is null."
     },
+    "achievable_terminal_rental_monthly_minor": {
+      "type": "number",
+      "description": "IN-STORE ONLY (channel='in_store'). Achievable monthly TPV terminal rental in MINOR units of fixed_fee_currency after migrating to a publicly-contractable modern TPV. Typically 0 (modern TPV = no rental). The recovery narrative for bank-TPV merchants is: migrate to a modern rate AND drop the rental drag \u2014 this field captures the 'after' rental so the engine can amortize the rental delta. Absent/null on online rows \u2014 treated as 0. Purely additive \u2014 no migration."
+    },
     "intl_uplift_bps": {
       "type": "number",
-      "description": "OPTIONAL \u2014 Cross-border card uplift (in bps) charged by this PSP for cards issued outside the merchant's region. Applied to the intl portion of GMV only (percent component; the fixed fee is NOT scaled \u2014 schemes don't charge a separate fixed fee per card origin). Cited verbatim from the PSP's public pricing page via intl_uplift_source_url + intl_uplift_source_quote when known. NULL when the provider does not publish a distinct cross-border rate we could verify \u2014 the engine treats null as 'not modeled' and emits an assumption to that effect (never invents a value in code). Enmienda 1: NEVER hardcode uplift constants in the engine."
+      "description": "OPTIONAL \u2014 Cross-border card uplift (in bps) charged by this PSP for cards issued outside the merchant's region. Applied to the intl portion of GMV only (percent component; the fixed fee is NOT scaled \u2014 schemes don't charge a separate fixed fee per card origin). Cited verbatim from the PSP's public pricing page via intl_uplift_source_url + intl_uplift_source_quote when known. NULL when the provider does not publish a distinct cross-border rate we could verify \u2014 the engine treats null as 'not modeled' and emits an assumption to that effect (never invents a value in code). ALWAYS null on in-store rows (card-present cross-border is negligible for the ICP). Enmienda 1: NEVER hardcode uplift constants in the engine."
     },
     "achievable_intl_uplift_bps": {
       "type": "number",
@@ -96,7 +113,7 @@
     },
     "achievable_breakdown_json": {
       "type": "object",
-      "description": "Documented components of achievable_percent_bps. Shape: { interchange_bps: number, scheme_fees_bps: number, processor_margin_bps: number, processor_margin_band_bps: number, sources: [{ label, url }] }. Read by the engine to expose transparency in the output assumptions."
+      "description": "Documented components of achievable_percent_bps. Online shape: { interchange_bps, scheme_fees_bps, processor_margin_bps, processor_margin_band_bps, sources: [{ label, url }] }. In-store shape: { anchor_provider, anchor_region, anchor_percent_bps, anchor_fixed_fee_minor_units, anchor_source_url, anchor_source_quote } \u2014 the publicly-contractable TPV the achievable rate is anchored to. Read by the engine to expose transparency in the output assumptions."
     },
     "savings_band_pct": {
       "type": "number",
