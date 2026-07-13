@@ -147,7 +147,7 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
           >
-            Most independent brands overpay <span className="text-white">30–60%</span> on card payments — hidden inside blended rates. CAMBRA measures your effective rate against the interchange floor and recovers what's negotiable. <span className="text-white">You keep 75%. We only get paid when you do.</span>
+            Most independent brands overpay <span className="text-white">up to 40%</span> on card payments — hidden inside blended rates. CAMBRA measures your effective rate against the interchange floor and recovers what's negotiable. <span className="text-white">You keep 75%. We only get paid when you do.</span>
           </motion.p>
 
           <motion.div

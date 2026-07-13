@@ -1,36 +1,40 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 /**
- * Savings Curve — illustrative projection · R5 (2026-07-12).
+ * Savings Curve — illustrative projection · R6 canonical recalibration (2026-07-13).
  *
- * R5 widens the window from 12mo to 24mo — matching the pricing model's
- * declared recovery window (see PricingDual / Access model: 24-month success
- * fee window). This lets the hero figure become the biggest number the
- * engine can honestly defend for the reference brand:
+ * Derived from the SINGLE CANONICAL REFERENCE BRAND (see Decision_Log ·
+ * "Landing reference brand", identical to ProblemSectionWow):
  *
- *   €6,000/yr × 24mo = €12,000+ recoverable
+ *   GMV €1M/yr · current effective 2.21% · achievable 1.47% · gap 0.74 pts
+ *   → overpaying   = €1M × 0.74% ≈ €7,400/yr
+ *   → over 24 mo   = €7,400 × 2  ≈ €15,000    ← hero figure
+ *   → per month    = €15,000 / 24 ≈ €617/mo   (fully ramped)
  *
- * Same engine (`paymentsGap.js`), same reference brand (€1M GMV, 0.7pt gap),
- * same honesty. The "+" acknowledges the ICP tail — brands closer to €2M
- * project €24,000+ over the same window (see `Range` copy in the footer).
+ * The "+" on the hero acknowledges the ICP tail — brands closer to €2M GMV
+ * project ~€30,000 over the same window (see `Range` copy in the footer).
  *
  * Historical notes preserved:
  *   - R2/R3: reframed from "LIVE · NETWORK MEDIAN / €48,000" (fabricated
- *     telemetry, off by ~8×) to "ILLUSTRATIVE · PROJECTION / €6,000" (honest,
- *     engine-derived).
- *   - R4: recalibrated ProblemSectionWow to close the same €6,000 gap from
- *     the "bleed" side. Both sides of the transaction now speak one number.
- *   - R5 (this): pushes to the 24-month window explicitly. Bleed side gets
- *     "−€6,000/year · −€12,000 over 24 months" so the two figures visibly
- *     rhyme instead of contradicting.
+ *     telemetry, off by ~8×) to "ILLUSTRATIVE · PROJECTION".
+ *   - R4: recalibrated ProblemSectionWow to close the same gap from
+ *     the "bleed" side.
+ *   - R5: pushed the window from 12mo to 24mo to match the pricing model's
+ *     declared recovery window.
+ *   - R6 (this): unified the reference brand across the whole public
+ *     surface. €6k/yr → €7,400/yr, €12k/24mo → €15,000, per-month €500 →
+ *     €617, ICP tail €24k → €30k. All three headline figures (H2 "up to
+ *     40%", ProblemSection €7,400/yr, this chart €15,000) now close the
+ *     SAME account from €1M GMV. Any future gap change must re-derive
+ *     ALL surfaces at once (see Decision_Log rule).
  *
  * Everything else honest: badge ILLUSTRATIVE · PROJECTION, verb "recovered
- * over 24 months" (the pricing window IS 24 months — this is fair language),
- * cohort DTC €200k–€2M, "run the analyzer for your real number".
+ * over 24 months" (the pricing window IS 24 months), cohort DTC €200k–€2M,
+ * "run the analyzer for your real number".
  *
- * The curve *shape* stays organic and monotone — extended smoothly from 12
- * to 24 points via a cubic ease so the visual density feels the same. Axis
- * ticks stay derived from `target`; stats strip stays derived from `target`.
+ * Curve *shape* stays organic and monotone — 24 points via cubic ease.
+ * Axis ticks and stats strip stay derived from `target`; retunes only need
+ * a single number.
  */
 
 /**
@@ -53,9 +57,12 @@ const DEFAULT_MONTHS = 24;
 const DEFAULT_CURVE = buildCurve(DEFAULT_MONTHS);
 
 export default function SavingsCurveChart({
-  // €12,000 — €6,000/yr × 24mo window (matches pricing model's declared window).
-  // Reference brand: €1M GMV, 0.7pt gap, engine `paymentsGap.js`.
-  target = 12000,
+  // €15,000 — €7,400/yr × 24mo window on the canonical reference brand
+  // (€1M GMV, gap 0.74pts, engine `paymentsGap.js` v1.5.0). Value is the
+  // commercial rounding of €14,800 to the nearest €1k for cleaner axis
+  // ticks (€0 / €7.5K / €15K) and hero legibility. See file header for
+  // the full arithmetic and Decision_Log for the canonical rule.
+  target = 15000,
   months = DEFAULT_MONTHS,
   // 24-point monotone curve, cubic ease-out to 1.0.
   curve = DEFAULT_CURVE,
@@ -154,7 +161,7 @@ export default function SavingsCurveChart({
   // not the ceiling — brands at €2M GMV project ~2× this.
   const formatted = `€${currentEUR.toLocaleString("en-US")}+`;
 
-  // Derived stat: €/month when fully ramped. €12,000 / 24 = €500/mo.
+  // Derived stat: €/month when fully ramped. €15,000 / 24 ≈ €625/mo.
   const perMonth = Math.round(target / months);
   const perMonthStr = perMonth >= 1000
     ? `€${(perMonth / 1000).toFixed(1)}k`
@@ -195,14 +202,15 @@ export default function SavingsCurveChart({
         </div>
 
         {/* Microcopy under the hero figure — anchors it emotionally: recovered
-            money is bottom-line, not revenue. €6,000/yr against a typical
-            10% net margin ≈ 5% of annual profit for the reference brand.
-            "Without selling one more unit" is the point. */}
+            money is bottom-line, not revenue. €7,400/yr against a typical
+            10% net margin (€1M GMV → ~€100k profit) ≈ 7% of annual profit
+            for the reference brand. "Without selling one more unit" is the
+            point — this is pure margin, not top-line growth. */}
         <p
           className="mt-2 text-[11px] leading-snug"
           style={{ color: "rgba(255,255,255,0.50)" }}
         >
-          ≈ 5% of annual profit — recovered without selling one more unit.
+          ≈ 7% of annual profit — recovered without selling one more unit.
         </p>
 
         {/* Sober stats strip — recalibrated for €1M GMV ICP over 24-month window */}
@@ -239,7 +247,7 @@ export default function SavingsCurveChart({
                 lineHeight: 1,
               }}
             >
-              0.6pts
+              0.74pts
             </div>
             <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "rgba(255,255,255,0.40)" }}>
               rate saved
@@ -255,7 +263,7 @@ export default function SavingsCurveChart({
                 lineHeight: 1,
               }}
             >
-              ~5%
+              ~7%
             </div>
             <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "rgba(255,255,255,0.40)" }}>
               of profit
@@ -388,10 +396,13 @@ export default function SavingsCurveChart({
       </svg>
 
       {/* ===== Footer meta — honest framing =====
-          R5: added the ICP range line so the "+" in the hero figure has a
-          visible reason. Brands at the €200k floor project ~€2,400 over
-          24 months; brands at the €2M ceiling project ~€24,000+ over the
-          same window. The €12,000+ hero is the midpoint. */}
+          R6 canonical range — same 0.74pt gap on the canonical reference
+          brand, extrapolated linearly to the ICP endpoints:
+            €200k × 0.74% × 2mo  ≈ €3,000/24mo    (floor)
+            €1M   × 0.74% × 2mo  ≈ €15,000/24mo   (midpoint · hero)
+            €2M   × 0.74% × 2mo  ≈ €30,000/24mo   (ceiling)
+          The "+" on the hero figure exists because the reference brand is
+          the midpoint of the ICP, not its ceiling. */}
       <div
         className="mt-3 pt-3"
         style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
@@ -405,15 +416,15 @@ export default function SavingsCurveChart({
           style={{ color: "rgba(255,255,255,0.55)" }}
         >
           <span className="text-white/75 font-semibold">Range:</span>{" "}
-          €2,400 to €24,000+ over 24 months depending on your volume
+          €3,000 to €30,000+ over 24 months depending on your volume
           (€200k–€2M GMV).
         </p>
         <p
           className="mt-1.5 text-[10.5px] leading-snug"
           style={{ color: "rgba(255,255,255,0.38)" }}
         >
-          Illustrative — €1M GMV brand on typical blended pricing. Run the
-          analyzer for your real number.
+          Illustrative — €1M GMV brand, 2.21% effective vs 1.47% achievable.
+          Run the analyzer for your real number.
         </p>
       </div>
     </div>

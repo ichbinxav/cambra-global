@@ -141,7 +141,7 @@ export const FAQ_GROUPS = [
     items: [
       {
         q: "What is CAMBRA?",
-        a: "CAMBRA analyzes your card-payment costs — online (PSP) and in-store (TPV / physical terminal) — measures your effective rate against verifiable public benchmarks, and helps you recover what you're overpaying. Independent commerce brands typically overpay 30–60% on card processing without knowing it.",
+        a: "CAMBRA analyzes your card-payment costs — online (PSP) and in-store (TPV / physical terminal) — measures your effective rate against verifiable public benchmarks, and helps you recover what you're overpaying. Independent commerce brands typically overpay up to 40% on card processing without knowing it.",
       },
       {
         q: "Who is CAMBRA built for?",

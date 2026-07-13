@@ -5,42 +5,57 @@ import SectionLabel from "@/components/shared/SectionLabel";
 import AnimatedSection from "@/components/landing/AnimatedSection";
 
 /**
- * Problem section — payments-only edition · R4 recalibration (2026-07-12).
+ * Problem section — payments-only edition · R6 canonical recalibration (2026-07-13).
  *
  * Three angles of the SAME problem — hidden overpayment on card payments.
- * Numbers derived from the SINGLE REFERENCE BRAND used across the whole
- * landing (see KNOWN_DEBT · "Landing reference-brand rule"):
- *   GMV €1M/yr, blended PSP at 2.4%, intl ~15%, low-mid ticket.
- *   Engine (`paymentsGap.js`) floor ≈ 1.7% → gap ≈ 0.7pts × €1M = €6,000/yr.
+ * Numbers derived from the SINGLE CANONICAL REFERENCE BRAND used across
+ * the whole public surface (see Decision_Log · "Landing reference brand"):
  *
- * The three cards below decompose that same €6,000 gap into its narrative
- * angles (blended / cross-border / fixed-fee drag), so the TOTAL BLEED and
- * the SavingsCurveChart's "recoverable" figure are the same number, told
- * from two ends of the transaction:
- *   —€6,000/yr lost today   =   €6,000/yr recoverable tomorrow.
+ *   GMV €1M/yr · current effective 2.21% · achievable 1.47% · gap 0.74 pts
+ *   → cost today   = €1M × 2.21% = €22,100/yr  (of which €14,700/yr is
+ *                     unavoidable — interchange + scheme floor, kept forever)
+ *   → overpaying   = €1M × 0.74% = €7,400/yr   (THE recoverable portion)
+ *   → over 24 mo   = €7,400 × 2  ≈ €15,000     (matches the pricing window)
+ *   → relative     = €7,400 / €22,100 ≈ 33%    (comfortably under the
+ *                     "up to 40%" band advertised in the H2)
+ *
+ * CRITICAL distinction — do NOT confuse:
+ *   • €14,700/yr = what the merchant STILL pays after optimisation (floor).
+ *     This is NOT recoverable, ever. Never present it as savings.
+ *   • €7,400/yr  = the gap. THIS is what CAMBRA recovers.
+ * Mixing the two is the €48k fabricated-telemetry class of error and must
+ * not happen again.
+ *
+ * The three cards below decompose the €7,400/yr gap into its narrative
+ * angles (blended / cross-border / fixed-fee drag). Amounts sum to €7,400
+ * so the TOTAL BLEED and the SavingsCurveChart's "recovered" figure close
+ * the same account:
+ *   —€7,400/yr overpaying   =   €7,400/yr × 24 mo ≈ €15,000 recovered.
  *
  * Total is a live reduce over ITEMS — NOT hardcoded. If the reference brand
- * assumptions change, retune the three amounts and everything else follows.
+ * assumptions change, retune the three amounts (keeping their proportions)
+ * and everything else follows.
  */
 const ITEMS = [
   {
     icon: TrendingDown,
     category: "Blended rates",
-    amount: 3200,
-    // Overpay relative to floor: 2.4% blended vs 1.7% achievable ≈ +41%.
-    overpayPct: 41,
-    body: "Blended pricing hides the interchange floor. Most brands pay 2.2–2.8% when their real minimum is 1.4–1.8%.",
+    amount: 3900,
+    // Largest angle — blended pricing hides most of the gap.
+    // Overpay vs achievable on the % component: (2.21% − 1.47%) / 1.47% ≈ +50%.
+    overpayPct: 50,
+    body: "Blended pricing hides the interchange floor. Most brands pay 2.0–2.6% when their real minimum sits at 1.4–1.5%.",
     accent: "rgba(239,68,68,0.65)",
     glow: "rgba(239,68,68,0.08)",
   },
   {
     icon: Globe2,
     category: "Cross-border uplift",
-    amount: 1800,
-    // +1.75% Stripe EU/UK cross-border on ~15% intl share vs ~0.9% negotiated
-    // on the same portion ≈ +94% overpay on the intl slice. Visual cap at
-    // +35% to stay in the honest 30-60% band advertised in the H2.
-    overpayPct: 35,
+    amount: 2200,
+    // ~30% of the gap on the reference brand (~15% intl share, +1.75%
+    // Stripe EU/UK cross-border vs a negotiated ~0.9% on the same portion).
+    // Visual cap +38% keeps the bar under the "up to 40%" H2 band.
+    overpayPct: 38,
     body: "International cards add +1.75% on the wrong PSP. On the right one, the schemes' floor is the same — the margin isn't.",
     accent: "rgba(249,115,22,0.65)",
     glow: "rgba(249,115,22,0.08)",
@@ -48,11 +63,11 @@ const ITEMS = [
   {
     icon: Coins,
     category: "Fixed-fee drag",
-    amount: 1000,
-    // €0.25 vs €0.15 per-tx on ~€65 avg ticket ≈ +22% overpay on the fixed
-    // component (the % component isn't affected).
-    overpayPct: 22,
-    body: "€0.25 per-transaction fees compound on low-ticket flows. Amortized against your real ticket size, they quietly change your effective rate.",
+    amount: 1300,
+    // €0.25 vs €0.15 per-tx on ~€65 avg ticket ≈ +25% overpay on the fixed
+    // component (the % component isn't affected). ~17% of the total gap.
+    overpayPct: 25,
+    body: "€0.25 per-transaction fees compound on low-ticket flows. Amortised against your real ticket size, they quietly change your effective rate.",
     accent: "rgba(236,72,153,0.65)",
     glow: "rgba(236,72,153,0.08)",
   },
@@ -264,7 +279,7 @@ export default function ProblemSectionWow() {
                 filter: "drop-shadow(0 0 24px rgba(239,68,68,0.35))",
               }}
             >
-              30–60%
+              up to 40%
             </span>{" "}
             on card payments.{" "}
             <span style={{ color: "rgba(255,255,255,0.55)" }}>Every month.</span>
@@ -322,17 +337,17 @@ export default function ProblemSectionWow() {
                 </p>
                 <p className="text-[13px] text-white/55 max-w-md">
                   <span className="text-white/85 font-semibold">
-                    −€6,000/year
+                    −€7,400/year
                   </span>
                   {" · "}
                   <span className="text-red-300/85 font-semibold">
-                    −€12,000 over 24 months
+                    ≈ €15,000 over 24 months
                   </span>
                   {" — the same money the Savings Curve shows as recoverable."}
                 </p>
                 <p className="text-[11px] text-white/40 mt-2 leading-snug max-w-md">
-                  Illustrative — €1M GMV brand on typical blended pricing.
-                  Run the analyzer for yours.
+                  Illustrative — €1M GMV brand, effective 2.21% vs 1.47% achievable.
+                  Run the analyzer for your real number.
                 </p>
               </div>
             </div>
