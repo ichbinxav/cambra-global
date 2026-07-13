@@ -223,6 +223,11 @@ Deno.serve(async (req) => {
       confidence_level: 'medium',
       benchmark_source: 'provider_published',
       details: {
+        // REDEPLOY-FINGERPRINT 2026-07-13c — forcing a fresh deploy to defeat
+        // stale-runtime hot-reload latency; production was materializing a
+        // legacy scoreEngine-shaped details (shipping/saas/banking) instead of
+        // this payments shape, leaving /Results blank for owned rows.
+        details_shape: "payments-v1",
         // The RANGE the teaser showed — Results must render this unchanged.
         savings_range: range,
         // Full engine output preserved verbatim so nothing is lost and the
