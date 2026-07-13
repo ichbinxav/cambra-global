@@ -77,6 +77,55 @@
         "banking_fx_optimal": {
           "type": "number",
           "description": "Benchmark target FX spread (%) for the brand's cohort. Absent on legacy rows."
+        },
+        "details_shape": {
+          "type": "string",
+          "description": "PAYMENTS-ONLY shape marker (2026-07-13). 'payments-v1' when this row was materialized by the payments claim (claimAnonPaymentsResult) and carries engine_result/input_snapshot below. Absent on legacy scoreEngine rows, which use the number fields above. ROOT-CAUSE NOTE: before this field (and the payments fields below) were declared, Base44 stripped every payments key from details on write, leaving owned claimed rows with only the legacy number keys and no engine_result \u2014 which rendered /Results blank. Declaring these makes the payments shape persist. Purely additive: legacy rows and legacy number keys untouched, no migration."
+        },
+        "savings_range": {
+          "type": "object",
+          "description": "PAYMENTS-ONLY. Annual savings band {lo, point, hi} copied verbatim from engine_result.annual_savings_eur at claim time. Never recomputed.",
+          "properties": {
+            "lo": {
+              "type": "number"
+            },
+            "point": {
+              "type": "number"
+            },
+            "hi": {
+              "type": "number"
+            }
+          }
+        },
+        "engine_result": {
+          "type": "object",
+          "description": "PAYMENTS-ONLY. Full verbatim output of calculatePaymentsGap copied from the PaymentsAnalysisSession at claim time (COPY, never recomputed). This is what PaymentsResults reads to render an owned/unlocked report. Open object \u2014 mirrors the engine's evolving output shape without needing a schema change per field."
+        },
+        "engine_version": {
+          "type": "string",
+          "description": "PAYMENTS-ONLY. engine_version copied from the session (e.g. 'payments-gap-1.5.0')."
+        },
+        "cohort": {
+          "type": "object",
+          "description": "PAYMENTS-ONLY. Cohort descriptor {key, verified, matched} copied from engine_result at claim time."
+        },
+        "input_snapshot": {
+          "type": "object",
+          "description": "PAYMENTS-ONLY. The sanitized inputs that produced engine_result (monthly_gmv_eur, avg_ticket_eur, provider_slug, country), copied from the session so PaymentsResults can render the footer without recomputation.",
+          "properties": {
+            "monthly_gmv_eur": {
+              "type": "number"
+            },
+            "avg_ticket_eur": {
+              "type": "number"
+            },
+            "provider_slug": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            }
+          }
         }
       }
     },
