@@ -6,6 +6,59 @@ import { isBot } from '@/lib/utils';
 
 const AuthContext = createContext();
 
+// ── Anonymous-session rescue helpers ───────────────────────────────────────
+// The rescue exists for ONE purpose: carry the anonymous Analyzer session id
+// across Base44's signup redirect so a freshly-created user who lands on "/"
+// gets bounced back to their populated report. It reads two channels because
+// Base44's SIGNUP branch can return in a different tab/context (OAuth popup)
+// where the origin tab's localStorage isn't shared:
+//   1) localStorage['cambra_pending_anon_session'] — same-tab LOGIN path.
+//   2) cookie 'cambra_anon_session'                — cross-tab SIGNUP path.
+const ANON_UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidAnonSession(v) {
+  return typeof v === 'string' && ANON_UUID_RE.test(v);
+}
+
+function readPendingAnonSession() {
+  if (typeof window === 'undefined') return null;
+  let pending = null;
+  try { pending = localStorage.getItem('cambra_pending_anon_session'); }
+  catch { /* fall through to cookie */ }
+  if (!pending) {
+    try {
+      const match = (document.cookie || '').match(/(?:^|;\s*)cambra_anon_session=([^;]+)/);
+      if (match) pending = decodeURIComponent(match[1]);
+    } catch { /* no cookie access */ }
+  }
+  return pending;
+}
+
+function clearPendingAnonSession() {
+  try { localStorage.removeItem('cambra_pending_anon_session'); } catch { /* ignore */ }
+  try { document.cookie = 'cambra_anon_session=; Max-Age=0; Path=/; SameSite=Lax'; } catch { /* ignore */ }
+}
+
+// Fire the rescue ONLY when it's genuinely the post-signup landing case:
+// unauthenticated + on "/" + a valid pending id present. Clears the pending
+// id in the SAME tick as the redirect (armed-and-consumed atomically) so it
+// can never fire twice → no loop. Returns true if it redirected.
+function maybeRescueAnonymousSession() {
+  if (typeof window === 'undefined') return false;
+  const onLanding =
+    window.location.pathname === '/' ||
+    window.location.pathname === '/Landing' ||
+    window.location.pathname === '/landing';
+  if (!onLanding) return false;
+  const pending = readPendingAnonSession();
+  if (!isValidAnonSession(pending)) return false;
+  // Consume immediately — clear BEFORE the redirect so a reload can't re-arm.
+  clearPendingAnonSession();
+  window.location.replace(`/Results?session=${encodeURIComponent(pending)}`);
+  return true;
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,65 +72,34 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAppState = async () => {
-    // #1 FIX Layer B — MUST run BEFORE the public-landing early-return.
+    // ─────────────────────────────────────────────────────────────────────
+    // SESSION FIX (2026-07-13) — AUTH RESOLVES BEFORE THE ANONYMOUS RESCUE.
     //
-    // Root cause of the "user lands on / after signup" bug:
-    // Base44's SIGNUP path drops from_url and returns the user to "/". The
-    // landing is public → AuthContext hits the early-return below and NEVER
-    // calls checkUserAuth. Layer B rescue that used to live inside
-    // checkUserAuth was therefore unreachable exactly when it was needed.
+    // Previous bug: the anonymous-session rescue ran at the very TOP of
+    // checkAppState and could `return` (redirect to /Results) BEFORE auth
+    // was ever verified. Because `cambra_pending_anon_session` was never
+    // cleared, that rescue fired on EVERY mount — hijacking every navigation
+    // of an already-logged-in user back to the anonymous /Results, which the
+    // founder experienced as "the app forgets I'm logged in / keeps sending
+    // me to the anonymous analysis".
     //
-    // Fix: read the pending anon session id here (synchronous storage
-    // access, no network) BEFORE any short-circuit. If present + valid UUID
-    // v4 + we're not already on /Results, redirect immediately.
+    // New order (see maybeRescueAnonymousSession below for the actual gate):
+    //   1. Resolve auth FIRST (checkUserAuth, later in this function).
+    //   2. If authenticated → the rescue is DISARMED (pending cleared).
+    //   3. ONLY if NOT authenticated AND on "/" AND a valid pending id
+    //      exists → rescue (armed-and-consumed atomically: cleared in the
+    //      same tick as the redirect, so it can never loop).
+    // The rescue can NO LONGER abort checkUserAuth — auth always runs first.
     //
-    // We read TWO channels in priority order:
-    //   1) localStorage       — same-tab LOGIN path (fast, always works).
-    //   2) cambra_anon_session cookie — SIGNUP path when Base44 returns
-    //      in a different tab/context (OAuth popup, magic-link opened
-    //      elsewhere), where localStorage of the origin tab isn't shared.
-    // Whichever channel has a valid UUID wins. If both disagree,
-    // localStorage takes precedence (more recent, tighter to the tab).
+    // Malformed-value cleanup is safe to do up front (no redirect, no return).
     try {
       if (typeof window !== 'undefined') {
-        const uuidRe =
-          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-        // Channel 1 — localStorage
-        let pending = null;
-        try { pending = localStorage.getItem('cambra_pending_anon_session'); }
-        catch { /* fall through to cookie */ }
-
-        // Channel 2 — cookie fallback (only if localStorage was empty/unusable)
-        if (!pending) {
-          try {
-            const raw = document.cookie || '';
-            const match = raw.match(/(?:^|;\s*)cambra_anon_session=([^;]+)/);
-            if (match) pending = decodeURIComponent(match[1]);
-          } catch { /* no cookie access — nothing more to try */ }
-        }
-
-        if (pending) {
-          const looksLikeUuid = uuidRe.test(pending);
-          const onResults =
-            window.location.pathname === '/Results' &&
-            window.location.search.includes('session=');
-          if (looksLikeUuid && !onResults) {
-            // NOTE: we do NOT clear either channel here. PaymentsResults
-            // re-writes both on mount, so leaving them in place is harmless
-            // and keeps the rescue idempotent if the redirect itself gets
-            // interrupted (flaky network, refresh, etc.).
-            window.location.replace(`/Results?session=${encodeURIComponent(pending)}`);
-            return;
-          }
-          // Malformed value → clean up silently in both channels.
-          if (!looksLikeUuid) {
-            try { localStorage.removeItem('cambra_pending_anon_session'); } catch {}
-            try { document.cookie = 'cambra_anon_session=; Max-Age=0; Path=/; SameSite=Lax'; } catch {}
-          }
+        const pending = readPendingAnonSession();
+        if (pending && !isValidAnonSession(pending)) {
+          clearPendingAnonSession();
         }
       }
-    } catch { /* storage unavailable → nothing we can do, fall through */ }
+    } catch { /* storage unavailable → nothing to clean, fall through */ }
 
     // Hard stop for public homepage: no auth or app calls on '/'
     const isPublicLandingPath = typeof window !== 'undefined' && (
@@ -90,6 +112,14 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       setAuthError(null);
+      // Post-signup rescue lives HERE for the landing case: Base44's signup
+      // branch drops from_url and returns the user to "/" with NO token in
+      // the URL yet (the public landing early-returns before any auth call).
+      // maybeRescueAnonymousSession is self-gated (only "/" + valid pending)
+      // and consumes the id atomically, so a genuine new signup is bounced to
+      // its report exactly once, while a normal landing visit with no pending
+      // id is a no-op. This is the ONLY place the rescue can fire on "/".
+      maybeRescueAnonymousSession();
       return;
     }
 
@@ -125,14 +155,28 @@ export const AuthProvider = ({ children }) => {
         const publicSettings = await res.json();
         setAppPublicSettings(publicSettings);
         
-        // If we got the app public settings successfully, check if user is authenticated
+        // AUTH-FIRST: resolve authentication BEFORE the anonymous rescue can
+        // act, so the rescue never hijacks a logged-in user's navigation.
+        let didAuth = false;
         if (appParams.token) {
-          await checkUserAuth();
+          didAuth = await checkUserAuth();
         } else {
           setIsLoadingAuth(false);
           setIsAuthenticated(false);
         }
         setIsLoadingPublicSettings(false);
+
+        // Post-auth anonymous-session handling:
+        //   • Authenticated → DISARM the rescue (the handoff is done or was
+        //     never needed — an existing user has no pending anon report).
+        //   • Not authenticated → the rescue MAY fire, but only on "/" with a
+        //     valid pending id (handled inside maybeRescueAnonymousSession,
+        //     which consumes the id atomically to prevent any loop).
+        if (didAuth) {
+          clearPendingAnonSession();
+        } else {
+          maybeRescueAnonymousSession();
+        }
       } catch (appError) {
         console.error('App state check failed:', appError);
         
@@ -186,11 +230,10 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
 
-      // Layer B rescue for anonymous-audit continuity now lives at the top
-      // of checkAppState() so it runs BEFORE the public-landing early-return.
-      // That path is exactly what Base44's signup branch triggers (drops
-      // from_url → lands user on "/") and the previous placement here was
-      // never reached for that case.
+      // Anonymous-session rescue is orchestrated by checkAppState AFTER this
+      // resolves (auth-first ordering). Returning true lets the caller DISARM
+      // the rescue for authenticated users.
+      return true;
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
@@ -203,6 +246,7 @@ export const AuthProvider = ({ children }) => {
           message: 'Authentication required'
         });
       }
+      return false;
     }
   };
 

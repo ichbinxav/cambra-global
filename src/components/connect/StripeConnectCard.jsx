@@ -367,13 +367,17 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
     <div className="rounded-2xl border border-border/60 bg-card p-4">
       <Header>Connect read-only access to pull live fees & volumes</Header>
       <div className="flex items-center justify-between gap-3">
+        {/* Timing guard: brandId resolves asynchronously in the parent
+            (ConnectTools does auth.me() → Brand.filter). Disabling until it's
+            present prevents the "Missing brand context — please refresh"
+            error from a click that lands before the brand is resolved. */}
         <button
           onClick={handleConnect}
-          disabled={busy}
+          disabled={busy || !brandId}
           className="h-9 px-4 rounded-full text-xs font-bold text-white disabled:opacity-50"
           style={{ background: stripeColor }}
         >
-          {busy ? "Connecting…" : "Connect Stripe"}
+          {busy ? "Connecting…" : !brandId ? "Loading…" : "Connect Stripe"}
         </button>
         <span className="text-[10px] text-muted-foreground">🔒 Read-only OAuth</span>
       </div>
