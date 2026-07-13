@@ -74,7 +74,10 @@ const REGISTRY = {
     auth_method: "oauth",
     auth_url: "https://connect.stripe.com/oauth/authorize",
     token_url: "https://connect.stripe.com/oauth/token",
-    scopes: ["read_only"],
+    // Kept in sync with oauthConnector (registry duplication note): Stripe
+    // blocks new read-only Connect connections without prior approval, so the
+    // authorize flow requests read_write. CAMBRA still only reads (GET-only sync).
+    scopes: ["read_write"],
     client_id_env: "STRIPE_CLIENT_ID",
     client_secret_env: "STRIPE_SECRET_KEY",
     data_type: "transactions",

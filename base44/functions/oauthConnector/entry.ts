@@ -129,7 +129,13 @@ const REGISTRY = {
     auth_method: "oauth",
     auth_url: "https://connect.stripe.com/oauth/authorize",
     token_url: "https://connect.stripe.com/oauth/token",
-    scopes: ["read_only"],
+    // Stripe blocks NEW read-only Connect connections without prior approval
+    // from Stripe support ("Please use the `read_write` scope..."). read_write
+    // unblocks the connection immediately. CAMBRA still only READS data (the
+    // sync engine issues GET-only requests) — read_write is the minimum scope
+    // Stripe currently accepts for a fresh Connect flow. (Follow-up, not now:
+    // request the read-only exception from Stripe support.)
+    scopes: ["read_write"],
     client_id_env: "STRIPE_CLIENT_ID",
     client_secret_env: "STRIPE_SECRET_KEY",
     data_type: "transactions",
