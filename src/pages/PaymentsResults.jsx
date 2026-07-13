@@ -37,6 +37,7 @@ import FeeBreakdownCard from "@/components/paymentsResults/FeeBreakdownCard";
 import AssumptionsFootnote from "@/components/paymentsResults/AssumptionsFootnote";
 import CombinedGapHero from "@/components/paymentsResults/CombinedGapHero";
 import OptimizedHero from "@/components/paymentsResults/OptimizedHero";
+import ResultsHistory from "@/components/paymentsResults/ResultsHistory";
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const OBJECT_ID = /^[0-9a-f]{24}$/i;
@@ -320,7 +321,29 @@ export default function PaymentsResults() {
     );
   }
 
-  // ── invalid or missing session id
+  // ── no session AND no verified id in the URL — the "bare /Results" case.
+  //    Authenticated → show the user's own analysis history (server-side,
+  //    getMyPaymentsHistory). Anonymous → neutral "run your analysis" prompt,
+  //    NOT the scary "this link isn't valid" (there was never a link).
+  const hasNoTarget = !verifiedId && !sessionId;
+  if (hasNoTarget && (status === "invalid" || status === "not_found")) {
+    return (
+      <ResultsShell>
+        {isAuthenticated ? (
+          <ResultsHistory />
+        ) : (
+          <EmptyState
+            title="Run your payments analysis"
+            message="See what you're overpaying on payments in about two minutes — no account needed."
+            ctaLabel="Start analysis"
+            onCta={() => navigate("/Analyzer")}
+          />
+        )}
+      </ResultsShell>
+    );
+  }
+
+  // ── invalid or missing session id (a target WAS provided but is bad)
   if (status === "invalid" || status === "not_found") {
     return (
       <ResultsShell>
