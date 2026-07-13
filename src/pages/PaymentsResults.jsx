@@ -235,6 +235,33 @@ export default function PaymentsResults() {
             if (Array.isArray(rows) && rows[0]) { owned = rows[0]; break; }
           }
           if (cancelled) return;
+          // ISSUE 2 FIX (2026-07-13) — already-authenticated user running a
+          // NEW analysis. The session is born anonymous (submitPaymentsAnalysis
+          // never checks auth) and the login-transition claim in AuthContext
+          // does NOT fire (the user was already authenticated → no didAuth
+          // transition), so no owned AnalyzerResult ever gets materialized and
+          // the page would fall to the locked teaser. If we're authenticated
+          // and found no owned row yet, fire the (idempotent) claim right here
+          // — we're already authenticated so it succeeds — then retry the read
+          // briefly (eventual consistency) so we unlock without a teaser flash.
+          // Safe to run alongside AuthContext's claim: claimAnonPaymentsResult
+          // is idempotent (owner-check + already_claimed + create-then-verify).
+          if (!owned && !cancelled) {
+            const claim = await base44.functions
+              .invoke("claimAnonPaymentsResult", { anon_session_id: sessionId })
+              .catch(() => null);
+            const cbody = claim?.data || claim;
+            if (cbody?.ok && !cancelled) {
+              const retryDelays = [0, 400, 900];
+              for (let i = 0; i < retryDelays.length && !cancelled; i++) {
+                if (retryDelays[i]) await new Promise((r) => setTimeout(r, retryDelays[i]));
+                const rows = await base44.entities.AnalyzerResult
+                  .filter({ anon_session_id: sessionId }, "-created_date", 1)
+                  .catch(() => []);
+                if (Array.isArray(rows) && rows[0]) { owned = rows[0]; break; }
+              }
+            }
+          }
           // Only use the owned row when it actually carries the payments
           // engine_result in its details. LEGACY rows materialized by an older
           // claim (or the pre-pivot scoreEngine path) have a details shape

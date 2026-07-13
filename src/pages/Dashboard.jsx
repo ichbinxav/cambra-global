@@ -335,6 +335,19 @@ export default function Dashboard() {
             >
               {formatEur(latest.total_savings)}<span className="text-[0.35em] font-bold text-white/40 ml-2" style={{ WebkitTextFillColor: "rgba(255,255,255,0.4)" }}>/{t("per_yr_short")}</span>
             </p>
+            {/* Confidence band — same presentation as the Results report:
+                big figure (total_savings = the point) + lo–hi range underneath.
+                GUARD: only when details.savings_range exists with a valid
+                lo–hi (legacy/incurable rows have no range → no band, never a
+                broken/empty band). */}
+            {isFinite(latest?.details?.savings_range?.lo) && isFinite(latest?.details?.savings_range?.hi) && (
+              <p className="text-[12px] text-white/50 mt-2">
+                Estimated range{" "}
+                <span className="text-white/75 font-semibold tabular-nums">
+                  {formatEur(latest.details.savings_range.lo)}–{formatEur(latest.details.savings_range.hi)}
+                </span>{" "}/{t("per_yr_short")}
+              </p>
+            )}
             <p className="text-sm text-white/60 mt-3 max-w-md">{heroSubtitle}</p>
             {/* Honesty caption — only when not verified. Uses `active_days`
                 parsed from the AnalyzerResult's assumptions string. */}

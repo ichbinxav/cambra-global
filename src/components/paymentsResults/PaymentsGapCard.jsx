@@ -115,7 +115,11 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
         )}
       </div>
 
-      {/* Annual savings range — the hero */}
+      {/* Annual savings — the hero. UNIFIED PRESENTATION (2026-07-13): the big
+          figure is the POINT estimate (same number the Dashboard shows), with
+          the lo–hi RANGE band directly underneath as the confidence band. This
+          keeps Dashboard and Results visually identical. When the point is
+          missing (legacy rows), we fall back to the range as the headline. */}
       <p className="text-[13px] text-white/55 mb-2">You're overpaying by roughly</p>
       <div className="flex items-baseline gap-3 flex-wrap">
         <span
@@ -131,12 +135,20 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             backgroundClip: "text",
           }}
         >
-          {eur(annual.lo)}–{eur(annual.hi)}
+          {isFinite(annual.point) ? eur(annual.point) : `${eur(annual.lo)}–${eur(annual.hi)}`}
         </span>
         <span className="text-[13px] text-white/50">/ year</span>
       </div>
-      <p className="text-[12px] text-white/45 mt-2">
-        That's about <span className="text-white/75 font-semibold tabular-nums">{eur(monthly.lo)}–{eur(monthly.hi)}</span> a month.
+      {/* Confidence band — only when we have a real lo–hi range. */}
+      {isFinite(annual.lo) && isFinite(annual.hi) && (
+        <p className="text-[12px] text-white/50 mt-2">
+          Estimated range <span className="text-white/75 font-semibold tabular-nums">{eur(annual.lo)}–{eur(annual.hi)}</span> / year
+        </p>
+      )}
+      <p className="text-[12px] text-white/45 mt-1">
+        That's about <span className="text-white/75 font-semibold tabular-nums">
+          {isFinite(monthly.point) ? eur(monthly.point) : `${eur(monthly.lo)}–${eur(monthly.hi)}`}
+        </span> a month.
       </p>
 
       {/* Current vs achievable rate strip */}
