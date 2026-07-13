@@ -1,13 +1,15 @@
-// claimAnonPaymentsResult — the payments-only handoff step (deploy-clean rename).
+// claimAnonPaymentsResult — the payments-only handoff step. SINGLE SOURCE OF
+// TRUTH for the anonymous→authenticated claim (the only claim function; the
+// former `claimPaymentsAnalysisSession` was deleted 2026-07-13).
 //
-// WHY A NEW NAME (2026-07-13): the previous function `claimPaymentsAnalysisSession`
-// had a FROZEN runtime build — neither incremental find_replace nor a full
-// write_file rewrite ever landed in production, so freshly-claimed rows kept
-// carrying the LEGACY scoreEngine `details` shape (shipping/saas/banking) with
-// no `engine_result`, which rendered /Results blank for owned rows. Brand-NEW
-// function names deploy cleanly in this sandbox (verified with a probe), so
-// the root fix is to recreate the claim under a new name and point AuthContext
-// at it. `claimPaymentsAnalysisSession` is now dead — no caller references it.
+// ROOT CAUSE (corrected 2026-07-13): reports rendered blank NOT because of a
+// "frozen deploy" but because the AnalyzerResult.details schema only declared
+// the legacy scoreEngine keys, so Base44 silently STRIPPED every payments key
+// on write (engine_result, input_snapshot, AND the details_shape fingerprint —
+// which is exactly why edits appeared to "never land": the probe itself was
+// being eaten). The fix was declaring the payments sub-properties on the
+// details schema. The deploy was never frozen. This is the sole survivor and
+// AuthContext points at it.
 //
 // ── CONDICIONES NO NEGOCIABLES (Xavi 2026-07-13) ────────────────────────────
 //  1. NO RECALCULAR — COPIAR. The materialized AnalyzerResult carries the
