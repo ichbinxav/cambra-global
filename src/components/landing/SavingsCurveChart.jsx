@@ -9,7 +9,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
  *   GMV €1M/yr · current effective 2.21% · achievable 1.47% · gap 0.74 pts
  *   → overpaying   = €1M × 0.74% ≈ €7,400/yr
  *   → over 24 mo   = €7,400 × 2  ≈ €15,000    ← hero figure
- *   → per month    = €15,000 / 24 ≈ €617/mo   (fully ramped)
+ *   → per month    = €15,000 / 24 ≈ €625/mo   (fully ramped, what the code renders)
  *
  * The "+" on the hero acknowledges the ICP tail — brands closer to €2M GMV
  * project ~€30,000 over the same window (see `Range` copy in the footer).
@@ -23,7 +23,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
  *     declared recovery window.
  *   - R6 (this): unified the reference brand across the whole public
  *     surface. €6k/yr → €7,400/yr, €12k/24mo → €15,000, per-month €500 →
- *     €617, ICP tail €24k → €30k. All three headline figures (H2 "up to
+ *     €625, ICP tail €24k → €30k. All three headline figures (H2 "up to
  *     40%", ProblemSection €7,400/yr, this chart €15,000) now close the
  *     SAME account from €1M GMV. Any future gap change must re-derive
  *     ALL surfaces at once (see Decision_Log rule).
