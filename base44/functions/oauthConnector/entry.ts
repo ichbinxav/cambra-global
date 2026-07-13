@@ -135,7 +135,10 @@ const REGISTRY = {
     // sync engine issues GET-only requests) — read_write is the minimum scope
     // Stripe currently accepts for a fresh Connect flow. (Follow-up, not now:
     // request the read-only exception from Stripe support.)
+    // REDEPLOY-FINGERPRINT 2026-07-13b — forcing a fresh deploy to defeat
+    // stale-runtime hot-reload latency; production was still serving read_only.
     scopes: ["read_write"],
+    scope_fingerprint: "rw-2026-07-13b",
     client_id_env: "STRIPE_CLIENT_ID",
     client_secret_env: "STRIPE_SECRET_KEY",
     data_type: "transactions",
