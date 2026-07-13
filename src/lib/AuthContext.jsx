@@ -48,7 +48,7 @@ async function claimThenRedirect() {
   claimInFlight = true;
 
   try {
-    const res = await base44.functions.invoke('claimPaymentsAnalysisSession', { anon_session_id: pending });
+    const res = await base44.functions.invoke('claimAnonPaymentsResult', { anon_session_id: pending });
     const data = res?.data || res;
     if (data?.ok) {
       clearPendingAnonSession();           // terminal success → consume
