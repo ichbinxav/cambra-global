@@ -55,6 +55,10 @@ const PROVIDER_OPTIONS_ONLINE = [
   { slug: "mollie",           label: "Mollie",           hasSeed: true  },
   { slug: "checkout_com",     label: "Checkout.com",     hasSeed: true  },
   { slug: "sumup",            label: "SumUp",            hasSeed: true  },
+  // 0.2b (2026-07-13) — FR online PSPs, each with a seeded <slug>|ANY|EU row.
+  { slug: "payplug",          label: "Payplug",          hasSeed: true  },
+  { slug: "stancer",          label: "Stancer",          hasSeed: true  },
+  { slug: "lyra",             label: "Lyra",             hasSeed: true  },
   { slug: "klarna",           label: "Klarna",           hasSeed: false },
   { slug: "worldpay",         label: "Worldpay",         hasSeed: false },
   { slug: "square",           label: "Square",           hasSeed: false },
@@ -69,6 +73,8 @@ const PROVIDER_OPTIONS_IN_STORE = [
   { slug: "stripe_terminal", label: "Stripe Terminal",    hasSeed: true  },
   { slug: "smile_and_pay",   label: "Smile & Pay",        hasSeed: true  },
   { slug: "zettle",          label: "Zettle by PayPal",   hasSeed: true  },
+  // 0.2b (2026-07-13) — FR in-store TPV with a seeded row.
+  { slug: "yavin",           label: "Yavin",              hasSeed: true  },
   { slug: "square",          label: "Square",             hasSeed: false },
   { slug: "revolut_reader",  label: "Revolut Reader",     hasSeed: false },
   { slug: "mypos",           label: "myPOS",              hasSeed: false },
