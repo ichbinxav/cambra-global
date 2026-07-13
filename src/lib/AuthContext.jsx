@@ -21,6 +21,53 @@ function isValidAnonSession(v) {
   return typeof v === 'string' && ANON_UUID_RE.test(v);
 }
 
+// CONCURRENCY — primary defense (2026-07-13). Module-scoped once-guard so a
+// StrictMode double-render / double-mount of AuthProvider fires the claim at
+// most ONCE per page load. Resets on a real reload, which is exactly what the
+// network-retry path below relies on. Combined with server-side idempotency
+// (create-then-verify + already_claimed), this covers the client-side race.
+let claimInFlight = false;
+
+// Claim the pending anonymous analysis for a NOW-AUTHENTICATED user, then land
+// them on their unlocked report. Fires ONLY from the authenticated branch when
+// a valid pending id exists — NO path gate, so it works on the real post-login
+// from_url (/Results?session=<uuid>) exactly as on "/".
+//
+// PENDING CONSUMPTION — terminal-only (robustness, 2026-07-13):
+//   • ok (claimed or already yours) → clear pending, route to owned report.
+//   • already_claimed / session_not_found → terminal (retry won't help) →
+//     clear pending, clean Dashboard.
+//   • network failure / exception → DO NOT clear pending → next real load
+//     retries the claim (claimInFlight resets on reload → no loop). A network
+//     blip must never strand the user's anonymous analysis.
+async function claimThenRedirect() {
+  if (typeof window === 'undefined') return false;
+  const pending = readPendingAnonSession();
+  if (!isValidAnonSession(pending)) return false;
+  if (claimInFlight) return true;          // once-guard: never twice per load
+  claimInFlight = true;
+
+  try {
+    const res = await base44.functions.invoke('claimPaymentsAnalysisSession', { anon_session_id: pending });
+    const data = res?.data || res;
+    if (data?.ok) {
+      clearPendingAnonSession();           // terminal success → consume
+      const target = `/Results?session=${encodeURIComponent(pending)}`;
+      const here = window.location.pathname + window.location.search;
+      if (here !== target) window.location.replace(target);
+      return true;
+    }
+    // Terminal not-ok (already_claimed / session_not_found): retry won't help.
+    clearPendingAnonSession();
+    if (window.location.pathname !== '/Dashboard') window.location.replace('/Dashboard');
+    return true;
+  } catch {
+    // Network / transport failure → NOT terminal. Keep the pending so the next
+    // real load retries the claim. Do not redirect (stay where we are).
+    return true;
+  }
+}
+
 function readPendingAnonSession() {
   if (typeof window === 'undefined') return null;
   let pending = null;
@@ -128,8 +175,17 @@ export const AuthProvider = ({ children }) => {
         // Authenticated → DISARM the rescue (an existing user has no pending
         // anonymous report to be bounced to). Only rescue when /me failed.
         if (didAuth) {
-          clearPendingAnonSession();
+          // Authenticated: if a pending anon session exists (just signed up /
+          // logged in), CLAIM it now — no path gate, works on /Results?session=
+          // and "/" alike. Otherwise disarm as before.
+          if (isValidAnonSession(readPendingAnonSession())) {
+            await claimThenRedirect();
+          } else {
+            clearPendingAnonSession();
+          }
         } else {
+          // Anonymous branch — UNCHANGED. Pure redirect to the teaser, never
+          // the claim (claim requires auth → would 401 and strand the visitor).
           maybeRescueAnonymousSession();
         }
       } else {
@@ -196,8 +252,16 @@ export const AuthProvider = ({ children }) => {
         //     valid pending id (handled inside maybeRescueAnonymousSession,
         //     which consumes the id atomically to prevent any loop).
         if (didAuth) {
-          clearPendingAnonSession();
+          // Authenticated: claim a pending anon session (path-independent) so
+          // the real post-login return to /Results?session= materializes the
+          // owned report. Otherwise disarm as before.
+          if (isValidAnonSession(readPendingAnonSession())) {
+            await claimThenRedirect();
+          } else {
+            clearPendingAnonSession();
+          }
         } else {
+          // Anonymous branch — UNCHANGED.
           maybeRescueAnonymousSession();
         }
       } catch (appError) {

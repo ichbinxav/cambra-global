@@ -218,6 +218,38 @@ export default function PaymentsResults() {
     setStatus("loading");
     (async () => {
       try {
+        // DIFF 3 — Authenticated readers first try their OWNED AnalyzerResult
+        // (materialized by the claim) and render it UNLOCKED. Base44 is
+        // eventually consistent, so right after a claim the row may not be
+        // visible yet — retry briefly before falling back to the teaser, so a
+        // just-logged-in user never flashes the "create an account" teaser
+        // over their own report. Anonymous readers skip this entirely.
+        if (isAuthenticated) {
+          const delays = [0, 400, 900]; // ~1.3s worst case
+          let owned = null;
+          for (let i = 0; i < delays.length && !cancelled; i++) {
+            if (delays[i]) await new Promise((r) => setTimeout(r, delays[i]));
+            const rows = await base44.entities.AnalyzerResult
+              .filter({ anon_session_id: sessionId }, "-created_date", 1)
+              .catch(() => []);
+            if (Array.isArray(rows) && rows[0]) { owned = rows[0]; break; }
+          }
+          if (cancelled) return;
+          if (owned) {
+            // Rebuild the SAME view the teaser showed — engine_result verbatim
+            // + the exact savings_range (matiz #1: number/range unchanged).
+            setPayload({
+              ok: true,
+              engine_result: owned?.details?.engine_result || null,
+              engine_version: owned?.details?.engine_version || owned?.savings_model_version || null,
+              input_snapshot: owned?.details?.input_snapshot || null,
+              owned: true,
+            });
+            setStatus("ready");
+            return;
+          }
+          // No owned row after retries → fall through to the teaser (unchanged).
+        }
         const resp = await base44.functions.invoke("getPaymentsGapTeaser", { anon_session_id: sessionId });
         if (cancelled) return;
         const body = resp?.data || resp;
@@ -499,7 +531,7 @@ export default function PaymentsResults() {
               already signed in and connected. */}
           <FeeBreakdownCard
             engineResult={engineResult}
-            locked={engineResult?.mode !== "verified"}
+            locked={engineResult?.mode !== "verified" && !payload?.owned}
           />
           <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
         </div>
