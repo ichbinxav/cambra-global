@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 // PLACEHOLDER testimonials — replace with real customer quotes before public launch.
 const TESTIMONIALS = [
@@ -38,6 +39,7 @@ const TESTIMONIALS = [
 ];
 
 export default function Testimonials() {
+  const { t } = useTranslation();
   return (
     <div
       className="relative min-h-screen font-inter overflow-hidden text-white"
@@ -70,29 +72,28 @@ export default function Testimonials() {
             >
               <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
               <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">
-                Testimonials · From real operators
+                {t("tst_hero_badge")}
               </span>
             </div>
             <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-4 text-white">
-              What brands say <br className="hidden sm:inline" /> about{" "}
               <span
                 style={{
-                  background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+                  background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #22d3ee 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                CAMBRA.
+                {t("tst_hero_h1")}
               </span>
             </h1>
             <p className="text-base text-white/60 max-w-xl mx-auto">
-              Real results from independent commerce brands across Europe.
+              {t("tst_hero_sub")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {TESTIMONIALS.map((t, i) => (
+            {TESTIMONIALS.map((tm, i) => (
               <div
                 key={i}
                 className="relative overflow-hidden rounded-[1.75rem] p-7 flex flex-col transition hover:-translate-y-0.5"
@@ -104,24 +105,24 @@ export default function Testimonials() {
                 }}
               >
                 <div className="flex items-center gap-1 mb-4">
-                  {[...Array(t.rating)].map((_, j) => (
+                  {[...Array(tm.rating)].map((_, j) => (
                     <Star key={j} size={14} className="fill-cyan-300 text-cyan-300" />
                   ))}
                 </div>
 
-                <p className="text-sm text-white/80 mb-6 flex-1 leading-relaxed">"{t.text}"</p>
+                <p className="text-sm text-white/80 mb-6 flex-1 leading-relaxed">"{tm.text}"</p>
 
                 <div
                   className="flex items-center gap-3 pt-4"
                   style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
                 >
                   <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shrink-0 font-bold text-xs">
-                    {t.avatar}
+                    {tm.avatar}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">{t.name}</p>
+                    <p className="text-sm font-semibold text-white">{tm.name}</p>
                     <p className="text-[11px] text-white/55">
-                      {t.role} at {t.company}
+                      {t("tst_role_at", { role: tm.role, company: tm.company })}
                     </p>
                   </div>
                 </div>

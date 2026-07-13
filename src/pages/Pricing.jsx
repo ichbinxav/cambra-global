@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck, TrendingUp, Zap, Lock, Sparkles } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
 import PricingDual from "@/components/landing/PricingDual";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 const FAQ = [
   {
@@ -31,18 +32,19 @@ const FAQ = [
 ];
 
 const TRUST_POINTS = [
-  { icon: ShieldCheck, label: "No credit card" },
-  { icon: Lock, label: "Read-only, encrypted access" },
-  { icon: Zap, label: "5-minute setup" },
-  { icon: TrendingUp, label: "Cancel anytime" },
+  { icon: ShieldCheck, key: "prc_trust_1" },
+  { icon: Lock, key: "prc_trust_2" },
+  { icon: Zap, key: "prc_trust_3" },
+  { icon: TrendingUp, key: "prc_trust_4" },
 ];
 
 function SplitVisual() {
+  const { t } = useTranslation();
   return (
     <div className="relative max-w-4xl mx-auto mb-16 sm:mb-20">
       <div className="text-center mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45 mb-3">
-          Pricing model
+          {t("prc_split_eyebrow")}
         </p>
         <h2
           className="text-white"
@@ -54,7 +56,7 @@ function SplitVisual() {
             lineHeight: 1.05,
           }}
         >
-          You keep the margin. We take a share.
+          {t("prc_split_h2")}
         </h2>
       </div>
 
@@ -71,7 +73,7 @@ function SplitVisual() {
           <div className="flex items-baseline justify-between mb-4">
             <div>
               <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/80 mb-1">
-                You keep
+                {t("prc_you_keep")}
               </p>
               <p
                 className="tabular-nums font-black"
@@ -93,7 +95,7 @@ function SplitVisual() {
             </div>
             <div className="text-right">
               <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/40 mb-1">
-                CAMBRA
+                {t("prc_cambra")}
               </p>
               <p
                 className="tabular-nums font-black text-white/70"
@@ -130,29 +132,29 @@ function SplitVisual() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-white/[0.06]">
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/40 mb-1.5">
-                Duration
+                {t("prc_duration_label")}
               </p>
-              <p className="text-[14px] font-semibold text-white">24 months</p>
+              <p className="text-[14px] font-semibold text-white">{t("prc_duration_val")}</p>
               <p className="text-[11.5px] text-white/50 mt-0.5">
-                Then 100% yours, forever
+                {t("prc_duration_note")}
               </p>
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/40 mb-1.5">
-                Already at benchmark
+                {t("prc_atbench_label")}
               </p>
-              <p className="text-[14px] font-semibold text-white">You pay €0</p>
+              <p className="text-[14px] font-semibold text-white">{t("prc_atbench_val")}</p>
               <p className="text-[11.5px] text-white/50 mt-0.5">
-                No gap, no fee — ever
+                {t("prc_atbench_note")}
               </p>
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/40 mb-1.5">
-                If no savings
+                {t("prc_nosav_label")}
               </p>
-              <p className="text-[14px] font-semibold text-white">You pay €0</p>
+              <p className="text-[14px] font-semibold text-white">{t("prc_nosav_val")}</p>
               <p className="text-[11.5px] text-white/50 mt-0.5">
-                Risk is entirely on us
+                {t("prc_nosav_note")}
               </p>
             </div>
           </div>
@@ -163,6 +165,7 @@ function SplitVisual() {
 }
 
 export default function Pricing() {
+  const { t } = useTranslation();
   return (
     <div
       className="relative min-h-screen font-inter overflow-hidden text-white"
@@ -221,7 +224,7 @@ export default function Pricing() {
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
               </span>
               <span className="text-[10px] font-semibold tracking-[0.24em] uppercase text-white/75">
-                Pricing · Aligned with your margin
+                {t("prc_hero_badge")}
               </span>
             </div>
 
@@ -234,21 +237,20 @@ export default function Pricing() {
                 lineHeight: 0.92,
               }}
             >
-              First analyze.{" "}
               <span
                 style={{
                   background:
-                    "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #22d3ee 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Then recover.
+                {t("prc_hero_h1")}
               </span>
             </h1>
             <p className="text-base md:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed mb-8">
-              Not two pricing tiers — two inevitable steps. Step 01 is the free audit. Step 02 is when we help you actually recover the margin we found.
+              {t("prc_hero_sub")}
             </p>
 
             {/* CTA */}
@@ -261,7 +263,7 @@ export default function Pricing() {
                     "0 0 0 1px rgba(255,255,255,0.1), 0 18px 40px -18px rgba(34,211,238,0.5)",
                 }}
               >
-                Run free audit — 3 min
+                {t("prc_cta_primary")}
                 <ArrowRight size={14} />
               </Link>
               <Link
@@ -272,16 +274,16 @@ export default function Pricing() {
                   background: "rgba(255,255,255,0.02)",
                 }}
               >
-                See how it works
+                {t("prc_cta_secondary")}
               </Link>
             </div>
 
             {/* Trust bar */}
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[12px] text-white/45">
-              {TRUST_POINTS.map(({ icon: Icon, label }) => (
-                <span key={label} className="inline-flex items-center gap-1.5">
+              {TRUST_POINTS.map(({ icon: Icon, key }) => (
+                <span key={key} className="inline-flex items-center gap-1.5">
                   <Icon size={13} className="text-cyan-300/80" />
-                  {label}
+                  {t(key)}
                 </span>
               ))}
             </div>
@@ -328,10 +330,10 @@ export default function Pricing() {
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/85 mb-1.5">
-                  The founder's promise
+                  {t("prc_promise_eyebrow")}
                 </p>
                 <p className="text-[14.5px] text-white/80 leading-relaxed">
-                  If CAMBRA doesn't recover any margin for you, you owe us nothing. Not for the audit, not for the negotiation, not for the migration. Our incentives are 100% aligned with yours — we only get paid when your bank statements confirm the savings.
+                  {t("prc_promise_text")}
                 </p>
               </div>
             </div>
@@ -341,7 +343,7 @@ export default function Pricing() {
           <div className="mt-8 md:mt-12 max-w-3xl mx-auto">
             <div className="mb-8 text-center">
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45 mb-3">
-                Frequently asked
+                {t("prc_faq_eyebrow")}
               </p>
               <h2
                 className="text-white"
@@ -353,7 +355,7 @@ export default function Pricing() {
                   lineHeight: 1.05,
                 }}
               >
-                Clarity, not fine print.
+                {t("prc_faq_h2")}
               </h2>
             </div>
 
@@ -394,11 +396,11 @@ export default function Pricing() {
                   "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(34,211,238,0.6)",
               }}
             >
-              Start with the free audit
+              {t("prc_final_cta")}
               <ArrowRight size={16} />
             </Link>
             <p className="mt-4 text-[12px] text-white/40">
-              3 minutes · No card · You'll see your savings in euros
+              {t("prc_final_note")}
             </p>
           </div>
         </div>

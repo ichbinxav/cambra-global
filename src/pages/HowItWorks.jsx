@@ -3,47 +3,16 @@ import { motion } from "framer-motion";
 import { ArrowRight, Activity, Plug, BarChart3, Sparkles } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
 import { Button } from "@/components/ui/button";
-
-const STEPS = [
-  {
-    n: "01",
-    eyebrow: "analyze",
-    icon: Activity,
-    title: "Analyze anonymously",
-    detail: "Answer a few quick questions about your revenue, provider and volumes. No account, no connection, no card. Sixty seconds.",
-    points: ["No signup required", "No credentials shared", "60 seconds"],
-    cta: { label: "Start the audit", href: "/Analyzer" },
-  },
-  {
-    n: "02",
-    eyebrow: "diagnose",
-    icon: BarChart3,
-    title: "See your real payment costs",
-    detail: "We compare your effective fee against the achievable floor for your tier and geography, and split the delta by interchange, scheme fees and processor margin — the three layers that actually leak money.",
-    points: ["Effective vs floor rate", "Interchange · scheme · margin split", "Peer-tier benchmark"],
-    cta: { label: "Run the analyzer", href: "/Analyzer" },
-  },
-  {
-    n: "03",
-    eyebrow: "verify",
-    icon: Plug,
-    title: "Connect Stripe for exact numbers",
-    detail: "Go from estimation to calculation. Read-only Stripe connection turns your declared inputs into transaction-level truth — same benchmark, verified figures.",
-    points: ["Read-only access", "Transaction-level accuracy", "Encrypted, never shared"],
-    cta: { label: "Connect Stripe", href: "/ConnectTools" },
-  },
-  {
-    n: "04",
-    eyebrow: "recover",
-    icon: Sparkles,
-    title: "Recover margin",
-    detail: "When the gap is real and material, CAMBRA helps you close it — through renegotiation or migration — on a performance-based fee. If we don't recover anything, you pay nothing.",
-    points: ["Performance-based fee", "No upfront cost", "24-month duration"],
-    cta: { label: "See recovery model", href: "/Pricing" },
-  },
-];
+import { useTranslation } from "@/lib/i18n.jsx";
 
 export default function HowItWorks() {
+  const { t } = useTranslation();
+  const STEPS = [
+    { n: "01", eyebrow: t("hiw_s1_eyebrow"), icon: Activity,  title: t("hiw_s1_title"), detail: t("hiw_s1_detail"), cta: { label: t("hiw_s1_cta"), href: "/Analyzer" } },
+    { n: "02", eyebrow: t("hiw_s2_eyebrow"), icon: BarChart3, title: t("hiw_s2_title"), detail: t("hiw_s2_detail"), cta: { label: t("hiw_s2_cta"), href: "/Analyzer" } },
+    { n: "03", eyebrow: t("hiw_s3_eyebrow"), icon: Plug,      title: t("hiw_s3_title"), detail: t("hiw_s3_detail"), cta: { label: t("hiw_s3_cta"), href: "/ConnectTools" } },
+    { n: "04", eyebrow: t("hiw_s4_eyebrow"), icon: Sparkles,  title: t("hiw_s4_title"), detail: t("hiw_s4_detail"), cta: { label: t("hiw_s4_cta"), href: "/Pricing" } },
+  ];
   return (
     <div
       className="relative min-h-screen font-inter overflow-hidden text-white"
@@ -79,25 +48,24 @@ export default function HowItWorks() {
             >
               <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
               <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">
-                How it works · 4 steps
+                {t("hiw_hero_badge")}
               </span>
             </div>
 
             <h1 className="font-display text-[clamp(2.4rem,6vw,4.4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5 text-white">
-              From cost data to{" "}
               <span
                 style={{
-                  background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+                  background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #22d3ee 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                recovered margin.
+                {t("hiw_hero_h1")}
               </span>
             </h1>
             <p className="text-base md:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
-              A structured payments audit — built for independent operators. No upfront fees, no lock-in.
+              {t("hiw_hero_sub")}
             </p>
           </div>
 
@@ -166,11 +134,11 @@ export default function HowItWorks() {
           <div className="mt-16 text-center">
             <Link to="/Analyzer">
               <Button className="h-12 rounded-full px-8 text-sm font-bold gap-2 bg-white text-black hover:opacity-90">
-                Run your free audit <ArrowRight className="h-4 w-4" />
+                {t("hiw_cta_button")} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <p className="text-xs text-white/50 mt-4">
-              Free forever for early operators · No credit card required
+              {t("hiw_cta_note")}
             </p>
           </div>
 
