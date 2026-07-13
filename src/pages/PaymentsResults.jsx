@@ -26,6 +26,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Search, Lock } from "lucide-react";
@@ -135,6 +136,7 @@ function EmptyState({ title, message, ctaLabel, onCta, icon: Icon = Search }) {
 export default function PaymentsResults() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   const [params] = useSearchParams();
   // Two mutually-exclusive URL contracts:
   //   ?session=<uuid>   → anonymous form path (estimated)
@@ -178,30 +180,39 @@ export default function PaymentsResults() {
     if (!sessionId) { setStatus("invalid"); return; }
     if (!UUID_V4.test(sessionId)) { setStatus("invalid"); return; }
 
-    // Auto-persist the session id the moment a valid /Results page loads.
-    // Rationale: the rescue in AuthContext (Layer B) only works if the id
-    // is present when the user lands back on "/" after signup or login.
-    // We persist in TWO channels because Base44's SIGNUP branch can drop
-    // from_url AND the return leg may occur in a different tab/context
-    // (OAuth popup, magic-link opened elsewhere), where localStorage of
-    // the original tab is not shared:
-    //   1) localStorage       — same-tab, same-profile (LOGIN path).
-    //   2) cambra_anon_session cookie (same-origin, path=/, 30min,
-    //      SameSite=Lax) — survives cross-tab returns, OAuth popups,
-    //      and same-profile new tabs (SIGNUP path).
-    // Both channels are read by AuthContext; whichever is available wins.
-    try {
-      localStorage.setItem("cambra_pending_anon_session", sessionId);
-    } catch { /* localStorage unavailable — cookie still applies */ }
-    try {
-      // 30 minutes is well over the p99 signup latency; short enough that
-      // a stale id can't hijack a later, unrelated signup. path=/ so it's
-      // readable from any route; SameSite=Lax so it survives top-level
-      // navigations from Base44's /login page back to our origin.
-      document.cookie =
-        `cambra_anon_session=${encodeURIComponent(sessionId)}; ` +
-        `Max-Age=1800; Path=/; SameSite=Lax`;
-    } catch { /* document.cookie unavailable — localStorage still applies */ }
+    // Session-id persistence for the post-signup rescue (AuthContext Layer B).
+    //
+    // CRITICAL: only persist while the user is ANONYMOUS. The rescue exists
+    // for one purpose — carry the anonymous session id across Base44's signup
+    // redirect so a freshly-created user who lands on "/" gets bounced back to
+    // their populated report. Once the user is AUTHENTICATED and already
+    // viewing /Results, re-writing the pending id keeps the rescue armed
+    // forever: on the very next navigation to "/" (or when Base44 returns the
+    // user to the root), AuthContext detects the still-present id and force-
+    // replaces the URL back to /Results — which is exactly the "Results then
+    // redirects to the landing" loop the user reported.
+    //
+    // So: anonymous → persist (arm the rescue). Authenticated → CLEAR both
+    // channels (disarm it — the handoff is done, we're here).
+    if (isAuthenticated) {
+      try { localStorage.removeItem("cambra_pending_anon_session"); } catch { /* ignore */ }
+      try { document.cookie = "cambra_anon_session=; Max-Age=0; Path=/; SameSite=Lax"; } catch { /* ignore */ }
+    } else {
+      // Two channels because Base44's SIGNUP branch can drop from_url AND the
+      // return leg may occur in a different tab/context (OAuth popup), where
+      // the origin tab's localStorage isn't shared:
+      //   1) localStorage       — same-tab, same-profile (LOGIN path).
+      //   2) cambra_anon_session cookie (same-origin, path=/, 30min, Lax)
+      //      — survives cross-tab returns, OAuth popups (SIGNUP path).
+      try {
+        localStorage.setItem("cambra_pending_anon_session", sessionId);
+      } catch { /* localStorage unavailable — cookie still applies */ }
+      try {
+        document.cookie =
+          `cambra_anon_session=${encodeURIComponent(sessionId)}; ` +
+          `Max-Age=1800; Path=/; SameSite=Lax`;
+      } catch { /* document.cookie unavailable — localStorage still applies */ }
+    }
 
     let cancelled = false;
     setStatus("loading");
@@ -224,7 +235,7 @@ export default function PaymentsResults() {
       }
     })();
     return () => { cancelled = true; };
-  }, [sessionId, verifiedId, isVerifiedPath, attempt]);
+  }, [sessionId, verifiedId, isVerifiedPath, attempt, isAuthenticated]);
 
   // ── loading
   if (status === "loading") {

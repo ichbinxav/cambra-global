@@ -442,11 +442,20 @@ export default function PaymentsAnalyzer() {
             if (mode === "connect") navigate("/ConnectTools");
             // "upload" (FASE B) — the real upload path is per-PSP, living
             // under the provider selector. Scroll the user there to pick
-            // their provider and reveal the Upload-statements card.
+            // their provider and reveal the Upload-statements card. In
+            // combined mode #psp-selector doesn't exist, so fall back to the
+            // top of the form.
             if (mode === "upload") {
-              document.getElementById("psp-selector")?.scrollIntoView({ behavior: "smooth", block: "center" });
+              const target =
+                document.getElementById("psp-selector") ||
+                document.getElementById("analyzer-form");
+              target?.scrollIntoView({ behavior: "smooth", block: "start" });
             }
-            // "manual" is already the default — nothing to do.
+            // "manual" — scroll down to where the questions begin so the user
+            // sees something happen (they clicked a card, they expect motion).
+            if (mode === "manual") {
+              document.getElementById("analyzer-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
           }}
         />
 
@@ -509,7 +518,7 @@ export default function PaymentsAnalyzer() {
         )}
 
         {/* ─────────────── Form ─────────────── */}
-        <div className="space-y-8">
+        <div id="analyzer-form" className="space-y-8 scroll-mt-24">
           {/* M4-TPV Fase 3 — Combined mode renders a dual-channel block
               (online + in-store side by side) INSTEAD of the single-channel
               form. Country + brand + card mix still live at the top level.
