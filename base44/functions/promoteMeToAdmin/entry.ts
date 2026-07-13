@@ -21,6 +21,16 @@ Deno.serve(async (req) => {
     const allow = parseList(Deno.env.get('ADMIN_ALLOWLIST_EMAILS'));
     const founder = (Deno.env.get('FOUNDER_EMAIL')||'').toLowerCase();
     const setupToken = Deno.env.get('ADMIN_SETUP_TOKEN');
+
+    // Guard C — hard 403 when no admin config secrets are set at all.
+    // Converts the "accidentally locked by absent config" state into an
+    // explicit by-design lock. Without at least one of FOUNDER_EMAIL,
+    // ADMIN_ALLOWLIST_EMAILS, ADMIN_SETUP_TOKEN, this function refuses
+    // every caller before evaluating anything else.
+    if (!founder && allow.length === 0 && !setupToken) {
+      return Response.json({ error: 'Forbidden: admin promotion disabled (no config)' }, { status: 403 });
+    }
+
     const body = await req.json().catch(()=>({}));
     const token = body?.token;
 
@@ -28,6 +38,12 @@ Deno.serve(async (req) => {
     const hasAdmin = Array.isArray(admins) && admins.length > 0;
 
     const email = (user.email||'').toLowerCase();
+
+    // Defense in depth — reject empty/malformed caller email so it can never
+    // match an equally-empty FOUNDER_EMAIL by string equality in bootstrap.
+    if (!email) {
+      return Response.json({ error: 'Forbidden: caller has no email' }, { status: 403 });
+    }
 
     if (user.role === 'admin') {
       return Response.json({ success: true, user });
