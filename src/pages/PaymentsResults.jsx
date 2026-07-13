@@ -235,12 +235,20 @@ export default function PaymentsResults() {
             if (Array.isArray(rows) && rows[0]) { owned = rows[0]; break; }
           }
           if (cancelled) return;
-          if (owned) {
+          // Only use the owned row when it actually carries the payments
+          // engine_result in its details. LEGACY rows materialized by an older
+          // claim (or the pre-pivot scoreEngine path) have a details shape
+          // WITHOUT engine_result/input_snapshot — reading them renders the
+          // whole page blank (every field resolves to "—"). When that happens
+          // we DON'T render the owned row; we fall through to the teaser, which
+          // reads the intact PaymentsAnalysisSession and returns the correct
+          // shape. The teaser is service-role and works pre- and post-auth.
+          if (owned && owned?.details?.engine_result) {
             // Rebuild the SAME view the teaser showed — engine_result verbatim
             // + the exact savings_range (matiz #1: number/range unchanged).
             setPayload({
               ok: true,
-              engine_result: owned?.details?.engine_result || null,
+              engine_result: owned.details.engine_result,
               engine_version: owned?.details?.engine_version || owned?.savings_model_version || null,
               input_snapshot: owned?.details?.input_snapshot || null,
               owned: true,
@@ -248,7 +256,8 @@ export default function PaymentsResults() {
             setStatus("ready");
             return;
           }
-          // No owned row after retries → fall through to the teaser (unchanged).
+          // No owned row (or a legacy row without engine_result) → fall through
+          // to the teaser, which always returns the correct shape.
         }
         const resp = await base44.functions.invoke("getPaymentsGapTeaser", { anon_session_id: sessionId });
         if (cancelled) return;
