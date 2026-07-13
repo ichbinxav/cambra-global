@@ -140,17 +140,37 @@ Deno.serve(async (req) => {
 
     // ── Resolve or create the user's Brand (contact_email pivot) ──────────
     // Same source of truth as getMyActiveBrand — contact_email === user.email.
-    // We read with the USER-scoped client so RLS applies. If none exists (the
-    // common case for a brand-new signup), create one seeded from the session's
-    // brand metadata. Created user-scoped → created_by fixed to the user.
+    // We read with the USER-scoped client so RLS applies.
+    //
+    // CONCURRENCY — Brand policy (Xavi 2026-07-13): NEVER DELETE a Brand in the
+    // claim path. A Brand can be referenced (brand_id on AnalyzerResult and
+    // other entities), so deleting a duplicate risks dangling references — the
+    // risk of deleting outweighs a dead row. Instead:
+    //   1. Resolve/dedup the Brand BEFORE creating the AnalyzerResult, and
+    //      always point the report at the WINNER (oldest by created_date, then
+    //      id) so we never create a report aimed at a Brand we'd later purge.
+    //   2. If a residual race left ≥2 Brands, keep the deterministic winner and
+    //      leave the duplicate ORPHANED for an offline purge (logged, not
+    //      deleted here). Zero DELETE on Brand in this path.
+    const pickWinner = (rows: any[]) => {
+      // Deterministic: oldest created_date, tie-break by id ascending. Two
+      // concurrent requests reading the same set AGREE on the winner.
+      return [...rows].sort((a, b) => {
+        const da = new Date(a.created_date || 0).getTime();
+        const db = new Date(b.created_date || 0).getTime();
+        if (da !== db) return da - db;
+        return String(a.id).localeCompare(String(b.id));
+      })[0];
+    };
+
     let brand: any = null;
     const ownedBrands = await base44.entities.Brand
-      .filter({ contact_email: userEmail }, '-created_date', 1)
+      .filter({ contact_email: userEmail }, '-created_date', 20)
       .catch(() => []);
-    if (Array.isArray(ownedBrands) && ownedBrands[0]) {
-      brand = ownedBrands[0];
+    if (Array.isArray(ownedBrands) && ownedBrands.length > 0) {
+      brand = pickWinner(ownedBrands);
     } else {
-      brand = await base44.entities.Brand.create({
+      await base44.entities.Brand.create({
         name: (typeof snapshot.brand_name === 'string' && snapshot.brand_name.trim())
           ? snapshot.brand_name.trim()
           : 'My brand',
@@ -160,6 +180,19 @@ Deno.serve(async (req) => {
         country: typeof snapshot.country === 'string' ? snapshot.country : undefined,
         category: typeof snapshot.sector === 'string' ? snapshot.sector : undefined,
       });
+      // Re-read after create — if a concurrent claim also created one, this
+      // returns ≥2 rows and pickWinner deterministically resolves to the same
+      // Brand for both requests. The loser's created row is left orphaned
+      // (never deleted — see Brand policy above).
+      const afterCreate = await base44.entities.Brand
+        .filter({ contact_email: userEmail }, '-created_date', 20)
+        .catch(() => []);
+      brand = (Array.isArray(afterCreate) && afterCreate.length > 0)
+        ? pickWinner(afterCreate)
+        : null;
+      if (Array.isArray(afterCreate) && afterCreate.length > 1) {
+        console.warn('claimPaymentsAnalysisSession: residual duplicate Brand for', userEmail, '— left orphaned for offline purge. count=', afterCreate.length);
+      }
     }
     if (!brand?.id) {
       return Response.json({ ok: false, error: 'brand_resolution_failed' }, { status: 500 });
@@ -206,10 +239,52 @@ Deno.serve(async (req) => {
       },
     });
 
+    // ── CONCURRENCY — AnalyzerResult create-then-verify (Xavi 2026-07-13) ──
+    // Base44 has no unique constraints, so the check-then-create above can let
+    // two truly-simultaneous requests both pass the "no prior claim" check and
+    // both create. Safety net (client-side once-guard is the PRIMARY defense):
+    // re-read by anon_session_id and, if a duplicate exists, DELETE ONLY our
+    // own strictly-non-winner row.
+    //
+    // Determinism + safety rules (exactly as sealed):
+    //   • Winner = oldest by (created_date, then id) — both requests agree.
+    //   • Delete ONLY if: the winner is PRESENT in our re-read (never delete on
+    //     a stale read that sees only our own row → prefer a temporary
+    //     duplicate over reaching ZERO rows), AND the row we delete is
+    //     STRICTLY non-winner, is OURS (created_by === user.email), and is
+    //     targeted by explicit id. NEVER deleteMany.
+    //   • An AnalyzerResult just created has no inbound references → safe to
+    //     delete (unlike Brand).
+    let winnerId = created.id;
+    try {
+      const dupes = await base44.asServiceRole.entities.AnalyzerResult
+        .filter({ anon_session_id }, '-created_date', 20)
+        .catch(() => []);
+      if (Array.isArray(dupes) && dupes.length > 1) {
+        const winner = pickWinner(dupes);
+        winnerId = winner?.id || created.id;
+        // Only clean up when the WINNER is present in this read (guards against
+        // a stale read that would otherwise let us delete our only row).
+        const winnerPresent = dupes.some((r: any) => r.id === winnerId);
+        if (winnerPresent && created.id !== winnerId) {
+          // Our row is a strict loser — delete OURS, by explicit id, only if
+          // it's genuinely ours. User-scoped delete so RLS double-checks.
+          const mine = normalizeEmail(created.created_by) === userEmail;
+          if (mine) {
+            await base44.entities.AnalyzerResult.delete(created.id).catch(() => { /* already gone — fine */ });
+          }
+        }
+      }
+    } catch (e) {
+      // Verification is best-effort — a failure here at worst leaves a
+      // temporary duplicate (never zero rows, never a wrong-owner delete).
+      console.warn('claimPaymentsAnalysisSession: dedup verify skipped:', (e as any)?.message);
+    }
+
     return Response.json({
       ok: true,
       claimed: true,
-      analyzer_result_id: created.id,
+      analyzer_result_id: winnerId,
       brand_id: brand.id,
     });
   } catch (error) {
