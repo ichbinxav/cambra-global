@@ -25,6 +25,14 @@ export default function LoginGate() {
     return `${window.location.origin}/Dashboard`;
   }, []);
 
+  // Contextual copy: when the user was heading to Connect Tools (they clicked
+  // "Connect Stripe/your PSP"), show connection-specific messaging instead of
+  // the generic "your audit is ready" — otherwise the gate looks unrelated to
+  // the action they just took.
+  const isConnectIntent = /\/ConnectTools|\/ConnectIntegrations/i.test(returnUrl);
+  const headline = isConnectIntent ? t("login_gate_connect_headline") : t("login_gate_headline");
+  const sub = isConnectIntent ? t("login_gate_connect_sub") : t("login_gate_sub");
+
   const handleContinue = () => {
     try {
       base44.auth.redirectToLogin(returnUrl);
@@ -96,7 +104,7 @@ export default function LoginGate() {
             textShadow: "0 0 40px rgba(59,130,246,0.18)",
           }}
         >
-          {t("login_gate_headline")}
+          {headline}
         </h1>
 
         {/* Subhead */}
@@ -104,7 +112,7 @@ export default function LoginGate() {
           className="text-center mt-5 text-[15px]"
           style={{ color: "rgba(255,255,255,0.62)", lineHeight: 1.55 }}
         >
-          {t("login_gate_sub")}
+          {sub}
         </p>
 
         {/* Primary CTA */}

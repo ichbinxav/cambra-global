@@ -242,6 +242,8 @@ const DICT = {
     /* Login gate */
     login_gate_headline:    "Your infrastructure audit is ready.",
     login_gate_sub:         "Create a free account or sign in to see your results.",
+    login_gate_connect_headline: "Connect your tools securely.",
+    login_gate_connect_sub:      "Create a free account or sign in to connect Stripe and your other tools with read-only access.",
     login_gate_cta:         "Continue",
     login_gate_footnote:    "Free to start. No credit card. Pay only when you save.",
     login_gate_terms:       "By continuing, you agree to our",
@@ -434,6 +436,8 @@ const DICT = {
     /* Login gate */
     login_gate_headline:    "Votre audit d'infrastructure est prêt.",
     login_gate_sub:         "Créez un compte gratuit ou connectez-vous pour voir vos résultats.",
+    login_gate_connect_headline: "Connectez vos outils en toute sécurité.",
+    login_gate_connect_sub:      "Créez un compte gratuit ou connectez-vous pour relier Stripe et vos autres outils en lecture seule.",
     login_gate_cta:         "Continuer",
     login_gate_footnote:    "Gratuit pour commencer. Sans carte bancaire. Payez uniquement sur les économies.",
     login_gate_terms:       "En continuant, vous acceptez nos",
@@ -626,6 +630,8 @@ const DICT = {
     /* Login gate */
     login_gate_headline:    "Tu auditoría de infraestructura está lista.",
     login_gate_sub:         "Crea una cuenta gratuita o inicia sesión para ver tus resultados.",
+    login_gate_connect_headline: "Conecta tus herramientas de forma segura.",
+    login_gate_connect_sub:      "Crea una cuenta gratuita o inicia sesión para conectar Stripe y tus otras herramientas con acceso de solo lectura.",
     login_gate_cta:         "Continuar",
     login_gate_footnote:    "Gratis para empezar. Sin tarjeta. Solo pagas cuando ahorras.",
     login_gate_terms:       "Al continuar, aceptas nuestros",
