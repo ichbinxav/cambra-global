@@ -108,18 +108,41 @@ export const AuthProvider = ({ children }) => {
       window.location.pathname === '/landing'
     );
     if (isPublicLandingPath) {
-      setIsLoadingPublicSettings(false);
-      setIsLoadingAuth(false);
-      setIsAuthenticated(false);
+      // SESSION FIX (2026-07-13, part 2) — PRODUCTION BUG on cambra.global.
+      //
+      // Verified evidence: on the custom domain the token IS in localStorage,
+      // the SDK attaches it, and GET /me returns 200 with the real user — yet
+      // the landing rendered the ANONYMOUS view. Root cause found here: this
+      // branch used to hard-set isAuthenticated=false and `return` WITHOUT
+      // ever calling /me. So isAuthenticated never derived from User.me() on
+      // "/" — it derived from "am I on the landing? → false". That is the bug.
+      //
+      // Fix: still keep the landing INSTANT for anonymous visitors (no token →
+      // no network call, exactly as before), but when a token IS present,
+      // resolve auth from /me just like every other route. An authenticated
+      // user on "/" is now correctly recognized as authenticated.
       setAuthError(null);
-      // Post-signup rescue lives HERE for the landing case: Base44's signup
-      // branch drops from_url and returns the user to "/" with NO token in
-      // the URL yet (the public landing early-returns before any auth call).
-      // maybeRescueAnonymousSession is self-gated (only "/" + valid pending)
-      // and consumes the id atomically, so a genuine new signup is bounced to
-      // its report exactly once, while a normal landing visit with no pending
-      // id is a no-op. This is the ONLY place the rescue can fire on "/".
-      maybeRescueAnonymousSession();
+      if (appParams.token) {
+        const didAuth = await checkUserAuth();
+        setIsLoadingPublicSettings(false);
+        // Authenticated → DISARM the rescue (an existing user has no pending
+        // anonymous report to be bounced to). Only rescue when /me failed.
+        if (didAuth) {
+          clearPendingAnonSession();
+        } else {
+          maybeRescueAnonymousSession();
+        }
+      } else {
+        setIsLoadingPublicSettings(false);
+        setIsLoadingAuth(false);
+        setIsAuthenticated(false);
+        // Post-signup rescue for the token-less landing case: Base44's signup
+        // branch can return the user to "/" with no token in the URL yet.
+        // maybeRescueAnonymousSession is self-gated (only "/" + valid pending)
+        // and consumes the id atomically, so a genuine new signup is bounced
+        // to its report exactly once; a normal landing visit is a no-op.
+        maybeRescueAnonymousSession();
+      }
       return;
     }
 
