@@ -22,6 +22,7 @@
 //   insufficient_data → render nothing (parent decides; we return null).
 
 import { ShieldCheck, ArrowRight, Lock, TrendingDown, Handshake, PhoneCall, Plug } from "lucide-react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 function eur(n) {
   if (!isFinite(n)) return "—";
@@ -32,19 +33,21 @@ function pctFromBps(bps) {
   return (bps / 100).toFixed(2) + "%";
 }
 
-// cta_intent → CAMBRA-only presentation. Icon + label + the button copy that
-// leads to CAMBRA's offer. NEVER a third-party destination.
+// cta_intent → CAMBRA-only presentation. Icon + i18n KEY for the button copy
+// that leads to CAMBRA's offer. NEVER a third-party destination.
 const INTENT = {
-  managed_migration: { icon: Handshake,    cta: "Empieza tu migración gestionada" },
-  collective:        { icon: TrendingDown, cta: "Reserva tu plaza en el colectivo" },
-  call:              { icon: PhoneCall,     cta: "Reserva una llamada" },
-  connect_verify:    { icon: Plug,          cta: "Conecta para verificar" },
+  managed_migration: { icon: Handshake,    ctaKey: "route_cta_migration" },
+  collective:        { icon: TrendingDown, ctaKey: "route_cta_collective" },
+  call:              { icon: PhoneCall,     ctaKey: "route_cta_call" },
+  connect_verify:    { icon: Plug,          ctaKey: "route_cta_verify" },
 };
 
-const CONFIDENCE_LABEL = { high: "confianza alta", medium: "confianza media", low: "confianza estimada" };
-const EFFORT_LABEL = { low: "esfuerzo bajo", medium: "esfuerzo medio", high: "esfuerzo alto" };
+const CONFIDENCE_KEY = { high: "meta_conf_high", medium: "meta_conf_med", low: "meta_conf_low" };
+const EFFORT_KEY = { low: "meta_effort_low", medium: "meta_effort_med", high: "meta_effort_high" };
+const PRIORITY_KEY = { high: "meta_prio_high", medium: "meta_prio_med", low: "meta_prio_med" };
 
 function RouteRow({ rec, locked = false, onAction }) {
+  const { t } = useTranslation();
   const meta = INTENT[rec.cta_intent] || INTENT.managed_migration;
   const Icon = meta.icon;
   return (
@@ -60,12 +63,12 @@ function RouteRow({ rec, locked = false, onAction }) {
           <Icon size={16} className="text-cyan-300" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-white font-bold text-[14px] leading-snug">{rec.title}</p>
+          <p className="text-white font-bold text-[14px] leading-snug">{rec.title_key ? t(rec.title_key) : rec.title}</p>
           <p className="text-[12px] text-white/50 mt-0.5">
-            {EFFORT_LABEL[rec.effort] || rec.effort} · {CONFIDENCE_LABEL[rec.confidence] || rec.confidence} · prioridad {rec.priority}
+            {t(EFFORT_KEY[rec.effort] || "meta_effort_med")} · {t(CONFIDENCE_KEY[rec.confidence] || "meta_conf_med")} · {t(PRIORITY_KEY[rec.priority] || "meta_prio_med")}
           </p>
-          {rec.caveat && (
-            <p className="text-[11px] text-amber-300/80 mt-1.5 leading-snug">{rec.caveat}</p>
+          {(rec.caveat_key || rec.caveat) && (
+            <p className="text-[11px] text-amber-300/80 mt-1.5 leading-snug">{rec.caveat_key ? t(rec.caveat_key) : rec.caveat}</p>
           )}
           {!locked && (
             <button
@@ -73,7 +76,7 @@ function RouteRow({ rec, locked = false, onAction }) {
               onClick={() => onAction?.(rec)}
               className="group mt-3 inline-flex items-center gap-1.5 text-[12px] font-bold text-cyan-300 hover:text-cyan-200 transition-colors"
             >
-              {meta.cta}
+              {t(meta.ctaKey)}
               <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
             </button>
           )}
@@ -84,6 +87,7 @@ function RouteRow({ rec, locked = false, onAction }) {
 }
 
 export default function RecoveryRoadmap({ roadmap, isAnonymous = false, onRouteAction, onUnlock, className = "" }) {
+  const { t } = useTranslation();
   if (!roadmap || roadmap.state === "insufficient_data") return null;
 
   // ── Top-tier (A/B) — no improvement routes, monitor-drift badge only.
@@ -95,11 +99,10 @@ export default function RecoveryRoadmap({ roadmap, isAnonymous = false, onRouteA
       >
         <div className="flex items-center gap-2 mb-1.5">
           <ShieldCheck size={16} className="text-teal-300" />
-          <span className="text-[14px] font-bold text-teal-200">Eres top-tier</span>
+          <span className="text-[14px] font-bold text-teal-200">{t("roadmap_toptier_title")}</span>
         </div>
         <p className="text-[12px] text-white/60 leading-snug">
-          Tu setup de pagos ya está en el suelo del mercado. Monitorizamos tu
-          drift gratis para que siga así — si algún día se desvía, te avisamos.
+          {t("roadmap_toptier_body")}
         </p>
       </div>
     );
@@ -118,7 +121,7 @@ export default function RecoveryRoadmap({ roadmap, isAnonymous = false, onRouteA
       style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.10)" }}
     >
       {/* THE ONE FIGURE — shown once, verbatim from the hero pool. */}
-      <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-1.5">Recuperable</p>
+      <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-1.5">{t("roadmap_recoverable")}</p>
       <div className="flex items-baseline gap-2 flex-wrap">
         <span
           className="text-white font-black tabular-nums"
@@ -129,25 +132,25 @@ export default function RecoveryRoadmap({ roadmap, isAnonymous = false, onRouteA
             lineHeight: 1,
           }}
         >
-          hasta {eur(pool.point)}
+          {t("roadmap_up_to")} {eur(pool.point)}
         </span>
-        <span className="text-[13px] text-white/50">/ año</span>
+        <span className="text-[13px] text-white/50">{t("roadmap_per_year")}</span>
       </div>
       {isFinite(pool.lo) && isFinite(pool.hi) && (
         <p className="text-[12px] text-white/45 mt-1.5">
-          rango <span className="text-white/70 font-semibold tabular-nums">{eur(pool.lo)}–{eur(pool.hi)}</span>
+          {t("roadmap_range")} <span className="text-white/70 font-semibold tabular-nums">{eur(pool.lo)}–{eur(pool.hi)}</span>
         </p>
       )}
 
       {/* AMBITION — neutral upside, NO € attached, NO PSP name. */}
       {isFinite(roadmap.ambition_bps) && (
         <p className="text-[12px] text-white/55 mt-3 leading-snug">
-          Marcas de tu tramo llegan a ~{pctFromBps(roadmap.ambition_bps)} — hacia donde empuja el colectivo.
+          {t("roadmap_ambition", { x: (roadmap.ambition_bps / 100).toFixed(2) })}
         </p>
       )}
 
       {/* ROUTES — the HOW. */}
-      <p className="text-[12px] font-bold text-white/70 mt-5 mb-2.5">Rutas para conseguirlo</p>
+      <p className="text-[12px] font-bold text-white/70 mt-5 mb-2.5">{t("roadmap_routes")}</p>
       <div className="space-y-2.5">
         {visible.map((rec) => (
           <RouteRow key={rec.id} rec={rec} onAction={onRouteAction} />
@@ -172,9 +175,9 @@ export default function RecoveryRoadmap({ roadmap, isAnonymous = false, onRouteA
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white font-bold text-[14px]">
-                +{lockedCount} {lockedCount === 1 ? "ruta más" : "rutas más"} en tu plan
+                {t(lockedCount === 1 ? "roadmap_locked_more_one" : "roadmap_locked_more_other", { n: lockedCount })}
               </p>
-              <p className="text-[12px] text-white/55 mt-0.5">Crea tu cuenta para desbloquear tu plan de recuperación completo.</p>
+              <p className="text-[12px] text-white/55 mt-0.5">{t("roadmap_locked_sub")}</p>
             </div>
             <ArrowRight size={16} className="text-cyan-300 shrink-0 transition-transform group-hover:translate-x-0.5" />
           </button>

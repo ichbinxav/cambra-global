@@ -27,6 +27,7 @@
 import { useState } from "react";
 import { Info, ArrowRight, ShieldCheck } from "lucide-react";
 import { computePaymentsScore } from "@/lib/paymentsScore.js";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 // Tone token → concrete colors (maps to the semantic --score-* tokens in
 // src/index.css, kept as rgb here so the badge can tint borders/glows/gradients
@@ -45,6 +46,7 @@ export default function PaymentsScoreBadge({
   onRecoveryClick,
 }) {
   const [showHow, setShowHow] = useState(false);
+  const { t } = useTranslation();
   const result = computePaymentsScore(engineResult);
 
   // Honest neutral state — never fabricate a grade when we can't score.
@@ -156,12 +158,11 @@ export default function PaymentsScoreBadge({
               <div className="inline-flex items-center gap-1.5">
                 <ShieldCheck size={15} style={{ color: c.text }} />
                 <span className="text-[13px] font-bold" style={{ color: c.text }}>
-                  Eres top-tier
+                  {t("roadmap_toptier_title")}
                 </span>
               </div>
               <p className="text-[12px] text-white/55 leading-snug">
-                Tu setup ya está en el suelo del mercado. Monitoriza tu drift para
-                que siga así.
+                {t("roadmap_toptier_body")}
               </p>
             </div>
           ) : (
@@ -176,7 +177,7 @@ export default function PaymentsScoreBadge({
               }}
             >
               <span className="text-[13px] font-bold leading-snug" style={{ color: c.text }}>
-                {isAnonymous ? "Desbloquea tu plan" : "Ver cómo lo recuperamos"}
+                {isAnonymous ? t("score_cta_unlock") : t("score_cta_recover")}
               </span>
               <ArrowRight
                 size={16}

@@ -215,7 +215,7 @@ export function buildRecoveryRoadmap(engineResult, inputSnapshot = {}, rateTable
   // Route A — renegotiate the processor margin (same PSP, no migration).
   recs.push({
     id: "recover_margin",
-    title: "Renegociamos tu margen",
+    title_key: "route_margin_title",
     confidence: cohortVerified ? "high" : "medium",
     effort: "low",
     priority: "high",
@@ -227,11 +227,11 @@ export function buildRecoveryRoadmap(engineResult, inputSnapshot = {}, rateTable
   // + caveat). This is a ROUTE to the same pool — it does NOT carry its own €.
   recs.push({
     id: "better_rate",
-    title: "Te llevamos a un rate mejor",
+    title_key: "route_rate_title",
     confidence: cohortVerified ? "high" : "low",
     effort: "medium",
     priority: "medium",
-    ...(cohortVerified ? {} : { caveat: "Objetivo estimado a partir de rangos de mercado, sujeto a verificación." }),
+    ...(cohortVerified ? {} : { caveat_key: "route_caveat_estimated" }),
     cta_intent: "collective",
   });
 
@@ -240,7 +240,7 @@ export function buildRecoveryRoadmap(engineResult, inputSnapshot = {}, rateTable
   if (mode !== "verified") {
     recs.push({
       id: "connect_verify",
-      title: "Conecta para verificar y arrancamos",
+      title_key: "route_verify_title",
       confidence: "high",   // the ACTION is certain
       effort: "low",
       priority: "medium",
