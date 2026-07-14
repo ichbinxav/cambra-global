@@ -439,6 +439,81 @@ export default function PaymentsResults() {
   const isOptimizedSingle = !isCombined && classification === "already_optimized";
   const hidePrimaryCTA = isOptimizedSingle;
 
+  // 1.4 — LAYOUT MODE. The anonymous/estimated single-channel teaser is the
+  // conversion hook: it leads with the big figure at FULL WIDTH (hero → CTA →
+  // locked breakdown + assumptions stacked BELOW), so nothing competes with
+  // the number. Verified mode (and combined/optimized heroes) keep the
+  // 2-column grid — the user is already in and wants the "show your work"
+  // panel alongside the hero.
+  const useStackedTeaserLayout = !isVerifiedMode && !isCombined && !isOptimizedSingle;
+
+  // Shared CTA block (identical markup in both layouts) — extracted so the
+  // stacked teaser layout and the grid layout render the exact same button.
+  const ctaBlock = !hidePrimaryCTA && (
+    <div
+      className="rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4"
+      style={{
+        background:
+          "radial-gradient(120% 100% at 100% 0%, rgba(34,211,238,0.12) 0%, transparent 60%), rgba(255,255,255,0.03)",
+        border: "1px solid rgba(34,211,238,0.20)",
+      }}
+    >
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-1.5">Next step</p>
+        {isVerifiedMode ? (
+          <>
+            <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
+              This gap is measured, not estimated.
+            </p>
+            <p className="text-[13px] text-white/60 mt-1">
+              Head back to your dashboard to review your integrations and start the recovery workflow.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
+              Ready to stop overpaying?
+            </p>
+            <p className="text-[13px] text-white/60 mt-1">
+              Create an account to connect your PSP, verify the number, and start the recovery.
+            </p>
+          </>
+        )}
+      </div>
+      <Button
+        onClick={() => {
+          if (isVerifiedMode) {
+            navigate("/Dashboard");
+            return;
+          }
+          try {
+            const search = new URLSearchParams(window.location.search);
+            const sid = search.get("session") || search.get("anon_session_id");
+            if (sid) {
+              try {
+                localStorage.setItem("cambra_pending_anon_session", sid);
+              } catch { /* fall through to cookie */ }
+              try {
+                document.cookie =
+                  `cambra_anon_session=${encodeURIComponent(sid)}; ` +
+                  `Max-Age=1800; Path=/; SameSite=Lax`;
+              } catch { /* both channels down — Layer A still applies */ }
+            }
+          } catch { /* Layer A (URL) still applies */ }
+          const currentPath = window.location.pathname + window.location.search;
+          navigate(`/LoginGate?next=${encodeURIComponent(currentPath)}`);
+        }}
+        className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
+        style={{
+          background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+          boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
+        }}
+      >
+        {isVerifiedMode ? "Go to dashboard" : "Stop overpaying"} <ArrowRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+
   return (
     <ResultsShell>
       {/* Back link — desktop shows text, mobile just chevron */}
@@ -449,152 +524,61 @@ export default function PaymentsResults() {
         <ArrowLeft size={12} /> Run a new analysis
       </button>
 
-      {/* Desktop layout (≥lg): 2-column grid.
-            LEFT  = hero (gap card) + CTA — the emotional payload
-            RIGHT = fee breakdown + assumptions — the "show your work"
-          On mobile & tablet everything stacks in a single column, unchanged
-          from before. `lg:items-start` prevents the grid from stretching
-          both columns to the tallest — each card keeps its natural height. */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-6 lg:items-start gap-5">
-        {/* LEFT column — hero + CTA */}
-        <div className="lg:col-span-3 space-y-5">
-          {isCombined ? (
-            <CombinedGapHero
-              engineResult={engineResult}
-              country={inputSnapshot?.country}
-            />
-          ) : isOptimizedSingle ? (
-            <OptimizedHero
-              engineResult={engineResult}
-              inputSnapshot={inputSnapshot}
-              t={t}
-              onRerun={() => navigate("/Analyzer")}
-            />
-          ) : (
-            <PaymentsGapCard
-              engineResult={engineResult}
-              inputSnapshot={inputSnapshot}
-              sampleMetrics={sampleMetrics}
-              measurementWindow={measurementWindow}
-            />
-          )}
-
-          {/* Primary CTA — content changes per mode.
-              Estimated: sign-in wall (form → account → connect).
-              Verified: user is already signed in and connected — the next
-              step is the recovery workflow, not another signup.
-              HIDDEN when the single-channel result is already_optimized —
-              nothing to stop, no signup wall to push. */}
-          {!hidePrimaryCTA && (
-          <div
-            className="rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4"
-            style={{
-              background:
-                "radial-gradient(120% 100% at 100% 0%, rgba(34,211,238,0.12) 0%, transparent 60%), rgba(255,255,255,0.03)",
-              border: "1px solid rgba(34,211,238,0.20)",
-            }}
-          >
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-1.5">Next step</p>
-              {isVerifiedMode ? (
-                <>
-                  <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
-                    This gap is measured, not estimated.
-                  </p>
-                  <p className="text-[13px] text-white/60 mt-1">
-                    Head back to your dashboard to review your integrations and start the recovery workflow.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
-                    Ready to stop overpaying?
-                  </p>
-                  <p className="text-[13px] text-white/60 mt-1">
-                    Create an account to connect your PSP, verify the number, and start the recovery.
-                  </p>
-                </>
-              )}
-            </div>
-            <Button
-              onClick={() => {
-                // #1 FIX (2026-07-12, revisited) — funnel-critical, two layers.
-                //
-                // Diagnosis of the "user lands on / after signup" bug, RAW cited
-                // from @base44/sdk/dist/modules/auth.js:2961 redirectToLogin():
-                //   loginUrl = `${appBaseUrl}/login?from_url=${encoded(nextUrl)}`;
-                //   window.location.href = loginUrl;
-                // Base44's /login endpoint honors from_url for the LOGIN branch
-                // (existing account). The SIGNUP branch (new account creation)
-                // can drop from_url and default to the app root — that behavior
-                // is server-side and not controllable from the SDK.
-                //
-                // Layer A (URL) — pass ?next=/Results?session=<uuid> so the
-                //   login branch returns the user to their populated report.
-                // Layer B (localStorage) — persist the anon_session_id right
-                //   before we leave. If Base44 drops from_url on signup and the
-                //   user lands on "/" or "/Dashboard", AuthContext detects the
-                //   pending session and redirects to /Results?session=<uuid>.
-                //
-                // Zero backend change. getPaymentsGapTeaser is service-role and
-                // accepts the session id both pre- and post-auth (verified RAW
-                // 2026-07-12: teaser_endpoint_requires_auth=false).
-                if (isVerifiedMode) {
-                  navigate("/Dashboard");
-                  return;
-                }
-                // Layer B — persist for signup-path rescue in TWO channels.
-                // localStorage covers same-tab LOGIN; cookie covers cross-tab
-                // SIGNUP (see mount handler above for full rationale).
-                try {
-                  const search = new URLSearchParams(window.location.search);
-                  const sessionId =
-                    search.get("session") || search.get("anon_session_id");
-                  if (sessionId) {
-                    try {
-                      localStorage.setItem(
-                        "cambra_pending_anon_session",
-                        sessionId
-                      );
-                    } catch { /* fall through to cookie */ }
-                    try {
-                      document.cookie =
-                        `cambra_anon_session=${encodeURIComponent(sessionId)}; ` +
-                        `Max-Age=1800; Path=/; SameSite=Lax`;
-                    } catch { /* both channels down — Layer A still applies */ }
-                  }
-                } catch { /* Layer A (URL) still applies */ }
-                // Layer A — canonical URL preservation for the login path.
-                const currentPath =
-                  window.location.pathname + window.location.search;
-                navigate(`/LoginGate?next=${encodeURIComponent(currentPath)}`);
-              }}
-              className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
-              style={{
-                background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
-                boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
-              }}
-            >
-              {isVerifiedMode ? "Go to dashboard" : "Stop overpaying"} <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-          )}
-        </div>
-
-        {/* RIGHT column — breakdown + assumptions */}
-        <div className="lg:col-span-2 space-y-5">
-          {/* Locked in anonymous/estimated mode (mode !== "verified"): the
-              audit trail is one of the main conversion drivers for signup,
-              so we render the SHAPE + blur the numbers + show a padlock.
-              Verified mode (real Stripe data) unlocks it — the user is
-              already signed in and connected. */}
-          <FeeBreakdownCard
+      {useStackedTeaserLayout ? (
+        // 1.4 — ESTIMATED TEASER: single column, big figure leads at full
+        // width. Order: hero → CTA → locked breakdown → assumptions. On both
+        // mobile and desktop the number is ALWAYS first — nothing above it.
+        <div className="space-y-5 max-w-3xl mx-auto">
+          <PaymentsGapCard
             engineResult={engineResult}
-            locked={engineResult?.mode !== "verified" && !payload?.owned}
+            inputSnapshot={inputSnapshot}
+            sampleMetrics={sampleMetrics}
+            measurementWindow={measurementWindow}
+            compact
           />
+          {ctaBlock}
+          {/* Locked breakdown — one of the main signup conversion drivers:
+              render the SHAPE, blur the numbers, show a padlock. */}
+          <FeeBreakdownCard engineResult={engineResult} locked={!payload?.owned} />
           <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
         </div>
-      </div>
+      ) : (
+        // Verified / combined / optimized — 2-column grid, unchanged.
+        // LEFT = hero + CTA · RIGHT = breakdown + assumptions.
+        <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-6 lg:items-start gap-5">
+          <div className="lg:col-span-3 space-y-5">
+            {isCombined ? (
+              <CombinedGapHero
+                engineResult={engineResult}
+                country={inputSnapshot?.country}
+              />
+            ) : isOptimizedSingle ? (
+              <OptimizedHero
+                engineResult={engineResult}
+                inputSnapshot={inputSnapshot}
+                t={t}
+                onRerun={() => navigate("/Analyzer")}
+              />
+            ) : (
+              <PaymentsGapCard
+                engineResult={engineResult}
+                inputSnapshot={inputSnapshot}
+                sampleMetrics={sampleMetrics}
+                measurementWindow={measurementWindow}
+              />
+            )}
+            {ctaBlock}
+          </div>
+
+          <div className="lg:col-span-2 space-y-5">
+            <FeeBreakdownCard
+              engineResult={engineResult}
+              locked={engineResult?.mode !== "verified" && !payload?.owned}
+            />
+            <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
+          </div>
+        </div>
+      )}
 
       {/* Footer line — snapshot of what produced the number, for transparency.
           Full-width under the grid so it reads as a single closing note.

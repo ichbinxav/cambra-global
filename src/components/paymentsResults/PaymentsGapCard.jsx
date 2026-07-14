@@ -21,7 +21,7 @@ function eur(n) {
   return "€" + Math.round(n).toLocaleString("en-US");
 }
 
-export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMetrics, measurementWindow }) {
+export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMetrics, measurementWindow, compact = false }) {
   const current = engineResult?.current_effective_bps;
   const achievable = engineResult?.achievable_effective_bps;
   const annual = engineResult?.annual_savings_eur || {};
@@ -126,7 +126,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
           className="text-white font-black tabular-nums"
           style={{
             fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(40px, 9vw, 72px)",
+            fontSize: "clamp(44px, 10vw, 80px)",
             letterSpacing: "-0.04em",
             lineHeight: 1,
             background: "linear-gradient(135deg, #ffffff 0%, #22d3ee 100%)",
@@ -139,61 +139,79 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
         </span>
         <span className="text-[13px] text-white/50">/ year</span>
       </div>
-      {/* Confidence band — only when we have a real lo–hi range. */}
-      {isFinite(annual.lo) && isFinite(annual.hi) && (
-        <p className="text-[12px] text-white/50 mt-2">
-          Estimated range <span className="text-white/75 font-semibold tabular-nums">{eur(annual.lo)}–{eur(annual.hi)}</span> / year
-        </p>
-      )}
-      <p className="text-[12px] text-white/45 mt-1">
-        That's about <span className="text-white/75 font-semibold tabular-nums">
+      {/* Confidence band + monthly — ONE compact line under the figure.
+          The lo–hi range appears here ONLY (no longer duplicated with the
+          hero fallback). When we have no real range, we still show the
+          monthly figure so the line is never empty. */}
+      <p className="text-[12px] text-white/45 mt-2">
+        {isFinite(annual.lo) && isFinite(annual.hi) && (
+          <>Range <span className="text-white/75 font-semibold tabular-nums">{eur(annual.lo)}–{eur(annual.hi)}</span> · </>
+        )}
+        about <span className="text-white/75 font-semibold tabular-nums">
           {isFinite(monthly.point) ? eur(monthly.point) : `${eur(monthly.lo)}–${eur(monthly.hi)}`}
-        </span> a month.
+        </span> a month
       </p>
 
-      {/* Current vs achievable rate strip */}
-      <div className="mt-6 grid grid-cols-2 gap-3">
+      {compact ? (
+        // COMPACT rate line (estimated mode) — supporting context, NOT a
+        // competing hero. Current rate in muted red, achievable in cyan, so
+        // it still reads "this drops in your favor" without a size duel.
         <div
-          className="rounded-xl p-4"
-          style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.20)" }}
+          className="mt-6 flex items-center gap-2.5 flex-wrap rounded-xl px-4 py-3"
+          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
         >
-          <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-red-300/80 mb-1">You pay today</p>
-          <p
-            className="text-white tabular-nums font-black"
-            style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "26px", letterSpacing: "-0.03em" }}
-          >
-            {pctFromBps(current)}
-          </p>
-          {/* Verified mode: the subtitle explains this is a MEASURED figure
-              (fees ÷ net volume over real Stripe charges), not the form
-              input. Falls back to the estimated copy if the sample fields
-              are missing (defensive — shouldn't happen with M3-Chunk 5
-              reader, which always returns sample_metrics + window). */}
-          <p className="text-[10px] text-white/45 mt-0.5">
-            {isMeasured && txCount && daysCovered ? (
-              <>Your rate, measured from {txCount} charges over {daysCovered} days</>
-            ) : (
-              <>effective, on {inputSnapshot?.provider_slug || "your PSP"}</>
-            )}
-          </p>
+          <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-white/40">Effective rate</span>
+          <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ color: "rgb(248,180,180)" }}>
+            {pctFromBps(current)} today
+          </span>
+          <span className="text-white/35" aria-hidden="true">→</span>
+          <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ color: "rgb(103,232,249)" }}>
+            {pctFromBps(achievable)} achievable
+          </span>
+          {gapPct && (
+            <span className="text-[12px] text-white/40">({gapPct} pts lower)</span>
+          )}
         </div>
+      ) : (
+        // FULL rate strip (verified mode) — two cards side by side, unchanged.
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <div
+            className="rounded-xl p-4"
+            style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.20)" }}
+          >
+            <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-red-300/80 mb-1">You pay today</p>
+            <p
+              className="text-white tabular-nums font-black"
+              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "26px", letterSpacing: "-0.03em" }}
+            >
+              {pctFromBps(current)}
+            </p>
+            <p className="text-[10px] text-white/45 mt-0.5">
+              {isMeasured && txCount && daysCovered ? (
+                <>Your rate, measured from {txCount} charges over {daysCovered} days</>
+              ) : (
+                <>effective, on {inputSnapshot?.provider_slug || "your PSP"}</>
+              )}
+            </p>
+          </div>
 
-        <div
-          className="rounded-xl p-4"
-          style={{ background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.25)" }}
-        >
-          <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-cyan-300/90 mb-1">You should pay</p>
-          <p
-            className="text-white tabular-nums font-black"
-            style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "26px", letterSpacing: "-0.03em" }}
+          <div
+            className="rounded-xl p-4"
+            style={{ background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.25)" }}
           >
-            {pctFromBps(achievable)}
-          </p>
-          <p className="text-[10px] text-white/45 mt-0.5">
-            {gapPct ? `${gapPct} pts below your current rate` : "achievable rate"}
-          </p>
+            <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-cyan-300/90 mb-1">You should pay</p>
+            <p
+              className="text-white tabular-nums font-black"
+              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "26px", letterSpacing: "-0.03em" }}
+            >
+              {pctFromBps(achievable)}
+            </p>
+            <p className="text-[10px] text-white/45 mt-0.5">
+              {gapPct ? `${gapPct} pts below your current rate` : "achievable rate"}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
