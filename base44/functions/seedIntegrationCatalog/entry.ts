@@ -9,21 +9,34 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  */
 
 const CATALOG = [
-  // ── Payments (10) ─────────────────────────────────────────────
-  { integration_id: "stripe",           name: "Stripe",           category: "payments",  auth_type: "oauth",   depth: "deep",     status: "live",        priority: 1,  value_unlock: "Real payment fees, effective rate, disputes" },
-  { integration_id: "paypal",           name: "PayPal",           category: "payments",  auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 2,  value_unlock: "Checkout volumes and fees" },
-  { integration_id: "adyen",            name: "Adyen",            category: "payments",  auth_type: "api_key", depth: "deep",     status: "coming_soon", priority: 3,  value_unlock: "Enterprise interchange++ rates and disputes" },
-  { integration_id: "mollie",           name: "Mollie",           category: "payments",  auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 4,  value_unlock: "European payment processing & fees" },
-  { integration_id: "klarna",           name: "Klarna",           category: "payments",  auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 5,  value_unlock: "Buy-now-pay-later volume and fees" },
-  { integration_id: "sumup",            name: "SumUp",            category: "payments",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 6,  value_unlock: "In-store TPV terminal data and fees" },
-  { integration_id: "zettle",           name: "Zettle",           category: "payments",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 7,  value_unlock: "In-store card terminal data" },
-  { integration_id: "checkout_com",     name: "Checkout.com",     category: "payments",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 8,  value_unlock: "Enterprise card acquiring fees" },
-  { integration_id: "braintree",        name: "Braintree",        category: "payments",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 9,  value_unlock: "PayPal-owned acquiring data" },
-  { integration_id: "shopify_payments", name: "Shopify Payments", category: "payments",  auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 10, value_unlock: "Shopify-managed payment fees" },
-  { integration_id: "stripe_terminal",  name: "Stripe Terminal",  category: "payments",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 11, value_unlock: "In-store TPV via Stripe Terminal" },
-  { integration_id: "redsys",           name: "Redsys",           category: "payments",  auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 12, value_unlock: "Spanish bank-acquired card processing fees" },
-  { integration_id: "bizum",            name: "Bizum",            category: "payments",  auth_type: "api_key", depth: "standard", status: "planned",     priority: 13, value_unlock: "Spanish instant payments volume and fees" },
-  { integration_id: "lydia_pro",        name: "Lydia Pro",        category: "payments",  auth_type: "oauth",   depth: "standard", status: "planned",     priority: 14, value_unlock: "French mobile payments and wallet fees" },
+  // ── PSP · Online payments (channel: "online") ─────────────────
+  // 1.2 (2026-07-14) — split payments into online PSP + in-store TPV via the
+  // new `channel` field. Top-10 FR per channel. Stripe is the only `live`
+  // connector; everything else is `coming_soon`. Idempotent upsert by
+  // integration_id (see loop below) — safe to re-run.
+  { integration_id: "stripe",           name: "Stripe",           category: "payments",  channel: "online",   auth_type: "oauth",   depth: "deep",     status: "live",        priority: 1,  value_unlock: "Real payment fees, effective rate, disputes" },
+  { integration_id: "paypal",           name: "PayPal",           category: "payments",  channel: "online",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 2,  value_unlock: "Checkout volumes and fees" },
+  { integration_id: "mollie",           name: "Mollie",           category: "payments",  channel: "online",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 3,  value_unlock: "European payment processing & fees" },
+  { integration_id: "payplug",          name: "Payplug",          category: "payments",  channel: "online",   auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 4,  value_unlock: "French online payment processing & fees" },
+  { integration_id: "adyen",            name: "Adyen",            category: "payments",  channel: "online",   auth_type: "api_key", depth: "deep",     status: "coming_soon", priority: 5,  value_unlock: "Enterprise interchange++ rates and disputes" },
+  { integration_id: "checkout_com",     name: "Checkout.com",     category: "payments",  channel: "online",   auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 6,  value_unlock: "Enterprise card acquiring fees" },
+  { integration_id: "stancer",          name: "Stancer",          category: "payments",  channel: "online",   auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 7,  value_unlock: "French online payment processing & fees" },
+  { integration_id: "lyra",             name: "Lyra",             category: "payments",  channel: "online",   auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 8,  value_unlock: "French online payment gateway (PayZen) fees" },
+  { integration_id: "worldline",        name: "Worldline",        category: "payments",  channel: "online",   auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 9,  value_unlock: "Worldline / Payline online acquiring fees" },
+  { integration_id: "klarna",           name: "Klarna",           category: "payments",  channel: "online",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 10, value_unlock: "Buy-now-pay-later volume and fees" },
+  { integration_id: "shopify_payments", name: "Shopify Payments", category: "payments",  channel: "online",   auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 11, value_unlock: "Shopify-managed payment fees" },
+
+  // ── TPV · In-store terminals (channel: "in_store") ────────────
+  { integration_id: "sumup",            name: "SumUp",            category: "payments",  channel: "in_store", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 11, value_unlock: "In-store TPV terminal data and fees" },
+  { integration_id: "zettle",           name: "Zettle",           category: "payments",  channel: "in_store", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 12, value_unlock: "In-store card terminal data (PayPal)" },
+  { integration_id: "smile_and_pay",    name: "Smile & Pay",      category: "payments",  channel: "in_store", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 13, value_unlock: "French in-store card terminal fees" },
+  { integration_id: "yavin",            name: "Yavin",            category: "payments",  channel: "in_store", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 14, value_unlock: "French smart TPV terminal fees" },
+  { integration_id: "worldline_terminal", name: "Worldline (terminals)", category: "payments", channel: "in_store", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 15, value_unlock: "Worldline in-store terminal rental and fees" },
+  { integration_id: "mypos",            name: "myPOS",            category: "payments",  channel: "in_store", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 16, value_unlock: "In-store card terminal data and fees" },
+  { integration_id: "nepting",          name: "Nepting",          category: "payments",  channel: "in_store", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 17, value_unlock: "French payment terminal processing fees" },
+  { integration_id: "stripe_terminal",  name: "Stripe Terminal",  category: "payments",  channel: "in_store", auth_type: "oauth",   depth: "standard", status: "coming_soon", priority: 18, value_unlock: "In-store TPV via Stripe Terminal" },
+  { integration_id: "ingenico",         name: "Ingenico",         category: "payments",  channel: "in_store", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 19, value_unlock: "Ingenico terminal rental and acquiring fees" },
+  { integration_id: "verifone",         name: "Verifone",         category: "payments",  channel: "in_store", auth_type: "api_key", depth: "standard", status: "coming_soon", priority: 20, value_unlock: "Verifone terminal rental and acquiring fees" },
 
   // ── Commerce (6) ──────────────────────────────────────────────
   { integration_id: "shopify",          name: "Shopify",          category: "commerce",  auth_type: "oauth",   depth: "deep",     status: "coming_soon", priority: 1,  value_unlock: "Real GMV, orders, AOV, country mix, currency" },

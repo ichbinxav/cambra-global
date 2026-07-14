@@ -116,6 +116,9 @@ Deno.serve(async (req) => {
         integration_id: c.integration_id,
         name: c.name,
         category: c.category,
+        // 1.2 — payments-only sub-grouping (online PSP vs in-store TPV).
+        // Absent on non-payment rows; ConnectTools defaults missing to 'online'.
+        channel: c.channel || null,
         description: c.description || '',
         logo_url: c.logo_url || '',
         auth_type: c.auth_type,

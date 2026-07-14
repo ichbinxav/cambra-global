@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight, CheckCircle2, RefreshCw, Sparkles, Clock,
-  CreditCard, Store, Layers,
+  CreditCard, Store, Layers, Smartphone, ChevronDown,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import Navbar from "@/components/landing/Navbar";
@@ -350,34 +350,77 @@ export default function ConnectTools() {
           </div>
         )}
 
-        {/* Grouped categories */}
-        {!loading && CATEGORY_ORDER.map(catKey => {
-          const items = (grouped[catKey] || [])
-            // skip Stripe in payments — it's shown above
-            .filter(it => !(catKey === "payments" && it.integration_id === "stripe"));
+        {/* PAYMENTS — split into two sections: PSP (online) + TPV (in-store).
+            1.2 (2026-07-14) — presentation-only split driven by the catalog's
+            `channel` field. Stripe is rendered above (its own card), so it's
+            filtered out here. Missing channel defaults to 'online'. */}
+        {!loading && (() => {
+          const payItems = (grouped.payments || [])
+            .filter(it => it.integration_id !== "stripe")
+            .map(it => (
+              it.display_status !== "connected" && isOAuthPending(it.integration_id)
+                ? { ...it, display_status: "coming_soon", catalog_status: "coming_soon" }
+                : it
+            ));
+          const online  = payItems.filter(it => (it.channel || "online") === "online");
+          const inStore = payItems.filter(it => it.channel === "in_store");
 
-          // E(a) — gate Drive/Sheets/Gmail/Slack while OAuth creds aren't registered.
-          const gatedItems = items.map(it => {
-            if (it.display_status !== "connected" && isOAuthPending(it.integration_id)) {
-              return { ...it, display_status: "coming_soon", catalog_status: "coming_soon" };
-            }
-            return it;
-          });
-          if (gatedItems.length === 0) return null;
-
-          const meta = CATEGORY_META[catKey] || { labelKey: null, fallback: catKey, icon: Layers };
-          const Icon = meta.icon;
-          const label = meta.labelKey ? t(meta.labelKey) : meta.fallback;
+          const PaySection = ({ icon: Icon, label, items }) => {
+            if (items.length === 0) return null;
+            return (
+              <section className="space-y-2.5">
+                <div className="sticky top-14 z-10 -mx-5 px-5 py-2.5 bg-background/95 backdrop-blur-md border-b border-border/30 flex items-center gap-2">
+                  <Icon size={13} className="text-muted-foreground" aria-hidden="true" />
+                  <h2 className="text-sm font-black tracking-tight">{label}</h2>
+                  <span className="text-xs text-muted-foreground/60 tabular-nums">({items.length})</span>
+                </div>
+                <div className="space-y-2">
+                  {items.map(it => (
+                    <IntegrationCard
+                      key={it.integration_id}
+                      integration={it}
+                      stripeConnected={stripeConnected}
+                      t={t}
+                      onSync={handleSync}
+                      onConnect={handleConnect}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          };
 
           return (
-            <section key={catKey} className="space-y-2.5">
-              <div className="sticky top-14 z-10 -mx-5 px-5 py-2.5 bg-background/95 backdrop-blur-md border-b border-border/30 flex items-center gap-2">
-                <Icon size={13} className="text-muted-foreground" aria-hidden="true" />
-                <h2 className="text-sm font-black tracking-tight">{label}</h2>
-                <span className="text-xs text-muted-foreground/60 tabular-nums">({items.length})</span>
-              </div>
-              <div className="space-y-2">
-                {gatedItems.map(it => (
+            <>
+              <PaySection icon={CreditCard} label={t("ct_group_psp")} items={online} />
+              <PaySection icon={Smartphone} label={t("ct_group_tpv")} items={inStore} />
+            </>
+          );
+        })()}
+
+        {/* COMMERCE — collapsed, clearly labelled as volume-detection (not PSP).
+            1.2 — kept visible but out of the payments message, behind a
+            disclosure so it never competes with the PSP/TPV lists. */}
+        {!loading && (() => {
+          const commerceItems = (grouped.commerce || []).map(it => (
+            it.display_status !== "connected" && isOAuthPending(it.integration_id)
+              ? { ...it, display_status: "coming_soon", catalog_status: "coming_soon" }
+              : it
+          ));
+          if (commerceItems.length === 0) return null;
+          return (
+            <details className="group rounded-2xl border border-border/60 bg-secondary/20 overflow-hidden">
+              <summary className="list-none cursor-pointer px-4 py-3 flex items-center gap-2 select-none">
+                <Store size={13} className="text-muted-foreground shrink-0" aria-hidden="true" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-black tracking-tight">{t("ct_group_commerce")}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{t("ct_group_commerce_sub")}</p>
+                </div>
+                <span className="text-xs text-muted-foreground/60 tabular-nums">({commerceItems.length})</span>
+                <ChevronDown size={15} className="text-muted-foreground transition-transform group-open:rotate-180 shrink-0" aria-hidden="true" />
+              </summary>
+              <div className="px-4 pb-4 space-y-2">
+                {commerceItems.map(it => (
                   <IntegrationCard
                     key={it.integration_id}
                     integration={it}
@@ -388,9 +431,9 @@ export default function ConnectTools() {
                   />
                 ))}
               </div>
-            </section>
+            </details>
           );
-        })}
+        })()}
 
         {/* Footer */}
         {!loading && (

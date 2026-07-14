@@ -150,6 +150,10 @@ const DICT = {
     /* connect tools */
     ct_page_title:        "Connect your infrastructure",
     ct_page_sub:          "Every connection improves your benchmark accuracy and savings confidence.",
+    ct_group_psp:         "PSP · Online payments",
+    ct_group_tpv:         "TPV · In-store terminal",
+    ct_group_commerce:    "Commerce",
+    ct_group_commerce_sub:"To detect your volume — not a payment provider",
     summary_detected:     "{n} tools detected",
     summary_connected:    "{n} connected",
     summary_available:    "{n} available",
@@ -458,6 +462,10 @@ const DICT = {
 
     ct_page_title:        "Connectez votre infrastructure",
     ct_page_sub:          "Chaque connexion améliore la précision de votre benchmark et la confiance dans vos économies.",
+    ct_group_psp:         "PSP · Paiements en ligne",
+    ct_group_tpv:         "TPE · Terminal en boutique",
+    ct_group_commerce:    "Commerce",
+    ct_group_commerce_sub:"Pour détecter votre volume — pas un prestataire de paiement",
     summary_detected:     "{n} outils détectés",
     summary_connected:    "{n} connecté(s)",
     summary_available:    "{n} disponible(s)",
@@ -756,6 +764,10 @@ const DICT = {
 
     ct_page_title:        "Conecta tu infraestructura",
     ct_page_sub:          "Cada conexión mejora la precisión de tu benchmark y la confianza en tus ahorros.",
+    ct_group_psp:         "PSP · Pagos online",
+    ct_group_tpv:         "TPV · Terminal en tienda",
+    ct_group_commerce:    "Commerce",
+    ct_group_commerce_sub:"Para detectar tu volumen — no es un proveedor de pagos",
     summary_detected:     "{n} herramientas detectadas",
     summary_connected:    "{n} conectada(s)",
     summary_available:    "{n} disponible(s)",

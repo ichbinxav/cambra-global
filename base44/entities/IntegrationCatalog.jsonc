@@ -71,6 +71,14 @@
       "type": "string",
       "description": "One line describing what connecting this unlocks"
     },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "online",
+        "in_store"
+      ],
+      "description": "PAYMENTS-ONLY presentation sub-grouping. 'online' = card-not-present PSP (Stripe, PayPal, Mollie\u2026). 'in_store' = physical TPV/TPE terminal (SumUp, Zettle, Ingenico\u2026). Purely additive \u2014 absent on non-payment rows (commerce/banking/\u2026) and treated as 'online' by default in the UI. Used by ConnectTools to render two separate sections (PSP \u00b7 online vs TPV \u00b7 in-store); does NOT affect any backend logic, routing, or the analyzer slug enum."
+    },
     "docs_url": {
       "type": "string"
     }

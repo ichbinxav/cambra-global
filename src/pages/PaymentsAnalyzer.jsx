@@ -47,40 +47,45 @@ import PspVerificationOptions from "@/components/paymentsAnalyzer/PspVerificatio
 // Slugs without a seed row (Klarna, Square online, Revolut, myPOS, …)
 // carry `.hasSeed: false` — they submit as `other` which routes to the
 // regional fallback (ANY|ANY|<region>|<channel>).
+// 1.2 (2026-07-14) — reordered to FR relevance + top-10 online PSPs.
+// worldpay/square removed (US/UK, not FR top-10). worldline added
+// (Worldline/Payline) as hasSeed:false → collapses to `other` at submit.
+// shopify_payments + sumup kept on purpose (Shopify = key for indie brands;
+// SumUp operates online + in-store).
 const PROVIDER_OPTIONS_ONLINE = [
   { slug: "stripe",           label: "Stripe",           hasSeed: true  },
   { slug: "paypal",           label: "PayPal",           hasSeed: true  },
-  { slug: "shopify_payments", label: "Shopify Payments", hasSeed: true  },
-  { slug: "adyen",            label: "Adyen",            hasSeed: true  },
   { slug: "mollie",           label: "Mollie",           hasSeed: true  },
-  { slug: "checkout_com",     label: "Checkout.com",     hasSeed: true  },
-  { slug: "sumup",            label: "SumUp",            hasSeed: true  },
-  // 0.2b (2026-07-13) — FR online PSPs, each with a seeded <slug>|ANY|EU row.
   { slug: "payplug",          label: "Payplug",          hasSeed: true  },
+  { slug: "adyen",            label: "Adyen",            hasSeed: true  },
+  { slug: "checkout_com",     label: "Checkout.com",     hasSeed: true  },
   { slug: "stancer",          label: "Stancer",          hasSeed: true  },
   { slug: "lyra",             label: "Lyra",             hasSeed: true  },
+  { slug: "worldline",        label: "Worldline",        hasSeed: false },
+  { slug: "shopify_payments", label: "Shopify Payments", hasSeed: true  },
+  { slug: "sumup",            label: "SumUp",            hasSeed: true  },
   { slug: "klarna",           label: "Klarna",           hasSeed: false },
-  { slug: "worldpay",         label: "Worldpay",         hasSeed: false },
-  { slug: "square",           label: "Square",           hasSeed: false },
   { slug: "other",            label: "Other",            hasSeed: true  },
 ];
 
 // M4-TPV Fase 2B + 2026-07-12 UX widening. Verified in-store rows first
 // (SumUp / Stripe Terminal / Smile&Pay / Zettle), then common providers
 // that submit as `other` → routed to ANY|ANY|<region>|in_store fallback.
+// 1.2 (2026-07-14) — top-10 FR TPV. square/revolut_reader/viva/adyen removed.
+// worldline_terminal/nepting/ingenico/verifone added as hasSeed:false →
+// collapse to `other` (regional in-store fallback). Contract-safe.
 const PROVIDER_OPTIONS_IN_STORE = [
-  { slug: "sumup",           label: "SumUp",              hasSeed: true  },
-  { slug: "stripe_terminal", label: "Stripe Terminal",    hasSeed: true  },
-  { slug: "smile_and_pay",   label: "Smile & Pay",        hasSeed: true  },
-  { slug: "zettle",          label: "Zettle by PayPal",   hasSeed: true  },
-  // 0.2b (2026-07-13) — FR in-store TPV with a seeded row.
-  { slug: "yavin",           label: "Yavin",              hasSeed: true  },
-  { slug: "square",          label: "Square",             hasSeed: false },
-  { slug: "revolut_reader",  label: "Revolut Reader",     hasSeed: false },
-  { slug: "mypos",           label: "myPOS",              hasSeed: false },
-  { slug: "viva",            label: "Viva Wallet",        hasSeed: false },
-  { slug: "adyen",           label: "Adyen (in-store)",   hasSeed: false },
-  { slug: "other",           label: "Traditional bank TPV", hasSeed: true },
+  { slug: "sumup",              label: "SumUp",              hasSeed: true  },
+  { slug: "zettle",             label: "Zettle by PayPal",   hasSeed: true  },
+  { slug: "smile_and_pay",      label: "Smile & Pay",        hasSeed: true  },
+  { slug: "yavin",              label: "Yavin",              hasSeed: true  },
+  { slug: "worldline_terminal", label: "Worldline",          hasSeed: false },
+  { slug: "mypos",              label: "myPOS",              hasSeed: false },
+  { slug: "nepting",            label: "Nepting",            hasSeed: false },
+  { slug: "stripe_terminal",    label: "Stripe Terminal",    hasSeed: true  },
+  { slug: "ingenico",           label: "Ingenico",           hasSeed: false },
+  { slug: "verifone",           label: "Verifone",           hasSeed: false },
+  { slug: "other",              label: "Traditional bank TPV", hasSeed: true },
 ];
 
 // Map a UI slug to the exact string the backend allowlist accepts.
