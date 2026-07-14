@@ -292,6 +292,17 @@ const DICT = {
     roadmap_locked_more_other: "+{n} more routes in your plan",
     roadmap_locked_sub:    "Create your account to unlock your full recovery plan.",
 
+    /* Report v2 — Pieza C: peer benchmark distribution */
+    bench_title:          "Where you stand vs brands like you",
+    bench_illustrative:   "illustrative · cohort growing",
+    bench_top10:          "Top 10%",
+    bench_median:         "Peer median",
+    bench_you:            "YOU",
+    bench_axis_cheaper:   "cheaper",
+    bench_axis_pricier:   "pricier",
+    bench_callout:        "You're in the most expensive ~{pct}% of {country} brands your size.",
+    bench_callout_nocountry: "You're in the most expensive ~{pct}% of brands your size.",
+
     /* FIX 2 — Dashboard strings */
 
     /* FIX 4 — Toast keys */
@@ -626,6 +637,17 @@ const DICT = {
     roadmap_locked_more_other: "+{n} voies de plus dans votre plan",
     roadmap_locked_sub:    "Créez votre compte pour débloquer votre plan de récupération complet.",
 
+    /* Report v2 — Pieza C: peer benchmark distribution */
+    bench_title:          "Votre position face aux marques comme vous",
+    bench_illustrative:   "illustratif · cohorte en croissance",
+    bench_top10:          "Top 10%",
+    bench_median:         "Médiane des pairs",
+    bench_you:            "VOUS",
+    bench_axis_cheaper:   "moins cher",
+    bench_axis_pricier:   "plus cher",
+    bench_callout:        "Vous êtes dans les ~{pct}% les plus chers des marques {country} de votre taille.",
+    bench_callout_nocountry: "Vous êtes dans les ~{pct}% les plus chers des marques de votre taille.",
+
     /* FIX 2 — Dashboard strings */
 
     /* FIX 4 — Toast keys */
@@ -959,6 +981,17 @@ const DICT = {
     roadmap_locked_more_one:   "+{n} ruta más en tu plan",
     roadmap_locked_more_other: "+{n} rutas más en tu plan",
     roadmap_locked_sub:    "Crea tu cuenta para desbloquear tu plan de recuperación completo.",
+
+    /* Report v2 — Pieza C: peer benchmark distribution */
+    bench_title:          "Dónde estás frente a marcas como la tuya",
+    bench_illustrative:   "ilustrativo · cohorte creciendo",
+    bench_top10:          "Top 10%",
+    bench_median:         "Mediana de pares",
+    bench_you:            "TÚ",
+    bench_axis_cheaper:   "más barato",
+    bench_axis_pricier:   "más caro",
+    bench_callout:        "Estás en el ~{pct}% más caro de las marcas {country} de tu tamaño.",
+    bench_callout_nocountry: "Estás en el ~{pct}% más caro de las marcas de tu tamaño.",
 
     /* FIX 2 — Dashboard strings */
 

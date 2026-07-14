@@ -84,7 +84,7 @@ export default function ScoreGauge({ score = 0, grade = "F", tone = "medium", mu
           strokeDashoffset={swept ? targetOffset : circumference}
           style={{
             transition: "stroke-dashoffset 1400ms cubic-bezier(0.22,1,0.36,1)",
-            filter: `drop-shadow(0 0 6px ${color}) drop-shadow(0 0 14px ${color}66)`,
+            filter: `drop-shadow(0 0 5px ${color}59)`,
             opacity: muted ? 0.75 : 1,
           }}
         />
@@ -97,7 +97,7 @@ export default function ScoreGauge({ score = 0, grade = "F", tone = "medium", mu
             fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
             fontSize: size * 0.30,
             color,
-            textShadow: `0 0 18px ${color}55`,
+            textShadow: `0 0 5px ${color}59`,
             letterSpacing: "-0.02em",
           }}
         >

@@ -39,6 +39,7 @@ import CombinedGapHero from "@/components/paymentsResults/CombinedGapHero";
 import OptimizedHero from "@/components/paymentsResults/OptimizedHero";
 import ResultsHistory from "@/components/paymentsResults/ResultsHistory";
 import RecoveryRoadmap from "@/components/paymentsResults/RecoveryRoadmap";
+import PeerBenchmark from "@/components/paymentsResults/PeerBenchmark";
 import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -606,6 +607,7 @@ export default function PaymentsResults() {
               />
             </div>
           )}
+          <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} />
           {ctaBlock}
           {/* Locked breakdown — one of the main signup conversion drivers:
               render the SHAPE, blur the numbers, show a padlock. */}
@@ -648,6 +650,9 @@ export default function PaymentsResults() {
                   onUnlock={handleUnlock}
                 />
               </div>
+            )}
+            {!isCombined && !isOptimizedSingle && (
+              <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} />
             )}
             {ctaBlock}
           </div>

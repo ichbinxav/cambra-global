@@ -190,7 +190,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
               letterSpacing: "-0.03em",
               lineHeight: 1,
               color: "#22d3ee",
-              textShadow: "0 0 28px rgba(34,211,238,0.45), 0 0 60px rgba(34,211,238,0.18)",
+              textShadow: "0 0 12px rgba(34,211,238,0.18)",
             }}
           />
           <span className="text-[13px]" style={{ color: "#5f6f88" }}>/ year</span>
@@ -224,7 +224,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
           <div className="mt-6 grid grid-cols-2 gap-3">
             <div className="rounded-xl p-4" style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.20)" }}>
               <p className="uppercase font-bold mb-1" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "rgba(248,113,113,0.8)" }}>You pay today</p>
-              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#f87171", textShadow: "0 0 16px rgba(248,113,113,0.35)" }}>
+              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#f87171", textShadow: "0 0 8px rgba(248,113,113,0.18)" }}>
                 {pctFromBps(current)}
               </p>
               <p className="text-[10px] mt-0.5" style={{ color: "#5f6f88" }}>
@@ -235,7 +235,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             </div>
             <div className="rounded-xl p-4" style={{ background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.25)" }}>
               <p className="uppercase font-bold mb-1" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "rgba(103,232,249,0.9)" }}>You should pay</p>
-              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#67e8f9", textShadow: "0 0 16px rgba(34,211,238,0.35)" }}>
+              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#67e8f9", textShadow: "0 0 8px rgba(34,211,238,0.18)" }}>
                 {pctFromBps(achievable)}
               </p>
               <p className="text-[10px] mt-0.5" style={{ color: "#5f6f88" }}>
