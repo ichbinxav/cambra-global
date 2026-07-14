@@ -112,31 +112,54 @@ function marketRange(rateTable, region, channel, avgTicketEur, currentProviderSl
 
 // ─── Public entry point ──────────────────────────────────────────────────────
 
-// buildRecoveryRoadmap — derive the ordered recommendation list.
+// buildRecoveryRoadmap — derive the recovery roadmap from the engine's OWN
+// numbers. Single-source-of-truth, anti-double-counting design (sealed with
+// the operator 2026-07-14):
+//
+//   • SINGLE TARGET  — the target rate is the engine's achievable_effective_bps
+//     (the EXACT same number the hero uses). The roadmap never computes a
+//     second, lower target from the rate table. `findBestMarketRate` is NOT
+//     used to size any €.
+//
+//   • SINGLE POOL    — there is ONE recoverable figure: annual_savings_eur.point
+//     (the hero number). It is surfaced ONCE, at the top (`recoverable_annual`).
+//
+//   • ROUTES, NOT €  — recommendations are the HOW (renegotiate margin /
+//     better rate via CAMBRA / connect to verify). Each carries effort ·
+//     confidence · priority, but NO per-rec € (they're alternative/complementary
+//     paths to the SAME pool — a per-rec € would repeat or contradict the pool).
+//
+//   • UPSIDE AS AMBITION — marketRange is kept ONLY as neutral aggregate proof
+//     of headroom ("brands in your tier reach ~X%"), rendered as ambition COPY
+//     via `ambition_bps`. It never produces a hard € that competes with the hero.
+//
+// INVARIANT (enforced by the coherence test): no rec carries a € that exceeds
+// the pool; the UI never sums recs. The output shape makes summation impossible
+// (recs have no € field).
 //
 // Contract:
 //   engineResult: full engine_result (reads current/achievable bps, cohort,
 //     classification, annual_savings_eur, mode). Never mutated.
 //   inputSnapshot: { monthly_gmv_eur, avg_ticket_eur, provider_slug, country }.
-//   rateTable: PaymentsRateTable rows (INTERNAL sizing only). Optional — when
-//     absent, the "better rate" rec is simply omitted (never invented).
+//   rateTable: PaymentsRateTable rows (INTERNAL, ambition-only). Optional — when
+//     absent, the ambition line is simply omitted (never invented).
 //
 // Returns:
-//   { state: 'already_optimized', recommendations: [] }        // top-tier
-//   { state: 'insufficient_data', recommendations: [] }        // no honest recs
-//   { state: 'savings_opportunity', recommendations: [ Rec... ] }
+//   { state: 'already_optimized', recoverable_annual: null, recommendations: [] }
+//   { state: 'insufficient_data', recoverable_annual: null, recommendations: [] }
+//   { state: 'savings_opportunity',
+//     recoverable_annual: { lo, point, hi },   // the ONE figure, = hero pool
+//     target_bps,                              // = achievable_effective_bps (single target)
+//     ambition_bps?,                           // neutral upside ("reach ~X%"), NO €
+//     recommendations: [ Route... ] }
 //
-// Rec shape (each field traces to data — NO invented numbers, NO provider name):
+// Route shape (NO € field — that's the whole point):
 //   {
-//     id,                       // stable key
-//     title,                    // CAMBRA-framed ("we recover ..."), no PSP name
-//     annual_eur | annual_range // point €/yr, or {lo,hi} when confidence is low
+//     id, title,                       // CAMBRA-framed, no PSP name
 //     confidence: 'high'|'medium'|'low',
 //     effort: 'low'|'medium'|'high',
 //     priority: 'high'|'medium'|'low',
-//     target_rate_bps?,         // NEUTRAL target ("~X%"), no provenance
-//     market_low_bps?, market_mid_bps?, // aggregate proof, no provider name
-//     caveat?,                  // "estimated, subject to verification" when low conf
+//     caveat?,                         // for the low-confidence better-rate route
 //     cta_intent: 'managed_migration'|'collective'|'call'|'connect_verify',
 //   }
 export function buildRecoveryRoadmap(engineResult, inputSnapshot = {}, rateTable = null) {
@@ -147,101 +170,96 @@ export function buildRecoveryRoadmap(engineResult, inputSnapshot = {}, rateTable
   const cohortVerified = engineResult?.cohort?.verified === true;
   const region = engineResult?.cohort?.key?.split("|")?.[2] || null;
   const channel = engineResult?.cohort?.channel === "in_store" ? "in_store" : "online";
-  const gmv = Number(inputSnapshot?.monthly_gmv_eur);
   const ticket = Number(inputSnapshot?.avg_ticket_eur);
   const providerSlug = inputSnapshot?.provider_slug || null;
-  const annualPoint = Number(engineResult?.annual_savings_eur?.point);
 
   // Top-tier — nothing to recover. Component renders the "monitor drift" state.
   if (classification === "already_optimized") {
-    return { state: "already_optimized", recommendations: [] };
+    return { state: "already_optimized", recoverable_annual: null, recommendations: [] };
   }
   // We can't defend a number — neutral state, never invent recs.
   if (classification === "insufficient_data" || !isFinite(current) || !isFinite(achievable)) {
-    return { state: "insufficient_data", recommendations: [] };
+    return { state: "insufficient_data", recoverable_annual: null, recommendations: [] };
   }
 
-  const recs = [];
-
-  // ── Rec 1 — RECOVER PROCESSOR MARGIN (same PSP, no migration) ──────────────
-  // €/yr = gap (current - achievable) applied to GMV. This is the engine's own
-  // number — we prefer the engine's annual point when present, else recompute
-  // from the bps gap (identical arithmetic).
-  const marginAnnual = isFinite(annualPoint) && annualPoint > 0
-    ? annualPoint
-    : eurFromBpsGap(current - achievable, gmv);
-  if (marginAnnual >= MATERIAL_ANNUAL_EUR) {
-    recs.push({
-      id: "recover_margin",
-      title: "Recuperamos el margen de tu procesador",
-      annual_eur: marginAnnual,
-      confidence: cohortVerified ? "high" : "medium",
-      effort: "low",
-      priority: "high",
-      cta_intent: "managed_migration",
-    });
+  // ── SINGLE POOL — the ONE recoverable figure, taken verbatim from the engine
+  //    (same object the hero renders). Never recomputed here.
+  const pool = engineResult?.annual_savings_eur;
+  const poolPoint = Number(pool?.point);
+  if (!isFinite(poolPoint) || poolPoint < MATERIAL_ANNUAL_EUR) {
+    // Below materiality — no honest roadmap to show.
+    return { state: "insufficient_data", recoverable_annual: null, recommendations: [] };
   }
 
-  // ── Rec 2 — CAMBRA TAKES YOU TO A BETTER RATE (internal sizing only) ───────
-  // Sized against the best market rate at the merchant's ticket — but the
-  // provider is DISCARDED. We surface only the NEUTRAL target rate + the
-  // AGGREGATE market range as proof. Confidence downgrades + caveat when the
-  // best evidence is a fallback (verified:false) row.
-  if (Array.isArray(rateTable) && isFinite(current) && isFinite(ticket) && ticket > 0 && isFinite(gmv) && gmv > 0) {
-    const best = findBestMarketRate(rateTable, region, channel, ticket, providerSlug);
+  // ── SINGLE TARGET — the engine's achievable rate. NOT a rate-table minimum.
+  const target_bps = achievable;
+
+  // ── AMBITION (upside) — neutral aggregate proof of headroom, NO hard €.
+  //    marketRange gives the best/mid effective rate in the cohort at the
+  //    merchant's ticket. We surface ONLY the low end as ambition copy
+  //    ("brands in your tier reach ~X%") and ONLY when it's actually below the
+  //    engine's achievable target (otherwise there's no headroom to talk about).
+  //    Provider is discarded — no PSP name ever leaves this block.
+  let ambition_bps = null;
+  if (Array.isArray(rateTable) && isFinite(ticket) && ticket > 0) {
     const range = marketRange(rateTable, region, channel, ticket, providerSlug);
-    if (best && best.effectiveBps < current) {
-      const betterAnnual = eurFromBpsGap(current - best.effectiveBps, gmv);
-      if (betterAnnual >= MATERIAL_ANNUAL_EUR) {
-        const lowConf = !best.verified;
-        recs.push({
-          id: "better_rate",
-          title: "CAMBRA te lleva a un rate mejor",
-          // Low-confidence evidence → present the saving as a RANGE, never a
-          // false-precision point. Honesty guard.
-          ...(lowConf
-            ? { annual_range: { lo: betterAnnual * 0.6, hi: betterAnnual } }
-            : { annual_eur: betterAnnual }),
-          confidence: best.verified ? "high" : "low",
-          effort: "medium",
-          priority: betterAnnual > marginAnnual ? "high" : "medium",
-          // NEUTRAL target rate — no provenance, no provider. "~X%".
-          target_rate_bps: best.effectiveBps,
-          // Aggregate proof — cohort range, no provider names.
-          ...(range ? { market_low_bps: range.lowBps, market_mid_bps: range.midBps } : {}),
-          ...(lowConf ? { caveat: "Estimado a partir de rangos de mercado, sujeto a verificación." } : {}),
-          cta_intent: "collective",
-        });
-      }
+    if (range && isFinite(range.lowBps) && range.lowBps < target_bps) {
+      ambition_bps = range.lowBps;
     }
   }
 
-  // ── Rec 3 — CONNECT TO VERIFY (estimated mode only, no €) ──────────────────
-  // Disappears in verified mode — the number is already measured there.
+  // ── ROUTES — the HOW. No per-rec €. Order: renegotiate (easiest, highest
+  //    confidence) → better rate → connect (estimated only).
+  const recs = [];
+
+  // Route A — renegotiate the processor margin (same PSP, no migration).
+  recs.push({
+    id: "recover_margin",
+    title: "Renegociamos tu margen",
+    confidence: cohortVerified ? "high" : "medium",
+    effort: "low",
+    priority: "high",
+    cta_intent: "managed_migration",
+  });
+
+  // Route B — CAMBRA takes you to a better rate via the collective. Confidence
+  // follows the cohort's evidence quality (verified row → high, fallback → low
+  // + caveat). This is a ROUTE to the same pool — it does NOT carry its own €.
+  recs.push({
+    id: "better_rate",
+    title: "Te llevamos a un rate mejor",
+    confidence: cohortVerified ? "high" : "low",
+    effort: "medium",
+    priority: "medium",
+    ...(cohortVerified ? {} : { caveat: "Objetivo estimado a partir de rangos de mercado, sujeto a verificación." }),
+    cta_intent: "collective",
+  });
+
+  // Route C — connect to verify (estimated mode only). Disappears once the
+  // number is measured from real PSP data.
   if (mode !== "verified") {
     recs.push({
       id: "connect_verify",
-      title: "Conecta para verificar y arrancamos la recuperación",
-      confidence: "high",       // the ACTION is certain; there's no € claim
+      title: "Conecta para verificar y arrancamos",
+      confidence: "high",   // the ACTION is certain
       effort: "low",
       priority: "medium",
       cta_intent: "connect_verify",
     });
   }
 
-  // Order by €/year desc (recs without a € figure sort last), tie-break by
-  // lower effort. connect_verify has no € → naturally sinks below the sized recs.
-  const annualOf = (r) =>
-    isFinite(r.annual_eur) ? r.annual_eur
-      : r.annual_range ? r.annual_range.hi
-      : -1;
-  recs.sort((a, b) => {
-    const d = annualOf(b) - annualOf(a);
-    if (d !== 0) return d;
-    return (EFFORT[a.effort] || 9) - (EFFORT[b.effort] || 9);
-  });
-
-  return { state: "savings_opportunity", recommendations: recs };
+  return {
+    state: "savings_opportunity",
+    // The ONE figure — the hero pool verbatim (lo/point/hi). Surfaced once.
+    recoverable_annual: {
+      lo: Number(pool.lo),
+      point: poolPoint,
+      hi: Number(pool.hi),
+    },
+    target_bps,
+    ...(ambition_bps != null ? { ambition_bps } : {}),
+    recommendations: recs,
+  };
 }
 
 export { MATERIAL_ANNUAL_EUR, effectiveBpsAtTicket, findBestMarketRate, marketRange };
