@@ -23,7 +23,7 @@
 // on the estimated path. The verified path shows a different CTA (the user
 // is already signed in and connected — they need next-steps, not a signup).
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -38,6 +38,8 @@ import AssumptionsFootnote from "@/components/paymentsResults/AssumptionsFootnot
 import CombinedGapHero from "@/components/paymentsResults/CombinedGapHero";
 import OptimizedHero from "@/components/paymentsResults/OptimizedHero";
 import ResultsHistory from "@/components/paymentsResults/ResultsHistory";
+import RecoveryRoadmap from "@/components/paymentsResults/RecoveryRoadmap";
+import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const OBJECT_ID = /^[0-9a-f]{24}$/i;
@@ -153,6 +155,12 @@ export default function PaymentsResults() {
   const [payload, setPayload] = useState(null);
   const [retryAfter, setRetryAfter] = useState(0);
   const [attempt, setAttempt] = useState(0); // manual retry counter
+  // Roadmap open state + a ref to scroll to it when the Score CTA is clicked.
+  const [roadmapOpen, setRoadmapOpen] = useState(false);
+  const roadmapRef = useRef(null);
+  // PaymentsRateTable — read once when a result is ready, ONLY to derive the
+  // neutral ambition line (marketRange). Public read RLS. Never blocks render.
+  const [rateTable, setRateTable] = useState(null);
 
   useEffect(() => {
     // ── PATH B — verified (authenticated real-data read) ───────────────
@@ -306,6 +314,48 @@ export default function PaymentsResults() {
     return () => { cancelled = true; };
   }, [sessionId, verifiedId, isVerifiedPath, attempt, isAuthenticated]);
 
+  // Load the rate table once a result is ready — used ONLY for the roadmap's
+  // neutral ambition line. Best-effort: failure just omits the ambition copy.
+  useEffect(() => {
+    if (status !== "ready" || rateTable) return;
+    let cancelled = false;
+    base44.entities.PaymentsRateTable
+      .filter({ active: true }, "-created_date", 200)
+      .then((rows) => { if (!cancelled) setRateTable(Array.isArray(rows) ? rows : []); })
+      .catch(() => { if (!cancelled) setRateTable([]); });
+    return () => { cancelled = true; };
+  }, [status, rateTable]);
+
+  // Score CTA → open the roadmap and scroll to it.
+  const handleScoreCTA = () => {
+    setRoadmapOpen(true);
+    requestAnimationFrame(() => {
+      roadmapRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
+  // Anonymous unlock → route to signup, preserving the session so the report
+  // (and the full plan) come back populated after login.
+  const handleUnlock = () => {
+    try {
+      const search = new URLSearchParams(window.location.search);
+      const sid = search.get("session") || search.get("anon_session_id");
+      if (sid) {
+        try { localStorage.setItem("cambra_pending_anon_session", sid); } catch { /* cookie fallback */ }
+        try { document.cookie = `cambra_anon_session=${encodeURIComponent(sid)}; Max-Age=1800; Path=/; SameSite=Lax`; } catch { /* url fallback */ }
+      }
+    } catch { /* url fallback */ }
+    const currentPath = window.location.pathname + window.location.search;
+    navigate(`/LoginGate?next=${encodeURIComponent(currentPath)}`);
+  };
+
+  // Route action → CAMBRA's offer. Anonymous first goes through signup (same as
+  // unlock); registered goes to the dashboard where the managed workflow lives.
+  const handleRouteAction = () => {
+    if (!isAuthenticated) { handleUnlock(); return; }
+    navigate("/Dashboard");
+  };
+
   // ── loading
   if (status === "loading") {
     return (
@@ -429,6 +479,14 @@ export default function PaymentsResults() {
   // and a per-channel channels[] array. Detect once here and route to the
   // combined hero renderer instead of the single-channel gap card.
   const isCombined = engineResult?.combined === true && Array.isArray(engineResult?.channels);
+  // Anonymous readers get the teaser gating (first route visible, rest locked).
+  // Owned/verified rows are always fully unlocked.
+  const isAnonymous = !isAuthenticated && !payload?.owned;
+  // Recovery roadmap — single-channel only (combined has its own hero). Derived
+  // purely from engine_result + input_snapshot; rateTable only feeds ambition.
+  const roadmap = (!isCombined && engineResult)
+    ? buildRecoveryRoadmap(engineResult, inputSnapshot || {}, rateTable)
+    : null;
   // M4-refinado (v1.5.0) — classification branches the hero.
   //   single-channel + already_optimized → OptimizedHero + hide primary CTA
   //   single-channel + savings_opportunity/insufficient_data → PaymentsGapCard (unchanged)
@@ -535,7 +593,19 @@ export default function PaymentsResults() {
             sampleMetrics={sampleMetrics}
             measurementWindow={measurementWindow}
             compact
+            isAnonymous={isAnonymous}
+            onScoreCTA={handleScoreCTA}
           />
+          {roadmapOpen && roadmap && (
+            <div ref={roadmapRef}>
+              <RecoveryRoadmap
+                roadmap={roadmap}
+                isAnonymous={isAnonymous}
+                onRouteAction={handleRouteAction}
+                onUnlock={handleUnlock}
+              />
+            </div>
+          )}
           {ctaBlock}
           {/* Locked breakdown — one of the main signup conversion drivers:
               render the SHAPE, blur the numbers, show a padlock. */}
@@ -565,7 +635,19 @@ export default function PaymentsResults() {
                 inputSnapshot={inputSnapshot}
                 sampleMetrics={sampleMetrics}
                 measurementWindow={measurementWindow}
+                isAnonymous={isAnonymous}
+                onScoreCTA={handleScoreCTA}
               />
+            )}
+            {roadmapOpen && roadmap && (
+              <div ref={roadmapRef}>
+                <RecoveryRoadmap
+                  roadmap={roadmap}
+                  isAnonymous={isAnonymous}
+                  onRouteAction={handleRouteAction}
+                  onUnlock={handleUnlock}
+                />
+              </div>
             )}
             {ctaBlock}
           </div>

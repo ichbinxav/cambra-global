@@ -23,7 +23,7 @@ function eur(n) {
   return "€" + Math.round(n).toLocaleString("en-US");
 }
 
-export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMetrics, measurementWindow, compact = false }) {
+export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMetrics, measurementWindow, compact = false, isAnonymous = false, onScoreCTA }) {
   const current = engineResult?.current_effective_bps;
   const achievable = engineResult?.achievable_effective_bps;
   const annual = engineResult?.annual_savings_eur || {};
@@ -121,7 +121,12 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
           Derived purely from the two bps the engine already produced (single
           source of truth). Sits above the €/year figure: the grade says "how
           well you pay", the figure says "how much it's costing you". */}
-      <PaymentsScoreBadge engineResult={engineResult} className="mb-6" />
+      <PaymentsScoreBadge
+        engineResult={engineResult}
+        className="mb-6"
+        isAnonymous={isAnonymous}
+        onRecoveryClick={onScoreCTA}
+      />
 
       {/* Annual savings — the hero. UNIFIED PRESENTATION (2026-07-13): the big
           figure is the POINT estimate (same number the Dashboard shows), with
