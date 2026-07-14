@@ -1,8 +1,12 @@
 import { Star } from "lucide-react";
 import Navbar from "@/components/landing/Navbar";
+import InitialsAvatar from "@/components/shared/InitialsAvatar";
 import { useTranslation } from "@/lib/i18n.jsx";
 
-// PLACEHOLDER testimonials — replace with real customer quotes before public launch.
+// ⚠️ ILLUSTRATIVE / PLACEHOLDER testimonials — invented names + quotes.
+// Uses initials avatars (NOT photos) on purpose: a fake photo-realistic face
+// + fake quote presented as a real customer is misleading advertising.
+// REPLACE with real, consented customer quotes (and real photos) before launch.
 const TESTIMONIALS = [
   {
     name: "Emma Rossi",
@@ -116,9 +120,7 @@ export default function Testimonials() {
                   className="flex items-center gap-3 pt-4"
                   style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
                 >
-                  <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shrink-0 font-bold text-xs">
-                    {tm.avatar}
-                  </div>
+                  <InitialsAvatar name={tm.name} size={40} />
                   <div>
                     <p className="text-sm font-semibold text-white">{tm.name}</p>
                     <p className="text-[11px] text-white/55">

@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, Quote, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import InitialsAvatar from "@/components/shared/InitialsAvatar";
 
+// ⚠️ ILLUSTRATIVE / PLACEHOLDER testimonials — invented names + quotes.
+// Uses initials avatars (NOT photos) on purpose: a fake photo-realistic face
+// + fake quote presented as a real customer is misleading advertising.
+// REPLACE with real, consented customer quotes (and real photos) before launch.
 const ITEMS = [
   {
     category: "Payments",
@@ -10,7 +15,6 @@ const ITEMS = [
     name: "Julien Laurent",
     role: "Founder",
     revenue: "€2.1M revenue",
-    photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces",
     before: "2.9%",
     after: "2.3%",
     savings: "€12K",
@@ -22,7 +26,6 @@ const ITEMS = [
     name: "Marta Ruiz",
     role: "COO",
     revenue: "€4.5M revenue",
-    photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces",
     before: "€8.90",
     after: "€6.40",
     savings: "€9K",
@@ -34,7 +37,6 @@ const ITEMS = [
     name: "Antoine Schmidt",
     role: "CFO",
     revenue: "€3.8M revenue",
-    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces",
     before: "24 tools",
     after: "13 tools",
     savings: "€7K",
@@ -147,12 +149,7 @@ export default function TestimonialsCarousel() {
 
             {/* author */}
             <div className="relative flex items-center gap-2.5 mb-5">
-              <img
-                src={item.photo}
-                alt={item.name}
-                className="w-9 h-9 rounded-full object-cover shrink-0"
-                style={{ border: "1px solid rgba(255,255,255,0.15)" }}
-              />
+              <InitialsAvatar name={item.name} size={36} />
               <div className="min-w-0">
                 <p className="text-white text-[12px] font-bold tracking-tight truncate">
                   {item.name}
