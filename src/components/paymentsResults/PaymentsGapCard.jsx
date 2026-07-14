@@ -11,6 +11,8 @@
 // (1 bps = 0.01%). We ALWAYS use the engine's numbers directly — never
 // recompute here.
 
+import PaymentsScoreBadge from "@/components/paymentsResults/PaymentsScoreBadge";
+
 function pctFromBps(bps) {
   if (!isFinite(bps)) return "—";
   return (bps / 100).toFixed(2) + "%";
@@ -114,6 +116,12 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
           </span>
         )}
       </div>
+
+      {/* CAMBRA payments-efficiency Score — the at-a-glance product signal.
+          Derived purely from the two bps the engine already produced (single
+          source of truth). Sits above the €/year figure: the grade says "how
+          well you pay", the figure says "how much it's costing you". */}
+      <PaymentsScoreBadge engineResult={engineResult} className="mb-6" />
 
       {/* Annual savings — the hero. UNIFIED PRESENTATION (2026-07-13): the big
           figure is the POINT estimate (same number the Dashboard shows), with
