@@ -1,17 +1,32 @@
-// PaymentsGapCard — the hero card of PaymentsResults.
+// PaymentsGapCard — the hero card of PaymentsResults. Report v2 (tech).
 //
-// Shows:
-//   - The current effective rate (blended %) vs the achievable rate.
-//   - The annual savings RANGE (lo–hi). Never the point alone — that's a
-//     hard requirement of the product: single-number precision would be
-//     dishonest for an estimate.
+// PIEZA A — Score GAUGE (ScoreGauge): amber arc that sweeps to the score % on
+//   load, big number counts up, "GRADE X" underneath. Beside it the segmented
+//   recovery CTA (ScoreRecoveryCTA) — C/D/F → recover, A/B → top-tier. Both
+//   derive from computePaymentsScore (single source of truth — never recomputed).
 //
-// Basis-points math note: engine returns effective bps (percent_bps +
-// amortized fixed fee). To render as a human "%" we divide by 100
-// (1 bps = 0.01%). We ALWAYS use the engine's numbers directly — never
-// recompute here.
+// PIEZA B — Live figure: "You're overpaying by ~" + € count-up (cyan, glow) +
+//   "/ year". Range + monthly below. Mono chip: current% → achievable%.
+//
+// AESTHETIC: card bg #070c16 + subtle grid overlay (radial mask). Mono numbers,
+// soft glows. cyan = savings, amber = score, red = current rate.
+//
+// Everything numeric comes verbatim from engine_result. Payments only.
 
-import PaymentsScoreBadge from "@/components/paymentsResults/PaymentsScoreBadge";
+import { computePaymentsScore } from "@/lib/paymentsScore.js";
+import ScoreGauge from "@/components/paymentsResults/ScoreGauge";
+import ScoreRecoveryCTA from "@/components/paymentsResults/ScoreRecoveryCTA";
+import EuroCountUp from "@/components/paymentsResults/EuroCountUp";
+
+const MONO = "'IBM Plex Mono', ui-monospace, monospace";
+
+// Tone token → concrete colors (same mapping as the old badge).
+const TONE = {
+  excellent: { text: "rgb(45,212,191)",  ring: "rgba(45,212,191,0.45)",  glow: "rgba(45,212,191,0.22)",  soft: "rgba(45,212,191,0.10)" },
+  good:      { text: "rgb(96,165,250)",  ring: "rgba(96,165,250,0.45)",  glow: "rgba(96,165,250,0.22)",  soft: "rgba(96,165,250,0.10)" },
+  medium:    { text: "rgb(245,181,68)",  ring: "rgba(245,181,68,0.45)",  glow: "rgba(245,181,68,0.20)",  soft: "rgba(245,181,68,0.10)" },
+  risk:      { text: "rgb(248,113,113)", ring: "rgba(248,113,113,0.45)", glow: "rgba(248,113,113,0.20)", soft: "rgba(248,113,113,0.10)" },
+};
 
 function pctFromBps(bps) {
   if (!isFinite(bps)) return "—";
@@ -29,202 +44,207 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
   const annual = engineResult?.annual_savings_eur || {};
   const monthly = engineResult?.monthly_savings_eur || {};
   const cohortVerifiedRow = engineResult?.cohort?.verified === true;
-  // M3-Chunk 7 — the ONLY badge in the app that reads "VERIFIED" (Vocabulary
-  // Rule, Decision_Log 2026-07-09). Gated on engine_result.mode, which the
-  // motor stamps as "verified" ONLY when computeStripeVerifiedGap ran on
-  // real Stripe balance-transaction data. The form path never reaches
-  // mode==="verified" — it stops at "estimated".
   const isMeasured = engineResult?.mode === "verified";
-  // M4-TPV Fase 2B — channel from cohort. Default 'online' preserves pre-M4
-  // behavior for legacy verified rows without the field.
   const channel = engineResult?.cohort?.channel === "in_store" ? "in_store" : "online";
 
   const gapPct = isFinite(current) && isFinite(achievable) ? ((current - achievable) / 100).toFixed(2) : null;
   const txCount = sampleMetrics?.tx_count_charges_90d;
   const daysCovered = measurementWindow?.days_covered;
 
+  // Score (single source of truth) — drives the gauge + CTA.
+  const scoreResult = computePaymentsScore(engineResult);
+  const scoreAvailable = scoreResult.available;
+  const tone = scoreResult.tone || "medium";
+  const toneColors = TONE[tone] || TONE.medium;
+  const scoreMuted = scoreAvailable && !scoreResult.verified;
+
   return (
     <div
-      className="rounded-3xl p-6 md:p-8"
+      className="relative rounded-3xl p-6 md:p-8 overflow-hidden"
       style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)",
-        border: "1px solid rgba(255,255,255,0.10)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
+        background: "#070c16",
+        border: "1px solid rgba(255,255,255,0.09)",
+        boxShadow: "0 24px 64px -28px rgba(0,0,0,0.7)",
       }}
     >
-      {/* Eyebrow — cohort label + verification tier.
-          VOCABULARY RULE (Decision_Log 2026-07-09 + M3-Chunk 7): the word
-          "VERIFIED" is RESERVED in this app for analyses backed by REAL
-          CONNECTED DATA (mode === "verified"). Three tiers, one truth:
-            engine_result.mode === "verified" → "VERIFIED"        (measured)
-            cohort.verified === true          → "PUBLIC PRICING"  (estimated)
-            cohort.verified === false         → "REGIONAL ESTIMATE"
-          Order matters: mode check FIRST — a verified row still carries
-          cohort.verified === true from its rate-table row, so without the
-          mode gate every verified analysis would land on the weaker badge. */}
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
-        <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
-          Payments gap · {inputSnapshot?.country || "—"}
-        </span>
-        {/* M4-TPV Fase 2B — channel pill (in-store / online). Only shown for
-            in_store to keep online results visually unchanged (default state). */}
-        {channel === "in_store" && (
-          <span
-            title="Analysis based on in-store (physical terminal) payment rates."
-            className="text-[9px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full"
-            style={{
-              background: "rgba(168,85,247,0.12)",
-              color: "rgb(216,180,254)",
-              border: "1px solid rgba(168,85,247,0.35)",
-            }}
-          >
-            In-store
-          </span>
-        )}
-        {isMeasured ? (
-          <span
-            title="Measured from your real Stripe transaction data over the last 90 days."
-            className="text-[9px] uppercase tracking-[0.14em] font-black px-2 py-0.5 rounded-full inline-flex items-center gap-1"
-            style={{
-              background: "linear-gradient(135deg, rgba(34,211,238,0.22) 0%, rgba(59,130,246,0.18) 100%)",
-              color: "rgb(103,232,249)",
-              border: "1px solid rgba(34,211,238,0.55)",
-              boxShadow: "0 0 12px rgba(34,211,238,0.25)",
-            }}
-          >
-            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            Verified
-          </span>
-        ) : cohortVerifiedRow ? (
-          <span
-            title="Calculated against your PSP's publicly published pricing."
-            className="text-[9px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(34,211,238,0.12)", color: "rgb(34,211,238)", border: "1px solid rgba(34,211,238,0.35)" }}
-          >
-            Public pricing
-          </span>
-        ) : (
-          <span
-            title="No public pricing available for this cohort — we used regional averages."
-            className="text-[9px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", border: "1px solid rgba(255,255,255,0.15)" }}
-          >
-            Regional estimate
-          </span>
-        )}
-      </div>
-
-      {/* CAMBRA payments-efficiency Score — the at-a-glance product signal.
-          Derived purely from the two bps the engine already produced (single
-          source of truth). Sits above the €/year figure: the grade says "how
-          well you pay", the figure says "how much it's costing you". */}
-      <PaymentsScoreBadge
-        engineResult={engineResult}
-        className="mb-6"
-        isAnonymous={isAnonymous}
-        onRecoveryClick={onScoreCTA}
+      {/* Subtle tech grid overlay — radial mask fades it toward the edges. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(#0d1a30 1px, transparent 1px), linear-gradient(90deg, #0d1a30 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+          opacity: 0.6,
+          maskImage: "radial-gradient(ellipse 95% 85% at 50% 25%, #000 30%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 95% 85% at 50% 25%, #000 30%, transparent 100%)",
+        }}
       />
 
-      {/* Annual savings — the hero. UNIFIED PRESENTATION (2026-07-13): the big
-          figure is the POINT estimate (same number the Dashboard shows), with
-          the lo–hi RANGE band directly underneath as the confidence band. This
-          keeps Dashboard and Results visually identical. When the point is
-          missing (legacy rows), we fall back to the range as the headline. */}
-      <p className="text-[13px] text-white/55 mb-2">You're overpaying by roughly</p>
-      <div className="flex items-baseline gap-3 flex-wrap">
-        <span
-          className="text-white font-black tabular-nums"
-          style={{
-            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(44px, 10vw, 80px)",
-            letterSpacing: "-0.04em",
-            lineHeight: 1,
-            background: "linear-gradient(135deg, #ffffff 0%, #22d3ee 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
-        >
-          {isFinite(annual.point) ? eur(annual.point) : `${eur(annual.lo)}–${eur(annual.hi)}`}
-        </span>
-        <span className="text-[13px] text-white/50">/ year</span>
-      </div>
-      {/* Confidence band + monthly — ONE compact line under the figure.
-          The lo–hi range appears here ONLY (no longer duplicated with the
-          hero fallback). When we have no real range, we still show the
-          monthly figure so the line is never empty. */}
-      <p className="text-[12px] text-white/45 mt-2">
-        {isFinite(annual.lo) && isFinite(annual.hi) && (
-          <>Range <span className="text-white/75 font-semibold tabular-nums">{eur(annual.lo)}–{eur(annual.hi)}</span> · </>
-        )}
-        about <span className="text-white/75 font-semibold tabular-nums">
-          {isFinite(monthly.point) ? eur(monthly.point) : `${eur(monthly.lo)}–${eur(monthly.hi)}`}
-        </span> a month
-      </p>
-
-      {compact ? (
-        // COMPACT rate line (estimated mode) — supporting context, NOT a
-        // competing hero. Current rate in muted red, achievable in cyan, so
-        // it still reads "this drops in your favor" without a size duel.
-        <div
-          className="mt-6 flex items-center gap-2.5 flex-wrap rounded-xl px-4 py-3"
-          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-white/40">Effective rate</span>
-          <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ color: "rgb(248,180,180)" }}>
-            {pctFromBps(current)} today
+      <div className="relative z-10">
+        {/* Eyebrow — cohort + verification tier + channel. Unchanged logic. */}
+        <div className="flex items-center gap-2 mb-5 flex-wrap">
+          <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#5f6f88" }}>
+            Payments gap · {inputSnapshot?.country || "—"}
           </span>
-          <span className="text-white/35" aria-hidden="true">→</span>
-          <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ color: "rgb(103,232,249)" }}>
-            {pctFromBps(achievable)} achievable
-          </span>
-          {gapPct && (
-            <span className="text-[12px] text-white/40">({gapPct} pts lower)</span>
+          {channel === "in_store" && (
+            <span
+              title="Analysis based on in-store (physical terminal) payment rates."
+              className="uppercase font-bold px-2 py-0.5 rounded-full"
+              style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(168,85,247,0.12)", color: "rgb(216,180,254)", border: "1px solid rgba(168,85,247,0.35)" }}
+            >
+              In-store
+            </span>
+          )}
+          {isMeasured ? (
+            <span
+              title="Measured from your real Stripe transaction data over the last 90 days."
+              className="uppercase font-black px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+              style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "linear-gradient(135deg, rgba(34,211,238,0.22) 0%, rgba(59,130,246,0.18) 100%)", color: "rgb(103,232,249)", border: "1px solid rgba(34,211,238,0.55)", boxShadow: "0 0 12px rgba(34,211,238,0.25)" }}
+            >
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Verified
+            </span>
+          ) : cohortVerifiedRow ? (
+            <span
+              title="Calculated against your PSP's publicly published pricing."
+              className="uppercase font-bold px-2 py-0.5 rounded-full"
+              style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(34,211,238,0.12)", color: "rgb(34,211,238)", border: "1px solid rgba(34,211,238,0.35)" }}
+            >
+              Public pricing
+            </span>
+          ) : (
+            <span
+              title="No public pricing available for this cohort — we used regional averages."
+              className="uppercase font-bold px-2 py-0.5 rounded-full"
+              style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", border: "1px solid rgba(255,255,255,0.15)" }}
+            >
+              Regional estimate
+            </span>
           )}
         </div>
-      ) : (
-        // FULL rate strip (verified mode) — two cards side by side, unchanged.
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <div
-            className="rounded-xl p-4"
-            style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.20)" }}
-          >
-            <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-red-300/80 mb-1">You pay today</p>
-            <p
-              className="text-white tabular-nums font-black"
-              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "26px", letterSpacing: "-0.03em" }}
-            >
-              {pctFromBps(current)}
-            </p>
-            <p className="text-[10px] text-white/45 mt-0.5">
-              {isMeasured && txCount && daysCovered ? (
-                <>Your rate, measured from {txCount} charges over {daysCovered} days</>
-              ) : (
-                <>effective, on {inputSnapshot?.provider_slug || "your PSP"}</>
-              )}
-            </p>
-          </div>
 
+        {/* PIEZA A — GAUGE + segmented CTA. */}
+        {scoreAvailable ? (
           <div
-            className="rounded-xl p-4"
-            style={{ background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.25)" }}
+            className="rounded-2xl p-5 mb-7 flex flex-col sm:flex-row sm:items-center gap-5"
+            style={{
+              background: `radial-gradient(120% 120% at 0% 0%, ${toneColors.soft} 0%, transparent 60%), rgba(255,255,255,0.02)`,
+              border: `1px solid ${toneColors.ring}`,
+              boxShadow: `0 0 28px -10px ${toneColors.glow}`,
+            }}
           >
-            <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-cyan-300/90 mb-1">You should pay</p>
-            <p
-              className="text-white tabular-nums font-black"
-              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "26px", letterSpacing: "-0.03em" }}
+            <div className="flex items-center gap-5 flex-1 min-w-0">
+              <ScoreGauge score={scoreResult.score} grade={scoreResult.grade} tone={tone} muted={scoreMuted} />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.18em", color: "rgba(255,255,255,0.5)" }}>
+                    Payments efficiency
+                  </span>
+                  {scoreMuted && (
+                    <span
+                      className="uppercase font-bold px-1.5 py-0.5 rounded-full"
+                      style={{ fontFamily: MONO, fontSize: 8, letterSpacing: "0.12em", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.15)" }}
+                    >
+                      Estimate
+                    </span>
+                  )}
+                </div>
+                <p className="text-[12px] text-white/55 leading-snug">{scoreResult.contextLine}</p>
+              </div>
+            </div>
+            <div
+              className="sm:w-[38%] sm:border-l sm:pl-5 flex flex-col justify-center shrink-0"
+              style={{ borderColor: "rgba(255,255,255,0.08)" }}
             >
-              {pctFromBps(achievable)}
-            </p>
-            <p className="text-[10px] text-white/45 mt-0.5">
-              {gapPct ? `${gapPct} pts below your current rate` : "achievable rate"}
-            </p>
+              <ScoreRecoveryCTA
+                grade={scoreResult.grade}
+                tone={tone}
+                toneColors={toneColors}
+                isAnonymous={isAnonymous}
+                onRecoveryClick={onScoreCTA}
+              />
+            </div>
           </div>
+        ) : (
+          <div
+            className="rounded-2xl px-4 py-3 mb-7 flex items-center gap-3"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.18em", color: "rgba(255,255,255,0.4)" }}>Payments efficiency</span>
+            <span className="text-[13px] text-white/55">Connect your PSP to score</span>
+          </div>
+        )}
+
+        {/* PIEZA B — LIVE FIGURE. */}
+        <p className="text-[13px] mb-2" style={{ color: "#8a97ad" }}>You're overpaying by roughly</p>
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <EuroCountUp
+            value={isFinite(annual.point) ? annual.point : (annual.lo + annual.hi) / 2}
+            className="font-black tabular-nums"
+            style={{
+              fontFamily: MONO,
+              fontSize: "clamp(44px, 10vw, 82px)",
+              letterSpacing: "-0.03em",
+              lineHeight: 1,
+              color: "#22d3ee",
+              textShadow: "0 0 28px rgba(34,211,238,0.45), 0 0 60px rgba(34,211,238,0.18)",
+            }}
+          />
+          <span className="text-[13px]" style={{ color: "#5f6f88" }}>/ year</span>
         </div>
-      )}
+        <p className="text-[12px] mt-2.5" style={{ color: "#5f6f88" }}>
+          {isFinite(annual.lo) && isFinite(annual.hi) && (
+            <>Range <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#8a97ad" }}>{eur(annual.lo)}–{eur(annual.hi)}</span> · </>
+          )}
+          about <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#8a97ad" }}>
+            {isFinite(monthly.point) ? eur(monthly.point) : `${eur(monthly.lo)}–${eur(monthly.hi)}`}
+          </span> a month
+        </p>
+
+        {/* Rate chip — mono, current(red) → achievable(cyan). */}
+        {compact ? (
+          <div
+            className="mt-6 inline-flex items-center gap-2.5 flex-wrap rounded-xl px-4 py-3"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "#5f6f88" }}>Effective rate</span>
+            <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ fontFamily: MONO, color: "#f87171" }}>
+              {pctFromBps(current)} today
+            </span>
+            <span style={{ color: "#5f6f88" }} aria-hidden="true">→</span>
+            <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ fontFamily: MONO, color: "#67e8f9" }}>
+              {pctFromBps(achievable)} achievable
+            </span>
+            {gapPct && <span className="text-[12px]" style={{ color: "#5f6f88" }}>({gapPct} pts lower)</span>}
+          </div>
+        ) : (
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="rounded-xl p-4" style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.20)" }}>
+              <p className="uppercase font-bold mb-1" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "rgba(248,113,113,0.8)" }}>You pay today</p>
+              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#f87171", textShadow: "0 0 16px rgba(248,113,113,0.35)" }}>
+                {pctFromBps(current)}
+              </p>
+              <p className="text-[10px] mt-0.5" style={{ color: "#5f6f88" }}>
+                {isMeasured && txCount && daysCovered
+                  ? <>Your rate, measured from {txCount} charges over {daysCovered} days</>
+                  : <>effective, on {inputSnapshot?.provider_slug || "your PSP"}</>}
+              </p>
+            </div>
+            <div className="rounded-xl p-4" style={{ background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.25)" }}>
+              <p className="uppercase font-bold mb-1" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "rgba(103,232,249,0.9)" }}>You should pay</p>
+              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#67e8f9", textShadow: "0 0 16px rgba(34,211,238,0.35)" }}>
+                {pctFromBps(achievable)}
+              </p>
+              <p className="text-[10px] mt-0.5" style={{ color: "#5f6f88" }}>
+                {gapPct ? `${gapPct} pts below your current rate` : "achievable rate"}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
