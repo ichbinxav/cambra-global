@@ -15,9 +15,17 @@
 // CONFIDENCE: when `verified === false` (estimated), the number carries a "~"
 // and an "Estimate" tag, and the whole badge is slightly muted — the Score is
 // honest about being an estimate until the merchant connects their PSP.
+//
+// SEGMENTED CTA (right column):
+//   grade C/D/F (room to recover) → action toward CAMBRA's recovery roadmap.
+//     anonymous → "Desbloquea tu plan →"  ·  registered → "Ver cómo lo recuperamos →"
+//   grade A/B (already at the floor) → "Eres top-tier · monitoriza tu drift" + ✓,
+//     NO "improve" language, passive (no click destination).
+//   The action ALWAYS routes to the roadmap (which only offers CAMBRA actions).
+//   This component NEVER links to an external PSP.
 
 import { useState } from "react";
-import { Info } from "lucide-react";
+import { Info, ArrowRight, ShieldCheck } from "lucide-react";
 import { computePaymentsScore } from "@/lib/paymentsScore.js";
 
 // Tone token → concrete colors (maps to the semantic --score-* tokens in
@@ -30,7 +38,12 @@ const TONE = {
   risk:      { text: "rgb(248,113,113)", ring: "rgba(248,113,113,0.45)", glow: "rgba(248,113,113,0.20)", soft: "rgba(248,113,113,0.10)" },
 };
 
-export default function PaymentsScoreBadge({ engineResult, className = "" }) {
+export default function PaymentsScoreBadge({
+  engineResult,
+  className = "",
+  isAnonymous = false,
+  onRecoveryClick,
+}) {
   const [showHow, setShowHow] = useState(false);
   const result = computePaymentsScore(engineResult);
 
@@ -52,6 +65,8 @@ export default function PaymentsScoreBadge({ engineResult, className = "" }) {
   const { score, grade, tone, contextLine, verified } = result;
   const c = TONE[tone] || TONE.medium;
   const muted = !verified;
+  // A/B = at the floor (top-tier). C/D/F = room to recover.
+  const isTopTier = grade === "A" || grade === "B";
 
   return (
     <div
@@ -63,66 +78,115 @@ export default function PaymentsScoreBadge({ engineResult, className = "" }) {
         opacity: muted ? 0.9 : 1,
       }}
     >
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/50">
-          Payments efficiency
-        </span>
-        <div className="flex items-center gap-1.5">
-          {muted && (
-            <span
-              className="text-[8px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full"
-              style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.15)" }}
-            >
-              Estimate
+      {/* Two columns: LEFT = score number/letter/line, RIGHT = segmented CTA.
+          Stacks on mobile, side-by-side on sm+. */}
+      <div className="flex flex-col sm:flex-row sm:items-stretch gap-4">
+        {/* LEFT — the score itself (unchanged content). */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/50">
+              Payments efficiency
             </span>
+            <div className="flex items-center gap-1.5">
+              {muted && (
+                <span
+                  className="text-[8px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full"
+                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.15)" }}
+                >
+                  Estimate
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowHow((v) => !v)}
+                className="text-white/40 hover:text-white/80 transition-colors"
+                aria-label="How this score is calculated"
+              >
+                <Info size={13} />
+              </button>
+            </div>
+          </div>
+
+          {/* Primary = number (credit-score framing), secondary = letter grade. */}
+          <div className="flex items-baseline gap-2.5">
+            <span
+              className="font-black tabular-nums leading-none"
+              style={{
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                fontSize: "clamp(34px, 7vw, 46px)",
+                letterSpacing: "-0.04em",
+                color: c.text,
+              }}
+            >
+              {muted && <span className="opacity-70">~</span>}{score}
+            </span>
+            <span className="text-[15px] font-bold text-white/40 tabular-nums">/ 100</span>
+            <span
+              className="ml-1 inline-flex items-center justify-center h-7 min-w-7 px-2 rounded-lg font-black text-[16px]"
+              style={{ background: c.soft, color: c.text, border: `1px solid ${c.ring}` }}
+            >
+              {grade}
+            </span>
+          </div>
+
+          <p className="text-[12px] text-white/55 mt-2 leading-snug">{contextLine}</p>
+
+          {showHow && (
+            <div
+              className="mt-3 rounded-xl px-3 py-2.5 text-[11px] leading-relaxed text-white/60"
+              style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              Your score reflects how close your effective rate is to the best
+              achievable rate for your profile. Being at the achievable floor scores
+              highest; paying near the top of the market scores lowest. It grades
+              your cost setup — not any specific provider.
+              {muted && " This is an estimate until you connect your PSP for exact figures."}
+            </div>
           )}
-          <button
-            type="button"
-            onClick={() => setShowHow((v) => !v)}
-            className="text-white/40 hover:text-white/80 transition-colors"
-            aria-label="How this score is calculated"
-          >
-            <Info size={13} />
-          </button>
         </div>
-      </div>
 
-      {/* Primary = number (credit-score framing), secondary = letter grade. */}
-      <div className="flex items-baseline gap-2.5">
-        <span
-          className="font-black tabular-nums leading-none"
-          style={{
-            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(34px, 7vw, 46px)",
-            letterSpacing: "-0.04em",
-            color: c.text,
-          }}
-        >
-          {muted && <span className="opacity-70">~</span>}{score}
-        </span>
-        <span className="text-[15px] font-bold text-white/40 tabular-nums">/ 100</span>
-        <span
-          className="ml-1 inline-flex items-center justify-center h-7 min-w-7 px-2 rounded-lg font-black text-[16px]"
-          style={{ background: c.soft, color: c.text, border: `1px solid ${c.ring}` }}
-        >
-          {grade}
-        </span>
-      </div>
-
-      <p className="text-[12px] text-white/55 mt-2 leading-snug">{contextLine}</p>
-
-      {showHow && (
+        {/* RIGHT — segmented CTA. */}
         <div
-          className="mt-3 rounded-xl px-3 py-2.5 text-[11px] leading-relaxed text-white/60"
-          style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="sm:w-[42%] sm:border-l sm:pl-4 flex flex-col justify-center"
+          style={{ borderColor: "rgba(255,255,255,0.08)" }}
         >
-          Your score reflects how close your effective rate is to the best
-          achievable rate for your profile. Being at the achievable floor scores
-          highest; paying near the top of the market scores lowest. It grades
-          your cost setup — not any specific provider.
-          {muted && " This is an estimate until you connect your PSP for exact figures."}
+          {isTopTier ? (
+            // A/B — top-tier. Passive celebratory state, NO "improve" language.
+            <div className="flex flex-col gap-2">
+              <div className="inline-flex items-center gap-1.5">
+                <ShieldCheck size={15} style={{ color: c.text }} />
+                <span className="text-[13px] font-bold" style={{ color: c.text }}>
+                  Eres top-tier
+                </span>
+              </div>
+              <p className="text-[12px] text-white/55 leading-snug">
+                Tu setup ya está en el suelo del mercado. Monitoriza tu drift para
+                que siga así.
+              </p>
+            </div>
+          ) : (
+            // C/D/F — room to recover. Action routes to the CAMBRA roadmap.
+            <button
+              type="button"
+              onClick={onRecoveryClick}
+              className="group w-full h-full min-h-[64px] rounded-xl px-4 py-3 flex items-center justify-between gap-2 text-left transition-all hover:brightness-110"
+              style={{
+                background: `linear-gradient(135deg, ${c.soft} 0%, rgba(255,255,255,0.02) 100%)`,
+                border: `1px solid ${c.ring}`,
+              }}
+            >
+              <span className="text-[13px] font-bold leading-snug" style={{ color: c.text }}>
+                {isAnonymous ? "Desbloquea tu plan" : "Ver cómo lo recuperamos"}
+              </span>
+              <ArrowRight
+                size={16}
+                style={{ color: c.text }}
+                className="shrink-0 transition-transform group-hover:translate-x-0.5"
+              />
+            </button>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
