@@ -993,6 +993,44 @@ const DICT = {
     bench_callout:        "Estás en el ~{pct}% más caro de las marcas {country} de tu tamaño.",
     bench_callout_nocountry: "Estás en el ~{pct}% más caro de las marcas de tu tamaño.",
 
+    /* Report v2 — Colectivo (clickwrap-lite) + Reserva una llamada */
+    coll_eyebrow:        "El colectivo",
+    coll_title:          "Únete al colectivo",
+    coll_sub:            "Muchas marcas negociando como una sola. Cuanto más GMV se suma, más fuerza tiene el colectivo para recuperar tu margen.",
+    coll_email_label:    "Email",
+    coll_email_ph:       "tu@marca.com",
+    coll_gmv_label:      "GMV mensual",
+    coll_gmv_note:       "de tu análisis",
+    coll_submit:         "Únete al colectivo · founding member",
+    coll_submitting:     "Uniéndote…",
+    coll_clickwrap_pre:  "Al unirte aceptas los",
+    coll_clickwrap_link: "Términos del Colectivo",
+    coll_terms_draft:    "Borrador — pendiente de revisión legal",
+    coll_terms_title:    "Términos del Colectivo (borrador)",
+    coll_terms_body:     "Al unirte al Colectivo CAMBRA autorizas a CAMBRA a incluir tu volumen de pagos, de forma agregada y pseudonimizada, en la fuerza negociadora colectiva usada para recuperar margen en nombre de sus miembros. No hay coste inicial ni permanencia. CAMBRA solo cobra una comisión sobre el ahorro verificado que efectivamente se materialice, conforme al modelo por resultados. Puedes salir del colectivo en cualquier momento. Este texto es un BORRADOR pendiente de revisión legal y no constituye un contrato vinculante hasta su versión final revisada.",
+    coll_terms_close:    "Entendido",
+    coll_success_title:  "Estás dentro · founding member",
+    coll_success_body:   "€{gmv} de GMV ya en el colectivo. Te escribimos con los próximos pasos.",
+    coll_success_body_nogmv: "Bienvenido al colectivo. Te escribimos con los próximos pasos.",
+    coll_error:          "Algo falló. Inténtalo de nuevo.",
+    coll_done:           "Listo",
+
+    /* Book a call */
+    call_eyebrow:        "Hablemos",
+    call_title:          "Reserva una llamada",
+    call_sub:            "Tu oportunidad es lo bastante grande como para merecer una conversación. Cuéntanos y te contactamos para agendar.",
+    call_name_label:     "Nombre",
+    call_name_ph:        "Tu nombre",
+    call_email_label:    "Email",
+    call_email_ph:       "tu@marca.com",
+    call_msg_label:      "Mensaje (opcional)",
+    call_msg_ph:         "Cuéntanos brevemente tu situación…",
+    call_submit:         "Solicitar llamada",
+    call_submitting:     "Enviando…",
+    call_success_title:  "Solicitud enviada",
+    call_success_body:   "Te contactamos por email para agendar la llamada.",
+    call_error:          "Algo falló. Inténtalo de nuevo.",
+
     /* FIX 2 — Dashboard strings */
 
     /* FIX 4 — Toast keys */

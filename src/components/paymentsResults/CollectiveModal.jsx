@@ -1,0 +1,222 @@
+// CollectiveModal — clickwrap-lite "Join the collective" destination.
+//
+// The PRIMARY destination for recovery CTAs (overpayer + roadmap routes +
+// "Stop overpaying" for authenticated users). Captures email (prefilled when
+// signed in) + GMV (from the analysis) and records a CollectiveMember via the
+// joinCollective backend.
+//
+// ⚠️ The Collective Terms text is a DRAFT pending legal review. The clickwrap
+// checkbox + terms link are present (required for a valid clickwrap), but the
+// text is explicitly marked as a draft. Do NOT treat this flow as launch-ready
+// until a lawyer signs off the copy.
+//
+// Payments only. No external PSP destinations. Same dark/glass aesthetic as
+// the report.
+
+import { useEffect, useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
+import { useTranslation } from "@/lib/i18n.jsx";
+import { X, Users, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
+
+const MONO = "'IBM Plex Mono', ui-monospace, monospace";
+
+function eur(n) {
+  if (!isFinite(n)) return null;
+  return "€" + Math.round(n).toLocaleString("en-US");
+}
+
+export default function CollectiveModal({ open, onClose, context = {} }) {
+  const { t } = useTranslation();
+  const { user, isAuthenticated } = useAuth();
+  const [email, setEmail] = useState("");
+  const [accepted, setAccepted] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle | submitting | success | error
+  const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    if (open && isAuthenticated && user?.email) setEmail(user.email);
+  }, [open, isAuthenticated, user]);
+
+  // Reset transient state each time the modal opens.
+  useEffect(() => {
+    if (open) { setStatus("idle"); setErrorMsg(""); setAccepted(false); }
+  }, [open]);
+
+  if (!open) return null;
+
+  const gmv = Number(context?.gmv_eur_monthly);
+  const gmvLabel = eur(gmv);
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const canSubmit = emailOk && accepted && status !== "submitting";
+
+  const submit = async () => {
+    if (!canSubmit) return;
+    setStatus("submitting");
+    setErrorMsg("");
+    try {
+      const resp = await base44.functions.invoke("joinCollective", {
+        email: email.trim(),
+        accepted: true,
+        context,
+      });
+      const b = resp?.data || resp;
+      if (b?.ok) { setStatus("success"); return; }
+      setErrorMsg(t("coll_error"));
+      setStatus("error");
+    } catch {
+      setErrorMsg(t("coll_error"));
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      style={{ background: "rgba(4,6,12,0.72)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md rounded-3xl p-6 md:p-7 overflow-hidden animate-fade-up"
+        style={{ background: "#070c16", border: "1px solid rgba(255,255,255,0.10)", boxShadow: "0 32px 80px -24px rgba(0,0,0,0.8)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* grid overlay */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: "linear-gradient(#0d1a30 1px, transparent 1px), linear-gradient(90deg, #0d1a30 1px, transparent 1px)",
+            backgroundSize: "32px 32px", opacity: 0.5,
+            maskImage: "radial-gradient(ellipse 90% 80% at 50% 0%, #000 30%, transparent 100%)",
+            WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 0%, #000 30%, transparent 100%)",
+          }}
+        />
+
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 text-white/40 hover:text-white transition-colors"
+          aria-label="Close"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="relative z-10">
+          {status === "success" ? (
+            <div className="text-center py-4">
+              <div
+                className="inline-flex items-center justify-center h-14 w-14 rounded-2xl mb-4"
+                style={{ background: "rgba(45,212,191,0.10)", border: "1px solid rgba(45,212,191,0.30)" }}
+              >
+                <CheckCircle2 size={26} className="text-teal-300" />
+              </div>
+              <h3 className="text-white font-black mb-2" style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: 22, letterSpacing: "-0.02em" }}>
+                {t("coll_success_title")}
+              </h3>
+              <p className="text-[14px] text-white/60 leading-snug max-w-xs mx-auto">
+                {gmvLabel ? t("coll_success_body", { gmv: gmvLabel.replace("€", "") }) : t("coll_success_body_nogmv")}
+              </p>
+              <button
+                onClick={onClose}
+                className="mt-5 inline-flex items-center justify-center h-10 rounded-full px-6 text-sm font-bold text-white hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)" }}
+              >
+                {t("coll_done")}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-1">
+                <Users size={14} className="text-cyan-300" />
+                <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#5f6f88" }}>
+                  {t("coll_eyebrow")}
+                </span>
+              </div>
+              <h3 className="text-white font-black mb-2" style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: 26, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
+                {t("coll_title")}
+              </h3>
+              <p className="text-[13px] text-white/55 leading-snug mb-5">{t("coll_sub")}</p>
+
+              {/* Email */}
+              <label className="block text-[11px] uppercase tracking-[0.14em] font-bold text-white/50 mb-1.5">{t("coll_email_label")}</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t("coll_email_ph")}
+                className="w-full h-11 rounded-xl px-3.5 text-[14px] text-white placeholder:text-white/30 outline-none focus:ring-2 focus:ring-cyan-400/40 transition-shadow mb-4"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+              />
+
+              {/* GMV (read-only from analysis) */}
+              {gmvLabel && (
+                <div className="flex items-center justify-between rounded-xl px-3.5 h-11 mb-5" style={{ background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.20)" }}>
+                  <span className="text-[11px] uppercase tracking-[0.14em] font-bold text-white/50">
+                    {t("coll_gmv_label")} <span className="text-white/35 normal-case tracking-normal">· {t("coll_gmv_note")}</span>
+                  </span>
+                  <span className="tabular-nums font-bold text-[15px]" style={{ fontFamily: MONO, color: "#67e8f9" }}>{gmvLabel}</span>
+                </div>
+              )}
+
+              <button
+                onClick={submit}
+                disabled={!canSubmit}
+                className="w-full h-12 rounded-full text-sm font-bold text-white inline-flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)", boxShadow: "0 0 28px rgba(34,211,238,0.30)" }}
+              >
+                {status === "submitting" ? <><Loader2 size={16} className="animate-spin" /> {t("coll_submitting")}</> : <>{t("coll_submit")} <ArrowRight size={16} /></>}
+              </button>
+
+              {status === "error" && <p className="text-[12px] text-red-300 mt-2 text-center">{errorMsg}</p>}
+
+              {/* Clickwrap — required for validity, terms are DRAFT */}
+              <div className="mt-4 flex items-start gap-2.5">
+                <input
+                  id="coll-accept"
+                  type="checkbox"
+                  checked={accepted}
+                  onChange={(e) => setAccepted(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded accent-cyan-400 cursor-pointer"
+                />
+                <label htmlFor="coll-accept" className="text-[11px] text-white/45 leading-snug cursor-pointer">
+                  {t("coll_clickwrap_pre")}{" "}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); setTermsOpen(true); }}
+                    className="text-cyan-300/90 underline underline-offset-2 hover:text-cyan-200"
+                  >
+                    {t("coll_clickwrap_link")}
+                  </button>
+                  {" "}<span className="text-amber-300/70">({t("coll_terms_draft")})</span>
+                </label>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Terms sub-sheet (DRAFT) */}
+        {termsOpen && (
+          <div className="absolute inset-0 z-30 p-6 md:p-7 flex flex-col" style={{ background: "#070c16" }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.14em", color: "#e8eef7" }}>
+                {t("coll_terms_title")}
+              </span>
+              <span className="uppercase font-bold px-2 py-0.5 rounded-full" style={{ fontFamily: MONO, fontSize: 8, letterSpacing: "0.1em", background: "rgba(245,181,68,0.10)", color: "rgb(245,181,68)", border: "1px solid rgba(245,181,68,0.30)" }}>
+                {t("coll_terms_draft")}
+              </span>
+            </div>
+            <p className="text-[13px] text-white/60 leading-relaxed flex-1 overflow-y-auto">{t("coll_terms_body")}</p>
+            <button
+              onClick={() => setTermsOpen(false)}
+              className="mt-4 h-10 rounded-full text-sm font-bold text-white/90 shrink-0"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)" }}
+            >
+              {t("coll_terms_close")}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

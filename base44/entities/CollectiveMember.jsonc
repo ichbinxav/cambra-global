@@ -1,0 +1,74 @@
+{
+  "name": "CollectiveMember",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Contact email of the merchant joining the collective. Prefilled from the authenticated user when signed in, otherwise typed in the clickwrap modal."
+    },
+    "gmv_eur_monthly": {
+      "type": "number",
+      "description": "Monthly GMV (EUR) carried over from the payments analysis that produced this join. Sizes the merchant's weight in the collective. Optional \u2014 absent when the join came from a context without a fresh analysis."
+    },
+    "provider_slug": {
+      "type": "string",
+      "description": "PSP/TPV provider slug from the analysis (stripe, sumup, ...). Optional. NEVER used to recommend a destination \u2014 collective sizing only."
+    },
+    "country": {
+      "type": "string",
+      "description": "ISO country from the analysis (e.g. 'FR'). Optional. Used to group collective demand by geography."
+    },
+    "annual_savings_eur": {
+      "type": "number",
+      "description": "The point annual savings figure (EUR) from the analysis that produced this join, copied verbatim. Optional \u2014 used to prioritize outreach to high-value joins."
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "online",
+        "in_store"
+      ],
+      "description": "Payment channel of the analysis that produced this join. Optional."
+    },
+    "source_session": {
+      "type": "string",
+      "description": "The anon_session_id (UUID v4) of the analysis that produced this join, when present. Joins the CollectiveMember back to its PaymentsAnalysisSession / AnalyzerResult. Empty for joins with no analysis context."
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Server-set timestamp when the member accepted the (DRAFT, pending legal review) Collective Terms via the clickwrap. Presence = clickwrap acceptance recorded."
+    },
+    "terms_version": {
+      "type": "string",
+      "description": "Version tag of the Collective Terms accepted. Currently 'draft-v0' \u2014 the terms text is a DRAFT pending legal review and MUST NOT be treated as launch-ready. Recorded so we can re-consent members when the reviewed terms ship."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "founding",
+        "contacted",
+        "active",
+        "declined"
+      ],
+      "default": "founding",
+      "description": "Lifecycle of the collective membership. New joins land as 'founding'."
+    }
+  },
+  "required": [
+    "email",
+    "accepted_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

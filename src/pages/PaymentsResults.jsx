@@ -40,7 +40,15 @@ import OptimizedHero from "@/components/paymentsResults/OptimizedHero";
 import ResultsHistory from "@/components/paymentsResults/ResultsHistory";
 import RecoveryRoadmap from "@/components/paymentsResults/RecoveryRoadmap";
 import PeerBenchmark from "@/components/paymentsResults/PeerBenchmark";
+import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
+import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
+
+// A merchant whose opportunity is this large gets routed to a human call
+// instead of the self-serve collective. Either high monthly GMV OR high
+// annual savings crosses the threshold.
+const CALL_GMV_MONTHLY_EUR = 250000;   // ≥ €250k/mo GMV
+const CALL_ANNUAL_SAVINGS_EUR = 25000; // ≥ €25k/yr recoverable
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const OBJECT_ID = /^[0-9a-f]{24}$/i;
@@ -159,6 +167,9 @@ export default function PaymentsResults() {
   // Roadmap open state + a ref to scroll to it when the Score CTA is clicked.
   const [roadmapOpen, setRoadmapOpen] = useState(false);
   const roadmapRef = useRef(null);
+  // CTA destinations — the collective modal (primary) and book-a-call (high value).
+  const [collectiveOpen, setCollectiveOpen] = useState(false);
+  const [callOpen, setCallOpen] = useState(false);
   // PaymentsRateTable — read once when a result is ready, ONLY to derive the
   // neutral ambition line (marketRange). Public read RLS. Never blocks render.
   const [rateTable, setRateTable] = useState(null);
@@ -350,12 +361,46 @@ export default function PaymentsResults() {
     navigate(`/LoginGate?next=${encodeURIComponent(currentPath)}`);
   };
 
-  // Route action → CAMBRA's offer. Anonymous first goes through signup (same as
-  // unlock); registered goes to the dashboard where the managed workflow lives.
-  const handleRouteAction = () => {
-    if (!isAuthenticated) { handleUnlock(); return; }
-    navigate("/Dashboard");
+  // ── CTA routing ────────────────────────────────────────────────────────
+  // Build the context every destination modal needs (email prefill happens in
+  // the modal itself; here we carry the analysis figures + session).
+  const buildCtaContext = () => {
+    const er = payload?.engine_result;
+    const snap = payload?.input_snapshot || {};
+    const sid = params.get("session") || params.get("anon_session_id") || "";
+    return {
+      session_id: sid || undefined,
+      gmv_eur_monthly: Number(snap?.monthly_gmv_eur) || undefined,
+      annual_savings_eur: Number(er?.annual_savings_eur?.point) || undefined,
+      provider_slug: snap?.provider_slug || undefined,
+      country: snap?.country || undefined,
+      channel: er?.cohort?.channel === "in_store" ? "in_store" : "online",
+    };
   };
+
+  // A big-enough opportunity routes to a human call instead of the collective.
+  const isHighValue = () => {
+    const ctx = buildCtaContext();
+    return (
+      (isFinite(ctx.gmv_eur_monthly) && ctx.gmv_eur_monthly >= CALL_GMV_MONTHLY_EUR) ||
+      (isFinite(ctx.annual_savings_eur) && ctx.annual_savings_eur >= CALL_ANNUAL_SAVINGS_EUR)
+    );
+  };
+
+  // Open the right destination for a given intent, honoring the segment rules:
+  //   • anonymous              → sign up first (destination resumes after login)
+  //   • connect_verify         → existing verify flow (dashboard connect)
+  //   • high-value opportunity → book a call
+  //   • everything else        → the collective modal
+  const openDestination = (intent) => {
+    if (!isAuthenticated) { handleUnlock(); return; }
+    if (intent === "connect_verify") { navigate("/ConnectTools"); return; }
+    if (intent === "call" || isHighValue()) { setCallOpen(true); return; }
+    setCollectiveOpen(true);
+  };
+
+  // Roadmap route CTAs → map the rec's cta_intent to a destination.
+  const handleRouteAction = (rec) => openDestination(rec?.cta_intent || "collective");
 
   // ── loading
   if (status === "loading") {
@@ -534,33 +579,19 @@ export default function PaymentsResults() {
               Ready to stop overpaying?
             </p>
             <p className="text-[13px] text-white/60 mt-1">
-              Create an account to connect your PSP, verify the number, and start the recovery.
+              {isAnonymous
+                ? "Create an account, then join the collective to start the recovery."
+                : (isHighValue()
+                    ? "Your opportunity is large enough for a call — let's talk it through."
+                    : "Join the collective — many brands negotiating as one — to start the recovery.")}
             </p>
           </>
         )}
       </div>
       <Button
         onClick={() => {
-          if (isVerifiedMode) {
-            navigate("/Dashboard");
-            return;
-          }
-          try {
-            const search = new URLSearchParams(window.location.search);
-            const sid = search.get("session") || search.get("anon_session_id");
-            if (sid) {
-              try {
-                localStorage.setItem("cambra_pending_anon_session", sid);
-              } catch { /* fall through to cookie */ }
-              try {
-                document.cookie =
-                  `cambra_anon_session=${encodeURIComponent(sid)}; ` +
-                  `Max-Age=1800; Path=/; SameSite=Lax`;
-              } catch { /* both channels down — Layer A still applies */ }
-            }
-          } catch { /* Layer A (URL) still applies */ }
-          const currentPath = window.location.pathname + window.location.search;
-          navigate(`/LoginGate?next=${encodeURIComponent(currentPath)}`);
+          if (isVerifiedMode) { navigate("/Dashboard"); return; }
+          openDestination("collective");
         }}
         className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
         style={{
@@ -685,6 +716,18 @@ export default function PaymentsResults() {
           </>
         )}
       </div>
+
+      {/* CTA destinations — the collective (primary) and book-a-call (high value). */}
+      <CollectiveModal
+        open={collectiveOpen}
+        onClose={() => setCollectiveOpen(false)}
+        context={buildCtaContext()}
+      />
+      <BookCallModal
+        open={callOpen}
+        onClose={() => setCallOpen(false)}
+        context={buildCtaContext()}
+      />
     </ResultsShell>
   );
 }
