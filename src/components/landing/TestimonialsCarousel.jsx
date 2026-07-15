@@ -10,36 +10,58 @@ import InitialsAvatar from "@/components/shared/InitialsAvatar";
 const ITEMS = [
   {
     category: "Payments",
-    vertical: "Activewear brand",
-    quote: "Renegotiated our PSP in a week. 0.6pp shaved off — pure margin we never knew we had.",
-    name: "Julien Laurent",
+    vertical: "Maison Épice",
+    quote: "We were paying 2.4% blended and thought that was just the cost of cards. CAMBRA showed us the processor margin was the only movable part — and how much we were leaving on the table.",
+    name: "Camille Laurent",
     role: "Founder",
-    revenue: "€2.1M revenue",
-    before: "2.9%",
-    after: "2.3%",
-    savings: "€12K",
+    revenue: "Maison Épice",
+    before: "2.40%",
+    after: "1.62%",
+    savings: "€14K",
   },
   {
-    category: "Shipping",
-    vertical: "DTC home goods",
-    quote: "CAMBRA found 18% inflation in our shipping contract. Switched carriers in two weeks.",
-    name: "Marta Ruiz",
+    category: "Payments",
+    vertical: "Atelier Nord",
+    quote: "The 3-minute audit was more transparent about our card fees than our PSP had been in three years. We saw exactly where the money leaked.",
+    name: "Théo Mercier",
     role: "COO",
-    revenue: "€4.5M revenue",
-    before: "€8.90",
-    after: "€6.40",
+    revenue: "Atelier Nord",
+    before: "2.15%",
+    after: "1.48%",
+    savings: "€11K",
+  },
+  {
+    category: "Payments",
+    vertical: "Vela Studio",
+    quote: "Joining the collective got us to a rate we'd never have reached negotiating alone at our size. Brands moving as one — that's the whole point.",
+    name: "Sofia Ferran",
+    role: "Founder",
+    revenue: "Vela Studio",
+    before: "2.55%",
+    after: "1.70%",
     savings: "€9K",
   },
   {
-    category: "SaaS",
-    vertical: "Beauty brand",
-    quote: "We were paying for 8 tools doing the same job. CAMBRA cleaned the stack in a single call.",
-    name: "Antoine Schmidt",
-    role: "CFO",
-    revenue: "€3.8M revenue",
-    before: "24 tools",
-    after: "13 tools",
-    savings: "€7K",
+    category: "Payments",
+    vertical: "Brün Coffee",
+    quote: "No retainer, no contract. They only got paid once our bank statements confirmed the savings. That alignment is rare.",
+    name: "Lucas Petit",
+    role: "Finance lead",
+    revenue: "Brün Coffee",
+    before: "2.30%",
+    after: "1.55%",
+    savings: "€8K",
+  },
+  {
+    category: "Payments",
+    vertical: "Lume",
+    quote: "CAMBRA benchmarked us against French brands our size — we were in the most expensive third. Seeing that in one number changed how we think about payments.",
+    name: "Inès Marchal",
+    role: "Founder",
+    revenue: "Lume",
+    before: "2.60%",
+    after: "1.75%",
+    savings: "€13K",
   },
 ];
 
@@ -71,6 +93,16 @@ export default function TestimonialsCarousel() {
               Real findings
             </span>
           </span>
+          {/* Honesty disclaimer — illustrative sample quotes, not real customers yet. */}
+          <div className="mt-3">
+            <span
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-medium text-amber-200/90"
+              style={{ border: "1px solid rgba(245,181,68,0.28)", background: "rgba(245,181,68,0.08)" }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
+              Illustrative sample quotes — not real customers yet
+            </span>
+          </div>
         </div>
 
         <h2
