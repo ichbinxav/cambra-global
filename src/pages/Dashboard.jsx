@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight, Sparkles,
   CreditCard, Plug, Store, Layers,
@@ -14,6 +14,7 @@ import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import DashboardHeroV2 from "@/components/dashboard/DashboardHeroV2";
 import AccountSummaryPanel from "@/components/dashboard/AccountSummaryPanel";
+import ActionCenter from "@/components/dashboard/ActionCenter";
 import AnalysisTrendPanel from "@/components/dashboard/AnalysisTrendPanel";
 import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
 import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
@@ -64,6 +65,7 @@ function nodeBadge(node, t) {
 /* ── main ────────────────────────────────────────────────────── */
 export default function Dashboard() {
   const { t, lang } = useTranslation();
+  const navigate = useNavigate();
   const formatEur = (n) => formatEurLocal(n, lang);
   const [user, setUser] = useState(null);
   const [brand, setBrand] = useState(null);
@@ -271,6 +273,12 @@ export default function Dashboard() {
     else setCollectiveOpen(true);
   };
 
+  // Action Center — "in collective" is inferred from an active recovery deal
+  // (honest: we don't read the admin-only CollectiveMember table, so we only
+  // claim membership when a live deal proves it). Handlers route to the SAME
+  // existing flows the report uses — nothing new is opened here.
+  const inCollective = hasLiveDeal;
+
   return (
     <div className="space-y-6 pb-10">
       {/* Header */}
@@ -314,6 +322,18 @@ export default function Dashboard() {
           </Button>
         </Link>
       </div>
+
+      {/* ── ACTION CENTER — your next best step (one primary action, same
+          aggregated state as the Hero; routes to existing flows) ── */}
+      <ActionCenter
+        rows={allResults}
+        latest={latest}
+        inCollective={inCollective}
+        onVerify={() => navigate("/ConnectTools")}
+        onCall={() => setCallOpen(true)}
+        onCollective={() => setCollectiveOpen(true)}
+        onAddChannel={() => navigate("/Analyzer")}
+      />
 
       {/* ── SAVINGS HERO v2 — single source of truth (engine_result), gauge, CTAs ── */}
       <DashboardHeroV2

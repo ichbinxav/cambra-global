@@ -44,6 +44,7 @@ import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsig
 import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
 import CombinedChannelSection from "@/components/paymentsResults/CombinedChannelSection";
 import DownloadAuditButton from "@/components/paymentsResults/DownloadAuditButton";
+import ActionCenter from "@/components/dashboard/ActionCenter";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
@@ -568,6 +569,27 @@ export default function PaymentsResults() {
   // panel alongside the hero.
   const useStackedTeaserLayout = !isVerifiedMode && !isCombined && !isOptimizedSingle;
 
+  // Action Center (compact) for OWNED single-channel reports — the same "next
+  // best step" panel the dashboard shows, driven by the same engine_result.
+  // Only for signed-in owners of an estimated single-channel report; anonymous
+  // (conversion-first), verified-mode, and combined keep the tuned ctaBlock.
+  const showOwnedActionCenter = !isAnonymous && !isVerifiedMode && !isCombined && !hidePrimaryCTA;
+  const ownedActionRow = engineResult
+    ? { details: { engine_result: engineResult, input_snapshot: inputSnapshot }, verification_status: isVerifiedMode ? "verified" : "estimated", total_savings: Number(engineResult?.annual_savings_eur?.point) || 0 }
+    : null;
+  const ownedActionCenter = showOwnedActionCenter && ownedActionRow && (
+    <ActionCenter
+      rows={[ownedActionRow]}
+      latest={ownedActionRow}
+      inCollective={false}
+      onVerify={() => navigate("/ConnectTools")}
+      onCall={() => openDestination("call")}
+      onCollective={() => openDestination("collective")}
+      onAddChannel={() => navigate("/Analyzer")}
+      compact
+    />
+  );
+
   // Shared CTA block (identical markup in both layouts) — extracted so the
   // stacked teaser layout and the grid layout render the exact same button.
   const ctaBlock = !hidePrimaryCTA && (
@@ -754,7 +776,7 @@ export default function PaymentsResults() {
               engineResult={engineResult}
               inputSnapshot={inputSnapshot}
             />
-            {ctaBlock}
+            {ownedActionCenter || ctaBlock}
           </div>
 
           <div className="lg:col-span-2 space-y-5">

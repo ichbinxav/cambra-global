@@ -88,8 +88,12 @@ export function computePaymentsBenchmark(engineResult, opts = {}) {
   // — i.e. you're CHEAPER than that share. The consumers (screen + PDF) must
   // flip the template accordingly so an A-grade brand is never labeled "most
   // expensive". cheaperPct = the share you beat.
+  // On the cheap side, expensivePct is the upper-tail mass = the % of peers
+  // MORE expensive than you = exactly the share you're cheaper than. Use it
+  // as-is (NOT 100 − expensivePct). Sanity: the cheapest possible brand has
+  // ~100% of peers above it → "cheaper than ~100%".
   const cheaperSide = current <= medianBps;
-  const cheaperPct = Math.max(1, Math.min(99, 100 - expensivePct));
+  const cheaperPct = Math.max(1, Math.min(99, expensivePct));
 
   // vs_cohort reserved for real-N mode; today always illustrative.
   const mode = "illustrative";
