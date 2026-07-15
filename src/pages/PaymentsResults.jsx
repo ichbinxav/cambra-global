@@ -653,10 +653,12 @@ export default function PaymentsResults() {
             </div>
           )}
           <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} />
-          {/* Phase 1·B — insights shown in the anonymous teaser too. The
-              input_snapshot is not sensitive (the user typed it), and the
-              "here's exactly what you overpay" breakdown drives signup. */}
-          <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
+          {/* Phase 1·B — insights shown in the anonymous teaser too, but
+              COMPACT: only the 3 highest-punch tiles (total fees · effective
+              rate · current-rate decomposed). Keeps the teaser scannable and
+              lets the conversion CTA below own the spotlight; the full grid
+              unlocks after signup on the owned report. */}
+          <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} compact />
           {ctaBlock}
           {/* Locked breakdown — one of the main signup conversion drivers:
               render the SHAPE, blur the numbers, show a padlock. */}

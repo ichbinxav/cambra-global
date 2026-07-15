@@ -499,6 +499,24 @@ const DICT = {
     ins_fixeddrag_note:     "At a {ticket} ticket, the {fee} fixed fee adds ~{drag}% to your effective rate.",
     ins_per_year_full:      "per year",
     ins_per_month_full:     "per month",
+
+    /* Phase 2 — account aggregate (dashboard, shown when ≥2 analyses). All
+       derived from persisted engine_result rows, sum-validated before render. */
+    acct_title:             "Your account, aggregated",
+    acct_sub:               "Across {n} analyses — money summed, blended rate weighted by volume.",
+    acct_total_gmv:         "Total card volume",
+    acct_total_fees:        "Total fees you pay",
+    acct_blended_rate:      "Blended effective rate",
+    acct_blended_note:      "GMV-weighted across all your analyses.",
+    acct_total_savings:     "Recoverable, aggregated",
+    acct_savings_note:      "Point estimate summed across analyses.",
+    acct_confidence:        "Confidence",
+    acct_conf_verified:     "Verified — backed by real provider data",
+    acct_conf_provisional:  "Provisional — partial verified data",
+    acct_conf_estimated:    "Estimated — connect a provider to verify",
+    acct_analyses_count:    "{n} analyses",
+    acct_channels_online:   "Online",
+    acct_channels_in_store: "In-store",
   },
 
   fr: {
@@ -922,6 +940,23 @@ const DICT = {
     ins_fixeddrag_note:     "À un panier de {ticket}, le frais fixe de {fee} ajoute ~{drag}% à votre taux effectif.",
     ins_per_year_full:      "par an",
     ins_per_month_full:     "par mois",
+
+    /* Phase 2 — account aggregate */
+    acct_title:             "Votre compte, agrégé",
+    acct_sub:               "Sur {n} analyses — montants additionnés, taux mélangé pondéré par le volume.",
+    acct_total_gmv:         "Volume carte total",
+    acct_total_fees:        "Total des frais payés",
+    acct_blended_rate:      "Taux effectif mélangé",
+    acct_blended_note:      "Pondéré par le GMV sur toutes vos analyses.",
+    acct_total_savings:     "Récupérable, agrégé",
+    acct_savings_note:      "Estimation ponctuelle additionnée sur les analyses.",
+    acct_confidence:        "Confiance",
+    acct_conf_verified:     "Vérifié — appuyé sur des données prestataire réelles",
+    acct_conf_provisional:  "Provisoire — données vérifiées partielles",
+    acct_conf_estimated:    "Estimé — connectez un prestataire pour vérifier",
+    acct_analyses_count:    "{n} analyses",
+    acct_channels_online:   "En ligne",
+    acct_channels_in_store: "En boutique",
   },
 
   es: {
@@ -1345,6 +1380,23 @@ const DICT = {
     ins_fixeddrag_note:     "Con un ticket de {ticket}, la comisión fija de {fee} añade ~{drag}% a tu tasa efectiva.",
     ins_per_year_full:      "al año",
     ins_per_month_full:     "al mes",
+
+    /* Phase 2 — account aggregate */
+    acct_title:             "Tu cuenta, agregada",
+    acct_sub:               "En {n} análisis — importes sumados, tasa mezclada ponderada por volumen.",
+    acct_total_gmv:         "Volumen de tarjeta total",
+    acct_total_fees:        "Total de comisiones que pagas",
+    acct_blended_rate:      "Tasa efectiva mezclada",
+    acct_blended_note:      "Ponderada por GMV en todos tus análisis.",
+    acct_total_savings:     "Recuperable, agregado",
+    acct_savings_note:      "Estimación puntual sumada en los análisis.",
+    acct_confidence:        "Confianza",
+    acct_conf_verified:     "Verificado — respaldado por datos reales del proveedor",
+    acct_conf_provisional:  "Provisional — datos verificados parciales",
+    acct_conf_estimated:    "Estimado — conecta un proveedor para verificar",
+    acct_analyses_count:    "{n} análisis",
+    acct_channels_online:   "Online",
+    acct_channels_in_store: "En tienda",
   },
 };
 

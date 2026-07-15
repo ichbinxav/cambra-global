@@ -13,6 +13,7 @@ import AIInsightsPanel from "@/components/dashboard/AIInsightsPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import DashboardHeroV2 from "@/components/dashboard/DashboardHeroV2";
+import AccountSummaryPanel from "@/components/dashboard/AccountSummaryPanel";
 import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
@@ -65,6 +66,7 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [brand, setBrand] = useState(null);
   const [latest, setLatest] = useState(null);
+  const [allResults, setAllResults] = useState([]);
   const [activeDays, setActiveDays] = useState(null);
   const [stripeConn, setStripeConn] = useState(null);
   const [graphNodes, setGraphNodes] = useState([]);
@@ -86,13 +88,16 @@ export default function Dashboard() {
         // AnalyzerResult remains scoped by brand_id when the brand exists —
         // that's the correct tenant boundary. Falls back to `[]` for users
         // without a brand, same visible behavior as the previous empty case.
+        // Phase 2 — fetch up to 20 (newest first) to power the account
+        // aggregate; `latest` stays the first (unchanged behavior for the hero).
         const results = b
           ? await base44.entities.AnalyzerResult
-              .filter({ brand_id: b.id }, "-created_date", 1)
+              .filter({ brand_id: b.id }, "-created_date", 20)
               .catch(() => [])
           : [];
         const latestResult = results[0] || null;
         setLatest(latestResult);
+        setAllResults(results);
 
         // Extract `active_days` from the latest result's assumptions to
         // power the honesty caption in the provisional/estimated hero.
@@ -325,6 +330,9 @@ export default function Dashboard() {
         stripeConnected={stripeConnected}
         onStartRecovery={handleStartRecovery}
       />
+
+      {/* ── PHASE 2 — account aggregate (self-hides with <2 coherent analyses) ── */}
+      <AccountSummaryPanel rows={allResults} />
 
       {/* Quick stats — payments only (FASE 1.1) */}
       <div className="grid grid-cols-1 gap-3">

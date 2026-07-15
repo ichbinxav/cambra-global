@@ -48,7 +48,7 @@ function SegBar({ label, valueLabel, pctOfMax, color, negotiable, negotiableLabe
   );
 }
 
-export default function PaymentsDataInsights({ engineResult, inputSnapshot }) {
+export default function PaymentsDataInsights({ engineResult, inputSnapshot, compact = false }) {
   const { t } = useTranslation();
   const ins = useMemo(() => derivePaymentsInsights(engineResult, inputSnapshot), [engineResult, inputSnapshot]);
 
@@ -134,8 +134,11 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot }) {
           </InsightCard>
         )}
 
-        {/* 4 — Card mix & cost (debit/credit + domestic/intl) */}
-        {(debitCredit.available || domesticIntl.available) && (
+        {/* Teaser (compact) shows only tiles 1-3 (total fees · effective ·
+            current-rate decomposed) — the 3 with most punch. The rest live
+            behind signup per the spec, so the teaser stays scannable and the
+            conversion CTA below keeps the spotlight. */}
+        {!compact && (debitCredit.available || domesticIntl.available) && (
           <InsightCard label={t("ins_cardmix_title")} accent="cyan" span={2}
             note={debitCredit.available && debitCredit.debit_overpay_annual > 0
               ? t("ins_cardmix_ifr_note", { ideal: debitCredit.ifr_debit_pct.toFixed(2), overpay: eur(debitCredit.debit_overpay_annual) })
@@ -158,7 +161,7 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot }) {
         )}
 
         {/* 5 — Cost per transaction + tx/month */}
-        {perTransaction.available && (
+        {!compact && perTransaction.available && (
           <InsightCard label={t("ins_pertx_title")} note={t("ins_pertx_ticket", { ticket: eur2(perTransaction.avg_ticket) })} accent="cyan">
             <div className="flex items-baseline justify-between gap-3">
               <div>
@@ -174,7 +177,7 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot }) {
         )}
 
         {/* 6 — Cross-border cost */}
-        {crossBorder.available ? (
+        {compact ? null : crossBorder.available ? (
           <InsightCard label={t("ins_crossborder_title")} note={t("ins_crossborder_note", { pct: crossBorder.intl_pct.toFixed(0) })} accent="amber">
             <div className="flex items-baseline gap-2">
               <EuroCountUp value={crossBorder.annual_eur} className="tabular-nums" style={{ ...bigNum, color: "rgb(245,181,68)", fontSize: 24 }} />
@@ -188,7 +191,7 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot }) {
         ) : null}
 
         {/* 8 — Fixed-fee drag */}
-        {fixedDrag.available && (
+        {!compact && fixedDrag.available && (
           <InsightCard label={t("ins_fixeddrag_title")} accent="cyan"
             note={t("ins_fixeddrag_note", { ticket: eur2(fixedDrag.avg_ticket), fee: eur2(fixedDrag.fixed_fee_eur), drag: fixedDrag.drag_pct.toFixed(2) })}>
             <div className="flex items-baseline gap-2">
