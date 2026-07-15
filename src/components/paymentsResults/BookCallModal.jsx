@@ -20,7 +20,7 @@ const MONO = "'IBM Plex Mono', ui-monospace, monospace";
 // the request). Empty = form-only flow.
 const CALENDLY_URL = "";
 
-export default function BookCallModal({ open, onClose, context = {} }) {
+export default function BookCallModal({ open, onClose, context = {}, onSwitch }) {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [name, setName] = useState("");
@@ -158,6 +158,17 @@ export default function BookCallModal({ open, onClose, context = {} }) {
                 {status === "submitting" ? <><Loader2 size={16} className="animate-spin" /> {t("call_submitting")}</> : t("call_submit")}
               </button>
               {status === "error" && <p className="text-[12px] text-red-300 mt-2 text-center">{errorMsg}</p>}
+
+              {/* Secondary — discreet link to the collective flow. */}
+              {onSwitch && (
+                <button
+                  type="button"
+                  onClick={() => onSwitch()}
+                  className="mt-4 w-full text-center text-[12px] text-white/45 hover:text-cyan-200 underline underline-offset-2 transition-colors"
+                >
+                  {t("call_secondary_coll")}
+                </button>
+              )}
             </>
           )}
         </div>

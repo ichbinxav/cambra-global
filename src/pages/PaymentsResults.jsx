@@ -170,6 +170,9 @@ export default function PaymentsResults() {
   // CTA destinations — the collective modal (primary) and book-a-call (high value).
   const [collectiveOpen, setCollectiveOpen] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
+  // uiContext (margin|rate|score|generic) — set by the CTA that opens a modal,
+  // read by CollectiveModal to show a context-adapted subcopy line.
+  const [ctaUiContext, setCtaUiContext] = useState("generic");
   // PaymentsRateTable — read once when a result is ready, ONLY to derive the
   // neutral ambition line (marketRange). Public read RLS. Never blocks render.
   const [rateTable, setRateTable] = useState(null);
@@ -375,6 +378,7 @@ export default function PaymentsResults() {
       provider_slug: snap?.provider_slug || undefined,
       country: snap?.country || undefined,
       channel: er?.cohort?.channel === "in_store" ? "in_store" : "online",
+      uiContext: ctaUiContext,
     };
   };
 
@@ -392,8 +396,17 @@ export default function PaymentsResults() {
   //   • connect_verify         → existing verify flow (dashboard connect)
   //   • high-value opportunity → book a call
   //   • everything else        → the collective modal
+  // Map a roadmap route intent → the context-subcopy variant the collective
+  // modal shows. margin renegotiation → "margin"; rate move → "rate";
+  // everything else keeps the generic collective explanation.
+  const intentToUiContext = (intent) =>
+    intent === "managed_migration" ? "margin"
+    : intent === "collective" ? "rate"
+    : "generic";
+
   const openDestination = (intent) => {
     if (!isAuthenticated) { handleUnlock(); return; }
+    setCtaUiContext(intentToUiContext(intent));
     if (intent === "connect_verify") { navigate("/ConnectTools"); return; }
     if (intent === "call" || isHighValue()) { setCallOpen(true); return; }
     setCollectiveOpen(true);
@@ -722,11 +735,13 @@ export default function PaymentsResults() {
         open={collectiveOpen}
         onClose={() => setCollectiveOpen(false)}
         context={buildCtaContext()}
+        onSwitch={() => { setCollectiveOpen(false); setCallOpen(true); }}
       />
       <BookCallModal
         open={callOpen}
         onClose={() => setCallOpen(false)}
         context={buildCtaContext()}
+        onSwitch={() => { setCallOpen(false); setCollectiveOpen(true); }}
       />
     </ResultsShell>
   );

@@ -329,6 +329,11 @@ const DICT = {
     coll_success_body_nogmv: "Welcome to the collective. We'll email you with the next steps.",
     coll_error:          "Something went wrong. Please try again.",
     coll_done:           "Done",
+    /* Report v2 — cross-links + context subcopy */
+    coll_secondary_call: "Prefer to talk? Book a call",
+    call_secondary_coll: "or join the collective",
+    coll_ctx_margin:     "Let CAMBRA renegotiate your processor margin — join to start.",
+    coll_ctx_rate:       "Let CAMBRA move you to a better rate — join to start.",
 
     /* Book a call */
     call_eyebrow:        "Let's talk",
@@ -713,6 +718,11 @@ const DICT = {
     coll_success_body_nogmv: "Bienvenue dans le collectif. Nous vous écrirons pour les prochaines étapes.",
     coll_error:          "Une erreur est survenue. Veuillez réessayer.",
     coll_done:           "Terminé",
+    /* Report v2 — cross-links + context subcopy */
+    coll_secondary_call: "Vous préférez en parler ? Réservez un appel",
+    call_secondary_coll: "ou rejoignez le collectif",
+    coll_ctx_margin:     "Laissez CAMBRA renégocier votre marge de processeur — rejoignez pour démarrer.",
+    coll_ctx_rate:       "Laissez CAMBRA vous amener à un meilleur taux — rejoignez pour démarrer.",
 
     /* Book a call */
     call_eyebrow:        "Parlons-en",
@@ -1097,6 +1107,11 @@ const DICT = {
     coll_success_body_nogmv: "Bienvenido al colectivo. Te escribimos con los próximos pasos.",
     coll_error:          "Algo falló. Inténtalo de nuevo.",
     coll_done:           "Listo",
+    /* Report v2 — cross-links + context subcopy */
+    coll_secondary_call: "¿Prefieres hablar? Reserva una llamada",
+    call_secondary_coll: "o únete al colectivo",
+    coll_ctx_margin:     "Deja que CAMBRA renegocie tu margen de procesador — únete para arrancar.",
+    coll_ctx_rate:       "Deja que CAMBRA te lleve a una tarifa mejor — únete para arrancar.",
 
     /* Book a call */
     call_eyebrow:        "Hablemos",

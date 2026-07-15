@@ -113,30 +113,51 @@ Deno.serve(async (req) => {
       ...(sourceSession ? { anon_session_id: sourceSession } : {}),
     });
 
-    const adminEmail = String(Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "").trim();
+    const gmvFmt = Number.isFinite(gmv) && gmv > 0 ? Math.round(gmv).toLocaleString("en-US") : null;
+
+    // ── Emails (best-effort — a failure NEVER breaks the persisted lead).
+
+    // 1) Confirmation to the user.
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        from_name: "CAMBRA",
+        to: email,
+        subject: "We got your request — CAMBRA",
+        body: [
+          `<div style="font-family:-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:40px 32px;color:#111;">`,
+          `<p style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#999;margin-bottom:24px;">CAMBRA</p>`,
+          `<h1 style="font-size:28px;font-weight:900;letter-spacing:-0.03em;line-height:1.05;margin-bottom:12px;">Thanks${name ? `, ${name}` : ""}.</h1>`,
+          `<p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:24px;">We got your request and we'll reach out to schedule a call. Talk soon.</p>`,
+          `<p style="font-size:12px;color:#aaa;line-height:1.6;border-top:1px solid #eee;padding-top:16px;margin-top:32px;">CAMBRA · Payments margin recovery.</p>`,
+          `</div>`,
+        ].join(""),
+      });
+    } catch (userEmailErr) {
+      console.warn("Call user confirmation email failed:", (userEmailErr as any)?.message);
+    }
+
+    // 2) Founder/admin lead alert.
+    const adminEmail = String(Deno.env.get("FOUNDER_EMAIL") || Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "").trim();
     if (adminEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)) {
       try {
-        const resendKey = Deno.env.get("RESEND_API_KEY");
-        const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hello@contact.cambra.global>";
-        if (resendKey) {
-          const bodyText = [
-            `A high-value merchant requested a call.`,
-            ``,
-            `Email: ${email}`,
-            name ? `Name: ${name}` : null,
-            Number.isFinite(annual) && annual > 0 ? `Annual savings estimate: €${Math.round(annual).toLocaleString("fr-FR")}` : null,
-            Number.isFinite(gmv) && gmv > 0 ? `Monthly GMV: €${Math.round(gmv).toLocaleString("fr-FR")}` : null,
-            message ? `Message:\n${message}` : null,
-            sourceSession ? `Session: ${sourceSession}` : null,
-            ``,
-            `Lead ID: ${lead.id}`,
-          ].filter(Boolean).join("\n");
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
-            body: JSON.stringify({ from: fromAddress, to: adminEmail, reply_to: email, subject: `Call request — ${email}`, text: bodyText }),
-          });
-        }
+        const bodyText = [
+          `A high-value merchant requested a call.`,
+          ``,
+          `Email: ${email}`,
+          name ? `Name: ${name}` : null,
+          Number.isFinite(annual) && annual > 0 ? `Annual savings estimate: €${Math.round(annual).toLocaleString("en-US")}` : null,
+          gmvFmt ? `Monthly GMV: €${gmvFmt}` : null,
+          message ? `Message:\n${message}` : null,
+          sourceSession ? `Session: ${sourceSession}` : null,
+          ``,
+          `Lead ID: ${lead.id}`,
+        ].filter(Boolean).join("\n");
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          from_name: "CAMBRA",
+          to: adminEmail,
+          subject: `Call request: ${email}${gmvFmt ? ` · €${gmvFmt}/mo` : ""}`,
+          body: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap;">${bodyText}</pre>`,
+        });
       } catch (emailErr) {
         console.warn("Admin notification email failed:", (emailErr as any)?.message);
       }

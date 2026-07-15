@@ -121,32 +121,58 @@ Deno.serve(async (req) => {
       ...(sourceSession ? { source_session: sourceSession } : {}),
     });
 
-    // Notify admin — best-effort.
-    const adminEmail = String(Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "").trim();
+    const gmvFmt = Number.isFinite(gmv) && gmv > 0 ? Math.round(gmv).toLocaleString("en-US") : null;
+
+    // ── Emails (best-effort — a failure NEVER breaks the persisted member).
+    //    Uses Core.SendEmail (same integration as onBrandCreated), so it works
+    //    with the app's configured sender — no raw Resend fetch to maintain.
+
+    // 1) Confirmation to the user — welcome as founding member, honest next
+    //    steps, NO concrete rate promised.
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        from_name: "CAMBRA",
+        to: email,
+        subject: "You're in — CAMBRA Collective (founding member)",
+        body: [
+          `<div style="font-family:-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:40px 32px;color:#111;">`,
+          `<p style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#999;margin-bottom:24px;">CAMBRA COLLECTIVE</p>`,
+          `<h1 style="font-size:28px;font-weight:900;letter-spacing:-0.03em;line-height:1.05;margin-bottom:12px;">You're in — founding member.</h1>`,
+          `<p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:20px;">Welcome to the CAMBRA Collective. You've joined as a founding member — many brands negotiating as one to recover the margin each of us leaks on card payments.</p>`,
+          gmvFmt ? `<p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:20px;"><strong>€${gmvFmt}/mo</strong> added to the collective's negotiating volume.</p>` : ``,
+          `<p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:24px;">What happens next: we'll reach out as the collective grows and we're ready to negotiate on your behalf. We don't promise a specific rate up front — we only ever charge on savings that actually materialize.</p>`,
+          `<p style="font-size:12px;color:#aaa;line-height:1.6;border-top:1px solid #eee;padding-top:16px;margin-top:32px;">The Collective Terms are a draft pending legal review. CAMBRA · Payments margin recovery.</p>`,
+          `</div>`,
+        ].filter(Boolean).join(""),
+      });
+    } catch (userEmailErr) {
+      console.warn("Collective user confirmation email failed:", (userEmailErr as any)?.message);
+    }
+
+    // 2) Founder/admin lead alert — this is how CAMBRA hears about the join.
+    const adminEmail = String(Deno.env.get("FOUNDER_EMAIL") || Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "").trim();
     if (adminEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)) {
       try {
-        const resendKey = Deno.env.get("RESEND_API_KEY");
-        const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hello@contact.cambra.global>";
-        if (resendKey) {
-          const bodyText = [
-            `A merchant joined the CAMBRA collective (founding member).`,
-            ``,
-            `Email: ${email}`,
-            Number.isFinite(gmv) && gmv > 0 ? `Monthly GMV: €${Math.round(gmv).toLocaleString("fr-FR")}` : null,
-            Number.isFinite(annual) && annual > 0 ? `Annual savings estimate: €${Math.round(annual).toLocaleString("fr-FR")}` : null,
-            ctx.provider_slug ? `Provider: ${ctx.provider_slug}` : null,
-            ctx.country ? `Country: ${ctx.country}` : null,
-            sourceSession ? `Session: ${sourceSession}` : null,
-            ``,
-            `Terms version accepted: ${TERMS_VERSION} (DRAFT — pending legal review)`,
-            `Member ID: ${member.id}`,
-          ].filter(Boolean).join("\n");
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
-            body: JSON.stringify({ from: fromAddress, to: adminEmail, reply_to: adminEmail, subject: `New collective member — ${email}`, text: bodyText }),
-          });
-        }
+        const bodyText = [
+          `New collective member (founding).`,
+          ``,
+          `Email: ${email}`,
+          gmvFmt ? `Monthly GMV: €${gmvFmt}` : null,
+          Number.isFinite(annual) && annual > 0 ? `Annual savings estimate: €${Math.round(annual).toLocaleString("en-US")}` : null,
+          ctx.provider_slug ? `Provider: ${ctx.provider_slug}` : null,
+          ctx.country ? `Country: ${ctx.country}` : null,
+          sourceSession ? `Session: ${sourceSession}` : null,
+          `Accepted at: ${member.accepted_at || new Date().toISOString()}`,
+          ``,
+          `Terms version accepted: ${TERMS_VERSION} (DRAFT — pending legal review)`,
+          `Member ID: ${member.id}`,
+        ].filter(Boolean).join("\n");
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          from_name: "CAMBRA",
+          to: adminEmail,
+          subject: `New collective member: ${email}${gmvFmt ? ` · €${gmvFmt}/mo` : ""}`,
+          body: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap;">${bodyText}</pre>`,
+        });
       } catch (emailErr) {
         console.warn("Admin notification email failed:", (emailErr as any)?.message);
       }

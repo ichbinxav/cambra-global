@@ -26,7 +26,7 @@ function eur(n) {
   return "€" + Math.round(n).toLocaleString("en-US");
 }
 
-export default function CollectiveModal({ open, onClose, context = {} }) {
+export default function CollectiveModal({ open, onClose, context = {}, onSwitch }) {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [email, setEmail] = useState("");
@@ -48,6 +48,12 @@ export default function CollectiveModal({ open, onClose, context = {} }) {
 
   const gmv = Number(context?.gmv_eur_monthly);
   const gmvLabel = eur(gmv);
+  // Context-adapted subcopy shown ABOVE the generic collective explanation.
+  // The CTA that opened the modal passes uiContext (margin|rate|score|generic).
+  // Only margin/rate get a tailored line; score/generic keep coll_sub only.
+  const ctxLineKey = context?.uiContext === "margin" ? "coll_ctx_margin"
+    : context?.uiContext === "rate" ? "coll_ctx_rate"
+    : null;
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const canSubmit = emailOk && accepted && status !== "submitting";
 
@@ -136,6 +142,9 @@ export default function CollectiveModal({ open, onClose, context = {} }) {
               <h3 className="text-white font-black mb-2" style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: 26, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
                 {t("coll_title")}
               </h3>
+              {ctxLineKey && (
+                <p className="text-[13px] font-semibold text-cyan-200/90 leading-snug mb-2">{t(ctxLineKey)}</p>
+              )}
               <p className="text-[13px] text-white/55 leading-snug mb-5">{t("coll_sub")}</p>
 
               {/* Email */}
@@ -191,6 +200,17 @@ export default function CollectiveModal({ open, onClose, context = {} }) {
                   {" "}<span className="text-amber-300/70">({t("coll_terms_draft")})</span>
                 </label>
               </div>
+
+              {/* Secondary — discreet link to the call flow. */}
+              {onSwitch && (
+                <button
+                  type="button"
+                  onClick={() => onSwitch()}
+                  className="mt-4 w-full text-center text-[12px] text-white/45 hover:text-cyan-200 underline underline-offset-2 transition-colors"
+                >
+                  {t("coll_secondary_call")}
+                </button>
+              )}
             </>
           )}
         </div>
