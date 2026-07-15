@@ -13,7 +13,7 @@
 
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, Users, PhoneCall, Plug, Layers, CheckCircle2, Zap } from "lucide-react";
+import { ArrowRight, ShieldCheck, Users, PhoneCall, Plug, CheckCircle2, Zap } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { derivePaymentsAccount } from "@/lib/paymentsAccount.js";
 import { computePaymentsNextAction, NEXT_ACTION_INTENT } from "@/lib/paymentsNextAction.js";
@@ -95,14 +95,19 @@ export default function ActionCenter({
   const accent = isPositive ? "rgb(52,211,153)" : "rgb(34,211,238)";
   const impactKey = IMPACT_KEY[action.impact] || null;
 
-  // Secondary link — only when the primary is the collective (offer a call) or
-  // a call (offer the collective). Never on verify / add-channel / top-tier.
-  const secondary =
-    !compact && action.intent === NEXT_ACTION_INTENT.JOIN_COLLECTIVE
-      ? { label: t("ac_secondary_call"), onClick: onCall }
-      : !compact && action.intent === NEXT_ACTION_INTENT.BOOK_CALL && !inCollective
-      ? { label: t("ac_secondary_coll"), onClick: onCollective }
-      : null;
+  // Secondaries (tiny links, never competing buttons):
+  //   • the other recovery destination (collective ↔ call)
+  //   • "add your other channel" — only when the account truly shows one channel
+  const secondaries = [];
+  if (!compact && action.intent === NEXT_ACTION_INTENT.JOIN_COLLECTIVE) {
+    secondaries.push({ label: t("ac_secondary_call"), onClick: onCall });
+  } else if (!compact && action.intent === NEXT_ACTION_INTENT.BOOK_CALL && !inCollective) {
+    secondaries.push({ label: t("ac_secondary_coll"), onClick: onCollective });
+  }
+  if (!compact && action.suggestAdd && onAddChannel) {
+    const label = action.suggestAdd === "in_store" ? t("ac_addchannel_why_instore") : t("ac_addchannel_why_online");
+    secondaries.push({ label: `${t("ac_addchannel_title")} — ${label}`, onClick: onAddChannel });
+  }
 
   return (
     <div
@@ -167,15 +172,16 @@ export default function ActionCenter({
               {action.intent === NEXT_ACTION_INTENT.VERIFY_CONNECT && <Plug size={15} />}
               {ctaLabel} <ArrowRight className="h-4 w-4" />
             </button>
-            {secondary && (
+            {secondaries.map((s, i) => (
               <button
+                key={i}
                 type="button"
-                onClick={secondary.onClick}
+                onClick={s.onClick}
                 className="text-[12px] text-white/45 hover:text-cyan-200 underline underline-offset-2 transition-colors text-center md:text-right"
               >
-                {secondary.label}
+                {s.label}
               </button>
-            )}
+            ))}
           </div>
         )}
       </div>
