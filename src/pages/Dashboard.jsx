@@ -16,6 +16,7 @@ import DashboardHeroV2 from "@/components/dashboard/DashboardHeroV2";
 import AccountSummaryPanel from "@/components/dashboard/AccountSummaryPanel";
 import AnalysisTrendPanel from "@/components/dashboard/AnalysisTrendPanel";
 import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
+import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -376,6 +377,11 @@ export default function Dashboard() {
       {/* ── PHASE 1 — data insights (single source of truth: engine_result) ── */}
       {engineResult && (
         <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
+      )}
+
+      {/* ── PHASE 3 — in-store (TPE) tiles. Self-hides for online analyses. ── */}
+      {engineResult && (
+        <PaymentsInStoreInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
       )}
 
       {/* ── INFRASTRUCTURE NODES — grouped ── */}

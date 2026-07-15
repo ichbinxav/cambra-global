@@ -41,6 +41,7 @@ import ResultsHistory from "@/components/paymentsResults/ResultsHistory";
 import RecoveryRoadmap from "@/components/paymentsResults/RecoveryRoadmap";
 import PeerBenchmark from "@/components/paymentsResults/PeerBenchmark";
 import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
+import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
@@ -708,6 +709,12 @@ export default function PaymentsResults() {
             {!isCombined && (
               <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
             )}
+            {/* Phase 3 — in-store (TPE) tiles. Self-hides for online/single-online. */}
+            <PaymentsInStoreInsights
+              engineResult={engineResult}
+              inputSnapshot={inputSnapshot}
+              perChannel={isCombined ? engineResult?.channels : null}
+            />
             {ctaBlock}
           </div>
 
