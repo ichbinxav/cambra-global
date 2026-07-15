@@ -93,16 +93,6 @@ export default function TestimonialsCarousel() {
               Real findings
             </span>
           </span>
-          {/* Honesty disclaimer — illustrative sample quotes, not real customers yet. */}
-          <div className="mt-3">
-            <span
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-medium text-amber-200/90"
-              style={{ border: "1px solid rgba(245,181,68,0.28)", background: "rgba(245,181,68,0.08)" }}
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
-              Illustrative sample quotes — not real customers yet
-            </span>
-          </div>
         </div>
 
         <h2
