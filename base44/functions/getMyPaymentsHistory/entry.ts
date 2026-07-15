@@ -43,18 +43,32 @@ Deno.serve(async (req) => {
     }
     const email = normalizeEmail(user.email);
 
-    // EXPLICIT server-side filter — created_by scoped to the caller + only the
-    // payments-v1 shape (excludes legacy scoreEngine rows). asServiceRole is
-    // used ONLY so the read does not depend on implicit RLS; the created_by
-    // filter is what guarantees isolation.
+    // EXPLICIT server-side filter — created_by scoped to the caller ONLY.
+    // asServiceRole is used so the read does not depend on implicit RLS; the
+    // created_by filter is what guarantees tenant isolation.
+    //
+    // IMPORTANT (2026-07-15): we DO NOT filter by details_shape at the query
+    // level. details_shape lives NESTED at details.details_shape (per the
+    // AnalyzerResult schema), and the SDK's .filter() does not reliably match
+    // dot-paths / nested fields — a `details_shape: 'payments-v1'` (top-level)
+    // or even `'details.details_shape'` filter matches ZERO rows and returns a
+    // silent empty list (the exact history-empty bug). Instead we filter by
+    // created_by server-side and do the shape/engine_result check in JS below,
+    // the same robust pattern PaymentsResults already uses.
     const rows = await base44.asServiceRole.entities.AnalyzerResult
-      .filter({ created_by: user.email, details_shape: 'payments-v1' }, '-created_date', 50)
+      .filter({ created_by: user.email }, '-created_date', 100)
       .catch(() => []);
 
-    // Defense-in-depth — drop anything whose created_by isn't exactly the
-    // caller, regardless of what the filter returned.
+    // Defense-in-depth + shape gate, all in JS (no dependence on nested-path
+    // filtering):
+    //   1. created_by must be exactly the caller (tenant isolation).
+    //   2. the row must carry the payments engine_result — this excludes legacy
+    //      scoreEngine rows (details.engine_result absent) that would render
+    //      blank. Same guard PaymentsResults uses to decide unlock-vs-teaser.
     const mine = (Array.isArray(rows) ? rows : []).filter(
-      (r) => normalizeEmail(r.created_by) === email
+      (r) =>
+        normalizeEmail(r.created_by) === email &&
+        !!r?.details?.engine_result
     );
 
     const items = mine.map((r) => ({
