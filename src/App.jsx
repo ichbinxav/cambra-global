@@ -83,7 +83,6 @@ import IntegrationsCallback from '@/pages/IntegrationsCallback';
 import BrandProfile from '@/pages/BrandProfile';
 import BrandGlyph from '@/components/shared/BrandGlyph';
 import CopilotPanel from '@/components/copilot/CopilotPanel.jsx';
-import CopilotObservations from '@/components/copilot/CopilotObservations.jsx';
 import ScrollToTop from '@/components/shared/ScrollToTop.jsx';
 import ErrorBoundary from '@/components/shared/ErrorBoundary.jsx';
 import { ToastProvider } from '@/components/shared/Toast.jsx';
@@ -302,7 +301,6 @@ function App() {
                 <ScrollToTop />
                 <AuthenticatedApp />
                 <CopilotPanel />
-                <CopilotObservations />
                 <CookieConsent />
                 </Router>
               <Toaster />

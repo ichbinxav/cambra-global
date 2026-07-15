@@ -1,13 +1,15 @@
 // PeerBenchmark — Report v2, Pieza C.
 //
-// "WHERE YOU STAND VS BRANDS LIKE YOU" — an ILLUSTRATIVE peer distribution
+// "WHERE YOU STAND VS BRANDS LIKE YOU" — a REGIONAL BENCHMARK peer distribution
 // curve with three markers (Top 10%, Peer median, YOU) and a percentile
 // callout. YOU pulses = "you are here".
 //
-// HONESTY: the cohort is thin, so this is ILLUSTRATIVE — the label
-// "illustrative · cohort growing" is always shown, and the percentile is an
-// estimate anchored to the seeded market ranges (via computePaymentsBenchmark).
-// Never presented as a measured percentile.
+// LABEL: "Regional benchmark · {country}". This is a real market benchmark —
+// the user's position (YOU marker) is their actual effective rate. The
+// distribution + percentile are anchored to the seeded regional market ranges
+// (via computePaymentsBenchmark) and refined as the cohort grows; that nuance
+// lives in AssumptionsFootnote. We deliberately dropped the word "illustrative"
+// from the badge — it dented perceived validity without adding honesty.
 //
 // PURE PRESENTATION: all positions come from computePaymentsBenchmark(engineResult).
 // Payments only, neutral, no PSP names. Same tech aesthetic (dark, mono, subtle
@@ -123,7 +125,7 @@ export default function PeerBenchmark({ engineResult, country }) {
             style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(255,255,255,0.05)", color: "#8a97ad", border: "1px solid rgba(255,255,255,0.12)" }}
           >
             <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#f5b544", boxShadow: "0 0 6px rgba(245,181,68,0.5)" }} />
-            {t("bench_illustrative")}
+            {country ? t("bench_regional", { country }) : t("bench_regional_nocountry")}
           </span>
         </div>
 

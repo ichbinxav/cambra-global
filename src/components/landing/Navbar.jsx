@@ -60,12 +60,12 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-5 lg:px-8 h-14 flex items-center justify-between">
 
-        {/* Logo */}
+        {/* Logo — always a way out. Signed in → Dashboard, else → home. */}
         <Link
-          to="/"
+          to={isAuthenticated ? "/Dashboard" : "/"}
           className="flex-shrink-0 inline-flex items-center gap-2 text-white"
           style={{ fontWeight: 900, letterSpacing: "-0.04em", fontSize: 18 }}
-          aria-label="CAMBRA home"
+          aria-label={isAuthenticated ? "CAMBRA dashboard" : "CAMBRA home"}
         >
           CAMBRA
         </Link>

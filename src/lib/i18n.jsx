@@ -294,7 +294,12 @@ const DICT = {
 
     /* Report v2 — Pieza C: peer benchmark distribution */
     bench_title:          "Where you stand vs brands like you",
-    bench_illustrative:   "illustrative · cohort growing",
+    /* Label refined off "illustrative" (dented perceived validity) to a
+       regional benchmark badge. Internally the cohort still grows and the
+       percentile is anchored to seeded market ranges — that nuance lives in
+       AssumptionsFootnote, not this badge. */
+    bench_regional:       "Regional benchmark · {country}",
+    bench_regional_nocountry: "Regional benchmark",
     bench_top10:          "Top 10%",
     bench_median:         "Peer median",
     bench_you:            "YOU",
@@ -302,6 +307,44 @@ const DICT = {
     bench_axis_pricier:   "pricier",
     bench_callout:        "You're in the most expensive ~{pct}% of {country} brands your size.",
     bench_callout_nocountry: "You're in the most expensive ~{pct}% of brands your size.",
+
+    /* Report v2 — Collective (clickwrap-lite) + Book a call */
+    coll_eyebrow:        "The collective",
+    coll_title:          "Join the collective",
+    coll_sub:            "Many brands negotiating as one. The more GMV joins, the more leverage the collective has to recover your margin.",
+    coll_email_label:    "Email",
+    coll_email_ph:       "you@brand.com",
+    coll_gmv_label:      "Monthly GMV",
+    coll_gmv_note:       "from your analysis",
+    coll_submit:         "Join as founding member",
+    coll_submitting:     "Joining…",
+    coll_clickwrap_pre:  "By joining you accept the",
+    coll_clickwrap_link: "Collective Terms",
+    coll_terms_draft:    "Draft — pending legal review",
+    coll_terms_title:    "Collective Terms (draft)",
+    coll_terms_body:     "By joining the CAMBRA Collective you authorize CAMBRA to include your payment volume, aggregated and pseudonymized, in the collective negotiating power used to recover margin on behalf of its members. There is no upfront cost and no lock-in. CAMBRA only charges a fee on verified savings that actually materialize, under the results-based model. You can leave the collective at any time. This text is a DRAFT pending legal review and does not constitute a binding contract until its final reviewed version.",
+    coll_terms_close:    "Got it",
+    coll_success_title:  "You're in · founding member",
+    coll_success_body:   "€{gmv} of GMV now in the collective. We'll email you with the next steps.",
+    coll_success_body_nogmv: "Welcome to the collective. We'll email you with the next steps.",
+    coll_error:          "Something went wrong. Please try again.",
+    coll_done:           "Done",
+
+    /* Book a call */
+    call_eyebrow:        "Let's talk",
+    call_title:          "Book a call",
+    call_sub:            "Your opportunity is large enough to deserve a conversation. Tell us and we'll reach out to schedule.",
+    call_name_label:     "Name",
+    call_name_ph:        "Your name",
+    call_email_label:    "Email",
+    call_email_ph:       "you@brand.com",
+    call_msg_label:      "Message (optional)",
+    call_msg_ph:         "Briefly tell us about your situation…",
+    call_submit:         "Request a call",
+    call_submitting:     "Sending…",
+    call_success_title:  "Request sent",
+    call_success_body:   "We'll email you to schedule the call.",
+    call_error:          "Something went wrong. Please try again.",
 
     /* FIX 2 — Dashboard strings */
 
@@ -639,7 +682,8 @@ const DICT = {
 
     /* Report v2 — Pieza C: peer benchmark distribution */
     bench_title:          "Votre position face aux marques comme vous",
-    bench_illustrative:   "illustratif · cohorte en croissance",
+    bench_regional:       "Benchmark régional · {country}",
+    bench_regional_nocountry: "Benchmark régional",
     bench_top10:          "Top 10%",
     bench_median:         "Médiane des pairs",
     bench_you:            "VOUS",
@@ -647,6 +691,44 @@ const DICT = {
     bench_axis_pricier:   "plus cher",
     bench_callout:        "Vous êtes dans les ~{pct}% les plus chers des marques {country} de votre taille.",
     bench_callout_nocountry: "Vous êtes dans les ~{pct}% les plus chers des marques de votre taille.",
+
+    /* Report v2 — Collectif (clickwrap-lite) + Réserver un appel */
+    coll_eyebrow:        "Le collectif",
+    coll_title:          "Rejoignez le collectif",
+    coll_sub:            "Plusieurs marques qui négocient ensemble. Plus le GMV s'additionne, plus le collectif a de poids pour récupérer votre marge.",
+    coll_email_label:    "Email",
+    coll_email_ph:       "vous@marque.com",
+    coll_gmv_label:      "GMV mensuel",
+    coll_gmv_note:       "de votre analyse",
+    coll_submit:         "Rejoindre comme membre fondateur",
+    coll_submitting:     "Adhésion…",
+    coll_clickwrap_pre:  "En rejoignant, vous acceptez les",
+    coll_clickwrap_link: "Conditions du Collectif",
+    coll_terms_draft:    "Brouillon — en attente de revue juridique",
+    coll_terms_title:    "Conditions du Collectif (brouillon)",
+    coll_terms_body:     "En rejoignant le Collectif CAMBRA, vous autorisez CAMBRA à inclure votre volume de paiements, de façon agrégée et pseudonymisée, dans le pouvoir de négociation collectif utilisé pour récupérer de la marge au nom de ses membres. Aucun frais initial ni engagement. CAMBRA ne facture qu'une commission sur les économies vérifiées effectivement réalisées, selon le modèle à la performance. Vous pouvez quitter le collectif à tout moment. Ce texte est un BROUILLON en attente de revue juridique et ne constitue pas un contrat contraignant tant que sa version finale révisée n'est pas publiée.",
+    coll_terms_close:    "Compris",
+    coll_success_title:  "Vous y êtes · membre fondateur",
+    coll_success_body:   "€{gmv} de GMV désormais dans le collectif. Nous vous écrirons pour les prochaines étapes.",
+    coll_success_body_nogmv: "Bienvenue dans le collectif. Nous vous écrirons pour les prochaines étapes.",
+    coll_error:          "Une erreur est survenue. Veuillez réessayer.",
+    coll_done:           "Terminé",
+
+    /* Book a call */
+    call_eyebrow:        "Parlons-en",
+    call_title:          "Réservez un appel",
+    call_sub:            "Votre opportunité est assez grande pour mériter une conversation. Dites-nous-en plus et nous vous contacterons pour planifier.",
+    call_name_label:     "Nom",
+    call_name_ph:        "Votre nom",
+    call_email_label:    "Email",
+    call_email_ph:       "vous@marque.com",
+    call_msg_label:      "Message (facultatif)",
+    call_msg_ph:         "Décrivez brièvement votre situation…",
+    call_submit:         "Demander un appel",
+    call_submitting:     "Envoi…",
+    call_success_title:  "Demande envoyée",
+    call_success_body:   "Nous vous contacterons par email pour planifier l'appel.",
+    call_error:          "Une erreur est survenue. Veuillez réessayer.",
 
     /* FIX 2 — Dashboard strings */
 
@@ -984,7 +1066,8 @@ const DICT = {
 
     /* Report v2 — Pieza C: peer benchmark distribution */
     bench_title:          "Dónde estás frente a marcas como la tuya",
-    bench_illustrative:   "ilustrativo · cohorte creciendo",
+    bench_regional:       "Benchmark regional · {country}",
+    bench_regional_nocountry: "Benchmark regional",
     bench_top10:          "Top 10%",
     bench_median:         "Mediana de pares",
     bench_you:            "TÚ",
