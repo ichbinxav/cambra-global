@@ -517,6 +517,15 @@ const DICT = {
     acct_analyses_count:    "{n} analyses",
     acct_channels_online:   "Online",
     acct_channels_in_store: "In-store",
+
+    /* Phase 2 — analysis evolution (dashboard, shown when ≥2 analyses).
+       Re-runs ARE the series — this is the correct home for them. */
+    trend_eyebrow:          "Evolution",
+    trend_title:            "How your numbers moved",
+    trend_sub:              "Across {n} analyses over time.",
+    trend_legend_rate:      "Effective rate",
+    trend_legend_savings:   "Identified savings",
+    trend_caption:          "Every re-run plotted in time — nothing averaged. Verified points are ringed.",
   },
 
   fr: {
@@ -957,6 +966,14 @@ const DICT = {
     acct_analyses_count:    "{n} analyses",
     acct_channels_online:   "En ligne",
     acct_channels_in_store: "En boutique",
+
+    /* Phase 2 — analysis evolution */
+    trend_eyebrow:          "Évolution",
+    trend_title:            "Comment vos chiffres ont bougé",
+    trend_sub:              "Sur {n} analyses dans le temps.",
+    trend_legend_rate:      "Taux effectif",
+    trend_legend_savings:   "Économies identifiées",
+    trend_caption:          "Chaque relance tracée dans le temps — rien de moyenné. Les points vérifiés sont cerclés.",
   },
 
   es: {
@@ -1397,6 +1414,14 @@ const DICT = {
     acct_analyses_count:    "{n} análisis",
     acct_channels_online:   "Online",
     acct_channels_in_store: "En tienda",
+
+    /* Phase 2 — analysis evolution */
+    trend_eyebrow:          "Evolución",
+    trend_title:            "Cómo se movieron tus números",
+    trend_sub:              "En {n} análisis a lo largo del tiempo.",
+    trend_legend_rate:      "Tasa efectiva",
+    trend_legend_savings:   "Ahorro identificado",
+    trend_caption:          "Cada re-ejecución trazada en el tiempo — nada promediado. Los puntos verificados van con anillo.",
   },
 };
 

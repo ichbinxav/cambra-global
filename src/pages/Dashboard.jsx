@@ -14,6 +14,7 @@ import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import DashboardHeroV2 from "@/components/dashboard/DashboardHeroV2";
 import AccountSummaryPanel from "@/components/dashboard/AccountSummaryPanel";
+import AnalysisTrendPanel from "@/components/dashboard/AnalysisTrendPanel";
 import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
@@ -333,6 +334,10 @@ export default function Dashboard() {
 
       {/* ── PHASE 2 — account aggregate (self-hides with <2 coherent analyses) ── */}
       <AccountSummaryPanel rows={allResults} />
+
+      {/* ── PHASE 2 — analysis evolution (self-hides with <2 coherent analyses).
+          Re-runs ARE the point here — the series shows how rate/savings moved. ── */}
+      <AnalysisTrendPanel rows={allResults} />
 
       {/* Quick stats — payments only (FASE 1.1) */}
       <div className="grid grid-cols-1 gap-3">
