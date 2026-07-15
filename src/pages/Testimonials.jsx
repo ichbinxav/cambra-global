@@ -94,6 +94,18 @@ export default function Testimonials() {
             <p className="text-base text-white/60 max-w-xl mx-auto">
               {t("tst_hero_sub")}
             </p>
+            {/* Honesty disclaimer — these are illustrative sample quotes, not
+                real consented customers. Visible to visitors (not just a code
+                comment) so they are never presented as genuine testimonials. */}
+            <div className="mt-6 flex justify-center">
+              <span
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-medium text-amber-200/90"
+                style={{ border: "1px solid rgba(245,181,68,0.28)", background: "rgba(245,181,68,0.08)" }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
+                {t("tst_illustrative_note")}
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

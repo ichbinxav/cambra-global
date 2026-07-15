@@ -422,6 +422,7 @@ const DICT = {
     tst_hero_h1:      "What brands say about CAMBRA.",
     tst_hero_sub:     "Real results from independent commerce brands across Europe.",
     tst_role_at:      "{role} at {company}",
+    tst_illustrative_note: "Illustrative sample quotes — not real customers yet.",
 
     /* 0.4 — Pricing page */
     prc_split_eyebrow:   "Pricing model",
@@ -895,6 +896,7 @@ const DICT = {
     tst_hero_h1:      "Ce que les marques disent de CAMBRA.",
     tst_hero_sub:     "Des résultats concrets de marques de commerce indépendantes partout en Europe.",
     tst_role_at:      "{role} chez {company}",
+    tst_illustrative_note: "Exemples illustratifs — pas encore de vrais clients.",
 
     /* 0.4 — Pricing page */
     prc_split_eyebrow:   "Modèle tarifaire",
@@ -1365,6 +1367,7 @@ const DICT = {
     tst_hero_h1:      "Lo que las marcas dicen de CAMBRA.",
     tst_hero_sub:     "Resultados reales de marcas de comercio independiente por toda Europa.",
     tst_role_at:      "{role} en {company}",
+    tst_illustrative_note: "Testimonios de ejemplo — aún no son clientes reales.",
 
     /* 0.4 — Pricing page */
     prc_split_eyebrow:   "Modelo de precios",

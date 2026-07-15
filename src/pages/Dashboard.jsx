@@ -69,7 +69,6 @@ export default function Dashboard() {
   const [brand, setBrand] = useState(null);
   const [latest, setLatest] = useState(null);
   const [allResults, setAllResults] = useState([]);
-  const [activeDays, setActiveDays] = useState(null);
   const [stripeConn, setStripeConn] = useState(null);
   const [graphNodes, setGraphNodes] = useState([]);
   const [hasLiveDeal, setHasLiveDeal] = useState(false);
@@ -100,16 +99,6 @@ export default function Dashboard() {
         const latestResult = results[0] || null;
         setLatest(latestResult);
         setAllResults(results);
-
-        // Extract `active_days` from the latest result's assumptions to
-        // power the honesty caption in the provisional/estimated hero.
-        // bridgeToAnalyzer writes "...N active day(s)..." into the string.
-        // Non-fatal on parse miss — the caption just hides.
-        if (Array.isArray(latestResult?.assumptions)) {
-          const line = latestResult.assumptions.find(a => /active day/i.test(a));
-          const m = line?.match(/(\d+)\s+active day/i);
-          if (m) setActiveDays(Number(m[1]));
-        }
 
         if (b) {
           // FASE 1 — Integration is the source of truth for "connected"; StripeConnection is legacy fallback.
