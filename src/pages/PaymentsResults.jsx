@@ -40,6 +40,7 @@ import OptimizedHero from "@/components/paymentsResults/OptimizedHero";
 import ResultsHistory from "@/components/paymentsResults/ResultsHistory";
 import RecoveryRoadmap from "@/components/paymentsResults/RecoveryRoadmap";
 import PeerBenchmark from "@/components/paymentsResults/PeerBenchmark";
+import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
@@ -652,6 +653,9 @@ export default function PaymentsResults() {
             </div>
           )}
           <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} />
+          {!isAnonymous && (
+            <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
+          )}
           {ctaBlock}
           {/* Locked breakdown — one of the main signup conversion drivers:
               render the SHAPE, blur the numbers, show a padlock. */}
@@ -697,6 +701,9 @@ export default function PaymentsResults() {
             )}
             {!isCombined && !isOptimizedSingle && (
               <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} />
+            )}
+            {!isCombined && (
+              <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
             )}
             {ctaBlock}
           </div>

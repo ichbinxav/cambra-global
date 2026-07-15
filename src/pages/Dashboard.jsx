@@ -13,6 +13,7 @@ import AIInsightsPanel from "@/components/dashboard/AIInsightsPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import DashboardHeroV2 from "@/components/dashboard/DashboardHeroV2";
+import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -358,6 +359,11 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+
+      {/* ── PHASE 1 — data insights (single source of truth: engine_result) ── */}
+      {engineResult && (
+        <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
+      )}
 
       {/* ── INFRASTRUCTURE NODES — grouped ── */}
       {graphNodes.length > 0 && (
