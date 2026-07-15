@@ -42,6 +42,8 @@ import RecoveryRoadmap from "@/components/paymentsResults/RecoveryRoadmap";
 import PeerBenchmark from "@/components/paymentsResults/PeerBenchmark";
 import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
 import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
+import CombinedChannelSection from "@/components/paymentsResults/CombinedChannelSection";
+import DownloadAuditButton from "@/components/paymentsResults/DownloadAuditButton";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
@@ -621,13 +623,21 @@ export default function PaymentsResults() {
 
   return (
     <ResultsShell>
-      {/* Back link — desktop shows text, mobile just chevron */}
-      <button
-        onClick={() => navigate("/Analyzer")}
-        className="mb-6 inline-flex items-center gap-1.5 text-[12px] text-white/50 hover:text-white transition-colors"
-      >
-        <ArrowLeft size={12} /> Run a new analysis
-      </button>
+      {/* Back link + Download audit — desktop shows text, mobile just chevron */}
+      <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
+        <button
+          onClick={() => navigate("/Analyzer")}
+          className="inline-flex items-center gap-1.5 text-[12px] text-white/50 hover:text-white transition-colors"
+        >
+          <ArrowLeft size={12} /> Run a new analysis
+        </button>
+        <DownloadAuditButton
+          engineResult={engineResult}
+          inputSnapshot={inputSnapshot}
+          rateTable={rateTable}
+          brandName={inputSnapshot?.provider_slug || ""}
+        />
+      </div>
 
       {useStackedTeaserLayout ? (
         // 1.4 — ESTIMATED TEASER: single column, big figure leads at full
@@ -666,17 +676,40 @@ export default function PaymentsResults() {
           <FeeBreakdownCard engineResult={engineResult} locked={!payload?.owned} />
           <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
         </div>
+      ) : isCombined ? (
+        // COMBINED — full depth. Aggregate view on top (CombinedGapHero =
+        // combined total + confidence band + per-channel strip), the primary
+        // CTA + top-level breakdown, then ONE complete section PER CHANNEL,
+        // each reusing the single-channel components fed with THAT channel's
+        // own engine_result + input_snapshot. Never mixes figures.
+        <div className="space-y-8 max-w-4xl mx-auto">
+          <CombinedGapHero engineResult={engineResult} country={inputSnapshot?.country} />
+          {ctaBlock}
+          <FeeBreakdownCard
+            engineResult={engineResult}
+            locked={engineResult?.mode !== "verified" && !payload?.owned}
+          />
+          {engineResult.channels.map((ch) => (
+            <div key={ch.channel} className="pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+              <CombinedChannelSection
+                channel={ch.channel}
+                engineResult={ch.engine_result}
+                inputSnapshot={ch.input_snapshot}
+                rateTable={rateTable}
+                isAnonymous={isAnonymous}
+                onRouteAction={handleRouteAction}
+                onUnlock={handleUnlock}
+              />
+            </div>
+          ))}
+          <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
+        </div>
       ) : (
-        // Verified / combined / optimized — 2-column grid, unchanged.
+        // Verified / optimized single-channel — 2-column grid, unchanged.
         // LEFT = hero + CTA · RIGHT = breakdown + assumptions.
         <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-6 lg:items-start gap-5">
           <div className="lg:col-span-3 space-y-5">
-            {isCombined ? (
-              <CombinedGapHero
-                engineResult={engineResult}
-                country={inputSnapshot?.country}
-              />
-            ) : isOptimizedSingle ? (
+            {isOptimizedSingle ? (
               <OptimizedHero
                 engineResult={engineResult}
                 inputSnapshot={inputSnapshot}
@@ -703,17 +736,14 @@ export default function PaymentsResults() {
                 />
               </div>
             )}
-            {!isCombined && !isOptimizedSingle && (
+            {!isOptimizedSingle && (
               <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} />
             )}
-            {!isCombined && (
-              <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
-            )}
+            <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
             {/* Phase 3 — in-store (TPE) tiles. Self-hides for online/single-online. */}
             <PaymentsInStoreInsights
               engineResult={engineResult}
               inputSnapshot={inputSnapshot}
-              perChannel={isCombined ? engineResult?.channels : null}
             />
             {ctaBlock}
           </div>

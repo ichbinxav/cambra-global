@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import PageHero from '@/components/shared/PageHero';
 import { FolderLock } from 'lucide-react';
+import DownloadAuditButton from '@/components/paymentsResults/DownloadAuditButton';
+import { getMyActiveBrand } from '@/lib/getMyActiveBrand';
 
 const CATEGORIES = [
   'invoices','statements','provider_proposals','contracts','signed_mandates','tax_docs','screenshots','benchmark_evidence','migration_docs','pricing_docs','internal_files'
@@ -22,6 +24,27 @@ export default function Vault() {
   const fileRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [newCat, setNewCat] = useState('internal_files');
+  // Latest analysis with an engine_result → powers the "Download audit (PDF)"
+  // button in the hero. Same source the report uses; null hides the button.
+  const [latestAudit, setLatestAudit] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { brand } = await getMyActiveBrand();
+        if (!brand) return;
+        const rows = await base44.entities.AnalyzerResult
+          .filter({ brand_id: brand.id }, '-created_date', 20).catch(() => []);
+        const withEngine = (rows || []).find(r => r?.details?.engine_result);
+        if (withEngine) {
+          setLatestAudit({
+            engineResult: withEngine.details.engine_result,
+            inputSnapshot: withEngine.details.input_snapshot || null,
+          });
+        }
+      } catch { /* button just hides */ }
+    })();
+  }, []);
 
   const load = async () => {
     setLoading(true);
@@ -73,6 +96,13 @@ export default function Vault() {
         icon={FolderLock}
         actions={
           <div className="flex items-center gap-2">
+            {latestAudit && (
+              <DownloadAuditButton
+                engineResult={latestAudit.engineResult}
+                inputSnapshot={latestAudit.inputSnapshot}
+                brandName={latestAudit.inputSnapshot?.provider_slug || ''}
+              />
+            )}
             <Select value={newCat} onValueChange={setNewCat}>
               <SelectTrigger className="w-44 bg-white/10 border-white/20 text-white"><SelectValue placeholder="Category" /></SelectTrigger>
               <SelectContent>{CATEGORIES.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}</SelectContent>
