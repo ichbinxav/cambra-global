@@ -59,8 +59,8 @@ export default function CombinedGapHero({ engineResult, country }) {
   const annual = engineResult?.annual_savings_eur || {};
   const monthly = engineResult?.monthly_savings_eur || {};
   const combinedClass = engineResult?.combined_classification;
-  const hasMixedState = channels.some((c) => c.classification === "already_optimized")
-                     && channels.some((c) => c.classification === "savings_opportunity");
+  const hasMixedState = channels.some((c) => c.engine_result?.classification === "already_optimized")
+                     && channels.some((c) => c.engine_result?.classification === "savings_opportunity");
 
   return (
     <div
@@ -129,7 +129,7 @@ export default function CombinedGapHero({ engineResult, country }) {
           const r = ch.engine_result || {};
           const chMonthly = r.monthly_savings_eur || {};
           const chAnnual = r.annual_savings_eur || {};
-          const chClass = ch.classification;
+          const chClass = r.classification;
           // Mini-victory: when a channel is already_optimized, the card no
           // longer shows a €0 monetary figure (which would read as "no data"
           // rather than "you won here"). Instead it shows an emerald "✓
