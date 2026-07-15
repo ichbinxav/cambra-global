@@ -682,26 +682,35 @@ export default function PaymentsResults() {
         // CTA + top-level breakdown, then ONE complete section PER CHANNEL,
         // each reusing the single-channel components fed with THAT channel's
         // own engine_result + input_snapshot. Never mixes figures.
-        <div className="space-y-8 max-w-4xl mx-auto">
+        <div className="space-y-8 max-w-6xl mx-auto">
           <CombinedGapHero engineResult={engineResult} country={inputSnapshot?.country} />
           {ctaBlock}
           <FeeBreakdownCard
             engineResult={engineResult}
             locked={engineResult?.mode !== "verified" && !payload?.owned}
           />
-          {engineResult.channels.map((ch) => (
-            <div key={ch.channel} className="pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-              <CombinedChannelSection
-                channel={ch.channel}
-                engineResult={ch.engine_result}
-                inputSnapshot={ch.input_snapshot}
-                rateTable={rateTable}
-                isAnonymous={isAnonymous}
-                onRouteAction={handleRouteAction}
-                onUnlock={handleUnlock}
-              />
-            </div>
-          ))}
+          {/* Per-channel depth — side by side on desktop (lg+) to compare
+              online vs in-store, stacked in one column on mobile/tablet. The
+              divider becomes the grid gap; a top border separates the block
+              from the aggregate view above. */}
+          <div
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            {engineResult.channels.map((ch) => (
+              <div key={ch.channel} className="min-w-0">
+                <CombinedChannelSection
+                  channel={ch.channel}
+                  engineResult={ch.engine_result}
+                  inputSnapshot={ch.input_snapshot}
+                  rateTable={rateTable}
+                  isAnonymous={isAnonymous}
+                  onRouteAction={handleRouteAction}
+                  onUnlock={handleUnlock}
+                />
+              </div>
+            ))}
+          </div>
           <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
         </div>
       ) : (

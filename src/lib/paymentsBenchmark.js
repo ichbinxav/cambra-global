@@ -83,6 +83,14 @@ export function computePaymentsBenchmark(engineResult, opts = {}) {
   const upperTail = 1 - normalCdf(current, medianBps, sdBps);
   const expensivePct = Math.max(1, Math.min(99, Math.round(upperTail * 100)));
 
+  // Which side of the peer median are you on? When your rate is at or below
+  // the median, "expensivePct" is really "% of peers MORE expensive than you"
+  // — i.e. you're CHEAPER than that share. The consumers (screen + PDF) must
+  // flip the template accordingly so an A-grade brand is never labeled "most
+  // expensive". cheaperPct = the share you beat.
+  const cheaperSide = current <= medianBps;
+  const cheaperPct = Math.max(1, Math.min(99, 100 - expensivePct));
+
   // vs_cohort reserved for real-N mode; today always illustrative.
   const mode = "illustrative";
 
@@ -94,6 +102,8 @@ export function computePaymentsBenchmark(engineResult, opts = {}) {
     markers: { top10Bps, medianBps, youBps: current },
     distribution: { meanBps: medianBps, sdBps },
     expensivePct,
+    cheaperSide,
+    cheaperPct,
   };
 }
 

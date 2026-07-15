@@ -136,7 +136,13 @@ function renderAnalysisBody(doc, { engineResult, inputSnapshot, rateTable }, sta
     row(t("pdf_your_rate"), pctFromBps(bench.markers?.youBps));
     row(t("pdf_peer_median"), pctFromBps(bench.markers?.medianBps));
     row(t("pdf_top10"), pctFromBps(bench.markers?.top10Bps));
-    if (isFinite(bench.expensivePct)) row(t("pdf_percentile"), t("pdf_percentile_val", { pct: bench.expensivePct }));
+    // Same flip as the on-screen benchmark: at/below the peer median the
+    // merchant is "cheaper than ~X%", not "most expensive ~X%".
+    if (isFinite(bench.expensivePct)) {
+      const cheaper = bench.cheaperSide;
+      const posPct = cheaper ? bench.cheaperPct : bench.expensivePct;
+      row(t("pdf_percentile"), t(cheaper ? "pdf_percentile_val_cheaper" : "pdf_percentile_val", { pct: posPct }));
+    }
     y += 6;
   }
 

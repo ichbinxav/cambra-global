@@ -48,7 +48,7 @@ export default function PeerBenchmark({ engineResult, country }) {
 
   if (!bench.available) return null;
 
-  const { axis, markers, distribution, expensivePct } = bench;
+  const { axis, markers, distribution, expensivePct, cheaperSide, cheaperPct } = bench;
   const { minBps, maxBps } = axis;
   const domain = maxBps - minBps || 1;
 
@@ -91,7 +91,13 @@ export default function PeerBenchmark({ engineResult, country }) {
     { key: "you",    bps: markers.youBps,    label: t("bench_you"),    sub: pct(markers.youBps),    color: "#f5b544", dashed: false, pulse: true },
   ];
 
-  const calloutKey = country ? "bench_callout" : "bench_callout_nocountry";
+  // Flip the template when the merchant is at/below the peer median: they're
+  // "cheaper than ~X%", not "most expensive ~X%". `displayPct` matches whichever
+  // side is shown so the highlighted number stays correct.
+  const displayPct = cheaperSide ? cheaperPct : expensivePct;
+  const calloutKey = cheaperSide
+    ? (country ? "bench_callout_cheaper" : "bench_callout_cheaper_nocountry")
+    : (country ? "bench_callout" : "bench_callout_nocountry");
 
   return (
     <div
@@ -220,8 +226,8 @@ export default function PeerBenchmark({ engineResult, country }) {
         >
           <p className="text-[13px] leading-snug" style={{ color: "#e8eef7" }}
              dangerouslySetInnerHTML={{
-               __html: t(calloutKey, { pct: expensivePct, country: country || "" })
-                 .replace(`~${expensivePct}%`, `<strong style="color:#f5b544;font-family:${MONO}">~${expensivePct}%</strong>`),
+               __html: t(calloutKey, { pct: displayPct, country: country || "" })
+                 .replace(`~${displayPct}%`, `<strong style="color:#f5b544;font-family:${MONO}">~${displayPct}%</strong>`),
              }}
           />
         </div>

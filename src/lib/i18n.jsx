@@ -307,6 +307,8 @@ const DICT = {
     bench_axis_pricier:   "pricier",
     bench_callout:        "You're in the most expensive ~{pct}% of {country} brands your size.",
     bench_callout_nocountry: "You're in the most expensive ~{pct}% of brands your size.",
+    bench_callout_cheaper:   "You're cheaper than ~{pct}% of {country} brands your size.",
+    bench_callout_cheaper_nocountry: "You're cheaper than ~{pct}% of brands your size.",
 
     /* Report v2 — Collective (clickwrap-lite) + Book a call */
     coll_eyebrow:        "The collective",
@@ -583,6 +585,7 @@ const DICT = {
     pdf_top10:               "Top 10%",
     pdf_percentile:          "Your position",
     pdf_percentile_val:      "Among the ~{pct}% most expensive of your size",
+    pdf_percentile_val_cheaper: "Cheaper than ~{pct}% of brands your size",
     pdf_toptier:             "You're at the achievable floor — top-tier payment costs.",
     pdf_engine_version:      "Engine version",
     pdf_footer_note:         "Estimate based on your inputs — connect your provider to verify. CAMBRA · Payments audit.",
@@ -818,6 +821,8 @@ const DICT = {
     bench_axis_pricier:   "plus cher",
     bench_callout:        "Vous êtes dans les ~{pct}% les plus chers des marques {country} de votre taille.",
     bench_callout_nocountry: "Vous êtes dans les ~{pct}% les plus chers des marques de votre taille.",
+    bench_callout_cheaper:   "Vous êtes moins cher que ~{pct}% des marques {country} de votre taille.",
+    bench_callout_cheaper_nocountry: "Vous êtes moins cher que ~{pct}% des marques de votre taille.",
 
     /* Report v2 — Collectif (clickwrap-lite) + Réserver un appel */
     coll_eyebrow:        "Le collectif",
@@ -1091,6 +1096,7 @@ const DICT = {
     pdf_top10:               "Top 10%",
     pdf_percentile:          "Votre position",
     pdf_percentile_val:      "Parmi les ~{pct}% les plus chers de votre taille",
+    pdf_percentile_val_cheaper: "Moins cher que ~{pct}% des marques de votre taille",
     pdf_toptier:             "Vous êtes au plancher atteignable — coûts de paiement au top.",
     pdf_engine_version:      "Version du moteur",
     pdf_footer_note:         "Estimation basée sur vos données — connectez votre prestataire pour vérifier. CAMBRA · Audit des paiements.",
@@ -1326,6 +1332,8 @@ const DICT = {
     bench_axis_pricier:   "más caro",
     bench_callout:        "Estás en el ~{pct}% más caro de las marcas {country} de tu tamaño.",
     bench_callout_nocountry: "Estás en el ~{pct}% más caro de las marcas de tu tamaño.",
+    bench_callout_cheaper:   "Eres más barato que ~{pct}% de las marcas {country} de tu tamaño.",
+    bench_callout_cheaper_nocountry: "Eres más barato que ~{pct}% de las marcas de tu tamaño.",
 
     /* Report v2 — Colectivo (clickwrap-lite) + Reserva una llamada */
     coll_eyebrow:        "El colectivo",
@@ -1599,6 +1607,7 @@ const DICT = {
     pdf_top10:               "Top 10%",
     pdf_percentile:          "Tu posición",
     pdf_percentile_val:      "Entre el ~{pct}% más caro de tu tamaño",
+    pdf_percentile_val_cheaper: "Más barato que ~{pct}% de las marcas de tu tamaño",
     pdf_toptier:             "Estás en el suelo alcanzable — costes de pago top-tier.",
     pdf_engine_version:      "Versión del motor",
     pdf_footer_note:         "Estimación basada en tus datos — conecta tu proveedor para verificar. CAMBRA · Auditoría de pagos.",
