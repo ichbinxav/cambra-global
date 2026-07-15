@@ -1,8 +1,10 @@
 // AccountSummaryPanel — Phase 2 account aggregate (dashboard).
 //
-// Shown ONLY when the brand has ≥2 analyses AND the aggregate passes its own
-// sum check (_coherent). With a single analysis the hero + insights already
-// tell the whole story, so this panel stays hidden to avoid redundancy.
+// Shown ONLY when the aggregate spans >1 DISTINCT channel (online + in-store)
+// AND passes its own coherence check (_coherent). Re-runs of the same channel
+// are deduped to the latest by derivePaymentsAccount — never summed — so a
+// single-channel account (re-runs of one business) adds nothing over the hero
+// and this panel stays hidden. Honest over pretty.
 //
 // SINGLE SOURCE OF TRUTH: everything is derivePaymentsAccount() over the
 // persisted AnalyzerResult rows — money summed, blended rate GMV-weighted,
@@ -65,8 +67,9 @@ export default function AccountSummaryPanel({ rows }) {
   const { t } = useTranslation();
   const acc = useMemo(() => derivePaymentsAccount(rows), [rows]);
 
-  // Guard: need ≥2 analyses and a coherent aggregate (honest over pretty).
-  if (!acc.available || acc.count < 2 || !acc._coherent) return null;
+  // Guard: aggregate must span >1 distinct channel (else it duplicates the hero)
+  // and pass its own coherence check (honest over pretty).
+  if (!acc.available || !acc.adds_value_over_hero || !acc._coherent) return null;
 
   const channelLabel = acc.channels
     .map((c) => (c === "in_store" ? t("acct_channels_in_store") : t("acct_channels_online")))

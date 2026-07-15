@@ -53,23 +53,55 @@ function readAnalysis(row) {
   };
 }
 
+// Newest-first comparator on created_date (falls back to 0 for missing dates).
+function newestFirst(a, b) {
+  const ta = a?.created_date ? new Date(a.created_date).getTime() : 0;
+  const tb = b?.created_date ? new Date(b.created_date).getTime() : 0;
+  return tb - ta;
+}
+
+// Deduplicate analyses to the MOST RECENT one per channel.
+//
+// WHY: the account panel aggregates the *current state* of the business, not a
+// pile of re-runs. A user who re-runs the analyzer 7 times with different inputs
+// produces 7 online rows for the SAME business — summing them inflates GMV ×7
+// (e.g. a real ~€380k/yr business shows a nonsensical €2.66M). The correct
+// aggregate combines DISTINCT channels only: the latest online + the latest
+// in-store = the business's total payment cost. Re-runs of the same channel
+// collapse to the latest one (that channel's current truth).
+export function dedupeLatestByChannel(analyses) {
+  const byChannel = new Map();
+  for (const a of analyses) {
+    const existing = byChannel.get(a.channel);
+    if (!existing || newestFirst(a, existing) < 0) byChannel.set(a.channel, a);
+  }
+  return Array.from(byChannel.values());
+}
+
 // Aggregate an array of AnalyzerResult rows into a single account view.
 //
-// NOTE on multi-channel: online and in-store analyses are aggregated together
-// at the money level (total GMV, total fees, total savings) because those are
-// additive euros. The blended effective rate is GMV-weighted across all
-// channels — a true account-wide "what fraction of everything you process goes
-// to fees". `channels` lists which channels contributed so the UI can label it.
+// The rows are first deduplicated to the latest analysis per channel (see
+// dedupeLatestByChannel) so we aggregate ACROSS distinct channels only —
+// never across re-runs of the same channel. Money (GMV, fees, savings) is then
+// summed across those distinct channels (additive euros), and the blended
+// effective rate is GMV-weighted across them. `channels` lists which channels
+// contributed so the UI can label it.
 export function derivePaymentsAccount(rows) {
-  const analyses = (Array.isArray(rows) ? rows : [])
+  const allAnalyses = (Array.isArray(rows) ? rows : [])
     .map(readAnalysis)
     .filter(Boolean);
 
-  if (analyses.length === 0) {
+  if (allAnalyses.length === 0) {
     return { available: false, count: 0 };
   }
 
-  // Money aggregates — plain sums (additive euros).
+  // ── DEDUPE: latest analysis per channel. This is the semantic fix — we
+  // aggregate the business's current state, not a stack of re-executions.
+  const analyses = dedupeLatestByChannel(allAnalyses).sort(newestFirst);
+  const rawCount = allAnalyses.length;
+  const distinctChannels = analyses.length;
+
+  // Money aggregates — plain sums across DISTINCT channels only.
   let totalAnnualGmv = 0;
   let totalAnnualFees = 0;
   let totalAnnualSavings = 0;
@@ -93,18 +125,28 @@ export function derivePaymentsAccount(rows) {
   // GMV-weighted blended effective rate (bps). Guard against zero GMV.
   const blendedBps = totalAnnualGmv > 0 ? (totalAnnualFees / totalAnnualGmv) * BPS_PER_UNIT : null;
 
-  // ── COHERENCE (SUM validated before the UI is allowed to show it) ──
-  // The aggregate total fees must equal fees reconstructed from the blended
-  // rate on total GMV (they should be arithmetically identical). Tolerate €1
-  // of float rounding across many rows.
+  // ── COHERENCE — two checks, both must pass or the UI must not render: ──
+  // 1) ARITHMETIC: total fees === fees reconstructed from blended rate on total
+  //    GMV (should be identical). Tolerate €1 of float rounding.
   const reconstructedFees = blendedBps != null ? totalAnnualGmv * (blendedBps / BPS_PER_UNIT) : null;
-  const coherent =
+  const arithmeticCoherent =
     reconstructedFees != null && Math.abs(reconstructedFees - totalAnnualFees) <= 1;
+  // 2) SEMANTIC: we must be aggregating one row per channel — never summing
+  //    re-runs of the same channel. After dedupe this is always true, but we
+  //    assert it explicitly so a future regression can't silently re-inflate.
+  const semanticCoherent = analyses.length === channelsSet.size;
+  const coherent = arithmeticCoherent && semanticCoherent;
+
+  // Whether the aggregate adds anything over the hero: only when it spans more
+  // than one distinct channel. With a single channel the account view is just
+  // the latest analysis (already shown by the hero) — the UI should hide it.
+  const addsValueOverHero = distinctChannels > 1;
 
   return {
     available: true,
-    count: analyses.length,
-    analyses,                              // sorted as passed in (newest first)
+    count: distinctChannels,               // DISTINCT channels aggregated
+    raw_count: rawCount,                   // total rows before dedupe (for the trend, not the sum)
+    analyses,                              // deduped, newest first
     total_annual_gmv: totalAnnualGmv,
     total_annual_fees: totalAnnualFees,
     total_annual_savings: totalAnnualSavings,
@@ -114,8 +156,9 @@ export function derivePaymentsAccount(rows) {
     channels: Array.from(channelsSet),     // ['online'] | ['in_store'] | both
     providers: Array.from(providersSet),
     countries: Array.from(countriesSet),
+    adds_value_over_hero: addsValueOverHero,
     _coherent: coherent,                   // UI must not render when false
   };
 }
 
-export const _internal = { readAnalysis, CONFIDENCE_RANK };
+export const _internal = { readAnalysis, CONFIDENCE_RANK, dedupeLatestByChannel, newestFirst };
