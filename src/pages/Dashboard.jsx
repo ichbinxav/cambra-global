@@ -1,19 +1,26 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRight, CheckCircle2, Sparkles,
+  ArrowRight, Sparkles,
   CreditCard, Plug, Store, Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { getMyActiveBrand } from "@/lib/getMyActiveBrand";
-import UpgradeToVerified from "@/components/shared/UpgradeToVerified";
 
 import LastScanBar from "@/components/dashboard/LastScanBar";
 import AIInsightsPanel from "@/components/dashboard/AIInsightsPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
+import DashboardHeroV2 from "@/components/dashboard/DashboardHeroV2";
+import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
+import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { useTranslation } from "@/lib/i18n.jsx";
+
+// A merchant whose opportunity is this large gets routed to a human call
+// instead of the self-serve collective (same thresholds as PaymentsResults).
+const CALL_GMV_MONTHLY_EUR = 250000;
+const CALL_ANNUAL_SAVINGS_EUR = 25000;
 
 /* ── helpers ─────────────────────────────────────────────────── */
 function formatEurLocal(n, lang) {
@@ -62,6 +69,9 @@ export default function Dashboard() {
   const [graphNodes, setGraphNodes] = useState([]);
   const [hasLiveDeal, setHasLiveDeal] = useState(false);
   const [loading, setLoading] = useState(true);
+  // Recovery destinations (collective / call) — same segment logic as the report.
+  const [collectiveOpen, setCollectiveOpen] = useState(false);
+  const [callOpen, setCallOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -233,11 +243,6 @@ export default function Dashboard() {
       ? { label: t("state_c_badge_provisional"), cls: "bg-blue-400/10 text-blue-300 border-blue-400/25", dot: "bg-blue-400" }
       : { label: t("state_b_badge"), cls: "bg-amber-400/10 text-amber-300 border-amber-400/25", dot: "bg-amber-400" };
 
-  const heroSubtitle =
-    verificationStatus === "verified"       ? t("hero_confidence_verified")
-    : verificationStatus === "pending_verification" ? t("hero_confidence_provisional")
-    : t("hero_confidence_estimated");
-
   // Group nodes by category
   const grouped = {};
   for (const n of graphNodes) {
@@ -245,6 +250,29 @@ export default function Dashboard() {
     if (!grouped[meta.key]) grouped[meta.key] = { icon: meta.icon, items: [] };
     grouped[meta.key].items.push(n);
   }
+
+  // ── Recovery CTA routing (same contract + thresholds as PaymentsResults) ──
+  const engineResult = latest?.details?.engine_result || null;
+  const inputSnapshot = latest?.details?.input_snapshot || {};
+  const buildCtaContext = () => ({
+    gmv_eur_monthly: Number(inputSnapshot?.monthly_gmv_eur) || undefined,
+    annual_savings_eur: Number(engineResult?.annual_savings_eur?.point) || Number(latest?.total_savings) || undefined,
+    provider_slug: inputSnapshot?.provider_slug || undefined,
+    country: inputSnapshot?.country || undefined,
+    channel: engineResult?.cohort?.channel === "in_store" ? "in_store" : "online",
+    uiContext: "generic",
+  });
+  const isHighValue = () => {
+    const ctx = buildCtaContext();
+    return (
+      (isFinite(ctx.gmv_eur_monthly) && ctx.gmv_eur_monthly >= CALL_GMV_MONTHLY_EUR) ||
+      (isFinite(ctx.annual_savings_eur) && ctx.annual_savings_eur >= CALL_ANNUAL_SAVINGS_EUR)
+    );
+  };
+  const handleStartRecovery = () => {
+    if (isHighValue()) setCallOpen(true);
+    else setCollectiveOpen(true);
+  };
 
   return (
     <div className="space-y-6 pb-10">
@@ -290,94 +318,12 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* ── SAVINGS HERO ── */}
-      <div
-        className="relative rounded-3xl p-6 sm:p-8 overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)",
-          border: "1px solid rgba(255,255,255,0.10)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
-          boxShadow: "0 30px 80px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(96,165,250,0.18)",
-        }}
-      >
-        {/* ambient halo */}
-        <div
-          aria-hidden
-          className="absolute pointer-events-none"
-          style={{
-            width: 500, height: 500, right: "-10%", top: "-30%",
-            background: "radial-gradient(circle, rgba(34,211,238,0.18) 0%, transparent 70%)",
-            filter: "blur(70px)",
-          }}
-        />
-        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-          <div className="flex-1 min-w-0">
-            <div className={`inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded-full border text-[10px] uppercase tracking-[0.18em] font-bold ${heroBadge.cls}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${heroBadge.dot}`} />
-              {heroBadge.label}
-            </div>
-            <p className="text-[10px] uppercase tracking-[0.22em] text-white/45 font-bold mb-2">{t("identified_potential")}</p>
-            <p
-              className="tabular-nums leading-none"
-              style={{
-                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-                fontSize: "clamp(2.5rem, 8vw, 4.5rem)",
-                fontWeight: 900,
-                letterSpacing: "-0.05em",
-                background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #22d3ee 100%)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                filter: "drop-shadow(0 0 22px rgba(34,211,238,0.35))",
-              }}
-            >
-              {formatEur(latest.total_savings)}<span className="text-[0.35em] font-bold text-white/40 ml-2" style={{ WebkitTextFillColor: "rgba(255,255,255,0.4)" }}>/{t("per_yr_short")}</span>
-            </p>
-            {/* Confidence band — same presentation as the Results report:
-                big figure (total_savings = the point) + lo–hi range underneath.
-                GUARD: only when details.savings_range exists with a valid
-                lo–hi (legacy/incurable rows have no range → no band, never a
-                broken/empty band). */}
-            {isFinite(latest?.details?.savings_range?.lo) && isFinite(latest?.details?.savings_range?.hi) && (
-              <p className="text-[12px] text-white/50 mt-2">
-                Estimated range{" "}
-                <span className="text-white/75 font-semibold tabular-nums">
-                  {formatEur(latest.details.savings_range.lo)}–{formatEur(latest.details.savings_range.hi)}
-                </span>{" "}/{t("per_yr_short")}
-              </p>
-            )}
-            <p className="text-sm text-white/60 mt-3 max-w-md">{heroSubtitle}</p>
-            {/* Honesty caption — only when not verified. Uses `active_days`
-                parsed from the AnalyzerResult's assumptions string. */}
-            {verificationStatus !== "verified" && activeDays != null && (
-              <p className="text-[11px] text-white/40 mt-2 max-w-md italic">
-                Extrapolado desde {activeDays} {activeDays === 1 ? "día activo" : "días activos"} — conecta más histórico para consolidar
-              </p>
-            )}
-          </div>
-
-          <div className="shrink-0 w-full sm:w-auto sm:max-w-xs">
-            {verificationStatus === "verified" ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/10 text-emerald-300 text-xs font-bold">
-                <CheckCircle2 size={11} /> {t("payments_verified")}
-              </div>
-            ) : verificationStatus === "pending_verification" ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-blue-400/25 bg-blue-400/10 text-blue-300 text-xs font-bold">
-                <Sparkles size={11} /> {t("payments_provisional")}
-              </div>
-            ) : (
-              <UpgradeToVerified
-                vertical="payments"
-                currentConfidence="estimated"
-                isConnected={false}
-                onConnect={() => { window.location.href = "/ConnectTools"; }}
-              />
-            )}
-          </div>
-        </div>
-      </div>
+      {/* ── SAVINGS HERO v2 — single source of truth (engine_result), gauge, CTAs ── */}
+      <DashboardHeroV2
+        latest={latest}
+        stripeConnected={stripeConnected}
+        onStartRecovery={handleStartRecovery}
+      />
 
       {/* Quick stats — payments only (FASE 1.1) */}
       <div className="grid grid-cols-1 gap-3">
@@ -524,6 +470,20 @@ export default function Dashboard() {
           </div>
         </Link>
       </div>
+
+      {/* Recovery destinations — collective (primary) / call (high value). */}
+      <CollectiveModal
+        open={collectiveOpen}
+        onClose={() => setCollectiveOpen(false)}
+        context={buildCtaContext()}
+        onSwitch={() => { setCollectiveOpen(false); setCallOpen(true); }}
+      />
+      <BookCallModal
+        open={callOpen}
+        onClose={() => setCallOpen(false)}
+        context={buildCtaContext()}
+        onSwitch={() => { setCallOpen(false); setCollectiveOpen(true); }}
+      />
     </div>
   );
 }
