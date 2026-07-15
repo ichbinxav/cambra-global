@@ -100,44 +100,35 @@ export function derivePaymentsInsights(engineResult, inputSnapshot) {
         }
       : { available: false };
 
-  // ── 3. ACHIEVABLE FLOOR, DECOMPOSED (interchange + scheme + NEGOTIABLE margin) ─
-  // Online only (auditable split). This is the composition of the ACHIEVABLE
-  // rate — the floor you could reach — NOT your current blended rate. The three
-  // layers (interchange + scheme + margin) sum to the achievable percent rate;
-  // the margin layer is the ONLY negotiable piece and is exactly what CAMBRA
-  // recovers. €/layer/year = layer bps × annual GMV. Coherence: these numbers
-  // describe the achievable floor's makeup, and are labeled as such in the UI —
-  // never conflated with the (higher) current-rate total-fees figure.
+  // ── 3. YOUR CURRENT RATE, DECOMPOSED (hard floor + movable zone) ──────────
+  // COHERENCE (validated against real data): this decomposes the CURRENT rate
+  // the merchant pays today — NOT the achievable floor. The two parts sum to
+  // current_effective_bps EXACTLY:
+  //   hard_floor  = interchange_bps + scheme_bps  (regulated — never moves)
+  //   movable     = current_effective_bps − hard_floor  (processor margin +
+  //                 fixed-fee amortization + intl uplift — the optimizable zone)
+  // The achievable processor margin (from the same assumption line) lives
+  // INSIDE the movable zone and is surfaced as the negotiable highlight — but
+  // it is never added on top (that would double-count). €/part/year = part bps
+  // × annual GMV. Online only (in-store has no auditable interchange split).
   const composition = parseAchievableBreakdown(er.assumptions);
-  const layered =
-    composition && annualGmv != null && channel === "online"
-      ? {
-          available: true,
-          achievable_bps: achievableBps,
-          margin_recoverable_annual:
-            annualGmv * (composition.processor_margin_bps / BPS_PER_UNIT),
-          layers: [
-            {
-              key: "interchange",
-              bps: composition.interchange_bps,
-              annual_eur: annualGmv * (composition.interchange_bps / BPS_PER_UNIT),
-              negotiable: false,
-            },
-            {
-              key: "scheme",
-              bps: composition.scheme_fees_bps,
-              annual_eur: annualGmv * (composition.scheme_fees_bps / BPS_PER_UNIT),
-              negotiable: false,
-            },
-            {
-              key: "margin",
-              bps: composition.processor_margin_bps,
-              band_bps: composition.processor_margin_band_bps,
-              annual_eur: annualGmv * (composition.processor_margin_bps / BPS_PER_UNIT),
-              negotiable: true,
-            },
-          ],
-        }
+  const currentRate =
+    composition && annualGmv != null && currentBps != null && channel === "online"
+      ? (() => {
+          const hardFloorBps = composition.interchange_bps + composition.scheme_fees_bps;
+          const movableBps = currentBps - hardFloorBps;
+          return {
+            available: true,
+            current_bps: currentBps,
+            hard_floor_bps: hardFloorBps,
+            movable_bps: movableBps,
+            hard_floor_annual: annualGmv * (hardFloorBps / BPS_PER_UNIT),
+            movable_annual: annualGmv * (movableBps / BPS_PER_UNIT),
+            // The negotiable processor margin (achievable floor's margin) sits
+            // inside the movable zone — shown as the recoverable highlight.
+            negotiable_margin_bps: composition.processor_margin_bps,
+          };
+        })()
       : { available: false, reason: channel === "in_store" ? "in_store" : "no_composition" };
 
   // ── 4. CARD MIX & COST (debit/credit + domestic/intl, €/segment) ──────────
@@ -243,7 +234,7 @@ export function derivePaymentsInsights(engineResult, inputSnapshot) {
     channel,
     totalFees,        // 1
     gmvEffective,     // 2
-    layered,          // 3
+    currentRate,      // 3
     debitCredit,      // 4a
     domesticIntl,     // 4b
     perTransaction,   // 5

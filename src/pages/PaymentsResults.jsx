@@ -653,9 +653,10 @@ export default function PaymentsResults() {
             </div>
           )}
           <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} />
-          {!isAnonymous && (
-            <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
-          )}
+          {/* Phase 1·B — insights shown in the anonymous teaser too. The
+              input_snapshot is not sensitive (the user typed it), and the
+              "here's exactly what you overpay" breakdown drives signup. */}
+          <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
           {ctaBlock}
           {/* Locked breakdown — one of the main signup conversion drivers:
               render the SHAPE, blur the numbers, show a padlock. */}

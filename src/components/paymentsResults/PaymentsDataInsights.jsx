@@ -20,6 +20,7 @@ const eur = (n) => (isFinite(n) ? "€" + Math.round(n).toLocaleString("en-US") 
 const eur2 = (n) => (isFinite(n) ? "€" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—");
 const pct = (n) => (isFinite(n) ? n.toFixed(2) + "%" : "—");
 const int = (n) => (isFinite(n) ? Math.round(n).toLocaleString("en-US") : "—");
+const bpsToPctLocal = (bps) => (isFinite(bps) ? bps / 100 : null);
 
 const bigNum = { fontFamily: MONO, fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1 };
 
@@ -53,17 +54,17 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot }) {
 
   if (!engineResult) return null;
 
-  const { totalFees, gmvEffective, layered, debitCredit, domesticIntl, perTransaction, crossBorder, fixedDrag } = ins;
+  const { totalFees, gmvEffective, currentRate, debitCredit, domesticIntl, perTransaction, crossBorder, fixedDrag } = ins;
 
   // Nothing to show → render nothing (honest).
   const anyAvailable =
-    totalFees.available || gmvEffective.available || layered.available ||
+    totalFees.available || gmvEffective.available || currentRate.available ||
     debitCredit.available || domesticIntl.available || perTransaction.available ||
     crossBorder.available || fixedDrag.available;
   if (!anyAvailable) return null;
 
-  // Layered bars scale to the largest layer.
-  const maxLayerBps = layered.available ? Math.max(...layered.layers.map((l) => l.bps)) : 1;
+  // Current-rate bars scale to the current rate (hard floor + movable = current).
+  const currentMaxBps = currentRate.available ? currentRate.current_bps : 1;
 
   return (
     <div className="space-y-4">
@@ -88,7 +89,7 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot }) {
 
         {/* 2 — GMV + effective % */}
         {gmvEffective.available && (
-          <InsightCard label={t("ins_effective_label")} note={t("ins_effective_note", { pct: pct(gmvEffective.effective_pct) })} accent="cyan">
+          <InsightCard label={t("ins_effective_label")} note={t("ins_effective_note", { pct: isFinite(gmvEffective.effective_pct) ? gmvEffective.effective_pct.toFixed(2) : "—" })} accent="cyan">
             <div className="flex items-baseline gap-2">
               <span className="tabular-nums" style={{ ...bigNum, color: "#67e8f9" }}>{pct(gmvEffective.effective_pct)}</span>
             </div>
@@ -98,22 +99,37 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot }) {
           </InsightCard>
         )}
 
-        {/* 3 — Blended → layered (interchange + scheme + negotiable margin) */}
-        {layered.available && (
-          <InsightCard label={t("ins_layered_title")} note={t("ins_layered_sub")} span={2} accent="cyan">
+        {/* 3 — YOUR CURRENT RATE, decomposed (hard floor + movable zone).
+            hard_floor + movable = current_bps EXACT (validated). The movable
+            zone is where the recoverable money lives — highlighted. */}
+        {currentRate.available && (
+          <InsightCard
+            label={t("ins_currentrate_title")}
+            note={t("ins_currentrate_sub", {
+              rate: pct(bpsToPctLocal(currentRate.current_bps)),
+              floor: pct(bpsToPctLocal(currentRate.hard_floor_bps)),
+              movable: pct(bpsToPctLocal(currentRate.movable_bps)),
+            })}
+            span={2}
+            accent="cyan"
+          >
             <div className="space-y-3.5 mt-1">
-              {layered.layers.map((l) => (
-                <SegBar
-                  key={l.key}
-                  label={l.key === "interchange" ? t("ins_layer_interchange") : l.key === "scheme" ? t("ins_layer_scheme") : t("ins_layer_margin")}
-                  valueLabel={`${eur(l.annual_eur)}${t("ins_layer_per_year")}`}
-                  pctOfMax={(l.bps / maxLayerBps) * 100}
-                  color={l.negotiable ? "linear-gradient(90deg, #22d3ee 0%, #3b82f6 100%)" : l.key === "interchange" ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.38)"}
-                  negotiable={l.negotiable}
-                  negotiableLabel={t("ins_layer_negotiable")}
-                  note={l.key === "interchange" ? t("ins_layer_interchange_note") : l.key === "scheme" ? t("ins_layer_scheme_note") : t("ins_layer_margin_note")}
-                />
-              ))}
+              <SegBar
+                label={`${t("ins_currentrate_floor")} · ${pct(bpsToPctLocal(currentRate.hard_floor_bps))}`}
+                valueLabel={`${eur(currentRate.hard_floor_annual)}${t("ins_layer_per_year")}`}
+                pctOfMax={(currentRate.hard_floor_bps / currentMaxBps) * 100}
+                color="rgba(255,255,255,0.45)"
+                note={t("ins_currentrate_floor_note")}
+              />
+              <SegBar
+                label={`${t("ins_currentrate_movable")} · ${pct(bpsToPctLocal(currentRate.movable_bps))}`}
+                valueLabel={`${eur(currentRate.movable_annual)}${t("ins_layer_per_year")}`}
+                pctOfMax={(currentRate.movable_bps / currentMaxBps) * 100}
+                color="linear-gradient(90deg, #22d3ee 0%, #3b82f6 100%)"
+                negotiable
+                negotiableLabel={t("ins_currentrate_recoverable")}
+                note={t("ins_currentrate_movable_note")}
+              />
             </div>
           </InsightCard>
         )}
