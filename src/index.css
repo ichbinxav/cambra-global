@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,6 +7,22 @@
 @layer base {
   :root {
     --font-inter: 'Inter', 'Space Grotesk', system-ui, sans-serif;
+
+    /* ══════════════════════════════════════════════════════════════
+       DA v1.1 — TOKENS (Chunk 1). Additive: named CSS variables used
+       by the new .eyebrow / .kw* / .panel-dark / .btn-primary / .dot-grid
+       utilities below. They do NOT redefine the existing HSL theme
+       tokens above — legacy surfaces keep rendering exactly as before.
+       ══════════════════════════════════════════════════════════════ */
+    --ink:#0C0C16; --paper:#FAFAFC;
+    --voltio:#5B4CF5; --voltio-2:#8B7BFF; --cian:#39C6F0;
+    --menta:#2FE0A8; --menta-dark:#0FA97A;
+    --coral:#F45B69; --coral-2:#FF8A6B;
+    --gris-1:#585868; --gris-2:#9A9AAB; --linea:#E9E9F2;
+    --g-voltio:linear-gradient(120deg,#5B4CF5 0%,#8B7BFF 55%,#39C6F0 100%);
+    --g-menta:linear-gradient(120deg,#0FA97A 0%,#2FE0A8 100%);
+    --g-coral:linear-gradient(120deg,#F45B69 0%,#FF8A6B 100%);
+    --g-aurora:radial-gradient(ellipse 90% 70% at 50% 110%,rgba(91,76,245,.5),rgba(57,198,240,.15) 55%,transparent 75%);
 
     /* CAMBRA OS — light base */
     --background: 0 0% 99.5%;        /* off-white global base */
@@ -983,4 +999,85 @@ body {
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DA v1.1 — CHUNK 1: Typography hierarchy + utility classes.
+   Style-only, additive. No logic, no data, no copy.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Part A — global type hierarchy.
+   Headings + hero figures → Space Grotesk. Body/UI → Inter.
+   Data labels / numeric badges → JetBrains Mono (via .eyebrow + .mono-num).
+   These reinforce the existing h1/h2/h3 rules with the DA letter-spacing;
+   line-heights already tuned above are preserved (not overridden here). */
+h1, h2, h3, .font-display {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.02em;
+}
+body, p {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Numeric/data label helper — JetBrains Mono for table figures + badges. */
+.mono-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Part C — utility classes */
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--voltio);
+}
+.kw   { background: var(--g-voltio); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.kw-m { background: var(--g-menta);  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.kw-c { background: var(--g-coral);  -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.dot-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(91,76,245,.25) 1px, transparent 1.5px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse 60% 60% at 100% 100%, black, transparent 70%);
+  mask-image: radial-gradient(ellipse 60% 60% at 100% 100%, black, transparent 70%);
+}
+
+.panel-dark {
+  position: relative;
+  overflow: hidden;
+  background: #0E0E1A;
+  border-radius: 14px;
+}
+.panel-dark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--g-aurora);
+  pointer-events: none;
+}
+
+/* Part D — .btn-primary (DA v1.1). Replaces the legacy .btn-primary
+   token-based rule earlier in this file; only Navbar.jsx consumes the
+   class, and it is a landing primary CTA — exactly the intended target. */
+.btn-primary {
+  background: var(--g-voltio);
+  color: #fff;
+  border-radius: 99px;
+  padding: 14px 26px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(91,76,245,.28);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px rgba(91,76,245,.38);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary { transition: none; }
 }
