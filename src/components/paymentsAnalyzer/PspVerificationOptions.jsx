@@ -69,46 +69,55 @@ export default function PspVerificationOptions({ providerSlug, providerLabel, on
       </p>
 
       {isLiveVerified ? (
-        // ── CONNECT path — Stripe today (env-key operator flow behind the
-        //    /ConnectTools screen). Copy is honest: it's a connection, and it
-        //    measures real data.
-        <button
-          type="button"
-          onClick={() => onConnect?.()}
-          className="w-full text-left rounded-2xl p-4 transition-all duration-150 hover:scale-[1.005] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
-          style={{
-            background: "rgba(34,211,238,0.06)",
-            border: "1px solid rgba(34,211,238,0.30)",
-          }}
-        >
-          <div className="flex items-start gap-3">
-            <div
-              className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", color: "rgb(103,232,249)" }}
-            >
-              <Zap size={16} strokeWidth={1.8} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="text-white text-[14px] font-bold leading-tight" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
-                  Connect {label}
-                </h4>
-                <span
-                  className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
-                  style={{ background: "rgba(34,211,238,0.10)", color: "rgb(103,232,249)", border: "1px solid rgba(34,211,238,0.30)" }}
-                >
-                  <ShieldCheck size={8} /> Verified
+        // ── Stripe: BOTH paths. Connect (fastest, real data) is the primary
+        //    option; uploading statements is offered as an alternative for
+        //    merchants who'd rather not connect their account.
+        <div className="space-y-2.5">
+          <button
+            type="button"
+            onClick={() => onConnect?.()}
+            className="w-full text-left rounded-2xl p-4 transition-all duration-150 hover:scale-[1.005] focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+            style={{
+              background: "rgba(34,211,238,0.06)",
+              border: "1px solid rgba(34,211,238,0.30)",
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", color: "rgb(103,232,249)" }}
+              >
+                <Zap size={16} strokeWidth={1.8} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="text-white text-[14px] font-bold leading-tight" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
+                    Connect {label}
+                  </h4>
+                  <span
+                    className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
+                    style={{ background: "rgba(34,211,238,0.10)", color: "rgb(103,232,249)", border: "1px solid rgba(34,211,238,0.30)" }}
+                  >
+                    <ShieldCheck size={8} /> Verified
+                  </span>
+                </div>
+                <p className="text-[12px] text-white/60 leading-relaxed">
+                  We measure your actual effective rate from 90 days of real transactions — no estimation.
+                </p>
+                <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-cyan-300">
+                  Connect {label} <ArrowRight size={11} />
                 </span>
               </div>
-              <p className="text-[12px] text-white/60 leading-relaxed">
-                We measure your actual effective rate from 90 days of real transactions — no estimation.
-              </p>
-              <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-cyan-300">
-                Connect {label} <ArrowRight size={11} />
-              </span>
             </div>
-          </div>
-        </button>
+          </button>
+
+          {/* Alternative — upload statements instead of connecting. Same
+              extraction-gated copy as every other PSP. */}
+          <StatementUploadCard
+            providerLabel={label}
+            extractionLive={extractionLive}
+          />
+        </div>
       ) : (
         // ── UPLOAD path — every other PSP. Copy gated by extraction_live.
         <StatementUploadCard
