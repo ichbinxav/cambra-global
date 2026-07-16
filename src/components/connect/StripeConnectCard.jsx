@@ -343,7 +343,7 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
               disabled={computing || busy}
               className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[11px] font-bold text-white disabled:opacity-60 shrink-0"
               style={{
-                background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)",
                 boxShadow: "0 6px 20px -8px rgba(34,211,238,0.55)",
               }}
             >

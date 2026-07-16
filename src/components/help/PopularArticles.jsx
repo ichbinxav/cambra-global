@@ -46,8 +46,8 @@ export default function PopularArticles() {
                     <span
                       className="text-[10px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full"
                       style={{
-                        color: cat?.accent || "#60a5fa",
-                        background: `${cat?.accent || "#60a5fa"}18`,
+                        color: cat?.accent || "#8B7BFF",
+                        background: `${cat?.accent || "#8B7BFF"}18`,
                       }}
                     >
                       {cat?.title || item.category}

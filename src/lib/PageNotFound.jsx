@@ -27,7 +27,7 @@ export default function PageNotFound() {
       style={{
         color: "#ffffff",
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 35%, #0a0d18 65%, #08090f 100%)",
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 35%, #0a0d18 65%, #0E0E1A 100%)",
       }}
     >
       {/* Ambient grid */}

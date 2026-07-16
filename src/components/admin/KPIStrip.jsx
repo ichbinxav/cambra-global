@@ -3,10 +3,10 @@ import React from "react";
 // Map a Tailwind text color class to a bright variant that pops on navy
 const TEXT_ON_NAVY = {
   "text-purple-600": "text-[#C49AFF]",
-  "text-green-600":  "text-[#52EBA4]",
+  "text-green-600":  "text-[#2FE0A8]",
   "text-amber-600":  "text-[#FFC85A]",
   "text-red-600":    "text-[#FF8A8A]",
-  "text-blue-600":   "text-[#7AA8FF]",
+  "text-blue-600":   "text-[#8B7BFF]",
   "text-foreground": "text-white",
 };
 

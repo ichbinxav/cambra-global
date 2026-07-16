@@ -61,7 +61,7 @@ export default function Account() {
           display: "inline-block",
           width: 32, height: 32, borderRadius: "50%",
           border: "2px solid rgba(255,255,255,0.12)",
-          borderTopColor: "#22d3ee",
+          borderTopColor: "#39C6F0",
           animation: "cambra-spin 0.8s linear infinite",
         }}
       />

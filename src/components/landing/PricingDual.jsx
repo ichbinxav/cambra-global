@@ -42,7 +42,7 @@ const RECOVERY_FEATURES = [
 ];
 
 function Eyebrow({ children, accent = "white" }) {
-  const color = accent === "cyan" ? "#22d3ee" : "rgba(255,255,255,0.55)";
+  const color = accent === "cyan" ? "#39C6F0" : "rgba(255,255,255,0.55)";
   return (
     <div className="flex items-center gap-2">
       <span
@@ -118,7 +118,7 @@ function Tier({
                 ...(priceGradient
                   ? {
                       background:
-                        "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #22d3ee 100%)",
+                        "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #39C6F0 100%)",
                       WebkitBackgroundClip: "text",
                       backgroundClip: "text",
                       WebkitTextFillColor: "transparent",
@@ -213,7 +213,7 @@ function MonitoringPriceRow() {
             letterSpacing: "-0.055em",
             lineHeight: 0.9,
             background:
-              "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #22d3ee 100%)",
+              "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #39C6F0 100%)",
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",
@@ -303,7 +303,7 @@ export default function PricingDual() {
             Free until we{" "}
             <span
               style={{
-                background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+                background: "linear-gradient(135deg, #8B7BFF 0%, #39C6F0 100%)",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 WebkitTextFillColor: "transparent",

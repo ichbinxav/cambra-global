@@ -14,7 +14,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { X, PhoneCall, CheckCircle2, Loader2 } from "lucide-react";
 
-const MONO = "'IBM Plex Mono', ui-monospace, monospace";
+const MONO = "'JetBrains Mono', ui-monospace, monospace";
 // Placeholder — when a real Calendly link exists, set it here and the modal
 // will show a "Pick a time" button that opens it (in addition to recording
 // the request). Empty = form-only flow.
@@ -105,7 +105,7 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch })
                 {t("call_success_title")}
               </h3>
               <p className="text-[14px] text-white/60 leading-snug max-w-xs mx-auto">{t("call_success_body")}</p>
-              <button onClick={onClose} className="mt-5 inline-flex items-center justify-center h-10 rounded-full px-6 text-sm font-bold text-white hover:opacity-90" style={{ background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)" }}>
+              <button onClick={onClose} className="mt-5 inline-flex items-center justify-center h-10 rounded-full px-6 text-sm font-bold text-white hover:opacity-90" style={{ background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)" }}>
                 {t("coll_done")}
               </button>
             </div>
@@ -113,7 +113,7 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch })
             <>
               <div className="flex items-center gap-2 mb-1">
                 <PhoneCall size={14} className="text-cyan-300" />
-                <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#5f6f88" }}>{t("call_eyebrow")}</span>
+                <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#585868" }}>{t("call_eyebrow")}</span>
               </div>
               <h3 className="text-white font-black mb-2" style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: 26, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
                 {t("call_title")}
@@ -153,7 +153,7 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch })
                 onClick={submit}
                 disabled={!canSubmit}
                 className="w-full h-12 rounded-full text-sm font-bold text-white inline-flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)", boxShadow: "0 0 28px rgba(34,211,238,0.30)" }}
+                style={{ background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)", boxShadow: "0 0 28px rgba(34,211,238,0.30)" }}
               >
                 {status === "submitting" ? <><Loader2 size={16} className="animate-spin" /> {t("call_submitting")}</> : t("call_submit")}
               </button>

@@ -65,7 +65,7 @@ export default function JoinWaitlistButton({
         style={{
           border: "1px solid rgba(34,211,238,0.35)",
           background: "rgba(34,211,238,0.08)",
-          color: "#a5f3fc",
+          color: "#7BD9F0",
         }}
         role="status"
         aria-live="polite"

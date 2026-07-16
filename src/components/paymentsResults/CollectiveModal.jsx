@@ -19,7 +19,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { X, Users, CheckCircle2, Loader2, ArrowRight } from "lucide-react";
 
-const MONO = "'IBM Plex Mono', ui-monospace, monospace";
+const MONO = "'JetBrains Mono', ui-monospace, monospace";
 
 function eur(n) {
   if (!isFinite(n)) return null;
@@ -126,7 +126,7 @@ export default function CollectiveModal({ open, onClose, context = {}, onSwitch 
               <button
                 onClick={onClose}
                 className="mt-5 inline-flex items-center justify-center h-10 rounded-full px-6 text-sm font-bold text-white hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)" }}
+                style={{ background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)" }}
               >
                 {t("coll_done")}
               </button>
@@ -135,7 +135,7 @@ export default function CollectiveModal({ open, onClose, context = {}, onSwitch 
             <>
               <div className="flex items-center gap-2 mb-1">
                 <Users size={14} className="text-cyan-300" />
-                <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#5f6f88" }}>
+                <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#585868" }}>
                   {t("coll_eyebrow")}
                 </span>
               </div>
@@ -164,7 +164,7 @@ export default function CollectiveModal({ open, onClose, context = {}, onSwitch 
                   <span className="text-[11px] uppercase tracking-[0.14em] font-bold text-white/50">
                     {t("coll_gmv_label")} <span className="text-white/35 normal-case tracking-normal">· {t("coll_gmv_note")}</span>
                   </span>
-                  <span className="tabular-nums font-bold text-[15px]" style={{ fontFamily: MONO, color: "#67e8f9" }}>{gmvLabel}</span>
+                  <span className="tabular-nums font-bold text-[15px]" style={{ fontFamily: MONO, color: "#7BD9F0" }}>{gmvLabel}</span>
                 </div>
               )}
 
@@ -172,7 +172,7 @@ export default function CollectiveModal({ open, onClose, context = {}, onSwitch 
                 onClick={submit}
                 disabled={!canSubmit}
                 className="w-full h-12 rounded-full text-sm font-bold text-white inline-flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)", boxShadow: "0 0 28px rgba(34,211,238,0.30)" }}
+                style={{ background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)", boxShadow: "0 0 28px rgba(34,211,238,0.30)" }}
               >
                 {status === "submitting" ? <><Loader2 size={16} className="animate-spin" /> {t("coll_submitting")}</> : <>{t("coll_submit")} <ArrowRight size={16} /></>}
               </button>

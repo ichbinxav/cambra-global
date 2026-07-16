@@ -17,9 +17,9 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { TrendingDown, TrendingUp, LineChart as LineChartIcon } from "lucide-react";
 
 const DATE_LOCALES = { en: "en-GB", fr: "fr-FR", es: "es-ES" };
-const RATE_COLOR = "#67e8f9";    // cyan — effective rate
-const SAVINGS_COLOR = "#34d399"; // emerald — identified savings
-const VERIFIED_RING = "#34d399";
+const RATE_COLOR = "#7BD9F0";    // cyan — effective rate
+const SAVINGS_COLOR = "#2FE0A8"; // emerald — identified savings
+const VERIFIED_RING = "#2FE0A8";
 
 function dayLabel(ts, lang) {
   try {
@@ -54,7 +54,7 @@ export default function AnalysisTrendPanel({ rows }) {
 
   const rateImproved = trend.rate_delta_pct <= 0; // lower rate = better
   const DeltaIcon = rateImproved ? TrendingDown : TrendingUp;
-  const deltaColor = rateImproved ? "#34d399" : "#f87171";
+  const deltaColor = rateImproved ? "#2FE0A8" : "#F45B69";
   const deltaAbs = Math.abs(trend.rate_delta_pct).toFixed(2);
 
   return (
@@ -85,7 +85,7 @@ export default function AnalysisTrendPanel({ rows }) {
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
               <LineChartIcon size={13} className="text-cyan-300" />
-              <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#5f6f88" }}>
+              <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#585868" }}>
                 {t("trend_eyebrow")}
               </span>
             </div>

@@ -23,7 +23,7 @@ export default function LoadingScreen({
       style={{
         color: "#ffffff",
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 35%, #0a0d18 65%, #08090f 100%)",
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 35%, #0a0d18 65%, #0E0E1A 100%)",
       }}
     >
       {/* Ambient grid */}
@@ -73,8 +73,8 @@ export default function LoadingScreen({
           style={{
             width: 12,
             height: 12,
-            background: "#22d3ee",
-            boxShadow: "0 0 20px #22d3ee, 0 0 40px rgba(34,211,238,0.55)",
+            background: "#39C6F0",
+            boxShadow: "0 0 20px #39C6F0, 0 0 40px rgba(34,211,238,0.55)",
           }}
         />
       </div>

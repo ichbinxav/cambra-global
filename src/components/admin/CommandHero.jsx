@@ -1,9 +1,9 @@
 import React from "react";
 
 const ACCENT_GRADIENTS = [
-  "linear-gradient(135deg, #ffffff 0%, #B8D8E0 50%, #2CA7C1 100%)",
+  "linear-gradient(135deg, #ffffff 0%, #B8D8E0 50%, #39C6F0 100%)",
   "linear-gradient(135deg, #ffffff 0%, #FFD9B0 50%, #FB923C 100%)",
-  "linear-gradient(135deg, #ffffff 0%, #BBE5C6 50%, #22C55E 100%)",
+  "linear-gradient(135deg, #ffffff 0%, #BBE5C6 50%, #2FE0A8 100%)",
 ];
 
 function MetricBlock({ label, value, helper, accent, gradient }) {

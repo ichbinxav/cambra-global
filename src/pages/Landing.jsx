@@ -382,9 +382,11 @@ function LandingFooter() {
   return (
     <footer
       style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
-      className="py-10"
+      className="py-10 relative overflow-hidden"
     >
-      <div className="max-w-6xl mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* DA v1.1 — decorative dot-grid corner (footer) */}
+      <div className="dot-grid" aria-hidden />
+      <div className="relative max-w-6xl mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.45)" }}>
             <span className="font-black text-white" style={{ letterSpacing: "-0.04em" }}>CAMBRA</span>
@@ -415,7 +417,7 @@ export default function Landing() {
         color: "#ffffff",
         // Continuous editorial gradient — no flat #0a0a0a "cuts" between sections
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
       }}
     >
       {/* Fixed ambient noise/grid that unifies every section */}
@@ -437,6 +439,8 @@ export default function Landing() {
       <LandingJsonLd />
       <Navbar />
       <main className="relative">
+        {/* DA v1.1 — decorative dot-grid corner (hero) */}
+        <div className="dot-grid" aria-hidden />
         <Hero />
         {/* M4-TPV Fase 2B — RESTAURADO 2026-07-12 tras Fase 2A-redo verificada
             (motor 1.4.0 en las 3 copias SYNC + 19 filas seed + retrocompat

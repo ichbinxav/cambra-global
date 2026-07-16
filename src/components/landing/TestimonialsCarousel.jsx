@@ -108,7 +108,7 @@ export default function TestimonialsCarousel() {
           What brands actually{" "}
           <span
             style={{
-              background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+              background: "linear-gradient(135deg, #8B7BFF 0%, #39C6F0 100%)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -146,7 +146,7 @@ export default function TestimonialsCarousel() {
 
             {/* category */}
             <div className="relative flex items-center gap-2 mb-4">
-              <Quote size={13} style={{ color: "#22d3ee" }} />
+              <Quote size={13} style={{ color: "#39C6F0" }} />
               <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-cyan-300">
                 {item.category}
               </span>
@@ -233,7 +233,7 @@ export default function TestimonialsCarousel() {
                     letterSpacing: "-0.03em",
                     lineHeight: 0.95,
                     background:
-                      "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #22d3ee 100%)",
+                      "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #39C6F0 100%)",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",

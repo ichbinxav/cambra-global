@@ -47,7 +47,7 @@ export default function Contact() {
       className="relative min-h-screen font-inter overflow-hidden text-white"
       style={{
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
       }}
     >
       <Navbar />
@@ -81,7 +81,7 @@ export default function Contact() {
               Get in{" "}
               <span
                 style={{
-                  background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+                  background: "linear-gradient(135deg, #8B7BFF 0%, #39C6F0 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
@@ -114,7 +114,7 @@ export default function Contact() {
                   style={{
                     border: "1px solid rgba(34,211,238,0.25)",
                     background: "rgba(34,211,238,0.10)",
-                    color: "#67e8f9",
+                    color: "#7BD9F0",
                   }}
                 >
                   <c.icon className="w-5 h-5" />

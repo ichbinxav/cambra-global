@@ -67,7 +67,7 @@ export default function FounderLetter() {
           A note from{" "}
           <span
             style={{
-              background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+              background: "linear-gradient(135deg, #8B7BFF 0%, #39C6F0 100%)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -151,7 +151,7 @@ export default function FounderLetter() {
                   fontWeight: 500,
                   letterSpacing: "-0.01em",
                   background:
-                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #22d3ee 100%)",
+                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #39C6F0 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",

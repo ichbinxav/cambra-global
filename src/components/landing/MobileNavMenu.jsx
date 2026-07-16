@@ -232,7 +232,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                     <div
                       aria-hidden
                       className="absolute -inset-0.5 rounded-full opacity-50 group-hover:opacity-80 blur-md transition-opacity"
-                      style={{ background: "linear-gradient(110deg, #1F4ED8, #2CA7C1)" }}
+                      style={{ background: "linear-gradient(110deg, #5B4CF5, #39C6F0)" }}
                     />
                     <div className="relative h-12 rounded-full bg-white text-[#06080F] font-bold text-[14px] inline-flex items-center justify-center gap-2 w-full overflow-hidden">
                       <Sparkles className="h-3.5 w-3.5" />
@@ -249,7 +249,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                       <div
                         aria-hidden
                         className="absolute -inset-0.5 rounded-full opacity-60 group-hover:opacity-90 blur-md transition-opacity"
-                        style={{ background: "linear-gradient(110deg, #1F4ED8, #2CA7C1)" }}
+                        style={{ background: "linear-gradient(110deg, #5B4CF5, #39C6F0)" }}
                       />
                       <div className="relative h-12 rounded-full bg-white text-[#06080F] font-bold text-[14px] inline-flex items-center justify-center gap-2 w-full overflow-hidden">
                         {/* Shimmer sweep */}

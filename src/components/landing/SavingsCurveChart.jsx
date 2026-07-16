@@ -281,9 +281,9 @@ export default function SavingsCurveChart({
       >
         <defs>
           <linearGradient id="curveStroke" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#3b82f6" />
-            <stop offset="55%" stopColor="#22d3ee" />
-            <stop offset="100%" stopColor="#a5f3fc" />
+            <stop offset="0%" stopColor="#5B4CF5" />
+            <stop offset="55%" stopColor="#39C6F0" />
+            <stop offset="100%" stopColor="#7BD9F0" />
           </linearGradient>
           <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="rgba(34,211,238,0.22)" />
@@ -367,7 +367,7 @@ export default function SavingsCurveChart({
         {/* Marker — minimal, brighter core */}
         <g>
           <circle cx={mx} cy={my} r="6" fill="#0b1020" stroke="rgba(34,211,238,1)" strokeWidth="1.75" />
-          <circle cx={mx} cy={my} r="2.5" fill="#22d3ee" />
+          <circle cx={mx} cy={my} r="2.5" fill="#39C6F0" />
         </g>
 
         {/* Live M{n} pill riding the marker — only after ~15% progress so it
@@ -383,7 +383,7 @@ export default function SavingsCurveChart({
             <text
               x="15" y="2.5"
               textAnchor="middle"
-              fill="#a5f3fc"
+              fill="#7BD9F0"
               fontSize="9"
               fontWeight="700"
               fontFamily="ui-monospace, SFMono-Regular, monospace"

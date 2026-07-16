@@ -15,9 +15,9 @@ import { useEffect, useRef, useState } from "react";
 // grade tone so extremes read correctly (A teal / F red).
 const ARC = {
   excellent: "#2dd4bf",
-  good:      "#60a5fa",
-  medium:    "#f5b544",
-  risk:      "#f87171",
+  good:      "#8B7BFF",
+  medium:    "#F5A623",
+  risk:      "#F45B69",
 };
 
 export default function ScoreGauge({ score = 0, grade = "F", tone = "medium", muted = false, size = 132 }) {
@@ -94,7 +94,7 @@ export default function ScoreGauge({ score = 0, grade = "F", tone = "medium", mu
         <div
           className="tabular-nums font-black leading-none"
           style={{
-            fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             fontSize: size * 0.30,
             color,
             textShadow: `0 0 5px ${color}59`,
@@ -106,7 +106,7 @@ export default function ScoreGauge({ score = 0, grade = "F", tone = "medium", mu
         <div
           className="uppercase font-bold tracking-[0.2em]"
           style={{
-            fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             fontSize: 9,
             color: "rgba(255,255,255,0.45)",
             marginTop: 2,

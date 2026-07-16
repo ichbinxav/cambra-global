@@ -129,7 +129,7 @@ export default function StopLeavingMarginCTA() {
           <span
             style={{
               background:
-                "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #22d3ee 100%)",
+                "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #39C6F0 100%)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",

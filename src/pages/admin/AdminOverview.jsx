@@ -217,11 +217,11 @@ export default function AdminOverview() {
 
   // SECTION 4 — DEAL PIPELINE (mini)
   const pipelineStages = [
-    { key: DEAL_STATUSES.SUBMITTED, label: "Submitted", color: "#3b82f6" },
+    { key: DEAL_STATUSES.SUBMITTED, label: "Submitted", color: "#5B4CF5" },
     { key: DEAL_STATUSES.IN_REVIEW, label: "In Review", color: "#f97316" },
-    { key: DEAL_STATUSES.PROVIDER_CONTACTED, label: "Provider Contacted", color: "#a855f7" },
-    { key: DEAL_STATUSES.OFFER_READY, label: "Offer Ready", color: "#f59e0b" },
-    { key: DEAL_STATUSES.ACTIVATED, label: "Activated", color: "#22c55e" },
+    { key: DEAL_STATUSES.PROVIDER_CONTACTED, label: "Provider Contacted", color: "#8B7BFF" },
+    { key: DEAL_STATUSES.OFFER_READY, label: "Offer Ready", color: "#F5A623" },
+    { key: DEAL_STATUSES.ACTIVATED, label: "Activated", color: "#2FE0A8" },
   ];
   const pipelineData = pipelineStages.map(s => ({
     ...s,

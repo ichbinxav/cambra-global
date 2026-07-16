@@ -44,7 +44,7 @@ export default function HelpHero({ onSearchOpen }) {
           <span
             className="inline-block"
             style={{
-              background: "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)",
+              background: "linear-gradient(135deg, #8B7BFF 0%, #39C6F0 100%)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",

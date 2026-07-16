@@ -25,7 +25,7 @@ export default function VerticalStatusBadge({ status }) {
     complete: {
       Icon: CheckCircle2,
       label: "Complete",
-      className: "bg-[#52EBA4]/15 border-[#52EBA4]/35 text-[#0a8250]",
+      className: "bg-[#2FE0A8]/15 border-[#2FE0A8]/35 text-[#0a8250]",
     },
     partial: {
       Icon: AlertCircle,

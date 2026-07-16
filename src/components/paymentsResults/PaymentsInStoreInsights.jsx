@@ -181,7 +181,7 @@ export default function PaymentsInStoreInsights({ engineResult, inputSnapshot, p
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mt-1">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.14em] text-white/40 mb-1" style={{ fontFamily: MONO }}>{t("instore_subpayg_crossover")}</p>
-                <span className="tabular-nums" style={{ ...bigNum, color: "#67e8f9", fontSize: 24 }}>{eur(subVsPayg.crossover_gmv_eur)}</span>
+                <span className="tabular-nums" style={{ ...bigNum, color: "#7BD9F0", fontSize: 24 }}>{eur(subVsPayg.crossover_gmv_eur)}</span>
                 <span className="text-[11px] text-white/40 ml-1">{t("ins_per_month_full")}</span>
               </div>
               <div>

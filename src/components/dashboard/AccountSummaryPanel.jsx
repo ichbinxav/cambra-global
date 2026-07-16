@@ -24,9 +24,9 @@ const bigNum = { fontFamily: MONO, fontSize: 26, fontWeight: 800, letterSpacing:
 // Confidence meter — 3 filled segments = verified, 2 = provisional, 1 = estimated.
 const CONF_LEVEL = { verified: 3, pending_verification: 2, estimated: 1 };
 const CONF_COLOR = {
-  verified: "#34d399",           // emerald
-  pending_verification: "#60a5fa", // blue
-  estimated: "#f5b544",          // amber
+  verified: "#2FE0A8",           // emerald
+  pending_verification: "#8B7BFF", // blue
+  estimated: "#F5A623",          // amber
 };
 const CONF_KEY = {
   verified: "acct_conf_verified",
@@ -103,7 +103,7 @@ export default function AccountSummaryPanel({ rows }) {
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
               <Layers size={13} className="text-cyan-300" />
-              <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#5f6f88" }}>
+              <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#585868" }}>
                 {channelLabel}
               </span>
             </div>
@@ -113,7 +113,7 @@ export default function AccountSummaryPanel({ rows }) {
             <p className="text-[12px] text-white/45 mt-1">{t("acct_sub", { n: acc.count })}</p>
           </div>
           <div className="text-right shrink-0">
-            <p className="uppercase font-bold mb-1.5" style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.16em", color: "#5f6f88" }}>
+            <p className="uppercase font-bold mb-1.5" style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.16em", color: "#585868" }}>
               {t("acct_confidence")}
             </p>
             <ConfidenceMeter level={acc.confidence} />
@@ -126,13 +126,13 @@ export default function AccountSummaryPanel({ rows }) {
             <span className="tabular-nums text-white/90" style={bigNum}>{eur(acc.total_annual_gmv)}</span>
           </Stat>
           <Stat label={t("acct_total_fees")} accent="red">
-            <EuroCountUp value={acc.total_annual_fees} className="tabular-nums" style={{ ...bigNum, color: "#f87171" }} />
+            <EuroCountUp value={acc.total_annual_fees} className="tabular-nums" style={{ ...bigNum, color: "#F45B69" }} />
           </Stat>
           <Stat label={t("acct_blended_rate")} accent="cyan" note={t("acct_blended_note")}>
-            <span className="tabular-nums" style={{ ...bigNum, color: "#67e8f9" }}>{pct(acc.blended_effective_pct)}</span>
+            <span className="tabular-nums" style={{ ...bigNum, color: "#7BD9F0" }}>{pct(acc.blended_effective_pct)}</span>
           </Stat>
           <Stat label={t("acct_total_savings")} accent="emerald" note={t("acct_savings_note")}>
-            <EuroCountUp value={acc.total_annual_savings} className="tabular-nums" style={{ ...bigNum, color: "#34d399" }} />
+            <EuroCountUp value={acc.total_annual_savings} className="tabular-nums" style={{ ...bigNum, color: "#2FE0A8" }} />
           </Stat>
         </div>
 

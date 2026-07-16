@@ -12,7 +12,7 @@ const STATUS_CONFIG = {
 };
 
 function ScoreGauge({ score }) {
-  const color = score >= 75 ? "#22c55e" : score >= 55 ? "#f97316" : "#ef4444";
+  const color = score >= 75 ? "#2FE0A8" : score >= 55 ? "#f97316" : "#F45B69";
   const circ = 2 * Math.PI * 34;
   return (
     <div className="relative w-24 h-24 mx-auto">
@@ -117,8 +117,8 @@ export default function StripeResults({ data }) {
         </div>
         <div className="p-5 space-y-4">
           {[
-            { label: "Your rate", pct: data.effective_fee_pct, max: 4, color: "#ef4444", barW: (data.effective_fee_pct / 4) * 100 },
-            { label: "CAMBRA network benchmark", pct: data.benchmark_fee_pct, max: 4, color: "#22c55e", barW: (data.benchmark_fee_pct / 4) * 100 },
+            { label: "Your rate", pct: data.effective_fee_pct, max: 4, color: "#F45B69", barW: (data.effective_fee_pct / 4) * 100 },
+            { label: "CAMBRA network benchmark", pct: data.benchmark_fee_pct, max: 4, color: "#2FE0A8", barW: (data.benchmark_fee_pct / 4) * 100 },
           ].map((row, i) => (
             <div key={i}>
               <div className="flex justify-between mb-1.5">

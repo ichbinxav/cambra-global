@@ -69,7 +69,7 @@ export default function CombinedChannelSection({
         <h2
           className="uppercase font-black"
           style={{
-            fontFamily: "'IBM Plex Mono', ui-monospace, monospace",
+            fontFamily: "'JetBrains Mono', ui-monospace, monospace",
             fontSize: 13,
             letterSpacing: "0.18em",
             color: meta.color,

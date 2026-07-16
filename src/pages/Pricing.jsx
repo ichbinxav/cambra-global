@@ -65,7 +65,7 @@ function SplitVisual() {
                   letterSpacing: "-0.05em",
                   lineHeight: 0.9,
                   background:
-                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #22d3ee 100%)",
+                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #39C6F0 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
@@ -103,7 +103,7 @@ function SplitVisual() {
                 style={{
                   width: "75%",
                   background:
-                    "linear-gradient(90deg, #60a5fa 0%, #22d3ee 100%)",
+                    "linear-gradient(90deg, #8B7BFF 0%, #39C6F0 100%)",
                   boxShadow: "0 0 16px rgba(34,211,238,0.5)",
                 }}
               />
@@ -153,7 +153,7 @@ export default function Pricing() {
       className="relative min-h-screen font-inter overflow-hidden text-white"
       style={{
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
       }}
     >
       <Navbar />
@@ -222,7 +222,7 @@ export default function Pricing() {
               <span
                 style={{
                   background:
-                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #22d3ee 100%)",
+                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #39C6F0 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",

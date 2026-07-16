@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 import { computePaymentsBenchmark } from "@/lib/paymentsBenchmark.js";
 import { useTranslation } from "@/lib/i18n.jsx";
 
-const MONO = "'IBM Plex Mono', ui-monospace, monospace";
+const MONO = "'JetBrains Mono', ui-monospace, monospace";
 
 // SVG viewport (internal coords; scales via width=100%).
 const W = 640;
@@ -86,9 +86,9 @@ export default function PeerBenchmark({ engineResult, country }) {
   const pct = (bps) => (bps / 100).toFixed(2) + "%";
 
   const MARKERS = [
-    { key: "top10",  bps: markers.top10Bps,  label: t("bench_top10"),  sub: pct(markers.top10Bps),  color: "#34d399", dashed: false, pulse: false },
-    { key: "median", bps: markers.medianBps, label: t("bench_median"), sub: pct(markers.medianBps), color: "#60a5fa", dashed: true,  pulse: false },
-    { key: "you",    bps: markers.youBps,    label: t("bench_you"),    sub: pct(markers.youBps),    color: "#f5b544", dashed: false, pulse: true },
+    { key: "top10",  bps: markers.top10Bps,  label: t("bench_top10"),  sub: pct(markers.top10Bps),  color: "#2FE0A8", dashed: false, pulse: false },
+    { key: "median", bps: markers.medianBps, label: t("bench_median"), sub: pct(markers.medianBps), color: "#8B7BFF", dashed: true,  pulse: false },
+    { key: "you",    bps: markers.youBps,    label: t("bench_you"),    sub: pct(markers.youBps),    color: "#F5A623", dashed: false, pulse: true },
   ];
 
   // Flip the template when the merchant is at/below the peer median: they're
@@ -128,9 +128,9 @@ export default function PeerBenchmark({ engineResult, country }) {
           </h3>
           <span
             className="inline-flex items-center gap-1.5 uppercase font-bold px-2 py-1 rounded-full shrink-0"
-            style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(255,255,255,0.05)", color: "#8a97ad", border: "1px solid rgba(255,255,255,0.12)" }}
+            style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(255,255,255,0.05)", color: "#9A9AAB", border: "1px solid rgba(255,255,255,0.12)" }}
           >
-            <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#f5b544", boxShadow: "0 0 6px rgba(245,181,68,0.5)" }} />
+            <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#F5A623", boxShadow: "0 0 6px rgba(245,181,68,0.5)" }} />
             {country ? t("bench_regional", { country }) : t("bench_regional_nocountry")}
           </span>
         </div>
@@ -139,8 +139,8 @@ export default function PeerBenchmark({ engineResult, country }) {
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" className="block" style={{ overflow: "visible" }}>
           <defs>
             <linearGradient id="pbFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.16" />
-              <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
+              <stop offset="0%" stopColor="#39C6F0" stopOpacity="0.16" />
+              <stop offset="100%" stopColor="#39C6F0" stopOpacity="0" />
             </linearGradient>
           </defs>
 
@@ -158,7 +158,7 @@ export default function PeerBenchmark({ engineResult, country }) {
           <path
             d={d}
             fill="none"
-            stroke="#3b82f6"
+            stroke="#5B4CF5"
             strokeWidth="2"
             strokeLinecap="round"
             strokeDasharray={pathLen}
@@ -208,13 +208,13 @@ export default function PeerBenchmark({ engineResult, country }) {
                 {m.pulse && <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: m.color }} />}
                 {m.label}
               </span>
-              <span className="tabular-nums font-semibold" style={{ fontFamily: MONO, fontSize: 11, color: "#8a97ad" }}>{m.sub}</span>
+              <span className="tabular-nums font-semibold" style={{ fontFamily: MONO, fontSize: 11, color: "#9A9AAB" }}>{m.sub}</span>
             </div>
           ))}
         </div>
 
         {/* axis labels ← cheaper / pricier → */}
-        <div className="mt-2 flex items-center justify-between" style={{ fontFamily: MONO, fontSize: 10, color: "#5f6f88" }}>
+        <div className="mt-2 flex items-center justify-between" style={{ fontFamily: MONO, fontSize: 10, color: "#585868" }}>
           <span>← {t("bench_axis_cheaper")}</span>
           <span>{t("bench_axis_pricier")} →</span>
         </div>
@@ -227,7 +227,7 @@ export default function PeerBenchmark({ engineResult, country }) {
           <p className="text-[13px] leading-snug" style={{ color: "#e8eef7" }}
              dangerouslySetInnerHTML={{
                __html: t(calloutKey, { pct: displayPct, country: country || "" })
-                 .replace(`~${displayPct}%`, `<strong style="color:#f5b544;font-family:${MONO}">~${displayPct}%</strong>`),
+                 .replace(`~${displayPct}%`, `<strong style="color:#F5A623;font-family:${MONO}">~${displayPct}%</strong>`),
              }}
           />
         </div>

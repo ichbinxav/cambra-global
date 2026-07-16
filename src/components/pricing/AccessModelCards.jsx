@@ -38,8 +38,8 @@ export default function AccessModelCards() {
       >
         {/* Ambient analytical gradient */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-32 -right-24 w-80 h-80 rounded-full blur-3xl opacity-[0.18]" style={{ background: "radial-gradient(closest-side, #1F4ED8, transparent)" }} />
-          <div className="absolute -bottom-32 -left-24 w-72 h-72 rounded-full blur-3xl opacity-[0.14]" style={{ background: "radial-gradient(closest-side, #2CA7C1, transparent)" }} />
+          <div className="absolute -top-32 -right-24 w-80 h-80 rounded-full blur-3xl opacity-[0.18]" style={{ background: "radial-gradient(closest-side, #5B4CF5, transparent)" }} />
+          <div className="absolute -bottom-32 -left-24 w-72 h-72 rounded-full blur-3xl opacity-[0.14]" style={{ background: "radial-gradient(closest-side, #39C6F0, transparent)" }} />
           <div
             className="absolute inset-0 opacity-[0.5]"
             style={{
@@ -203,7 +203,7 @@ export default function AccessModelCards() {
           <h3 className="font-display text-[clamp(1.75rem,3.4vw,2.4rem)] font-black tracking-[-0.035em] leading-[1] mb-3">
             <span
               style={{
-                background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #2CA7C1 100%)",
+                background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #39C6F0 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
@@ -221,7 +221,7 @@ export default function AccessModelCards() {
             <span
               className="font-display text-[clamp(3rem,6vw,4.5rem)] font-black tracking-[-0.05em] leading-none tabular-nums"
               style={{
-                background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #2CA7C1 100%)",
+                background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #39C6F0 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",

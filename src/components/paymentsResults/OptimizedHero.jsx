@@ -75,7 +75,7 @@ export default function OptimizedHero({ engineResult, inputSnapshot, t, onRerun 
           fontWeight: 900,
           letterSpacing: "-0.035em",
           lineHeight: 1.05,
-          background: "linear-gradient(135deg, #ffffff 0%, #6ee7b7 100%)",
+          background: "linear-gradient(135deg, #ffffff 0%, #2FE0A8 100%)",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
           backgroundClip: "text",

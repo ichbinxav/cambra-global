@@ -165,7 +165,7 @@ export default function ActionCenter({
               onClick={onCta}
               className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 inline-flex items-center justify-center transition-opacity"
               style={{
-                background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)",
                 boxShadow: "0 0 32px rgba(34,211,238,0.32), 0 12px 32px -12px rgba(34,211,238,0.5)",
               }}
             >

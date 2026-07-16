@@ -272,7 +272,7 @@ export default function ProblemSectionWow() {
             Independent brands overpay{" "}
             <span
               style={{
-                background: "linear-gradient(135deg, #ef4444 0%, #f97316 50%, #ec4899 100%)",
+                background: "linear-gradient(135deg, #F45B69 0%, #f97316 50%, #8B7BFF 100%)",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -361,7 +361,7 @@ export default function ProblemSectionWow() {
                   letterSpacing: "-0.05em",
                   lineHeight: 0.95,
                   background:
-                    "linear-gradient(135deg, #ffffff 0%, #fca5a5 50%, #ef4444 100%)",
+                    "linear-gradient(135deg, #ffffff 0%, #FF8A6B 50%, #F45B69 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",

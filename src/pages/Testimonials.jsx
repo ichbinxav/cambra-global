@@ -52,7 +52,7 @@ export default function Testimonials() {
       className="relative min-h-screen font-inter overflow-hidden text-white"
       style={{
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
       }}
     >
       <Navbar />
@@ -85,7 +85,7 @@ export default function Testimonials() {
             <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-4 text-white">
               <span
                 style={{
-                  background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #22d3ee 100%)",
+                  background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #39C6F0 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",

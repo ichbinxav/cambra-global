@@ -21,9 +21,9 @@ const MAX_TOASTS = 3;
 
 const VARIANT = {
   success: { bg: "rgba(16,185,129,0.15)", border: "rgba(16,185,129,0.45)", dot: "#10b981", role: "status", aria: "polite" },
-  error:   { bg: "rgba(239,68,68,0.15)",  border: "rgba(239,68,68,0.45)",  dot: "#ef4444", role: "alert",  aria: "assertive" },
-  info:    { bg: "rgba(59,130,246,0.15)", border: "rgba(59,130,246,0.45)", dot: "#3b82f6", role: "status", aria: "polite" },
-  warning: { bg: "rgba(245,158,11,0.15)", border: "rgba(245,158,11,0.45)", dot: "#f59e0b", role: "status", aria: "polite" },
+  error:   { bg: "rgba(239,68,68,0.15)",  border: "rgba(239,68,68,0.45)",  dot: "#F45B69", role: "alert",  aria: "assertive" },
+  info:    { bg: "rgba(59,130,246,0.15)", border: "rgba(59,130,246,0.45)", dot: "#5B4CF5", role: "status", aria: "polite" },
+  warning: { bg: "rgba(245,158,11,0.15)", border: "rgba(245,158,11,0.45)", dot: "#F5A623", role: "status", aria: "polite" },
 };
 
 function ToastItem({ t, onDismiss }) {

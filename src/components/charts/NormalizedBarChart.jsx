@@ -75,7 +75,7 @@ export default function NormalizedBarChart({
           <Tooltip content={<DefaultTooltip />} cursor={{ fill: "hsl(var(--secondary))", radius: 6 }} wrapperStyle={{ outline: "none" }} />
           <Bar dataKey="scaled" radius={[6, 6, 0, 0]} label={renderLabel}>
             {processed.map((entry, i) => (
-              <Cell key={`cell-${i}`} fill={entry.fill || "#3b82f6"} fillOpacity={0.9} />
+              <Cell key={`cell-${i}`} fill={entry.fill || "#5B4CF5"} fillOpacity={0.9} />
             ))}
           </Bar>
         </BarChart>

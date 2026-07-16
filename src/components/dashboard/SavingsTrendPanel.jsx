@@ -20,7 +20,7 @@ function qualityBadge(q, t) {
 }
 
 const VERIFIED_COLOR = "#10b981"; // emerald-500
-const ESTIMATED_COLOR = "#f59e0b"; // amber-500
+const ESTIMATED_COLOR = "#F5A623"; // amber-500
 
 export default function SavingsTrendPanel({ brandId, identifiedMonthly = 0 }) {
   const { t, lang } = useTranslation();

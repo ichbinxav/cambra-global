@@ -18,7 +18,7 @@ export default function HowItWorks() {
       className="relative min-h-screen font-inter overflow-hidden text-white"
       style={{
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #08090f 100%)",
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
       }}
     >
       <Navbar />
@@ -55,7 +55,7 @@ export default function HowItWorks() {
             <h1 className="font-display text-[clamp(2.4rem,6vw,4.4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5 text-white">
               <span
                 style={{
-                  background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #22d3ee 100%)",
+                  background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #39C6F0 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
@@ -115,7 +115,7 @@ export default function HowItWorks() {
                       </div>
 
                       <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-black tracking-[-0.035em] leading-[1] mb-3">
-                        <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                        <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #39C6F0 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                           {step.title}
                         </span>
                       </h2>

@@ -37,7 +37,7 @@ export default function DashboardLayout() {
       style={{
         color: "#ffffff",
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #0E0E1A 100%)",
       }}
     >
       {/* Desktop Sidebar — premium dark editorial */}

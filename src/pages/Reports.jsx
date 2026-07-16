@@ -89,7 +89,7 @@ export default function Reports() {
               display: "inline-block",
               width: 32, height: 32, borderRadius: "50%",
               border: "2px solid rgba(255,255,255,0.12)",
-              borderTopColor: "#22d3ee",
+              borderTopColor: "#39C6F0",
               animation: "cambra-spin 0.8s linear infinite",
             }}
           />
@@ -149,7 +149,7 @@ export default function Reports() {
                     formatter={v => [`€${v?.toLocaleString()}/yr`]}
                   />
                   <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16, color: "rgba(255,255,255,0.7)" }} />
-                  <Bar dataKey="Payments" fill="#7AA8FF" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Payments" fill="#8B7BFF" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               </div>
@@ -186,7 +186,7 @@ export default function Reports() {
                    return steps.map(s => (
                      <li key={s.key} className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
                        <div className="flex items-center gap-3">
-                         {s.done ? <CheckCircle2 className="w-4 h-4 text-[#52EBA4]" /> : <Circle className="w-4 h-4 text-white/30" />}
+                         {s.done ? <CheckCircle2 className="w-4 h-4 text-[#2FE0A8]" /> : <Circle className="w-4 h-4 text-white/30" />}
                          <span className={`text-sm ${s.done ? "font-semibold text-white" : "text-white/65"}`}>{s.label}</span>
                          {s.hint && <span className="text-[11px] text-white/55">· {s.hint}</span>}
                        </div>
@@ -257,7 +257,7 @@ export default function Reports() {
                  <div className="divide-y divide-white/[0.06] relative">
                  {results.map((r, i) => {
                    const score = r.infra_score || 0;
-                   const scoreColor = score >= 75 ? "text-[#52EBA4] bg-[#52EBA4]/10 border-[#52EBA4]/25" : score >= 50 ? "text-[#7BD9F0] bg-[#7BD9F0]/10 border-[#7BD9F0]/25" : score >= 30 ? "text-[#FFB05A] bg-[#FFB05A]/10 border-[#FFB05A]/25" : "text-[#FF7A6E] bg-[#FF7A6E]/10 border-[#FF7A6E]/25";
+                   const scoreColor = score >= 75 ? "text-[#2FE0A8] bg-[#2FE0A8]/10 border-[#2FE0A8]/25" : score >= 50 ? "text-[#7BD9F0] bg-[#7BD9F0]/10 border-[#7BD9F0]/25" : score >= 30 ? "text-[#FFB05A] bg-[#FFB05A]/10 border-[#FFB05A]/25" : "text-[#FF7A6E] bg-[#FF7A6E]/10 border-[#FF7A6E]/25";
                    return (
                  <Link key={r.id} to={`/Results?id=${r.id}`}>
                  <div className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.04] transition-colors group cursor-pointer">

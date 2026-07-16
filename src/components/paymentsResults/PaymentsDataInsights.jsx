@@ -80,7 +80,7 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot, comp
         {totalFees.available && (
           <InsightCard label={t("ins_total_fees_label")} note={t("ins_total_fees_note")} accent="red">
             <div className="flex items-baseline gap-2">
-              <EuroCountUp value={totalFees.annual} className="tabular-nums" style={{ ...bigNum, color: "#f87171" }} />
+              <EuroCountUp value={totalFees.annual} className="tabular-nums" style={{ ...bigNum, color: "#F45B69" }} />
               <span className="text-[11px] text-white/40">{t("ins_per_year_full")}</span>
             </div>
             <p className="text-[12px] text-white/50 mt-1" style={{ fontFamily: MONO }}>{eur(totalFees.monthly)} {t("ins_per_month_full")}</p>
@@ -91,7 +91,7 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot, comp
         {gmvEffective.available && (
           <InsightCard label={t("ins_effective_label")} note={t("ins_effective_note", { pct: isFinite(gmvEffective.effective_pct) ? gmvEffective.effective_pct.toFixed(2) : "—" })} accent="cyan">
             <div className="flex items-baseline gap-2">
-              <span className="tabular-nums" style={{ ...bigNum, color: "#67e8f9" }}>{pct(gmvEffective.effective_pct)}</span>
+              <span className="tabular-nums" style={{ ...bigNum, color: "#7BD9F0" }}>{pct(gmvEffective.effective_pct)}</span>
             </div>
             <p className="text-[12px] text-white/50 mt-1" style={{ fontFamily: MONO }}>
               {t("ins_gmv_label")}: {eur(gmvEffective.annual_gmv)}/{t("ins_per_year_full")}
@@ -125,7 +125,7 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot, comp
                 label={`${t("ins_currentrate_movable")} · ${pct(bpsToPctLocal(currentRate.movable_bps))}`}
                 valueLabel={`${eur(currentRate.movable_annual)}${t("ins_layer_per_year")}`}
                 pctOfMax={(currentRate.movable_bps / currentMaxBps) * 100}
-                color="linear-gradient(90deg, #22d3ee 0%, #3b82f6 100%)"
+                color="linear-gradient(90deg, #39C6F0 0%, #5B4CF5 100%)"
                 negotiable
                 negotiableLabel={t("ins_currentrate_recoverable")}
                 note={t("ins_currentrate_movable_note")}
@@ -165,7 +165,7 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot, comp
           <InsightCard label={t("ins_pertx_title")} note={t("ins_pertx_ticket", { ticket: eur2(perTransaction.avg_ticket) })} accent="cyan">
             <div className="flex items-baseline justify-between gap-3">
               <div>
-                <span className="tabular-nums" style={{ ...bigNum, color: "#67e8f9", fontSize: 24 }}>{eur2(perTransaction.cost_per_tx)}</span>
+                <span className="tabular-nums" style={{ ...bigNum, color: "#7BD9F0", fontSize: 24 }}>{eur2(perTransaction.cost_per_tx)}</span>
                 <p className="text-[10px] uppercase tracking-[0.14em] text-white/40 mt-1" style={{ fontFamily: MONO }}>{t("ins_pertx_cost")}</p>
               </div>
               <div className="text-right">
@@ -195,7 +195,7 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot, comp
           <InsightCard label={t("ins_fixeddrag_title")} accent="cyan"
             note={t("ins_fixeddrag_note", { ticket: eur2(fixedDrag.avg_ticket), fee: eur2(fixedDrag.fixed_fee_eur), drag: fixedDrag.drag_pct.toFixed(2) })}>
             <div className="flex items-baseline gap-2">
-              <span className="tabular-nums" style={{ ...bigNum, color: "#67e8f9", fontSize: 24 }}>+{pct(fixedDrag.drag_pct)}</span>
+              <span className="tabular-nums" style={{ ...bigNum, color: "#7BD9F0", fontSize: 24 }}>+{pct(fixedDrag.drag_pct)}</span>
             </div>
           </InsightCard>
         )}

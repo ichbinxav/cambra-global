@@ -365,7 +365,7 @@ export default function PaymentsAnalyzer() {
       style={{
         color: "#ffffff",
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #08090f 100%)",
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #0E0E1A 100%)",
       }}
     >
       {/* Ambient grid + halo — matches Analyzer/Results for visual continuity */}
@@ -399,7 +399,7 @@ export default function PaymentsAnalyzer() {
           className="h-full transition-all duration-500"
           style={{
             width: `${progress.pct}%`,
-            background: "linear-gradient(90deg, #3b82f6 0%, #22d3ee 100%)",
+            background: "linear-gradient(90deg, #5B4CF5 0%, #39C6F0 100%)",
             boxShadow: "0 0 12px rgba(34,211,238,0.55)",
           }}
         />
@@ -502,7 +502,7 @@ export default function PaymentsAnalyzer() {
                   style={
                     active
                       ? {
-                          background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                          background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)",
                           color: "#ffffff",
                           boxShadow: "0 4px 12px -4px rgba(34,211,238,0.55)",
                         }
@@ -694,7 +694,7 @@ export default function PaymentsAnalyzer() {
               disabled={!validation.valid || submitting}
               className="w-full h-12 rounded-full text-sm font-bold gap-2 text-white hover:opacity-90 disabled:opacity-40 transition-opacity"
               style={{
-                background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)",
                 boxShadow: "0 0 32px rgba(34,211,238,0.45), 0 12px 32px -12px rgba(34,211,238,0.6)",
               }}
             >

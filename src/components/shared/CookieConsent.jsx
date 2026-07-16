@@ -255,7 +255,7 @@ function Toggle({ checked, onChange, disabled }) {
       onClick={() => !disabled && onChange?.(!checked)}
       className="relative inline-flex h-6 w-10 shrink-0 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
       style={{
-        background: checked ? "#22d3ee" : "rgba(255,255,255,0.15)",
+        background: checked ? "#39C6F0" : "rgba(255,255,255,0.15)",
         opacity: disabled ? 0.6 : 1,
         cursor: disabled ? "not-allowed" : "pointer",
       }}

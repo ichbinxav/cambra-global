@@ -15,7 +15,7 @@ export default function StepGrid({ statuses }) {
       title: "Tell us about your brand",
       done: anyVerticalTouched,
       icon: Building2,
-      tone: "#7AA8FF",
+      tone: "#8B7BFF",
       desc: "Name, country, category.",
       cta: (
         <Link to="/BrandProfile" className="w-full">
@@ -31,7 +31,7 @@ export default function StepGrid({ statuses }) {
       done: (statuses?.payments?.completeness || 0) >= 50,
       desc: "Get your savings potential in 2 minutes.",
       icon: TrendingDown,
-      tone: "#52EBA4",
+      tone: "#2FE0A8",
       cta: (
         <Link to="/Analyzer" className="w-full">
           <Button className="w-full h-10 rounded-xl gap-1.5 bg-white text-[#06080F] hover:bg-white/90 font-semibold">
@@ -72,7 +72,7 @@ export default function StepGrid({ statuses }) {
             style={{ background: `radial-gradient(closest-side, ${s.tone}55, transparent)`, zIndex: 0 }}
           />
           {s.done && (
-            <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#52EBA4]/15 border border-[#52EBA4]/35 text-[9px] font-bold text-[#52EBA4]">
+            <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#2FE0A8]/15 border border-[#2FE0A8]/35 text-[9px] font-bold text-[#2FE0A8]">
               <CheckCircle2 className="w-2.5 h-2.5" /> DONE
             </span>
           )}

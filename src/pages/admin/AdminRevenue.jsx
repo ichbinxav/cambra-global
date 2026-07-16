@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import MonthlyReportsTable from "@/components/admin/MonthlyReportsTable";
 
-const COLORS = ["#3b82f6", "#22c55e", "#f97316", "#8b5cf6", "#f59e0b", "#06b6d4"];
+const COLORS = ["#5B4CF5", "#2FE0A8", "#f97316", "#8b5cf6", "#F5A623", "#06b6d4"];
 const REALIZED_STATUSES = ["invoiced", "paid"];
 
 export default function AdminRevenue() {
@@ -96,7 +96,7 @@ export default function AdminRevenue() {
               <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `€${v}`} />
               <Tooltip contentStyle={{ borderRadius: 8, fontSize: 11, border: "1px solid hsl(var(--border))" }}
                 formatter={v => [`€${v}`, "Monetized"]} />
-              <Bar dataKey="monetized" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="monetized" fill="#F5A623" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

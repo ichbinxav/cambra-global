@@ -10,12 +10,12 @@
 // picked from a small on-brand palette that reads well on dark surfaces.
 
 const PALETTE = [
-  { bg: "linear-gradient(135deg, #1F4ED8 0%, #22d3ee 100%)", fg: "#ffffff" },
-  { bg: "linear-gradient(135deg, #7c3aed 0%, #60a5fa 100%)", fg: "#ffffff" },
+  { bg: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)", fg: "#ffffff" },
+  { bg: "linear-gradient(135deg, #7c3aed 0%, #8B7BFF 100%)", fg: "#ffffff" },
   { bg: "linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%)", fg: "#04121a" },
   { bg: "linear-gradient(135deg, #f43f5e 0%, #fb923c 100%)", fg: "#ffffff" },
   { bg: "linear-gradient(135deg, #10b981 0%, #a3e635 100%)", fg: "#04121a" },
-  { bg: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)", fg: "#ffffff" },
+  { bg: "linear-gradient(135deg, #5B4CF5 0%, #8B7BFF 100%)", fg: "#ffffff" },
 ];
 
 function initialsOf(name = "") {

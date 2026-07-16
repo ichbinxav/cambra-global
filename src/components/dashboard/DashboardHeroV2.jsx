@@ -28,7 +28,7 @@ import { computePaymentsScore } from "@/lib/paymentsScore.js";
 import ScoreGauge from "@/components/paymentsResults/ScoreGauge";
 import EuroCountUp from "@/components/paymentsResults/EuroCountUp";
 
-const MONO = "'IBM Plex Mono', ui-monospace, monospace";
+const MONO = "'JetBrains Mono', ui-monospace, monospace";
 
 function eur(n) {
   if (!isFinite(n)) return "—";
@@ -111,7 +111,7 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
             {badge.label}
           </div>
 
-          <p className="uppercase font-bold mb-2.5" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.22em", color: "#5f6f88" }}>
+          <p className="uppercase font-bold mb-2.5" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.22em", color: "#585868" }}>
             Identified potential
           </p>
 
@@ -124,17 +124,17 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
                 fontSize: "clamp(44px, 9vw, 78px)",
                 letterSpacing: "-0.03em",
                 lineHeight: 1,
-                color: "#22d3ee",
+                color: "#39C6F0",
                 textShadow: "0 0 14px rgba(34,211,238,0.20)",
               }}
             />
-            <span className="text-[13px]" style={{ color: "#5f6f88" }}>/ year</span>
+            <span className="text-[13px]" style={{ color: "#585868" }}>/ year</span>
           </div>
 
           {isFinite(rangeLo) && isFinite(rangeHi) && (
-            <p className="text-[12px] mt-2.5" style={{ color: "#5f6f88" }}>
+            <p className="text-[12px] mt-2.5" style={{ color: "#585868" }}>
               Confidence band{" "}
-              <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#8a97ad" }}>
+              <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#9A9AAB" }}>
                 {eur(rangeLo)}–{eur(rangeHi)}
               </span>{" "}/ year
             </p>
@@ -152,12 +152,12 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
               className="mt-5 inline-flex items-center gap-2.5 flex-wrap rounded-xl px-4 py-2.5"
               style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
             >
-              <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.15em", color: "#5f6f88" }}>Effective rate</span>
-              <span className="tabular-nums font-bold text-[14px]" style={{ fontFamily: MONO, color: "#f87171" }}>
+              <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.15em", color: "#585868" }}>Effective rate</span>
+              <span className="tabular-nums font-bold text-[14px]" style={{ fontFamily: MONO, color: "#F45B69" }}>
                 {pctFromBps(current)} today
               </span>
-              <span style={{ color: "#5f6f88" }} aria-hidden="true">→</span>
-              <span className="tabular-nums font-bold text-[14px]" style={{ fontFamily: MONO, color: "#67e8f9" }}>
+              <span style={{ color: "#585868" }} aria-hidden="true">→</span>
+              <span className="tabular-nums font-bold text-[14px]" style={{ fontFamily: MONO, color: "#7BD9F0" }}>
                 {pctFromBps(achievable)} achievable
               </span>
             </div>
@@ -170,7 +170,7 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
               onClick={onStartRecovery}
               className="inline-flex items-center justify-center h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 transition-opacity"
               style={{
-                background: "linear-gradient(135deg, #1F4ED8 0%, #2CA7C1 100%)",
+                background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)",
                 boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
               }}
             >

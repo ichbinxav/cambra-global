@@ -2,7 +2,7 @@
 // Dark surface, subtle grid, monospace numbers, soft glow. Kept tiny + generic
 // so PaymentsDataInsights composes tiles without repeating chrome.
 
-const MONO = "'IBM Plex Mono', ui-monospace, monospace";
+const MONO = "'JetBrains Mono', ui-monospace, monospace";
 
 export default function InsightCard({ label, note, accent = "cyan", children, className = "", span = 1 }) {
   const accentColor = accent === "amber" ? "rgb(245,181,68)"

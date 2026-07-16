@@ -18,7 +18,7 @@ import ScoreGauge from "@/components/paymentsResults/ScoreGauge";
 import ScoreRecoveryCTA from "@/components/paymentsResults/ScoreRecoveryCTA";
 import EuroCountUp from "@/components/paymentsResults/EuroCountUp";
 
-const MONO = "'IBM Plex Mono', ui-monospace, monospace";
+const MONO = "'JetBrains Mono', ui-monospace, monospace";
 
 // Tone token → concrete colors (same mapping as the old badge).
 const TONE = {
@@ -84,7 +84,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
       <div className="relative z-10">
         {/* Eyebrow — cohort + verification tier + channel. Unchanged logic. */}
         <div className="flex items-center gap-2 mb-5 flex-wrap">
-          <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#5f6f88" }}>
+          <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#585868" }}>
             Payments gap · {inputSnapshot?.country || "—"}
           </span>
           {channel === "in_store" && (
@@ -179,7 +179,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
         )}
 
         {/* PIEZA B — LIVE FIGURE. */}
-        <p className="text-[13px] mb-2" style={{ color: "#8a97ad" }}>You're overpaying by roughly</p>
+        <p className="text-[13px] mb-2" style={{ color: "#9A9AAB" }}>You're overpaying by roughly</p>
         <div className="flex items-baseline gap-3 flex-wrap">
           <EuroCountUp
             value={isFinite(annual.point) ? annual.point : (annual.lo + annual.hi) / 2}
@@ -189,17 +189,17 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
               fontSize: "clamp(44px, 10vw, 82px)",
               letterSpacing: "-0.03em",
               lineHeight: 1,
-              color: "#22d3ee",
+              color: "#39C6F0",
               textShadow: "0 0 12px rgba(34,211,238,0.18)",
             }}
           />
-          <span className="text-[13px]" style={{ color: "#5f6f88" }}>/ year</span>
+          <span className="text-[13px]" style={{ color: "#585868" }}>/ year</span>
         </div>
-        <p className="text-[12px] mt-2.5" style={{ color: "#5f6f88" }}>
+        <p className="text-[12px] mt-2.5" style={{ color: "#585868" }}>
           {isFinite(annual.lo) && isFinite(annual.hi) && (
-            <>Range <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#8a97ad" }}>{eur(annual.lo)}–{eur(annual.hi)}</span> · </>
+            <>Range <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#9A9AAB" }}>{eur(annual.lo)}–{eur(annual.hi)}</span> · </>
           )}
-          about <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#8a97ad" }}>
+          about <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#9A9AAB" }}>
             {isFinite(monthly.point) ? eur(monthly.point) : `${eur(monthly.lo)}–${eur(monthly.hi)}`}
           </span> a month
         </p>
@@ -210,24 +210,24 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             className="mt-6 inline-flex items-center gap-2.5 flex-wrap rounded-xl px-4 py-3"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
           >
-            <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "#5f6f88" }}>Effective rate</span>
-            <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ fontFamily: MONO, color: "#f87171" }}>
+            <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "#585868" }}>Effective rate</span>
+            <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ fontFamily: MONO, color: "#F45B69" }}>
               {pctFromBps(current)} today
             </span>
-            <span style={{ color: "#5f6f88" }} aria-hidden="true">→</span>
-            <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ fontFamily: MONO, color: "#67e8f9" }}>
+            <span style={{ color: "#585868" }} aria-hidden="true">→</span>
+            <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ fontFamily: MONO, color: "#7BD9F0" }}>
               {pctFromBps(achievable)} achievable
             </span>
-            {gapPct && <span className="text-[12px]" style={{ color: "#5f6f88" }}>({gapPct} pts lower)</span>}
+            {gapPct && <span className="text-[12px]" style={{ color: "#585868" }}>({gapPct} pts lower)</span>}
           </div>
         ) : (
           <div className="mt-6 grid grid-cols-2 gap-3">
             <div className="rounded-xl p-4" style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.20)" }}>
               <p className="uppercase font-bold mb-1" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "rgba(248,113,113,0.8)" }}>You pay today</p>
-              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#f87171", textShadow: "0 0 8px rgba(248,113,113,0.18)" }}>
+              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#F45B69", textShadow: "0 0 8px rgba(248,113,113,0.18)" }}>
                 {pctFromBps(current)}
               </p>
-              <p className="text-[10px] mt-0.5" style={{ color: "#5f6f88" }}>
+              <p className="text-[10px] mt-0.5" style={{ color: "#585868" }}>
                 {isMeasured && txCount && daysCovered
                   ? <>Your rate, measured from {txCount} charges over {daysCovered} days</>
                   : <>effective, on {inputSnapshot?.provider_slug || "your PSP"}</>}
@@ -235,10 +235,10 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             </div>
             <div className="rounded-xl p-4" style={{ background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.25)" }}>
               <p className="uppercase font-bold mb-1" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "rgba(103,232,249,0.9)" }}>You should pay</p>
-              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#67e8f9", textShadow: "0 0 8px rgba(34,211,238,0.18)" }}>
+              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#7BD9F0", textShadow: "0 0 8px rgba(34,211,238,0.18)" }}>
                 {pctFromBps(achievable)}
               </p>
-              <p className="text-[10px] mt-0.5" style={{ color: "#5f6f88" }}>
+              <p className="text-[10px] mt-0.5" style={{ color: "#585868" }}>
                 {gapPct ? `${gapPct} pts below your current rate` : "achievable rate"}
               </p>
             </div>

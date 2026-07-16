@@ -23,7 +23,7 @@ export default function ConnectStatsBar({ connectedCount, uploadedCount }) {
         {stats.map((s, i) => (
           <div key={i} className="px-5 py-5 text-center">
             <p className="font-display text-3xl sm:text-4xl font-black tracking-tight leading-none mb-1.5"
-               style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #2CA7C1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", filter: "drop-shadow(0 0 18px rgba(44,167,193,0.3))" }}>
+               style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #39C6F0 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", filter: "drop-shadow(0 0 18px rgba(44,167,193,0.3))" }}>
               {s.value}
             </p>
             <p className="text-[10px] font-semibold tracking-[0.15em] uppercase text-white/35">{s.label}</p>
