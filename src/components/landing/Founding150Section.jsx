@@ -74,7 +74,7 @@ export default function Founding150Section() {
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
         >
           <img
-            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d75f12e30_image.png"
+            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/8fcff2fc6_hub-alpha2x.webp"
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
             width={600}
             height={600}
