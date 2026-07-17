@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Quote, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import InitialsAvatar from "@/components/shared/InitialsAvatar";
@@ -68,15 +68,27 @@ const ITEMS = [
 
 export default function TestimonialsCarousel() {
   const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
   const total = ITEMS.length;
   const item = ITEMS[idx];
 
   const prev = () => setIdx((i) => (i - 1 + total) % total);
   const next = () => setIdx((i) => (i + 1) % total);
 
+  // Auto-advance every 5s, paused on hover.
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => setIdx((i) => (i + 1) % total), 5000);
+    return () => clearInterval(id);
+  }, [paused, total]);
+
   return (
     <section id="testimonials" className="relative py-12 sm:py-16 overflow-hidden">
-      <div className="relative max-w-2xl mx-auto px-6 sm:px-10">
+      <div
+        className="relative max-w-2xl mx-auto px-6 sm:px-10"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
         <SectionHeading eyebrow="Real findings" className="mb-8">
           What brands
           <br />
