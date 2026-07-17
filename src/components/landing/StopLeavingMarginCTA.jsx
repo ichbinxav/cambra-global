@@ -70,15 +70,16 @@ export default function StopLeavingMarginCTA() {
       />
 
       <div className="relative max-w-3xl mx-auto px-6 sm:px-10 flex flex-col items-center text-center">
-        {/* Logo mark — centered above the headline */}
+        {/* Giant background C-mark — fills the whole pill as the brand watermark */}
         <motion.img
           src={BRAND_ASSETS.cMarkWhitePng}
-          alt="CAMBRA"
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          alt=""
+          aria-hidden
+          initial={{ opacity: 0, scale: 0.96 }}
+          whileInView={{ opacity: 0.06, scale: 1 }}
           viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="h-16 sm:h-20 w-auto mb-10 select-none"
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] max-w-none h-auto select-none"
           draggable={false}
         />
 

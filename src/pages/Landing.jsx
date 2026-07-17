@@ -212,7 +212,7 @@ function Hero() {
             width={600}
             height={600}
             fetchpriority="high"
-            className="relative hero-stack w-[88%] max-w-[600px] h-auto select-none lg:-ml-32 -mr-6 lg:mr-0"
+            className="relative hero-stack w-[88%] max-w-[600px] h-auto select-none lg:-ml-48 -mr-6 lg:mr-0"
             style={{ filter: "brightness(0.86)" }}
             draggable={false}
           />
