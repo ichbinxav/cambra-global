@@ -61,7 +61,7 @@ export default function SavingsCurveChart({
 
   // Geometry
   const W = 640, H = 260;
-  const PAD_L = 52, PAD_R = 24, PAD_T = 20, PAD_B = 36;
+  const PAD_L = 64, PAD_R = 28, PAD_T = 20, PAD_B = 44;
   const innerW = W - PAD_L - PAD_R;
   const innerH = H - PAD_T - PAD_B;
 
@@ -162,33 +162,33 @@ export default function SavingsCurveChart({
           <div>
             <div
               className="font-bold tabular-nums"
-              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "15px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--ink)" }}
+              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--ink)" }}
             >
               {perMonthStr}
             </div>
-            <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "var(--gris-2)" }}>
+            <div className="text-[11px] uppercase tracking-[0.16em] font-semibold mt-1.5" style={{ color: "var(--gris-1)" }}>
               /month
             </div>
           </div>
           <div style={{ borderLeft: "1px solid var(--linea)" }} className="pl-3">
             <div
               className="font-bold tabular-nums"
-              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "15px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--coral)" }}
+              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--coral)" }}
             >
               0.74pts
             </div>
-            <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "var(--gris-2)" }}>
+            <div className="text-[11px] uppercase tracking-[0.16em] font-semibold mt-1.5" style={{ color: "var(--gris-1)" }}>
               rate saved
             </div>
           </div>
           <div style={{ borderLeft: "1px solid var(--linea)" }} className="pl-3">
             <div
               className="font-bold tabular-nums"
-              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "15px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--menta-dark)" }}
+              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--menta-dark)" }}
             >
               ~7%
             </div>
-            <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "var(--gris-2)" }}>
+            <div className="text-[11px] uppercase tracking-[0.16em] font-semibold mt-1.5" style={{ color: "var(--gris-1)" }}>
               of profit
             </div>
           </div>
@@ -228,10 +228,11 @@ export default function SavingsCurveChart({
               strokeDasharray={i === 0 ? "0" : "2 4"}
             />
             <text
-              x={PAD_L - 10} y={t.y + 4}
+              x={PAD_L - 12} y={t.y + 5}
               textAnchor="end"
-              fill="rgba(12,12,22,0.45)"
-              fontSize="10"
+              fill="rgba(12,12,22,0.6)"
+              fontSize="15"
+              fontWeight="600"
               fontFamily="ui-monospace, SFMono-Regular, monospace"
             >
               {t.label}
@@ -246,10 +247,11 @@ export default function SavingsCurveChart({
           return (
             <text
               key={i}
-              x={p.x} y={H - 12}
+              x={p.x} y={H - 14}
               textAnchor="middle"
-              fill="rgba(12,12,22,0.40)"
-              fontSize="10"
+              fill="rgba(12,12,22,0.55)"
+              fontSize="14"
+              fontWeight="600"
               fontFamily="ui-monospace, SFMono-Regular, monospace"
             >
               {monthLabels[i]}
@@ -288,22 +290,22 @@ export default function SavingsCurveChart({
         {/* Live M{n} pill — flips to the LEFT of the marker near the right
             edge so the label never gets clipped when the curve reaches the end. */}
         {progress > 0.15 && (() => {
-          const pillW = 30;
-          const flip = mx + 12 + pillW > W - PAD_R;
-          const pillX = flip ? mx - 12 - pillW : mx + 12;
+          const pillW = 42;
+          const flip = mx + 14 + pillW > W - PAD_R;
+          const pillX = flip ? mx - 14 - pillW : mx + 14;
           return (
-            <g transform={`translate(${pillX}, ${my - 10})`} opacity={progress}>
+            <g transform={`translate(${pillX}, ${my - 12})`} opacity={progress}>
               <rect
-                x="0" y="-9" width={pillW} height="16" rx="8"
+                x="0" y="-12" width={pillW} height="22" rx="11"
                 fill="#0b1020"
                 stroke="rgba(139,123,255,0.5)"
                 strokeWidth="0.75"
               />
               <text
-                x={pillW / 2} y="2.5"
+                x={pillW / 2} y="3"
                 textAnchor="middle"
                 fill="#8B7BFF"
-                fontSize="9"
+                fontSize="13"
                 fontWeight="700"
                 fontFamily="ui-monospace, SFMono-Regular, monospace"
                 letterSpacing="0.05em"
