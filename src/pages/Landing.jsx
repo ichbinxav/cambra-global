@@ -6,7 +6,6 @@ import SectionLabel from "@/components/shared/SectionLabel";
 import SectionHeading from "@/components/landing/SectionHeading";
 import Navbar from "@/components/landing/Navbar";
 import { useTranslation } from "@/lib/i18n.jsx"; // used by HowItWorksSection + LandingFooter
-import AuroraBackground from "@/components/landing/AuroraBackground";
 import AnimatedSection from "@/components/landing/AnimatedSection";
 import TestimonialsCarousel from "@/components/landing/TestimonialsCarousel";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
@@ -221,7 +220,7 @@ function Hero() {
             alt="CAMBRA — card payments audit: effective rate vs interchange floor, overpayment recovered"
             width={620}
             height={620}
-            fetchpriority="high"
+            fetchPriority="high"
             className="relative w-full max-w-none h-auto select-none lg:w-[135%] lg:-translate-x-[8%]"
             style={{ filter: "contrast(0.97)" }}
             draggable={false}
