@@ -424,9 +424,9 @@ export default function Landing() {
         className="pointer-events-none fixed inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(rgba(91,76,245,0.28) 1.3px, transparent 2px), radial-gradient(rgba(139,123,255,0.18) 1px, transparent 1.6px)",
-          backgroundSize: "34px 30px, 19px 23px",
-          backgroundPosition: "0 0, 11px 14px",
+            "radial-gradient(rgba(91,76,245,0.28) 1.3px, transparent 2px)",
+          backgroundSize: "34px 30px",
+          backgroundPosition: "0 0",
           opacity: 1,
           maskImage:
             "radial-gradient(120% 90% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 100%)",
