@@ -73,37 +73,16 @@ function LandingJsonLd() {
 function Hero() {
   const { t } = useTranslation();
   return (
-    <section
-      className="relative flex items-center overflow-hidden"
-      style={{
-        minHeight: "100vh",
-        color: "#ffffff",
-        paddingTop: 80,
-        background: "linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
-      }}
-    >
-      {/* Dot mesh over the dark hero — the reference texture. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(139,123,255,0.18) 1px, transparent 1.6px)",
-          backgroundSize: "28px 28px",
-          maskImage:
-            "radial-gradient(ellipse 70% 60% at 78% 20%, #000 0%, transparent 72%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 70% 60% at 78% 20%, #000 0%, transparent 72%)",
-          opacity: 0.8,
-        }}
-      />
+    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "var(--ink)", paddingTop: 80 }}>
+      {/* DA v1.1 Chunk 1d — Aurora navy removida sobre hero claro. Spotlight
+          reducido a un wash voltio suave (~25% opacidad) para no ensuciar. */}
       {/* eslint-disable-next-line no-unused-vars */}
       <motion.div
         aria-hidden
         className="absolute pointer-events-none"
         style={{
           width: 720, height: 720, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-          background: "radial-gradient(circle, rgba(91,76,245,0.22) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(91,76,245,0.08) 0%, transparent 70%)",
           filter: "blur(70px)",
         }}
         animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.85, 0.6] }}
@@ -116,9 +95,9 @@ function Hero() {
           <motion.div
             className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 mb-8 text-[10px] uppercase font-semibold"
             style={{
-              border: "1px solid rgba(255,255,255,0.14)",
-              color: "rgba(255,255,255,0.75)",
-              background: "rgba(255,255,255,0.05)",
+              border: "1px solid var(--linea)",
+              color: "var(--gris-1)",
+              background: "rgba(12,12,22,0.04)",
               letterSpacing: "0.14em",
             }}
             initial={{ opacity: 0, y: -8 }}
@@ -137,7 +116,7 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             style={{
-              color: "#ffffff",
+              color: "var(--ink)",
               fontSize: "clamp(46px, 7.8vw, 100px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
@@ -153,7 +132,7 @@ function Hero() {
 
           <motion.p
             className="mt-8"
-            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, color: "rgba(255,255,255,0.65)" }}
+            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, color: "var(--gris-1)" }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
@@ -182,11 +161,11 @@ function Hero() {
             </motion.div>
             <a
               href="#testimonials"
-              className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium transition-colors hover:border-white/40"
+              className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium transition-colors hover:border-[color:var(--ink)]"
               style={{
-                border: "1px solid rgba(255,255,255,0.18)",
-                color: "rgba(255,255,255,0.9)",
-                background: "rgba(255,255,255,0.04)",
+                border: "1px solid var(--linea)",
+                color: "var(--gris-1)",
+                background: "#fff",
               }}
             >
               {t("hero_cta_secondary")}
@@ -196,7 +175,7 @@ function Hero() {
           {/* Trust row */}
           <motion.div
             className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px]"
-            style={{ color: "rgba(255,255,255,0.5)" }}
+            style={{ color: "var(--gris-2)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.6 }}
@@ -503,21 +482,25 @@ export default function Landing() {
         background: "var(--paper)",
       }}
     >
-      {/* Fixed ambient DOT mesh — violet dots across the whole paper canvas,
-          the reference hero texture. Two offset layers (coarse + fine) with a
-          soft radial fade so it's densest mid-page and dissolves at the edges. */}
+      {/* Fixed ambient DOT mesh — violet dots across the whole paper canvas.
+          Two offset layers scattered in DIFFERENT directions (coarse layer
+          anchored top-left, fine layer anchored bottom-right + half-offset)
+          so the texture reads organic/random rather than a rigid grid. Two
+          soft radial fades (top-right + center-left) blend the mesh in without
+          any hard edge — nothing gets cut off at the bottom. */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(rgba(91,76,245,0.10) 1px, transparent 1.6px)",
-          backgroundSize: "30px 30px",
-          opacity: 0.6,
+            "radial-gradient(rgba(91,76,245,0.11) 1px, transparent 1.7px), radial-gradient(rgba(139,123,255,0.07) 0.9px, transparent 1.4px)",
+          backgroundSize: "34px 30px, 19px 23px",
+          backgroundPosition: "0 0, 11px 14px",
+          opacity: 0.65,
           maskImage:
-            "radial-gradient(ellipse 60% 55% at 78% 18%, #000 0%, transparent 70%)",
+            "radial-gradient(120% 90% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 100%)",
           WebkitMaskImage:
-            "radial-gradient(ellipse 60% 55% at 78% 18%, #000 0%, transparent 70%)",
+            "radial-gradient(120% 90% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 100%)",
         }}
       />
 
