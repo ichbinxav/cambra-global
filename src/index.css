@@ -1081,3 +1081,33 @@ body, p {
 @media (prefers-reduced-motion: reduce) {
   .btn-primary { transition: none; }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   DA v1.1 Chunk 1e — PAPER-FIRST UNIFICATION.
+   The public site is paper (light) by default. Sections built entirely
+   for a dark surface (white text) are wrapped in .section-ink so their
+   text stays legible — a navy block floating on the paper canvas,
+   exactly like the moodboard (How it works / Trust are dark blocks on
+   a light page). Style-only, additive.
+   ══════════════════════════════════════════════════════════════════ */
+.section-ink {
+  position: relative;
+  background: linear-gradient(180deg, #0b0e1a 0%, #0a0d18 50%, #0E0E1A 100%);
+  border-radius: 28px;
+  overflow: hidden;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 78rem;
+}
+@media (max-width: 640px) {
+  .section-ink { border-radius: 20px; }
+}
+/* subtle aurora inside the ink block, matches moodboard depth */
+.section-ink::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(91,76,245,0.14), transparent 65%);
+}
+.section-ink > * { position: relative; z-index: 1; }

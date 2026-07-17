@@ -366,28 +366,26 @@ function LandingFooter() {
   const { t } = useTranslation();
   return (
     <footer
-      style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+      style={{ borderTop: "1px solid var(--linea)" }}
       className="py-10 relative overflow-hidden"
     >
-      {/* DA v1.1 — decorative dot-grid corner (footer) */}
-      <div className="dot-grid" aria-hidden />
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-            <span className="font-black text-white" style={{ letterSpacing: "-0.04em" }}>CAMBRA</span>
+          <p className="text-[13px]" style={{ color: "var(--gris-1)" }}>
+            <span className="font-black" style={{ letterSpacing: "-0.04em", color: "var(--ink)" }}>CAMBRA</span>
             <span className="mx-2">·</span>
             {t("footer_tagline")}
           </p>
-          <p className="mt-2 text-[12px]" style={{ color: "rgba(255,255,255,0.30)" }}>
+          <p className="mt-2 text-[12px]" style={{ color: "var(--gris-2)" }}>
             CAMBRA GLOBAL SASU · SIREN 105 452 916 · 42 rue Vivienne, 75002 Paris, France · support@cambra.global
           </p>
         </div>
-        <div className="flex items-center gap-6 text-[13px] flex-wrap" style={{ color: "rgba(255,255,255,0.45)" }}>
-          <Link to="/ForProviders" className="hover:text-white transition-colors">{t("footer_for_providers")}</Link>
-          <Link to="/Privacy" className="hover:text-white transition-colors">{t("footer_privacy")}</Link>
-          <Link to="/Terms" className="hover:text-white transition-colors">{t("footer_terms")}</Link>
-          <Link to="/Cookies" className="hover:text-white transition-colors">Cookies</Link>
-          <Link to="/Contact" className="hover:text-white transition-colors">{t("footer_contact")}</Link>
+        <div className="flex items-center gap-6 text-[13px] flex-wrap" style={{ color: "var(--gris-1)" }}>
+          <Link to="/ForProviders" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_for_providers")}</Link>
+          <Link to="/Privacy" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_privacy")}</Link>
+          <Link to="/Terms" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_terms")}</Link>
+          <Link to="/Cookies" className="hover:text-[color:var(--ink)] transition-colors">Cookies</Link>
+          <Link to="/Contact" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_contact")}</Link>
         </div>
       </div>
     </footer>
@@ -428,18 +426,21 @@ export default function Landing() {
         {/* DA v1.1 — decorative dot-grid corner (hero) */}
         <div className="dot-grid" aria-hidden />
         <Hero />
-        {/* M4-TPV Fase 2B — RESTAURADO 2026-07-12 tras Fase 2A-redo verificada
-            (motor 1.4.0 en las 3 copias SYNC + 19 filas seed + retrocompat
-            online byte-idéntica). Strip señala que payments cubre ambos canales
-            (online + in-store TPV) sin prometer números que el motor no puede
-            calcular todavía — el CTA lleva al Analyzer donde el toggle real vive. */}
-        <InStoreUpsellStrip />
-        <ProblemSectionWow />
-        <HowItWorksSection />
-        <PricingDual />
-        <TestimonialsCarousel />
-        <FounderLetter />
-        <StopLeavingMarginCTA />
+        {/* DA v1.1 Chunk 1e — paper-first: every dark-built section (white text)
+            is wrapped in a .section-ink block so it stays legible on the paper
+            canvas — the moodboard's "dark block on a light page" pattern.
+            Horizontal padding + vertical rhythm live on this wrapper so the
+            ink blocks float with air around them. */}
+        <div className="px-4 sm:px-6 space-y-6 sm:space-y-8 py-6 sm:py-8">
+          {/* M4-TPV Fase 2B — in-store channel cue. */}
+          <div className="section-ink"><InStoreUpsellStrip /></div>
+          <div className="section-ink"><ProblemSectionWow /></div>
+          <div className="section-ink"><HowItWorksSection /></div>
+          <div className="section-ink"><PricingDual /></div>
+          <div className="section-ink"><TestimonialsCarousel /></div>
+          <div className="section-ink"><FounderLetter /></div>
+          <div className="section-ink"><StopLeavingMarginCTA /></div>
+        </div>
       </main>
       <LandingFooter />
     </div>
