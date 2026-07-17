@@ -1092,22 +1092,60 @@ body, p {
    ══════════════════════════════════════════════════════════════════ */
 .section-ink {
   position: relative;
-  background: linear-gradient(180deg, #0b0e1a 0%, #0a0d18 50%, #0E0E1A 100%);
+  /* Depth-rich base — same language as the curve graph card: layered
+     aurora glows (voltio top-left, cian bottom-right) over a deep navy
+     gradient, a luminous top rim-light, translucent border, and an
+     elevated shadow so the block reads premium, not flat PowerPoint. */
+  background:
+    radial-gradient(120% 90% at 8% 0%, rgba(91,76,245,0.28) 0%, transparent 55%),
+    radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.20) 0%, transparent 60%),
+    radial-gradient(90% 70% at 50% -20%, rgba(139,123,255,0.18) 0%, transparent 60%),
+    linear-gradient(180deg, #0d1226 0%, #0a0d1c 55%, #08090f 100%);
   border-radius: 28px;
   overflow: hidden;
+  isolation: isolate;
   margin-left: auto;
   margin-right: auto;
   max-width: 78rem;
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    0 -1px 0 rgba(255,255,255,0.03) inset,
+    0 40px 90px -40px rgba(0,0,0,0.7),
+    0 12px 40px -20px rgba(91,76,245,0.28);
 }
 @media (max-width: 640px) {
   .section-ink { border-radius: 20px; }
 }
-/* subtle aurora inside the ink block, matches moodboard depth */
+/* Fine grid + soft top-anchored fade — adds the "engineered" texture the
+   flat navy was missing, masked so it dissolves toward the edges. */
 .section-ink::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(91,76,245,0.14), transparent 65%);
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(ellipse 95% 85% at 50% 0%, #000 25%, transparent 75%);
+  mask-image: radial-gradient(ellipse 95% 85% at 50% 0%, #000 25%, transparent 75%);
+  opacity: 0.5;
+}
+/* Floating cian bloom in the top-right — the same drifting glow that makes
+   the curve card feel alive. Blurred, blended, non-interactive. */
+.section-ink::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: -12%;
+  width: 55%;
+  height: 75%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(closest-side, rgba(57,198,240,0.22), transparent 70%);
+  filter: blur(30px);
+  opacity: 0.7;
 }
 .section-ink > * { position: relative; z-index: 1; }
