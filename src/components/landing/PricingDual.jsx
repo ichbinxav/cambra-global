@@ -177,7 +177,7 @@ function Tier({
             : {
                 background: "#ffffff",
                 color: "var(--ink)",
-                border: "1px solid var(--linea)",
+                border: "1px solid rgba(91,76,245,0.30)",
               }
         }
       >
