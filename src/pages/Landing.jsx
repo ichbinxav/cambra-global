@@ -206,8 +206,8 @@ function Hero() {
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
         >
           <img
-            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/60d4dc7c0_hub-alpha2x.webp"
-            alt="CAMBRA — your entire payments stack, analyzed in one pass"
+            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/de2b6ff10_audit-hero-v2-alpha2x.webp"
+            alt="CAMBRA — card payments audit: effective rate vs interchange floor, overpayment recovered"
             width={620}
             height={620}
             fetchpriority="high"
