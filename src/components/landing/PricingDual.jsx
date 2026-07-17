@@ -267,6 +267,7 @@ export default function PricingDual() {
               eyebrow="Analyze"
               eyebrowAccent="ink"
               price="Free"
+              priceGradient
               caption="Always · No card"
               features={FREE_FEATURES}
               ctaText="Run audit"
@@ -306,16 +307,17 @@ export default function PricingDual() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="absolute -top-3 left-1/2 -translate-x-1/2 z-20"
+              className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-30"
             >
               <span
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[9.5px] uppercase font-bold tracking-[0.18em] text-white whitespace-nowrap"
+                className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[10px] uppercase font-bold tracking-[0.14em] text-white whitespace-nowrap"
                 style={{
-                  background: "var(--g-voltio)",
-                  boxShadow: "0 8px 20px -8px rgba(91,76,245,0.55)",
+                  background: "#3A2BB0",
+                  border: "2px solid #ffffff",
+                  boxShadow: "0 10px 24px -8px rgba(58,43,176,0.6)",
                 }}
               >
-                <Sparkles size={10} strokeWidth={2.5} />
+                <Sparkles size={11} strokeWidth={2.5} />
                 Most popular
               </span>
             </motion.div>
