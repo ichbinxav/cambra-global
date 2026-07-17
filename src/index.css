@@ -15,11 +15,11 @@
        tokens above — legacy surfaces keep rendering exactly as before.
        ══════════════════════════════════════════════════════════════ */
     --ink:#0C0C16; --paper:#FAFAFC;
-    --voltio:#5B4CF5; --voltio-2:#8B7BFF; --cian:#39C6F0;
+    --voltio:#4A3AD1; --voltio-2:#6E5FE6; --cian:#39C6F0;
     --menta:#2FE0A8; --menta-dark:#0FA97A;
     --coral:#F45B69; --coral-2:#FF8A6B;
     --gris-1:#585868; --gris-2:#9A9AAB; --linea:#E9E9F2;
-    --g-voltio:linear-gradient(120deg,#5B4CF5 0%,#8B7BFF 55%,#39C6F0 100%);
+    --g-voltio:linear-gradient(120deg,#4A3AD1 0%,#6E5FE6 55%,#2FA9D6 100%);
     --g-menta:linear-gradient(120deg,#0FA97A 0%,#2FE0A8 100%);
     --g-coral:linear-gradient(120deg,#F45B69 0%,#FF8A6B 100%);
     --g-aurora:radial-gradient(ellipse 90% 70% at 50% 110%,rgba(91,76,245,.5),rgba(57,198,240,.15) 55%,transparent 75%);
@@ -1098,15 +1098,15 @@ body, p {
    ══════════════════════════════════════════════════════════════════ */
 .section-ink {
   position: relative;
-  /* Depth-rich base — same language as the curve graph card: layered
-     aurora glows (voltio top-left, cian bottom-right) over a deep navy
-     gradient, a luminous top rim-light, translucent border, and an
-     elevated shadow so the block reads premium, not flat PowerPoint. */
+  /* Depth-rich base — SOLID deep navy-purple pill. Layered aurora glows
+     (voltio top-left, cian bottom-right) over an opaque dark navy-violet
+     gradient (no translucency), a luminous top rim-light, and an elevated
+     shadow so the block reads premium, not flat PowerPoint. */
   background:
-    radial-gradient(120% 90% at 8% 0%, rgba(91,76,245,0.28) 0%, transparent 55%),
-    radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.20) 0%, transparent 60%),
-    radial-gradient(90% 70% at 50% -20%, rgba(139,123,255,0.18) 0%, transparent 60%),
-    linear-gradient(180deg, #0d1226 0%, #0a0d1c 55%, #08090f 100%);
+    radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%),
+    radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.16) 0%, transparent 60%),
+    radial-gradient(90% 70% at 50% -20%, rgba(110,95,230,0.18) 0%, transparent 60%),
+    linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%);
   border-radius: 32px;
   overflow: hidden;
   isolation: isolate;

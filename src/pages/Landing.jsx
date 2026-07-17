@@ -149,9 +149,9 @@ function Hero() {
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/Analyzer"
-                className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-medium text-[14px] transition-colors hover:bg-[#6E5FF7]"
+                className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-medium text-[14px] transition-colors hover:bg-[#5A4ADD]"
                 style={{
-                  background: "#5B4CF5",
+                  background: "#4A3AD1",
                   color: "#fff",
                 }}
               >
@@ -373,7 +373,7 @@ function LandingFooter() {
       <div
         className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] px-8 sm:px-12 py-14"
         style={{
-          background: "#0E0E1A",
+          background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)",
           border: "1px solid rgba(255,255,255,0.06)",
         }}
       >

@@ -18,7 +18,7 @@ export default function StopLeavingMarginCTA() {
      <div
        className="relative mx-auto max-w-6xl rounded-[32px] overflow-hidden py-24 sm:py-32"
        style={{
-         background: "linear-gradient(180deg, rgba(13,18,38,0.88) 0%, rgba(10,13,28,0.88) 55%, rgba(8,9,15,0.88) 100%)",
+         background: "linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
          border: "1px solid rgba(255,255,255,0.08)",
          boxShadow: "0 40px 100px -40px rgba(0,0,0,0.6), 0 16px 50px -22px rgba(91,76,245,0.3)",
        }}
@@ -165,9 +165,9 @@ export default function StopLeavingMarginCTA() {
           <div className="flex-1">
             <Link
               to="/Analyzer"
-              className="group w-full inline-flex items-center justify-center gap-3 rounded-full font-medium text-[15px] transition-colors hover:bg-[#6E5FF7]"
+              className="group w-full inline-flex items-center justify-center gap-3 rounded-full font-medium text-[15px] transition-colors hover:bg-[#5A4ADD]"
               style={{
-                background: "#5B4CF5",
+                background: "#4A3AD1",
                 color: "#ffffff",
                 padding: "20px 32px",
               }}

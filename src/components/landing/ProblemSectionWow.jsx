@@ -122,7 +122,7 @@ function Card({ item, index }) {
       whileHover={{ y: -4 }}
       className="relative rounded-2xl p-6 sm:p-7 h-full group overflow-hidden"
       style={{
-        background: "linear-gradient(180deg, rgba(13,18,38,0.85) 0%, rgba(8,9,15,0.85) 100%)",
+        background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)",
         border: "1px solid rgba(255,255,255,0.10)",
         boxShadow: "0 20px 50px -25px rgba(0,0,0,0.5)",
       }}
@@ -281,7 +281,7 @@ export default function ProblemSectionWow() {
           transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="relative mt-10 rounded-2xl p-6 sm:p-8 overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, rgba(21,13,19,0.85) 0%, rgba(13,10,16,0.85) 100%)",
+            background: "linear-gradient(135deg, #1a1230 0%, #0d0a1a 100%)",
             border: "1px solid rgba(239,68,68,0.25)",
             boxShadow: "0 20px 60px -30px rgba(239,68,68,0.4)",
           }}
