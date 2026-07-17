@@ -58,21 +58,6 @@ export default function StopLeavingMarginCTA() {
         transition={{ duration: 8, ease: "easeInOut", repeat: Infinity, delay: 1.5 }}
       />
 
-      {/* Giant C logo — fills the whole pill as a ghosted background mark,
-          replacing the old "CAMBRA" wordmark watermark. Transparent PNG. */}
-      <div
-        aria-hidden
-        className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
-        style={{ opacity: 0.14 }}
-      >
-        <img
-          src={BRAND_ASSETS.cMarkBig}
-          alt=""
-          className="h-[135%] w-auto max-w-none select-none"
-          draggable={false}
-        />
-      </div>
-
       {/* Top hairline — cinematic frame */}
       <div
         aria-hidden
@@ -85,7 +70,7 @@ export default function StopLeavingMarginCTA() {
       />
 
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-10 lg:gap-16 items-center">
-        {/* LEFT — frosted cube, large, floating */}
+        {/* LEFT — frosted network, large, floating */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -94,7 +79,7 @@ export default function StopLeavingMarginCTA() {
           className="flex justify-center lg:justify-start order-2 lg:order-1"
         >
           <img
-            src={BRAND_ASSETS.cubeFrosted}
+            src={BRAND_ASSETS.flowFrosted}
             alt=""
             width={520}
             height={520}

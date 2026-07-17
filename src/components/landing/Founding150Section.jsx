@@ -74,7 +74,7 @@ export default function Founding150Section() {
           style={{ maxWidth: 440 }}
         >
           <img
-            src={BRAND_ASSETS.coinFrosted}
+            src={BRAND_ASSETS.flowFrosted}
             alt="Free forever for the Founding 150"
             width={440}
             height={440}
