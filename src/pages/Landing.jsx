@@ -482,8 +482,8 @@ export default function Landing() {
         <Hero />
         {/* Sections render directly on the paper canvas — NO wrappers.
             Each section owns its own inner dark pills/cards internally. */}
-        <TheStackSection />
         <InStoreUpsellStrip />
+        <TheStackSection />
         <ProblemSectionWow />
         <HowItWorksSection />
         <RealImpactSection />
