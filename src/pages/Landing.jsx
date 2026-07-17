@@ -206,19 +206,17 @@ function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
         >
-          {/* soft clearing in the dot mesh behind the 3D object */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{ background: "radial-gradient(55% 55% at 50% 50%, #FAFAFC 35%, rgba(250,250,252,0) 75%)" }}
-          />
           <img
             src={BRAND_ASSETS.stackFrosted}
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
             width={720}
             height={720}
             fetchpriority="high"
-            className="relative hero-stack w-[105%] max-w-[720px] h-auto select-none -mr-6 lg:-mr-16 drop-shadow-2xl"
+            className="relative hero-stack w-[105%] max-w-[720px] h-auto select-none -mr-6 lg:-mr-16"
+            style={{
+              maskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
+              WebkitMaskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
+            }}
             draggable={false}
           />
         </motion.div>

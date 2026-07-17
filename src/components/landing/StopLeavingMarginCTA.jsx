@@ -99,7 +99,11 @@ export default function StopLeavingMarginCTA() {
             width={520}
             height={520}
             loading="lazy"
-            className="hero-stack w-[80%] max-w-[520px] lg:w-[520px] h-auto select-none drop-shadow-2xl"
+            className="hero-stack w-[80%] max-w-[520px] lg:w-[520px] h-auto select-none"
+            style={{
+              maskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
+              WebkitMaskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
+            }}
             draggable={false}
           />
         </motion.div>

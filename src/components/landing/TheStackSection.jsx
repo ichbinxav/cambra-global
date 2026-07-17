@@ -56,12 +56,6 @@ export default function TheStackSection() {
             className="relative w-full mx-auto flex justify-center"
             style={{ maxWidth: 560 }}
           >
-            {/* soft clearing in the dot mesh behind the 3D object */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0"
-              style={{ background: "radial-gradient(55% 55% at 50% 50%, #FAFAFC 35%, rgba(250,250,252,0) 75%)" }}
-            />
             <img
               src={BRAND_ASSETS.stackFrosted}
               alt="Online payments, in-store terminals, contracts and benchmark — one stack"
@@ -69,6 +63,10 @@ export default function TheStackSection() {
               height={560}
               loading="lazy"
               className="relative w-full max-w-[560px] h-auto select-none"
+              style={{
+                maskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
+                WebkitMaskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
+              }}
               draggable={false}
             />
           </motion.div>
