@@ -50,7 +50,7 @@ export default function TheStackSection() {
         {/* The 4-layer glass illustration already contains dashed lines ending
             in a colored dot per layer. We overlay each callout to the right,
             vertically aligned to its dot. On mobile the callouts stack below. */}
-        <div className="relative mx-auto" style={{ maxWidth: 860 }}>
+        <div className="relative mx-auto lg:mx-0 lg:-translate-x-6" style={{ maxWidth: 680 }}>
           <motion.img
             src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/20ff08204_stack-callouts-alpha2x.webp"
             alt="Online payments, in-store terminals, contracts and benchmark — one stack, one analysis"
