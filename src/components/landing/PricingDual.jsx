@@ -60,8 +60,8 @@ function FeatureRow({ children }) {
       <span
         className="mt-[5px] inline-flex h-3.5 w-3.5 items-center justify-center rounded-full shrink-0"
         style={{
-          background: "rgba(139,123,255,0.12)",
-          border: "1px solid rgba(139,123,255,0.28)",
+          background: "rgba(139,123,255,0.20)",
+          border: "1px solid rgba(139,123,255,0.5)",
         }}
       >
         <Check size={9} style={{ color: "#8B7BFF" }} strokeWidth={3} />
