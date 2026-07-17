@@ -76,10 +76,10 @@ export default function StopLeavingMarginCTA() {
           alt=""
           aria-hidden
           initial={{ opacity: 0, scale: 0.96 }}
-          whileInView={{ opacity: 0.06, scale: 1 }}
+          whileInView={{ opacity: 0.11, scale: 1 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-none absolute inset-0 m-auto w-[70%] max-w-[520px] h-auto object-contain select-none"
+          className="pointer-events-none absolute inset-0 m-auto w-[105%] max-w-[900px] h-auto object-contain select-none"
           draggable={false}
         />
 
