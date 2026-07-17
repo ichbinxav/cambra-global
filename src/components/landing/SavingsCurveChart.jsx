@@ -271,7 +271,6 @@ export default function SavingsCurveChart({
           style={{
             strokeDasharray: pathLengthApprox,
             strokeDashoffset: dashOffset,
-            filter: "drop-shadow(0 0 6px rgba(91,76,245,0.35))",
           }}
         />
 
