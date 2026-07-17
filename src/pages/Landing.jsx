@@ -73,16 +73,37 @@ function LandingJsonLd() {
 function Hero() {
   const { t } = useTranslation();
   return (
-    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "var(--ink)", paddingTop: 80 }}>
-      {/* DA v1.1 Chunk 1d — Aurora navy removida sobre hero claro. Spotlight
-          reducido a un wash voltio suave (~25% opacidad) para no ensuciar. */}
+    <section
+      className="relative flex items-center overflow-hidden"
+      style={{
+        minHeight: "100vh",
+        color: "#ffffff",
+        paddingTop: 80,
+        background: "linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
+      }}
+    >
+      {/* Dot mesh over the dark hero — the reference texture. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(139,123,255,0.18) 1px, transparent 1.6px)",
+          backgroundSize: "28px 28px",
+          maskImage:
+            "radial-gradient(ellipse 70% 60% at 78% 20%, #000 0%, transparent 72%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 70% 60% at 78% 20%, #000 0%, transparent 72%)",
+          opacity: 0.8,
+        }}
+      />
       {/* eslint-disable-next-line no-unused-vars */}
       <motion.div
         aria-hidden
         className="absolute pointer-events-none"
         style={{
           width: 720, height: 720, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-          background: "radial-gradient(circle, rgba(91,76,245,0.08) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(91,76,245,0.22) 0%, transparent 70%)",
           filter: "blur(70px)",
         }}
         animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.85, 0.6] }}
@@ -95,9 +116,9 @@ function Hero() {
           <motion.div
             className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 mb-8 text-[10px] uppercase font-semibold"
             style={{
-              border: "1px solid var(--linea)",
-              color: "var(--gris-1)",
-              background: "rgba(12,12,22,0.04)",
+              border: "1px solid rgba(255,255,255,0.14)",
+              color: "rgba(255,255,255,0.75)",
+              background: "rgba(255,255,255,0.05)",
               letterSpacing: "0.14em",
             }}
             initial={{ opacity: 0, y: -8 }}
@@ -116,7 +137,7 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             style={{
-              color: "var(--ink)",
+              color: "#ffffff",
               fontSize: "clamp(46px, 7.8vw, 100px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
@@ -132,7 +153,7 @@ function Hero() {
 
           <motion.p
             className="mt-8"
-            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, color: "var(--gris-1)" }}
+            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, color: "rgba(255,255,255,0.65)" }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
@@ -161,11 +182,11 @@ function Hero() {
             </motion.div>
             <a
               href="#testimonials"
-              className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium transition-colors hover:border-[color:var(--ink)]"
+              className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium transition-colors hover:border-white/40"
               style={{
-                border: "1px solid var(--linea)",
-                color: "var(--gris-1)",
-                background: "#fff",
+                border: "1px solid rgba(255,255,255,0.18)",
+                color: "rgba(255,255,255,0.9)",
+                background: "rgba(255,255,255,0.04)",
               }}
             >
               {t("hero_cta_secondary")}
@@ -175,7 +196,7 @@ function Hero() {
           {/* Trust row */}
           <motion.div
             className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px]"
-            style={{ color: "var(--gris-2)" }}
+            style={{ color: "rgba(255,255,255,0.5)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.6 }}
@@ -382,15 +403,15 @@ function LandingFooter() {
     { to: "/Contact", label: t("footer_contact") },
   ];
   return (
-    <footer className="px-4 sm:px-6 pb-6 pt-6">
-      {/* Dark navy rounded container — feels like an extension of the product.
-          Soft purple/cyan ambient glow + subtle dot-grid so the page fades
-          naturally into the end rather than stopping abruptly. */}
+    <footer className="relative mt-16">
+      {/* Full-bleed dark footer — a solid navy band cut straight across the
+          bottom of the paper page (no rounded pill). Soft purple/cyan ambient
+          glow + subtle dot-grid so the page fades naturally into the end. */}
       <div
-        className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] px-8 sm:px-12 py-14"
+        className="relative w-full overflow-hidden px-6 sm:px-10 pt-20 pb-14"
         style={{
           background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)",
-          border: "1px solid rgba(255,255,255,0.06)",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
         }}
       >
         {/* Soft purple ambient light (top-left) */}
@@ -429,7 +450,7 @@ function LandingFooter() {
           }}
         />
 
-        <div className="relative flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+        <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-10">
           <div>
             <span
               className="font-black text-white"
@@ -459,7 +480,7 @@ function LandingFooter() {
         </div>
 
         <div
-          className="relative mt-12 pt-6"
+          className="relative max-w-6xl mx-auto mt-12 pt-6"
           style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
         >
           <p className="text-[11.5px]" style={{ color: "rgba(255,255,255,0.35)" }}>
