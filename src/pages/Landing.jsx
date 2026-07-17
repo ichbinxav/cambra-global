@@ -198,24 +198,8 @@ function Hero() {
           </motion.div>
         </div>
 
-        {/* RIGHT — hero stack (frosted 3D object). Icon only, no callouts —
-            the callouts live in TheStackSection. Floats gently. */}
-        <motion.div
-          className="relative lg:col-span-5 flex justify-center"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
-        >
-          <img
-            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/60d4dc7c0_hub-alpha2x.webp"
-            alt="CAMBRA — your entire payments stack, analyzed in one pass"
-            width={600}
-            height={600}
-            fetchpriority="high"
-            className="relative hero-stack w-full max-w-[1125px] h-auto select-none lg:scale-[1.56] lg:origin-center"
-            draggable={false}
-          />
-        </motion.div>
+        {/* RIGHT — hero visual intentionally left empty for now. */}
+        <div className="hidden lg:block lg:col-span-5" aria-hidden />
       </div>
     </section>
   );

@@ -22,9 +22,10 @@ export default function Founding150Section() {
         }}
       />
 
-      <div className="relative max-w-3xl mx-auto px-6 sm:px-10 text-center">
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* copy */}
         <motion.div
+          className="lg:col-span-7 text-center lg:text-left"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
@@ -48,7 +49,7 @@ export default function Founding150Section() {
             <span className="kw">One dataset.</span>
           </h2>
 
-          <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed max-w-xl mx-auto" style={{ color: "var(--gris-1)" }}>
+          <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed max-w-xl mx-auto lg:mx-0" style={{ color: "var(--gris-1)" }}>
             We're selecting 150 independent brands (€200k–€2M in annual sales)
             to build Europe's first database of what payments really cost.
             In exchange: full analysis and ongoing monitoring, free, forever.
@@ -60,6 +61,24 @@ export default function Founding150Section() {
               <ArrowRight size={16} />
             </Link>
           </div>
+        </motion.div>
+
+        {/* lateral image */}
+        <motion.div
+          className="relative lg:col-span-5 flex justify-center"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+        >
+          <img
+            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/60d4dc7c0_hub-alpha2x.webp"
+            alt="CAMBRA — your entire payments stack, analyzed in one pass"
+            width={600}
+            height={600}
+            className="relative hero-stack w-full max-w-[560px] h-auto select-none"
+            draggable={false}
+          />
         </motion.div>
       </div>
     </section>
