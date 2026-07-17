@@ -73,12 +73,23 @@ export default function Founding150Section() {
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
         >
+          {/* Solid paper backdrop that hides the fixed dot-mesh peeking around
+              the transparent image. Radial fade so there's no hard edge. */}
+          <div
+            aria-hidden
+            className="absolute pointer-events-none"
+            style={{
+              inset: "-10%",
+              background:
+                "radial-gradient(ellipse 60% 58% at 55% 48%, var(--paper) 0%, var(--paper) 56%, transparent 80%)",
+            }}
+          />
           <img
             src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/8fcff2fc6_hub-alpha2x.webp"
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
             width={600}
             height={600}
-            className="relative w-full max-w-none h-auto select-none lg:w-[125%] lg:-translate-x-[28%]"
+            className="relative w-full max-w-none h-auto select-none lg:w-[125%] lg:-translate-x-[18%]"
             draggable={false}
           />
         </motion.div>

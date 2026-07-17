@@ -13,18 +13,22 @@ const CALLOUTS = [
   {
     title: "Online payments",
     desc: "Stripe, Mollie, PayPal… what each sale really costs you.",
+    dot: "#7C3AED",
   },
   {
     title: "In-store terminals",
     desc: "The quiet leak in your physical channel.",
+    dot: "#3B82F6",
   },
   {
     title: "Contracts",
     desc: "What you signed vs. what brands your size actually pay.",
+    dot: "#22C1E0",
   },
   {
     title: "Benchmark (base layer)",
     desc: "Real costs from real brands. Not the price list.",
+    dot: "#2FE0A8",
   },
 ];
 
@@ -43,64 +47,103 @@ export default function TheStackSection() {
           </SectionHeading>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          {/* LEFT — frosted stack. Same icon as the hero (deliberate: the
-              icon appears in the hero, then gets explained here). No float
-              animation here, so the two placements read differently. */}
-          <motion.div
+        {/* The 4-layer glass illustration already contains dashed lines ending
+            in a colored dot per layer. We overlay each callout to the right,
+            vertically aligned to its dot. On mobile the callouts stack below. */}
+        <div className="relative mx-auto" style={{ maxWidth: 1100 }}>
+          <motion.img
+            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/20ff08204_stack-callouts-alpha2x.webp"
+            alt="Online payments, in-store terminals, contracts and benchmark — one stack, one analysis"
+            width={1100}
+            height={800}
+            loading="lazy"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            id="stack-slot"
-            className="relative w-full mx-auto flex justify-center"
-            style={{ maxWidth: 560 }}
-          >
-            <img
-              src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/3ef15c048_Capturadepantalla2026-07-17alas192524.png"
-              alt="Online payments, in-store terminals, contracts and benchmark — one stack"
-              width={560}
-              height={560}
-              loading="lazy"
-              className="relative w-full max-w-[560px] h-auto select-none"
-              draggable={false}
-            />
-          </motion.div>
+            className="relative w-full h-auto select-none"
+            draggable={false}
+          />
 
-          {/* RIGHT — callouts */}
-          <div className="space-y-7">
-            {CALLOUTS.map((c, i) => (
-              <motion.div
-                key={c.title}
-                initial={{ opacity: 0, x: 16 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <h3
-                  style={{
-                    color: "var(--ink)",
-                    fontFamily: "'Inter', sans-serif",
-                    fontWeight: 600,
-                    fontSize: "17px",
-                    letterSpacing: "-0.01em",
-                  }}
+          {/* DESKTOP — callout labels overlaid next to each colored dot.
+              The dots sit at roughly 24% / 41% / 58% / 75% of the image height,
+              just to the right of the dot column (~92% width). */}
+          <div className="hidden lg:block">
+            {CALLOUTS.map((c, i) => {
+              const tops = ["24%", "41%", "58%", "75%"];
+              return (
+                <motion.div
+                  key={c.title}
+                  initial={{ opacity: 0, x: 12 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute"
+                  style={{ top: tops[i], left: "94%", transform: "translateY(-50%)", width: 280 }}
                 >
-                  {c.title}
-                </h3>
-                <p
-                  className="mt-1"
-                  style={{
-                    color: "var(--gris-1)",
-                    fontFamily: "'Inter', sans-serif",
-                    fontWeight: 400,
-                    fontSize: "14px",
-                    lineHeight: 1.55,
-                  }}
-                >
-                  {c.desc}
-                </p>
-              </motion.div>
+                  <h3
+                    style={{
+                      color: "var(--ink)",
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: 600,
+                      fontSize: "16px",
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    {c.title}
+                  </h3>
+                  <p
+                    className="mt-1"
+                    style={{
+                      color: "var(--gris-1)",
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: 400,
+                      fontSize: "13px",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {c.desc}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* MOBILE — simple stacked list with a colored dot per item. */}
+          <div className="lg:hidden mt-8 space-y-5">
+            {CALLOUTS.map((c) => (
+              <div key={c.title} className="flex gap-3">
+                <span
+                  className="mt-1.5 inline-block h-2.5 w-2.5 rounded-full shrink-0"
+                  style={{ background: c.dot }}
+                  aria-hidden
+                />
+                <div>
+                  <h3
+                    style={{
+                      color: "var(--ink)",
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: 600,
+                      fontSize: "16px",
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    {c.title}
+                  </h3>
+                  <p
+                    className="mt-1"
+                    style={{
+                      color: "var(--gris-1)",
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: 400,
+                      fontSize: "13px",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {c.desc}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
