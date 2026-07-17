@@ -81,9 +81,7 @@ export default function StopLeavingMarginCTA() {
         }}
       />
 
-      {/* DA v1.1 — Part D: Trust & Security closer wrapped in .panel-dark
-          (aurora-gradient dark panel) so the final CTA sits on the DA surface. */}
-      <div className="panel-dark relative max-w-4xl mx-auto px-6 sm:px-10 py-16 sm:py-20 text-center">
+      <div className="relative max-w-4xl mx-auto px-6 sm:px-10 text-center">
         {/* Eyebrow */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
