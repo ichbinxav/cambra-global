@@ -121,15 +121,13 @@ export default function StopLeavingMarginCTA() {
             fontWeight: 900,
             letterSpacing: "-0.05em",
             lineHeight: 0.9,
-            textTransform: "uppercase",
             textShadow: "0 0 80px rgba(34,211,238,0.25)",
           }}
         >
           Stop leaving
           <br />
-          {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "margin on the table."
-              is the RESULT at stake → .kw-m (Menta Rise). */}
-          <span className="kw-m">margin on the table.</span>
+          {/* Keyword highlight → violet→cyan gradient (reference style). */}
+          <span className="kw">margin on the table.</span>
         </motion.h2>
 
         {/* Supporting line */}

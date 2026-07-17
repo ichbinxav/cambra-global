@@ -92,21 +92,27 @@ function Hero() {
         {/* LEFT — aggressive copy */}
         <div className="lg:col-span-7">
           <motion.div
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-8 text-[11px] uppercase tracking-[0.22em]"
+            className="inline-flex items-center gap-2 rounded-full pl-2.5 pr-3.5 py-1.5 mb-8 text-[10.5px] uppercase font-semibold"
             style={{
-              border: "1px solid rgba(91,76,245,0.25)",
+              border: "1px solid var(--linea)",
               color: "var(--gris-1)",
-              background: "rgba(91,76,245,0.05)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
+              background: "#ffffff",
+              letterSpacing: "0.18em",
+              fontFamily: "'JetBrains Mono', monospace",
+              boxShadow: "0 1px 2px rgba(12,12,22,0.04), 0 6px 16px -10px rgba(91,76,245,0.25)",
             }}
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--voltio)" }} />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "var(--voltio)" }} />
+            <span
+              className="inline-flex h-4 w-4 items-center justify-center rounded-full"
+              style={{ background: "var(--g-voltio)" }}
+            >
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping bg-white" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+              </span>
             </span>
             {t("hero_badge")}
           </motion.div>
@@ -117,18 +123,17 @@ function Hero() {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             style={{
               color: "var(--ink)",
-              fontSize: "clamp(44px, 7.5vw, 96px)",
+              fontSize: "clamp(46px, 7.8vw, 100px)",
               fontWeight: 900,
-              letterSpacing: "-0.045em",
+              letterSpacing: "-0.05em",
               lineHeight: 0.94,
-              textTransform: "uppercase",
             }}
           >
             {t("hero_h1_line1")}
             <br />
-            {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "margin." is the
-                RESULT the merchant recovers → .kw-m (Menta Rise). */}
-            <span className="kw-m">{t("hero_h1_line2")}</span>
+            {/* Keyword highlight uses the reference violet→cyan gradient (.kw).
+                Menta is reserved for explicitly positive figures (gains). */}
+            <span className="kw">{t("hero_h1_line2")}</span>
           </motion.h1>
 
           <motion.p
@@ -220,7 +225,16 @@ function Hero() {
                 illustrative projection derived from our benchmark methodology,
                 anchored to the ICP (DTC €200k–€2M). No dated tag anymore. */}
             <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "var(--gris-1)" }}>
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full pl-1.5 pr-2.5 py-1 text-[9.5px] uppercase font-semibold"
+                style={{
+                  color: "var(--gris-1)",
+                  border: "1px solid var(--linea)",
+                  background: "#fff",
+                  letterSpacing: "0.16em",
+                  fontFamily: "'JetBrains Mono', monospace",
+                }}
+              >
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--voltio)" }} />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "var(--voltio)" }} />
@@ -405,19 +419,22 @@ export default function Landing() {
         background: "var(--paper)",
       }}
     >
-      {/* Fixed ambient grid — violeta suave sobre claro (estilo moodboard). */}
+      {/* Fixed ambient DOT mesh — violet dots across the whole paper canvas,
+          the reference hero texture. Two offset layers (coarse + fine) with a
+          soft radial fade so it's densest mid-page and dissolves at the edges. */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(91,76,245,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(91,76,245,0.05) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          opacity: 0.5,
+            "radial-gradient(rgba(91,76,245,0.16) 1px, transparent 1.6px), radial-gradient(rgba(91,76,245,0.08) 0.8px, transparent 1.3px)",
+          backgroundSize: "26px 26px, 13px 13px",
+          backgroundPosition: "0 0, 13px 13px",
+          opacity: 0.7,
           maskImage:
-            "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+            "radial-gradient(ellipse 90% 80% at 50% 25%, #000 30%, transparent 95%)",
           WebkitMaskImage:
-            "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
+            "radial-gradient(ellipse 90% 80% at 50% 25%, #000 30%, transparent 95%)",
         }}
       />
 
