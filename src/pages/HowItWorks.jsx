@@ -52,17 +52,10 @@ export default function HowItWorks() {
               </span>
             </div>
 
+            {/* DA v1.1 Chunk 1c — Rule 1: full-string i18n headline has no
+                isolable single word → normal text color (loose cyan removed). */}
             <h1 className="font-display text-[clamp(2.4rem,6vw,4.4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5 text-white">
-              <span
-                style={{
-                  background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #39C6F0 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                {t("hiw_hero_h1")}
-              </span>
+              {t("hiw_hero_h1")}
             </h1>
             <p className="text-base md:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
               {t("hiw_hero_sub")}

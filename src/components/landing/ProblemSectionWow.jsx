@@ -270,17 +270,9 @@ export default function ProblemSectionWow() {
             }}
           >
             Independent brands overpay{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg, #F45B69 0%, #f97316 50%, #8B7BFF 100%)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                filter: "drop-shadow(0 0 24px rgba(239,68,68,0.35))",
-              }}
-            >
-              up to 40%
-            </span>{" "}
+            {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "up to 40%" is the
+                PROBLEM/cost → .kw-c (Coral Gap). */}
+            <span className="kw-c">up to 40%</span>{" "}
             on card payments.{" "}
             <span style={{ color: "rgba(255,255,255,0.55)" }}>Every month.</span>
           </h2>

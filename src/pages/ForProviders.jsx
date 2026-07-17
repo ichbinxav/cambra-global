@@ -315,16 +315,9 @@ export default function ForProviders() {
             }}
           >
             Merchants are comparing you{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #39C6F0 100%)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              right now.
-            </span>
+            {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "right now." is the
+                urgency/tension → .kw-c (Coral Gap). */}
+            <span className="kw-c">right now.</span>
             <br />
             Be the answer.
           </h1>

@@ -180,15 +180,15 @@ export default function SavingsCurveChart({
 
         <div className="flex items-baseline gap-2 flex-wrap">
           <span
-            className="font-black tabular-nums text-white"
+            className="font-black tabular-nums"
             style={{
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
               fontSize: "clamp(40px, 6vw, 64px)",
               letterSpacing: "-0.045em",
               lineHeight: 1,
-              /* Subtle drop-glow so the figure pops on the navy card without
-                 needing a gradient fill (kept white for maximum legibility). */
-              textShadow: "0 0 22px rgba(34,211,238,0.20)",
+              /* DA v1.1 Chunk 1c — Rule 3: recovered/positive → --menta (#2FE0A8 on navy). */
+              color: "#2FE0A8",
+              textShadow: "0 0 22px rgba(47,224,168,0.25)",
             }}
           >
             {formatted}
@@ -239,12 +239,14 @@ export default function SavingsCurveChart({
           </div>
           <div style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }} className="pl-3">
             <div
-              className="font-bold tabular-nums text-white/90"
+              className="font-bold tabular-nums"
               style={{
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "15px",
                 letterSpacing: "-0.02em",
                 lineHeight: 1,
+                /* DA v1.1 Chunk 1c — Rule 3: gap/negative → --coral-2 on navy. */
+                color: "#FF8A6B",
               }}
             >
               0.74pts
@@ -255,12 +257,14 @@ export default function SavingsCurveChart({
           </div>
           <div style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }} className="pl-3">
             <div
-              className="font-bold tabular-nums text-white/90"
+              className="font-bold tabular-nums"
               style={{
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "15px",
                 letterSpacing: "-0.02em",
                 lineHeight: 1,
+                /* DA v1.1 Chunk 1c — Rule 3: positive (share of profit recovered) → --menta. */
+                color: "#2FE0A8",
               }}
             >
               ~7%

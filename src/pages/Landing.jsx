@@ -128,17 +128,9 @@ function Hero() {
           >
             {t("hero_h1_line1")}
             <br />
-            <span
-              style={{
-                background:
-                  "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #22d3ee 100%)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              {t("hero_h1_line2")}
-            </span>
+            {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "margin." is the
+                RESULT the merchant recovers → .kw-m (Menta Rise). */}
+            <span className="kw-m">{t("hero_h1_line2")}</span>
           </motion.h1>
 
           <motion.p

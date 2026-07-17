@@ -57,6 +57,8 @@ function SplitVisual() {
               <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/80 mb-1">
                 {t("prc_you_keep")}
               </p>
+              {/* DA v1.1 Chunk 1c — Rule 3: what the merchant KEEPS is the
+                  positive outcome → --menta. */}
               <p
                 className="tabular-nums font-black"
                 style={{
@@ -64,12 +66,8 @@ function SplitVisual() {
                   fontSize: "clamp(48px, 7vw, 84px)",
                   letterSpacing: "-0.05em",
                   lineHeight: 0.9,
-                  background:
-                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #39C6F0 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 22px rgba(34,211,238,0.35))",
+                  color: "#2FE0A8",
+                  filter: "drop-shadow(0 0 22px rgba(47,224,168,0.30))",
                 }}
               >
                 75%
@@ -210,6 +208,8 @@ export default function Pricing() {
               </span>
             </div>
 
+            {/* DA v1.1 Chunk 1c — Rule 1: full-string i18n headline has no
+                isolable single word → normal text color (loose cyan removed). */}
             <h1
               className="font-display mb-6 text-white"
               style={{
@@ -219,17 +219,7 @@ export default function Pricing() {
                 lineHeight: 0.92,
               }}
             >
-              <span
-                style={{
-                  background:
-                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #39C6F0 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                {t("prc_hero_h1")}
-              </span>
+              {t("prc_hero_h1")}
             </h1>
             <p className="text-base md:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed mb-8">
               {t("prc_hero_sub")}

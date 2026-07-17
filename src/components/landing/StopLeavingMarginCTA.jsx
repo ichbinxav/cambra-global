@@ -126,18 +126,9 @@ export default function StopLeavingMarginCTA() {
         >
           Stop leaving
           <br />
-          <span
-            style={{
-              background:
-                "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #39C6F0 100%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              filter: "drop-shadow(0 0 40px rgba(34,211,238,0.4))",
-            }}
-          >
-            margin on the table.
-          </span>
+          {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "margin on the table."
+              is the RESULT at stake → .kw-m (Menta Rise). */}
+          <span className="kw-m">margin on the table.</span>
         </motion.h2>
 
         {/* Supporting line */}
