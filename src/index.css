@@ -15,11 +15,11 @@
        tokens above — legacy surfaces keep rendering exactly as before.
        ══════════════════════════════════════════════════════════════ */
     --ink:#0C0C16; --paper:#FAFAFC;
-    --voltio:#4A3AD1; --voltio-2:#6E5FE6; --cian:#39C6F0;
+    --voltio:#3A2BB0; --voltio-2:#5A49D6; --cian:#39C6F0;
     --menta:#2FE0A8; --menta-dark:#0FA97A;
     --coral:#F45B69; --coral-2:#FF8A6B;
     --gris-1:#585868; --gris-2:#9A9AAB; --linea:#E9E9F2;
-    --g-voltio:linear-gradient(120deg,#4A3AD1 0%,#6E5FE6 55%,#2FA9D6 100%);
+    --g-voltio:linear-gradient(120deg,#3A2BB0 0%,#5A49D6 55%,#2FA9D6 100%);
     --g-menta:linear-gradient(120deg,#0FA97A 0%,#2FE0A8 100%);
     --g-coral:linear-gradient(120deg,#F45B69 0%,#FF8A6B 100%);
     --g-aurora:radial-gradient(ellipse 90% 70% at 50% 110%,rgba(91,76,245,.5),rgba(57,198,240,.15) 55%,transparent 75%);

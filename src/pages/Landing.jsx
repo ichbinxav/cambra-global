@@ -149,9 +149,9 @@ function Hero() {
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/Analyzer"
-                className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-medium text-[14px] transition-colors hover:bg-[#5A4ADD]"
+                className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-medium text-[14px] transition-colors hover:bg-[#4A3AD1]"
                 style={{
-                  background: "#4A3AD1",
+                  background: "#3A2BB0",
                   color: "#fff",
                 }}
               >

@@ -101,8 +101,8 @@ export default function JoinWaitlistButton({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[14px] font-medium text-white transition-colors hover:bg-[#5A4ADD] disabled:opacity-70"
-          style={{ background: "#4A3AD1" }}
+          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[14px] font-medium text-white transition-colors hover:bg-[#4A3AD1] disabled:opacity-70"
+          style={{ background: "#3A2BB0" }}
         >
           {submitting ? <><Loader2 size={14} className="animate-spin" /> Joining…</> : <>Join <ArrowRight size={14} /></>}
         </button>
@@ -117,7 +117,7 @@ export default function JoinWaitlistButton({
   const commonStyle =
     variant === "primary"
       ? {
-          background: "#4A3AD1",
+          background: "#3A2BB0",
           color: "#ffffff",
           padding: fullWidth ? "18px 28px" : undefined,
         }
