@@ -4,13 +4,13 @@
 // the C-mark SVGs are the wordmark glyph.
 export const BRAND_ASSETS = {
   // PNG transparent-background renders (no white backdrop) — hero, coin, cube.
-  stackFrosted: "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/efcc3ac77_generated_image.png",
-  coinFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/8ea5c892e_generated_image.png",
-  cubeFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/1f689ae1f_generated_image.png",
+  stackFrosted: "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/ecfd9af5a_stack-frosted2x.webp",
+  coinFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d06587bdf_coin-frosted2x.webp",
+  cubeFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/99d61673f_vault-glow2x.webp",
   cMarkBig:     "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/9773758f8_generated_image.png",
-  flowFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/8318cfed4_flow-frosted2x.webp",
-  vaultGlow:    "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/05d7e1166_vault-glow2x.webp",
-  cMarkMono:    "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/98774b0c5_c-mark-mono.svg",
-  cMarkVoltio:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/e98c2b296_c-mark-voltio.svg",
-  cMarkWhite:   "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/5fdaa11c9_c-mark-white.svg",
+  flowFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/736334131_flow-frosted2x.webp",
+  vaultGlow:    "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/99d61673f_vault-glow2x.webp",
+  cMarkMono:    "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/887838027_c-mark-mono.svg",
+  cMarkVoltio:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/17cdcb4aa_c-mark-voltio.svg",
+  cMarkWhite:   "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/bb67087b2_c-mark-white.svg",
 };
