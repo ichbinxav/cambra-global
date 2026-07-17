@@ -201,18 +201,24 @@ function Hero() {
         {/* RIGHT — hero stack (frosted 3D object). Icon only, no callouts —
             the callouts live in TheStackSection. Floats gently. */}
         <motion.div
-          className="lg:col-span-5 flex justify-center lg:justify-end"
+          className="relative lg:col-span-5 flex justify-center lg:justify-end"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
         >
+          {/* soft clearing in the dot mesh behind the 3D object */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "radial-gradient(55% 55% at 50% 50%, #FAFAFC 35%, rgba(250,250,252,0) 75%)" }}
+          />
           <img
             src={BRAND_ASSETS.stackFrosted}
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
             width={720}
             height={720}
             fetchpriority="high"
-            className="hero-stack w-[105%] max-w-[720px] h-auto select-none -mr-6 lg:-mr-16 drop-shadow-2xl"
+            className="relative hero-stack w-[105%] max-w-[720px] h-auto select-none -mr-6 lg:-mr-16 drop-shadow-2xl"
             draggable={false}
           />
         </motion.div>

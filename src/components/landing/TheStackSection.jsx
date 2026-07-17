@@ -53,16 +53,22 @@ export default function TheStackSection() {
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             id="stack-slot"
-            className="w-full mx-auto flex justify-center"
+            className="relative w-full mx-auto flex justify-center"
             style={{ maxWidth: 560 }}
           >
+            {/* soft clearing in the dot mesh behind the 3D object */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{ background: "radial-gradient(55% 55% at 50% 50%, #FAFAFC 35%, rgba(250,250,252,0) 75%)" }}
+            />
             <img
               src={BRAND_ASSETS.stackFrosted}
               alt="Online payments, in-store terminals, contracts and benchmark — one stack"
               width={560}
               height={560}
               loading="lazy"
-              className="w-full max-w-[560px] h-auto select-none"
+              className="relative w-full max-w-[560px] h-auto select-none"
               draggable={false}
             />
           </motion.div>

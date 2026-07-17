@@ -70,16 +70,22 @@ export default function Founding150Section() {
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           id="coin-slot"
-          className="w-full flex justify-center lg:justify-end"
+          className="relative w-full flex justify-center lg:justify-end"
           style={{ maxWidth: 440 }}
         >
+          {/* soft clearing in the dot mesh behind the 3D object */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "radial-gradient(55% 55% at 50% 50%, #FAFAFC 35%, rgba(250,250,252,0) 75%)" }}
+          />
           <img
             src={BRAND_ASSETS.coinFrosted}
             alt="Free forever for the Founding 150"
             width={440}
             height={440}
             loading="lazy"
-            className="hero-stack w-full max-w-[440px] h-auto select-none drop-shadow-2xl"
+            className="relative hero-stack w-full max-w-[440px] h-auto select-none drop-shadow-2xl"
             draggable={false}
           />
         </motion.div>
