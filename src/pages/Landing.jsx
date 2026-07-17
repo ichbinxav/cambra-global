@@ -444,21 +444,15 @@ export default function Landing() {
         {/* DA v1.1 — decorative dot-grid corner (hero) */}
         <div className="dot-grid" aria-hidden />
         <Hero />
-        {/* DA v1.1 Chunk 1e — paper-first: every dark-built section (white text)
-            is wrapped in a .section-ink block so it stays legible on the paper
-            canvas — the moodboard's "dark block on a light page" pattern.
-            Horizontal padding + vertical rhythm live on this wrapper so the
-            ink blocks float with air around them. */}
-        <div className="px-4 sm:px-6 space-y-6 sm:space-y-8 py-6 sm:py-8">
-          {/* M4-TPV Fase 2B — in-store channel cue. */}
-          <div className="section-ink"><InStoreUpsellStrip /></div>
-          <div className="section-ink"><ProblemSectionWow /></div>
-          <div className="section-ink"><HowItWorksSection /></div>
-          <div className="section-ink"><PricingDual /></div>
-          <div className="section-ink"><TestimonialsCarousel /></div>
-          <div className="section-ink"><FounderLetter /></div>
-          <div className="section-ink"><StopLeavingMarginCTA /></div>
-        </div>
+        {/* Sections render directly on the page — no per-section wrapper card. */}
+        {/* M4-TPV Fase 2B — in-store channel cue. */}
+        <InStoreUpsellStrip />
+        <ProblemSectionWow />
+        <HowItWorksSection />
+        <PricingDual />
+        <TestimonialsCarousel />
+        <FounderLetter />
+        <StopLeavingMarginCTA />
       </main>
       <LandingFooter />
     </div>
