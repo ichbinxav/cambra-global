@@ -211,7 +211,8 @@ function Hero() {
             width={620}
             height={620}
             fetchpriority="high"
-            className="relative w-full max-w-none h-auto select-none lg:w-[135%] lg:-translate-x-[22%]"
+            className="relative w-full max-w-none h-auto select-none lg:w-[135%] lg:-translate-x-[14%]"
+            style={{ filter: "contrast(0.92)" }}
             draggable={false}
           />
         </motion.div>
