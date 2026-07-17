@@ -48,9 +48,10 @@ export default function TheStackSection() {
         </div>
 
         {/* The 4-layer glass illustration already contains dashed lines ending
-            in a colored dot per layer. We overlay each callout to the right,
-            vertically aligned to its dot. On mobile the callouts stack below. */}
-        <div className="relative mx-auto lg:mx-0 lg:-translate-x-6" style={{ maxWidth: 680 }}>
+            in a colored dot per layer. We overlay each callout next to its dot.
+            The wrapper is centered; a right padding reserves room for the
+            callout column so nothing overflows. On mobile the callouts stack. */}
+        <div className="relative mx-auto lg:pr-[280px]" style={{ maxWidth: 940 }}>
           <motion.img
             src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/20ff08204_stack-callouts-alpha2x.webp"
             alt="Online payments, in-store terminals, contracts and benchmark — one stack, one analysis"
@@ -67,7 +68,7 @@ export default function TheStackSection() {
 
           {/* DESKTOP — callout labels overlaid next to each colored dot.
               The dots sit at roughly 24% / 41% / 58% / 75% of the image height,
-              just to the right of the dot column (~92% width). */}
+              inside the padded area so they never clip the container. */}
           <div className="hidden lg:block">
             {CALLOUTS.map((c, i) => {
               const tops = ["24%", "41%", "58%", "75%"];
@@ -78,8 +79,8 @@ export default function TheStackSection() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute"
-                  style={{ top: tops[i], left: "94%", transform: "translateY(-50%)", width: 280 }}
+                  className="absolute right-0"
+                  style={{ top: tops[i], transform: "translateY(-50%)", width: 260 }}
                 >
                   <h3
                     style={{
