@@ -18,9 +18,11 @@ export default function StopLeavingMarginCTA() {
      <div
        className="relative mx-auto max-w-6xl rounded-[32px] overflow-hidden py-24 sm:py-32"
        style={{
-         background: "linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
+         background: "linear-gradient(180deg, rgba(20,17,46,0.92) 0%, rgba(14,11,34,0.94) 55%, rgba(10,8,24,0.96) 100%)",
          border: "1px solid rgba(255,255,255,0.08)",
          boxShadow: "0 40px 100px -40px rgba(0,0,0,0.6), 0 16px 50px -22px rgba(91,76,245,0.3)",
+         backdropFilter: "blur(12px)",
+         WebkitBackdropFilter: "blur(12px)",
        }}
      >
       {/* Pulsing multi-layer ambient halo — the heartbeat of the closing */}

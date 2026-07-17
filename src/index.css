@@ -1098,15 +1098,18 @@ body, p {
    ══════════════════════════════════════════════════════════════════ */
 .section-ink {
   position: relative;
-  /* Depth-rich base — SOLID deep navy-purple pill. Layered aurora glows
-     (voltio top-left, cian bottom-right) over an opaque dark navy-violet
-     gradient (no translucency), a luminous top rim-light, and an elevated
-     shadow so the block reads premium, not flat PowerPoint. */
+  /* Depth-rich base — TRANSLUCENT deep navy-purple pill (alpha-blended so the
+     paper canvas subtly shows through for a modern, layered look). Layered
+     aurora glows (voltio top-left, cian bottom-right) over a translucent dark
+     navy-violet gradient, a luminous top rim-light, and an elevated shadow so
+     the block reads premium, not flat. */
   background:
     radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%),
     radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.16) 0%, transparent 60%),
     radial-gradient(90% 70% at 50% -20%, rgba(110,95,230,0.18) 0%, transparent 60%),
-    linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%);
+    linear-gradient(180deg, rgba(20,17,46,0.92) 0%, rgba(14,11,34,0.94) 55%, rgba(10,8,24,0.96) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 32px;
   overflow: hidden;
   isolation: isolate;

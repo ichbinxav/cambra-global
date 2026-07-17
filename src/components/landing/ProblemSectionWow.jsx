@@ -122,9 +122,11 @@ function Card({ item, index }) {
       whileHover={{ y: -4 }}
       className="relative rounded-2xl p-6 sm:p-7 h-full group overflow-hidden"
       style={{
-        background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)",
+        background: "linear-gradient(180deg, rgba(20,17,46,0.90) 0%, rgba(10,8,24,0.94) 100%)",
         border: "1px solid rgba(255,255,255,0.10)",
         boxShadow: "0 20px 50px -25px rgba(0,0,0,0.5)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
       }}
     >
       {/* corner glow — matches category accent */}
