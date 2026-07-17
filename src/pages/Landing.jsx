@@ -200,11 +200,22 @@ function Hero() {
 
         {/* RIGHT — hero visual */}
         <motion.div
-          className="hidden lg:flex lg:col-span-5 justify-center items-center overflow-visible"
+          className="relative hidden lg:flex lg:col-span-5 justify-center items-center overflow-visible"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
         >
+          {/* Solid paper backdrop that hides the fixed dot-mesh behind the
+              transparent hero image. Radial fade so there's no hard edge. */}
+          <div
+            aria-hidden
+            className="absolute pointer-events-none"
+            style={{
+              inset: "-8%",
+              background:
+                "radial-gradient(ellipse 62% 62% at 50% 48%, var(--paper) 0%, var(--paper) 55%, transparent 78%)",
+            }}
+          />
           <img
             src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/de2b6ff10_audit-hero-v2-alpha2x.webp"
             alt="CAMBRA — card payments audit: effective rate vs interchange floor, overpayment recovered"
