@@ -63,6 +63,7 @@ export default function TheStackSection() {
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="relative w-full h-auto select-none"
+            style={{ filter: "contrast(1.12) saturate(1.15) brightness(0.97)" }}
             draggable={false}
           />
 
