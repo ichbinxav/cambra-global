@@ -211,7 +211,7 @@ function Hero() {
             width={620}
             height={620}
             fetchpriority="high"
-            className="relative hero-stack w-full max-w-none h-auto select-none"
+            className="relative w-full max-w-none h-auto select-none lg:w-[135%] lg:-translate-x-[22%]"
             draggable={false}
           />
         </motion.div>
