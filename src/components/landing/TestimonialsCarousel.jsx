@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, Quote, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import InitialsAvatar from "@/components/shared/InitialsAvatar";
+import SectionHeading from "@/components/landing/SectionHeading";
 
 // ⚠️ ILLUSTRATIVE / PLACEHOLDER testimonials — invented names + quotes.
 // Uses initials avatars (NOT photos) on purpose: a fake photo-realistic face
@@ -76,47 +77,10 @@ export default function TestimonialsCarousel() {
   return (
     <section id="testimonials" className="relative py-12 sm:py-16 overflow-hidden">
       <div className="relative max-w-2xl mx-auto px-6 sm:px-10">
-        {/* eyebrow */}
-        <div className="text-center mb-4">
-          <span
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1"
-            style={{
-              border: "1px solid rgba(255,255,255,0.14)",
-              background: "rgba(255,255,255,0.03)",
-            }}
-          >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.24em] font-bold text-white/70">
-              Real findings
-            </span>
-          </span>
-        </div>
-
-        <h2
-          className="text-white text-center mx-auto max-w-3xl mb-8"
-          style={{
-            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(36px, 5.5vw, 60px)",
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-            lineHeight: 1.05,
-          }}
-        >
+        <SectionHeading eyebrow="Real findings" className="mb-8">
           What brands actually{" "}
-          <span
-            style={{
-              background: "linear-gradient(135deg, #8B7BFF 0%, #39C6F0 100%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            recovered.
-          </span>
-        </h2>
+          <span className="kw">recovered.</span>
+        </SectionHeading>
 
         {/* Unified dark card — no split */}
         <AnimatePresence mode="wait">
@@ -260,11 +224,11 @@ export default function TestimonialsCarousel() {
                 style={{
                   width: i === idx ? 20 : 5,
                   height: 5,
-                  background: i === idx ? "#ffffff" : "rgba(255,255,255,0.25)",
+                  background: i === idx ? "var(--ink)" : "var(--linea)",
                 }}
               />
             ))}
-            <span className="ml-2 text-[10px] font-mono text-white/35 tabular-nums">
+            <span className="ml-2 text-[10px] font-mono tabular-nums" style={{ color: "var(--gris-2)" }}>
               {String(idx + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
             </span>
           </div>
@@ -274,10 +238,10 @@ export default function TestimonialsCarousel() {
               type="button"
               onClick={prev}
               aria-label="Previous"
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-white/10"
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-black/5"
               style={{
-                border: "1px solid rgba(255,255,255,0.18)",
-                color: "rgba(255,255,255,0.85)",
+                border: "1px solid var(--linea)",
+                color: "var(--gris-1)",
               }}
             >
               <ChevronLeft size={14} />
@@ -286,10 +250,10 @@ export default function TestimonialsCarousel() {
               type="button"
               onClick={next}
               aria-label="Next"
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-white/10"
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-black/5"
               style={{
-                border: "1px solid rgba(255,255,255,0.18)",
-                color: "rgba(255,255,255,0.85)",
+                border: "1px solid var(--linea)",
+                color: "var(--gris-1)",
               }}
             >
               <ChevronRight size={14} />

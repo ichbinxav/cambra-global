@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
+import SectionHeading from "@/components/landing/SectionHeading";
 
 /**
  * Founder letter — adapted to dark editorial theme.
@@ -24,59 +25,11 @@ export default function FounderLetter() {
       />
 
       <div className="relative max-w-4xl mx-auto px-6 sm:px-10">
-        {/* Eyebrow pill */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="flex justify-center mb-6"
-        >
-          <span
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
-            style={{
-              border: "1px solid rgba(255,255,255,0.14)",
-              background: "rgba(255,255,255,0.03)",
-            }}
-          >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.28em] font-bold text-white/70">
-              Meet the founder
-            </span>
-          </span>
-        </motion.div>
-
-        {/* Headline */}
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="text-center text-white mx-auto max-w-3xl mb-12 sm:mb-16"
-          style={{
-            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(36px, 5.5vw, 60px)",
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-            lineHeight: 1.05,
-          }}
-        >
-          A note from{" "}
-          <span
-            style={{
-              background: "linear-gradient(135deg, #8B7BFF 0%, #39C6F0 100%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            the founder
-          </span>
-          <span className="text-white">.</span>
-        </motion.h2>
+        {/* Header — unified */}
+        <SectionHeading eyebrow="Meet the founder" className="mb-12 sm:mb-16">
+          A note from <span className="kw">the founder</span>
+          <span style={{ color: "var(--ink)" }}>.</span>
+        </SectionHeading>
 
         {/* Two columns */}
         <motion.div

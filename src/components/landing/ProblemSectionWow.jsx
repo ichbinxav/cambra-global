@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { TrendingDown, Globe2, Coins, AlertTriangle } from "lucide-react";
-import SectionLabel from "@/components/shared/SectionLabel";
 import AnimatedSection from "@/components/landing/AnimatedSection";
+import SectionHeading from "@/components/landing/SectionHeading";
 
 /**
  * Problem section — payments-only edition · R6 canonical recalibration (2026-07-13).
@@ -122,7 +122,7 @@ function Card({ item, index }) {
       whileHover={{ y: -4 }}
       className="relative rounded-2xl p-6 sm:p-7 h-full group overflow-hidden"
       style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)",
+        background: "linear-gradient(180deg, #0d1226 0%, #08090f 100%)",
         border: "1px solid rgba(255,255,255,0.10)",
         boxShadow: "0 20px 50px -25px rgba(0,0,0,0.5)",
       }}
@@ -256,26 +256,14 @@ export default function ProblemSectionWow() {
 
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
-          <div className="text-center">
-            <SectionLabel className="mb-6 inline-block">The hidden cost problem</SectionLabel>
-          </div>
-          <h2
-            className="text-white max-w-3xl mx-auto mb-4 text-center"
-            style={{
-              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(36px, 5.5vw, 60px)",
-              fontWeight: 900,
-              letterSpacing: "-0.04em",
-              lineHeight: 1.05,
-            }}
-          >
+          <SectionHeading eyebrow="The hidden cost problem" className="mb-4">
             Independent brands overpay{" "}
             {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "up to 40%" is the
                 PROBLEM/cost → .kw-c (Coral Gap). */}
             <span className="kw-c">up to 40%</span>{" "}
             on card payments.{" "}
-            <span style={{ color: "rgba(255,255,255,0.55)" }}>Every month.</span>
-          </h2>
+            <span style={{ color: "var(--gris-1)" }}>Every month.</span>
+          </SectionHeading>
         </AnimatedSection>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
@@ -293,8 +281,8 @@ export default function ProblemSectionWow() {
           transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="relative mt-10 rounded-2xl p-6 sm:p-8 overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(236,72,153,0.04) 100%)",
-            border: "1px solid rgba(239,68,68,0.20)",
+            background: "linear-gradient(135deg, #150d13 0%, #0d0a10 100%)",
+            border: "1px solid rgba(239,68,68,0.25)",
             boxShadow: "0 20px 60px -30px rgba(239,68,68,0.4)",
           }}
         >

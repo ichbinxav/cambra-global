@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
+import SectionHeading from "@/components/landing/SectionHeading";
 import Navbar from "@/components/landing/Navbar";
 import { useTranslation } from "@/lib/i18n.jsx"; // used by HowItWorksSection + LandingFooter
 import AuroraBackground from "@/components/landing/AuroraBackground";
@@ -278,22 +279,9 @@ function HowItWorksSection() {
       />
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
-          <div className="text-center mb-10">
-            <SectionLabel className="mb-6 inline-block">{t("how_label")}</SectionLabel>
-            <h2
-              className="max-w-3xl mx-auto text-center"
-              style={{
-                color: "var(--ink)",
-                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-                fontSize: "clamp(36px, 5.5vw, 60px)",
-                fontWeight: 900,
-                letterSpacing: "-0.04em",
-                lineHeight: 1.05,
-              }}
-            >
-              {t("how_h2")}
-            </h2>
-          </div>
+          <SectionHeading eyebrow={t("how_label")} className="mb-10">
+            {t("how_h2")}
+          </SectionHeading>
         </AnimatedSection>
 
         <div className="relative space-y-3">
@@ -318,7 +306,7 @@ function HowItWorksSection() {
                 whileHover={{ scale: 1.005, borderColor: "rgba(96,165,250,0.25)" }}
                 transition={{ duration: 0.3 }}
                 className="relative overflow-hidden p-8 sm:p-10 group rounded-2xl"
-                style={{ background: "#fff", border: "1px solid var(--linea)" }}
+                style={{ background: "linear-gradient(180deg, #0d1226 0%, #08090f 100%)", border: "1px solid rgba(255,255,255,0.10)" }}
               >
                 {/* hover glow halo */}
                 <div
@@ -357,8 +345,8 @@ function HowItWorksSection() {
                     />
                     <SectionLabel>Step {s.n}</SectionLabel>
                   </div>
-                  <h3 className="text-title mb-3" style={{ color: "var(--ink)" }}>{s.title}</h3>
-                  <p className="text-[14px]" style={{ color: "var(--gris-1)" }}>{s.desc}</p>
+                  <h3 className="text-title text-white mb-3">{s.title}</h3>
+                  <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.55)" }}>{s.desc}</p>
                   {s.cta && (
                     <div className="mt-5">
                       <JoinWaitlistButton />
@@ -443,19 +431,15 @@ export default function Landing() {
         {/* DA v1.1 — decorative dot-grid corner (hero) */}
         <div className="dot-grid" aria-hidden />
         <Hero />
-        {/* HowItWorks + footer live on the paper canvas (dark text).
-            Sections built for a dark surface (white text) are wrapped in
-            .section-ink — a navy block floating on paper. */}
+        {/* Sections render directly on the paper canvas — NO wrappers.
+            Each section owns its own inner dark pills/cards internally. */}
+        <InStoreUpsellStrip />
+        <ProblemSectionWow />
         <HowItWorksSection />
-        <div className="px-4 sm:px-6 my-8 space-y-8">
-          {/* M4-TPV Fase 2B — in-store channel cue. */}
-          <section className="section-ink py-10 sm:py-14 px-6 sm:px-10"><InStoreUpsellStrip /></section>
-          <section className="section-ink py-4"><ProblemSectionWow /></section>
-          <section className="section-ink py-4"><PricingDual /></section>
-          <section className="section-ink py-4"><TestimonialsCarousel /></section>
-          <section className="section-ink py-4"><FounderLetter /></section>
-          <section className="section-ink py-4"><StopLeavingMarginCTA /></section>
-        </div>
+        <PricingDual />
+        <TestimonialsCarousel />
+        <FounderLetter />
+        <StopLeavingMarginCTA />
       </main>
       <LandingFooter />
     </div>

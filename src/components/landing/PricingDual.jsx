@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Check } from "lucide-react";
+import SectionHeading from "@/components/landing/SectionHeading";
 
 /**
  * Pricing — three-tier edition (Addendum R1, 2026-07-12).
@@ -274,46 +275,13 @@ export default function PricingDual() {
 
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         {/* Header */}
+        <SectionHeading eyebrow="Pricing" className="mb-6">
+          Free until we{" "}
+          <span className="kw">save you money</span>
+          <span style={{ color: "var(--ink)" }}>.</span>
+        </SectionHeading>
         <div className="text-center mb-12 sm:mb-14">
-          <span
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-5"
-            style={{
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(255,255,255,0.03)",
-            }}
-          >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.28em] font-bold text-white/70">
-              Pricing
-            </span>
-          </span>
-          <h2
-            className="text-white text-center mx-auto max-w-3xl"
-            style={{
-              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(36px, 5.5vw, 60px)",
-              fontWeight: 900,
-              letterSpacing: "-0.04em",
-              lineHeight: 1.05,
-            }}
-          >
-            Free until we{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg, #8B7BFF 0%, #39C6F0 100%)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              save you money
-            </span>
-            <span className="text-white">.</span>
-          </h2>
-          <p className="mt-4 text-[13px] sm:text-[14px] text-white/50 max-w-lg mx-auto">
+          <p className="text-[13px] sm:text-[14px] max-w-lg mx-auto" style={{ color: "var(--gris-1)" }}>
             Analyze for free. Monitor for free during the founding cohort. Pay only when we actually recover margin — 25% of verified payment savings.
           </p>
         </div>
@@ -434,7 +402,7 @@ export default function PricingDual() {
         </div>
 
         {/* Tiny footnote */}
-        <p className="mt-6 text-center text-[11px] text-white/35">
+        <p className="mt-6 text-center text-[11px]" style={{ color: "var(--gris-2)" }}>
           Cancel anytime · No credit card required · 5-minute setup
         </p>
       </div>
