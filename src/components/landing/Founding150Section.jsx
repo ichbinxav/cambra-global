@@ -74,11 +74,11 @@ export default function Founding150Section() {
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
         >
           <img
-            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/60d4dc7c0_hub-alpha2x.webp"
+            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/de2b6ff10_audit-hero-v2-alpha2x.webp"
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
             width={600}
             height={600}
-            className="relative hero-stack w-full max-w-none h-auto select-none lg:w-[125%] lg:-translate-x-[10%]"
+            className="relative w-full max-w-none h-auto select-none lg:w-[125%] lg:-translate-x-[28%]"
             draggable={false}
           />
         </motion.div>
