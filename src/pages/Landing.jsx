@@ -94,12 +94,12 @@ function Hero() {
           <motion.div
             className="inline-flex items-center gap-2 rounded-full pl-2.5 pr-3.5 py-1.5 mb-8 text-[10.5px] uppercase font-semibold"
             style={{
-              border: "1px solid var(--linea)",
-              color: "var(--gris-1)",
-              background: "#ffffff",
+              border: "1px solid rgba(255,255,255,0.12)",
+              color: "rgba(255,255,255,0.72)",
+              background: "rgba(255,255,255,0.04)",
               letterSpacing: "0.18em",
               fontFamily: "'JetBrains Mono', monospace",
-              boxShadow: "0 1px 2px rgba(12,12,22,0.04), 0 6px 16px -10px rgba(91,76,245,0.25)",
+              backdropFilter: "blur(8px)",
             }}
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -122,7 +122,7 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             style={{
-              color: "var(--ink)",
+              color: "#fff",
               fontSize: "clamp(46px, 7.8vw, 100px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
@@ -138,7 +138,7 @@ function Hero() {
 
           <motion.p
             className="mt-8"
-            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, color: "var(--gris-1)" }}
+            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, color: "rgba(255,255,255,0.6)" }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
@@ -157,9 +157,9 @@ function Hero() {
                 to="/Analyzer"
                 className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-bold text-[14px] transition-shadow"
                 style={{
-                  background: "var(--ink)",
-                  color: "var(--paper)",
-                  boxShadow: "0 8px 24px -10px rgba(12,12,22,0.4)",
+                  background: "#fff",
+                  color: "#08090f",
+                  boxShadow: "0 8px 24px -10px rgba(34,211,238,0.4)",
                 }}
               >
                 {t("hero_cta_primary")}
@@ -167,13 +167,13 @@ function Hero() {
               </Link>
             </motion.div>
             <motion.a
-              whileHover={{ scale: 1.03, borderColor: "var(--ink)" }}
+              whileHover={{ scale: 1.03, borderColor: "rgba(255,255,255,0.3)" }}
               href="#testimonials"
               className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium"
               style={{
-                border: "1px solid var(--linea)",
-                color: "var(--gris-1)",
-                background: "#fff",
+                border: "1px solid rgba(255,255,255,0.14)",
+                color: "rgba(255,255,255,0.75)",
+                background: "rgba(255,255,255,0.04)",
               }}
             >
               {t("hero_cta_secondary")}
@@ -183,21 +183,21 @@ function Hero() {
           {/* Trust row */}
           <motion.div
             className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px]"
-            style={{ color: "var(--gris-2)" }}
+            style={{ color: "rgba(255,255,255,0.5)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.6 }}
           >
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} style={{ color: "var(--menta-dark)" }} />
+              <ShieldCheck size={13} style={{ color: "var(--menta)" }} />
               {t("hero_trust_1")}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} style={{ color: "var(--menta-dark)" }} />
+              <ShieldCheck size={13} style={{ color: "var(--menta)" }} />
               {t("hero_trust_2")}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} style={{ color: "var(--menta-dark)" }} />
+              <ShieldCheck size={13} style={{ color: "var(--menta)" }} />
               {t("hero_trust_3")}
             </span>
           </motion.div>
@@ -381,26 +381,26 @@ function LandingFooter() {
   const { t } = useTranslation();
   return (
     <footer
-      style={{ borderTop: "1px solid var(--linea)" }}
+      style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
       className="py-10 relative overflow-hidden"
     >
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <p className="text-[13px]" style={{ color: "var(--gris-1)" }}>
-            <span className="font-black" style={{ letterSpacing: "-0.04em", color: "var(--ink)" }}>CAMBRA</span>
+          <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.6)" }}>
+            <span className="font-black" style={{ letterSpacing: "-0.04em", color: "#fff" }}>CAMBRA</span>
             <span className="mx-2">·</span>
             {t("footer_tagline")}
           </p>
-          <p className="mt-2 text-[12px]" style={{ color: "var(--gris-2)" }}>
+          <p className="mt-2 text-[12px]" style={{ color: "rgba(255,255,255,0.4)" }}>
             CAMBRA GLOBAL SASU · SIREN 105 452 916 · 42 rue Vivienne, 75002 Paris, France · support@cambra.global
           </p>
         </div>
-        <div className="flex items-center gap-6 text-[13px] flex-wrap" style={{ color: "var(--gris-1)" }}>
-          <Link to="/ForProviders" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_for_providers")}</Link>
-          <Link to="/Privacy" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_privacy")}</Link>
-          <Link to="/Terms" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_terms")}</Link>
-          <Link to="/Cookies" className="hover:text-[color:var(--ink)] transition-colors">Cookies</Link>
-          <Link to="/Contact" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_contact")}</Link>
+        <div className="flex items-center gap-6 text-[13px] flex-wrap" style={{ color: "rgba(255,255,255,0.6)" }}>
+          <Link to="/ForProviders" className="hover:text-white transition-colors">{t("footer_for_providers")}</Link>
+          <Link to="/Privacy" className="hover:text-white transition-colors">{t("footer_privacy")}</Link>
+          <Link to="/Terms" className="hover:text-white transition-colors">{t("footer_terms")}</Link>
+          <Link to="/Cookies" className="hover:text-white transition-colors">Cookies</Link>
+          <Link to="/Contact" className="hover:text-white transition-colors">{t("footer_contact")}</Link>
         </div>
       </div>
     </footer>
@@ -412,11 +412,10 @@ export default function Landing() {
     <div
       className="min-h-screen font-inter relative"
       style={{
-        // DA v1.1 Chunk 1d — paper-first: fondo claro global. El gradiente
-        // navy de 5 stops ya NO es el fondo global; vive solo dentro de los
-        // dos bloques tinta (How it works + StopLeavingMarginCTA).
-        color: "var(--ink)",
-        background: "var(--paper)",
+        // Fondo oscuro global — las secciones (texto blanco) van directas sobre
+        // él, sin ningún wrapper/pastilla envolviéndolas.
+        color: "#fff",
+        background: "#08090f",
       }}
     >
       {/* Fixed ambient DOT mesh — violet dots across the whole paper canvas,
@@ -444,19 +443,15 @@ export default function Landing() {
         {/* DA v1.1 — decorative dot-grid corner (hero) */}
         <div className="dot-grid" aria-hidden />
         <Hero />
-        {/* Dark-built sections (white text) share ONE continuous dark surface —
-            not a pastilla per section. Full-bleed navy canvas so nothing sits
-            unreadable on paper, without any wrapper card around each block. */}
-        <div className="relative" style={{ background: "#08090f", color: "#fff" }}>
-          {/* M4-TPV Fase 2B — in-store channel cue. */}
-          <InStoreUpsellStrip />
-          <ProblemSectionWow />
-          <HowItWorksSection />
-          <PricingDual />
-          <TestimonialsCarousel />
-          <FounderLetter />
-          <StopLeavingMarginCTA />
-        </div>
+        {/* Sections render directly — no wrapper. */}
+        {/* M4-TPV Fase 2B — in-store channel cue. */}
+        <InStoreUpsellStrip />
+        <ProblemSectionWow />
+        <HowItWorksSection />
+        <PricingDual />
+        <TestimonialsCarousel />
+        <FounderLetter />
+        <StopLeavingMarginCTA />
       </main>
       <LandingFooter />
     </div>
