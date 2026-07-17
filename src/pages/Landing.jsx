@@ -211,12 +211,28 @@ function Hero() {
               boxShadow: "0 4px 20px rgba(12,12,22,0.04)",
             }}
           >
+            {/* Dot mesh inside the card — the reference texture, densest in the
+                bottom-right corner and dissolving toward the center. */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(rgba(91,76,245,0.16) 1px, transparent 1.6px)",
+                backgroundSize: "22px 22px",
+                maskImage:
+                  "radial-gradient(ellipse 70% 70% at 100% 100%, #000 8%, transparent 74%)",
+                WebkitMaskImage:
+                  "radial-gradient(ellipse 70% 70% at 100% 100%, #000 8%, transparent 74%)",
+                opacity: 0.7,
+              }}
+            />
             {/* Corner badge — Illustrative projection (2026-07-12 · R3).
                 Was "Live · network median / Q3 2026" — presented a fabricated
                 network figure (€48k) as live telemetry. Reframed as an
                 illustrative projection derived from our benchmark methodology,
                 anchored to the ICP (DTC €200k–€2M). No dated tag anymore. */}
-            <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
+            <div className="relative z-10 flex items-center justify-between mb-2 gap-3 flex-wrap">
               <span
                 className="inline-flex items-center gap-1.5 rounded-full pl-1.5 pr-2.5 py-1 text-[9.5px] uppercase font-semibold"
                 style={{
@@ -235,7 +251,7 @@ function Hero() {
               </span>
               <span className="text-[10px] font-mono" style={{ color: "var(--gris-2)" }}>DTC · €200k–€2M GMV</span>
             </div>
-            <SavingsCurveChart className="mt-6" />
+            <SavingsCurveChart className="relative z-10 mt-6" />
           </div>
         </motion.div>
       </div>
