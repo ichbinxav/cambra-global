@@ -207,16 +207,12 @@ function Hero() {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
         >
           <img
-            src={BRAND_ASSETS.stackFrosted}
+            src={BRAND_ASSETS.cMarkVoltioPng}
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
-            width={720}
-            height={720}
+            width={820}
+            height={820}
             fetchpriority="high"
-            className="relative hero-stack w-[105%] max-w-[720px] h-auto select-none -mr-6 lg:-mr-16"
-            style={{
-              maskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
-              WebkitMaskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
-            }}
+            className="relative hero-stack w-[125%] max-w-[820px] h-auto select-none lg:-ml-24 -mr-6 lg:-mr-8"
             draggable={false}
           />
         </motion.div>

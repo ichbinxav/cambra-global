@@ -12,6 +12,7 @@ export const BRAND_ASSETS = {
   vaultGlow:    "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/99d61673f_vault-glow2x.webp",
   cMarkMono:    "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/887838027_c-mark-mono.svg",
   cMarkVoltio:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/17cdcb4aa_c-mark-voltio.svg",
+  cMarkVoltioPng: "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d62c05e68_c-mark-voltio2x.png",
   cMarkWhite:   "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/bb67087b2_c-mark-white.svg",
   cMarkWhitePng: "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/f34aeeff4_c-mark-white2x.png",
 };

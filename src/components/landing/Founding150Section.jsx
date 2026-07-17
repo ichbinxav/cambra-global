@@ -81,8 +81,8 @@ export default function Founding150Section() {
             loading="lazy"
             className="relative hero-stack w-full max-w-[440px] h-auto select-none"
             style={{
-              maskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
-              WebkitMaskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
+              maskImage: "radial-gradient(60% 60% at 50% 50%, #000 25%, rgba(0,0,0,0.4) 55%, transparent 80%)",
+              WebkitMaskImage: "radial-gradient(60% 60% at 50% 50%, #000 25%, rgba(0,0,0,0.4) 55%, transparent 80%)",
             }}
             draggable={false}
           />
