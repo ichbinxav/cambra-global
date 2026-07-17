@@ -53,7 +53,7 @@ export default function Navbar() {
       className="fixed top-0 left-0 right-0 z-50"
       style={{
         /* Dark navbar — matches the dark mobile dropdown + hero. */
-        background: "rgba(10,8,24,0.82)",
+        background: "rgba(10,8,24,0.97)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
         borderBottom: "1px solid rgba(255,255,255,0.08)",
