@@ -296,7 +296,7 @@ export default function SavingsCurveChart({
             <g transform={`translate(${pillX}, ${my - 10})`} opacity={progress}>
               <rect
                 x="0" y="-9" width={pillW} height="16" rx="8"
-                fill="rgba(11,16,32,0.85)"
+                fill="#0b1020"
                 stroke="rgba(139,123,255,0.5)"
                 strokeWidth="0.75"
               />
