@@ -59,9 +59,10 @@ export default function SavingsCurveChart({
     return () => cancelAnimationFrame(raf);
   }, [hasAnimated]);
 
-  // Geometry
-  const W = 640, H = 260;
-  const PAD_L = 64, PAD_R = 28, PAD_T = 20, PAD_B = 44;
+  // Geometry — smaller viewBox = SVG text renders proportionally LARGER
+  // once the chart scales to full width.
+  const W = 440, H = 240;
+  const PAD_L = 54, PAD_R = 22, PAD_T = 18, PAD_B = 40;
   const innerW = W - PAD_L - PAD_R;
   const innerH = H - PAD_T - PAD_B;
 
@@ -228,10 +229,10 @@ export default function SavingsCurveChart({
               strokeDasharray={i === 0 ? "0" : "2 4"}
             />
             <text
-              x={PAD_L - 12} y={t.y + 5}
+              x={PAD_L - 10} y={t.y + 5}
               textAnchor="end"
-              fill="rgba(12,12,22,0.6)"
-              fontSize="15"
+              fill="rgba(12,12,22,0.62)"
+              fontSize="14"
               fontWeight="600"
               fontFamily="ui-monospace, SFMono-Regular, monospace"
             >
@@ -247,10 +248,10 @@ export default function SavingsCurveChart({
           return (
             <text
               key={i}
-              x={p.x} y={H - 14}
+              x={p.x} y={H - 12}
               textAnchor="middle"
-              fill="rgba(12,12,22,0.55)"
-              fontSize="14"
+              fill="rgba(12,12,22,0.58)"
+              fontSize="13"
               fontWeight="600"
               fontFamily="ui-monospace, SFMono-Regular, monospace"
             >
@@ -290,13 +291,13 @@ export default function SavingsCurveChart({
         {/* Live M{n} pill — flips to the LEFT of the marker near the right
             edge so the label never gets clipped when the curve reaches the end. */}
         {progress > 0.15 && (() => {
-          const pillW = 42;
-          const flip = mx + 14 + pillW > W - PAD_R;
-          const pillX = flip ? mx - 14 - pillW : mx + 14;
+          const pillW = 34;
+          const flip = mx + 12 + pillW > W - PAD_R;
+          const pillX = flip ? mx - 12 - pillW : mx + 12;
           return (
-            <g transform={`translate(${pillX}, ${my - 12})`} opacity={progress}>
+            <g transform={`translate(${pillX}, ${my - 11})`} opacity={progress}>
               <rect
-                x="0" y="-12" width={pillW} height="22" rx="11"
+                x="0" y="-11" width={pillW} height="20" rx="10"
                 fill="#0b1020"
                 stroke="rgba(139,123,255,0.5)"
                 strokeWidth="0.75"
@@ -305,7 +306,7 @@ export default function SavingsCurveChart({
                 x={pillW / 2} y="3"
                 textAnchor="middle"
                 fill="#8B7BFF"
-                fontSize="13"
+                fontSize="12"
                 fontWeight="700"
                 fontFamily="ui-monospace, SFMono-Regular, monospace"
                 letterSpacing="0.05em"

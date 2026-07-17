@@ -69,39 +69,28 @@ export default function StopLeavingMarginCTA() {
         }}
       />
 
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-10 lg:gap-16 items-center">
-        {/* LEFT — frosted network, large, floating */}
-        <motion.div
+      <div className="relative max-w-3xl mx-auto px-6 sm:px-10 flex flex-col items-center text-center">
+        {/* Logo mark — centered above the headline */}
+        <motion.img
+          src={BRAND_ASSETS.cMarkWhitePng}
+          alt="CAMBRA"
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="flex justify-center lg:justify-start order-2 lg:order-1"
-        >
-          <img
-            src={BRAND_ASSETS.flowFrosted}
-            alt=""
-            width={520}
-            height={520}
-            loading="lazy"
-            className="hero-stack w-[80%] max-w-[520px] lg:w-[520px] h-auto select-none"
-            style={{
-              maskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
-              WebkitMaskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
-            }}
-            draggable={false}
-          />
-        </motion.div>
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="h-16 sm:h-20 w-auto mb-10 select-none"
+          draggable={false}
+        />
 
-        {/* RIGHT — copy + CTAs, right-aligned on desktop */}
-        <div className="text-center lg:text-right order-1 lg:order-2">
+        {/* Copy + CTAs, centered */}
+        <div className="w-full">
           {/* Eyebrow */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="mb-10 flex justify-center lg:justify-end"
+            className="mb-10 flex justify-center"
           >
             <span
               className="inline-flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-md"
@@ -149,7 +138,7 @@ export default function StopLeavingMarginCTA() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.15 }}
-            className="mt-10 text-[17px] sm:text-[20px] text-white/65 lg:ml-auto"
+            className="mt-10 text-[17px] sm:text-[20px] text-white/65 mx-auto"
             style={{ lineHeight: 1.55, maxWidth: 620 }}
           >
             Turn operating costs into recovered margin.
