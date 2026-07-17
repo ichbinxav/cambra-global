@@ -126,7 +126,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
           className="md:hidden absolute inset-x-0 top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto overflow-x-hidden border-b border-white/[0.08]"
           style={{
             background:
-              "radial-gradient(120% 60% at 50% 0%, rgba(31,78,216,0.18) 0%, transparent 55%), radial-gradient(80% 50% at 100% 100%, rgba(44,167,193,0.12) 0%, transparent 60%), linear-gradient(180deg, hsl(222 65% 5%) 0%, hsl(222 70% 3%) 100%)",
+              "radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%), radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.16) 0%, transparent 60%), linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
             boxShadow: "0 30px 80px -30px rgba(0,0,0,0.6)",
           }}
         >

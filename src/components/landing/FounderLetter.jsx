@@ -61,10 +61,9 @@ export default function FounderLetter() {
           <div
             className="relative rounded-2xl overflow-hidden p-4 sm:p-7 flex flex-col"
             style={{
-              background: "linear-gradient(180deg, rgba(13,18,36,0.85) 0%, rgba(6,8,16,0.85) 100%)",
+              background:
+                "radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%), radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.16) 0%, transparent 60%), linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
               border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
               boxShadow: "0 30px 60px -30px rgba(0,0,0,0.6)",
             }}
           >
