@@ -287,18 +287,17 @@ export default function SavingsCurveChart({
         <defs>
           <linearGradient id="curveStroke" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#5B4CF5" />
-            <stop offset="55%" stopColor="#39C6F0" />
-            <stop offset="100%" stopColor="#7BD9F0" />
+            <stop offset="100%" stopColor="#8B7BFF" />
           </linearGradient>
           <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(34,211,238,0.22)" />
-            <stop offset="100%" stopColor="rgba(59,130,246,0)" />
+            <stop offset="0%" stopColor="rgba(91,76,245,0.20)" />
+            <stop offset="100%" stopColor="rgba(91,76,245,0)" />
           </linearGradient>
-          {/* Soft halo around the endpoint marker — brighter than before */}
+          {/* Soft halo around the endpoint marker */}
           <radialGradient id="endpointHalo" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0%" stopColor="rgba(34,211,238,0.55)" />
-            <stop offset="60%" stopColor="rgba(34,211,238,0.10)" />
-            <stop offset="100%" stopColor="rgba(34,211,238,0)" />
+            <stop offset="0%" stopColor="rgba(139,123,255,0.55)" />
+            <stop offset="60%" stopColor="rgba(139,123,255,0.10)" />
+            <stop offset="100%" stopColor="rgba(139,123,255,0)" />
           </radialGradient>
         </defs>
 
@@ -356,7 +355,7 @@ export default function SavingsCurveChart({
           style={{
             strokeDasharray: pathLengthApprox,
             strokeDashoffset: dashOffset,
-            filter: "drop-shadow(0 0 6px rgba(34,211,238,0.35))",
+            filter: "drop-shadow(0 0 6px rgba(91,76,245,0.35))",
           }}
         />
 
@@ -371,8 +370,8 @@ export default function SavingsCurveChart({
 
         {/* Marker — minimal, brighter core */}
         <g>
-          <circle cx={mx} cy={my} r="6" fill="#0b1020" stroke="rgba(34,211,238,1)" strokeWidth="1.75" />
-          <circle cx={mx} cy={my} r="2.5" fill="#39C6F0" />
+          <circle cx={mx} cy={my} r="6" fill="#0b1020" stroke="rgba(139,123,255,1)" strokeWidth="1.75" />
+          <circle cx={mx} cy={my} r="2.5" fill="#8B7BFF" />
         </g>
 
         {/* Live M{n} pill riding the marker — only after ~15% progress so it
@@ -382,13 +381,13 @@ export default function SavingsCurveChart({
             <rect
               x="0" y="-9" width="30" height="16" rx="8"
               fill="rgba(11,16,32,0.85)"
-              stroke="rgba(34,211,238,0.5)"
+              stroke="rgba(139,123,255,0.5)"
               strokeWidth="0.75"
             />
             <text
               x="15" y="2.5"
               textAnchor="middle"
-              fill="#7BD9F0"
+              fill="#8B7BFF"
               fontSize="9"
               fontWeight="700"
               fontFamily="ui-monospace, SFMono-Regular, monospace"

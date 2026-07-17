@@ -34,7 +34,7 @@ export default function StopLeavingMarginCTA() {
           top: "50%",
           transform: "translate(-50%, -50%)",
           background:
-            "radial-gradient(circle, rgba(34,211,238,0.22) 0%, transparent 65%)",
+            "radial-gradient(circle, rgba(91,76,245,0.24) 0%, transparent 65%)",
           filter: "blur(120px)",
         }}
         animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
@@ -50,7 +50,7 @@ export default function StopLeavingMarginCTA() {
           top: "50%",
           transform: "translate(-50%, -50%)",
           background:
-            "radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(139,123,255,0.18) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
         animate={{ scale: [1.05, 1, 1.05], opacity: [0.6, 0.9, 0.6] }}
@@ -88,7 +88,7 @@ export default function StopLeavingMarginCTA() {
         style={{
           width: "min(720px, 80%)",
           background:
-            "linear-gradient(90deg, transparent 0%, rgba(34,211,238,0.5) 50%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, rgba(139,123,255,0.5) 50%, transparent 100%)",
         }}
       />
 
@@ -104,14 +104,14 @@ export default function StopLeavingMarginCTA() {
           <span
             className="inline-flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-md"
             style={{
-              border: "1px solid rgba(34,211,238,0.30)",
-              background: "rgba(34,211,238,0.06)",
-              boxShadow: "0 0 32px rgba(34,211,238,0.20)",
+              border: "1px solid rgba(139,123,255,0.32)",
+              background: "rgba(139,123,255,0.08)",
+              boxShadow: "0 0 32px rgba(91,76,245,0.22)",
             }}
           >
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#8B7BFF" }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#8B7BFF" }} />
             </span>
             <span className="text-[11px] uppercase tracking-[0.28em] font-bold text-white/85">
               The final call
@@ -132,7 +132,7 @@ export default function StopLeavingMarginCTA() {
             fontWeight: 900,
             letterSpacing: "-0.05em",
             lineHeight: 0.9,
-            textShadow: "0 0 80px rgba(34,211,238,0.25)",
+            textShadow: "0 0 80px rgba(91,76,245,0.25)",
           }}
         >
           Stop leaving
@@ -171,7 +171,7 @@ export default function StopLeavingMarginCTA() {
                 color: "#0a0f1e",
                 padding: "20px 32px",
                 boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.15), 0 28px 70px -20px rgba(34,211,238,0.65), 0 0 60px rgba(34,211,238,0.28)",
+                  "0 0 0 1px rgba(255,255,255,0.15), 0 28px 70px -20px rgba(91,76,245,0.65), 0 0 60px rgba(91,76,245,0.28)",
               }}
             >
               {/* Shimmer sweep */}
@@ -180,12 +180,12 @@ export default function StopLeavingMarginCTA() {
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    "linear-gradient(110deg, transparent 35%, rgba(34,211,238,0.20) 50%, transparent 65%)",
+                    "linear-gradient(110deg, transparent 35%, rgba(139,123,255,0.22) 50%, transparent 65%)",
                 }}
                 animate={{ x: ["-100%", "100%"] }}
                 transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.4 }}
               />
-              <Sparkles size={16} className="relative text-blue-600" />
+              <Sparkles size={16} className="relative" style={{ color: "#5B4CF5" }} />
               <span className="relative">Run free audit</span>
               <ArrowRight size={16} className="relative transition-transform group-hover:translate-x-0.5" />
             </Link>
@@ -206,14 +206,14 @@ export default function StopLeavingMarginCTA() {
           style={{ color: "rgba(255,255,255,0.50)" }}
         >
           <span className="inline-flex items-center gap-1.5">
-            <ShieldCheck size={12} className="text-cyan-300/85" />
+            <ShieldCheck size={12} style={{ color: "rgba(139,123,255,0.9)" }} />
             3 minutes
           </span>
-          <span className="text-cyan-400/60">•</span>
+          <span style={{ color: "rgba(139,123,255,0.6)" }}>•</span>
           <span>No credit card</span>
-          <span className="text-cyan-400/60">•</span>
+          <span style={{ color: "rgba(139,123,255,0.6)" }}>•</span>
           <span>No contract</span>
-          <span className="text-cyan-400/60">•</span>
+          <span style={{ color: "rgba(139,123,255,0.6)" }}>•</span>
           <span className="text-white/80">Pay only if we save you money</span>
         </motion.div>
       </div>
@@ -225,7 +225,7 @@ export default function StopLeavingMarginCTA() {
         style={{
           width: "min(720px, 80%)",
           background:
-            "linear-gradient(90deg, transparent 0%, rgba(34,211,238,0.5) 50%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, rgba(139,123,255,0.5) 50%, transparent 100%)",
         }}
       />
      </div>

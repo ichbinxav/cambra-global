@@ -19,7 +19,7 @@ export default function FounderLetter() {
         className="absolute pointer-events-none"
         style={{
           width: 700, height: 700, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-          background: "radial-gradient(circle, rgba(34,211,238,0.05) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(91,76,245,0.06) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
@@ -74,7 +74,7 @@ export default function FounderLetter() {
               className="absolute pointer-events-none"
               style={{
                 width: 260, height: 260, right: "-30%", top: "-30%",
-                background: "radial-gradient(circle, rgba(34,211,238,0.18) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(139,123,255,0.20) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }}
             />
@@ -82,7 +82,8 @@ export default function FounderLetter() {
             <div className="relative">
               <Quote
                 size={28}
-                className="text-cyan-400 mb-4"
+                className="mb-4"
+                style={{ color: "#8B7BFF" }}
                 strokeWidth={2.5}
               />
 
@@ -106,7 +107,7 @@ export default function FounderLetter() {
                   fontWeight: 500,
                   letterSpacing: "-0.01em",
                   background:
-                    "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #39C6F0 100%)",
+                    "linear-gradient(135deg, #8B7BFF 0%, #5B4CF5 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",

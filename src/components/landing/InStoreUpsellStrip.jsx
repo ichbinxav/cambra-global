@@ -35,11 +35,11 @@ export default function InStoreUpsellStrip() {
         style={{
           background:
             "linear-gradient(135deg, rgba(13,18,38,0.82) 0%, rgba(10,13,28,0.82) 55%, rgba(8,9,15,0.82) 100%)",
-          border: "1px solid rgba(34,211,238,0.22)",
+          border: "1px solid rgba(139,123,255,0.22)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
           boxShadow:
-            "0 40px 100px -40px rgba(0,0,0,0.55), 0 0 60px -20px rgba(34,211,238,0.35)",
+            "0 40px 100px -40px rgba(0,0,0,0.55), 0 0 60px -20px rgba(91,76,245,0.35)",
         }}
       >
         {/* Cyan corner bloom */}
@@ -52,7 +52,7 @@ export default function InStoreUpsellStrip() {
             right: "-12%",
             top: "-40%",
             background:
-              "radial-gradient(circle, rgba(34,211,238,0.28) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(139,123,255,0.30) 0%, transparent 70%)",
             filter: "blur(60px)",
           }}
         />
@@ -64,15 +64,15 @@ export default function InStoreUpsellStrip() {
               <div
                 className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
                 style={{
-                  background: "rgba(34,211,238,0.14)",
-                  border: "1px solid rgba(34,211,238,0.35)",
-                  boxShadow: "0 0 24px rgba(34,211,238,0.35)",
+                  background: "rgba(139,123,255,0.16)",
+                  border: "1px solid rgba(139,123,255,0.38)",
+                  boxShadow: "0 0 24px rgba(91,76,245,0.35)",
                 }}
                 aria-hidden="true"
               >
-                <Store size={20} className="text-cyan-300" />
+                <Store size={20} style={{ color: "#8B7BFF" }} />
               </div>
-              <span className="text-[10px] uppercase tracking-[0.28em] font-bold text-cyan-300/90">
+              <span className="text-[10px] uppercase tracking-[0.28em] font-bold" style={{ color: "rgba(139,123,255,0.95)" }}>
                 {t("landing_upsell_in_store_eyebrow")}
               </span>
             </div>
@@ -105,7 +105,7 @@ export default function InStoreUpsellStrip() {
                     border: "1px solid rgba(255,255,255,0.12)",
                   }}
                 >
-                  <CreditCard size={11} className="text-cyan-300/80" />
+                  <CreditCard size={11} style={{ color: "rgba(139,123,255,0.85)" }} />
                   {p}
                 </span>
               ))}
@@ -121,7 +121,7 @@ export default function InStoreUpsellStrip() {
                 background: "#ffffff",
                 color: "#0a0f1e",
                 boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.12), 0 20px 48px -18px rgba(34,211,238,0.6)",
+                  "0 0 0 1px rgba(255,255,255,0.12), 0 20px 48px -18px rgba(91,76,245,0.6)",
               }}
             >
               {t("landing_upsell_in_store_cta")}

@@ -36,12 +36,12 @@ const RECOVERY_FEATURES = [
 ];
 
 function Eyebrow({ children, accent = "white" }) {
-  const color = accent === "cyan" ? "#39C6F0" : "rgba(255,255,255,0.55)";
+  const color = accent === "voltio" ? "#8B7BFF" : "rgba(255,255,255,0.55)";
   return (
     <div className="flex items-center gap-2">
       <span
         className="inline-block h-px w-5"
-        style={{ background: accent === "cyan" ? "rgba(34,211,238,0.4)" : "rgba(255,255,255,0.18)" }}
+        style={{ background: accent === "voltio" ? "rgba(139,123,255,0.4)" : "rgba(255,255,255,0.18)" }}
       />
       <span
         className="text-[9px] uppercase font-bold"
@@ -59,11 +59,11 @@ function FeatureRow({ children }) {
       <span
         className="mt-[5px] inline-flex h-3.5 w-3.5 items-center justify-center rounded-full shrink-0"
         style={{
-          background: "rgba(34,211,238,0.10)",
-          border: "1px solid rgba(34,211,238,0.25)",
+          background: "rgba(139,123,255,0.12)",
+          border: "1px solid rgba(139,123,255,0.28)",
         }}
       >
-        <Check size={9} className="text-cyan-300" strokeWidth={3} />
+        <Check size={9} style={{ color: "#8B7BFF" }} strokeWidth={3} />
       </span>
       <span className="text-[12.5px] text-white/75 leading-[1.55]">{children}</span>
     </li>
@@ -112,11 +112,11 @@ function Tier({
                 ...(priceGradient
                   ? {
                       background:
-                        "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #39C6F0 100%)",
+                        "linear-gradient(135deg, #8B7BFF 0%, #5B4CF5 100%)",
                       WebkitBackgroundClip: "text",
                       backgroundClip: "text",
                       WebkitTextFillColor: "transparent",
-                      filter: "drop-shadow(0 0 18px rgba(34,211,238,0.28))",
+                      filter: "drop-shadow(0 0 18px rgba(91,76,245,0.28))",
                     }
                   : { color: "#ffffff" }),
               }}
@@ -172,7 +172,7 @@ function Tier({
                 background: "#ffffff",
                 color: "#0a0f1e",
                 boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.1), 0 18px 40px -16px rgba(34,211,238,0.45)",
+                  "0 0 0 1px rgba(255,255,255,0.1), 0 18px 40px -16px rgba(91,76,245,0.45)",
               }
             : {
                 background: "rgba(255,255,255,0.04)",
@@ -203,7 +203,7 @@ export default function PricingDual() {
           top: "50%",
           transform: "translate(-50%, -50%)",
           background:
-            "radial-gradient(circle, rgba(34,211,238,0.05) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(91,76,245,0.05) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
@@ -266,9 +266,9 @@ export default function PricingDual() {
             style={{
               background:
                 "linear-gradient(180deg, rgba(13,18,36,0.82) 0%, rgba(6,8,15,0.82) 100%)",
-              border: "1px solid rgba(34,211,238,0.18)",
+              border: "1px solid rgba(139,123,255,0.20)",
               boxShadow:
-                "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 40px -20px rgba(34,211,238,0.35)",
+                "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 40px -20px rgba(91,76,245,0.35)",
             }}
           >
             <div
@@ -276,19 +276,20 @@ export default function PricingDual() {
               className="absolute pointer-events-none"
               style={{
                 width: 360, height: 360, right: "-15%", bottom: "-25%",
-                background: "radial-gradient(circle, rgba(34,211,238,0.18) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(139,123,255,0.20) 0%, transparent 70%)",
                 filter: "blur(60px)",
               }}
             />
             <span
-              className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em] text-cyan-300/70"
+              className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em]"
+              style={{ color: "rgba(139,123,255,0.7)" }}
               aria-hidden
             >
               Step 2
             </span>
             <Tier
               eyebrow="Recover"
-              eyebrowAccent="cyan"
+              eyebrowAccent="voltio"
               price="25%"
               priceSuffix="of verified payment savings · 24-month agreement"
               priceGradient

@@ -103,15 +103,15 @@ export default function TestimonialsCarousel() {
               className="absolute pointer-events-none"
               style={{
                 width: 300, height: 300, right: "-20%", top: "-30%",
-                background: "radial-gradient(circle, rgba(34,211,238,0.18) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(139,123,255,0.18) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }}
             />
 
             {/* category */}
             <div className="relative flex items-center gap-2 mb-4">
-              <Quote size={13} style={{ color: "#39C6F0" }} />
-              <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-cyan-300">
+              <Quote size={13} style={{ color: "#8B7BFF" }} />
+              <span className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: "#8B7BFF" }}>
                 {item.category}
               </span>
               <span className="text-white/30">·</span>
@@ -168,12 +168,13 @@ export default function TestimonialsCarousel() {
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-[9px] uppercase tracking-[0.22em] font-bold text-cyan-300/80 mb-1">
+                <p className="text-[9px] uppercase tracking-[0.22em] font-bold mb-1" style={{ color: "rgba(47,224,168,0.85)" }}>
                   After
                 </p>
                 <p
-                  className="font-black tabular-nums text-cyan-300"
+                  className="font-black tabular-nums"
                   style={{
+                    color: "#2FE0A8",
                     fontSize: "clamp(16px, 2.2vw, 20px)",
                     letterSpacing: "-0.02em",
                     lineHeight: 1,
@@ -184,8 +185,8 @@ export default function TestimonialsCarousel() {
               </div>
               <div className="text-center" style={{ borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
                 <div className="inline-flex items-center gap-1 mb-1">
-                  <TrendingUp size={9} className="text-cyan-300" />
-                  <p className="text-[9px] uppercase tracking-[0.22em] font-bold text-cyan-300/80">
+                  <TrendingUp size={9} style={{ color: "#2FE0A8" }} />
+                  <p className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: "rgba(47,224,168,0.85)" }}>
                     Saved
                   </p>
                 </div>
@@ -197,11 +198,11 @@ export default function TestimonialsCarousel() {
                     letterSpacing: "-0.03em",
                     lineHeight: 0.95,
                     background:
-                      "linear-gradient(135deg, #ffffff 0%, #b8d8e0 50%, #39C6F0 100%)",
+                      "linear-gradient(135deg, #2FE0A8 0%, #0FA97A 100%)",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",
-                    filter: "drop-shadow(0 0 16px rgba(34,211,238,0.35))",
+                    filter: "drop-shadow(0 0 16px rgba(47,224,168,0.35))",
                   }}
                 >
                   {item.savings}

@@ -273,7 +273,7 @@ function HowItWorksSection() {
         className="absolute pointer-events-none"
         style={{
           width: 700, height: 700, right: "-10%", top: "10%",
-          background: "radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(91,76,245,0.10) 0%, transparent 70%)",
           filter: "blur(90px)",
         }}
       />
@@ -291,8 +291,8 @@ function HowItWorksSection() {
             className="absolute left-8 top-0 bottom-0 w-px hidden sm:block"
             style={{
               background:
-                "linear-gradient(180deg, transparent, rgba(96,165,250,0.4), rgba(44,167,193,0.3), transparent)",
-              boxShadow: "0 0 16px rgba(96,165,250,0.3)",
+                "linear-gradient(180deg, transparent, rgba(139,123,255,0.45), rgba(91,76,245,0.3), transparent)",
+              boxShadow: "0 0 16px rgba(139,123,255,0.3)",
             }}
             initial={{ scaleY: 0, originY: 0 }}
             whileInView={{ scaleY: 1 }}
@@ -314,7 +314,7 @@ function HowItWorksSection() {
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                   style={{
                     background:
-                      "radial-gradient(circle at 20% 50%, rgba(59,130,246,0.10), transparent 60%)",
+                      "radial-gradient(circle at 20% 50%, rgba(139,123,255,0.12), transparent 60%)",
                   }}
                 />
                 {/* Giant number — gradient */}
@@ -327,7 +327,7 @@ function HowItWorksSection() {
                     letterSpacing: "-0.05em",
                     lineHeight: 1,
                     background:
-                      "linear-gradient(180deg, rgba(96,165,250,0.65) 0%, rgba(34,211,238,0.35) 45%, rgba(255,255,255,0.06) 95%)",
+                      "linear-gradient(180deg, rgba(139,123,255,0.7) 0%, rgba(91,76,245,0.4) 45%, rgba(255,255,255,0.06) 95%)",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",
@@ -340,7 +340,7 @@ function HowItWorksSection() {
                   <div className="flex items-center gap-3 mb-3">
                     <span
                       className="relative inline-flex w-2 h-2 rounded-full"
-                      style={{ background: "#60a5fa", boxShadow: "0 0 12px rgba(96,165,250,0.8)" }}
+                      style={{ background: "#8B7BFF", boxShadow: "0 0 12px rgba(139,123,255,0.8)" }}
                       aria-hidden
                     />
                     <SectionLabel>Step {s.n}</SectionLabel>
