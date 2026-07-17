@@ -94,12 +94,11 @@ function Hero() {
           <motion.div
             className="inline-flex items-center gap-2 rounded-full pl-2.5 pr-3.5 py-1.5 mb-8 text-[10.5px] uppercase font-semibold"
             style={{
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "rgba(255,255,255,0.72)",
-              background: "rgba(255,255,255,0.04)",
+              border: "1px solid var(--linea)",
+              color: "var(--gris-1)",
+              background: "#fff",
               letterSpacing: "0.18em",
               fontFamily: "'JetBrains Mono', monospace",
-              backdropFilter: "blur(8px)",
             }}
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -122,7 +121,7 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             style={{
-              color: "#fff",
+              color: "var(--ink)",
               fontSize: "clamp(46px, 7.8vw, 100px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
@@ -138,7 +137,7 @@ function Hero() {
 
           <motion.p
             className="mt-8"
-            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, color: "rgba(255,255,255,0.6)" }}
+            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, color: "var(--gris-1)" }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
@@ -157,9 +156,9 @@ function Hero() {
                 to="/Analyzer"
                 className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-bold text-[14px] transition-shadow"
                 style={{
-                  background: "#fff",
-                  color: "#08090f",
-                  boxShadow: "0 8px 24px -10px rgba(34,211,238,0.4)",
+                  background: "var(--ink)",
+                  color: "#fff",
+                  boxShadow: "0 8px 24px -10px rgba(91,76,245,0.35)",
                 }}
               >
                 {t("hero_cta_primary")}
@@ -167,13 +166,13 @@ function Hero() {
               </Link>
             </motion.div>
             <motion.a
-              whileHover={{ scale: 1.03, borderColor: "rgba(255,255,255,0.3)" }}
+              whileHover={{ scale: 1.03, borderColor: "var(--ink)" }}
               href="#testimonials"
               className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium"
               style={{
-                border: "1px solid rgba(255,255,255,0.14)",
-                color: "rgba(255,255,255,0.75)",
-                background: "rgba(255,255,255,0.04)",
+                border: "1px solid var(--linea)",
+                color: "var(--gris-1)",
+                background: "#fff",
               }}
             >
               {t("hero_cta_secondary")}
@@ -183,21 +182,21 @@ function Hero() {
           {/* Trust row */}
           <motion.div
             className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px]"
-            style={{ color: "rgba(255,255,255,0.5)" }}
+            style={{ color: "var(--gris-2)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.6 }}
           >
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} style={{ color: "var(--menta)" }} />
+              <ShieldCheck size={13} style={{ color: "var(--menta-dark)" }} />
               {t("hero_trust_1")}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} style={{ color: "var(--menta)" }} />
+              <ShieldCheck size={13} style={{ color: "var(--menta-dark)" }} />
               {t("hero_trust_2")}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} style={{ color: "var(--menta)" }} />
+              <ShieldCheck size={13} style={{ color: "var(--menta-dark)" }} />
               {t("hero_trust_3")}
             </span>
           </motion.div>
@@ -282,8 +281,9 @@ function HowItWorksSection() {
           <div className="text-center mb-10">
             <SectionLabel className="mb-6 inline-block">{t("how_label")}</SectionLabel>
             <h2
-              className="text-white max-w-3xl mx-auto text-center"
+              className="max-w-3xl mx-auto text-center"
               style={{
+                color: "var(--ink)",
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "clamp(36px, 5.5vw, 60px)",
                 fontWeight: 900,
@@ -317,8 +317,8 @@ function HowItWorksSection() {
               <motion.div
                 whileHover={{ scale: 1.005, borderColor: "rgba(96,165,250,0.25)" }}
                 transition={{ duration: 0.3 }}
-                className="surface relative overflow-hidden p-8 sm:p-10 group"
-                style={{ background: "rgba(255,255,255,0.025)" }}
+                className="relative overflow-hidden p-8 sm:p-10 group rounded-2xl"
+                style={{ background: "#fff", border: "1px solid var(--linea)" }}
               >
                 {/* hover glow halo */}
                 <div
@@ -357,8 +357,8 @@ function HowItWorksSection() {
                     />
                     <SectionLabel>Step {s.n}</SectionLabel>
                   </div>
-                  <h3 className="text-title text-white mb-3">{s.title}</h3>
-                  <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.55)" }}>{s.desc}</p>
+                  <h3 className="text-title mb-3" style={{ color: "var(--ink)" }}>{s.title}</h3>
+                  <p className="text-[14px]" style={{ color: "var(--gris-1)" }}>{s.desc}</p>
                   {s.cta && (
                     <div className="mt-5">
                       <JoinWaitlistButton />
@@ -381,26 +381,26 @@ function LandingFooter() {
   const { t } = useTranslation();
   return (
     <footer
-      style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ borderTop: "1px solid var(--linea)" }}
       className="py-10 relative overflow-hidden"
     >
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <p className="text-[13px]" style={{ color: "rgba(255,255,255,0.6)" }}>
-            <span className="font-black" style={{ letterSpacing: "-0.04em", color: "#fff" }}>CAMBRA</span>
+          <p className="text-[13px]" style={{ color: "var(--gris-1)" }}>
+            <span className="font-black" style={{ letterSpacing: "-0.04em", color: "var(--ink)" }}>CAMBRA</span>
             <span className="mx-2">·</span>
             {t("footer_tagline")}
           </p>
-          <p className="mt-2 text-[12px]" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <p className="mt-2 text-[12px]" style={{ color: "var(--gris-2)" }}>
             CAMBRA GLOBAL SASU · SIREN 105 452 916 · 42 rue Vivienne, 75002 Paris, France · support@cambra.global
           </p>
         </div>
-        <div className="flex items-center gap-6 text-[13px] flex-wrap" style={{ color: "rgba(255,255,255,0.6)" }}>
-          <Link to="/ForProviders" className="hover:text-white transition-colors">{t("footer_for_providers")}</Link>
-          <Link to="/Privacy" className="hover:text-white transition-colors">{t("footer_privacy")}</Link>
-          <Link to="/Terms" className="hover:text-white transition-colors">{t("footer_terms")}</Link>
-          <Link to="/Cookies" className="hover:text-white transition-colors">Cookies</Link>
-          <Link to="/Contact" className="hover:text-white transition-colors">{t("footer_contact")}</Link>
+        <div className="flex items-center gap-6 text-[13px] flex-wrap" style={{ color: "var(--gris-1)" }}>
+          <Link to="/ForProviders" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_for_providers")}</Link>
+          <Link to="/Privacy" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_privacy")}</Link>
+          <Link to="/Terms" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_terms")}</Link>
+          <Link to="/Cookies" className="hover:text-[color:var(--ink)] transition-colors">Cookies</Link>
+          <Link to="/Contact" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_contact")}</Link>
         </div>
       </div>
     </footer>
@@ -412,10 +412,10 @@ export default function Landing() {
     <div
       className="min-h-screen font-inter relative"
       style={{
-        // Fondo oscuro global — las secciones (texto blanco) van directas sobre
-        // él, sin ningún wrapper/pastilla envolviéndolas.
-        color: "#fff",
-        background: "#08090f",
+        // Fondo claro (paper) global. Las secciones van directas sobre él, sin
+        // ningún wrapper/pastilla envolviéndolas.
+        color: "var(--ink)",
+        background: "var(--paper)",
       }}
     >
       {/* Fixed ambient DOT mesh — violet dots across the whole paper canvas,
@@ -443,15 +443,19 @@ export default function Landing() {
         {/* DA v1.1 — decorative dot-grid corner (hero) */}
         <div className="dot-grid" aria-hidden />
         <Hero />
-        {/* Sections render directly — no wrapper. */}
-        {/* M4-TPV Fase 2B — in-store channel cue. */}
-        <InStoreUpsellStrip />
-        <ProblemSectionWow />
+        {/* HowItWorks + footer live on the paper canvas (dark text).
+            Sections built for a dark surface (white text) are wrapped in
+            .section-ink — a navy block floating on paper. */}
         <HowItWorksSection />
-        <PricingDual />
-        <TestimonialsCarousel />
-        <FounderLetter />
-        <StopLeavingMarginCTA />
+        <div className="px-4 sm:px-6 my-8 space-y-8">
+          {/* M4-TPV Fase 2B — in-store channel cue. */}
+          <section className="section-ink py-10 sm:py-14 px-6 sm:px-10"><InStoreUpsellStrip /></section>
+          <section className="section-ink py-4"><ProblemSectionWow /></section>
+          <section className="section-ink py-4"><PricingDual /></section>
+          <section className="section-ink py-4"><TestimonialsCarousel /></section>
+          <section className="section-ink py-4"><FounderLetter /></section>
+          <section className="section-ink py-4"><StopLeavingMarginCTA /></section>
+        </div>
       </main>
       <LandingFooter />
     </div>
