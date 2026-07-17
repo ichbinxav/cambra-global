@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 import MobileNavMenu from "@/components/landing/MobileNavMenu";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 // CAMBRA public navigation — SAME set of links in every public page, whether
 // the visitor is signed in or not. Member navigation (Dashboard, Reports,
@@ -68,6 +69,7 @@ export default function Navbar() {
           style={{ fontWeight: 900, letterSpacing: "-0.04em", fontSize: 18, color: "#ffffff" }}
           aria-label={isAuthenticated ? "CAMBRA dashboard" : "CAMBRA home"}
         >
+          <img src={BRAND_ASSETS.cMarkWhite} alt="" width={22} height={22} className="h-[22px] w-[22px]" draggable={false} />
           CAMBRA
         </Link>
 

@@ -697,6 +697,16 @@ p { line-height: 1.6; }
 .cambra-range:active::-webkit-slider-thumb { transform: scale(1.08); }
 .cambra-range:active::-moz-range-thumb { transform: scale(1.08); }
 
+/* LANDING v1.1 Chunk 3 — hero stack float (6s) */
+.hero-stack { animation: hero-float 6s ease-in-out infinite; }
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-stack { animation: none; }
+}
+
 /* Motion reduce */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

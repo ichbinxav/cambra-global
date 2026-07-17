@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
+import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 /**
  * Founding 150 — dedicated section. Light background. Copy on the left,
@@ -62,17 +63,26 @@ export default function Founding150Section() {
           </div>
         </motion.div>
 
-        {/* RIGHT — lateral image slot (asset arrives in Chunk 3) */}
+        {/* RIGHT — frosted coin (Founding 150 reward: free forever). */}
         <motion.div
           initial={{ opacity: 0, scale: 0.92 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           id="coin-slot"
-          className="w-full"
-          style={{ maxWidth: 320, minHeight: 320 }}
-          aria-hidden
-        />
+          className="w-full flex justify-center"
+          style={{ maxWidth: 320 }}
+        >
+          <img
+            src={BRAND_ASSETS.coinFrosted}
+            alt="Free forever for the Founding 150"
+            width={320}
+            height={320}
+            loading="lazy"
+            className="w-full max-w-[320px] h-auto select-none"
+            draggable={false}
+          />
+        </motion.div>
       </div>
     </section>
   );

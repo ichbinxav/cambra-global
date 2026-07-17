@@ -8,8 +8,8 @@ import Navbar from "@/components/landing/Navbar";
 import { useTranslation } from "@/lib/i18n.jsx"; // used by HowItWorksSection + LandingFooter
 import AuroraBackground from "@/components/landing/AuroraBackground";
 import AnimatedSection from "@/components/landing/AnimatedSection";
-import SavingsCurveChart from "@/components/landing/SavingsCurveChart";
 import TestimonialsCarousel from "@/components/landing/TestimonialsCarousel";
+import { BRAND_ASSETS } from "@/lib/brandAssets";
 import FounderLetter from "@/components/landing/FounderLetter";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
@@ -198,64 +198,23 @@ function Hero() {
           </motion.div>
         </div>
 
-        {/* RIGHT — animated cumulative savings chart */}
+        {/* RIGHT — hero stack (frosted 3D object). Icon only, no callouts —
+            the callouts live in TheStackSection. Floats gently. */}
         <motion.div
-          className="lg:col-span-5"
+          className="lg:col-span-5 flex justify-center lg:justify-end"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
         >
-          <div
-            className="relative p-6 sm:p-8 overflow-hidden"
-            style={{
-              background: "#fff",
-              border: "1px solid var(--linea)",
-              borderRadius: 26,
-              boxShadow: "0 4px 20px rgba(12,12,22,0.04)",
-            }}
-          >
-            {/* Dot mesh inside the card — the reference texture, densest in the
-                bottom-right corner and dissolving toward the center. */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0"
-              style={{
-                backgroundImage:
-                  "radial-gradient(rgba(91,76,245,0.16) 1px, transparent 1.6px)",
-                backgroundSize: "22px 22px",
-                maskImage:
-                  "radial-gradient(ellipse 70% 70% at 100% 100%, #000 8%, transparent 74%)",
-                WebkitMaskImage:
-                  "radial-gradient(ellipse 70% 70% at 100% 100%, #000 8%, transparent 74%)",
-                opacity: 0.7,
-              }}
-            />
-            {/* Corner badge — Illustrative projection (2026-07-12 · R3).
-                Was "Live · network median / Q3 2026" — presented a fabricated
-                network figure (€48k) as live telemetry. Reframed as an
-                illustrative projection derived from our benchmark methodology,
-                anchored to the ICP (DTC €200k–€2M). No dated tag anymore. */}
-            <div className="relative z-10 flex items-center justify-between mb-2 gap-3 flex-wrap">
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full pl-1.5 pr-2.5 py-1 text-[9.5px] uppercase font-semibold"
-                style={{
-                  color: "var(--gris-1)",
-                  border: "1px solid var(--linea)",
-                  background: "#fff",
-                  letterSpacing: "0.16em",
-                  fontFamily: "'JetBrains Mono', monospace",
-                }}
-              >
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--voltio)" }} />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "var(--voltio)" }} />
-                </span>
-                Illustrative · Projection
-              </span>
-              <span className="text-[10px] font-mono" style={{ color: "var(--gris-2)" }}>DTC · €200k–€2M GMV</span>
-            </div>
-            <SavingsCurveChart className="relative z-10 mt-6" />
-          </div>
+          <img
+            src={BRAND_ASSETS.stackFrosted}
+            alt="CAMBRA — your entire payments stack, analyzed in one pass"
+            width={560}
+            height={560}
+            fetchpriority="high"
+            className="hero-stack w-[70%] max-w-[560px] h-auto select-none"
+            draggable={false}
+          />
         </motion.div>
       </div>
     </section>
@@ -402,9 +361,10 @@ function LandingFooter() {
         <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-10">
           <div>
             <span
-              className="font-black text-white"
+              className="font-black text-white inline-flex items-center gap-2.5"
               style={{ letterSpacing: "-0.04em", fontSize: 22 }}
             >
+              <img src={BRAND_ASSETS.cMarkWhite} alt="" width={26} height={26} className="h-[26px] w-[26px]" draggable={false} />
               CAMBRA
             </span>
             <p className="mt-4 max-w-xs text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>

@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import SectionHeading from "@/components/landing/SectionHeading";
+import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 /**
  * The Stack — "Your entire payments stack. One analysis."
@@ -43,17 +44,28 @@ export default function TheStackSection() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          {/* LEFT — image slot (asset arrives in Chunk 3) */}
+          {/* LEFT — frosted stack. Same icon as the hero (deliberate: the
+              icon appears in the hero, then gets explained here). No float
+              animation here, so the two placements read differently. */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             id="stack-slot"
-            className="w-full mx-auto"
-            style={{ maxWidth: 560, minHeight: 320 }}
-            aria-hidden
-          />
+            className="w-full mx-auto flex justify-center"
+            style={{ maxWidth: 560 }}
+          >
+            <img
+              src={BRAND_ASSETS.stackFrosted}
+              alt="Online payments, in-store terminals, contracts and benchmark — one stack"
+              width={560}
+              height={560}
+              loading="lazy"
+              className="w-full max-w-[560px] h-auto select-none"
+              draggable={false}
+            />
+          </motion.div>
 
           {/* RIGHT — callouts */}
           <div className="space-y-7">

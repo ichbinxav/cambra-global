@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
+import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 /**
  * Final CTA block — the WOW closer.
@@ -37,7 +38,7 @@ export default function StopLeavingMarginCTA() {
             "radial-gradient(circle, rgba(91,76,245,0.24) 0%, transparent 65%)",
           filter: "blur(120px)",
         }}
-        animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
+        animate={{ scale: [1, 1.08, 1], opacity: [0.55, 0.8, 0.55] }}
         transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
       />
       <motion.div
@@ -53,9 +54,24 @@ export default function StopLeavingMarginCTA() {
             "radial-gradient(circle, rgba(139,123,255,0.18) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
-        animate={{ scale: [1.05, 1, 1.05], opacity: [0.6, 0.9, 0.6] }}
+        animate={{ scale: [1.05, 1, 1.05], opacity: [0.45, 0.7, 0.45] }}
         transition={{ duration: 8, ease: "easeInOut", repeat: Infinity, delay: 1.5 }}
       />
+
+      {/* Vault (glow asset) — the closing object. Alpha-faded edges bake the
+          glow into the PNG itself, so NO background / border / shadow on the
+          image element. Sits centered behind the content. */}
+      <div aria-hidden className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <img
+          src={BRAND_ASSETS.vaultGlow}
+          alt=""
+          width={440}
+          height={440}
+          loading="lazy"
+          className="w-[440px] max-w-[70%] h-auto opacity-90 select-none"
+          draggable={false}
+        />
+      </div>
 
       {/* Watermark "CAMBRA" — massive, ghosted */}
       <div
