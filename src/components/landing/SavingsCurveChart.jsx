@@ -286,28 +286,34 @@ export default function SavingsCurveChart({
           <circle cx={mx} cy={my} r="2.5" fill="#8B7BFF" />
         </g>
 
-        {/* Live M{n} pill */}
-        {progress > 0.15 && (
-          <g transform={`translate(${mx + 12}, ${my - 10})`} opacity={progress}>
-            <rect
-              x="0" y="-9" width="30" height="16" rx="8"
-              fill="rgba(11,16,32,0.85)"
-              stroke="rgba(139,123,255,0.5)"
-              strokeWidth="0.75"
-            />
-            <text
-              x="15" y="2.5"
-              textAnchor="middle"
-              fill="#8B7BFF"
-              fontSize="9"
-              fontWeight="700"
-              fontFamily="ui-monospace, SFMono-Regular, monospace"
-              letterSpacing="0.05em"
-            >
-              M{currentMonth}
-            </text>
-          </g>
-        )}
+        {/* Live M{n} pill — flips to the LEFT of the marker near the right
+            edge so the label never gets clipped when the curve reaches the end. */}
+        {progress > 0.15 && (() => {
+          const pillW = 30;
+          const flip = mx + 12 + pillW > W - PAD_R;
+          const pillX = flip ? mx - 12 - pillW : mx + 12;
+          return (
+            <g transform={`translate(${pillX}, ${my - 10})`} opacity={progress}>
+              <rect
+                x="0" y="-9" width={pillW} height="16" rx="8"
+                fill="rgba(11,16,32,0.85)"
+                stroke="rgba(139,123,255,0.5)"
+                strokeWidth="0.75"
+              />
+              <text
+                x={pillW / 2} y="2.5"
+                textAnchor="middle"
+                fill="#8B7BFF"
+                fontSize="9"
+                fontWeight="700"
+                fontFamily="ui-monospace, SFMono-Regular, monospace"
+                letterSpacing="0.05em"
+              >
+                M{currentMonth}
+              </text>
+            </g>
+          );
+        })()}
       </svg>
 
       {/* ===== Footer meta ===== */}

@@ -373,10 +373,8 @@ function LandingFooter() {
       <div
         className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] px-8 sm:px-12 py-14"
         style={{
-          background: "linear-gradient(180deg, rgba(20,17,46,0.92) 0%, rgba(10,8,24,0.96) 100%)",
+          background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)",
           border: "1px solid rgba(255,255,255,0.06)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
         }}
       >
         {/* Soft purple ambient light (top-left) */}
