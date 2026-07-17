@@ -620,6 +620,35 @@ const DICT = {
     ac_chip_impact_complete: "Full-business view",
     ac_secondary_call:       "Prefer to talk? Book a call",
     ac_secondary_coll:       "or join the collective",
+
+    /* Landing — TheStackSection */
+    stack_eyebrow: "WHAT WE ANALYZE",
+    stack_h2_pre:  "Your entire payments stack.",
+    stack_h2_kw:   "One analysis.",
+    stack_c1_t: "Online payments",
+    stack_c1_d: "Stripe, Mollie, PayPal… what each sale really costs you.",
+    stack_c2_t: "In-store terminals",
+    stack_c2_d: "The quiet leak in your physical channel.",
+    stack_c3_t: "Contracts",
+    stack_c3_d: "What you signed vs. what brands your size actually pay.",
+    stack_c4_t: "Benchmark (base layer)",
+    stack_c4_d: "Real costs from real brands. Not the price list.",
+
+    /* Landing — RealImpactSection */
+    ri_eyebrow:   "REAL IMPACT",
+    ri_h2_pre:    "That gap is",
+    ri_h2_kw:     "+7% net profit.",
+    ri_sub_pre:   "One real brand, €1M in annual sales: paying an effective 2.21% per transaction when 1.47% was achievable. A ",
+    ri_sub_kw:    "0.74-point",
+    ri_sub_post:  " gap — €7,400 a year, ≈€15,000 over 24 months. Recovered, that's about 7% more net profit. Same sales. Same team.",
+
+    /* Landing — Founding150Section */
+    f150_eyebrow: "FOUNDING 150",
+    f150_h2_l1:   "150 brands.",
+    f150_h2_l2:   "Free forever.",
+    f150_h2_kw:   "One dataset.",
+    f150_sub:     "We're selecting 150 independent brands (€200k–€2M in annual sales) to build Europe's first database of what payments really cost. In exchange: full analysis and ongoing monitoring, free, forever.",
+    f150_cta:     "Claim my spot",
   },
 
   fr: {
@@ -1162,6 +1191,35 @@ const DICT = {
     ac_chip_impact_complete: "Vue complète de l'activité",
     ac_secondary_call:       "Vous préférez en parler ? Réservez un appel",
     ac_secondary_coll:       "ou rejoignez le collectif",
+
+    /* Landing — TheStackSection */
+    stack_eyebrow: "CE QUE NOUS ANALYSONS",
+    stack_h2_pre:  "Toute votre infrastructure de paiement.",
+    stack_h2_kw:   "Une seule analyse.",
+    stack_c1_t: "Paiements en ligne",
+    stack_c1_d: "Stripe, Mollie, PayPal… le coût réel de chaque vente.",
+    stack_c2_t: "Terminaux en boutique",
+    stack_c2_d: "La fuite silencieuse de votre canal physique.",
+    stack_c3_t: "Contrats",
+    stack_c3_d: "Ce que vous avez signé vs. ce que paient les marques de votre taille.",
+    stack_c4_t: "Benchmark (couche de base)",
+    stack_c4_d: "Des coûts réels de marques réelles. Pas la grille tarifaire.",
+
+    /* Landing — RealImpactSection */
+    ri_eyebrow:   "IMPACT RÉEL",
+    ri_h2_pre:    "Cet écart, c'est",
+    ri_h2_kw:     "+7 % de bénéfice net.",
+    ri_sub_pre:   "Une marque réelle, 1 M€ de ventes annuelles : un taux effectif de 2,21 % par transaction quand 1,47 % était atteignable. Un écart de ",
+    ri_sub_kw:    "0,74 point",
+    ri_sub_post:  " — 7 400 € par an, ≈15 000 € sur 24 mois. Récupéré, c'est environ 7 % de bénéfice net en plus. Mêmes ventes. Même équipe.",
+
+    /* Landing — Founding150Section */
+    f150_eyebrow: "FOUNDING 150",
+    f150_h2_l1:   "150 marques.",
+    f150_h2_l2:   "Gratuit à vie.",
+    f150_h2_kw:   "Une base de données.",
+    f150_sub:     "Nous sélectionnons 150 marques indépendantes (200 k€–2 M€ de ventes annuelles) pour construire la première base européenne du coût réel des paiements. En échange : analyse complète et suivi continu, gratuits, pour toujours.",
+    f150_cta:     "Réserver ma place",
   },
 
   es: {
@@ -1704,6 +1762,35 @@ const DICT = {
     ac_chip_impact_complete: "Vista de todo el negocio",
     ac_secondary_call:       "¿Prefieres hablar? Reserva una llamada",
     ac_secondary_coll:       "o únete al colectivo",
+
+    /* Landing — TheStackSection */
+    stack_eyebrow: "QUÉ ANALIZAMOS",
+    stack_h2_pre:  "Todo tu stack de pagos.",
+    stack_h2_kw:   "Un solo análisis.",
+    stack_c1_t: "Pagos online",
+    stack_c1_d: "Stripe, Mollie, PayPal… lo que de verdad te cuesta cada venta.",
+    stack_c2_t: "TPV en tienda",
+    stack_c2_d: "La fuga silenciosa de tu canal físico.",
+    stack_c3_t: "Contratos",
+    stack_c3_d: "Lo que firmaste vs. lo que pagan las marcas de tu tamaño.",
+    stack_c4_t: "Benchmark (capa base)",
+    stack_c4_d: "Costes reales de marcas reales. No la tarifa publicada.",
+
+    /* Landing — RealImpactSection */
+    ri_eyebrow:   "IMPACTO REAL",
+    ri_h2_pre:    "Ese gap es",
+    ri_h2_kw:     "+7% de beneficio neto.",
+    ri_sub_pre:   "Una marca real, 1 M€ de ventas anuales: pagaba un 2,21% efectivo por transacción cuando el 1,47% era alcanzable. Un gap de ",
+    ri_sub_kw:    "0,74 puntos",
+    ri_sub_post:  " — 7.400 € al año, ≈15.000 € en 24 meses. Recuperado, es cerca de un 7% más de beneficio neto. Mismas ventas. Mismo equipo.",
+
+    /* Landing — Founding150Section */
+    f150_eyebrow: "FOUNDING 150",
+    f150_h2_l1:   "150 marcas.",
+    f150_h2_l2:   "Gratis para siempre.",
+    f150_h2_kw:   "Una base de datos.",
+    f150_sub:     "Seleccionamos 150 marcas independientes (200k–2M € de ventas anuales) para construir la primera base europea del coste real de los pagos. A cambio: análisis completo y monitoring continuo, gratis, para siempre.",
+    f150_cta:     "Reservar mi plaza",
   },
 };
 

@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * Founding 150 — dedicated section. Light background. Copy on the left,
  * lateral image slot on the right (asset arrives in Chunk 3).
  */
 export default function Founding150Section() {
+  const { t } = useTranslation();
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
       {/* voltio wash */}
@@ -32,7 +34,7 @@ export default function Founding150Section() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="mb-5">
-            <SectionLabel>Founding 150</SectionLabel>
+            <SectionLabel>{t("f150_eyebrow")}</SectionLabel>
           </div>
           <h2
             style={{
@@ -44,22 +46,20 @@ export default function Founding150Section() {
               lineHeight: 1.0,
             }}
           >
-            150 brands.
+            {t("f150_h2_l1")}
             <br />
-            Free forever.
+            {t("f150_h2_l2")}
             <br />
-            <span className="kw">One dataset.</span>
+            <span className="kw">{t("f150_h2_kw")}</span>
           </h2>
 
           <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed max-w-xl mx-auto lg:mx-0" style={{ color: "var(--gris-1)" }}>
-            We're selecting 150 independent brands (€200k–€2M in annual sales)
-            to build Europe's first database of what payments really cost.
-            In exchange: full analysis and ongoing monitoring, free, forever.
+            {t("f150_sub")}
           </p>
 
           <div className="mt-8">
             <Link to="/Analyzer" className="btn-primary inline-flex items-center gap-2">
-              Claim my spot
+              {t("f150_cta")}
               <ArrowRight size={16} />
             </Link>
           </div>

@@ -2,48 +2,32 @@ import React from "react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import SectionHeading from "@/components/landing/SectionHeading";
-import { BRAND_ASSETS } from "@/lib/brandAssets";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * The Stack — "Your entire payments stack. One analysis."
  * Light section. Image on the left (asset arrives in Chunk 3 — empty
  * placeholder, no border), four callouts on the right. Stacks on mobile.
  */
-const CALLOUTS = [
-  {
-    title: "Online payments",
-    desc: "Stripe, Mollie, PayPal… what each sale really costs you.",
-    dot: "#7C3AED",
-  },
-  {
-    title: "In-store terminals",
-    desc: "The quiet leak in your physical channel.",
-    dot: "#3B82F6",
-  },
-  {
-    title: "Contracts",
-    desc: "What you signed vs. what brands your size actually pay.",
-    dot: "#22C1E0",
-  },
-  {
-    title: "Benchmark (base layer)",
-    desc: "Real costs from real brands. Not the price list.",
-    dot: "#2FE0A8",
-  },
-];
-
 export default function TheStackSection() {
+  const { t } = useTranslation();
+  const CALLOUTS = [
+    { title: t("stack_c1_t"), desc: t("stack_c1_d"), dot: "#7C3AED" },
+    { title: t("stack_c2_t"), desc: t("stack_c2_d"), dot: "#3B82F6" },
+    { title: t("stack_c3_t"), desc: t("stack_c3_d"), dot: "#22C1E0" },
+    { title: t("stack_c4_t"), desc: t("stack_c4_d"), dot: "#2FE0A8" },
+  ];
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <div className="text-center mb-12">
           <div className="flex justify-center mb-5">
-            <SectionLabel>What we analyze</SectionLabel>
+            <SectionLabel>{t("stack_eyebrow")}</SectionLabel>
           </div>
           <SectionHeading>
-            Your entire payments stack.
+            {t("stack_h2_pre")}
             <br />
-            <span className="kw">One analysis.</span>
+            <span className="kw">{t("stack_h2_kw")}</span>
           </SectionHeading>
         </div>
 

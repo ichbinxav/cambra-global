@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import SavingsCurveChart from "@/components/landing/SavingsCurveChart";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * Real Impact — promotes the existing "≈ 7% of annual profit" microcopy to
@@ -9,6 +10,7 @@ import SavingsCurveChart from "@/components/landing/SavingsCurveChart";
  * stats, disclaimers and methodology note are NOT modified here).
  */
 export default function RealImpactSection() {
+  const { t } = useTranslation();
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
       {/* soft mint wash */}
@@ -31,7 +33,7 @@ export default function RealImpactSection() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="mb-5">
-            <SectionLabel>Real impact</SectionLabel>
+            <SectionLabel>{t("ri_eyebrow")}</SectionLabel>
           </div>
           <h2
             style={{
@@ -43,17 +45,15 @@ export default function RealImpactSection() {
               lineHeight: 1.0,
             }}
           >
-            That gap is
+            {t("ri_h2_pre")}
             <br />
-            <span className="kw-m whitespace-nowrap">+7% net profit.</span>
+            <span className="kw-m whitespace-nowrap">{t("ri_h2_kw")}</span>
           </h2>
 
           <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed max-w-xl" style={{ color: "var(--gris-1)" }}>
-            One real brand, €1M in annual sales: paying an effective 2.21% per
-            transaction when 1.47% was achievable. A{" "}
-            <span className="kw-c">0.74-point</span> gap — €7,400 a year,
-            ≈€15,000 over 24 months. Recovered, that's about 7% more net profit.
-            Same sales. Same team.
+            {t("ri_sub_pre")}
+            <span className="kw-c">{t("ri_sub_kw")}</span>
+            {t("ri_sub_post")}
           </p>
         </motion.div>
 
