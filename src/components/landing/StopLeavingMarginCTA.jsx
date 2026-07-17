@@ -11,7 +11,18 @@ import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
  */
 export default function StopLeavingMarginCTA() {
   return (
-    <section className="relative py-24 sm:py-36 overflow-hidden">
+    <section className="relative py-16 sm:py-20 px-4 sm:px-6">
+     {/* Dark closer pill — this section is a full-bleed cinematic dark block,
+         so it renders as its own navy card on the paper canvas. Navy matches
+         the exact gradient used by every other dark pill on the page. */}
+     <div
+       className="relative mx-auto max-w-6xl rounded-[32px] overflow-hidden py-24 sm:py-32"
+       style={{
+         background: "linear-gradient(180deg, #0d1226 0%, #0a0d1c 55%, #08090f 100%)",
+         border: "1px solid rgba(255,255,255,0.08)",
+         boxShadow: "0 40px 100px -40px rgba(0,0,0,0.6), 0 16px 50px -22px rgba(91,76,245,0.3)",
+       }}
+     >
       {/* Pulsing multi-layer ambient halo — the heartbeat of the closing */}
       <motion.div
         aria-hidden
@@ -217,6 +228,7 @@ export default function StopLeavingMarginCTA() {
             "linear-gradient(90deg, transparent 0%, rgba(34,211,238,0.5) 50%, transparent 100%)",
         }}
       />
+     </div>
     </section>
   );
 }
