@@ -4,9 +4,9 @@
 // the C-mark SVGs are the wordmark glyph.
 export const BRAND_ASSETS = {
   // PNG transparent-background renders (no white backdrop) — hero, coin, cube.
-  stackFrosted: "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/ecba260b8_generated_image.png",
-  coinFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/94e90f5d3_generated_image.png",
-  cubeFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d0ce9e51c_generated_image.png",
+  stackFrosted: "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/afe378a27_generated_image.png",
+  coinFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/8a2363f55_generated_image.png",
+  cubeFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/5285241f1_generated_image.png",
   cMarkBig:     "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/9773758f8_generated_image.png",
   flowFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/8318cfed4_flow-frosted2x.webp",
   vaultGlow:    "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/05d7e1166_vault-glow2x.webp",
