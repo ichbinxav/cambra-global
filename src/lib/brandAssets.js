@@ -8,7 +8,7 @@ export const BRAND_ASSETS = {
   coinFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d06587bdf_coin-frosted2x.webp",
   cubeFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/99d61673f_vault-glow2x.webp",
   cMarkBig:     "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/9773758f8_generated_image.png",
-  flowFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/b26ab3713_flow-frosted2x.webp",
+  flowFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/583b18f2a_generated_image.png",
   vaultGlow:    "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/99d61673f_vault-glow2x.webp",
   cMarkMono:    "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/887838027_c-mark-mono.svg",
   cMarkVoltio:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/17cdcb4aa_c-mark-voltio.svg",

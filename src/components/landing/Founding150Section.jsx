@@ -79,11 +79,7 @@ export default function Founding150Section() {
             width={440}
             height={440}
             loading="lazy"
-            className="relative hero-stack w-full max-w-[440px] h-auto select-none"
-            style={{
-              maskImage: "radial-gradient(75% 75% at 50% 50%, #000 70%, rgba(0,0,0,0.5) 88%, transparent 100%)",
-              WebkitMaskImage: "radial-gradient(75% 75% at 50% 50%, #000 70%, rgba(0,0,0,0.5) 88%, transparent 100%)",
-            }}
+            className="relative w-full max-w-[440px] h-auto select-none"
             draggable={false}
           />
         </motion.div>
