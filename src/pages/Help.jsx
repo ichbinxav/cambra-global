@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Navbar from "@/components/landing/Navbar";
+import PublicPageShell from "@/components/shared/PublicPageShell";
 import HelpHero from "@/components/help/HelpHero";
 import HelpSearch from "@/components/help/HelpSearch";
 import CategoryGrid from "@/components/help/CategoryGrid";
@@ -21,27 +21,7 @@ export default function Help() {
   }, []);
 
   return (
-    <div
-      className="relative min-h-screen font-inter overflow-hidden text-white"
-      style={{
-        background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
-      }}
-    >
-      <Navbar />
-      {/* Ambient backdrop */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          opacity: 0.35,
-          maskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
-        }}
-      />
+    <PublicPageShell>
       <div className="relative">
         <HelpHero onSearchOpen={() => setSearchOpen(true)} />
         <CategoryGrid />
@@ -49,6 +29,6 @@ export default function Help() {
         <HelpCTA />
         <HelpSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       </div>
-    </div>
+    </PublicPageShell>
   );
 }
