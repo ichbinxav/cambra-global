@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Activity, Plug, BarChart3, Sparkles } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
+import PublicPageHero from "@/components/shared/PublicPageHero";
 import SectionLabel from "@/components/shared/SectionLabel";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -24,30 +25,14 @@ export default function HowItWorks() {
   ];
   return (
     <PublicPageShell>
-      <div className="relative pt-24 pb-20">
+      <PublicPageHero
+        eyebrow={t("hiw_hero_badge")}
+        title={t("hiw_hero_h1")}
+        subtitle={t("hiw_hero_sub")}
+      />
+
+      <div className="relative pt-16 pb-20">
         <div className="max-w-6xl mx-auto px-5">
-
-          {/* Hero */}
-          <div className="text-center mb-16">
-            <div className="flex justify-center mb-6">
-              <SectionLabel>{t("hiw_hero_badge")}</SectionLabel>
-            </div>
-
-            <h1
-              className="font-display font-black mb-5"
-              style={{
-                color: "var(--ink)",
-                fontSize: "clamp(2.4rem,6vw,4.4rem)",
-                letterSpacing: "-0.045em",
-                lineHeight: 0.92,
-              }}
-            >
-              {t("hiw_hero_h1")}
-            </h1>
-            <p className="text-base md:text-lg max-w-2xl mx-auto leading-relaxed" style={{ color: "var(--gris-1)" }}>
-              {t("hiw_hero_sub")}
-            </p>
-          </div>
 
           {/* Steps — large cinematic, on white paper cards */}
           <div className="space-y-6">

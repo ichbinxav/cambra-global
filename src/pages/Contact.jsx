@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, MessageSquare, ArrowRight, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 import PublicPageShell from "@/components/shared/PublicPageShell";
-import SectionLabel from "@/components/shared/SectionLabel";
+import PublicPageHero from "@/components/shared/PublicPageHero";
 import { base44 } from "@/api/base44Client";
 
 export default function Contact() {
@@ -47,37 +48,27 @@ export default function Contact() {
 
   return (
     <PublicPageShell>
-      <div className="relative pt-24 pb-20">
-        <div className="max-w-3xl mx-auto px-5">
-          <div className="text-center mb-14">
-            <div className="flex justify-center mb-6">
-              <SectionLabel>Contact · We're here to help</SectionLabel>
-            </div>
-            <h1
-              className="font-display font-black mb-4"
-              style={{
-                color: "var(--ink)",
-                fontSize: "clamp(2.2rem,5.5vw,4rem)",
-                letterSpacing: "-0.045em",
-                lineHeight: 0.92,
-              }}
-            >
-              Get in <span className="kw">touch.</span>
-            </h1>
-            <p className="text-base max-w-md mx-auto" style={{ color: "var(--gris-1)" }}>
-              Questions about CAMBRA? We're here to help.
-            </p>
-          </div>
+      <PublicPageHero
+        eyebrow="Contact · We're here to help"
+        title={<>Get in <span className="kw-m">touch.</span></>}
+        subtitle="Questions about CAMBRA? We're here to help."
+      />
 
+      <div className="relative pt-16 pb-20">
+        <div className="max-w-3xl mx-auto px-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
             {[
               { icon: Mail, label: "General", value: "hello@cambra.global", href: "mailto:hello@cambra.global" },
               { icon: MessageSquare, label: "Support", value: "support@cambra.global", href: "mailto:support@cambra.global" },
             ].map((c, i) => (
-              <a
+              <motion.a
                 key={i}
                 href={c.href}
-                className="group p-6 text-center transition hover:-translate-y-0.5"
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="group p-6 text-center transition hover:-translate-y-1 hover:shadow-lg block"
                 style={{
                   background: "#FFFFFF",
                   border: "1px solid var(--linea)",
@@ -93,11 +84,15 @@ export default function Contact() {
                 </div>
                 <p className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>{c.label}</p>
                 <p className="text-sm" style={{ color: "var(--gris-1)" }}>{c.value}</p>
-              </a>
+              </motion.a>
             ))}
           </div>
 
-          <div
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="relative overflow-hidden p-8"
             style={{
               background: "#FFFFFF",
@@ -163,7 +158,7 @@ export default function Contact() {
                 )}
               </form>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </PublicPageShell>

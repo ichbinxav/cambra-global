@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
+import { motion } from "framer-motion";
 import PublicPageShell from "@/components/shared/PublicPageShell";
-import SectionLabel from "@/components/shared/SectionLabel";
+import PublicPageHero from "@/components/shared/PublicPageHero";
 import InitialsAvatar from "@/components/shared/InitialsAvatar";
 import { useTranslation } from "@/lib/i18n.jsx";
 
@@ -50,33 +51,23 @@ export default function Testimonials() {
   const { t } = useTranslation();
   return (
     <PublicPageShell>
-      <div className="relative pt-24 pb-20">
-        <div className="max-w-6xl mx-auto px-5">
-          <div className="text-center mb-14">
-            <div className="flex justify-center mb-6">
-              <SectionLabel>{t("tst_hero_badge")}</SectionLabel>
-            </div>
-            <h1
-              className="font-display font-black mb-4"
-              style={{
-                color: "var(--ink)",
-                fontSize: "clamp(2.2rem,5.5vw,4rem)",
-                letterSpacing: "-0.045em",
-                lineHeight: 0.92,
-              }}
-            >
-              {t("tst_hero_h1")}
-            </h1>
-            <p className="text-base max-w-xl mx-auto" style={{ color: "var(--gris-1)" }}>
-              {t("tst_hero_sub")}
-            </p>
-          </div>
+      <PublicPageHero
+        eyebrow={t("tst_hero_badge")}
+        title={t("tst_hero_h1")}
+        subtitle={t("tst_hero_sub")}
+      />
 
+      <div className="relative pt-16 pb-20">
+        <div className="max-w-6xl mx-auto px-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {TESTIMONIALS.map((tm, i) => (
-              <div
+              <motion.div
                 key={i}
-                className="relative overflow-hidden p-7 flex flex-col transition hover:-translate-y-0.5"
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5, delay: (i % 2) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="relative overflow-hidden p-7 flex flex-col transition hover:-translate-y-1 hover:shadow-lg"
                 style={{
                   background: "#FFFFFF",
                   border: "1px solid var(--linea)",
@@ -101,7 +92,7 @@ export default function Testimonials() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

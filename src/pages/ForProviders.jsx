@@ -22,6 +22,7 @@ import {
   Handshake, CheckCircle2, Globe, Mail,
 } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
+import PublicPageHero from "@/components/shared/PublicPageHero";
 import SectionLabel from "@/components/shared/SectionLabel";
 
 // ── Tier cards data ─────────────────────────────────────────────────
@@ -232,59 +233,22 @@ function TierCard({ tier, accent }) {
 export default function ForProviders() {
   return (
     <PublicPageShell>
-      {/* Soft voltio wash behind hero — dialed to ~25% for the paper canvas. */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed"
-        style={{
-          width: 700, height: 700, left: "50%", top: 100, transform: "translateX(-50%)",
-          background: "radial-gradient(circle, rgba(58,43,176,0.06) 0%, transparent 70%)",
-          filter: "blur(80px)",
-        }}
+      <PublicPageHero
+        eyebrow="For payment providers"
+        align="left"
+        title={<>Merchants are comparing you <span className="kw-c">right now.</span><br />Be the answer.</>}
+        subtitle="CAMBRA runs a payments audit for independent brands — online and in-store. Every audit compares the merchant's current effective rate against the best publicly contractable alternative for their region and ticket size. If your pricing is public, we can cite it. If you'll offer an exclusive rate through us, we can present it."
       />
 
-      <div className="relative max-w-5xl mx-auto px-6 pt-24 pb-20">
+      <div className="relative max-w-5xl mx-auto px-6 pt-14 pb-20">
         <Link to="/">
           <button
-            className="mb-8 -ml-2 h-8 text-xs rounded-full px-3 inline-flex items-center transition-colors"
+            className="mb-10 -ml-2 h-8 text-xs rounded-full px-3 inline-flex items-center transition-colors"
             style={{ color: "var(--gris-1)" }}
           >
             <ArrowLeft size={13} className="mr-1.5" /> Back
           </button>
         </Link>
-
-        {/* Hero */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-16 max-w-3xl"
-        >
-          <div className="mb-6">
-            <SectionLabel>For payment providers</SectionLabel>
-          </div>
-
-          <h1
-            className="mb-5"
-            style={{
-              color: "var(--ink)",
-              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(38px, 6.5vw, 76px)",
-              fontWeight: 900,
-              letterSpacing: "-0.045em",
-              lineHeight: 0.94,
-            }}
-          >
-            Merchants are comparing you{" "}
-            <span className="kw-c">right now.</span>
-            <br />
-            Be the answer.
-          </h1>
-
-          <p className="text-[16px] leading-relaxed max-w-2xl" style={{ color: "var(--gris-1)" }}>
-            CAMBRA runs a payments audit for independent brands — online and in-store. Every audit compares the merchant's current effective rate against the best publicly contractable alternative for their region and ticket size. If your pricing is public, we can cite it. If you'll offer an exclusive rate through us, we can present it.
-          </p>
-        </motion.section>
 
         {/* Tier cards */}
         <section className="mb-16">

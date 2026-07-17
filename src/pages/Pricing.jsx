@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck, TrendingUp, Zap, Lock, Sparkles } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
+import PublicPageHero from "@/components/shared/PublicPageHero";
 import SectionLabel from "@/components/shared/SectionLabel";
 import PricingDual from "@/components/landing/PricingDual";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -139,71 +140,39 @@ export default function Pricing() {
   const { t } = useTranslation();
   return (
     <PublicPageShell>
-      {/* hero halo — voltio wash dialed to ~25% for the paper canvas */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute"
-        style={{
-          width: 900,
-          height: 900,
-          left: "50%",
-          top: "-10%",
-          transform: "translateX(-50%)",
-          background: "radial-gradient(circle, rgba(58,43,176,0.05) 0%, transparent 60%)",
-          filter: "blur(80px)",
-        }}
-      />
+      <PublicPageHero
+        eyebrow={t("prc_hero_badge")}
+        title={t("prc_hero_h1")}
+        subtitle={t("prc_hero_sub")}
+      >
+        {/* CTA */}
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+          <Link to="/Analyzer" className="btn-primary inline-flex items-center gap-2">
+            {t("prc_cta_primary")}
+            <ArrowRight size={14} />
+          </Link>
+          <Link
+            to="/HowItWorks"
+            className="inline-flex items-center rounded-full px-7 py-3.5 text-[13px] font-medium transition-colors text-white/80 hover:text-white"
+            style={{ border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.04)" }}
+          >
+            {t("prc_cta_secondary")}
+          </Link>
+        </div>
 
-      <div className="relative pt-24 pb-20">
+        {/* Trust bar */}
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[12px] text-white/60">
+          {TRUST_POINTS.map(({ icon: Icon, key }) => (
+            <span key={key} className="inline-flex items-center gap-1.5">
+              <Icon size={13} style={{ color: "#7DE3FF" }} />
+              {t(key)}
+            </span>
+          ))}
+        </div>
+      </PublicPageHero>
+
+      <div className="relative pt-16 pb-20">
         <div className="max-w-6xl mx-auto px-5">
-          {/* HERO */}
-          <div className="text-center mb-16 md:mb-20">
-            <div className="flex justify-center mb-6">
-              <SectionLabel>{t("prc_hero_badge")}</SectionLabel>
-            </div>
-
-            <h1
-              className="font-display mb-6"
-              style={{
-                color: "var(--ink)",
-                fontSize: "clamp(2.6rem, 6.5vw, 5rem)",
-                fontWeight: 900,
-                letterSpacing: "-0.05em",
-                lineHeight: 0.92,
-              }}
-            >
-              {t("prc_hero_h1")}
-            </h1>
-            <p className="text-base md:text-lg max-w-2xl mx-auto leading-relaxed mb-8" style={{ color: "var(--gris-1)" }}>
-              {t("prc_hero_sub")}
-            </p>
-
-            {/* CTA */}
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
-              <Link to="/Analyzer" className="btn-primary inline-flex items-center gap-2">
-                {t("prc_cta_primary")}
-                <ArrowRight size={14} />
-              </Link>
-              <Link
-                to="/HowItWorks"
-                className="inline-flex items-center rounded-full px-7 py-3.5 text-[13px] font-medium transition-colors"
-                style={{ border: "1px solid var(--linea)", background: "#FFFFFF", color: "var(--gris-1)" }}
-              >
-                {t("prc_cta_secondary")}
-              </Link>
-            </div>
-
-            {/* Trust bar */}
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[12px]" style={{ color: "var(--gris-1)" }}>
-              {TRUST_POINTS.map(({ icon: Icon, key }) => (
-                <span key={key} className="inline-flex items-center gap-1.5">
-                  <Icon size={13} style={{ color: "var(--voltio)" }} />
-                  {t(key)}
-                </span>
-              ))}
-            </div>
-          </div>
-
           {/* Split visual */}
           <SplitVisual />
 
