@@ -212,7 +212,7 @@ function Hero() {
             width={600}
             height={600}
             fetchpriority="high"
-            className="relative hero-stack w-full max-w-[1125px] h-auto select-none lg:-ml-40 lg:scale-125 lg:origin-left"
+            className="relative hero-stack w-full max-w-[1125px] h-auto select-none lg:-ml-56 lg:scale-[1.56] lg:origin-left"
             draggable={false}
           />
         </motion.div>
