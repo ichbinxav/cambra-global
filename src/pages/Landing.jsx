@@ -327,7 +327,7 @@ function HowItWorksSection() {
                     letterSpacing: "-0.05em",
                     lineHeight: 1,
                     background:
-                      "linear-gradient(180deg, rgba(96,165,250,0.18), rgba(255,255,255,0.02) 70%)",
+                      "linear-gradient(180deg, rgba(96,165,250,0.65) 0%, rgba(34,211,238,0.35) 45%, rgba(255,255,255,0.06) 95%)",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",

@@ -28,13 +28,6 @@ const FREE_FEATURES = [
   "Your savings estimate in euros",
 ];
 
-const MONITORING_FEATURES = [
-  "Monthly re-scan of your rate",
-  "Alert if your effective rate drifts up",
-  "Cohort benchmark refresh",
-  "Ongoing savings tracking (included as we roll out)",
-];
-
 const RECOVERY_FEATURES = [
   "Interchange floor benchmarking",
   "Payments rate negotiation",
@@ -196,64 +189,6 @@ function Tier({
   );
 }
 
-/**
- * MonitoringPriceRow — bespoke price block for the Monitoring tier.
- * Renders "Free" as the headline number, with €29/mo struck-through as
- * strike context, and a founding-cohort pill below explaining the grant
- * duration in plain English ("12 months — founding cohort").
- */
-function MonitoringPriceRow() {
-  return (
-    <div>
-      <div className="flex items-baseline gap-3 flex-wrap">
-        <div
-          className="font-black tabular-nums"
-          style={{
-            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(44px, 5.2vw, 64px)",
-            letterSpacing: "-0.055em",
-            lineHeight: 0.9,
-            background:
-              "linear-gradient(135deg, #ffffff 0%, #b8d8e0 45%, #39C6F0 100%)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            filter: "drop-shadow(0 0 18px rgba(34,211,238,0.28))",
-          }}
-        >
-          Free
-        </div>
-        <span
-          className="text-[15px] font-bold tabular-nums text-white/40"
-          style={{ textDecoration: "line-through" }}
-        >
-          €29/mo
-        </span>
-      </div>
-      <div className="mt-3">
-        <span
-          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1"
-          style={{
-            border: "1px solid rgba(34,211,238,0.25)",
-            background: "rgba(34,211,238,0.06)",
-          }}
-        >
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
-          </span>
-          <span className="text-[10px] uppercase font-bold tracking-[0.22em] text-cyan-200">
-            12 months — founding cohort
-          </span>
-        </span>
-      </div>
-      <p className="mt-2 text-[12px] font-medium text-white/50 leading-snug">
-        First 150 brands. After that, €29/mo.
-      </p>
-    </div>
-  );
-}
-
 export default function PricingDual() {
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
@@ -282,12 +217,12 @@ export default function PricingDual() {
         </SectionHeading>
         <div className="text-center mb-12 sm:mb-14">
           <p className="text-[13px] sm:text-[14px] max-w-lg mx-auto" style={{ color: "var(--gris-1)" }}>
-            Analyze for free. Monitor for free during the founding cohort. Pay only when we actually recover margin — 25% of verified payment savings.
+            Analyze for free. Pay only when we actually recover margin — 25% of verified payment savings.
           </p>
         </div>
 
-        {/* Three columns — Analyze · Monitoring · Recover */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+        {/* Two columns — Analyze · Recover */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-3xl mx-auto">
           {/* STEP 1 — Analyze (free, always) */}
           <div
             className="relative rounded-3xl overflow-hidden"
@@ -325,43 +260,7 @@ export default function PricingDual() {
             />
           </div>
 
-          {/* STEP 2 — Monitoring (founding cohort: free 24mo, then €29/mo) */}
-          <div
-            className="relative rounded-3xl overflow-hidden"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(13,18,36,0.82) 0%, rgba(6,8,15,0.82) 100%)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              boxShadow:
-                "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
-            }}
-          >
-            <div
-              aria-hidden
-              className="absolute pointer-events-none"
-              style={{
-                width: 320, height: 320, left: "50%", top: "-25%", transform: "translateX(-50%)",
-                background: "radial-gradient(circle, rgba(96,165,250,0.10) 0%, transparent 70%)",
-                filter: "blur(60px)",
-              }}
-            />
-            <span
-              className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em] text-white/40"
-              aria-hidden
-            >
-              Step 2
-            </span>
-            <Tier
-              eyebrow="Monitoring"
-              eyebrowAccent="white"
-              priceRow={<MonitoringPriceRow />}
-              features={MONITORING_FEATURES}
-              ctaText="Start monitoring"
-              ctaPrimary={false}
-            />
-          </div>
-
-          {/* STEP 3 — Recover (25% success fee, 24-month agreement) */}
+          {/* STEP 2 — Recover (25% success fee, 24-month agreement) */}
           <div
             className="relative rounded-3xl overflow-hidden"
             style={{
@@ -385,7 +284,7 @@ export default function PricingDual() {
               className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em] text-cyan-300/70"
               aria-hidden
             >
-              Step 3
+              Step 2
             </span>
             <Tier
               eyebrow="Recover"
