@@ -261,7 +261,8 @@ export default function ProblemSectionWow() {
             {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "up to 40%" is the
                 PROBLEM/cost → .kw-c (Coral Gap). */}
             <span className="kw-c">up to 40%</span>{" "}
-            on card payments.{" "}
+            on card payments.
+            <br />
             <span className="kw-c">Every month.</span>
           </SectionHeading>
         </AnimatedSection>
