@@ -496,7 +496,7 @@ export default function Landing() {
         <ProblemSectionWow />
         <HowItWorksSection />
         <PricingDual />
-        {/* <TestimonialsCarousel /> */}
+        <TestimonialsCarousel />
         <FounderLetter />
         <StopLeavingMarginCTA />
       </main>
