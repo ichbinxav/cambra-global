@@ -78,8 +78,7 @@ export default function TestimonialsCarousel() {
     <section id="testimonials" className="relative py-12 sm:py-16 overflow-hidden">
       <div className="relative max-w-2xl mx-auto px-6 sm:px-10">
         <SectionHeading eyebrow="Real findings" className="mb-8">
-          What brands{" "}
-          <span className="kw">actually recovered.</span>
+          <span className="whitespace-nowrap">What brands <span className="kw">actually recovered.</span></span>
         </SectionHeading>
 
         {/* Unified dark card — no split */}
