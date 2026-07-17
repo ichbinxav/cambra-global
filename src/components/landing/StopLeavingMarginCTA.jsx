@@ -119,8 +119,9 @@ export default function StopLeavingMarginCTA() {
             fontFamily: "'Space Grotesk', 'Inter', sans-serif",
             fontSize: "clamp(52px, 10vw, 128px)",
             fontWeight: 900,
-            letterSpacing: "-0.055em",
+            letterSpacing: "-0.05em",
             lineHeight: 0.9,
+            textTransform: "uppercase",
             textShadow: "0 0 80px rgba(34,211,238,0.25)",
           }}
         >

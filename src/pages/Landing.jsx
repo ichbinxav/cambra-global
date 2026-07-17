@@ -119,8 +119,9 @@ function Hero() {
               color: "var(--ink)",
               fontSize: "clamp(44px, 7.5vw, 96px)",
               fontWeight: 900,
-              letterSpacing: "-0.05em",
+              letterSpacing: "-0.045em",
               lineHeight: 0.94,
+              textTransform: "uppercase",
             }}
           >
             {t("hero_h1_line1")}

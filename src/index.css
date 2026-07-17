@@ -1042,10 +1042,16 @@ body, p {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: radial-gradient(circle, rgba(91,76,245,.25) 1px, transparent 1.5px);
-  background-size: 18px 18px;
-  -webkit-mask-image: radial-gradient(ellipse 60% 60% at 100% 100%, black, transparent 70%);
-  mask-image: radial-gradient(ellipse 60% 60% at 100% 100%, black, transparent 70%);
+  /* Condensing paper mesh — two dot layers (coarse + fine offset) that
+     densify toward the bottom-right corner and dissolve inward, the
+     Stripe/Apple hero texture. */
+  background-image:
+    radial-gradient(circle, rgba(91,76,245,.28) 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(91,76,245,.16) 0.8px, transparent 1.3px);
+  background-size: 22px 22px, 11px 11px;
+  background-position: 0 0, 11px 11px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 100% 100%, black 8%, rgba(0,0,0,0.4) 42%, transparent 74%);
+  mask-image: radial-gradient(ellipse 70% 70% at 100% 100%, black 8%, rgba(0,0,0,0.4) 42%, transparent 74%);
 }
 
 .panel-dark {
@@ -1101,24 +1107,27 @@ body, p {
     radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.20) 0%, transparent 60%),
     radial-gradient(90% 70% at 50% -20%, rgba(139,123,255,0.18) 0%, transparent 60%),
     linear-gradient(180deg, #0d1226 0%, #0a0d1c 55%, #08090f 100%);
-  border-radius: 28px;
+  border-radius: 32px;
   overflow: hidden;
   isolation: isolate;
   margin-left: auto;
   margin-right: auto;
   max-width: 78rem;
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.08);
   box-shadow:
-    0 1px 0 rgba(255,255,255,0.06) inset,
+    0 1px 0 rgba(139,123,255,0.12) inset,
     0 -1px 0 rgba(255,255,255,0.03) inset,
-    0 40px 90px -40px rgba(0,0,0,0.7),
-    0 12px 40px -20px rgba(91,76,245,0.28);
+    0 40px 100px -40px rgba(0,0,0,0.75),
+    0 16px 50px -22px rgba(91,76,245,0.35);
 }
 @media (max-width: 640px) {
-  .section-ink { border-radius: 20px; }
+  .section-ink { border-radius: 24px; }
 }
-/* Fine grid + soft top-anchored fade — adds the "engineered" texture the
-   flat navy was missing, masked so it dissolves toward the edges. */
+/* Condensing dot-mesh — DOTS, not straight lines. Two layers of radial
+   dots (a coarse 28px lattice + a fine 14px one) that are DENSE in the
+   bottom-right corner and dissolve toward the center, exactly like the
+   Stripe/Apple-style moodboard. The corner-anchored mask does the
+   "condensing + fading" — the mesh is never a flat uniform grid. */
 .section-ink::before {
   content: "";
   position: absolute;
@@ -1126,12 +1135,13 @@ body, p {
   pointer-events: none;
   z-index: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-  background-size: 46px 46px;
-  -webkit-mask-image: radial-gradient(ellipse 95% 85% at 50% 0%, #000 25%, transparent 75%);
-  mask-image: radial-gradient(ellipse 95% 85% at 50% 0%, #000 25%, transparent 75%);
-  opacity: 0.5;
+    radial-gradient(rgba(255,255,255,0.16) 1.1px, transparent 1.6px),
+    radial-gradient(rgba(139,123,255,0.14) 0.9px, transparent 1.4px);
+  background-size: 28px 28px, 14px 14px;
+  background-position: 0 0, 7px 7px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 85% at 100% 100%, #000 5%, rgba(0,0,0,0.35) 45%, transparent 78%);
+  mask-image: radial-gradient(ellipse 85% 85% at 100% 100%, #000 5%, rgba(0,0,0,0.35) 45%, transparent 78%);
+  opacity: 0.9;
 }
 /* Floating cian bloom in the top-right — the same drifting glow that makes
    the curve card feel alive. Blurred, blended, non-interactive. */
