@@ -52,10 +52,11 @@ export default function Navbar() {
     <header
       className="fixed top-0 left-0 right-0 z-50"
       style={{
-        background: "rgba(10,10,10,0.85)",
+        /* DA v1.1 Chunk 1d — paper-first: navbar claro translúcido. */
+        background: "rgba(250,250,252,0.85)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        borderBottom: "1px solid var(--linea)",
       }}
     >
       <div className="max-w-7xl mx-auto px-5 lg:px-8 h-14 flex items-center justify-between">
@@ -63,8 +64,8 @@ export default function Navbar() {
         {/* Logo — always a way out. Signed in → Dashboard, else → home. */}
         <Link
           to={isAuthenticated ? "/Dashboard" : "/"}
-          className="flex-shrink-0 inline-flex items-center gap-2 text-white"
-          style={{ fontWeight: 900, letterSpacing: "-0.04em", fontSize: 18 }}
+          className="flex-shrink-0 inline-flex items-center gap-2"
+          style={{ fontWeight: 900, letterSpacing: "-0.04em", fontSize: 18, color: "var(--ink)" }}
           aria-label={isAuthenticated ? "CAMBRA dashboard" : "CAMBRA home"}
         >
           CAMBRA
@@ -80,13 +81,13 @@ export default function Navbar() {
                 to={item.href}
                 className={`relative px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                   active
-                    ? "text-white"
-                    : "text-white/55 hover:text-white"
+                    ? "text-[color:var(--ink)]"
+                    : "text-[color:var(--gris-1)] hover:text-[color:var(--ink)]"
                 }`}
               >
                 {trLabel(item.label)}
                 {active && (
-                  <span className="absolute left-3 right-3 -bottom-[14px] h-[2px] bg-white rounded-full" />
+                  <span className="absolute left-3 right-3 -bottom-[14px] h-[2px] rounded-full" style={{ background: "var(--ink)" }} />
                 )}
               </Link>
             );
@@ -95,15 +96,15 @@ export default function Navbar() {
 
         {/* Desktop CTAs — dark variant to match landing */}
         <div className="hidden md:flex items-center gap-2">
-          <LanguageSwitcher variant="dark" className="mr-1" />
+          <LanguageSwitcher variant="light" className="mr-1" />
           {isAuthenticated ? (
             <>
               {isAdmin && (
-                <Link to="/admin" className="btn-base btn-secondary-dark btn-sm">
+                <Link to="/admin" className="btn-base btn-secondary btn-sm">
                   <Shield size={12} /> Admin
                 </Link>
               )}
-              <Link to="/Dashboard" className="btn-base btn-primary-inverse btn-sm">
+              <Link to="/Dashboard" className="btn-base btn-primary btn-sm">
                 {t("nav_dashboard")}
               </Link>
             </>
@@ -113,11 +114,11 @@ export default function Navbar() {
                 href="/auth/start"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-base btn-ghost-dark btn-sm"
+                className="btn-base btn-ghost btn-sm"
               >
                 Sign in
               </a>
-              <Link to="/Analyzer" className="btn-base btn-primary-inverse btn-sm">
+              <Link to="/Analyzer" className="btn-base btn-primary btn-sm">
                 {t("nav_get_started")} <ArrowRight className="h-3 w-3" />
               </Link>
             </>
@@ -126,7 +127,7 @@ export default function Navbar() {
 
         {/* Mobile toggle */}
         <button
-          className="md:hidden p-2 text-white/80 hover:text-white transition-colors -mr-2"
+          className="md:hidden p-2 text-[color:var(--gris-1)] hover:text-[color:var(--ink)] transition-colors -mr-2"
           onClick={() => setOpen(v => !v)}
           aria-label="Toggle menu"
         >

@@ -72,20 +72,19 @@ function LandingJsonLd() {
 function Hero() {
   const { t } = useTranslation();
   return (
-    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "#ffffff", paddingTop: 80 }}>
-      {/* Cinematic ambient layers */}
-      <AuroraBackground intensity={1} />
-
-      {/* Spotlight halo behind headline */}
+    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "var(--ink)", paddingTop: 80 }}>
+      {/* DA v1.1 Chunk 1d — Aurora navy removida sobre hero claro. Spotlight
+          reducido a un wash voltio suave (~25% opacidad) para no ensuciar. */}
+      {/* eslint-disable-next-line no-unused-vars */}
       <motion.div
         aria-hidden
         className="absolute pointer-events-none"
         style={{
           width: 720, height: 720, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-          background: "radial-gradient(circle, rgba(59,130,246,0.22) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(91,76,245,0.08) 0%, transparent 70%)",
           filter: "blur(70px)",
         }}
-        animate={{ scale: [1, 1.08, 1], opacity: [0.85, 1, 0.85] }}
+        animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.85, 0.6] }}
         transition={{ duration: 7, ease: "easeInOut", repeat: Infinity }}
       />
 
@@ -95,35 +94,33 @@ function Hero() {
           <motion.div
             className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-8 text-[11px] uppercase tracking-[0.22em]"
             style={{
-              border: "1px solid rgba(96,165,250,0.30)",
-              color: "rgba(255,255,255,0.85)",
-              background: "rgba(59,130,246,0.06)",
+              border: "1px solid rgba(91,76,245,0.25)",
+              color: "var(--gris-1)",
+              background: "rgba(91,76,245,0.05)",
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
-              boxShadow: "0 0 24px rgba(59,130,246,0.18)",
             }}
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
+              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--voltio)" }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "var(--voltio)" }} />
             </span>
             {t("hero_badge")}
           </motion.div>
 
           <motion.h1
-            className="text-white"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             style={{
+              color: "var(--ink)",
               fontSize: "clamp(44px, 7.5vw, 96px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
               lineHeight: 0.94,
-              textShadow: "0 0 60px rgba(59,130,246,0.18)",
             }}
           >
             {t("hero_h1_line1")}
@@ -134,8 +131,8 @@ function Hero() {
           </motion.h1>
 
           <motion.p
-            className="mt-8 text-white/60"
-            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6 }}
+            className="mt-8"
+            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, color: "var(--gris-1)" }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
@@ -152,10 +149,11 @@ function Hero() {
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/Analyzer"
-                className="inline-flex items-center gap-2 rounded-full bg-white text-black px-8 py-4 font-bold text-[14px] transition-shadow"
+                className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-bold text-[14px] transition-shadow"
                 style={{
-                  boxShadow:
-                    "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
+                  background: "var(--ink)",
+                  color: "var(--paper)",
+                  boxShadow: "0 8px 24px -10px rgba(12,12,22,0.4)",
                 }}
               >
                 {t("hero_cta_primary")}
@@ -163,15 +161,13 @@ function Hero() {
               </Link>
             </motion.div>
             <motion.a
-              whileHover={{ scale: 1.03, borderColor: "rgba(255,255,255,0.5)", color: "rgba(255,255,255,0.95)" }}
+              whileHover={{ scale: 1.03, borderColor: "var(--ink)" }}
               href="#testimonials"
               className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium"
               style={{
-                border: "1px solid rgba(255,255,255,0.20)",
-                color: "rgba(255,255,255,0.70)",
-                backdropFilter: "blur(8px)",
-                WebkitBackdropFilter: "blur(8px)",
-                background: "rgba(255,255,255,0.02)",
+                border: "1px solid var(--linea)",
+                color: "var(--gris-1)",
+                background: "#fff",
               }}
             >
               {t("hero_cta_secondary")}
@@ -181,21 +177,21 @@ function Hero() {
           {/* Trust row */}
           <motion.div
             className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px]"
-            style={{ color: "rgba(255,255,255,0.45)" }}
+            style={{ color: "var(--gris-2)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.6 }}
           >
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} className="text-cyan-300/80" />
+              <ShieldCheck size={13} style={{ color: "var(--menta-dark)" }} />
               {t("hero_trust_1")}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} className="text-cyan-300/80" />
+              <ShieldCheck size={13} style={{ color: "var(--menta-dark)" }} />
               {t("hero_trust_2")}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={13} className="text-cyan-300/80" />
+              <ShieldCheck size={13} style={{ color: "var(--menta-dark)" }} />
               {t("hero_trust_3")}
             </span>
           </motion.div>
@@ -211,13 +207,10 @@ function Hero() {
           <div
             className="relative p-6 sm:p-8 rounded-2xl overflow-hidden"
             style={{
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              boxShadow:
-                "0 30px 80px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(96,165,250,0.18)",
+              /* DA v1.1 Chunk 1d — projection card a blanca sobre hero claro. */
+              background: "#fff",
+              border: "1px solid var(--linea)",
+              boxShadow: "0 8px 24px rgba(12,12,22,0.06)",
             }}
           >
             {/* Corner badge — Illustrative projection (2026-07-12 · R3).
@@ -226,14 +219,14 @@ function Hero() {
                 illustrative projection derived from our benchmark methodology,
                 anchored to the ICP (DTC €200k–€2M). No dated tag anymore. */}
             <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "var(--gris-1)" }}>
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+                  <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--voltio)" }} />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "var(--voltio)" }} />
                 </span>
                 Illustrative · Projection
               </span>
-              <span className="text-[10px] text-white/35 font-mono">DTC · €200k–€2M GMV</span>
+              <span className="text-[10px] font-mono" style={{ color: "var(--gris-2)" }}>DTC · €200k–€2M GMV</span>
             </div>
             <SavingsCurveChart className="mt-6" />
           </div>
@@ -406,21 +399,22 @@ export default function Landing() {
     <div
       className="min-h-screen font-inter relative"
       style={{
-        color: "#ffffff",
-        // Continuous editorial gradient — no flat #0a0a0a "cuts" between sections
-        background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
+        // DA v1.1 Chunk 1d — paper-first: fondo claro global. El gradiente
+        // navy de 5 stops ya NO es el fondo global; vive solo dentro de los
+        // dos bloques tinta (How it works + StopLeavingMarginCTA).
+        color: "var(--ink)",
+        background: "var(--paper)",
       }}
     >
-      {/* Fixed ambient noise/grid that unifies every section */}
+      {/* Fixed ambient grid — violeta suave sobre claro (estilo moodboard). */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+            "linear-gradient(rgba(91,76,245,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(91,76,245,0.05) 1px, transparent 1px)",
           backgroundSize: "56px 56px",
-          opacity: 0.35,
+          opacity: 0.5,
           maskImage:
             "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
           WebkitMaskImage:

@@ -173,7 +173,7 @@ export default function SavingsCurveChart({
       <div className="relative z-10 mb-4 select-none">
         <p
           className="text-[10px] uppercase tracking-[0.24em] font-semibold mb-3"
-          style={{ color: "rgba(255,255,255,0.45)" }}
+          style={{ color: "var(--gris-2)" }}
         >
           Projected recovery · 24 months
         </p>
@@ -186,16 +186,16 @@ export default function SavingsCurveChart({
               fontSize: "clamp(40px, 6vw, 64px)",
               letterSpacing: "-0.045em",
               lineHeight: 1,
-              /* DA v1.1 Chunk 1c — Rule 3: recovered/positive → --menta (#2FE0A8 on navy). */
-              color: "#2FE0A8",
-              textShadow: "0 0 22px rgba(47,224,168,0.25)",
+              /* DA v1.1 Chunk 1d — paper-first: sobre card blanca, menta grande
+                 usa --menta-dark para contraste AA. */
+              color: "var(--menta-dark)",
             }}
           >
             {formatted}
           </span>
           <span
             className="text-[12px] font-medium"
-            style={{ color: "rgba(255,255,255,0.45)" }}
+            style={{ color: "var(--gris-1)" }}
           >
             recovered over 24 months
           </span>
@@ -208,7 +208,7 @@ export default function SavingsCurveChart({
             point — this is pure margin, not top-line growth. */}
         <p
           className="mt-2 text-[11px] leading-snug"
-          style={{ color: "rgba(255,255,255,0.50)" }}
+          style={{ color: "var(--gris-1)" }}
         >
           ≈ 7% of annual profit — recovered without selling one more unit.
         </p>
@@ -217,27 +217,28 @@ export default function SavingsCurveChart({
         <div
           className="mt-4 grid grid-cols-3 gap-2 rounded-lg p-3"
           style={{
-            background: "rgba(255,255,255,0.02)",
-            border: "1px solid rgba(255,255,255,0.06)",
+            background: "rgba(12,12,22,0.02)",
+            border: "1px solid var(--linea)",
           }}
         >
           <div>
             <div
-              className="font-bold tabular-nums text-white/90"
+              className="font-bold tabular-nums"
               style={{
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "15px",
                 letterSpacing: "-0.02em",
                 lineHeight: 1,
+                color: "var(--ink)",
               }}
             >
               {perMonthStr}
             </div>
-            <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "rgba(255,255,255,0.40)" }}>
+            <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "var(--gris-2)" }}>
               /month
             </div>
           </div>
-          <div style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }} className="pl-3">
+          <div style={{ borderLeft: "1px solid var(--linea)" }} className="pl-3">
             <div
               className="font-bold tabular-nums"
               style={{
@@ -245,17 +246,17 @@ export default function SavingsCurveChart({
                 fontSize: "15px",
                 letterSpacing: "-0.02em",
                 lineHeight: 1,
-                /* DA v1.1 Chunk 1c — Rule 3: gap/negative → --coral-2 on navy. */
-                color: "#FF8A6B",
+                /* DA v1.1 Chunk 1d — paper-first: gap/negative → --coral. */
+                color: "var(--coral)",
               }}
             >
               0.74pts
             </div>
-            <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "rgba(255,255,255,0.40)" }}>
+            <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "var(--gris-2)" }}>
               rate saved
             </div>
           </div>
-          <div style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }} className="pl-3">
+          <div style={{ borderLeft: "1px solid var(--linea)" }} className="pl-3">
             <div
               className="font-bold tabular-nums"
               style={{
@@ -263,13 +264,13 @@ export default function SavingsCurveChart({
                 fontSize: "15px",
                 letterSpacing: "-0.02em",
                 lineHeight: 1,
-                /* DA v1.1 Chunk 1c — Rule 3: positive (share of profit recovered) → --menta. */
-                color: "#2FE0A8",
+                /* DA v1.1 Chunk 1d — paper-first: positive → --menta-dark (AA). */
+                color: "var(--menta-dark)",
               }}
             >
               ~7%
             </div>
-            <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "rgba(255,255,255,0.40)" }}>
+            <div className="text-[9px] uppercase tracking-[0.18em] font-semibold mt-1.5" style={{ color: "var(--gris-2)" }}>
               of profit
             </div>
           </div>
@@ -306,14 +307,14 @@ export default function SavingsCurveChart({
           <g key={i}>
             <line
               x1={PAD_L} x2={W - PAD_R} y1={t.y} y2={t.y}
-              stroke="rgba(255,255,255,0.05)"
+              stroke="rgba(12,12,22,0.08)"
               strokeWidth="1"
               strokeDasharray={i === 0 ? "0" : "2 4"}
             />
             <text
               x={PAD_L - 10} y={t.y + 4}
               textAnchor="end"
-              fill="rgba(255,255,255,0.35)"
+              fill="rgba(12,12,22,0.45)"
               fontSize="10"
               fontFamily="ui-monospace, SFMono-Regular, monospace"
             >
@@ -332,7 +333,7 @@ export default function SavingsCurveChart({
               key={i}
               x={p.x} y={H - 12}
               textAnchor="middle"
-              fill="rgba(255,255,255,0.30)"
+              fill="rgba(12,12,22,0.40)"
               fontSize="10"
               fontFamily="ui-monospace, SFMono-Regular, monospace"
             >
@@ -409,23 +410,23 @@ export default function SavingsCurveChart({
           the midpoint of the ICP, not its ceiling. */}
       <div
         className="mt-3 pt-3"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ borderTop: "1px solid var(--linea)" }}
       >
-        <div className="flex items-center justify-between gap-3 text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>
+        <div className="flex items-center justify-between gap-3 text-[11px]" style={{ color: "var(--gris-2)" }}>
           <span className="font-mono">Cohort · DTC €200k–€2M</span>
           <span className="font-mono">Benchmark methodology</span>
         </div>
         <p
           className="mt-2 text-[11px] leading-snug"
-          style={{ color: "rgba(255,255,255,0.55)" }}
+          style={{ color: "var(--gris-1)" }}
         >
-          <span className="text-white/75 font-semibold">Range:</span>{" "}
+          <span className="font-semibold" style={{ color: "var(--ink)" }}>Range:</span>{" "}
           €3,000 to €30,000+ over 24 months depending on your volume
           (€200k–€2M GMV).
         </p>
         <p
           className="mt-1.5 text-[10.5px] leading-snug"
-          style={{ color: "rgba(255,255,255,0.38)" }}
+          style={{ color: "var(--gris-2)" }}
         >
           Illustrative — €1M GMV brand, 2.21% effective vs 1.47% achievable.
           Run the analyzer for your real number.
