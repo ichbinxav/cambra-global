@@ -27,7 +27,7 @@ export default function FounderLetter() {
       <div className="relative max-w-4xl mx-auto px-6 sm:px-10">
         {/* Header — unified */}
         <SectionHeading eyebrow="Meet the founder" className="mb-12 sm:mb-16">
-          A note from <span className="kw">the founder.</span>
+          <span className="whitespace-nowrap">A note from <span className="kw">the founder.</span></span>
         </SectionHeading>
 
         {/* Two columns */}

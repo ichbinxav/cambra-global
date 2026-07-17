@@ -210,8 +210,7 @@ export default function PricingDual() {
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         {/* Header */}
         <SectionHeading eyebrow="Pricing" className="mb-6">
-          Free until we{" "}
-          <span className="kw">save you money.</span>
+          <span className="whitespace-nowrap">Free until we <span className="kw">save you money.</span></span>
         </SectionHeading>
         <div className="text-center mb-12 sm:mb-14">
           <p className="text-[13px] sm:text-[14px] max-w-lg mx-auto" style={{ color: "var(--gris-1)" }}>
