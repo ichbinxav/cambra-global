@@ -34,9 +34,9 @@ export default function InStoreUpsellStrip() {
         className="relative mx-auto max-w-6xl rounded-[28px] overflow-hidden p-8 sm:p-12"
         style={{
           background: "#ffffff",
-          border: "1px solid rgba(91,76,245,0.30)",
+          border: "1px solid rgba(91,76,245,0.45)",
           boxShadow:
-            "0 30px 80px -40px rgba(12,12,22,0.12), 0 0 60px -30px rgba(91,76,245,0.18)",
+            "0 30px 80px -40px rgba(12,12,22,0.12), 0 0 0 1px rgba(91,76,245,0.15), 0 0 40px -6px rgba(91,76,245,0.45), 0 0 90px -20px rgba(91,76,245,0.5)",
         }}
       >
         {/* Voltio corner bloom */}
