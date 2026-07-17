@@ -294,8 +294,11 @@ export default function SavingsCurveChart({
           const pillW = 34;
           const flip = mx + 12 + pillW > W - PAD_R;
           const pillX = flip ? mx - 12 - pillW : mx + 12;
+          // Clamp vertically so the pill never gets clipped at the top edge
+          // (near M24 the marker sits high, pushing the pill above the viewBox).
+          const pillY = Math.max(PAD_T + 11, my - 11);
           return (
-            <g transform={`translate(${pillX}, ${my - 11})`} opacity={progress}>
+            <g transform={`translate(${pillX}, ${pillY})`} opacity={progress}>
               <rect
                 x="0" y="-11" width={pillW} height="20" rx="10"
                 fill="#0b1020"
