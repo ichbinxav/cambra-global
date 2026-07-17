@@ -293,7 +293,7 @@ export default function ProblemSectionWow() {
             className="absolute pointer-events-none"
             style={{
               width: 400, height: 400, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-              background: "radial-gradient(circle, rgba(239,68,68,0.15) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(255,138,107,0.24) 0%, rgba(239,68,68,0.16) 45%, transparent 72%)",
               filter: "blur(60px)",
             }}
             animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.9, 0.5] }}
