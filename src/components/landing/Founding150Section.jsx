@@ -67,7 +67,7 @@ export default function Founding150Section() {
 
         {/* lateral image */}
         <motion.div
-          className="relative lg:col-span-5 flex justify-center items-center"
+          className="relative lg:col-span-5 flex justify-center items-center overflow-visible"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
@@ -78,7 +78,7 @@ export default function Founding150Section() {
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
             width={600}
             height={600}
-            className="relative hero-stack w-full max-w-none h-auto select-none lg:w-full lg:scale-100 lg:origin-left lg:-translate-x-[22%]"
+            className="relative hero-stack w-full max-w-none h-auto select-none lg:w-full lg:scale-100 lg:origin-left lg:-translate-x-[40%]"
             draggable={false}
           />
         </motion.div>
