@@ -76,7 +76,7 @@ function LandingJsonLd() {
 function Hero() {
   const { t } = useTranslation();
   return (
-    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "var(--ink)", paddingTop: 80 }}>
+    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "var(--ink)", paddingTop: 48 }}>
       {/* DA v1.1 Chunk 1d — Aurora navy removida sobre hero claro. Spotlight
           reducido a un wash voltio suave (~25% opacidad) para no ensuciar. */}
       {/* eslint-disable-next-line no-unused-vars */}
@@ -212,7 +212,7 @@ function Hero() {
             width={600}
             height={600}
             fetchpriority="high"
-            className="relative hero-stack w-[62%] max-w-[420px] h-auto select-none lg:-ml-16"
+            className="relative hero-stack w-[62%] max-w-[420px] h-auto select-none lg:-ml-4"
             style={{ filter: "brightness(0.7) contrast(1.25)" }}
             draggable={false}
           />
