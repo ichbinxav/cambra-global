@@ -78,7 +78,7 @@ export default function Founding150Section() {
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
             width={600}
             height={600}
-            className="relative hero-stack w-full max-w-none h-auto select-none lg:w-full lg:scale-100 lg:origin-left lg:-translate-x-[40%]"
+            className="relative hero-stack w-full max-w-none h-auto select-none lg:absolute lg:right-full lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-[55%] lg:w-[115%]"
             draggable={false}
           />
         </motion.div>
