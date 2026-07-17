@@ -444,15 +444,19 @@ export default function Landing() {
         {/* DA v1.1 — decorative dot-grid corner (hero) */}
         <div className="dot-grid" aria-hidden />
         <Hero />
-        {/* Sections render directly on the page — no per-section wrapper card. */}
-        {/* M4-TPV Fase 2B — in-store channel cue. */}
-        <InStoreUpsellStrip />
-        <ProblemSectionWow />
-        <HowItWorksSection />
-        <PricingDual />
-        <TestimonialsCarousel />
-        <FounderLetter />
-        <StopLeavingMarginCTA />
+        {/* Dark-built sections (white text) share ONE continuous dark surface —
+            not a pastilla per section. Full-bleed navy canvas so nothing sits
+            unreadable on paper, without any wrapper card around each block. */}
+        <div className="relative" style={{ background: "#08090f", color: "#fff" }}>
+          {/* M4-TPV Fase 2B — in-store channel cue. */}
+          <InStoreUpsellStrip />
+          <ProblemSectionWow />
+          <HowItWorksSection />
+          <PricingDual />
+          <TestimonialsCarousel />
+          <FounderLetter />
+          <StopLeavingMarginCTA />
+        </div>
       </main>
       <LandingFooter />
     </div>
