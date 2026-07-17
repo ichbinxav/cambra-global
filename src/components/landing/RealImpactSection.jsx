@@ -45,7 +45,7 @@ export default function RealImpactSection() {
           >
             That gap is
             <br />
-            <span className="kw-m">+7% net profit.</span>
+            <span className="kw-m whitespace-nowrap">+7% net profit.</span>
           </h2>
 
           <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed max-w-xl" style={{ color: "var(--gris-1)" }}>
