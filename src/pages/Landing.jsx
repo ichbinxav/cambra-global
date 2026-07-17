@@ -306,7 +306,7 @@ function HowItWorksSection() {
                 whileHover={{ scale: 1.005, borderColor: "rgba(96,165,250,0.25)" }}
                 transition={{ duration: 0.3 }}
                 className="relative overflow-hidden p-8 sm:p-10 group rounded-2xl"
-                style={{ background: "linear-gradient(180deg, #0d1226 0%, #08090f 100%)", border: "1px solid rgba(255,255,255,0.10)" }}
+                style={{ background: "linear-gradient(180deg, rgba(13,18,38,0.85) 0%, rgba(8,9,15,0.85) 100%)", border: "1px solid rgba(255,255,255,0.10)" }}
               >
                 {/* hover glow halo */}
                 <div

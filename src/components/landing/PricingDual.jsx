@@ -293,7 +293,7 @@ export default function PricingDual() {
             className="relative rounded-3xl overflow-hidden"
             style={{
               background:
-                "linear-gradient(180deg, rgba(13,18,36,0.95) 0%, rgba(6,8,15,0.95) 100%)",
+                "linear-gradient(180deg, rgba(13,18,36,0.82) 0%, rgba(6,8,15,0.82) 100%)",
               border: "1px solid rgba(255,255,255,0.08)",
               boxShadow:
                 "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
@@ -330,7 +330,7 @@ export default function PricingDual() {
             className="relative rounded-3xl overflow-hidden"
             style={{
               background:
-                "linear-gradient(180deg, rgba(13,18,36,0.95) 0%, rgba(6,8,15,0.95) 100%)",
+                "linear-gradient(180deg, rgba(13,18,36,0.82) 0%, rgba(6,8,15,0.82) 100%)",
               border: "1px solid rgba(255,255,255,0.10)",
               boxShadow:
                 "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
@@ -366,7 +366,7 @@ export default function PricingDual() {
             className="relative rounded-3xl overflow-hidden"
             style={{
               background:
-                "linear-gradient(180deg, rgba(13,18,36,0.95) 0%, rgba(6,8,15,0.95) 100%)",
+                "linear-gradient(180deg, rgba(13,18,36,0.82) 0%, rgba(6,8,15,0.82) 100%)",
               border: "1px solid rgba(34,211,238,0.18)",
               boxShadow:
                 "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 40px -20px rgba(34,211,238,0.35)",

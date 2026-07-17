@@ -18,7 +18,7 @@ export default function StopLeavingMarginCTA() {
      <div
        className="relative mx-auto max-w-6xl rounded-[32px] overflow-hidden py-24 sm:py-32"
        style={{
-         background: "linear-gradient(180deg, #0d1226 0%, #0a0d1c 55%, #08090f 100%)",
+         background: "linear-gradient(180deg, rgba(13,18,38,0.88) 0%, rgba(10,13,28,0.88) 55%, rgba(8,9,15,0.88) 100%)",
          border: "1px solid rgba(255,255,255,0.08)",
          boxShadow: "0 40px 100px -40px rgba(0,0,0,0.6), 0 16px 50px -22px rgba(91,76,245,0.3)",
        }}
