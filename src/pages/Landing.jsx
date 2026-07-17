@@ -389,8 +389,10 @@ function LandingFooter() {
       <div
         className="relative w-full overflow-hidden px-6 sm:px-10 pt-20 pb-14"
         style={{
-          background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(10,8,24,0.97)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
         }}
       >
         {/* Soft purple ambient light (top-left) */}
