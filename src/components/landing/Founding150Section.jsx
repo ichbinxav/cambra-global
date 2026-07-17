@@ -44,7 +44,9 @@ export default function Founding150Section() {
               lineHeight: 1.0,
             }}
           >
-            150 brands. Free forever.
+            150 brands.
+            <br />
+            Free forever.
             <br />
             <span className="kw">One dataset.</span>
           </h2>
