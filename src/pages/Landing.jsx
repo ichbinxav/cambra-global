@@ -207,13 +207,12 @@ function Hero() {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
         >
           <img
-            src={BRAND_ASSETS.cMarkVoltioPng}
+            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/60d4dc7c0_hub-alpha2x.webp"
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
             width={600}
             height={600}
             fetchpriority="high"
-            className="relative hero-stack w-[62%] max-w-[420px] h-auto select-none lg:-ml-4"
-            style={{ filter: "brightness(0.7) contrast(1.25)" }}
+            className="relative hero-stack w-full max-w-[560px] h-auto select-none"
             draggable={false}
           />
         </motion.div>
