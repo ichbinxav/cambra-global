@@ -152,7 +152,7 @@ export default function StopLeavingMarginCTA() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="mt-12 flex flex-col sm:flex-row gap-3 max-w-lg lg:ml-auto items-stretch justify-center lg:justify-end"
+            className="mt-12 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto items-stretch justify-center"
           >
             <div className="flex-1">
               <Link
@@ -181,7 +181,7 @@ export default function StopLeavingMarginCTA() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-10 flex flex-wrap justify-center lg:justify-end items-center gap-x-5 gap-y-2.5 text-[11px] uppercase tracking-[0.24em] font-bold"
+            className="mt-10 flex flex-wrap justify-center items-center gap-x-5 gap-y-2.5 text-[11px] uppercase tracking-[0.24em] font-bold"
             style={{ color: "rgba(255,255,255,0.50)" }}
           >
             <span className="inline-flex items-center gap-1.5">
