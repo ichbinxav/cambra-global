@@ -33,16 +33,13 @@ export default function InStoreUpsellStrip() {
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="relative mx-auto max-w-6xl rounded-[28px] overflow-hidden p-8 sm:p-12"
         style={{
-          background:
-            "linear-gradient(135deg, rgba(13,18,38,0.82) 0%, rgba(10,13,28,0.82) 55%, rgba(8,9,15,0.82) 100%)",
-          border: "1px solid rgba(139,123,255,0.22)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          background: "#ffffff",
+          border: "1px solid var(--linea)",
           boxShadow:
-            "0 40px 100px -40px rgba(0,0,0,0.55), 0 0 60px -20px rgba(91,76,245,0.35)",
+            "0 30px 80px -40px rgba(12,12,22,0.12), 0 0 60px -30px rgba(91,76,245,0.18)",
         }}
       >
-        {/* Cyan corner bloom */}
+        {/* Voltio corner bloom */}
         <div
           aria-hidden
           className="absolute pointer-events-none"
@@ -52,7 +49,7 @@ export default function InStoreUpsellStrip() {
             right: "-12%",
             top: "-40%",
             background:
-              "radial-gradient(circle, rgba(139,123,255,0.30) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(91,76,245,0.10) 0%, transparent 70%)",
             filter: "blur(60px)",
           }}
         />
@@ -64,22 +61,21 @@ export default function InStoreUpsellStrip() {
               <div
                 className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
                 style={{
-                  background: "rgba(139,123,255,0.16)",
-                  border: "1px solid rgba(139,123,255,0.38)",
-                  boxShadow: "0 0 24px rgba(91,76,245,0.35)",
+                  background: "rgba(91,76,245,0.10)",
+                  border: "1px solid rgba(91,76,245,0.28)",
                 }}
                 aria-hidden="true"
               >
-                <Store size={20} style={{ color: "#8B7BFF" }} />
+                <Store size={20} style={{ color: "#5B4CF5" }} />
               </div>
-              <span className="text-[10px] uppercase tracking-[0.28em] font-bold" style={{ color: "rgba(139,123,255,0.95)" }}>
+              <span className="text-[10px] uppercase tracking-[0.28em] font-bold" style={{ color: "#5B4CF5" }}>
                 {t("landing_upsell_in_store_eyebrow")}
               </span>
             </div>
 
             <h2
-              className="text-white"
               style={{
+                color: "var(--ink)",
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "clamp(28px, 4vw, 44px)",
                 fontWeight: 900,
@@ -90,7 +86,7 @@ export default function InStoreUpsellStrip() {
               {t("landing_upsell_in_store_title")}
             </h2>
 
-            <p className="mt-4 text-[14px] sm:text-[15px] text-white/70 leading-relaxed max-w-xl">
+            <p className="mt-4 text-[14px] sm:text-[15px] leading-relaxed max-w-xl" style={{ color: "var(--gris-1)" }}>
               {t("landing_upsell_in_store_desc")}
             </p>
 
@@ -99,13 +95,14 @@ export default function InStoreUpsellStrip() {
               {PROVIDERS.map((p) => (
                 <span
                   key={p}
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-white/85"
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11.5px] font-semibold"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.12)",
+                    color: "var(--gris-1)",
+                    background: "rgba(12,12,22,0.03)",
+                    border: "1px solid var(--linea)",
                   }}
                 >
-                  <CreditCard size={11} style={{ color: "rgba(139,123,255,0.85)" }} />
+                  <CreditCard size={11} style={{ color: "#5B4CF5" }} />
                   {p}
                 </span>
               ))}
@@ -118,10 +115,9 @@ export default function InStoreUpsellStrip() {
               to="/Analyzer"
               className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 text-[14px] font-bold transition-transform hover:-translate-y-0.5 whitespace-nowrap"
               style={{
-                background: "#ffffff",
-                color: "#0a0f1e",
-                boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.12), 0 20px 48px -18px rgba(91,76,245,0.6)",
+                background: "var(--g-voltio)",
+                color: "#ffffff",
+                boxShadow: "0 12px 32px -12px rgba(91,76,245,0.5)",
               }}
             >
               {t("landing_upsell_in_store_cta")}

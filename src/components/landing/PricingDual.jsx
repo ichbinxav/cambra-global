@@ -35,13 +35,13 @@ const RECOVERY_FEATURES = [
   "We win when you do",
 ];
 
-function Eyebrow({ children, accent = "white" }) {
-  const color = accent === "voltio" ? "#8B7BFF" : "rgba(255,255,255,0.55)";
+function Eyebrow({ children, accent = "ink" }) {
+  const color = accent === "voltio" ? "#5B4CF5" : "var(--gris-1)";
   return (
     <div className="flex items-center gap-2">
       <span
         className="inline-block h-px w-5"
-        style={{ background: accent === "voltio" ? "rgba(139,123,255,0.4)" : "rgba(255,255,255,0.18)" }}
+        style={{ background: accent === "voltio" ? "rgba(91,76,245,0.4)" : "var(--linea)" }}
       />
       <span
         className="text-[9px] uppercase font-bold"
@@ -65,7 +65,7 @@ function FeatureRow({ children }) {
       >
         <Check size={9} style={{ color: "#8B7BFF" }} strokeWidth={3} />
       </span>
-      <span className="text-[12.5px] text-white/75 leading-[1.55]">{children}</span>
+      <span className="text-[12.5px] leading-[1.55]" style={{ color: "var(--gris-1)" }}>{children}</span>
     </li>
   );
 }
@@ -118,13 +118,13 @@ function Tier({
                       WebkitTextFillColor: "transparent",
                       filter: "drop-shadow(0 0 18px rgba(91,76,245,0.28))",
                     }
-                  : { color: "#ffffff" }),
+                  : { color: "var(--ink)" }),
               }}
             >
               {price}
             </div>
             {priceSuffix && (
-              <p className="mt-2 text-[12px] font-medium text-white/50 leading-snug">
+              <p className="mt-2 text-[12px] font-medium leading-snug" style={{ color: "var(--gris-1)" }}>
                 {priceSuffix}
               </p>
             )}
@@ -135,14 +135,14 @@ function Tier({
       <div className="mt-3 flex items-center gap-2 min-h-[18px]">
         {strike && (
           <span
-            className="text-[11px] text-white/35"
-            style={{ textDecoration: "line-through" }}
+            className="text-[11px]"
+            style={{ textDecoration: "line-through", color: "var(--gris-2)" }}
           >
             {strike}
           </span>
         )}
         {caption && (
-          <span className="text-[11px] font-medium text-white/60">{caption}</span>
+          <span className="text-[11px] font-medium" style={{ color: "var(--gris-1)" }}>{caption}</span>
         )}
       </div>
 
@@ -151,7 +151,7 @@ function Tier({
         className="my-6 h-px"
         style={{
           background:
-            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.10) 50%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, var(--linea) 50%, transparent 100%)",
         }}
       />
 
@@ -169,16 +169,14 @@ function Tier({
         style={
           ctaPrimary
             ? {
-                background: "#ffffff",
-                color: "#0a0f1e",
-                boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.1), 0 18px 40px -16px rgba(91,76,245,0.45)",
+                background: "var(--g-voltio)",
+                color: "#ffffff",
+                boxShadow: "0 14px 36px -14px rgba(91,76,245,0.5)",
               }
             : {
-                background: "rgba(255,255,255,0.04)",
-                color: "#ffffff",
-                border: "1px solid rgba(255,255,255,0.14)",
-                backdropFilter: "blur(8px)",
+                background: "#ffffff",
+                color: "var(--ink)",
+                border: "1px solid var(--linea)",
               }
         }
       >
@@ -203,7 +201,7 @@ export default function PricingDual() {
           top: "50%",
           transform: "translate(-50%, -50%)",
           background:
-            "radial-gradient(circle, rgba(91,76,245,0.05) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(91,76,245,0.06) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
@@ -227,11 +225,9 @@ export default function PricingDual() {
           <div
             className="relative rounded-3xl overflow-hidden"
             style={{
-              background:
-                "linear-gradient(180deg, rgba(13,18,36,0.82) 0%, rgba(6,8,15,0.82) 100%)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              boxShadow:
-                "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
+              background: "#ffffff",
+              border: "1px solid var(--linea)",
+              boxShadow: "0 30px 80px -40px rgba(12,12,22,0.12)",
             }}
           >
             <div
@@ -239,19 +235,20 @@ export default function PricingDual() {
               className="absolute pointer-events-none"
               style={{
                 width: 320, height: 320, left: "-15%", top: "-25%",
-                background: "radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(91,76,245,0.05) 0%, transparent 70%)",
                 filter: "blur(60px)",
               }}
             />
             <span
-              className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em] text-white/40"
+              className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em]"
+              style={{ color: "var(--gris-2)" }}
               aria-hidden
             >
               Step 1
             </span>
             <Tier
               eyebrow="Analyze"
-              eyebrowAccent="white"
+              eyebrowAccent="ink"
               price="Free"
               caption="Always · No card"
               features={FREE_FEATURES}
@@ -264,11 +261,9 @@ export default function PricingDual() {
           <div
             className="relative rounded-3xl overflow-hidden"
             style={{
-              background:
-                "linear-gradient(180deg, rgba(13,18,36,0.82) 0%, rgba(6,8,15,0.82) 100%)",
-              border: "1px solid rgba(139,123,255,0.20)",
-              boxShadow:
-                "0 30px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 40px -20px rgba(91,76,245,0.35)",
+              background: "#ffffff",
+              border: "1px solid rgba(91,76,245,0.30)",
+              boxShadow: "0 30px 80px -40px rgba(91,76,245,0.25), 0 0 40px -24px rgba(91,76,245,0.3)",
             }}
           >
             <div
@@ -276,13 +271,13 @@ export default function PricingDual() {
               className="absolute pointer-events-none"
               style={{
                 width: 360, height: 360, right: "-15%", bottom: "-25%",
-                background: "radial-gradient(circle, rgba(139,123,255,0.20) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(91,76,245,0.08) 0%, transparent 70%)",
                 filter: "blur(60px)",
               }}
             />
             <span
               className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em]"
-              style={{ color: "rgba(139,123,255,0.7)" }}
+              style={{ color: "#5B4CF5" }}
               aria-hidden
             >
               Step 2

@@ -157,9 +157,9 @@ function Hero() {
                 to="/Analyzer"
                 className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-bold text-[14px] transition-shadow"
                 style={{
-                  background: "var(--ink)",
+                  background: "var(--g-voltio)",
                   color: "#fff",
-                  boxShadow: "0 8px 24px -10px rgba(91,76,245,0.35)",
+                  boxShadow: "0 12px 32px -10px rgba(91,76,245,0.5)",
                 }}
               >
                 {t("hero_cta_primary")}
@@ -306,7 +306,7 @@ function HowItWorksSection() {
                 whileHover={{ scale: 1.005, borderColor: "rgba(96,165,250,0.25)" }}
                 transition={{ duration: 0.3 }}
                 className="relative overflow-hidden p-8 sm:p-10 group rounded-2xl"
-                style={{ background: "linear-gradient(180deg, rgba(13,18,38,0.85) 0%, rgba(8,9,15,0.85) 100%)", border: "1px solid rgba(255,255,255,0.10)" }}
+                style={{ background: "#ffffff", border: "1px solid var(--linea)", boxShadow: "0 20px 60px -40px rgba(12,12,22,0.15)" }}
               >
                 {/* hover glow halo */}
                 <div
@@ -314,7 +314,7 @@ function HowItWorksSection() {
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                   style={{
                     background:
-                      "radial-gradient(circle at 20% 50%, rgba(139,123,255,0.12), transparent 60%)",
+                      "radial-gradient(circle at 20% 50%, rgba(91,76,245,0.06), transparent 60%)",
                   }}
                 />
                 {/* Giant number — gradient */}
@@ -327,7 +327,7 @@ function HowItWorksSection() {
                     letterSpacing: "-0.05em",
                     lineHeight: 1,
                     background:
-                      "linear-gradient(180deg, rgba(139,123,255,0.7) 0%, rgba(91,76,245,0.4) 45%, rgba(255,255,255,0.06) 95%)",
+                      "linear-gradient(180deg, rgba(91,76,245,0.9) 0%, rgba(139,123,255,0.5) 55%, rgba(12,12,22,0.04) 95%)",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",
@@ -345,8 +345,8 @@ function HowItWorksSection() {
                     />
                     <SectionLabel>Step {s.n}</SectionLabel>
                   </div>
-                  <h3 className="text-title text-white mb-3">{s.title}</h3>
-                  <p className="text-[14px]" style={{ color: "rgba(255,255,255,0.55)" }}>{s.desc}</p>
+                  <h3 className="text-title mb-3" style={{ color: "var(--ink)" }}>{s.title}</h3>
+                  <p className="text-[14px]" style={{ color: "var(--gris-1)" }}>{s.desc}</p>
                   {s.cta && (
                     <div className="mt-5">
                       <JoinWaitlistButton />

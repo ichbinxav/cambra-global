@@ -101,10 +101,10 @@ export default function JoinWaitlistButton({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[14px] font-bold bg-white text-black hover:bg-white/90 disabled:opacity-70"
+          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[14px] font-bold text-white hover:opacity-90 disabled:opacity-70"
           style={{
-            boxShadow:
-              "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(34,211,238,0.55)",
+            background: "var(--g-voltio)",
+            boxShadow: "0 12px 32px -12px rgba(91,76,245,0.55)",
           }}
         >
           {submitting ? <><Loader2 size={14} className="animate-spin" /> Joining…</> : <>Join <ArrowRight size={14} /></>}
@@ -120,11 +120,11 @@ export default function JoinWaitlistButton({
   const commonStyle =
     variant === "primary"
       ? {
-          background: "#ffffff",
-          color: "#0a0f1e",
+          background: "var(--g-voltio)",
+          color: "#ffffff",
           padding: fullWidth ? "18px 28px" : undefined,
           boxShadow:
-            "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(34,211,238,0.55), 0 0 28px rgba(34,211,238,0.22)",
+            "0 12px 32px -12px rgba(91,76,245,0.55), 0 0 28px rgba(91,76,245,0.22)",
         }
       : {
           background: "transparent",

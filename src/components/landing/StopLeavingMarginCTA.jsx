@@ -167,11 +167,11 @@ export default function StopLeavingMarginCTA() {
               to="/Analyzer"
               className="group relative w-full inline-flex items-center justify-center gap-3 rounded-full font-bold text-[15px] overflow-hidden"
               style={{
-                background: "#ffffff",
-                color: "#0a0f1e",
+                background: "var(--g-voltio)",
+                color: "#ffffff",
                 padding: "20px 32px",
                 boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.15), 0 28px 70px -20px rgba(91,76,245,0.65), 0 0 60px rgba(91,76,245,0.28)",
+                  "0 28px 70px -20px rgba(91,76,245,0.65), 0 0 60px rgba(91,76,245,0.28)",
               }}
             >
               {/* Shimmer sweep */}
@@ -180,12 +180,12 @@ export default function StopLeavingMarginCTA() {
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   background:
-                    "linear-gradient(110deg, transparent 35%, rgba(139,123,255,0.22) 50%, transparent 65%)",
+                    "linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.25) 50%, transparent 65%)",
                 }}
                 animate={{ x: ["-100%", "100%"] }}
                 transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.4 }}
               />
-              <Sparkles size={16} className="relative" style={{ color: "#5B4CF5" }} />
+              <Sparkles size={16} className="relative" style={{ color: "#ffffff" }} />
               <span className="relative">Run free audit</span>
               <ArrowRight size={16} className="relative transition-transform group-hover:translate-x-0.5" />
             </Link>
