@@ -70,16 +70,16 @@ export default function Founding150Section() {
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           id="coin-slot"
-          className="w-full flex justify-center"
-          style={{ maxWidth: 320 }}
+          className="w-full flex justify-center lg:justify-end"
+          style={{ maxWidth: 440 }}
         >
           <img
             src={BRAND_ASSETS.coinFrosted}
             alt="Free forever for the Founding 150"
-            width={320}
-            height={320}
+            width={440}
+            height={440}
             loading="lazy"
-            className="w-full max-w-[320px] h-auto select-none"
+            className="hero-stack w-full max-w-[440px] h-auto select-none drop-shadow-2xl"
             draggable={false}
           />
         </motion.div>

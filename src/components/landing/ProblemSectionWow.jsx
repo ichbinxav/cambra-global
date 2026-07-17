@@ -282,21 +282,21 @@ export default function ProblemSectionWow() {
           transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="relative mt-10 rounded-2xl p-6 sm:p-8 overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, #1a1230 0%, #0d0a1a 100%)",
-            border: "1px solid rgba(239,68,68,0.25)",
-            boxShadow: "0 20px 60px -30px rgba(239,68,68,0.4)",
+            background: "linear-gradient(135deg, #1f1420 0%, #0d0a1a 100%)",
+            border: "1px solid rgba(249,115,22,0.45)",
+            boxShadow: "0 24px 70px -28px rgba(249,115,22,0.6), 0 0 40px -8px rgba(249,115,22,0.35)",
           }}
         >
-          {/* pulsing glow */}
+          {/* pulsing glow — stronger orange */}
           <motion.div
             aria-hidden
             className="absolute pointer-events-none"
             style={{
-              width: 400, height: 400, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-              background: "radial-gradient(circle, rgba(255,138,107,0.24) 0%, rgba(239,68,68,0.16) 45%, transparent 72%)",
-              filter: "blur(60px)",
+              width: 520, height: 520, left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+              background: "radial-gradient(circle, rgba(255,159,67,0.42) 0%, rgba(249,115,22,0.28) 42%, transparent 74%)",
+              filter: "blur(70px)",
             }}
-            animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.9, 0.5] }}
+            animate={{ scale: [1, 1.18, 1], opacity: [0.65, 1, 0.65] }}
             transition={{ duration: 4, ease: "easeInOut", repeat: Infinity }}
           />
 
@@ -342,11 +342,11 @@ export default function ProblemSectionWow() {
                   letterSpacing: "-0.05em",
                   lineHeight: 0.95,
                   background:
-                    "linear-gradient(135deg, #ffffff 0%, #FF8A6B 50%, #F45B69 100%)",
+                    "linear-gradient(135deg, #ffffff 0%, #FF9F43 45%, #F97316 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 22px rgba(239,68,68,0.45))",
+                  filter: "drop-shadow(0 0 26px rgba(249,115,22,0.7))",
                 }}
               >
                 −€{totalCount.toLocaleString("en-US")}

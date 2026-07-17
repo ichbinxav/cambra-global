@@ -209,10 +209,10 @@ function Hero() {
           <img
             src={BRAND_ASSETS.stackFrosted}
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
-            width={560}
-            height={560}
+            width={720}
+            height={720}
             fetchpriority="high"
-            className="hero-stack w-[70%] max-w-[560px] h-auto select-none"
+            className="hero-stack w-[105%] max-w-[720px] h-auto select-none -mr-6 lg:-mr-16 drop-shadow-2xl"
             draggable={false}
           />
         </motion.div>
