@@ -57,16 +57,12 @@ export default function TheStackSection() {
             style={{ maxWidth: 560 }}
           >
             <img
-              src={BRAND_ASSETS.stackFrosted}
+              src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/3ef15c048_Capturadepantalla2026-07-17alas192524.png"
               alt="Online payments, in-store terminals, contracts and benchmark — one stack"
               width={560}
               height={560}
               loading="lazy"
               className="relative w-full max-w-[560px] h-auto select-none"
-              style={{
-                maskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
-                WebkitMaskImage: "radial-gradient(75% 75% at 50% 50%, #000 55%, transparent 88%)",
-              }}
               draggable={false}
             />
           </motion.div>
