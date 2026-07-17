@@ -101,11 +101,8 @@ export default function JoinWaitlistButton({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[14px] font-bold text-white hover:opacity-90 disabled:opacity-70"
-          style={{
-            background: "var(--g-voltio)",
-            boxShadow: "0 12px 32px -12px rgba(91,76,245,0.55)",
-          }}
+          className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[14px] font-medium text-white transition-colors hover:bg-[#6E5FF7] disabled:opacity-70"
+          style={{ background: "#5B4CF5" }}
         >
           {submitting ? <><Loader2 size={14} className="animate-spin" /> Joining…</> : <>Join <ArrowRight size={14} /></>}
         </button>
@@ -120,11 +117,9 @@ export default function JoinWaitlistButton({
   const commonStyle =
     variant === "primary"
       ? {
-          background: "var(--g-voltio)",
+          background: "#5B4CF5",
           color: "#ffffff",
           padding: fullWidth ? "18px 28px" : undefined,
-          boxShadow:
-            "0 12px 32px -12px rgba(91,76,245,0.55), 0 0 28px rgba(91,76,245,0.22)",
         }
       : {
           background: "transparent",
@@ -137,7 +132,7 @@ export default function JoinWaitlistButton({
     <button
       type="button"
       onClick={() => setState("form")}
-      className={`${fullWidth ? "flex w-full" : "inline-flex"} items-center justify-center gap-2 rounded-full text-[15px] font-bold transition-transform hover:scale-[1.02] ${fullWidth ? "" : "px-6 py-3 text-[14px]"}`}
+      className={`${fullWidth ? "flex w-full" : "inline-flex"} items-center justify-center gap-2 rounded-full text-[15px] font-medium transition-colors ${variant === "primary" ? "hover:bg-[#6E5FF7]" : "hover:bg-white/5"} ${fullWidth ? "" : "px-6 py-3 text-[14px]"}`}
       style={commonStyle}
     >
       {label}

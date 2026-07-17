@@ -162,34 +162,21 @@ export default function StopLeavingMarginCTA() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="mt-12 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto items-stretch justify-center"
         >
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="flex-1">
+          <div className="flex-1">
             <Link
               to="/Analyzer"
-              className="group relative w-full inline-flex items-center justify-center gap-3 rounded-full font-bold text-[15px] overflow-hidden"
+              className="group w-full inline-flex items-center justify-center gap-3 rounded-full font-medium text-[15px] transition-colors hover:bg-[#6E5FF7]"
               style={{
-                background: "var(--g-voltio)",
+                background: "#5B4CF5",
                 color: "#ffffff",
                 padding: "20px 32px",
-                boxShadow:
-                  "0 28px 70px -20px rgba(91,76,245,0.65), 0 0 60px rgba(91,76,245,0.28)",
               }}
             >
-              {/* Shimmer sweep */}
-              <motion.span
-                aria-hidden
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.25) 50%, transparent 65%)",
-                }}
-                animate={{ x: ["-100%", "100%"] }}
-                transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.4 }}
-              />
-              <Sparkles size={16} className="relative" style={{ color: "#ffffff" }} />
-              <span className="relative">Run free audit</span>
-              <ArrowRight size={16} className="relative transition-transform group-hover:translate-x-0.5" />
+              <Sparkles size={16} style={{ color: "#ffffff" }} />
+              <span>Run free audit</span>
+              <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
             </Link>
-          </motion.div>
+          </div>
 
           <div className="flex-1">
             <JoinWaitlistButton variant="ghost" label="Join to recover" fullWidth />

@@ -1,13 +1,21 @@
 import React from "react";
 
 /**
- * SectionLabel — uppercase eyebrow label used above section titles.
- * 11px / 600 / 0.12em tracking / rgba(255,255,255,0.35) on dark.
+ * SectionLabel — premium product-style eyebrow pill.
+ * Very light grey background, small uppercase type, wide tracking,
+ * rounded pill. Never colourful — restrained, engineered (Art Direction).
  */
-export default function SectionLabel({ children, className = "", as: Tag = "p" }) {
-  // DA v1.1 — Part D: section eyebrows use the .eyebrow utility.
+export default function SectionLabel({ children, className = "", as: Tag = "span" }) {
   return (
-    <Tag className={`eyebrow ${className}`}>
+    <Tag
+      className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${className}`}
+      style={{
+        background: "rgba(12,12,22,0.04)",
+        color: "var(--gris-1)",
+        letterSpacing: "0.14em",
+        border: "1px solid var(--linea)",
+      }}
+    >
       {children}
     </Tag>
   );

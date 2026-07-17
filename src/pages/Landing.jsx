@@ -93,27 +93,21 @@ function Hero() {
         {/* LEFT — aggressive copy */}
         <div className="lg:col-span-7">
           <motion.div
-            className="inline-flex items-center gap-2 rounded-full pl-2.5 pr-3.5 py-1.5 mb-8 text-[10.5px] uppercase font-semibold"
+            className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 mb-8 text-[10px] uppercase font-semibold"
             style={{
               border: "1px solid var(--linea)",
               color: "var(--gris-1)",
-              background: "#fff",
-              letterSpacing: "0.18em",
-              fontFamily: "'JetBrains Mono', monospace",
+              background: "rgba(12,12,22,0.04)",
+              letterSpacing: "0.14em",
             }}
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
             <span
-              className="inline-flex h-4 w-4 items-center justify-center rounded-full"
-              style={{ background: "var(--g-voltio)" }}
-            >
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping bg-white" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
-              </span>
-            </span>
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{ background: "#5B4CF5" }}
+            />
             {t("hero_badge")}
           </motion.div>
 
@@ -155,21 +149,19 @@ function Hero() {
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/Analyzer"
-                className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-bold text-[14px] transition-shadow"
+                className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-medium text-[14px] transition-colors hover:bg-[#6E5FF7]"
                 style={{
-                  background: "var(--g-voltio)",
+                  background: "#5B4CF5",
                   color: "#fff",
-                  boxShadow: "0 12px 32px -10px rgba(91,76,245,0.5)",
                 }}
               >
                 {t("hero_cta_primary")}
                 <ArrowRight size={16} />
               </Link>
             </motion.div>
-            <motion.a
-              whileHover={{ scale: 1.03, borderColor: "var(--ink)" }}
+            <a
               href="#testimonials"
-              className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium"
+              className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium transition-colors hover:border-[color:var(--ink)]"
               style={{
                 border: "1px solid var(--linea)",
                 color: "var(--gris-1)",
@@ -177,7 +169,7 @@ function Hero() {
               }}
             >
               {t("hero_cta_secondary")}
-            </motion.a>
+            </a>
           </motion.div>
 
           {/* Trust row */}
@@ -211,12 +203,12 @@ function Hero() {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
         >
           <div
-            className="relative p-6 sm:p-8 rounded-2xl overflow-hidden"
+            className="relative p-6 sm:p-8 overflow-hidden"
             style={{
-              /* DA v1.1 Chunk 1d — projection card a blanca sobre hero claro. */
               background: "#fff",
               border: "1px solid var(--linea)",
-              boxShadow: "0 8px 24px rgba(12,12,22,0.06)",
+              borderRadius: 26,
+              boxShadow: "0 4px 20px rgba(12,12,22,0.04)",
             }}
           >
             {/* Corner badge — Illustrative projection (2026-07-12 · R3).
@@ -303,10 +295,9 @@ function HowItWorksSection() {
           {steps.map((s, i) => (
             <AnimatedSection key={s.n} delay={i * 0.15}>
               <motion.div
-                whileHover={{ scale: 1.005, borderColor: "rgba(96,165,250,0.25)" }}
                 transition={{ duration: 0.3 }}
-                className="relative overflow-hidden p-8 sm:p-10 group rounded-2xl"
-                style={{ background: "#ffffff", border: "1px solid var(--linea)", boxShadow: "0 20px 60px -40px rgba(12,12,22,0.15)" }}
+                className="relative overflow-hidden p-8 sm:p-10 group"
+                style={{ background: "#ffffff", border: "1px solid var(--linea)", borderRadius: 26, boxShadow: "0 4px 20px rgba(12,12,22,0.04)" }}
               >
                 {/* hover glow halo */}
                 <div
@@ -367,28 +358,97 @@ function HowItWorksSection() {
 
 function LandingFooter() {
   const { t } = useTranslation();
+  const links = [
+    { to: "/ForProviders", label: t("footer_for_providers") },
+    { to: "/Privacy", label: t("footer_privacy") },
+    { to: "/Terms", label: t("footer_terms") },
+    { to: "/Cookies", label: "Cookies" },
+    { to: "/Contact", label: t("footer_contact") },
+  ];
   return (
-    <footer
-      style={{ borderTop: "1px solid var(--linea)" }}
-      className="py-10 relative overflow-hidden"
-    >
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <p className="text-[13px]" style={{ color: "var(--gris-1)" }}>
-            <span className="font-black" style={{ letterSpacing: "-0.04em", color: "var(--ink)" }}>CAMBRA</span>
-            <span className="mx-2">·</span>
-            {t("footer_tagline")}
-          </p>
-          <p className="mt-2 text-[12px]" style={{ color: "var(--gris-2)" }}>
+    <footer className="px-4 sm:px-6 pb-6 pt-6">
+      {/* Dark navy rounded container — feels like an extension of the product.
+          Soft purple/cyan ambient glow + subtle dot-grid so the page fades
+          naturally into the end rather than stopping abruptly. */}
+      <div
+        className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] px-8 sm:px-12 py-14"
+        style={{
+          background: "#0E0E1A",
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        {/* Soft purple ambient light (top-left) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            width: 440, height: 440, left: "-8%", top: "-40%",
+            background: "radial-gradient(circle, rgba(91,76,245,0.22) 0%, transparent 70%)",
+            filter: "blur(50px)",
+          }}
+        />
+        {/* Cyan reflection (bottom-right) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            width: 380, height: 380, right: "-6%", bottom: "-45%",
+            background: "radial-gradient(circle, rgba(57,198,240,0.14) 0%, transparent 70%)",
+            filter: "blur(50px)",
+          }}
+        />
+        {/* Subtle radial dot-grid — precision-engineering feel, near-invisible */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1.5px)",
+            backgroundSize: "26px 26px",
+            maskImage:
+              "radial-gradient(ellipse 70% 80% at 20% 0%, #000 5%, transparent 70%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 70% 80% at 20% 0%, #000 5%, transparent 70%)",
+            opacity: 0.5,
+          }}
+        />
+
+        <div className="relative flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+          <div>
+            <span
+              className="font-black text-white"
+              style={{ letterSpacing: "-0.04em", fontSize: 22 }}
+            >
+              CAMBRA
+            </span>
+            <p className="mt-4 max-w-xs text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
+              {t("footer_tagline")}
+            </p>
+          </div>
+
+          <nav className="flex flex-wrap gap-x-7 gap-y-3 text-[13px]">
+            {links.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="transition-colors"
+                style={{ color: "rgba(255,255,255,0.60)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#ffffff")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.60)")}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div
+          className="relative mt-12 pt-6"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <p className="text-[11.5px]" style={{ color: "rgba(255,255,255,0.35)" }}>
             CAMBRA GLOBAL SASU · SIREN 105 452 916 · 42 rue Vivienne, 75002 Paris, France · support@cambra.global
           </p>
-        </div>
-        <div className="flex items-center gap-6 text-[13px] flex-wrap" style={{ color: "var(--gris-1)" }}>
-          <Link to="/ForProviders" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_for_providers")}</Link>
-          <Link to="/Privacy" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_privacy")}</Link>
-          <Link to="/Terms" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_terms")}</Link>
-          <Link to="/Cookies" className="hover:text-[color:var(--ink)] transition-colors">Cookies</Link>
-          <Link to="/Contact" className="hover:text-[color:var(--ink)] transition-colors">{t("footer_contact")}</Link>
         </div>
       </div>
     </footer>
@@ -414,14 +474,13 @@ export default function Landing() {
         className="pointer-events-none fixed inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(rgba(91,76,245,0.16) 1px, transparent 1.6px), radial-gradient(rgba(91,76,245,0.08) 0.8px, transparent 1.3px)",
-          backgroundSize: "26px 26px, 13px 13px",
-          backgroundPosition: "0 0, 13px 13px",
-          opacity: 0.7,
+            "radial-gradient(rgba(91,76,245,0.10) 1px, transparent 1.6px)",
+          backgroundSize: "30px 30px",
+          opacity: 0.6,
           maskImage:
-            "radial-gradient(ellipse 90% 80% at 50% 25%, #000 30%, transparent 95%)",
+            "radial-gradient(ellipse 60% 55% at 78% 18%, #000 0%, transparent 70%)",
           WebkitMaskImage:
-            "radial-gradient(ellipse 90% 80% at 50% 25%, #000 30%, transparent 95%)",
+            "radial-gradient(ellipse 60% 55% at 78% 18%, #000 0%, transparent 70%)",
         }}
       />
 
@@ -437,7 +496,7 @@ export default function Landing() {
         <ProblemSectionWow />
         <HowItWorksSection />
         <PricingDual />
-        <TestimonialsCarousel />
+        {/* <TestimonialsCarousel /> */}
         <FounderLetter />
         <StopLeavingMarginCTA />
       </main>
