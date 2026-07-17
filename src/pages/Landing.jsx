@@ -200,7 +200,7 @@ function Hero() {
 
         {/* RIGHT — hero visual */}
         <motion.div
-          className="relative flex lg:col-span-5 justify-center items-center overflow-visible order-first lg:order-last"
+          className="relative flex lg:col-span-5 justify-center items-center overflow-visible"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
