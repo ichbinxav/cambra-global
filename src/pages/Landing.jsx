@@ -288,7 +288,9 @@ function HowItWorksSection() {
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
           <SectionHeading eyebrow={t("how_label")} className="mb-10">
-            {t("how_h2")}
+            {t("how_h2_pre")}{" "}
+            <span className="kw">{t("how_h2_hl")}</span>
+            <span style={{ color: "var(--ink)" }}>.</span>
           </SectionHeading>
         </AnimatedSection>
 
@@ -334,7 +336,7 @@ function HowItWorksSection() {
                     letterSpacing: "-0.05em",
                     lineHeight: 1,
                     background:
-                      "linear-gradient(180deg, rgba(91,76,245,0.9) 0%, rgba(139,123,255,0.5) 55%, rgba(12,12,22,0.04) 95%)",
+                      "linear-gradient(180deg, rgba(91,76,245,0.55) 0%, rgba(139,123,255,0.3) 55%, rgba(12,12,22,0.03) 95%)",
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",
@@ -395,42 +397,6 @@ function LandingFooter() {
           borderTop: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        {/* Soft purple ambient light (top-left) */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute"
-          style={{
-            width: 440, height: 440, left: "-8%", top: "-40%",
-            background: "radial-gradient(circle, rgba(91,76,245,0.22) 0%, transparent 70%)",
-            filter: "blur(50px)",
-          }}
-        />
-        {/* Cyan reflection (bottom-right) */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute"
-          style={{
-            width: 380, height: 380, right: "-6%", bottom: "-45%",
-            background: "radial-gradient(circle, rgba(57,198,240,0.14) 0%, transparent 70%)",
-            filter: "blur(50px)",
-          }}
-        />
-        {/* Subtle radial dot-grid — precision-engineering feel, near-invisible */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1.5px)",
-            backgroundSize: "26px 26px",
-            maskImage:
-              "radial-gradient(ellipse 70% 80% at 20% 0%, #000 5%, transparent 70%)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 70% 80% at 20% 0%, #000 5%, transparent 70%)",
-            opacity: 0.5,
-          }}
-        />
-
         <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-10">
           <div>
             <span

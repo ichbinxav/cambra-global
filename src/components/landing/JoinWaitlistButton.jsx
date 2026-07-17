@@ -124,7 +124,7 @@ export default function JoinWaitlistButton({
       : {
           background: "transparent",
           color: "rgba(255,255,255,0.95)",
-          border: "1px solid rgba(255,255,255,0.20)",
+          border: "1px solid rgba(139,123,255,0.5)",
           padding: fullWidth ? "18px 28px" : undefined,
         };
 

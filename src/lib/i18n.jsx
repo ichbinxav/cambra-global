@@ -84,6 +84,8 @@ const DICT = {
 
     /* landing — how it works (steps) */
     how_h2:               "Four steps from estimate to recovered margin.",
+    how_h2_pre:           "Four steps from estimate to",
+    how_h2_hl:            "recovered margin",
     how_step1_title:      "Tell us what you process",
     how_step1_desc:       "Your annual GMV, average ticket, and current PSP. Sixty seconds. Nothing to connect.",
     how_step2_title:      "See your effective rate",
@@ -654,6 +656,8 @@ const DICT = {
 
     /* landing — how it works (steps) */
     how_h2:               "Quatre étapes, de l'estimation à la marge récupérée.",
+    how_h2_pre:           "Quatre étapes, de l'estimation à la",
+    how_h2_hl:            "marge récupérée",
     how_step1_title:      "Dites-nous ce que vous encaissez",
     how_step1_desc:       "Votre volume annuel, votre panier moyen et votre prestataire de paiement actuel. Soixante secondes. Rien à connecter.",
     how_step2_title:      "Découvrez votre taux effectif",
@@ -1194,6 +1198,8 @@ const DICT = {
 
     /* landing — how it works (steps) */
     how_h2:               "Cuatro pasos, de la estimación al margen recuperado.",
+    how_h2_pre:           "Cuatro pasos, de la estimación al",
+    how_h2_hl:            "margen recuperado",
     how_step1_title:      "Cuéntanos cuánto facturas",
     how_step1_desc:       "Tu volumen anual, tu ticket medio y tu proveedor de pagos actual. Sesenta segundos. Nada que conectar.",
     how_step2_title:      "Descubre tu tasa efectiva",

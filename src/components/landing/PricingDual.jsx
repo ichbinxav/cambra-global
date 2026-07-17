@@ -211,8 +211,7 @@ export default function PricingDual() {
         {/* Header */}
         <SectionHeading eyebrow="Pricing" className="mb-6">
           Free until we{" "}
-          <span className="kw">save you money</span>
-          <span style={{ color: "var(--ink)" }}>.</span>
+          <span className="kw">save you money.</span>
         </SectionHeading>
         <div className="text-center mb-12 sm:mb-14">
           <p className="text-[13px] sm:text-[14px] max-w-lg mx-auto" style={{ color: "var(--gris-1)" }}>
@@ -221,7 +220,7 @@ export default function PricingDual() {
         </div>
 
         {/* Two columns — Analyze · Recover */}
-        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-3xl mx-auto">
+        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-3xl mx-auto pt-4">
           {/* Flow connector between the two steps */}
           <motion.div
             aria-hidden
@@ -276,32 +275,8 @@ export default function PricingDual() {
           </div>
 
           {/* STEP 2 — Recover (25% success fee, 24-month agreement) */}
-          <div
-            className="relative rounded-3xl overflow-hidden"
-            style={{
-              background: "#ffffff",
-              border: "1px solid rgba(91,76,245,0.30)",
-              boxShadow: "0 30px 80px -40px rgba(91,76,245,0.12)",
-            }}
-          >
-            {/* Animated gradient border sweep — the WOW frame on the featured tier */}
-            <motion.div
-              aria-hidden
-              className="absolute inset-0 rounded-3xl pointer-events-none"
-              style={{
-                padding: 1.5,
-                background:
-                  "linear-gradient(120deg, rgba(91,76,245,0) 20%, rgba(139,123,255,0.9) 50%, rgba(57,198,240,0.9) 60%, rgba(91,76,245,0) 85%)",
-                backgroundSize: "220% 220%",
-                WebkitMask:
-                  "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                WebkitMaskComposite: "xor",
-                maskComposite: "exclude",
-              }}
-              animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-              transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
-            />
-            {/* Most popular badge */}
+          <div className="relative">
+            {/* Most popular badge — sits on the wrapper (no overflow) so it never clips */}
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -321,33 +296,60 @@ export default function PricingDual() {
                 Most popular
               </span>
             </motion.div>
+
             <div
-              aria-hidden
-              className="absolute pointer-events-none"
+              className="relative rounded-3xl overflow-hidden"
               style={{
-                width: 360, height: 360, right: "-15%", bottom: "-25%",
-                background: "radial-gradient(circle, rgba(91,76,245,0.035) 0%, transparent 70%)",
-                filter: "blur(60px)",
+                background: "#ffffff",
+                border: "1px solid rgba(91,76,245,0.30)",
+                boxShadow: "0 30px 80px -40px rgba(91,76,245,0.12)",
               }}
-            />
-            <span
-              className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em]"
-              style={{ color: "#5B4CF5" }}
-              aria-hidden
             >
-              Step 2
-            </span>
-            <Tier
-              eyebrow="Recover"
-              eyebrowAccent="voltio"
-              price="25%"
-              priceSuffix="of verified payment savings · 24-month agreement"
-              priceGradient
-              caption="No savings, no fee"
-              features={RECOVERY_FEATURES}
-              ctaText="Start recovering"
-              ctaPrimary={true}
-            />
+              {/* Animated gradient border sweep — the WOW frame on the featured tier */}
+              <motion.div
+                aria-hidden
+                className="absolute inset-0 rounded-3xl pointer-events-none"
+                style={{
+                  padding: 1.5,
+                  background:
+                    "linear-gradient(120deg, rgba(91,76,245,0) 20%, rgba(139,123,255,0.9) 50%, rgba(57,198,240,0.9) 60%, rgba(91,76,245,0) 85%)",
+                  backgroundSize: "220% 220%",
+                  WebkitMask:
+                    "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                  WebkitMaskComposite: "xor",
+                  maskComposite: "exclude",
+                }}
+                animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
+              />
+              <div
+                aria-hidden
+                className="absolute pointer-events-none"
+                style={{
+                  width: 360, height: 360, right: "-15%", bottom: "-25%",
+                  background: "radial-gradient(circle, rgba(91,76,245,0.035) 0%, transparent 70%)",
+                  filter: "blur(60px)",
+                }}
+              />
+              <span
+                className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em]"
+                style={{ color: "#5B4CF5" }}
+                aria-hidden
+              >
+                Step 2
+              </span>
+              <Tier
+                eyebrow="Recover"
+                eyebrowAccent="voltio"
+                price="25%"
+                priceSuffix="of verified payment savings · 24-month agreement"
+                priceGradient
+                caption="No savings, no fee"
+                features={RECOVERY_FEATURES}
+                ctaText="Start recovering"
+                ctaPrimary={true}
+              />
+            </div>
           </div>
         </div>
 

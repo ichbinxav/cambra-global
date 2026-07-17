@@ -150,7 +150,8 @@ export default function StopLeavingMarginCTA() {
           className="mt-10 mx-auto text-[17px] sm:text-[20px] text-white/65"
           style={{ lineHeight: 1.55, maxWidth: 620 }}
         >
-          Turn operating costs into recovered margin.{" "}
+          Turn operating costs into recovered margin.
+          <br />
           <span className="text-white">Verified. Immediate. Aligned incentives.</span>
         </motion.p>
 
