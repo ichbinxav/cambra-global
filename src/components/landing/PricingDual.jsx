@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Check } from "lucide-react";
+import { ArrowUpRight, Check, Sparkles, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import SectionHeading from "@/components/landing/SectionHeading";
 
 /**
@@ -201,7 +202,7 @@ export default function PricingDual() {
           top: "50%",
           transform: "translate(-50%, -50%)",
           background:
-            "radial-gradient(circle, rgba(91,76,245,0.06) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(91,76,245,0.025) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
@@ -220,7 +221,23 @@ export default function PricingDual() {
         </div>
 
         {/* Two columns — Analyze · Recover */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-3xl mx-auto">
+        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-3xl mx-auto">
+          {/* Flow connector between the two steps */}
+          <motion.div
+            aria-hidden
+            initial={{ opacity: 0, scale: 0.6 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+            className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full"
+            style={{
+              background: "var(--g-voltio)",
+              boxShadow: "0 10px 24px -10px rgba(91,76,245,0.5)",
+              border: "3px solid #ffffff",
+            }}
+          >
+            <ArrowRight size={15} className="text-white" strokeWidth={2.5} />
+          </motion.div>
           {/* STEP 1 — Analyze (free, always) */}
           <div
             className="relative rounded-3xl overflow-hidden"
@@ -235,7 +252,7 @@ export default function PricingDual() {
               className="absolute pointer-events-none"
               style={{
                 width: 320, height: 320, left: "-15%", top: "-25%",
-                background: "radial-gradient(circle, rgba(91,76,245,0.05) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(91,76,245,0.02) 0%, transparent 70%)",
                 filter: "blur(60px)",
               }}
             />
@@ -263,15 +280,51 @@ export default function PricingDual() {
             style={{
               background: "#ffffff",
               border: "1px solid rgba(91,76,245,0.30)",
-              boxShadow: "0 30px 80px -40px rgba(91,76,245,0.25), 0 0 40px -24px rgba(91,76,245,0.3)",
+              boxShadow: "0 30px 80px -40px rgba(91,76,245,0.12)",
             }}
           >
+            {/* Animated gradient border sweep — the WOW frame on the featured tier */}
+            <motion.div
+              aria-hidden
+              className="absolute inset-0 rounded-3xl pointer-events-none"
+              style={{
+                padding: 1.5,
+                background:
+                  "linear-gradient(120deg, rgba(91,76,245,0) 20%, rgba(139,123,255,0.9) 50%, rgba(57,198,240,0.9) 60%, rgba(91,76,245,0) 85%)",
+                backgroundSize: "220% 220%",
+                WebkitMask:
+                  "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                WebkitMaskComposite: "xor",
+                maskComposite: "exclude",
+              }}
+              animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+              transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
+            />
+            {/* Most popular badge */}
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="absolute -top-3 left-1/2 -translate-x-1/2 z-20"
+            >
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[9.5px] uppercase font-bold tracking-[0.18em] text-white whitespace-nowrap"
+                style={{
+                  background: "var(--g-voltio)",
+                  boxShadow: "0 8px 20px -8px rgba(91,76,245,0.55)",
+                }}
+              >
+                <Sparkles size={10} strokeWidth={2.5} />
+                Most popular
+              </span>
+            </motion.div>
             <div
               aria-hidden
               className="absolute pointer-events-none"
               style={{
                 width: 360, height: 360, right: "-15%", bottom: "-25%",
-                background: "radial-gradient(circle, rgba(91,76,245,0.08) 0%, transparent 70%)",
+                background: "radial-gradient(circle, rgba(91,76,245,0.035) 0%, transparent 70%)",
                 filter: "blur(60px)",
               }}
             />
