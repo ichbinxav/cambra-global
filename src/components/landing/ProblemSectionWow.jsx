@@ -262,7 +262,7 @@ export default function ProblemSectionWow() {
                 PROBLEM/cost → .kw-c (Coral Gap). */}
             <span className="kw-c">up to 40%</span>{" "}
             on card payments.{" "}
-            <span style={{ color: "var(--gris-1)" }}>Every month.</span>
+            <span className="kw-c">Every month.</span>
           </SectionHeading>
         </AnimatedSection>
 

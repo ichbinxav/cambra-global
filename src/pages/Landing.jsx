@@ -289,8 +289,7 @@ function HowItWorksSection() {
         <AnimatedSection>
           <SectionHeading eyebrow={t("how_label")} className="mb-10">
             {t("how_h2_pre")}{" "}
-            <span className="kw">{t("how_h2_hl")}</span>
-            <span style={{ color: "var(--ink)" }}>.</span>
+            <span className="kw">{t("how_h2_hl")}.</span>
           </SectionHeading>
         </AnimatedSection>
 
