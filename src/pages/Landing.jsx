@@ -209,10 +209,11 @@ function Hero() {
           <img
             src={BRAND_ASSETS.cMarkVoltioPng}
             alt="CAMBRA — your entire payments stack, analyzed in one pass"
-            width={820}
-            height={820}
+            width={720}
+            height={720}
             fetchpriority="high"
-            className="relative hero-stack w-[125%] max-w-[820px] h-auto select-none lg:-ml-24 -mr-6 lg:-mr-8"
+            className="relative hero-stack w-[108%] max-w-[720px] h-auto select-none lg:-ml-16 -mr-6 lg:-mr-8"
+            style={{ filter: "brightness(0.86)" }}
             draggable={false}
           />
         </motion.div>
