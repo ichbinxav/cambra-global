@@ -1,4 +1,4 @@
-// ForProviders v2 — provider program page.
+// ForProviders v2 — provider program page. PAPER-FIRST (Chunk 1d).
 //
 // Two-tier model:
 //   Nivel 1 · Listed → provider publishes public pricing → enters CAMBRA's
@@ -12,10 +12,8 @@
 // This page has ZERO fabricated network figures (no "X merchants
 // connected"). If we need social proof we say "founding cohort in progress".
 //
-// Visual language mirrors Terms/Privacy/Cookies (dark navy gradient +
-// glass-panel + cyan accent + Space Grotesk headers). CTA points to
-// contact@cambra.global — no form, matches the rest of the platform's
-// contact convention.
+// Visual language: paper canvas + white cards + one authorized ink block
+// for the closing CTA (.section-ink). Mirrors the approved Landing.
 
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -23,13 +21,10 @@ import {
   ArrowLeft, ArrowRight, ShieldCheck, Sparkles, LinkIcon, Search,
   Handshake, CheckCircle2, Globe, Mail,
 } from "lucide-react";
-import Navbar from "@/components/landing/Navbar";
+import PublicPageShell from "@/components/shared/PublicPageShell";
+import SectionLabel from "@/components/shared/SectionLabel";
 
 // ── Tier cards data ─────────────────────────────────────────────────
-// Kept inline (single-language on purpose — same convention as Landing's
-// step cards). Copy is deliberately concrete about the requirements/
-// benefits without publishing commercial terms (%, exclusive rates)
-// — those live in a signed agreement, not on a marketing page.
 
 const LISTED_TIER = {
   eyebrow: "Tier 1",
@@ -124,6 +119,14 @@ const GUARDRAILS = [
   },
 ];
 
+// Shared paper card style — white, --linea border, radius 14, spec shadow.
+const CARD_STYLE = {
+  background: "#FFFFFF",
+  border: "1px solid var(--linea)",
+  borderRadius: 14,
+  boxShadow: "0 8px 24px rgba(12,12,22,.06)",
+};
+
 function TierCard({ tier, accent }) {
   const isPartner = accent === "partner";
   return (
@@ -132,39 +135,31 @@ function TierCard({ tier, accent }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className="relative overflow-hidden rounded-2xl p-6 sm:p-8"
+      className="relative overflow-hidden p-6 sm:p-8"
       style={{
-        background: isPartner
-          ? "radial-gradient(120% 100% at 100% 0%, rgba(34,211,238,0.10) 0%, transparent 60%), rgba(255,255,255,0.03)"
-          : "rgba(255,255,255,0.03)",
-        border: isPartner
-          ? "1px solid rgba(34,211,238,0.22)"
-          : "1px solid rgba(255,255,255,0.10)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
+        ...CARD_STYLE,
+        border: isPartner ? "1px solid rgba(58,43,176,0.30)" : "1px solid var(--linea)",
         boxShadow: isPartner
-          ? "0 30px 80px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(34,211,238,0.16)"
-          : "0 30px 80px -30px rgba(0,0,0,0.6)",
+          ? "0 8px 24px rgba(12,12,22,.06), 0 0 40px -18px rgba(58,43,176,0.22)"
+          : "0 8px 24px rgba(12,12,22,.06)",
       }}
     >
       <div className="mb-5 flex items-center gap-2">
-        <span
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.22em] uppercase"
-          style={{
-            background: isPartner ? "rgba(34,211,238,0.10)" : "rgba(255,255,255,0.04)",
-            border: isPartner
-              ? "1px solid rgba(34,211,238,0.30)"
-              : "1px solid rgba(255,255,255,0.10)",
-            color: isPartner ? "rgba(103,232,249,0.95)" : "rgba(255,255,255,0.55)",
-          }}
+        <SectionLabel
+          style={
+            isPartner
+              ? { background: "rgba(58,43,176,0.06)", color: "var(--voltio)", border: "1px solid rgba(58,43,176,0.20)" }
+              : undefined
+          }
         >
           {tier.eyebrow}
-        </span>
+        </SectionLabel>
       </div>
 
       <h3
-        className="text-white mb-2"
+        className="mb-2"
         style={{
+          color: "var(--ink)",
           fontFamily: "'Space Grotesk', 'Inter', sans-serif",
           fontSize: "clamp(28px, 3.5vw, 40px)",
           fontWeight: 900,
@@ -174,11 +169,11 @@ function TierCard({ tier, accent }) {
       >
         {tier.title}
       </h3>
-      <p className="text-[15px] font-semibold text-white/80 mb-4">{tier.tagline}</p>
-      <p className="text-[14px] leading-relaxed text-white/60 mb-8">{tier.intro}</p>
+      <p className="text-[15px] font-semibold mb-4" style={{ color: "var(--ink)" }}>{tier.tagline}</p>
+      <p className="text-[14px] leading-relaxed mb-8" style={{ color: "var(--gris-1)" }}>{tier.intro}</p>
 
       <div className="mb-8">
-        <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/40 mb-3">
+        <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-3" style={{ color: "var(--gris-2)" }}>
           What you bring
         </p>
         <ul className="space-y-3">
@@ -186,16 +181,13 @@ function TierCard({ tier, accent }) {
             <li key={r.title} className="flex gap-3">
               <div
                 className="h-8 w-8 rounded-lg shrink-0 flex items-center justify-center"
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                }}
+                style={{ background: "rgba(12,12,22,0.04)", border: "1px solid var(--linea)" }}
               >
-                <r.icon size={13} className="text-white/70" />
+                <r.icon size={13} style={{ color: "var(--gris-1)" }} />
               </div>
               <div className="min-w-0">
-                <p className="text-[13px] font-semibold text-white/95">{r.title}</p>
-                <p className="text-[12.5px] text-white/55 leading-relaxed">{r.body}</p>
+                <p className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>{r.title}</p>
+                <p className="text-[12.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{r.body}</p>
               </div>
             </li>
           ))}
@@ -203,7 +195,7 @@ function TierCard({ tier, accent }) {
       </div>
 
       <div className="mb-6">
-        <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/40 mb-3">
+        <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-3" style={{ color: "var(--gris-2)" }}>
           What CAMBRA delivers
         </p>
         <ul className="space-y-3">
@@ -212,31 +204,26 @@ function TierCard({ tier, accent }) {
               <div
                 className="h-8 w-8 rounded-lg shrink-0 flex items-center justify-center"
                 style={{
-                  background: isPartner ? "rgba(34,211,238,0.10)" : "rgba(255,255,255,0.04)",
-                  border: isPartner
-                    ? "1px solid rgba(34,211,238,0.25)"
-                    : "1px solid rgba(255,255,255,0.10)",
+                  background: isPartner ? "rgba(58,43,176,0.06)" : "rgba(12,12,22,0.04)",
+                  border: isPartner ? "1px solid rgba(58,43,176,0.20)" : "1px solid var(--linea)",
                 }}
               >
-                <b.icon size={13} className={isPartner ? "text-cyan-300" : "text-white/70"} />
+                <b.icon size={13} style={{ color: isPartner ? "var(--voltio)" : "var(--gris-1)" }} />
               </div>
               <div className="min-w-0">
-                <p className="text-[13px] font-semibold text-white/95">{b.title}</p>
-                <p className="text-[12.5px] text-white/55 leading-relaxed">{b.body}</p>
+                <p className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>{b.title}</p>
+                <p className="text-[12.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{b.body}</p>
               </div>
             </li>
           ))}
         </ul>
       </div>
 
-      <div
-        className="pt-5 mt-2"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
-      >
-        <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/40 mb-1">
+      <div className="pt-5 mt-2" style={{ borderTop: "1px solid var(--linea)" }}>
+        <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-1" style={{ color: "var(--gris-2)" }}>
           Commercial
         </p>
-        <p className="text-[13px] text-white/70">{tier.cost}</p>
+        <p className="text-[13px]" style={{ color: "var(--gris-1)" }}>{tier.cost}</p>
       </div>
     </motion.article>
   );
@@ -244,42 +231,24 @@ function TierCard({ tier, accent }) {
 
 export default function ForProviders() {
   return (
-    <div
-      className="relative min-h-screen font-inter overflow-hidden text-white"
-      style={{
-        background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
-      }}
-    >
-      <Navbar />
-
-      {/* Ambient grid (same treatment as Terms/Privacy) */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          opacity: 0.35,
-          maskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
-        }}
-      />
-      {/* Ambient halo behind hero */}
+    <PublicPageShell>
+      {/* Soft voltio wash behind hero — dialed to ~25% for the paper canvas. */}
       <div
         aria-hidden
         className="pointer-events-none fixed"
         style={{
           width: 700, height: 700, left: "50%", top: 100, transform: "translateX(-50%)",
-          background: "radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(58,43,176,0.06) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
 
       <div className="relative max-w-5xl mx-auto px-6 pt-24 pb-20">
         <Link to="/">
-          <button className="mb-8 -ml-2 h-8 text-xs rounded-full px-3 text-white/60 hover:text-white hover:bg-white/5 inline-flex items-center transition-colors">
+          <button
+            className="mb-8 -ml-2 h-8 text-xs rounded-full px-3 inline-flex items-center transition-colors"
+            style={{ color: "var(--gris-1)" }}
+          >
             <ArrowLeft size={13} className="mr-1.5" /> Back
           </button>
         </Link>
@@ -291,22 +260,14 @@ export default function ForProviders() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="mb-16 max-w-3xl"
         >
-          <div
-            className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full backdrop-blur-sm"
-            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
-          >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-300 opacity-75 animate-ping" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-300" />
-            </span>
-            <span className="text-[10px] font-semibold tracking-[0.22em] uppercase text-white/60">
-              For payment providers
-            </span>
+          <div className="mb-6">
+            <SectionLabel>For payment providers</SectionLabel>
           </div>
 
           <h1
-            className="mb-5 text-white"
+            className="mb-5"
             style={{
+              color: "var(--ink)",
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
               fontSize: "clamp(38px, 6.5vw, 76px)",
               fontWeight: 900,
@@ -315,14 +276,12 @@ export default function ForProviders() {
             }}
           >
             Merchants are comparing you{" "}
-            {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "right now." is the
-                urgency/tension → .kw-c (Coral Gap). */}
             <span className="kw-c">right now.</span>
             <br />
             Be the answer.
           </h1>
 
-          <p className="text-[16px] leading-relaxed text-white/60 max-w-2xl">
+          <p className="text-[16px] leading-relaxed max-w-2xl" style={{ color: "var(--gris-1)" }}>
             CAMBRA runs a payments audit for independent brands — online and in-store. Every audit compares the merchant's current effective rate against the best publicly contractable alternative for their region and ticket size. If your pricing is public, we can cite it. If you'll offer an exclusive rate through us, we can present it.
           </p>
         </motion.section>
@@ -330,12 +289,12 @@ export default function ForProviders() {
         {/* Tier cards */}
         <section className="mb-16">
           <div className="mb-8">
-            <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/40 mb-2">
+            <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-2" style={{ color: "var(--gris-2)" }}>
               Two ways to work with us
             </p>
             <h2
-              className="text-white"
               style={{
+                color: "var(--ink)",
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "clamp(28px, 3.8vw, 44px)",
                 fontWeight: 900,
@@ -345,7 +304,7 @@ export default function ForProviders() {
             >
               Listed, or Partner.
             </h2>
-            <p className="mt-3 text-[14px] text-white/55 max-w-2xl">
+            <p className="mt-3 text-[14px] max-w-2xl" style={{ color: "var(--gris-1)" }}>
               Two levels of engagement. One protects our benchmark's public integrity; the other opens a qualified acquisition channel. Both are opt-in, both are transparent about what they cost and what they deliver.
             </p>
           </div>
@@ -359,12 +318,12 @@ export default function ForProviders() {
         {/* Guardrails */}
         <section className="mb-16">
           <div className="mb-6">
-            <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/40 mb-2">
+            <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-2" style={{ color: "var(--gris-2)" }}>
               Where we won't compromise
             </p>
             <h2
-              className="text-white"
               style={{
+                color: "var(--ink)",
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
                 fontSize: "clamp(24px, 3vw, 36px)",
                 fontWeight: 900,
@@ -384,41 +343,31 @@ export default function ForProviders() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="rounded-xl p-5"
-                style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
+                className="p-5"
+                style={CARD_STYLE}
               >
                 <div className="mb-3 flex items-center gap-2">
-                  <ShieldCheck size={14} className="text-cyan-300/85" />
-                  <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/45">
+                  <ShieldCheck size={14} style={{ color: "var(--voltio)" }} />
+                  <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: "var(--gris-2)" }}>
                     Rule {i + 1}
                   </span>
                 </div>
-                <p className="text-[14px] font-semibold text-white/95 mb-2 leading-tight">
+                <p className="text-[14px] font-semibold mb-2 leading-tight" style={{ color: "var(--ink)" }}>
                   {g.title}
                 </p>
-                <p className="text-[12.5px] text-white/55 leading-relaxed">{g.body}</p>
+                <p className="text-[12.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{g.body}</p>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* CTA */}
+        {/* CTA — the ONE authorized ink block on this page. */}
         <motion.section
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="relative overflow-hidden rounded-2xl p-6 sm:p-10 text-center"
-          style={{
-            background:
-              "radial-gradient(120% 100% at 50% 0%, rgba(31,78,216,0.15) 0%, transparent 60%), rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.10)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-          }}
+          className="section-ink p-6 sm:p-10 text-center"
         >
           <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-cyan-300/90 mb-3">
             Talk to us
@@ -455,6 +404,6 @@ export default function ForProviders() {
           </p>
         </motion.section>
       </div>
-    </div>
+    </PublicPageShell>
   );
 }

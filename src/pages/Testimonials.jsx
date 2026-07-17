@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
-import Navbar from "@/components/landing/Navbar";
+import PublicPageShell from "@/components/shared/PublicPageShell";
+import SectionLabel from "@/components/shared/SectionLabel";
 import InitialsAvatar from "@/components/shared/InitialsAvatar";
 import { useTranslation } from "@/lib/i18n.jsx";
 
@@ -48,53 +49,25 @@ const TESTIMONIALS = [
 export default function Testimonials() {
   const { t } = useTranslation();
   return (
-    <div
-      className="relative min-h-screen font-inter overflow-hidden text-white"
-      style={{
-        background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
-      }}
-    >
-      <Navbar />
-      {/* Ambient backdrop */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          opacity: 0.35,
-          maskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
-        }}
-      />
-
+    <PublicPageShell>
       <div className="relative pt-24 pb-20">
         <div className="max-w-6xl mx-auto px-5">
           <div className="text-center mb-14">
-            <div
-              className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full backdrop-blur-sm"
-              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">
-                {t("tst_hero_badge")}
-              </span>
+            <div className="flex justify-center mb-6">
+              <SectionLabel>{t("tst_hero_badge")}</SectionLabel>
             </div>
-            <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-4 text-white">
-              <span
-                style={{
-                  background: "linear-gradient(135deg, #ffffff 0%, #b8d8e0 55%, #39C6F0 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                {t("tst_hero_h1")}
-              </span>
+            <h1
+              className="font-display font-black mb-4"
+              style={{
+                color: "var(--ink)",
+                fontSize: "clamp(2.2rem,5.5vw,4rem)",
+                letterSpacing: "-0.045em",
+                lineHeight: 0.92,
+              }}
+            >
+              {t("tst_hero_h1")}
             </h1>
-            <p className="text-base text-white/60 max-w-xl mx-auto">
+            <p className="text-base max-w-xl mx-auto" style={{ color: "var(--gris-1)" }}>
               {t("tst_hero_sub")}
             </p>
           </div>
@@ -103,30 +76,27 @@ export default function Testimonials() {
             {TESTIMONIALS.map((tm, i) => (
               <div
                 key={i}
-                className="relative overflow-hidden rounded-[1.75rem] p-7 flex flex-col transition hover:-translate-y-0.5"
+                className="relative overflow-hidden p-7 flex flex-col transition hover:-translate-y-0.5"
                 style={{
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  background: "rgba(255,255,255,0.03)",
-                  backdropFilter: "blur(10px)",
-                  WebkitBackdropFilter: "blur(10px)",
+                  background: "#FFFFFF",
+                  border: "1px solid var(--linea)",
+                  borderRadius: 14,
+                  boxShadow: "0 8px 24px rgba(12,12,22,.06)",
                 }}
               >
                 <div className="flex items-center gap-1 mb-4">
                   {[...Array(tm.rating)].map((_, j) => (
-                    <Star key={j} size={14} className="fill-cyan-300 text-cyan-300" />
+                    <Star key={j} size={14} style={{ fill: "var(--voltio)", color: "var(--voltio)" }} />
                   ))}
                 </div>
 
-                <p className="text-sm text-white/80 mb-6 flex-1 leading-relaxed">"{tm.text}"</p>
+                <p className="text-sm mb-6 flex-1 leading-relaxed" style={{ color: "var(--gris-1)" }}>"{tm.text}"</p>
 
-                <div
-                  className="flex items-center gap-3 pt-4"
-                  style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
-                >
+                <div className="flex items-center gap-3 pt-4" style={{ borderTop: "1px solid var(--linea)" }}>
                   <InitialsAvatar name={tm.name} size={40} />
                   <div>
-                    <p className="text-sm font-semibold text-white">{tm.name}</p>
-                    <p className="text-[11px] text-white/55">
+                    <p className="text-sm font-semibold" style={{ color: "var(--ink)" }}>{tm.name}</p>
+                    <p className="text-[11px]" style={{ color: "var(--gris-2)" }}>
                       {t("tst_role_at", { role: tm.role, company: tm.company })}
                     </p>
                   </div>
@@ -136,6 +106,6 @@ export default function Testimonials() {
           </div>
         </div>
       </div>
-    </div>
+    </PublicPageShell>
   );
 }

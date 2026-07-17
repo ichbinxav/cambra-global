@@ -1,9 +1,18 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Activity, Plug, BarChart3, Sparkles } from "lucide-react";
-import Navbar from "@/components/landing/Navbar";
+import PublicPageShell from "@/components/shared/PublicPageShell";
+import SectionLabel from "@/components/shared/SectionLabel";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n.jsx";
+
+// Shared paper card style — white, --linea border, radius 14, spec shadow.
+const CARD_STYLE = {
+  background: "#FFFFFF",
+  border: "1px solid var(--linea)",
+  borderRadius: 14,
+  boxShadow: "0 8px 24px rgba(12,12,22,.06)",
+};
 
 export default function HowItWorks() {
   const { t } = useTranslation();
@@ -14,55 +23,33 @@ export default function HowItWorks() {
     { n: "04", eyebrow: t("hiw_s4_eyebrow"), icon: Sparkles,  title: t("hiw_s4_title"), detail: t("hiw_s4_detail"), cta: { label: t("hiw_s4_cta"), href: "/Pricing" } },
   ];
   return (
-    <div
-      className="relative min-h-screen font-inter overflow-hidden text-white"
-      style={{
-        background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
-      }}
-    >
-      <Navbar />
-
-      {/* Ambient backdrop */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          opacity: 0.35,
-          maskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
-        }}
-      />
-
+    <PublicPageShell>
       <div className="relative pt-24 pb-20">
         <div className="max-w-6xl mx-auto px-5">
 
           {/* Hero */}
           <div className="text-center mb-16">
-            <div
-              className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full backdrop-blur-sm"
-              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">
-                {t("hiw_hero_badge")}
-              </span>
+            <div className="flex justify-center mb-6">
+              <SectionLabel>{t("hiw_hero_badge")}</SectionLabel>
             </div>
 
-            {/* DA v1.1 Chunk 1c — Rule 1: full-string i18n headline has no
-                isolable single word → normal text color (loose cyan removed). */}
-            <h1 className="font-display text-[clamp(2.4rem,6vw,4.4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-5 text-white">
+            <h1
+              className="font-display font-black mb-5"
+              style={{
+                color: "var(--ink)",
+                fontSize: "clamp(2.4rem,6vw,4.4rem)",
+                letterSpacing: "-0.045em",
+                lineHeight: 0.92,
+              }}
+            >
               {t("hiw_hero_h1")}
             </h1>
-            <p className="text-base md:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-lg max-w-2xl mx-auto leading-relaxed" style={{ color: "var(--gris-1)" }}>
               {t("hiw_hero_sub")}
             </p>
           </div>
 
-          {/* Steps — large cinematic */}
+          {/* Steps — large cinematic, on white paper cards */}
           <div className="space-y-6">
             {STEPS.map((step, i) => {
               const Icon = step.icon;
@@ -73,47 +60,55 @@ export default function HowItWorks() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-80px" }}
                   transition={{ duration: 0.5, delay: i * 0.05 }}
-                  className="cambra-card p-8 sm:p-12"
+                  className="p-8 sm:p-12"
+                  style={CARD_STYLE}
                 >
                   <div className="flex items-start justify-between gap-4 mb-8">
-                    {/* Giant cinematic number — on top */}
-                    <div className="cambra-step-number">
+                    {/* Giant cinematic number — navy gradient on paper */}
+                    <div className="cambra-step-number-light" style={{ fontSize: "clamp(4rem, 9vw, 6.5rem)", lineHeight: 1 }}>
                       {step.n}
                     </div>
 
                     {/* CTA row — aligned with number */}
                     <Link
                       to={step.cta.href}
-                      className="group/cta inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full border border-white/20 bg-cambra-navy-deep/80 hover:bg-cambra-navy-deep hover:border-white/40 transition-all backdrop-blur-md mt-1 flex-shrink-0"
-                      style={{ position: 'relative', zIndex: 20 }}
+                      className="group/cta inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full transition-all mt-1 flex-shrink-0"
+                      style={{ background: "rgba(12,12,22,0.04)", border: "1px solid var(--linea)", position: "relative", zIndex: 20 }}
                     >
-                      <span className="text-[9px] sm:text-[10px] font-bold text-white tracking-[0.08em] uppercase whitespace-nowrap">
+                      <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.08em] uppercase whitespace-nowrap" style={{ color: "var(--ink)" }}>
                         {step.cta.label}
                       </span>
-                      <span className="h-4 w-4 rounded-full flex items-center justify-center bg-cambra-mint transition-transform group-hover/cta:translate-x-0.5">
-                        <ArrowRight className="h-2.5 w-2.5 text-cambra-navy-deep" strokeWidth={3} />
+                      <span className="h-4 w-4 rounded-full flex items-center justify-center transition-transform group-hover/cta:translate-x-0.5" style={{ background: "var(--voltio)" }}>
+                        <ArrowRight className="h-2.5 w-2.5 text-white" strokeWidth={3} />
                       </span>
                     </Link>
                   </div>
 
                   <div>
-
-                    {/* Content */}
                     <div className="min-w-0">
-                      <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-sm">
-                        <Icon size={11} className="text-cambra-mint" />
-                        <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-white/70">
+                      <div
+                        className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full"
+                        style={{ background: "rgba(12,12,22,0.04)", border: "1px solid var(--linea)" }}
+                      >
+                        <Icon size={11} style={{ color: "var(--voltio)" }} />
+                        <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: "var(--gris-1)" }}>
                           {step.eyebrow}
                         </span>
                       </div>
 
-                      <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-black tracking-[-0.035em] leading-[1] mb-3">
-                        <span style={{ background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 55%, #39C6F0 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                          {step.title}
-                        </span>
+                      <h2
+                        className="font-display font-black mb-3"
+                        style={{
+                          color: "var(--ink)",
+                          fontSize: "clamp(1.5rem, 4vw, 2.25rem)",
+                          letterSpacing: "-0.035em",
+                          lineHeight: 1,
+                        }}
+                      >
+                        {step.title}
                       </h2>
 
-                      <p className="text-sm sm:text-base text-white/70 leading-relaxed max-w-2xl">
+                      <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: "var(--gris-1)" }}>
                         {step.detail}
                       </p>
                     </div>
@@ -126,17 +121,17 @@ export default function HowItWorks() {
           {/* CTA */}
           <div className="mt-16 text-center">
             <Link to="/Analyzer">
-              <Button className="h-12 rounded-full px-8 text-sm font-bold gap-2 bg-white text-black hover:opacity-90">
+              <Button className="h-12 rounded-full px-8 text-sm font-bold gap-2 text-white hover:opacity-90" style={{ background: "var(--ink)" }}>
                 {t("hiw_cta_button")} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <p className="text-xs text-white/50 mt-4">
+            <p className="text-xs mt-4" style={{ color: "var(--gris-2)" }}>
               {t("hiw_cta_note")}
             </p>
           </div>
 
         </div>
       </div>
-    </div>
+    </PublicPageShell>
   );
 }

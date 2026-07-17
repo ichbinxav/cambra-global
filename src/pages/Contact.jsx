@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, MessageSquare, ArrowRight, Loader2 } from "lucide-react";
-import Navbar from "@/components/landing/Navbar";
+import PublicPageShell from "@/components/shared/PublicPageShell";
+import SectionLabel from "@/components/shared/SectionLabel";
 import { base44 } from "@/api/base44Client";
 
 export default function Contact() {
@@ -42,55 +43,28 @@ export default function Contact() {
     }
   };
 
-  return (
-    <div
-      className="relative min-h-screen font-inter overflow-hidden text-white"
-      style={{
-        background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 22%, #0a0d18 48%, #0b1020 72%, #0E0E1A 100%)",
-      }}
-    >
-      <Navbar />
-      {/* Ambient backdrop */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          opacity: 0.35,
-          maskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 30%, #000 35%, transparent 100%)",
-        }}
-      />
+  const inputStyle = { background: "#FFFFFF", border: "1px solid var(--linea)", color: "var(--ink)" };
 
+  return (
+    <PublicPageShell>
       <div className="relative pt-24 pb-20">
         <div className="max-w-3xl mx-auto px-5">
           <div className="text-center mb-14">
-            <div
-              className="inline-flex items-center gap-2 mb-6 px-2.5 py-1.5 rounded-full backdrop-blur-sm"
-              style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
-              <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-white/60">
-                Contact · We're here to help
-              </span>
+            <div className="flex justify-center mb-6">
+              <SectionLabel>Contact · We're here to help</SectionLabel>
             </div>
-            <h1 className="font-display text-[clamp(2.2rem,5.5vw,4rem)] font-black tracking-[-0.045em] leading-[0.92] mb-4 text-white">
-              Get in{" "}
-              <span
-                style={{
-                  background: "linear-gradient(135deg, #8B7BFF 0%, #39C6F0 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                touch.
-              </span>
+            <h1
+              className="font-display font-black mb-4"
+              style={{
+                color: "var(--ink)",
+                fontSize: "clamp(2.2rem,5.5vw,4rem)",
+                letterSpacing: "-0.045em",
+                lineHeight: 0.92,
+              }}
+            >
+              Get in <span className="kw">touch.</span>
             </h1>
-            <p className="text-base text-white/60 max-w-md mx-auto">
+            <p className="text-base max-w-md mx-auto" style={{ color: "var(--gris-1)" }}>
               Questions about CAMBRA? We're here to help.
             </p>
           </div>
@@ -103,84 +77,80 @@ export default function Contact() {
               <a
                 key={i}
                 href={c.href}
-                className="group rounded-2xl p-6 text-center transition hover:-translate-y-0.5 backdrop-blur-sm"
+                className="group p-6 text-center transition hover:-translate-y-0.5"
                 style={{
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  background: "rgba(255,255,255,0.03)",
+                  background: "#FFFFFF",
+                  border: "1px solid var(--linea)",
+                  borderRadius: 14,
+                  boxShadow: "0 8px 24px rgba(12,12,22,.06)",
                 }}
               >
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-colors"
-                  style={{
-                    border: "1px solid rgba(34,211,238,0.25)",
-                    background: "rgba(34,211,238,0.10)",
-                    color: "#7BD9F0",
-                  }}
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                  style={{ border: "1px solid rgba(58,43,176,0.20)", background: "rgba(58,43,176,0.06)", color: "var(--voltio)" }}
                 >
                   <c.icon className="w-5 h-5" />
                 </div>
-                <p className="text-sm font-semibold mb-1 text-white">{c.label}</p>
-                <p className="text-sm text-white/60">{c.value}</p>
+                <p className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>{c.label}</p>
+                <p className="text-sm" style={{ color: "var(--gris-1)" }}>{c.value}</p>
               </a>
             ))}
           </div>
 
           <div
-            className="relative overflow-hidden rounded-[1.75rem] p-8 backdrop-blur-md"
+            className="relative overflow-hidden p-8"
             style={{
-              border: "1px solid rgba(255,255,255,0.10)",
-              background: "rgba(255,255,255,0.03)",
-              boxShadow: "0 24px 60px -20px rgba(0,0,0,0.5)",
+              background: "#FFFFFF",
+              border: "1px solid var(--linea)",
+              borderRadius: 14,
+              boxShadow: "0 8px 24px rgba(12,12,22,.06)",
             }}
           >
-            <div
-              className="pointer-events-none absolute -top-24 -right-24 w-56 h-56 rounded-full blur-3xl"
-              style={{ background: "radial-gradient(closest-side, rgba(34,211,238,0.25), transparent 70%)" }}
-            />
             <div className="relative">
-              <h2 className="font-display text-xl font-black tracking-[-0.03em] mb-6 text-white">Send us a message</h2>
+              <h2 className="font-display text-xl font-black tracking-[-0.03em] mb-6" style={{ color: "var(--ink)" }}>Send us a message</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold block mb-2 text-white/80">Name</label>
+                  <label className="text-sm font-semibold block mb-2" style={{ color: "var(--ink)" }}>Name</label>
                   <Input
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Your name"
-                    className="h-12 text-white placeholder:text-white/30"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                    className="h-12"
+                    style={inputStyle}
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold block mb-2 text-white/80">Email</label>
+                  <label className="text-sm font-semibold block mb-2" style={{ color: "var(--ink)" }}>Email</label>
                   <Input
                     name="email"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="your@email.com"
-                    className="h-12 text-white placeholder:text-white/30"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                    className="h-12"
+                    style={inputStyle}
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold block mb-2 text-white/80">Message</label>
+                  <label className="text-sm font-semibold block mb-2" style={{ color: "var(--ink)" }}>Message</label>
                   <textarea
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
                     placeholder="Tell us how we can help..."
-                    className="w-full min-h-32 p-4 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-cyan-300/50"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                    className="w-full min-h-32 p-4 rounded-lg focus:outline-none focus:ring-1"
+                    style={{ ...inputStyle }}
                     required
                   />
                 </div>
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="w-full h-12 rounded-full font-bold gap-2 bg-white text-black hover:bg-white/90"
+                  className="w-full h-12 rounded-full font-bold gap-2 text-white hover:opacity-90"
+                  style={{ background: "var(--ink)" }}
                 >
                   {submitting
                     ? <>Sending... <Loader2 className="w-4 h-4 animate-spin" /></>
@@ -189,13 +159,13 @@ export default function Contact() {
                       : <>Send message <ArrowRight className="w-4 h-4" /></>}
                 </Button>
                 {error && (
-                  <p className="text-xs text-red-300 mt-2 text-center">{error}</p>
+                  <p className="text-xs mt-2 text-center" style={{ color: "var(--coral)" }}>{error}</p>
                 )}
               </form>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </PublicPageShell>
   );
 }
