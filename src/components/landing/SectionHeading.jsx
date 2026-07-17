@@ -19,10 +19,10 @@ export default function SectionHeading({ eyebrow, children, className = "" }) {
         style={{
           color: "var(--ink)",
           fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-          fontSize: "clamp(36px, 5.5vw, 60px)",
+          fontSize: "clamp(44px, 7vw, 80px)",
           fontWeight: 900,
-          letterSpacing: "-0.04em",
-          lineHeight: 1.05,
+          letterSpacing: "-0.045em",
+          lineHeight: 1.0,
         }}
       >
         {children}
