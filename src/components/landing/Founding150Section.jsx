@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
-import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 /**
  * Founding 150 — dedicated section. Light background. Copy on the left,
@@ -23,8 +22,8 @@ export default function Founding150Section() {
         }}
       />
 
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-16 items-center">
-        {/* LEFT — copy */}
+      <div className="relative max-w-3xl mx-auto px-6 sm:px-10 text-center">
+        {/* copy */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -49,7 +48,7 @@ export default function Founding150Section() {
             <span className="kw">One dataset.</span>
           </h2>
 
-          <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed max-w-xl" style={{ color: "var(--gris-1)" }}>
+          <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed max-w-xl mx-auto" style={{ color: "var(--gris-1)" }}>
             We're selecting 150 independent brands (€200k–€2M in annual sales)
             to build Europe's first database of what payments really cost.
             In exchange: full analysis and ongoing monitoring, free, forever.
@@ -61,27 +60,6 @@ export default function Founding150Section() {
               <ArrowRight size={16} />
             </Link>
           </div>
-        </motion.div>
-
-        {/* RIGHT — frosted coin (Founding 150 reward: free forever). */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.92 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          id="coin-slot"
-          className="relative w-full flex justify-center lg:justify-end"
-          style={{ maxWidth: 440 }}
-        >
-          <img
-            src={BRAND_ASSETS.flowFrosted}
-            alt="Free forever for the Founding 150"
-            width={440}
-            height={440}
-            loading="lazy"
-            className="relative w-full max-w-[440px] h-auto select-none"
-            draggable={false}
-          />
         </motion.div>
       </div>
     </section>

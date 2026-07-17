@@ -201,7 +201,7 @@ function Hero() {
         {/* RIGHT — hero stack (frosted 3D object). Icon only, no callouts —
             the callouts live in TheStackSection. Floats gently. */}
         <motion.div
-          className="relative lg:col-span-5 flex justify-center lg:justify-end"
+          className="relative lg:col-span-5 flex justify-center"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
@@ -212,7 +212,7 @@ function Hero() {
             width={600}
             height={600}
             fetchpriority="high"
-            className="relative hero-stack w-[62%] max-w-[420px] h-auto select-none lg:-ml-72 -mr-6 lg:mr-0"
+            className="relative hero-stack w-[62%] max-w-[420px] h-auto select-none"
             style={{ filter: "brightness(0.86)" }}
             draggable={false}
           />
