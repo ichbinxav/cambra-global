@@ -16,6 +16,9 @@ import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
 import InStoreUpsellStrip from "@/components/landing/InStoreUpsellStrip";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
+import TheStackSection from "@/components/landing/TheStackSection";
+import RealImpactSection from "@/components/landing/RealImpactSection";
+import Founding150Section from "@/components/landing/Founding150Section";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
 const LANDING_JSON_LD = {
@@ -479,11 +482,14 @@ export default function Landing() {
         <Hero />
         {/* Sections render directly on the paper canvas — NO wrappers.
             Each section owns its own inner dark pills/cards internally. */}
+        <TheStackSection />
         <InStoreUpsellStrip />
         <ProblemSectionWow />
         <HowItWorksSection />
+        <RealImpactSection />
         <PricingDual />
         <TestimonialsCarousel />
+        <Founding150Section />
         <FounderLetter />
         <StopLeavingMarginCTA />
       </main>
