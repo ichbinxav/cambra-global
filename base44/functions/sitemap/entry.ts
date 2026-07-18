@@ -22,6 +22,7 @@ const PUBLIC_ROUTES: Array<[string, string, string]> = [
   ["/",              "weekly",  "1.0"],
   ["/Analyzer",      "weekly",  "0.9"],
   ["/HowItWorks",    "monthly", "0.8"],
+  ["/ForProviders",  "monthly", "0.7"],
   ["/Pricing",       "monthly", "0.8"],
   ["/Testimonials",  "monthly", "0.6"],
   ["/Contact",       "monthly", "0.6"],
@@ -55,12 +56,15 @@ Disallow: /Account
 Disallow: /Reports
 Disallow: /Vault
 Disallow: /Invoices
+Disallow: /Onboarding
+Disallow: /BrandProfile
 Disallow: /ConnectIntegrations
 Disallow: /ConnectTools
 Disallow: /Results
 Disallow: /AnalyzerTeaser
 Disallow: /IntegrationsCallback
 Disallow: /LoginGate
+Disallow: /HealthCheck
 Disallow: /auth
 Disallow: /dev
 

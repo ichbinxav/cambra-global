@@ -84,6 +84,7 @@ import BrandProfile from '@/pages/BrandProfile';
 import BrandGlyph from '@/components/shared/BrandGlyph';
 import CopilotPanel from '@/components/copilot/CopilotPanel.jsx';
 import ScrollToTop from '@/components/shared/ScrollToTop.jsx';
+import RobotsMeta from '@/components/shared/RobotsMeta.jsx';
 import ErrorBoundary from '@/components/shared/ErrorBoundary.jsx';
 import { ToastProvider } from '@/components/shared/Toast.jsx';
 
@@ -299,6 +300,7 @@ function App() {
             <QueryClientProvider client={queryClientInstance}>
               <Router>
                 <ScrollToTop />
+                <RobotsMeta />
                 <AuthenticatedApp />
                 <CopilotPanel />
                 <CookieConsent />
