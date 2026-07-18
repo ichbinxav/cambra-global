@@ -151,10 +151,11 @@ function Hero() {
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to="/Analyzer"
-                className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-medium text-[14px] transition-colors hover:bg-[#4A3AD1]"
+                className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-medium text-[14px] transition-transform hover:-translate-y-0.5"
                 style={{
-                  background: "#3A2BB0",
+                  background: "var(--g-voltio)",
                   color: "#fff",
+                  boxShadow: "0 12px 32px -12px rgba(91,76,245,0.5)",
                 }}
               >
                 {t("hero_cta_primary")}
