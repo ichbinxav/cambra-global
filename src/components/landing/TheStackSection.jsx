@@ -36,20 +36,28 @@ export default function TheStackSection() {
             The wrapper is centered; a right padding reserves room for the
             callout column so nothing overflows. On mobile the callouts stack. */}
         <div className="relative mx-auto lg:pr-[280px]" style={{ maxWidth: 940 }}>
-          <motion.img
-            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/20ff08204_stack-callouts-alpha2x.webp"
-            alt="Online payments, in-store terminals, contracts and benchmark — one stack, one analysis"
-            width={1100}
-            height={800}
-            loading="lazy"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full h-auto select-none"
-            style={{ filter: "contrast(1.12) saturate(1.15) brightness(0.97)" }}
-            draggable={false}
-          />
+          {/* On mobile the baked-in dashed lines + dots on the right of the
+              image point at nothing (the callouts move to a list below), so
+              they read as broken/dangling. We clip the right portion of the
+              image on mobile (showing only the clean layer stack) and center
+              it; on lg+ the full image with its dashed lines is shown so the
+              overlaid callout labels line up with each dot. */}
+          <div className="overflow-hidden lg:overflow-visible">
+            <motion.img
+              src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/20ff08204_stack-callouts-alpha2x.webp"
+              alt="Online payments, in-store terminals, contracts and benchmark — one stack, one analysis"
+              width={1100}
+              height={800}
+              loading="lazy"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="relative h-auto select-none w-[150%] max-w-none -ml-[8%] lg:w-full lg:ml-0"
+              style={{ filter: "contrast(1.12) saturate(1.15) brightness(0.97)" }}
+              draggable={false}
+            />
+          </div>
 
           {/* DESKTOP — callout labels overlaid next to each colored dot.
               The dots sit at roughly 24% / 41% / 58% / 75% of the image height,
