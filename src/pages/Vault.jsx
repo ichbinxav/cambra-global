@@ -114,22 +114,22 @@ export default function Vault() {
       />
 
       <div className="flex items-center gap-2 flex-wrap">
-        <Input placeholder="Buscar…" value={q} onChange={e=>setQ(e.target.value)} className="w-52" />
+        <Input placeholder="Buscar…" value={q} onChange={e=>setQ(e.target.value)} className="w-52 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30" />
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-44"><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectTrigger className="w-44 bg-white/[0.04] border-white/10 text-white"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
             {CATEGORIES.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-40 bg-white/[0.04] border-white/10 text-white"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             {STATUSES.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
           </SelectContent>
         </Select>
-        <Button variant="outline" onClick={onFilter}>Filtrar</Button>
+        <Button variant="outline" onClick={onFilter} className="bg-white/[0.04] border-white/10 text-white hover:bg-white/10 hover:text-white">Filtrar</Button>
       </div>
 
       {loading ? (
@@ -137,21 +137,23 @@ export default function Vault() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
           {(items||[]).map(doc => (
-            <div key={doc.id} className={`rounded-xl border p-4 bg-card hover:shadow-sm cursor-pointer ${selected?.id===doc.id? 'ring-1 ring-foreground' : ''}`} onClick={()=>setSelected(doc)}>
-              <div className="flex items-center justify-between">
-                <div className="font-semibold truncate max-w-[70%]">{doc.title || doc.file_name}</div>
-                <Badge variant="outline" className="text-[10px]">{doc.category}</Badge>
+            <div key={doc.id} className={`cambra-card p-4 cursor-pointer ${selected?.id===doc.id? 'ring-1 ring-cambra-cyan' : ''}`} onClick={()=>setSelected(doc)}>
+              <div className="relative">
+                <div className="flex items-center justify-between">
+                  <div className="font-semibold truncate max-w-[70%] text-white">{doc.title || doc.file_name}</div>
+                  <Badge variant="outline" className="text-[10px] border-white/15 text-white/70">{doc.category}</Badge>
+                </div>
+                <div className="text-xs text-white/50 mt-1 truncate">{doc.file_name}</div>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <Badge className="border border-white/10 bg-white/[0.06] text-white/75 text-[10px]">{doc.review_status}</Badge>
+                  <Badge variant="outline" className="text-[10px] border-white/15 text-white/70">{doc.visibility}</Badge>
+                  {Array.isArray(doc.tags) && doc.tags.slice(0,3).map(t => <Badge key={t} variant="outline" className="text-[10px] border-white/15 text-white/70">#{t}</Badge>)}
+                </div>
+                <div className="mt-3 text-xs"><a className="text-cambra-cyan underline" href={doc.file_url} target="_blank" rel="noreferrer">Abrir</a></div>
+                {doc.links && doc.links.length>0 && (
+                  <div className="mt-2 text-[11px] text-white/50">Vínculos: {doc.links.map(l=>`${l.target_type}:${l.target_id}`).join(', ')}</div>
+                )}
               </div>
-              <div className="text-xs text-muted-foreground mt-1 truncate">{doc.file_name}</div>
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <Badge className="bg-secondary text-secondary-foreground text-[10px]">{doc.review_status}</Badge>
-                <Badge variant="outline" className="text-[10px]">{doc.visibility}</Badge>
-                {Array.isArray(doc.tags) && doc.tags.slice(0,3).map(t => <Badge key={t} variant="outline" className="text-[10px]">#{t}</Badge>)}
-              </div>
-              <div className="mt-3 text-xs"><a className="text-blue-600 underline" href={doc.file_url} target="_blank" rel="noreferrer">Abrir</a></div>
-              {doc.links && doc.links.length>0 && (
-                <div className="mt-2 text-[11px] text-muted-foreground">Vínculos: {doc.links.map(l=>`${l.target_type}:${l.target_id}`).join(', ')}</div>
-              )}
             </div>
           ))}
         </div>
@@ -160,26 +162,26 @@ export default function Vault() {
       {/* Detail drawer */}
       {selected && (
         <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/30" onClick={()=>setSelected(null)} />
-          <div className="absolute right-0 top-0 h-full w-full sm:w-[440px] bg-card border-l p-4 overflow-auto">
+          <div className="absolute inset-0 bg-black/50" onClick={()=>setSelected(null)} />
+          <div className="absolute right-0 top-0 h-full w-full sm:w-[440px] border-l border-white/10 p-4 overflow-auto text-white" style={{ background: "linear-gradient(180deg, #0b1020 0%, #08090f 100%)" }}>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold">Editar documento</h2>
-              <Button variant="ghost" onClick={()=>setSelected(null)}>Cerrar</Button>
+              <h2 className="text-lg font-bold text-white">Editar documento</h2>
+              <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10" onClick={()=>setSelected(null)}>Cerrar</Button>
             </div>
 
             <div className="space-y-3">
-              <label className="text-xs text-muted-foreground">Título</label>
-              <Input defaultValue={selected.title || ''} onBlur={(e)=>saveMeta(selected, { title: e.target.value })} />
+              <label className="text-xs text-white/50">Título</label>
+              <Input className="bg-white/[0.04] border-white/10 text-white" defaultValue={selected.title || ''} onBlur={(e)=>saveMeta(selected, { title: e.target.value })} />
 
-              <label className="text-xs text-muted-foreground">Etiquetas (separadas por coma)</label>
-              <Input defaultValue={(selected.tags||[]).join(', ')} onBlur={(e)=>saveMeta(selected, { tags: e.target.value.split(',').map(s=>s.trim()).filter(Boolean) })} />
+              <label className="text-xs text-white/50">Etiquetas (separadas por coma)</label>
+              <Input className="bg-white/[0.04] border-white/10 text-white" defaultValue={(selected.tags||[]).join(', ')} onBlur={(e)=>saveMeta(selected, { tags: e.target.value.split(',').map(s=>s.trim()).filter(Boolean) })} />
 
-              <label className="text-xs text-muted-foreground">Notas</label>
-              <Input defaultValue={selected.notes || ''} onBlur={(e)=>saveMeta(selected, { notes: e.target.value })} />
+              <label className="text-xs text-white/50">Notas</label>
+              <Input className="bg-white/[0.04] border-white/10 text-white" defaultValue={selected.notes || ''} onBlur={(e)=>saveMeta(selected, { notes: e.target.value })} />
 
               <div className="flex items-center justify-between">
-                <a className="text-blue-600 underline text-sm" href={selected.file_url} target="_blank" rel="noreferrer">Abrir archivo</a>
-                <span className="text-[11px] text-muted-foreground">v{selected.version || 1}</span>
+                <a className="text-cambra-cyan underline text-sm" href={selected.file_url} target="_blank" rel="noreferrer">Abrir archivo</a>
+                <span className="text-[11px] text-white/50">v{selected.version || 1}</span>
               </div>
 
               {/* Links */}

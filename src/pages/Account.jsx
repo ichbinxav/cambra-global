@@ -9,14 +9,16 @@ import MonthlyEmailPreference from "@/components/account/MonthlyEmailPreference"
 import PageHero from "@/components/shared/PageHero";
 
 const Section = ({ icon: IconComp, title, children }) => (
-  <div className="p-6 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-sm">
-    <div className="flex items-center gap-2 mb-5">
-      <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
-        <IconComp size={13} className="text-muted-foreground" />
+  <div className="cambra-card p-6">
+    <div className="relative">
+      <div className="flex items-center gap-2 mb-5">
+        <div className="w-7 h-7 rounded-lg border border-white/10 bg-white/[0.05] flex items-center justify-center">
+          <IconComp size={13} className="text-cambra-cyan" />
+        </div>
+        <p className="cc-eyebrow">{title}</p>
       </div>
-      <p className="text-[10px] tracking-[0.22em] uppercase text-muted-foreground font-semibold">{title}</p>
+      {children}
     </div>
-    {children}
   </div>
 );
 
@@ -82,16 +84,16 @@ export default function Account() {
         <Section icon={User} title="Profile">
           <div className="space-y-4">
             <div>
-              <Label className="text-xs text-muted-foreground/60 mb-1.5 block">Full name</Label>
-              <p className="text-sm font-semibold">{user?.full_name || "—"}</p>
+              <Label className="text-xs text-white/50 mb-1.5 block">Full name</Label>
+              <p className="text-sm font-semibold text-white">{user?.full_name || "—"}</p>
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground/60 mb-1.5 block">Email</Label>
-              <p className="text-sm font-semibold">{user?.email || "—"}</p>
+              <Label className="text-xs text-white/50 mb-1.5 block">Email</Label>
+              <p className="text-sm font-semibold text-white">{user?.email || "—"}</p>
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground/60 mb-1.5 block">Role</Label>
-              <span className="inline-flex items-center text-[10px] tracking-[0.1em] uppercase px-2.5 py-1 rounded-full bg-secondary text-muted-foreground">
+              <Label className="text-xs text-white/50 mb-1.5 block">Role</Label>
+              <span className="inline-flex items-center text-[10px] tracking-[0.1em] uppercase px-2.5 py-1 rounded-full border border-white/10 bg-white/[0.05] text-white/75">
                 {user?.role || "Member"}
               </span>
             </div>
@@ -107,11 +109,11 @@ export default function Account() {
                 { field: "country", label: "Country", placeholder: "e.g. Germany" },
               ].map(({ field, label, placeholder }) => (
                 <div key={field} className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground/60">{label}</Label>
+                  <Label className="text-xs text-white/50">{label}</Label>
                   <Input
                     defaultValue={brand[field]}
                     onBlur={e => updateBrand(field, e.target.value)}
-                    className="h-9 text-sm border-border/60"
+                    className="h-9 text-sm bg-white/[0.04] border-white/10 text-white placeholder:text-white/30"
                     placeholder={placeholder}
                   />
                 </div>
@@ -135,11 +137,11 @@ export default function Account() {
                 { field: "renewal_date", label: "Renewal date", placeholder: "2026-12-31" },
               ].map(({ field, label, placeholder }) => (
                 <div key={field} className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground/60">{label}</Label>
+                  <Label className="text-xs text-white/50">{label}</Label>
                   <Input
                     defaultValue={paymentsProfile[field]}
                     onBlur={e => updatePaymentsProfile(field, e.target.value)}
-                    className="h-9 text-sm border-border/60"
+                    className="h-9 text-sm bg-white/[0.04] border-white/10 text-white placeholder:text-white/30"
                     placeholder={placeholder}
                   />
                 </div>
@@ -153,14 +155,14 @@ export default function Account() {
         </Section>
 
         <Section icon={Shield} title="Session">
-          <p className="text-sm text-muted-foreground mb-5">
+          <p className="text-sm text-white/55 mb-5">
             Signing out will end your current session. You can always sign back in with your credentials.
           </p>
           <Button
             variant="outline"
             size="sm"
             onClick={() => base44.auth.logout()}
-            className="h-9 rounded-full px-5 text-xs font-medium gap-2 border-border/60"
+            className="h-9 rounded-full px-5 text-xs font-medium gap-2 bg-white/[0.04] border-white/10 text-white hover:bg-white/10 hover:text-white"
           >
             <LogOut size={12} />
             Sign out of CAMBRA
