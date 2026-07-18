@@ -33,7 +33,7 @@ export default function DashboardLayout() {
 
   return (
     <div
-      className="min-h-screen flex font-inter"
+      className="dark min-h-screen flex font-inter"
       style={{
         color: "#ffffff",
         background:
