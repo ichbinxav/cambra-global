@@ -32,6 +32,7 @@ import BrandBlock, { BRAND_SECTOR_SLUGS } from "@/components/paymentsAnalyzer/Br
 import CombinedChannelBlock from "@/components/paymentsAnalyzer/CombinedChannelBlock";
 import AnalyzerEntryCards from "@/components/paymentsAnalyzer/AnalyzerEntryCards";
 import PspVerificationOptions from "@/components/paymentsAnalyzer/PspVerificationOptions";
+import AnalyzingOverlay from "@/components/paymentsAnalyzer/AnalyzingOverlay";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
@@ -402,31 +403,11 @@ export default function PaymentsAnalyzer() {
 
       <Navbar />
 
-      {/* Analyzing overlay — shown while the audit runs. The frosted "flow"
-          object signals the engine crunching the numbers. */}
-      {submitting && (
-        <div
-          className="fixed inset-0 z-[60] flex flex-col items-center justify-center px-6 text-center"
-          style={{ background: "rgba(8,9,20,0.82)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
-        >
-          <img
-            src={BRAND_ASSETS.flowFrosted}
-            alt=""
-            width={380}
-            height={380}
-            loading="lazy"
-            className="hero-stack w-[70%] max-w-[380px] h-auto select-none"
-            draggable={false}
-          />
-          <div className="mt-6 inline-flex items-center gap-2 text-white/85">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-[14px] font-medium">Running your payments audit…</span>
-          </div>
-          <p className="mt-2 text-[12px] text-white/45 max-w-sm">
-            Comparing your effective rate against interchange floors and your regional benchmark.
-          </p>
-        </div>
-      )}
+      {/* Analyzing overlay — live progress steps while the audit runs. The
+          sequence advances on a timer (so a cold-start submit never looks
+          hung), but the overlay CLOSES the moment `submitting` flips back to
+          false — i.e. dictated by the real response, not the animation. */}
+      {submitting && <AnalyzingOverlay />}
 
       {/* Thin progress bar under navbar */}
       <div className="fixed top-14 left-0 right-0 z-40 h-[2px]" style={{ background: "rgba(255,255,255,0.05)" }}>

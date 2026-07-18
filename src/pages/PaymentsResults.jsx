@@ -95,7 +95,10 @@ function ResultsShell({ children }) {
       <Navbar />
       {/* Container widens on desktop so the results grid has room to breathe.
           Mobile stays visually identical (max-w-2xl equivalent at that size). */}
-      <main className="relative z-10 flex-1 max-w-2xl lg:max-w-6xl mx-auto w-full px-5 pt-24 pb-16">
+      {/* pb bumped on mobile so the fixed cookie banner (bottom-0, ~120px on
+          phones) never overlaps the last content / primary CTA. Desktop keeps
+          the tighter pb-16 (the banner is a centered pill, no overlap risk). */}
+      <main className="relative z-10 flex-1 max-w-2xl lg:max-w-6xl mx-auto w-full px-5 pt-24 pb-40 lg:pb-16">
         {children}
       </main>
     </div>
