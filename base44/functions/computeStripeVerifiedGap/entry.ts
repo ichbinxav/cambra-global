@@ -250,12 +250,19 @@ const KNOWN_REGIONS = new Set(["EU", "UK", "US", "RoW"]);
 const KNOWN_PROVIDERS = new Set([
   // Online (pre-M4)
   "stripe", "paypal", "shopify_payments",
+  // Online FR PSPs (0.2b, seeded 2026-07-13). Each has a seeded row
+  // <slug>|ANY|EU so the engine's exact-match lookup resolves them instead
+  // of the regional fallback. payplug is verified=true; the rest are
+  // verified=false DRAFT rows (wide band + "Estimate — connect your PSP").
+  "payplug", "mollie", "stancer", "checkout_com", "adyen", "lyra",
   // In-store (M4-TPV Fase 2A-redo, 2026-07-12) — slugs that have a verified
   // in-store row seeded in PaymentsRateTable. 'sumup' is DUAL-CHANNEL: the
   // engine segments by (provider_slug, channel), so sumup+online resolves to
   // the regional fallback (no verified online sumup row exists) and
   // sumup+in_store hits the verified in-store row. No cross-channel leakage.
-  "sumup", "stripe_terminal", "smile_and_pay", "zettle",
+  // 'sumup' now ALSO has a seeded online DRAFT row (sumup|ANY|EU) → online
+  // resolves exact too. 'yavin' added (0.2b) — seeded in-store DRAFT row.
+  "sumup", "stripe_terminal", "smile_and_pay", "zettle", "yavin",
 ]);
 
 // M4-TPV Fase 2A-redo — channels the engine understands. Default 'online'

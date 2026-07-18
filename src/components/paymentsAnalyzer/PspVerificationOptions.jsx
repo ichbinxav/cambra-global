@@ -29,7 +29,7 @@
 // computeStripeVerifiedGap, no estimated path touched.
 
 import { useEffect, useState } from "react";
-import { Zap, FileUp, ArrowRight, Lock, ShieldCheck, Clock } from "lucide-react";
+import { Zap, ArrowRight, ShieldCheck } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import StatementUploadCard from "@/components/paymentsAnalyzer/StatementUploadCard";
 

@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { ArrowRight, Activity, Plug, BarChart3, Sparkles } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
-import SectionLabel from "@/components/shared/SectionLabel";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n.jsx";
 

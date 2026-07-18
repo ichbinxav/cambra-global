@@ -12,7 +12,6 @@
 // BookCallModal / Analyzer). Single source, no new numbers, no double CTAs.
 
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck, Users, PhoneCall, Plug, CheckCircle2, Zap } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { derivePaymentsAccount } from "@/lib/paymentsAccount.js";

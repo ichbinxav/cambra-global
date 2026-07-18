@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Users, Settings, BookOpen, Shield, Activity, MessageSquareQuote, Handshake } from "lucide-react";
+import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Settings, Shield, Activity, MessageSquareQuote, Handshake } from "lucide-react";
 
 // ─────────────────────────────────────────────
 // Premium grouped structure — fintech editorial

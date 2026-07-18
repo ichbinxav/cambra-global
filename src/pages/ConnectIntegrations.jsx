@@ -5,7 +5,7 @@ import Navbar from "@/components/landing/Navbar";
 import { useToast } from "@/components/shared/Toast.jsx";
 import {
   CheckCircle2, RefreshCw, ArrowRight, Loader2, AlertTriangle,
-  CreditCard, Truck, Building2, Mail, Layers, Plug, Sparkles, KeyRound, Store, X,
+  CreditCard, Layers, Plug, Sparkles, KeyRound, Store, X,
 } from "lucide-react";
 import ApiKeyConnectForm from "@/components/connect/ApiKeyConnectForm";
 import ShopDomainCaptureForm from "@/components/connect/ShopDomainCaptureForm";
