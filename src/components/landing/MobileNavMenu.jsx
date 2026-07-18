@@ -76,14 +76,14 @@ function NavRow({ item, index }) {
         className="group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 active:scale-[0.99] hover:bg-white/[0.04]"
       >
         {/* Icon container */}
-        <div className="relative h-9 w-9 rounded-lg flex items-center justify-center shrink-0 border border-white/10 bg-white/[0.04] group-hover:border-cambra-cyan/30 group-hover:bg-white/[0.06] transition-all duration-200 overflow-hidden">
-          {/* Ambient glow on hover */}
+        <div className="relative h-9 w-9 rounded-lg flex items-center justify-center shrink-0 border border-white/10 bg-white/[0.04] group-hover:border-[#8B7BFF]/30 group-hover:bg-white/[0.06] transition-all duration-200 overflow-hidden">
+          {/* Ambient glow on hover — DA voltio */}
           <span
             aria-hidden
             className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.25), transparent 70%)" }}
+            style={{ background: "radial-gradient(closest-side, rgba(91,76,245,0.28), transparent 70%)" }}
           />
-          <Icon className="relative h-[15px] w-[15px] text-white/75 group-hover:text-cambra-cyan transition-colors" strokeWidth={1.6} />
+          <Icon className="relative h-[15px] w-[15px] text-white/75 group-hover:text-[#8B7BFF] transition-colors" strokeWidth={1.6} />
         </div>
 
         {/* Text block — tighter, sharper */}
@@ -147,7 +147,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
           <motion.div
             aria-hidden
             className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full blur-[80px]"
-            style={{ background: "radial-gradient(closest-side, rgba(44,167,193,0.35), transparent)" }}
+            style={{ background: "radial-gradient(closest-side, rgba(91,76,245,0.32), transparent)" }}
             animate={{ opacity: [0.4, 0.7, 0.4], scale: [1, 1.08, 1] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -162,8 +162,8 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
             >
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-cambra-cyan opacity-75" style={{ animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
+                  <span className="absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "#5B4CF5", animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: "#5B4CF5" }} />
                 </span>
                 <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/60">
                   Live · Network online
@@ -272,7 +272,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                     rel="noopener noreferrer"
                     className="w-full h-11 rounded-full text-[13px] font-semibold border border-white/[0.12] bg-white/[0.03] text-white/85 hover:bg-white/[0.06] hover:border-white/[0.2] transition-all flex items-center justify-center gap-2"
                   >
-                    <Activity className="h-3.5 w-3.5 text-cambra-cyan" strokeWidth={2} />
+                    <Activity className="h-3.5 w-3.5" style={{ color: "#8B7BFF" }} strokeWidth={2} />
                     Sign in
                   </a>
                 </>
