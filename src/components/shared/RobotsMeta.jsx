@@ -23,7 +23,10 @@ const PUBLIC_PREFIXES = [
   "/",              // exact-only (handled below)
   "/landing",
   "/analyzer",
-  "/results",       // anonymous analysis result / teaser
+  // NOTE: /Results is intentionally NOT public. It's the authenticated
+  // merchant report view (sensitive data). Kept OUT of the allowlist so
+  // RobotsMeta emits noindex,nofollow for it — see Decision_Log_PUBLISH.md
+  // and CHUNK SEO-1. Do not re-add without a dedicated shareable public route.
   "/howitworks",
   "/pricing",
   "/testimonials",

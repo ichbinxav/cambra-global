@@ -154,6 +154,92 @@ Testing Agent (panel lateral). Pegar resultados aquí:
 Bundle/code-splitting, i18n FR/ES, selector de proveedores 0.2b, upgrade de dependencias,
 cualquier cambio de copy. Idioma: inglés por defecto (confirmado por el founder).
 
+---
+
+## CHUNK SEO-1 — Coherencia robots.txt ↔ noindex (2026-07-18)
+
+### Problema
+Doble protección contradictoria: una ruta en `Disallow` NUNCA es rastreada, el
+bot no renderiza React, no ve el `noindex` de RobotsMeta, y puede indexar la URL
+"a ciegas" desde un enlace externo. Regla de Google: para que `noindex` funcione,
+la ruta NO puede estar bloqueada por robots.txt. → Política única.
+
+### Política única aplicada
+- **Páginas React (HTML servido por la SPA)** → desindexar SOLO con `noindex`
+  (RobotsMeta). SALEN del `Disallow`.
+- **Endpoints no-HTML** (`/functions/*`, callbacks OAuth bajo `/auth/`) → sin meta
+  que el bot pueda leer → SE QUEDAN en `Disallow`.
+
+### robots.txt resultante
+```
+User-agent: *
+Allow: /
+Disallow: /functions/
+Disallow: /auth/
+
+Sitemap: <SITE_URL>/functions/sitemap
+```
+Todas las páginas React internas retiradas del Disallow. Sitemap intacto (solo-público).
+
+### Tarea 2 — Verificación cruzada ruta por ruta (cobertura noindex)
+Allowlist público de RobotsMeta: `/`, `/landing`, `/analyzer`, `/howitworks`,
+`/pricing`, `/testimonials`, `/contact`, `/forproviders`, `/for-providers`, `/help`,
+`/privacy`, `/terms`, `/cookies`. Fail-safe: todo lo no listado → `noindex`.
+
+Rutas retiradas del Disallow y su cobertura:
+| Ruta | ¿En allowlist? | Meta emitido |
+|---|---|---|
+| `/Dashboard` | no | noindex ✅ |
+| `/Account` | no | noindex ✅ |
+| `/Reports` | no | noindex ✅ |
+| `/Vault` | no | noindex ✅ |
+| `/Invoices` | no | noindex ✅ |
+| `/Onboarding` | no | noindex ✅ |
+| `/BrandProfile` | no | noindex ✅ |
+| `/ConnectIntegrations` | no | noindex ✅ |
+| `/ConnectTools` | no | noindex ✅ |
+| `/IntegrationsCallback` (ruta React) | no | noindex ✅ |
+| `/LoginGate` | no | noindex ✅ |
+| `/HealthCheck` | no | noindex ✅ |
+| `/AnalyzerTeaser` | no | noindex ✅ |
+| `/admin` y `/admin/*` | no | noindex ✅ |
+| `/dev/export` | no | noindex ✅ |
+
+**Ajuste requerido — `/Results`:** estaba en el allowlist público (recibía
+`index,follow`). La decisión del CHUNK PUBLISH es que `/Results` permanezca
+`noindex` (vista autenticada, datos de merchant). Para cumplir la política SEO-1
+(páginas React → solo noindex, sin Disallow) SIN indexarla, se retiró `/results`
+del allowlist de RobotsMeta. Resultado: `/Results` → `noindex` ✅, y sale del
+Disallow como el resto. Este es el ÚNICO cambio en RobotsMeta (permitido por el
+brief ante hallazgo de Tarea 2).
+
+**BLOCKER:** ninguno. No existe ruta interna que quede sin Disallow Y sin noindex.
+
+### Tarea 3 — Limitación estructural (aceptada, no "arreglada")
+El `noindex` se inyecta **client-side** vía React (RobotsMeta). Googlebot renderiza
+JS y lo verá correctamente. Crawlers que NO ejecutan JS verán el meta estático
+`index, follow` del `index.html`. La mitigación ideal sería una cabecera
+`X-Robots-Tag: noindex` **por ruta** en el servidor; el entorno de Base44 no expone
+configuración de cabeceras HTTP por ruta para la SPA, por lo que se documenta como
+**limitación de plataforma aceptada**. Riesgo residual: un crawler sin-JS podría
+listar una URL interna sin contenido (nunca su contenido, protegido por auth/RLS).
+NO se cambia el meta estático del index.html a `noindex` por defecto: desindexaría
+las páginas públicas si el bot captura el HTML antes del render. Si en el futuro
+Base44 habilita cabeceras por ruta, migrar el noindex de las rutas internas a
+`X-Robots-Tag` server-side.
+
+### Criterio 5 — Republicar
+Requiere un segundo Publish para servir el robots.txt nuevo. Puede fusionarse con
+el Publish pendiente del CHUNK PUBLISH (una sola publicación).
+
+### Estado SEO-1
+- [x] Tarea 1 — robots.txt: Disallow solo de `/functions/` y `/auth/`.
+- [x] Tarea 2 — verificación cruzada + ajuste `/Results` fuera del allowlist. Sin BLOCKER.
+- [x] Tarea 3 — limitación client-side documentada.
+- [ ] Criterio 5 — republicar (acción del founder; fusionable con el Publish anterior).
+
+---
+
 ## ESTADO
 - [x] Tarea 1 — clasificación de rutas.
 - [x] Tarea 2 — RobotsMeta (noindex por ruta) + robots.txt + sitemap solo-público.
