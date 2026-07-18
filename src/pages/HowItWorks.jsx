@@ -49,7 +49,17 @@ export default function HowItWorks() {
                 >
                   <div className="flex items-start justify-between gap-4 mb-8">
                     {/* Giant cinematic number — navy gradient on paper */}
-                    <div className="cambra-step-number-light" style={{ fontSize: "clamp(4rem, 9vw, 6.5rem)", lineHeight: 1 }}>
+                    <div
+                      className="cambra-step-number-light"
+                      style={{
+                        fontSize: "clamp(4rem, 9vw, 6.5rem)",
+                        lineHeight: 1,
+                        background: "linear-gradient(180deg, #3A2BB0 0%, #8B7BFF 100%)",
+                        WebkitBackgroundClip: "text",
+                        backgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                      }}
+                    >
                       {step.n}
                     </div>
 
