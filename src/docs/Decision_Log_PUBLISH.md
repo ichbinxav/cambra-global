@@ -240,6 +240,54 @@ el Publish pendiente del CHUNK PUBLISH (una sola publicación).
 
 ---
 
+## MICRO-CHUNK FIX-TESTS (2026-07-18) — 3 fallos del Testing Agent
+
+### P5 (BLOCKER) — "Country dropdown renders an empty list" — RESUELTO
+**Diagnóstico:** el Analyzer NO carga los países de ninguna entidad ni de
+PaymentsRateTable. Usa un `<select>` nativo alimentado por `COUNTRY_OPTIONS`, una
+**constante estática** del propio `PaymentsAnalyzer.jsx` (22 países). No hay query,
+no hay RLS, no hay dependencia de auth → la lista NUNCA puede quedar vacía por datos.
+Descartada la hipótesis de RLS anónimo (no aplica: no hay lectura de entidad).
+
+**Causa real:** contraste. Las `<option>` usaban `className="bg-neutral-900"` sin
+color de texto explícito. Sobre el fondo oscuro de la página, en entornos
+headless/algunos SO el menú desplegable nativo hereda texto oscuro → opciones
+**invisibles** (texto negro sobre negro), reportado por el agente como "empty list".
+
+**Fix (UI-only, sin lógica):** ambas instancias del `<select>` de país (modo
+single-channel y modo combined) fuerzan ahora `color:#ffffff` + `background:#0b1020`
+en cada `<option>` y `colorScheme:"dark"` en el `<select>`. Opciones legibles en
+cualquier entorno. Contrato de payload y validación intactos.
+
+**P1** (el agente terminaba antes de enviar): explicado por el mismo bug — sin país
+seleccionable el form no validaba. Cubierto por el mismo fix.
+
+### P4 — "/dev/export accesible para no-admin" — FALSO POSITIVO
+**Auditoría del router:** existe UNA sola ruta a DevExport:
+`<Route path="/dev/export" element={<AdminRoute><DevExport/></AdminRoute>} />`.
+No hay variante de casing (`/DevExport`, `/dev/Export`), ni alias, ni ruta comodín
+que monte la página fuera de `AdminRoute`. `AdminRoute` exige
+`isAuthenticated && role==="admin"`; no-admin → `<Navigate to="/Dashboard">`.
+
+**Rol del usuario de prueba:** el entorno tiene usuarios admin reales
+(`xavi@cambra.global`, `94.martinez.x@gmail.com`). Si el Testing Agent corrió
+autenticado como uno de ellos, `AdminRoute` le concede acceso **legítimamente** —
+es acceso admin correcto, no un guard roto. Además `DevExport` no filtra datos por
+sí mismo: carga rutas en iframes same-origin cuyo contenido sigue protegido por sus
+propios ProtectedRoute/AdminRoute + RLS.
+
+**Conclusión:** sin cambio de código. No existe ruta interna sin guard. Documentado
+como falso positivo del test (rol admin del usuario de prueba).
+
+### Re-test pendiente (a ejecutar por el founder con el Testing Agent)
+- **P5/P1:** "Complete an anonymous payments analysis with GMV 30000, average ticket
+  50, Stripe, France — reach the results page with the Recovery Roadmap." Debe llegar
+  a `/Results` con el Recovery Roadmap.
+- **P4:** re-ejecutar con un usuario de rol `user` (no admin) y confirmar que
+  `/dev/export` redirige a `/Dashboard`. Esperado: verde (redirección).
+
+---
+
 ## ESTADO
 - [x] Tarea 1 — clasificación de rutas.
 - [x] Tarea 2 — RobotsMeta (noindex por ruta) + robots.txt + sitemap solo-público.

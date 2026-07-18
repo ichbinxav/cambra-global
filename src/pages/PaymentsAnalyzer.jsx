@@ -584,11 +584,11 @@ export default function PaymentsAnalyzer() {
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   className="w-full h-11 px-3 rounded-md text-sm text-white focus:outline-none focus:border-cyan-400/60 transition-colors"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
                 >
-                  <option value="" className="bg-neutral-900">Select your country…</option>
+                  <option value="" style={{ background: "#0b1020", color: "#ffffff" }}>Select your country…</option>
                   {COUNTRY_OPTIONS.map((c) => (
-                    <option key={c.code} value={c.code} className="bg-neutral-900">{c.name}</option>
+                    <option key={c.code} value={c.code} style={{ background: "#0b1020", color: "#ffffff" }}>{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -625,11 +625,11 @@ export default function PaymentsAnalyzer() {
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
                 className="w-full h-11 px-3 rounded-md text-sm text-white focus:outline-none focus:border-cyan-400/60 transition-colors"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
               >
-                <option value="" className="bg-neutral-900">Select your country…</option>
+                <option value="" style={{ background: "#0b1020", color: "#ffffff" }}>Select your country…</option>
                 {COUNTRY_OPTIONS.map((c) => (
-                  <option key={c.code} value={c.code} className="bg-neutral-900">{c.name}</option>
+                  <option key={c.code} value={c.code} style={{ background: "#0b1020", color: "#ffffff" }}>{c.name}</option>
                 ))}
               </select>
             </div>
