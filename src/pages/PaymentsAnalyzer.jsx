@@ -152,7 +152,12 @@ export default function PaymentsAnalyzer() {
   const [channel, setChannel]           = useState("online");
   const [gmv, setGmv]                   = useState("");
   const [avgTicket, setAvgTicket]       = useState("");
-  const [intlPct, setIntlPct]           = useState("");
+  // Intl share: seed the state with the slider's visual default ("0") from
+  // the first render. 0% ("domestic only") is a real, contract-valid value —
+  // leaving the state empty until the user drags made an untouched slider fail
+  // validation ("International share is required") even though 0 was shown.
+  // Now the visual default and the state default are the same value at mount.
+  const [intlPct, setIntlPct]           = useState("0");
   const [providerSlug, setProviderSlug] = useState("");
   const [country, setCountry]           = useState("");
   const [cardMixOpen, setCardMixOpen]   = useState(false);
@@ -160,7 +165,10 @@ export default function PaymentsAnalyzer() {
   // Combined mode holds independent per-channel form state, so switching
   // back to a single-channel mode preserves nothing (avoids stale data).
   const [combinedOnline, setCombinedOnline] = useState({
-    monthly_gmv_eur: "", avg_ticket_eur: "", intl_pct: "", provider_slug: "",
+    // intl_pct seeded to "0" (domestic only) — same rationale as single-channel
+    // intlPct above: 0 is a valid contract value + the slider's visual default,
+    // so an untouched slider must not fail validation as "required/absent".
+    monthly_gmv_eur: "", avg_ticket_eur: "", intl_pct: "0", provider_slug: "",
   });
   const [combinedInStore, setCombinedInStore] = useState({
     monthly_gmv_eur: "", avg_ticket_eur: "", provider_slug: "",
