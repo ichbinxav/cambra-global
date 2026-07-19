@@ -657,14 +657,14 @@ p { line-height: 1.6; }
 .cambra-range::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(34,211,238,0.55) 0%, rgba(59,130,246,0.55) 100%);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  background: linear-gradient(90deg, rgba(91,76,245,0.55) 0%, rgba(90,73,214,0.55) 100%);
+  box-shadow: inset 0 0 0 1px rgba(12,12,22,0.06);
 }
 .cambra-range::-moz-range-track {
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(34,211,238,0.55) 0%, rgba(59,130,246,0.55) 100%);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  background: linear-gradient(90deg, rgba(91,76,245,0.55) 0%, rgba(90,73,214,0.55) 100%);
+  box-shadow: inset 0 0 0 1px rgba(12,12,22,0.06);
 }
 .cambra-range::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -674,8 +674,8 @@ p { line-height: 1.6; }
   border-radius: 999px;
   margin-top: -8px; /* center on 6px track */
   background: #ffffff;
-  border: 2px solid rgba(34,211,238,0.9);
-  box-shadow: 0 0 0 4px rgba(34,211,238,0.16), 0 4px 12px -2px rgba(34,211,238,0.5);
+  border: 2px solid rgba(91,76,245,0.9);
+  box-shadow: 0 0 0 4px rgba(91,76,245,0.16), 0 4px 12px -2px rgba(91,76,245,0.5);
   transition: transform 120ms ease, box-shadow 120ms ease;
 }
 .cambra-range::-moz-range-thumb {
@@ -683,16 +683,16 @@ p { line-height: 1.6; }
   width: 22px;
   border-radius: 999px;
   background: #ffffff;
-  border: 2px solid rgba(34,211,238,0.9);
-  box-shadow: 0 0 0 4px rgba(34,211,238,0.16), 0 4px 12px -2px rgba(34,211,238,0.5);
+  border: 2px solid rgba(91,76,245,0.9);
+  box-shadow: 0 0 0 4px rgba(91,76,245,0.16), 0 4px 12px -2px rgba(91,76,245,0.5);
   transition: transform 120ms ease, box-shadow 120ms ease;
 }
 .cambra-range:focus { outline: none; }
 .cambra-range:focus::-webkit-slider-thumb {
-  box-shadow: 0 0 0 5px rgba(34,211,238,0.28), 0 4px 12px -2px rgba(34,211,238,0.65);
+  box-shadow: 0 0 0 5px rgba(91,76,245,0.28), 0 4px 12px -2px rgba(91,76,245,0.65);
 }
 .cambra-range:focus::-moz-range-thumb {
-  box-shadow: 0 0 0 5px rgba(34,211,238,0.28), 0 4px 12px -2px rgba(34,211,238,0.65);
+  box-shadow: 0 0 0 5px rgba(91,76,245,0.28), 0 4px 12px -2px rgba(91,76,245,0.65);
 }
 .cambra-range:active::-webkit-slider-thumb { transform: scale(1.08); }
 .cambra-range:active::-moz-range-thumb { transform: scale(1.08); }

@@ -37,7 +37,7 @@ function LogoMark({ slug, label, selected }) {
   // Every mark occupies the same 32×32 tile so lines stay aligned regardless
   // of which fallback branch fires.
   const wrapClass = "inline-flex items-center justify-center h-8 w-8 shrink-0";
-  const tint = selected ? "text-cyan-300" : "text-white/70";
+  const tint = selected ? "text-[#5B4CF5]" : "text-[#585868]";
 
   // Branch 1 — vendor has an inline SVG.
   if (hasProviderLogo(slug)) {
@@ -70,12 +70,13 @@ function LogoMark({ slug, label, selected }) {
       aria-hidden="true"
       style={{
         borderRadius: 999,
-        background: selected ? "rgba(34,211,238,0.18)" : "rgba(255,255,255,0.06)",
-        border: `1px solid ${selected ? "rgba(34,211,238,0.55)" : "rgba(255,255,255,0.14)"}`,
+        background: selected ? "rgba(91,76,245,0.15)" : "rgba(12,12,22,0.04)",
+        border: `1px solid ${selected ? "rgba(91,76,245,0.55)" : "var(--linea)"}`,
       }}
     >
       <span
-        className={`text-[13px] font-bold ${selected ? "text-cyan-200" : "text-white/70"}`}
+        className="text-[13px] font-bold"
+        style={{ color: selected ? "#5B4CF5" : "var(--gris-1)" }}
         style={{ letterSpacing: "-0.02em" }}
       >
         {initial}
@@ -91,18 +92,18 @@ export default function ProviderCard({ option, value, onChange }) {
       type="button"
       onClick={() => onChange(option.slug)}
       // min-h-14 = 56px → clears the 44px thumb-target floor on 375px.
-      className="relative rounded-xl px-3 py-3 min-h-14 flex items-center gap-2.5 text-left transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 hover:border-white/25"
+      className="relative rounded-xl px-3 py-3 min-h-14 flex items-center gap-2.5 text-left transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B4CF5]/40"
       style={
         selected
           ? {
-              background: "rgba(34,211,238,0.10)",
-              border: "1px solid rgba(34,211,238,0.55)",
+              background: "rgba(91,76,245,0.08)",
+              border: "1px solid rgba(91,76,245,0.55)",
               boxShadow:
-                "0 0 0 3px rgba(34,211,238,0.10), 0 6px 20px -8px rgba(34,211,238,0.45)",
+                "0 0 0 3px rgba(91,76,245,0.08), 0 6px 20px -8px rgba(91,76,245,0.4)",
             }
           : {
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.10)",
+              background: "#ffffff",
+              border: "1px solid var(--linea)",
             }
       }
       aria-pressed={selected}
@@ -110,19 +111,18 @@ export default function ProviderCard({ option, value, onChange }) {
     >
       <LogoMark slug={option.slug} label={option.label} selected={selected} />
       <span
-        className={`text-[13px] font-semibold leading-tight ${
-          selected ? "text-white" : "text-white/85"
-        }`}
+        className="text-[13px] font-semibold leading-tight"
+        style={{ color: selected ? "var(--ink)" : "var(--gris-1)" }}
       >
         {option.label}
       </span>
       {selected && (
         <span
           className="absolute top-1.5 right-1.5 inline-flex items-center justify-center h-4 w-4 rounded-full"
-          style={{ background: "rgba(34,211,238,0.9)" }}
+          style={{ background: "#5B4CF5" }}
           aria-hidden="true"
         >
-          <Check size={10} className="text-neutral-900" strokeWidth={3} />
+          <Check size={10} className="text-white" strokeWidth={3} />
         </span>
       )}
     </button>

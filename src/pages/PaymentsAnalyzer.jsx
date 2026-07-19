@@ -373,32 +373,24 @@ export default function PaymentsAnalyzer() {
     <div
       className="relative min-h-screen flex flex-col font-inter overflow-x-hidden"
       style={{
-        color: "#ffffff",
-        background:
-          "radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%), radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.16) 0%, transparent 60%), radial-gradient(90% 70% at 50% -20%, rgba(110,95,230,0.18) 0%, transparent 60%), linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
+        color: "var(--ink)",
+        background: "var(--paper)",
       }}
     >
-      {/* Ambient grid + halo — matches Analyzer/Results for visual continuity */}
+      {/* Fixed ambient DOT mesh — violet dots on paper, exactly like the landing */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          opacity: 0.3,
-          maskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed z-0"
-        style={{
-          width: 600, height: 800, right: "-12%", top: "-10%",
-          background: "radial-gradient(closest-side, rgba(57,198,240,0.22), transparent 70%)",
-          filter: "blur(30px)",
-          opacity: 0.7,
+            "radial-gradient(rgba(91,76,245,0.28) 1.3px, transparent 2px)",
+          backgroundSize: "34px 30px",
+          backgroundPosition: "0 0",
+          opacity: 1,
+          maskImage:
+            "radial-gradient(120% 90% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 100%)",
+          WebkitMaskImage:
+            "radial-gradient(120% 90% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 100%)",
         }}
       />
 
@@ -430,22 +422,23 @@ export default function PaymentsAnalyzer() {
         {/* Header pill + counter */}
         <div className="flex items-center justify-between mb-5">
           <div className="inline-flex items-center gap-2 rounded-full px-3 py-1"
-            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+            style={{ border: "1px solid var(--linea)", background: "rgba(12,12,22,0.04)" }}
           >
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#8B7BFF" }} />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#8B7BFF" }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#5B4CF5" }} />
             </span>
-            <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Payments audit · anonymous</span>
+            <span className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "var(--gris-1)" }}>Payments audit · anonymous</span>
           </div>
-          <span className="text-[11px] font-bold tabular-nums text-white/50">
-            {progress.done} <span className="text-white/30">of {progress.total}</span>
+          <span className="text-[11px] font-bold tabular-nums" style={{ color: "var(--gris-2)" }}>
+            {progress.done} <span style={{ color: "var(--gris-2)" }}>of {progress.total}</span>
           </span>
         </div>
 
         <h1
-          className="text-white mb-3"
+          className="mb-3"
           style={{
+            color: "var(--ink)",
             fontFamily: "'Space Grotesk', 'Inter', sans-serif",
             fontSize: "clamp(30px, 5vw, 44px)",
             fontWeight: 900,
@@ -455,7 +448,7 @@ export default function PaymentsAnalyzer() {
         >
           What are you overpaying on payments?
         </h1>
-        <p className="text-[14px] text-white/55 mb-6">
+        <p className="text-[14px] mb-6" style={{ color: "var(--gris-1)" }}>
           A few quick answers. No account required, no data connected. We estimate the gap between what you pay today
           and what a merchant of your size + region should be paying.
         </p>
@@ -495,8 +488,8 @@ export default function PaymentsAnalyzer() {
             aria-label="Payment channel"
             className="mb-8 inline-flex items-center rounded-full p-1"
             style={{
-              border: "1px solid rgba(255,255,255,0.10)",
-              background: "rgba(255,255,255,0.02)",
+              border: "1px solid var(--linea)",
+              background: "rgba(12,12,22,0.04)",
             }}
           >
             {[
@@ -523,7 +516,7 @@ export default function PaymentsAnalyzer() {
                           color: "#ffffff",
                           boxShadow: "0 4px 12px -4px rgba(91,76,245,0.55)",
                         }
-                      : { background: "transparent", color: "rgba(255,255,255,0.55)" }
+                      : { background: "transparent", color: "var(--gris-1)" }
                   }
                 >
                   {opt.label}
@@ -565,20 +558,20 @@ export default function PaymentsAnalyzer() {
                   both channels (a merchant is in one country). */}
               <div className="space-y-2.5">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
                     Country
                   </span>
-                  <span className="text-[10px] text-white/35">Region benchmark</span>
+                  <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>Region benchmark</span>
                 </div>
                 <select
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  className="w-full h-11 px-3 rounded-md text-sm text-white focus:outline-none focus:border-cyan-400/60 transition-colors"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
+                  className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
+                  style={{ color: "var(--ink)", background: "#ffffff", border: "1px solid var(--linea)" }}
                 >
-                  <option value="" style={{ background: "#0b1020", color: "#ffffff" }}>Select your country…</option>
+                  <option value="">Select your country…</option>
                   {COUNTRY_OPTIONS.map((c) => (
-                    <option key={c.code} value={c.code} style={{ background: "#0b1020", color: "#ffffff" }}>{c.name}</option>
+                    <option key={c.code} value={c.code}>{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -606,20 +599,20 @@ export default function PaymentsAnalyzer() {
                 own row into this one to reclaim the desktop width. */}
             <div className="space-y-2.5">
               <div className="flex items-baseline justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
                   Country
                 </span>
-                <span className="text-[10px] text-white/35">Region benchmark</span>
+                <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>Region benchmark</span>
               </div>
               <select
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                className="w-full h-11 px-3 rounded-md text-sm text-white focus:outline-none focus:border-cyan-400/60 transition-colors"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
+                className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
+                style={{ color: "var(--ink)", background: "#ffffff", border: "1px solid var(--linea)" }}
               >
-                <option value="" style={{ background: "#0b1020", color: "#ffffff" }}>Select your country…</option>
+                <option value="">Select your country…</option>
                 {COUNTRY_OPTIONS.map((c) => (
-                  <option key={c.code} value={c.code} style={{ background: "#0b1020", color: "#ffffff" }}>{c.name}</option>
+                  <option key={c.code} value={c.code}>{c.name}</option>
                 ))}
               </select>
             </div>
@@ -630,10 +623,10 @@ export default function PaymentsAnalyzer() {
               Options swap based on channel: online providers vs. in-store TPVs. */}
           <div id="psp-selector" className="space-y-2.5 scroll-mt-24">
             <div className="flex items-baseline justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
                 {channel === "in_store" ? "In-store terminal (TPV)" : "Payment provider"}
               </span>
-              <span className="text-[10px] text-white/35">One tap</span>
+              <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>One tap</span>
             </div>
             <ProviderGrid
               options={channel === "in_store" ? PROVIDER_OPTIONS_IN_STORE : PROVIDER_OPTIONS_ONLINE}
@@ -664,18 +657,18 @@ export default function PaymentsAnalyzer() {
             <button
               type="button"
               onClick={() => setCardMixOpen((o) => !o)}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[44px] text-white/75 hover:text-white transition-colors"
-              style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.02)" }}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[44px] transition-colors"
+              style={{ border: "1px solid var(--linea)", background: "#ffffff", color: "var(--gris-1)" }}
             >
               <span className="flex items-center gap-2 text-[13px] font-medium">
-                Debit vs credit mix <span className="text-[11px] text-white/40">(optional)</span>
+                Debit vs credit mix <span className="text-[11px]" style={{ color: "var(--gris-2)" }}>(optional)</span>
               </span>
               {cardMixOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
             {cardMixOpen && (
               <div
                 className="mt-3 rounded-2xl p-4"
-                style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}
+                style={{ border: "1px solid var(--linea)", background: "#ffffff" }}
               >
                 <CardMixSlider value={cardMixDebit} onChange={setCardMixDebit} />
               </div>
@@ -697,7 +690,7 @@ export default function PaymentsAnalyzer() {
           />
 
           {/* Privacy microcopy */}
-          <div className="flex items-start gap-2 pt-2 text-[11px] text-white/40">
+          <div className="flex items-start gap-2 pt-2 text-[11px]" style={{ color: "var(--gris-2)" }}>
             <Lock size={11} className="mt-0.5 shrink-0" />
             <span>No account, no data connected, nothing shared. Results are stored with an anonymous session id you can revisit from this device.</span>
           </div>
@@ -731,10 +724,10 @@ export default function PaymentsAnalyzer() {
                 required fields above scroll off-screen. UX-only, no logic
                 change: the validation itself is unchanged. */}
             {!validation.valid && !submitting && !errorBanner && (
-              <p className="text-center text-[11.5px] text-white/50 leading-relaxed">
-                Still needed: <span className="text-white/80">{validation.errors[0].replace(/[.!]$/, "")}</span>
+              <p className="text-center text-[11.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+                Still needed: <span style={{ color: "var(--ink)" }}>{validation.errors[0].replace(/[.!]$/, "")}</span>
                 {validation.errors.length > 1 && (
-                  <span className="text-white/40"> · +{validation.errors.length - 1} more above</span>
+                  <span style={{ color: "var(--gris-2)" }}> · +{validation.errors.length - 1} more above</span>
                 )}
               </p>
             )}
@@ -742,7 +735,8 @@ export default function PaymentsAnalyzer() {
               type="button"
               onClick={() => navigate("/")}
               disabled={submitting}
-              className="w-full h-11 rounded-full text-[13px] font-medium text-white/50 hover:text-white/85 transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-40"
+              className="w-full h-11 rounded-full text-[13px] font-medium transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-40"
+              style={{ color: "var(--gris-1)" }}
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               Back

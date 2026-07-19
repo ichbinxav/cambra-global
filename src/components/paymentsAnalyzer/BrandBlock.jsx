@@ -47,18 +47,18 @@ export default function BrandBlock({
     <div
       className="rounded-2xl p-5 space-y-4"
       style={{
-        border: "1px solid rgba(255,255,255,0.10)",
-        background: "rgba(255,255,255,0.02)",
+        border: "1px solid var(--linea)",
+        background: "#ffffff",
       }}
     >
       {/* Section header */}
       <div className="flex items-baseline justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
           About your brand
         </span>
-        <span className="text-[10px] text-white/35">Cohort benchmark</span>
+        <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>Cohort benchmark</span>
       </div>
-      <p className="text-[11.5px] text-white/45 leading-relaxed -mt-1">
+      <p className="text-[11.5px] leading-relaxed -mt-1" style={{ color: "var(--gris-1)" }}>
         Helps us benchmark you against similar brands. Still no account, still anonymous.
       </p>
 
@@ -66,9 +66,10 @@ export default function BrandBlock({
       <div className="space-y-1.5">
         <label
           htmlFor="brand-name-input"
-          className="text-[11px] font-medium text-white/60"
+          className="text-[11px] font-medium"
+          style={{ color: "var(--gris-1)" }}
         >
-          Brand name <span className="text-red-300/90">*</span>
+          Brand name <span style={{ color: "#F45B69" }}>*</span>
         </label>
         <input
           id="brand-name-input"
@@ -79,10 +80,11 @@ export default function BrandBlock({
           value={brandName}
           onChange={(e) => onBrandNameChange(e.target.value)}
           placeholder="e.g. Aime Studio"
-          className="w-full h-11 px-3 rounded-md text-sm text-white placeholder-white/25 focus:outline-none focus:border-cyan-400/60 transition-colors"
+          className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            color: "var(--ink)",
+            background: "#ffffff",
+            border: "1px solid var(--linea)",
           }}
         />
       </div>
@@ -93,9 +95,10 @@ export default function BrandBlock({
         <div className="space-y-1.5">
           <label
             htmlFor="brand-website-input"
-            className="text-[11px] font-medium text-white/60"
+            className="text-[11px] font-medium"
+            style={{ color: "var(--gris-1)" }}
           >
-            Website <span className="text-white/35">(optional)</span>
+            Website <span style={{ color: "var(--gris-2)" }}>(optional)</span>
           </label>
           <input
             id="brand-website-input"
@@ -106,10 +109,11 @@ export default function BrandBlock({
             value={website}
             onChange={(e) => onWebsiteChange(e.target.value)}
             placeholder="aimestudio.com"
-            className="w-full h-11 px-3 rounded-md text-sm text-white placeholder-white/25 focus:outline-none focus:border-cyan-400/60 transition-colors"
+            className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.12)",
+              color: "var(--ink)",
+              background: "#ffffff",
+              border: "1px solid var(--linea)",
             }}
           />
         </div>
@@ -118,25 +122,27 @@ export default function BrandBlock({
         <div className="space-y-1.5">
           <label
             htmlFor="brand-sector-input"
-            className="text-[11px] font-medium text-white/60"
+            className="text-[11px] font-medium"
+            style={{ color: "var(--gris-1)" }}
           >
-            Sector <span className="text-white/35">(optional)</span>
+            Sector <span style={{ color: "var(--gris-2)" }}>(optional)</span>
           </label>
           <select
             id="brand-sector-input"
             value={sector}
             onChange={(e) => onSectorChange(e.target.value)}
-            className="w-full h-11 px-3 rounded-md text-sm text-white focus:outline-none focus:border-cyan-400/60 transition-colors"
+            className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.12)",
+              color: "var(--ink)",
+              background: "#ffffff",
+              border: "1px solid var(--linea)",
             }}
           >
-            <option value="" className="bg-neutral-900">
+            <option value="">
               Select a sector…
             </option>
             {SECTOR_OPTIONS.map((s) => (
-              <option key={s.value} value={s.value} className="bg-neutral-900">
+              <option key={s.value} value={s.value}>
                 {s.label}
               </option>
             ))}

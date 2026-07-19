@@ -27,8 +27,8 @@ function ChannelPanel({ title, subtitle, accentColor, children }) {
     <div
       className="rounded-2xl p-5"
       style={{
-        background: "rgba(255,255,255,0.02)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "#ffffff",
+        border: "1px solid var(--linea)",
       }}
     >
       <div className="flex items-baseline justify-between mb-5">
@@ -39,7 +39,7 @@ function ChannelPanel({ title, subtitle, accentColor, children }) {
           >
             {title}
           </p>
-          <p className="text-[11px] text-white/45 mt-0.5">{subtitle}</p>
+          <p className="text-[11px] mt-0.5" style={{ color: "var(--gris-1)" }}>{subtitle}</p>
         </div>
       </div>
       <div className="space-y-6">{children}</div>
@@ -64,7 +64,7 @@ export default function CombinedChannelBlock({
       <ChannelPanel
         title="Online"
         subtitle="Card-not-present · your PSP (Stripe, PayPal…)"
-        accentColor="rgb(103,232,249)"
+        accentColor="#5B4CF5"
       >
         <GmvSlider
           value={onlineValue.monthly_gmv_eur}
@@ -82,10 +82,10 @@ export default function CombinedChannelBlock({
         </div>
         <div className="space-y-2.5">
           <div className="flex items-baseline justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
               Online provider
             </span>
-            <span className="text-[10px] text-white/35">One tap</span>
+            <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>One tap</span>
           </div>
           <ProviderGrid
             options={onlineProviders}
@@ -99,7 +99,7 @@ export default function CombinedChannelBlock({
       <ChannelPanel
         title="In-store"
         subtitle="Card-present · your TPV / physical terminal"
-        accentColor="rgb(216,180,254)"
+        accentColor="#8B7BFF"
       >
         <GmvSlider
           value={inStoreValue.monthly_gmv_eur}
@@ -111,10 +111,10 @@ export default function CombinedChannelBlock({
         />
         <div className="space-y-2.5">
           <div className="flex items-baseline justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
               In-store terminal (TPV)
             </span>
-            <span className="text-[10px] text-white/35">One tap</span>
+            <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>One tap</span>
           </div>
           <ProviderGrid
             options={inStoreProviders}
