@@ -375,7 +375,7 @@ export default function PaymentsAnalyzer() {
       style={{
         color: "#ffffff",
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #0E0E1A 100%)",
+          "radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%), radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.16) 0%, transparent 60%), radial-gradient(90% 70% at 50% -20%, rgba(110,95,230,0.18) 0%, transparent 60%), linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
       }}
     >
       {/* Ambient grid + halo — matches Analyzer/Results for visual continuity */}
@@ -395,9 +395,10 @@ export default function PaymentsAnalyzer() {
         aria-hidden
         className="pointer-events-none fixed z-0"
         style={{
-          width: 700, height: 700, left: "50%", top: 80, transform: "translateX(-50%)",
-          background: "radial-gradient(circle, rgba(91,76,245,0.16) 0%, transparent 70%)",
-          filter: "blur(80px)",
+          width: 600, height: 800, right: "-12%", top: "-10%",
+          background: "radial-gradient(closest-side, rgba(57,198,240,0.22), transparent 70%)",
+          filter: "blur(30px)",
+          opacity: 0.7,
         }}
       />
 
