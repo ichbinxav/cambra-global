@@ -415,8 +415,8 @@ export default function PaymentsAnalyzer() {
           className="h-full transition-all duration-500"
           style={{
             width: `${progress.pct}%`,
-            background: "linear-gradient(90deg, #5B4CF5 0%, #8B7BFF 100%)",
-            boxShadow: "0 0 12px rgba(139,123,255,0.55)",
+            background: "var(--g-voltio)",
+            boxShadow: "0 0 12px rgba(91,76,245,0.55)",
           }}
         />
       </div>
@@ -518,9 +518,9 @@ export default function PaymentsAnalyzer() {
                   style={
                     active
                       ? {
-                          background: "linear-gradient(135deg, #5B4CF5 0%, #8B7BFF 100%)",
+                          background: "var(--g-voltio)",
                           color: "#ffffff",
-                          boxShadow: "0 4px 12px -4px rgba(139,123,255,0.55)",
+                          boxShadow: "0 4px 12px -4px rgba(91,76,245,0.55)",
                         }
                       : { background: "transparent", color: "rgba(255,255,255,0.55)" }
                   }
@@ -710,8 +710,8 @@ export default function PaymentsAnalyzer() {
               disabled={!validation.valid || submitting}
               className="w-full h-12 rounded-full text-sm font-bold gap-2 text-white hover:opacity-90 disabled:opacity-40 transition-opacity"
               style={{
-                background: "linear-gradient(135deg, #5B4CF5 0%, #8B7BFF 100%)",
-                boxShadow: "0 0 32px rgba(139,123,255,0.45), 0 12px 32px -12px rgba(139,123,255,0.6)",
+                background: "var(--g-voltio)",
+                boxShadow: "0 0 32px rgba(91,76,245,0.45), 0 12px 32px -12px rgba(91,76,245,0.6)",
               }}
             >
               {submitting ? (
