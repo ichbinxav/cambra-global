@@ -54,7 +54,7 @@ export default function DashboardLayout() {
         <div
           aria-hidden
           className="pointer-events-none absolute top-0 left-0 right-0 h-40"
-          style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(59,130,246,0.15), transparent 70%)" }}
+          style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(139,123,255,0.18), transparent 70%)" }}
         />
 
         <div className="relative px-5 h-14 flex items-center" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -72,8 +72,8 @@ export default function DashboardLayout() {
             style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
           >
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#8B7BFF" }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#8B7BFF" }} />
             </span>
             {t("sidebar_network_live")}
           </span>
@@ -93,7 +93,7 @@ export default function DashboardLayout() {
                   }`}
                   style={
                     active
-                      ? { boxShadow: "0 0 24px rgba(34,211,238,0.25)" }
+                      ? { boxShadow: "0 0 24px rgba(139,123,255,0.30)" }
                       : { background: "transparent" }
                   }
                   whileHover={active ? {} : { x: 2, backgroundColor: "rgba(255,255,255,0.04)" }}
