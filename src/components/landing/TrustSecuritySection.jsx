@@ -47,7 +47,7 @@ export default function TrustSecuritySection() {
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Copy + bullets */}
           <div className="lg:col-span-7">
-            <p className="eyebrow mb-5">TRUST &amp; SECURITY</p>
+            <p className="eyebrow mb-5" style={{ color: "#ffffff" }}>TRUST &amp; SECURITY</p>
             <h2
               style={{
                 color: "#ffffff",
@@ -59,7 +59,7 @@ export default function TrustSecuritySection() {
               }}
             >
               Your data is yours.{" "}
-              <span style={{ color: "var(--menta)" }}>Always.</span>
+              <span className="kw">Always.</span>
             </h2>
 
             <div className="mt-9 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-7">
@@ -70,9 +70,9 @@ export default function TrustSecuritySection() {
                     <span
                       className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
                       style={{
-                        background: "rgba(255,255,255,0.05)",
-                        border: "1px solid rgba(255,255,255,0.10)",
-                        color: "var(--menta)",
+                        background: "rgba(139,123,255,0.12)",
+                        border: "1px solid rgba(139,123,255,0.28)",
+                        color: "#8B7BFF",
                       }}
                     >
                       <Icon size={16} strokeWidth={1.9} />
@@ -97,7 +97,7 @@ export default function TrustSecuritySection() {
               <Link
                 to="/Security"
                 className="inline-flex items-center gap-1.5 text-[13px] font-semibold transition-colors"
-                style={{ color: "var(--menta)" }}
+                style={{ color: "#8B7BFF" }}
               >
                 How we handle your data
                 <ArrowRight size={14} />
@@ -105,7 +105,10 @@ export default function TrustSecuritySection() {
             </div>
           </div>
 
-          {/* Vault render with its Aurora glow */}
+          {/* Vault render with its Aurora glow. The source image has a
+              baked-in bounding box that shows against the ink panel — a radial
+              mask fades its edges (especially the bottom) into the panel so
+              there's no visible rectangle. */}
           <div className="relative lg:col-span-5 flex justify-center items-center">
             <img
               src={BRAND_ASSETS.vaultGlow}
@@ -114,6 +117,12 @@ export default function TrustSecuritySection() {
               height={480}
               className="relative w-full max-w-[380px] h-auto select-none"
               draggable={false}
+              style={{
+                maskImage:
+                  "radial-gradient(ellipse 78% 78% at 50% 42%, #000 55%, transparent 88%)",
+                WebkitMaskImage:
+                  "radial-gradient(ellipse 78% 78% at 50% 42%, #000 55%, transparent 88%)",
+              }}
             />
           </div>
         </div>
