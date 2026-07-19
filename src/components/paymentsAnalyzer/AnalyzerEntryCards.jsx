@@ -4,25 +4,22 @@
 //   1. CONNECT      — Connect Stripe/PSP → real balance-transaction sync →
 //                     "verified" mode (measured, not estimated). Requires
 //                     signup. Routes to /ConnectTools.
-//   2. UPLOAD       — Upload a provider statement (PDF/CSV). Not yet wired
-//                     to the anonymous flow — surfaced as "coming soon" so
-//                     the funnel doesn't lose users who want to click it.
+//   2. UPLOAD       — Upload a provider statement (PDF/CSV). Scrolls to the
+//                     per-PSP upload card below (in beta).
 //   3. MANUAL       — What the current Analyzer already is. Fastest, but
 //                     the estimate carries the widest confidence band.
 //
 // UX contract: this component is presentational. It does NOT read or write
 // any form state. Selection is owned by the parent (PaymentsAnalyzer) via
-// `selected` + `onSelect(mode)`. When the user picks "manual" the parent
-// keeps the existing form visible; when they pick "connect" the parent
-// routes to /ConnectTools (protected route → login gate). "Upload" is
-// disabled and shows a hint so we don't ship a broken action.
+// `selected` + `onSelect(mode)`.
 //
-// Anti-pattern check: we deliberately DO NOT change the payload contract
-// for submitPaymentsAnalysis. The three cards are choice UI on top of the
-// same anonymous form; "connect" leaves the anonymous form for a
-// different flow entirely (authenticated, real-data sync).
+// v2 (WOW-tech): the "connect" card is now a hero navy-gradient tile with a
+// voltio glow + animated dot-mesh, the other two are premium paper cards with
+// a hover glow halo. Entrance is staggered via framer-motion. Presentation
+// only — the payload contract for submitPaymentsAnalysis is untouched.
 
-import { Zap, FileUp, Edit3, ArrowRight, Lock } from "lucide-react";
+import { Zap, FileUp, Edit3, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 const CARDS = [
   {
@@ -31,26 +28,18 @@ const CARDS = [
     title: "Connect your PSP",
     subtitle: "Verified real data",
     body: "Stripe OAuth in 20 seconds. We measure your actual fees over 90 days — no estimation.",
-    accent: "cyan",
     badge: "Best accuracy",
     cta: "Connect Stripe",
-    enabled: true,
+    featured: true,
   },
   {
-    // Fallback universal de facturas (FASE B) — the Upload path is now REAL
-    // per-PSP: after picking a provider below, any non-Stripe PSP shows an
-    // "Upload your last 3 statements" card (in beta). This entry card scrolls
-    // the user to the provider selector where that option lives. Honest copy —
-    // "in beta", not a promise of an instant verified number.
     id: "upload",
     icon: FileUp,
     title: "Upload your statements",
     subtitle: "Verified — in beta",
     body: "Pick your provider below, then drop your last statements. We start turning your estimate into a verified number.",
-    accent: "blue",
     badge: "In beta",
     cta: "Choose provider",
-    enabled: true,
   },
   {
     id: "manual",
@@ -58,109 +47,193 @@ const CARDS = [
     title: "Answer 5 questions",
     subtitle: "Fastest — no account",
     body: "Public pricing benchmark against merchants of your size + region. ~2 minutes.",
-    accent: "neutral",
     badge: "You're here",
     cta: "Continue below",
-    enabled: true,
   },
 ];
 
-const ACCENT_STYLES = {
-  cyan: {
-    bg: "rgba(91,76,245,0.05)",
-    border: "rgba(91,76,245,0.28)",
-    borderSelected: "rgba(91,76,245,0.75)",
-    text: "#5B4CF5",
-    glow: "0 0 24px rgba(91,76,245,0.18), 0 8px 24px -8px rgba(91,76,245,0.32)",
-  },
-  blue: {
-    bg: "rgba(91,76,245,0.04)",
-    border: "rgba(91,76,245,0.22)",
-    borderSelected: "rgba(91,76,245,0.6)",
-    text: "#5A49D6",
-    glow: "0 0 24px rgba(91,76,245,0.16)",
-  },
-  neutral: {
-    bg: "#ffffff",
-    border: "var(--linea)",
-    borderSelected: "rgba(12,12,22,0.35)",
-    text: "var(--gris-1)",
-    glow: "0 8px 24px -12px rgba(12,12,22,0.15)",
-  },
-};
+// ── Featured (navy hero) card — Connect PSP ──────────────────────────────
+function FeaturedCard({ card, isSelected, onSelect }) {
+  const Icon = card.icon;
+  return (
+    <motion.button
+      type="button"
+      onClick={() => onSelect?.(card.id)}
+      whileHover={{ y: -3 }}
+      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+      className="group relative overflow-hidden text-left rounded-2xl p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7BFF]/50"
+      style={{
+        background:
+          "radial-gradient(130% 90% at 8% 0%, rgba(91,76,245,0.45) 0%, transparent 55%)," +
+          "radial-gradient(120% 100% at 100% 100%, rgba(57,198,240,0.22) 0%, transparent 60%)," +
+          "linear-gradient(180deg, #191540 0%, #0e0b22 55%, #0a0818 100%)",
+        border: `1px solid ${isSelected ? "rgba(139,123,255,0.7)" : "rgba(255,255,255,0.12)"}`,
+        boxShadow: isSelected
+          ? "0 0 0 3px rgba(139,123,255,0.18), 0 0 40px rgba(91,76,245,0.5), 0 20px 50px -20px rgba(91,76,245,0.6)"
+          : "0 0 32px rgba(91,76,245,0.28), 0 18px 44px -22px rgba(91,76,245,0.5)",
+      }}
+      aria-pressed={isSelected}
+    >
+      {/* Animated dot-mesh */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.14) 1px, transparent 1.6px)",
+          backgroundSize: "22px 22px",
+          maskImage: "radial-gradient(ellipse 80% 80% at 100% 100%, #000 5%, transparent 70%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 80% at 100% 100%, #000 5%, transparent 70%)",
+          opacity: 0.7,
+        }}
+      />
+      {/* Drifting cyan bloom */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -top-16 -right-10 h-48 w-48 rounded-full blur-2xl transition-opacity duration-500 opacity-60 group-hover:opacity-100"
+        style={{ background: "radial-gradient(closest-side, rgba(57,198,240,0.35), transparent 70%)" }}
+      />
+
+      <div className="relative z-10">
+        <div className="flex items-start justify-between gap-2 mb-4">
+          <span
+            className="inline-flex items-center justify-center h-10 w-10 rounded-xl shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #5B4CF5, #8B7BFF)",
+              boxShadow: "0 6px 18px -4px rgba(91,76,245,0.7)",
+              color: "#ffffff",
+            }}
+          >
+            <Icon size={18} strokeWidth={2} />
+          </span>
+          <span
+            className="text-[9px] uppercase tracking-[0.16em] font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1 shrink-0"
+            style={{ background: "rgba(139,123,255,0.2)", color: "#C9C1FF", border: "1px solid rgba(139,123,255,0.4)" }}
+          >
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#8B7BFF" }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#8B7BFF" }} />
+            </span>
+            {card.badge}
+          </span>
+        </div>
+        <h3 className="text-[17px] font-bold leading-tight mb-1"
+          style={{ color: "#ffffff", fontFamily: "'Space Grotesk', 'Inter', sans-serif", letterSpacing: "-0.02em" }}
+        >
+          {card.title}
+        </h3>
+        <p className="text-[11px] uppercase tracking-[0.12em] font-bold mb-2.5" style={{ color: "#8B7BFF" }}>
+          {card.subtitle}
+        </p>
+        <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "rgba(255,255,255,0.72)" }}>
+          {card.body}
+        </p>
+        <span
+          className="inline-flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full transition-all group-hover:gap-2.5"
+          style={{ background: "linear-gradient(135deg, #5B4CF5, #8B7BFF)", color: "#ffffff", boxShadow: "0 6px 16px -6px rgba(91,76,245,0.7)" }}
+        >
+          {card.cta}
+          <ArrowRight size={12} />
+        </span>
+      </div>
+    </motion.button>
+  );
+}
+
+// ── Standard (paper premium) card — Upload / Manual ──────────────────────
+function StandardCard({ card, isSelected, onSelect }) {
+  const Icon = card.icon;
+  return (
+    <motion.button
+      type="button"
+      onClick={() => onSelect?.(card.id)}
+      whileHover={{ y: -3 }}
+      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+      className="group relative overflow-hidden text-left rounded-2xl p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B4CF5]/40"
+      style={{
+        background: "#ffffff",
+        border: `1px solid ${isSelected ? "rgba(91,76,245,0.65)" : "var(--linea)"}`,
+        boxShadow: isSelected
+          ? "0 0 0 3px rgba(91,76,245,0.10), 0 14px 34px -16px rgba(91,76,245,0.4)"
+          : "0 4px 20px rgba(12,12,22,0.05)",
+      }}
+      aria-pressed={isSelected}
+    >
+      {/* Hover glow halo */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{ background: "radial-gradient(circle at 15% 0%, rgba(91,76,245,0.08), transparent 55%)" }}
+      />
+      <div className="relative z-10">
+        <div className="flex items-start justify-between gap-2 mb-4">
+          <span
+            className="inline-flex items-center justify-center h-10 w-10 rounded-xl shrink-0"
+            style={{ background: "rgba(91,76,245,0.08)", border: "1px solid rgba(91,76,245,0.22)", color: "#5B4CF5" }}
+          >
+            <Icon size={18} strokeWidth={1.9} />
+          </span>
+          <span
+            className="text-[9px] uppercase tracking-[0.16em] font-bold px-2.5 py-1 rounded-full shrink-0"
+            style={{ background: "rgba(91,76,245,0.06)", color: "#5B4CF5", border: "1px solid rgba(91,76,245,0.22)" }}
+          >
+            {card.badge}
+          </span>
+        </div>
+        <h3 className="text-[16px] font-bold leading-tight mb-1"
+          style={{ color: "var(--ink)", fontFamily: "'Space Grotesk', 'Inter', sans-serif", letterSpacing: "-0.02em" }}
+        >
+          {card.title}
+        </h3>
+        <p className="text-[11px] uppercase tracking-[0.12em] font-bold mb-2.5" style={{ color: "#5B4CF5" }}>
+          {card.subtitle}
+        </p>
+        <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "var(--gris-1)" }}>
+          {card.body}
+        </p>
+        <span
+          className="inline-flex items-center gap-1 text-[12px] font-bold transition-all group-hover:gap-2"
+          style={{ color: "#5B4CF5" }}
+        >
+          {card.cta}
+          <ArrowRight size={12} />
+        </span>
+      </div>
+    </motion.button>
+  );
+}
 
 export default function AnalyzerEntryCards({ selected = "manual", onSelect }) {
   return (
     <div className="mb-8">
-      <p className="text-[10px] uppercase tracking-[0.22em] font-bold mb-3" style={{ color: "var(--gris-1)" }}>
-        Choose how to run your audit
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {CARDS.map((card) => {
-          const Icon = card.icon;
-          const accent = ACCENT_STYLES[card.accent];
-          const isSelected = selected === card.id;
-          const isDisabled = !card.enabled;
-          return (
-            <button
-              key={card.id}
-              type="button"
-              disabled={isDisabled}
-              onClick={() => card.enabled && onSelect?.(card.id)}
-              className={`relative text-left rounded-2xl p-4 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B4CF5]/40 ${
-                isDisabled ? "cursor-not-allowed opacity-60" : "hover:scale-[1.01]"
-              }`}
-              style={{
-                background: accent.bg,
-                border: `1px solid ${isSelected ? accent.borderSelected : accent.border}`,
-                boxShadow: isSelected ? accent.glow : "none",
-              }}
-              aria-pressed={isSelected}
-            >
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div
-                  className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
-                  style={{
-                    background: "rgba(12,12,22,0.03)",
-                    border: "1px solid var(--linea)",
-                    color: accent.text,
-                  }}
-                >
-                  <Icon size={16} strokeWidth={1.8} />
-                </div>
-                <span
-                  className="text-[9px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0"
-                  style={{
-                    background: "rgba(12,12,22,0.03)",
-                    color: isDisabled ? "var(--gris-2)" : accent.text,
-                    border: `1px solid ${isDisabled ? "var(--linea)" : accent.border}`,
-                  }}
-                >
-                  {isDisabled && <Lock size={8} />}
-                  {card.badge}
-                </span>
-              </div>
-              <h3 className="text-[15px] font-bold leading-tight mb-1"
-                style={{ color: "var(--ink)", fontFamily: "'Space Grotesk', 'Inter', sans-serif", letterSpacing: "-0.02em" }}
-              >
-                {card.title}
-              </h3>
-              <p className="text-[11px] uppercase tracking-[0.12em] font-bold mb-2" style={{ color: accent.text }}>
-                {card.subtitle}
-              </p>
-              <p className="text-[12px] leading-relaxed mb-3" style={{ color: "var(--gris-1)" }}>
-                {card.body}
-              </p>
-              <span
-                className="inline-flex items-center gap-1 text-[11px] font-bold"
-                style={{ color: isDisabled ? "var(--gris-2)" : accent.text }}
-              >
-                {card.cta}
-                {!isDisabled && <ArrowRight size={11} />}
-              </span>
-            </button>
-          );
-        })}
+      <div className="flex items-center gap-2 mb-3.5">
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1"
+          style={{ background: "var(--g-voltio)", boxShadow: "0 4px 14px -6px rgba(91,76,245,0.6)" }}
+        >
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#ffffff" }} />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#ffffff" }} />
+          </span>
+          <span className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: "#ffffff" }}>
+            Choose how to run your audit
+          </span>
+        </span>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+        {CARDS.map((card, i) => (
+          <motion.div
+            key={card.id}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {card.featured ? (
+              <FeaturedCard card={card} isSelected={selected === card.id} onSelect={onSelect} />
+            ) : (
+              <StandardCard card={card} isSelected={selected === card.id} onSelect={onSelect} />
+            )}
+          </motion.div>
+        ))}
       </div>
     </div>
   );
