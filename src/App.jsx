@@ -70,6 +70,7 @@ import Pricing from '@/pages/Pricing.jsx';
 // (dos niveles Listed/Partner). Ver src/pages/ForProviders.jsx.
 import ForProviders from '@/pages/ForProviders';
 import HowItWorks from '@/pages/HowItWorks';
+import Security from '@/pages/Security';
 import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
 import Help from '@/pages/Help';
@@ -231,6 +232,8 @@ const AuthenticatedApp = () => {
         <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
         <Route path="/HowItWorks" element={withBoundary(<HowItWorks />)} />
         <Route path="/howitworks" element={<Navigate to="/HowItWorks" replace />} />
+        <Route path="/Security" element={withBoundary(<Security />)} />
+        <Route path="/security" element={<Navigate to="/Security" replace />} />
         <Route path="/Testimonials" element={withBoundary(<Testimonials />)} />
         <Route path="/testimonials" element={<Navigate to="/Testimonials" replace />} />
         <Route path="/Contact" element={withBoundary(<Contact />)} />

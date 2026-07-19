@@ -18,6 +18,7 @@ import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 import TheStackSection from "@/components/landing/TheStackSection";
 import RealImpactSection from "@/components/landing/RealImpactSection";
 import Founding150Section from "@/components/landing/Founding150Section";
+import TrustSecuritySection from "@/components/landing/TrustSecuritySection";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
 const LANDING_JSON_LD = {
@@ -350,6 +351,7 @@ function LandingFooter() {
   const { t } = useTranslation();
   const links = [
     { to: "/ForProviders", label: t("footer_for_providers") },
+    { to: "/Security", label: "Security" },
     { to: "/Privacy", label: t("footer_privacy") },
     { to: "/Terms", label: t("footer_terms") },
     { to: "/Cookies", label: "Cookies" },
@@ -461,6 +463,7 @@ export default function Landing() {
         <PricingDual />
         <TestimonialsCarousel />
         <Founding150Section />
+        <TrustSecuritySection />
         <FounderLetter />
         <StopLeavingMarginCTA />
       </main>

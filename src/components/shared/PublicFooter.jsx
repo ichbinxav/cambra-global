@@ -13,6 +13,7 @@ export default function PublicFooter() {
   const { t } = useTranslation();
   const links = [
     { to: "/ForProviders", label: t("footer_for_providers") },
+    { to: "/Security", label: "Security" },
     { to: "/Privacy", label: t("footer_privacy") },
     { to: "/Terms", label: t("footer_terms") },
     { to: "/Cookies", label: "Cookies" },
