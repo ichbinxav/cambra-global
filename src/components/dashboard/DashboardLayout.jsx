@@ -37,7 +37,7 @@ export default function DashboardLayout() {
       style={{
         color: "#ffffff",
         background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #0E0E1A 100%)",
+          "radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%), radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.16) 0%, transparent 60%), radial-gradient(90% 70% at 50% -20%, rgba(110,95,230,0.18) 0%, transparent 60%), linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
       }}
     >
       {/* Desktop Sidebar — premium dark editorial */}
@@ -227,9 +227,9 @@ export default function DashboardLayout() {
             }}
           />
           <div className="absolute -top-40 right-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl"
-               style={{ background: "radial-gradient(closest-side, rgba(59,130,246,0.16), transparent 65%)" }} />
+               style={{ background: "radial-gradient(closest-side, rgba(91,76,245,0.20), transparent 65%)" }} />
           <div className="absolute top-1/2 -left-32 w-[34rem] h-[34rem] rounded-full blur-3xl"
-               style={{ background: "radial-gradient(closest-side, rgba(34,211,238,0.14), transparent 65%)" }} />
+               style={{ background: "radial-gradient(closest-side, rgba(57,198,240,0.14), transparent 65%)" }} />
         </div>
         <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8">
           <Outlet />
