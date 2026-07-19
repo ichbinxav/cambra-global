@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, BarChart3, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Home, ShieldCheck, FolderOpen } from "lucide-react";
-import BrandGlyph from "@/components/shared/BrandGlyph";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 // MVP navigation — focused, minimal. Advanced API/OAuth/Webhook screens are admin-only.
 // FASE 1.2 — Unlock Savings + Recovery Tracker removed from sidebar (negotiation
@@ -33,70 +33,72 @@ export default function DashboardLayout() {
 
   return (
     <div
-      className="dark min-h-screen flex font-inter"
+      className="min-h-screen flex font-inter"
       style={{
-        color: "#ffffff",
-        background:
-          "radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%), radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.16) 0%, transparent 60%), radial-gradient(90% 70% at 50% -20%, rgba(110,95,230,0.18) 0%, transparent 60%), linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
+        color: "var(--ink)",
+        background: "var(--paper)",
       }}
     >
-      {/* Desktop Sidebar — premium dark editorial */}
-      <aside
-        className="hidden lg:flex flex-col w-56 shrink-0 relative"
+      {/* Fixed ambient DOT mesh — same violet dots on paper as the landing */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
         style={{
-          background: "rgba(10,10,10,0.65)",
-          borderRight: "1px solid rgba(255,255,255,0.06)",
+          backgroundImage: "radial-gradient(rgba(91,76,245,0.28) 1.3px, transparent 2px)",
+          backgroundSize: "34px 30px",
+          backgroundPosition: "0 0",
+          opacity: 1,
+          maskImage: "radial-gradient(120% 90% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(120% 90% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 100%)",
+        }}
+      />
+
+      {/* Desktop Sidebar — light paper editorial, always visible on lg+ */}
+      <aside
+        className="hidden lg:flex flex-col w-56 shrink-0 relative z-20"
+        style={{
+          background: "rgba(255,255,255,0.72)",
+          borderRight: "1px solid var(--linea)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
         }}
       >
-        {/* Subtle radial accent at top */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute top-0 left-0 right-0 h-40"
-          style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(139,123,255,0.18), transparent 70%)" }}
-        />
-
-        <div className="relative px-5 h-14 flex items-center" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="relative px-5 h-14 flex items-center" style={{ borderBottom: "1px solid var(--linea)" }}>
           <Link to="/" className="group flex items-center gap-2" aria-label="CAMBRA home">
-            <BrandGlyph className="h-5 w-5 text-white" />
-            <span className="text-[13px] font-black tracking-[-0.02em] text-white">CAMBRA</span>
-            <ArrowUpRight size={10} className="text-white/35 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+            <img src={BRAND_ASSETS.cMarkVoltio} alt="" width={22} height={22} className="h-[22px] w-[22px]" draggable={false} />
+            <span className="text-[13px] font-black tracking-[-0.02em]" style={{ color: "var(--ink)" }}>CAMBRA</span>
+            <ArrowUpRight size={10} className="text-[#9A9AAB] group-hover:text-[#5B4CF5] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </Link>
         </div>
 
         {/* Status pill */}
         <div className="relative px-3 pt-3 pb-2">
           <span
-            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] uppercase tracking-[0.22em] font-bold text-white/65"
-            style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] uppercase tracking-[0.22em] font-bold"
+            style={{ border: "1px solid var(--linea)", background: "#ffffff", color: "var(--gris-1)" }}
           >
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#8B7BFF" }} />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#8B7BFF" }} />
+              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#5B4CF5" }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#5B4CF5" }} />
             </span>
             {t("sidebar_network_live")}
           </span>
         </div>
 
         <nav className="relative flex-1 p-3 pt-2 space-y-0.5">
-          <p className="px-3 mb-1.5 text-[9px] font-bold tracking-[0.24em] uppercase text-white/35">{t("sidebar_workspace")}</p>
+          <p className="px-3 mb-1.5 text-[9px] font-bold tracking-[0.24em] uppercase" style={{ color: "var(--gris-2)" }}>{t("sidebar_workspace")}</p>
           {NAV_ITEMS.map(item => {
             const active = location.pathname === item.path;
             return (
               <Link key={item.path} to={item.path}>
                 <motion.div
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] transition-all ${
-                    active
-                      ? "bg-white text-black font-bold"
-                      : "text-white/55 hover:text-white"
-                  }`}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all"
                   style={
                     active
-                      ? { boxShadow: "0 0 24px rgba(139,123,255,0.30)" }
-                      : { background: "transparent" }
+                      ? { background: "var(--g-voltio)", color: "#ffffff", fontWeight: 700, boxShadow: "0 6px 18px -8px rgba(91,76,245,0.6)" }
+                      : { background: "transparent", color: "var(--gris-1)" }
                   }
-                  whileHover={active ? {} : { x: 2, backgroundColor: "rgba(255,255,255,0.04)" }}
+                  whileHover={active ? {} : { x: 2, backgroundColor: "rgba(91,76,245,0.06)" }}
                   transition={{ type: "spring", stiffness: 500, damping: 40 }}
                 >
                   <item.icon size={14} strokeWidth={active ? 2.4 : 1.8} />
@@ -107,10 +109,10 @@ export default function DashboardLayout() {
           })}
         </nav>
 
-        <div className="p-3 space-y-0.5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="p-3 space-y-0.5" style={{ borderTop: "1px solid var(--linea)" }}>
           {isAdmin && (
             <Link to="/admin">
-              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors font-semibold text-red-300 hover:bg-red-500/10">
+              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors font-semibold text-red-500 hover:bg-red-500/10">
                 <ShieldCheck size={14} />
                 {t("sidebar_admin")}
               </div>
@@ -118,14 +120,14 @@ export default function DashboardLayout() {
           )}
 
           <Link to="/Landing">
-            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-white/55 hover:text-white hover:bg-white/5 transition-colors">
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors hover:bg-[rgba(91,76,245,0.06)]" style={{ color: "var(--gris-1)" }}>
               <Home size={14} />
               {t("sidebar_homepage")}
             </div>
           </Link>
           <button
             onClick={() => base44.auth.logout("/Landing")}
-            className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm text-white/55 hover:text-white hover:bg-white/5 transition-colors"
+            className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm transition-colors hover:bg-[rgba(91,76,245,0.06)]" style={{ color: "var(--gris-1)" }}
           >
             <LogOut size={14} />
             {t("sidebar_signout")}
@@ -137,14 +139,17 @@ export default function DashboardLayout() {
       <div
         className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 h-14"
         style={{
-          background: "rgba(10,10,10,0.85)",
+          background: "rgba(255,255,255,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid var(--linea)",
         }}
       >
-        <Link to="/" className="text-sm font-black tracking-tight text-white">CAMBRA</Link>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        <Link to="/" className="flex items-center gap-2 text-sm font-black tracking-tight" style={{ color: "var(--ink)" }}>
+          <img src={BRAND_ASSETS.cMarkVoltio} alt="" width={20} height={20} className="h-5 w-5" draggable={false} />
+          CAMBRA
+        </Link>
+        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[rgba(91,76,245,0.08)]" style={{ color: "var(--ink)" }} onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
         </Button>
       </div>
@@ -162,7 +167,7 @@ export default function DashboardLayout() {
             />
             <motion.div
               className="fixed inset-0 z-40 pt-14 overflow-y-auto"
-              style={{ background: "#0a0a0a" }}
+              style={{ background: "var(--paper)" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -173,9 +178,11 @@ export default function DashboardLayout() {
                   const active = location.pathname === item.path;
                   return (
                     <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)}>
-                      <div className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm transition-colors ${
-                        active ? "bg-white text-black font-semibold" : "text-white/60"
-                      }`}>
+                      <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-colors"
+                        style={active
+                          ? { background: "var(--g-voltio)", color: "#ffffff", fontWeight: 700 }
+                          : { color: "var(--gris-1)" }}
+                      >
                         <item.icon size={16} />
                         {t(item.labelKey)}
                       </div>
@@ -183,10 +190,10 @@ export default function DashboardLayout() {
                   );
                 })}
               </nav>
-              <div className="px-4 pt-3 mt-3 space-y-0.5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="px-4 pt-3 mt-3 space-y-0.5" style={{ borderTop: "1px solid var(--linea)" }}>
                 {isAdmin && (
                   <Link to="/admin" onClick={() => setSidebarOpen(false)}>
-                    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-red-300 font-semibold">
+                    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-red-500 font-semibold">
                       <ShieldCheck size={16} />
                       {t("sidebar_admin")}
                     </div>
@@ -194,13 +201,13 @@ export default function DashboardLayout() {
                 )}
 
                 <Link to="/Landing" onClick={() => setSidebarOpen(false)}>
-                  <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-white/60">
+                  <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm" style={{ color: "var(--gris-1)" }}>
                     <Home size={16} /> {t("sidebar_homepage")}
                   </div>
                 </Link>
                 <button
                   onClick={() => base44.auth.logout("/Landing")}
-                  className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm text-white/60"
+                  className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm" style={{ color: "var(--gris-1)" }}
                 >
                   <LogOut size={16} /> {t("sidebar_signout")}
                 </button>
@@ -210,27 +217,11 @@ export default function DashboardLayout() {
         )}
       </AnimatePresence>
 
-      {/* Main content — dark editorial */}
-      <main className="relative flex-1 min-w-0 pt-14 lg:pt-0 overflow-hidden">
-        {/* Ambient backdrop */}
-        <div className="pointer-events-none absolute inset-0">
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-              backgroundSize: "56px 56px",
-              opacity: 0.3,
-              maskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
-              WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 25%, #000 35%, transparent 100%)",
-            }}
-          />
-          <div className="absolute -top-40 right-1/4 w-[40rem] h-[40rem] rounded-full blur-3xl"
-               style={{ background: "radial-gradient(closest-side, rgba(91,76,245,0.20), transparent 65%)" }} />
-          <div className="absolute top-1/2 -left-32 w-[34rem] h-[34rem] rounded-full blur-3xl"
-               style={{ background: "radial-gradient(closest-side, rgba(57,198,240,0.14), transparent 65%)" }} />
-        </div>
+      {/* Main content — floats on the landing paper canvas. The content itself
+          keeps the `.dark` token context so the existing navy cards / white
+          text inside each page render correctly (navy cards on paper, exactly
+          like the landing's dark section blocks sit on the paper background). */}
+      <main className="dark relative z-10 flex-1 min-w-0 pt-14 lg:pt-0">
         <div className="relative max-w-[1400px] mx-auto p-5 lg:p-8">
           <Outlet />
         </div>
