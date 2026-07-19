@@ -26,7 +26,7 @@ export default function Security() {
         <SecurityBlock
           index="01"
           icon={Eye}
-          accent="menta"
+          accent="voltio"
           title="Read-only. By design, not by promise."
         >
           <p>
@@ -43,7 +43,7 @@ export default function Security() {
         <SecurityBlock
           index="02"
           icon={Database}
-          accent="cian"
+          accent="voltio"
           title="Aggregates, not identities."
         >
           <p>
@@ -59,7 +59,7 @@ export default function Security() {
         <SecurityBlock
           index="03"
           icon={Layers}
-          accent="menta"
+          accent="voltio"
           title="Your numbers never leak into anyone else's."
         >
           <p>
@@ -74,7 +74,7 @@ export default function Security() {
         <SecurityBlock
           index="04"
           icon={Lock}
-          accent="cian"
+          accent="voltio"
           title="Encrypted everywhere it travels, everywhere it rests."
         >
           <p>
@@ -87,14 +87,14 @@ export default function Security() {
         <SecurityBlock
           index="05"
           icon={Scale}
-          accent="menta"
+          accent="voltio"
           title="European company. European rules."
         >
           <p>
             CAMBRA Global SASU is incorporated in France and operates under GDPR. You can request access to
             your data or its deletion at any time. A Data Processing Agreement is available for brands that
             require one — ask us at{" "}
-            <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: "#7DE3FF", fontWeight: 600 }}>
+            <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: "#5B4CF5", fontWeight: 600 }}>
               {CONTACT_EMAIL}
             </a>
             .

@@ -3,8 +3,8 @@ import { Check, X } from "lucide-react";
 
 /**
  * CanCannotTable — "What we can see" vs "What we can never do" on /Security.
- * Cybersecurity dark styling: two glass panels, the "can" column glows menta,
- * the "never" column glows coral. Labels in JetBrains Mono (.mono-num).
+ * Light paper panels matching the landing: the "can" column uses the voltio
+ * accent, the "never" column uses coral. Labels in JetBrains Mono (.mono-num).
  */
 const CAN_SEE = [
   "Transaction amounts and fees",
@@ -22,22 +22,16 @@ const CANNOT_DO = [
 
 function Column({ label, items, positive }) {
   const Icon = positive ? Check : X;
-  const color = positive ? "#2FE0A8" : "#FF8A6B";
-  const glow = positive ? "rgba(47,224,168,0.18)" : "rgba(244,91,105,0.18)";
+  const color = positive ? "#5B4CF5" : "#F45B69";
+  const soft = positive ? "rgba(91,76,245,0.06)" : "rgba(244,91,105,0.06)";
   return (
     <div
       className="relative rounded-2xl p-6 overflow-hidden"
       style={{
-        background: "rgba(255,255,255,0.03)",
-        border: `1px solid ${color}30`,
-        boxShadow: `inset 0 0 40px -20px ${glow}`,
+        background: soft,
+        border: `1px solid ${color}26`,
       }}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full"
-        style={{ background: glow, filter: "blur(30px)" }}
-      />
       <p
         className="relative mono-num text-[11px] font-semibold uppercase tracking-[0.16em] mb-5 flex items-center gap-2"
         style={{ color }}
@@ -47,7 +41,7 @@ function Column({ label, items, positive }) {
       </p>
       <ul className="relative space-y-3">
         {items.map((item) => (
-          <li key={item} className="flex items-start gap-2.5 text-[14px]" style={{ color: "rgba(255,255,255,0.8)" }}>
+          <li key={item} className="flex items-start gap-2.5 text-[14px]" style={{ color: "var(--ink)" }}>
             <span
               className="inline-flex items-center justify-center h-5 w-5 rounded-full shrink-0 mt-0.5"
               style={{ background: `${color}1f`, color }}
