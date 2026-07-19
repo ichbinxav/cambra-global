@@ -42,7 +42,12 @@ export default function TrustSecuritySection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="panel-dark relative max-w-6xl mx-auto px-6 sm:px-12 py-14 sm:py-20"
+        className="relative max-w-6xl mx-auto px-6 sm:px-12 py-14 sm:py-20 overflow-hidden"
+        style={{
+          background: "#0A0818",
+          borderRadius: 24,
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}
       >
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Copy + bullets */}
@@ -119,9 +124,9 @@ export default function TrustSecuritySection() {
               draggable={false}
               style={{
                 maskImage:
-                  "radial-gradient(ellipse 78% 78% at 50% 42%, #000 55%, transparent 88%)",
+                  "radial-gradient(ellipse 70% 70% at 50% 40%, #000 48%, transparent 82%)",
                 WebkitMaskImage:
-                  "radial-gradient(ellipse 78% 78% at 50% 42%, #000 55%, transparent 88%)",
+                  "radial-gradient(ellipse 70% 70% at 50% 40%, #000 48%, transparent 82%)",
               }}
             />
           </div>
