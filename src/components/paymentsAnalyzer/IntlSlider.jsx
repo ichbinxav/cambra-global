@@ -21,12 +21,12 @@ export default function IntlSlider({ value, onChange }) {
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
           International share
         </span>
         <span
           className="tabular-nums font-bold"
-          style={{ color: "var(--ink)", fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "22px", letterSpacing: "-0.02em" }}
+          style={{ color: "#ffffff", fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "22px", letterSpacing: "-0.02em" }}
         >
           {isSet ? `${pct}%` : "—"}
         </span>
@@ -43,9 +43,9 @@ export default function IntlSlider({ value, onChange }) {
         aria-label="International sales share"
       />
 
-      <div className="flex items-center justify-between text-[10px]" style={{ color: "var(--gris-2)" }}>
+      <div className="flex items-center justify-between text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>
         <span>0%</span>
-        <span className="text-[11px]" style={{ color: "var(--gris-1)" }}>{contextLabel}</span>
+        <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.8)" }}>{contextLabel}</span>
         <span>100%</span>
       </div>
     </div>

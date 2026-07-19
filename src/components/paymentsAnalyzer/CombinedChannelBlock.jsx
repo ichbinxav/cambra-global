@@ -25,24 +25,31 @@ import ProviderGrid from "@/components/paymentsAnalyzer/ProviderGrid";
 function ChannelPanel({ title, subtitle, accentColor, children }) {
   return (
     <div
-      className="rounded-2xl p-5"
+      className="relative overflow-hidden rounded-2xl p-5"
       style={{
-        background: "#ffffff",
-        border: "1px solid var(--linea)",
+        background:
+          "radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%)," +
+          "radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.14) 0%, transparent 60%)," +
+          "linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow:
+          "0 1px 0 rgba(139,123,255,0.12) inset, 0 24px 64px -34px rgba(0,0,0,0.7), 0 10px 34px -20px rgba(91,76,245,0.35)",
       }}
     >
-      <div className="flex items-baseline justify-between mb-5">
-        <div>
-          <p
-            className="text-[10px] uppercase tracking-[0.22em] font-bold"
-            style={{ color: accentColor }}
-          >
-            {title}
-          </p>
-          <p className="text-[11px] mt-0.5" style={{ color: "var(--gris-1)" }}>{subtitle}</p>
+      <div className="relative z-10">
+        <div className="flex items-baseline justify-between mb-5">
+          <div>
+            <p
+              className="text-[10px] uppercase tracking-[0.22em] font-bold"
+              style={{ color: accentColor === "#5B4CF5" ? "#8B7BFF" : accentColor }}
+            >
+              {title}
+            </p>
+            <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.7)" }}>{subtitle}</p>
+          </div>
         </div>
+        <div className="space-y-6">{children}</div>
       </div>
-      <div className="space-y-6">{children}</div>
     </div>
   );
 }
@@ -82,10 +89,10 @@ export default function CombinedChannelBlock({
         </div>
         <div className="space-y-2.5">
           <div className="flex items-baseline justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
               Online provider
             </span>
-            <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>One tap</span>
+            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>One tap</span>
           </div>
           <ProviderGrid
             options={onlineProviders}
@@ -111,10 +118,10 @@ export default function CombinedChannelBlock({
         />
         <div className="space-y-2.5">
           <div className="flex items-baseline justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
               In-store terminal (TPV)
             </span>
-            <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>One tap</span>
+            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>One tap</span>
           </div>
           <ProviderGrid
             options={inStoreProviders}

@@ -44,21 +44,15 @@ export default function BrandBlock({
   onSectorChange,
 }) {
   return (
-    <div
-      className="rounded-2xl p-5 space-y-4"
-      style={{
-        border: "1px solid var(--linea)",
-        background: "#ffffff",
-      }}
-    >
+    <div className="space-y-4">
       {/* Section header */}
       <div className="flex items-baseline justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
           About your brand
         </span>
-        <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>Cohort benchmark</span>
+        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Cohort benchmark</span>
       </div>
-      <p className="text-[11.5px] leading-relaxed -mt-1" style={{ color: "var(--gris-1)" }}>
+      <p className="text-[11.5px] leading-relaxed -mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>
         Helps us benchmark you against similar brands. Still no account, still anonymous.
       </p>
 
@@ -67,9 +61,9 @@ export default function BrandBlock({
         <label
           htmlFor="brand-name-input"
           className="text-[11px] font-medium"
-          style={{ color: "var(--gris-1)" }}
+          style={{ color: "rgba(255,255,255,0.75)" }}
         >
-          Brand name <span style={{ color: "#F45B69" }}>*</span>
+          Brand name <span style={{ color: "#FF8A6B" }}>*</span>
         </label>
         <input
           id="brand-name-input"
@@ -82,9 +76,9 @@ export default function BrandBlock({
           placeholder="e.g. Aime Studio"
           className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
           style={{
-            color: "var(--ink)",
-            background: "#ffffff",
-            border: "1px solid var(--linea)",
+            color: "#ffffff",
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.14)",
           }}
         />
       </div>
@@ -96,9 +90,9 @@ export default function BrandBlock({
           <label
             htmlFor="brand-website-input"
             className="text-[11px] font-medium"
-            style={{ color: "var(--gris-1)" }}
+            style={{ color: "rgba(255,255,255,0.75)" }}
           >
-            Website <span style={{ color: "var(--gris-2)" }}>(optional)</span>
+            Website <span style={{ color: "rgba(255,255,255,0.5)" }}>(optional)</span>
           </label>
           <input
             id="brand-website-input"
@@ -111,9 +105,9 @@ export default function BrandBlock({
             placeholder="aimestudio.com"
             className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
             style={{
-              color: "var(--ink)",
-              background: "#ffffff",
-              border: "1px solid var(--linea)",
+              color: "#ffffff",
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.14)",
             }}
           />
         </div>
@@ -123,9 +117,9 @@ export default function BrandBlock({
           <label
             htmlFor="brand-sector-input"
             className="text-[11px] font-medium"
-            style={{ color: "var(--gris-1)" }}
+            style={{ color: "rgba(255,255,255,0.75)" }}
           >
-            Sector <span style={{ color: "var(--gris-2)" }}>(optional)</span>
+            Sector <span style={{ color: "rgba(255,255,255,0.5)" }}>(optional)</span>
           </label>
           <select
             id="brand-sector-input"
@@ -133,9 +127,10 @@ export default function BrandBlock({
             onChange={(e) => onSectorChange(e.target.value)}
             className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
             style={{
-              color: "var(--ink)",
-              background: "#ffffff",
-              border: "1px solid var(--linea)",
+              color: "#ffffff",
+              background: "rgba(30,26,60,0.9)",
+              border: "1px solid rgba(255,255,255,0.14)",
+              colorScheme: "dark",
             }}
           >
             <option value="">

@@ -81,10 +81,10 @@ export default function GmvSlider({ value, onChange }) {
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
           Monthly card GMV
         </span>
-        <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>Slide or type</span>
+        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Slide or type</span>
       </div>
 
       {/* Hero value + exact input, side by side */}
@@ -98,14 +98,14 @@ export default function GmvSlider({ value, onChange }) {
             // Dimmer color while it's a default placeholder — the moment the
             // user drags or types, it becomes fully white. Zero cognitive
             // load, clearly signals "this is a preview".
-            color: isSet ? "var(--ink)" : "var(--gris-2)",
+            color: isSet ? "#ffffff" : "rgba(255,255,255,0.45)",
           }}
         >
           {formatEur(displayValue)}
         </div>
-        <span className="text-[12px] shrink-0" style={{ color: "var(--gris-2)" }}>/ mo</span>
+        <span className="text-[12px] shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>/ mo</span>
         <div className="ml-auto flex items-center gap-1.5 shrink-0">
-          <span className="text-[11px]" style={{ color: "var(--gris-2)" }}>exact</span>
+          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>exact</span>
           <input
             type="number"
             min={SLIDER_MIN}
@@ -115,7 +115,7 @@ export default function GmvSlider({ value, onChange }) {
             onChange={handleInputChange}
             placeholder="e.g. 100000"
             className="cambra-num-input w-28 h-9 rounded-md px-2.5 text-sm text-right focus:outline-none transition-colors"
-            style={{ color: "var(--ink)", background: "#ffffff", border: "1px solid var(--linea)" }}
+            style={{ color: "#ffffff", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)" }}
             aria-label="Monthly GMV exact value"
           />
         </div>
@@ -133,7 +133,7 @@ export default function GmvSlider({ value, onChange }) {
       />
 
       {/* Anchor tick labels — decorative, help calibrate the log scale */}
-      <div className="flex justify-between text-[9px] font-medium" style={{ color: "var(--gris-2)" }}>
+      <div className="flex justify-between text-[9px] font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>
         <span>€500</span>
         <span>€10k</span>
         <span>€100k</span>

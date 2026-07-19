@@ -33,6 +33,7 @@ import CombinedChannelBlock from "@/components/paymentsAnalyzer/CombinedChannelB
 import AnalyzerEntryCards from "@/components/paymentsAnalyzer/AnalyzerEntryCards";
 import PspVerificationOptions from "@/components/paymentsAnalyzer/PspVerificationOptions";
 import AnalyzingOverlay from "@/components/paymentsAnalyzer/AnalyzingOverlay";
+import FieldCard from "@/components/paymentsAnalyzer/FieldCard";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
@@ -422,13 +423,13 @@ export default function PaymentsAnalyzer() {
         {/* Header pill + counter */}
         <div className="flex items-center justify-between mb-5">
           <div className="inline-flex items-center gap-2 rounded-full px-3 py-1"
-            style={{ border: "1px solid var(--linea)", background: "rgba(12,12,22,0.04)" }}
+            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "var(--g-voltio)", boxShadow: "0 4px 14px -6px rgba(91,76,245,0.6)" }}
           >
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#8B7BFF" }} />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#5B4CF5" }} />
+              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#ffffff" }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#ffffff" }} />
             </span>
-            <span className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "var(--gris-1)" }}>Payments audit · anonymous</span>
+            <span className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "#ffffff" }}>Payments audit · anonymous</span>
           </div>
           <span className="text-[11px] font-bold tabular-nums" style={{ color: "var(--gris-2)" }}>
             {progress.done} <span style={{ color: "var(--gris-2)" }}>of {progress.total}</span>
@@ -488,8 +489,8 @@ export default function PaymentsAnalyzer() {
             aria-label="Payment channel"
             className="mb-8 inline-flex items-center rounded-full p-1"
             style={{
-              border: "1px solid var(--linea)",
-              background: "rgba(12,12,22,0.04)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)",
             }}
           >
             {[
@@ -516,7 +517,7 @@ export default function PaymentsAnalyzer() {
                           color: "#ffffff",
                           boxShadow: "0 4px 12px -4px rgba(91,76,245,0.55)",
                         }
-                      : { background: "transparent", color: "var(--gris-1)" }
+                      : { background: "transparent", color: "rgba(255,255,255,0.6)" }
                   }
                 >
                   {opt.label}
@@ -556,18 +557,68 @@ export default function PaymentsAnalyzer() {
               />
               {/* Country lives at the top level — single field shared by
                   both channels (a merchant is in one country). */}
+              <FieldCard>
+                <div className="space-y-2.5">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
+                      Country
+                    </span>
+                    <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Region benchmark</span>
+                  </div>
+                  <select
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
+                    style={{ color: "#ffffff", background: "rgba(30,26,60,0.9)", border: "1px solid rgba(255,255,255,0.14)", colorScheme: "dark" }}
+                  >
+                    <option value="">Select your country…</option>
+                    {COUNTRY_OPTIONS.map((c) => (
+                      <option key={c.code} value={c.code}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </FieldCard>
+            </>
+          ) : (
+          <>
+          {/* GMV always spans full width — it's the anchor number. */}
+          <FieldCard>
+            <GmvSlider value={gmv} onChange={setGmv} />
+          </FieldCard>
+
+          {/* Ticket + International share + Country live in one responsive
+              row. On mobile they stack; on lg they pair (2 cols); on xl they
+              spread to 3 cols so the extra desktop width actually earns its
+              keep instead of leaving dead space on the right. */}
+          <div className={`grid grid-cols-1 lg:grid-cols-2 ${channel === "online" ? "xl:grid-cols-3" : ""} gap-x-8 gap-y-8`}>
+            <FieldCard>
+              <AvgTicketInput value={avgTicket} onChange={setAvgTicket} />
+            </FieldCard>
+            {/* Intl share — online only. In-store: card-present cross-border
+                is negligible for the ICP and none of the seeded in-store rows
+                carry a modeled intl_uplift_bps (all null). Asking would only
+                add noise and produce an "intl uplift not modeled" assumption. */}
+            {channel === "online" && (
+              <FieldCard>
+                <IntlSlider value={intlPct} onChange={setIntlPct} />
+              </FieldCard>
+            )}
+            {/* Country — kept as a native <select>: single-choice from 22
+                options, low frequency, no need for a grid. Lifted from its
+                own row into this one to reclaim the desktop width. */}
+            <FieldCard>
               <div className="space-y-2.5">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
                     Country
                   </span>
-                  <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>Region benchmark</span>
+                  <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Region benchmark</span>
                 </div>
                 <select
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
-                  style={{ color: "var(--ink)", background: "#ffffff", border: "1px solid var(--linea)" }}
+                  style={{ color: "#ffffff", background: "rgba(30,26,60,0.9)", border: "1px solid rgba(255,255,255,0.14)", colorScheme: "dark" }}
                 >
                   <option value="">Select your country…</option>
                   {COUNTRY_OPTIONS.map((c) => (
@@ -575,65 +626,27 @@ export default function PaymentsAnalyzer() {
                   ))}
                 </select>
               </div>
-            </>
-          ) : (
-          <>
-          {/* GMV always spans full width — it's the anchor number. */}
-          <GmvSlider value={gmv} onChange={setGmv} />
-
-          {/* Ticket + International share + Country live in one responsive
-              row. On mobile they stack; on lg they pair (2 cols); on xl they
-              spread to 3 cols so the extra desktop width actually earns its
-              keep instead of leaving dead space on the right. */}
-          <div className={`grid grid-cols-1 lg:grid-cols-2 ${channel === "online" ? "xl:grid-cols-3" : ""} gap-x-8 gap-y-8`}>
-            <AvgTicketInput value={avgTicket} onChange={setAvgTicket} />
-            {/* Intl share — online only. In-store: card-present cross-border
-                is negligible for the ICP and none of the seeded in-store rows
-                carry a modeled intl_uplift_bps (all null). Asking would only
-                add noise and produce an "intl uplift not modeled" assumption. */}
-            {channel === "online" && (
-              <IntlSlider value={intlPct} onChange={setIntlPct} />
-            )}
-            {/* Country — kept as a native <select>: single-choice from 22
-                options, low frequency, no need for a grid. Lifted from its
-                own row into this one to reclaim the desktop width. */}
-            <div className="space-y-2.5">
-              <div className="flex items-baseline justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
-                  Country
-                </span>
-                <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>Region benchmark</span>
-              </div>
-              <select
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
-                style={{ color: "var(--ink)", background: "#ffffff", border: "1px solid var(--linea)" }}
-              >
-                <option value="">Select your country…</option>
-                {COUNTRY_OPTIONS.map((c) => (
-                  <option key={c.code} value={c.code}>{c.name}</option>
-                ))}
-              </select>
-            </div>
+            </FieldCard>
           </div>
 
           {/* Provider grid — ProviderGrid owns responsive density internally
               (2 / 3 / 4 cols). Same enum + same order as the backend contract.
               Options swap based on channel: online providers vs. in-store TPVs. */}
-          <div id="psp-selector" className="space-y-2.5 scroll-mt-24">
-            <div className="flex items-baseline justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--gris-1)" }}>
-                {channel === "in_store" ? "In-store terminal (TPV)" : "Payment provider"}
-              </span>
-              <span className="text-[10px]" style={{ color: "var(--gris-2)" }}>One tap</span>
+          <FieldCard>
+            <div id="psp-selector" className="space-y-2.5 scroll-mt-24">
+              <div className="flex items-baseline justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  {channel === "in_store" ? "In-store terminal (TPV)" : "Payment provider"}
+                </span>
+                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>One tap</span>
+              </div>
+              <ProviderGrid
+                options={channel === "in_store" ? PROVIDER_OPTIONS_IN_STORE : PROVIDER_OPTIONS_ONLINE}
+                value={providerSlug}
+                onChange={setProviderSlug}
+              />
             </div>
-            <ProviderGrid
-              options={channel === "in_store" ? PROVIDER_OPTIONS_IN_STORE : PROVIDER_OPTIONS_ONLINE}
-              value={providerSlug}
-              onChange={setProviderSlug}
-            />
-          </div>
+          </FieldCard>
 
           {/* Fallback universal de facturas (FASE B) — per-PSP verification
               path. Reacts to the selected provider: Stripe → Connect card
@@ -658,20 +671,17 @@ export default function PaymentsAnalyzer() {
               type="button"
               onClick={() => setCardMixOpen((o) => !o)}
               className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[44px] transition-colors"
-              style={{ border: "1px solid var(--linea)", background: "#ffffff", color: "var(--gris-1)" }}
+              style={{ border: "1px solid rgba(255,255,255,0.10)", background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)", color: "rgba(255,255,255,0.8)" }}
             >
               <span className="flex items-center gap-2 text-[13px] font-medium">
-                Debit vs credit mix <span className="text-[11px]" style={{ color: "var(--gris-2)" }}>(optional)</span>
+                Debit vs credit mix <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>(optional)</span>
               </span>
               {cardMixOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
             {cardMixOpen && (
-              <div
-                className="mt-3 rounded-2xl p-4"
-                style={{ border: "1px solid var(--linea)", background: "#ffffff" }}
-              >
+              <FieldCard className="mt-3">
                 <CardMixSlider value={cardMixDebit} onChange={setCardMixDebit} />
-              </div>
+              </FieldCard>
             )}
           </div>
 
@@ -680,14 +690,16 @@ export default function PaymentsAnalyzer() {
               highest here (users have already answered the payment questions
               and are committed), so this is where we can afford to ask for
               lead-intelligence metadata without hurting conversion. */}
-          <BrandBlock
-            brandName={brandName}
-            onBrandNameChange={setBrandName}
-            website={website}
-            onWebsiteChange={setWebsite}
-            sector={sector}
-            onSectorChange={setSector}
-          />
+          <FieldCard>
+            <BrandBlock
+              brandName={brandName}
+              onBrandNameChange={setBrandName}
+              website={website}
+              onWebsiteChange={setWebsite}
+              sector={sector}
+              onSectorChange={setSector}
+            />
+          </FieldCard>
 
           {/* Privacy microcopy */}
           <div className="flex items-start gap-2 pt-2 text-[11px]" style={{ color: "var(--gris-2)" }}>
