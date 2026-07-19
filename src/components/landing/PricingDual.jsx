@@ -112,8 +112,7 @@ function Tier({
                 lineHeight: 0.9,
                 ...(priceGradient
                   ? {
-                      background:
-                        "linear-gradient(135deg, #8B7BFF 0%, #5B4CF5 100%)",
+                      background: "var(--g-voltio)",
                       WebkitBackgroundClip: "text",
                       backgroundClip: "text",
                       WebkitTextFillColor: "transparent",
