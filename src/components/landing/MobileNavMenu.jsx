@@ -234,7 +234,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                       className="absolute -inset-0.5 rounded-full opacity-50 group-hover:opacity-80 blur-md transition-opacity"
                       style={{ background: "linear-gradient(110deg, #5B4CF5, #39C6F0)" }}
                     />
-                    <div className="relative h-12 rounded-full bg-white text-[#06080F] font-bold text-[14px] inline-flex items-center justify-center gap-2 w-full overflow-hidden">
+                    <div className="relative h-12 rounded-full text-white font-bold text-[14px] inline-flex items-center justify-center gap-2 w-full overflow-hidden" style={{ background: "var(--g-voltio)" }}>
                       <Sparkles className="h-3.5 w-3.5" />
                       Run new audit
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -251,12 +251,12 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                         className="absolute -inset-0.5 rounded-full opacity-60 group-hover:opacity-90 blur-md transition-opacity"
                         style={{ background: "linear-gradient(110deg, #5B4CF5, #39C6F0)" }}
                       />
-                      <div className="relative h-12 rounded-full bg-white text-[#06080F] font-bold text-[14px] inline-flex items-center justify-center gap-2 w-full overflow-hidden">
+                      <div className="relative h-12 rounded-full text-white font-bold text-[14px] inline-flex items-center justify-center gap-2 w-full overflow-hidden" style={{ background: "var(--g-voltio)" }}>
                         {/* Shimmer sweep */}
                         <motion.span
                           aria-hidden
                           className="absolute inset-0 pointer-events-none"
-                          style={{ background: "linear-gradient(110deg, transparent 35%, rgba(31,78,216,0.18) 50%, transparent 65%)" }}
+                          style={{ background: "linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.25) 50%, transparent 65%)" }}
                           animate={{ x: ["-100%", "100%"] }}
                           transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }}
                         />
