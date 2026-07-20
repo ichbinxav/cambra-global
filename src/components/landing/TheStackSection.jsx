@@ -42,7 +42,7 @@ export default function TheStackSection() {
               image on mobile (showing only the clean layer stack) and center
               it; on lg+ the full image with its dashed lines is shown so the
               overlaid callout labels line up with each dot. */}
-          <div className="overflow-hidden lg:overflow-visible">
+          <div className="hidden lg:block lg:overflow-visible">
             <motion.img
               src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/20ff08204_stack-callouts-alpha2x.webp"
               alt="Online payments, in-store terminals, contracts and benchmark — one stack, one analysis"
