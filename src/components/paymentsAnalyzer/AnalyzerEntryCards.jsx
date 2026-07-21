@@ -61,7 +61,7 @@ function FeaturedCard({ card, isSelected, onSelect }) {
       onClick={() => onSelect?.(card.id)}
       whileHover={{ y: -3 }}
       transition={{ type: "spring", stiffness: 400, damping: 28 }}
-      className="group relative overflow-hidden text-left rounded-2xl p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7BFF]/50"
+      className="group relative overflow-hidden text-left rounded-2xl p-4 h-full flex flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7BFF]/50"
       style={{
         background:
           "radial-gradient(130% 90% at 8% 0%, rgba(91,76,245,0.45) 0%, transparent 55%)," +
@@ -93,20 +93,20 @@ function FeaturedCard({ card, isSelected, onSelect }) {
         style={{ background: "radial-gradient(closest-side, rgba(57,198,240,0.35), transparent 70%)" }}
       />
 
-      <div className="relative z-10">
-        <div className="flex items-start justify-between gap-2 mb-4">
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="flex items-start justify-between gap-2 mb-3">
           <span
-            className="inline-flex items-center justify-center h-10 w-10 rounded-xl shrink-0"
+            className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
             style={{
               background: "linear-gradient(135deg, #5B4CF5, #8B7BFF)",
               boxShadow: "0 6px 18px -4px rgba(91,76,245,0.7)",
               color: "#ffffff",
             }}
           >
-            <Icon size={18} strokeWidth={2} />
+            <Icon size={16} strokeWidth={2} />
           </span>
           <span
-            className="text-[9px] uppercase tracking-[0.16em] font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1 shrink-0"
+            className="text-[9px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0"
             style={{ background: "rgba(139,123,255,0.2)", color: "#C9C1FF", border: "1px solid rgba(139,123,255,0.4)" }}
           >
             <span className="relative flex h-1.5 w-1.5">
@@ -116,19 +116,19 @@ function FeaturedCard({ card, isSelected, onSelect }) {
             {card.badge}
           </span>
         </div>
-        <h3 className="text-[17px] font-bold leading-tight mb-1"
+        <h3 className="text-[15px] font-bold leading-tight mb-1"
           style={{ color: "#ffffff", fontFamily: "'Space Grotesk', 'Inter', sans-serif", letterSpacing: "-0.02em" }}
         >
           {card.title}
         </h3>
-        <p className="text-[11px] uppercase tracking-[0.12em] font-bold mb-2.5" style={{ color: "#8B7BFF" }}>
+        <p className="text-[10px] uppercase tracking-[0.12em] font-bold mb-2" style={{ color: "#8B7BFF" }}>
           {card.subtitle}
         </p>
-        <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "rgba(255,255,255,0.72)" }}>
+        <p className="text-[12px] leading-snug mb-3 flex-1" style={{ color: "rgba(255,255,255,0.72)" }}>
           {card.body}
         </p>
         <span
-          className="inline-flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full transition-all group-hover:gap-2.5"
+          className="inline-flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full transition-all group-hover:gap-2.5 w-fit"
           style={{ background: "linear-gradient(135deg, #5B4CF5, #8B7BFF)", color: "#ffffff", boxShadow: "0 6px 16px -6px rgba(91,76,245,0.7)" }}
         >
           {card.cta}
@@ -150,7 +150,7 @@ function StandardCard({ card, isSelected, onSelect }) {
       onClick={() => onSelect?.(card.id)}
       whileHover={{ y: -3 }}
       transition={{ type: "spring", stiffness: 400, damping: 28 }}
-      className="group relative overflow-hidden text-left rounded-2xl p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7BFF]/50"
+      className="group relative overflow-hidden text-left rounded-2xl p-4 h-full flex flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7BFF]/50"
       style={{
         background:
           "radial-gradient(130% 90% at 8% 0%, rgba(91,76,245,0.45) 0%, transparent 55%)," +
@@ -181,35 +181,35 @@ function StandardCard({ card, isSelected, onSelect }) {
         className="pointer-events-none absolute -top-16 -right-10 h-48 w-48 rounded-full blur-2xl transition-opacity duration-500 opacity-60 group-hover:opacity-100"
         style={{ background: "radial-gradient(closest-side, rgba(57,198,240,0.35), transparent 70%)" }}
       />
-      <div className="relative z-10">
-        <div className="flex items-start justify-between gap-2 mb-4">
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="flex items-start justify-between gap-2 mb-3">
           <span
-            className="inline-flex items-center justify-center h-10 w-10 rounded-xl shrink-0"
+            className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
             style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", color: "#8B7BFF" }}
           >
-            <Icon size={18} strokeWidth={1.9} />
+            <Icon size={16} strokeWidth={1.9} />
           </span>
           <span
-            className="text-[9px] uppercase tracking-[0.16em] font-bold px-2.5 py-1 rounded-full shrink-0"
+            className="text-[9px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full shrink-0"
             style={{ background: "rgba(139,123,255,0.14) ", color: "#C9C1FF", border: "1px solid rgba(139,123,255,0.3)" }}
           >
             {card.badge}
           </span>
         </div>
-        <h3 className="text-[16px] font-bold leading-tight mb-1"
+        <h3 className="text-[15px] font-bold leading-tight mb-1"
           style={{ color: "#ffffff", fontFamily: "'Space Grotesk', 'Inter', sans-serif", letterSpacing: "-0.02em" }}
         >
           {card.title}
         </h3>
-        <p className="text-[11px] uppercase tracking-[0.12em] font-bold mb-2.5" style={{ color: "#8B7BFF" }}>
+        <p className="text-[10px] uppercase tracking-[0.12em] font-bold mb-2" style={{ color: "#8B7BFF" }}>
           {card.subtitle}
         </p>
-        <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "rgba(255,255,255,0.72)" }}>
+        <p className="text-[12px] leading-snug mb-3 flex-1" style={{ color: "rgba(255,255,255,0.72)" }}>
           {card.body}
         </p>
         {/* Flat CTA pill — no gradient (only the Connect card gets the voltio gradient) */}
         <span
-          className="inline-flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full transition-all group-hover:gap-2.5"
+          className="inline-flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full transition-all group-hover:gap-2.5 w-fit"
           style={{ background: "rgba(255,255,255,0.08)", color: "#ffffff", border: "1px solid rgba(255,255,255,0.16)" }}
         >
           {card.cta}
@@ -237,13 +237,14 @@ export default function AnalyzerEntryCards({ selected = "manual", onSelect }) {
           </span>
         </span>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 items-stretch">
         {CARDS.map((card, i) => (
           <motion.div
             key={card.id}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+            className="h-full"
           >
             {card.featured ? (
               <FeaturedCard card={card} isSelected={selected === card.id} onSelect={onSelect} />
