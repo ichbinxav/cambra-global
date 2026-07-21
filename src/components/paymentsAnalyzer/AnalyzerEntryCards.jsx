@@ -139,7 +139,9 @@ function FeaturedCard({ card, isSelected, onSelect }) {
   );
 }
 
-// ── Standard (paper premium) card — Upload / Manual ──────────────────────
+// ── Standard (navy) card — Upload / Manual ──────────────────────────────
+// Same navy-gradient background as the Connect card, but a FLAT (non-gradient)
+// CTA pill so only "Connect PSP" carries the voltio gradient CTA.
 function StandardCard({ card, isSelected, onSelect }) {
   const Icon = card.icon;
   return (
@@ -148,51 +150,67 @@ function StandardCard({ card, isSelected, onSelect }) {
       onClick={() => onSelect?.(card.id)}
       whileHover={{ y: -3 }}
       transition={{ type: "spring", stiffness: 400, damping: 28 }}
-      className="group relative overflow-hidden text-left rounded-2xl p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B4CF5]/40"
+      className="group relative overflow-hidden text-left rounded-2xl p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7BFF]/50"
       style={{
-        background: "#ffffff",
-        border: `1px solid ${isSelected ? "rgba(91,76,245,0.65)" : "var(--linea)"}`,
+        background:
+          "radial-gradient(130% 90% at 8% 0%, rgba(91,76,245,0.45) 0%, transparent 55%)," +
+          "radial-gradient(120% 100% at 100% 100%, rgba(57,198,240,0.22) 0%, transparent 60%)," +
+          "linear-gradient(180deg, #191540 0%, #0e0b22 55%, #0a0818 100%)",
+        border: `1px solid ${isSelected ? "rgba(139,123,255,0.7)" : "rgba(255,255,255,0.12)"}`,
         boxShadow: isSelected
-          ? "0 0 0 3px rgba(91,76,245,0.10), 0 14px 34px -16px rgba(91,76,245,0.4)"
-          : "0 4px 20px rgba(12,12,22,0.05)",
+          ? "0 0 0 3px rgba(139,123,255,0.18), 0 0 40px rgba(91,76,245,0.5), 0 20px 50px -20px rgba(91,76,245,0.6)"
+          : "0 0 32px rgba(91,76,245,0.28), 0 18px 44px -22px rgba(91,76,245,0.5)",
       }}
       aria-pressed={isSelected}
     >
-      {/* Hover glow halo */}
+      {/* Animated dot-mesh */}
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ background: "radial-gradient(circle at 15% 0%, rgba(91,76,245,0.08), transparent 55%)" }}
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.14) 1px, transparent 1.6px)",
+          backgroundSize: "22px 22px",
+          maskImage: "radial-gradient(ellipse 80% 80% at 100% 100%, #000 5%, transparent 70%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 80% at 100% 100%, #000 5%, transparent 70%)",
+          opacity: 0.7,
+        }}
+      />
+      {/* Drifting cyan bloom */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -top-16 -right-10 h-48 w-48 rounded-full blur-2xl transition-opacity duration-500 opacity-60 group-hover:opacity-100"
+        style={{ background: "radial-gradient(closest-side, rgba(57,198,240,0.35), transparent 70%)" }}
       />
       <div className="relative z-10">
         <div className="flex items-start justify-between gap-2 mb-4">
           <span
             className="inline-flex items-center justify-center h-10 w-10 rounded-xl shrink-0"
-            style={{ background: "rgba(91,76,245,0.08)", border: "1px solid rgba(91,76,245,0.22)", color: "#5B4CF5" }}
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", color: "#8B7BFF" }}
           >
             <Icon size={18} strokeWidth={1.9} />
           </span>
           <span
             className="text-[9px] uppercase tracking-[0.16em] font-bold px-2.5 py-1 rounded-full shrink-0"
-            style={{ background: "rgba(91,76,245,0.06)", color: "#5B4CF5", border: "1px solid rgba(91,76,245,0.22)" }}
+            style={{ background: "rgba(139,123,255,0.14) ", color: "#C9C1FF", border: "1px solid rgba(139,123,255,0.3)" }}
           >
             {card.badge}
           </span>
         </div>
         <h3 className="text-[16px] font-bold leading-tight mb-1"
-          style={{ color: "var(--ink)", fontFamily: "'Space Grotesk', 'Inter', sans-serif", letterSpacing: "-0.02em" }}
+          style={{ color: "#ffffff", fontFamily: "'Space Grotesk', 'Inter', sans-serif", letterSpacing: "-0.02em" }}
         >
           {card.title}
         </h3>
-        <p className="text-[11px] uppercase tracking-[0.12em] font-bold mb-2.5" style={{ color: "#5B4CF5" }}>
+        <p className="text-[11px] uppercase tracking-[0.12em] font-bold mb-2.5" style={{ color: "#8B7BFF" }}>
           {card.subtitle}
         </p>
-        <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "var(--gris-1)" }}>
+        <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "rgba(255,255,255,0.72)" }}>
           {card.body}
         </p>
+        {/* Flat CTA pill — no gradient (only the Connect card gets the voltio gradient) */}
         <span
-          className="inline-flex items-center gap-1 text-[12px] font-bold transition-all group-hover:gap-2"
-          style={{ color: "#5B4CF5" }}
+          className="inline-flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full transition-all group-hover:gap-2.5"
+          style={{ background: "rgba(255,255,255,0.08)", color: "#ffffff", border: "1px solid rgba(255,255,255,0.16)" }}
         >
           {card.cta}
           <ArrowRight size={12} />
