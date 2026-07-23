@@ -115,7 +115,7 @@ export default function HowItWorks() {
           {/* CTA */}
           <div className="mt-16 text-center">
             <Link to="/Analyzer">
-              <Button className="h-12 rounded-full px-8 text-sm font-bold gap-2 text-white hover:opacity-90" style={{ background: "var(--ink)" }}>
+              <Button className="h-12 rounded-full px-8 text-sm font-bold gap-2 text-white hover:opacity-90" style={{ background: "var(--g-voltio)", boxShadow: "0 12px 32px -12px rgba(91,76,245,0.5)" }}>
                 {t("hiw_cta_button")} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
