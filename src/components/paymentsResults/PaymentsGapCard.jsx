@@ -189,8 +189,8 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
               fontSize: "clamp(44px, 10vw, 82px)",
               letterSpacing: "-0.03em",
               lineHeight: 1,
-              color: "#39C6F0",
-              textShadow: "0 0 12px rgba(34,211,238,0.18)",
+              color: "#2FE0A8",
+              textShadow: "0 0 12px rgba(47,224,168,0.22)",
             }}
           />
           <span className="text-[13px]" style={{ color: "#585868" }}>/ year</span>
