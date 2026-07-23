@@ -39,25 +39,13 @@ const CARD_STYLE = {
 };
 
 function SplitVisual() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   return (
     <div className="relative max-w-4xl mx-auto mb-16 sm:mb-20">
-      <div className="text-center mb-8">
-        <div className="flex justify-center mb-3">
-          <SectionLabel>{t("prc_split_eyebrow")}</SectionLabel>
-        </div>
-        <h2
-          style={{
-            color: "var(--ink)",
-            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(28px, 4vw, 42px)",
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-            lineHeight: 1.05,
-          }}
-        >
-          {t("prc_split_h2")}
-        </h2>
+      <div className="mb-8">
+        <SectionHeading eyebrow={t("prc_split_eyebrow")}>
+          {PRC_SPLIT_TITLE[lang] || PRC_SPLIT_TITLE.en}
+        </SectionHeading>
       </div>
 
       <div className="relative overflow-hidden" style={CARD_STYLE}>
