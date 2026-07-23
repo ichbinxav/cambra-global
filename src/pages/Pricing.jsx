@@ -133,9 +133,9 @@ function SplitVisual() {
 }
 
 const PRC_HERO_TITLE = {
-  en: <>First <span className="kw">analyze.</span> Then <span className="kw">recover.</span></>,
-  fr: <>D'abord <span className="kw">analyser.</span> Ensuite <span className="kw">récupérer.</span></>,
-  es: <>Primero <span className="kw">analiza.</span> Luego <span className="kw">recupera.</span></>,
+  en: <><span className="kw">First</span> analyze. <span className="kw">Then</span> recover.</>,
+  fr: <><span className="kw">D'abord</span> analyser. <span className="kw">Ensuite</span> récupérer.</>,
+  es: <><span className="kw">Primero</span> analiza. <span className="kw">Luego</span> recupera.</>,
 };
 
 export default function Pricing() {
