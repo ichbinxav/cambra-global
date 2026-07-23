@@ -374,17 +374,18 @@ export default function PaymentsAnalyzer() {
     <div
       className="relative min-h-screen flex flex-col font-inter overflow-x-hidden"
       style={{
-        color: "var(--ink)",
-        background: "var(--paper)",
+        color: "#ffffff",
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #0E0E1A 100%)",
       }}
     >
-      {/* Fixed ambient DOT mesh — violet dots on paper, exactly like the landing */}
+      {/* Fixed ambient DOT mesh — violet dots on the dark navy canvas */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"
         style={{
           backgroundImage:
-            "radial-gradient(rgba(91,76,245,0.28) 1.3px, transparent 2px)",
+            "radial-gradient(rgba(139,123,255,0.22) 1.3px, transparent 2px)",
           backgroundSize: "34px 30px",
           backgroundPosition: "0 0",
           opacity: 1,
@@ -431,15 +432,15 @@ export default function PaymentsAnalyzer() {
             </span>
             <span className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "#ffffff" }}>Payments audit · anonymous</span>
           </div>
-          <span className="text-[11px] font-bold tabular-nums" style={{ color: "var(--gris-2)" }}>
-            {progress.done} <span style={{ color: "var(--gris-2)" }}>of {progress.total}</span>
+          <span className="text-[11px] font-bold tabular-nums" style={{ color: "rgba(255,255,255,0.55)" }}>
+            {progress.done} <span style={{ color: "rgba(255,255,255,0.4)" }}>of {progress.total}</span>
           </span>
         </div>
 
         <h1
           className="mb-3"
           style={{
-            color: "var(--ink)",
+            color: "#ffffff",
             fontFamily: "'Space Grotesk', 'Inter', sans-serif",
             fontSize: "clamp(30px, 5vw, 44px)",
             fontWeight: 900,
@@ -449,7 +450,7 @@ export default function PaymentsAnalyzer() {
         >
           What are you overpaying on payments?
         </h1>
-        <p className="text-[14px] mb-6" style={{ color: "var(--gris-1)" }}>
+        <p className="text-[14px] mb-6" style={{ color: "rgba(255,255,255,0.65)" }}>
           A few quick answers. No account required, no data connected. We estimate the gap between what you pay today
           and what a merchant of your size + region should be paying.
         </p>
@@ -702,7 +703,7 @@ export default function PaymentsAnalyzer() {
           </FieldCard>
 
           {/* Privacy microcopy */}
-          <div className="flex items-start gap-2 pt-2 text-[11px]" style={{ color: "var(--gris-2)" }}>
+          <div className="flex items-start gap-2 pt-2 text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>
             <Lock size={11} className="mt-0.5 shrink-0" />
             <span>No account, no data connected, nothing shared. Results are stored with an anonymous session id you can revisit from this device.</span>
           </div>
@@ -736,10 +737,10 @@ export default function PaymentsAnalyzer() {
                 required fields above scroll off-screen. UX-only, no logic
                 change: the validation itself is unchanged. */}
             {!validation.valid && !submitting && !errorBanner && (
-              <p className="text-center text-[11.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
-                Still needed: <span style={{ color: "var(--ink)" }}>{validation.errors[0].replace(/[.!]$/, "")}</span>
+              <p className="text-center text-[11.5px] leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
+                Still needed: <span style={{ color: "#ffffff" }}>{validation.errors[0].replace(/[.!]$/, "")}</span>
                 {validation.errors.length > 1 && (
-                  <span style={{ color: "var(--gris-2)" }}> · +{validation.errors.length - 1} more above</span>
+                  <span style={{ color: "rgba(255,255,255,0.45)" }}> · +{validation.errors.length - 1} more above</span>
                 )}
               </p>
             )}
@@ -748,7 +749,7 @@ export default function PaymentsAnalyzer() {
               onClick={() => navigate("/")}
               disabled={submitting}
               className="w-full h-11 rounded-full text-[13px] font-medium transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-40"
-              style={{ color: "var(--gris-1)" }}
+              style={{ color: "rgba(255,255,255,0.6)" }}
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               Back
