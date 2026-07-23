@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck, TrendingUp, Zap, Lock, Sparkles } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
-import SectionLabel from "@/components/shared/SectionLabel";
 import SectionHeading from "@/components/landing/SectionHeading";
 import PricingDual from "@/components/landing/PricingDual";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -132,6 +131,13 @@ function SplitVisual() {
   );
 }
 
+// FAQ heading — "Clarity" in the voltio gradient, per language.
+const PRC_FAQ_TITLE = {
+  en: <><span className="kw">Clarity</span>, not fine print.</>,
+  fr: <><span className="kw">Clarté</span>, pas de petits caractères.</>,
+  es: <><span className="kw">Claridad</span>, sin letra pequeña.</>,
+};
+
 const PRC_HERO_TITLE = {
   en: <><span className="kw">First</span> analyze. <span className="kw">Then</span> recover.</>,
   fr: <><span className="kw">D'abord</span> analyser. <span className="kw">Ensuite</span> récupérer.</>,
@@ -210,22 +216,10 @@ export default function Pricing() {
 
           {/* FAQ */}
           <div className="mt-8 md:mt-12 max-w-3xl mx-auto">
-            <div className="mb-8 text-center">
-              <div className="flex justify-center mb-3">
-                <SectionLabel>{t("prc_faq_eyebrow")}</SectionLabel>
-              </div>
-              <h2
-                style={{
-                  color: "var(--ink)",
-                  fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-                  fontSize: "clamp(28px, 4vw, 40px)",
-                  fontWeight: 900,
-                  letterSpacing: "-0.035em",
-                  lineHeight: 1.05,
-                }}
-              >
-                {t("prc_faq_h2")}
-              </h2>
+            <div className="mb-8">
+              <SectionHeading eyebrow={t("prc_faq_eyebrow")}>
+                {PRC_FAQ_TITLE[lang] || PRC_FAQ_TITLE.en}
+              </SectionHeading>
             </div>
 
             <div className="rounded-2xl overflow-hidden" style={CARD_STYLE}>
