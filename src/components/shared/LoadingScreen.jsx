@@ -1,4 +1,5 @@
 import React from "react";
+import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 /**
  * CAMBRA — Loading screen.
@@ -41,7 +42,7 @@ export default function LoadingScreen({
             "radial-gradient(ellipse 80% 70% at 50% 45%, #000 30%, transparent 100%)",
         }}
       />
-      {/* Soft blue halo */}
+      {/* Soft voltio halo */}
       <div
         aria-hidden
         className="pointer-events-none absolute"
@@ -49,39 +50,41 @@ export default function LoadingScreen({
           width: 540,
           height: 540,
           background:
-            "radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(91,76,245,0.22) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
       />
 
-      {/* Pulsing dot ring */}
+      {/* Pulsing logo ring */}
       <div
         className="relative flex items-center justify-center"
-        style={{ width: 64, height: 64 }}
+        style={{ width: 72, height: 72 }}
       >
         <span
           aria-hidden
           className="absolute inset-0 rounded-full"
           style={{
-            border: "1px solid rgba(34,211,238,0.35)",
+            border: "1px solid rgba(139,123,255,0.4)",
             animation: "cambra-ping 2s cubic-bezier(0,0,0.2,1) infinite",
           }}
         />
-        <span
-          aria-hidden
-          className="absolute rounded-full"
+        <img
+          src={BRAND_ASSETS.cMarkVoltio}
+          alt="CAMBRA"
+          width={34}
+          height={34}
+          className="relative h-[34px] w-[34px]"
           style={{
-            width: 12,
-            height: 12,
-            background: "#39C6F0",
-            boxShadow: "0 0 20px #39C6F0, 0 0 40px rgba(34,211,238,0.55)",
+            filter: "drop-shadow(0 0 16px rgba(91,76,245,0.65))",
+            animation: "cambra-pulse 2s ease-in-out infinite",
           }}
+          draggable={false}
         />
       </div>
 
       {/* Wordmark */}
       <p
-        className="mt-8 text-white"
+        className="mt-8 text-white inline-flex items-center gap-2"
         style={{
           fontFamily: "'Space Grotesk', 'Inter', sans-serif",
           fontWeight: 900,
@@ -117,6 +120,10 @@ export default function LoadingScreen({
           0%   { transform: scale(0.6); opacity: 0.9; }
           80%  { transform: scale(1.6); opacity: 0;   }
           100% { transform: scale(1.6); opacity: 0;   }
+        }
+        @keyframes cambra-pulse {
+          0%, 100% { transform: scale(1);    opacity: 1;   }
+          50%      { transform: scale(1.08); opacity: 0.8; }
         }
       `}</style>
     </div>
