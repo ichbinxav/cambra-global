@@ -197,9 +197,9 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
         </div>
         <p className="text-[12px] mt-2.5" style={{ color: "#585868" }}>
           {isFinite(annual.lo) && isFinite(annual.hi) && (
-            <>Range <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#9A9AAB" }}>{eur(annual.lo)}–{eur(annual.hi)}</span> · </>
+            <>Range <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#2FE0A8" }}>{eur(annual.lo)}–{eur(annual.hi)}</span> · </>
           )}
-          about <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#9A9AAB" }}>
+          about <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#2FE0A8" }}>
             {isFinite(monthly.point) ? eur(monthly.point) : `${eur(monthly.lo)}–${eur(monthly.hi)}`}
           </span> a month
         </p>
