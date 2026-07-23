@@ -61,7 +61,7 @@ export default function SecurityHero() {
             lineHeight: 0.94,
           }}
         >
-          Built so <span className="kw">you are safe</span>.
+          Built so <span className="kw">you are safe.</span>
         </motion.h1>
 
         <motion.p
