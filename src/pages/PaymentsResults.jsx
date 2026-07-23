@@ -29,6 +29,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Search, Lock } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 
@@ -61,16 +62,15 @@ const OBJECT_ID = /^[0-9a-f]{24}$/i;
 // Page-level wrapper that installs the same navy-glass background we use on
 // the analyzer, so a user landing directly on this URL (shared link) sees
 // the same brand shell.
-function ResultsShell({ children }) {
-  return (
-    <div
-      className="relative min-h-screen flex flex-col font-inter overflow-x-hidden"
-      style={{
-        color: "#ffffff",
-        background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #0E0E1A 100%)",
-      }}
-    >
+//
+// Authenticated readers get the workspace SIDEBAR (same as Dashboard/Analyzer/
+// Vault/Account) so /Results feels like part of the app. Anonymous readers
+// (shared teaser links, pre-signup) keep the public Navbar — they have no
+// workspace to navigate to. `withSidebar` is decided by the caller from the
+// auth state.
+function ResultsShell({ children, withSidebar = false }) {
+  const backdrop = (
+    <>
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"
@@ -92,6 +92,42 @@ function ResultsShell({ children }) {
           filter: "blur(80px)",
         }}
       />
+    </>
+  );
+
+  // ── Authenticated layout — workspace sidebar + main content ──────────────
+  if (withSidebar) {
+    return (
+      <div
+        className="dark relative min-h-screen flex font-inter overflow-x-hidden"
+        style={{
+          color: "#ffffff",
+          background:
+            "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #0E0E1A 100%)",
+        }}
+      >
+        {backdrop}
+        <DashboardSidebar />
+        <main className="relative z-10 flex-1 min-w-0 pt-14 lg:pt-0">
+          <div className="relative max-w-6xl mx-auto w-full px-5 lg:px-8 pt-8 pb-40 lg:pb-16">
+            {children}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // ── Anonymous layout — public navbar (shared teaser link) ────────────────
+  return (
+    <div
+      className="relative min-h-screen flex flex-col font-inter overflow-x-hidden"
+      style={{
+        color: "#ffffff",
+        background:
+          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #0E0E1A 100%)",
+      }}
+    >
+      {backdrop}
       <Navbar />
       {/* Container widens on desktop so the results grid has room to breathe.
           Mobile stays visually identical (max-w-2xl equivalent at that size). */}
@@ -426,7 +462,7 @@ export default function PaymentsResults() {
   // ── loading
   if (status === "loading") {
     return (
-      <ResultsShell>
+      <ResultsShell withSidebar={isAuthenticated}>
         <div className="mb-6 inline-flex items-center gap-2 rounded-full px-3 py-1"
           style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
         >
@@ -445,7 +481,7 @@ export default function PaymentsResults() {
   const hasNoTarget = !verifiedId && !sessionId;
   if (hasNoTarget && (status === "invalid" || status === "not_found")) {
     return (
-      <ResultsShell>
+      <ResultsShell withSidebar={isAuthenticated}>
         {isAuthenticated ? (
           <ResultsHistory />
         ) : (
@@ -463,7 +499,7 @@ export default function PaymentsResults() {
   // ── invalid or missing session id (a target WAS provided but is bad)
   if (status === "invalid" || status === "not_found") {
     return (
-      <ResultsShell>
+      <ResultsShell withSidebar={isAuthenticated}>
         <EmptyState
           title={status === "invalid" ? "This link isn't valid" : "We couldn't find that audit"}
           message="Your session may have expired, or the link was mistyped. Run a fresh analysis in about two minutes — no account needed."
@@ -478,7 +514,7 @@ export default function PaymentsResults() {
   if (status === "rate_limited") {
     const mins = Math.max(1, Math.ceil((retryAfter || 60) / 60));
     return (
-      <ResultsShell>
+      <ResultsShell withSidebar={isAuthenticated}>
         <EmptyState
           icon={AlertTriangle}
           title="Too many reads from your network"
@@ -493,7 +529,7 @@ export default function PaymentsResults() {
   // ── generic error
   if (status === "error") {
     return (
-      <ResultsShell>
+      <ResultsShell withSidebar={isAuthenticated}>
         <EmptyState
           icon={AlertTriangle}
           title="Something went wrong"
@@ -647,7 +683,7 @@ export default function PaymentsResults() {
   );
 
   return (
-    <ResultsShell>
+    <ResultsShell withSidebar={isAuthenticated}>
       {/* Back link + Download audit — desktop shows text, mobile just chevron */}
       <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
         <button
