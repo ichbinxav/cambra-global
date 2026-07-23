@@ -136,13 +136,19 @@ function SplitVisual() {
   );
 }
 
+const PRC_HERO_TITLE = {
+  en: <>First <span className="kw">analyze.</span> Then <span className="kw">recover.</span></>,
+  fr: <>D'abord <span className="kw">analyser.</span> Ensuite <span className="kw">récupérer.</span></>,
+  es: <>Primero <span className="kw">analiza.</span> Luego <span className="kw">recupera.</span></>,
+};
+
 export default function Pricing() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   return (
     <PublicPageShell>
       <PublicPageHero
         eyebrow={t("prc_hero_badge")}
-        title={t("prc_hero_h1")}
+        title={PRC_HERO_TITLE[lang] || PRC_HERO_TITLE.en}
         subtitle={t("prc_hero_sub")}
       >
         {/* CTA */}
