@@ -50,7 +50,7 @@ export default function Contact() {
     <PublicPageShell>
       <PublicPageHero
         eyebrow="Contact · We're here to help"
-        title={<>Get in <span className="kw-m">touch.</span></>}
+        title={<>Get in <span className="kw">touch.</span></>}
         subtitle="Questions about CAMBRA? We're here to help."
       />
 
