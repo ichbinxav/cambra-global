@@ -3,8 +3,16 @@ import { ArrowRight, ShieldCheck, TrendingUp, Zap, Lock, Sparkles } from "lucide
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
 import SectionLabel from "@/components/shared/SectionLabel";
+import SectionHeading from "@/components/landing/SectionHeading";
 import PricingDual from "@/components/landing/PricingDual";
 import { useTranslation } from "@/lib/i18n.jsx";
+
+// Split heading — "you keep the margin." in the voltio gradient, per language.
+const PRC_SPLIT_TITLE = {
+  en: <>You <span className="kw">keep the margin.</span> We take a share.</>,
+  fr: <>Vous <span className="kw">gardez la marge.</span> Nous en prenons une part.</>,
+  es: <>Tú te quedas <span className="kw">el margen.</span> Nosotros una parte.</>,
+};
 
 const FAQ = [
   { q: "prc_faq_q1", a: "prc_faq_a1" },
