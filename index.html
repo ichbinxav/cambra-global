@@ -33,6 +33,12 @@
     <link rel="canonical" href="https://cambra.global" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#0A1024" />
+    <!-- CONSOLIDATE-1 T4 — security headers settable from the repo.
+         referrer: the only defensive header browsers honor as a meta tag.
+         X-Content-Type-Options / Permissions-Policy / HSTS / frame-ancestors
+         are HTTP-header-only → require Base44 panel config (see
+         Decision_Log_CONSOLIDATE1.md T4 for founder instructions). -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
 
     <!-- JSON-LD Schema for SEO -->
     <script type="application/ld+json">{

@@ -354,6 +354,7 @@ export default function PaymentsAnalyzer() {
 
   // ── Submit → submitPaymentsAnalysis → /PaymentsResults?session=<id>
   const handleSubmit = async () => {
+    if (submitting) return; // double-submit guard (CONSOLIDATE-1 T2)
     setErrorBanner("");
     if (!validation.valid) {
       setErrorBanner(validation.errors.join("\n"));

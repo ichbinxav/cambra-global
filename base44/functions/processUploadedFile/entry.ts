@@ -179,6 +179,7 @@ async function runLayer1Anthropic(fileUrl: string, fileName: string) {
     const fileRes = await fetch(fileUrl);
     if (!fileRes.ok) return null;
     const buf = new Uint8Array(await fileRes.arrayBuffer());
+    if (buf.length > 15 * 1024 * 1024) return null; // CONSOLIDATE-1 T3 — 15MB cap, degrades to format_unknown
     // Chunked base64 to avoid call-stack blowup on large PDFs.
     let bin = '';
     const chunk = 0x8000;
@@ -360,6 +361,7 @@ RULES:
       const fileRes = await fetch(fileUrl);
       if (!fileRes.ok) return null;
       const buf = new Uint8Array(await fileRes.arrayBuffer());
+    if (buf.length > 15 * 1024 * 1024) return null; // CONSOLIDATE-1 T3 — 15MB cap, degrades to format_unknown
       let bin = '';
       const chunk = 0x8000;
       for (let i = 0; i < buf.length; i += chunk) {
@@ -564,6 +566,14 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { file_url, file_name, brand_id: requestedBrandId } = body || {};
     if (!file_url) return Response.json({ error: 'file_url is required' }, { status: 400 });
+
+    // CONSOLIDATE-1 T3 — pure input validation: extension allowlist. Covers
+    // every format any layer can actually parse (csv/xlsx/pdf/images/json);
+    // anything else was already dead weight ('other' parser, no extraction).
+    const extName = String(file_name || file_url).split('?')[0].toLowerCase();
+    if (!/\.(csv|xlsx?|pdf|png|jpe?g|webp|gif|json)$/.test(extName)) {
+      return Response.json({ error: 'unsupported_file_type' }, { status: 400 });
+    }
 
     // Resolve brand (owned by user). Same pattern as before — explicit id if
     // passed, else user's latest brand for legacy single-brand callers.

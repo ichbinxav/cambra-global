@@ -33,6 +33,7 @@ export default function JoinWaitlistButton({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (state === "submitting") return; // double-submit guard (CONSOLIDATE-1 T2)
     if (!isValidEmail(email)) {
       setError("Enter a valid email");
       return;

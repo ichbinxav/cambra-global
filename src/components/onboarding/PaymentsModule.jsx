@@ -41,8 +41,9 @@ export default function PaymentsModule(){
   };
 
   const save = async () => {
-    if (!brandId) return;
+    if (saving || !brandId) return; // double-submit guard (CONSOLIDATE-1 T2)
     setSaving(true);
+    try {
     const body = {
       ...item,
       brand_id: brandId,
@@ -72,7 +73,9 @@ export default function PaymentsModule(){
     }
     await base44.functions.invoke('computeVerticalStatus', { brandId, vertical: 'payments' });
     await refreshStatus();
-    setSaving(false);
+    } finally {
+      setSaving(false); // always released — a failed save no longer wedges the button
+    }
   };
 
   return (

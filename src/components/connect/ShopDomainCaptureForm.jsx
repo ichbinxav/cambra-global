@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Loader2, Store, ExternalLink, Check, X, AlertCircle } from "lucide-react";
 
 /**
@@ -48,14 +48,22 @@ export default function ShopDomainCaptureForm({
   const looksReasonable =
     trimmed.length >= 3 && trimmed.length <= 120 && !/\s/.test(trimmed);
   const canSave = looksReasonable && !busy;
+  // `busy` is parent state and lags a render behind — the ref blocks a
+  // same-tick second submit (CONSOLIDATE-1 T2).
+  const submitRef = useRef(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!canSave) return;
-    await onSave(trimmed);
-    // Parent owns the success toast + form close. We clear the field so a
-    // re-open does not show stale input.
-    setValue("");
+    if (submitRef.current || !canSave) return;
+    submitRef.current = true;
+    try {
+      await onSave(trimmed);
+      // Parent owns the success toast + form close. We clear the field so a
+      // re-open does not show stale input.
+      setValue("");
+    } finally {
+      submitRef.current = false;
+    }
   };
 
   return (

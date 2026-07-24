@@ -89,6 +89,7 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
   // NOT vary per caller, which is why redirect_after (not redirect_uri)
   // carries the "bring me back here" intent through the OAuthState row.
   const handleConnect = async () => {
+    if (busy) return; // double-submit guard (CONSOLIDATE-1 T2)
     if (!brandId) {
       setError("Missing brand context — please refresh the page.");
       return;
@@ -127,6 +128,7 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
   };
 
   const handleSync = async () => {
+    if (busy) return; // double-submit guard (CONSOLIDATE-1 T2)
     setBusy(true);
     setError("");
     try {
@@ -203,6 +205,7 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
   };
 
   const handleDisconnect = async () => {
+    if (busy) return; // double-submit guard (CONSOLIDATE-1 T2)
     setBusy(true);
     setError("");
     try {

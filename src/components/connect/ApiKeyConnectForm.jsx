@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Loader2, KeyRound, ExternalLink, Check, X } from "lucide-react";
 
 /**
@@ -20,14 +20,22 @@ export default function ApiKeyConnectForm({ helpUrl, helpText, busy, onCancel, o
   const [showHelp, setShowHelp] = useState(false);
 
   const canSave = key.trim().length >= 4 && !busy;
+  // `busy` is parent state and lags a render behind — the ref blocks a
+  // same-tick second submit (CONSOLIDATE-1 T2).
+  const submitRef = useRef(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!canSave) return;
-    const trimmed = key.trim();
-    await onSave(trimmed);
-    // Clear local state regardless — the parent owns the success toast.
-    setKey("");
+    if (submitRef.current || !canSave) return;
+    submitRef.current = true;
+    try {
+      const trimmed = key.trim();
+      await onSave(trimmed);
+      // Clear local state regardless — the parent owns the success toast.
+      setKey("");
+    } finally {
+      submitRef.current = false;
+    }
   };
 
   return (
