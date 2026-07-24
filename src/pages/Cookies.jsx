@@ -1,17 +1,56 @@
+// LEGAL-1 (2026-07-24) — Cookie & storage policy, rebuilt from the
+// code-verified inventory (src/docs/Decision_Log_LEGAL1.md, Fase 0).
+// Renders one table per storage MECHANISM (cookies / localStorage /
+// sessionStorage) — calling browser storage "cookies" is exactly the kind of
+// imprecision this rewrite removes. Content is trilingual via per-language
+// files; the "Last updated" date is a constant in the content, never new Date().
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import SectionLabel from "@/components/shared/SectionLabel";
+import { useTranslation } from "@/lib/i18n.jsx";
+import en from "@/content/legal/en/cookies";
+import fr from "@/content/legal/fr/cookies";
+import es from "@/content/legal/es/cookies";
 
-const COOKIES = [
-  { name: "cambra_session", type: "Strictly necessary", purpose: "Authentication & session continuity", duration: "Session", party: "First-party" },
-  { name: "cambra_csrf", type: "Strictly necessary", purpose: "CSRF protection for state-changing requests", duration: "Session", party: "First-party" },
-  { name: "cambra_copilot_open", type: "Functional", purpose: "Remembers whether the Copilot panel is open", duration: "12 months", party: "First-party" },
-  { name: "cambra_consent", type: "Strictly necessary", purpose: "Stores your cookie preferences", duration: "12 months", party: "First-party" },
-];
+const CONTENT = { en, fr, es };
+
+function StorageTable({ table, columns }) {
+  return (
+    <section>
+      <h2 className="text-base font-bold mb-1" style={{ color: "var(--ink)" }}>{table.heading}</h2>
+      <p className="text-xs mb-3" style={{ color: "var(--gris-2)" }}>{table.note}</p>
+      <div className="overflow-x-auto -mx-2 px-2">
+        <table className="w-full text-xs border-collapse">
+          <thead>
+            <tr style={{ borderBottom: "1px solid var(--linea)", color: "var(--ink)" }}>
+              <th className="text-left font-semibold py-2 pr-3">{columns.name}</th>
+              <th className="text-left font-semibold py-2 pr-3">{columns.purpose}</th>
+              <th className="text-left font-semibold py-2 pr-3">{columns.duration}</th>
+              <th className="text-left font-semibold py-2">{columns.category}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {table.rows.map((r) => (
+              <tr key={r.name} style={{ borderBottom: "1px solid var(--linea)" }}>
+                <td className="py-3 pr-3 font-mono align-top" style={{ color: "var(--ink)" }}>{r.name}</td>
+                <td className="py-3 pr-3 align-top">{r.purpose}</td>
+                <td className="py-3 pr-3 align-top whitespace-nowrap">{r.duration}</td>
+                <td className="py-3 align-top whitespace-nowrap">{r.category}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
 
 export default function Cookies() {
+  const { lang } = useTranslation();
+  const c = CONTENT[lang] || CONTENT.en;
+
   return (
     <PublicPageShell>
       <div className="relative max-w-3xl mx-auto px-6 pt-24 pb-16">
@@ -20,13 +59,13 @@ export default function Cookies() {
             className="mb-8 -ml-2 h-8 text-xs rounded-full px-3 inline-flex items-center transition-colors"
             style={{ color: "var(--gris-1)" }}
           >
-            <ArrowLeft size={13} className="mr-1.5" /> Back
+            <ArrowLeft size={13} className="mr-1.5" /> {c.back}
           </button>
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <div className="mb-5">
-            <SectionLabel>Legal · Cookie policy</SectionLabel>
+            <SectionLabel>{c.badge}</SectionLabel>
           </div>
           <h1
             className="font-display font-black mb-3"
@@ -37,60 +76,28 @@ export default function Cookies() {
               lineHeight: 0.9,
             }}
           >
-            Cookie Policy.
+            {c.title}
           </h1>
-          <p className="text-sm mb-12" style={{ color: "var(--gris-2)" }}>
-            Last updated: {new Date().toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" })}
-          </p>
+          <p className="text-sm mb-12" style={{ color: "var(--gris-2)" }}>{c.lastUpdated}</p>
 
           <div className="space-y-10 text-sm leading-relaxed" style={{ color: "var(--gris-1)" }}>
-            <section>
-              <h2 className="text-base font-bold mb-3" style={{ color: "var(--ink)" }}>1. What are cookies</h2>
-              <p>Cookies are small text files stored on your device when you visit a website. They allow the site to remember your actions and preferences (such as authentication or display settings) over time.</p>
-            </section>
+            {c.intro.map((s) => (
+              <section key={s.title}>
+                <h2 className="text-base font-bold mb-3" style={{ color: "var(--ink)" }}>{s.title}</h2>
+                <p>{s.body}</p>
+              </section>
+            ))}
 
-            <section>
-              <h2 className="text-base font-bold mb-3" style={{ color: "var(--ink)" }}>2. How CAMBRA uses cookies</h2>
-              <p>CAMBRA uses cookies strictly to operate the platform: keep you signed in, remember UI preferences, and protect against CSRF attacks. We do not use advertising cookies, third-party trackers, behavioral profiling or cross-site identifiers.</p>
-            </section>
+            {c.tables.map((table) => (
+              <StorageTable key={table.heading} table={table} columns={c.columns} />
+            ))}
 
-            <section>
-              <h2 className="text-base font-bold mb-3" style={{ color: "var(--ink)" }}>3. Cookies we set</h2>
-              <div className="overflow-x-auto -mx-2 px-2">
-                <table className="w-full text-xs border-collapse">
-                  <thead>
-                    <tr style={{ borderBottom: "1px solid var(--linea)", color: "var(--ink)" }}>
-                      <th className="text-left font-semibold py-2 pr-3">Name</th>
-                      <th className="text-left font-semibold py-2 pr-3">Type</th>
-                      <th className="text-left font-semibold py-2 pr-3">Purpose</th>
-                      <th className="text-left font-semibold py-2 pr-3">Duration</th>
-                      <th className="text-left font-semibold py-2">Party</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {COOKIES.map((c) => (
-                      <tr key={c.name} style={{ borderBottom: "1px solid var(--linea)" }}>
-                        <td className="py-3 pr-3 font-mono" style={{ color: "var(--ink)" }}>{c.name}</td>
-                        <td className="py-3 pr-3">{c.type}</td>
-                        <td className="py-3 pr-3">{c.purpose}</td>
-                        <td className="py-3 pr-3">{c.duration}</td>
-                        <td className="py-3">{c.party}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-base font-bold mb-3" style={{ color: "var(--ink)" }}>4. Managing cookies</h2>
-              <p>Strictly necessary cookies cannot be disabled — the platform will not function without them. Functional cookies may be cleared from your browser's settings at any time. Disabling cookies may degrade the experience.</p>
-            </section>
-
-            <section>
-              <h2 className="text-base font-bold mb-3" style={{ color: "var(--ink)" }}>5. Contact</h2>
-              <p>Questions about how CAMBRA uses cookies: privacy@cambra.global. Publisher: CAMBRA GLOBAL SASU, SIREN 105 452 916, 42 rue Vivienne, 75002 Paris, France.</p>
-            </section>
+            {c.after.map((s) => (
+              <section key={s.title}>
+                <h2 className="text-base font-bold mb-3" style={{ color: "var(--ink)" }}>{s.title}</h2>
+                <p>{s.body}</p>
+              </section>
+            ))}
           </div>
         </motion.div>
       </div>

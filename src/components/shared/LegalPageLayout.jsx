@@ -10,7 +10,7 @@ import SectionLabel from "@/components/shared/SectionLabel";
  * (Terms, Privacy). One badge + h1 + last-updated date + a list of
  * { title, content } blocks. Cookies has a table so it uses the shell directly.
  */
-export default function LegalPageLayout({ badge, title, sections }) {
+export default function LegalPageLayout({ badge, title, sections, lastUpdated, backLabel = "Back" }) {
   return (
     <PublicPageShell>
       <div className="relative max-w-3xl mx-auto px-6 pt-24 pb-16">
@@ -19,7 +19,7 @@ export default function LegalPageLayout({ badge, title, sections }) {
             className="mb-8 -ml-2 h-8 text-xs rounded-full px-3 inline-flex items-center transition-colors"
             style={{ color: "var(--gris-1)" }}
           >
-            <ArrowLeft size={13} className="mr-1.5" /> Back
+            <ArrowLeft size={13} className="mr-1.5" /> {backLabel}
           </button>
         </Link>
 
@@ -38,9 +38,13 @@ export default function LegalPageLayout({ badge, title, sections }) {
           >
             {title}
           </h1>
-          <p className="text-sm mb-14" style={{ color: "var(--gris-2)" }}>
-            Last updated: {new Date().toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" })}
-          </p>
+          {/* LEGAL-1 — the date is a CONSTANT passed from the legal content
+              (real date of the last text edit). It was previously new Date(),
+              which re-dated the policy every day — a policy whose date changes
+              by itself attests nothing. */}
+          {lastUpdated && (
+            <p className="text-sm mb-14" style={{ color: "var(--gris-2)" }}>{lastUpdated}</p>
+          )}
 
           <div className="space-y-10 text-sm leading-relaxed" style={{ color: "var(--gris-1)" }}>
             {sections.map((section, i) => (
