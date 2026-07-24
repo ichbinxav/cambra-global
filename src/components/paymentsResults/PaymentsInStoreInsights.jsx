@@ -53,6 +53,7 @@ export default function PaymentsInStoreInsights({ engineResult, inputSnapshot, p
   const isCombined = Array.isArray(perChannel) && perChannel.length >= 2;
   const region = (inputSnapshot?.region && ["EU", "UK", "US", "RoW"].includes(inputSnapshot.region)) ? inputSnapshot.region : "EU";
   const providerSlug = inputSnapshot?.provider_slug || null;
+  const country = inputSnapshot?.country || null;
 
   // Only fetch rate rows for in-store / combined — online analyses never render.
   useEffect(() => {
@@ -70,23 +71,42 @@ export default function PaymentsInStoreInsights({ engineResult, inputSnapshot, p
   }, [channel, isCombined]);
 
   // ── derive tiles ──────────────────────────────────────────────────────────
+  // COHERENCE-1 Tarea 1.1 (2026-07-24) — country rule, mirror of the engine's
+  // selectRow (M5): country-less rows are ALWAYS eligible; a row pinned to a
+  // DIFFERENT country is NEVER eligible; without a snapshot country only
+  // country-less rows enter the pool. Field-based — cohort_key never parsed.
+  const pool = useMemo(() => {
+    if (!rows) return null;
+    return rows.filter((x) => !x.country || (country && x.country === country));
+  }, [rows, country]);
+
   const rental = useMemo(() => {
-    if (!rows) return { available: false };
-    // Merchant's own row (provider exact match, else regional in-store fallback).
+    if (!pool) return { available: false };
+    // COHERENCE-1 Tarea 1.3 — merchant's own row, FIELD-based and country-
+    // aware, replicating the engine's preference order: (1) row pinned to the
+    // merchant's country matching slug/region/channel, (2) pan-regional row,
+    // (3) regional in-store fallback. tier must be ANY — PLUS plan-anchor
+    // rows are never the merchant's CURRENT row (same rule as the engine).
+    const own = (x) => x.provider_slug === providerSlug && x.region === region && x.tier === "ANY";
     const row =
-      (providerSlug && rows.find((x) => x.cohort_key === `${providerSlug}|ANY|${region}|in_store`)) ||
-      rows.find((x) => x.cohort_key === `ANY|ANY|${region}|in_store`) || null;
+      (providerSlug && country && pool.find((x) => own(x) && x.country === country)) ||
+      (providerSlug && pool.find((x) => own(x) && !x.country)) ||
+      pool.find((x) => x.provider_slug === "ANY" && x.region === region && !x.country) ||
+      null;
     return deriveTerminalRental(engineResult, inputSnapshot, row);
-  }, [rows, engineResult, inputSnapshot, providerSlug, region]);
+  }, [pool, engineResult, inputSnapshot, providerSlug, region, country]);
 
   const split = useMemo(() => deriveChannelSplit(perChannel), [perChannel]);
 
   const subVsPayg = useMemo(() => {
-    if (!rows) return { available: false };
+    if (!pool) return { available: false };
     // Market references (internal only — NEVER shown as destinations):
     //   payg = the lowest-% no-rental verified in-store row in the region.
     //   sub  = the lowest-% WITH-rental in-store row in the region.
-    const verifiedRegion = rows.filter((x) => x.region === region && isFinite(Number(x.percent_bps)));
+    // COHERENCE-1 Tarea 1.2 — VERIFIED only, for real: the comment above
+    // always promised verified rows; the code now enforces verified === true.
+    // DRAFT (unverified) rows are not publicly recommendable references.
+    const verifiedRegion = pool.filter((x) => x.verified === true && x.region === region && isFinite(Number(x.percent_bps)));
     const paygCandidates = verifiedRegion
       .filter((x) => (Number(x.terminal_rental_monthly_minor) || 0) === 0)
       .sort((a, b) => a.percent_bps - b.percent_bps);
@@ -96,7 +116,7 @@ export default function PaymentsInStoreInsights({ engineResult, inputSnapshot, p
     const paygRow = paygCandidates[0] || null;
     const subRow = subCandidates[0] || null;
     return deriveSubVsPayg(inputSnapshot, paygRow, subRow);
-  }, [rows, inputSnapshot, region]);
+  }, [pool, inputSnapshot, region]);
 
   if (channel !== "in_store" && !isCombined) return null;
   if (!rental.available && !split.available && !subVsPayg.available) return null;

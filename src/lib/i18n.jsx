@@ -710,6 +710,9 @@ const DICT = {
     overlay_step_2: "Matching your regional cohort",
     overlay_step_3: "Comparing against interchange floors",
     overlay_step_4: "Building your audit",
+
+    /* COHERENCE-1 — PLUS plan-anchor transparency note (exact copy, do not paraphrase) */
+    plus_anchor_note: "Rate shown is SumUp Pagos Plus (€19/month plan, no lock-in), monthly fee included in the effective rate. The 0.75% applies to eligible standard transactions; premium and commercial cards may cost more.",
   },
 
   fr: {
@@ -1340,6 +1343,9 @@ const DICT = {
     overlay_step_2: "Association à votre cohorte régionale",
     overlay_step_3: "Comparaison aux planchers d'interchange",
     overlay_step_4: "Construction de votre audit",
+
+    /* COHERENCE-1 — PLUS plan-anchor transparency note (copy exacte, ne pas paraphraser) */
+    plus_anchor_note: "Le taux affiché correspond à SumUp Paiements Plus (abonnement 19 €/mois, sans engagement), abonnement inclus dans le taux effectif. Le 0,75 % s'applique aux transactions standard éligibles ; les cartes premium et commerciales peuvent coûter davantage.",
   },
 
   es: {
@@ -1970,6 +1976,9 @@ const DICT = {
     overlay_step_2: "Asignando tu cohorte regional",
     overlay_step_3: "Comparando contra los suelos de interchange",
     overlay_step_4: "Construyendo tu auditoría",
+
+    /* COHERENCE-1 — PLUS plan-anchor transparency note (copy exacta, no parafrasear) */
+    plus_anchor_note: "La tasa mostrada corresponde a SumUp Pagos Plus (plan de 19 €/mes, sin permanencia), con la cuota incluida en la tasa efectiva. El 0,75 % aplica a operaciones estándar elegibles; las tarjetas premium y de empresa pueden costar más.",
   },
 };
 

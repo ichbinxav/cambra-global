@@ -45,6 +45,7 @@ import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsig
 import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
 import CombinedChannelSection from "@/components/paymentsResults/CombinedChannelSection";
 import DownloadAuditButton from "@/components/paymentsResults/DownloadAuditButton";
+import PlusAnchorNote from "@/components/paymentsResults/PlusAnchorNote";
 import ActionCenter from "@/components/dashboard/ActionCenter";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
@@ -735,6 +736,7 @@ export default function PaymentsResults() {
           {/* Locked breakdown — one of the main signup conversion drivers:
               render the SHAPE, blur the numbers, show a padlock. */}
           <FeeBreakdownCard engineResult={engineResult} locked={!payload?.owned} />
+          <PlusAnchorNote engineResult={engineResult} inputSnapshot={inputSnapshot} rateTable={rateTable} />
           <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
         </div>
       ) : isCombined ? (
@@ -823,6 +825,7 @@ export default function PaymentsResults() {
               engineResult={engineResult}
               locked={engineResult?.mode !== "verified" && !payload?.owned}
             />
+            <PlusAnchorNote engineResult={engineResult} inputSnapshot={inputSnapshot} rateTable={rateTable} />
             <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
           </div>
         </div>
