@@ -801,7 +801,307 @@ Deno.serve(async (req) => {
       }
     ];
 
-    const allRows = [...verified, ...fallback, ...verifiedInStore, ...fallbackInStore];
+    // -------------------------------------------------------------------
+    // SPAIN (SEED-ES / SEED-ES-2 / COHERENCE-1) — country-pinned ES rows.
+    //
+    // COHERENCE-1 Tarea 3 (2026-07-24): these rows were originally seeded
+    // ad-hoc (SEED-ES + SEED-ES-2 chunks) directly into the DB; this block
+    // makes the seeder the CANONICAL reproducible source. Values are copied
+    // VERBATIM from the live table on 2026-07-24 (9 rows — the count in
+    // production; see Decision_Log_COHERENCE1.md for the seed-vs-live diff).
+    // verified_at is HARDCODED (not NOW) so re-running the seed produces
+    // zero changes on these rows. Country resolution is FIELD-based (M5):
+    // the 'EU-ES' segment in cohort_key is a readable identifier only.
+    // -------------------------------------------------------------------
+    const seedES = [
+      // --- SumUp Pagos Plus ES (PLUS plan anchor — achievable pool only) ---
+      {
+        cohort_key: 'sumup|PLUS|EU-ES|in_store',
+        provider_slug: 'sumup',
+        tier: 'PLUS',
+        region: 'EU',
+        country: 'ES',
+        channel: 'in_store',
+        percent_bps: 75,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 1900,
+        achievable_percent_bps: 75,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 1900,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: true,
+        source_url: 'https://www.sumup.com/es-es/',
+        source_quote: '0,75% por transacción con el plan Pagos Plus (19 €/mes), sin permanencia.',
+        source_notes: 'SEED-ES-2 2026-07-24. SumUp Pagos Plus ES: 0,75% + 19€/mes (modelado como rental), sin permanencia. Pricing público verificado. Fuente: rankia.com / sumup.com/es 2026-07. DECISIÓN DE MODELADO: la suscripción mensual de 19€ se modela como terminal_rental_monthly_minor=1900 porque económicamente es idéntica a un alquiler (coste fijo mensual amortizado contra el GMV) y el motor ya amortiza ese campo en computeEffectiveBps. TIER=PLUS a propósito: lo excluye de la resolución de tarifa ACTUAL de selectRow (countryRow exige tier ANY; las keys candidatas solo construyen |ANY|) mientras el pool multi-anchor — sin filtro de tier — sí lo recoge como achievable. Exclusión self intacta (slug sumup): un merchant cuyo proveedor actual es sumup no recibe este anchor. | COHERENCE-1 2026-07-24: el 0,75% aplica a operaciones estándar ELEGIBLES según las condiciones publicadas del plan Pagos Plus; las tarjetas premium y de empresa pueden costar más. Fuente: sumup.com/es-es/ (condiciones del plan Pagos Plus).',
+        achievable_breakdown_json: { anchor_provider: 'sumup' },
+        savings_band_pct: 0.2,
+        verified_at: '2026-07-24T13:02:12.444Z',
+        active: true
+      },
+      // --- SumUp ES in-store (standard rate, verified anchor) ---
+      {
+        cohort_key: 'sumup|ANY|EU-ES|in_store',
+        provider_slug: 'sumup',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'in_store',
+        percent_bps: 149,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: 75,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 1900,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: true,
+        source_url: 'https://www.rankia.com/',
+        source_quote: '1,49% por transacción (tarifa estándar SumUp España, sin cuota mensual).',
+        source_notes: 'DRAFT SEED-ES 2026-07-24. SumUp ES presencial 1,49% (vs 1,75% FR). Achievable 0,75% = plan Pagos Plus, cuya suscripción de 19€/mes se modela como achievable_terminal_rental (el motor la amortiza sobre GMV). Fuente: rankia jul 2026. Estimate — connect your PSP. | SEED-ES-2 2026-07-24: promovida a anchor verified=true (pricing público verificado y contratable, mismo estándar que los anchors FR; 1,49% confirmado multi-fuente) + achievable_breakdown_json.anchor_provider=sumup para entrar al pool multi-anchor.',
+        achievable_breakdown_json: { anchor_provider: 'sumup' },
+        savings_band_pct: 0.25,
+        verified_at: '2026-07-24T13:02:12.444Z',
+        active: true
+      },
+      // --- Zettle ES in-store (tiered, draft) ---
+      {
+        cohort_key: 'zettle|ANY|EU-ES|in_store',
+        provider_slug: 'zettle',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'in_store',
+        percent_bps: 110,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: null,
+        achievable_fixed_fee_minor_units: null,
+        achievable_terminal_rental_monthly_minor: null,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://www.zettle.com/es',
+        source_quote: null,
+        source_notes: 'DRAFT SEED-ES 2026-07-24. Escalonado 1,99%→0,99% por volumen mensual con rebate a fin de mes; 110 bps = punto estimado al GMV del ICP. Banda extra-ancha 0.40 por el escalonado. Fuente: multi-fuente 2023-2025. Tramos dinámicos fuera de alcance (chunk aparte). Estimate — connect your PSP.',
+        achievable_breakdown_json: null,
+        savings_band_pct: 0.4,
+        verified_at: null,
+        active: true
+      },
+      // --- Square ES in-store (draft) ---
+      {
+        cohort_key: 'square|ANY|EU-ES|in_store',
+        provider_slug: 'square',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'in_store',
+        percent_bps: 125,
+        fixed_fee_minor_units: 5,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: null,
+        achievable_fixed_fee_minor_units: null,
+        achievable_terminal_rental_monthly_minor: null,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://www.roams.es/',
+        source_quote: null,
+        source_notes: 'DRAFT SEED-ES 2026-07-24. El pay-per-use presencial más barato de ES (1,25% + 0,05€). Fuente: roams.es jun 2026. Estimate — connect your PSP.',
+        achievable_breakdown_json: null,
+        savings_band_pct: 0.25,
+        verified_at: null,
+        active: true
+      },
+      // --- myPOS ES in-store (draft) ---
+      {
+        cohort_key: 'mypos|ANY|EU-ES|in_store',
+        provider_slug: 'mypos',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'in_store',
+        percent_bps: 145,
+        fixed_fee_minor_units: 5,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: null,
+        achievable_fixed_fee_minor_units: null,
+        achievable_terminal_rental_monthly_minor: null,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://sincomisiones.org/',
+        source_quote: null,
+        source_notes: 'DRAFT SEED-ES 2026-07-24. myPOS ES 1,45% + 0,05€. Fuente: sincomisiones jun 2026. Estimate — connect your PSP.',
+        achievable_breakdown_json: null,
+        savings_band_pct: 0.25,
+        verified_at: null,
+        active: true
+      },
+      // --- Bank TPV ES (Redsys acquirers, draft fallback for bank_tpv_es slug) ---
+      {
+        cohort_key: 'bank_tpv_es|ANY|EU-ES|in_store',
+        provider_slug: 'bank_tpv_es',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'in_store',
+        percent_bps: 100,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 2500,
+        achievable_percent_bps: 75,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://comisionestpv.es/',
+        source_quote: null,
+        source_notes: 'DRAFT SEED-ES 2026-07-24. TPV bancario sobre Redsys (CaixaBank/Santander/BBVA/Sabadell): negociado 0,3–1,5%, típico PYME 0,4–1,2% + alquiler 10–35€/mes + permanencia. 80 bps = punto medio; el coste real incluye cuotas fijas no capturadas en bps — el alquiler típico se modela aparte como terminal_rental (25€/mes, punto medio del rango, mismo patrón que la fila fallback FR). Banda máxima 0.50: tarifa negociada, dispersión real enorme. Fuentes: comisionestpv.es, batemat.es 2026. | SEED-ES-2 2026-07-24: punto 80 → 100 bps — el research sitúa al comercio del ICP más cerca del 0,7–1,2% negociado que del punto medio optimista; la banda 0.50 sigue cubriendo el rango completo.',
+        achievable_breakdown_json: null,
+        savings_band_pct: 0.5,
+        verified_at: null,
+        active: true
+      },
+      // --- PAYCOMET ES online (draft) ---
+      {
+        cohort_key: 'paycomet|ANY|EU-ES',
+        provider_slug: 'paycomet',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'online',
+        percent_bps: 55,
+        fixed_fee_minor_units: 9,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: null,
+        achievable_percent_bps: 86,
+        achievable_fixed_fee_minor_units: 9,
+        achievable_terminal_rental_monthly_minor: null,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://www.paycomet.com/',
+        source_quote: null,
+        source_notes: 'DRAFT SEED-ES 2026-07-24. Régimen >2.000€/mes: ~0,50% nacional / 0,60% UE + 0,09€. Tarifa plana 19€/mes solo bajo 2k€ (irrelevante para el ICP). Fuente: paycomet.com 2026-07-24. Estimate — connect your PSP.',
+        achievable_breakdown_json: {
+          interchange_bps: 26,
+          scheme_fees_bps: 20,
+          processor_margin_bps: 40,
+          processor_margin_band_bps: 20,
+          sources: [
+            { label: 'EU interchange cap (Reg. 2015/751) + scheme fee estimates', url: 'https://eur-lex.europa.eu/eli/reg/2015/751/oj' }
+          ]
+        },
+        savings_band_pct: 0.3,
+        verified_at: null,
+        active: true
+      },
+      // --- Square ES online (draft) ---
+      {
+        cohort_key: 'square|ANY|EU-ES',
+        provider_slug: 'square',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'online',
+        percent_bps: 140,
+        fixed_fee_minor_units: 25,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: null,
+        achievable_percent_bps: 86,
+        achievable_fixed_fee_minor_units: 25,
+        achievable_terminal_rental_monthly_minor: null,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://www.roams.es/',
+        source_quote: null,
+        source_notes: 'DRAFT SEED-ES 2026-07-24. 1,40% + 0,25€ tarjetas UE; 2,90% no-EEE (no modelado como intl_uplift — sin cita directa). Fuente: roams.es jun 2026. Banda 0.35 (draft, no especificada en el research). Estimate — connect your PSP.',
+        achievable_breakdown_json: {
+          interchange_bps: 26,
+          scheme_fees_bps: 20,
+          processor_margin_bps: 40,
+          processor_margin_band_bps: 20,
+          sources: [
+            { label: 'EU interchange cap (Reg. 2015/751) + scheme fee estimates', url: 'https://eur-lex.europa.eu/eli/reg/2015/751/oj' }
+          ]
+        },
+        savings_band_pct: 0.35,
+        verified_at: null,
+        active: true
+      },
+      // --- MONEI ES online (draft) ---
+      {
+        cohort_key: 'monei|ANY|EU-ES',
+        provider_slug: 'monei',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'online',
+        percent_bps: 65,
+        fixed_fee_minor_units: 24,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: null,
+        achievable_percent_bps: 86,
+        achievable_fixed_fee_minor_units: 24,
+        achievable_terminal_rental_monthly_minor: null,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://monei.com/pricing/',
+        source_quote: null,
+        source_notes: 'DRAFT SEED-ES 2026-07-24. MONEI X: interchange++ (markup 0,1%) + platform fee escalado desde 0,15% + 0,24€ + 0,10€/día. Coste efectivo estimado mix ES (65 bps + 0,24€). Fuente: monei.com/pricing 2026-07-24. Achievable = composición estándar EU (patrón de las filas draft FR). Estimate — connect your PSP.',
+        achievable_breakdown_json: {
+          interchange_bps: 26,
+          scheme_fees_bps: 20,
+          processor_margin_bps: 40,
+          processor_margin_band_bps: 20,
+          sources: [
+            { label: 'EU interchange cap (Reg. 2015/751) + scheme fee estimates', url: 'https://eur-lex.europa.eu/eli/reg/2015/751/oj' }
+          ]
+        },
+        savings_band_pct: 0.35,
+        verified_at: null,
+        active: true
+      }
+    ];
+
+    const allRows = [...verified, ...fallback, ...verifiedInStore, ...fallbackInStore, ...seedES];
 
     // Idempotent upsert by cohort_key.
     // Fetch existing rows first, then update or create as needed.

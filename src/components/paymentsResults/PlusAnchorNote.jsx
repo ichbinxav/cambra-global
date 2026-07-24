@@ -28,14 +28,19 @@ function effectiveBps(row, ticketEur, monthlyGmvEur) {
 
 export default function PlusAnchorNote({ engineResult, inputSnapshot, rateTable }) {
   const { t } = useTranslation();
-  const br = engineResult?.benchmark_resolution;
   const channel = engineResult?.cohort?.channel;
-  if (!br || channel !== "in_store" || !Array.isArray(rateTable)) return null;
+  if (channel !== "in_store" || !Array.isArray(rateTable)) return null;
 
   const country = inputSnapshot?.country || null;
   const ticket = Number(inputSnapshot?.avg_ticket_eur) || 0;
   const gmv = Number(inputSnapshot?.monthly_gmv_eur) || 0;
-  const winnerBps = Number(br.winner_effective_bps);
+  // The anonymous teaser allowlist strips benchmark_resolution, so we anchor
+  // the match on achievable_effective_bps — present on BOTH reader paths and
+  // equal to the winner's effective bps by construction (multi-anchor winner
+  // IS the achievable). When benchmark_resolution is present, its winner slug
+  // is enforced as an extra guard.
+  const br = engineResult?.benchmark_resolution;
+  const winnerBps = Number(br?.winner_effective_bps ?? engineResult?.achievable_effective_bps);
   if (!isFinite(winnerBps)) return null;
 
   const plusWon = rateTable.some(
@@ -43,7 +48,7 @@ export default function PlusAnchorNote({ engineResult, inputSnapshot, rateTable 
       x.active !== false &&
       x.tier === "PLUS" &&
       x.channel === "in_store" &&
-      x.provider_slug === br.winner &&
+      (!br?.winner || x.provider_slug === br.winner) &&
       (!x.country || (country && x.country === country)) &&
       Math.abs(effectiveBps(x, ticket, gmv) - winnerBps) < 0.5
   );

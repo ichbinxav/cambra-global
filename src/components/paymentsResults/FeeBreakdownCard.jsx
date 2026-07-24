@@ -69,9 +69,12 @@ export default function FeeBreakdownCard({ engineResult, locked = false }) {
   //     provider" positioning.
   const channel = engineResult?.cohort?.channel;
   const isInStore = channel === "in_store";
+  // COHERENCE-1 (2026-07-24) — engine 1.5/1.6 emits "Achievable anchored to…"
+  // (multi-anchor copy) while older sessions carry "Achievable rate anchored
+  // to…". Match both so the anchor panel renders for every in-store session.
   const anchorLine = isInStore
     ? (engineResult?.assumptions || []).find(
-        (a) => typeof a === "string" && a.startsWith("Achievable rate anchored to")
+        (a) => typeof a === "string" && /^Achievable (rate )?anchored to/.test(a)
       )
     : null;
 
