@@ -204,18 +204,29 @@ describe('CONTRACT — Verified analysis handoff (M3-Chunk 6+7)', () => {
 // without noise from the routing block above.
 //
 // Contract: the "About your brand" block adds THREE metadata fields to the
-// anonymous session — brand_name (required), website (optional), sector
+// anonymous session — brand_name (OPTIONAL), website (optional), sector
 // (optional). These are lead-intelligence metadata, NOT engine inputs. The
 // motor must not read them; downstream aggregators must be able to join on
 // them without the client being able to inject nonsense.
+//
+// brand_name is OPTIONAL since SWEEP-1 T2 (2026-07-24) — product decision:
+// asking for the brand name before showing the gap added conversion friction
+// to the anonymous funnel. The name is now requested in the CLAIM flow,
+// once the merchant has already seen their gap. When present, the 2-80 char
+// range still applies (strict conditional validation, no silent clamping).
+// When absent, the results surface must NEVER render an empty string or
+// "undefined" — the i18n fallback key `brand_fallback` ("Your brand" /
+// "Votre marque" / "Tu marca") is the sanctioned placeholder.
 describe('CONTRACT — Brand-block metadata (name / website / sector)', () => {
   const analyzer   = fs.readFileSync(path.join(ROOT, 'src/pages/PaymentsAnalyzer.jsx'), 'utf-8');
   const brandBlock = fs.readFileSync(path.join(ROOT, 'src/components/paymentsAnalyzer/BrandBlock.jsx'), 'utf-8');
   const submit     = fs.readFileSync(path.join(ROOT, 'base44/functions/submitPaymentsAnalysis/entry.ts'), 'utf-8');
 
-  // 1. Client → server field names match verbatim.
-  it('Client sends brand_name (required) in the payload', () => {
-    expect(analyzer).toMatch(/brand_name:\s*brandName\.trim\(\)/);
+  // 1. Client → server field names match verbatim. Since SWEEP-1 T2 the
+  //    client sends brand_name ONLY when the user typed one — same
+  //    "left blank → send nothing" convention as website/sector.
+  it('Client sends brand_name only when the user filled it (conditional spread)', () => {
+    expect(analyzer).toMatch(/\.\.\.\(brandName\.trim\(\)\s*!==\s*""\s*\?\s*\{\s*brand_name:\s*brandName\.trim\(\)\s*\}\s*:\s*\{\}\)/);
   });
 
   it('Client sends website and sector only when the user filled them', () => {
@@ -227,18 +238,57 @@ describe('CONTRACT — Brand-block metadata (name / website / sector)', () => {
     expect(analyzer).toMatch(/sector\s*!==\s*""/);
   });
 
-  // 2. Server treats brand_name as required with the exact same 2-80 range.
-  it('submitPaymentsAnalysis requires brand_name (missing → invalid_input)', () => {
-    // The validation block must reject a missing brand_name explicitly
-    // (rather than letting it slip through as an empty string).
-    expect(submit).toMatch(/field:\s*'brand_name',\s*reason:\s*'missing'/);
+  // 2. Server treats brand_name as OPTIONAL (SWEEP-1 T2, 2026-07-24).
+  //    Strict inverse of the pre-T2 contract: a missing/empty brand_name is
+  //    ACCEPTED — there must be NO 'missing' rejection branch for it, and the
+  //    normalizer must coerce absence to '' (never undefined) on BOTH paths
+  //    (single-channel and combined).
+  it('submitPaymentsAnalysis accepts a missing brand_name (no invalid_input for absence)', () => {
+    // No validation branch may reject brand_name for being absent.
+    expect(submit).not.toMatch(/field:\s*'brand_name',\s*reason:\s*'missing'/);
+    // Absence is normalized to '' via the presence-safe trim — single path…
+    expect(submit).toMatch(/const brand_name_raw = typeof raw\.brand_name === 'string' \? raw\.brand_name\.trim\(\) : '';/);
+    // …and combined path.
+    expect(submit).toMatch(/const brandName = typeof raw\.brand_name === 'string' \? raw\.brand_name\.trim\(\) : '';/);
   });
 
-  it('submitPaymentsAnalysis enforces the 2-80 character range on brand_name', () => {
+  // 3. When brand_name IS present, the 2-80 range still applies — the
+  //    validation is CONDITIONAL on presence (truthy guard before the range
+  //    check), not dropped.
+  it('submitPaymentsAnalysis enforces the 2-80 range on brand_name ONLY when present', () => {
+    // The constant is still declared…
     expect(submit).toMatch(/brand_name:\s*\{\s*minLen:\s*2,\s*maxLen:\s*80\s*\}/);
+    // …and applied behind a presence guard on the single path…
+    expect(submit).toMatch(/if \(brand_name_raw && \(brand_name_raw\.length < VALIDATION\.brand_name\.minLen/);
+    // …and on the combined path.
+    expect(submit).toMatch(/if \(brandName && \(brandName\.length < VALIDATION\.brand_name\.minLen/);
   });
 
-  // 3. Sector enum is IDENTICAL between client (BrandBlock) and server. This
+  // 4. Fallback seal — when brand_name is absent, the results surface never
+  //    shows an empty string or "undefined":
+  //    (a) the i18n fallback key exists in ALL three locales with the exact
+  //        sanctioned copy, and
+  //    (b) the results surface performs NO raw interpolation of brand_name
+  //        anywhere (PaymentsResults + every paymentsResults component), so
+  //        there is no code path that could render ''/undefined for it.
+  it('brand_name fallback: i18n key sealed and no raw interpolation on the results surface', () => {
+    const en = fs.readFileSync(path.join(ROOT, 'src/lib/locales/en.js'), 'utf-8');
+    const fr = fs.readFileSync(path.join(ROOT, 'src/lib/locales/fr.js'), 'utf-8');
+    const es = fs.readFileSync(path.join(ROOT, 'src/lib/locales/es.js'), 'utf-8');
+    expect(en).toMatch(/brand_fallback:\s*"Your brand"/);
+    expect(fr).toMatch(/brand_fallback:\s*"Votre marque"/);
+    expect(es).toMatch(/brand_fallback:\s*"Tu marca"/);
+
+    const resultsPage = fs.readFileSync(path.join(ROOT, 'src/pages/PaymentsResults.jsx'), 'utf-8');
+    expect(resultsPage).not.toMatch(/brand_name/);
+    const resultsDir = path.join(ROOT, 'src/components/paymentsResults');
+    for (const f of fs.readdirSync(resultsDir)) {
+      const src = fs.readFileSync(path.join(resultsDir, f), 'utf-8');
+      expect(src, `${f} interpolates brand_name directly`).not.toMatch(/brand_name/);
+    }
+  });
+
+  // 5. Sector enum is IDENTICAL between client (BrandBlock) and server. This
   //    is the same drift risk the provider enum has — we lock it the same way.
   it('Sector enum matches verbatim between BrandBlock and submitPaymentsAnalysis', () => {
     // Extract each list independently and compare as sorted sets. We match
@@ -254,7 +304,7 @@ describe('CONTRACT — Brand-block metadata (name / website / sector)', () => {
     expect([...clientMatches].sort()).toEqual([...serverMatches].sort());
   });
 
-  // 4. Website normalization exists server-side and produces bare hostnames.
+  // 6. Website normalization exists server-side and produces bare hostnames.
   //    We assert the function name — the unit-level behavior would belong in
   //    a dedicated normalizer test if this ever grew beyond 5 lines.
   it('submitPaymentsAnalysis normalizes website to a bare hostname', () => {
@@ -263,7 +313,7 @@ describe('CONTRACT — Brand-block metadata (name / website / sector)', () => {
     expect(submit).toMatch(/normalizeWebsite\(raw\.website\)/);
   });
 
-  // 5. Brand metadata is NOT fed to the engine — critical for sync-check
+  // 7. Brand metadata is NOT fed to the engine — critical for sync-check
   //    stability. If a future refactor accidentally passes brand_name into
   //    engineInput, this test catches it before the sync-check does.
   it('engineInput does not include brand_name / website / sector', () => {
