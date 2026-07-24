@@ -15,10 +15,11 @@
 // Expected NET volume (denominator): 1295 - 130 = 1165 EUR
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { quarantineProbe } from '../../shared/internalGate.ts';
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): sync-engine test harness, dormant until first live client — kept with probe.
 Deno.serve(async (req) => {
-  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'seedStripeTestData' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
+  await quarantineProbe(createClientFromRequest(req), "seedStripeTestData");
   try {
     // SECURITY-1 (2026-07-24) — dev harness, admin-only. Previously had NO
     // auth gate: any anonymous caller could mint Stripe test charges.

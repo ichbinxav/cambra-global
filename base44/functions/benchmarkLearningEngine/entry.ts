@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 
 /**
  * M2 — Benchmark Learning Engine
@@ -53,18 +54,19 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Auth: admin OR service role (no user attached)
-    const user = await base44.auth.me().catch(() => null);
-    if (user && user.role !== "admin") {
-      return Response.json({ error: "Forbidden: admin or service role required" }, { status: 403 });
-    }
+    // SECURITY-2 (2026-07-24) — canonical gate: anonymous is an attacker.
+    // Admin OR INTERNAL_CALL_SECRET (header x-internal-secret / payload
+    // internal_secret for function→function invocations).
+    const bodyEarly = await req.json().catch(() => ({}));
+    const gate = await requireAdminOrInternal(req, base44, bodyEarly);
+    if (!gate.ok) return gate.response;
 
     const SALT = Deno.env.get("BENCHMARK_ANON_SALT");
     if (!SALT) {
       throw new Error("BENCHMARK_ANON_SALT environment variable is required");
     }
 
-    const body = await req.json().catch(() => ({}));
+    const body = bodyEarly; // body already consumed by the gate above
     const resultId = body?.resultId;
     if (!resultId) {
       return Response.json({ error: "resultId is required" }, { status: 400 });

@@ -1,12 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
+import { requireAdminOrInternal, quarantineProbe } from '../../shared/internalGate.ts';
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): orphan, but Subscription holds 2 rows — kept with probe.
 Deno.serve(async (req) => {
-  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'startSubscription' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
+  await quarantineProbe(createClientFromRequest(req), "startSubscription");
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // SECURITY-2 (2026-07-24) — quarantined + mutating: canonical admin gate
+    // in front of the original logic. Quarantine no longer means "open".
+    // Restore the plain user gate only if the subscription flow ever revives.
+    const gate = await requireAdminOrInternal(req, base44, null);
+    if (!gate.ok) return gate.response;
+    const user = gate.user;
+    if (!user) return Response.json({ error: 'user context required' }, { status: 400 });
 
     // If already active, just return success
     const existing = await base44.entities.Subscription.filter({ user_email: user.email, status: 'active' }, '-created_date', 1);

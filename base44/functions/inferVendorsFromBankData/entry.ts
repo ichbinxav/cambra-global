@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { requireUserOrInternal } from '../../shared/internalGate.ts';
 
 /**
  * inferVendorsFromBankData
@@ -113,26 +114,21 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Auth: admin / service role / brand owner
-    let isServiceRole = false;
-    let user = null;
-    try {
-      user = await base44.auth.me();
-    } catch (_) {
-      isServiceRole = true;
-    }
-    if (!isServiceRole && !user) {
-      return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-    }
-
+    // SECURITY-2 (2026-07-24) — an auth FAILURE never grants privilege (the
+    // old catch set isServiceRole=true: anonymous became "service role").
+    // Authenticated user (owner-checked) OR INTERNAL_CALL_SECRET.
     const body = await req.json().catch(() => ({}));
     const { brand_id } = body || {};
     if (!brand_id) {
       return Response.json({ ok: false, error: 'brand_id required' }, { status: 400 });
     }
 
-    const isAdmin = user?.role === 'admin';
-    if (!isServiceRole && !isAdmin) {
+    const gate = await requireUserOrInternal(req, base44, body);
+    if (!gate.ok) return gate.response;
+    const user = gate.user;
+
+    const isAdmin = gate.isAdmin;
+    if (!gate.isInternal && !isAdmin) {
       const owned = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch(() => []);
       if (!owned.length) {
         return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });

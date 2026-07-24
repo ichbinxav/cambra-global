@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     const [sa] = await sr.entities.SaaSProfile.filter({ brand_id: brand.id }, '-updated_date', 1);
 
     // Ensure latest computed
-    const res = await sr.functions.invoke('computeVerticalStatus', { brandId: brand.id });
+    const res = await sr.functions.invoke('computeVerticalStatus', { brandId: brand.id, internal_secret: Deno.env.get('INTERNAL_CALL_SECRET') || '' });
 
     return Response.json({ brand_id: brand.id, statuses: res?.data?.statuses || {
       payments: { completeness: pp?.completeness_score||0, readiness: pp?.readiness_score||0, missing_fields: pp?.missing_fields||[] },

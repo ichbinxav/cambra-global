@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { requireUserOrInternal } from '../../shared/internalGate.ts';
 
 function presence(v){
   if (v === null || v === undefined) return false;
@@ -25,9 +26,12 @@ async function upsertProfile(base44, entity, id, patch){
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    let user = null; try { user = await base44.auth.me(); } catch {}
-
     const payload = await req.json().catch(()=>({}));
+    // SECURITY-2 (2026-07-24) — deny anonymous: authenticated user (ownership
+    // enforced below) OR INTERNAL_CALL_SECRET (function→function invocations).
+    const gate = await requireUserOrInternal(req, base44, payload);
+    if (!gate.ok) return gate.response;
+    const user = gate.user;
     let { brandId, vertical } = payload || {};
 
     // Resolve from automation event
@@ -38,6 +42,13 @@ Deno.serve(async (req) => {
       const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1);
       brandId = brands?.[0]?.id;
       if (!brandId) return Response.json({ error: 'No brand' }, { status: 400 });
+    }
+
+    // SECURITY-2 — a non-admin user may only compute status for a brand they
+    // own (user-scoped read: RLS filters to visible brands).
+    if (!gate.isAdmin && !gate.isInternal) {
+      const owned = await base44.entities.Brand.filter({ id: brandId }, '-created_date', 1).catch(() => []);
+      if (!owned.length) return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const sr = base44.asServiceRole; // operate with service role for updates

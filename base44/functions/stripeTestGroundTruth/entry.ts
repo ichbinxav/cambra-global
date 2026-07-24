@@ -4,10 +4,11 @@
 // compare against what dataSyncAgent's normalizer produces for the same window.
 // NEVER touches live money. NEVER writes to DB.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { quarantineProbe } from '../../shared/internalGate.ts';
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): sync-engine test harness, dormant until first live client — kept with probe.
 Deno.serve(async (req) => {
-  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'stripeTestGroundTruth' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
+  await quarantineProbe(createClientFromRequest(req), "stripeTestGroundTruth");
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();

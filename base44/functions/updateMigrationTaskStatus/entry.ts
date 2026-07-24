@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
+import { quarantineProbe } from '../../shared/internalGate.ts';
 
 function assert(v,m){ if(!v) throw new Error(m); }
 
@@ -23,7 +24,7 @@ async function canGoLive(base44, activationId){
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): activation-admin family (surface live, no src caller) — kept with probe.
 Deno.serve(async (req) => {
-  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'updateMigrationTaskStatus' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
+  await quarantineProbe(createClientFromRequest(req), "updateMigrationTaskStatus");
   try {
     const base44 = createClientFromRequest(req);
     const me = await base44.auth.me();

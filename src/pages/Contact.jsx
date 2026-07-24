@@ -24,16 +24,16 @@ export default function Contact() {
     setError(null);
     setSubmitting(true);
     try {
-      // Landing opt-in → Lead population (the right one for contact-form intake).
-      // Lead schema accepts: email, whatsapp, benchmark_opt_in, consent, source_page, notes.
-      // We pack name + message into `notes` since the schema has no name/message fields,
-      // and mark consent=true (the user explicitly submitted the contact form).
-      await base44.entities.Lead.create({
+      // SECURITY-2 Fase 3.1 — the direct Lead.create from the browser ALWAYS
+      // failed for anonymous visitors (Lead is admin-write RLS). The public
+      // backend function persists via service role, validates and rate-limits;
+      // success is only shown AFTER the row exists.
+      const res = await base44.functions.invoke("submitContactMessage", {
+        name: formData.name,
         email: formData.email,
-        consent: true,
-        source_page: "/Contact",
-        notes: `Name: ${formData.name}\n\n${formData.message}`,
+        message: formData.message,
       });
+      if (!res?.data?.ok) throw new Error(res?.data?.error || "send_failed");
       setSubmitted(true);
       setFormData({ name: "", email: "", message: "" });
       setTimeout(() => setSubmitted(false), 4000);

@@ -2,10 +2,22 @@
 // Retries with exponential backoff (5min, 30min, 2h, 12h, 24h).
 // After ~6 attempts (~24h total) marks the delivery as "exhausted".
 // Run every 5 minutes via Base44 scheduled automation.
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+//
+// SECURITY-2 (2026-07-24):
+//   · Canonical trust gate (admin OR INTERNAL_CALL_SECRET). The scheduler
+//     authenticates as the app-owner admin (verified empirically:
+//     base44-scheduled-task runs pass auth.me() with role=admin), so the cron
+//     keeps working. The previous inverted pattern let ANONYMOUS callers
+//     trigger concurrent retry storms.
+//   · CLAIM before re-delivery: each due row gets locked_at set first; rows
+//     locked less than LOCK_TTL_MIN ago are skipped — two concurrent runs can
+//     no longer double-send the same delivery.
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
+import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 
 const BACKOFF_MINUTES = [5, 30, 120, 720, 1440, 1440]; // 5m, 30m, 2h, 12h, 24h, 24h
 const MAX_TOTAL_ATTEMPTS = 9; // 3 inline + 6 DLQ
+const LOCK_TTL_MIN = 10; // a lock older than this is considered stale (crashed run)
 
 async function hmacSha256Hex(secret, body) {
   const enc = new TextEncoder();
@@ -17,9 +29,10 @@ async function hmacSha256Hex(secret, body) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const body0 = await req.json().catch(() => ({}));
 
-    const user = await base44.auth.me().catch(() => null);
-    if (user && user.role !== "admin") return Response.json({ error: "Forbidden" }, { status: 403 });
+    const gate = await requireAdminOrInternal(req, base44, body0);
+    if (!gate.ok) return gate.response;
 
     const now = new Date();
     const pending = await base44.asServiceRole.entities.WebhookDeadLetter.filter({ status: "pending_retry" }, "-created_date", 50);
@@ -27,9 +40,23 @@ Deno.serve(async (req) => {
 
     const results = [];
     for (const dl of dueNow) {
+      // ── Claim (double-send protection) ──
+      // Re-read: another concurrent run may have claimed or resolved it since
+      // our filter. Skip anything locked recently or no longer pending.
+      const fresh = await base44.asServiceRole.entities.WebhookDeadLetter.get(dl.id).catch(() => null);
+      if (!fresh || fresh.status !== "pending_retry") {
+        results.push({ id: dl.id, action: "skipped_not_pending" });
+        continue;
+      }
+      if (fresh.locked_at && (now.getTime() - new Date(fresh.locked_at).getTime()) < LOCK_TTL_MIN * 60 * 1000) {
+        results.push({ id: dl.id, action: "skipped_locked" });
+        continue;
+      }
+      await base44.asServiceRole.entities.WebhookDeadLetter.update(dl.id, { locked_at: new Date().toISOString() });
+
       const endpoint = await base44.asServiceRole.entities.WebhookEndpoint.get(dl.webhook_id).catch(() => null);
       if (!endpoint || endpoint.status === "disabled") {
-        await base44.asServiceRole.entities.WebhookDeadLetter.update(dl.id, { status: "abandoned" });
+        await base44.asServiceRole.entities.WebhookDeadLetter.update(dl.id, { status: "abandoned", locked_at: null });
         results.push({ id: dl.id, action: "abandoned_disabled_endpoint" });
         continue;
       }
@@ -88,6 +115,7 @@ Deno.serve(async (req) => {
           resolved_at: new Date().toISOString(),
           total_attempts: newAttempts,
           last_response_code: responseCode,
+          locked_at: null,
         });
         results.push({ id: dl.id, action: "resolved", attempts: newAttempts });
       } else if (newAttempts >= MAX_TOTAL_ATTEMPTS) {
@@ -97,6 +125,7 @@ Deno.serve(async (req) => {
           last_response_code: responseCode,
           last_response_body: responseBody,
           last_error_message: errorMessage,
+          locked_at: null,
         });
         results.push({ id: dl.id, action: "exhausted", attempts: newAttempts });
       } else {
@@ -108,6 +137,7 @@ Deno.serve(async (req) => {
           last_response_code: responseCode,
           last_response_body: responseBody,
           last_error_message: errorMessage,
+          locked_at: null,
         });
         results.push({ id: dl.id, action: "rescheduled", attempts: newAttempts, next_delay_min: nextDelay });
       }

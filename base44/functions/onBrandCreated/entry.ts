@@ -1,18 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 
 // Email 4: Welcome to CAMBRA — triggered when a Brand entity is created (onboarding complete)
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
 
-  // SECURITY-1 (2026-07-24) — entity-automation target. Platform automations
-  // invoke without a user session (allowed); any AUTHENTICATED caller must be
-  // admin, so a logged-in regular user cannot trigger it directly.
-  const caller = await base44.auth.me().catch(() => null);
-  if (caller && caller.role !== "admin") {
-    return Response.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const body = await req.json();
+  // SECURITY-2 (2026-07-24) — canonical gate replacing the inverted pattern
+  // (anonymous used to pass). Platform automations authenticate as the
+  // app-owner admin (verified empirically), so automation triggers still work;
+  // anonymous curl no longer does.
+  const body = await req.json().catch(() => ({}));
+  const gate = await requireAdminOrInternal(req, base44, body);
+  if (!gate.ok) return gate.response;
   const { data } = body;
 
   if (!data) return Response.json({ ok: true });

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
+import { quarantineProbe } from '../../shared/internalGate.ts';
 
 // Endpoint classification: AUTH_REQUIRED (bootstrap-gated ADMIN_REQUIRED).
 // This is the ONLY function that can elevate a user to admin. Auth is layered:
@@ -14,7 +15,7 @@ function parseList(v){ return (v||'').split(',').map(s=>s.trim().toLowerCase()).
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): owner bootstrap utility with no src caller — kept with probe.
 Deno.serve(async (req) => {
-  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'promoteMeToAdmin' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
+  await quarantineProbe(createClientFromRequest(req), "promoteMeToAdmin");
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();

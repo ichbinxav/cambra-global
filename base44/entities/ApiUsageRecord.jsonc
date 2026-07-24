@@ -32,6 +32,10 @@
       "type": "string",
       "format": "date-time"
     },
+    "billing_run_id": {
+      "type": "string",
+      "description": "SECURITY-2 (2026-07-24) \u2014 claim marker set by billApiUsage BEFORE invoicing. A record claimed by one run is skipped by concurrent/duplicate runs. Released (null) if invoice creation fails so the next run retries. Additive \u2014 historical rows have it absent."
+    },
     "stripe_invoice_id": {
       "type": "string"
     },

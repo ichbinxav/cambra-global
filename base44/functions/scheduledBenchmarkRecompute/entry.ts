@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 
 /**
  * M2 — Cohort recomputation.
@@ -30,13 +31,14 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    const user = await base44.auth.me().catch(() => null);
-    if (user && user.role !== "admin") {
-      return Response.json({ error: "Forbidden: admin or scheduler only" }, { status: 403 });
-    }
-
+    // SECURITY-2 (2026-07-24) — canonical gate. The platform scheduler
+    // authenticates as the app-owner admin (verified 2026-07-24), so the
+    // weekly cron passes; anonymous callers no longer do.
     const body = await req.json().catch(() => ({}));
-    const trigger = body?.trigger || (user ? "manual" : "scheduled");
+    const gate = await requireAdminOrInternal(req, base44, body);
+    if (!gate.ok) return gate.response;
+    const user = gate.user;
+    const trigger = body?.trigger || (req.headers.get("base44-scheduled-task") === "true" ? "scheduled" : "manual");
 
     // Load all validated, non-flagged contributions
     const contributions = await base44.asServiceRole.entities.BenchmarkContribution.filter(

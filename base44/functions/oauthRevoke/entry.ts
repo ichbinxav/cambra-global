@@ -1,6 +1,7 @@
 // OAuth 2.0 — Revocation endpoint (RFC 7009)
 // POST /functions/oauthRevoke   body: token, token_type_hint? (access_token | refresh_token)
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { quarantineProbe } from "../../shared/internalGate.ts";
 
 async function sha256Hex(input) {
   const data = new TextEncoder().encode(input);
@@ -10,7 +11,7 @@ async function sha256Hex(input) {
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): OAuth2 revocation endpoint — external clients may call by URL, kept with probe.
 Deno.serve(async (req) => {
-  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'oauthRevoke' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
+  await quarantineProbe(createClientFromRequest(req), "oauthRevoke");
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
   const base44 = createClientFromRequest(req);
   const text = await req.text();

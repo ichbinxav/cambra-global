@@ -41,8 +41,17 @@ const REGISTRY = {
   },
 };
 
-Deno.serve(async (_req) => {
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
+import { requireUserOrInternal } from "../../shared/internalGate.ts";
+
+Deno.serve(async (req) => {
   try {
+    // SECURITY-2 (2026-07-24) — deny-by-default. Static registry metadata,
+    // but no anonymous surface needs it: authenticated users or internal
+    // callers only.
+    const base44 = createClientFromRequest(req);
+    const gate = await requireUserOrInternal(req, base44, null);
+    if (!gate.ok) return gate.response;
     const providers = Object.entries(REGISTRY).map(([slug, cfg]) => ({
       provider: slug,
       display_name: cfg.display_name,

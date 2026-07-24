@@ -12,6 +12,7 @@
 // asServiceRole justification: reads all active WebhookEndpoints across tenants
 // (event dispatch is a platform-level concern) and writes delivery/DLQ audit rows.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { quarantineProbe } from "../../shared/internalGate.ts";
 
 const SUPPORTED_EVENTS = [
   "new_brand_created",
@@ -55,7 +56,7 @@ async function deliverOnce({ endpoint, body, signature, event_type, requestId, a
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): no live caller found (API-platform family kept out of caution).
 Deno.serve(async (req) => {
-  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'dispatchWebhook' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
+  await quarantineProbe(createClientFromRequest(req), "dispatchWebhook");
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();

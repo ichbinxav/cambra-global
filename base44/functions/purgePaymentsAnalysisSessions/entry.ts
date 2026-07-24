@@ -12,6 +12,7 @@
 // re-run any time (rows already deleted just don't match the filter).
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 
 const RETENTION_DAYS = 90;
 const BATCH_SIZE = 200;
@@ -20,12 +21,11 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // SECURITY-1 (2026-07-24) — scheduled job: the platform scheduler invokes
-    // without a session (allowed); any AUTHENTICATED caller must be admin.
-    const caller = await base44.auth.me().catch(() => null);
-    if (caller && caller.role !== 'admin') {
-      return Response.json({ ok: false, error: 'forbidden' }, { status: 403 });
-    }
+    // SECURITY-2 (2026-07-24) — canonical gate replacing the inverted pattern.
+    // The scheduler authenticates as the app-owner admin (verified), so the
+    // daily TTL purge keeps running; anonymous callers are denied.
+    const gate = await requireAdminOrInternal(req, base44, null);
+    if (!gate.ok) return gate.response;
 
     const cutoff = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
 

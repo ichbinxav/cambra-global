@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { quarantineProbe } from '../../shared/internalGate.ts';
 
 /**
  * Admin-only, idempotent seeder for BenchmarkCohort rows.
@@ -127,7 +128,7 @@ function buildCohorts() {
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): seeder for the live benchmark cron chain — plausible re-run, kept with probe.
 Deno.serve(async (req) => {
-  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'seedBenchmarkCohorts' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
+  await quarantineProbe(createClientFromRequest(req), "seedBenchmarkCohorts");
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);

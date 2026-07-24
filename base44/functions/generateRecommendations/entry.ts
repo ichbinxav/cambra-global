@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 
 function sum(arr){ return (arr||[]).reduce((s,v)=>s+(Number(v)||0),0); }
 function byLatest(arr, key='created_date'){ return (arr||[]).sort((a,b)=> new Date(b[key]) - new Date(a[key])); }
@@ -102,9 +103,10 @@ function computeScores({ brand, latestResult, reports, activations, tasks, provi
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    let user = null;
-    try { user = await base44.auth.me(); } catch {}
-    if (user && user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin only' }, { status: 403 });
+    // SECURITY-2 (2026-07-24) — canonical gate: admin OR INTERNAL_CALL_SECRET.
+    const body = await req.json().catch(() => ({}));
+    const gate = await requireAdminOrInternal(req, base44, body);
+    if (!gate.ok) return gate.response;
 
     const brands = await base44.asServiceRole.entities.Brand.list('-created_date', 500);
     const providers = await base44.asServiceRole.entities.Provider.list();

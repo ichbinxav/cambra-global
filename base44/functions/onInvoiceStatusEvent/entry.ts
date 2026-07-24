@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { requireAdminOrInternal, quarantineProbe } from '../../shared/internalGate.ts';
 
 const statusToEvent = (status) => {
   switch (status) {
@@ -15,15 +16,13 @@ const statusToEvent = (status) => {
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): entity-automation handler with NO registered automation — kept with probe (invoicing surface is live).
 Deno.serve(async (req) => {
-  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'onInvoiceStatusEvent' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
+  await quarantineProbe(createClientFromRequest(req), "onInvoiceStatusEvent");
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
-    if (user && user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
-
-    const payload = await req.json();
+    // SECURITY-2 (2026-07-24) — canonical gate replacing the inverted pattern.
+    const payload = await req.json().catch(() => ({}));
+    const gate = await requireAdminOrInternal(req, base44, payload);
+    if (!gate.ok) return gate.response;
     const event = payload?.event || {};
     const data = payload?.data || null;
     const old = payload?.old_data || null;

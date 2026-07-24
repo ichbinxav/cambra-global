@@ -257,7 +257,7 @@ Deno.serve(async (req) => {
 
     // Non-blocking vendor inference from descriptors.
     try {
-      await base44.asServiceRole.functions.invoke('inferVendorsFromBankData', { brand_id });
+      await base44.asServiceRole.functions.invoke('inferVendorsFromBankData', { brand_id, internal_secret: Deno.env.get('INTERNAL_CALL_SECRET') || '' });
     } catch (e) {
       console.warn('inferVendorsFromBankData failed (non-blocking):', (e as any)?.message || e);
     }

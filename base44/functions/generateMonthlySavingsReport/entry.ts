@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 
 /**
  * generateMonthlySavingsReport
@@ -39,15 +40,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Auth: admin or service role
-    let isServiceRole = false;
-    let user = null;
-    try { user = await base44.auth.me(); } catch (_) { isServiceRole = true; }
-    if (!isServiceRole && (!user || user.role !== 'admin')) {
-      return Response.json({ ok: false, error: 'Forbidden: admin only' }, { status: 403 });
-    }
-
+    // SECURITY-2 (2026-07-24) — an auth FAILURE never grants privilege (the
+    // old catch set isServiceRole=true, letting anonymous callers through).
+    // Canonical gate: admin OR INTERNAL_CALL_SECRET.
     const body = await req.json().catch(() => ({}));
+    const gate = await requireAdminOrInternal(req, base44, body);
+    if (!gate.ok) return gate.response;
     const { brand_id } = body || {};
     const month = body?.month || prevMonthYM();
     if (!brand_id) return Response.json({ ok: false, error: 'brand_id required' }, { status: 400 });

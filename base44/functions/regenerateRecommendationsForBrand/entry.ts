@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { requireUserOrInternal } from '../../shared/internalGate.ts';
 
 function num(v) { const n = Number(v || 0); return isFinite(n) ? n : 0; }
 function clamp01(v) { return Math.max(0, Math.min(1, v)); }
@@ -44,17 +45,23 @@ async function resolveBrandId(base44, payload){
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    let user = null; try { user = await base44.auth.me(); } catch {}
     let payload = {};
     try { payload = await req.json(); } catch {}
+    // SECURITY-2 (2026-07-24) — deny anonymous: authenticated user (owner
+    // check below) OR INTERNAL_CALL_SECRET (function→function invocations).
+    const gate = await requireUserOrInternal(req, base44, payload);
+    if (!gate.ok) return gate.response;
+    const user = gate.user;
 
     const brandId = await resolveBrandId(base44, payload);
     if (!brandId) {
       return Response.json({ error: 'brandId no resuelto' }, { status: 400 });
     }
 
-    // Si viene desde frontend: asegurar permisos (propietario o admin)
-    if (user && user.role !== 'admin'){
+    // Si viene desde frontend: asegurar permisos (propietario o admin).
+    // Nota: tras el gate deny-anonymous, `user` solo es null en llamadas
+    // internas con secreto (confiables) — el check de ownership no aplica.
+    if (!gate.isAdmin && !gate.isInternal){
       const myBrands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 5);
       const ok = !!myBrands.find(b => b.id === brandId);
       if (!ok) return Response.json({ error: 'Forbidden' }, { status: 403 });

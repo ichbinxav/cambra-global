@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { requireUserOrInternal } from '../../shared/internalGate.ts';
 
 /**
  * M7 — runContinuousDiscovery
@@ -29,19 +30,14 @@ Deno.serve(async (req) => {
     return Response.json({ ok: false, error: 'brand_id required' }, { status: 400 });
   }
 
-  // Auth: admin / service role / brand owner
-  let isServiceRole = false;
-  let user = null;
-  try {
-    user = await base44.auth.me();
-  } catch (_) {
-    isServiceRole = true; // called from another function via service role
-  }
-  if (!isServiceRole && !user) {
-    return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  }
-  const isAdmin = user?.role === 'admin';
-  if (!isServiceRole && !isAdmin) {
+  // SECURITY-2 (2026-07-24) — an auth FAILURE never grants privilege (the old
+  // catch set isServiceRole=true, the same conceptual error as the inverted
+  // gate). Authenticated user (owner-checked) OR INTERNAL_CALL_SECRET.
+  const gate = await requireUserOrInternal(req, base44, null);
+  if (!gate.ok) return gate.response;
+  const user = gate.user;
+  const isAdmin = gate.isAdmin;
+  if (!gate.isInternal && !isAdmin) {
     const owned = await base44.entities.Brand.filter({ id: brand_id }).catch(() => []);
     if (!owned.length) {
       return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
@@ -136,7 +132,7 @@ Deno.serve(async (req) => {
       const createdMs = new Date(lr.created_date || 0).getTime();
       const fresh = createdMs && (Date.now() - createdMs) < BENCHMARK_FRESH_DAYS * 24 * 60 * 60 * 1000;
       if (fresh) {
-        const benchRes = await base44.functions.invoke('benchmarkLearningEngine', { resultId: lr.id })
+        const benchRes = await base44.functions.invoke('benchmarkLearningEngine', { resultId: lr.id, internal_secret: Deno.env.get('INTERNAL_CALL_SECRET') || '' })
           .catch((e) => { throw new Error('benchmarkLearningEngine: ' + (e?.message || e)); });
         const bp = benchRes?.data || benchRes;
         if (bp?.ok !== false) benchmarks_refreshed = 1;
@@ -180,7 +176,7 @@ Deno.serve(async (req) => {
   // ── STEP 5: Infer vendors from Stripe payment data ───────────
   // Non-blocking — gracefully returns reason if no StripeConnection.
   try {
-    const inferRes = await base44.functions.invoke('inferVendorsFromBankData', { brand_id })
+    const inferRes = await base44.functions.invoke('inferVendorsFromBankData', { brand_id, internal_secret: Deno.env.get('INTERNAL_CALL_SECRET') || '' })
       .catch((e) => { throw new Error('inferVendorsFromBankData: ' + (e?.message || e)); });
     const ip = inferRes?.data || inferRes;
     if (ip?.ok) {

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
+import { requireAdminOrInternal, quarantineProbe } from '../../shared/internalGate.ts';
 
 // Endpoint classification: INTERNAL_ONLY (invoked by the DealActivation update
 // automation). The check here is idempotent — if the mandate is present, do
@@ -8,10 +9,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): activation-admin family (surface live, no src caller) — kept with probe.
 Deno.serve(async (req) => {
-  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'guardDealActivationStatus' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
+  await quarantineProbe(createClientFromRequest(req), "guardDealActivationStatus");
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
+    // SECURITY-2 (2026-07-24) — canonical gate: this handler mutates
+    // DealActivation via service role; anonymous is denied. Platform
+    // automations authenticate as the app-owner admin (verified), so a future
+    // registered automation still passes.
+    const gate = await requireAdminOrInternal(req, base44, body);
+    if (!gate.ok) return gate.response;
     const { event, data, old_data } = body || {};
 
     if (!event || event.entity_name !== 'DealActivation' || event.type !== 'update') {

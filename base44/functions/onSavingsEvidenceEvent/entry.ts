@@ -1,16 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // SECURITY-1 (2026-07-24) — automations may not carry a user (allowed);
-    // any AUTHENTICATED caller must be admin.
-    const caller = await base44.auth.me().catch(() => null);
-    if (caller && caller.role !== 'admin') {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const payload = await req.json();
+    // SECURITY-2 (2026-07-24) — canonical gate replacing the inverted pattern.
+    // Platform automations authenticate as the app-owner admin (verified),
+    // so automation triggers pass; anonymous callers are denied.
+    const payload = await req.json().catch(() => ({}));
+    const gate = await requireAdminOrInternal(req, base44, payload);
+    if (!gate.ok) return gate.response;
     const event = payload?.event || {};
     const data = payload?.data || null;
     const type = event?.type; // create | update | delete

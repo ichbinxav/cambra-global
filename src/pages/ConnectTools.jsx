@@ -214,14 +214,21 @@ export default function ConnectTools() {
   const handleConnect = async (integration) => {
     const status = integration.display_status;
     if (status === "coming_soon" || integration.catalog_status === "coming_soon" || integration.catalog_status === "planned") {
-      toast.success(`${integration.name} — coming soon. We'll let you know.`);
+      // SECURITY-2 Fase 3.2 — the old ProviderLead.create used an incompatible
+      // schema and swallowed the error: interest was NEVER saved. LeadCapture
+      // has public create by design; the integration slug tags the interest.
+      // Toast only AFTER the row is persisted; honest error if it fails.
       try {
-        await base44.entities.ProviderLead.create({
-          integration_id: integration.integration_id,
-          brand_id: brandId,
-          interest_expressed_at: new Date().toISOString(),
+        const me = await base44.auth.me().catch(() => null);
+        await base44.entities.LeadCapture.create({
+          email: me?.email || "unknown@user",
+          consent: true,
+          source_page: `connect_tools_interest:${integration.integration_id || integration.name}`,
         });
-      } catch { /* non-fatal */ }
+        toast.success(`${integration.name} — coming soon. We'll let you know.`);
+      } catch (err) {
+        toast.error(err?.message || "Could not register your interest — please try again.");
+      }
       return;
     }
     try {

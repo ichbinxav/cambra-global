@@ -34,6 +34,11 @@
       "type": "string",
       "format": "date-time"
     },
+    "locked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "SECURITY-2 (2026-07-24) \u2014 atomic-ish claim set by processWebhookDeadLetters BEFORE re-delivery. A row locked less than 10 minutes ago is skipped by concurrent runs (prevents double sends). Cleared on resolution/reschedule. Additive \u2014 historical rows have it absent."
+    },
     "status": {
       "type": "string",
       "enum": [
