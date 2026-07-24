@@ -137,7 +137,7 @@ export default function ResultsHistory() {
         <Button
           onClick={() => navigate("/Analyzer")}
           className="h-10 rounded-full px-5 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
-          style={{ background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)", boxShadow: "0 0 24px rgba(34,211,238,0.3)" }}
+          style={{ background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)", boxShadow: "0 0 24px rgba(34,211,238,0.3)" }}
         >
           <Plus className="h-4 w-4" /> New analysis
         </Button>
@@ -166,7 +166,7 @@ export default function ResultsHistory() {
           <Button
             onClick={() => navigate("/Analyzer")}
             className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90"
-            style={{ background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)" }}
+            style={{ background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)" }}
           >
             Run your analysis <ArrowRight className="h-4 w-4" />
           </Button>

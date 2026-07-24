@@ -88,8 +88,8 @@ function TestimonialCard({ item }) {
 
       {/* category */}
       <div className="relative flex items-center gap-2 mb-4">
-        <Quote size={13} style={{ color: "#8B7BFF" }} />
-        <span className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: "#8B7BFF" }}>
+        <Quote size={13} style={{ color: "var(--voltio-2)" }} />
+        <span className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: "var(--voltio-2)" }}>
           {item.category}
         </span>
         <span className="text-white/30">·</span>

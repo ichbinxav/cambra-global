@@ -83,7 +83,7 @@ export default function FounderLetter() {
               <Quote
                 size={28}
                 className="mb-4"
-                style={{ color: "#8B7BFF" }}
+                style={{ color: "var(--voltio-2)" }}
                 strokeWidth={2.5}
               />
 
@@ -107,7 +107,7 @@ export default function FounderLetter() {
                   fontWeight: 500,
                   letterSpacing: "-0.01em",
                   background:
-                    "linear-gradient(135deg, #8B7BFF 0%, #5B4CF5 100%)",
+                    "linear-gradient(135deg, var(--voltio-2) 0%, var(--voltio) 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",

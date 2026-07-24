@@ -158,7 +158,7 @@ export default function PeerBenchmark({ engineResult, country }) {
           <path
             d={d}
             fill="none"
-            stroke="#5B4CF5"
+            stroke="var(--voltio)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeDasharray={pathLen}

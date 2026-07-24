@@ -22,7 +22,7 @@ export default function CardMixSlider({ value, onChange }) {
         >
           {isSet ? (
             <>
-              <span style={{ color: "#8B7BFF" }}>{debitPct}%</span>
+              <span style={{ color: "var(--voltio-2)" }}>{debitPct}%</span>
               <span className="mx-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>/</span>
               <span style={{ color: "#ffffff" }}>{creditPct}%</span>
             </>

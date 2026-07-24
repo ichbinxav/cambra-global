@@ -105,7 +105,7 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch })
                 {t("call_success_title")}
               </h3>
               <p className="text-[14px] text-white/60 leading-snug max-w-xs mx-auto">{t("call_success_body")}</p>
-              <button onClick={onClose} className="mt-5 inline-flex items-center justify-center h-10 rounded-full px-6 text-sm font-bold text-white hover:opacity-90" style={{ background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)" }}>
+              <button onClick={onClose} className="mt-5 inline-flex items-center justify-center h-10 rounded-full px-6 text-sm font-bold text-white hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)" }}>
                 {t("coll_done")}
               </button>
             </div>
@@ -153,7 +153,7 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch })
                 onClick={submit}
                 disabled={!canSubmit}
                 className="w-full h-12 rounded-full text-sm font-bold text-white inline-flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)", boxShadow: "0 0 28px rgba(34,211,238,0.30)" }}
+                style={{ background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)", boxShadow: "0 0 28px rgba(34,211,238,0.30)" }}
               >
                 {status === "submitting" ? <><Loader2 size={16} className="animate-spin" /> {t("call_submitting")}</> : t("call_submit")}
               </button>

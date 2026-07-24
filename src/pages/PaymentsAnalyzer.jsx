@@ -291,10 +291,9 @@ export default function PaymentsAnalyzer() {
     }
     if (!country) errors.push("Country is required.");
 
-    // Brand name — required (2-80 chars, same range as backend).
+    // Brand name — OPTIONAL (SWEEP-1 T2). When provided, 2-80 chars.
     const trimmedBrand = brandName.trim();
-    if (trimmedBrand === "") errors.push("Brand name is required.");
-    else if (trimmedBrand.length < 2 || trimmedBrand.length > 80) {
+    if (trimmedBrand !== "" && (trimmedBrand.length < 2 || trimmedBrand.length > 80)) {
       errors.push("Brand name: must be between 2 and 80 characters.");
     }
 
@@ -344,11 +343,12 @@ export default function PaymentsAnalyzer() {
       paymentFields = [gmv, avgTicket, intlPct, providerSlug, country];  // classic online
     }
     const filled = paymentFields.filter((v) => v !== "" && v !== undefined && v !== null).length;
-    const brandFilled = brandName.trim() !== "" ? 1 : 0;
+    // SWEEP-1 T2 — brand name is optional now, so it no longer counts toward
+    // the progress pill (same policy as website/sector: never nag optionals).
     const optionalCounts = cardMixOpen;
     const optionalFilled = optionalCounts && cardMixDebit !== "" ? 1 : 0;
-    const total = paymentFields.length + 1 + (optionalCounts ? 1 : 0);
-    const done = filled + brandFilled + optionalFilled;
+    const total = paymentFields.length + (optionalCounts ? 1 : 0);
+    const done = filled + optionalFilled;
     return { done, total, pct: Math.round((done / total) * 100) };
   }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName, channel, combinedOnline, combinedInStore]);
 
@@ -369,7 +369,7 @@ export default function PaymentsAnalyzer() {
         payload = {
           mode: "combined",
           country,
-          brand_name: brandName.trim(),
+          ...(brandName.trim() !== "" ? { brand_name: brandName.trim() } : {}),
           channels: [
             {
               channel: "online",
@@ -402,7 +402,7 @@ export default function PaymentsAnalyzer() {
           ),
           country,
           channel,
-          brand_name: brandName.trim(),
+          ...(brandName.trim() !== "" ? { brand_name: brandName.trim() } : {}),
           ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
           ...(website.trim() !== "" ? { website: website.trim() } : {}),
           ...(sector !== "" ? { sector } : {}),

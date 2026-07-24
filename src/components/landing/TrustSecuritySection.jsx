@@ -64,7 +64,7 @@ export default function TrustSecuritySection() {
                       style={{
                         background: "rgba(139,123,255,0.12)",
                         border: "1px solid rgba(139,123,255,0.28)",
-                        color: "#8B7BFF",
+                        color: "var(--voltio-2)",
                       }}
                     >
                       <Icon size={16} strokeWidth={1.9} />
@@ -89,7 +89,7 @@ export default function TrustSecuritySection() {
               <Link
                 to="/Security"
                 className="inline-flex items-center gap-1.5 text-[13px] font-semibold transition-colors"
-                style={{ color: "#8B7BFF" }}
+                style={{ color: "var(--voltio-2)" }}
               >
                 {t("trust_sec_link")}
                 <ArrowRight size={14} />

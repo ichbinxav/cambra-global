@@ -41,7 +41,7 @@ function ChannelPanel({ title, subtitle, accentColor, children }) {
           <div>
             <p
               className="text-[10px] uppercase tracking-[0.22em] font-bold"
-              style={{ color: accentColor === "#5B4CF5" ? "#8B7BFF" : accentColor }}
+              style={{ color: accentColor === "var(--voltio)" ? "var(--voltio-2)" : accentColor }}
             >
               {title}
             </p>
@@ -71,7 +71,7 @@ export default function CombinedChannelBlock({
       <ChannelPanel
         title="Online"
         subtitle="Card-not-present · your PSP (Stripe, PayPal…)"
-        accentColor="#5B4CF5"
+        accentColor="var(--voltio)"
       >
         <GmvSlider
           value={onlineValue.monthly_gmv_eur}
@@ -106,7 +106,7 @@ export default function CombinedChannelBlock({
       <ChannelPanel
         title="In-store"
         subtitle="Card-present · your TPV / physical terminal"
-        accentColor="#8B7BFF"
+        accentColor="var(--voltio-2)"
       >
         <GmvSlider
           value={inStoreValue.monthly_gmv_eur}

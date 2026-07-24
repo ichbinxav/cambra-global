@@ -102,8 +102,8 @@ export default function StopLeavingMarginCTA() {
               }}
             >
               <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#8B7BFF" }} />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#8B7BFF" }} />
+                <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--voltio-2)" }} />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "var(--voltio-2)" }} />
               </span>
               <span className="text-[11px] uppercase tracking-[0.28em] font-bold text-white/85">
                 The final call

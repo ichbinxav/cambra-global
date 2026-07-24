@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import MonthlyReportsTable from "@/components/admin/MonthlyReportsTable";
 
-const COLORS = ["#5B4CF5", "#2FE0A8", "#f97316", "#8b5cf6", "#F5A623", "#06b6d4"];
+const COLORS = ["var(--voltio)", "#2FE0A8", "#f97316", "#8b5cf6", "#F5A623", "#06b6d4"];
 const REALIZED_STATUSES = ["invoiced", "paid"];
 
 export default function AdminRevenue() {

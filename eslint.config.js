@@ -9,9 +9,14 @@ export default [
     files: [
       "src/components/**/*.{js,mjs,cjs,jsx}",
       "src/pages/**/*.{js,mjs,cjs,jsx}",
+      "src/lib/**/*.{js,mjs,cjs,jsx}",
       "src/Layout.jsx",
     ],
-    ignores: ["src/lib/**/*", "src/components/ui/**/*"],
+    // SWEEP-1 T5 (2026-07-24): src/lib/** now linted (verified clean
+    // externally). src/components/ui/** stays ignored — generated shadcn
+    // code; lint cannot be executed in this environment to audit it, so the
+    // ignore is kept and documented in Decision_Log_SWEEP1.md.
+    ignores: ["src/components/ui/**/*"],
     ...pluginJs.configs.recommended,
     ...pluginReact.configs.flat.recommended,
     languageOptions: {

@@ -66,9 +66,9 @@ export default function InStoreUpsellStrip() {
                 }}
                 aria-hidden="true"
               >
-                <Store size={20} style={{ color: "#5B4CF5" }} />
+                <Store size={20} style={{ color: "var(--voltio)" }} />
               </div>
-              <span className="text-[10px] uppercase tracking-[0.28em] font-bold" style={{ color: "#5B4CF5" }}>
+              <span className="text-[10px] uppercase tracking-[0.28em] font-bold" style={{ color: "var(--voltio)" }}>
                 {t("landing_upsell_in_store_eyebrow")}
               </span>
             </div>
@@ -102,7 +102,7 @@ export default function InStoreUpsellStrip() {
                     border: "1px solid var(--linea)",
                   }}
                 >
-                  <CreditCard size={11} style={{ color: "#5B4CF5" }} />
+                  <CreditCard size={11} style={{ color: "var(--voltio)" }} />
                   {p}
                 </span>
               ))}

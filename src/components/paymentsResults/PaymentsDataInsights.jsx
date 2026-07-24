@@ -125,7 +125,7 @@ export default function PaymentsDataInsights({ engineResult, inputSnapshot, comp
                 label={`${t("ins_currentrate_movable")} · ${pct(bpsToPctLocal(currentRate.movable_bps))}`}
                 valueLabel={`${eur(currentRate.movable_annual)}${t("ins_layer_per_year")}`}
                 pctOfMax={(currentRate.movable_bps / currentMaxBps) * 100}
-                color="linear-gradient(90deg, #39C6F0 0%, #5B4CF5 100%)"
+                color="linear-gradient(90deg, #39C6F0 0%, var(--voltio) 100%)"
                 negotiable
                 negotiableLabel={t("ins_currentrate_recoverable")}
                 note={t("ins_currentrate_movable_note")}

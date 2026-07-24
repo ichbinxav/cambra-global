@@ -98,7 +98,7 @@ export default function CombinedGapHero({ engineResult, country }) {
             fontSize: "clamp(40px, 9vw, 72px)",
             letterSpacing: "-0.04em",
             lineHeight: 1,
-            background: "linear-gradient(135deg, #ffffff 0%, #39C6F0 60%, #8B7BFF 100%)",
+            background: "linear-gradient(135deg, #ffffff 0%, #39C6F0 60%, var(--voltio-2) 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",

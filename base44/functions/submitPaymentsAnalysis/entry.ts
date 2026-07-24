@@ -1650,10 +1650,12 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
     card_mix_debit_pct = debit;
   }
 
-  // brand_name — required (2-80 chars after trim).
+  // brand_name — OPTIONAL (SWEEP-1 T2, 2026-07-24 — conversion friction).
+  // When present must be 2-80 chars after trim. Session metadata ONLY — never
+  // an engine input (see engineInput construction), so optionality cannot
+  // affect any calculation.
   const brand_name_raw = typeof raw.brand_name === 'string' ? raw.brand_name.trim() : '';
-  if (!brand_name_raw) return { ok: false, failure: { field: 'brand_name', reason: 'missing' } };
-  if (brand_name_raw.length < VALIDATION.brand_name.minLen || brand_name_raw.length > VALIDATION.brand_name.maxLen) {
+  if (brand_name_raw && (brand_name_raw.length < VALIDATION.brand_name.minLen || brand_name_raw.length > VALIDATION.brand_name.maxLen)) {
     return { ok: false, failure: { field: 'brand_name', reason: 'out_of_range' } };
   }
 
@@ -1689,7 +1691,7 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
       country,
       region,
       channel,
-      brand_name: brand_name_raw,
+      ...(brand_name_raw ? { brand_name: brand_name_raw } : {}),
       ...(card_mix_debit_pct !== undefined ? { card_mix_debit_pct } : {}),
       ...(website !== undefined ? { website } : {}),
       ...(sector !== undefined ? { sector } : {}),
@@ -1761,9 +1763,9 @@ Deno.serve(async (req) => {
       if (!country) return Response.json({ error: 'invalid_input', field: 'country', reason: 'missing' }, { status: 400 });
       if (!/^[A-Z]{2}$/.test(country)) return Response.json({ error: 'invalid_input', field: 'country', reason: 'invalid_type' }, { status: 400 });
 
+      // brand_name — OPTIONAL (SWEEP-1 T2). Same rule as the single path.
       const brandName = typeof raw.brand_name === 'string' ? raw.brand_name.trim() : '';
-      if (!brandName) return Response.json({ error: 'invalid_input', field: 'brand_name', reason: 'missing' }, { status: 400 });
-      if (brandName.length < VALIDATION.brand_name.minLen || brandName.length > VALIDATION.brand_name.maxLen) {
+      if (brandName && (brandName.length < VALIDATION.brand_name.minLen || brandName.length > VALIDATION.brand_name.maxLen)) {
         return Response.json({ error: 'invalid_input', field: 'brand_name', reason: 'out_of_range' }, { status: 400 });
       }
 
@@ -1880,7 +1882,7 @@ Deno.serve(async (req) => {
           mode: 'combined',
           country,
           region,
-          brand_name: brandName,
+          ...(brandName ? { brand_name: brandName } : {}),
           ...(website !== undefined ? { website } : {}),
           ...(sector !== undefined ? { sector } : {}),
           // Primary-channel projection at the top level for the teaser's

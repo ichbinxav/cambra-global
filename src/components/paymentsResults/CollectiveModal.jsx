@@ -126,7 +126,7 @@ export default function CollectiveModal({ open, onClose, context = {}, onSwitch 
               <button
                 onClick={onClose}
                 className="mt-5 inline-flex items-center justify-center h-10 rounded-full px-6 text-sm font-bold text-white hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)" }}
+                style={{ background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)" }}
               >
                 {t("coll_done")}
               </button>
@@ -172,7 +172,7 @@ export default function CollectiveModal({ open, onClose, context = {}, onSwitch 
                 onClick={submit}
                 disabled={!canSubmit}
                 className="w-full h-12 rounded-full text-sm font-bold text-white inline-flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)", boxShadow: "0 0 28px rgba(34,211,238,0.30)" }}
+                style={{ background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)", boxShadow: "0 0 28px rgba(34,211,238,0.30)" }}
               >
                 {status === "submitting" ? <><Loader2 size={16} className="animate-spin" /> {t("coll_submitting")}</> : <>{t("coll_submit")} <ArrowRight size={16} /></>}
               </button>

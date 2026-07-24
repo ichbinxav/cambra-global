@@ -1,9 +1,10 @@
 // BrandBlock — "About your brand" block for the anonymous PaymentsAnalyzer.
 //
 // Three fields, minimal by design:
-//   - brand_name  (required, 2-80 chars)  — the single mandatory addition;
-//                 without a name every analysis is anonymous noise in the
-//                 lead intelligence layer.
+//   - brand_name  (OPTIONAL since SWEEP-1 T2, 2026-07-24; 2-80 chars when
+//                 present) — asking for a name before showing value was pure
+//                 conversion friction and invited fake data. The claim flow
+//                 falls back to a neutral name when absent.
 //   - website     (optional, URL-ish)      — captured to enable future
 //                 auto-detection (stack, geo, size proxies) without asking.
 //   - sector      (optional, enum)         — enables cohort-aware benchmarking
@@ -35,6 +36,8 @@ const SECTOR_OPTIONS = [
 // Exported so the parent (and tests) can reuse the enum without drift.
 export const BRAND_SECTOR_SLUGS = SECTOR_OPTIONS.map((s) => s.value);
 
+import { useTranslation } from "@/lib/i18n.jsx";
+
 export default function BrandBlock({
   brandName,
   onBrandNameChange,
@@ -43,6 +46,7 @@ export default function BrandBlock({
   sector,
   onSectorChange,
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       {/* Section header */}
@@ -56,14 +60,14 @@ export default function BrandBlock({
         Helps us benchmark you against similar brands. Still no account, still anonymous.
       </p>
 
-      {/* Brand name — REQUIRED */}
+      {/* Brand name — OPTIONAL (SWEEP-1 T2) */}
       <div className="space-y-1.5">
         <label
           htmlFor="brand-name-input"
           className="text-[11px] font-medium"
           style={{ color: "rgba(255,255,255,0.75)" }}
         >
-          Brand name <span style={{ color: "#FF8A6B" }}>*</span>
+          {t("brand_name_optional")}
         </label>
         <input
           id="brand-name-input"

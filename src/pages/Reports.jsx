@@ -149,7 +149,7 @@ export default function Reports() {
                     formatter={v => [`€${v?.toLocaleString()}/yr`]}
                   />
                   <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16, color: "rgba(255,255,255,0.7)" }} />
-                  <Bar dataKey="Payments" fill="#8B7BFF" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Payments" fill="var(--voltio-2)" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
               </div>

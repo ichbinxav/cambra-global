@@ -77,7 +77,7 @@ export default function Security() {
         >
           <p>
             {b5Parts[0]}
-            <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: "#5B4CF5", fontWeight: 600 }}>
+            <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: "var(--voltio)", fontWeight: 600 }}>
               {CONTACT_EMAIL}
             </a>
             {b5Parts[1]}

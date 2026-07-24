@@ -157,6 +157,11 @@ Deno.serve(async (req) => {
         annual_savings_eur: engine_result_raw.annual_savings_eur || null,
         cohort: engine_result_raw.cohort || null,
         mode: typeof engine_result_raw.mode === 'string' ? engine_result_raw.mode : null,
+        // SWEEP-1 T1 (2026-07-24) — classification is a computed 3-value enum
+        // (savings_opportunity | already_optimized | insufficient_data), zero
+        // sensitive data. Needed so the anonymous reader renders OptimizedHero
+        // instead of a "€0/year" GapCard on already_optimized results.
+        classification: typeof engine_result_raw.classification === 'string' ? engine_result_raw.classification : null,
         assumptions: Array.isArray(engine_result_raw.assumptions) ? engine_result_raw.assumptions : [],
       };
       // Combined-mode additive fields. Only present when the persisted row
@@ -178,6 +183,8 @@ Deno.serve(async (req) => {
             annual_savings_eur: chEr.annual_savings_eur || null,
             cohort: chEr.cohort || null,
             mode: typeof chEr.mode === 'string' ? chEr.mode : null,
+            // SWEEP-1 T1 — same computed enum, per-channel (combined mode).
+            classification: typeof chEr.classification === 'string' ? chEr.classification : null,
             assumptions: Array.isArray(chEr.assumptions) ? chEr.assumptions : [],
           } : null;
           return {

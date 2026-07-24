@@ -122,7 +122,7 @@ export default function FeeBreakdownCard({ engineResult, locked = false }) {
             <Bar
               label="Processor margin"
               bps={breakdown.processor_margin_bps}
-              color="linear-gradient(90deg, #39C6F0 0%, #5B4CF5 100%)"
+              color="linear-gradient(90deg, #39C6F0 0%, var(--voltio) 100%)"
               note={`Assumed ±${breakdown.processor_margin_band_bps} bps — this is where the savings live`}
               negotiable
             />

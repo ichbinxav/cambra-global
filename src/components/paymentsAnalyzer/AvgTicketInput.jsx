@@ -41,7 +41,7 @@ export default function AvgTicketInput({ value, onChange }) {
               active(v)
                 ? {
                     background: "rgba(91,76,245,0.12)",
-                    color: "#5B4CF5",
+                    color: "var(--voltio)",
                     border: "1px solid rgba(91,76,245,0.55)",
                   }
                 : {

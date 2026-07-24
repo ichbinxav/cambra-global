@@ -11,7 +11,7 @@ export default function BrandGlyph({ className = "w-5 h-5" }) {
     >
       <defs>
         <linearGradient id="cambra-g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#5B4CF5" />
+          <stop offset="0%" stopColor="var(--voltio)" />
           <stop offset="100%" stopColor="#39C6F0" />
         </linearGradient>
       </defs>

@@ -170,7 +170,7 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
               onClick={onStartRecovery}
               className="inline-flex items-center justify-center h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 transition-opacity"
               style={{
-                background: "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)",
+                background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)",
                 boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
               }}
             >

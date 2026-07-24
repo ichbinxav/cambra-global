@@ -38,7 +38,7 @@ export default function AccessModelCards() {
       >
         {/* Ambient analytical gradient */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-32 -right-24 w-80 h-80 rounded-full blur-3xl opacity-[0.18]" style={{ background: "radial-gradient(closest-side, #5B4CF5, transparent)" }} />
+          <div className="absolute -top-32 -right-24 w-80 h-80 rounded-full blur-3xl opacity-[0.18]" style={{ background: "radial-gradient(closest-side, var(--voltio), transparent)" }} />
           <div className="absolute -bottom-32 -left-24 w-72 h-72 rounded-full blur-3xl opacity-[0.14]" style={{ background: "radial-gradient(closest-side, #39C6F0, transparent)" }} />
           <div
             className="absolute inset-0 opacity-[0.5]"

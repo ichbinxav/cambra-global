@@ -25,7 +25,7 @@ const bigNum = { fontFamily: MONO, fontSize: 26, fontWeight: 800, letterSpacing:
 const CONF_LEVEL = { verified: 3, pending_verification: 2, estimated: 1 };
 const CONF_COLOR = {
   verified: "#2FE0A8",           // emerald
-  pending_verification: "#8B7BFF", // blue
+  pending_verification: "var(--voltio-2)", // violet
   estimated: "#F5A623",          // amber
 };
 const CONF_KEY = {

@@ -109,7 +109,7 @@ function Hero() {
           >
             <span
               className="inline-block h-1.5 w-1.5 rounded-full"
-              style={{ background: "#5B4CF5" }}
+              style={{ background: "var(--voltio)" }}
             />
             {t("hero_badge")}
           </motion.div>
@@ -322,7 +322,7 @@ function HowItWorksSection() {
                   <div className="flex items-center gap-3 mb-3">
                     <span
                       className="relative inline-flex w-2 h-2 rounded-full"
-                      style={{ background: "#8B7BFF", boxShadow: "0 0 12px rgba(139,123,255,0.8)" }}
+                      style={{ background: "var(--voltio-2)", boxShadow: "0 0 12px rgba(139,123,255,0.8)" }}
                       aria-hidden
                     />
                     <SectionLabel>Step {s.n}</SectionLabel>

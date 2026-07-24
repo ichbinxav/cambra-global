@@ -50,7 +50,7 @@ export default function PopularArticles() {
                     <span
                       className="text-[10px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full"
                       style={{
-                        color: cat?.accent || "#5B4CF5",
+                        color: cat?.accent || "var(--voltio)",
                         background: `${cat?.accent || "#5B4CF5"}18`,
                       }}
                     >

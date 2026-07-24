@@ -205,8 +205,8 @@ export default function SavingsCurveChart({
       >
         <defs>
           <linearGradient id="curveStroke" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#5B4CF5" />
-            <stop offset="100%" stopColor="#8B7BFF" />
+            <stop offset="0%" stopColor="var(--voltio)" />
+            <stop offset="100%" stopColor="var(--voltio-2)" />
           </linearGradient>
           <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="rgba(91,76,245,0.20)" />
@@ -285,7 +285,7 @@ export default function SavingsCurveChart({
         {/* Marker */}
         <g>
           <circle cx={mx} cy={my} r="6" fill="#0b1020" stroke="rgba(139,123,255,1)" strokeWidth="1.75" />
-          <circle cx={mx} cy={my} r="2.5" fill="#8B7BFF" />
+          <circle cx={mx} cy={my} r="2.5" fill="var(--voltio-2)" />
         </g>
 
         {/* Live M{n} pill — flips to the LEFT of the marker near the right
@@ -308,7 +308,7 @@ export default function SavingsCurveChart({
               <text
                 x={pillW / 2} y="3"
                 textAnchor="middle"
-                fill="#8B7BFF"
+                fill="var(--voltio-2)"
                 fontSize="12"
                 fontWeight="700"
                 fontFamily="ui-monospace, SFMono-Regular, monospace"

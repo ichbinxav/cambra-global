@@ -46,7 +46,7 @@ export default function SecurityHero() {
             letterSpacing: "0.14em",
           }}
         >
-          <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "#5B4CF5" }} />
+          <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "var(--voltio)" }} />
           {t("sec_eyebrow")}
         </motion.div>
 
@@ -98,7 +98,7 @@ export default function SecurityHero() {
                 color: "var(--gris-1)",
               }}
             >
-              <Icon size={12} style={{ color: "#5B4CF5" }} />
+              <Icon size={12} style={{ color: "var(--voltio)" }} />
               {t(k)}
             </span>
           ))}
