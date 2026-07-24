@@ -76,8 +76,8 @@ export default function AnalyzingOverlay() {
           className="h-full rounded-full transition-all duration-500 ease-out"
           style={{
             width: `${pct}%`,
-            background: "linear-gradient(90deg, #5B4CF5 0%, #39C6F0 100%)",
-            boxShadow: "0 0 12px rgba(34,211,238,0.55)",
+            background: "linear-gradient(90deg, var(--voltio) 0%, #39C6F0 100%)",
+            boxShadow: "0 0 12px rgba(91,76,245,0.55)",
           }}
         />
       </div>
@@ -93,11 +93,11 @@ export default function AnalyzingOverlay() {
                 className="inline-flex items-center justify-center h-4 w-4 rounded-full shrink-0 transition-all"
                 style={{
                   background: done
-                    ? "linear-gradient(135deg, #5B4CF5 0%, #39C6F0 100%)"
+                    ? "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)"
                     : active
-                      ? "rgba(34,211,238,0.15)"
+                      ? "rgba(91,76,245,0.15)"
                       : "rgba(255,255,255,0.06)",
-                  border: active ? "1px solid rgba(34,211,238,0.6)" : "1px solid transparent",
+                  border: active ? "1px solid rgba(91,76,245,0.6)" : "1px solid transparent",
                 }}
               >
                 {done ? (

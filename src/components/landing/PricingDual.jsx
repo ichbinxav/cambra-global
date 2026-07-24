@@ -37,7 +37,7 @@ const RECOVERY_FEATURES = [
 ];
 
 function Eyebrow({ children, accent = "ink" }) {
-  const color = accent === "voltio" ? "#5B4CF5" : "var(--gris-1)";
+  const color = accent === "voltio" ? "var(--voltio)" : "var(--gris-1)";
   return (
     <div className="flex items-center gap-2">
       <span
@@ -64,7 +64,7 @@ function FeatureRow({ children }) {
           border: "1px solid rgba(139,123,255,0.5)",
         }}
       >
-        <Check size={9} style={{ color: "#8B7BFF" }} strokeWidth={3} />
+        <Check size={9} style={{ color: "var(--voltio-2)" }} strokeWidth={3} />
       </span>
       <span className="text-[12.5px] leading-[1.55]" style={{ color: "var(--gris-1)" }}>{children}</span>
     </li>
@@ -333,7 +333,7 @@ export default function PricingDual() {
               />
               <span
                 className="absolute top-5 right-5 text-[9px] uppercase font-bold tracking-[0.24em]"
-                style={{ color: "#5B4CF5" }}
+                style={{ color: "var(--voltio)" }}
                 aria-hidden
               >
                 Step 2

@@ -76,7 +76,7 @@ function LogoMark({ slug, label, selected }) {
     >
       <span
         className="text-[13px] font-bold"
-        style={{ color: selected ? "#8B7BFF" : "rgba(255,255,255,0.75)", letterSpacing: "-0.02em" }}
+        style={{ color: selected ? "var(--voltio-2)" : "rgba(255,255,255,0.75)", letterSpacing: "-0.02em" }}
       >
         {initial}
       </span>
@@ -118,7 +118,7 @@ export default function ProviderCard({ option, value, onChange }) {
       {selected && (
         <span
           className="absolute top-1.5 right-1.5 inline-flex items-center justify-center h-4 w-4 rounded-full"
-          style={{ background: "#8B7BFF" }}
+          style={{ background: "var(--voltio-2)" }}
           aria-hidden="true"
         >
           <Check size={10} className="text-white" strokeWidth={3} />

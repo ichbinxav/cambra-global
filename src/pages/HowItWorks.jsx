@@ -54,7 +54,7 @@ export default function HowItWorks() {
                       style={{
                         fontSize: "clamp(4rem, 9vw, 6.5rem)",
                         lineHeight: 1,
-                        background: "linear-gradient(180deg, #3A2BB0 0%, #8B7BFF 100%)",
+                        background: "linear-gradient(180deg, #3A2BB0 0%, var(--voltio-2) 100%)",
                         WebkitBackgroundClip: "text",
                         backgroundClip: "text",
                         WebkitTextFillColor: "transparent",

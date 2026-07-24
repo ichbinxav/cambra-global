@@ -52,8 +52,8 @@ export default function DashboardSidebar() {
             style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.65)" }}
           >
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#8B7BFF" }} />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#8B7BFF" }} />
+              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--voltio-2)" }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "var(--voltio-2)" }} />
             </span>
             {t("sidebar_network_live")}
           </span>

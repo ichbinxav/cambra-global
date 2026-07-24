@@ -8,7 +8,6 @@
 import { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
-import { downloadPaymentsAuditPdf } from "@/lib/paymentsAuditPdf.js";
 
 export default function DownloadAuditButton({
   engineResult,
@@ -27,6 +26,9 @@ export default function DownloadAuditButton({
     if (busy) return;
     setBusy(true);
     try {
+      // BACKLOG-1 T4 — jsPDF + PDF builder cargados SOLO al pulsar exportar,
+      // fuera del bundle inicial. El spinner existente cubre la carga del chunk.
+      const { downloadPaymentsAuditPdf } = await import("@/lib/paymentsAuditPdf.js");
       // Yield a frame so the spinner paints before the (synchronous) jsPDF build.
       await new Promise((r) => requestAnimationFrame(r));
       downloadPaymentsAuditPdf({ engineResult, inputSnapshot, rateTable, brandName }, t);

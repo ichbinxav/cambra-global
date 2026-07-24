@@ -25,7 +25,7 @@ import CookieConsent from '@/components/shared/CookieConsent';
 // /Results renders PaymentsResults directly (eager) — it's small.
 const Dashboard     = lazy(() => import('@/pages/Dashboard'));
 const ConnectTools  = lazy(() => import('@/pages/ConnectTools'));
-import Reports from '@/pages/Reports';
+const Reports = lazy(() => import('@/pages/Reports'));
 // FASE 1.2 — /Network, /Insights, /InsightDetail deprecated (multi-vertical /
 // pre-pivot collective model). Components kept dormant in src/pages/.
 import Account from '@/pages/Account';
@@ -42,26 +42,29 @@ import AdminLayout from '@/pages/admin/AdminLayout';
 const AdminOverview   = lazy(() => import('@/pages/admin/AdminOverview'));
 const AdminRevenue    = lazy(() => import('@/pages/admin/AdminRevenue'));
 const AdminBenchmarks = lazy(() => import('@/pages/admin/AdminBenchmarks'));
-import AdminUsers from '@/pages/admin/AdminUsers';
-import AdminUserDetail from '@/pages/admin/AdminUserDetail';
-import AdminApplications from '@/pages/admin/AdminApplications';
-import AdminPipeline from '@/pages/admin/AdminPipeline';
-import AdminDeals from '@/pages/admin/AdminDeals';
-import AdminProviders from '@/pages/admin/AdminProviders';
-import AdminContracts from '@/pages/admin/AdminContracts';
-import AdminIntegrations from '@/pages/admin/AdminIntegrations';
-import AdminApiIntegrations from '@/pages/admin/AdminApiIntegrations';
-import AdminControl from '@/pages/admin/AdminControl';
-import AdminActivationDetail from '@/pages/admin/AdminActivationDetail';
-import AdminRecommendations from '@/pages/admin/AdminRecommendations';
-import AdminCompliance from '@/pages/admin/AdminCompliance';
-import AdminActivity from '@/pages/admin/AdminActivity';
-import AdminApprovals from '@/pages/admin/AdminApprovals';
-import AdminCopilot from '@/pages/admin/AdminCopilot';
-import AdminCommand from '@/pages/admin/AdminCommand';
-import AdminInbox from '@/pages/admin/AdminInbox';
-import AdminChat from '@/pages/admin/AdminChat';
-import AdminDiscovery from '@/pages/admin/AdminDiscovery';
+// BACKLOG-1 T4 — páginas admin lazy: estaban eager y arrastraban sus paneles
+// pesados (recharts, tablas) al chunk inicial de cualquier visitante anónimo.
+// El <Suspense> con LazyFallback ya envolvía <Routes>.
+const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'));
+const AdminUserDetail = lazy(() => import('@/pages/admin/AdminUserDetail'));
+const AdminApplications = lazy(() => import('@/pages/admin/AdminApplications'));
+const AdminPipeline = lazy(() => import('@/pages/admin/AdminPipeline'));
+const AdminDeals = lazy(() => import('@/pages/admin/AdminDeals'));
+const AdminProviders = lazy(() => import('@/pages/admin/AdminProviders'));
+const AdminContracts = lazy(() => import('@/pages/admin/AdminContracts'));
+const AdminIntegrations = lazy(() => import('@/pages/admin/AdminIntegrations'));
+const AdminApiIntegrations = lazy(() => import('@/pages/admin/AdminApiIntegrations'));
+const AdminControl = lazy(() => import('@/pages/admin/AdminControl'));
+const AdminActivationDetail = lazy(() => import('@/pages/admin/AdminActivationDetail'));
+const AdminRecommendations = lazy(() => import('@/pages/admin/AdminRecommendations'));
+const AdminCompliance = lazy(() => import('@/pages/admin/AdminCompliance'));
+const AdminActivity = lazy(() => import('@/pages/admin/AdminActivity'));
+const AdminApprovals = lazy(() => import('@/pages/admin/AdminApprovals'));
+const AdminCopilot = lazy(() => import('@/pages/admin/AdminCopilot'));
+const AdminCommand = lazy(() => import('@/pages/admin/AdminCommand'));
+const AdminInbox = lazy(() => import('@/pages/admin/AdminInbox'));
+const AdminChat = lazy(() => import('@/pages/admin/AdminChat'));
+const AdminDiscovery = lazy(() => import('@/pages/admin/AdminDiscovery'));
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing.jsx';
 // FASE 1.2 — /Developers, /Developers/MCP, /Snapshot deprecated.
@@ -75,8 +78,8 @@ import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
 import Help from '@/pages/Help';
 import HelpCategory from '@/pages/HelpCategory';
-import AdminInvoices from '@/pages/admin/AdminInvoices';
-import AdminWaitlist from '@/pages/admin/AdminWaitlist';
+const AdminInvoices = lazy(() => import('@/pages/admin/AdminInvoices'));
+const AdminWaitlist = lazy(() => import('@/pages/admin/AdminWaitlist'));
 import Invoices from '@/pages/Invoices';
 import Vault from '@/pages/Vault';
 import ConnectIntegrations from '@/pages/ConnectIntegrations';

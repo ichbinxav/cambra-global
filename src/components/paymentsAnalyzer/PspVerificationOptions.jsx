@@ -85,7 +85,7 @@ export default function PspVerificationOptions({ providerSlug, providerLabel, on
             <div className="flex items-start gap-3">
               <div
                 className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
-                style={{ background: "rgba(12,12,22,0.03)", border: "1px solid var(--linea)", color: "#5B4CF5" }}
+                style={{ background: "rgba(12,12,22,0.03)", border: "1px solid var(--linea)", color: "var(--voltio)" }}
               >
                 <Zap size={16} strokeWidth={1.8} />
               </div>
@@ -96,7 +96,7 @@ export default function PspVerificationOptions({ providerSlug, providerLabel, on
                   </h4>
                   <span
                     className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
-                    style={{ background: "rgba(91,76,245,0.10)", color: "#5B4CF5", border: "1px solid rgba(91,76,245,0.28)" }}
+                    style={{ background: "rgba(91,76,245,0.10)", color: "var(--voltio)", border: "1px solid rgba(91,76,245,0.28)" }}
                   >
                     <ShieldCheck size={8} /> Verified
                   </span>
@@ -104,7 +104,7 @@ export default function PspVerificationOptions({ providerSlug, providerLabel, on
                 <p className="text-[12px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
                   We measure your actual effective rate from 90 days of real transactions — no estimation.
                 </p>
-                <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold" style={{ color: "#5B4CF5" }}>
+                <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold" style={{ color: "var(--voltio)" }}>
                   Connect {label} <ArrowRight size={11} />
                 </span>
               </div>

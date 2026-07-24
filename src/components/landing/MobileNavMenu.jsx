@@ -162,8 +162,8 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
             >
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "#5B4CF5", animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: "#5B4CF5" }} />
+                  <span className="absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "var(--voltio)", animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: "var(--voltio)" }} />
                 </span>
                 <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/60">
                   Live · Network online
@@ -232,7 +232,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                     <div
                       aria-hidden
                       className="absolute -inset-0.5 rounded-full opacity-50 group-hover:opacity-80 blur-md transition-opacity"
-                      style={{ background: "linear-gradient(110deg, #5B4CF5, #39C6F0)" }}
+                      style={{ background: "linear-gradient(110deg, var(--voltio), #39C6F0)" }}
                     />
                     <div className="relative h-12 rounded-full text-white font-bold text-[14px] inline-flex items-center justify-center gap-2 w-full overflow-hidden" style={{ background: "var(--g-voltio)" }}>
                       <Sparkles className="h-3.5 w-3.5" />
@@ -249,7 +249,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                       <div
                         aria-hidden
                         className="absolute -inset-0.5 rounded-full opacity-60 group-hover:opacity-90 blur-md transition-opacity"
-                        style={{ background: "linear-gradient(110deg, #5B4CF5, #39C6F0)" }}
+                        style={{ background: "linear-gradient(110deg, var(--voltio), #39C6F0)" }}
                       />
                       <div className="relative h-12 rounded-full text-white font-bold text-[14px] inline-flex items-center justify-center gap-2 w-full overflow-hidden" style={{ background: "var(--g-voltio)" }}>
                         {/* Shimmer sweep */}
@@ -272,7 +272,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                     rel="noopener noreferrer"
                     className="w-full h-11 rounded-full text-[13px] font-semibold border border-white/[0.12] bg-white/[0.03] text-white/85 hover:bg-white/[0.06] hover:border-white/[0.2] transition-all flex items-center justify-center gap-2"
                   >
-                    <Activity className="h-3.5 w-3.5" style={{ color: "#8B7BFF" }} strokeWidth={2} />
+                    <Activity className="h-3.5 w-3.5" style={{ color: "var(--voltio-2)" }} strokeWidth={2} />
                     Sign in
                   </a>
                 </>

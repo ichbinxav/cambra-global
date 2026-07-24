@@ -34,7 +34,6 @@ import AnalyzerEntryCards from "@/components/paymentsAnalyzer/AnalyzerEntryCards
 import PspVerificationOptions from "@/components/paymentsAnalyzer/PspVerificationOptions";
 import AnalyzingOverlay from "@/components/paymentsAnalyzer/AnalyzingOverlay";
 import FieldCard from "@/components/paymentsAnalyzer/FieldCard";
-import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
 //    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
