@@ -13,7 +13,9 @@ const statusToEvent = (status) => {
   }
 };
 
+// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): entity-automation handler with NO registered automation — kept with probe (invoicing surface is live).
 Deno.serve(async (req) => {
+  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'onInvoiceStatusEvent' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);

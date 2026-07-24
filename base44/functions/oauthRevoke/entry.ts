@@ -8,7 +8,9 @@ async function sha256Hex(input) {
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): OAuth2 revocation endpoint — external clients may call by URL, kept with probe.
 Deno.serve(async (req) => {
+  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'oauthRevoke' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
   const base44 = createClientFromRequest(req);
   const text = await req.text();

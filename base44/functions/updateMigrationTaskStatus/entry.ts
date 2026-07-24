@@ -21,7 +21,9 @@ async function canGoLive(base44, activationId){
   return hasMandate && noneBlocked && coreDone;
 }
 
+// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): activation-admin family (surface live, no src caller) — kept with probe.
 Deno.serve(async (req) => {
+  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'updateMigrationTaskStatus' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
   try {
     const base44 = createClientFromRequest(req);
     const me = await base44.auth.me();

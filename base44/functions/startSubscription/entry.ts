@@ -1,6 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
+// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): orphan, but Subscription holds 2 rows — kept with probe.
 Deno.serve(async (req) => {
+  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'startSubscription' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();

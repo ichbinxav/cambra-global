@@ -3,7 +3,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 // Admin-only diagnostic: verifies STRIPE_SECRET_KEY works against the live API
 // and that STRIPE_PUBLISHABLE_KEY + STRIPE_WEBHOOK_SECRET are present with
 // the expected prefixes. Returns a compact status object — never leaks values.
+// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): ops diagnostic adjacent to the verified flow — kept with probe.
 Deno.serve(async (req) => {
+  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'stripeHealthCheck' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();

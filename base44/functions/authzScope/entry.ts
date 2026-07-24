@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 
+// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): zero references from src or live functions.
+// Invocation probe below logs any real use to OperationalLog before the second sweep.
 Deno.serve(async (req) => {
+  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'authzScope' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();

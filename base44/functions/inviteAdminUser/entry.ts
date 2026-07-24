@@ -4,7 +4,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
  * One-shot admin helper — invites a new admin user, or promotes an existing
  * user to admin. Guarded to admins only. Idempotent: safe to call twice.
  */
+// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): admin utility with no src caller — kept with probe.
 Deno.serve(async (req) => {
+  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'inviteAdminUser' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
   try {
     const base44 = createClientFromRequest(req);
     const caller = await base44.auth.me();

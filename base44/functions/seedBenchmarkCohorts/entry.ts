@@ -125,7 +125,9 @@ function buildCohorts() {
   return rows;
 }
 
+// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): seeder for the live benchmark cron chain — plausible re-run, kept with probe.
 Deno.serve(async (req) => {
+  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'seedBenchmarkCohorts' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);

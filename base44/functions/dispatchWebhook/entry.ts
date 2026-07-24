@@ -53,7 +53,9 @@ async function deliverOnce({ endpoint, body, signature, event_type, requestId, a
   }
 }
 
+// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): no live caller found (API-platform family kept out of caution).
 Deno.serve(async (req) => {
+  try { await createClientFromRequest(req).asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'dispatchWebhook' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();

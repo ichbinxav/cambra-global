@@ -13,8 +13,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const ENGINE_VERSION = 'm8-approve-agent-run-1.0';
 
+// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): approvals surface live but no src caller — kept with probe.
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
+  try { await base44.asServiceRole.entities.OperationalLog.create({ event_type: "quarantine_probe", message: "quarantined function 'approveAgentRun' was invoked", created_at: new Date().toISOString() }); } catch (_probeErr) { /* probe must never break the function */ }
 
   // Admin only (no service-role bypass — this is a human gate)
   let user = null;
