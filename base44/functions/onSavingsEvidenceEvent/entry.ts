@@ -3,8 +3,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Automations may not carry a user; proceed regardless but attempt fetch
-    await base44.auth.me().catch(() => null);
+    // SECURITY-1 (2026-07-24) — automations may not carry a user (allowed);
+    // any AUTHENTICATED caller must be admin.
+    const caller = await base44.auth.me().catch(() => null);
+    if (caller && caller.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const payload = await req.json();
     const event = payload?.event || {};
@@ -12,6 +16,13 @@ Deno.serve(async (req) => {
     const type = event?.type; // create | update | delete
 
     if (!data) return Response.json({ status: 'skipped', reason: 'no data' });
+
+    // SECURITY-1 — anti-forgery: only log audit rows for evidence records that
+    // actually exist server-side (forged payloads = fake audit trail noise).
+    const evidence = data.id
+      ? await base44.asServiceRole.entities.SavingsEvidence.get(data.id).catch(() => null)
+      : null;
+    if (!evidence) return Response.json({ status: 'skipped', reason: 'unverified_payload' });
 
     // On create: log 'submitted'
     if (type === 'create') {

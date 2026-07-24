@@ -3,6 +3,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 // Email 4: Welcome to CAMBRA — triggered when a Brand entity is created (onboarding complete)
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
+
+  // SECURITY-1 (2026-07-24) — entity-automation target. Platform automations
+  // invoke without a user session (allowed); any AUTHENTICATED caller must be
+  // admin, so a logged-in regular user cannot trigger it directly.
+  const caller = await base44.auth.me().catch(() => null);
+  if (caller && caller.role !== "admin") {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const body = await req.json();
   const { data } = body;
 
@@ -13,6 +22,16 @@ Deno.serve(async (req) => {
   const brandName = data.name || "your brand";
 
   if (!userEmail) return Response.json({ ok: true });
+
+  // SECURITY-1 — anti-forgery: only email when the referenced Brand actually
+  // exists and its stored creator matches the payload. Kills anonymous
+  // curl-with-forged-payload email spam through our sending domain.
+  const brand = data.id
+    ? await base44.asServiceRole.entities.Brand.get(data.id).catch(() => null)
+    : null;
+  if (!brand || brand.created_by !== userEmail) {
+    return Response.json({ ok: true, skipped: "unverified_payload" });
+  }
 
   const appDomain = Deno.env.get('APP_DOMAIN') || 'cambra.global';
 

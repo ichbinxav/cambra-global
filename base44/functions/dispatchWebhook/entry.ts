@@ -56,7 +56,24 @@ async function deliverOnce({ endpoint, body, signature, event_type, requestId, a
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { event_type, payload = {} } = await req.json();
+    const body = await req.json();
+    const { event_type, payload = {} } = body;
+
+    // SECURITY-1 (2026-07-24) — INTERNAL_ONLY enforcement, as this file's own
+    // classification comment prescribes. Without this gate an anonymous caller
+    // could push forged-but-validly-SIGNED events to every registered endpoint.
+    // Allowed callers: (a) authenticated admin, (b) server-to-server callers
+    // presenting the shared INTERNAL_CALL_SECRET via the x-internal-secret
+    // header or payload.internal_secret. Frontend invocation is not supported.
+    const internalSecret = Deno.env.get("INTERNAL_CALL_SECRET") || "";
+    const presented = req.headers.get("x-internal-secret") || body.internal_secret || "";
+    const user = await base44.auth.me().catch(() => null);
+    const isAdmin = user?.role === "admin";
+    const isInternal = internalSecret.length > 0 && presented === internalSecret;
+    if (!isAdmin && !isInternal) {
+      return Response.json({ error: "forbidden" }, { status: 403 });
+    }
+
     if (!event_type) return Response.json({ error: "event_type required" }, { status: 400 });
     if (!SUPPORTED_EVENTS.includes(event_type)) {
       return Response.json({ error: `unsupported_event_type: ${event_type}`, supported: SUPPORTED_EVENTS }, { status: 400 });

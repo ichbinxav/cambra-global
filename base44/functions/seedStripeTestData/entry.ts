@@ -14,8 +14,18 @@
 // Expected refunds: 80 (full) + 50 (partial) = 130 EUR
 // Expected NET volume (denominator): 1295 - 130 = 1165 EUR
 
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+
 Deno.serve(async (req) => {
   try {
+    // SECURITY-1 (2026-07-24) — dev harness, admin-only. Previously had NO
+    // auth gate: any anonymous caller could mint Stripe test charges.
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me().catch(() => null);
+    if (!user || user.role !== "admin") {
+      return Response.json({ error: "forbidden" }, { status: 403 });
+    }
+
     const testKey = Deno.env.get("STRIPE_TEST_SECRET_KEY");
     if (!testKey) return Response.json({ error: "STRIPE_TEST_SECRET_KEY missing" }, { status: 500 });
 

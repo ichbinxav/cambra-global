@@ -1,6 +1,7 @@
 {
   "name": "VerificationEvent",
   "type": "object",
+  "description": "Append-only verification audit trail. Written exclusively by backend functions via service role \u2014 admin-only RLS (SECURITY-1, 2026-07-24).",
   "properties": {
     "entity_type": {
       "type": "string",
@@ -44,5 +45,17 @@
     "entity_id",
     "action",
     "occurred_at"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

@@ -1,6 +1,7 @@
 {
   "name": "BenchmarkSnapshot",
   "type": "object",
+  "description": "Internal network-benchmark aggregates. Served to users only through backend functions (service role) \u2014 direct reads admin-only (SECURITY-1, 2026-07-24).",
   "properties": {
     "cohort_key": {
       "type": "string"
@@ -43,5 +44,17 @@
     "month",
     "metric_key",
     "n"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

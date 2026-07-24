@@ -20,6 +20,13 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // SECURITY-1 (2026-07-24) — scheduled job: the platform scheduler invokes
+    // without a session (allowed); any AUTHENTICATED caller must be admin.
+    const caller = await base44.auth.me().catch(() => null);
+    if (caller && caller.role !== 'admin') {
+      return Response.json({ ok: false, error: 'forbidden' }, { status: 403 });
+    }
+
     const cutoff = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
     let totalDeleted = 0;

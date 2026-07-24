@@ -1,6 +1,7 @@
 {
   "name": "Insight",
   "type": "object",
+  "description": "Editorial articles for the deprecated /Insights surface (FASE 1.2 \u2014 route redirects home). Admin-only RLS while dormant (SECURITY-1, 2026-07-24); loosen read to published-only if the surface is ever reactivated.",
   "properties": {
     "title": {
       "type": "string"
@@ -34,5 +35,17 @@
   },
   "required": [
     "title"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

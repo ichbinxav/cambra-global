@@ -1,6 +1,7 @@
 {
   "name": "Provider",
   "type": "object",
+  "description": "Internal provider CRM (contact emails, revenue-share terms, notes). Never rendered on public surfaces (/ForProviders is static marketing) \u2014 admin-only RLS (SECURITY-1, 2026-07-24). Backend functions use service role.",
   "properties": {
     "name": {
       "type": "string"
@@ -50,5 +51,17 @@
   "required": [
     "name",
     "category"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

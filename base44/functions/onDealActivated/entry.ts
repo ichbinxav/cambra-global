@@ -3,6 +3,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
 // Triggered when a DealApplication status changes to "activated"
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
+
+  // SECURITY-1 (2026-07-24) — entity-automation target. Automations invoke
+  // without a session (allowed); any AUTHENTICATED caller must be admin.
+  const caller = await base44.auth.me().catch(() => null);
+  if (caller && caller.role !== "admin") {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const body = await req.json();
   const { data, old_data, event } = body;
 
@@ -11,7 +19,18 @@ Deno.serve(async (req) => {
   if (data?.status !== "activated") return Response.json({ ok: true });
   if (old_data?.status === "activated") return Response.json({ ok: true }); // already processed
 
-  const app = data;
+  // SECURITY-1 — anti-forgery: re-read the DealApplication server-side and act
+  // on the STORED record, never on caller-supplied fields. A forged payload
+  // can no longer mint Contracts/UserDeals or send emails for records that
+  // aren't genuinely activated.
+  const record = data?.id
+    ? await base44.asServiceRole.entities.DealApplication.get(data.id).catch(() => null)
+    : null;
+  if (!record || record.status !== "activated") {
+    return Response.json({ ok: true, skipped: "unverified_payload" });
+  }
+
+  const app = record;
 
   // 1. Create Contract record
   const today = new Date().toISOString().split("T")[0];

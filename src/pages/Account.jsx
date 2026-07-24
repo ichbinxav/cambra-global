@@ -29,12 +29,19 @@ export default function Account() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([base44.auth.me(), base44.entities.Brand.list("-created_date", 1), base44.entities.PaymentsProfile.list("-created_date", 1)]).then(([u, b, p]) => {
-      setUser(u);
-      setBrands(b);
-      setPaymentsProfiles(p);
-      setLoading(false);
-    });
+    // SECURITY-1 — ownership scoping in the query itself (defense in depth on
+    // top of RLS): only MY brand and MY payments profile, never a bare .list().
+    base44.auth.me().then((u) =>
+      Promise.all([
+        base44.entities.Brand.filter({ created_by: u.email }, "-created_date", 1),
+        base44.entities.PaymentsProfile.filter({ created_by: u.email }, "-created_date", 1),
+      ]).then(([b, p]) => {
+        setUser(u);
+        setBrands(b);
+        setPaymentsProfiles(p);
+        setLoading(false);
+      })
+    );
   }, []);
 
   const brand = brands[0];
