@@ -675,7 +675,7 @@ const DICT = {
     sec_sub:      "The honest answer to the question every founder should ask before connecting anything: \"what exactly can CAMBRA see, and what can it do?\"",
     /* i18n: traducción propia, revisar — hero trust chips (not in source table) */
     sec_chip_1:   "Read-only OAuth",
-    sec_chip_2:   "Encrypted end-to-end",
+    sec_chip_2:   "Encrypted in transit & at rest",
     sec_chip_3:   "GDPR · France",
     sec_b1_h2:    "Read-only. By design, not by promise.",
     sec_b1_body:  "When you connect your payment provider, you grant CAMBRA read-only access through the provider's official OAuth flow. That access lets us read your transaction fees and volumes. It does not let us create charges, issue refunds, move funds, or modify anything in your account. This isn't a policy we follow — it's a technical boundary set by the provider. Even if we wanted to touch your money, we couldn't.",
@@ -1305,7 +1305,7 @@ const DICT = {
     sec_sub:      "La réponse honnête à la question que tout fondateur devrait se poser avant de connecter quoi que ce soit : « que peut voir CAMBRA exactement, et que peut-il faire ? »",
     /* i18n: traducción propia, revisar — hero trust chips (not in source table) */
     sec_chip_1:   "OAuth en lecture seule",
-    sec_chip_2:   "Chiffré de bout en bout",
+    sec_chip_2:   "Chiffré en transit et au repos",
     sec_chip_3:   "RGPD · France",
     sec_b1_h2:    "Lecture seule. Par conception, pas par promesse.",
     sec_b1_body:  "Lorsque vous connectez votre prestataire de paiement, vous accordez à CAMBRA un accès en lecture seule via le flux OAuth officiel du prestataire. Cet accès nous permet de lire vos frais et vos volumes de transactions. Il ne nous permet pas de créer des paiements, d'émettre des remboursements, de déplacer des fonds, ni de modifier quoi que ce soit dans votre compte. Ce n'est pas une politique que nous suivons — c'est une limite technique fixée par le prestataire. Même si nous voulions toucher à votre argent, nous ne le pourrions pas.",
@@ -1935,7 +1935,7 @@ const DICT = {
     sec_sub:      "La respuesta honesta a la pregunta que todo founder debería hacerse antes de conectar nada: «¿qué puede ver exactamente CAMBRA y qué puede hacer?»",
     /* i18n: traducción propia, revisar — hero trust chips (not in source table) */
     sec_chip_1:   "OAuth de solo lectura",
-    sec_chip_2:   "Cifrado de extremo a extremo",
+    sec_chip_2:   "Cifrado en tránsito y en reposo",
     sec_chip_3:   "RGPD · Francia",
     sec_b1_h2:    "Solo lectura. Por diseño, no por promesa.",
     sec_b1_body:  "Cuando conectas tu proveedor de pagos, otorgas a CAMBRA acceso de solo lectura a través del flujo OAuth oficial del proveedor. Ese acceso nos permite leer tus comisiones y volúmenes de transacciones. No nos permite crear cobros, emitir reembolsos, mover fondos ni modificar nada en tu cuenta. No es una política que seguimos: es un límite técnico fijado por el proveedor. Aunque quisiéramos tocar tu dinero, no podríamos.",
