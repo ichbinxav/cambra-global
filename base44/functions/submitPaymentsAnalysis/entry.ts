@@ -252,6 +252,13 @@ const KNOWN_PROVIDERS = new Set([
   // 'sumup' now ALSO has a seeded online DRAFT row (sumup|ANY|EU) → online
   // resolves exact too. 'yavin' added (0.2b) — seeded in-store DRAFT row.
   "sumup", "stripe_terminal", "smile_and_pay", "zettle", "yavin",
+  // SEED-ES (2026-07-24) — Spanish providers with country=ES rows in
+  // PaymentsRateTable (all DRAFT verified=false). 'square' is dual-channel
+  // in ES (online + in-store rows). With no country match and no pan-regional
+  // row, these slugs fall to the regional fallback for non-ES merchants —
+  // same as before this seed. 'bank_tpv_es' is the Spanish bank-TPV (Redsys)
+  // point row the UI collapses CaixaBank/Santander/BBVA/Sabadell into.
+  "monei", "paycomet", "square", "mypos", "bank_tpv_es",
 ]);
 
 // M4-TPV Fase 2A-redo — channels the engine understands. Default 'online'
@@ -1379,6 +1386,18 @@ const ALLOWED_PROVIDER_SLUGS = [
   'zettle',
   // 0.2b (2026-07-13) — FR in-store TPV with a seeded <slug>|ANY|EU|in_store row.
   'yavin',
+  // SEED-ES (2026-07-24) — Spanish providers with country=ES rows (DRAFT).
+  // 'square' is dual-channel in ES (online + in-store). 'bank_tpv_es' is the
+  // collapsed slug for Spanish bank TPVs over Redsys — the UI maps the
+  // CaixaBank/Santander/BBVA/Sabadell/'Other bank TPV' tiles to this slug
+  // when country=ES (never to generic 'other': the Spanish bank-TPV row at
+  // 80 bps + banda máxima is the honest benchmark, not the 220 bps European
+  // fallback).
+  'monei',
+  'paycomet',
+  'square',
+  'mypos',
+  'bank_tpv_es',
   'other',
 ] as const;
 const ALLOWED_PROVIDER_SET = new Set<string>(ALLOWED_PROVIDER_SLUGS);

@@ -277,6 +277,13 @@ const KNOWN_PROVIDERS = new Set([
   // 'sumup' now ALSO has a seeded online DRAFT row (sumup|ANY|EU) → online
   // resolves exact too. 'yavin' added (0.2b) — seeded in-store DRAFT row.
   "sumup", "stripe_terminal", "smile_and_pay", "zettle", "yavin",
+  // SEED-ES (2026-07-24) — Spanish providers with country=ES rows in
+  // PaymentsRateTable (all DRAFT verified=false). 'square' is dual-channel
+  // in ES (online + in-store rows). With no country match and no pan-regional
+  // row, these slugs fall to the regional fallback for non-ES merchants —
+  // same as before this seed. 'bank_tpv_es' is the Spanish bank-TPV (Redsys)
+  // point row the UI collapses CaixaBank/Santander/BBVA/Sabadell into.
+  "monei", "paycomet", "square", "mypos", "bank_tpv_es",
 ]);
 
 // M4-TPV Fase 2A-redo — channels the engine understands. Default 'online'

@@ -15,7 +15,7 @@
 // payload shape, same enum in the same order. Every slider produces a value
 // that lives inside the contract by construction — no clamping needed.
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -90,12 +90,58 @@ const PROVIDER_OPTIONS_IN_STORE = [
   { slug: "other",              label: "Traditional bank TPV", hasSeed: true },
 ];
 
+// ── SEED-ES (2026-07-24) — Spanish provider catalog. Shown ONLY when the
+//    selected country is ES. Slugs with a country=ES row in PaymentsRateTable
+//    carry hasSeed:true and submit as-is. Bank BRAND tiles (CaixaBank /
+//    Santander / BBVA / Sabadell / Other bank TPV) carry
+//    `submitAs: "bank_tpv_es"` — the majority Spanish physical merchant runs
+//    a bank TPV over Redsys, and they MUST land on the Spanish bank-TPV row
+//    (80 bps point, banda máxima), never on the generic European fallback
+//    (220 bps), which would be absurd for a negotiated bank rate. For
+//    country=FR nothing changes: bank options keep collapsing to `other`.
+const PROVIDER_OPTIONS_ONLINE_ES_EXTRA = [
+  { slug: "monei",          label: "MONEI",                     hasSeed: true  },
+  { slug: "paycomet",       label: "PAYCOMET",                  hasSeed: true  },
+  { slug: "square",         label: "Square",                    hasSeed: true  },
+  { slug: "redsys_virtual", label: "Bank virtual TPV (Redsys)", hasSeed: false },
+];
+const PROVIDER_OPTIONS_IN_STORE_ES = [
+  { slug: "sumup",          label: "SumUp",            hasSeed: true },
+  { slug: "zettle",         label: "Zettle by PayPal", hasSeed: true },
+  { slug: "square",         label: "Square",           hasSeed: true },
+  { slug: "mypos",          label: "myPOS",            hasSeed: true },
+  { slug: "caixabank",      label: "CaixaBank",        submitAs: "bank_tpv_es" },
+  { slug: "santander",      label: "Santander",        submitAs: "bank_tpv_es" },
+  { slug: "bbva",           label: "BBVA",             submitAs: "bank_tpv_es" },
+  { slug: "sabadell",       label: "Sabadell",         submitAs: "bank_tpv_es" },
+  { slug: "other_bank_tpv", label: "Other bank TPV",   submitAs: "bank_tpv_es" },
+];
+
+// Country-aware catalog resolution. ES swaps in the Spanish lists; every
+// other country keeps the existing catalogs byte-identical (FR unchanged).
+function getProviderOptions(channel, country) {
+  if (country === "ES") {
+    if (channel === "in_store") return PROVIDER_OPTIONS_IN_STORE_ES;
+    const other = PROVIDER_OPTIONS_ONLINE.find((o) => o.slug === "other");
+    return [
+      ...PROVIDER_OPTIONS_ONLINE.filter((o) => o.slug !== "other"),
+      ...PROVIDER_OPTIONS_ONLINE_ES_EXTRA,
+      other,
+    ];
+  }
+  return channel === "in_store" ? PROVIDER_OPTIONS_IN_STORE : PROVIDER_OPTIONS_ONLINE;
+}
+
 // Map a UI slug to the exact string the backend allowlist accepts.
 // UI-catalog-only slugs (hasSeed=false) collapse to "other" — the backend
 // then routes them to the regional in-store/online fallback. Contract-safe.
 function mapSlugForSubmit(uiSlug, options) {
   const opt = options.find((o) => o.slug === uiSlug);
   if (!opt) return "other";
+  // SEED-ES — explicit collapse target (e.g. bank brand tiles → bank_tpv_es).
+  // Takes precedence over the generic hasSeed rule so a Spanish bank merchant
+  // lands on the Spanish bank-TPV row, never on the generic 'other' fallback.
+  if (opt.submitAs) return opt.submitAs;
   return opt.hasSeed ? opt.slug : "other";
 }
 
@@ -183,6 +229,27 @@ export default function PaymentsAnalyzer() {
 
   const [submitting, setSubmitting]   = useState(false);
   const [errorBanner, setErrorBanner] = useState("");
+
+  // SEED-ES — country-aware provider catalogs. Recomputed when the country
+  // changes; ES swaps in the Spanish lists, everything else is unchanged.
+  const onlineProviderOptions  = useMemo(() => getProviderOptions("online", country), [country]);
+  const inStoreProviderOptions = useMemo(() => getProviderOptions("in_store", country), [country]);
+
+  // Clear any selected provider that no longer exists after a country switch
+  // (e.g. CaixaBank selected, then country changed to FR). Prevents ever
+  // submitting a slug that isn't in the visible catalog.
+  useEffect(() => {
+    const online  = getProviderOptions("online", country);
+    const inStore = getProviderOptions("in_store", country);
+    const inAny = (slug) => online.some((o) => o.slug === slug) || inStore.some((o) => o.slug === slug);
+    if (providerSlug && !inAny(providerSlug)) setProviderSlug("");
+    setCombinedOnline((p) =>
+      p.provider_slug && !online.some((o) => o.slug === p.provider_slug) ? { ...p, provider_slug: "" } : p
+    );
+    setCombinedInStore((p) =>
+      p.provider_slug && !inStore.some((o) => o.slug === p.provider_slug) ? { ...p, provider_slug: "" } : p
+    );
+  }, [country, providerSlug]);
 
   // ── Client-side validation — same ranges + fields as the backend.
   const validation = useMemo(() => {
@@ -306,14 +373,14 @@ export default function PaymentsAnalyzer() {
           channels: [
             {
               channel: "online",
-              provider_slug: mapSlugForSubmit(combinedOnline.provider_slug, PROVIDER_OPTIONS_ONLINE),
+              provider_slug: mapSlugForSubmit(combinedOnline.provider_slug, onlineProviderOptions),
               monthly_gmv_eur: Number(combinedOnline.monthly_gmv_eur),
               avg_ticket_eur: Number(combinedOnline.avg_ticket_eur),
               intl_pct: Number(combinedOnline.intl_pct),
             },
             {
               channel: "in_store",
-              provider_slug: mapSlugForSubmit(combinedInStore.provider_slug, PROVIDER_OPTIONS_IN_STORE),
+              provider_slug: mapSlugForSubmit(combinedInStore.provider_slug, inStoreProviderOptions),
               monthly_gmv_eur: Number(combinedInStore.monthly_gmv_eur),
               avg_ticket_eur: Number(combinedInStore.avg_ticket_eur),
             },
@@ -331,7 +398,7 @@ export default function PaymentsAnalyzer() {
           intl_pct: channel === "in_store" ? 0 : Number(intlPct),
           provider_slug: mapSlugForSubmit(
             providerSlug,
-            channel === "in_store" ? PROVIDER_OPTIONS_IN_STORE : PROVIDER_OPTIONS_ONLINE
+            channel === "in_store" ? inStoreProviderOptions : onlineProviderOptions
           ),
           country,
           channel,
@@ -554,8 +621,8 @@ export default function PaymentsAnalyzer() {
                 onOnlineChange={setCombinedOnline}
                 inStoreValue={combinedInStore}
                 onInStoreChange={setCombinedInStore}
-                onlineProviders={PROVIDER_OPTIONS_ONLINE}
-                inStoreProviders={PROVIDER_OPTIONS_IN_STORE}
+                onlineProviders={onlineProviderOptions}
+                inStoreProviders={inStoreProviderOptions}
               />
               {/* Country lives at the top level — single field shared by
                   both channels (a merchant is in one country). */}
@@ -643,7 +710,7 @@ export default function PaymentsAnalyzer() {
                 <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>One tap</span>
               </div>
               <ProviderGrid
-                options={channel === "in_store" ? PROVIDER_OPTIONS_IN_STORE : PROVIDER_OPTIONS_ONLINE}
+                options={channel === "in_store" ? inStoreProviderOptions : onlineProviderOptions}
                 value={providerSlug}
                 onChange={setProviderSlug}
               />
@@ -659,7 +726,7 @@ export default function PaymentsAnalyzer() {
           <PspVerificationOptions
             providerSlug={providerSlug}
             providerLabel={
-              (channel === "in_store" ? PROVIDER_OPTIONS_IN_STORE : PROVIDER_OPTIONS_ONLINE)
+              (channel === "in_store" ? inStoreProviderOptions : onlineProviderOptions)
                 .find((o) => o.slug === providerSlug)?.label
             }
             onConnect={() => navigate("/ConnectTools")}
