@@ -1,6 +1,7 @@
 {
   "name": "Subscription",
   "type": "object",
+  "description": "[QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): orphan \u2014 zero src references, only referenced by startSubscription (itself quarantined), no platform trigger. NOT deleted because it holds 2 rows (2026-07-09) that may be real early-bird subscriptions. RLS tightened to admin-only for the quarantine window. If the invocation probe on startSubscription stays silent until the review date, both are safe to delete (export rows first).",
   "properties": {
     "user_email": {
       "type": "string"
@@ -43,19 +44,9 @@
   ],
   "rls": {
     "read": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "data.user_email": "{{user.email}}"
-        },
-        {
-          "created_by": "{{user.email}}"
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "write": {
       "user_condition": {
