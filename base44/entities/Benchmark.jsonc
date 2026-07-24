@@ -1,0 +1,54 @@
+{
+  "name": "Benchmark",
+  "type": "object",
+  "description": "Static market reference table (tier/region averages, no tenant data). Public read is deliberate \u2014 anonymous surfaces may consume it; writes admin-only (SECURITY-1, 2026-07-24).",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "shipping",
+        "saas"
+      ]
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "micro",
+        "small",
+        "mid",
+        "large"
+      ]
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "EU",
+        "Global"
+      ]
+    },
+    "value": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "category",
+    "tier",
+    "region",
+    "value"
+  ],
+  "rls": {
+    "read": {},
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
