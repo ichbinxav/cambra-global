@@ -345,6 +345,7 @@ Se arregla al preparar sync recurrente / cron.
 ## BUG-6 — RLS `created_by == {{user.email}}` es inerte para entidades escritas por service role
 
 **Estado:** activa (documentada, mitigada estructuralmente vía `owner_email` + `_tenantGuard` en `PaymentsAnalysisVerified`; NO retro-arreglada en Integration ni en el resto de entidades)
+**Actualización TRUTH-1 (2026-07-24):** la mitigación pasa de "disciplina" a **"disciplina + verificada automáticamente"**. El test estático `src/lib/tenantGuard.static.test.js` recorre las 141 funciones y ROMPE la suite si una función toca cualquiera de las 10 entidades vía `asServiceRole` sin un mecanismo aprobado (internalGate / secret interno / tenant guard / check admin / gate auth.me+401 / auth de principal API). Censo 2026-07-24: 59 funciones tocan entidades tenant, las 59 llevan mecanismo, allowlist vacía. El test es un tripwire de PRESENCIA del mecanismo, no una prueba de corrección por code-path (eso sigue en Decision_Log_SECURITY2.md). La migración a `owner_email` + RLS activa sigue pendiente como milestone propio.
 **Detectado:** 2026-07-10 durante M3-Chunk 2 (setup de `PaymentsAnalysisVerified`)
 **Entidades afectadas:** `Integration`, `AnalyzerInput`, `AnalyzerResult`, `StatementImport`, `ChatMessage`, `AgentQuestion`, `Approval`, `Event`, `AgentTask`, `Brand` — todas las que declaran `created_by == {{user.email}}` en su RLS de lectura mientras sus escrituras van por `base44.asServiceRole.entities.X.create()`.
 

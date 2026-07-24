@@ -48,7 +48,7 @@ export default {
   after: [
     {
       title: "6. Vos choix de consentement",
-      body: "Lors de votre première visite, une bannière de consentement propose « Tout accepter » et « Gérer les préférences », où l'analytique et le marketing peuvent être activés individuellement (le stockage strictement nécessaire est toujours actif). Votre choix est enregistré dans cambra_cookie_consent avec un horodatage. En termes clairs : CAMBRA ne dépose actuellement aucun cookie ni stockage analytique ou marketing — votre choix enregistré ne prendra effet que si de tels outils sont un jour introduits, et cette politique sera mise à jour au préalable.",
+      body: "Lors de votre première visite, une bannière de consentement propose « Tout accepter » et « Gérer les préférences », où l'analytique et le marketing peuvent être activés individuellement (le stockage strictement nécessaire est toujours actif). Votre choix est enregistré dans cambra_cookie_consent avec un horodatage. En termes clairs : CAMBRA ne dépose actuellement aucun cookie ni stockage analytique ou marketing — votre choix enregistré ne prendra effet que si de tels outils sont un jour introduits, et cette politique sera mise à jour au préalable. La seule mesure d'usage en place est un compteur de pages vues interne (first-party) : lorsque vous naviguez entre les pages, l'application envoie le nom de la page (p. ex. « Analyzer ») à notre plateforme d'hébergement sur ce même domaine. Il n'écrit rien sur votre appareil — ni cookie, ni stockage — et n'implique aucun tiers ni réseau publicitaire.",
     },
     {
       title: "7. Gérer les cookies et le stockage",

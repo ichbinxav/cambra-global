@@ -1,10 +1,11 @@
 # CAMBRA
 
-**Infrastructure Intelligence for independent brands.** CAMBRA analyzes a
-brand's operational stack (payments, shipping, SaaS, banking, insurance,
-telecom, finance ops, HR), benchmarks each vertical against network data, and
-surfaces recoverable margin — presented as concrete recommendations and
-auditable savings.
+**CAMBRA audits online and in-store card payment costs for independent
+European brands.** It compares a merchant's effective rate (online PSP and
+physical terminal) against European payment benchmarks built from public
+pricing and regulatory interchange floors, quantifies the recoverable gap,
+and drives the recovery — free analysis, success fee only on verified
+savings.
 
 The app is built on [Base44](https://base44.com): a React/Vite frontend, a
 Deno-runtime backend of serverless functions, an entity-driven database with
@@ -20,8 +21,10 @@ approval gates.
 npm install
 
 # 2. Configure environment
-cp .env.example .env         # fill in the frontend VITE_ vars
+cp env.example .env          # fill in the frontend VITE_ vars
 # Backend secrets go into the Base44 dashboard, not this file.
+# (The template is named env.example without a leading dot because the
+#  Base44 sandbox silently drops dotfiles from the repo.)
 
 # 3. Run
 npm run dev                  # http://localhost:5173
@@ -34,22 +37,23 @@ to the linked repo is picked up by the Base44 builder.
 
 ## Scripts
 
-| Command              | What it does                                              |
-|----------------------|-----------------------------------------------------------|
-| `npm run dev`        | Vite dev server, hot reload                               |
-| `npm run build`      | Production build (Vite)                                   |
-| `npm run preview`    | Serve the production build locally                        |
-| `npm run lint`       | ESLint (errors only)                                      |
-| `npm run lint:fix`   | ESLint with auto-fix (imports cleanup, safe transforms)   |
-| `npm run typecheck`  | TypeScript check against `jsconfig.json`                  |
-| `npm test`           | Vitest, single run                                        |
-| `npm run test:watch` | Vitest, watch mode                                        |
+| Command                   | What it does                                              |
+|---------------------------|-----------------------------------------------------------|
+| `npm run dev`             | Vite dev server, hot reload                               |
+| `npm run build`           | Production build (Vite)                                   |
+| `npm run preview`         | Serve the production build locally                        |
+| `npm run lint`            | ESLint (errors only)                                      |
+| `npm run lint:fix`        | ESLint with auto-fix (imports cleanup, safe transforms)   |
+| `npm run typecheck`       | TypeScript check against `jsconfig.json` — currently reports 554 preexisting errors (see `src/docs/TYPECHECK_NOISE.md`); the Vite build does not run this check |
+| `npm run typecheck:noise` | Same check, prefixed with the known-noise warning         |
+| `npm test`                | Vitest, single run                                        |
+| `npm run test:watch`      | Vitest, watch mode                                        |
 
 ---
 
 ## Environment variables
 
-See [`.env.example`](./.env.example) for the full, grouped list with
+See [`env.example`](./env.example) for the full, grouped list with
 placeholder values. Two groups exist:
 
 - **Frontend (`VITE_*`)** — compiled into the bundle by Vite; safe to expose.
@@ -71,8 +75,8 @@ every stored integration; do not rotate without a migration plan.
 │                          FRONTEND (Vite + React)                      │
 │  src/pages/*            src/components/*         src/lib/*            │
 │  Route table:           UI + charts +            Pure logic:          │
-│  src/App.jsx            forms                    scoreEngine, i18n,   │
-│                                                  sync-engine helpers  │
+│  src/App.jsx            forms                    paymentsGap, i18n,   │
+│                                                  score/roadmap/bench  │
 └───────────────────────────────────────────────────────────────────────┘
                                     │
                           Base44 SDK · @/api/base44Client
@@ -84,14 +88,15 @@ every stored integration; do not rotate without a migration plan.
 │  base44/functions/*/entry.ts     HTTP handlers (Deno.serve)           │
 │  base44/agents/*.jsonc           In-app AI agents (with approvals)    │
 │                                                                       │
-│  Key subsystems:                                                      │
-│    • Sync engine — normalizes provider APIs (Stripe, Mollie, PayPal,  │
-│      Shopify, WooCommerce, BigCommerce, Sendcloud, Klarna, Zettle,    │
-│      Square, PayPlug, Pennylane, Holded, Xero, QuickBooks, Sage,      │
-│      Lexoffice, sevDesk, Odoo, FreshBooks). Contracts documented in   │
-│      src/docs/normalizers-contracts.md.                               │
-│    • Benchmark engine — scoreEngine.js (frontend) + mirrors in        │
-│      3 Deno functions. Sync enforced by tests (see below).            │
+│  Key subsystems (payments-only product):                              │
+│    • Payments gap engine — anonymous form analysis                    │
+│      (submitPaymentsAnalysis → getPaymentsGapTeaser) and verified     │
+│      Stripe analysis (stripeOAuthConnect → stripeDataSync →           │
+│      computeStripeVerifiedGap). Rates come from PaymentsRateTable     │
+│      (public pricing, source-quoted rows).                            │
+│    • Benchmark engine — PaymentsRateTable-derived cohort curves       │
+│      (src/lib/paymentsBenchmark.js); modeled curves are labeled as    │
+│      modeled, never presented as empirical.                           │
 │    • Agent orchestration — recommendation, spend intelligence, lead   │
 │      discovery, outreach. Buy-side agents require Approval before     │
 │      external action (risk_level ≥ 2).                                │
@@ -104,11 +109,27 @@ in `src/docs/`.
 
 ---
 
+## Roadmap / NOT implemented
+
+The following verticals appear in dormant code paths (deprecated pages,
+V1-era entities kept for historical data, sync-engine normalizers written
+ahead of need) but are **not part of the live product** and are not offered
+to users: **shipping, SaaS, banking, insurance, telecom, finance ops, HR**.
+CAMBRA has been payments-only since the product refocus. The multi-provider
+sync normalizers (Mollie, Shopify, WooCommerce, BigCommerce, Sendcloud,
+Klarna, Zettle, Square, accounting suites…) exist as tested library code but
+only Stripe is wired end-to-end; contracts are documented in
+`src/docs/normalizers-contracts.md` with *"verify at first real connect"*
+markers.
+
+---
+
 ## Tests
 
 The test suite is Vitest. It covers:
 
-- **Score & savings math** (`src/lib/scoreEngine.test.js`).
+- **Payments gap math** (`src/lib/paymentsGap.test.js` and the classifier,
+  in-store, roadmap, score, trend and benchmark suites next to it).
 - **Every normalizer** (`src/lib/normalizers/*.test.js`) against pinned
   fixtures. These validate the *shape* of the normalization contract — not
   that the numbers match a live provider (see limitations below).
@@ -117,9 +138,12 @@ The test suite is Vitest. It covers:
 - **Structural drift** (`src/lib/syncEngine/__sync_check__.test.js`) —
   compares the source-of-truth JS files against the mirrored Deno copies in
   `dataSyncAgent/entry.ts`. Fails on any semantic drift.
-- **Benchmark sync** (`src/lib/__benchmark_sync__.test.js`) — extracts
-  benchmark values from `scoreEngine.js` and its three Deno mirrors and
-  fails on any divergence (payment rate, shipping cost, SaaS %).
+- **Contract tests** (`src/pages/__contracts__/`) — analyzer → results
+  handoff fields, route aliases, brand-metadata normalization.
+- **Tenant-isolation static check** (`src/lib/tenantGuard.static.test.js`)
+  — scans every backend function and fails if one touches a tenant entity
+  via service role without an approved guard mechanism (see KNOWN_DEBT
+  BUG-6).
 
 Run: `npm test`. Full suite completes in seconds.
 
@@ -137,10 +161,12 @@ under `base44/functions/**` is auto-discovered and deployed as
 
 ## Security notes
 
-- **Tenant isolation**: every non-User entity carries `brand_id`. Backend
-  functions validate that the calling user owns the brand (or is admin)
-  before returning data. Row-level security rules on entities enforce the
-  same at the DB layer as a second line of defense.
+- **Tenant isolation**: enforced in backend functions — each function that
+  touches tenant data validates that the calling user owns the brand (or is
+  admin) before returning data. Note: for the 10 entities whose writes go
+  through service role, the `created_by` RLS rule is inert (fails closed);
+  isolation relies on the per-function checks, now verified automatically
+  by the static test above (KNOWN_DEBT BUG-6).
 - **Stored credentials are encrypted at rest**. OAuth `access_token` /
   `refresh_token` and API-key blobs in `Integration.access_token` are
   encrypted with AES-256-GCM using `INTEGRATION_TOKEN_KEY`. The plaintext
@@ -169,10 +195,10 @@ Two categories remain that only real data can close:
   marked *"verify at first real connect"* and cannot be validated without
   a paying merchant on the other side.
 - **End-to-end savings defensibility**. The math is exhaustively tested and
-  the benchmarks are anchored to public sources (Stripe/Adyen published
-  rates, PSD2 caps, BEREC telecom data), but the final claim — *"this
-  brand can recover €X"* — requires a real connection, a real audit, and a
-  real renegotiation outcome to be defended in front of a merchant.
+  the benchmarks are anchored to public sources (published PSP pricing,
+  interchange regulation floors), but the final claim — *"this brand can
+  recover €X"* — requires a real connection, a real audit, and a real
+  renegotiation outcome to be defended in front of a merchant.
 
 ### Known dependency vulnerabilities
 

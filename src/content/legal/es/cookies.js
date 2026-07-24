@@ -48,7 +48,7 @@ export default {
   after: [
     {
       title: "6. Tus opciones de consentimiento",
-      body: "En tu primera visita, un banner de consentimiento ofrece «Aceptar todo» y «Gestionar preferencias», donde analítica y marketing pueden activarse individualmente (el almacenamiento estrictamente necesario está siempre activo). Tu elección se registra en cambra_cookie_consent con una marca de tiempo. En palabras claras: CAMBRA no pone actualmente ninguna cookie ni almacenamiento de analítica o marketing — tu elección registrada solo tendrá efecto si algún día se introducen esas herramientas, y esta política se actualizará antes.",
+      body: "En tu primera visita, un banner de consentimiento ofrece «Aceptar todo» y «Gestionar preferencias», donde analítica y marketing pueden activarse individualmente (el almacenamiento estrictamente necesario está siempre activo). Tu elección se registra en cambra_cookie_consent con una marca de tiempo. En palabras claras: CAMBRA no pone actualmente ninguna cookie ni almacenamiento de analítica o marketing — tu elección registrada solo tendrá efecto si algún día se introducen esas herramientas, y esta política se actualizará antes. La única medición de uso existente es un contador de páginas vistas propio (first-party): al navegar entre páginas, la aplicación envía el nombre de la página (p. ej. «Analyzer») a nuestra plataforma de alojamiento en este mismo dominio. No escribe nada en tu dispositivo — ni cookie, ni almacenamiento — y no interviene ningún tercero ni red publicitaria.",
     },
     {
       title: "7. Gestionar cookies y almacenamiento",
