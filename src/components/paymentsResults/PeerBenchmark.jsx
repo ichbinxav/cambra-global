@@ -239,8 +239,8 @@ export default function PeerBenchmark({ engineResult, country, rateTable }) {
         {/* Callout */}
         {/* ⚠️ SECURITY (HYGIENE-1 T1) — dangerouslySetInnerHTML below. The HTML
             source MUST ALWAYS be: our own i18n dictionary string + calculated
-            numeric values. NEVER interpolate user input or brand fields
-            (brand_name, sector, website...) into this string. If merchant-derived
+            numeric values. NEVER interpolate user input or merchant-derived
+            identity fields (nombre de marca, sector, web...) into this string. If merchant-derived
             text is ever needed here, refactor to JSX composition instead of HTML.
             Params are sanitized above (displayPct finite number, safeCountry
             /^[A-Z]{2}$/) as a cheap second line of defense. */}
