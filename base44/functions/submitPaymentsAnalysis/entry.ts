@@ -1724,9 +1724,18 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
 
     // Parse body first — cheap rejection before any DB call.
+    // HYGIENE-1 T3 — body size cap BEFORE parsing (same pattern as oauthToken:
+    // content-length header check + text length check → 413). 16KB is plenty:
+    // the combined analyzer payload (online + in-store, all sliders + brand
+    // metadata) measures <2KB serialized — 8× headroom.
+    const MAX_BODY_BYTES = 16 * 1024;
+    const contentLength = parseInt(req.headers.get('content-length') || '0', 10);
+    if (contentLength > MAX_BODY_BYTES) return Response.json({ error: 'request_too_large' }, { status: 413 });
+    const bodyText = await req.text();
+    if (bodyText.length > MAX_BODY_BYTES) return Response.json({ error: 'request_too_large' }, { status: 413 });
     let raw: any = null;
     try {
-      raw = await req.json();
+      raw = JSON.parse(bodyText);
     } catch {
       return Response.json({ error: 'invalid_json_body' }, { status: 400 });
     }

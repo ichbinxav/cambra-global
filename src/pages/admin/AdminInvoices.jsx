@@ -102,7 +102,7 @@ export default function AdminInvoices() {
                     <Button size="sm" variant="outline" onClick={()=>createLink(inv.id)}>Payment link</Button>
                     <Button size="sm" onClick={()=>markPaid(inv.id)}>Record payment</Button>
                     <Button size="sm" variant="ghost" onClick={()=>reconcile(inv.id)}>Reconcile</Button>
-                    {inv.hosted_invoice_url && <a className="text-blue-600 text-xs underline" href={inv.hosted_invoice_url} target="_blank">Open link</a>}
+                    {inv.hosted_invoice_url && <a className="text-blue-600 text-xs underline" href={inv.hosted_invoice_url} target="_blank" rel="noopener noreferrer">Open link</a>}
                   </td>
                 </tr>
               ))}

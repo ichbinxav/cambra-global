@@ -50,7 +50,7 @@ export default function Invoices() {
                 <td className="p-3 text-white/70">{inv.due_at ? new Date(inv.due_at).toLocaleDateString() : '—'}</td>
                 <td className="p-3 font-semibold">€{(inv.total_amount ?? 0).toLocaleString()}</td>
                 <td className="p-3 text-white/70">{inv.status}</td>
-                <td className="p-3">{inv.hosted_invoice_url ? <a className="text-cambra-cyan underline" href={inv.hosted_invoice_url} target="_blank">Pay</a> : '—'}</td>
+                <td className="p-3">{inv.hosted_invoice_url ? <a className="text-cambra-cyan underline" href={inv.hosted_invoice_url} target="_blank" rel="noopener noreferrer">Pay</a> : '—'}</td>
               </tr>
             ))}
             {items.length === 0 && (

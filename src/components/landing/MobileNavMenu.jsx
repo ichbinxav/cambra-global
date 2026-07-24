@@ -268,8 +268,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                   </Link>
                   <a
                     href="/auth/start"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    target="_blank" rel="noopener noreferrer"
                     className="w-full h-11 rounded-full text-[13px] font-semibold border border-white/[0.12] bg-white/[0.03] text-white/85 hover:bg-white/[0.06] hover:border-white/[0.2] transition-all flex items-center justify-center gap-2"
                   >
                     <Activity className="h-3.5 w-3.5" style={{ color: "var(--voltio-2)" }} strokeWidth={2} />

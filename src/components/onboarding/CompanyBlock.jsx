@@ -175,7 +175,7 @@ export default function CompanyBlock({ onCreated, autoRedirect = true } = {}){
       >
         <div className="flex items-center gap-2">
           <Checkbox id="accept" checked={!!brand.accept_terms} onCheckedChange={(v)=>setBrand({...brand, accept_terms: !!v})} />
-          <Label htmlFor="accept" className="text-sm">I accept the <a href="/Terms" target="_blank" className="underline">terms and conditions</a></Label>
+          <Label htmlFor="accept" className="text-sm">I accept the <a href="/Terms" target="_blank" rel="noopener" className="underline">terms and conditions</a></Label>
         </div>
         <div className="flex gap-2 items-center">
           <Button onClick={saveOrCreate} disabled={saving} className="gap-2 h-10 rounded-full px-5">

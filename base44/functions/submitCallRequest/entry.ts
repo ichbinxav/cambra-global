@@ -77,7 +77,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const body = await req.json().catch(() => ({}));
+    // HYGIENE-1 T3 — body size cap BEFORE parsing (same pattern as oauthToken).
+    const MAX_BODY_BYTES = 16 * 1024;
+    const contentLength = parseInt(req.headers.get("content-length") || "0", 10);
+    if (contentLength > MAX_BODY_BYTES) return Response.json({ error: "request_too_large" }, { status: 413 });
+    const bodyText = await req.text();
+    if (bodyText.length > MAX_BODY_BYTES) return Response.json({ error: "request_too_large" }, { status: 413 });
+    let body: any = {};
+    try { body = JSON.parse(bodyText); } catch { body = {}; }
 
     let email = String(body?.email || "").trim().toLowerCase();
     const me = await base44.auth.me().catch(() => null);

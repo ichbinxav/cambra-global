@@ -177,7 +177,7 @@ export default function AdminContracts() {
                     <div className="flex gap-2">
                       <input value={form.contract_link || ""} onChange={e => setForm(f => ({ ...f, contract_link: e.target.value }))}
                         placeholder="https://..." className="flex-1 h-8 px-3 text-xs bg-secondary/60 border border-border/50 rounded-lg focus:outline-none" />
-                      {form.contract_link && <a href={form.contract_link} target="_blank" rel="noreferrer" className="h-8 w-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-border transition-colors"><ExternalLink size={11} /></a>}
+                      {form.contract_link && <a href={form.contract_link} target="_blank" rel="noopener noreferrer" className="h-8 w-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-border transition-colors"><ExternalLink size={11} /></a>}
                     </div>
                   </div>
                 </div>

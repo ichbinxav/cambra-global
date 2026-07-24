@@ -90,8 +90,7 @@ export default function AdminLayout() {
           <p className="text-sm text-muted-foreground mb-4">Open the login window and return automatically.</p>
           <a
             href="/auth/start"
-            target="_blank"
-            rel="noopener noreferrer"
+            target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold"
           >
             Sign in

@@ -671,8 +671,7 @@ function BasicAuthConnectForm({ meta, busy, values, onChange, onCancel, onSave }
               {meta.basic_auth_help_url && (
                 <a
                   href={meta.basic_auth_help_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 mt-1 text-cyan-700 hover:underline"
                 >
                   Open provider docs

@@ -114,8 +114,7 @@ export default function Navbar() {
             <>
               <a
                 href="/auth/start"
-                target="_blank"
-                rel="noopener noreferrer"
+                target="_blank" rel="noopener noreferrer"
                 className="btn-base btn-ghost-dark btn-sm"
               >
                 Sign in

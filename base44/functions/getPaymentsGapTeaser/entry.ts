@@ -99,7 +99,14 @@ Deno.serve(async (req) => {
     // to hit the URL directly some day. Cheap to support both.
     let session_id: string | null = null;
     if (req.method === 'POST') {
-      const body = await req.json().catch(() => ({}));
+      // HYGIENE-1 T3 — body size cap BEFORE parsing (same pattern as oauthToken).
+      const MAX_BODY_BYTES = 16 * 1024;
+      const contentLength = parseInt(req.headers.get('content-length') || '0', 10);
+      if (contentLength > MAX_BODY_BYTES) return Response.json({ error: 'request_too_large' }, { status: 413 });
+      const bodyText = await req.text();
+      if (bodyText.length > MAX_BODY_BYTES) return Response.json({ error: 'request_too_large' }, { status: 413 });
+      let body: any = {};
+      try { body = JSON.parse(bodyText); } catch { body = {}; }
       session_id = body?.anon_session_id || body?.session_id || null;
     } else {
       const url = new URL(req.url);

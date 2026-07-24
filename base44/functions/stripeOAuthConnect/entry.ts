@@ -39,10 +39,21 @@ Deno.serve(async (req) => {
       }
       brandId = requestedBrandId;
     } else {
-      // TODO: require explicit brand_id selection for multi-brand users
-      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch(() => []);
+      // HYGIENE-1 T4 — fail loudly instead of guessing. Previously this picked
+      // the NEWEST brand ('-created_date', 1) silently: a multi-brand user could
+      // get Stripe linked to the wrong business → a "verified" analysis built on
+      // the wrong merchant's data. Now: >1 brand + no explicit brand_id → 400
+      // with an actionable error. Single-brand users behave exactly as before.
+      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 2).catch(() => []);
       if (!brands.length) {
         return Response.json({ ok: false, error: 'No brand found for user' }, { status: 400 });
+      }
+      if (brands.length > 1) {
+        return Response.json({
+          ok: false,
+          error: 'multiple_brands',
+          message: 'Your account has more than one brand. Pass an explicit brand_id so Stripe is connected to the right business.',
+        }, { status: 400 });
       }
       brandId = brands[0].id;
     }

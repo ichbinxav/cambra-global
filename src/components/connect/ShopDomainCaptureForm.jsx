@@ -126,8 +126,7 @@ export default function ShopDomainCaptureForm({
               {helpUrl && (
                 <a
                   href={helpUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 mt-1 text-cyan-700 hover:underline"
                 >
                   Open provider docs <ExternalLink size={9} />

@@ -100,10 +100,16 @@ export default function PeerBenchmark({ engineResult, country, rateTable }) {
   // Flip the template when the merchant is at/below the peer median: they're
   // "cheaper than ~X%", not "most expensive ~X%". `displayPct` matches whichever
   // side is shown so the highlighted number stays correct.
-  const displayPct = cheaperSide ? cheaperPct : expensivePct;
+  // HYGIENE-1 T1 — parameter sanitization for the dangerouslySetInnerHTML
+  // callout below. Even if the dictionary string ever changed, these params
+  // cannot carry markup: pct is forced to a finite number, country to a
+  // strict ISO-3166 alpha-2 uppercase code (else empty).
+  const rawPct = cheaperSide ? cheaperPct : expensivePct;
+  const displayPct = Number.isFinite(Number(rawPct)) ? Number(rawPct) : 0;
+  const safeCountry = /^[A-Z]{2}$/.test(String(country || "")) ? String(country) : "";
   const calloutKey = cheaperSide
-    ? (country ? "bench_callout_cheaper" : "bench_callout_cheaper_nocountry")
-    : (country ? "bench_callout" : "bench_callout_nocountry");
+    ? (safeCountry ? "bench_callout_cheaper" : "bench_callout_cheaper_nocountry")
+    : (safeCountry ? "bench_callout" : "bench_callout_nocountry");
 
   return (
     <div
@@ -231,13 +237,20 @@ export default function PeerBenchmark({ engineResult, country, rateTable }) {
         </p>
 
         {/* Callout */}
+        {/* ⚠️ SECURITY (HYGIENE-1 T1) — dangerouslySetInnerHTML below. The HTML
+            source MUST ALWAYS be: our own i18n dictionary string + calculated
+            numeric values. NEVER interpolate user input or brand fields
+            (brand_name, sector, website...) into this string. If merchant-derived
+            text is ever needed here, refactor to JSX composition instead of HTML.
+            Params are sanitized above (displayPct finite number, safeCountry
+            /^[A-Z]{2}$/) as a cheap second line of defense. */}
         <div
           className="mt-5 rounded-xl px-4 py-3"
           style={{ background: "rgba(245,181,68,0.07)", border: "1px solid rgba(245,181,68,0.25)" }}
         >
           <p className="text-[13px] leading-snug" style={{ color: "#e8eef7" }}
              dangerouslySetInnerHTML={{
-               __html: t(calloutKey, { pct: displayPct, country: country || "" })
+               __html: t(calloutKey, { pct: displayPct, country: safeCountry })
                  .replace(`~${displayPct}%`, `<strong style="color:#F5A623;font-family:${MONO}">~${displayPct}%</strong>`),
              }}
           />

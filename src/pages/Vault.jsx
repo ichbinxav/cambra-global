@@ -149,7 +149,7 @@ export default function Vault() {
                   <Badge variant="outline" className="text-[10px] border-white/15 text-white/70">{doc.visibility}</Badge>
                   {Array.isArray(doc.tags) && doc.tags.slice(0,3).map(t => <Badge key={t} variant="outline" className="text-[10px] border-white/15 text-white/70">#{t}</Badge>)}
                 </div>
-                <div className="mt-3 text-xs"><a className="text-cambra-cyan underline" href={doc.file_url} target="_blank" rel="noreferrer">Abrir</a></div>
+                <div className="mt-3 text-xs"><a className="text-cambra-cyan underline" href={doc.file_url} target="_blank" rel="noopener noreferrer">Abrir</a></div>
                 {doc.links && doc.links.length>0 && (
                   <div className="mt-2 text-[11px] text-white/50">Vínculos: {doc.links.map(l=>`${l.target_type}:${l.target_id}`).join(', ')}</div>
                 )}
@@ -180,7 +180,7 @@ export default function Vault() {
               <Input className="bg-white/[0.04] border-white/10 text-white" defaultValue={selected.notes || ''} onBlur={(e)=>saveMeta(selected, { notes: e.target.value })} />
 
               <div className="flex items-center justify-between">
-                <a className="text-cambra-cyan underline text-sm" href={selected.file_url} target="_blank" rel="noreferrer">Abrir archivo</a>
+                <a className="text-cambra-cyan underline text-sm" href={selected.file_url} target="_blank" rel="noopener noreferrer">Abrir archivo</a>
                 <span className="text-[11px] text-white/50">v{selected.version || 1}</span>
               </div>
 
