@@ -95,7 +95,7 @@ KNOWN_DEBT BUG-6 actualizado: "mitigado por disciplina" → "mitigado por discip
 4. README / LAUNCH_CHECKLIST / env.example / scripts coherentes con el producto payments-only real.
 5. Warnings del build: 1 real (chunk-size, deuda conocida BACKLOG-1) + 1 informativo. Clasificados arriba.
 6. Test tenant: **verde** (3/3), allowlist vacía y justificada por censo.
-7. Suite completa + lint + build: ver cifras al pie.
+7. Suite completa + lint + build (ejecutados 2026-07-24, cierre del chunk): **457 passed / 0 failed / 2 skipped** (suma los 3 tests nuevos de tenantGuard.static) · `eslint . --quiet` → 0 errores · `vite build` → EXIT=0.
 
 ## FUERA DE ALCANCE (backlog, sin cambios)
 Reducción de superficie backend · migración `owner_email` · Help trilingüe · consolidación de logs · banner de consentimiento · límites de coste IA · CSP/headers · SSRF file_url · rotación INTEGRATION_TOKEN_KEY · SDK.
