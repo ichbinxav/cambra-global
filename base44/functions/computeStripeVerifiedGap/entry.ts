@@ -146,6 +146,20 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 //                       (i.e. €1M/yr) / ticket€50 / intl15% (channel=online)
 //                       still produces exactly 226.25 / 149.5 / {lo:6140,
 //                       point:7675, hi:9210} — byte-identical to 1.4.0.
+//   M5 (2026-07-24) — COUNTRY-AWARE ROW RESOLUTION, deliberately NO version
+//                       bump. selectRow (and the in-store anchor pool) now
+//                       prefer a rate row whose declared `country` field
+//                       matches the merchant's input country over the
+//                       pan-regional row, and NEVER serve a row pinned to a
+//                       DIFFERENT country. Resolution is FIELD-based —
+//                       cohort_key is never parsed (the 'REGION-CC' key
+//                       convention is a readable identifier only). With a
+//                       table that carries no country rows (the entire table
+//                       today), every result is byte-identical to 1.5.0 —
+//                       that invariant is the sealed heart of the M5 chunk
+//                       and the reason the tag stays 1.5.0 (also pinned by
+//                       paymentsGap.test.js). Revisit the bump when SEED-ES
+//                       lands the first country rows.
 const ENGINE_VERSION = "payments-gap-1.5.0";
 
 // Currency minor-unit divisor. All PaymentsRateTable rows store fixed fees
@@ -302,6 +316,13 @@ function normalizeInput(raw) {
   // `channel` land on the exact same 'online' branch as before.
   const channelRaw = typeof raw.channel === "string" ? raw.channel.trim().toLowerCase() : "";
   const channel = KNOWN_CHANNELS.has(channelRaw) ? channelRaw : DEFAULT_CHANNEL;
+  // M5 (2026-07-24) — optional country (ISO-3166-1 alpha-2, uppercase). Used
+  // ONLY as a row-selection preference in selectRow / the in-store anchor
+  // pool: a row that declares the same country wins over the pan-regional
+  // row; a row that declares a DIFFERENT country is never selected. Missing
+  // or malformed → null → selection is byte-identical to pre-M5.
+  const countryRaw = typeof raw.country === "string" ? raw.country.trim().toUpperCase() : "";
+  const country = /^[A-Z]{2}$/.test(countryRaw) ? countryRaw : null;
   const intl_pctRaw = Number(raw.intl_pct);
   const intl_pct = isFinite(intl_pctRaw) && intl_pctRaw >= 0 && intl_pctRaw <= 100
     ? intl_pctRaw
@@ -330,6 +351,7 @@ function normalizeInput(raw) {
       region,
       provider_slug,
       channel,
+      country,
       intl_pct,
       measured_current_bps,
       measured_intl_pct,
@@ -411,9 +433,12 @@ function validateRateTable(rows, opts) {
 // Never returns null when the table passed validateRateTable — the regional
 // fallback for the requested channel is guaranteed to exist (validateRateTable
 // enforces all 8 REQUIRED_FALLBACK_KEYS in 1.4.0).
-function selectRow(rows, provider_slug, region, channel) {
+function selectRow(rows, provider_slug, region, channel, country) {
   const ch = KNOWN_CHANNELS.has(channel) ? channel : DEFAULT_CHANNEL;
   const isOnline = ch === "online";
+  // M5 — country preference. Sanitized to null unless a clean ISO-2 uppercase
+  // code; null → selection is byte-identical to pre-M5 (pan-regional only).
+  const wantCountry = (typeof country === "string" && /^[A-Z]{2}$/.test(country)) ? country : null;
 
   // Build the ordered list of candidate keys (highest-priority first).
   const candidates = [];
@@ -436,14 +461,41 @@ function selectRow(rows, provider_slug, region, channel) {
   }
 
   // Index the table once, then walk candidates in priority order.
+  // M5 — while indexing, ALSO look for a COUNTRY-SPECIFIC exact row by
+  // FIELDS (cohort_key is NEVER parsed): same provider, tier ANY, same
+  // region, same channel, active, row.country === input country. When one
+  // exists it beats every key-based candidate. Rows without a country are
+  // the pan-regional rows and behave exactly as pre-M5. The regional
+  // fallback chain (ANY|ANY|<region>[|in_store]) stays country-agnostic —
+  // fallback rows must never be pinned to a country.
   const byKey = new Map();
+  let countryRow = null;
   for (const r of rows) {
     if (!r || r.active === false) continue;
     if (typeof r.cohort_key === "string") byKey.set(r.cohort_key, r);
+    if (
+      wantCountry !== null &&
+      countryRow === null &&
+      KNOWN_PROVIDERS.has(provider_slug) &&
+      typeof r.country === "string" && r.country === wantCountry &&
+      r.provider_slug === provider_slug &&
+      r.region === region &&
+      (typeof r.tier !== "string" || r.tier === "ANY") &&
+      ((typeof r.channel === "string" && KNOWN_CHANNELS.has(r.channel)) ? r.channel : DEFAULT_CHANNEL) === ch
+    ) {
+      countryRow = r;
+    }
   }
+  if (countryRow) return { row: countryRow, matched: "exact" };
   for (const cand of candidates) {
     const row = byKey.get(cand.key);
-    if (row) return { row, matched: cand.matched };
+    if (row) {
+      // M5 guard — a row pinned to a DIFFERENT country must never be served
+      // (an ES row must not answer for an FR merchant). Country-less rows
+      // (every pre-M5 row) pass untouched — byte-identical behavior.
+      if (typeof row.country === "string" && row.country.length > 0 && row.country !== wantCountry) continue;
+      return { row, matched: cand.matched };
+    }
   }
   // Should be impossible after validateRateTable; guard anyway.
   return { row: null, matched: "none" };
@@ -532,15 +584,21 @@ function computeEffectiveBps(
 // Confidence: "high" when ≥2 candidates in the pool (real competitive
 // evaluation happened); "reduced" when only 1 candidate (single-option pool —
 // still auditable but no comparison).
-function selectMultiAnchorAchievable(rows, region, ticket, monthlyGmv, currentProviderSlug) {
+function selectMultiAnchorAchievable(rows, region, ticket, monthlyGmv, currentProviderSlug, country) {
   if (!Array.isArray(rows)) return null;
   if (!isFinite(ticket) || ticket <= 0) return null;
+  // M5 — same sanitization as selectRow. null → country-less pool (pre-M5).
+  const wantCountry = (typeof country === "string" && /^[A-Z]{2}$/.test(country)) ? country : null;
   const candidates = [];
   for (const r of rows) {
     if (!r || r.active === false) continue;
     if (r.verified !== true) continue;
     if (r.channel !== "in_store") continue;
     if (r.region !== region) continue;
+    // M5 — country guard on the anchor pool: an anchor pinned to a specific
+    // country is only eligible when it matches the merchant's country.
+    // Country-less anchors (every pre-M5 row) are always eligible.
+    if (typeof r.country === "string" && r.country.length > 0 && r.country !== wantCountry) continue;
     // Must be a provider anchor row (i.e. carries an anchor_provider in its
     // achievable_breakdown_json). Generic in-store rows without an anchor
     // shape are not eligible.
@@ -916,7 +974,7 @@ function calculateGap(rawInput, rateTable) {
     return { ok: false, error: tableCheck.reason, missing: tableCheck.missing };
   }
 
-  const { row, matched } = selectRow(rateTable, input.provider_slug, input.region, input.channel);
+  const { row, matched } = selectRow(rateTable, input.provider_slug, input.region, input.channel, input.country);
   if (!row) {
     // Defensive — validateRateTable already guarantees the regional fallback.
     // The missing-key hint uses the 4-segment shape only for in_store lookups
@@ -1002,6 +1060,7 @@ function calculateGap(rawInput, rateTable) {
       input.avg_ticket_eur,
       input.monthly_gmv_eur,
       input.provider_slug,
+      input.country,
     );
     if (multiAnchor) {
       // Winner from the region's verified in-store anchor pool. Use its
@@ -1785,6 +1844,10 @@ Deno.serve(async (req) => {
       monthly_gmv_eur: agg.monthly_gmv_eur,
       avg_ticket_eur: agg.avg_ticket_eur,
       region,
+      // M5 — the Stripe account country (same source as the region cohort)
+      // feeds the engine's country-aware row preference. With no country rows
+      // seeded, behavior is identical.
+      country: auth.acct_country_hint,
       provider_slug,
       intl_pct: 0, // ignored when measured_intl_pct is passed
       measured_current_bps: agg.measured_current_bps,

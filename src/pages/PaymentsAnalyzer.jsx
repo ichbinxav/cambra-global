@@ -102,7 +102,9 @@ function mapSlugForSubmit(uiSlug, options) {
 // ── Country list — kept short and payments-relevant. Backend uses country
 //    only to derive region (EU/UK/US/RoW).
 const COUNTRY_OPTIONS = [
-  { code: "ES", name: "Spain" },        { code: "FR", name: "France" },
+  // M5 — FR + ES primero (países con soporte de resolución por país; el resto
+  // sigue funcionando vía fallback regional, no se quita ninguno).
+  { code: "FR", name: "France" },       { code: "ES", name: "Spain" },
   { code: "DE", name: "Germany" },      { code: "IT", name: "Italy" },
   { code: "PT", name: "Portugal" },     { code: "NL", name: "Netherlands" },
   { code: "BE", name: "Belgium" },      { code: "IE", name: "Ireland" },

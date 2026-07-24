@@ -4,7 +4,7 @@
   "properties": {
     "cohort_key": {
       "type": "string",
-      "description": "Row identity. Online rows: '<provider_slug>|<tier>|<region>' (e.g. 'stripe|ANY|EU'). In-store rows append the channel segment: '<provider_slug>|<tier>|<region>|in_store' (e.g. 'sumup|ANY|EU|in_store'). Provider is 'stripe','paypal','shopify_payments','sumup','stripe_terminal','smile_and_pay','zettle','ANY' (regional fallback). Tier is currently always 'ANY' (Chunk 1b decision \u2014 tier segmentation happens in the engine's savings band, not in the row). Region is 'EU','UK','US','RoW'. Unique per row. Engine lookup: exact match first (e.g. 'stripe|ANY|EU'), then fallback to 'ANY|ANY|<region>' (or 'ANY|ANY|<region>|in_store') if no exact match."
+      "description": "Row identity. Online rows: '<provider_slug>|<tier>|<region>' (e.g. 'stripe|ANY|EU'). In-store rows append the channel segment: '<provider_slug>|<tier>|<region>|in_store' (e.g. 'sumup|ANY|EU|in_store'). Provider is 'stripe','paypal','shopify_payments','sumup','stripe_terminal','smile_and_pay','zettle','ANY' (regional fallback). Tier is currently always 'ANY' (Chunk 1b decision \u2014 tier segmentation happens in the engine's savings band, not in the row). Region is 'EU','UK','US','RoW'. Unique per row. Engine lookup: exact match first (e.g. 'stripe|ANY|EU'), then fallback to 'ANY|ANY|<region>' (or 'ANY|ANY|<region>|in_store') if no exact match. M5 (2026-07-24): COUNTRY-pinned rows use the convention '<slug>|<tier>|<REGION>-<CC>' (e.g. 'sumup|ANY|EU-ES') as a HUMAN-READABLE identifier only \u2014 the engine's resolution NEVER parses cohort_key for country; it reads the declared `country` field. Existing keys need no migration."
     },
     "provider_slug": {
       "type": "string",
@@ -18,6 +18,10 @@
       ],
       "default": "online",
       "description": "Payment channel this row applies to. 'online' = card-not-present (default; every historical/online row leaves this absent and is treated as online). 'in_store' = card-present TPV rows (M4-TPV Fase 2A) \u2014 these carry terminal_rental_monthly_minor + achievable_terminal_rental_monthly_minor and set intl_uplift_bps to null (card-present cross-border volume is negligible for the ICP). The channel is ALSO encoded in cohort_key ('|in_store' suffix) for the engine's exact-match lookup; this declared field makes it queryable/auditable. Purely additive \u2014 no migration."
+    },
+    "country": {
+      "type": "string",
+      "description": "M5 (2026-07-24) \u2014 OPTIONAL country pin, ISO-3166-1 alpha-2 UPPERCASE ('FR', 'ES'). Absent/null = row valid for the whole region (EVERY pre-M5 row \u2014 no migration). Semantics in the engine's selectRow (payments-gap SYNC block): (1) when the merchant's input carries a country and an active row matches (provider_slug, tier ANY, region, channel) AND row.country === input country, that row WINS over the pan-regional row; (2) a row pinned to a DIFFERENT country is NEVER selected (an ES row must not answer for an FR merchant); (3) the regional fallback chain (ANY|ANY|<region>[|in_store]) stays country-agnostic \u2014 fallback rows must NEVER carry a country. Resolution is FIELD-based: cohort_key is never parsed; the 'REGION-CC' key convention is a readable identifier only. Rationale: verified per-country price divergences inside EU (SumUp 1.75% FR vs 1.49% ES; Zettle FR flat vs ES tiered; Square 1.65% FR vs 1.25% ES) plus single-country providers (MONEI, PAYCOMET, Spanish bank TPV). Seeding of ES rows is a separate chunk (SEED-ES)."
     },
     "tier": {
       "type": "string",
