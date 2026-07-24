@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Lock, Eye, ShieldCheck, Boxes } from "lucide-react";
 import { motion } from "framer-motion";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * TrustSecuritySection — landing TRUST and SECURITY block (map v1.1).
@@ -11,30 +12,16 @@ import { BRAND_ASSETS } from "@/lib/brandAssets";
  * certifications are ever claimed. Uses only DA tokens (voltio/menta/gris/
  * linea) + .eyebrow + Space Grotesk / Inter hierarchy.
  */
+/* I18N-GAP — copy lives in the i18n dictionary (trust_sec_*). */
 const BULLETS = [
-  {
-    icon: Lock,
-    title: "Bank-level encryption",
-    desc: "Your data is encrypted in transit and at rest.",
-  },
-  {
-    icon: Eye,
-    title: "Read-only access",
-    desc: "We can see your fees. We can never move your money.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "GDPR compliant",
-    desc: "Built in Europe, under European rules.",
-  },
-  {
-    icon: Boxes,
-    title: "Strict isolation",
-    desc: "Your data never mixes with anyone else's.",
-  },
+  { icon: Lock,        tKey: "trust_sec_b1_t", dKey: "trust_sec_b1_d" },
+  { icon: Eye,         tKey: "trust_sec_b2_t", dKey: "trust_sec_b2_d" },
+  { icon: ShieldCheck, tKey: "trust_sec_b3_t", dKey: "trust_sec_b3_d" },
+  { icon: Boxes,       tKey: "trust_sec_b4_t", dKey: "trust_sec_b4_d" },
 ];
 
 export default function TrustSecuritySection() {
+  const { t } = useTranslation();
   return (
     <section className="relative py-12 sm:py-16 px-5">
       <motion.div
@@ -52,7 +39,7 @@ export default function TrustSecuritySection() {
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Copy + bullets */}
           <div className="lg:col-span-7">
-            <p className="eyebrow mb-5" style={{ color: "#ffffff" }}>TRUST &amp; SECURITY</p>
+            <p className="eyebrow mb-5" style={{ color: "#ffffff" }}>{t("trust_sec_eyebrow")}</p>
             <h2
               style={{
                 color: "#ffffff",
@@ -63,15 +50,15 @@ export default function TrustSecuritySection() {
                 lineHeight: 1.02,
               }}
             >
-              Your data is yours.{" "}
-              <span className="kw">Always.</span>
+              {t("trust_sec_h2_pre")}{" "}
+              <span className="kw">{t("trust_sec_h2_kw")}</span>
             </h2>
 
             <div className="mt-9 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-7">
               {BULLETS.map((b) => {
                 const Icon = b.icon;
                 return (
-                  <div key={b.title} className="flex items-start gap-3">
+                  <div key={b.tKey} className="flex items-start gap-3">
                     <span
                       className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0"
                       style={{
@@ -87,10 +74,10 @@ export default function TrustSecuritySection() {
                         className="mono-num text-[13px] font-semibold mb-1"
                         style={{ color: "#ffffff", letterSpacing: "-0.01em" }}
                       >
-                        {b.title}
+                        {t(b.tKey)}
                       </h3>
                       <p className="text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
-                        {b.desc}
+                        {t(b.dKey)}
                       </p>
                     </div>
                   </div>
@@ -104,7 +91,7 @@ export default function TrustSecuritySection() {
                 className="inline-flex items-center gap-1.5 text-[13px] font-semibold transition-colors"
                 style={{ color: "#8B7BFF" }}
               >
-                How we handle your data
+                {t("trust_sec_link")}
                 <ArrowRight size={14} />
               </Link>
             </div>
@@ -117,7 +104,7 @@ export default function TrustSecuritySection() {
           <div className="relative lg:col-span-5 flex justify-center items-center">
             <img
               src={BRAND_ASSETS.vaultGlow}
-              alt="CAMBRA — your data secured in an isolated vault"
+              alt={t("trust_sec_vault_alt")}
               width={480}
               height={480}
               className="relative w-full max-w-[380px] h-auto select-none"

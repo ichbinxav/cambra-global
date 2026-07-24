@@ -1,24 +1,15 @@
 import React from "react";
 import { Check, X } from "lucide-react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * CanCannotTable — "What we can see" vs "What we can never do" on /Security.
  * Light paper panels matching the landing: the "can" column uses the voltio
  * accent, the "never" column uses coral. Labels in JetBrains Mono (.mono-num).
  */
-const CAN_SEE = [
-  "Transaction amounts and fees",
-  "Payment methods and card types",
-  "Currencies and regions",
-  "Payout schedules",
-];
-
-const CANNOT_DO = [
-  "Move or hold money",
-  "Create or refund charges",
-  "See your customers' card numbers",
-  "Change anything in your account",
-];
+/* I18N-GAP — copy lives in the i18n dictionary (sec_can_* / sec_cannot_*). */
+const CAN_SEE_KEYS = ["sec_can_1", "sec_can_2", "sec_can_3", "sec_can_4"];
+const CANNOT_DO_KEYS = ["sec_cannot_1", "sec_cannot_2", "sec_cannot_3", "sec_cannot_4"];
 
 function Column({ label, items, positive }) {
   const Icon = positive ? Check : X;
@@ -57,10 +48,11 @@ function Column({ label, items, positive }) {
 }
 
 export default function CanCannotTable() {
+  const { t } = useTranslation();
   return (
     <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <Column label="What we can see" items={CAN_SEE} positive />
-      <Column label="What we can never do" items={CANNOT_DO} positive={false} />
+      <Column label={t("sec_can_title")} items={CAN_SEE_KEYS.map((k) => t(k))} positive />
+      <Column label={t("sec_cannot_title")} items={CANNOT_DO_KEYS.map((k) => t(k))} positive={false} />
     </div>
   );
 }

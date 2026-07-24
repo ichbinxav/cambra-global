@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * AnalyzingOverlay — shown while the payments audit runs (submitting=true).
@@ -15,12 +16,9 @@ import { BRAND_ASSETS } from "@/lib/brandAssets";
  *
  * Pure presentation. No business logic, no data.
  */
-const STEPS = [
-  "Reading your inputs",
-  "Matching your regional cohort",
-  "Comparing against interchange floors",
-  "Building your audit",
-];
+/* I18N-GAP — step copy lives in the i18n dictionary; keys are resolved inside
+   the component via t() so labels react to a language switch mid-session. */
+const STEP_KEYS = ["overlay_step_1", "overlay_step_2", "overlay_step_3", "overlay_step_4"];
 
 // Cadence: advance a step roughly every 3.5s so all 4 steps span ~14s before
 // the last one holds. Progress bar eases toward 92% and never claims 100%
@@ -28,12 +26,13 @@ const STEPS = [
 const STEP_MS = 3500;
 
 export default function AnalyzingOverlay() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [pct, setPct] = useState(8);
 
   useEffect(() => {
     const stepTimer = setInterval(() => {
-      setStep((s) => Math.min(s + 1, STEPS.length - 1));
+      setStep((s) => Math.min(s + 1, STEP_KEYS.length - 1));
     }, STEP_MS);
     // Progress creeps toward 92% asymptotically so it always feels alive but
     // never completes on its own — the real response completes it.
@@ -67,7 +66,7 @@ export default function AnalyzingOverlay() {
         className="mt-6 text-white font-black"
         style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: 20, letterSpacing: "-0.02em" }}
       >
-        Running your payments audit
+        {t("overlay_title")}
       </p>
 
       {/* Progress bar */}
@@ -84,11 +83,11 @@ export default function AnalyzingOverlay() {
 
       {/* Live steps */}
       <ul className="mt-6 space-y-2.5 text-left">
-        {STEPS.map((label, i) => {
+        {STEP_KEYS.map((k, i) => {
           const done = i < step;
           const active = i === step;
           return (
-            <li key={label} className="flex items-center gap-2.5 text-[13px] transition-colors">
+            <li key={k} className="flex items-center gap-2.5 text-[13px] transition-colors">
               <span
                 className="inline-flex items-center justify-center h-4 w-4 rounded-full shrink-0 transition-all"
                 style={{
@@ -109,7 +108,7 @@ export default function AnalyzingOverlay() {
                 ) : null}
               </span>
               <span style={{ color: done ? "rgba(255,255,255,0.55)" : active ? "#ffffff" : "rgba(255,255,255,0.35)" }}>
-                {label}
+                {t(k)}
                 {active && <span className="inline-block ml-0.5 animate-pulse">…</span>}
               </span>
             </li>

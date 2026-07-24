@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ShieldCheck, Lock, Scale } from "lucide-react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * SecurityHero — hero for /Security, styled like the landing hero.
@@ -10,6 +11,7 @@ import { ShieldCheck, Lock, Scale } from "lucide-react";
  * tokens only.
  */
 export default function SecurityHero() {
+  const { t } = useTranslation();
   return (
     <section className="relative px-5 pt-28 sm:pt-32 pb-4 overflow-hidden">
       {/* Soft voltio spotlight — same wash as the landing hero */}
@@ -45,7 +47,7 @@ export default function SecurityHero() {
           }}
         >
           <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: "#5B4CF5" }} />
-          Security
+          {t("sec_eyebrow")}
         </motion.div>
 
         <motion.h1
@@ -61,7 +63,7 @@ export default function SecurityHero() {
             lineHeight: 0.94,
           }}
         >
-          Built so <span className="kw">you are safe.</span>
+          {t("sec_h1_pre")} <span className="kw">{t("sec_h1_kw")}</span> {t("sec_h1_post")}
         </motion.h1>
 
         <motion.p
@@ -71,8 +73,7 @@ export default function SecurityHero() {
           className="mt-7 text-[15px] sm:text-[17px] leading-relaxed max-w-2xl mx-auto"
           style={{ color: "var(--gris-1)" }}
         >
-          The honest answer to the question every founder should ask before connecting anything:
-          "what exactly can CAMBRA see, and what can it do?"
+          {t("sec_sub")}
         </motion.p>
 
         {/* Trust chips — light paper pills, voltio icon */}
@@ -82,13 +83,14 @@ export default function SecurityHero() {
           transition={{ duration: 0.7, delay: 0.45 }}
           className="mt-10 flex flex-wrap items-center justify-center gap-2.5"
         >
+          {/* i18n: traducción propia, revisar — chips not covered by the source table */}
           {[
-            { icon: Lock, label: "Read-only OAuth" },
-            { icon: ShieldCheck, label: "Encrypted end-to-end" },
-            { icon: Scale, label: "GDPR · France" },
-          ].map(({ icon: Icon, label }) => (
+            { icon: Lock, k: "sec_chip_1" },
+            { icon: ShieldCheck, k: "sec_chip_2" },
+            { icon: Scale, k: "sec_chip_3" },
+          ].map(({ icon: Icon, k }) => (
             <span
-              key={label}
+              key={k}
               className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold"
               style={{
                 background: "#fff",
@@ -97,7 +99,7 @@ export default function SecurityHero() {
               }}
             >
               <Icon size={12} style={{ color: "#5B4CF5" }} />
-              {label}
+              {t(k)}
             </span>
           ))}
         </motion.div>

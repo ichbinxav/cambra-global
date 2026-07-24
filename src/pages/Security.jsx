@@ -6,6 +6,7 @@ import PublicPageShell from "@/components/shared/PublicPageShell";
 import SecurityHero from "@/components/security/SecurityHero";
 import SecurityBlock from "@/components/security/SecurityBlock";
 import CanCannotTable from "@/components/security/CanCannotTable";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * /Security — public page. The honest answer to "what can CAMBRA see, and what
@@ -17,6 +18,10 @@ import CanCannotTable from "@/components/security/CanCannotTable";
 const CONTACT_EMAIL = "support@cambra.global";
 
 export default function Security() {
+  const { t } = useTranslation();
+  // sec_b5_body carries an {email} interpolation slot; split around it so the
+  // address stays a live mailto link (plain t() interpolation would flatten it).
+  const b5Parts = t("sec_b5_body").split("{email}");
   return (
     <PublicPageShell>
       <SecurityHero />
@@ -27,15 +32,9 @@ export default function Security() {
           index="01"
           icon={Eye}
           accent="voltio"
-          title="Read-only. By design, not by promise."
+          title={t("sec_b1_h2")}
         >
-          <p>
-            When you connect your payment provider, you grant CAMBRA read-only access through the
-            provider's official OAuth flow. That access lets us read your transaction fees and volumes.
-            It does not let us create charges, issue refunds, move funds, or modify anything in your
-            account. This isn't a policy we follow — it's a technical boundary set by the provider.
-            Even if we wanted to touch your money, we couldn't.
-          </p>
+          <p>{t("sec_b1_body")}</p>
           <CanCannotTable />
         </SecurityBlock>
 
@@ -44,15 +43,9 @@ export default function Security() {
           index="02"
           icon={Database}
           accent="voltio"
-          title="Aggregates, not identities."
+          title={t("sec_b2_h2")}
         >
-          <p>
-            Our analysis runs on aggregate numbers: volumes, fees, rates, payment mix. We do not need —
-            and do not process — your end customers' personal data. No names, no emails, no card numbers.
-            Card data never touches CAMBRA at any point: it stays within your payment provider's certified
-            infrastructure. Statement uploads are used solely to compute your effective rate, and the
-            figures we benchmark are anonymized and aggregated.
-          </p>
+          <p>{t("sec_b2_body")}</p>
         </SecurityBlock>
 
         {/* BLOCK 3 — Isolation */}
@@ -60,14 +53,9 @@ export default function Security() {
           index="03"
           icon={Layers}
           accent="voltio"
-          title="Your numbers never leak into anyone else's."
+          title={t("sec_b3_h2")}
         >
-          <p>
-            Every brand's data lives in strict isolation, enforced at the database layer. Benchmarks are
-            built from anonymized aggregates — no brand can ever see another brand's rates, volumes, or
-            identity. When your data contributes to a benchmark, it does so as a number in a cohort, never
-            as your name.
-          </p>
+          <p>{t("sec_b3_body")}</p>
         </SecurityBlock>
 
         {/* BLOCK 4 — Encryption & infrastructure */}
@@ -75,12 +63,9 @@ export default function Security() {
           index="04"
           icon={Lock}
           accent="voltio"
-          title="Encrypted everywhere it travels, everywhere it rests."
+          title={t("sec_b4_h2")}
         >
-          <p>
-            All data is encrypted in transit (TLS) and at rest. Access to production data is restricted and
-            logged. We keep what we need to run your analysis and monitoring — nothing more.
-          </p>
+          <p>{t("sec_b4_body")}</p>
         </SecurityBlock>
 
         {/* BLOCK 5 — GDPR */}
@@ -88,16 +73,14 @@ export default function Security() {
           index="05"
           icon={Scale}
           accent="voltio"
-          title="European company. European rules."
+          title={t("sec_b5_h2")}
         >
           <p>
-            CAMBRA Global SASU is incorporated in France and operates under GDPR. You can request access to
-            your data or its deletion at any time. A Data Processing Agreement is available for brands that
-            require one — ask us at{" "}
+            {b5Parts[0]}
             <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: "#5B4CF5", fontWeight: 600 }}>
               {CONTACT_EMAIL}
             </a>
-            .
+            {b5Parts[1]}
           </p>
         </SecurityBlock>
 
@@ -106,12 +89,9 @@ export default function Security() {
           index="06"
           icon={Power}
           accent="coral"
-          title="Leaving takes one click."
+          title={t("sec_b6_h2")}
         >
-          <p>
-            You can disconnect your payment provider at any moment from your dashboard, and the connection
-            is revoked immediately at the provider level. Your access, your call — always.
-          </p>
+          <p>{t("sec_b6_body")}</p>
         </SecurityBlock>
 
         {/* CLOSING */}
@@ -132,11 +112,10 @@ export default function Security() {
               lineHeight: 1.02,
             }}
           >
-            Questions? Ask before you connect.
+            {t("sec_close_h2")}
           </h2>
           <p className="mt-5 max-w-xl mx-auto text-[15px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
-            If anything here is unclear, write to us before connecting anything. We'd rather earn your trust
-            slowly than lose it fast.
+            {t("sec_close_body")}
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -144,7 +123,7 @@ export default function Security() {
               className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 font-medium text-[14px] text-white transition-transform hover:-translate-y-0.5"
               style={{ background: "var(--g-voltio)", boxShadow: "0 12px 32px -12px rgba(91,76,245,0.5)" }}
             >
-              See my payment gap
+              {t("sec_cta_analyze")}
               <ArrowRight size={16} />
             </Link>
             <Link
@@ -152,7 +131,7 @@ export default function Security() {
               className="inline-flex items-center gap-1.5 rounded-full px-7 py-3.5 text-[14px] font-medium transition-colors"
               style={{ border: "1px solid var(--linea)", color: "var(--gris-1)", background: "#fff" }}
             >
-              Contact us
+              {t("sec_cta_contact")}
               <ArrowRight size={14} />
             </Link>
           </div>
