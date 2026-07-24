@@ -135,7 +135,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 //                       and the reason the tag stays 1.5.0 (also pinned by
 //                       paymentsGap.test.js). Revisit the bump when SEED-ES
 //                       lands the first country rows.
-const ENGINE_VERSION = "payments-gap-1.5.0";
+//   payments-gap-1.6.0 (SEED-ES-2, 2026-07-24) — VERSION BUMP, cero cambio de
+//                       lógica. Primeras filas country=ES activas en la tabla
+//                       (SEED-ES) + anchors ES en el pool multi-anchor: los
+//                       resultados reales para merchants ES cambian respecto a
+//                       1.5.0, y un motor cuyos resultados cambian merece traza
+//                       de versión. La resolución country-aware es de M5; este
+//                       bump la acompaña ahora que los datos la activan.
+const ENGINE_VERSION = "payments-gap-1.6.0";
 
 // Currency minor-unit divisor. All PaymentsRateTable rows store fixed fees
 // in minor units (cents / pence). 100 minor units = 1 major (EUR / GBP / USD).

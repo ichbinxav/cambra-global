@@ -553,8 +553,12 @@ describe('calculateGap — end-to-end', () => {
     // arithmetic is byte-identical to 1.4.0 (retrocompat oracle in the
     // dedicated classifier test file), so THIS test only pins the version
     // string; the numeric oracle lives in paymentsGap.classifier.test.js.
-    expect(result.engine_version).toBe('payments-gap-1.5.0');
-    expect(ENGINE_VERSION).toBe('payments-gap-1.5.0');
+    // v1.6.0 (SEED-ES-2, 2026-07-24): version bump with ZERO logic change —
+    // first country=ES rows + ES anchors in the multi-anchor pool change real
+    // results for ES merchants, so the version gets a trace. Every numeric
+    // assertion in this file is untouched (fixture has no country rows).
+    expect(result.engine_version).toBe('payments-gap-1.6.0');
+    expect(ENGINE_VERSION).toBe('payments-gap-1.6.0');
   });
 });
 

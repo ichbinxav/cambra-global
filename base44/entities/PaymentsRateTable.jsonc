@@ -27,13 +27,14 @@
       "type": "string",
       "enum": [
         "ANY",
+        "PLUS",
         "micro",
         "small",
         "mid",
         "large"
       ],
       "default": "ANY",
-      "description": "Revenue tier. Chunk 1b: always 'ANY' \u2014 Stripe/PayPal/Shopify don't publish tiered pricing publicly. Future rows may segment when a provider does (e.g. Shopify tiering by plan)."
+      "description": "Revenue tier. Chunk 1b: always 'ANY' \u2014 Stripe/PayPal/Shopify don't publish tiered pricing publicly. Future rows may segment when a provider does (e.g. Shopify tiering by plan). SEED-ES-2 (2026-07-24): 'PLUS' added for PLAN-tier anchor rows (SumUp Pagos Plus ES). A non-ANY tier deliberately keeps the row OUT of selectRow's current-rate resolution (both the M5 countryRow field-match, which requires tier ANY, and the key candidates, which only build '|ANY|' keys) while the multi-anchor pool \u2014 which has no tier filter \u2014 still picks it up as an achievable anchor. This is the sanctioned way to seed subscription-plan anchors without engine changes."
     },
     "region": {
       "type": "string",
@@ -64,7 +65,7 @@
     },
     "terminal_rental_monthly_minor": {
       "type": "number",
-      "description": "IN-STORE ONLY (channel='in_store'). Monthly TPV terminal rental in MINOR units of fixed_fee_currency (e.g. 2500 = \u20ac25/mo). 0 for modern TPV providers that sell hardware one-off with no rental (SumUp, Zettle, Smile & Pay, Stripe Terminal). Populated on fallback bank-acquirer rows (BNP, CA, SG, ...) where \u20ac15-40/mo rental is the norm. The engine amortizes this against monthly in-store GMV / ticket at runtime. Absent/null on online rows \u2014 treated as 0. Purely additive \u2014 no migration."
+      "description": "IN-STORE ONLY (channel='in_store'). Monthly TPV terminal rental in MINOR units of fixed_fee_currency (e.g. 2500 = \u20ac25/mo). 0 for modern TPV providers that sell hardware one-off with no rental (SumUp, Zettle, Smile & Pay, Stripe Terminal). Populated on fallback bank-acquirer rows (BNP, CA, SG, ...) where \u20ac15-40/mo rental is the norm. The engine amortizes this against monthly in-store GMV / ticket at runtime. Absent/null on online rows \u2014 treated as 0. SEED-ES-2 (2026-07-24): ALSO used to model monthly SUBSCRIPTION plans (SumUp Pagos Plus 19\u20ac/mes \u2192 1900) \u2014 economically identical to a rental (fixed monthly cost amortized against GMV), so the engine needs no new field. Purely additive \u2014 no migration."
     },
     "achievable_percent_bps": {
       "type": "number",
