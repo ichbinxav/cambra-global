@@ -103,8 +103,12 @@ const TABLE = [
 // FAMILY 1 — Classifier matrix (pure function). Six-row truth table.
 // ────────────────────────────────────────────────────────────────────────────
 describe("classifyResult — matrix from Decision_Log_Iter4", () => {
-  it("v1.5.0 engine version pinned", () => {
-    expect(ENGINE_VERSION).toBe("payments-gap-1.5.0");
+  it("v1.6.0 engine version pinned", () => {
+    // SEED-ES-2 (2026-07-24): sanctioned version bump 1.5.0 → 1.6.0 (first
+    // country=ES rows + ES anchors change real ES results; zero logic change).
+    // Same pin update as paymentsGap.test.js — this second pin was missed in
+    // the original chunk and caught by external verification.
+    expect(ENGINE_VERSION).toBe("payments-gap-1.6.0");
   });
 
   const base = { monthly_gmv_eur: 40000, ticket_present: true, multi_anchor_ran: false, multi_anchor_empty: false, channel: "online" };
