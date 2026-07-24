@@ -51,7 +51,45 @@ en `src/index.css` → cero cambio visual.
 (shadcn generado; no se puede ejecutar lint en este entorno para auditarlo).
 ⚠️ No es posible ejecutar `eslint` aquí — validar en local.
 
-## T6 — diagnóstico de la curva de pares ✅ (diagnóstico; recalibración pendiente de decisión)
+## T6 — curva de pares: FIX aplicado (2026-07-24, segunda pasada)
+
+**Decisión del operador: NO recalibrar la mediana para servir la narrativa.**
+La mediana solo se mueve con evidencia. Aplicados los puntos 1-4:
+
+1. **Monotonía (fix obligatorio).** Causa raíz de la inversión (ES in-store
+   1,08% → "92%" vs 1,49% → "99%"): la curva se anclaba al
+   `achievable_effective_bps` DE CADA MERCHANT — proveedor distinto ⇒ curva
+   distinta ⇒ percentiles no comparables. Fix: `computePaymentsBenchmark`
+   deriva ahora UNA curva por (región, canal, país) — parámetros
+   independientes del merchant. **Verificado contra la tabla real:** ES
+   in-store (n=12 filas, mediana 1,52%, sd 44 pb): 1,08% → "cheaper ~84%" y
+   1,49% → "cheaper ~53%" — misma curva, monótono. Barrido 1,00%→4,50% en
+   ES online y ES in-store: masa de cola estrictamente monótona.
+2. **Anclaje con evidencia (derivación limpia — aplicada).** Parámetros
+   derivados de las filas activas de PaymentsRateTable del país+canal:
+   tarifa efectiva de cada fila en un punto de referencia FIJO
+   (ticket 50€ online / 35€ in-store; alquiler/abono amortizado a
+   12.500€/mes de GMV in-store ≈ 150k€/año, medio del ICP — supuestos
+   documentados en el propio módulo). Mediana de filas → mediana de curva;
+   mín → suelo (Top 10%); máx → techo; sd = max((mediana−suelo)/2,
+   (techo−mediana)/2, 12 pb). La mediana derivada ES online sale ~1,90%
+   (n=13) e in-store ES ~1,52% (n=12) — se aplica la derivada, venga más
+   alta o más baja. Fallback: <3 filas ⇒ modelo constante anterior intacto,
+   `derived:false` ("modelada, pendiente de datos verificados").
+3. **Saturación de extremos.** Con el sd derivado del spread real (~85 pb
+   online ES), la cola cara diferencia: 2,9% → "expensive ~12%", 3,5% → ~3%,
+   4,5% → ~1% (antes: todo ~1-2%).
+4. **Honestidad de etiqueta.** Nota bajo la curva (clave `bench_modeled_note`
+   ×3 EN/FR/ES, copy literal del operador) + "~" conservado en todos los
+   percentiles. El PDF usa la misma derivación (rateTable + país pasados).
+
+Consumidores actualizados: PeerBenchmark (espera a que la tabla cargue para
+no mostrar números que salten), PaymentsResults ×2, CombinedChannelSection,
+paymentsAuditPdf. Pendientes menores del diagnóstico (no bloqueantes):
+"brands EU your size" en modo verified (país=región) y alineación cosmética
+de la leyenda.
+
+### Diagnóstico original (histórico)
 Ejecutado sobre `computePaymentsBenchmark` (src/lib/paymentsBenchmark.js) con 9
 escenarios representativos (online típico/caro, in-store banco/moderno,
 already_optimized). Hallazgos, por severidad:

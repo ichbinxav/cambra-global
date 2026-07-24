@@ -725,7 +725,7 @@ export default function PaymentsResults() {
               />
             </div>
           )}
-          <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} />
+          <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} rateTable={rateTable} />
           {/* Phase 1·B — insights shown in the anonymous teaser too, but
               COMPACT: only the 3 highest-punch tiles (total fees · effective
               rate · current-rate decomposed). Keeps the teaser scannable and
@@ -809,7 +809,7 @@ export default function PaymentsResults() {
               </div>
             )}
             {!isOptimizedSingle && (
-              <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} />
+              <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} rateTable={rateTable} />
             )}
             <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
             {/* Phase 3 — in-store (TPE) tiles. Self-hides for online/single-online. */}

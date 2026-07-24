@@ -33,10 +33,15 @@ function gaussian(x, mean, sd) {
   return Math.exp(-0.5 * z * z);
 }
 
-export default function PeerBenchmark({ engineResult, country }) {
+// `rateTable` — active PaymentsRateTable rows. When provided, the curve is
+// DERIVED per country+channel (SWEEP-1 T6: one shared curve per cohort —
+// monotone percentiles). Pass null while the table is loading (we wait rather
+// than flash fallback numbers that shift a second later); pass undefined to
+// use the legacy modeled fallback directly.
+export default function PeerBenchmark({ engineResult, country, rateTable }) {
   const { t } = useTranslation();
   const [drawn, setDrawn] = useState(false);
-  const bench = computePaymentsBenchmark(engineResult);
+  const bench = computePaymentsBenchmark(engineResult, { rateTable, country });
 
   useEffect(() => {
     const reduce = typeof window !== "undefined" &&
@@ -46,6 +51,7 @@ export default function PeerBenchmark({ engineResult, country }) {
     return () => cancelAnimationFrame(id);
   }, []);
 
+  if (rateTable === null) return null; // table still loading — avoid a params flip mid-view
   if (!bench.available) return null;
 
   const { axis, markers, distribution, expensivePct, cheaperSide, cheaperPct } = bench;
@@ -218,6 +224,11 @@ export default function PeerBenchmark({ engineResult, country }) {
           <span>← {t("bench_axis_cheaper")}</span>
           <span>{t("bench_axis_pricier")} →</span>
         </div>
+
+        {/* Honesty note — the curve is modeled, not measured (SWEEP-1 T6). */}
+        <p className="mt-2" style={{ fontFamily: MONO, fontSize: 9.5, color: "#585868" }}>
+          {t("bench_modeled_note")}
+        </p>
 
         {/* Callout */}
         <div

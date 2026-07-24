@@ -56,7 +56,7 @@ function renderAnalysisBody(doc, { engineResult, inputSnapshot, rateTable }, sta
   };
 
   const insights = derivePaymentsInsights(engineResult, inputSnapshot || {});
-  const bench = computePaymentsBenchmark(engineResult);
+  const bench = computePaymentsBenchmark(engineResult, { rateTable, country: inputSnapshot?.country });
   const score = computePaymentsScore(engineResult);
   const roadmap = buildRecoveryRoadmap(engineResult, inputSnapshot || {}, rateTable);
 

@@ -235,6 +235,8 @@ export default {
     bench_callout_nocountry: "Vous êtes dans les ~{pct}% les plus chers des marques de votre taille.",
     bench_callout_cheaper:   "Vous êtes moins cher que ~{pct}% des marques {country} de votre taille.",
     bench_callout_cheaper_nocountry: "Vous êtes moins cher que ~{pct}% des marques de votre taille.",
+    /* SWEEP-1 T6 — honesty note under the modeled peer curve */
+    bench_modeled_note:   "Modélisé à partir de tarifs publics — affiné à mesure que les données vérifiées atteignent la masse critique.",
 
     /* Report v2 — Collectif (clickwrap-lite) + Réserver un appel */
     coll_eyebrow:        "Le collectif",

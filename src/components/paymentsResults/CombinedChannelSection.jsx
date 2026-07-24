@@ -97,7 +97,7 @@ export default function CombinedChannelSection({
         </div>
       )}
 
-      <PeerBenchmark engineResult={engineResult} country={country} />
+      <PeerBenchmark engineResult={engineResult} country={country} rateTable={rateTable} />
 
       <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
 

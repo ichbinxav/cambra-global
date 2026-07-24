@@ -264,6 +264,8 @@ export default {
     bench_callout_nocountry: "You're in the most expensive ~{pct}% of brands your size.",
     bench_callout_cheaper:   "You're cheaper than ~{pct}% of {country} brands your size.",
     bench_callout_cheaper_nocountry: "You're cheaper than ~{pct}% of brands your size.",
+    /* SWEEP-1 T6 — honesty note under the modeled peer curve */
+    bench_modeled_note:   "Modeled from public pricing data — refined as verified merchant data reaches critical mass.",
 
     /* Report v2 — Collective (clickwrap-lite) + Book a call */
     coll_eyebrow:        "The collective",
