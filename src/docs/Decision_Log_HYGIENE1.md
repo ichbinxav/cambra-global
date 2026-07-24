@@ -62,7 +62,7 @@ Nota de harness: `test_backend_function` bloquea `submitWaitlistSignup` por el s
 - Grep T2: cero resultados (output arriba).
 - Funnel público: 4 submits + teaser en verde + dos 413 empíricos (tabla arriba).
 - OAuth: mono-marca intacto, multi-marca → 400 accionable.
-- Suite / lint / build: ver cifras al pie.
+- Suite / lint / build: no ejecutables en este entorno (limitación conocida del sandbox — sin runner de vitest/eslint/vite). Verificación sustitutiva: grep T2 limpio, funnel end-to-end en verde vía HTTP real, y lectura de diff en los 6 ficheros tocados (todas las ediciones son aditivas: comentario+saneado en PeerBenchmark, atributos rel, caps 413 pre-parse, guard multi-marca).
 
 ## FUERA DE ALCANCE (sin cambios)
 Migración SDK · BUG-6 (`owner_email`) · reducción de superficie backend · Help trilingüe · 554 errores typecheck · selector de marca UI · fila PayPal guest checkout.
