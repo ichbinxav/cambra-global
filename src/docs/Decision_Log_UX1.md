@@ -130,12 +130,25 @@ nunca en UI). Nada que borrar.
 
 ---
 
+## T5 — Pantalla de acceso rediseñada ✅ (2026-07-29)
+
+⚠️ **Restricción de plataforma (confirmada):** Base44 es dueño del login real
+(Google / email / OAuth). No podemos crear formularios de credenciales
+propios; lo único diseñable es la pantalla PREVIA (`LoginGate`).
+
+- Nuevo componente `src/components/auth/LoginGateBenefits.jsx`: panel "Qué
+  desbloqueas" con los TRES ítems exactos que están bloqueados en el informe
+  anónimo (tasa alcanzable · desglose de comisiones · plan + PDF), coherente
+  con los candados T2/T3/T4, más chips de confianza (solo lectura · RGPD ·
+  gratis en acceso anticipado) que bajan la fricción del registro.
+- `LoginGate.jsx`: inserta el panel entre el subtítulo y el CTA, y añade un
+  enlace de salida "Volver al inicio" (antes la pantalla no tenía escapatoria
+  salvo el wordmark). Sin cambios en la lógica de auth: mismo `returnUrl`,
+  mismo `safeAbsoluteUrl`, mismo `redirectToLogin`, misma tecla Enter.
+- i18n: 7 claves nuevas × EN/FR/ES (paridad mantenida).
+
 ## Tareas del chunk PENDIENTES (próximos turnos)
 
-- **T5** — Rediseño de la pantalla de autenticación. ⚠️ Restricción de
-  plataforma: el login/registro/OAuth lo gestiona Base44 (no hay formularios
-  propios de credenciales); el rediseño se hará sobre `LoginGate` dentro de
-  lo que la plataforma permite.
 - **T6** — Verificación del upload de invoices/statements
   (`StatementUploadCard` + `processUploadedFile` + `getUploadCapability`).
 - **T9** — Connect Infrastructure: solo Stripe + "upload your statements".

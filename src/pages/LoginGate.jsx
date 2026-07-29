@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useTranslation } from "@/lib/i18n.jsx";
+import LoginGateBenefits from "@/components/auth/LoginGateBenefits";
 
 /* CAMBRA — Pre-login gate.
    Shown when an unauthenticated user lands on a protected route.
@@ -115,10 +116,13 @@ export default function LoginGate() {
           {sub}
         </p>
 
+        {/* UX-1 T5 — what an account unlocks (mirrors the locked report items) */}
+        <LoginGateBenefits />
+
         {/* Primary CTA */}
         <button
           onClick={handleContinue}
-          className="mt-10 w-full inline-flex items-center justify-center gap-2 rounded-full bg-white text-black font-bold text-[14px] h-12 px-6 transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-full bg-white text-black font-bold text-[14px] h-12 px-6 transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           style={{
             boxShadow:
               "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
@@ -151,6 +155,16 @@ export default function LoginGate() {
           </Link>
           .
         </p>
+
+        {/* Escape hatch — never trap a user on the gate */}
+        <div className="mt-7 text-center">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/75 transition-colors"
+          >
+            <ArrowLeft size={12} /> {t("login_gate_back")}
+          </Link>
+        </div>
       </div>
     </div>
   );

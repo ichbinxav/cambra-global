@@ -682,4 +682,15 @@ export default {
     locked_achievable_rate:     "Create your free account to unlock your exact achievable rate.",
     locked_combined_breakdown:  "Create your free account to see the online vs in-store breakdown.",
     locked_pdf_download:        "Create your free account to download the PDF report.",
+
+    /* UX-1 T5 — LoginGate redesign (Base44 owns the credential UI; this is
+       the pre-login value screen shown before the platform's login flow). */
+    login_gate_benefits_title: "What you unlock",
+    login_gate_b1:             "Your exact achievable rate, not a range",
+    login_gate_b2:             "The full fee breakdown — interchange, scheme, margin",
+    login_gate_b3:             "Your recovery plan and the PDF audit",
+    login_gate_trust_1:        "Read-only",
+    login_gate_trust_2:        "GDPR · Europe",
+    login_gate_trust_3:        "Free during early access",
+    login_gate_back:           "Back to home",
 };

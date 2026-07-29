@@ -648,4 +648,15 @@ export default {
     locked_achievable_rate:     "Crea tu cuenta gratuita para desbloquear tu tasa alcanzable exacta.",
     locked_combined_breakdown:  "Crea tu cuenta gratuita para ver el desglose online vs tienda.",
     locked_pdf_download:        "Crea tu cuenta gratuita para descargar el informe PDF.",
+
+    /* UX-1 T5 — rediseño del LoginGate (Base44 gestiona la pantalla de
+       credenciales; esta es la pantalla de valor previa al login). */
+    login_gate_benefits_title: "Qué desbloqueas",
+    login_gate_b1:             "Tu tasa alcanzable exacta, no un rango",
+    login_gate_b2:             "El desglose completo de comisiones — interchange, esquemas, margen",
+    login_gate_b3:             "Tu plan de recuperación y la auditoría en PDF",
+    login_gate_trust_1:        "Solo lectura",
+    login_gate_trust_2:        "RGPD · Europa",
+    login_gate_trust_3:        "Gratis durante el acceso anticipado",
+    login_gate_back:           "Volver al inicio",
 };
