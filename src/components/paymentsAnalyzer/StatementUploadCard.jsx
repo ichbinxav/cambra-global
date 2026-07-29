@@ -98,9 +98,15 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
         file_name: file.name,
       });
       const body = resp?.data || resp;
-      if (body?.error) {
+      // The extractor answers 200 EVEN WHEN it understood nothing: an
+      // unreadable/unsupported layout comes back as status "format_unknown"
+      // with no `error` field (verified against the live function, 2026-07-29).
+      // Checking only `body.error` therefore claimed "statement received" for
+      // files we never read — a false promise. Treat a non-recognized document
+      // as an honest failure the merchant can act on.
+      if (body?.error || body?.status === "format_unknown" || body?.detected === "unknown") {
         setStatus("error");
-        setMessage("We couldn't read that file. Try a PDF or CSV export of your statement.");
+        setMessage("We couldn't read that file. Try the PDF or CSV your provider gives you — a photo or screenshot won't work.");
         return;
       }
       setStatus("done");
