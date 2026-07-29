@@ -746,7 +746,7 @@ export default function PaymentsResults() {
         // each reusing the single-channel components fed with THAT channel's
         // own engine_result + input_snapshot. Never mixes figures.
         <div className="space-y-8 max-w-6xl mx-auto">
-          <CombinedGapHero engineResult={engineResult} country={inputSnapshot?.country} />
+          <CombinedGapHero engineResult={engineResult} country={inputSnapshot?.country} isAnonymous={isAnonymous} />
           {ctaBlock}
           <FeeBreakdownCard
             engineResult={engineResult}
@@ -756,6 +756,9 @@ export default function PaymentsResults() {
               online vs in-store, stacked in one column on mobile/tablet. The
               divider becomes the grid gap; a top border separates the block
               from the aggregate view above. */}
+          {/* UX-1 T3 — per-channel depth reserved for registered users. The
+              anonymous combined teaser shows ONE total only (hero above). */}
+          {!isAnonymous && (
           <div
             className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6"
             style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
@@ -774,6 +777,7 @@ export default function PaymentsResults() {
               </div>
             ))}
           </div>
+          )}
           <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
         </div>
       ) : (

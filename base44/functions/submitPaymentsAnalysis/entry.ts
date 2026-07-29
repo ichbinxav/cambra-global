@@ -1557,6 +1557,21 @@ async function checkAndIncrementRateLimit(
 // ─── Input validation — hard ranges, no clamp ───────────────────────────────
 type ValidationFailure = { field: string; reason: 'missing' | 'out_of_range' | 'not_in_enum' | 'invalid_type' };
 
+// UX-1 T1 (2026-07-29) — email is REQUIRED on every submission (deliberate
+// funnel change: no report is generated without a valid email). Session
+// metadata ONLY — never an engine input, never returned by the teaser
+// allowlist. Format check mirrors the frontend's EMAIL_RE.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const EMAIL_MAX_LEN = 254;
+function validateEmail(raw: any): { ok: true; email: string } | { ok: false; failure: ValidationFailure } {
+  const email = typeof raw === 'string' ? raw.trim().toLowerCase() : '';
+  if (!email) return { ok: false, failure: { field: 'email', reason: 'missing' } };
+  if (email.length > EMAIL_MAX_LEN || !EMAIL_RE.test(email)) {
+    return { ok: false, failure: { field: 'email', reason: 'invalid_type' } };
+  }
+  return { ok: true, email };
+}
+
 // M4-TPV Fase 3 — validation for a single per-channel sub-payload inside a
 // combined submit. Runs the SAME per-field checks as validateInput() but
 // scoped to the fields that belong to a channel (no brand_name / country /
@@ -1631,6 +1646,10 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
   if (!country) return { ok: false, failure: { field: 'country', reason: 'missing' } };
   if (!/^[A-Z]{2}$/.test(country)) return { ok: false, failure: { field: 'country', reason: 'invalid_type' } };
 
+  // email — REQUIRED (UX-1 T1). Session metadata only, never an engine input.
+  const emailCheck = validateEmail(raw.email);
+  if (!emailCheck.ok) return { ok: false, failure: emailCheck.failure };
+
   // channel — optional, default 'online'. When present must be in the enum.
   // Reserving 'online' as the default ensures pre-M4 callers (no channel in
   // payload) produce byte-identical results to v1.3.0 for the online cohort.
@@ -1691,6 +1710,7 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
       country,
       region,
       channel,
+      email: emailCheck.email,
       ...(brand_name_raw ? { brand_name: brand_name_raw } : {}),
       ...(card_mix_debit_pct !== undefined ? { card_mix_debit_pct } : {}),
       ...(website !== undefined ? { website } : {}),
@@ -1716,6 +1736,30 @@ async function loadRateTable(base44: any): Promise<{ ok: boolean; rows?: any[]; 
   }
   if (!check.ok) return { ok: false, error: check.reason, missing: check.missing };
   return { ok: true, rows };
+}
+
+// ─── UX-1 T2 (2026-07-29) — anonymous response projection ──────────────────
+// The submit endpoint is anonymous, so its response mirrors the teaser's
+// policy: NEVER ship the exact achievable rate (or the assumption lines that
+// disclose its composition/anchor — they all start with "Achievable") to an
+// unauthenticated client. The PERSISTED session keeps the FULL engine_result
+// for the claim / verified paths — this projection touches the response only.
+function sanitizeEngineResultForAnon(er: any): any {
+  const strip = (r: any) => (r && typeof r === 'object')
+    ? {
+        ...r,
+        achievable_effective_bps: null,
+        assumptions: Array.isArray(r.assumptions)
+          ? r.assumptions.filter((a: any) => typeof a === 'string' && !a.startsWith('Achievable'))
+          : [],
+      }
+    : r;
+  if (!er || typeof er !== 'object') return er;
+  const out = strip(er);
+  if (Array.isArray(er.channels)) {
+    out.channels = er.channels.map((c: any) => ({ ...c, engine_result: strip(c.engine_result) }));
+  }
+  return out;
 }
 
 // ─── HTTP handler ───────────────────────────────────────────────────────────
@@ -1776,6 +1820,12 @@ Deno.serve(async (req) => {
       const brandName = typeof raw.brand_name === 'string' ? raw.brand_name.trim() : '';
       if (brandName && (brandName.length < VALIDATION.brand_name.minLen || brandName.length > VALIDATION.brand_name.maxLen)) {
         return Response.json({ error: 'invalid_input', field: 'brand_name', reason: 'out_of_range' }, { status: 400 });
+      }
+
+      // email — REQUIRED (UX-1 T1). Same rule as the single path.
+      const emailCheck = validateEmail(raw.email);
+      if (!emailCheck.ok) {
+        return Response.json({ error: 'invalid_input', field: emailCheck.failure.field, reason: emailCheck.failure.reason }, { status: 400 });
       }
 
       const channelsRaw = Array.isArray(raw.channels) ? raw.channels : [];
@@ -1891,6 +1941,7 @@ Deno.serve(async (req) => {
           mode: 'combined',
           country,
           region,
+          email: emailCheck.email, // UX-1 T1 — session metadata, never returned by the teaser
           ...(brandName ? { brand_name: brandName } : {}),
           ...(website !== undefined ? { website } : {}),
           ...(sector !== undefined ? { sector } : {}),
@@ -1906,7 +1957,7 @@ Deno.serve(async (req) => {
         ip_hash: ipHash,
       });
 
-      return Response.json({ ok: true, anon_session_id, engine_result: engineResult });
+      return Response.json({ ok: true, anon_session_id, engine_result: sanitizeEngineResultForAnon(engineResult) });
     }
 
     // ── Single-channel path (pre-Fase-3, byte-identical) ────────────────
@@ -1950,7 +2001,7 @@ Deno.serve(async (req) => {
     return Response.json({
       ok: true,
       anon_session_id,
-      engine_result: engineResult,
+      engine_result: sanitizeEngineResultForAnon(engineResult),
     });
   } catch (error) {
     console.error('submitPaymentsAnalysis:', (error as any)?.message, (error as any)?.stack);

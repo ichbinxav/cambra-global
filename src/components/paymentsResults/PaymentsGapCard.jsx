@@ -13,6 +13,8 @@
 //
 // Everything numeric comes verbatim from engine_result. Payments only.
 
+import { Lock } from "lucide-react";
+import { useTranslation } from "@/lib/i18n.jsx";
 import { computePaymentsScore } from "@/lib/paymentsScore.js";
 import ScoreGauge from "@/components/paymentsResults/ScoreGauge";
 import ScoreRecoveryCTA from "@/components/paymentsResults/ScoreRecoveryCTA";
@@ -39,8 +41,12 @@ function eur(n) {
 }
 
 export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMetrics, measurementWindow, compact = false, isAnonymous = false, onScoreCTA }) {
+  const { t } = useTranslation();
   const current = engineResult?.current_effective_bps;
   const achievable = engineResult?.achievable_effective_bps;
+  // UX-1 T2 — the anonymous teaser no longer ships the achievable rate
+  // (getPaymentsGapTeaser returns null). Render a locked state instead.
+  const achievableLocked = !isFinite(achievable);
   const annual = engineResult?.annual_savings_eur || {};
   const monthly = engineResult?.monthly_savings_eur || {};
   const cohortVerifiedRow = engineResult?.cohort?.verified === true;
@@ -174,7 +180,11 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
           >
             <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.18em", color: "rgba(255,255,255,0.4)" }}>Payments efficiency</span>
-            <span className="text-[13px] text-white/55">Connect your PSP to score</span>
+            <span className="text-[13px] text-white/55 inline-flex items-center gap-1.5">
+              {achievableLocked && isAnonymous
+                ? (<><Lock size={12} className="shrink-0" /> {t("locked_achievable_rate")}</>)
+                : "Connect your PSP to score"}
+            </span>
           </div>
         )}
 
@@ -215,10 +225,18 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
               {pctFromBps(current)} today
             </span>
             <span style={{ color: "#585868" }} aria-hidden="true">→</span>
-            <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ fontFamily: MONO, color: "#7BD9F0" }}>
-              {pctFromBps(achievable)} achievable
-            </span>
-            {gapPct && <span className="text-[12px]" style={{ color: "#585868" }}>({gapPct} pts lower)</span>}
+            {achievableLocked ? (
+              <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold" style={{ color: "#7BD9F0" }}>
+                <Lock size={12} className="shrink-0" /> {t("locked_achievable_rate")}
+              </span>
+            ) : (
+              <>
+                <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ fontFamily: MONO, color: "#7BD9F0" }}>
+                  {pctFromBps(achievable)} achievable
+                </span>
+                {gapPct && <span className="text-[12px]" style={{ color: "#585868" }}>({gapPct} pts lower)</span>}
+              </>
+            )}
           </div>
         ) : (
           <div className="mt-6 grid grid-cols-2 gap-3">
@@ -235,12 +253,23 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             </div>
             <div className="rounded-xl p-4" style={{ background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.25)" }}>
               <p className="uppercase font-bold mb-1" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "rgba(103,232,249,0.9)" }}>You should pay</p>
-              <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#7BD9F0", textShadow: "0 0 8px rgba(34,211,238,0.18)" }}>
-                {pctFromBps(achievable)}
-              </p>
-              <p className="text-[10px] mt-0.5" style={{ color: "#585868" }}>
-                {gapPct ? `${gapPct} pts below your current rate` : "achievable rate"}
-              </p>
+              {achievableLocked ? (
+                <div className="flex items-start gap-2 mt-1">
+                  <Lock size={14} className="mt-0.5 shrink-0" style={{ color: "#7BD9F0" }} />
+                  <p className="text-[12px] leading-snug font-semibold" style={{ color: "#7BD9F0" }}>
+                    {t("locked_achievable_rate")}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="tabular-nums font-black" style={{ fontFamily: MONO, fontSize: 26, letterSpacing: "-0.02em", color: "#7BD9F0", textShadow: "0 0 8px rgba(34,211,238,0.18)" }}>
+                    {pctFromBps(achievable)}
+                  </p>
+                  <p className="text-[10px] mt-0.5" style={{ color: "#585868" }}>
+                    {gapPct ? `${gapPct} pts below your current rate` : "achievable rate"}
+                  </p>
+                </>
+              )}
             </div>
           </div>
         )}

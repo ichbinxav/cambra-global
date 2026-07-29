@@ -672,4 +672,14 @@ export default {
     /* SWEEP-1 T2 — brand name is optional in the anonymous analyzer */
     brand_name_optional: "Brand name (optional)",
     brand_fallback:      "Your brand",
+
+    /* UX-1 — mandatory email gate + locked teaser fields */
+    analyzer_email_label:       "Your email",
+    analyzer_email_hint:        "Required — we send your report here",
+    analyzer_email_placeholder: "you@yourbrand.com",
+    analyzer_email_required:    "Enter your email to see your results.",
+    analyzer_email_invalid:     "Enter a valid email address (e.g. you@yourbrand.com).",
+    locked_achievable_rate:     "Create your free account to unlock your exact achievable rate.",
+    locked_combined_breakdown:  "Create your free account to see the online vs in-store breakdown.",
+    locked_pdf_download:        "Create your free account to download the PDF report.",
 };

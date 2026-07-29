@@ -172,6 +172,10 @@ const RANGES = {
   card_mix_debit_pct: { min: 0,   max: 100,        label: "Debit card share (%)" },
 };
 
+// UX-1 T1 — email format check (mirrors the backend's EMAIL_RE in
+// submitPaymentsAnalysis). `required` alone is not enough — format is checked.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 function fieldRangeError(key, value) {
   const r = RANGES[key];
   const n = Number(value);
@@ -226,6 +230,10 @@ export default function PaymentsAnalyzer() {
   const [brandName, setBrandName]       = useState("");
   const [website, setWebsite]           = useState("");
   const [sector, setSector]             = useState("");
+  // UX-1 T1 — email is REQUIRED before any report is generated (deliberate
+  // funnel change: no report without a valid email). Validated here AND in
+  // submitPaymentsAnalysis — the backend is authoritative.
+  const [email, setEmail]               = useState("");
 
   const [submitting, setSubmitting]   = useState(false);
   const [errorBanner, setErrorBanner] = useState("");
@@ -315,13 +323,18 @@ export default function PaymentsAnalyzer() {
       errors.push("Sector: pick one of the listed options.");
     }
 
+    // Email — REQUIRED in every mode (UX-1 T1). Presence + format.
+    const trimmedEmail = email.trim();
+    if (trimmedEmail === "") errors.push(t("analyzer_email_required"));
+    else if (trimmedEmail.length > 254 || !EMAIL_RE.test(trimmedEmail)) errors.push(t("analyzer_email_invalid"));
+
     if (cardMixDebit !== "") {
       const e = fieldRangeError("card_mix_debit_pct", cardMixDebit);
       if (e) errors.push(e);
     }
 
     return { valid: errors.length === 0, errors };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit, brandName, website, sector, channel, combinedOnline, combinedInStore]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit, brandName, website, sector, channel, combinedOnline, combinedInStore, email, t]);
 
   // ── Progress counter — 6 required fields (5 payment + brand name) plus 1
   //    optional (card mix) when the drawer is open. Website and sector are
@@ -342,6 +355,8 @@ export default function PaymentsAnalyzer() {
     } else {
       paymentFields = [gmv, avgTicket, intlPct, providerSlug, country];  // classic online
     }
+    // UX-1 T1 — email is required in every mode, so it counts toward progress.
+    paymentFields.push(email);
     const filled = paymentFields.filter((v) => v !== "" && v !== undefined && v !== null).length;
     // SWEEP-1 T2 — brand name is optional now, so it no longer counts toward
     // the progress pill (same policy as website/sector: never nag optionals).
@@ -350,7 +365,7 @@ export default function PaymentsAnalyzer() {
     const total = paymentFields.length + (optionalCounts ? 1 : 0);
     const done = filled + optionalFilled;
     return { done, total, pct: Math.round((done / total) * 100) };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName, channel, combinedOnline, combinedInStore]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName, channel, combinedOnline, combinedInStore, email]);
 
   // ── Submit → submitPaymentsAnalysis → /PaymentsResults?session=<id>
   const handleSubmit = async () => {
@@ -370,6 +385,7 @@ export default function PaymentsAnalyzer() {
         payload = {
           mode: "combined",
           country,
+          email: email.trim().toLowerCase(), // UX-1 T1 — required
           ...(brandName.trim() !== "" ? { brand_name: brandName.trim() } : {}),
           channels: [
             {
@@ -403,6 +419,7 @@ export default function PaymentsAnalyzer() {
           ),
           country,
           channel,
+          email: email.trim().toLowerCase(), // UX-1 T1 — required
           ...(brandName.trim() !== "" ? { brand_name: brandName.trim() } : {}),
           ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
           ...(website.trim() !== "" ? { website: website.trim() } : {}),
@@ -754,6 +771,32 @@ export default function PaymentsAnalyzer() {
               </FieldCard>
             )}
           </div>
+
+          {/* UX-1 T1 — REQUIRED email. Nobody gets a report without one
+              (deliberate funnel change — lead capture before value). */}
+          <FieldCard>
+            <div className="space-y-2.5">
+              <div className="flex items-baseline justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  {t("analyzer_email_label")}
+                </span>
+                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("analyzer_email_hint")}</span>
+              </div>
+              <input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t("analyzer_email_placeholder")}
+                className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
+                style={{ color: "#ffffff", background: "rgba(30,26,60,0.9)", border: "1px solid rgba(255,255,255,0.14)" }}
+              />
+              {email.trim() !== "" && !EMAIL_RE.test(email.trim()) && (
+                <p className="text-[11px]" style={{ color: "#FCA5A5" }} role="alert">{t("analyzer_email_invalid")}</p>
+              )}
+            </div>
+          </FieldCard>
 
           {/* About your brand — REQUIRED brand name, optional website + sector.
               Placed at the end of the form on purpose: cost-per-field is

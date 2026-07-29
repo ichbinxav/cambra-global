@@ -638,4 +638,14 @@ export default {
     /* SWEEP-1 T2 — brand name is optional in the anonymous analyzer */
     brand_name_optional: "Nom de la marque (facultatif)",
     brand_fallback:      "Votre marque",
+
+    /* UX-1 — mandatory email gate + locked teaser fields */
+    analyzer_email_label:       "Votre email",
+    analyzer_email_hint:        "Obligatoire — nous y envoyons votre rapport",
+    analyzer_email_placeholder: "vous@votremarque.com",
+    analyzer_email_required:    "Indiquez votre email pour voir vos résultats.",
+    analyzer_email_invalid:     "Saisissez une adresse email valide (ex. vous@votremarque.com).",
+    locked_achievable_rate:     "Créez votre compte gratuit pour débloquer votre taux atteignable exact.",
+    locked_combined_breakdown:  "Créez votre compte gratuit pour voir le détail en ligne vs boutique.",
+    locked_pdf_download:        "Créez votre compte gratuit pour télécharger le rapport PDF.",
 };

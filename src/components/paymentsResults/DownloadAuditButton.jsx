@@ -6,8 +6,10 @@
 // render. rateTable is optional (only feeds the roadmap ambition line).
 
 import { useState } from "react";
-import { Download, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Download, Loader2, Lock } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function DownloadAuditButton({
   engineResult,
@@ -18,12 +20,23 @@ export default function DownloadAuditButton({
   className = "",
 }) {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
 
   if (!engineResult) return null;
 
   const handleClick = async () => {
     if (busy) return;
+    // UX-1 T4 — PDF download is reserved for identified users. Anonymous click
+    // routes to signup; the report resumes after login via the session rescue.
+    // (No public PDF endpoint exists — the audit PDF is built client-side, and
+    // the anonymous teaser payload no longer carries the locked fields.)
+    if (!isAuthenticated) {
+      const next = window.location.pathname + window.location.search;
+      navigate(`/LoginGate?next=${encodeURIComponent(next)}`);
+      return;
+    }
     setBusy(true);
     try {
       // BACKLOG-1 T4 — jsPDF + PDF builder cargados SOLO al pulsar exportar,
@@ -57,10 +70,11 @@ export default function DownloadAuditButton({
       type="button"
       onClick={handleClick}
       disabled={busy}
+      title={!isAuthenticated ? t("locked_pdf_download") : undefined}
       className={`${base} ${className} hover:brightness-125`}
       style={style}
     >
-      {busy ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+      {busy ? <Loader2 size={15} className="animate-spin" /> : isAuthenticated ? <Download size={15} /> : <Lock size={15} />}
       {busy ? t("pdf_generating") : t("pdf_download_cta")}
     </button>
   );

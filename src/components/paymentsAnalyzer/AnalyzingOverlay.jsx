@@ -52,13 +52,16 @@ export default function AnalyzingOverlay() {
       role="status"
       aria-live="polite"
     >
+      {/* UX-1 T10 — official CAMBRA "C" mark (PNG asset). The previous
+          AI-generated illustration rendered garbled / substitute glyphs on
+          some devices. Never rebuild the logo from characters or icons. */}
       <img
-        src={BRAND_ASSETS.flowFrosted}
-        alt=""
-        width={380}
-        height={380}
-        loading="lazy"
-        className="hero-stack w-[62%] max-w-[340px] h-auto select-none"
+        src={BRAND_ASSETS.cMarkVoltioPng}
+        alt="CAMBRA"
+        width={96}
+        height={96}
+        className="hero-stack w-20 h-auto select-none"
+        style={{ filter: "drop-shadow(0 0 24px rgba(91,76,245,0.55))" }}
         draggable={false}
       />
 

@@ -69,7 +69,7 @@ export default function LoadingScreen({
           }}
         />
         <img
-          src={BRAND_ASSETS.cMarkVoltio}
+          src={BRAND_ASSETS.cMarkVoltioPng}
           alt="CAMBRA"
           width={34}
           height={34}

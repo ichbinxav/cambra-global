@@ -159,7 +159,10 @@ Deno.serve(async (req) => {
         ok: engine_result_raw.ok === true,
         engine_version: engine_result_raw.engine_version || null,
         current_effective_bps: Number.isFinite(engine_result_raw.current_effective_bps) ? engine_result_raw.current_effective_bps : null,
-        achievable_effective_bps: Number.isFinite(engine_result_raw.achievable_effective_bps) ? engine_result_raw.achievable_effective_bps : null,
+        // UX-1 T2 (2026-07-29) — the exact achievable rate is reserved for
+        // identified users (claimed AnalyzerResult / verified paths). The
+        // anonymous teaser NEVER ships it — the UI renders a locked state.
+        achievable_effective_bps: null,
         monthly_savings_eur: engine_result_raw.monthly_savings_eur || null,
         annual_savings_eur: engine_result_raw.annual_savings_eur || null,
         cohort: engine_result_raw.cohort || null,
@@ -169,7 +172,12 @@ Deno.serve(async (req) => {
         // sensitive data. Needed so the anonymous reader renders OptimizedHero
         // instead of a "€0/year" GapCard on already_optimized results.
         classification: typeof engine_result_raw.classification === 'string' ? engine_result_raw.classification : null,
-        assumptions: Array.isArray(engine_result_raw.assumptions) ? engine_result_raw.assumptions : [],
+        // UX-1 T2 — assumption lines that disclose the achievable composition
+        // or anchor all start with "Achievable"; they are stripped so the rate
+        // cannot be reconstructed from the teaser payload.
+        assumptions: Array.isArray(engine_result_raw.assumptions)
+          ? engine_result_raw.assumptions.filter((a: any) => typeof a === 'string' && !a.startsWith('Achievable'))
+          : [],
       };
       // Combined-mode additive fields. Only present when the persisted row
       // is a combined submit (produced by submitPaymentsAnalysis Fase 3).
@@ -185,14 +193,16 @@ Deno.serve(async (req) => {
             ok: chEr.ok === true,
             engine_version: chEr.engine_version || null,
             current_effective_bps: Number.isFinite(chEr.current_effective_bps) ? chEr.current_effective_bps : null,
-            achievable_effective_bps: Number.isFinite(chEr.achievable_effective_bps) ? chEr.achievable_effective_bps : null,
+            achievable_effective_bps: null, // UX-1 T2 — reserved for identified users
             monthly_savings_eur: chEr.monthly_savings_eur || null,
             annual_savings_eur: chEr.annual_savings_eur || null,
             cohort: chEr.cohort || null,
             mode: typeof chEr.mode === 'string' ? chEr.mode : null,
             // SWEEP-1 T1 — same computed enum, per-channel (combined mode).
             classification: typeof chEr.classification === 'string' ? chEr.classification : null,
-            assumptions: Array.isArray(chEr.assumptions) ? chEr.assumptions : [],
+            assumptions: Array.isArray(chEr.assumptions)
+              ? chEr.assumptions.filter((a: any) => typeof a === 'string' && !a.startsWith('Achievable')) // UX-1 T2
+              : [],
           } : null;
           return {
             channel: typeof c?.channel === 'string' ? c.channel : null,

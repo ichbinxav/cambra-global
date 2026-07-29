@@ -14,6 +14,7 @@
 //     channels: [ { channel, engine_result, input_snapshot }, ... ]
 //   }
 
+import { Lock } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 function eur(n) {
@@ -44,7 +45,7 @@ const CHANNEL_STYLE = {
   },
 };
 
-export default function CombinedGapHero({ engineResult, country }) {
+export default function CombinedGapHero({ engineResult, country, isAnonymous = false }) {
   const { t } = useTranslation();
   const channels = Array.isArray(engineResult?.channels) ? engineResult.channels : [];
   // M4-refinado (v1.5.0) — honest top-level totals.
@@ -121,7 +122,18 @@ export default function CombinedGapHero({ engineResult, country }) {
         </p>
       )}
 
-      {/* Per-channel breakdown strip — with mini-victory for optimized channels */}
+      {/* Per-channel breakdown strip — UX-1 T3: reserved for registered users.
+          Anonymous readers see ONE total only, plus a locked note. */}
+      {isAnonymous && (
+        <div
+          className="mt-6 rounded-xl p-4 flex items-center gap-3"
+          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.12)" }}
+        >
+          <Lock size={15} className="text-cyan-300 shrink-0" />
+          <p className="text-[12.5px] text-white/70">{t("locked_combined_breakdown")}</p>
+        </div>
+      )}
+      {!isAnonymous && (
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
         {channels.map((ch) => {
           const style = CHANNEL_STYLE[ch.channel] || CHANNEL_STYLE.online;
@@ -216,6 +228,7 @@ export default function CombinedGapHero({ engineResult, country }) {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
