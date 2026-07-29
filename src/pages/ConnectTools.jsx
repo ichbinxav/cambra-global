@@ -103,8 +103,7 @@ export default function ConnectTools() {
           </>
         )}
 
-        <div className="pt-6 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-muted-foreground">{t("ct_page_sub")}</p>
+        <div className="pt-6 border-t border-border/40 flex justify-end">
           <Link to="/Analyzer">
             <Button className="h-10 rounded-full px-5 text-sm font-bold gap-2 min-h-[44px] sm:min-h-0">
               {t("nav_analyzer")} <ArrowRight className="h-4 w-4" />

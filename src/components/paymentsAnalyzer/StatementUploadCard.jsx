@@ -25,8 +25,10 @@
 import { useRef, useState } from "react";
 import { FileUp, Lock, Clock, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 export default function StatementUploadCard({ providerLabel, extractionLive }) {
+  const { t } = useTranslation();
   const inputRef = useRef(null);
   const [status, setStatus] = useState("idle"); // idle | uploading | done | error
   const [message, setMessage] = useState("");
@@ -63,17 +65,17 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h4 className="text-[14px] font-bold leading-tight" style={{ color: "var(--ink)", fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
-                Upload your {providerLabel} statements
+                {t("su_title_soon", { provider: providerLabel })}
               </h4>
               <span
                 className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
                 style={{ background: "rgba(12,12,22,0.03)", color: "var(--gris-1)", border: "1px solid var(--linea)" }}
               >
-                <Lock size={8} /> Coming soon
+                <Lock size={8} /> {t("su_badge_soon")}
               </span>
             </div>
             <p className="text-[12px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
-              Verified analysis from your last 3 {providerLabel} statements is coming soon. For now, your estimate above is instant and needs no upload.
+              {t("su_body_soon", { provider: providerLabel })}
             </p>
           </div>
         </div>
@@ -106,16 +108,14 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
       // as an honest failure the merchant can act on.
       if (body?.error || body?.status === "format_unknown" || body?.detected === "unknown") {
         setStatus("error");
-        setMessage("We couldn't read that file. Try the PDF or CSV your provider gives you — a photo or screenshot won't work.");
+        setMessage(t("su_err_unreadable"));
         return;
       }
       setStatus("done");
-      setMessage(
-        "Statement received. Our team reviews the extraction before it becomes a verified number — you'll be notified when it's ready."
-      );
+      setMessage(t("su_received"));
     } catch {
       setStatus("error");
-      setMessage("Upload failed. Please check your connection and try again.");
+      setMessage(t("su_err_upload"));
     }
   };
 
@@ -134,18 +134,17 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 className="text-[14px] font-bold leading-tight" style={{ color: "var(--ink)", fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
-              Upload your last 3 {providerLabel} statements
+              {t("su_title_beta", { provider: providerLabel })}
             </h4>
             <span
               className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
               style={{ background: "rgba(91,76,245,0.10)", color: "#5A49D6", border: "1px solid rgba(91,76,245,0.28)" }}
             >
-              In beta
+              {t("su_badge_beta")}
             </span>
           </div>
           <p className="text-[12px] leading-relaxed mb-3" style={{ color: "var(--gris-1)" }}>
-            Verified from statements — in beta. Drop a {providerLabel} statement (PDF or CSV) to start. We read the fees and
-            begin turning your estimate into a verified number; it isn't instant yet.
+            {t("su_body_beta", { provider: providerLabel })}
           </p>
 
           {status === "done" ? (
@@ -170,9 +169,9 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
                 style={{ background: "var(--g-voltio)", border: "1px solid rgba(91,76,245,0.4)" }}
               >
                 {status === "uploading" ? (
-                  <><Loader2 size={12} className="animate-spin" /> Reading…</>
+                  <><Loader2 size={12} className="animate-spin" /> {t("su_reading")}</>
                 ) : (
-                  <>Upload a statement <ArrowRight size={12} /></>
+                  <>{t("su_cta")} <ArrowRight size={12} /></>
                 )}
               </button>
               {status === "error" && (

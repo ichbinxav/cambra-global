@@ -693,4 +693,17 @@ export default {
     login_gate_trust_2:        "GDPR · Europe",
     login_gate_trust_3:        "Free during early access",
     login_gate_back:           "Back to home",
+
+    /* Statement upload card */
+    su_title_soon:      "Upload your {provider} statements",
+    su_badge_soon:      "Coming soon",
+    su_body_soon:       "Verified analysis from your last 3 {provider} statements is coming soon. For now, your estimate above is instant and needs no upload.",
+    su_title_beta:      "Upload your last 3 {provider} statements",
+    su_badge_beta:      "In beta",
+    su_body_beta:       "Verified from statements — in beta. Drop a {provider} statement (PDF or CSV) to start. We read the fees and begin turning your estimate into a verified number; it isn't instant yet.",
+    su_cta:             "Upload a statement",
+    su_reading:         "Reading…",
+    su_err_unreadable:  "We couldn't read that file. Try the PDF or CSV your provider gives you — a photo or screenshot won't work.",
+    su_err_upload:      "Upload failed. Please check your connection and try again.",
+    su_received:        "Statement received. Our team reviews the extraction before it becomes a verified number — you'll be notified when it's ready.",
 };

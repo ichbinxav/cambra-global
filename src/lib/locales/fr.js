@@ -659,4 +659,17 @@ export default {
     login_gate_trust_2:        "RGPD · Europe",
     login_gate_trust_3:        "Gratuit pendant l'accès anticipé",
     login_gate_back:           "Retour à l'accueil",
+
+    /* Statement upload card */
+    su_title_soon:      "Importez vos relevés {provider}",
+    su_badge_soon:      "Bientôt disponible",
+    su_body_soon:       "L'analyse vérifiée à partir de vos 3 derniers relevés {provider} arrive bientôt. Pour l'instant, votre estimation ci-dessus est instantanée et ne nécessite aucun import.",
+    su_title_beta:      "Importez vos 3 derniers relevés {provider}",
+    su_badge_beta:      "En bêta",
+    su_body_beta:       "Vérifié à partir des relevés — en bêta. Déposez un relevé {provider} (PDF ou CSV) pour commencer. Nous lisons les frais et transformons progressivement votre estimation en chiffre vérifié ; ce n'est pas encore instantané.",
+    su_cta:             "Importer un relevé",
+    su_reading:         "Lecture…",
+    su_err_unreadable:  "Nous n'avons pas pu lire ce fichier. Essayez le PDF ou le CSV fourni par votre prestataire — une photo ou une capture d'écran ne fonctionne pas.",
+    su_err_upload:      "L'import a échoué. Vérifiez votre connexion et réessayez.",
+    su_received:        "Relevé reçu. Notre équipe vérifie l'extraction avant qu'elle devienne un chiffre vérifié — vous serez prévenu dès que c'est prêt.",
 };

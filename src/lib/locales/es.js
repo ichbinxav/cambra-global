@@ -659,4 +659,17 @@ export default {
     login_gate_trust_2:        "RGPD · Europa",
     login_gate_trust_3:        "Gratis durante el acceso anticipado",
     login_gate_back:           "Volver al inicio",
+
+    /* Statement upload card */
+    su_title_soon:      "Sube tus extractos de {provider}",
+    su_badge_soon:      "Próximamente",
+    su_body_soon:       "El análisis verificado a partir de tus 3 últimos extractos de {provider} llegará pronto. De momento, tu estimación de arriba es instantánea y no requiere subir nada.",
+    su_title_beta:      "Sube tus 3 últimos extractos de {provider}",
+    su_badge_beta:      "En beta",
+    su_body_beta:       "Verificado a partir de extractos — en beta. Sube un extracto de {provider} (PDF o CSV) para empezar. Leemos las comisiones y comenzamos a convertir tu estimación en un número verificado; todavía no es instantáneo.",
+    su_cta:             "Subir un extracto",
+    su_reading:         "Leyendo…",
+    su_err_unreadable:  "No hemos podido leer ese archivo. Prueba con el PDF o el CSV que te da tu proveedor — una foto o captura no sirve.",
+    su_err_upload:      "La subida ha fallado. Revisa tu conexión e inténtalo de nuevo.",
+    su_received:        "Extracto recibido. Nuestro equipo revisa la extracción antes de convertirla en un número verificado — te avisaremos cuando esté listo.",
 };
