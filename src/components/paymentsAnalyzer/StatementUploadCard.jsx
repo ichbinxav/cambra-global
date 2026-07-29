@@ -136,12 +136,6 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
             <h4 className="text-[14px] font-bold leading-tight" style={{ color: "var(--ink)", fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
               {t("su_title_beta", { provider: providerLabel })}
             </h4>
-            <span
-              className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
-              style={{ background: "rgba(91,76,245,0.12)", color: "#4536B8", border: "1px solid rgba(91,76,245,0.35)" }}
-            >
-              {t("su_badge_beta")}
-            </span>
           </div>
           <p className="text-[12px] leading-relaxed mb-3" style={{ color: "rgba(12,12,22,0.78)" }}>
             {t("su_body_beta", { provider: providerLabel })}
