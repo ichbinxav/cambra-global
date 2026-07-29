@@ -53,7 +53,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
     return (
       <div
         className="rounded-2xl p-4"
-        style={{ background: "#ffffff", border: "1px solid var(--linea)" }}
+        style={{ background: "rgba(91,76,245,0.04)", border: "1px solid rgba(91,76,245,0.22)" }}
       >
         <div className="flex items-start gap-3">
           <div
@@ -74,7 +74,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
                 <Lock size={8} /> {t("su_badge_soon")}
               </span>
             </div>
-            <p className="text-[12px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+            <p className="text-[12px] leading-relaxed" style={{ color: "rgba(12,12,22,0.78)" }}>
               {t("su_body_soon", { provider: providerLabel })}
             </p>
           </div>
@@ -138,12 +138,12 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
             </h4>
             <span
               className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
-              style={{ background: "rgba(91,76,245,0.10)", color: "#5A49D6", border: "1px solid rgba(91,76,245,0.28)" }}
+              style={{ background: "rgba(91,76,245,0.12)", color: "#4536B8", border: "1px solid rgba(91,76,245,0.35)" }}
             >
               {t("su_badge_beta")}
             </span>
           </div>
-          <p className="text-[12px] leading-relaxed mb-3" style={{ color: "var(--gris-1)" }}>
+          <p className="text-[12px] leading-relaxed mb-3" style={{ color: "rgba(12,12,22,0.78)" }}>
             {t("su_body_beta", { provider: providerLabel })}
           </p>
 
