@@ -143,7 +143,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
           </p>
 
           {status === "done" ? (
-            <div className="flex items-start gap-2 text-[12px] text-emerald-300">
+            <div className="flex items-start gap-2 text-[12px] text-emerald-700">
               <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
               <span>{message}</span>
             </div>
@@ -170,7 +170,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
                 )}
               </button>
               {status === "error" && (
-                <p className="mt-2 text-[11.5px] text-red-300">{message}</p>
+                <p className="mt-2 text-[11.5px] text-red-600">{message}</p>
               )}
             </>
           )}

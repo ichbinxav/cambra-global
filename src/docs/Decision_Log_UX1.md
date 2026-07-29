@@ -147,11 +147,39 @@ propios; lo único diseñable es la pantalla PREVIA (`LoginGate`).
   mismo `safeAbsoluteUrl`, mismo `redirectToLogin`, misma tecla Enter.
 - i18n: 7 claves nuevas × EN/FR/ES (paridad mantenida).
 
-## Tareas del chunk PENDIENTES (próximos turnos)
+## T6 — Upload de extractos verificado ✅ (2026-07-29)
 
-- **T6** — Verificación del upload de invoices/statements
-  (`StatementUploadCard` + `processUploadedFile` + `getUploadCapability`).
-- **T9** — Connect Infrastructure: solo Stripe + "upload your statements".
+- Probe `getUploadCapability` ejecutado en producción: `extraction_live: true`,
+  `layer1_enabled: true`, `layer3_enabled: true`. El extractor ESTÁ vivo, así
+  que la tarjeta muestra el estado BETA con input real (no "coming soon").
+- Flujo revisado extremo a extremo: `UploadFile` → `processUploadedFile`
+  (allowlist de extensiones + límite 15 MB de CONSOLIDATE-1 T3) → mensaje
+  honesto de "recibido, revisión antes de ser número verificado". Sin cambios
+  de lógica.
+- **Bug corregido:** los mensajes de éxito/error usaban `text-emerald-300` /
+  `text-red-300` sobre tarjeta BLANCA — prácticamente ilegibles. Ahora
+  `emerald-700` / `red-600`.
+
+## T9 — Connect Infrastructure: dos caminos reales ✅ (2026-07-29)
+
+**Antes:** `/ConnectTools` listaba todo el catálogo (PSP, TPV, disclosure de
+commerce) donde casi cada fila era "coming soon" — un muro de botones muertos
+que enterraba el único camino que funciona.
+**Después:** la página ofrece exactamente lo que existe hoy:
+1. **Conectar Stripe** (`StripeConnectCard`, OAuth vivo → cifras verificadas).
+2. **Subir tus extractos** (`StatementUploadCard`, con el probe de T6 para que
+   la copy sea honesta si el extractor se apagara).
+Eliminados: barra de contadores, `getIntegrationStatus`, secciones PSP/TPV/
+commerce, `isOAuthPending` y los sub-componentes de tarjeta del catálogo.
+Cero cambios en Stripe ni en el flujo de upload — solo se retira la superficie
+de catálogo.
+
+---
+
+## UX-1 COMPLETADO
+
+T0–T10 cerrados. Deuda anotada: la i18n completa de `PaymentsResults` y
+`ConnectTools` (copy EN hardcodeado) sigue fuera del alcance de este chunk.
 
 ## Verificación
 
