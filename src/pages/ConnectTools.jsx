@@ -53,7 +53,21 @@ export default function ConnectTools() {
           const brands = await base44.entities.Brand
             .filter({ created_by: me.email }, "-created_date", 1)
             .catch(() => []);
-          setBrandId(brands[0]?.id || null);
+          let id = brands[0]?.id || null;
+          // A brand-new user has no Brand yet. Without one, brandId stayed
+          // null forever and "Connect Stripe" was stuck on "Loading…" — the
+          // verified path was unreachable. Create the minimal workspace brand
+          // (only `name` is required) so the OAuth start has a brand context.
+          // The user renames it later in /BrandProfile.
+          if (!id) {
+            const created = await base44.entities.Brand.create({
+              name: me.full_name || (me.email ? me.email.split("@")[0] : "My brand"),
+              contact_email: me.email,
+              contact_name: me.full_name,
+            }).catch(() => null);
+            id = created?.id || null;
+          }
+          setBrandId(id);
         }
       } finally {
         setLoading(false);

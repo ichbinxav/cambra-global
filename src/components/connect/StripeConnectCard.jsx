@@ -380,7 +380,7 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
           className="h-9 px-4 rounded-full text-xs font-bold text-white disabled:opacity-50"
           style={{ background: stripeColor }}
         >
-          {busy ? "Connecting…" : !brandId ? "Loading…" : "Connect Stripe"}
+          {busy ? "Connecting…" : !brandId ? "Setting up your workspace…" : "Connect Stripe"}
         </button>
         <span className="text-[10px] text-muted-foreground">🔒 Read-only OAuth</span>
       </div>
