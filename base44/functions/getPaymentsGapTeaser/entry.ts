@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
         // or anchor all start with "Achievable"; they are stripped so the rate
         // cannot be reconstructed from the teaser payload.
         assumptions: Array.isArray(engine_result_raw.assumptions)
-          ? engine_result_raw.assumptions.filter((a: any) => typeof a === 'string' && !a.startsWith('Achievable'))
+          ? engine_result_raw.assumptions.filter((a: any) => typeof a === 'string' && !/achievable/i.test(a))
           : [],
       };
       // Combined-mode additive fields. Only present when the persisted row
@@ -201,7 +201,7 @@ Deno.serve(async (req) => {
             // SWEEP-1 T1 — same computed enum, per-channel (combined mode).
             classification: typeof chEr.classification === 'string' ? chEr.classification : null,
             assumptions: Array.isArray(chEr.assumptions)
-              ? chEr.assumptions.filter((a: any) => typeof a === 'string' && !a.startsWith('Achievable')) // UX-1 T2
+              ? chEr.assumptions.filter((a: any) => typeof a === 'string' && !/achievable/i.test(a)) // UX-1 T2
               : [],
           } : null;
           return {

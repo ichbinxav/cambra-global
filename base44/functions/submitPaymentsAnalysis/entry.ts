@@ -1750,7 +1750,7 @@ function sanitizeEngineResultForAnon(er: any): any {
         ...r,
         achievable_effective_bps: null,
         assumptions: Array.isArray(r.assumptions)
-          ? r.assumptions.filter((a: any) => typeof a === 'string' && !a.startsWith('Achievable'))
+          ? r.assumptions.filter((a: any) => typeof a === 'string' && !/achievable/i.test(a))
           : [],
       }
     : r;
