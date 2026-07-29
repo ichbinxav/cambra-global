@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Settings, Shield, Activity, MessageSquareQuote, Handshake } from "lucide-react";
+import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 
 // ─────────────────────────────────────────────
 // Premium grouped structure — fintech editorial
@@ -160,6 +161,8 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
               transition={{ duration: 0.4, delay: 0.05 }}
               className="px-5 pt-5 pb-4"
             >
+              {/* UX-1 T0 — language switcher, previously desktop-only */}
+              <div className="flex items-center justify-between gap-3">
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "var(--voltio)", animation: "ping-soft 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
@@ -168,6 +171,8 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                 <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/60">
                   Live · Network online
                 </span>
+              </div>
+              <LanguageSwitcher variant="dark" />
               </div>
               <p className="mt-3 text-[12px] text-white/55 leading-snug max-w-[280px]">
                 Operational infrastructure intelligence for modern commerce.

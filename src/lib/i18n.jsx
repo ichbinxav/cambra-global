@@ -76,6 +76,24 @@ const LanguageContext = createContext({
   formatDate: (d) => formatDate(d, "en"),
 });
 
+// UX-1 T0 — auto-detection. An explicit choice (stored) always wins; first
+// visit falls back to the browser's preferred languages (the best available
+// country/locale signal client-side — no geo-IP call needed). Supported:
+// fr/es → those; anything else → en. The detected language is NOT persisted,
+// so the switcher stays authoritative: only a manual pick writes storage.
+function detectBrowserLang() {
+  try {
+    const candidates = Array.isArray(navigator.languages) && navigator.languages.length
+      ? navigator.languages
+      : [navigator.language];
+    for (const raw of candidates) {
+      const code = String(raw || "").slice(0, 2).toLowerCase();
+      if (DICT[code]) return code;
+    }
+  } catch {}
+  return "en";
+}
+
 function readStoredLang() {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
@@ -85,7 +103,7 @@ function readStoredLang() {
       if (lv && DICT[lv]) return lv;
     }
   } catch {}
-  return "en";
+  return detectBrowserLang();
 }
 
 // Ensure a meta tag exists; create it if missing. Returns the element.

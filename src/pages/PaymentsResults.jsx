@@ -659,7 +659,7 @@ export default function PaymentsResults() {
             </p>
             <p className="text-[13px] text-white/60 mt-1">
               {isAnonymous
-                ? "Create an account, then join the collective to start the recovery."
+                ? "Create your free account to unlock the full report — exact achievable rate, fee breakdown and your recovery plan."
                 : (isHighValue()
                     ? "Your opportunity is large enough for a call — let's talk it through."
                     : "Join the collective — many brands negotiating as one — to start the recovery.")}
@@ -667,6 +667,9 @@ export default function PaymentsResults() {
           </>
         )}
       </div>
+      {/* UX-1 T7 — ONE consolidated CTA. For anonymous readers the label says
+          what actually happens (openDestination already routes them to signup);
+          registered users keep the collective/call routing. */}
       <Button
         onClick={() => {
           if (isVerifiedMode) { navigate("/Dashboard"); return; }
@@ -678,7 +681,7 @@ export default function PaymentsResults() {
           boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
         }}
       >
-        {isVerifiedMode ? "Go to dashboard" : "Stop overpaying"} <ArrowRight className="h-4 w-4" />
+        {isVerifiedMode ? "Go to dashboard" : isAnonymous ? "Create free account" : "Stop overpaying"} <ArrowRight className="h-4 w-4" />
       </Button>
     </div>
   );

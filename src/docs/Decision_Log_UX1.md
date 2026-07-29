@@ -95,20 +95,49 @@ con caracteres/iconos.
 
 - Archivos: `AnalyzingOverlay.jsx`, `LoadingScreen.jsx`.
 
+## T0 — Idioma: selector en móvil + autodetección ✅ (2026-07-29)
+
+- **Autodetección** (`src/lib/i18n.jsx`): en la primera visita (sin elección
+  guardada) el idioma se resuelve desde `navigator.languages` → fr/es/en.
+  La detección NO se persiste — solo una elección manual escribe en
+  localStorage, así el switcher siempre manda. Elecciones previas intactas.
+- **Móvil** (`MobileNavMenu.jsx`): el `LanguageSwitcher` (antes solo en la
+  navbar desktop) ahora aparece en la cabecera del menú móvil.
+
+## T7 — CTA consolidada en el informe ✅ (2026-07-29)
+
+**Antes:** el CTA principal del informe anónimo decía "Stop overpaying" y el
+subcopy mencionaba el colectivo, pero el destino real era el registro
+(`openDestination` ya redirige anónimos a signup). Copy y destino no coincidían.
+**Después:** para anónimos el bloque dice "Create free account" + subcopy que
+enumera lo que desbloquea (tasa alcanzable exacta, desglose de fees, plan de
+recuperación) — UNA acción, alineada con los candados T2/T3/T4. Registrados y
+verified sin cambios (collective/call/dashboard). Archivo: `PaymentsResults.jsx`
+(solo copy del ctaBlock; cero cambios de routing).
+Nota: la página del informe usa copy EN hardcodeado de forma consistente; la
+nueva línea sigue ese patrón (la i18n completa de PaymentsResults es deuda
+previa, fuera del alcance de UX-1).
+
+## T8 — "draft pending" ✅ (verificado — ya no existe)
+
+Revisión manual de las superficies candidatas: contenido legal EN/FR/ES
+(terms/privacy/cookies), `Terms.jsx`, `LegalPageLayout`, `Pricing.jsx`,
+`PublicFooter`, `Reports.jsx`, `Invoices.jsx`, `ResultsHistory.jsx` y el PDF
+del audit (`paymentsAuditPdf.js`). Ningún texto "draft pending" / "draft
+pending legal review" visible queda en el producto — fue eliminado en LEGAL-1
+(los marcadores [REVISIÓN JURÍDICA] viven solo en el Decision Log interno,
+nunca en UI). Nada que borrar.
+
 ---
 
 ## Tareas del chunk PENDIENTES (próximos turnos)
 
-- **T0** — Selector de idioma en móvil + detección automática por país.
 - **T5** — Rediseño de la pantalla de autenticación. ⚠️ Restricción de
   plataforma: el login/registro/OAuth lo gestiona Base44 (no hay formularios
   propios de credenciales); el rediseño se hará sobre `LoginGate` dentro de
   lo que la plataforma permite.
 - **T6** — Verificación del upload de invoices/statements
   (`StatementUploadCard` + `processUploadedFile` + `getUploadCapability`).
-- **T7** — Simplificar CTAs del informe (eliminar "Renegotiate" como CTA
-  independiente).
-- **T8** — Grep "draft pending legal review" en src/ y contenido legal.
 - **T9** — Connect Infrastructure: solo Stripe + "upload your statements".
 
 ## Verificación
