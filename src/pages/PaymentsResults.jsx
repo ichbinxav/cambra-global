@@ -642,27 +642,27 @@ export default function PaymentsResults() {
       }}
     >
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-1.5">Next step</p>
+        <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-1.5">{t("results_next_step")}</p>
         {isVerifiedMode ? (
           <>
             <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
-              This gap is measured, not estimated.
+              {t("results_cta_verified_title")}
             </p>
             <p className="text-[13px] text-white/60 mt-1">
-              Head back to your dashboard to review your integrations and start the recovery workflow.
+              {t("results_cta_verified_sub")}
             </p>
           </>
         ) : (
           <>
             <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
-              Ready to stop overpaying?
+              {t("results_cta_title")}
             </p>
             <p className="text-[13px] text-white/60 mt-1">
               {isAnonymous
-                ? "Create your free account to unlock the full report — exact achievable rate, fee breakdown and your recovery plan."
+                ? t("results_cta_anon_sub")
                 : (isHighValue()
-                    ? "Your opportunity is large enough for a call — let's talk it through."
-                    : "Join the collective — many brands negotiating as one — to start the recovery.")}
+                    ? t("results_cta_call_sub")
+                    : t("results_cta_coll_sub"))}
             </p>
           </>
         )}
@@ -681,7 +681,7 @@ export default function PaymentsResults() {
           boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
         }}
       >
-        {isVerifiedMode ? "Go to dashboard" : isAnonymous ? "Create free account" : "Stop overpaying"} <ArrowRight className="h-4 w-4" />
+        {isVerifiedMode ? t("results_cta_dashboard") : isAnonymous ? t("results_cta_create") : t("results_cta_stop")} <ArrowRight className="h-4 w-4" />
       </Button>
     </div>
   );
@@ -694,7 +694,7 @@ export default function PaymentsResults() {
           onClick={() => navigate("/Analyzer")}
           className="inline-flex items-center gap-1.5 text-[12px] text-white/50 hover:text-white transition-colors"
         >
-          <ArrowLeft size={12} /> Run a new analysis
+          <ArrowLeft size={12} /> {t("results_rerun")}
         </button>
         <DownloadAuditButton
           engineResult={engineResult}

@@ -119,7 +119,9 @@ export default function LoginGate() {
         {/* UX-1 T5 — what an account unlocks (mirrors the locked report items) */}
         <LoginGateBenefits />
 
-        {/* Primary CTA */}
+        {/* Choice — create account (primary) vs sign in (secondary). Both land
+            on the platform auth flow; presenting the choice up-front removes
+            the "why am I on a login screen?" confusion for first-time users. */}
         <button
           onClick={handleContinue}
           className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-full bg-white text-black font-bold text-[14px] h-12 px-6 transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
@@ -128,8 +130,18 @@ export default function LoginGate() {
               "0 0 0 1px rgba(255,255,255,0.1), 0 20px 50px -20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.25)",
           }}
         >
-          {t("login_gate_cta")}
+          {t("login_gate_create")}
           <ArrowRight size={16} aria-hidden="true" />
+        </button>
+        <button
+          onClick={handleContinue}
+          className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-full font-bold text-[14px] h-12 px-6 text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.16)",
+          }}
+        >
+          {t("login_gate_signin")}
         </button>
 
         {/* Footnote */}

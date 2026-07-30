@@ -260,7 +260,7 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
   if (loading) {
     return (
       <div className="rounded-2xl border border-border/60 bg-card p-4">
-        <Header>Loading…</Header>
+        <Header>{t("sc_loading")}</Header>
       </div>
     );
   }
@@ -268,12 +268,12 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
   if (setupRequired) {
     return (
       <div className="rounded-2xl border border-border/60 bg-card p-4">
-        <Header>Online payment processing fees & rates</Header>
+        <Header>{t("sc_desc")}</Header>
         <div className="flex items-center justify-between gap-3">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary text-[10px] font-semibold text-muted-foreground border border-border/60">
-            <Clock size={10} /> Coming soon
+            <Clock size={10} /> {t("sc_coming_soon")}
           </span>
-          <span className="text-[11px] text-muted-foreground">Live data connection launching shortly</span>
+          <span className="text-[11px] text-muted-foreground">{t("sc_coming_soon_sub")}</span>
         </div>
       </div>
     );
@@ -288,14 +288,14 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
     return (
       <div className="rounded-2xl border border-emerald-500/30 bg-card p-4">
         <Header>
-          Connected · last sync{" "}
+          {t("sc_connected_last_sync")}{" "}
           {connection.last_sync_at
             ? new Date(connection.last_sync_at).toLocaleString()
             : "—"}
         </Header>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-[10px] font-semibold text-emerald-600 border border-emerald-500/20">
-            <CheckCircle2 size={10} /> Connected
+            <CheckCircle2 size={10} /> {t("sc_connected")}
           </span>
           <button
             onClick={handleSync}
@@ -303,7 +303,7 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
             className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-border/60 text-[11px] font-medium text-foreground hover:border-foreground/40 disabled:opacity-50"
           >
             <RefreshCw size={12} className={busy ? "animate-spin" : ""} />
-            Sync now
+            {t("sc_sync_now")}
           </button>
           <button
             onClick={handleDisconnect}
@@ -311,7 +311,7 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
             className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-medium text-muted-foreground hover:text-foreground disabled:opacity-50"
           >
             <LogOut size={12} />
-            Disconnect
+            {t("sc_disconnect")}
           </button>
         </div>
 
@@ -333,12 +333,10 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
                 <Sparkles size={11} className="text-cyan-500" />
-                Run verified analysis
+                {t("sc_run_title")}
               </p>
               <p className="text-[10.5px] text-muted-foreground mt-0.5">
-                {computing
-                  ? "Measuring your real rates from Stripe…"
-                  : "Measure your effective rate from real Stripe data (last 90 days)."}
+                {computing ? t("sc_run_computing") : t("sc_run_sub")}
               </p>
             </div>
             <button
@@ -352,10 +350,10 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
             >
               {computing ? (
                 <>
-                  <Loader2 size={12} className="animate-spin" /> Running…
+                  <Loader2 size={12} className="animate-spin" /> {t("sc_running")}
                 </>
               ) : (
-                <>Run</>
+                <>{t("sc_run")}</>
               )}
             </button>
           </div>
@@ -368,7 +366,7 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
 
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-4">
-      <Header>Connect read-only access to pull live fees & volumes</Header>
+      <Header>{t("sc_subtitle_connect")}</Header>
       <div className="flex items-center justify-between gap-3">
         {/* Timing guard: brandId resolves asynchronously in the parent
             (ConnectTools does auth.me() → Brand.filter). Disabling until it's
@@ -380,9 +378,9 @@ export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
           className="h-9 px-4 rounded-full text-xs font-bold text-white disabled:opacity-50"
           style={{ background: stripeColor }}
         >
-          {busy ? "Connecting…" : !brandId ? "Setting up your workspace…" : "Connect Stripe"}
+          {busy ? t("sc_connecting") : !brandId ? t("sc_setting_up") : t("sc_connect")}
         </button>
-        <span className="text-[10px] text-muted-foreground">🔒 Read-only OAuth</span>
+        <span className="text-[10px] text-muted-foreground">🔒 {t("sc_readonly")}</span>
       </div>
       {error && <p className="mt-2 text-[11px] text-red-600">{error}</p>}
     </div>
