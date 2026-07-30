@@ -34,6 +34,7 @@ import AnalyzerEntryCards from "@/components/paymentsAnalyzer/AnalyzerEntryCards
 import PspVerificationOptions from "@/components/paymentsAnalyzer/PspVerificationOptions";
 import AnalyzingOverlay from "@/components/paymentsAnalyzer/AnalyzingOverlay";
 import FieldCard from "@/components/paymentsAnalyzer/FieldCard";
+import CountryField from "@/components/paymentsAnalyzer/CountryField";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
 //    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
@@ -645,25 +646,7 @@ export default function PaymentsAnalyzer() {
               {/* Country lives at the top level — single field shared by
                   both channels (a merchant is in one country). */}
               <FieldCard>
-                <div className="space-y-2.5">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-                      Country
-                    </span>
-                    <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Region benchmark</span>
-                  </div>
-                  <select
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
-                    style={{ color: "#ffffff", background: "rgba(30,26,60,0.9)", border: "1px solid rgba(255,255,255,0.14)", colorScheme: "dark" }}
-                  >
-                    <option value="">Select your country…</option>
-                    {COUNTRY_OPTIONS.map((c) => (
-                      <option key={c.code} value={c.code}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
+                <CountryField value={country} onChange={setCountry} options={COUNTRY_OPTIONS} />
               </FieldCard>
             </>
           ) : (
@@ -694,25 +677,7 @@ export default function PaymentsAnalyzer() {
                 options, low frequency, no need for a grid. Lifted from its
                 own row into this one to reclaim the desktop width. */}
             <FieldCard>
-              <div className="space-y-2.5">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-                    Country
-                  </span>
-                  <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Region benchmark</span>
-                </div>
-                <select
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
-                  style={{ color: "#ffffff", background: "rgba(30,26,60,0.9)", border: "1px solid rgba(255,255,255,0.14)", colorScheme: "dark" }}
-                >
-                  <option value="">Select your country…</option>
-                  {COUNTRY_OPTIONS.map((c) => (
-                    <option key={c.code} value={c.code}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
+              <CountryField value={country} onChange={setCountry} options={COUNTRY_OPTIONS} />
             </FieldCard>
           </div>
 
