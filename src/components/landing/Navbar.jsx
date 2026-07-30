@@ -126,14 +126,17 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden p-2 text-white/70 hover:text-white transition-colors -mr-2"
-          onClick={() => setOpen(v => !v)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        {/* Mobile — language switcher always visible + menu toggle */}
+        <div className="md:hidden flex items-center gap-1">
+          <LanguageSwitcher variant="dark" />
+          <button
+            className="p-2 text-white/70 hover:text-white transition-colors -mr-2"
+            onClick={() => setOpen(v => !v)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu — premium fintech dropdown */}
