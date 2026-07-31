@@ -40,9 +40,9 @@ export default {
     how_h2_pre:           "Four steps from estimate to",
     how_h2_hl:            "recovered margin",
     how_step1_title:      "Tell us what you process",
-    how_step1_desc:       "Your annual GMV, average ticket, and current PSP. Sixty seconds. Nothing to connect.",
-    how_step2_title:      "See your effective rate",
-    how_step2_desc:       "We compare what you actually pay against the interchange floor — the real minimum for cards your size.",
+    how_step1_desc:       "Your yearly sales, your average ticket, and who processes your payments. Sixty seconds. Nothing to connect.",
+    how_step2_title:      "See what you pay",
+    how_step2_desc:       "We compare it with the minimum banks and card networks allow for a business your size.",
     how_step3_title:      "Connect your provider to confirm",
     how_step3_desc:       "Read-only. Your estimate becomes a confirmed number from your real transaction data.",
     how_step4_title:      "Join to recover it",
@@ -105,8 +105,8 @@ export default {
 
     /* connect tools */
     ct_page_title:        "Connect your infrastructure",
-    ct_page_sub:          "Every connection improves your benchmark accuracy and savings confidence.",
-    ct_group_psp:         "PSP · Online payments",
+    ct_page_sub:          "Every connection makes your figures more exact and your savings more certain.",
+    ct_group_psp:         "Online payments",
     ct_group_tpv:         "TPV · In-store terminal",
     ct_group_commerce:    "Commerce",
     ct_group_commerce_sub:"To detect your volume — not a payment provider",
@@ -144,7 +144,7 @@ export default {
 
     /* dashboard — extras */
     auto_detection:       "Automatic detection",
-    bench_comparison:     "Benchmark comparison",
+    bench_comparison:     "Comparison vs. industry",
     savings_calc:         "Savings calculation",
     dashboard_word:       "Dashboard",
     measured_cumulative:  "Measured cumulative savings — past, not projected.",
@@ -210,7 +210,7 @@ export default {
     combined_mixed_total_note: "Total sums channels with a recoverable gap. Optimized channels contribute €0.",
     insufficient_hero_title: "We don't have a defensible answer",
     insufficient_hero_body: "Your figures land on a regional average, not a rate we've confirmed with your provider. Rather than show a number we can't back, connect your provider for the exact one.",
-    insufficient_hero_cta: "Connect your PSP",
+    insufficient_hero_cta: "Connect your provider",
     combined_hero_eyebrow:        "Payments gap · combined",
     combined_hero_badge:          "Online + In-store",
     combined_hero_lead:           "Your total overpayment across channels is roughly",
@@ -292,7 +292,7 @@ export default {
     /* Report v2 — cross-links + context subcopy */
     coll_secondary_call: "Prefer to talk? Book a call",
     call_secondary_coll: "or join the collective",
-    coll_ctx_margin:     "Let CAMBRA renegotiate your processor margin — join to start.",
+    coll_ctx_margin:     "Let CAMBRA renegotiate your provider's margin — join to start.",
     coll_ctx_rate:       "Let CAMBRA move you to a better rate — join to start.",
 
     /* Book a call */
@@ -364,11 +364,11 @@ export default {
     hiw_s1_cta:       "Start the audit",
     hiw_s2_eyebrow:   "diagnose",
     hiw_s2_title:     "See your real payment costs",
-    hiw_s2_detail:    "We compare your effective fee against the achievable floor for your tier and geography, and split the delta by interchange, scheme fees and processor margin — the three layers that actually leak money.",
+    hiw_s2_detail:    "We compare what you pay with the best rate possible for your size and country. Then we split the gap into three parts: bank fee, card network fee and provider margin — the last one is where the money leaks.",
     hiw_s2_cta:       "Run the analyzer",
     hiw_s3_eyebrow:   "verify",
     hiw_s3_title:     "Connect your provider for exact numbers",
-    hiw_s3_detail:    "Go from estimation to calculation. A read-only connection turns your declared inputs into transaction-level truth — same benchmark, verified figures.",
+    hiw_s3_detail:    "Go from estimate to measurement. A read-only connection replaces the figures you typed with your real transactions — same comparison, verified numbers.",
     hiw_s3_cta:       "Connect your provider",
     hiw_s4_eyebrow:   "recover",
     hiw_s4_title:     "Recover margin",
@@ -392,7 +392,7 @@ export default {
     prc_duration_label:  "Duration",
     prc_duration_val:    "24 months",
     prc_duration_note:   "Then 100% yours, forever",
-    prc_atbench_label:   "Already at benchmark",
+    prc_atbench_label:   "Already at the best rate",
     prc_atbench_val:     "You pay €0",
     prc_atbench_note:    "No gap, no fee — ever",
     prc_nosav_label:     "If no savings",
@@ -587,7 +587,7 @@ export default {
     stack_c2_d: "The quiet leak in your physical channel.",
     stack_c3_t: "Contracts",
     stack_c3_d: "What you signed vs. what similar businesses actually pay.",
-    stack_c4_t: "Benchmark (base layer)",
+    stack_c4_t: "What others really pay",
     stack_c4_d: "Real costs from real businesses. Not the price list.",
 
     /* Landing — RealImpactSection */
@@ -646,7 +646,7 @@ export default {
     sec_cannot_3: "See your customers' card numbers",
     sec_cannot_4: "Change anything in your account",
     sec_b2_h2:    "Aggregates, not identities.",
-    sec_b2_body:  "Our analysis runs on aggregate numbers: volumes, fees, rates, payment mix. We do not need — and do not process — your end customers' personal data. No names, no emails, no card numbers. Card data never touches CAMBRA at any point: it stays within your payment provider's certified infrastructure. Statement uploads are used solely to compute your effective rate, and the figures we benchmark are anonymized and aggregated.",
+    sec_b2_body:  "Our analysis runs on aggregate figures: sales, fees, rates, payment mix. We do not need — and do not process — your end customers' personal data. No names, no emails, no card numbers. Card data never touches CAMBRA at any point: it stays within your payment provider's certified infrastructure. Statements you upload are used solely to work out what you pay, and the figures we compare are anonymized and aggregated.",
     sec_b3_h2:    "Your numbers never leak into anyone else's.",
     sec_b3_body:  "Every business's data lives in strict isolation, enforced at the database layer. Industry comparisons are built from anonymous totals — no business can ever see another's rates, volumes, or identity. When your data feeds a comparison, it does so as a number in a group, never as your name.",
     sec_b4_h2:    "Encrypted everywhere it travels, everywhere it rests.",

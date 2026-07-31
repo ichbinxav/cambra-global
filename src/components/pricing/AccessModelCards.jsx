@@ -5,7 +5,7 @@ import { ArrowRight, Check, Sparkles, ShieldCheck, Activity, TrendingUp } from "
 
 const INTELLIGENCE_FEATURES = [
   "Infrastructure audit across 8 operational layers",
-  "Benchmarking against similar brands",
+  "Comparison with similar businesses",
   "Infrastructure Score™",
   "Estimated savings opportunities",
   "AI recommendations & optimization insights",
@@ -20,7 +20,7 @@ const RECOVERY_FEATURES = [
   "Priority migration assistance",
   "Ongoing recovery monitoring",
   "Strategic infrastructure support",
-  "Continuous benchmark updates",
+  "Always-updated market comparison",
 ];
 
 export default function AccessModelCards() {
@@ -69,7 +69,7 @@ export default function AccessModelCards() {
             See the leaks. <span className="text-saas-gradient">Free.</span>
           </h3>
           <p className="text-sm sm:text-[15px] text-foreground/65 leading-relaxed mb-8 max-w-md">
-            Run the full infrastructure audit, benchmark your costs, and quantify recoverable margin — no card, no commitment.
+            Run the full audit, compare your costs with the market, and see how much you can recover — no card, no commitment.
           </p>
 
           {/* Price block */}
@@ -97,7 +97,7 @@ export default function AccessModelCards() {
               <TrendingUp className="h-3.5 w-3.5 text-cambra-blue" strokeWidth={2.2} />
             </div>
             <p className="text-[12.5px] leading-relaxed text-foreground/75">
-              Typical brands discover <span className="font-bold text-foreground tabular-nums">€8k–€120k/year</span> in recoverable infrastructure inefficiencies.
+              Typical businesses find <span className="font-bold text-foreground tabular-nums">€8k–€120k/year</span> they can recover.
             </p>
           </div>
 

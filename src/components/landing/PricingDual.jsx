@@ -25,12 +25,12 @@ import SectionHeading from "@/components/landing/SectionHeading";
 const FREE_FEATURES = [
   "Anonymous 60-second audit",
   "Verified analysis via Stripe Connect",
-  "Public-pricing benchmarks",
+  "Comparison with public prices",
   "Your savings estimate in euros",
 ];
 
 const RECOVERY_FEATURES = [
-  "Interchange floor benchmarking",
+  "Comparison vs. the minimum allowed",
   "Payments rate negotiation",
   "Savings verification & migration",
   "We win when you do",

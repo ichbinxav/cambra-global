@@ -45,7 +45,7 @@ export default function TheStackSection() {
           <div className="hidden lg:block lg:overflow-visible">
             <motion.img
               src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/20ff08204_stack-callouts-alpha2x.webp"
-              alt="Online payments, in-store terminals, contracts and benchmark — one stack, one analysis"
+              alt="Online payments, in-store terminals, contracts and what others pay — one stack, one analysis"
               width={1100}
               height={800}
               loading="lazy"

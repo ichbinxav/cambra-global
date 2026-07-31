@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
   await base44.asServiceRole.integrations.Core.SendEmail({
     from_name: "CAMBRA",
     to: userEmail,
-    subject: "Welcome to CAMBRA — your infrastructure intelligence starts here",
+    subject: "Welcome to CAMBRA — let's see what you're paying",
     body: `
       <div style="font-family: -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 32px; color: #111;">
         <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 32px;">CAMBRA</p>
@@ -45,27 +45,27 @@ Deno.serve(async (req) => {
           Welcome, ${brandName}.
         </h1>
         <p style="color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 32px;">
-          You've joined CAMBRA — the infrastructure audit and intelligence platform for independent brands.
+          You've joined CAMBRA — we help independent businesses stop overpaying on card payments.
         </p>
 
         <div style="background: #111; color: #fff; border-radius: 16px; padding: 28px; margin-bottom: 32px;">
           <p style="font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 16px;">What's unlocked</p>
           <div style="margin-bottom: 12px;">
-            <p style="font-weight: 700; margin-bottom: 4px;">Infrastructure Analyzer</p>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.5);">Benchmark your payments, shipping, and SaaS against real network rates.</p>
+            <p style="font-weight: 700; margin-bottom: 4px;">The analyzer</p>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5);">See what you pay on card payments, and the minimum banks and card networks allow.</p>
           </div>
           <div style="margin-bottom: 12px;">
-            <p style="font-weight: 700; margin-bottom: 4px;">AI Copilot</p>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.5);">Ongoing infrastructure intelligence and optimization recommendations.</p>
+            <p style="font-weight: 700; margin-bottom: 4px;">Verified figures</p>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5);">Connect your payment provider, read-only, and your estimate becomes a measured number.</p>
           </div>
           <div>
-            <p style="font-weight: 700; margin-bottom: 4px;">Member Network</p>
-            <p style="font-size: 13px; color: rgba(255,255,255,0.5);">Connect with independent brands across Europe.</p>
+            <p style="font-weight: 700; margin-bottom: 4px;">The collective</p>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5);">Many businesses negotiating as one for a better card rate.</p>
           </div>
         </div>
 
         <p style="font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 24px;">
-          Start with the Analyzer — it takes 2 minutes and identifies exactly where your infrastructure is costing you more than it should.
+          Start with the analyzer — two minutes, and it shows exactly where your card payments cost more than they should.
         </p>
 
         <a href="https://${appDomain}/Analyzer" style="display: inline-block; background: #111; color: #fff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 14px 28px; border-radius: 100px;">
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
         </a>
 
         <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #eee;">
-          <p style="font-size: 11px; color: #ccc;">CAMBRA · Infrastructure Audit & Intelligence Platform</p>
+          <p style="font-size: 11px; color: #ccc;">CAMBRA · Payments margin recovery</p>
         </div>
       </div>
     `,

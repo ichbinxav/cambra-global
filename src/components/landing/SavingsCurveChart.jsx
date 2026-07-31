@@ -324,15 +324,15 @@ export default function SavingsCurveChart({
       {/* ===== Footer meta ===== */}
       <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--linea)" }}>
         <div className="flex items-center justify-between gap-3 text-[11px]" style={{ color: "var(--gris-2)" }}>
-          <span className="font-mono">Cohort · DTC €200k–€2M</span>
-          <span className="font-mono">Benchmark methodology</span>
+          <span className="font-mono">Similar businesses · €200k–€2M</span>
+          <span className="font-mono">How we compare</span>
         </div>
         <p className="mt-2 text-[11px] leading-snug" style={{ color: "var(--gris-1)" }}>
           <span className="font-semibold" style={{ color: "var(--ink)" }}>Range:</span>{" "}
-          €3,000 to €30,000+ over 24 months depending on your volume (€200k–€2M GMV).
+          €3,000 to €30,000+ over 24 months, depending on your sales (€200k–€2M a year).
         </p>
         <p className="mt-1.5 text-[10.5px] leading-snug" style={{ color: "var(--gris-2)" }}>
-          Illustrative — €1M GMV brand, 2.21% effective vs 1.47% achievable. Run the analyzer for your real number.
+          Illustrative — a business with €1M in yearly sales, paying 2.21% when 1.47% was possible. Run the analyzer for your real number.
         </p>
       </div>
     </div>

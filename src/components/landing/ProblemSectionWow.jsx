@@ -44,7 +44,7 @@ const ITEMS = [
     // Largest angle — blended pricing hides most of the gap.
     // Overpay vs achievable on the % component: (2.21% − 1.47%) / 1.47% ≈ +50%.
     overpayPct: 50,
-    body: "Blended pricing hides the interchange floor. Most brands pay 2.0–2.6% when their real minimum sits at 1.4–1.5%.",
+    body: "A single all-in rate hides the minimum. Most businesses pay 2.0–2.6% when their real floor is 1.4–1.5%.",
     accent: "rgba(239,68,68,0.65)",
     glow: "rgba(239,68,68,0.08)",
   },
@@ -56,7 +56,7 @@ const ITEMS = [
     // Stripe EU/UK cross-border vs a negotiated ~0.9% on the same portion).
     // Visual cap +38% keeps the bar under the "up to 40%" H2 band.
     overpayPct: 38,
-    body: "International cards add +1.75% on the wrong PSP. On the right one, the schemes' floor is the same — the margin isn't.",
+    body: "Foreign cards add +1.75% with the wrong provider. With the right one the card networks charge the same — the provider doesn't.",
     accent: "rgba(249,115,22,0.65)",
     glow: "rgba(249,115,22,0.08)",
   },
@@ -67,7 +67,7 @@ const ITEMS = [
     // €0.25 vs €0.15 per-tx on ~€65 avg ticket ≈ +25% overpay on the fixed
     // component (the % component isn't affected). ~17% of the total gap.
     overpayPct: 25,
-    body: "€0.25 per-transaction fees compound on low-ticket flows. Amortised against your real ticket size, they quietly change your effective rate.",
+    body: "A €0.25 fee per sale piles up when your tickets are small. Spread over your real ticket, it quietly raises what you pay.",
     accent: "rgba(236,72,153,0.65)",
     glow: "rgba(236,72,153,0.08)",
   },
@@ -257,7 +257,7 @@ export default function ProblemSectionWow() {
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
           <SectionHeading eyebrow="The hidden cost problem" className="mb-4">
-            Independent brands overpay{" "}
+            Independent businesses overpay{" "}
             {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "up to 40%" is the
                 PROBLEM/cost → .kw-c (Coral Gap). */}
             <span className="kw-c">up to 40%</span>{" "}
@@ -327,7 +327,7 @@ export default function ProblemSectionWow() {
                   {" — the same money the Savings Curve shows as recoverable."}
                 </p>
                 <p className="text-[11px] text-white/40 mt-2 leading-snug max-w-md">
-                  Illustrative — €1M GMV brand, effective 2.21% vs 1.47% achievable.
+                  Illustrative — a business with €1M in yearly sales, paying 2.21% when 1.47% was possible.
                   Run the analyzer for your real number.
                 </p>
               </div>
@@ -352,7 +352,7 @@ export default function ProblemSectionWow() {
                 −€{totalCount.toLocaleString("en-US")}
               </p>
               <p className="text-[11px] uppercase tracking-[0.22em] font-bold text-white/45 mt-1">
-                /year · per brand
+                /year · per business
               </p>
             </div>
           </div>

@@ -26,7 +26,7 @@ const LANDING_JSON_LD = {
   "@type": "SoftwareApplication",
   "name": "CAMBRA",
   "slogan": "Pay less for card payments",
-  "description": "CAMBRA helps independent brands reduce what they pay for card payments. Anonymous 60-second analysis compares your effective payment rate against interchange floors and recovers the negotiable margin.",
+  "description": "CAMBRA helps independent businesses reduce what they pay for card payments. An anonymous 60-second analysis compares what you pay with the minimum banks and card networks allow, and recovers the difference.",
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web",
   "offers": {
@@ -36,9 +36,9 @@ const LANDING_JSON_LD = {
     "description": "Free anonymous payments analysis during early access. Optional recovery service earns 25% of verified savings over 24 months — only when CAMBRA actually recovers margin. No upfront fee, no subscription."
   },
   "featureList": [
-    "Payment fee benchmarking",
-    "Interchange floor analysis",
-    "Effective rate calculation",
+    "Card fee comparison vs. industry",
+    "Minimum allowed rate analysis",
+    "What you really pay, calculated",
     "Anonymous 60-second audit"
   ],
   "audience": {
@@ -219,7 +219,7 @@ function Hero() {
           />
           <img
             src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/de2b6ff10_audit-hero-v2-alpha2x.webp"
-            alt="CAMBRA — card payments audit: effective rate vs interchange floor, overpayment recovered"
+            alt="CAMBRA — card payments audit: what you pay vs the minimum allowed, overpayment recovered"
             width={620}
             height={620}
             fetchPriority="high"
