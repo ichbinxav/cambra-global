@@ -56,6 +56,7 @@ export default {
     footer_privacy:       "Política de privacidad",
     footer_terms:         "Términos de servicio",
     footer_contact:       "Contacto",
+    footer_data_requests: "Solicitudes de datos",
     footer_for_providers: "Para proveedores",
 
 
@@ -252,7 +253,7 @@ export default {
     coll_clickwrap_link: "Términos del Colectivo",
     coll_terms_draft:    "Borrador — pendiente de revisión legal",
     coll_terms_title:    "Términos del Colectivo (borrador)",
-    coll_terms_body:     "Al unirte al Colectivo CAMBRA autorizas a CAMBRA a incluir tu volumen de pagos, de forma agregada y pseudonimizada, en la fuerza negociadora colectiva usada para recuperar margen en nombre de sus miembros. No hay coste inicial ni permanencia. CAMBRA solo cobra una comisión sobre el ahorro verificado que efectivamente se materialice, conforme al modelo por resultados. Puedes salir del colectivo en cualquier momento. Este texto es un BORRADOR pendiente de revisión legal y no constituye un contrato vinculante hasta su versión final revisada.",
+    coll_terms_body:     "Al unirte al Colectivo CAMBRA autorizas a CAMBRA a incluir tu volumen de pagos, de forma agregada y pseudonimizada, en la fuerza negociadora colectiva usada para recuperar margen en nombre de sus miembros. No hay coste inicial ni permanencia. CAMBRA solo cobra una comisión sobre el ahorro verificado que efectivamente se materialice, conforme al modelo por resultados. Puedes salir del colectivo en cualquier momento.",
     coll_terms_close:    "Entendido",
     coll_success_title:  "Estás dentro · founding member",
     coll_success_body:   "€{gmv} de GMV ya en el colectivo. Te escribimos con los próximos pasos.",

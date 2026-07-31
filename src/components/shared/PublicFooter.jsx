@@ -66,6 +66,18 @@ export default function PublicFooter() {
         >
           <p className="text-[11.5px]" style={{ color: "rgba(255,255,255,0.35)" }}>
             CAMBRA GLOBAL SASU · SIREN 105 452 916 · 42 rue Vivienne, 75002 Paris, France · support@cambra.global
+            {" · "}
+            {/* LEGAL-2 — GDPR access/erasure (ARCO) entry point. Deliberately
+                discreet: same size/colour as the legal line, no emphasis. */}
+            <Link
+              to="/Contact?topic=data-request"
+              className="underline underline-offset-2 transition-colors"
+              style={{ color: "rgba(255,255,255,0.35)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+            >
+              {t("footer_data_requests")}
+            </Link>
           </p>
         </div>
       </div>

@@ -7,8 +7,23 @@ import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
 import { base44 } from "@/api/base44Client";
 
+// LEGAL-2 — the footer's discreet "Data requests" link lands here with
+// ?topic=data-request and pre-fills the message so a GDPR access/erasure
+// request reaches us through the normal contact pipeline.
+const DATA_REQUEST_PREFILL =
+  "Data request: I would like to exercise my GDPR rights (access / rectification / erasure / portability / objection) regarding the personal data CAMBRA holds about me.";
+
+function initialMessage() {
+  try {
+    const topic = new URLSearchParams(window.location.search).get("topic");
+    return topic === "data-request" ? DATA_REQUEST_PREFILL : "";
+  } catch {
+    return "";
+  }
+}
+
 export default function Contact() {
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", message: initialMessage() });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);

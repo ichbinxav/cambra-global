@@ -5,10 +5,10 @@
 // signed in) + GMV (from the analysis) and records a CollectiveMember via the
 // joinCollective backend.
 //
-// ⚠️ The Collective Terms text is a DRAFT pending legal review. The clickwrap
-// checkbox + terms link are present (required for a valid clickwrap), but the
-// text is explicitly marked as a draft. Do NOT treat this flow as launch-ready
-// until a lawyer signs off the copy.
+// LEGAL-2 (2026-07-31): the DRAFT marker was removed at the founder's
+// instruction. The clickwrap checkbox + terms link remain (both required for
+// a valid clickwrap); only the "draft / pending legal review" labelling is
+// gone. The terms body copy itself is unchanged.
 //
 // Payments only. No external PSP destinations. Same dark/glass aesthetic as
 // the report.
@@ -179,7 +179,7 @@ export default function CollectiveModal({ open, onClose, context = {}, onSwitch 
 
               {status === "error" && <p className="text-[12px] text-red-300 mt-2 text-center">{errorMsg}</p>}
 
-              {/* Clickwrap — required for validity, terms are DRAFT */}
+              {/* Clickwrap — required for validity */}
               <div className="mt-4 flex items-start gap-2.5">
                 <input
                   id="coll-accept"
@@ -197,7 +197,6 @@ export default function CollectiveModal({ open, onClose, context = {}, onSwitch 
                   >
                     {t("coll_clickwrap_link")}
                   </button>
-                  {" "}<span className="text-amber-300/70">({t("coll_terms_draft")})</span>
                 </label>
               </div>
 
@@ -215,15 +214,12 @@ export default function CollectiveModal({ open, onClose, context = {}, onSwitch 
           )}
         </div>
 
-        {/* Terms sub-sheet (DRAFT) */}
+        {/* Terms sub-sheet */}
         {termsOpen && (
           <div className="absolute inset-0 z-30 p-6 md:p-7 flex flex-col" style={{ background: "#070c16" }} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 mb-3">
               <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.14em", color: "#e8eef7" }}>
                 {t("coll_terms_title")}
-              </span>
-              <span className="uppercase font-bold px-2 py-0.5 rounded-full" style={{ fontFamily: MONO, fontSize: 8, letterSpacing: "0.1em", background: "rgba(245,181,68,0.10)", color: "rgb(245,181,68)", border: "1px solid rgba(245,181,68,0.30)" }}>
-                {t("coll_terms_draft")}
               </span>
             </div>
             <p className="text-[13px] text-white/60 leading-relaxed flex-1 overflow-y-auto">{t("coll_terms_body")}</p>

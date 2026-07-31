@@ -64,6 +64,7 @@ export default {
     footer_privacy:       "Privacy Policy",
     footer_terms:         "Terms of Service",
     footer_contact:       "Contact",
+    footer_data_requests: "Data requests",
     footer_for_providers: "For providers",
 
     /* analyzer — step 1 */
@@ -281,7 +282,7 @@ export default {
     coll_clickwrap_link: "Collective Terms",
     coll_terms_draft:    "Draft — pending legal review",
     coll_terms_title:    "Collective Terms (draft)",
-    coll_terms_body:     "By joining the CAMBRA Collective you authorize CAMBRA to include your payment volume, aggregated and pseudonymized, in the collective negotiating power used to recover margin on behalf of its members. There is no upfront cost and no lock-in. CAMBRA only charges a fee on verified savings that actually materialize, under the results-based model. You can leave the collective at any time. This text is a DRAFT pending legal review and does not constitute a binding contract until its final reviewed version.",
+    coll_terms_body:     "By joining the CAMBRA Collective you authorize CAMBRA to include your payment volume, aggregated and pseudonymized, in the collective negotiating power used to recover margin on behalf of its members. There is no upfront cost and no lock-in. CAMBRA only charges a fee on verified savings that actually materialize, under the results-based model. You can leave the collective at any time.",
     coll_terms_close:    "Got it",
     coll_success_title:  "You're in · founding member",
     coll_success_body:   "€{gmv} of GMV now in the collective. We'll email you with the next steps.",

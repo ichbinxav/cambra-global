@@ -56,6 +56,7 @@ export default {
     footer_privacy:       "Politique de confidentialité",
     footer_terms:         "Conditions d'utilisation",
     footer_contact:       "Contact",
+    footer_data_requests: "Demandes de données",
     footer_for_providers: "Pour les prestataires",
 
 
@@ -252,7 +253,7 @@ export default {
     coll_clickwrap_link: "Conditions du Collectif",
     coll_terms_draft:    "Brouillon — en attente de revue juridique",
     coll_terms_title:    "Conditions du Collectif (brouillon)",
-    coll_terms_body:     "En rejoignant le Collectif CAMBRA, vous autorisez CAMBRA à inclure votre volume de paiements, de façon agrégée et pseudonymisée, dans le pouvoir de négociation collectif utilisé pour récupérer de la marge au nom de ses membres. Aucun frais initial ni engagement. CAMBRA ne facture qu'une commission sur les économies vérifiées effectivement réalisées, selon le modèle à la performance. Vous pouvez quitter le collectif à tout moment. Ce texte est un BROUILLON en attente de revue juridique et ne constitue pas un contrat contraignant tant que sa version finale révisée n'est pas publiée.",
+    coll_terms_body:     "En rejoignant le Collectif CAMBRA, vous autorisez CAMBRA à inclure votre volume de paiements, de façon agrégée et pseudonymisée, dans le pouvoir de négociation collectif utilisé pour récupérer de la marge au nom de ses membres. Aucun frais initial ni engagement. CAMBRA ne facture qu'une commission sur les économies vérifiées effectivement réalisées, selon le modèle à la performance. Vous pouvez quitter le collectif à tout moment.",
     coll_terms_close:    "Compris",
     coll_success_title:  "Vous y êtes · membre fondateur",
     coll_success_body:   "€{gmv} de GMV désormais dans le collectif. Nous vous écrirons pour les prochaines étapes.",
