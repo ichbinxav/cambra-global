@@ -252,7 +252,7 @@ export default {
     coll_clickwrap_pre:  "Al unirte aceptas los",
     coll_clickwrap_link: "Términos del Colectivo",
     coll_terms_draft:    "Borrador — pendiente de revisión legal",
-    coll_terms_title:    "Términos del Colectivo (borrador)",
+    coll_terms_title:    "Términos del Colectivo",
     coll_terms_body:     "Al unirte al Colectivo CAMBRA autorizas a CAMBRA a incluir tu volumen de pagos, de forma agregada y pseudonimizada, en la fuerza negociadora colectiva usada para recuperar margen en nombre de sus miembros. No hay coste inicial ni permanencia. CAMBRA solo cobra una comisión sobre el ahorro verificado que efectivamente se materialice, conforme al modelo por resultados. Puedes salir del colectivo en cualquier momento.",
     coll_terms_close:    "Entendido",
     coll_success_title:  "Estás dentro · founding member",

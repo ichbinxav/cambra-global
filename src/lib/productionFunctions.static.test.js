@@ -48,7 +48,7 @@ const MANIFEST = [
   "onSavingsEvidenceEvent", "outreachAgent", "outreachOrchestrator",
   "phase2CleanupLegacyFields", "processUploadedFile", "processWebhookDeadLetters",
   "promoteMeToAdmin", "providerMonitorAgent", "providerResearchAgent",
-  "purgePaymentsAnalysisSessions", "qaAgent", "qaMonitorAgent",
+  "purgeInactiveLeads", "purgePaymentsAnalysisSessions", "qaAgent", "qaMonitorAgent",
   "recommendationEngineAgent", "reconcileInvoice", "recordPayment",
   "regenerateMigrationTasks", "regenerateRecommendationsForBrand",
   "researchOrchestrator", "revokeApiKey", "revokeMandate", "runApiSelfTests",

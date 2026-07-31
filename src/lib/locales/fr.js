@@ -252,7 +252,7 @@ export default {
     coll_clickwrap_pre:  "En rejoignant, vous acceptez les",
     coll_clickwrap_link: "Conditions du Collectif",
     coll_terms_draft:    "Brouillon — en attente de revue juridique",
-    coll_terms_title:    "Conditions du Collectif (brouillon)",
+    coll_terms_title:    "Conditions du Collectif",
     coll_terms_body:     "En rejoignant le Collectif CAMBRA, vous autorisez CAMBRA à inclure votre volume de paiements, de façon agrégée et pseudonymisée, dans le pouvoir de négociation collectif utilisé pour récupérer de la marge au nom de ses membres. Aucun frais initial ni engagement. CAMBRA ne facture qu'une commission sur les économies vérifiées effectivement réalisées, selon le modèle à la performance. Vous pouvez quitter le collectif à tout moment.",
     coll_terms_close:    "Compris",
     coll_success_title:  "Vous y êtes · membre fondateur",

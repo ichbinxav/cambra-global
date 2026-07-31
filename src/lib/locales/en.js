@@ -281,7 +281,7 @@ export default {
     coll_clickwrap_pre:  "By joining you accept the",
     coll_clickwrap_link: "Collective Terms",
     coll_terms_draft:    "Draft — pending legal review",
-    coll_terms_title:    "Collective Terms (draft)",
+    coll_terms_title:    "Collective Terms",
     coll_terms_body:     "By joining the CAMBRA Collective you authorize CAMBRA to include your payment volume, aggregated and pseudonymized, in the collective negotiating power used to recover margin on behalf of its members. There is no upfront cost and no lock-in. CAMBRA only charges a fee on verified savings that actually materialize, under the results-based model. You can leave the collective at any time.",
     coll_terms_close:    "Got it",
     coll_success_title:  "You're in · founding member",
