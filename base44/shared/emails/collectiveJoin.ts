@@ -2,8 +2,8 @@
 // CAMBRA Collective (founding member).
 //
 // EMAIL-1 (2026-07-31):
-//   · T1 — the "The Collective Terms are a draft pending legal review" footer
-//     line is GONE. COPY-1/LEGAL-2 removed that labelling from the clickwrap
+//   · T1 — the footer line qualifying the Collective Terms as provisional /
+//     awaiting legal review is GONE. COPY-1/LEGAL-2 removed that labelling from the clickwrap
 //     UI at the founder's instruction; keeping it in the email meant the two
 //     surfaces disagreed about the status of the same document. The scope of
 //     what the member accepted is unchanged — only the status qualifier is.
