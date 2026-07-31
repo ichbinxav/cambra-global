@@ -138,8 +138,8 @@ export default function PaymentsScoreBadge({
               className="mt-3 rounded-xl px-3 py-2.5 text-[11px] leading-relaxed text-white/60"
               style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.08)" }}
             >
-              Your score reflects how close your effective rate is to the best
-              achievable rate for your profile. Being at the achievable floor scores
+              Your score reflects how close what you pay is to the best
+                          rate possible for your profile. Being at that floor scores
               highest; paying near the top of the market scores lowest. It grades
               your cost setup — not any specific provider.
               {muted && " This is an estimate until you connect your PSP for exact figures."}

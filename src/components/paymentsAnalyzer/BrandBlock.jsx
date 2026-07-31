@@ -54,10 +54,10 @@ export default function BrandBlock({
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
           About your brand
         </span>
-        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Cohort benchmark</span>
+        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Compare vs. industry</span>
       </div>
       <p className="text-[11.5px] leading-relaxed -mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>
-        Helps us benchmark you against similar brands. Still no account, still anonymous.
+        Helps us compare you with similar businesses. Still no account, still anonymous.
       </p>
 
       {/* Brand name — OPTIONAL (SWEEP-1 T2) */}

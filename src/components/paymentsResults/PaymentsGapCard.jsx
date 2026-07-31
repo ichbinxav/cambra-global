@@ -115,7 +115,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             </span>
           ) : cohortVerifiedRow ? (
             <span
-              title="Calculated against your PSP's publicly published pricing."
+              title="Calculated against your provider's published prices."
               className="uppercase font-bold px-2 py-0.5 rounded-full"
               style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(34,211,238,0.12)", color: "rgb(34,211,238)", border: "1px solid rgba(34,211,238,0.35)" }}
             >
@@ -123,7 +123,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             </span>
           ) : (
             <span
-              title="No public pricing available for this cohort — we used regional averages."
+              title="No public prices for this case — we used regional averages."
               className="uppercase font-bold px-2 py-0.5 rounded-full"
               style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", border: "1px solid rgba(255,255,255,0.15)" }}
             >
@@ -131,6 +131,12 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             </span>
           )}
         </div>
+
+        {/* COPY-2A T3 — Verified/Estimated explained ONCE per page, right at
+            the first badge. Later badges carry no explanation by design. */}
+        <p className="text-[11px] mb-5" style={{ color: "rgba(255,255,255,0.40)" }}>
+          {t("verified_estimated_legend")}
+        </p>
 
         {/* PIEZA A — GAUGE + segmented CTA. */}
         {scoreAvailable ? (
@@ -183,7 +189,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             <span className="text-[13px] text-white/55 inline-flex items-center gap-1.5">
               {achievableLocked && isAnonymous
                 ? (<><Lock size={12} className="shrink-0" /> {t("locked_achievable_rate")}</>)
-                : "Connect your PSP to score"}
+                : "Connect your provider to score"}
             </span>
           </div>
         )}
@@ -220,7 +226,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             className="mt-6 inline-flex items-center gap-2.5 flex-wrap rounded-xl px-4 py-3"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
           >
-            <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "#585868" }}>Effective rate</span>
+            <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.15em", color: "#585868" }}>{t("ins_effective_label")}</span>
             <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ fontFamily: MONO, color: "#F45B69" }}>
               {pctFromBps(current)} today
             </span>
@@ -232,7 +238,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
             ) : (
               <>
                 <span className="tabular-nums font-bold text-[15px] md:text-[16px]" style={{ fontFamily: MONO, color: "#7BD9F0" }}>
-                  {pctFromBps(achievable)} achievable
+                  {pctFromBps(achievable)} possible
                 </span>
                 {gapPct && <span className="text-[12px]" style={{ color: "#585868" }}>({gapPct} pts lower)</span>}
               </>
@@ -248,7 +254,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
               <p className="text-[10px] mt-0.5" style={{ color: "#585868" }}>
                 {isMeasured && txCount && daysCovered
                   ? <>Your rate, measured from {txCount} charges over {daysCovered} days</>
-                  : <>effective, on {inputSnapshot?.provider_slug || "your PSP"}</>}
+                  : <>what you pay, on {inputSnapshot?.provider_slug || "your provider"}</>}
               </p>
             </div>
             <div className="rounded-xl p-4" style={{ background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.25)" }}>
@@ -266,7 +272,7 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
                     {pctFromBps(achievable)}
                   </p>
                   <p className="text-[10px] mt-0.5" style={{ color: "#585868" }}>
-                    {gapPct ? `${gapPct} pts below your current rate` : "achievable rate"}
+                    {gapPct ? `${gapPct} pts below what you pay now` : "the rate you could pay"}
                   </p>
                 </>
               )}

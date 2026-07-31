@@ -102,7 +102,7 @@ export default function PspVerificationOptions({ providerSlug, providerLabel, on
                   </span>
                 </div>
                 <p className="text-[12px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
-                  We measure your actual effective rate from 90 days of real transactions — no estimation.
+                  We measure what you really pay from 90 days of real transactions — nothing estimated.
                 </p>
                 <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold" style={{ color: "var(--voltio)" }}>
                   Connect {label} <ArrowRight size={11} />

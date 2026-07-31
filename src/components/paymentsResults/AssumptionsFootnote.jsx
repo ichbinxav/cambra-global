@@ -62,8 +62,8 @@ export default function AssumptionsFootnote({ engineResult, engineVersion }) {
             <p className="text-[13px] font-bold text-orange-200">Estimate based on regional averages</p>
             <p className="text-[12px] text-orange-100/85 mt-0.5">
               {isInStore
-                ? "We don't have verified public pricing for this TPV provider in your region yet. Upload a provider statement for exact figures."
-                : "We don't have verified public pricing for this PSP in your region yet. Connect your PSP for exact figures."}
+                ? "We don't have confirmed public pricing for this card terminal provider in your region yet. Upload a statement for exact figures."
+                : "We don't have confirmed public pricing for this provider in your region yet. Connect it for exact figures."}
             </p>
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function AssumptionsFootnote({ engineResult, engineVersion }) {
               past — it's meta-context about the numbers themselves. */}
           {bandPct !== null && (
             <p className="mt-3 pt-3 text-[11px] text-white/45 leading-relaxed border-t border-white/8">
-              The savings range shown above is ±{bandPct}% around the point — our overall confidence in the achievable benchmark for this cohort. That is a different quantity from any "±N bps" mentioned inside an individual assumption, which measures uncertainty on a single component (e.g. processor margin), not on the total.
+              The savings range above is ±{bandPct}% around the central figure. That's our confidence in the whole estimate. Any ± mentioned inside a single assumption above is narrower — it covers only that one part, not the total.
             </p>
           )}
 
@@ -132,7 +132,7 @@ export default function AssumptionsFootnote({ engineResult, engineVersion }) {
         >
           <Lock size={13} className="text-white/40 shrink-0" />
           <p className="text-[12px] text-white/55 leading-relaxed">
-            Full audit trail — how we amortized the fixed fee, which anchor we compared against, and the confidence bands — appears in your report after you create a free account.
+            The full working — how we spread the fixed fee, which rate we compared against, and how confident we are — appears in your report once you create a free account.
           </p>
         </div>
       )}

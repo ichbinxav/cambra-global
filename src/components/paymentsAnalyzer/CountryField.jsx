@@ -46,7 +46,7 @@ export default function CountryField({ value, onChange, options }) {
       <p className="text-[10.5px] leading-relaxed" style={{ color: missing ? "#FCA5A5" : "rgba(255,255,255,0.5)" }}>
         {missing
           ? "Pick your country — we price your rate against your country's rules, not a generic average."
-          : "Your rate is benchmarked against this country's providers and interchange rules."}
+          : "We compare your rate with the providers and the legal caps of this country."}
       </p>
     </div>
   );

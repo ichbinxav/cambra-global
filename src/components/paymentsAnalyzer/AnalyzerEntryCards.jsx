@@ -46,7 +46,7 @@ const CARDS = [
     icon: Edit3,
     title: "Answer 5 questions",
     subtitle: "Fastest — no account",
-    body: "Public pricing benchmark against merchants of your size + region. ~2 minutes.",
+    body: "We compare you with similar businesses in your region, using public prices. ~2 minutes.",
     badge: "You're here",
     cta: "Continue below",
   },

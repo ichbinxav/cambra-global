@@ -82,7 +82,7 @@ export default function GmvSlider({ value, onChange }) {
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-          Monthly card GMV
+          Monthly card sales
         </span>
         <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Slide or type</span>
       </div>
@@ -116,7 +116,7 @@ export default function GmvSlider({ value, onChange }) {
             placeholder="e.g. 100000"
             className="cambra-num-input w-28 h-9 rounded-md px-2.5 text-sm text-right focus:outline-none transition-colors"
             style={{ color: "#ffffff", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)" }}
-            aria-label="Monthly GMV exact value"
+            aria-label="Monthly card sales exact value"
           />
         </div>
       </div>
@@ -129,7 +129,7 @@ export default function GmvSlider({ value, onChange }) {
         value={sliderPosition}
         onChange={handleSliderChange}
         className="cambra-range w-full"
-        aria-label="Monthly GMV slider"
+        aria-label="Monthly card sales slider"
       />
 
       {/* Anchor tick labels — decorative, help calibrate the log scale */}
