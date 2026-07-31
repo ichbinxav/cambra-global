@@ -28,12 +28,12 @@ export default {
     hero_badge:           "Pay only if we save you money",
     hero_h1_line1:        "Stop overpaying.",
     hero_h1_line2:        "Recover the margin.",
-    hero_sub:             "Most independent brands overpay up to 40% on card payments — hidden inside blended rates. CAMBRA measures your effective rate against the interchange floor and recovers what's negotiable. You keep 75%. We only get paid when you do.",
+    hero_sub:             "Most independent businesses overpay up to 40% on card payments. We check what you pay against the lowest your bank and the card networks allow, then recover the difference. You keep 75%. We only get paid when you save.",
     hero_cta_primary:     "Recover your margin — 3 min",
-    hero_cta_secondary:   "Discover real brands savings",
+    hero_cta_secondary:   "See what real businesses saved",
     hero_trust_1:         "No retainer · no contract",
     hero_trust_2:         "Credentials encrypted, never in plain text",
-    hero_trust_3:         "EU brands only",
+    hero_trust_3:         "EU businesses only",
 
     /* landing — how it works (steps) */
     how_h2:               "Four steps from estimate to recovered margin.",
@@ -46,7 +46,7 @@ export default {
     how_step3_title:      "Connect your provider to confirm",
     how_step3_desc:       "Read-only. Your estimate becomes a confirmed number from your real transaction data.",
     how_step4_title:      "Join to recover it",
-    how_step4_desc:       "Claim your savings and join the brands negotiating as one. Together we unlock rates none of us could get alone.",
+    how_step4_desc:       "Claim your savings and join the businesses negotiating as one. Together we get rates none of us could get alone.",
 
     /* landing — hero */
 
@@ -88,7 +88,7 @@ export default {
 
     /* dashboard */
     state_a_title:        "Map your infrastructure in 3 minutes",
-    state_a_sub:          "Enter your website. CAMBRA automatically detects your payment providers, shipping carriers and SaaS tools — then benchmarks your costs against anonymized data from European brands at your revenue tier.",
+    state_a_sub:          "Enter your website. CAMBRA finds your payment providers, carriers and software tools. Then it compares your costs with anonymous data from similar European businesses.",
     state_a_cta:          "Start free analysis →",
     state_b_badge:        "Estimated",
     state_c_badge:        "Verified ✓",
@@ -224,7 +224,7 @@ export default {
     roadmap_up_to:        "up to",
     roadmap_per_year:     "/ year",
     roadmap_range:        "range",
-    roadmap_ambition:     "Brands in your tier reach ~{x}% — where the collective pushes",
+    roadmap_ambition:     "Similar businesses reach ~{x}% — where the collective pushes",
     roadmap_routes:       "Routes to get there",
     route_margin_title:   "We renegotiate your margin",
     route_rate_title:     "We move you to a better rate",
@@ -249,7 +249,7 @@ export default {
     roadmap_locked_sub:    "Create your account to unlock your full recovery plan.",
 
     /* Report v2 — Pieza C: peer benchmark distribution */
-    bench_title:          "Where you stand vs brands like you",
+    bench_title:          "Where you stand vs similar businesses",
     /* Label refined off "illustrative" (dented perceived validity) to a
        regional benchmark badge. Internally the cohort still grows and the
        percentile is anchored to seeded market ranges — that nuance lives in
@@ -261,19 +261,19 @@ export default {
     bench_you:            "YOU",
     bench_axis_cheaper:   "cheaper",
     bench_axis_pricier:   "pricier",
-    bench_callout:        "You're in the most expensive ~{pct}% of {country} brands your size.",
-    bench_callout_nocountry: "You're in the most expensive ~{pct}% of brands your size.",
-    bench_callout_cheaper:   "You're cheaper than ~{pct}% of {country} brands your size.",
-    bench_callout_cheaper_nocountry: "You're cheaper than ~{pct}% of brands your size.",
+    bench_callout:        "You're in the most expensive ~{pct}% of similar {country} businesses.",
+    bench_callout_nocountry: "You're in the most expensive ~{pct}% of similar businesses.",
+    bench_callout_cheaper:   "You're cheaper than ~{pct}% of similar {country} businesses.",
+    bench_callout_cheaper_nocountry: "You're cheaper than ~{pct}% of similar businesses.",
     /* SWEEP-1 T6 — honesty note under the modeled peer curve */
     bench_modeled_note:   "Modeled from public pricing data — refined as verified merchant data reaches critical mass.",
 
     /* Report v2 — Collective (clickwrap-lite) + Book a call */
     coll_eyebrow:        "The collective",
     coll_title:          "Join the collective",
-    coll_sub:            "Many brands negotiating as one. The more GMV joins, the more leverage the collective has to recover your margin.",
+    coll_sub:            "Many businesses negotiating as one. The more sales join, the more weight the collective has to win you a better rate.",
     coll_email_label:    "Email",
-    coll_email_ph:       "you@brand.com",
+    coll_email_ph:       "you@yourbusiness.com",
     coll_gmv_label:      "Monthly GMV",
     coll_gmv_note:       "from your analysis",
     coll_submit:         "Join as founding member",
@@ -302,7 +302,7 @@ export default {
     call_name_label:     "Name",
     call_name_ph:        "Your name",
     call_email_label:    "Email",
-    call_email_ph:       "you@brand.com",
+    call_email_ph:       "you@yourbusiness.com",
     call_msg_label:      "Message (optional)",
     call_msg_ph:         "Briefly tell us about your situation…",
     call_submit:         "Request a call",
@@ -379,8 +379,8 @@ export default {
 
     /* 0.4 — Testimonials page (chrome only; quotes stay untranslated placeholders) */
     tst_hero_badge:   "Testimonials · From real operators",
-    tst_hero_h1:      "What brands say about CAMBRA.",
-    tst_hero_sub:     "Real results from independent commerce brands across Europe.",
+    tst_hero_h1:      "What businesses say about CAMBRA.",
+    tst_hero_sub:     "Real results from independent businesses across Europe.",
     tst_role_at:      "{role} at {company}",
     tst_illustrative_note: "Illustrative sample quotes — not real customers yet.",
 
@@ -412,7 +412,7 @@ export default {
     prc_faq_eyebrow:     "Frequently asked",
     prc_faq_h2:          "Clarity, not fine print.",
     prc_faq_q1: "Is the infrastructure intelligence really free?",
-    prc_faq_a1: "Yes — no card, no commitment. Early founding brands get full access to the audit, benchmarks, scoring and dashboard at no cost.",
+    prc_faq_a1: "Yes — no card, no commitment. Early founding businesses get full access to the audit, the industry comparison, the score and the dashboard at no cost.",
     prc_faq_q2: "How does the recovery model work?",
     prc_faq_a2: "When CAMBRA actively helps you recover margin, we participate in 25% of the verified savings for 24 months. You keep the majority. No upfront fee, no subscription, no minimum. If we don't recover anything, you pay nothing — the risk is entirely on us. After 24 months, 100% of the recovered margin stays with you.",
     prc_faq_q3: "What counts as 'verified savings'?",
@@ -543,7 +543,7 @@ export default {
     pdf_top10:               "Top 10%",
     pdf_percentile:          "Your position",
     pdf_percentile_val:      "Among the ~{pct}% most expensive of your size",
-    pdf_percentile_val_cheaper: "Cheaper than ~{pct}% of brands your size",
+    pdf_percentile_val_cheaper: "Cheaper than ~{pct}% of similar businesses",
     pdf_toptier:             "You're at the achievable floor — top-tier payment costs.",
     pdf_engine_version:      "Engine version",
     pdf_footer_note:         "Estimate based on your inputs — connect your provider to verify. CAMBRA · Payments audit.",
@@ -554,7 +554,7 @@ export default {
     ac_verify_why:           "Turn your ~{amount}/yr estimate into a verified number — connect your provider, read-only.",
     ac_verify_cta:           "Connect your provider",
     ac_recover_title:        "Recover {amount}/yr",
-    ac_recover_why_coll:     "Join the collective — many brands negotiating as one — to start recovering it.",
+    ac_recover_why_coll:     "Join the collective — many businesses negotiating as one — to start recovering it.",
     ac_recover_cta_coll:     "Join the collective",
     ac_call_title:           "Recover {amount}/yr",
     ac_call_why:             "Your opportunity is large enough for a call — let's plan the recovery together.",
@@ -586,24 +586,24 @@ export default {
     stack_c2_t: "In-store terminals",
     stack_c2_d: "The quiet leak in your physical channel.",
     stack_c3_t: "Contracts",
-    stack_c3_d: "What you signed vs. what brands your size actually pay.",
+    stack_c3_d: "What you signed vs. what similar businesses actually pay.",
     stack_c4_t: "Benchmark (base layer)",
-    stack_c4_d: "Real costs from real brands. Not the price list.",
+    stack_c4_d: "Real costs from real businesses. Not the price list.",
 
     /* Landing — RealImpactSection */
     ri_eyebrow:   "REAL IMPACT",
     ri_h2_pre:    "That gap is",
     ri_h2_kw:     "+7% net profit.",
-    ri_sub_pre:   "One real brand, €1M in annual sales: paying an effective 2.21% per transaction when 1.47% was achievable. A ",
+    ri_sub_pre:   "One real business, €1M in annual sales: paying 2.21% per sale when 1.47% was possible. A ",
     ri_sub_kw:    "0.74-point",
     ri_sub_post:  " gap — €7,400 a year, ≈€15,000 over 24 months. Recovered, that's about 7% more net profit. Same sales. Same team.",
 
     /* Landing — Founding150Section */
     f150_eyebrow: "FOUNDING 150",
-    f150_h2_l1:   "150 brands.",
+    f150_h2_l1:   "150 businesses.",
     f150_h2_l2:   "Free forever.",
     f150_h2_kw:   "One dataset.",
-    f150_sub:     "We're selecting 150 independent brands (€200k–€2M in annual sales) to build Europe's first database of what payments really cost. In exchange: full analysis and ongoing monitoring, free, forever.",
+    f150_sub:     "We're selecting 150 independent businesses (€200k–€2M in annual sales) to build Europe's first database of what payments really cost. In exchange: full analysis and ongoing monitoring, free, forever.",
     f150_cta:     "Claim my spot",
 
     /* I18N-GAP — Landing TrustSecuritySection */
@@ -648,11 +648,11 @@ export default {
     sec_b2_h2:    "Aggregates, not identities.",
     sec_b2_body:  "Our analysis runs on aggregate numbers: volumes, fees, rates, payment mix. We do not need — and do not process — your end customers' personal data. No names, no emails, no card numbers. Card data never touches CAMBRA at any point: it stays within your payment provider's certified infrastructure. Statement uploads are used solely to compute your effective rate, and the figures we benchmark are anonymized and aggregated.",
     sec_b3_h2:    "Your numbers never leak into anyone else's.",
-    sec_b3_body:  "Every brand's data lives in strict isolation, enforced at the database layer. Benchmarks are built from anonymized aggregates — no brand can ever see another brand's rates, volumes, or identity. When your data contributes to a benchmark, it does so as a number in a cohort, never as your name.",
+    sec_b3_body:  "Every business's data lives in strict isolation, enforced at the database layer. Industry comparisons are built from anonymous totals — no business can ever see another's rates, volumes, or identity. When your data feeds a comparison, it does so as a number in a group, never as your name.",
     sec_b4_h2:    "Encrypted everywhere it travels, everywhere it rests.",
     sec_b4_body:  "All data is encrypted in transit (TLS) and at rest. Access to production data is restricted and logged. We keep what we need to run your analysis and monitoring — nothing more.",
     sec_b5_h2:    "European company. European rules.",
-    sec_b5_body:  "CAMBRA Global SASU is incorporated in France and operates under GDPR. You can request access to your data or its deletion at any time. A Data Processing Agreement is available for brands that require one — ask us at {email}.",
+    sec_b5_body:  "CAMBRA Global SASU is incorporated in France and operates under GDPR. You can request access to your data or its deletion at any time. A Data Processing Agreement is available for businesses that require one — ask us at {email}.",
     sec_b6_h2:    "Leaving takes one click.",
     sec_b6_body:  "You can disconnect your payment provider at any moment from your dashboard, and the connection is revoked immediately at the provider level. Your access, your call — always.",
     sec_close_h2:   "Questions? Ask before you connect.",
@@ -671,7 +671,7 @@ export default {
     plus_anchor_note: "Rate shown is SumUp Pagos Plus (€19/month plan, no lock-in), monthly fee included in the effective rate. The 0.75% applies to eligible standard transactions; premium and commercial cards may cost more.",
 
     /* SWEEP-1 T2 — brand name is optional in the anonymous analyzer */
-    brand_name_optional: "Brand name (optional)",
+    brand_name_optional: "Business name (optional)",
     brand_fallback:      "Your brand",
 
     /* UX-1 — mandatory email gate + locked teaser fields */
@@ -679,9 +679,9 @@ export default {
     analyzer_email_hint:        "Required — we send your report here",
     analyzer_email_privacy_note: "We only use it to send your report — no marketing without your consent.",
     analyzer_email_privacy_link: "Privacy Policy",
-    analyzer_email_placeholder: "you@yourbrand.com",
+    analyzer_email_placeholder: "you@yourbusiness.com",
     analyzer_email_required:    "Enter your email to see your results.",
-    analyzer_email_invalid:     "Enter a valid email address (e.g. you@yourbrand.com).",
+    analyzer_email_invalid:     "Enter a valid email address (e.g. you@yourbusiness.com).",
     locked_achievable_rate:     "Create your free account to unlock your exact achievable rate.",
     locked_combined_breakdown:  "Create your free account to see the online vs in-store breakdown.",
     locked_pdf_download:        "Create your free account to download the PDF report.",
@@ -715,7 +715,7 @@ export default {
     results_cta_verified_sub:   "Head back to your dashboard to review your integrations and start the recovery workflow.",
     results_cta_anon_sub:       "Create your free account to see the full report — exact achievable rate, fee breakdown and your recovery plan.",
     results_cta_call_sub:       "Your opportunity is large enough for a call — let's talk it through.",
-    results_cta_coll_sub:       "Join the collective — many brands negotiating as one — to start the recovery.",
+    results_cta_coll_sub:       "Join the collective — many businesses negotiating as one — to start the recovery.",
     results_cta_dashboard:      "Go to dashboard",
     results_cta_create:         "Create free account",
     results_cta_stop:           "Stop overpaying",

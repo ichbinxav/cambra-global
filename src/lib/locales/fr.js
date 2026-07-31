@@ -26,12 +26,12 @@ export default {
     hero_badge:           "Vous ne payez que si nous vous faisons économiser",
     hero_h1_line1:        "Arrêtez de trop payer.",
     hero_h1_line2:        "Récupérez votre marge.",
-    hero_sub:             "La plupart des marques indépendantes paient jusqu'à 40 % de trop sur les paiements par carte — un surcoût dissimulé dans des taux mélangés. CAMBRA mesure votre taux effectif par rapport au plancher d'interchange et récupère ce qui est négociable. Vous gardez 75 %. Nous ne sommes rémunérés que lorsque vous économisez.",
+    hero_sub:             "La plupart des commerces indépendants paient jusqu'à 40 % de trop sur les paiements par carte. Nous comparons ce que vous payez au minimum autorisé par votre banque et les réseaux de cartes, puis nous récupérons la différence. Vous gardez 75 %. Nous ne sommes payés que lorsque vous économisez.",
     hero_cta_primary:     "Récupérez votre marge — 3 min",
-    hero_cta_secondary:   "Découvrez les économies de vraies marques",
+    hero_cta_secondary:   "Voyez ce qu'ont économisé de vrais commerces",
     hero_trust_1:         "Sans honoraires · sans engagement",
     hero_trust_2:         "Identifiants chiffrés, jamais en clair",
-    hero_trust_3:         "Réservé aux marques de l'UE",
+    hero_trust_3:         "Réservé aux commerces de l'UE",
 
     /* landing — how it works (steps) */
     how_h2:               "Quatre étapes, de l'estimation à la marge récupérée.",
@@ -44,7 +44,7 @@ export default {
     how_step3_title:      "Connectez votre prestataire pour confirmer",
     how_step3_desc:       "En lecture seule. Votre estimation devient un chiffre confirmé, à partir de vos transactions réelles.",
     how_step4_title:      "Rejoignez-nous pour la récupérer",
-    how_step4_desc:       "Récupérez vos économies et rejoignez les marques qui négocient d'une seule voix. Ensemble, nous obtenons des taux qu'aucune d'entre nous n'atteindrait seule.",
+    how_step4_desc:       "Récupérez vos économies et rejoignez les commerces qui négocient d'une seule voix. Ensemble, nous obtenons des tarifs qu'aucun n'obtiendrait seul.",
 
 
 
@@ -74,7 +74,7 @@ export default {
     connect_more:                 "Connecter plus d'outils pour améliorer la précision",
 
     state_a_title:        "Cartographiez votre infrastructure en 3 minutes",
-    state_a_sub:          "Entrez votre site web. CAMBRA détecte automatiquement vos prestataires de paiement, transporteurs et outils SaaS — puis compare vos coûts avec des données anonymisées de marques européennes à votre niveau de CA.",
+    state_a_sub:          "Entrez votre site web. CAMBRA détecte vos prestataires de paiement, transporteurs et logiciels. Puis compare vos coûts avec des données anonymes de commerces européens similaires.",
     state_a_cta:          "Lancer l'analyse gratuite →",
     state_b_badge:        "Estimé",
     state_c_badge:        "Vérifié ✓",
@@ -199,7 +199,7 @@ export default {
     roadmap_up_to:        "jusqu'à",
     roadmap_per_year:     "/ an",
     roadmap_range:        "fourchette",
-    roadmap_ambition:     "Les marques de votre palier atteignent ~{x}% — là où pousse le collectif",
+    roadmap_ambition:     "Les commerces similaires atteignent ~{x}% — là où pousse le collectif",
     roadmap_routes:       "Les voies pour y parvenir",
     route_margin_title:   "Nous renégocions votre marge",
     route_rate_title:     "Nous vous amenons à un meilleur taux",
@@ -224,7 +224,7 @@ export default {
     roadmap_locked_sub:    "Créez votre compte pour débloquer votre plan de récupération complet.",
 
     /* Report v2 — Pieza C: peer benchmark distribution */
-    bench_title:          "Votre position face aux marques comme vous",
+    bench_title:          "Votre position face aux commerces similaires",
     bench_regional:       "Benchmark régional · {country}",
     bench_regional_nocountry: "Benchmark régional",
     bench_top10:          "Top 10%",
@@ -232,19 +232,19 @@ export default {
     bench_you:            "VOUS",
     bench_axis_cheaper:   "moins cher",
     bench_axis_pricier:   "plus cher",
-    bench_callout:        "Vous êtes dans les ~{pct}% les plus chers des marques {country} de votre taille.",
-    bench_callout_nocountry: "Vous êtes dans les ~{pct}% les plus chers des marques de votre taille.",
-    bench_callout_cheaper:   "Vous êtes moins cher que ~{pct}% des marques {country} de votre taille.",
-    bench_callout_cheaper_nocountry: "Vous êtes moins cher que ~{pct}% des marques de votre taille.",
+    bench_callout:        "Vous êtes dans les ~{pct}% les plus chers des commerces similaires en {country}.",
+    bench_callout_nocountry: "Vous êtes dans les ~{pct}% les plus chers des commerces similaires.",
+    bench_callout_cheaper:   "Vous êtes moins cher que ~{pct}% des commerces similaires en {country}.",
+    bench_callout_cheaper_nocountry: "Vous êtes moins cher que ~{pct}% des commerces similaires.",
     /* SWEEP-1 T6 — honesty note under the modeled peer curve */
     bench_modeled_note:   "Modélisé à partir de tarifs publics — affiné à mesure que les données vérifiées atteignent la masse critique.",
 
     /* Report v2 — Collectif (clickwrap-lite) + Réserver un appel */
     coll_eyebrow:        "Le collectif",
     coll_title:          "Rejoignez le collectif",
-    coll_sub:            "Plusieurs marques qui négocient ensemble. Plus le GMV s'additionne, plus le collectif a de poids pour récupérer votre marge.",
+    coll_sub:            "Plusieurs commerces qui négocient ensemble. Plus les ventes s'additionnent, plus le collectif a de poids pour vous obtenir un meilleur tarif.",
     coll_email_label:    "Email",
-    coll_email_ph:       "vous@marque.com",
+    coll_email_ph:       "vous@votrecommerce.com",
     coll_gmv_label:      "GMV mensuel",
     coll_gmv_note:       "de votre analyse",
     coll_submit:         "Rejoindre comme membre fondateur",
@@ -273,7 +273,7 @@ export default {
     call_name_label:     "Nom",
     call_name_ph:        "Votre nom",
     call_email_label:    "Email",
-    call_email_ph:       "vous@marque.com",
+    call_email_ph:       "vous@votrecommerce.com",
     call_msg_label:      "Message (facultatif)",
     call_msg_ph:         "Décrivez brièvement votre situation…",
     call_submit:         "Demander un appel",
@@ -350,8 +350,8 @@ export default {
 
     /* 0.4 — Testimonials page (chrome only) */
     tst_hero_badge:   "Témoignages · D'opérateurs réels",
-    tst_hero_h1:      "Ce que les marques disent de CAMBRA.",
-    tst_hero_sub:     "Des résultats concrets de marques de commerce indépendantes partout en Europe.",
+    tst_hero_h1:      "Ce que les commerces disent de CAMBRA.",
+    tst_hero_sub:     "Des résultats concrets de commerces indépendants partout en Europe.",
     tst_role_at:      "{role} chez {company}",
     tst_illustrative_note: "Exemples illustratifs — pas encore de vrais clients.",
 
@@ -383,7 +383,7 @@ export default {
     prc_faq_eyebrow:     "Questions fréquentes",
     prc_faq_h2:          "De la clarté, pas des petites lignes.",
     prc_faq_q1: "L'intelligence d'infrastructure est-elle vraiment gratuite ?",
-    prc_faq_a1: "Oui — sans carte, sans engagement. Les premières marques fondatrices ont un accès complet à l'audit, aux référentiels, au scoring et au tableau de bord, sans aucun frais.",
+    prc_faq_a1: "Oui — sans carte, sans engagement. Les premiers commerces fondateurs ont un accès complet à l'audit, à la comparaison sectorielle, au score et au tableau de bord, sans aucun frais.",
     prc_faq_q2: "Comment fonctionne le modèle de récupération ?",
     prc_faq_a2: "Lorsque CAMBRA vous aide activement à récupérer de la marge, nous prenons 25 % des économies vérifiées pendant 24 mois. Vous gardez la majeure partie. Sans frais initiaux, sans abonnement, sans minimum. Si nous ne récupérons rien, vous ne payez rien — le risque est entièrement pour nous. Après 24 mois, 100 % de la marge récupérée vous revient.",
     prc_faq_q3: "Qu'entend-on par « économies vérifiées » ?",
@@ -511,7 +511,7 @@ export default {
     pdf_top10:               "Top 10%",
     pdf_percentile:          "Votre position",
     pdf_percentile_val:      "Parmi les ~{pct}% les plus chers de votre taille",
-    pdf_percentile_val_cheaper: "Moins cher que ~{pct}% des marques de votre taille",
+    pdf_percentile_val_cheaper: "Moins cher que ~{pct}% des commerces similaires",
     pdf_toptier:             "Vous êtes au plancher atteignable — coûts de paiement au top.",
     pdf_engine_version:      "Version du moteur",
     pdf_footer_note:         "Estimation basée sur vos données — connectez votre prestataire pour vérifier. CAMBRA · Audit des paiements.",
@@ -522,7 +522,7 @@ export default {
     ac_verify_why:           "Transformez votre estimation de ~{amount}/an en chiffre vérifié — connectez votre prestataire, en lecture seule.",
     ac_verify_cta:           "Connecter votre prestataire",
     ac_recover_title:        "Récupérez {amount}/an",
-    ac_recover_why_coll:     "Rejoignez le collectif — plusieurs marques qui négocient d'une seule voix — pour commencer à la récupérer.",
+    ac_recover_why_coll:     "Rejoignez le collectif — plusieurs commerces qui négocient d'une seule voix — pour commencer à la récupérer.",
     ac_recover_cta_coll:     "Rejoindre le collectif",
     ac_call_title:           "Récupérez {amount}/an",
     ac_call_why:             "Votre opportunité mérite un appel — planifions la récupération ensemble.",
@@ -554,24 +554,24 @@ export default {
     stack_c2_t: "Terminaux en boutique",
     stack_c2_d: "La fuite silencieuse de votre canal physique.",
     stack_c3_t: "Contrats",
-    stack_c3_d: "Ce que vous avez signé vs. ce que paient les marques de votre taille.",
+    stack_c3_d: "Ce que vous avez signé vs. ce que paient les commerces similaires.",
     stack_c4_t: "Benchmark (couche de base)",
-    stack_c4_d: "Des coûts réels de marques réelles. Pas la grille tarifaire.",
+    stack_c4_d: "Des coûts réels de commerces réels. Pas la grille tarifaire.",
 
     /* Landing — RealImpactSection */
     ri_eyebrow:   "IMPACT RÉEL",
     ri_h2_pre:    "Cet écart, c'est",
     ri_h2_kw:     "+7 % de bénéfice net.",
-    ri_sub_pre:   "Une marque réelle, 1 M€ de ventes annuelles : un taux effectif de 2,21 % par transaction quand 1,47 % était atteignable. Un écart de ",
+    ri_sub_pre:   "Un commerce réel, 1 M€ de ventes annuelles : 2,21 % par vente quand 1,47 % était possible. Un écart de ",
     ri_sub_kw:    "0,74 point",
     ri_sub_post:  " — 7 400 € par an, ≈15 000 € sur 24 mois. Récupéré, c'est environ 7 % de bénéfice net en plus. Mêmes ventes. Même équipe.",
 
     /* Landing — Founding150Section */
     f150_eyebrow: "FOUNDING 150",
-    f150_h2_l1:   "150 marques.",
+    f150_h2_l1:   "150 commerces.",
     f150_h2_l2:   "Gratuit à vie.",
     f150_h2_kw:   "Une base de données.",
-    f150_sub:     "Nous sélectionnons 150 marques indépendantes (200 k€–2 M€ de ventes annuelles) pour construire la première base européenne du coût réel des paiements. En échange : analyse complète et suivi continu, gratuits, pour toujours.",
+    f150_sub:     "Nous sélectionnons 150 commerces indépendants (200 k€–2 M€ de ventes annuelles) pour construire la première base européenne du coût réel des paiements. En échange : analyse complète et suivi continu, gratuits, pour toujours.",
     f150_cta:     "Réserver ma place",
 
     /* I18N-GAP — Landing TrustSecuritySection */
@@ -614,11 +614,11 @@ export default {
     sec_b2_h2:    "Des agrégats, pas des identités.",
     sec_b2_body:  "Notre analyse repose sur des chiffres agrégés : volumes, frais, taux, répartition des paiements. Nous n'avons pas besoin — et ne traitons pas — des données personnelles de vos clients finaux. Pas de noms, pas d'e-mails, pas de numéros de carte. Les données de carte ne transitent jamais par CAMBRA : elles restent dans l'infrastructure certifiée de votre prestataire de paiement. Les relevés importés servent uniquement à calculer votre taux effectif, et les chiffres que nous comparons sont anonymisés et agrégés.",
     sec_b3_h2:    "Vos chiffres ne fuient jamais chez les autres.",
-    sec_b3_body:  "Les données de chaque marque vivent dans une isolation stricte, appliquée au niveau de la base de données. Les benchmarks sont construits à partir d'agrégats anonymisés — aucune marque ne peut jamais voir les taux, les volumes ou l'identité d'une autre. Quand vos données contribuent à un benchmark, c'est en tant que nombre dans une cohorte, jamais en tant que votre nom.",
+    sec_b3_body:  "Les données de chaque commerce vivent dans une isolation stricte, appliquée au niveau de la base de données. Les comparaisons sont construites à partir de totaux anonymes — aucun commerce ne peut jamais voir les tarifs, les volumes ou l'identité d'un autre. Quand vos données alimentent une comparaison, c'est en tant que nombre dans un groupe, jamais en tant que votre nom.",
     sec_b4_h2:    "Chiffré en transit, chiffré au repos.",
     sec_b4_body:  "Toutes les données sont chiffrées en transit (TLS) et au repos. L'accès aux données de production est restreint et journalisé. Nous conservons ce qu'il faut pour exécuter votre analyse et votre suivi — rien de plus.",
     sec_b5_h2:    "Entreprise européenne. Règles européennes.",
-    sec_b5_body:  "CAMBRA Global SASU est une société de droit français et opère sous le RGPD. Vous pouvez demander l'accès à vos données ou leur suppression à tout moment. Un accord de traitement des données (DPA) est disponible pour les marques qui en ont besoin — écrivez-nous à {email}.",
+    sec_b5_body:  "CAMBRA Global SASU est une société de droit français et opère sous le RGPD. Vous pouvez demander l'accès à vos données ou leur suppression à tout moment. Un accord de traitement des données (DPA) est disponible pour les commerces qui en ont besoin — écrivez-nous à {email}.",
     sec_b6_h2:    "Partir ne prend qu'un clic.",
     sec_b6_body:  "Vous pouvez déconnecter votre prestataire de paiement à tout moment depuis votre tableau de bord, et la connexion est révoquée immédiatement au niveau du prestataire. Votre accès, votre décision — toujours.",
     sec_close_h2:   "Des questions ? Posez-les avant de connecter.",
@@ -637,7 +637,7 @@ export default {
     plus_anchor_note: "Le taux affiché correspond à SumUp Paiements Plus (abonnement 19 €/mois, sans engagement), abonnement inclus dans le taux effectif. Le 0,75 % s'applique aux transactions standard éligibles ; les cartes premium et commerciales peuvent coûter davantage.",
 
     /* SWEEP-1 T2 — brand name is optional in the anonymous analyzer */
-    brand_name_optional: "Nom de la marque (facultatif)",
+    brand_name_optional: "Nom du commerce (facultatif)",
     brand_fallback:      "Votre marque",
 
     /* UX-1 — mandatory email gate + locked teaser fields */
@@ -645,9 +645,9 @@ export default {
     analyzer_email_hint:        "Obligatoire — nous y envoyons votre rapport",
     analyzer_email_privacy_note: "Utilisé uniquement pour vous envoyer votre rapport — aucun marketing sans votre consentement.",
     analyzer_email_privacy_link: "Politique de confidentialité",
-    analyzer_email_placeholder: "vous@votremarque.com",
+    analyzer_email_placeholder: "vous@votrecommerce.com",
     analyzer_email_required:    "Indiquez votre email pour voir vos résultats.",
-    analyzer_email_invalid:     "Saisissez une adresse email valide (ex. vous@votremarque.com).",
+    analyzer_email_invalid:     "Saisissez une adresse email valide (ex. vous@votrecommerce.com).",
     locked_achievable_rate:     "Créez votre compte gratuit pour débloquer votre taux atteignable exact.",
     locked_combined_breakdown:  "Créez votre compte gratuit pour voir le détail en ligne vs boutique.",
     locked_pdf_download:        "Créez votre compte gratuit pour télécharger le rapport PDF.",
@@ -681,7 +681,7 @@ export default {
     results_cta_verified_sub:   "Retournez à votre tableau de bord pour revoir vos intégrations et lancer la récupération.",
     results_cta_anon_sub:       "Créez votre compte gratuit pour voir le rapport complet — taux atteignable exact, détail des frais et votre plan de récupération.",
     results_cta_call_sub:       "Votre opportunité mérite un appel — planifions la récupération ensemble.",
-    results_cta_coll_sub:       "Rejoignez le collectif — de nombreuses marques négociant comme une seule — pour lancer la récupération.",
+    results_cta_coll_sub:       "Rejoignez le collectif — de nombreux commerces négociant comme un seul — pour lancer la récupération.",
     results_cta_dashboard:      "Aller au tableau de bord",
     results_cta_create:         "Créer un compte gratuit",
     results_cta_stop:           "Arrêtez de surpayer",

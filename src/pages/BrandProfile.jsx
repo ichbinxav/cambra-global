@@ -12,7 +12,7 @@ export default function BrandProfile() {
           <Link to="/Onboarding" className="text-sm text-white/55 hover:text-white inline-flex items-center gap-1">
             <ArrowLeft size={14} /> Back
           </Link>
-          <h1 className="ml-auto text-base font-bold text-white">Brand Profile</h1>
+          <h1 className="ml-auto text-base font-bold text-white">Business Profile</h1>
         </div>
       </div>
 
@@ -20,7 +20,7 @@ export default function BrandProfile() {
       <div className="max-w-3xl mx-auto px-5 py-6 space-y-6">
         <div className="cambra-card p-5">
           <div className="relative">
-            <h2 className="text-xl font-black tracking-[-0.02em] mb-1 text-white">Tell us about your brand</h2>
+            <h2 className="text-xl font-black tracking-[-0.02em] mb-1 text-white">Tell us about your business</h2>
             <p className="text-sm text-white/55">Name, country, category, and basics to personalize your analysis.</p>
           </div>
         </div>

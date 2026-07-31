@@ -26,12 +26,12 @@ export default {
     hero_badge:           "Solo pagas si te ahorramos dinero",
     hero_h1_line1:        "Deja de pagar de más.",
     hero_h1_line2:        "Recupera tu margen.",
-    hero_sub:             "La mayoría de las marcas independientes pagan hasta un 40 % de más en los pagos con tarjeta — un sobrecoste oculto en tarifas combinadas. CAMBRA mide tu tasa efectiva frente al suelo de intercambio y recupera lo que es negociable. Te quedas con el 75 %. Solo cobramos cuando tú ahorras.",
+    hero_sub:             "La mayoría de los comercios independientes pagan hasta un 40 % de más en los pagos con tarjeta. Comparamos lo que pagas con lo mínimo que permiten tu banco y las tarjetas, y recuperamos la diferencia. Te quedas con el 75 %. Solo cobramos cuando ahorras.",
     hero_cta_primary:     "Recupera tu margen — 3 min",
-    hero_cta_secondary:   "Descubre lo que ahorran marcas reales",
+    hero_cta_secondary:   "Mira lo que ahorran comercios reales",
     hero_trust_1:         "Sin cuota fija · sin permanencia",
     hero_trust_2:         "Credenciales cifradas, nunca en texto plano",
-    hero_trust_3:         "Solo para marcas de la UE",
+    hero_trust_3:         "Solo para comercios de la UE",
 
     /* landing — how it works (steps) */
     how_h2:               "Cuatro pasos, de la estimación al margen recuperado.",
@@ -44,7 +44,7 @@ export default {
     how_step3_title:      "Conecta tu proveedor para confirmarlo",
     how_step3_desc:       "Solo lectura. Tu estimación se convierte en una cifra confirmada, a partir de tus transacciones reales.",
     how_step4_title:      "Únete para recuperarlo",
-    how_step4_desc:       "Reclama tus ahorros y únete a las marcas que negocian a una sola voz. Juntas conseguimos tarifas que ninguna lograría por separado.",
+    how_step4_desc:       "Reclama tus ahorros y únete a los comercios que negocian a una sola voz. Juntos conseguimos tarifas que nadie lograría por separado.",
 
 
 
@@ -74,7 +74,7 @@ export default {
     connect_more:                 "Conectar más herramientas para mejorar la precisión",
 
     state_a_title:        "Mapea tu infraestructura en 3 minutos",
-    state_a_sub:          "Introduce tu web. CAMBRA detecta automáticamente tus proveedores de pago, transportistas y herramientas SaaS — y compara tus costes con datos anonimizados de marcas europeas en tu nivel de facturación.",
+    state_a_sub:          "Introduce tu web. CAMBRA detecta tus proveedores de pago, transportistas y programas. Y compara tus costes con datos anónimos de comercios europeos similares.",
     state_a_cta:          "Iniciar análisis gratuito →",
     state_b_badge:        "Estimado",
     state_c_badge:        "Verificado ✓",
@@ -199,7 +199,7 @@ export default {
     roadmap_up_to:        "hasta",
     roadmap_per_year:     "/ año",
     roadmap_range:        "rango",
-    roadmap_ambition:     "Marcas de tu tramo llegan a ~{x}% — hacia donde empuja el colectivo",
+    roadmap_ambition:     "Comercios similares llegan a ~{x}% — hacia donde empuja el colectivo",
     roadmap_routes:       "Rutas para conseguirlo",
     route_margin_title:   "Renegociamos tu margen",
     route_rate_title:     "Te llevamos a una tarifa mejor",
@@ -224,7 +224,7 @@ export default {
     roadmap_locked_sub:    "Crea tu cuenta para desbloquear tu plan de recuperación completo.",
 
     /* Report v2 — Pieza C: peer benchmark distribution */
-    bench_title:          "Dónde estás frente a marcas como la tuya",
+    bench_title:          "Dónde estás frente a comercios similares",
     bench_regional:       "Benchmark regional · {country}",
     bench_regional_nocountry: "Benchmark regional",
     bench_top10:          "Top 10%",
@@ -232,19 +232,19 @@ export default {
     bench_you:            "TÚ",
     bench_axis_cheaper:   "más barato",
     bench_axis_pricier:   "más caro",
-    bench_callout:        "Estás en el ~{pct}% más caro de las marcas {country} de tu tamaño.",
-    bench_callout_nocountry: "Estás en el ~{pct}% más caro de las marcas de tu tamaño.",
-    bench_callout_cheaper:   "Eres más barato que ~{pct}% de las marcas {country} de tu tamaño.",
-    bench_callout_cheaper_nocountry: "Eres más barato que ~{pct}% de las marcas de tu tamaño.",
+    bench_callout:        "Estás en el ~{pct}% más caro de los comercios similares en {country}.",
+    bench_callout_nocountry: "Estás en el ~{pct}% más caro de los comercios similares.",
+    bench_callout_cheaper:   "Eres más barato que el ~{pct}% de los comercios similares en {country}.",
+    bench_callout_cheaper_nocountry: "Eres más barato que el ~{pct}% de los comercios similares.",
     /* SWEEP-1 T6 — honesty note under the modeled peer curve */
     bench_modeled_note:   "Modelado a partir de tarifas públicas — se refinará a medida que los datos verificados alcancen masa crítica.",
 
     /* Report v2 — Colectivo (clickwrap-lite) + Reserva una llamada */
     coll_eyebrow:        "El colectivo",
     coll_title:          "Únete al colectivo",
-    coll_sub:            "Muchas marcas negociando como una sola. Cuanto más GMV se suma, más fuerza tiene el colectivo para recuperar tu margen.",
+    coll_sub:            "Muchos comercios negociando como uno solo. Cuantas más ventas se suman, más fuerza tiene el colectivo para conseguirte mejor tarifa.",
     coll_email_label:    "Email",
-    coll_email_ph:       "tu@marca.com",
+    coll_email_ph:       "tu@tucomercio.com",
     coll_gmv_label:      "GMV mensual",
     coll_gmv_note:       "de tu análisis",
     coll_submit:         "Únete al colectivo · founding member",
@@ -273,7 +273,7 @@ export default {
     call_name_label:     "Nombre",
     call_name_ph:        "Tu nombre",
     call_email_label:    "Email",
-    call_email_ph:       "tu@marca.com",
+    call_email_ph:       "tu@tucomercio.com",
     call_msg_label:      "Mensaje (opcional)",
     call_msg_ph:         "Cuéntanos brevemente tu situación…",
     call_submit:         "Solicitar llamada",
@@ -350,8 +350,8 @@ export default {
 
     /* 0.4 — Testimonials page (chrome only) */
     tst_hero_badge:   "Testimonios · De operadores reales",
-    tst_hero_h1:      "Lo que las marcas dicen de CAMBRA.",
-    tst_hero_sub:     "Resultados reales de marcas de comercio independiente por toda Europa.",
+    tst_hero_h1:      "Lo que dicen los comercios de CAMBRA.",
+    tst_hero_sub:     "Resultados reales de comercios independientes de toda Europa.",
     tst_role_at:      "{role} en {company}",
     tst_illustrative_note: "Testimonios de ejemplo — aún no son clientes reales.",
 
@@ -383,7 +383,7 @@ export default {
     prc_faq_eyebrow:     "Preguntas frecuentes",
     prc_faq_h2:          "Claridad, no letra pequeña.",
     prc_faq_q1: "¿La inteligencia de infraestructura es de verdad gratis?",
-    prc_faq_a1: "Sí — sin tarjeta, sin compromiso. Las primeras marcas fundadoras tienen acceso completo a la auditoría, los benchmarks, el scoring y el panel, sin coste alguno.",
+    prc_faq_a1: "Sí — sin tarjeta, sin compromiso. Los primeros comercios fundadores tienen acceso completo a la auditoría, la comparativa del sector, la puntuación y el panel, sin coste alguno.",
     prc_faq_q2: "¿Cómo funciona el modelo de recuperación?",
     prc_faq_a2: "Cuando CAMBRA te ayuda activamente a recuperar margen, participamos en el 25 % del ahorro verificado durante 24 meses. Tú te quedas con la mayor parte. Sin costes iniciales, sin suscripción, sin mínimo. Si no recuperamos nada, no pagas nada — el riesgo es todo nuestro. Después de 24 meses, el 100 % del margen recuperado se queda contigo.",
     prc_faq_q3: "¿Qué cuenta como «ahorro verificado»?",
@@ -511,7 +511,7 @@ export default {
     pdf_top10:               "Top 10%",
     pdf_percentile:          "Tu posición",
     pdf_percentile_val:      "Entre el ~{pct}% más caro de tu tamaño",
-    pdf_percentile_val_cheaper: "Más barato que ~{pct}% de las marcas de tu tamaño",
+    pdf_percentile_val_cheaper: "Más barato que el ~{pct}% de comercios similares",
     pdf_toptier:             "Estás en el suelo alcanzable — costes de pago top-tier.",
     pdf_engine_version:      "Versión del motor",
     pdf_footer_note:         "Estimación basada en tus datos — conecta tu proveedor para verificar. CAMBRA · Auditoría de pagos.",
@@ -522,7 +522,7 @@ export default {
     ac_verify_why:           "Convierte tu estimación de ~{amount}/año en un número verificado — conecta tu proveedor, solo lectura.",
     ac_verify_cta:           "Conecta tu proveedor",
     ac_recover_title:        "Recupera {amount}/año",
-    ac_recover_why_coll:     "Únete al colectivo — muchas marcas negociando como una sola — para empezar a recuperarlo.",
+    ac_recover_why_coll:     "Únete al colectivo — muchos comercios negociando como uno solo — para empezar a recuperarlo.",
     ac_recover_cta_coll:     "Únete al colectivo",
     ac_call_title:           "Recupera {amount}/año",
     ac_call_why:             "Tu oportunidad es lo bastante grande para una llamada — planifiquemos juntos la recuperación.",
@@ -554,24 +554,24 @@ export default {
     stack_c2_t: "TPV en tienda",
     stack_c2_d: "La fuga silenciosa de tu canal físico.",
     stack_c3_t: "Contratos",
-    stack_c3_d: "Lo que firmaste vs. lo que pagan las marcas de tu tamaño.",
+    stack_c3_d: "Lo que firmaste vs. lo que pagan comercios similares.",
     stack_c4_t: "Benchmark (capa base)",
-    stack_c4_d: "Costes reales de marcas reales. No la tarifa publicada.",
+    stack_c4_d: "Costes reales de comercios reales. No la tarifa publicada.",
 
     /* Landing — RealImpactSection */
     ri_eyebrow:   "IMPACTO REAL",
     ri_h2_pre:    "Ese gap es",
     ri_h2_kw:     "+7% de beneficio neto.",
-    ri_sub_pre:   "Una marca real, 1 M€ de ventas anuales: pagaba un 2,21% efectivo por transacción cuando el 1,47% era alcanzable. Un gap de ",
+    ri_sub_pre:   "Un comercio real, 1 M€ de ventas anuales: pagaba un 2,21% por venta cuando el 1,47% era posible. Una diferencia de ",
     ri_sub_kw:    "0,74 puntos",
     ri_sub_post:  " — 7.400 € al año, ≈15.000 € en 24 meses. Recuperado, es cerca de un 7% más de beneficio neto. Mismas ventas. Mismo equipo.",
 
     /* Landing — Founding150Section */
     f150_eyebrow: "FOUNDING 150",
-    f150_h2_l1:   "150 marcas.",
+    f150_h2_l1:   "150 comercios.",
     f150_h2_l2:   "Gratis para siempre.",
     f150_h2_kw:   "Una base de datos.",
-    f150_sub:     "Seleccionamos 150 marcas independientes (200k–2M € de ventas anuales) para construir la primera base europea del coste real de los pagos. A cambio: análisis completo y monitoring continuo, gratis, para siempre.",
+    f150_sub:     "Seleccionamos 150 comercios independientes (200k–2M € de ventas anuales) para construir la primera base europea del coste real de los pagos. A cambio: análisis completo y seguimiento continuo, gratis, para siempre.",
     f150_cta:     "Reservar mi plaza",
 
     /* I18N-GAP — Landing TrustSecuritySection */
@@ -614,11 +614,11 @@ export default {
     sec_b2_h2:    "Agregados, no identidades.",
     sec_b2_body:  "Nuestro análisis se basa en cifras agregadas: volúmenes, comisiones, tasas, mix de pagos. No necesitamos —ni tratamos— los datos personales de tus clientes finales. Ni nombres, ni emails, ni números de tarjeta. Los datos de tarjeta nunca pasan por CAMBRA: permanecen en la infraestructura certificada de tu proveedor de pagos. Los extractos subidos se usan únicamente para calcular tu tasa efectiva, y las cifras que comparamos están anonimizadas y agregadas.",
     sec_b3_h2:    "Tus números nunca se filtran a nadie más.",
-    sec_b3_body:  "Los datos de cada marca viven en aislamiento estricto, aplicado a nivel de base de datos. Los benchmarks se construyen con agregados anonimizados: ninguna marca puede ver jamás las tasas, los volúmenes o la identidad de otra. Cuando tus datos contribuyen a un benchmark, lo hacen como un número dentro de una cohorte, nunca como tu nombre.",
+    sec_b3_body:  "Los datos de cada comercio viven en aislamiento estricto, aplicado a nivel de base de datos. Las comparativas se construyen con totales anónimos: ningún comercio puede ver jamás las tarifas, los volúmenes o la identidad de otro. Cuando tus datos alimentan una comparativa, lo hacen como un número dentro de un grupo, nunca como tu nombre.",
     sec_b4_h2:    "Cifrado en tránsito, cifrado en reposo.",
     sec_b4_body:  "Todos los datos están cifrados en tránsito (TLS) y en reposo. El acceso a los datos de producción está restringido y registrado. Guardamos lo necesario para ejecutar tu análisis y tu monitorización — nada más.",
     sec_b5_h2:    "Empresa europea. Reglas europeas.",
-    sec_b5_body:  "CAMBRA Global SASU es una sociedad francesa y opera bajo el RGPD. Puedes solicitar acceso a tus datos o su eliminación en cualquier momento. Hay un acuerdo de tratamiento de datos (DPA) disponible para las marcas que lo necesiten — escríbenos a {email}.",
+    sec_b5_body:  "CAMBRA Global SASU es una sociedad francesa y opera bajo el RGPD. Puedes solicitar acceso a tus datos o su eliminación en cualquier momento. Hay un acuerdo de tratamiento de datos (DPA) disponible para los comercios que lo necesiten — escríbenos a {email}.",
     sec_b6_h2:    "Irse cuesta un clic.",
     sec_b6_body:  "Puedes desconectar tu proveedor de pagos en cualquier momento desde tu panel, y la conexión se revoca de inmediato a nivel del proveedor. Tu acceso, tu decisión — siempre.",
     sec_close_h2:   "¿Dudas? Pregunta antes de conectar.",
@@ -637,7 +637,7 @@ export default {
     plus_anchor_note: "La tasa mostrada corresponde a SumUp Pagos Plus (plan de 19 €/mes, sin permanencia), con la cuota incluida en la tasa efectiva. El 0,75 % aplica a operaciones estándar elegibles; las tarjetas premium y de empresa pueden costar más.",
 
     /* SWEEP-1 T2 — brand name is optional in the anonymous analyzer */
-    brand_name_optional: "Nombre de la marca (opcional)",
+    brand_name_optional: "Nombre del comercio (opcional)",
     brand_fallback:      "Tu marca",
 
     /* UX-1 — mandatory email gate + locked teaser fields */
@@ -645,9 +645,9 @@ export default {
     analyzer_email_hint:        "Obligatorio — te enviamos aquí tu informe",
     analyzer_email_privacy_note: "Solo lo usamos para enviarte tu informe — nada de marketing sin tu consentimiento.",
     analyzer_email_privacy_link: "Política de privacidad",
-    analyzer_email_placeholder: "tu@tumarca.com",
+    analyzer_email_placeholder: "tu@tucomercio.com",
     analyzer_email_required:    "Introduce tu email para ver tus resultados.",
-    analyzer_email_invalid:     "Introduce un email válido (p. ej. tu@tumarca.com).",
+    analyzer_email_invalid:     "Introduce un email válido (p. ej. tu@tucomercio.com).",
     locked_achievable_rate:     "Crea tu cuenta gratuita para desbloquear tu tasa alcanzable exacta.",
     locked_combined_breakdown:  "Crea tu cuenta gratuita para ver el desglose online vs tienda.",
     locked_pdf_download:        "Crea tu cuenta gratuita para descargar el informe PDF.",
@@ -681,7 +681,7 @@ export default {
     results_cta_verified_sub:   "Vuelve a tu panel para revisar tus integraciones y arrancar la recuperación.",
     results_cta_anon_sub:       "Crea tu cuenta gratuita para ver el informe completo — tasa alcanzable exacta, desglose de comisiones y tu plan de recuperación.",
     results_cta_call_sub:       "Tu oportunidad es lo bastante grande para una llamada — planifiquémosla juntos.",
-    results_cta_coll_sub:       "Únete al colectivo — muchas marcas negociando como una — para empezar la recuperación.",
+    results_cta_coll_sub:       "Únete al colectivo — muchos comercios negociando como uno — para empezar la recuperación.",
     results_cta_dashboard:      "Ir al panel",
     results_cta_create:         "Crear cuenta gratis",
     results_cta_stop:           "Deja de pagar de más",

@@ -303,7 +303,7 @@ export default function PaymentsAnalyzer() {
     // Brand name — OPTIONAL (SWEEP-1 T2). When provided, 2-80 chars.
     const trimmedBrand = brandName.trim();
     if (trimmedBrand !== "" && (trimmedBrand.length < 2 || trimmedBrand.length > 80)) {
-      errors.push("Brand name: must be between 2 and 80 characters.");
+      errors.push("Business name: must be between 2 and 80 characters.");
     }
 
     // Website — optional; light URL sanity check only (backend does the

@@ -111,7 +111,7 @@ export default function Account() {
           <Section icon={Building2} title="Brand">
             <div className="space-y-4">
               {[
-                { field: "name", label: "Brand name", placeholder: "Your brand" },
+                { field: "name", label: "Business name", placeholder: "Your business" },
                 { field: "website", label: "Website", placeholder: "https://" },
                 { field: "country", label: "Country", placeholder: "e.g. Germany" },
               ].map(({ field, label, placeholder }) => (

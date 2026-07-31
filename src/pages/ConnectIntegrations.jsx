@@ -349,7 +349,7 @@ export default function ConnectIntegrations() {
           <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 flex items-start gap-3">
             <AlertTriangle size={16} className="text-amber-600 mt-0.5" />
             <div>
-              <p className="text-sm font-bold">No brand found</p>
+              <p className="text-sm font-bold">No business found</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Complete the Analyzer first to create your brand workspace.
               </p>
