@@ -39,7 +39,7 @@ function CardSkeleton() {
 }
 
 export default function ConnectTools() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [brandId, setBrandId] = useState(null);
   const [loading, setLoading] = useState(true);
   // null = capability probe in flight (StatementUploadCard renders a skeleton).
@@ -64,6 +64,7 @@ export default function ConnectTools() {
               name: me.full_name || (me.email ? me.email.split("@")[0] : "My brand"),
               contact_email: me.email,
               contact_name: me.full_name,
+              locale: lang, // EMAIL-1 T2 — welcome + monthly emails follow the UI language
             }).catch(() => null);
             id = created?.id || null;
           }

@@ -189,7 +189,7 @@ function fieldRangeError(key, value) {
 
 export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   // M4-TPV Fase 2B — REACTIVADO 2026-07-12 tras Fase 2A-redo verificada.
   // Precondiciones cumplidas: motor 1.4.0 en las 3 copias SYNC byte-idénticas
@@ -387,6 +387,7 @@ export default function PaymentsAnalyzer() {
           mode: "combined",
           country,
           email: email.trim().toLowerCase(), // UX-1 T1 — required
+          locale: lang, // EMAIL-1 T2 — language for report delivery
           ...(brandName.trim() !== "" ? { brand_name: brandName.trim() } : {}),
           channels: [
             {
@@ -421,6 +422,7 @@ export default function PaymentsAnalyzer() {
           country,
           channel,
           email: email.trim().toLowerCase(), // UX-1 T1 — required
+          locale: lang, // EMAIL-1 T2 — language for report delivery
           ...(brandName.trim() !== "" ? { brand_name: brandName.trim() } : {}),
           ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
           ...(website.trim() !== "" ? { website: website.trim() } : {}),

@@ -23,6 +23,9 @@
 // TTL purge job (deferred to Chunk 6 as agreed).
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+// EMAIL-1 T2 — locale normalization lives OUTSIDE the SYNC block on purpose:
+// it is transport/metadata concern, never engine logic.
+import { normalizeLocale } from '../../shared/emailLocale.ts';
 
 // ─── SYNC block — verbatim copy of src/lib/paymentsGap.js ───────────────────
 // Base44 functions cannot share code via imports and do not share a service
@@ -1798,6 +1801,11 @@ Deno.serve(async (req) => {
     }
     const isCombined = modeRaw === 'combined';
 
+    // EMAIL-1 T2 — UI language at submit time, persisted alongside
+    // contact_email so any report delivery to this session goes out in the
+    // language the visitor was reading. Never an engine input; unknown → 'en'.
+    const locale = normalizeLocale(raw?.locale);
+
     // ── IP → hash → rate limit (shared across modes) ────────────────────
     const ip = extractClientIp(req);
     const ipHash = await hashIp(ip);
@@ -1945,6 +1953,7 @@ Deno.serve(async (req) => {
         // top-level contact_email field (PII, own retention policy), NOT
         // inside input_snapshot. Never returned by the teaser allowlist.
         contact_email: emailCheck.email,
+        locale, // EMAIL-1 T2 — see note above; not part of input_snapshot.
         input_snapshot: {
           mode: 'combined',
           country,
@@ -2000,6 +2009,7 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.PaymentsAnalysisSession.create({
       anon_session_id,
       contact_email: v.email, // UX-1-FIX T2 — dedicated PII field, not in input_snapshot
+      locale, // EMAIL-1 T2 — routing metadata, never an engine input
       input_snapshot: v.clean,
       engine_result: engineResult,
       engine_version: engineResult.engine_version,

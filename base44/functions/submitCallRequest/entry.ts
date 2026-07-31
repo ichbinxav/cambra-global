@@ -1,4 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { normalizeLocale } from '../../shared/emailLocale.ts';
+import { callRequestEmail } from '../../shared/emails/callRequest.ts';
 
 /**
  * submitCallRequest
@@ -102,6 +104,8 @@ Deno.serve(async (req) => {
     const sourceSession = UUID_V4.test(rawSid) ? rawSid : "";
     const annual = Number(ctx.annual_savings_eur);
     const gmv = Number(ctx.gmv_eur_monthly);
+    // EMAIL-1 T2 — UI language at submit time (unknown/absent → 'en').
+    const locale = normalizeLocale(body?.locale);
 
     const notes = [
       `Book-a-call request`,
@@ -117,6 +121,7 @@ Deno.serve(async (req) => {
       consent: true,
       source_page: "book_a_call",
       notes,
+      locale,
       ...(sourceSession ? { anon_session_id: sourceSession } : {}),
     });
 
@@ -124,20 +129,15 @@ Deno.serve(async (req) => {
 
     // ── Emails (best-effort — a failure NEVER breaks the persisted lead).
 
-    // 1) Confirmation to the user.
+    // 1) Confirmation to the user — EMAIL-1: localized template, routed by the
+    //    locale persisted on the Lead we just created.
     try {
+      const mail = callRequestEmail(locale, { name });
       await base44.asServiceRole.integrations.Core.SendEmail({
         from_name: "CAMBRA",
         to: email,
-        subject: "We got your request — CAMBRA",
-        body: [
-          `<div style="font-family:-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:40px 32px;color:#111;">`,
-          `<p style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#999;margin-bottom:24px;">CAMBRA</p>`,
-          `<h1 style="font-size:28px;font-weight:900;letter-spacing:-0.03em;line-height:1.05;margin-bottom:12px;">Thanks${name ? `, ${name}` : ""}.</h1>`,
-          `<p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:24px;">We got your request and we'll reach out to schedule a call. Talk soon.</p>`,
-          `<p style="font-size:12px;color:#aaa;line-height:1.6;border-top:1px solid #eee;padding-top:16px;margin-top:32px;">CAMBRA · Payments margin recovery.</p>`,
-          `</div>`,
-        ].join(""),
+        subject: mail.subject,
+        body: mail.html,
       });
     } catch (userEmailErr) {
       console.warn("Call user confirmation email failed:", (userEmailErr as any)?.message);
@@ -156,6 +156,7 @@ Deno.serve(async (req) => {
           gmvFmt ? `Monthly GMV: €${gmvFmt}` : null,
           message ? `Message:\n${message}` : null,
           sourceSession ? `Session: ${sourceSession}` : null,
+          `Locale: ${locale}`,
           ``,
           `Lead ID: ${lead.id}`,
         ].filter(Boolean).join("\n");

@@ -1,4 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { normalizeLocale } from '../../shared/emailLocale.ts';
+import { collectiveJoinEmail } from '../../shared/emails/collectiveJoin.ts';
 
 /**
  * joinCollective
@@ -12,10 +14,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
  *
  * Records a merchant joining the CAMBRA collective (clickwrap-lite acceptance).
  *
- * ⚠️ The Collective Terms text is a DRAFT pending legal review. This function
- * records the acceptance (accepted_at + terms_version='draft-v0') so we have an
- * audit trail, but the flow MUST NOT be treated as launch-ready until a lawyer
- * signs off the terms copy.
+ * Terms acceptance is recorded as accepted_at + terms_version so we have an
+ * audit trail and can re-consent members if the terms text ever changes.
+ * TERMS_VERSION is an opaque IDENTIFIER of the text that was accepted — its
+ * historical value ('draft-v0') is kept verbatim so existing acceptance
+ * records stay comparable; it is not a statement about the document's status
+ * (LEGAL-2 / EMAIL-1 removed that labelling from the UI and the email).
  *
  * Behavior:
  *   1. Rate limit by IP (public write + outbound email).
@@ -107,12 +111,16 @@ Deno.serve(async (req) => {
     const gmv = Number(ctx.gmv_eur_monthly);
     const annual = Number(ctx.annual_savings_eur);
     const channel = ctx.channel === "in_store" ? "in_store" : (ctx.channel === "online" ? "online" : undefined);
+    // EMAIL-1 T2 — the UI language active when the member joined. Normalized
+    // (unknown/absent → 'en') so the record always carries a usable value.
+    const locale = normalizeLocale(body?.locale);
 
     const member = await base44.asServiceRole.entities.CollectiveMember.create({
       email,
       accepted_at: new Date().toISOString(),
       terms_version: TERMS_VERSION,
       status: "founding",
+      locale,
       ...(Number.isFinite(gmv) && gmv > 0 ? { gmv_eur_monthly: gmv } : {}),
       ...(Number.isFinite(annual) && annual > 0 ? { annual_savings_eur: annual } : {}),
       ...(typeof ctx.provider_slug === "string" && ctx.provider_slug ? { provider_slug: String(ctx.provider_slug).slice(0, 60) } : {}),
@@ -128,22 +136,15 @@ Deno.serve(async (req) => {
     //    with the app's configured sender — no raw Resend fetch to maintain.
 
     // 1) Confirmation to the user — welcome as founding member, honest next
-    //    steps, NO concrete rate promised.
+    //    steps, NO concrete rate promised. EMAIL-1: template + language live in
+    //    base44/shared/emails/collectiveJoin.ts, routed by the member's locale.
     try {
+      const mail = collectiveJoinEmail(locale, { gmvEurMonthly: gmv });
       await base44.asServiceRole.integrations.Core.SendEmail({
         from_name: "CAMBRA",
         to: email,
-        subject: "You're in — CAMBRA Collective (founding member)",
-        body: [
-          `<div style="font-family:-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:40px 32px;color:#111;">`,
-          `<p style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#999;margin-bottom:24px;">CAMBRA COLLECTIVE</p>`,
-          `<h1 style="font-size:28px;font-weight:900;letter-spacing:-0.03em;line-height:1.05;margin-bottom:12px;">You're in — founding member.</h1>`,
-          `<p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:20px;">Welcome to the CAMBRA Collective. You've joined as a founding member — many businesses negotiating as one to recover the margin each of us loses on card payments.</p>`,
-          gmvFmt ? `<p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:20px;"><strong>€${gmvFmt}/mo</strong> in sales added to the collective's negotiating weight.</p>` : ``,
-          `<p style="color:#555;font-size:15px;line-height:1.6;margin-bottom:24px;">What happens next: we'll reach out as the collective grows and we're ready to negotiate on your behalf. We don't promise a specific rate up front — we only ever charge on savings that actually materialize.</p>`,
-          `<p style="font-size:12px;color:#aaa;line-height:1.6;border-top:1px solid #eee;padding-top:16px;margin-top:32px;">The Collective Terms are a draft pending legal review. CAMBRA · Payments margin recovery.</p>`,
-          `</div>`,
-        ].filter(Boolean).join(""),
+        subject: mail.subject,
+        body: mail.html,
       });
     } catch (userEmailErr) {
       console.warn("Collective user confirmation email failed:", (userEmailErr as any)?.message);
@@ -164,7 +165,8 @@ Deno.serve(async (req) => {
           sourceSession ? `Session: ${sourceSession}` : null,
           `Accepted at: ${member.accepted_at || new Date().toISOString()}`,
           ``,
-          `Terms version accepted: ${TERMS_VERSION} (DRAFT — pending legal review)`,
+          `Terms version accepted: ${TERMS_VERSION}`,
+          `Locale: ${locale}`,
           `Member ID: ${member.id}`,
         ].filter(Boolean).join("\n");
         await base44.asServiceRole.integrations.Core.SendEmail({

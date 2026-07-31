@@ -18,6 +18,16 @@
       "type": "string",
       "description": "Primary contact email"
     },
+    "locale": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr",
+        "es"
+      ],
+      "default": "en",
+      "description": "EMAIL-1 (2026-07-31) \u2014 language for every merchant-facing email tied to this business: the welcome email (onBrandCreated) and the monthly savings summary (sendMonthlySavingsSummary). Both are triggered by an automation or a scheduler, so the HTTP request carries no user context \u2014 the value stored HERE is the only reliable language signal, which is why it lives on the record and not only on a transient submit payload. Written at Brand creation from the ACTIVE UI language (the same value that governs the cambra_lang key), never inferred from Accept-Language. Absent/unrecognized \u2192 'en' via normalizeLocale (base44/shared/emailLocale.ts); brands created before this date therefore keep receiving English, exactly as they already did."
+    },
     "tax_id": {
       "type": "string",
       "description": "Company Tax ID / VAT / EIN"

@@ -16,6 +16,7 @@
 // asServiceRole justification: anonymous callers can't write the admin-only
 // Lead entity; the response leaks no data (ok + lead_id only).
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { normalizeLocale } from '../../shared/emailLocale.ts';
 
 const DEFAULT_LIMIT_PER_HOUR = 5;
 const MAX_BODY_BYTES = 16 * 1024;
@@ -95,6 +96,9 @@ Deno.serve(async (req) => {
       consent: true, // explicit form submission
       source_page: '/Contact',
       notes: `Contact form · Name: ${name}\n\n${message}`,
+      // EMAIL-1 T2 — language the visitor was reading the site in, so the
+      // human reply (and any future automated one) starts in their language.
+      locale: normalizeLocale(body?.locale),
     });
 
     // Notify admin — best-effort, never blocks the response.

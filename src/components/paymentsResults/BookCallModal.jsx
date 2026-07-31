@@ -21,7 +21,7 @@ const MONO = "'JetBrains Mono', ui-monospace, monospace";
 const CALENDLY_URL = "";
 
 export default function BookCallModal({ open, onClose, context = {}, onSwitch }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -54,6 +54,7 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch })
         email: email.trim(),
         name: name.trim(),
         message: message.trim(),
+        locale: lang, // EMAIL-1 T2 — routes the confirmation email
         context,
       });
       const b = resp?.data || resp;

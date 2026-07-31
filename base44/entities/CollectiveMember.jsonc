@@ -6,6 +6,16 @@
       "type": "string",
       "description": "Contact email of the merchant joining the collective. Prefilled from the authenticated user when signed in, otherwise typed in the clickwrap modal."
     },
+    "locale": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr",
+        "es"
+      ],
+      "default": "en",
+      "description": "EMAIL-1 (2026-07-31) \u2014 language the founding-member confirmation (and future collective correspondence) is sent in. Captured from the ACTIVE UI language when the clickwrap was submitted, never inferred from Accept-Language: the switcher choice wins (UX-1 T0 doctrine). Absent/unrecognized \u2192 'en' via normalizeLocale (base44/shared/emailLocale.ts)."
+    },
     "gmv_eur_monthly": {
       "type": "number",
       "description": "Monthly GMV (EUR) carried over from the payments analysis that produced this join. Sizes the merchant's weight in the collective. Optional \u2014 absent when the join came from a context without a fresh analysis."
@@ -37,11 +47,11 @@
     "accepted_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Server-set timestamp when the member accepted the (DRAFT, pending legal review) Collective Terms via the clickwrap. Presence = clickwrap acceptance recorded."
+      "description": "Server-set timestamp when the member accepted the Collective Terms via the clickwrap. Presence = clickwrap acceptance recorded."
     },
     "terms_version": {
       "type": "string",
-      "description": "Version tag of the Collective Terms accepted. Currently 'draft-v0' \u2014 the terms text is a DRAFT pending legal review and MUST NOT be treated as launch-ready. Recorded so we can re-consent members when the reviewed terms ship."
+      "description": "Version tag IDENTIFYING the Collective Terms text that was accepted. Currently 'draft-v0' \u2014 an opaque historical identifier kept verbatim so existing acceptance records stay comparable; since LEGAL-2/EMAIL-1 (2026-07-31) it is NOT a statement about the document's review status, which is no longer surfaced in the UI or the confirmation email. Recorded so we can re-consent members whenever the text changes."
     },
     "status": {
       "type": "string",

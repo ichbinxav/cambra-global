@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 import CountrySelect from '@/components/inputs/CountrySelect';
 import CategorySelect from '@/components/inputs/CategorySelect';
+import { useTranslation } from '@/lib/i18n.jsx';
 import { Building2, Mail, Globe, Instagram, Linkedin, Twitter, Youtube, Music2, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function CompanyBlock({ onCreated, autoRedirect = true } = {}){
@@ -18,6 +19,7 @@ export default function CompanyBlock({ onCreated, autoRedirect = true } = {}){
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { lang } = useTranslation();
 
   useEffect(()=>{ (async()=>{
     // A2 migration — resolve brand by contact_email (single source of truth).
@@ -59,7 +61,10 @@ export default function CompanyBlock({ onCreated, autoRedirect = true } = {}){
     try {
       const isNew = !brand?.id;
       const saved = isNew
-        ? await base44.entities.Brand.create(payload)
+        // EMAIL-1 T2 — stamp the UI language on CREATE only. Editing the
+        // profile later must not silently re-route the merchant's emails just
+        // because the switcher happens to sit elsewhere that session.
+        ? await base44.entities.Brand.create({ ...payload, locale: lang })
         : await base44.entities.Brand.update(brand.id, payload);
       setBrand(saved);
       toast({

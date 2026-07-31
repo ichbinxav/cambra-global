@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { normalizeLocale } from '../../shared/emailLocale.ts';
 
 /**
  * submitWaitlistSignup
@@ -136,6 +137,10 @@ Deno.serve(async (req) => {
       consent: true, // user explicitly opted in by submitting the form
       source_page: source,
       notes,
+      // EMAIL-1 T2 — captured now so any future merchant-facing email to this
+      // lead can be sent in the language they were browsing in. This endpoint
+      // sends no merchant email today (admin notification only).
+      locale: normalizeLocale(body?.locale),
       ...(anonSessionId ? { anon_session_id: anonSessionId } : {}),
     });
 

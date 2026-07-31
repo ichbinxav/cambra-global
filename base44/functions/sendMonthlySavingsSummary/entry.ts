@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { monthlySummaryEmail } from '../../shared/emails/monthlySummary.ts';
 
 // Sends the monthly savings summary email to a user (or to all opted-in users when called from scheduler).
 // Payload:
@@ -97,66 +98,33 @@ Deno.serve(async (req) => {
         );
         const cumulative = Math.round((total / 12) * monthsActive);
 
+        // EMAIL-1 — rows keyed (not labelled) here; the localized label lives
+        // in the template module. Same four sources, same filter, same maths.
         const breakdown = [
-          { label: 'Online Payments', v: Math.round(latest.payment_savings || 0) },
-          { label: 'Shipping', v: Math.round(latest.shipping_savings || 0) },
-          { label: 'SaaS & Tools', v: Math.round(latest.saas_savings || 0) },
-          { label: 'Insurance', v: Math.round(latest.details?.insurance_savings || 0) },
+          { key: 'payments', v: Math.round(latest.payment_savings || 0) },
+          { key: 'shipping', v: Math.round(latest.shipping_savings || 0) },
+          { key: 'saas', v: Math.round(latest.saas_savings || 0) },
+          { key: 'insurance', v: Math.round(latest.details?.insurance_savings || 0) },
         ].filter(x => x.v > 0);
 
-        const monthName = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-        const breakdownHtml = breakdown.map(b => `
-          <tr>
-            <td style="padding:10px 0;color:#525252;font-size:14px;">${b.label}</td>
-            <td style="padding:10px 0;text-align:right;font-weight:700;color:#0a0a0a;font-size:14px;">€${b.v.toLocaleString()}</td>
-          </tr>
-        `).join('');
-
-        const html = `
-          <div style="font-family:Inter,Arial,sans-serif;max-width:580px;margin:0 auto;color:#0a0a0a;background:#fbfaf7;padding:40px 24px;">
-            <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#999;margin:0 0 4px;">CAMBRA · ${monthName}</p>
-            <h1 style="font-size:28px;font-weight:900;letter-spacing:-0.03em;margin:0 0 8px;">Your monthly savings summary</h1>
-            <p style="font-size:14px;color:#666;margin:0 0 28px;">Hi ${u.full_name?.split(' ')[0] || 'there'}, here's how your infrastructure is performing this month.</p>
-
-            <div style="background:#fff;border:1px solid #eee;border-radius:16px;padding:28px;margin-bottom:16px;">
-              <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#999;margin:0 0 8px;">Identified annual savings</p>
-              <p style="font-size:42px;font-weight:900;letter-spacing:-0.04em;margin:0 0 4px;">€${total.toLocaleString()}</p>
-              <p style="font-size:13px;color:#666;margin:0;">≈ €${monthly.toLocaleString()} / month potential</p>
-            </div>
-
-            <div style="display:flex;gap:8px;margin-bottom:24px;">
-              <div style="flex:1;background:#fff;border:1px solid #eee;border-radius:12px;padding:16px;">
-                <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#999;margin:0 0 4px;">Infra Score</p>
-                <p style="font-size:22px;font-weight:900;margin:0;">${score}/100</p>
-              </div>
-              <div style="flex:1;background:#fff;border:1px solid #eee;border-radius:12px;padding:16px;">
-                <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#999;margin:0 0 4px;">Cumulative est.</p>
-                <p style="font-size:22px;font-weight:900;margin:0;">€${cumulative.toLocaleString()}</p>
-              </div>
-            </div>
-
-            ${breakdown.length ? `
-              <div style="background:#fff;border:1px solid #eee;border-radius:16px;padding:24px;margin-bottom:24px;">
-                <p style="font-size:12px;font-weight:700;margin:0 0 12px;">Breakdown by category</p>
-                <table style="width:100%;border-collapse:collapse;">${breakdownHtml}</table>
-              </div>
-            ` : ''}
-
-            <a href="https://app.base44.com/Dashboard" style="display:inline-block;background:#0a0a0a;color:#fff;text-decoration:none;padding:14px 28px;border-radius:999px;font-size:14px;font-weight:700;">Open Dashboard →</a>
-
-            <p style="font-size:11px;color:#999;margin-top:32px;line-height:1.6;">
-              You're receiving this because monthly summaries are enabled on your CAMBRA account.
-              You can turn them off anytime in <a href="https://app.base44.com/Account" style="color:#666;">Account settings</a>.
-            </p>
-          </div>
-        `;
+        // EMAIL-1 T4 — language from the user's stored Brand record; unknown
+        // or missing → 'en' inside the template module. The markup moved to
+        // base44/shared/emails/monthlySummary.ts (localized EN/FR/ES).
+        const mail = monthlySummaryEmail(brand.locale, {
+          firstName: u.full_name?.split(' ')[0] || '',
+          total,
+          monthly,
+          cumulative,
+          score,
+          breakdown,
+          appDomain: Deno.env.get('APP_DOMAIN') || 'cambra.global',
+        });
 
         await base44.asServiceRole.integrations.Core.SendEmail({
           from_name: 'CAMBRA',
           to: u.email,
-          subject: `Your CAMBRA savings summary — ${monthName}`,
-          body: html,
+          subject: mail.subject,
+          body: mail.html,
         });
         results.push({ email: u.email, status: 'sent' });
       } catch (err) {

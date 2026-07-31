@@ -23,6 +23,16 @@
     "first_submitted_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "locale": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr",
+        "es"
+      ],
+      "default": "en",
+      "description": "EMAIL-1 (2026-07-31) \u2014 language this contact should be emailed in. Captured client-side from the ACTIVE UI language at submit time (the same value that governs the cambra_lang key in localStorage), never inferred from Accept-Language in the backend: a visitor who picked a language manually in the switcher has made a choice that wins (same doctrine as UX-1 T0). Absent or unrecognized values resolve to 'en' via normalizeLocale (base44/shared/emailLocale.ts) \u2014 a send NEVER fails for lack of a language. Internal routing field only: never returned by any anonymous endpoint."
     }
   },
   "required": [

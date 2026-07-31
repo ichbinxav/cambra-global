@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * JoinWaitlistButton — "Join to recover" CTA.
@@ -25,6 +26,7 @@ export default function JoinWaitlistButton({
   source = "landing_waitlist",
   context = null,
 }) {
+  const { lang } = useTranslation();
   const [state, setState] = useState("idle"); // idle | form | submitting | done
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -44,6 +46,7 @@ export default function JoinWaitlistButton({
       const res = await base44.functions.invoke("submitWaitlistSignup", {
         email: email.trim(),
         source,
+        locale: lang, // EMAIL-1 T2 — persisted on the Lead for future emails
         context: context || {},
       });
       const payload = res?.data || res;

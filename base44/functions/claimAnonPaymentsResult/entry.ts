@@ -122,6 +122,10 @@ Deno.serve(async (req) => {
         website: typeof snapshot.website === 'string' ? snapshot.website : undefined,
         country: typeof snapshot.country === 'string' ? snapshot.country : undefined,
         category: typeof snapshot.sector === 'string' ? snapshot.sector : undefined,
+        // EMAIL-1 T2 — carry the anonymous session's language onto the Brand
+        // so the welcome + monthly emails keep speaking the language the
+        // visitor ran the analysis in. Absent → entity default 'en'.
+        locale: typeof session.locale === 'string' ? session.locale : undefined,
       });
       const afterCreate = await base44.entities.Brand
         .filter({ contact_email: userEmail }, '-created_date', 20)

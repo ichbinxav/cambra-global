@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
 import { base44 } from "@/api/base44Client";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 // LEGAL-2 — the footer's discreet "Data requests" link lands here with
 // ?topic=data-request and pre-fills the message so a GDPR access/erasure
@@ -23,6 +24,7 @@ function initialMessage() {
 }
 
 export default function Contact() {
+  const { lang } = useTranslation();
   const [formData, setFormData] = useState({ name: "", email: "", message: initialMessage() });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -47,6 +49,7 @@ export default function Contact() {
         name: formData.name,
         email: formData.email,
         message: formData.message,
+        locale: lang, // EMAIL-1 T2 — so our reply starts in their language
       });
       if (!res?.data?.ok) throw new Error(res?.data?.error || "send_failed");
       setSubmitted(true);

@@ -10,6 +10,16 @@
       "type": "string",
       "description": "UX-1-FIX T2 (2026-07-31) \u2014 contact email for report delivery, captured by the mandatory email gate (UX-1 T1). PII with its OWN retention/anonymization policy, deliberately separated from input_snapshot so it can be scrubbed independently of the engine inputs (DATA-1 anticipates a different treatment for unclaimed anonymous sessions). Internal/lead use only: NEVER returned by getPaymentsGapTeaser's allowlist, never used for marketing without a separate explicit opt-in. Rows created before 2026-07-31 carry the email inside input_snapshot.email instead (historical; the 90-day TTL purge retires them naturally)."
     },
+    "locale": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr",
+        "es"
+      ],
+      "default": "en",
+      "description": "EMAIL-1 (2026-07-31) \u2014 language in which any email tied to this session (report delivery, follow-up) must be sent. Captured client-side from the ACTIVE UI language at submit time (the same value that governs the cambra_lang key), never inferred from Accept-Language in the backend: a manual pick in the switcher is a deliberate choice and wins (UX-1 T0 doctrine). Absent/unrecognized \u2192 'en' via normalizeLocale (base44/shared/emailLocale.ts). Sits at the top level NEXT TO contact_email, not inside input_snapshot, for the same reason: it is delivery metadata, never an engine input, so it can never drift a calculation. NEVER returned by getPaymentsGapTeaser \u2014 that endpoint's hard allowlist copies fields by name and this one is deliberately not on it."
+    },
     "input_snapshot": {
       "type": "object",
       "description": "The post-validation, sanitized inputs that produced this session's engine_result. Fields: monthly_gmv_eur (number), avg_ticket_eur (number), region (EU|UK|US|RoW derived server-side from country), country (ISO-3166-1 alpha-2), provider_slug (from the sanctioned enum), intl_pct (0-100), card_mix_debit_pct (0-100, optional \u2014 may be omitted when the caller did not supply it), channel, plus optional lead metadata (brand_name, website, sector). Combined-mode rows additionally carry mode:'combined' + channels[]. Stored post-validation so audits show what the engine actually saw, not the raw payload. card_mix_debit_pct is persisted for future engine versions that will consume it; today's engine (v1) ignores it and its presence does not affect the computed savings. Since UX-1-FIX T2 (2026-07-31) the visitor's email is NOT part of this object \u2014 it lives in the dedicated contact_email field (rows older than that date may still carry a legacy email key here)."

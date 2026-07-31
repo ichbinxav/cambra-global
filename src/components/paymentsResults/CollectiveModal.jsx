@@ -27,7 +27,7 @@ function eur(n) {
 }
 
 export default function CollectiveModal({ open, onClose, context = {}, onSwitch }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [email, setEmail] = useState("");
   const [accepted, setAccepted] = useState(false);
@@ -65,6 +65,9 @@ export default function CollectiveModal({ open, onClose, context = {}, onSwitch 
       const resp = await base44.functions.invoke("joinCollective", {
         email: email.trim(),
         accepted: true,
+        // EMAIL-1 T2 — active UI language, so the confirmation arrives in the
+        // language this person is reading the site in.
+        locale: lang,
         context,
       });
       const b = resp?.data || resp;
