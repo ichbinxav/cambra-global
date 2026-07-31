@@ -642,6 +642,8 @@ export default {
     /* UX-1 — mandatory email gate + locked teaser fields */
     analyzer_email_label:       "Votre email",
     analyzer_email_hint:        "Obligatoire — nous y envoyons votre rapport",
+    analyzer_email_privacy_note: "Utilisé uniquement pour vous envoyer votre rapport — aucun marketing sans votre consentement.",
+    analyzer_email_privacy_link: "Politique de confidentialité",
     analyzer_email_placeholder: "vous@votremarque.com",
     analyzer_email_required:    "Indiquez votre email pour voir vos résultats.",
     analyzer_email_invalid:     "Saisissez une adresse email valide (ex. vous@votremarque.com).",

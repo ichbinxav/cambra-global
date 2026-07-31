@@ -1615,7 +1615,7 @@ function validateChannelPayload(raw: any, idx: number): { ok: true; clean: any }
   };
 }
 
-function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failure: ValidationFailure } {
+function validateInput(raw: any): { ok: true; clean: any; email: string } | { ok: false; failure: ValidationFailure } {
   if (!raw || typeof raw !== 'object') return { ok: false, failure: { field: 'body', reason: 'invalid_type' } };
 
   // monthly_gmv_eur — required
@@ -1702,6 +1702,11 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
 
   return {
     ok: true,
+    // UX-1-FIX T2 (2026-07-31) — email returned OUTSIDE clean: clean is
+    // persisted verbatim as input_snapshot (engine inputs + lead metadata),
+    // while the email is PII with its own retention policy → persisted in the
+    // dedicated top-level contact_email session field instead.
+    email: emailCheck.email,
     clean: {
       monthly_gmv_eur: gmv,
       avg_ticket_eur: ticket,
@@ -1710,7 +1715,6 @@ function validateInput(raw: any): { ok: true; clean: any } | { ok: false; failur
       country,
       region,
       channel,
-      email: emailCheck.email,
       ...(brand_name_raw ? { brand_name: brand_name_raw } : {}),
       ...(card_mix_debit_pct !== undefined ? { card_mix_debit_pct } : {}),
       ...(website !== undefined ? { website } : {}),
@@ -1937,11 +1941,14 @@ Deno.serve(async (req) => {
       const anon_session_id = crypto.randomUUID();
       await base44.asServiceRole.entities.PaymentsAnalysisSession.create({
         anon_session_id,
+        // UX-1-FIX T2 (2026-07-31) — email persisted as the dedicated
+        // top-level contact_email field (PII, own retention policy), NOT
+        // inside input_snapshot. Never returned by the teaser allowlist.
+        contact_email: emailCheck.email,
         input_snapshot: {
           mode: 'combined',
           country,
           region,
-          email: emailCheck.email, // UX-1 T1 — session metadata, never returned by the teaser
           ...(brandName ? { brand_name: brandName } : {}),
           ...(website !== undefined ? { website } : {}),
           ...(sector !== undefined ? { sector } : {}),
@@ -1992,6 +1999,7 @@ Deno.serve(async (req) => {
     const anon_session_id = crypto.randomUUID();
     await base44.asServiceRole.entities.PaymentsAnalysisSession.create({
       anon_session_id,
+      contact_email: v.email, // UX-1-FIX T2 — dedicated PII field, not in input_snapshot
       input_snapshot: v.clean,
       engine_result: engineResult,
       engine_version: engineResult.engine_version,

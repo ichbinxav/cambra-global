@@ -16,7 +16,7 @@
 // that lives inside the contract by construction — no clamping needed.
 
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
@@ -760,6 +760,15 @@ export default function PaymentsAnalyzer() {
               {email.trim() !== "" && !EMAIL_RE.test(email.trim()) && (
                 <p className="text-[11px]" style={{ color: "#FCA5A5" }} role="alert">{t("analyzer_email_invalid")}</p>
               )}
+              {/* UX-1-FIX T3 — explicit use + visible privacy link next to the
+                  now-mandatory email field. Report delivery only; any future
+                  marketing use requires a separate explicit opt-in checkbox. */}
+              <p className="text-[10.5px] leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
+                {t("analyzer_email_privacy_note")}{" "}
+                <Link to="/Privacy" className="underline hover:opacity-80" style={{ color: "rgba(255,255,255,0.75)" }}>
+                  {t("analyzer_email_privacy_link")}
+                </Link>
+              </p>
             </div>
           </FieldCard>
 
