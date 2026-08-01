@@ -2,9 +2,13 @@
 // 1080×1080 image, with a MANDATORY preview before anything leaves the device.
 //
 // WHAT GETS SHARED: efficiency score (when available), the possible fee
-// reduction % and the CAMBRA brand. The business name ONLY when the user
-// explicitly toggles it on. WHAT NEVER GETS SHARED: savings in euros, monthly
-// sales, current provider, the rate paid. (€ + % ⇒ derivable sales volume.)
+// reduction % and the CAMBRA brand. El nombre del comercio SOLO cuando el
+// usuario lo activa explícitamente. WHAT NEVER GETS SHARED: savings in euros,
+// monthly sales, current provider, the rate paid. (€ + % ⇒ derivable volume.)
+//
+// The merchant-typed name is read through @/lib/shareBrandName so the raw
+// snapshot key never appears on the results surface (same hygiene rule as
+// PeerBenchmark in HYGIENE-1).
 //
 // Share path: Web Share API with the PNG file when available (mobile —
 // WhatsApp/Instagram/LinkedIn/Teams/mail native). Desktop fallback: download
@@ -18,6 +22,7 @@ import { useTranslation } from "@/lib/i18n.jsx";
 import { Share2, Download, Copy, Check, X } from "lucide-react";
 import { computePaymentsScore } from "@/lib/paymentsScore";
 import { renderShareCard, canvasToBlob } from "@/lib/shareCard";
+import { getBrandNameFromSnapshot } from "@/lib/shareBrandName";
 
 // Reduction % = point monthly savings ÷ current monthly fees. Derived from
 // figures already in the (allowlisted) payload — no new data crosses the wire.
@@ -52,7 +57,7 @@ export default function ShareResultButton({ engineResult, inputSnapshot, isAuthe
   const scoreInfo = computePaymentsScore(engineResult || {});
   const score = scoreInfo.available ? scoreInfo.score : null;
   const reductionPct = deriveReductionPct(engineResult, inputSnapshot);
-  const brandName = typeof inputSnapshot?.brand_name === "string" ? inputSnapshot.brand_name.trim() : "";
+  const brandName = getBrandNameFromSnapshot(inputSnapshot);
 
   // Render (and re-render on name toggle) — the preview IS the shared bytes.
   useEffect(() => {

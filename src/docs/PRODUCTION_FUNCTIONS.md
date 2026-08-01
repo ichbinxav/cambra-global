@@ -1,6 +1,6 @@
 # PRODUCTION_FUNCTIONS.md — Manifiesto de funciones backend (CONSOLIDATE-1 T1)
 
-**Censo:** 2026-07-24 · **Total: 142 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
+**Censo:** 2026-07-24 · **Total: 143 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
 
 **Tripwire:** `src/lib/productionFunctions.static.test.js` falla si aparece una función no listada aquí (o si se borra una listada sin actualizar el manifiesto).
 
@@ -16,7 +16,7 @@
 |---|---|---|
 | A (merchant) | 31 | funnel anónimo (7), dashboard/connect/vault autenticado (24) |
 | A-API (partners) | 6 | apiAuth, apiOpenApiSpec, apiV1, mcpServer, oauthAuthorize, oauthToken |
-| B (admin/founder-OS) | 76 | incl. 44 agentes/orquestadores del founder-OS (via agentRegistry) |
+| B (admin/founder-OS) | 77 | incl. 44 agentes/orquestadores del founder-OS (via agentRegistry) |
 | C (scheduled) | 7 | billApiUsage, engineeringReportAgent†, processWebhookDeadLetters, purgeInactiveLeads, purgePaymentsAnalysisSessions, scheduledBenchmarkRecompute, sendMonthlySavingsSummary† |
 | D (dev/test/seed) | 11 | _tenantGuard, createSelfTestBrand, phase2CleanupLegacyFields, runApiSelfTests, runFlowSelfTests, seedComplianceRules, seedDemoData, seedIntegrationCatalog, seedPaymentsRateTable, sendTestWebhook, verifyRegistrySync |
 | E (QUARANTINE 15-ago) | 16 | ver tabla — probe de invocación activo (OperationalLog `quarantine_probe`) |
@@ -87,9 +87,15 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | sendMonthlySavingsSummary | mensual día 1 | me+admin | User, Brand, AnalyzerResult |
 | engineeringReportAgent | diario 07:00 y 15:00 | me+admin | AgentTask, Event |
 
-## B — Admin / founder-OS interno (76)
+## B — Admin / founder-OS interno (77)
 
 Todas con auth `me+admin` (o `gate`) y mayoritariamente SR. Agrupadas:
+
+**Producción autenticada (1):**
+
+| Función | Auth | SR | Entidades | Caller principal |
+|---|---|---|---|---|
+| getMyReferralLink | me (gate de usuario autenticado) | ✓ | ReferralLink | ShareResultButton / InviteCollectiveBlock |
 
 **Paneles admin (32):** adminOverrides, adminSummaries, adminUpdateApplicationStatus, answerAgentQuestion, chatChiefOrchestrator, createApiKey, createPaymentLink, discoveryTechStackAgent, driveConnectionCheck, generateInvoiceFromReport, generateInvoicePdf, generateMonthlySavingsReport (gate), getActivationAdminDetail, getAdminRecommendationQueue, getCommandCenterPulse, getWaitlistAggregate, getWaitlistLeads, gmailConnectionCheck, integritySummary, reconcileInvoice, recordPayment (gate), regenerateRecommendationsForBrand (gate), revokeApiKey, sheetsConnectionCheck, slackConnectionCheck, copilotChat (founder copilot), founderCopilotAgent, investorUpdateAgent, qaAgent, getBenchmarkForReport ⚠️(sin gate detectado — agregado sin PII; revisar en SURFACE-1), buildInfrastructureGraph (sin caller), discoverCompanyInfrastructure (sin caller)
 
