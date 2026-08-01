@@ -45,6 +45,8 @@ import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsig
 import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
 import CombinedChannelSection from "@/components/paymentsResults/CombinedChannelSection";
 import DownloadAuditButton from "@/components/paymentsResults/DownloadAuditButton";
+import ShareResultButton from "@/components/paymentsResults/ShareResultButton";
+import InviteCollectiveBlock from "@/components/paymentsResults/InviteCollectiveBlock";
 import PlusAnchorNote from "@/components/paymentsResults/PlusAnchorNote";
 import ActionCenter from "@/components/dashboard/ActionCenter";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
@@ -696,12 +698,20 @@ export default function PaymentsResults() {
         >
           <ArrowLeft size={12} /> {t("results_rerun")}
         </button>
-        <DownloadAuditButton
-          engineResult={engineResult}
-          inputSnapshot={inputSnapshot}
-          rateTable={rateTable}
-          brandName={inputSnapshot?.provider_slug || ""}
-        />
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* GROWTH-1 T1 — shareable card (score + reduction %, no sensitive data) */}
+          <ShareResultButton
+            engineResult={engineResult}
+            inputSnapshot={inputSnapshot}
+            isAuthenticated={isAuthenticated}
+          />
+          <DownloadAuditButton
+            engineResult={engineResult}
+            inputSnapshot={inputSnapshot}
+            rateTable={rateTable}
+            brandName={inputSnapshot?.provider_slug || ""}
+          />
+        </div>
       </div>
 
       {useStackedTeaserLayout ? (
@@ -837,6 +847,12 @@ export default function PaymentsResults() {
           </div>
         </div>
       )}
+
+      {/* GROWTH-1 T2 — collective-framing invite block, under the result after
+          the primary CTA. The frame is the incentive (no rewards this chunk). */}
+      <div className="max-w-3xl mx-auto mt-8">
+        <InviteCollectiveBlock isAuthenticated={isAuthenticated} onUnlock={handleUnlock} />
+      </div>
 
       {/* Footer line — snapshot of what produced the number, for transparency.
           Full-width under the grid so it reads as a single closing note.

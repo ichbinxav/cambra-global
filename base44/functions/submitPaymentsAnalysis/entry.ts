@@ -1806,6 +1806,32 @@ Deno.serve(async (req) => {
     // language the visitor was reading. Never an engine input; unknown → 'en'.
     const locale = normalizeLocale(raw?.locale);
 
+    // GROWTH-1 (2026-08-01) — optional growth metadata. NEVER engine inputs,
+    // never in the anonymous response, never on the teaser allowlist.
+    //   referred_by_code — opaque code from ?ref=. Persisted ONLY when it
+    //     matches an existing ReferralLink row (unknown/malformed codes drop
+    //     silently — a mistyped invite link must never break a submit).
+    //     times_used incremented best-effort on match.
+    //   time_to_result_ms — client-measured ms from Analyzer mount to submit.
+    //     Bounded 0..30min; anything else drops silently. No PII.
+    let referred_by_code: string | null = null;
+    const refRaw = typeof raw?.referred_by_code === 'string' ? raw.referred_by_code.trim() : '';
+    if (refRaw && /^[A-Za-z0-9_-]{4,24}$/.test(refRaw)) {
+      const links = await base44.asServiceRole.entities.ReferralLink
+        .filter({ code: refRaw }, '-created_date', 1)
+        .catch(() => []);
+      if (links?.[0]) {
+        referred_by_code = refRaw;
+        await base44.asServiceRole.entities.ReferralLink
+          .update(links[0].id, { times_used: (Number(links[0].times_used) || 0) + 1 })
+          .catch(() => { /* attribution counter is best-effort */ });
+      }
+    }
+    const ttrRaw = Number(raw?.time_to_result_ms);
+    const time_to_result_ms = (isFinite(ttrRaw) && ttrRaw >= 0 && ttrRaw <= 1_800_000)
+      ? Math.round(ttrRaw)
+      : null;
+
     // ── IP → hash → rate limit (shared across modes) ────────────────────
     const ip = extractClientIp(req);
     const ipHash = await hashIp(ip);
@@ -1971,6 +1997,10 @@ Deno.serve(async (req) => {
         engine_result: engineResult,
         engine_version: engineResult.engine_version,
         ip_hash: ipHash,
+        // GROWTH-1 — attribution + time-to-value metadata (never engine
+        // inputs; not in the anonymous response nor the teaser allowlist).
+        ...(referred_by_code ? { referred_by_code } : {}),
+        ...(time_to_result_ms !== null ? { time_to_result_ms } : {}),
       });
 
       return Response.json({ ok: true, anon_session_id, engine_result: sanitizeEngineResultForAnon(engineResult) });
@@ -2014,6 +2044,10 @@ Deno.serve(async (req) => {
       engine_result: engineResult,
       engine_version: engineResult.engine_version,
       ip_hash: ipHash,
+      // GROWTH-1 — attribution + time-to-value metadata (never engine inputs;
+      // not in the anonymous response nor the teaser allowlist).
+      ...(referred_by_code ? { referred_by_code } : {}),
+      ...(time_to_result_ms !== null ? { time_to_result_ms } : {}),
     });
 
     return Response.json({

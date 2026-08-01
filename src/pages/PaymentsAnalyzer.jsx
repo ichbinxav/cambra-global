@@ -15,7 +15,7 @@
 // payload shape, same enum in the same order. Every slider produces a value
 // that lives inside the contract by construction — no clamping needed.
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -239,6 +239,25 @@ export default function PaymentsAnalyzer() {
   const [submitting, setSubmitting]   = useState(false);
   const [errorBanner, setErrorBanner] = useState("");
 
+  // GROWTH-1 T3 — time-to-value: ms from Analyzer mount to the submit request,
+  // sent as time_to_result_ms (bounded + validated server-side; no PII).
+  // GROWTH-1 T2 — referral attribution: ?ref=CODE captured on mount and kept
+  // in sessionStorage so it survives in-page navigation before the submit.
+  const startedAtRef = useRef(Date.now());
+  const refCodeRef = useRef("");
+  useEffect(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const ref = (p.get("ref") || "").trim();
+      if (ref && /^[A-Za-z0-9_-]{4,24}$/.test(ref)) {
+        sessionStorage.setItem("cambra_ref_code", ref);
+        refCodeRef.current = ref;
+      } else {
+        refCodeRef.current = sessionStorage.getItem("cambra_ref_code") || "";
+      }
+    } catch { /* storage unavailable — attribution simply not captured */ }
+  }, []);
+
   // SEED-ES — country-aware provider catalogs. Recomputed when the country
   // changes; ES swaps in the Spanish lists, everything else is unchanged.
   const onlineProviderOptions  = useMemo(() => getProviderOptions("online", country), [country]);
@@ -388,6 +407,9 @@ export default function PaymentsAnalyzer() {
           country,
           email: email.trim().toLowerCase(), // UX-1 T1 — required
           locale: lang, // EMAIL-1 T2 — language for report delivery
+          // GROWTH-1 — attribution + time-to-value (never engine inputs).
+          ...(refCodeRef.current ? { referred_by_code: refCodeRef.current } : {}),
+          time_to_result_ms: Date.now() - startedAtRef.current,
           ...(brandName.trim() !== "" ? { brand_name: brandName.trim() } : {}),
           channels: [
             {
@@ -423,6 +445,9 @@ export default function PaymentsAnalyzer() {
           channel,
           email: email.trim().toLowerCase(), // UX-1 T1 — required
           locale: lang, // EMAIL-1 T2 — language for report delivery
+          // GROWTH-1 — attribution + time-to-value (never engine inputs).
+          ...(refCodeRef.current ? { referred_by_code: refCodeRef.current } : {}),
+          time_to_result_ms: Date.now() - startedAtRef.current,
           ...(brandName.trim() !== "" ? { brand_name: brandName.trim() } : {}),
           ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
           ...(website.trim() !== "" ? { website: website.trim() } : {}),
