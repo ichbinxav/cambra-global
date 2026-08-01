@@ -37,6 +37,7 @@ import Terms from '@/pages/Terms';
 import Cookies from '@/pages/Cookies';
 // FASE 1.2 — /StripeAnalyzer deprecated (superseded by /Analyzer + /ConnectTools + /Results).
 import DevExport from '@/pages/DevExport';
+import ShareCardPreview from '@/pages/ShareCardPreview';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import AdminLayout from '@/pages/admin/AdminLayout';
 const AdminOverview   = lazy(() => import('@/pages/admin/AdminOverview'));
@@ -248,6 +249,7 @@ const AuthenticatedApp = () => {
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/LoginGate" element={<LoginGate />} />
         <Route path="/logingate" element={<Navigate to="/LoginGate" replace />} />
+        <Route path="/ShareCardPreview" element={<ShareCardPreview />} />
         <Route path="/HealthCheck" element={<HealthCheck />} />
         <Route path="/healthcheck" element={<Navigate to="/HealthCheck" replace />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
