@@ -996,10 +996,16 @@ Deno.serve(async (req) => {
         region: 'EU',
         country: 'ES',
         channel: 'online',
-        percent_bps: 55,
+        // SEED-FR Tarea 4 (2026-08-02): estructura real confirmada por 4 fuentes
+        // independientes — cuota fija 19€/mes (cubre hasta 2.000€ de facturación
+        // mensual) y, por encima de 2.000€: 0,50% + 0,09€ nacional / 0,60% + 0,09€
+        // eurozona. Se modela el caso nacional (el más común para el ICP) y la
+        // cuota mensual como terminal_rental_monthly_minor=1900 — mismo patrón
+        // económico que SumUp Pagos Plus (coste fijo mensual amortizado).
+        percent_bps: 50,
         fixed_fee_minor_units: 9,
         fixed_fee_currency: 'EUR',
-        terminal_rental_monthly_minor: null,
+        terminal_rental_monthly_minor: 1900,
         achievable_percent_bps: 86,
         achievable_fixed_fee_minor_units: 9,
         achievable_terminal_rental_monthly_minor: null,
@@ -1009,9 +1015,9 @@ Deno.serve(async (req) => {
         intl_uplift_source_quote: null,
         intl_uplift_assumption_notes: null,
         verified: false,
-        source_url: 'https://www.paycomet.com/',
-        source_quote: null,
-        source_notes: 'DRAFT SEED-ES 2026-07-24. Régimen >2.000€/mes: ~0,50% nacional / 0,60% UE + 0,09€. Tarifa plana 19€/mes solo bajo 2k€ (irrelevante para el ICP). Fuente: paycomet.com 2026-07-24. Estimate — connect your PSP.',
+        source_url: 'https://sincomisiones.org/tpv-virtual/plataformas/paycomet',
+        source_quote: 'Cuota fija de 19€/mes que cubre hasta 2.000€ de facturación mensual; por encima: 0,50% + 0,09€ (tarjetas españolas) / 0,60% + 0,09€ (eurozona).',
+        source_notes: 'SEED-FR Tarea 4 2026-08-02 (corrige DRAFT SEED-ES 2026-07-24, que modelaba un 0,55% plano). Estructura real: 19€/mes fijos que cubren hasta 2.000€ de facturación mensual + 0,50%+0,09€ nacional / 0,60%+0,09€ eurozona por encima. Se siembra el tramo NACIONAL (50 bps, caso más común del ICP); el uplift eurozona (+10 bps) no se modela como intl_uplift (sin cita como delta limpio). LIMITACIÓN CONOCIDA: el campo terminal_rental_monthly_minor amortiza los 19€/mes sobre TODO el GMV, pero en realidad esa cuota YA CUBRE los primeros 2.000€ de facturación (sin % encima) — el motor no tiene campo de umbral cubierto por cuota, así que para GMV >> 2k€ el efecto es una ligera SOBREestimación del coste actual (~6 bps a 30k€/mes). Documentado en Decision_Log_SEEDFR.md; modelar el umbral sería un chunk de esquema aparte. Fuentes: sincomisiones.org/tpv-virtual/plataformas/paycomet + paycomet.com 2026-08-02. Estimate — connect your PSP.',
         achievable_breakdown_json: {
           interchange_bps: 26,
           scheme_fees_bps: 20,
@@ -1070,12 +1076,16 @@ Deno.serve(async (req) => {
         region: 'EU',
         country: 'ES',
         channel: 'online',
-        percent_bps: 65,
-        fixed_fee_minor_units: 24,
+        // SEED-FR Tarea 4 (2026-08-02): misma estructura real que PayComet —
+        // 19€/mes (cubre hasta 2.000€/mes de facturación) + 0,50% + 0,09€
+        // nacional / 0,60% + 0,09€ eurozona por encima. Sustituye la estimación
+        // plana anterior de 0,65% + 0,24€.
+        percent_bps: 50,
+        fixed_fee_minor_units: 9,
         fixed_fee_currency: 'EUR',
-        terminal_rental_monthly_minor: null,
+        terminal_rental_monthly_minor: 1900,
         achievable_percent_bps: 86,
-        achievable_fixed_fee_minor_units: 24,
+        achievable_fixed_fee_minor_units: 9,
         achievable_terminal_rental_monthly_minor: null,
         intl_uplift_bps: null,
         achievable_intl_uplift_bps: null,
@@ -1084,8 +1094,8 @@ Deno.serve(async (req) => {
         intl_uplift_assumption_notes: null,
         verified: false,
         source_url: 'https://monei.com/pricing/',
-        source_quote: null,
-        source_notes: 'DRAFT SEED-ES 2026-07-24. MONEI X: interchange++ (markup 0,1%) + platform fee escalado desde 0,15% + 0,24€ + 0,10€/día. Coste efectivo estimado mix ES (65 bps + 0,24€). Fuente: monei.com/pricing 2026-07-24. Achievable = composición estándar EU (patrón de las filas draft FR). Estimate — connect your PSP.',
+        source_quote: 'Cuota fija de 19€/mes que cubre hasta 2.000€ de facturación mensual; por encima: 0,50% + 0,09€ (tarjetas españolas) / 0,60% + 0,09€ (eurozona).',
+        source_notes: 'SEED-FR Tarea 4 2026-08-02 (corrige DRAFT SEED-ES 2026-07-24, que modelaba un 0,65% + 0,24€ plano). Estructura real confirmada por 4 fuentes independientes: 19€/mes fijos que cubren hasta 2.000€ de facturación mensual + 0,50%+0,09€ nacional / 0,60%+0,09€ eurozona por encima. Se siembra el tramo NACIONAL (50 bps); la cuota mensual se modela como terminal_rental_monthly_minor=1900 (mismo patrón que SumUp Pagos Plus y PayComet). MISMA LIMITACIÓN CONOCIDA que paycomet|ANY|EU-ES: el motor amortiza los 19€/mes sobre todo el GMV sin descontar los primeros 2.000€ ya cubiertos por la cuota — ligera sobreestimación documentada en Decision_Log_SEEDFR.md. Fuentes: monei.com/pricing + sincomisiones.org 2026-08-02. Estimate — connect your PSP.',
         achievable_breakdown_json: {
           interchange_bps: 26,
           scheme_fees_bps: 20,
@@ -1101,7 +1111,277 @@ Deno.serve(async (req) => {
       }
     ];
 
-    const allRows = [...verified, ...fallback, ...verifiedInStore, ...fallbackInStore, ...seedES];
+    // -------------------------------------------------------------------
+    // FRANCE (SEED-FR, 2026-08-02) — country-pinned FR rows.
+    //
+    // Stripe y PayPal NO se duplican con country=FR a propósito: la fila
+    // paneuropea stripe|ANY|EU (1,5% + 0,25€) está verificada verbatim
+    // también en stripe.com/fr/pricing (ver source_notes de esa fila), y
+    // PayPal armoniza su tabla EEA — la tarifa francesa es idéntica, así que
+    // el fallback pan-regional ya es correcto para Francia.
+    //
+    // verified_at HARDCODEADO (no NOW) — mismo patrón COHERENCE-1 que seedES:
+    // re-ejecutar el seed produce cero cambios en estas filas.
+    // -------------------------------------------------------------------
+    const FR_SEEDED_AT = '2026-08-02T12:00:00.000Z';
+    const seedFR = [
+      // --- Payplug FR online (verified — pricing citado del artículo oficial) ---
+      {
+        cohort_key: 'payplug|ANY|EU-FR',
+        provider_slug: 'payplug',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'FR',
+        channel: 'online',
+        percent_bps: 140,
+        fixed_fee_minor_units: 25,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: null,
+        achievable_percent_bps: 86,
+        achievable_fixed_fee_minor_units: 25,
+        achievable_terminal_rental_monthly_minor: null,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Payplug no publica un delta cross-border limpio en la fuente citada — no se modela (el motor emite "intl uplift not modeled").',
+        verified: true,
+        source_url: 'https://www.payplug.com/fr/blog/frais-transaction-carte/',
+        source_quote: '1,4% + 0,25€ pour une CB européenne',
+        source_notes: 'SEED-FR 2026-08-02. Payplug FR online 1,4% + 0,25€ (CB europea), citado del artículo oficial de Payplug. NOTA: difiere de la fila paneuropea payplug|ANY|EU (150 bps + 0,25€) — esta fila FR gana por resolución de país (M5). Achievable = composición EU estándar (patrón SEED-ES online). Banda 0.25 (fuente = artículo oficial, no página de pricing).',
+        achievable_breakdown_json: {
+          interchange_bps: 26,
+          scheme_fees_bps: 20,
+          processor_margin_bps: 40,
+          processor_margin_band_bps: 20,
+          sources: [
+            { label: 'EU interchange cap (Reg. 2015/751) + scheme fee estimates', url: 'https://eur-lex.europa.eu/eli/reg/2015/751/oj' }
+          ]
+        },
+        savings_band_pct: 0.25,
+        verified_at: FR_SEEDED_AT,
+        active: true
+      },
+      // --- Payplug FR in-store (proximité, mismo artículo) ---
+      {
+        cohort_key: 'payplug|ANY|EU-FR|in_store',
+        provider_slug: 'payplug',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'FR',
+        channel: 'in_store',
+        percent_bps: 140,
+        fixed_fee_minor_units: 5,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: 140,
+        achievable_fixed_fee_minor_units: 10,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled (mismo criterio que el resto de filas in-store).',
+        verified: true,
+        source_url: 'https://www.payplug.com/fr/blog/frais-transaction-carte/',
+        source_quote: '1,4% + 0,05€ pour les paiements de proximité (mismo artículo, nota presencial)',
+        source_notes: 'SEED-FR 2026-08-02. Payplug FR presencial 1,4% + 0,05€, mismo artículo oficial que la fila online (sección proximité). Achievable anclado a Stripe Terminal (140 + 0,10€) por consistencia con las demás filas in-store EU; Payplug ya está en el suelo (fixed 5c < 10c) — el gap clampa a 0, resultado honesto.',
+        achievable_breakdown_json: {
+          anchor_provider: 'stripe_terminal',
+          anchor_region: 'EU',
+          anchor_percent_bps: 140,
+          anchor_fixed_fee_minor_units: 10,
+          anchor_source_url: 'https://stripe.com/terminal',
+          anchor_source_quote: '1.4% + €0.10 for standard EEA cards, in-person'
+        },
+        savings_band_pct: 0.25,
+        verified_at: FR_SEEDED_AT,
+        active: true
+      },
+      // --- SumUp FR in-store (pay-per-use, verified) ---
+      {
+        cohort_key: 'sumup|ANY|EU-FR|in_store',
+        provider_slug: 'sumup',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'FR',
+        channel: 'in_store',
+        percent_bps: 175,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: 89,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 1900,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled (mismo criterio que sumup|ANY|EU|in_store).',
+        verified: true,
+        source_url: 'https://www.sumup.com/fr-fr/acceptez-les-paiements/',
+        source_quote: '1,75 % par transaction',
+        source_notes: 'SEED-FR 2026-08-02. SumUp FR presencial 1,75% pay-per-use, página oficial FR (la fila paneuropea sumup|ANY|EU|in_store citaba la página GB — esta fila pina el país con cita FR directa). Achievable = plan Paiements Plus FR (0,89% + 19€/mes modelado como achievable_terminal_rental=1900), mismo patrón que sumup|ANY|EU-ES|in_store: el propio plan superior del proveedor es la vía de recuperación según el volumen. Exclusión self intacta (slug sumup) en el pool multi-anchor.',
+        achievable_breakdown_json: { anchor_provider: 'sumup' },
+        savings_band_pct: 0.25,
+        verified_at: FR_SEEDED_AT,
+        active: true
+      },
+      // --- SumUp FR Paiements Plus (PLUS plan anchor — achievable pool only) ---
+      {
+        cohort_key: 'sumup|PLUS|EU-FR|in_store',
+        provider_slug: 'sumup',
+        tier: 'PLUS',
+        region: 'EU',
+        country: 'FR',
+        channel: 'in_store',
+        percent_bps: 89,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 1900,
+        achievable_percent_bps: 89,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 1900,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: true,
+        source_url: 'https://www.sumup.com/fr-fr/paiements-plus/',
+        source_quote: '0,89 % par transaction avec Paiements Plus (19 €/mois)',
+        source_notes: 'SEED-FR 2026-08-02. SumUp Paiements Plus FR: 0,89% + 19€/mes (modelado como terminal_rental_monthly_minor=1900 — coste fijo mensual amortizado, idéntico patrón a sumup|PLUS|EU-ES|in_store). TIER=PLUS a propósito: queda FUERA de la resolución de tarifa actual de selectRow (countryRow exige tier ANY; las keys candidatas solo construyen |ANY|) y DENTRO del pool multi-anchor de achievable — igual que en España. Exclusión self intacta (slug sumup).',
+        achievable_breakdown_json: { anchor_provider: 'sumup' },
+        savings_band_pct: 0.2,
+        verified_at: FR_SEEDED_AT,
+        active: true
+      },
+      // --- Smile & Pay FR in-store (pay-per-use, punto medio del rango) ---
+      {
+        cohort_key: 'smile_and_pay|ANY|EU-FR|in_store',
+        provider_slug: 'smile_and_pay',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'FR',
+        channel: 'in_store',
+        percent_bps: 160,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: 65,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 2900,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled.',
+        verified: false,
+        source_url: 'https://tool-advisor.fr/',
+        source_quote: null,
+        source_notes: 'SEED-FR 2026-08-02. Smile & Pay FR pay-per-use: las fuentes divergen — tool-advisor.fr y entrepreneurhero.fr citan el rango 1,55%–1,65% (la propia página smileandpay.com/tarifs, citada en la fila paneuropea, dice 1,55%). Se siembra el PUNTO MEDIO 160 bps con verified=false y banda 0.30 precisamente por esa variación entre fuentes — la fila paneuropea smile_and_pay|ANY|EU|in_store (155, verified) queda intacta. Achievable = plan con abono (0,65% + 29€/mes modelado como achievable_terminal_rental=2900), patrón SumUp Plus.',
+        achievable_breakdown_json: { anchor_provider: 'smile_and_pay' },
+        savings_band_pct: 0.3,
+        verified_at: null,
+        active: true
+      },
+      // --- Smile & Pay FR PLUS (abono 29€/mes — achievable pool only) ---
+      {
+        cohort_key: 'smile_and_pay|PLUS|EU-FR|in_store',
+        provider_slug: 'smile_and_pay',
+        tier: 'PLUS',
+        region: 'EU',
+        country: 'FR',
+        channel: 'in_store',
+        percent_bps: 65,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 2900,
+        achievable_percent_bps: 65,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 2900,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://tool-advisor.fr/',
+        source_quote: null,
+        source_notes: 'SEED-FR 2026-08-02. Smile & Pay plan con abono FR: 0,65% + 29€/mes (modelado como terminal_rental_monthly_minor=2900, mismo patrón que SumUp Plus). TIER=PLUS: fuera de la resolución de tarifa actual, disponible en el pool multi-anchor de achievable. verified=false (fuente agregadora tool-advisor.fr, no la página oficial) — no entra al pool de anchors verified hasta cita oficial.',
+        achievable_breakdown_json: { anchor_provider: 'smile_and_pay' },
+        savings_band_pct: 0.3,
+        verified_at: null,
+        active: true
+      },
+      // --- Square FR in-store (draft) ---
+      {
+        cohort_key: 'square|ANY|EU-FR|in_store',
+        provider_slug: 'square',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'FR',
+        channel: 'in_store',
+        percent_bps: 165,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 0,
+        achievable_percent_bps: null,
+        achievable_fixed_fee_minor_units: null,
+        achievable_terminal_rental_monthly_minor: null,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://prizia.fr/',
+        source_quote: null,
+        source_notes: 'SEED-FR 2026-08-02. Square FR presencial 1,65% (vs 1,25% + 0,05€ en ES — divergencia por país verificada en el research M5). Fuente agregadora prizia.fr → verified=false. Achievable null (patrón de las filas draft in-store ES: el pool multi-anchor de la región resuelve el achievable en runtime). Estimate — connect your PSP.',
+        achievable_breakdown_json: null,
+        savings_band_pct: 0.3,
+        verified_at: null,
+        active: true
+      },
+      // --- TPV bancario FR (SEED-FR Tarea 3 — suelo publicado, NO tarifa plana) ---
+      {
+        cohort_key: 'bank_tpv_fr|ANY|EU-FR|in_store',
+        provider_slug: 'bank_tpv_fr',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'FR',
+        channel: 'in_store',
+        percent_bps: 27,
+        fixed_fee_minor_units: 7,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 2500,
+        achievable_percent_bps: 140,
+        achievable_fixed_fee_minor_units: 10,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: 'Card-present intl uplift not modeled.',
+        verified: false,
+        source_url: 'https://axepta.staging.bnpparibas/fr/tarif',
+        source_quote: 'à partir de 0,27 % + 0,07 € par transaction (AXEPTA BNP Paribas)',
+        source_notes: 'SEED-FR Tarea 3 2026-08-02. NO es una tarifa plana: AXEPTA BNP Paribas publica un SUELO tipo "a partir de" (0,27% + 0,07€) — el coste real de un comercio concreto está POR ENCIMA y se negocia caso a caso. Es la única cifra pública encontrada en la banca francesa: Société Générale dice literalmente "Étude personnalisée" en su tarifario oficial — sin número público, NO se siembra nada para SG a propósito. verified=false + banda máxima 0.50 (mismo patrón que la fila genérica ANY|ANY|EU para casos análogos). Alquiler 25€/mes = mediana FR observada (misma cifra documentada en ANY|ANY|EU|in_store). NOTA DE RUTEO: el slug bank_tpv_fr aún no está en el catálogo UI ni en ALLOWED_PROVIDER_SLUGS — los bancos FR siguen colapsando a `other` → fallback genérico europeo ANY|ANY|EU|in_store (estimación, no tarifa bancaria francesa real); cablear el slug es un chunk de UI/validador aparte. Esta fila deja el dato citado listo para ese momento.',
+        achievable_breakdown_json: {
+          anchor_provider: 'stripe_terminal',
+          anchor_region: 'EU',
+          anchor_percent_bps: 140,
+          anchor_fixed_fee_minor_units: 10,
+          anchor_source_url: 'https://stripe.com/terminal',
+          anchor_source_quote: '1.4% + €0.10 for standard EEA cards, in-person'
+        },
+        savings_band_pct: 0.5,
+        verified_at: null,
+        active: true
+      }
+    ];
+
+    const allRows = [...verified, ...fallback, ...verifiedInStore, ...fallbackInStore, ...seedES, ...seedFR];
 
     // Idempotent upsert by cohort_key.
     // Fetch existing rows first, then update or create as needed.
