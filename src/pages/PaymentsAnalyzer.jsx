@@ -111,16 +111,43 @@ const PROVIDER_OPTIONS_IN_STORE_ES = [
   { slug: "zettle",         label: "Zettle by PayPal", hasSeed: true },
   { slug: "square",         label: "Square",           hasSeed: true },
   { slug: "mypos",          label: "myPOS",            hasSeed: true },
-  { slug: "caixabank",      label: "CaixaBank",        submitAs: "bank_tpv_es" },
-  { slug: "santander",      label: "Santander",        submitAs: "bank_tpv_es" },
+  // SEED-FR-2 / BANK-BREAKDOWN-ES (2026-08-02) — cada banco con fila propia
+  // en PaymentsRateTable envía su slug dedicado (el dato que la UI ya recogía
+  // dejaba de descartarse antes del motor). BBVA se queda en el genérico a
+  // propósito: no publica tarifa base (solo promo 12 meses gratis) — no se
+  // inventa fila para forzar el cableado.
+  { slug: "caixabank",      label: "CaixaBank",        submitAs: "bank_tpv_es_caixabank" },
+  { slug: "santander",      label: "Santander",        submitAs: "bank_tpv_es_santander" },
   { slug: "bbva",           label: "BBVA",             submitAs: "bank_tpv_es" },
-  { slug: "sabadell",       label: "Sabadell",         submitAs: "bank_tpv_es" },
+  { slug: "sabadell",       label: "Sabadell",         submitAs: "bank_tpv_es_sabadell" },
   { slug: "other_bank_tpv", label: "Other bank TPV",   submitAs: "bank_tpv_es" },
 ];
 
-// Country-aware catalog resolution. ES swaps in the Spanish lists; every
-// other country keeps the existing catalogs byte-identical (FR unchanged).
+// SEED-FR-2 (2026-08-02) — catálogo presencial FRANCÉS. Decisión documentada
+// en Decision_Log_SEEDFR2.md: se crea la lista FR-específica EN ESTE CHUNK
+// (mismo patrón que ES en getProviderOptions) en vez de tocar la lista
+// genérica — un comercio no-FR jamás debe poder enviar bank_tpv_fr, y las
+// filas FR sembradas (payplug in-store, square FR) solo son alcanzables así.
+const PROVIDER_OPTIONS_IN_STORE_FR = [
+  { slug: "sumup",              label: "SumUp",              hasSeed: true  },
+  { slug: "zettle",             label: "Zettle by PayPal",   hasSeed: true  },
+  { slug: "smile_and_pay",      label: "Smile & Pay",        hasSeed: true  },
+  { slug: "payplug",            label: "Payplug",            hasSeed: true  },
+  { slug: "square",             label: "Square",             hasSeed: true  },
+  { slug: "yavin",              label: "Yavin",              hasSeed: true  },
+  { slug: "stripe_terminal",    label: "Stripe Terminal",    hasSeed: true  },
+  { slug: "worldline_terminal", label: "Worldline",          hasSeed: false },
+  { slug: "mypos",              label: "myPOS",              hasSeed: false },
+  // Etiqueta honesta: la fila bank_tpv_fr es el suelo publicado de AXEPTA BNP
+  // ("a partir de"), verified=false — no una tarifa bancaria francesa real.
+  { slug: "banque_traditionnelle", label: "Banque traditionnelle", submitAs: "bank_tpv_fr" },
+  { slug: "other",              label: "Other",              hasSeed: true  },
+];
+
+// Country-aware catalog resolution. ES/FR swap in country lists; every
+// other country keeps the existing catalogs byte-identical.
 function getProviderOptions(channel, country) {
+  if (country === "FR" && channel === "in_store") return PROVIDER_OPTIONS_IN_STORE_FR;
   if (country === "ES") {
     if (channel === "in_store") return PROVIDER_OPTIONS_IN_STORE_ES;
     const other = PROVIDER_OPTIONS_ONLINE.find((o) => o.slug === "other");

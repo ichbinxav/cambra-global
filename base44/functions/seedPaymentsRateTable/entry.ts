@@ -988,6 +988,100 @@ Deno.serve(async (req) => {
         verified_at: null,
         active: true
       },
+      // ─── BANK-BREAKDOWN-ES (2026-08-02) — desglose bancario español: de un
+      // número único a filas por banco. La UI ya preguntaba el banco y
+      // descartaba el dato colapsándolo a bank_tpv_es; ahora Sabadell,
+      // CaixaBank y Santander tienen fila propia. BBVA NO se siembra a
+      // propósito: no publica tarifa base (solo promoción de 12 meses
+      // gratis) — su tile sigue en el genérico bank_tpv_es, que se MANTIENE
+      // como fallback para quien no identifica su entidad.
+      // --- Banco Sabadell (confirmado por 3 fuentes, coincidencia exacta) ---
+      {
+        cohort_key: 'bank_tpv_es_sabadell|ANY|EU-ES|in_store',
+        provider_slug: 'bank_tpv_es_sabadell',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'in_store',
+        percent_bps: 20,
+        fixed_fee_minor_units: 7,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 2500,
+        achievable_percent_bps: 75,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://www.rankia.com/',
+        source_quote: '0,20% con mínimo de 0,07€ por operación (TPV Banco Sabadell)',
+        source_notes: 'BANK-BREAKDOWN-ES 2026-08-02. Sabadell 0,20% + 0,07€ mínimo por operación — confirmado por 3 fuentes independientes con coincidencia exacta (rankia.com, finantresnoticias.com, pagosrecurrentes.com; overlap en rankiabusiness.com). El mínimo de 0,07€ se modela como fixed_fee (aproximación conservadora: a tickets del ICP el mínimo actúa como fijo). Alquiler 25€/mes = mediana del mercado ES (comisionestpv.es, mismo patrón que bank_tpv_es). Banda 0.35 (más estrecha que el genérico 0.50 por la coincidencia multi-fuente exacta); verified=false: fuentes agregadoras, no tarifario oficial del banco.',
+        achievable_breakdown_json: null,
+        savings_band_pct: 0.35,
+        verified_at: null,
+        active: true
+      },
+      // --- CaixaBank (vía Comercia Global Payments, punto medio 0,40–0,80%) ---
+      {
+        cohort_key: 'bank_tpv_es_caixabank|ANY|EU-ES|in_store',
+        provider_slug: 'bank_tpv_es_caixabank',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'in_store',
+        percent_bps: 60,
+        fixed_fee_minor_units: 0,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 2500,
+        achievable_percent_bps: 75,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://www.rankia.com/',
+        source_quote: 'TPV CaixaBank (Comercia Global Payments): comisión por operación del 0,40% al 0,80% según volumen',
+        source_notes: 'BANK-BREAKDOWN-ES 2026-08-02. CaixaBank opera su TPV vía Comercia Global Payments; rango 0,40–0,80% según volumen (rankia.com + rankiabusiness.com). Se siembra el PUNTO MEDIO 60 bps; el rango completo queda documentado aquí (achievable_breakdown_json sigue el patrón null de las filas bancarias — el rango no cabe en el shape anchor/composición existente y no se inventa un shape nuevo). Alquiler 25€/mes = mediana ES. Banda máxima 0.50: tarifa negociada por volumen, dispersión real.',
+        achievable_breakdown_json: null,
+        savings_band_pct: 0.5,
+        verified_at: null,
+        active: true
+      },
+      // --- Santander (Getnet — se siembra la Básica publicada, no el "desde") ---
+      {
+        cohort_key: 'bank_tpv_es_santander|ANY|EU-ES|in_store',
+        provider_slug: 'bank_tpv_es_santander',
+        tier: 'ANY',
+        region: 'EU',
+        country: 'ES',
+        channel: 'in_store',
+        percent_bps: 40,
+        fixed_fee_minor_units: 18,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 2500,
+        achievable_percent_bps: 75,
+        achievable_fixed_fee_minor_units: 0,
+        achievable_terminal_rental_monthly_minor: 0,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: false,
+        source_url: 'https://www.rankiabusiness.com/',
+        source_quote: 'Getnet (Santander): tarifa Básica 0,40% + 0,18€; tarifa Premium desde 0,30%',
+        source_notes: 'BANK-BREAKDOWN-ES 2026-08-02. Santander opera vía Getnet, sin tarifa diferenciada para TPV virtual. Se siembra la BÁSICA (0,40% + 0,18€ — plan publicado concreto), NO el "desde 0,30%" de la Premium (suelo tipo "a partir de", mismo criterio que bank_tpv_fr: un suelo no es una tarifa). Alquiler 25€/mes = mediana ES. Banda máxima 0.50: tarifa negociable.',
+        achievable_breakdown_json: null,
+        savings_band_pct: 0.5,
+        verified_at: null,
+        active: true
+      },
       // --- PAYCOMET ES online (draft) ---
       {
         cohort_key: 'paycomet|ANY|EU-ES',
@@ -1125,7 +1219,18 @@ Deno.serve(async (req) => {
     // -------------------------------------------------------------------
     const FR_SEEDED_AT = '2026-08-02T12:00:00.000Z';
     const seedFR = [
-      // --- Payplug FR online (verified — pricing citado del artículo oficial) ---
+      // ─── Payplug FR — SEED-FR-2 (2026-08-02): estructura real de DOS PLANES.
+      // Verificado DIRECTAMENTE contra la página oficial payplug.com/fr/tarifs
+      // (fetch 2026-08-02): Starter = 1,5% + 0,25€ online / 1,5% + 0,10€ en
+      // magasin + abono 10€/mes (CA ≤100k€). Pro = 1,1% + 0,25€ online /
+      // 1,1% + 0,10€ en magasin + abono 30€/mes (CA 100k€–1M€). DISCREPANCIA
+      // DOCUMENTADA: el comparador passerelledepaiement.com citado en el
+      // research decía Starter 1,2%+0,25€ y Pro 0,5%+0,15€ — la fuente
+      // OFICIAL no confirma esos números, así que se siembra lo oficial con
+      // verified=true (criterio del chunk: la web oficial manda). El abono
+      // mensual se modela como terminal_rental_monthly_minor (mismo patrón
+      // que SumUp Plus / PayComet). tier=PLUS para Pro: fuera de la
+      // resolución de tarifa actual, dentro del pool multi-anchor (in-store).
       {
         cohort_key: 'payplug|ANY|EU-FR',
         provider_slug: 'payplug',
@@ -1133,22 +1238,22 @@ Deno.serve(async (req) => {
         region: 'EU',
         country: 'FR',
         channel: 'online',
-        percent_bps: 140,
+        percent_bps: 150,
         fixed_fee_minor_units: 25,
         fixed_fee_currency: 'EUR',
-        terminal_rental_monthly_minor: null,
+        terminal_rental_monthly_minor: 1000,
         achievable_percent_bps: 86,
         achievable_fixed_fee_minor_units: 25,
         achievable_terminal_rental_monthly_minor: null,
-        intl_uplift_bps: null,
-        achievable_intl_uplift_bps: null,
-        intl_uplift_source_url: null,
-        intl_uplift_source_quote: null,
-        intl_uplift_assumption_notes: 'Payplug no publica un delta cross-border limpio en la fuente citada — no se modela (el motor emite "intl uplift not modeled").',
+        intl_uplift_bps: 140,
+        achievable_intl_uplift_bps: 70,
+        intl_uplift_source_url: 'https://www.payplug.com/fr/tarifs/',
+        intl_uplift_source_quote: 'Hors zone euro : 2,9% + 0,25€',
+        intl_uplift_assumption_notes: 'Uplift = 290 − 150 = +140 bps citado de la página oficial de tarifas. Achievable 70 ≈ 50% del publicado (suelo de esquema no negociable + ~50% de compresión de margen — mismo patrón documentado en stripe|ANY|EU).',
         verified: true,
-        source_url: 'https://www.payplug.com/fr/blog/frais-transaction-carte/',
-        source_quote: '1,4% + 0,25€ pour une CB européenne',
-        source_notes: 'SEED-FR 2026-08-02. Payplug FR online 1,4% + 0,25€ (CB europea), citado del artículo oficial de Payplug. NOTA: difiere de la fila paneuropea payplug|ANY|EU (150 bps + 0,25€) — esta fila FR gana por resolución de país (M5). Achievable = composición EU estándar (patrón SEED-ES online). Banda 0.25 (fuente = artículo oficial, no página de pricing).',
+        source_url: 'https://www.payplug.com/fr/tarifs/',
+        source_quote: 'Starter — Carte particulier zone euro : 1,5% + 0,25€ · Abonnement 10€/mois (CA annuel indicatif 100 000€ ou moins)',
+        source_notes: 'SEED-FR-2 2026-08-02. Plan STARTER online, página oficial de tarifas (sustituye el 1,4% plano del artículo de blog sembrado en SEED-FR — la página de pricing es la fuente canónica). El abono de 10€/mes se amortiza vía terminal_rental_monthly_minor. Cartas Business (2,5%) no modeladas (sin card-mix en el form). Plan Pro (1,1% + 30€/mes) en la fila payplug|PLUS|EU-FR.',
         achievable_breakdown_json: {
           interchange_bps: 26,
           scheme_fees_bps: 20,
@@ -1158,11 +1263,40 @@ Deno.serve(async (req) => {
             { label: 'EU interchange cap (Reg. 2015/751) + scheme fee estimates', url: 'https://eur-lex.europa.eu/eli/reg/2015/751/oj' }
           ]
         },
-        savings_band_pct: 0.25,
+        savings_band_pct: 0.2,
         verified_at: FR_SEEDED_AT,
         active: true
       },
-      // --- Payplug FR in-store (proximité, mismo artículo) ---
+      // --- Payplug FR online — plan Pro (PLUS, fuera de resolución actual) ---
+      {
+        cohort_key: 'payplug|PLUS|EU-FR',
+        provider_slug: 'payplug',
+        tier: 'PLUS',
+        region: 'EU',
+        country: 'FR',
+        channel: 'online',
+        percent_bps: 110,
+        fixed_fee_minor_units: 25,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 3000,
+        achievable_percent_bps: 110,
+        achievable_fixed_fee_minor_units: 25,
+        achievable_terminal_rental_monthly_minor: 3000,
+        intl_uplift_bps: 140,
+        achievable_intl_uplift_bps: 70,
+        intl_uplift_source_url: 'https://www.payplug.com/fr/tarifs/',
+        intl_uplift_source_quote: 'Hors zone euro : 2,9% + 0,25€',
+        intl_uplift_assumption_notes: 'Mismo uplift citado que la fila Starter.',
+        verified: true,
+        source_url: 'https://www.payplug.com/fr/tarifs/',
+        source_quote: 'Pro — Carte particulier zone euro : 1,1% + 0,25€ · Abonnement 30€/mois (CA annuel indicatif entre 100 000€ et 1M€)',
+        source_notes: 'SEED-FR-2 2026-08-02. Plan PRO online. tier=PLUS: fuera de la resolución de tarifa actual de selectRow. LIMITACIÓN CONOCIDA: el pool multi-anchor de achievable existe SOLO en in-store (motor sellado) — esta fila online queda como dato documentado sin consumo del motor hoy; la variante in-store (payplug|PLUS|EU-FR|in_store) sí entra al pool. Cambiarlo sería un chunk de motor aparte.',
+        achievable_breakdown_json: { anchor_provider: 'payplug' },
+        savings_band_pct: 0.2,
+        verified_at: FR_SEEDED_AT,
+        active: true
+      },
+      // --- Payplug FR in-store — plan Starter ---
       {
         cohort_key: 'payplug|ANY|EU-FR|in_store',
         provider_slug: 'payplug',
@@ -1170,31 +1304,53 @@ Deno.serve(async (req) => {
         region: 'EU',
         country: 'FR',
         channel: 'in_store',
-        percent_bps: 140,
-        fixed_fee_minor_units: 5,
+        percent_bps: 150,
+        fixed_fee_minor_units: 10,
         fixed_fee_currency: 'EUR',
-        terminal_rental_monthly_minor: 0,
-        achievable_percent_bps: 140,
+        terminal_rental_monthly_minor: 1000,
+        achievable_percent_bps: 110,
         achievable_fixed_fee_minor_units: 10,
-        achievable_terminal_rental_monthly_minor: 0,
+        achievable_terminal_rental_monthly_minor: 3000,
         intl_uplift_bps: null,
         achievable_intl_uplift_bps: null,
         intl_uplift_source_url: null,
         intl_uplift_source_quote: null,
         intl_uplift_assumption_notes: 'Card-present intl uplift not modeled (mismo criterio que el resto de filas in-store).',
         verified: true,
-        source_url: 'https://www.payplug.com/fr/blog/frais-transaction-carte/',
-        source_quote: '1,4% + 0,05€ pour les paiements de proximité (mismo artículo, nota presencial)',
-        source_notes: 'SEED-FR 2026-08-02. Payplug FR presencial 1,4% + 0,05€, mismo artículo oficial que la fila online (sección proximité). Achievable anclado a Stripe Terminal (140 + 0,10€) por consistencia con las demás filas in-store EU; Payplug ya está en el suelo (fixed 5c < 10c) — el gap clampa a 0, resultado honesto.',
-        achievable_breakdown_json: {
-          anchor_provider: 'stripe_terminal',
-          anchor_region: 'EU',
-          anchor_percent_bps: 140,
-          anchor_fixed_fee_minor_units: 10,
-          anchor_source_url: 'https://stripe.com/terminal',
-          anchor_source_quote: '1.4% + €0.10 for standard EEA cards, in-person'
-        },
-        savings_band_pct: 0.25,
+        source_url: 'https://www.payplug.com/fr/tarifs/',
+        source_quote: 'Starter — En magasin, carte particulier zone euro : 1,5% + 0,10€ · Abonnement 10€/mois',
+        source_notes: 'SEED-FR-2 2026-08-02. Plan STARTER presencial, página oficial (sustituye el 1,4% + 0,05€ del artículo de blog sembrado en SEED-FR). Achievable = plan Pro del propio Payplug (1,1% + 0,10€ + 30€/mes amortizados), mismo patrón que SumUp Plus. Exclusión self intacta en el pool multi-anchor (slug payplug).',
+        achievable_breakdown_json: { anchor_provider: 'payplug' },
+        savings_band_pct: 0.2,
+        verified_at: FR_SEEDED_AT,
+        active: true
+      },
+      // --- Payplug FR in-store — plan Pro (PLUS, anchor del pool) ---
+      {
+        cohort_key: 'payplug|PLUS|EU-FR|in_store',
+        provider_slug: 'payplug',
+        tier: 'PLUS',
+        region: 'EU',
+        country: 'FR',
+        channel: 'in_store',
+        percent_bps: 110,
+        fixed_fee_minor_units: 10,
+        fixed_fee_currency: 'EUR',
+        terminal_rental_monthly_minor: 3000,
+        achievable_percent_bps: 110,
+        achievable_fixed_fee_minor_units: 10,
+        achievable_terminal_rental_monthly_minor: 3000,
+        intl_uplift_bps: null,
+        achievable_intl_uplift_bps: null,
+        intl_uplift_source_url: null,
+        intl_uplift_source_quote: null,
+        intl_uplift_assumption_notes: null,
+        verified: true,
+        source_url: 'https://www.payplug.com/fr/tarifs/',
+        source_quote: 'Pro — En magasin, carte particulier zone euro : 1,1% + 0,10€ · Abonnement 30€/mois',
+        source_notes: 'SEED-FR-2 2026-08-02. Plan PRO presencial. tier=PLUS: fuera de la resolución de tarifa actual, DENTRO del pool multi-anchor de achievable (verified=true + anchor_provider) — el motor lo amortiza según el GMV introducido, igual que SumUp Plus. Exclusión self intacta (slug payplug).',
+        achievable_breakdown_json: { anchor_provider: 'payplug' },
+        savings_band_pct: 0.2,
         verified_at: FR_SEEDED_AT,
         active: true
       },

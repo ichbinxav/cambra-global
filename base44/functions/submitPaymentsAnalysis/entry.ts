@@ -269,6 +269,15 @@ const KNOWN_PROVIDERS = new Set([
   // same as before this seed. 'bank_tpv_es' is the Spanish bank-TPV (Redsys)
   // point row the UI collapses CaixaBank/Santander/BBVA/Sabadell into.
   "monei", "paycomet", "square", "mypos", "bank_tpv_es",
+  // SEED-FR-2 / BANK-BREAKDOWN-ES (2026-08-02) — per-bank Spanish TPV slugs.
+  // Sabadell/CaixaBank/Santander now have their OWN country=ES rows (the UI
+  // tiles stopped collapsing them into the single bank_tpv_es number). BBVA
+  // deliberately has NO slug of its own — no public base rate exists — and
+  // its tile keeps submitting the generic 'bank_tpv_es'. 'bank_tpv_fr' is
+  // the French bank-TPV row (AXEPTA BNP "a partir de" floor, verified=false)
+  // reachable from the FR in-store catalog.
+  "bank_tpv_es_sabadell", "bank_tpv_es_caixabank", "bank_tpv_es_santander",
+  "bank_tpv_fr",
 ]);
 
 // M4-TPV Fase 2A-redo — channels the engine understands. Default 'online'
@@ -1408,6 +1417,14 @@ const ALLOWED_PROVIDER_SLUGS = [
   'square',
   'mypos',
   'bank_tpv_es',
+  // SEED-FR-2 / BANK-BREAKDOWN-ES (2026-08-02) — per-bank Spanish TPV slugs
+  // (own country=ES rows). BBVA keeps mapping to the generic 'bank_tpv_es'
+  // (no public base rate → no own row). 'bank_tpv_fr' = French bank TPV
+  // (AXEPTA BNP floor row), reachable from the FR in-store catalog.
+  'bank_tpv_es_sabadell',
+  'bank_tpv_es_caixabank',
+  'bank_tpv_es_santander',
+  'bank_tpv_fr',
   'other',
 ] as const;
 const ALLOWED_PROVIDER_SET = new Set<string>(ALLOWED_PROVIDER_SLUGS);
