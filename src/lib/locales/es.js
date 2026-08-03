@@ -568,8 +568,7 @@ export default {
     /* Landing — SavingsCurveChart */
     ric_eyebrow:     "Recuperación proyectada · 24 meses",
     ric_recovered:   "recuperados en 24 meses",
-    ric_profit_note: "≈13 % más de beneficio neto — recuperado sin vender una unidad más.",
-    ric_split_note:  "41.400 € se quedan en el comercio — CAMBRA solo cobra el 25 % de lo que recupera.",
+    ric_profit_note: "≈14 % más de beneficio neto — recuperado sin vender una unidad más.",
     ric_per_month:   "/mes",
     ric_rate_saved:  "de tarifa ahorrada",
     ric_for_you:     "se queda contigo",

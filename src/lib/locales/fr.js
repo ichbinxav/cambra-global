@@ -568,8 +568,7 @@ export default {
     /* Landing — SavingsCurveChart */
     ric_eyebrow:     "Récupération projetée · 24 mois",
     ric_recovered:   "récupérés sur 24 mois",
-    ric_profit_note: "≈13 % de bénéfice net en plus — récupéré sans vendre une unité de plus.",
-    ric_split_note:  "41 400 € restent chez le commerçant — CAMBRA ne perçoit que 25 % de ce qu'elle récupère.",
+    ric_profit_note: "≈14 % de bénéfice net en plus — récupéré sans vendre une unité de plus.",
     ric_per_month:   "/mois",
     ric_rate_saved:  "de taux économisé",
     ric_for_you:     "restent chez vous",
