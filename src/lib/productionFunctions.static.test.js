@@ -29,6 +29,9 @@ const MANIFEST = [
   // RECOVER-2 (2026-08-03) — Stripe billing: diagnostics + payment-method setup.
   "stripeBillingKeyCheck", "startPaymentMethodSetup", "refreshPaymentMethodStatus",
   "stripeBillingWebhook",
+  // RECOVER-3 (2026-08-03) — contractual PDF generation, storage and delivery.
+  "generateRecoverContractPdf", "sendRecoverContractEmail", "getRecoverContractStatus",
+  "downloadRecoverContract", "retryPendingRecoverContracts",
   "answerAgentQuestion", "apiAuth", "apiOpenApiSpec", "apiV1", "approveAgentRun",
   "authzScope", "benchmarkLearningEngine", "billApiUsage", "blogAgent",
   "brainOrchestrator", "buildInfrastructureGraph", "chatChiefOrchestrator",
