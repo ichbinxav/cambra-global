@@ -138,12 +138,12 @@ export default function SavingsCurveChart({
           {t("ric_eyebrow")}
         </p>
 
-        <div className="flex items-baseline gap-2 flex-wrap">
+        <div>
           <span
-            className="font-black tabular-nums"
+            className="block font-black tabular-nums"
             style={{
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(40px, 6vw, 64px)",
+              fontSize: "clamp(38px, 6vw, 60px)",
               letterSpacing: "-0.045em",
               lineHeight: 1,
               /* Existing brand gradient token (--g-voltio, same family as the
@@ -156,65 +156,53 @@ export default function SavingsCurveChart({
           >
             {formatted}
           </span>
-          <span className="text-[12px] font-medium" style={{ color: "var(--gris-1)" }}>
+          <span
+            className="mt-1.5 block text-[12.5px] font-medium"
+            style={{ color: "var(--gris-1)" }}
+          >
             {t("ric_recovered")}
+            <span className="mx-2" style={{ color: "var(--linea)" }}>·</span>
+            <span className="font-semibold" style={{ color: "var(--menta-dark)" }}>
+              {t("ric_profit_big")} {t("ric_profit_sub")}
+            </span>
           </span>
         </div>
 
-        {/* COPY-4-FIX — second figure: green, mid-size. Below the euro amount,
-            well above the grey microcopy. */}
-        <p
-          className="mt-2 font-bold tabular-nums"
-          style={{
-            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "26px",
-            letterSpacing: "-0.02em",
-            lineHeight: 1.1,
-            color: "var(--menta-dark)",
-          }}
-        >
-          {t("ric_profit_big")}{" "}
-          <span className="text-[13px] font-semibold">{t("ric_profit_sub")}</span>
-        </p>
-
-        {/* Sober stats strip */}
+        {/* Sober stats strip — one uniform typographic scale */}
         <div
-          className="mt-4 grid grid-cols-3 gap-2 rounded-lg p-3"
-          style={{ background: "rgba(12,12,22,0.02)", border: "1px solid var(--linea)" }}
+          className="mt-5 grid grid-cols-3 rounded-xl overflow-hidden"
+          style={{ background: "#fff", border: "1px solid var(--linea)" }}
         >
-          <div>
+          {[
+            { v: perMonthStr, l: t("ric_per_month"), c: "var(--ink)" },
+            { v: "1.38pts", l: t("ric_rate_saved"), c: "var(--ink)" },
+            { v: "75%", l: t("ric_for_you"), c: "var(--ink)" },
+          ].map((s, i) => (
             <div
-              className="font-bold tabular-nums"
-              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--ink)" }}
+              key={s.l}
+              className="px-3 py-3.5"
+              style={i > 0 ? { borderLeft: "1px solid var(--linea)" } : undefined}
             >
-              {perMonthStr}
+              <div
+                className="font-bold tabular-nums"
+                style={{
+                  fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                  fontSize: "18px",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1,
+                  color: s.c,
+                }}
+              >
+                {s.v}
+              </div>
+              <div
+                className="mt-1.5 text-[9.5px] uppercase tracking-[0.14em] font-semibold leading-tight"
+                style={{ color: "var(--gris-2)" }}
+              >
+                {s.l}
+              </div>
             </div>
-            <div className="text-[11px] uppercase tracking-[0.16em] font-semibold mt-1.5" style={{ color: "var(--gris-1)" }}>
-              {t("ric_per_month")}
-            </div>
-          </div>
-          <div style={{ borderLeft: "1px solid var(--linea)" }} className="pl-3">
-            <div
-              className="font-bold tabular-nums"
-              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--coral)" }}
-            >
-              1.38pts
-            </div>
-            <div className="text-[11px] uppercase tracking-[0.16em] font-semibold mt-1.5" style={{ color: "var(--gris-1)" }}>
-              {t("ric_rate_saved")}
-            </div>
-          </div>
-          <div style={{ borderLeft: "1px solid var(--linea)" }} className="pl-3">
-            <div
-              className="font-bold tabular-nums"
-              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--ink)" }}
-            >
-              75%
-            </div>
-            <div className="text-[11px] uppercase tracking-[0.16em] font-semibold mt-1.5" style={{ color: "var(--gris-1)" }}>
-              {t("ric_for_you")}
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
