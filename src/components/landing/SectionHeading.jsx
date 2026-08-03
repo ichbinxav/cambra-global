@@ -23,8 +23,10 @@ export default function SectionHeading({ eyebrow, children, className = "" }) {
           fontWeight: 900,
           letterSpacing: "-0.045em",
           lineHeight: 1.05,
-          overflowWrap: "break-word",
-          hyphens: "auto",
+          overflowWrap: "normal",
+          wordBreak: "keep-all",
+          hyphens: "manual",
+          textWrap: "balance",
         }}
       >
         {children}
