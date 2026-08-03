@@ -32,9 +32,9 @@ export default function ReferralProgramSection() {
     .replace("{base}", `${BASE_FEE_PCT}%`);
 
   const tiles = [
-    { label: t("ref_land_t1_label"), value: `−${STEP_POINTS} pts` },
-    { label: t("ref_land_t2_label"), value: `${FLOOR_FEE_PCT}%` },
-    { label: t("ref_land_t3_label"), value: `${entryPct}%` },
+    { label: t("ref_land_t1_label"), value: `−${STEP_POINTS}`, unit: "pts", note: t("ref_land_t1_note") },
+    { label: t("ref_land_t2_label"), value: `${FLOOR_FEE_PCT}`, unit: "%", note: t("ref_land_t2_note") },
+    { label: t("ref_land_t3_label"), value: `${entryPct}`, unit: "%", note: t("ref_land_t3_note").replace("{base}", `${BASE_FEE_PCT}%`) },
   ];
 
   return (
@@ -98,31 +98,46 @@ export default function ReferralProgramSection() {
           </div>
         </motion.div>
 
-        <motion.div
-          className="lg:col-span-5 grid grid-cols-3 gap-3"
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-        >
-          {tiles.map((tile) => (
-            <div
+        <div className="lg:col-span-5 space-y-3">
+          {tiles.map((tile, i) => (
+            <motion.div
               key={tile.label}
-              className="rounded-2xl p-4 sm:p-5"
-              style={{ background: "#ffffff", border: "1px solid var(--linea)", boxShadow: "0 4px 20px rgba(12,12,22,0.04)" }}
+              className="section-ink relative flex items-center gap-5 px-6 py-5 sm:px-7 sm:py-6"
+              style={{ borderRadius: 22, maxWidth: "none" }}
+              initial={{ opacity: 0, x: 28 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 + i * 0.12 }}
+              whileHover={{ y: -3 }}
             >
               <p
-                className="font-black tabular-nums"
-                style={{ color: "var(--ink)", fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: 28, letterSpacing: "-0.03em" }}
+                className="font-black tabular-nums shrink-0"
+                style={{
+                  fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                  fontSize: "clamp(38px, 5vw, 52px)",
+                  letterSpacing: "-0.05em",
+                  lineHeight: 1,
+                  background: "var(--g-voltio)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(0 0 18px rgba(139,123,255,0.35))",
+                }}
               >
                 {tile.value}
+                <span style={{ fontSize: "0.44em", letterSpacing: "-0.02em" }}>{tile.unit}</span>
               </p>
-              <p className="mt-2 text-[11.5px] leading-snug" style={{ color: "var(--gris-1)" }}>
-                {tile.label}
-              </p>
-            </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase" style={{ letterSpacing: "0.16em", color: "rgba(255,255,255,0.5)" }}>
+                  {tile.label}
+                </p>
+                <p className="mt-1.5 text-[13.5px] leading-snug" style={{ color: "rgba(255,255,255,0.9)" }}>
+                  {tile.note}
+                </p>
+              </div>
+            </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
