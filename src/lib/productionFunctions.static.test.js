@@ -28,6 +28,7 @@ const MANIFEST = [
   "getRecoverAcceptanceContext", "startRecoverAcceptance", "acceptRecoverMandate",
   // RECOVER-2 (2026-08-03) — Stripe billing: diagnostics + payment-method setup.
   "stripeBillingKeyCheck", "startPaymentMethodSetup", "refreshPaymentMethodStatus",
+  "stripeBillingWebhook",
   "answerAgentQuestion", "apiAuth", "apiOpenApiSpec", "apiV1", "approveAgentRun",
   "authzScope", "benchmarkLearningEngine", "billApiUsage", "blogAgent",
   "brainOrchestrator", "buildInfrastructureGraph", "chatChiefOrchestrator",
