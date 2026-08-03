@@ -187,8 +187,24 @@ y está en la lista de revisión legal abierta; traducirlo yo a FR/ES sin revisi
 sería inventar redacción vinculante en dos idiomas. Localización pendiente **tras**
 esa revisión.
 
+## Verificación E2E en vivo (2026-08-03, datos desechables, purgados después)
+
+| Paso | Resultado |
+|---|---|
+| `getRecoverAcceptanceContext` sobre activación `activated` con baseline verificado | `eligible: true`, sin blockers, comisión 25%, baseline servido con service role, hash del snapshot devuelto |
+| `startRecoverAcceptance` | `Mandate` creado en `acceptance_started` |
+| Replay de `startRecoverAcceptance` | `reused: true`, MISMO mandato y mismo hash (la clave de idempotencia aguanta) |
+| `acceptRecoverMandate` | mandato → `active`, activación → `authorized`; `signed_by_name`, `signed_at`, `authenticated_at` y `user_agent` registrados |
+| Replay de `acceptRecoverMandate` | `already_accepted: true`, sin segundo mandato y sin segunda transición |
+| Baseline mutado con un segundo popup abierto, y luego aceptado | **409 `terms_changed`** con hash esperado vs real — y esa segunda activación **siguió en `activated`**: una aceptación rechazada no autorizó nada |
+| Rastro de auditoría | `OperationalLog` `mandate_signed` + `AuthorizationLog` `mandate_accepted` ("25% success fee · activation authorized") |
+
+Nota sobre `owner_email`: la prueba se ejecutó como admin, así que el owner
+registrado es el email del admin (bypass de propiedad de
+`resolveOwnedActivation`); en sesión de comercio se registra el comercio.
+Purgado después: marca demo, 2 activaciones, 2 baselines, 2 mandatos y las 2
+filas de log.
+
 ## Pendiente
 
-- Verificación E2E en vivo del flujo completo (requiere una `DealActivation` con
-  `Baseline` verificado).
 - Localización FR/ES del texto del mandato, después de la revisión legal.
