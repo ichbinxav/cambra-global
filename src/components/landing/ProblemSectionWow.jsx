@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { TrendingDown, Globe2, Coins, AlertTriangle } from "lucide-react";
 import AnimatedSection from "@/components/landing/AnimatedSection";
 import SectionHeading from "@/components/landing/SectionHeading";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * Problem section — payments-only edition · R6 canonical recalibration (2026-07-13).
@@ -39,35 +40,35 @@ import SectionHeading from "@/components/landing/SectionHeading";
 const ITEMS = [
   {
     icon: TrendingDown,
-    category: "Blended rates",
+    categoryKey: "prob_c1_cat",
+    bodyKey: "prob_c1_body",
     amount: 3900,
     // Largest angle — blended pricing hides most of the gap.
     // Overpay vs achievable on the % component: (2.21% − 1.47%) / 1.47% ≈ +50%.
     overpayPct: 50,
-    body: "A single all-in rate hides the minimum. Most businesses pay 2.0–2.6% when their real floor is 1.4–1.5%.",
     accent: "rgba(239,68,68,0.65)",
     glow: "rgba(239,68,68,0.08)",
   },
   {
     icon: Globe2,
-    category: "Cross-border uplift",
+    categoryKey: "prob_c2_cat",
+    bodyKey: "prob_c2_body",
     amount: 2200,
     // ~30% of the gap on the reference brand (~15% intl share, +1.75%
     // Stripe EU/UK cross-border vs a negotiated ~0.9% on the same portion).
     // Visual cap +38% keeps the bar under the "up to 40%" H2 band.
     overpayPct: 38,
-    body: "Foreign cards add +1.75% with the wrong provider. With the right one the card networks charge the same — the provider doesn't.",
     accent: "rgba(249,115,22,0.65)",
     glow: "rgba(249,115,22,0.08)",
   },
   {
     icon: Coins,
-    category: "Fixed-fee drag",
+    categoryKey: "prob_c3_cat",
+    bodyKey: "prob_c3_body",
     amount: 1300,
     // €0.25 vs €0.15 per-tx on ~€65 avg ticket ≈ +25% overpay on the fixed
     // component (the % component isn't affected). ~17% of the total gap.
     overpayPct: 25,
-    body: "A €0.25 fee per sale piles up when your tickets are small. Spread over your real ticket, it quietly raises what you pay.",
     accent: "rgba(236,72,153,0.65)",
     glow: "rgba(236,72,153,0.08)",
   },
@@ -95,6 +96,7 @@ function useCountUp(target, durationMs = 1600, start = false) {
 }
 
 function Card({ item, index }) {
+  const { t } = useTranslation();
   const [inView, setInView] = useState(false);
   const ref = useRef(null);
 
@@ -150,7 +152,7 @@ function Card({ item, index }) {
           <item.icon size={16} style={{ color: item.accent, opacity: 0.8 }} />
         </div>
         <p className="text-[10px] uppercase tracking-[0.24em] font-bold text-white/60">
-          {item.category}
+          {t(item.categoryKey)}
         </p>
       </div>
 
@@ -178,14 +180,14 @@ function Card({ item, index }) {
               filter: "none",
             }}
           >
-            /yr
+            /{t("per_yr_short")}
           </span>
         </p>
         <p
           className="text-[10px] uppercase tracking-[0.22em] font-bold mb-5"
           style={{ color: item.accent, opacity: 0.6 }}
         >
-          Illustrative · this angle
+          {t("prob_card_illustrative")}
         </p>
       </div>
 
@@ -193,7 +195,7 @@ function Card({ item, index }) {
       <div className="relative mb-5">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-white/40">
-            Overpay vs network
+            {t("prob_card_overpay")}
           </span>
           <span
             className="text-[11px] font-black tabular-nums"
@@ -219,12 +221,13 @@ function Card({ item, index }) {
         </div>
       </div>
 
-      <p className="relative text-[13px] text-white/55 leading-relaxed">{item.body}</p>
+      <p className="relative text-[13px] text-white/55 leading-relaxed">{t(item.bodyKey)}</p>
     </motion.div>
   );
 }
 
 export default function ProblemSectionWow() {
+  const { t } = useTranslation();
   const [totalInView, setTotalInView] = useState(false);
   const totalRef = useRef(null);
 
@@ -256,20 +259,20 @@ export default function ProblemSectionWow() {
 
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
-          <SectionHeading eyebrow="The hidden cost problem" className="mb-4">
-            Independent businesses overpay{" "}
+          <SectionHeading eyebrow={t("prob_eyebrow")} className="mb-4">
+            {t("prob_h2_pre")}{" "}
             {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "up to 40%" is the
                 PROBLEM/cost → .kw-c (Coral Gap). */}
-            <span className="kw-c">up to 40%</span>{" "}
-            on card payments.
+            <span className="kw-c">{t("prob_h2_kw")}</span>{" "}
+            {t("prob_h2_post")}
             <br />
-            <span className="kw-c">Every month.</span>
+            <span className="kw-c">{t("prob_h2_kw2")}</span>
           </SectionHeading>
         </AnimatedSection>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">
           {ITEMS.map((item, i) => (
-            <Card key={item.category} item={item} index={i} />
+            <Card key={item.categoryKey} item={item} index={i} />
           ))}
         </div>
 
@@ -314,21 +317,20 @@ export default function ProblemSectionWow() {
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-[0.24em] font-bold text-red-300/85 mb-1">
-                  Total annual bleed
+                  {t("prob_total_label")}
                 </p>
                 <p className="text-[13px] text-white/55 max-w-md">
                   <span className="text-white/85 font-semibold">
-                    −€7,400/year
+                    {t("prob_total_line1")}
                   </span>
                   {" · "}
                   <span className="text-red-300/85 font-semibold">
-                    ≈ €15,000 over 24 months
+                    {t("prob_total_line2")}
                   </span>
-                  {" — the same money the Savings Curve shows as recoverable."}
+                  {t("prob_total_line3")}
                 </p>
                 <p className="text-[11px] text-white/40 mt-2 leading-snug max-w-md">
-                  Illustrative — a business with €1M in yearly sales, paying 2.21% when 1.47% was possible.
-                  Run the analyzer for your real number.
+                  {t("prob_total_note")}
                 </p>
               </div>
             </div>
@@ -352,7 +354,7 @@ export default function ProblemSectionWow() {
                 −€{totalCount.toLocaleString("en-US")}
               </p>
               <p className="text-[11px] uppercase tracking-[0.22em] font-bold text-white/45 mt-1">
-                /year · per business
+                {t("prob_total_per")}
               </p>
             </div>
           </div>
