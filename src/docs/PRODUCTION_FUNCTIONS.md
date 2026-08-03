@@ -68,6 +68,10 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | acceptRecoverMandate | me (+ ownership) | ✓ | Mandate, DealActivation, Brand, Baseline, BillingRule, AuthorizationLog, OperationalLog | popup de aceptación Recover Margin |
 | startPaymentMethodSetup | me (+ ownership; exige Mandate `active`) | ✓ | DealActivation, Brand, Mandate | PaymentMethodSetupCard (RECOVER-2) |
 | refreshPaymentMethodStatus | me (+ ownership) | ✓ | DealActivation | PaymentMethodSetupCard (RECOVER-2) |
+| getRecoverContractStatus | me (+ ownership) o admin | ✓ | Mandate, DealActivation, Brand | ContractDocumentCard (RECOVER-3) |
+| downloadRecoverContract | me (+ ownership) o admin | ✓ | Mandate, DealActivation, Brand | ContractDocumentCard / RecoverContractAdminPanel |
+| generateRecoverContractPdf | gate (interno) o admin | ✓ | Mandate, DealActivation, Brand, OperationalLog | acceptRecoverMandate (fire-and-forget), reconciliador, admin |
+| sendRecoverContractEmail | gate (interno) o admin | ✓ | Mandate, OperationalLog | generateRecoverContractPdf, reconciliador, admin (resend explícito) |
 | stripeBillingWebhook | pública por diseño — firma HMAC de Stripe (`stripe-signature`) + secret por modo | ✓ | DealActivation | Stripe (cuenta de facturación de CAMBRA) |
 
 ## A-API — API de partners (6)
@@ -81,7 +85,7 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | oauthAuthorize | me | ✓ | OAuthApp, OrganizationMember, OAuthAuthorizationCode |
 | oauthToken | client_secret + cap 10KB | ✓ | OAuthApp, OAuthAuthorizationCode, OAuthToken |
 
-## C — Scheduled (7)
+## C — Scheduled (8)
 
 | Función | Trigger | Auth | Entidades |
 |---|---|---|---|
@@ -92,6 +96,7 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | billApiUsage | mensual día 1 | gate | ApiUsageRecord, Organization, Invoice |
 | sendMonthlySavingsSummary | mensual día 1 | me+admin | User, Brand, AnalyzerResult |
 | engineeringReportAgent | diario 07:00 y 15:00 | me+admin | AgentTask, Event |
+| retryPendingRecoverContracts | cada 15 min | gate (admin o interno) | Mandate, OperationalLog |
 
 ## B — Admin / founder-OS interno (77)
 
