@@ -1,9 +1,14 @@
 {
   "name": "Mandate",
   "type": "object",
+  "description": "Electronic B2B mandate authorizing CAMBRA to act on a merchant's behalf to recover payment margin. RECOVER-1 (2026-08-03) turned this from a single-shot 'signed' record into a two-phase state machine: a row is created as 'acceptance_started' when the merchant opens the acceptance popup, and only becomes 'active' when the signature is recorded. Consequence: signed_by_name / signed_by_email / signed_at are NO LONGER globally required (they are absent by definition during acceptance_started) \u2014 the acceptance function enforces their presence at the active transition instead. Nothing in the repo created Mandate rows before this chunk (audit 2026-08-03: only readers + revokeMandate as updater), so relaxing that required set broke no writer.",
   "properties": {
     "company_id": {
       "type": "string"
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "RECOVER-1 (2026-08-03) \u2014 the legal entity this mandate binds. TODAY, ORGANIZATION = BRAND: this holds a Brand.id, because no canonical user\u2194organization\u2194Brand relation exists (the Organization / OrganizationMember entities are the API-platform tenancy \u2014 quotas, rate limits, stripe_customer_id \u2014 and are never linked to a Brand). The field is deliberately NOT named brand_id even though it points at a Brand: the day real multi-brand Organizations exist (known debt since BUG-6), only the TARGET of this field changes, not the schema. Ownership checks therefore resolve through Brand.contact_email / created_by and DealActivation.user_email, which is what every existing RLS rule already does."
     },
     "deal_id": {
       "type": "string",
@@ -20,6 +25,14 @@
     },
     "catalog_deal_id": {
       "type": "string"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "RECOVER-1 \u2014 email of the merchant the acceptance belongs to, written when the row is CREATED (acceptance_started). Exists because signed_by_email is null until the signature lands, and without it a merchant could not read their own in-progress mandate under RLS. Resolved server-side from the authenticated session, never from the payload."
+    },
+    "baseline_id": {
+      "type": "string",
+      "description": "RECOVER-1 \u2014 the Baseline row this mandate was accepted against. VERIFIED-BASELINE CRITERION (decided 2026-08-03): locked === true AND verified_at present AND verified_by present, WITHOUT restricting `source`. Rationale: verified_at/verified_by are the actual PROOF that someone (system or human reviewer) verified the figure, whereas `source` is only provenance. Requiring source==='api' would have excluded by design every merchant verified through the uploaded-statement path (StatementUploadCard, whose copy promises 'our team reviews the extraction before it becomes a verified number'), making that entire flow useless for Recover Margin eligibility. Baseline RLS is admin/created_by, so the merchant cannot read it directly: getRecoverAcceptanceContext serves it with asServiceRole AFTER applying this criterion \u2014 Baseline's RLS is deliberately left untouched."
     },
     "scope_type": {
       "type": "string",
@@ -38,40 +51,85 @@
       ]
     },
     "authorized_actions_json": {
-      "type": "object"
+      "type": "object",
+      "description": "What CAMBRA is authorized to do on the merchant's behalf. Written when the acceptance starts (the scope is known from the offer), so it stays globally required."
     },
     "legal_entity_name": {
       "type": "string"
     },
     "signed_by_name": {
-      "type": "string"
+      "type": "string",
+      "description": "Absent during acceptance_started. Required at the transition to 'active' \u2014 enforced by acceptRecoverMandate, not by this schema."
     },
     "signed_by_email": {
-      "type": "string"
+      "type": "string",
+      "description": "Absent during acceptance_started. Required at the transition to 'active' \u2014 enforced by acceptRecoverMandate, not by this schema."
     },
     "signed_by_role": {
       "type": "string"
     },
     "signed_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "Absent during acceptance_started. Required at the transition to 'active' \u2014 enforced by acceptRecoverMandate, not by this schema."
+    },
+    "authenticated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-1 \u2014 the instant the SERVER validated the accepting session (the moment base44.auth.me() resolved). ACCEPTED PLATFORM LIMITATION, NOT A FUNCTIONAL EQUIVALENCE: we verify that the session is valid at the moment of accepting; we CANNOT verify how long ago the user authenticated. Base44's auth surface exposes no login timestamp, no session identifier and no re-authentication endpoint, so there is no freshness threshold and no step-up re-auth in this flow, and no session_id field exists on this entity (a null column would only imply a capability we do not have). The evidentiary weight of an electronic acceptance that commits 24 months of variable billing WITHOUT session-freshness verification is on the open legal-review list, alongside the PSP exclusivity clause, the commercial-agent statute and the BSA structure. It is named, not engineered around."
     },
     "ip_address": {
-      "type": "string"
+      "type": "string",
+      "description": "Captured when available. Part of the partial-but-real acceptance evidence trail (see authenticated_at)."
     },
     "user_agent": {
-      "type": "string"
+      "type": "string",
+      "description": "Captured when available. Part of the partial-but-real acceptance evidence trail (see authenticated_at)."
     },
     "document_version": {
-      "type": "string"
+      "type": "string",
+      "description": "Version tag of the mandate text that was displayed and accepted. Recorded so members can be re-consented when the text changes."
+    },
+    "acceptance_started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-1 \u2014 when the merchant opened the acceptance popup and this row was created in 'acceptance_started'."
+    },
+    "acceptance_snapshot_json": {
+      "type": "object",
+      "description": "RECOVER-1 \u2014 verbatim copy of everything shown to the merchant at acceptance time: the success fee percentage, the baseline figures, the projected savings and the document version. Frozen so a later fee change can never be retro-attributed to this acceptance."
+    },
+    "acceptance_snapshot_hash": {
+      "type": "string",
+      "description": "RECOVER-1 \u2014 hash of acceptance_snapshot_json computed when the acceptance started. Re-verified at signature: if the underlying fee or baseline moved while the popup was open, the hash no longer matches and the acceptance is refused rather than silently binding the merchant to different terms."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "RECOVER-1 \u2014 persisted claim key. Base44 offers no transactions, so concurrency safety is: claim this key BEFORE any state change, re-read state before every write, and collapse duplicates on re-read (same pattern as shared/referralLink.ts). Replaying an acceptance finds the claim and returns the existing mandate instead of creating a second one."
     },
     "status": {
       "type": "string",
       "enum": [
+        "acceptance_started",
         "active",
-        "revoked"
+        "revoked",
+        "superseded"
       ],
-      "default": "active"
+      "default": "acceptance_started",
+      "description": "State machine (RECOVER-1): acceptance_started \u2192 active (signature recorded) \u2192 revoked | superseded. 'acceptance_started' rows are NOT authorizations \u2014 every consumer that gates on a live mandate filters status === 'active' (which is what the pre-existing readers already did, so they keep behaving correctly). INVARIANT 'DealActivation never reaches authorized without an active mandate' is enforced IN LINE by acceptRecoverMandate (activate the mandate first, re-read, then authorize) \u2014 NOT by guardDealActivationStatus. See the Decision Log entry: that guard, and updateDealActivationStatus, were already dead before this chunk (no src caller, no registered entity automation \u2014 verified 2026-08-03: the app has zero entity automations), so the guard never fired at all. They were deliberately left to die in the PURGE-2 sweep of 2026-08-15 rather than resurrected: an in-line precondition PREVENTS the invalid write instead of reverting it afterwards, and reviving a reactive guard would create a second writer of DealActivation.status that could collide with the transient two-active-mandate overlap that mandate supersession explicitly tolerates."
+    },
+    "superseded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-1 \u2014 when this mandate was replaced by a newer one."
+    },
+    "superseded_by_id": {
+      "type": "string",
+      "description": "RECOVER-1 \u2014 id of the Mandate that replaced this one."
+    },
+    "supersedes_id": {
+      "type": "string",
+      "description": "RECOVER-1 \u2014 id of the Mandate this one replaced."
     },
     "revoked_at": {
       "type": "string",
@@ -89,9 +147,6 @@
   },
   "required": [
     "authorized_actions_json",
-    "signed_by_name",
-    "signed_by_email",
-    "signed_at",
     "status"
   ],
   "rls": {
@@ -101,6 +156,9 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "data.owner_email": "{{user.email}}"
         },
         {
           "data.signed_by_email": "{{user.email}}"
