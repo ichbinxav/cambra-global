@@ -1,7 +1,7 @@
 {
   "name": "Mandate",
   "type": "object",
-  "description": "Electronic B2B mandate authorizing CAMBRA to act on a merchant's behalf to recover payment margin. RECOVER-1 (2026-08-03) turned this from a single-shot 'signed' record into a two-phase state machine: a row is created as 'acceptance_started' when the merchant opens the acceptance popup, and only becomes 'active' when the signature is recorded. Consequence: signed_by_name / signed_by_email / signed_at are NO LONGER globally required (they are absent by definition during acceptance_started) \u2014 the acceptance function enforces their presence at the active transition instead. Nothing in the repo created Mandate rows before this chunk (audit 2026-08-03: only readers + revokeMandate as updater), so relaxing that required set broke no writer.",
+  "description": "Electronic B2B mandate authorizing CAMBRA to act on a merchant's behalf to recover payment margin. RECOVER-1 (2026-08-03) turned this from a single-shot 'signed' record into a two-phase state machine: a row is created as 'acceptance_started' when the merchant opens the acceptance popup, and only becomes 'active' when the signature is recorded. Consequence: signed_by_name / signed_by_email / signed_at are NO LONGER globally required (they are absent by definition during acceptance_started) \u2014 the acceptance function enforces their presence at the active transition instead. Nothing in the repo created Mandate rows before this chunk (audit 2026-08-03: only readers + revokeMandate as updater), so relaxing that required set broke no writer. RECOVER-3 (2026-08-03) added the contract_pdf_* / contract_email_* delivery state: the PDF is a LATER REPRESENTATION of the acceptance, never the act of consent, so none of those fields can invalidate a mandate that is already active.",
   "properties": {
     "company_id": {
       "type": "string"
@@ -57,13 +57,22 @@
     "legal_entity_name": {
       "type": "string"
     },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr",
+        "es"
+      ],
+      "description": "RECOVER-3 (2026-08-03) \u2014 the language the contractual PDF and its email must be produced in, FROZEN at the moment of acceptance. Resolved server-side from the STORED Brand.locale (itself captured from the active UI language at Brand creation), never from Accept-Language, never from the browser at generation time, never from the admin's current UI: a document regenerated months later must read in the language the merchant accepted in. Absent/unrecognized resolves to 'en' via normalizeLocale at generation, and the fallback is logged rather than written back over the stored value."
+    },
     "signed_by_name": {
       "type": "string",
       "description": "Absent during acceptance_started. Required at the transition to 'active' \u2014 enforced by acceptRecoverMandate, not by this schema."
     },
     "signed_by_email": {
       "type": "string",
-      "description": "Absent during acceptance_started. Required at the transition to 'active' \u2014 enforced by acceptRecoverMandate, not by this schema."
+      "description": "Absent during acceptance_started. Required at the transition to 'active' \u2014 enforced by acceptRecoverMandate, not by this schema. RECOVER-3: this, and ONLY this, is the recipient of the contractual email \u2014 never the current session's email, never a Brand contact, never created_by."
     },
     "signed_by_role": {
       "type": "string"
@@ -80,11 +89,11 @@
     },
     "ip_address": {
       "type": "string",
-      "description": "Captured when available. Part of the partial-but-real acceptance evidence trail (see authenticated_at)."
+      "description": "Captured when available. Part of the partial-but-real acceptance evidence trail (see authenticated_at). RECOVER-3: when empty, the PDF annex prints a neutral 'server-verified IP evidence unavailable' line \u2014 never 'IP: null'."
     },
     "user_agent": {
       "type": "string",
-      "description": "Captured when available. Part of the partial-but-real acceptance evidence trail (see authenticated_at)."
+      "description": "Captured when available. Part of the partial-but-real acceptance evidence trail (see authenticated_at). The PDF annex may truncate it visually; the original value stays here untouched."
     },
     "document_version": {
       "type": "string",
@@ -97,11 +106,11 @@
     },
     "acceptance_snapshot_json": {
       "type": "object",
-      "description": "RECOVER-1 \u2014 verbatim copy of everything shown to the merchant at acceptance time: the success fee percentage, the baseline figures, the projected savings and the document version. Frozen so a later fee change can never be retro-attributed to this acceptance."
+      "description": "RECOVER-1 \u2014 verbatim copy of everything shown to the merchant at acceptance time: the success fee percentage, the baseline figures, the projected savings and the document version. Frozen so a later fee change can never be retro-attributed to this acceptance. RECOVER-3: this object, and NOT current BillingRule / Terms / Baseline / Brand state, is the ONLY source the contractual PDF is built from."
     },
     "acceptance_snapshot_hash": {
       "type": "string",
-      "description": "RECOVER-1 \u2014 hash of acceptance_snapshot_json computed when the acceptance started. Re-verified at signature: if the underlying fee or baseline moved while the popup was open, the hash no longer matches and the acceptance is refused rather than silently binding the merchant to different terms."
+      "description": "RECOVER-1 \u2014 hash of acceptance_snapshot_json computed when the acceptance started. Re-verified at signature: if the underlying fee or baseline moved while the popup was open, the hash no longer matches and the acceptance is refused rather than silently binding the merchant to different terms. RECOVER-3 re-verifies it a THIRD time, against the stored snapshot alone, immediately before generating the PDF: a mismatch means the append-only evidence was altered, and the generation is refused as failed_permanent instead of producing a document that misrepresents the accepted terms."
     },
     "idempotency_key": {
       "type": "string",
@@ -116,7 +125,7 @@
         "superseded"
       ],
       "default": "acceptance_started",
-      "description": "State machine (RECOVER-1): acceptance_started \u2192 active (signature recorded) \u2192 revoked | superseded. 'acceptance_started' rows are NOT authorizations \u2014 every consumer that gates on a live mandate filters status === 'active' (which is what the pre-existing readers already did, so they keep behaving correctly). INVARIANT 'DealActivation never reaches authorized without an active mandate' is enforced IN LINE by acceptRecoverMandate (activate the mandate first, re-read, then authorize) \u2014 NOT by guardDealActivationStatus. See the Decision Log entry: that guard, and updateDealActivationStatus, were already dead before this chunk (no src caller, no registered entity automation \u2014 verified 2026-08-03: the app has zero entity automations), so the guard never fired at all. They were deliberately left to die in the PURGE-2 sweep of 2026-08-15 rather than resurrected: an in-line precondition PREVENTS the invalid write instead of reverting it afterwards, and reviving a reactive guard would create a second writer of DealActivation.status that could collide with the transient two-active-mandate overlap that mandate supersession explicitly tolerates."
+      "description": "State machine (RECOVER-1): acceptance_started \u2192 active (signature recorded) \u2192 revoked | superseded. 'acceptance_started' rows are NOT authorizations \u2014 every consumer that gates on a live mandate filters status === 'active' (which is what the pre-existing readers already did, so they keep behaving correctly). INVARIANT 'DealActivation never reaches authorized without an active mandate' is enforced IN LINE by acceptRecoverMandate (activate the mandate first, re-read, then authorize) \u2014 NOT by guardDealActivationStatus. See the Decision Log entry: that guard, and updateDealActivationStatus, were already dead before this chunk (no src caller, no registered entity automation \u2014 verified 2026-08-03: the app has zero entity automations), so the guard never fired at all. They were deliberately left to die in the PURGE-2 sweep of 2026-08-15 rather than resurrected: an in-line precondition PREVENTS the invalid write instead of reverting it afterwards, and reviving a reactive guard would create a second writer of DealActivation.status that could collide with the transient two-active-mandate overlap that mandate supersession explicitly tolerates. RECOVER-3 NEVER writes this field: no PDF or email failure can revoke, supersede or downgrade a mandate."
     },
     "superseded_at": {
       "type": "string",
@@ -142,7 +151,126 @@
       "type": "string"
     },
     "signed_document_url": {
-      "type": "string"
+      "type": "string",
+      "description": "PRE-EXISTING field, semantics clarified by RECOVER-3 (2026-08-03) and deliberately NOT repurposed: it is NOT the canonical reference to the contractual PDF. contract_pdf_storage_key is. A signed URL expires, so persisting one here as 'the document' would leave a dead link in an evidence record \u2014 this field is therefore left EMPTY by the Recover Margin flow, and kept only for backward compatibility with readers that already look at it (none of which currently write it)."
+    },
+    "contract_pdf_pending": {
+      "type": "boolean",
+      "default": false,
+      "description": "RECOVER-3 \u2014 set true the moment the mandate becomes active, BEFORE any generation is attempted and WITHOUT waiting for RECOVER-2. It is the flag the reconciler scans for: if the non-blocking generation call is lost when the serverless invocation ends, this row is still discoverable as work owed. Cleared when generation reaches a terminal state (generated / failed_permanent)."
+    },
+    "contract_pdf_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "generating",
+        "generated",
+        "failed_retryable",
+        "failed_permanent",
+        "superseded"
+      ],
+      "default": "pending",
+      "description": "RECOVER-3 \u2014 lifecycle of the contractual PDF. 'generating' carries a lease (contract_pdf_last_attempt_at): the reconciler may reclaim it only after the lease window, so a worker that is still legitimately running is never duplicated. 'generated' is written ONLY after the bytes were stored AND the stored object was re-read and its hash confirmed."
+    },
+    "contract_pdf_attempt_count": {
+      "type": "number",
+      "default": 0,
+      "description": "RECOVER-3 \u2014 generation attempts so far. Bounds the retry ladder; a permanent error stops it immediately regardless of the count."
+    },
+    "contract_pdf_last_attempt_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-3 \u2014 start of the most recent attempt. Doubles as the 'generating' lease timestamp."
+    },
+    "contract_pdf_next_retry_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-3 \u2014 earliest moment the reconciler may retry, from the exponential backoff ladder with jitter."
+    },
+    "contract_pdf_last_error_code": {
+      "type": "string",
+      "description": "RECOVER-3 \u2014 NORMALIZED error code (e.g. storage_unavailable, pdf_build_failed, source_snapshot_integrity_mismatch, legal_identity_missing). Never a raw provider message, never a stack trace: this value is safe to show in an admin panel."
+    },
+    "contract_pdf_generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-3 \u2014 when the stored document was verified and became downloadable."
+    },
+    "contract_pdf_template_version": {
+      "type": "string",
+      "description": "RECOVER-3 \u2014 version of the deterministic legal template that produced the document. Part of the generation idempotency key: a template change yields a NEW document for a NEW mandate, and never silently rewrites a historical one."
+    },
+    "contract_pdf_storage_key": {
+      "type": "string",
+      "description": "RECOVER-3 \u2014 THE canonical reference to the stored PDF (a private file URI). Never a public URL, never a signed URL. Access always goes through downloadRecoverContract, which proves ownership first and only then mints a short-lived signed URL."
+    },
+    "contract_pdf_sha256": {
+      "type": "string",
+      "description": "RECOVER-3 \u2014 SHA-256 of the EXACT bytes that were uploaded, re-verified against the stored object before the status becomes 'generated'. Immutable: a correction never overwrites this value (see the material-error policy in Decision_Log_RECOVER3.md)."
+    },
+    "contract_pdf_size_bytes": {
+      "type": "number",
+      "description": "RECOVER-3 \u2014 size of the stored PDF in bytes."
+    },
+    "contract_pdf_language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr",
+        "es"
+      ],
+      "description": "RECOVER-3 \u2014 the language the stored document was actually rendered in, after normalizeLocale was applied to `language`. Recorded separately so a fallback is visible in evidence instead of being indistinguishable from a deliberate choice."
+    },
+    "contract_pdf_source_snapshot_hash": {
+      "type": "string",
+      "description": "RECOVER-3 \u2014 the acceptance_snapshot_hash the document was built from, re-verified at generation time. Proves WHICH accepted terms the PDF represents."
+    },
+    "contract_email_status": {
+      "type": "string",
+      "enum": [
+        "not_ready",
+        "pending",
+        "sending",
+        "sent",
+        "failed_retryable",
+        "failed_permanent",
+        "suppressed"
+      ],
+      "default": "not_ready",
+      "description": "RECOVER-3 \u2014 delivery state of the contractual email. Starts at 'not_ready' at acceptance and only moves to 'pending' once the PDF is stored and verified: an email must never claim a document exists before it does. A failure here never touches Mandate.status and never blocks RECOVER-2 \u2014 the merchant can always download the document instead."
+    },
+    "contract_email_attempt_count": {
+      "type": "number",
+      "default": 0
+    },
+    "contract_email_last_attempt_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-3 \u2014 start of the most recent send attempt; also the 'sending' lease timestamp."
+    },
+    "contract_email_next_retry_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "contract_email_last_error_code": {
+      "type": "string",
+      "description": "RECOVER-3 \u2014 normalized send error code (send_failed, recipient_invalid, sender_not_configured, ...). Never the provider's raw body."
+    },
+    "contract_email_sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "contract_email_provider_message_id": {
+      "type": "string",
+      "description": "RECOVER-3 \u2014 provider reference for the accepted message when the platform returns one. Its presence is one of the guards that stop a retry from sending a second copy."
+    },
+    "contract_email_recipient": {
+      "type": "string",
+      "description": "RECOVER-3 \u2014 the address the copy was actually sent to, always equal to signed_by_email at send time. Stored so an audit does not have to assume it."
+    },
+    "contract_delivery_idempotency_key": {
+      "type": "string",
+      "description": "RECOVER-3 \u2014 generated server-side at activation and re-derived at send time from (mandate, pdf hash, recipient, template version, language). A retry that finds this claim already satisfied returns the existing result instead of sending again; only an explicit, logged admin resend is allowed to produce a second copy."
     }
   },
   "required": [

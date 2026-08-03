@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Link, useSearchParams, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import RecoverContractAdminPanel from '@/components/admin/RecoverContractAdminPanel';
 
 export default function AdminActivationDetail(){
   const [sp] = useSearchParams();
@@ -101,6 +102,9 @@ export default function AdminActivationDetail(){
           <div>Status: {mandates[0].status} · Signed by {mandates[0].signed_by_name} · {mandates[0].signed_at}</div>
         ) : 'No mandate'}</div>
       </div>
+
+      {/* RECOVER-3 — contract document state for this activation's mandate. */}
+      {mandates?.[0] && <RecoverContractAdminPanel mandateId={mandates[0].id} />}
 
       <div className="grid md:grid-cols-2 gap-3">
         <div className="rounded-xl border p-4 bg-card">

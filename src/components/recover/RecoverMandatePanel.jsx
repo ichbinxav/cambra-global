@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ShieldCheck, CheckCircle2 } from "lucide-react";
 import RecoverMandateModal from "./RecoverMandateModal";
 import PaymentMethodSetupCard from "./PaymentMethodSetupCard";
+import ContractDocumentCard from "./ContractDocumentCard";
 
 const BLOCKER_COPY = {
   no_verified_baseline:
@@ -89,6 +90,12 @@ export default function RecoverMandatePanel() {
           <p className="text-[12.5px] text-white/60 leading-relaxed">
             This deal isn't at the authorization stage yet — we'll let you know as soon as it is.
           </p>
+        )}
+
+        {/* RECOVER-3 — the agreement copy. Never blocks the payment-method setup:
+            an authorization with a still-generating PDF is a normal state. */}
+        {isAccepted && activation && (
+          <ContractDocumentCard dealActivationId={ctx.deal_activation_id || activation.id} />
         )}
 
         {isAccepted && activation && (

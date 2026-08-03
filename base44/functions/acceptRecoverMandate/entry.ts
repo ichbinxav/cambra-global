@@ -22,6 +22,10 @@
 //   6. supersede older active mandates
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
+import { normalizeLocale } from '../../shared/emailLocale.ts';
+import { RECOVER_CONTRACT_TEMPLATE_VERSION } from '../../shared/recoverContractTemplates.ts';
+import { deliveryIdempotencyKey, logContractEvent } from '../../shared/recoverContractState.ts';
+import { fireAndForget } from '../../shared/invokeInternal.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   acceptanceEvidence,
@@ -102,8 +106,27 @@ export default async function (req: Request): Promise<Response> {
     // 3 — the mandate becomes active BEFORE anything is authorized.
     const evidence = acceptanceEvidence(req, authenticatedAt);
     const signedAt = new Date().toISOString();
+    // RECOVER-3 — the document language is FROZEN here, from the STORED
+    // Brand.locale, never from a header or the browser: a copy regenerated months
+    // later must read in the language the merchant accepted in.
+    const language = normalizeLocale(owned.brand?.locale);
     await svc.entities.Mandate.update(mandate_id, {
       status: 'active',
+      // RECOVER-3 — delivery is marked owed BEFORE anything is attempted and
+      // WITHOUT waiting for RECOVER-2. If the non-blocking generation call below
+      // is lost when this invocation ends, the reconciler still finds this row.
+      language,
+      contract_pdf_pending: true,
+      contract_pdf_status: 'pending',
+      contract_pdf_attempt_count: 0,
+      contract_email_status: 'not_ready',
+      contract_email_attempt_count: 0,
+      contract_delivery_idempotency_key: deliveryIdempotencyKey({
+        mandateId: mandate_id,
+        snapshotHash: freshHash,
+        templateVersion: RECOVER_CONTRACT_TEMPLATE_VERSION,
+        language,
+      }),
       signed_by_name: String(signed_by_name).trim(),
       signed_by_email: email,
       signed_by_role: signed_by_role || '',
@@ -185,6 +208,13 @@ export default async function (req: Request): Promise<Response> {
       actor_email: email,
       created_at: signedAt,
     }).catch(() => null);
+
+    // RECOVER-3 — queue the contractual PDF WITHOUT blocking this response: the
+    // merchant continues straight to the payment-method setup. The document is a
+    // later representation of an acceptance that is already valid, so nothing
+    // here may fail the acceptance.
+    await logContractEvent(svc, 'recover_contract_pdf_queued', { ...mandate, id: mandate_id }, { language }, email);
+    fireAndForget(req, 'generateRecoverContractPdf', { mandate_id });
 
     return Response.json({
       ok: true,
