@@ -87,6 +87,33 @@ discarded — dropping an `activated_count` would overcharge a merchant.
 Production check on 2026-08-03: **1 `ReferralLink` row, 0 duplicates**, so no
 consolidation backlog exists; the helper handles any future race.
 
+## Live end-to-end verification (2026-08-03, throwaway data, purged after)
+
+Ran the whole loop on a demo brand, then deleted every row created.
+
+| Step | Result |
+|---|---|
+| 1st activation → ladder + scheduling | `activated_count` 1, fee 20%, rule effective `2026-09-01`, previous rule closed `2026-08-31` |
+| Replay of the same activation | `already_counted`, counter unchanged |
+| Report for **2026-08** | `fee_pct` **25** (pre-discount month) |
+| Report for **2026-09** | `fee_pct` **20** |
+| Invoice for the Aug report | €250 (25% of €1,000) |
+| Invoice for the Sep report | €200 (20%), snapshot carries `billing_rule_id` + `activated_count` |
+| 6th activation | fee **5%** — floor holds (25 − 30 would be negative) |
+| Injected duplicate `ReferralLink` | consolidated on next read: oldest row won, counters summed (`times_used` 4, `activated_count` 2) |
+| Invoice PDF | generated, applied percentage printed |
+
+Two real bugs surfaced and were fixed:
+
+- **`generateInvoiceFromReport` legacy fallback was date-blind.** When
+  `report.node_fee` is 0 it read "newest active rule", which would have applied a
+  September discount to an August invoice — the exact retroactivity Terms §8
+  forbids. It now calls `resolveFeePctForMonth` with the report's month, so the
+  invoice and the report always agree.
+- **`generateInvoicePdf` could never upload.** It passed a bare `Blob` to
+  `UploadPrivateFile`, which rejects it ("'file' field is an empty object"); every
+  PDF request returned 500. Now a named `File`.
+
 ## Out of scope (unchanged)
 
 Programme mechanics (percentages, floor, step) · anonymous teaser · `/Referrals`
