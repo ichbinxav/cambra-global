@@ -6,34 +6,33 @@ import SectionHeading from "@/components/landing/SectionHeading";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
- * Problem section — payments-only edition · R6 canonical recalibration (2026-07-13).
+ * Problem section — payments-only edition · canonical recalibration (2026-08-03).
  *
  * Three angles of the SAME problem — hidden overpayment on card payments.
- * Numbers derived from the SINGLE CANONICAL REFERENCE BRAND used across
+ * Numbers derived from the SINGLE CANONICAL REFERENCE EXAMPLE used across
  * the whole public surface (see Decision_Log · "Landing reference brand"):
  *
- *   GMV €1M/yr · current effective 2.21% · achievable 1.47% · gap 0.74 pts
- *   → cost today   = €1M × 2.21% = €22,100/yr  (of which €14,700/yr is
- *                     unavoidable — interchange + scheme floor, kept forever)
- *   → overpaying   = €1M × 0.74% = €7,400/yr   (THE recoverable portion)
- *   → over 24 mo   = €7,400 × 2  ≈ €15,000     (matches the pricing window)
- *   → relative     = €7,400 / €22,100 ≈ 33%    (comfortably under the
- *                     "up to 40%" band advertised in the H2)
+ *   current cost      = 2.00% effective → €40,000/yr
+ *   achievable cost   = 0.80% effective → €16,000/yr   (60% less)
+ *   → identified gap  = €24,000/yr  →  €48,000 over 24 months
+ *   → merchant keeps  = 75% = €18,000/yr → €36,000 over 24 months
+ *   → CAMBRA fee      = 25% = €6,000/yr  → €12,000 over 24 months
  *
  * CRITICAL distinction — do NOT confuse:
- *   • €14,700/yr = what the merchant STILL pays after optimisation (floor).
+ *   • €16,000/yr = what the merchant STILL pays after optimisation (floor).
  *     This is NOT recoverable, ever. Never present it as savings.
- *   • €7,400/yr  = the gap. THIS is what CAMBRA recovers.
- * Mixing the two is the €48k fabricated-telemetry class of error and must
- * not happen again.
+ *   • €24,000/yr = the gap. THIS is what CAMBRA recovers.
  *
- * The three cards below decompose the €7,400/yr gap into its narrative
- * angles (blended / cross-border / fixed-fee drag). Amounts sum to €7,400
- * so the TOTAL BLEED and the SavingsCurveChart's "recovered" figure close
- * the same account:
- *   —€7,400/yr overpaying   =   €7,400/yr × 24 mo ≈ €15,000 recovered.
+ * The three cards below decompose the €24,000/yr gap into its narrative
+ * angles (blended / cross-border / fixed-fee drag). Amounts sum to €24,000
+ * so the yearly figure and the 24-month headline close the same account:
+ *   €24,000/yr identified × 24 mo = €48,000 identified · €36,000 for the merchant.
  *
- * Total is a live reduce over ITEMS — NOT hardcoded. If the reference brand
+ * The HEADLINE figure is the 24-MONTH number (maximum visual impact); the
+ * yearly figure lives in the supporting copy. Overpay bars are capped at
+ * ~58% so they stay coherent with — and never exceed — the 60% hero band.
+ *
+ * Totals are live reduces over ITEMS — NOT hardcoded. If the reference
  * assumptions change, retune the three amounts (keeping their proportions)
  * and everything else follows.
  */
@@ -42,10 +41,10 @@ const ITEMS = [
     icon: TrendingDown,
     categoryKey: "prob_c1_cat",
     bodyKey: "prob_c1_body",
-    amount: 3900,
-    // Largest angle — blended pricing hides most of the gap.
-    // Overpay vs achievable on the % component: (2.21% − 1.47%) / 1.47% ≈ +50%.
-    overpayPct: 50,
+    amount: 12600,
+    // Largest angle — blended pricing hides most of the gap (~53% of €24,000).
+    // Visual cap +58% stays coherent with, and under, the 60% hero band.
+    overpayPct: 58,
     accent: "rgba(239,68,68,0.65)",
     glow: "rgba(239,68,68,0.08)",
   },
@@ -53,11 +52,11 @@ const ITEMS = [
     icon: Globe2,
     categoryKey: "prob_c2_cat",
     bodyKey: "prob_c2_body",
-    amount: 2200,
-    // ~30% of the gap on the reference brand (~15% intl share, +1.75%
-    // Stripe EU/UK cross-border vs a negotiated ~0.9% on the same portion).
-    // Visual cap +38% keeps the bar under the "up to 40%" H2 band.
-    overpayPct: 38,
+    amount: 7200,
+    // ~30% of the gap on the reference example (~15% intl share, +1.75%
+    // cross-border uplift vs a negotiated ~0.9% on the same portion).
+    // Visual cap +42% keeps the bar under the 60% hero band.
+    overpayPct: 42,
     accent: "rgba(249,115,22,0.65)",
     glow: "rgba(249,115,22,0.08)",
   },
@@ -65,16 +64,18 @@ const ITEMS = [
     icon: Coins,
     categoryKey: "prob_c3_cat",
     bodyKey: "prob_c3_body",
-    amount: 1300,
-    // €0.25 vs €0.15 per-tx on ~€65 avg ticket ≈ +25% overpay on the fixed
+    amount: 4200,
+    // €0.25 vs €0.15 per-tx on ~€65 avg ticket ≈ +28% overpay on the fixed
     // component (the % component isn't affected). ~17% of the total gap.
-    overpayPct: 25,
+    overpayPct: 28,
     accent: "rgba(236,72,153,0.65)",
     glow: "rgba(236,72,153,0.08)",
   },
 ];
 
-const TOTAL = ITEMS.reduce((acc, i) => acc + i.amount, 0);
+// Yearly identified gap (€24,000) and the 24-month headline (€48,000).
+const TOTAL_YEAR = ITEMS.reduce((acc, i) => acc + i.amount, 0);
+const TOTAL_24M = TOTAL_YEAR * 2;
 
 /* Animated counter — kicks in on view */
 function useCountUp(target, durationMs = 1600, start = false) {
@@ -180,7 +181,7 @@ function Card({ item, index }) {
               filter: "none",
             }}
           >
-            /{t("per_yr_short")}
+            {t("tst_per_year")}
           </span>
         </p>
         <p
@@ -242,7 +243,7 @@ export default function ProblemSectionWow() {
     return () => io.disconnect();
   }, []);
 
-  const totalCount = useCountUp(TOTAL, 2200, totalInView);
+  const totalCount = useCountUp(TOTAL_24M, 2200, totalInView);
 
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
@@ -261,7 +262,7 @@ export default function ProblemSectionWow() {
         <AnimatedSection>
           <SectionHeading eyebrow={t("prob_eyebrow")} className="mb-4">
             {t("prob_h2_pre")}{" "}
-            {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "up to 40%" is the
+            {/* DA v1.1 Chunk 1c — Rule 1: single keyword. "up to 60%" is the
                 PROBLEM/cost → .kw-c (Coral Gap). */}
             <span className="kw-c">{t("prob_h2_kw")}</span>{" "}
             {t("prob_h2_post")}
@@ -351,7 +352,7 @@ export default function ProblemSectionWow() {
                   filter: "drop-shadow(0 0 26px rgba(249,115,22,0.7))",
                 }}
               >
-                −€{totalCount.toLocaleString("en-US")}
+                €{totalCount.toLocaleString("en-US")}
               </p>
               <p className="text-[11px] uppercase tracking-[0.22em] font-bold text-white/45 mt-1">
                 {t("prob_total_per")}

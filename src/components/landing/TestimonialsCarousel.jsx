@@ -2,6 +2,7 @@ import React from "react";
 import { Quote, TrendingUp } from "lucide-react";
 import InitialsAvatar from "@/components/shared/InitialsAvatar";
 import SectionHeading from "@/components/landing/SectionHeading";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 // ⚠️ ILLUSTRATIVE / PLACEHOLDER testimonials — invented names + quotes.
 // Uses initials avatars (NOT photos) on purpose: a fake photo-realistic face
@@ -9,55 +10,50 @@ import SectionHeading from "@/components/landing/SectionHeading";
 // REPLACE with real, consented customer quotes (and real photos) before launch.
 const ITEMS = [
   {
-    category: "Payments",
     vertical: "Maison Épice",
-    quote: "We were paying 2.4% blended and thought that was just the cost of cards. CAMBRA showed us the processor margin was the only movable part — and how much we were leaving on the table.",
+    quoteKey: "tst_q1",
     name: "Camille Laurent",
-    role: "Founder",
+    roleKey: "tst_role_founder",
     revenue: "Maison Épice",
     before: "2.40%",
     after: "1.62%",
     savings: "€14K",
   },
   {
-    category: "Payments",
     vertical: "Atelier Nord",
-    quote: "The 3-minute audit was more transparent about our card fees than our PSP had been in three years. We saw exactly where the money leaked.",
+    quoteKey: "tst_q2",
     name: "Théo Mercier",
-    role: "COO",
+    roleKey: "tst_role_coo",
     revenue: "Atelier Nord",
     before: "2.15%",
     after: "1.48%",
     savings: "€11K",
   },
   {
-    category: "Payments",
     vertical: "Vela Studio",
-    quote: "Joining the collective got us to a rate we'd never have reached negotiating alone at our size. Brands moving as one — that's the whole point.",
+    quoteKey: "tst_q3",
     name: "Sofia Ferran",
-    role: "Founder",
+    roleKey: "tst_role_founder",
     revenue: "Vela Studio",
     before: "2.55%",
     after: "1.70%",
     savings: "€9K",
   },
   {
-    category: "Payments",
     vertical: "Brün Coffee",
-    quote: "No retainer, no contract. They only got paid once our bank statements confirmed the savings. That alignment is rare.",
+    quoteKey: "tst_q4",
     name: "Lucas Petit",
-    role: "Finance lead",
+    roleKey: "tst_role_finance",
     revenue: "Brün Coffee",
     before: "2.30%",
     after: "1.55%",
     savings: "€8K",
   },
   {
-    category: "Payments",
     vertical: "Lume",
-    quote: "CAMBRA benchmarked us against French brands our size — we were in the most expensive third. Seeing that in one number changed how we think about payments.",
+    quoteKey: "tst_q5",
     name: "Inès Marchal",
-    role: "Founder",
+    roleKey: "tst_role_founder",
     revenue: "Lume",
     before: "2.60%",
     after: "1.75%",
@@ -66,6 +62,7 @@ const ITEMS = [
 ];
 
 function TestimonialCard({ item }) {
+  const { t } = useTranslation();
   return (
     <div
       className="relative rounded-2xl overflow-hidden p-6 shrink-0 w-[340px] sm:w-[380px]"
@@ -90,7 +87,7 @@ function TestimonialCard({ item }) {
       <div className="relative flex items-center gap-2 mb-4">
         <Quote size={13} style={{ color: "var(--voltio-2)" }} />
         <span className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: "var(--voltio-2)" }}>
-          {item.category}
+          {t("tst_category")}
         </span>
         <span className="text-white/30">·</span>
         <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-white/55">
@@ -108,7 +105,7 @@ function TestimonialCard({ item }) {
           letterSpacing: "-0.005em",
         }}
       >
-        "{item.quote}"
+        "{t(item.quoteKey)}"
       </p>
 
       {/* author */}
@@ -119,7 +116,7 @@ function TestimonialCard({ item }) {
             {item.name}
           </p>
           <p className="text-[10px] text-white/55 truncate">
-            {item.role} <span className="text-white/30">·</span> {item.revenue}
+            {t(item.roleKey)} <span className="text-white/30">·</span> {item.revenue}
           </p>
         </div>
       </div>
@@ -131,7 +128,7 @@ function TestimonialCard({ item }) {
       <div className="relative grid grid-cols-3 items-center gap-3">
         <div className="text-center">
           <p className="text-[9px] uppercase tracking-[0.22em] font-bold text-white/40 mb-1">
-            Before
+            {t("tst_before")}
           </p>
           <p
             className="font-black tabular-nums text-white/50"
@@ -147,7 +144,7 @@ function TestimonialCard({ item }) {
         </div>
         <div className="text-center">
           <p className="text-[9px] uppercase tracking-[0.22em] font-bold mb-1" style={{ color: "rgba(47,224,168,0.85)" }}>
-            After
+            {t("tst_after")}
           </p>
           <p
             className="font-black tabular-nums"
@@ -165,7 +162,7 @@ function TestimonialCard({ item }) {
           <div className="inline-flex items-center gap-1 mb-1">
             <TrendingUp size={9} style={{ color: "#2FE0A8" }} />
             <p className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: "rgba(47,224,168,0.85)" }}>
-              Saved
+              {t("tst_saved")}
             </p>
           </div>
           <p
@@ -185,7 +182,7 @@ function TestimonialCard({ item }) {
           >
             {item.savings}
           </p>
-          <p className="text-[9px] text-white/40 mt-0.5">/year</p>
+          <p className="text-[9px] text-white/40 mt-0.5">{t("tst_per_year")}</p>
         </div>
       </div>
     </div>
@@ -193,16 +190,17 @@ function TestimonialCard({ item }) {
 }
 
 export default function TestimonialsCarousel() {
+  const { t } = useTranslation();
   // Duplicate the list so the marquee loops seamlessly (-50% translate).
   const loop = [...ITEMS, ...ITEMS];
 
   return (
     <section id="testimonials" className="relative py-12 sm:py-16 overflow-hidden">
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
-        <SectionHeading eyebrow="Real findings" className="mb-10">
-          What brands
+        <SectionHeading eyebrow={t("tst_eyebrow")} className="mb-10">
+          {t("tst_h2_pre")}
           <br />
-          <span className="kw">actually recovered.</span>
+          <span className="kw">{t("tst_h2_kw")}</span>
         </SectionHeading>
       </div>
 

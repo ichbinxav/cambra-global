@@ -4,6 +4,7 @@ import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * Final CTA block — the WOW closer.
@@ -12,6 +13,7 @@ import { BRAND_ASSETS } from "@/lib/brandAssets";
  * background brand mark.
  */
 export default function StopLeavingMarginCTA() {
+  const { t } = useTranslation();
   return (
     <section className="relative py-16 sm:py-20 px-4 sm:px-6">
      {/* Dark closer pill — this section is a full-bleed cinematic dark block,
@@ -106,7 +108,7 @@ export default function StopLeavingMarginCTA() {
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "var(--voltio-2)" }} />
               </span>
               <span className="text-[11px] uppercase tracking-[0.28em] font-bold text-white/85">
-                The final call
+                {t("cta_final_eyebrow")}
               </span>
             </span>
           </motion.div>
@@ -127,10 +129,10 @@ export default function StopLeavingMarginCTA() {
               textShadow: "0 0 80px rgba(91,76,245,0.25)",
             }}
           >
-            Stop leaving
+            {t("cta_final_h2_pre")}
             <br />
             {/* Keyword highlight → violet→cyan gradient (reference style). */}
-            <span className="kw">margin on the table.</span>
+            <span className="kw">{t("cta_final_h2_kw")}</span>
           </motion.h2>
 
           {/* Supporting line */}
@@ -142,9 +144,9 @@ export default function StopLeavingMarginCTA() {
             className="mt-10 text-[17px] sm:text-[20px] text-white/65 mx-auto"
             style={{ lineHeight: 1.55, maxWidth: 620 }}
           >
-            Turn operating costs into recovered margin.
+            {t("cta_final_sub1")}
             <br />
-            <span className="text-white">Verified. Immediate. Aligned incentives.</span>
+            <span className="text-white">{t("cta_final_sub2")}</span>
           </motion.p>
 
           {/* CTAs — premium dual */}
@@ -167,13 +169,13 @@ export default function StopLeavingMarginCTA() {
                 }}
               >
                 <Sparkles size={16} style={{ color: "#ffffff" }} />
-                <span>Run free audit</span>
+                <span>{t("cta_final_primary")}</span>
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
 
             <div className="flex-1">
-              <JoinWaitlistButton variant="ghost" label="Join to recover" fullWidth />
+              <JoinWaitlistButton variant="ghost" label={t("cta_final_secondary")} fullWidth />
             </div>
           </motion.div>
 
@@ -188,14 +190,14 @@ export default function StopLeavingMarginCTA() {
           >
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck size={12} style={{ color: "rgba(139,123,255,0.9)" }} />
-              3 minutes
+              {t("cta_final_t1")}
             </span>
             <span style={{ color: "rgba(139,123,255,0.6)" }}>•</span>
-            <span>No credit card</span>
+            <span>{t("cta_final_t2")}</span>
             <span style={{ color: "rgba(139,123,255,0.6)" }}>•</span>
-            <span>No contract</span>
+            <span>{t("cta_final_t3")}</span>
             <span style={{ color: "rgba(139,123,255,0.6)" }}>•</span>
-            <span className="text-white/80">Pay only if we save you money</span>
+            <span className="text-white/80">{t("cta_final_t4")}</span>
           </motion.div>
         </div>
       </div>

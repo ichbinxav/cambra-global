@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
 import SectionHeading from "@/components/landing/SectionHeading";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * Founder letter — adapted to dark editorial theme.
@@ -11,6 +12,7 @@ const FOUNDER_PHOTO =
   "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d863d71f2_0347F92E-E1B9-4977-A6B1-85897923556A.jpeg";
 
 export default function FounderLetter() {
+  const { t } = useTranslation();
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
       {/* ambient halo */}
@@ -26,10 +28,10 @@ export default function FounderLetter() {
 
       <div className="relative max-w-4xl mx-auto px-6 sm:px-10">
         {/* Header — unified */}
-        <SectionHeading eyebrow="Meet the founder" className="mb-12 sm:mb-16">
-          A note from
+        <SectionHeading eyebrow={t("fl_eyebrow")} className="mb-12 sm:mb-16">
+          {t("fl_h2_pre")}
           <br />
-          <span className="kw">the founder.</span>
+          <span className="kw">{t("fl_h2_kw")}</span>
         </SectionHeading>
 
         {/* Two columns */}
@@ -96,7 +98,7 @@ export default function FounderLetter() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.
+                {t("fl_p1")}
               </p>
 
               <p
@@ -113,7 +115,7 @@ export default function FounderLetter() {
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                That's why I started CAMBRA.
+                {t("fl_p2")}
               </p>
 
               <div className="flex-1" />
@@ -136,7 +138,7 @@ export default function FounderLetter() {
                     textTransform: "uppercase",
                   }}
                 >
-                  Founder
+                  {t("fl_role")}
                 </span>
               </div>
             </div>
