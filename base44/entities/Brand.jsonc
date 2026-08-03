@@ -130,6 +130,18 @@
     "anon_session_id": {
       "type": "string",
       "description": "Set when the Brand was created during an anonymous Analyzer session, before the user signed up. Cleared on claim. UUID v4 generated client-side, validated server-side. Never exposed to other users."
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "RECOVER-2 (2026-08-03) \u2014 id of the Stripe Customer, IN CAMBRA'S OWN BILLING ACCOUNT, that future success-fee invoices are charged to. THE CUSTOMER OBJECT LIVES ON THE BRAND, NOT ON Organization: the Organization / OrganizationMember entities are the API-platform tenancy (quotas, rate limits) and are never linked to a Brand, so the Brand is the only record that maps 1:1 to the business we bill. Written by startPaymentMethodSetup (service role) the first time a merchant sets up a payment method, and reused on every later setup so a business never accumulates duplicate Customers. NEVER a merchant-side Stripe id: the read-only OAuth connection to the merchant's own Stripe (StripeConnection) is a different relationship and nothing crosses between them. MODE-SCOPED: a Customer created in the sandbox does not exist in live, which is why stripe_billing_mode is recorded next to it on DealActivation \u2014 see that field. Populated for at most one mode at a time; switching CAMBRA to live billing means this id must be re-created, not reused."
+    },
+    "stripe_billing_mode": {
+      "type": "string",
+      "enum": [
+        "test",
+        "live"
+      ],
+      "description": "RECOVER-2 (2026-08-03) \u2014 which Stripe environment stripe_customer_id belongs to ('test' = CAMBRA's sandbox acct_1TqFip2Vr0WW305e, 'live' = acct_1TqFifJw0ka9dDf4). Exists because a Stripe Sandbox is a SEPARATE account with its own object space: a customer id from the sandbox is meaningless in live and would fail with a 'no such customer' at the worst possible moment (the first real invoice). startPaymentMethodSetup refuses to reuse a stored customer whose mode does not match the mode it is running in, and creates a fresh one instead."
     }
   },
   "required": [

@@ -103,6 +103,38 @@
     "last_updated": {
       "type": "string",
       "format": "date-time"
+    },
+    "payment_method_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "setup_started",
+        "ready",
+        "failed"
+      ],
+      "default": "none",
+      "description": "RECOVER-2 (2026-08-03) \u2014 state of the merchant's payment method for the success fee on THIS activation. 'setup_started' = a SetupIntent exists but the merchant has not completed it (so nothing is chargeable yet); 'ready' = a payment method is attached and usable for future invoices. DELIBERATELY SEPARATE FROM status: the mandate (status='authorized') is the legal authorization to act, this is the operational ability to collect. An activation can be authorized with payment_method_status='none' \u2014 that is a real, expected state, and it is the gap that must be closed before the first invoice, not a contradiction. Never set to 'ready' from a client payload: only from a server-side read of the SetupIntent (or, later, the Stripe webhook), because a browser can claim anything."
+    },
+    "stripe_setup_intent_id": {
+      "type": "string",
+      "description": "RECOVER-2 \u2014 id of the most recent SetupIntent created for this activation, in CAMBRA's own billing account. Kept so the setup can be resumed (the same intent is reused while it is still usable) instead of littering the account with one intent per page reload."
+    },
+    "stripe_payment_method_id": {
+      "type": "string",
+      "description": "RECOVER-2 \u2014 the payment method the merchant authorized for future success-fee invoices, as confirmed by the SetupIntent. Read from Stripe server-side, never accepted from the client."
+    },
+    "stripe_billing_mode": {
+      "type": "string",
+      "enum": [
+        "test",
+        "live"
+      ],
+      "description": "RECOVER-2 \u2014 which CAMBRA Stripe environment the ids above belong to ('test' = sandbox acct_1TqFip2Vr0WW305e, 'live' = acct_1TqFifJw0ka9dDf4). A Stripe Sandbox is a separate account with its own object space, so a setup intent / payment method / customer from the sandbox does not exist in live. Recorded per activation so a mode switch is DETECTED and the setup redone, rather than failing with 'no such payment method' on the first real invoice."
+    },
+    "payment_method_ready_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-2 \u2014 when the payment method became usable (payment_method_status \u2192 'ready'), verified server-side against Stripe."
     }
   },
   "required": [

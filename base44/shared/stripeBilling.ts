@@ -65,6 +65,17 @@ const PUBLISHABLE_KEY_ENV: Record<StripeMode, string> = {
 // would make every importer un-runnable until then. They live in
 // shared/stripeWebhookSecret.ts, imported only by the webhook handler.
 
+/**
+ * The mode CAMBRA's own billing runs in RIGHT NOW. Read from the environment
+ * (STRIPE_BILLING_MODE) and defaulting to 'test', because the wrong default here
+ * is not a bug — it is a real charge against a real merchant. Live billing is
+ * switched on deliberately by setting the variable to 'live', never by omission.
+ */
+export function resolveBillingMode(): StripeMode {
+  const raw = (Deno.env.get('STRIPE_BILLING_MODE') || 'test').trim().toLowerCase();
+  return raw === 'live' ? 'live' : 'test';
+}
+
 export function normalizeMode(mode: unknown): StripeMode {
   if (mode === 'test' || mode === 'live') return mode;
   throw new Error('stripe_mode_required: pass "test" or "live" explicitly');
