@@ -184,7 +184,11 @@ describe("applyReferralActivation — crediting an activated referral", () => {
 
   it("rejects self-referral", async () => {
     svc = seedChain();
-    svc.store.Brand[0].contact_email = REFERRER; // referred == referrer
+    // Keep the referred business's email intact (otherwise its session is no
+    // longer found and we'd exit at 'no_referral', never reaching the guard).
+    // Instead make the LINK belong to that same merchant: the code they used
+    // is their own.
+    svc.store.ReferralLink[0].owner_email = REFERRED;
     const res = await applyReferralActivation(svc, { brand_id: "brand_referred", now: NOW });
     expect(res.applied).toBe(false);
     expect(res.reason).toBe("self_referral");
