@@ -614,13 +614,18 @@ export default {
     ric_disclaimer:  "Illustratif — un commerce avec 2 M€ de ventes annuelles, payant 2,30 % quand 0,92 % était possible. Lancez l'analyseur pour votre chiffre réel.",
     ric_chart_aria:  "Projection illustrative de la récupération cumulée des paiements sur 24 mois",
 
-    /* Landing — Founding150Section */
-    f150_eyebrow: "FOUNDING 150",
-    f150_h2_l1:   "150 commerces.",
-    f150_h2_l2:   "Gratuit à vie.",
-    f150_h2_kw:   "Une base de données.",
-    f150_sub:     "Nous sélectionnons 150 commerces indépendants (200 k€–2 M€ de ventes annuelles) pour construire la première base européenne du coût réel des paiements. En échange : analyse complète et suivi continu, gratuits, pour toujours.",
-    f150_cta:     "Réserver ma place",
+    /* REFERRAL-3 — section parrainage de la landing (remplace Founding150Section).
+       Les chiffres viennent de src/lib/referralProgram.js — jamais codés en dur. */
+    ref_land_eyebrow:  "PROGRAMME DE PARRAINAGE",
+    ref_land_h2_l1:    "Amenez un commerce.",
+    ref_land_h2_kw:    "Baissez votre commission.",
+    ref_land_sub:      "Pour chaque commerce que vous amenez et qui active ses économies, votre commission baisse de {step} points — jusqu'à un minimum de {floor}. Et celui qui arrive recommandé par vous démarre déjà à un meilleur prix : {entry} au lieu des {base} standard.",
+    ref_land_trigger:  "Compté uniquement sur des économies réelles et vérifiées — jamais sur une inscription ou un clic.",
+    ref_land_t1_label: "Par filleul activé",
+    ref_land_t2_label: "Plancher — jamais moins",
+    ref_land_t3_label: "Commission d'entrée de votre filleul",
+    ref_land_cta:      "Lancer mon analyse gratuite",
+    ref_land_how:      "Comment ça marche",
 
     /* I18N-GAP — Landing TrustSecuritySection */
     trust_sec_eyebrow: "CONFIANCE & SÉCURITÉ",

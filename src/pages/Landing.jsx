@@ -17,7 +17,7 @@ import InStoreUpsellStrip from "@/components/landing/InStoreUpsellStrip";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 import TheStackSection from "@/components/landing/TheStackSection";
 import RealImpactSection from "@/components/landing/RealImpactSection";
-import Founding150Section from "@/components/landing/Founding150Section";
+import ReferralProgramSection from "@/components/landing/ReferralProgramSection";
 import TrustSecuritySection from "@/components/landing/TrustSecuritySection";
 
 /* FIX 12 — JSON-LD structured data for SoftwareApplication */
@@ -462,7 +462,7 @@ export default function Landing() {
         <RealImpactSection />
         <PricingDual />
         <TestimonialsCarousel />
-        <Founding150Section />
+        <ReferralProgramSection />
         <TrustSecuritySection />
         <FounderLetter />
         <StopLeavingMarginCTA />

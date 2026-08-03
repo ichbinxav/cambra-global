@@ -614,13 +614,18 @@ export default {
     ric_disclaimer:  "Ilustrativo — un comercio con 2 M€ de ventas anuales, pagando un 2,30 % cuando el 0,92 % era posible. Ejecuta el analizador para tu cifra real.",
     ric_chart_aria:  "Proyección ilustrativa de la recuperación acumulada de pagos en 24 meses",
 
-    /* Landing — Founding150Section */
-    f150_eyebrow: "FOUNDING 150",
-    f150_h2_l1:   "150 comercios.",
-    f150_h2_l2:   "Gratis para siempre.",
-    f150_h2_kw:   "Una base de datos.",
-    f150_sub:     "Seleccionamos 150 comercios independientes (200k–2M € de ventas anuales) para construir la primera base europea del coste real de los pagos. A cambio: análisis completo y seguimiento continuo, gratis, para siempre.",
-    f150_cta:     "Reservar mi plaza",
+    /* REFERRAL-3 — sección de referidos de la landing (sustituye Founding150Section).
+       Las cifras se inyectan desde src/lib/referralProgram.js — nunca hardcodeadas. */
+    ref_land_eyebrow:  "PROGRAMA DE REFERIDOS",
+    ref_land_h2_l1:    "Trae un comercio.",
+    ref_land_h2_kw:    "Baja tu comisión.",
+    ref_land_sub:      "Por cada negocio que traigas y active su ahorro, tu comisión baja {step} puntos — hasta un mínimo del {floor}. Y quien llega recomendado por ti empieza ya con mejor precio: {entry} en vez del {base} estándar.",
+    ref_land_trigger:  "Solo cuenta el ahorro real y verificado — nunca un registro ni un clic.",
+    ref_land_t1_label: "Por cada referido activado",
+    ref_land_t2_label: "Suelo — nunca menos",
+    ref_land_t3_label: "Comisión de entrada de quien traes",
+    ref_land_cta:      "Empieza tu análisis gratis",
+    ref_land_how:      "Cómo funciona",
 
     /* I18N-GAP — Landing TrustSecuritySection */
     trust_sec_eyebrow: "CONFIANZA Y SEGURIDAD",

@@ -646,13 +646,18 @@ export default {
     ric_disclaimer:  "Illustrative — a business with €2M in yearly sales, paying 2.30% when 0.92% was possible. Run the analyzer for your real number.",
     ric_chart_aria:  "Illustrative projection of cumulative payment recovery over 24 months",
 
-    /* Landing — Founding150Section */
-    f150_eyebrow: "FOUNDING 150",
-    f150_h2_l1:   "150 businesses.",
-    f150_h2_l2:   "Free forever.",
-    f150_h2_kw:   "One dataset.",
-    f150_sub:     "We're selecting 150 independent businesses (€200k–€2M in annual sales) to build Europe's first database of what payments really cost. In exchange: full analysis and ongoing monitoring, free, forever.",
-    f150_cta:     "Claim my spot",
+    /* REFERRAL-3 — Landing referral section (replaces Founding150Section).
+       Figures are injected from src/lib/referralProgram.js — never hardcoded. */
+    ref_land_eyebrow:  "REFERRAL PROGRAMME",
+    ref_land_h2_l1:    "Bring a business.",
+    ref_land_h2_kw:    "Lower your fee.",
+    ref_land_sub:      "For every business you bring that activates its savings, your fee drops {step} points — down to a minimum of {floor}. And whoever comes recommended by you starts on a better price: {entry} instead of the standard {base}.",
+    ref_land_trigger:  "Counted only on real, verified savings — never on a signup or a click.",
+    ref_land_t1_label: "Per activated referral",
+    ref_land_t2_label: "Floor — never lower",
+    ref_land_t3_label: "Entry fee for whoever you bring",
+    ref_land_cta:      "Start your free analysis",
+    ref_land_how:      "How it works",
 
     /* I18N-GAP — Landing TrustSecuritySection */
     trust_sec_eyebrow: "TRUST & SECURITY",
