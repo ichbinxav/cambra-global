@@ -26,6 +26,8 @@ const MANIFEST = [
   "applyReferralActivation", "getMyReferralStatus",
   // RECOVER-1 (2026-08-03) — Recover Margin mandate acceptance surface.
   "getRecoverAcceptanceContext", "startRecoverAcceptance", "acceptRecoverMandate",
+  // RECOVER-2 (2026-08-03) — Stripe billing account diagnostics.
+  "stripeBillingKeyCheck",
   "answerAgentQuestion", "apiAuth", "apiOpenApiSpec", "apiV1", "approveAgentRun",
   "authzScope", "benchmarkLearningEngine", "billApiUsage", "blogAgent",
   "brainOrchestrator", "buildInfrastructureGraph", "chatChiefOrchestrator",
