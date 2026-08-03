@@ -82,6 +82,7 @@ const AdminInvoices = lazy(() => import('@/pages/admin/AdminInvoices'));
 const AdminWaitlist = lazy(() => import('@/pages/admin/AdminWaitlist'));
 import Invoices from '@/pages/Invoices';
 import Vault from '@/pages/Vault';
+import Referrals from '@/pages/Referrals';
 import ConnectIntegrations from '@/pages/ConnectIntegrations';
 import IntegrationsCallback from '@/pages/IntegrationsCallback';
 import BrandProfile from '@/pages/BrandProfile';
@@ -258,6 +259,8 @@ const AuthenticatedApp = () => {
           <Route path="/Account" element={withBoundary(<Account />)} />
           <Route path="/Invoices" element={withBoundary(<Invoices />)} />
           <Route path="/Vault" element={withBoundary(<Vault />)} />
+          <Route path="/Referrals" element={withBoundary(<Referrals />)} />
+          <Route path="/referrals" element={<Navigate to="/Referrals" replace />} />
           <Route path="/ConnectIntegrations" element={withBoundary(<ConnectIntegrations />)} />
           <Route path="/IntegrationsCallback" element={withBoundary(<IntegrationsCallback />)} />
         </Route>

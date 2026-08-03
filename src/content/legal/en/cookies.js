@@ -44,6 +44,7 @@ export default {
       note: "Cleared automatically when the browser tab closes.",
       rows: [
         { name: "cambra_redirect_after_login", purpose: "Remembers the page you were trying to reach so you land back on it after signing in", duration: "Until the tab closes", category: "Strictly necessary" },
+        { name: "cambra_ref_code", purpose: "Remembers the referral code of the business whose invite link you opened, so the referral can still be recorded when you run your analysis a few screens later. An opaque random code, not derived from personal data", duration: "Until the tab closes", category: "Strictly necessary" },
         { name: "cambra_chat_conv", purpose: "Remembers the active conversation in the administration chat (admin accounts only)", duration: "Until the tab closes", category: "Functional" },
       ],
     },

@@ -2,6 +2,28 @@
 // SWEEP-1 T3 (2026-07-24): extracted verbatim from src/lib/i18n.jsx — zero
 // key/value changes. i18n.jsx imports this file; API unchanged.
 export default {
+    /* REFERRAL-1 — programme de recommandation (page, accès tableau de bord, pricing) */
+    ref_title:            "Amenez d'autres commerces, payez moins",
+    ref_sub:              "Chaque commerce que vous amenez et qui commence à économiser réellement baisse votre commission de 5 points. De 25% jusqu'à 5%.",
+    ref_your_link:        "Votre lien personnel",
+    ref_copy:             "Copier le lien",
+    ref_copied:           "Copié ✓",
+    ref_loading:          "Chargement de votre lien…",
+    ref_fee_label:        "Votre commission",
+    ref_activated_label:  "Commerces qui économisent déjà",
+    ref_used_label:       "Utilisations de votre lien",
+    ref_next_step:        "Un commerce de plus qui économise réellement et votre commission passe à {next}.",
+    ref_floor_note:       "Vous êtes à {floor} — la commission la plus basse possible. Elle ne peut pas descendre plus bas.",
+    ref_how_title:        "Comment ça marche",
+    ref_how_1:            "Partagez votre lien. Quiconque l'ouvre réalise son propre audit de paiements, gratuitement.",
+    ref_how_2:            "Quand un commerce que vous avez amené commence à économiser réellement — confirmé sur ses propres relevés — votre commission baisse de 5 points.",
+    ref_how_3:            "Aucune limite au nombre de commerces que vous amenez, et votre commission ne descend jamais sous 5%. Le commerce que vous amenez démarre à 20% au lieu de 25%.",
+    ref_terms_link:       "Lire le détail contractuel dans nos Conditions",
+    dash_ref_title:       "Baissez votre commission en amenant d'autres commerces",
+    dash_ref_sub:         "5 points de moins pour chaque commerce amené qui commence à économiser.",
+    prc_referral_note:    "Ces 25% ne sont pas figés : ils baissent de 5 points pour chaque commerce que vous amenez et qui commence à économiser, jusqu'à 5%.",
+    prc_referral_link:    "Voir le programme de recommandation",
+
 
     nav_dashboard:    "Tableau de bord",
     nav_analyzer:     "Analyseur",

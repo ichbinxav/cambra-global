@@ -1,7 +1,7 @@
 {
   "name": "ReferralLink",
   "type": "object",
-  "description": "GROWTH-1 T2 (2026-08-01) \u2014 one opaque invite code per business. Created lazily by getMyReferralLink (service role) the first time an authenticated merchant asks for their invite link. The code is a RANDOM token (crypto RNG) \u2014 deliberately NOT derivable from the email or the brand id, so a code leaks nothing about its owner. times_used is incremented server-side by submitPaymentsAnalysis whenever an analysis arrives carrying this code (attribution measurement only \u2014 NO reward mechanics in this chunk, by design: first observe whether people invite, then design the incentive with data).",
+  "description": "GROWTH-1 T2 (2026-08-01) / REFERRAL-1 (2026-08-03) \u2014 one opaque invite code per business. Created lazily by getMyReferralLink (service role) the first time an authenticated merchant asks for their invite link. The code is a RANDOM token (crypto RNG) \u2014 deliberately NOT derivable from the email or the brand id, so a code leaks nothing about its owner. times_used is incremented server-side by submitPaymentsAnalysis whenever an analysis arrives carrying this code (link usage, NOT a discount trigger). activated_count is the CONTRACTUAL counter: it only moves when a referred business reaches verified, activated savings (REFERRAL-1) \u2014 it is never derived from times_used.",
   "properties": {
     "code": {
       "type": "string",
@@ -14,7 +14,12 @@
     "times_used": {
       "type": "number",
       "default": 0,
-      "description": "How many analyses were submitted carrying this code (?ref=). Incremented best-effort by submitPaymentsAnalysis when the code matches. Conversion measurement joins PaymentsAnalysisSession.referred_by_code back to this row."
+      "description": "How many analyses were submitted carrying this code (?ref=). Incremented best-effort by submitPaymentsAnalysis when the code matches. Measurement only \u2014 NOT the discount trigger."
+    },
+    "activated_count": {
+      "type": "number",
+      "default": 0,
+      "description": "REFERRAL-1 (2026-08-03) \u2014 number of referred businesses that reached VERIFIED AND ACTIVATED savings (the same 'verified savings' standard as Terms \u00a77). This is the only counter that moves the referrer's success fee (\u22125 points each, floor 5%). Set by CAMBRA once the referred merchant's savings are reconciled against real provider statements; never incremented by an anonymous funnel event."
     }
   },
   "required": [

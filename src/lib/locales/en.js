@@ -2,6 +2,28 @@
 // SWEEP-1 T3 (2026-07-24): extracted verbatim from src/lib/i18n.jsx — zero
 // key/value changes. i18n.jsx imports this file; API unchanged.
 export default {
+    /* REFERRAL-1 — referral program (page, dashboard entry, pricing note) */
+    ref_title:            "Bring other businesses, pay less",
+    ref_sub:              "Every business you bring that starts saving for real lowers your own fee by 5 points. From 25% down to 5%.",
+    ref_your_link:        "Your personal link",
+    ref_copy:             "Copy link",
+    ref_copied:           "Copied ✓",
+    ref_loading:          "Loading your link…",
+    ref_fee_label:        "Your fee now",
+    ref_activated_label:  "Businesses already saving",
+    ref_used_label:       "Times your link was used",
+    ref_next_step:        "One more business saving for real and your fee drops to {next}.",
+    ref_floor_note:       "You're at {floor} — the lowest fee there is. It can't go lower.",
+    ref_how_title:        "How it works",
+    ref_how_1:            "Share your link. Anyone who opens it runs their own free payments audit.",
+    ref_how_2:            "When a business you brought starts saving for real — confirmed on their own statements — your fee drops 5 points.",
+    ref_how_3:            "There's no limit to how many you bring, and the lowest your fee can go is 5%. The business you bring starts at 20% instead of 25%.",
+    ref_terms_link:       "Read the contractual detail in our Terms",
+    dash_ref_title:       "Lower your fee by bringing other businesses",
+    dash_ref_sub:         "5 points off for every business you bring that starts saving.",
+    prc_referral_note:    "This 25% isn't fixed: it drops 5 points for every business you bring that starts saving, down to 5%.",
+    prc_referral_link:    "See the referral program",
+
     /* meta */
 
     /* navigation */

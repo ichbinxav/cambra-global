@@ -41,6 +41,7 @@ export default {
       note: "Se borra automáticamente al cerrar la pestaña del navegador.",
       rows: [
         { name: "cambra_redirect_after_login", purpose: "Recuerda la página a la que intentabas llegar para devolverte a ella tras iniciar sesión", duration: "Hasta cerrar la pestaña", category: "Estrictamente necesario" },
+        { name: "cambra_ref_code", purpose: "Recuerda el código de referido del comercio cuyo enlace de invitación abriste, para que el referido pueda registrarse cuando ejecutas tu análisis unas pantallas después. Código aleatorio opaco, no derivado de datos personales", duration: "Hasta que se cierra la pestaña", category: "Estrictamente necesario" },
         { name: "cambra_chat_conv", purpose: "Recuerda la conversación activa en el chat de administración (solo cuentas de administrador)", duration: "Hasta cerrar la pestaña", category: "Funcional" },
       ],
     },

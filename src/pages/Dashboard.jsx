@@ -15,6 +15,7 @@ import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import DashboardHeroV2 from "@/components/dashboard/DashboardHeroV2";
 import AccountSummaryPanel from "@/components/dashboard/AccountSummaryPanel";
 import ActionCenter from "@/components/dashboard/ActionCenter";
+import ReferralTeaser from "@/components/dashboard/ReferralTeaser";
 import AnalysisTrendPanel from "@/components/dashboard/AnalysisTrendPanel";
 import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
 import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
@@ -477,6 +478,9 @@ export default function Dashboard() {
 
       {/* ── M8 — AI Insights (unchanged) ── */}
       <AIInsightsPanel />
+
+      {/* REFERRAL-1 T4 — discreet entry point to the referral program */}
+      <ReferralTeaser />
 
       {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

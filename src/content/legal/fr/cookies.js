@@ -41,6 +41,7 @@ export default {
       note: "Effacé automatiquement à la fermeture de l'onglet du navigateur.",
       rows: [
         { name: "cambra_redirect_after_login", purpose: "Mémorise la page que vous cherchiez à atteindre afin de vous y ramener après connexion", duration: "Jusqu'à la fermeture de l'onglet", category: "Strictement nécessaire" },
+        { name: "cambra_ref_code", purpose: "Mémorise le code de recommandation du commerce dont vous avez ouvert le lien d'invitation, afin que la recommandation puisse être enregistrée lorsque vous lancez votre analyse quelques écrans plus loin. Code aléatoire opaque, non dérivé de données personnelles", duration: "Jusqu'à la fermeture de l'onglet", category: "Strictement nécessaire" },
         { name: "cambra_chat_conv", purpose: "Mémorise la conversation active dans le chat d'administration (comptes administrateurs uniquement)", duration: "Jusqu'à la fermeture de l'onglet", category: "Fonctionnel" },
       ],
     },

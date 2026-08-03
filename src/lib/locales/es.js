@@ -2,6 +2,28 @@
 // SWEEP-1 T3 (2026-07-24): extracted verbatim from src/lib/i18n.jsx — zero
 // key/value changes. i18n.jsx imports this file; API unchanged.
 export default {
+    /* REFERRAL-1 — programa de referidos (página, acceso desde panel, pricing) */
+    ref_title:            "Trae a otros comercios y paga menos",
+    ref_sub:              "Cada comercio que traes y que empieza a ahorrar de verdad baja tu comisión 5 puntos. Del 25% hasta el 5%.",
+    ref_your_link:        "Tu enlace personal",
+    ref_copy:             "Copiar enlace",
+    ref_copied:           "Copiado ✓",
+    ref_loading:          "Cargando tu enlace…",
+    ref_fee_label:        "Tu comisión ahora",
+    ref_activated_label:  "Comercios que ya ahorran",
+    ref_used_label:       "Veces que se usó tu enlace",
+    ref_next_step:        "Un comercio más ahorrando de verdad y tu comisión baja al {next}.",
+    ref_floor_note:       "Estás en el {floor}: la comisión más baja que existe. No puede bajar más.",
+    ref_how_title:        "Cómo funciona",
+    ref_how_1:            "Comparte tu enlace. Quien lo abra hace su propia auditoría de pagos gratis.",
+    ref_how_2:            "Cuando un comercio que tú traes empieza a ahorrar de verdad — confirmado en sus propios extractos — tu comisión baja 5 puntos.",
+    ref_how_3:            "No hay límite de cuántos puedes traer, y tu comisión nunca baja del 5%. El comercio que traes empieza en el 20% en vez del 25%.",
+    ref_terms_link:       "Lee el detalle contractual en nuestros Términos",
+    dash_ref_title:       "Baja tu comisión trayendo a otros comercios",
+    dash_ref_sub:         "5 puntos menos por cada comercio que traes y empieza a ahorrar.",
+    prc_referral_note:    "Este 25% no es fijo: baja 5 puntos por cada comercio que traes y empieza a ahorrar, hasta el 5%.",
+    prc_referral_link:    "Ver el programa de referidos",
+
 
     nav_dashboard:    "Panel",
     nav_analyzer:     "Analizador",
