@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import PageHero from "@/components/shared/PageHero";
 import ReportsKPIStrip from "@/components/reports/ReportsKPIStrip";
 import EffectiveFeePanel from "@/components/reports/EffectiveFeePanel";
+import RecoverMandatePanel from "@/components/recover/RecoverMandatePanel";
 
 export default function Reports() {
   const [results, setResults] = useState([]);
@@ -128,6 +129,10 @@ export default function Reports() {
           {/* REFERRAL-2 T3 — the merchant's REAL fee (25/20/15/10/5) and what
               they keep after it. Authenticated surface only. */}
           {!vLoading && <EffectiveFeePanel report={lastReport} />}
+
+          {/* RECOVER-1 — acceptance popup entry point. Renders nothing unless the
+              merchant actually has an activation to authorize. */}
+          <RecoverMandatePanel />
 
           {/* Chart */}
           {chartData.length > 0 && (

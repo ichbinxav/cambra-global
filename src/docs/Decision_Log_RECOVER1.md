@@ -165,7 +165,30 @@ en lugar de 404. Corregido en las tres funciones y en el módulo compartido.
 Verificado: id inexistente → 404 `activation not found` / `mandate not found`.
 (Misma trampa presente en `getActivationAdminDetail`, no tocada aquí.)
 
+## Popup de aceptación (UI)
+
+`RecoverMandatePanel` (en `/Reports`, tras `DashboardLayout`) →
+`RecoverMandateModal` → `MandateTermsSummary`.
+
+- El panel **no renderiza nada** si el comercio no tiene una activación que
+  autorizar: sin teaser vacío, sin prometer un flujo que no puede completar.
+- Cuando no es elegible **se dice por qué** en lenguaje llano en vez de esconder un
+  botón deshabilitado: "aún no hay cifra de partida verificada" es un estado real y
+  accionable (conectar proveedor / subir extracto), no un error.
+- `MandateTermsSummary` pinta **el snapshot congelado tal cual lo hasheó el
+  servidor**; nada se recalcula en cliente, porque el hash de ese objeto es contra
+  lo que se verifica la firma.
+- Ante `terms_changed` (409) **no se reintenta en silencio**: se le dice al comercio
+  que las condiciones cambiaron y que reabra para revisarlas. Reintentar sería
+  firmar términos rancios, exactamente el bug que el hash existe para evitar.
+
+**Copy en inglés únicamente, a propósito.** El texto del mandato es redacción legal
+y está en la lista de revisión legal abierta; traducirlo yo a FR/ES sin revisión
+sería inventar redacción vinculante en dos idiomas. Localización pendiente **tras**
+esa revisión.
+
 ## Pendiente
 
-- Popup de aceptación (UI) y su cableado.
-- Verificación E2E en vivo del flujo completo.
+- Verificación E2E en vivo del flujo completo (requiere una `DealActivation` con
+  `Baseline` verificado).
+- Localización FR/ES del texto del mandato, después de la revisión legal.
