@@ -218,8 +218,8 @@ function Hero() {
             }}
           />
           <img
-            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/de2b6ff10_audit-hero-v2-alpha2x.webp"
-            alt="CAMBRA — card payments audit: what you pay vs the minimum allowed, overpayment recovered"
+            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/6cf6e66f1_IMG_3459.webp"
+            alt={t("hero_image_alt")}
             width={620}
             height={620}
             fetchPriority="high"

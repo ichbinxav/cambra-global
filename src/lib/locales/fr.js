@@ -32,6 +32,7 @@ export default {
     hero_trust_1:         "Sans honoraires · sans engagement",
     hero_trust_2:         "Identifiants chiffrés, jamais en clair",
     hero_trust_3:         "Réservé aux commerces de l'UE",
+    hero_image_alt:       "CAMBRA — audit des paiements par carte : ce que vous payez face au minimum autorisé, trop-perçu récupéré",
 
     /* landing — how it works (steps) */
     how_h2:               "Quatre étapes, de l'estimation à la marge récupérée.",

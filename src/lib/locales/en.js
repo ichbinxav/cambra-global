@@ -34,6 +34,7 @@ export default {
     hero_trust_1:         "No retainer · no contract",
     hero_trust_2:         "Credentials encrypted, never in plain text",
     hero_trust_3:         "EU businesses only",
+    hero_image_alt:       "CAMBRA — card payments audit: what you pay vs the minimum allowed, overpayment recovered",
 
     /* landing — how it works (steps) */
     how_h2:               "Four steps from estimate to recovered margin.",

@@ -32,6 +32,7 @@ export default {
     hero_trust_1:         "Sin cuota fija · sin permanencia",
     hero_trust_2:         "Credenciales cifradas, nunca en texto plano",
     hero_trust_3:         "Solo para comercios de la UE",
+    hero_image_alt:       "CAMBRA — auditoría de pagos con tarjeta: lo que pagas frente al mínimo permitido, sobrepago recuperado",
 
     /* landing — how it works (steps) */
     how_h2:               "Cuatro pasos, de la estimación al margen recuperado.",
