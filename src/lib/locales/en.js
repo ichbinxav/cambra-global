@@ -28,7 +28,7 @@ export default {
     hero_badge:           "Pay only if we save you money",
     hero_h1_line1:        "Stop overpaying.",
     hero_h1_line2:        "Recover the margin.",
-    hero_sub:             "Most independent businesses overpay up to 40% on card payments. We check what you pay against the lowest your bank and the card networks allow, then recover the difference. You keep 75%. We only get paid when you save.",
+    hero_sub:             "We analyze what you overpay to accept payments and recover the difference.",
     hero_cta_primary:     "Recover your margin — 3 min",
     hero_cta_secondary:   "See what real businesses saved",
     hero_trust_1:         "No retainer · no contract",

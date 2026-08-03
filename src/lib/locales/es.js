@@ -26,7 +26,7 @@ export default {
     hero_badge:           "Solo pagas si te ahorramos dinero",
     hero_h1_line1:        "Deja de pagar de más.",
     hero_h1_line2:        "Recupera tu margen.",
-    hero_sub:             "La mayoría de los comercios independientes pagan hasta un 40 % de más en los pagos con tarjeta. Comparamos lo que pagas con lo mínimo que permiten tu banco y las tarjetas, y recuperamos la diferencia. Te quedas con el 75 %. Solo cobramos cuando ahorras.",
+    hero_sub:             "Analizamos lo que pagas de más aceptando pagos y recuperamos la diferencia.",
     hero_cta_primary:     "Recupera tu margen — 3 min",
     hero_cta_secondary:   "Mira lo que ahorran comercios reales",
     hero_trust_1:         "Sin cuota fija · sin permanencia",

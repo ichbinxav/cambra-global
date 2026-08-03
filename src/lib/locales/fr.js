@@ -26,7 +26,7 @@ export default {
     hero_badge:           "Vous ne payez que si nous vous faisons économiser",
     hero_h1_line1:        "Arrêtez de trop payer.",
     hero_h1_line2:        "Récupérez votre marge.",
-    hero_sub:             "La plupart des commerces indépendants paient jusqu'à 40 % de trop sur les paiements par carte. Nous comparons ce que vous payez au minimum autorisé par votre banque et les réseaux de cartes, puis nous récupérons la différence. Vous gardez 75 %. Nous ne sommes payés que lorsque vous économisez.",
+    hero_sub:             "Nous analysons ce que vous payez de trop pour accepter les paiements et nous récupérons la différence.",
     hero_cta_primary:     "Récupérez votre marge — 3 min",
     hero_cta_secondary:   "Voyez ce qu'ont économisé de vrais commerces",
     hero_trust_1:         "Sans honoraires · sans engagement",
