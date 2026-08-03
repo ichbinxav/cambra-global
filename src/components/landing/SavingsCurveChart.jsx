@@ -159,6 +159,9 @@ export default function SavingsCurveChart({
         <p className="mt-2 text-[11px] leading-snug" style={{ color: "var(--gris-1)" }}>
           {t("ric_profit_note")}
         </p>
+        <p className="mt-1 text-[11px] leading-snug" style={{ color: "var(--gris-2)" }}>
+          {t("ric_split_note")}
+        </p>
 
         {/* Sober stats strip */}
         <div

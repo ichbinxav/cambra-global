@@ -600,7 +600,8 @@ export default {
     /* Landing — SavingsCurveChart */
     ric_eyebrow:     "Projected recovery · 24 months",
     ric_recovered:   "recovered over 24 months",
-    ric_profit_note: "€41,400 of it stays with the business — CAMBRA only earns 25% of what it recovers.",
+    ric_profit_note: "≈13% more net profit — recovered without selling one more unit.",
+    ric_split_note:  "€41,400 of it stays with the business — CAMBRA only earns 25% of what it recovers.",
     ric_per_month:   "/month",
     ric_rate_saved:  "rate saved",
     ric_for_you:     "stays with you",
