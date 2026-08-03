@@ -560,15 +560,16 @@ export default {
     /* Landing — RealImpactSection */
     ri_eyebrow:   "IMPACT RÉEL",
     ri_h2_pre:    "Cet écart, c'est",
-    ri_h2_kw:     "55 200 € récupérés.",
-    ri_sub_pre:   "Un commerce réel, 2 M€ de ventes annuelles : 2,30 % par vente quand 0,92 % était possible. Un écart de ",
-    ri_sub_kw:    "1,38 point",
-    ri_sub_post:  " — 27 600 € par an, 55 200 € sur 24 mois. Sur ce montant, 41 400 € restent chez le commerçant : CAMBRA ne perçoit que 25 % de ce qu'elle récupère réellement. Mêmes ventes. Même équipe.",
+    ri_h2_kw:     "+14 % de bénéfice net.",
+    ri_sub_pre:   "Un commerce avec 2 M€ de ventes payait 2,30 % quand 0,92 % était possible — mêmes ventes, même équipe, ",
+    ri_sub_kw:    "14 % de bénéfice en plus.",
+    ri_sub_post:  "",
 
     /* Landing — SavingsCurveChart */
     ric_eyebrow:     "Récupération projetée · 24 mois",
     ric_recovered:   "récupérés sur 24 mois",
-    ric_profit_note: "≈14 % de bénéfice net en plus — récupéré sans vendre une unité de plus.",
+    ric_profit_big:  "+14 %",
+    ric_profit_sub:  "de bénéfice net en plus",
     ric_per_month:   "/mois",
     ric_rate_saved:  "de taux économisé",
     ric_for_you:     "restent chez vous",

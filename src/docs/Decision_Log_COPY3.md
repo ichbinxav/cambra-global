@@ -50,6 +50,22 @@ independiente y **ninguno está verificado con datos reales de clientes de
 CAMBRA**. Se documenta el cambio de supuesto de forma explícita en vez de
 presentarlo como un dato medido.
 
+## COPY-4 — El 14% como única cifra dominante
+
+Jerarquía invertida en la sección "Impacto real":
+
+- Titular: `ri_h2_kw` pasa de "€55.200 recuperados" a "+14% de beneficio neto"
+  (mismo tratamiento .kw-m, mismo tamaño y posición).
+- Párrafo: una sola frase que desemboca en el 14%. Fuera 1,38pts, €55.200,
+  €41.400, 25% y "€27.600/año" — siguen vivos en la tarjeta y en el bloque
+  "The hidden cost problem".
+- Tarjeta: la cifra grande verde (`--menta-dark`) es ahora `+14%` con la línea
+  "más de beneficio neto"; el contador €55.200 se degrada a texto pequeño gris
+  (`--gris-2`) sin color de acento, conservando la animación.
+- Stats de apoyo: `€2.3k/month` (ink) · `1.38pts` (coral) · `75%` — este último
+  pasa de `--menta-dark` a `--ink` para que ningún otro dato comparta el verde
+  de acento del 14%.
+
 ### Mensaje del reparto 75/25 → **opción (b)**
 
 Se retira de la tarjeta de recovery (clave `ric_split_note` eliminada). Motivo:

@@ -592,15 +592,16 @@ export default {
     /* Landing — RealImpactSection */
     ri_eyebrow:   "REAL IMPACT",
     ri_h2_pre:    "That gap is",
-    ri_h2_kw:     "€55,200 recovered.",
-    ri_sub_pre:   "One real business with €2M in yearly sales, paying 2.30% per sale when 0.92% was possible. A ",
-    ri_sub_kw:    "1.38-point",
-    ri_sub_post:  " gap — €27,600 a year, €55,200 over 24 months. Of that, €41,400 stays with the business: CAMBRA only earns 25% of what it actually recovers. Same sales. Same team.",
+    ri_h2_kw:     "+14% net profit.",
+    ri_sub_pre:   "A business with €2M in sales was paying 2.30% when 0.92% was possible — same sales, same team, ",
+    ri_sub_kw:    "14% more profit.",
+    ri_sub_post:  "",
 
     /* Landing — SavingsCurveChart */
     ric_eyebrow:     "Projected recovery · 24 months",
     ric_recovered:   "recovered over 24 months",
-    ric_profit_note: "≈14% more net profit — recovered without selling one more unit.",
+    ric_profit_big:  "+14%",
+    ric_profit_sub:  "more net profit",
     ric_per_month:   "/month",
     ric_rate_saved:  "rate saved",
     ric_for_you:     "stays with you",

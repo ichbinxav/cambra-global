@@ -560,15 +560,16 @@ export default {
     /* Landing — RealImpactSection */
     ri_eyebrow:   "IMPACTO REAL",
     ri_h2_pre:    "Ese gap es",
-    ri_h2_kw:     "55.200 € recuperados.",
-    ri_sub_pre:   "Un comercio real con 2 M€ de ventas anuales: pagaba un 2,30 % por venta cuando el 0,92 % era posible. Una diferencia de ",
-    ri_sub_kw:    "1,38 puntos",
-    ri_sub_post:  " — 27.600 € al año, 55.200 € en 24 meses. De eso, 41.400 € se quedan en el comercio: CAMBRA solo cobra el 25 % de lo que realmente recupera. Mismas ventas. Mismo equipo.",
+    ri_h2_kw:     "+14 % de beneficio neto.",
+    ri_sub_pre:   "Un comercio con 2 M€ de ventas pagaba un 2,30 % cuando el 0,92 % era posible — mismas ventas, mismo equipo, ",
+    ri_sub_kw:    "14 % más de beneficio.",
+    ri_sub_post:  "",
 
     /* Landing — SavingsCurveChart */
     ric_eyebrow:     "Recuperación proyectada · 24 meses",
     ric_recovered:   "recuperados en 24 meses",
-    ric_profit_note: "≈14 % más de beneficio neto — recuperado sin vender una unidad más.",
+    ric_profit_big:  "+14 %",
+    ric_profit_sub:  "más de beneficio neto",
     ric_per_month:   "/mes",
     ric_rate_saved:  "de tarifa ahorrada",
     ric_for_you:     "se queda contigo",

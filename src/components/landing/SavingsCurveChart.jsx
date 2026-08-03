@@ -149,15 +149,17 @@ export default function SavingsCurveChart({
               color: "var(--menta-dark)",
             }}
           >
-            {formatted}
+            {t("ric_profit_big")}
           </span>
           <span className="text-[12px] font-medium" style={{ color: "var(--gris-1)" }}>
-            {t("ric_recovered")}
+            {t("ric_profit_sub")}
           </span>
         </div>
 
-        <p className="mt-2 text-[11px] leading-snug" style={{ color: "var(--gris-1)" }}>
-          {t("ric_profit_note")}
+        {/* COPY-4 — €55,200 demoted to small grey support text: the +14% is
+            the only accented figure in this section. */}
+        <p className="mt-2 text-[11px] leading-snug tabular-nums" style={{ color: "var(--gris-2)" }}>
+          {formatted} {t("ric_recovered")}
         </p>
 
         {/* Sober stats strip */}
@@ -190,7 +192,7 @@ export default function SavingsCurveChart({
           <div style={{ borderLeft: "1px solid var(--linea)" }} className="pl-3">
             <div
               className="font-bold tabular-nums"
-              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--menta-dark)" }}
+              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--ink)" }}
             >
               75%
             </div>
