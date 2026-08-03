@@ -20,9 +20,34 @@
 // Mode is EXPLICIT everywhere: 'test' | 'live'. There is no default — a caller
 // that forgets to pass one gets an error instead of silently touching live.
 
-export const CAMBRA_BILLING_ACCOUNT_ID = 'acct_1TqFifJw0ka9dDf4';
-
 export type StripeMode = 'test' | 'live';
+
+// ══════════════════════════════════════════════════════════════════════════
+// EXPECTED ACCOUNT ID, PER MODE — corrected 2026-08-03 after live verification.
+// My original premise ("the Stripe account id is identical in test and live")
+// is TRUE only for LEGACY test mode. CAMBRA's account uses a Stripe SANDBOX,
+// and a sandbox is a SEPARATE account with its OWN acct_ id. So the pin has to
+// be per mode; one shared id would reject every valid test key forever.
+//   live → acct_1TqFifJw0ka9dDf4  ("CAMBRA GLOBAL", FR/EUR) — verified.
+//   test → acct_1TqFip2Vr0WW305e  ("Entorno de prueba de CAMBRA GLOBAL") —
+//          the sandbox of that same account (same acct_1TqFi… creation prefix).
+// NOT to be confused with acct_1TqWzFJtkNunlMvz, a DIFFERENT account also named
+// "CAMBRA GLOBAL" whose sk_test_ was configured here first: that mistake is
+// exactly what this pin exists to catch, so both ids stay hardcoded here rather
+// than trusting whatever key happens to be in the environment.
+// ══════════════════════════════════════════════════════════════════════════
+const EXPECTED_ACCOUNT_ID: Record<StripeMode, string> = {
+  live: 'acct_1TqFifJw0ka9dDf4',
+  test: 'acct_1TqFip2Vr0WW305e',
+};
+
+/** Live billing account — kept as a named export for readability at call sites
+ *  that speak about "the CAMBRA billing account" in production terms. */
+export const CAMBRA_BILLING_ACCOUNT_ID = EXPECTED_ACCOUNT_ID.live;
+
+export function expectedAccountId(mode: StripeMode): string {
+  return EXPECTED_ACCOUNT_ID[mode];
+}
 
 const SECRET_KEY_ENV: Record<StripeMode, string> = {
   test: 'STRIPE_TEST_SECRET_KEY',
@@ -96,14 +121,16 @@ export async function stripeRequest(
   return { ok: res.ok, status: res.status, data };
 }
 
-/** Confirms the key for `mode` really belongs to CAMBRA's billing account.
- *  The Stripe account id is identical in test and live, so this is the
- *  cheap, decisive check against "a key from some other account". */
+/** Confirms the key for `mode` really belongs to the account pinned above for
+ *  that mode — the cheap, decisive check against "a key from some other
+ *  account", which already caught one wrong key on 2026-08-03. */
 export async function assertBillingAccount(mode: StripeMode): Promise<{ account_id: string }> {
+  const expected = expectedAccountId(mode);
   const { ok, status, data } = await stripeRequest(mode, 'GET', 'account');
   if (!ok) throw new Error(`stripe_account_unreachable: ${status} ${data?.error?.message || 'unknown'}`);
-  if (data.id !== CAMBRA_BILLING_ACCOUNT_ID) {
-    throw new Error(`stripe_wrong_account: key belongs to ${data.id} (${data.business_profile?.name || data.settings?.dashboard?.display_name || 'unnamed'}), not the CAMBRA billing account`);
+  if (data.id !== expected) {
+    const label = data.business_profile?.name || data.settings?.dashboard?.display_name || 'unnamed';
+    throw new Error(`stripe_wrong_account: ${mode} key belongs to ${data.id} (${label}), expected ${expected}`);
   }
   return { account_id: data.id };
 }

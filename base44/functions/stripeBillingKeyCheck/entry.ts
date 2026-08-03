@@ -11,7 +11,7 @@
 //
 // Never returns key values, only prefixes and booleans.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { CAMBRA_BILLING_ACCOUNT_ID, assertBillingAccount } from '../../shared/stripeBilling.ts';
+import { assertBillingAccount, expectedAccountId } from '../../shared/stripeBilling.ts';
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -20,16 +20,15 @@ export default async function (req: Request): Promise<Response> {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    const out: Record<string, unknown> = {
-      expected_account_id: CAMBRA_BILLING_ACCOUNT_ID,
-    };
+    const out: Record<string, unknown> = {};
 
     for (const mode of ['test', 'live'] as const) {
+      const expected = expectedAccountId(mode);
       try {
         const { account_id } = await assertBillingAccount(mode);
-        out[mode] = { ok: true, account_id, matches_expected: account_id === CAMBRA_BILLING_ACCOUNT_ID };
+        out[mode] = { ok: true, account_id, expected };
       } catch (err) {
-        out[mode] = { ok: false, error: (err as Error).message };
+        out[mode] = { ok: false, expected, error: (err as Error).message };
       }
     }
 
