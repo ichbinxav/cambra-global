@@ -1,6 +1,6 @@
 # PRODUCTION_FUNCTIONS.md — Manifiesto de funciones backend (CONSOLIDATE-1 T1)
 
-**Censo:** 2026-07-24 · **Total: 143 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
+**Censo:** 2026-07-24 (actualizado 2026-08-03 con RECOVER-1/RECOVER-2) · **Total: 147 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
 
 **Tripwire:** `src/lib/productionFunctions.static.test.js` falla si aparece una función no listada aquí (o si se borra una listada sin actualizar el manifiesto).
 
@@ -14,7 +14,7 @@
 
 | Clase | Nº | Notas |
 |---|---|---|
-| A (merchant) | 34 | funnel anónimo (7), dashboard/connect/vault autenticado (24), aceptación Recover Margin (3 — RECOVER-1) |
+| A (merchant) | 37 | funnel anónimo (7), dashboard/connect/vault autenticado (24), aceptación Recover Margin (3 — RECOVER-1), cobro del success fee (3 — RECOVER-2: alta de método de pago, refresco de estado y webhook firmado) |
 | A-API (partners) | 6 | apiAuth, apiOpenApiSpec, apiV1, mcpServer, oauthAuthorize, oauthToken |
 | B (admin/founder-OS) | 77 | incl. 44 agentes/orquestadores del founder-OS (via agentRegistry) |
 | C (scheduled) | 7 | billApiUsage, engineeringReportAgent†, processWebhookDeadLetters, purgeInactiveLeads, purgePaymentsAnalysisSessions, scheduledBenchmarkRecompute, sendMonthlySavingsSummary† |
@@ -66,6 +66,9 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | getRecoverAcceptanceContext | me (+ ownership activación/marca) | ✓ | DealActivation, Brand, Baseline, BillingRule, Mandate | popup de aceptación Recover Margin |
 | startRecoverAcceptance | me (+ ownership) | ✓ | DealActivation, Brand, Baseline, BillingRule, Mandate | popup de aceptación Recover Margin |
 | acceptRecoverMandate | me (+ ownership) | ✓ | Mandate, DealActivation, Brand, Baseline, BillingRule, AuthorizationLog, OperationalLog | popup de aceptación Recover Margin |
+| startPaymentMethodSetup | me (+ ownership; exige Mandate `active`) | ✓ | DealActivation, Brand, Mandate | PaymentMethodSetupCard (RECOVER-2) |
+| refreshPaymentMethodStatus | me (+ ownership) | ✓ | DealActivation | PaymentMethodSetupCard (RECOVER-2) |
+| stripeBillingWebhook | pública por diseño — firma HMAC de Stripe (`stripe-signature`) + secret por modo | ✓ | DealActivation | Stripe (cuenta de facturación de CAMBRA) |
 
 ## A-API — API de partners (6)
 
@@ -102,7 +105,7 @@ Todas con auth `me+admin` (o `gate`) y mayoritariamente SR. Agrupadas:
 | getMyReferralStatus | me (`auth.me()` + 401) | ✓ | ReferralLink | Referrals / EffectiveFeePanel |
 | applyReferralActivation | admin o `gate` (internalGate) | ✓ | ReferralActivation, ReferralLink, PaymentsAnalysisSession, Brand, DealActivation, BillingRule | admin / futura automatización sobre MonthlySavingsReport |
 
-**Paneles admin (32):** adminOverrides, adminSummaries, adminUpdateApplicationStatus, answerAgentQuestion, chatChiefOrchestrator, createApiKey, createPaymentLink, discoveryTechStackAgent, driveConnectionCheck, generateInvoiceFromReport, generateInvoicePdf, generateMonthlySavingsReport (gate), getActivationAdminDetail, getAdminRecommendationQueue, getCommandCenterPulse, getWaitlistAggregate, getWaitlistLeads, gmailConnectionCheck, integritySummary, reconcileInvoice, recordPayment (gate), regenerateRecommendationsForBrand (gate), revokeApiKey, sheetsConnectionCheck, slackConnectionCheck, copilotChat (founder copilot), founderCopilotAgent, investorUpdateAgent, qaAgent, getBenchmarkForReport ⚠️(sin gate detectado — agregado sin PII; revisar en SURFACE-1), buildInfrastructureGraph (sin caller), discoverCompanyInfrastructure (sin caller)
+**Paneles admin (32):** adminOverrides, adminSummaries, adminUpdateApplicationStatus, answerAgentQuestion, chatChiefOrchestrator, createApiKey, createPaymentLink, discoveryTechStackAgent, driveConnectionCheck, generateInvoiceFromReport, generateInvoicePdf, generateMonthlySavingsReport (gate), getActivationAdminDetail, getAdminRecommendationQueue, getCommandCenterPulse, getWaitlistAggregate, getWaitlistLeads, gmailConnectionCheck, integritySummary, reconcileInvoice, recordPayment (gate), regenerateRecommendationsForBrand (gate), revokeApiKey, stripeBillingKeyCheck (RECOVER-2 — diagnóstico de claves/secrets de la cuenta de facturación; nunca devuelve valores), sheetsConnectionCheck, slackConnectionCheck, copilotChat (founder copilot), founderCopilotAgent, investorUpdateAgent, qaAgent, getBenchmarkForReport ⚠️(sin gate detectado — agregado sin PII; revisar en SURFACE-1), buildInfrastructureGraph (sin caller), discoverCompanyInfrastructure (sin caller)
 
 **Agentes founder-OS vía agentRegistry (38):** blogAgent, brainOrchestrator, codeReviewAgent, competitorMonitorAgent, complianceAgent, contractIPAgent, crmAgent, fixValidatorAgent, followUpAgent, gdprAgent, leadDiscoveryAgent, leadEnrichmentAgent, leadOrchestrator, leadScoringAgent, legalReviewAgent, linkedinAgent, marketingOrchestrator, meetingAgent, newsletterAgent, outreachAgent, outreachOrchestrator, providerMonitorAgent, providerResearchAgent, qaMonitorAgent, recommendationEngineAgent, researchOrchestrator, securityAgent, seoAgent, spendIntelligenceAgent, systemHealthAgent, xTwitterAgent (+7 ya listados arriba con doble rol)
 
