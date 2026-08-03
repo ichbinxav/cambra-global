@@ -13,6 +13,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, CheckCircle2 } from "lucide-react";
 import RecoverMandateModal from "./RecoverMandateModal";
+import PaymentMethodSetupCard from "./PaymentMethodSetupCard";
 
 const BLOCKER_COPY = {
   no_verified_baseline:
@@ -25,6 +26,9 @@ export default function RecoverMandatePanel() {
   const [email, setEmail] = useState("");
   const [open, setOpen] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  // Kept so the payment-method card knows where the setup already stands
+  // (an authorized activation with no method yet is a real, expected state).
+  const [activation, setActivation] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -36,6 +40,7 @@ export default function RecoverMandatePanel() {
         .catch(() => []);
       const target = (acts || []).find((a) => ["activated", "awaiting_authorization", "authorized"].includes(a.status));
       if (!target) return;
+      setActivation(target);
       const r = await base44.functions
         .invoke("getRecoverAcceptanceContext", { deal_activation_id: target.id })
         .catch(() => null);
@@ -65,6 +70,7 @@ export default function RecoverMandatePanel() {
             </span>
           </div>
         ) : blocker ? (
+
           <p className="text-[12.5px] text-white/60 leading-relaxed">{blocker}</p>
         ) : ctx.eligible ? (
           <>
@@ -83,6 +89,13 @@ export default function RecoverMandatePanel() {
           <p className="text-[12.5px] text-white/60 leading-relaxed">
             This deal isn't at the authorization stage yet — we'll let you know as soon as it is.
           </p>
+        )}
+
+        {isAccepted && activation && (
+          <PaymentMethodSetupCard
+            dealActivationId={ctx.deal_activation_id || activation.id}
+            initialStatus={activation.payment_method_status}
+          />
         )}
       </div>
 
