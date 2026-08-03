@@ -102,36 +102,43 @@ export default function ReferralProgramSection() {
           {tiles.map((tile, i) => (
             <motion.div
               key={tile.label}
-              className="section-ink relative flex items-center gap-5 px-6 py-5 sm:px-7 sm:py-6"
-              style={{ borderRadius: 22, maxWidth: "none" }}
+              className="section-ink relative flex items-center px-6 sm:px-7"
+              style={{ borderRadius: 20, maxWidth: "none", minHeight: 96 }}
               initial={{ opacity: 0, x: 28 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 + i * 0.12 }}
               whileHover={{ y: -3 }}
             >
+              {/* Fixed-width numeric column so the three figures sit on the
+                  same optical axis regardless of digit count (−5 / 5 / 20). */}
               <p
-                className="font-black tabular-nums shrink-0"
+                className="font-black tabular-nums shrink-0 text-center"
                 style={{
+                  width: 104,
                   fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-                  fontSize: "clamp(38px, 5vw, 52px)",
-                  letterSpacing: "-0.05em",
+                  fontSize: 44,
+                  letterSpacing: "-0.045em",
                   lineHeight: 1,
-                  background: "var(--g-voltio)",
+                  background: "linear-gradient(120deg, #B9AEFF 0%, #8B7BFF 45%, #5BD8F5 100%)",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
-                  filter: "drop-shadow(0 0 18px rgba(139,123,255,0.35))",
                 }}
               >
                 {tile.value}
-                <span style={{ fontSize: "0.44em", letterSpacing: "-0.02em" }}>{tile.unit}</span>
+                <span style={{ fontSize: "0.42em", letterSpacing: 0 }}>{tile.unit}</span>
               </p>
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase" style={{ letterSpacing: "0.16em", color: "rgba(255,255,255,0.5)" }}>
+              <div
+                aria-hidden
+                className="shrink-0 self-stretch my-5 mr-6"
+                style={{ width: 1, background: "rgba(255,255,255,0.12)" }}
+              />
+              <div className="min-w-0 py-5">
+                <p className="text-[9.5px] font-bold uppercase" style={{ letterSpacing: "0.16em", color: "rgba(255,255,255,0.45)" }}>
                   {tile.label}
                 </p>
-                <p className="mt-1.5 text-[13.5px] leading-snug" style={{ color: "rgba(255,255,255,0.9)" }}>
+                <p className="mt-1.5 text-[13.5px] leading-snug" style={{ color: "rgba(255,255,255,0.92)" }}>
                   {tile.note}
                 </p>
               </div>
