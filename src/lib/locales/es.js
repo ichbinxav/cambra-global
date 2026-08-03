@@ -560,10 +560,24 @@ export default {
     /* Landing — RealImpactSection */
     ri_eyebrow:   "IMPACTO REAL",
     ri_h2_pre:    "Ese gap es",
-    ri_h2_kw:     "+7% de beneficio neto.",
-    ri_sub_pre:   "Un comercio real, 1 M€ de ventas anuales: pagaba un 2,21% por venta cuando el 1,47% era posible. Una diferencia de ",
-    ri_sub_kw:    "0,74 puntos",
-    ri_sub_post:  " — 7.400 € al año, ≈15.000 € en 24 meses. Recuperado, es cerca de un 7% más de beneficio neto. Mismas ventas. Mismo equipo.",
+    ri_h2_kw:     "36.000 € recuperados.",
+    ri_sub_pre:   "Un comercio real que paga 40.000 € al año en comisiones de tarjeta al 2,00 %, cuando el 0,80 % era alcanzable. Una diferencia de ",
+    ri_sub_kw:    "1,20 puntos",
+    ri_sub_post:  " — 24.000 € al año, 48.000 € en 24 meses. De eso, 36.000 € se quedan en el comercio: CAMBRA solo cobra el 25 % de lo que realmente recupera. Mismas ventas. Mismo equipo.",
+
+    /* Landing — SavingsCurveChart */
+    ric_eyebrow:     "Recuperación proyectada · 24 meses",
+    ric_recovered:   "recuperados en 24 meses",
+    ric_profit_note: "36.000 € se quedan en el comercio — CAMBRA solo cobra el 25 % de lo que recupera.",
+    ric_per_month:   "/mes",
+    ric_rate_saved:  "de tarifa ahorrada",
+    ric_for_you:     "se queda contigo",
+    ric_cohort:      "Comercios similares · 200k–2M €",
+    ric_compare:     "Cómo comparamos",
+    ric_range_label: "Rango:",
+    ric_range_body:  "de 6.000 € a 60.000 € en 24 meses, según tus ventas (200k–2M € al año).",
+    ric_disclaimer:  "Ilustrativo — un comercio que paga 40.000 €/año en comisiones de tarjeta al 2,00 % cuando el 0,80 % era alcanzable. Ejecuta el analizador para tu cifra real.",
+    ric_chart_aria:  "Proyección ilustrativa de la recuperación acumulada de pagos en 24 meses",
 
     /* Landing — Founding150Section */
     f150_eyebrow: "FOUNDING 150",

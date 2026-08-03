@@ -592,10 +592,24 @@ export default {
     /* Landing — RealImpactSection */
     ri_eyebrow:   "REAL IMPACT",
     ri_h2_pre:    "That gap is",
-    ri_h2_kw:     "+7% net profit.",
-    ri_sub_pre:   "One real business, €1M in annual sales: paying 2.21% per sale when 1.47% was possible. A ",
-    ri_sub_kw:    "0.74-point",
-    ri_sub_post:  " gap — €7,400 a year, ≈€15,000 over 24 months. Recovered, that's about 7% more net profit. Same sales. Same team.",
+    ri_h2_kw:     "€36,000 recovered.",
+    ri_sub_pre:   "One real business paying €40,000 a year in card fees at 2.00%, when 0.80% was achievable. A ",
+    ri_sub_kw:    "1.20-point",
+    ri_sub_post:  " gap — €24,000 a year, €48,000 over 24 months. Of that, €36,000 stays with the business: CAMBRA only earns 25% of what it actually recovers. Same sales. Same team.",
+
+    /* Landing — SavingsCurveChart */
+    ric_eyebrow:     "Projected recovery · 24 months",
+    ric_recovered:   "recovered over 24 months",
+    ric_profit_note: "€36,000 of it stays with the business — CAMBRA only earns 25% of what it recovers.",
+    ric_per_month:   "/month",
+    ric_rate_saved:  "rate saved",
+    ric_for_you:     "stays with you",
+    ric_cohort:      "Similar businesses · €200k–€2M",
+    ric_compare:     "How we compare",
+    ric_range_label: "Range:",
+    ric_range_body:  "€6,000 to €60,000 over 24 months, depending on your sales (€200k–€2M a year).",
+    ric_disclaimer:  "Illustrative — a business paying €40,000/year in card fees at 2.00% when 0.80% was achievable. Run the analyzer for your real number.",
+    ric_chart_aria:  "Illustrative projection of cumulative payment recovery over 24 months",
 
     /* Landing — Founding150Section */
     f150_eyebrow: "FOUNDING 150",

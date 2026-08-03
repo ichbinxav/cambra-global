@@ -560,10 +560,24 @@ export default {
     /* Landing — RealImpactSection */
     ri_eyebrow:   "IMPACT RÉEL",
     ri_h2_pre:    "Cet écart, c'est",
-    ri_h2_kw:     "+7 % de bénéfice net.",
-    ri_sub_pre:   "Un commerce réel, 1 M€ de ventes annuelles : 2,21 % par vente quand 1,47 % était possible. Un écart de ",
-    ri_sub_kw:    "0,74 point",
-    ri_sub_post:  " — 7 400 € par an, ≈15 000 € sur 24 mois. Récupéré, c'est environ 7 % de bénéfice net en plus. Mêmes ventes. Même équipe.",
+    ri_h2_kw:     "36 000 € récupérés.",
+    ri_sub_pre:   "Un commerce réel qui paie 40 000 € par an de commissions carte à 2,00 %, quand 0,80 % était atteignable. Un écart de ",
+    ri_sub_kw:    "1,20 point",
+    ri_sub_post:  " — 24 000 € par an, 48 000 € sur 24 mois. Sur ce montant, 36 000 € restent chez le commerçant : CAMBRA ne perçoit que 25 % de ce qu'elle récupère réellement. Mêmes ventes. Même équipe.",
+
+    /* Landing — SavingsCurveChart */
+    ric_eyebrow:     "Récupération projetée · 24 mois",
+    ric_recovered:   "récupérés sur 24 mois",
+    ric_profit_note: "36 000 € restent chez le commerçant — CAMBRA ne perçoit que 25 % de ce qu'elle récupère.",
+    ric_per_month:   "/mois",
+    ric_rate_saved:  "de taux économisé",
+    ric_for_you:     "restent chez vous",
+    ric_cohort:      "Commerces similaires · 200k–2M €",
+    ric_compare:     "Comment nous comparons",
+    ric_range_label: "Fourchette :",
+    ric_range_body:  "de 6 000 € à 60 000 € sur 24 mois, selon vos ventes (200k–2M € par an).",
+    ric_disclaimer:  "Illustratif — un commerce qui paie 40 000 €/an de commissions carte à 2,00 % quand 0,80 % était atteignable. Lancez l'analyseur pour votre chiffre réel.",
+    ric_chart_aria:  "Projection illustrative de la récupération cumulée des paiements sur 24 mois",
 
     /* Landing — Founding150Section */
     f150_eyebrow: "FOUNDING 150",

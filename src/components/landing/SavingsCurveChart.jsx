@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * Savings Curve — illustrative projection.
- * Canonical reference brand: GMV €1M/yr · current 2.21% · achievable 1.47%
- * · gap 0.74 pts → ~€7,400/yr → ~€15,000 over 24 months.
+ * Canonical reference business (same one used by ProblemSectionWow):
+ * €40,000/yr in card fees at 2.00% · achievable 0.80% · gap 1.20 pts
+ * → €24,000/yr identified → €48,000 over 24 months (€36,000 stays with
+ * the merchant; CAMBRA earns 25% of what it actually recovers).
  * Organic monotone 24-point cubic ease-out curve, animated on scroll.
  */
 
@@ -21,11 +24,12 @@ const DEFAULT_MONTHS = 24;
 const DEFAULT_CURVE = buildCurve(DEFAULT_MONTHS);
 
 export default function SavingsCurveChart({
-  target = 15000,
+  target = 48000,
   months = DEFAULT_MONTHS,
   curve = DEFAULT_CURVE,
   className = "",
 }) {
+  const { t } = useTranslation();
   const [progress, setProgress] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
   const wrapRef = useRef(null);
@@ -130,7 +134,7 @@ export default function SavingsCurveChart({
           className="text-[10px] uppercase tracking-[0.24em] font-semibold mb-3"
           style={{ color: "var(--gris-2)" }}
         >
-          Projected recovery · 24 months
+          {t("ric_eyebrow")}
         </p>
 
         <div className="flex items-baseline gap-2 flex-wrap">
@@ -147,12 +151,12 @@ export default function SavingsCurveChart({
             {formatted}
           </span>
           <span className="text-[12px] font-medium" style={{ color: "var(--gris-1)" }}>
-            recovered over 24 months
+            {t("ric_recovered")}
           </span>
         </div>
 
         <p className="mt-2 text-[11px] leading-snug" style={{ color: "var(--gris-1)" }}>
-          ≈ 7% of annual profit — recovered without selling one more unit.
+          {t("ric_profit_note")}
         </p>
 
         {/* Sober stats strip */}
@@ -168,7 +172,7 @@ export default function SavingsCurveChart({
               {perMonthStr}
             </div>
             <div className="text-[11px] uppercase tracking-[0.16em] font-semibold mt-1.5" style={{ color: "var(--gris-1)" }}>
-              /month
+              {t("ric_per_month")}
             </div>
           </div>
           <div style={{ borderLeft: "1px solid var(--linea)" }} className="pl-3">
@@ -176,10 +180,10 @@ export default function SavingsCurveChart({
               className="font-bold tabular-nums"
               style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--coral)" }}
             >
-              0.74pts
+              1.20pts
             </div>
             <div className="text-[11px] uppercase tracking-[0.16em] font-semibold mt-1.5" style={{ color: "var(--gris-1)" }}>
-              rate saved
+              {t("ric_rate_saved")}
             </div>
           </div>
           <div style={{ borderLeft: "1px solid var(--linea)" }} className="pl-3">
@@ -187,10 +191,10 @@ export default function SavingsCurveChart({
               className="font-bold tabular-nums"
               style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--menta-dark)" }}
             >
-              ~7%
+              75%
             </div>
             <div className="text-[11px] uppercase tracking-[0.16em] font-semibold mt-1.5" style={{ color: "var(--gris-1)" }}>
-              of profit
+              {t("ric_for_you")}
             </div>
           </div>
         </div>
@@ -201,7 +205,7 @@ export default function SavingsCurveChart({
         viewBox={`0 0 ${W} ${H}`}
         className="w-full h-auto"
         role="img"
-        aria-label="Illustrative projection of cumulative payment recovery over 24 months"
+        aria-label={t("ric_chart_aria")}
       >
         <defs>
           <linearGradient id="curveStroke" x1="0" y1="0" x2="1" y2="0">
@@ -324,15 +328,15 @@ export default function SavingsCurveChart({
       {/* ===== Footer meta ===== */}
       <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--linea)" }}>
         <div className="flex items-center justify-between gap-3 text-[11px]" style={{ color: "var(--gris-2)" }}>
-          <span className="font-mono">Similar businesses · €200k–€2M</span>
-          <span className="font-mono">How we compare</span>
+          <span className="font-mono">{t("ric_cohort")}</span>
+          <span className="font-mono">{t("ric_compare")}</span>
         </div>
         <p className="mt-2 text-[11px] leading-snug" style={{ color: "var(--gris-1)" }}>
-          <span className="font-semibold" style={{ color: "var(--ink)" }}>Range:</span>{" "}
-          €3,000 to €30,000+ over 24 months, depending on your sales (€200k–€2M a year).
+          <span className="font-semibold" style={{ color: "var(--ink)" }}>{t("ric_range_label")}</span>{" "}
+          {t("ric_range_body")}
         </p>
         <p className="mt-1.5 text-[10.5px] leading-snug" style={{ color: "var(--gris-2)" }}>
-          Illustrative — a business with €1M in yearly sales, paying 2.21% when 1.47% was possible. Run the analyzer for your real number.
+          {t("ric_disclaimer")}
         </p>
       </div>
     </div>
