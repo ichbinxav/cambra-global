@@ -1,10 +1,17 @@
 // stripeBillingKeyCheck — RECOVER-2 (2026-08-03).
 //
-// Admin-only diagnostic: proves, per MODE, that the key configured for
-// CAMBRA's OWN billing account really belongs to that account
-// (acct_1TqFifJw0ka9dDf4). The Stripe account id is identical in test and
-// live, so retrieving /v1/account with each key is the decisive check against
-// "a key from some other account" (e.g. the Analyzer's test-data environment).
+// Admin-only diagnostic: proves, per MODE, that the key configured really
+// belongs to the account PINNED FOR THAT MODE in shared/stripeBilling.ts.
+//
+// test and live are TWO DIFFERENT ACCOUNTS, not one account in two modes:
+// CAMBRA's test environment is a Stripe SANDBOX (acct_1TqFip2Vr0WW305e), a
+// separate account with its own object space, while live billing is
+// acct_1TqFifJw0ka9dDf4 ("CAMBRA GLOBAL", FR/EUR). Hence the per-mode pin —
+// a single shared id would reject every valid test key forever.
+//
+// Retrieving /v1/account with each key is the decisive check against "a key
+// from some other account" — it already caught an sk_test_ belonging to a
+// DIFFERENT, homonymous account (acct_1TqWzFJtkNunlMvz) on 2026-08-03.
 //
 // Also reports whether the two webhook signing secrets exist AND differ — a
 // single secret shared across modes is a stop criterion for RECOVER-2.
