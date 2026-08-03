@@ -10,6 +10,8 @@
 // anything leaves this function — Baseline's RLS stays untouched by design.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
+import { normalizeLocale } from '../../shared/emailLocale.ts';
+import { checkboxTextFor, mandateCopy, MANDATE_COPY_VERSION } from '../../shared/recoverMandateCopy.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   MANDATE_DOCUMENT_VERSION,
@@ -31,7 +33,14 @@ export default async function (req: Request): Promise<Response> {
 
     const owned = await resolveOwnedActivation(svc, user, body?.deal_activation_id);
     if (!owned.ok) return Response.json({ error: owned.error }, { status: owned.status });
-    const { activation, ownerEmail } = owned;
+    const { activation, brand, ownerEmail } = owned;
+
+    // RECOVER-3-FIX — the popup does NOT restate the mandate wording: it renders
+    // the SAME strings the PDF is built from, served from the shared copy module.
+    // Language comes from the STORED Brand.locale (the value frozen onto the
+    // Mandate at acceptance), never from Accept-Language.
+    const locale = normalizeLocale(brand?.locale || '');
+    const copy = mandateCopy(locale);
 
     const month = currentMonth();
     const baseline = await findVerifiedBaseline(svc, activation);
@@ -67,6 +76,19 @@ export default async function (req: Request): Promise<Response> {
       eligible: blockers.length === 0,
       blockers,
       document_version: MANDATE_DOCUMENT_VERSION,
+      locale, // RECOVER-3-FIX
+      legal_entity_name: brand?.name || '',
+      owner_email_display: ownerEmail,
+      mandate_copy: {
+        version: MANDATE_COPY_VERSION,
+        titles: copy.titles,
+        actions_intro: copy.actions_intro,
+        actions: copy.actions,
+        limits_body: copy.limits_body,
+        limits_bullets: copy.limits_bullets,
+        summary: copy.summary,
+        checkbox: checkboxTextFor(locale, brand?.name || '', Number(fee.pct)),
+      },
       organization_id: activation.brand_id || '',
       deal_activation_id: activation.id,
       activation_status: activation.status,

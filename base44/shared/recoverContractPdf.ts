@@ -28,6 +28,10 @@ const BODY_W = WIDTH - MARGIN * 2;
 const INK = '#0C0C16';
 const MUTED = '#585868';
 
+// FR/ES DIACRITICS: the body text is rendered with jsPDF's built-in Helvetica,
+// whose WinAnsi encoding covers the full Latin-1 range (é à ç ù ñ í ó ü œ), so the
+// translated mandate prints its accents correctly without embedding a font. safe()
+// below strips only control, bidi and zero-width characters — never accents.
 /** Untrusted -> printable single line, bounded. */
 function safe(value: unknown, max = 160): string {
   const s = String(value ?? '')
@@ -235,7 +239,7 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
 
   heading(t.s9_title);
   t.s9_body.forEach(body);
-  field(t.s9_checkbox_label, checkboxTextFor(locale, mandate.legal_entity_name || ''));
+  field(t.s9_checkbox_label, checkboxTextFor(locale, mandate.legal_entity_name || '', snapshot.fee_pct));
   field(t.s9_declared_authority, t.s9_yes);
   field(t.s9_checkbox_accepted, t.s9_yes);
   field(t.client_signatory, mandate.signed_by_name || '');
@@ -271,7 +275,7 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
   field(t.client_signatory_role, mandate.signed_by_role || '');
   field(t.s9_declared_authority, t.s9_yes);
   field(t.s9_checkbox_accepted, t.s9_yes);
-  field(t.s9_checkbox_label, checkboxTextFor(locale, mandate.legal_entity_name || ''));
+  field(t.s9_checkbox_label, checkboxTextFor(locale, mandate.legal_entity_name || '', snapshot.fee_pct));
   field(t.annex_snapshot_hash, mandate.acceptance_snapshot_hash || '');
   input.documentHashes.forEach(d => field(d.label, d.value));
   if (mandate.supersedes_id) field(t.annex_supersedes, mandate.supersedes_id);

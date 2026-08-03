@@ -189,7 +189,7 @@ export default async function (req: Request): Promise<Response> {
     });
     await logContractEvent(svc, 'recover_contract_email_queued', mandate, { language: locale });
 
-    fireAndForget(req, 'sendRecoverContractEmail', { mandate_id });
+    fireAndForget(base44, 'sendRecoverContractEmail', { mandate_id });
 
     return Response.json({
       ok: true,

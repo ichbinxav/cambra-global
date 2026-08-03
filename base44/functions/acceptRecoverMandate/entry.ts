@@ -214,7 +214,7 @@ export default async function (req: Request): Promise<Response> {
     // later representation of an acceptance that is already valid, so nothing
     // here may fail the acceptance.
     await logContractEvent(svc, 'recover_contract_pdf_queued', { ...mandate, id: mandate_id }, { language }, email);
-    fireAndForget(req, 'generateRecoverContractPdf', { mandate_id });
+    fireAndForget(base44, 'generateRecoverContractPdf', { mandate_id });
 
     return Response.json({
       ok: true,

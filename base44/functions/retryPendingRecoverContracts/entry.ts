@@ -10,7 +10,14 @@
 //
 // It never resumes a job whose lease is still alive, never retries a permanent
 // failure, and processes a bounded batch per run so one bad row cannot starve the
-// rest. Admin or internal only; intended trigger is a scheduled automation.
+// rest. Admin or internal only.
+//
+// TRIGGER, VERIFIED (RECOVER-3-FIX, 2026-08-03): a real platform scheduled
+// automation runs this every 15 minutes ("Recover contract delivery reconciler",
+// EventBridge-backed, same mechanism as the pre-existing weekly benchmark
+// recompute). It is not an "intended" trigger — it was observed executing on
+// schedule, and its first live runs are what exposed the 404 bug in the internal
+// invocation path (see shared/invokeInternal.ts).
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { leaseExpired } from '../../shared/recoverContractState.ts';
@@ -62,11 +69,11 @@ export default async function (req: Request): Promise<Response> {
   const results: Record<string, unknown>[] = [];
 
   for (const m of pdfJobs.slice(0, BATCH)) {
-    const r = await invokeInternal(req, 'generateRecoverContractPdf', { mandate_id: m.id }).catch(() => null);
+    const r = await invokeInternal(base44, 'generateRecoverContractPdf', { mandate_id: m.id }).catch(() => null);
     results.push({ mandate_id: m.id, job: 'pdf', ok: Boolean(r?.ok), status: r?.status ?? 0 });
   }
   for (const m of emailJobs.slice(0, BATCH)) {
-    const r = await invokeInternal(req, 'sendRecoverContractEmail', { mandate_id: m.id }).catch(() => null);
+    const r = await invokeInternal(base44, 'sendRecoverContractEmail', { mandate_id: m.id }).catch(() => null);
     results.push({ mandate_id: m.id, job: 'email', ok: Boolean(r?.ok), status: r?.status ?? 0 });
   }
 
