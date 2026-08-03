@@ -161,10 +161,17 @@ export default function SavingsCurveChart({
             style={{ color: "var(--gris-1)" }}
           >
             {t("ric_recovered")}
-            <span className="mx-2" style={{ color: "var(--linea)" }}>·</span>
-            <span className="font-semibold" style={{ color: "var(--menta-dark)" }}>
-              {t("ric_profit_big")} {t("ric_profit_sub")}
-            </span>
+          </span>
+          <span
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-semibold"
+            style={{
+              color: "var(--menta-dark)",
+              background: "rgba(47,224,168,0.10)",
+              border: "1px solid rgba(15,169,122,0.22)",
+            }}
+          >
+            <span className="font-bold">{t("ric_profit_big")}</span>
+            {t("ric_profit_sub")}
           </span>
         </div>
 
