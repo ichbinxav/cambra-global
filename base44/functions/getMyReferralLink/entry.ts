@@ -9,7 +9,13 @@
 // Attribution happens in submitPaymentsAnalysis (referred_by_code on the
 // session + times_used increment). NO reward mechanics in this chunk.
 
+// REFERRAL-2 T5 (2026-08-03): the find-or-create was duplicated here and in
+// getMyReferralStatus, and two concurrent calls could create two rows for the
+// same owner. Both now share base44/shared/referralLink.ts, which also
+// consolidates any pre-existing duplicates (counters summed, oldest row wins).
+
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { findOrCreateReferralLink } from '../../shared/referralLink.ts';
 
 export default async function(req: Request): Promise<Response> {
   try {
@@ -17,25 +23,8 @@ export default async function(req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const existing = await base44.asServiceRole.entities.ReferralLink
-      .filter({ owner_email: user.email }, '-created_date', 1);
-    if (existing?.[0]?.code) {
-      return Response.json({ ok: true, code: existing[0].code });
-    }
-
-    // 10 lowercase base36 chars from crypto RNG (~51 bits) — opaque, ample
-    // for our volume, and short enough for a clean WhatsApp URL.
-    const bytes = new Uint8Array(10);
-    crypto.getRandomValues(bytes);
-    const code = Array.from(bytes).map((b) => (b % 36).toString(36)).join('');
-
-    await base44.asServiceRole.entities.ReferralLink.create({
-      code,
-      owner_email: user.email,
-      times_used: 0,
-    });
-
-    return Response.json({ ok: true, code });
+    const link = await findOrCreateReferralLink(base44.asServiceRole, user.email);
+    return Response.json({ ok: true, code: link.code });
   } catch (error) {
     return Response.json({ error: (error as any)?.message || 'internal_error' }, { status: 500 });
   }

@@ -22,6 +22,8 @@ const FUNCTIONS_DIR = path.join(REPO_ROOT, "base44", "functions");
 // Censo 2026-07-24 — 141 funciones. Fuente: src/docs/PRODUCTION_FUNCTIONS.md.
 const MANIFEST = [
   "_tenantGuard", "adminOverrides", "adminSummaries", "adminUpdateApplicationStatus",
+  // REFERRAL-1 / REFERRAL-2 (2026-08-03) — referral programme surface.
+  "applyReferralActivation", "getMyReferralStatus",
   "answerAgentQuestion", "apiAuth", "apiOpenApiSpec", "apiV1", "approveAgentRun",
   "authzScope", "benchmarkLearningEngine", "billApiUsage", "blogAgent",
   "brainOrchestrator", "buildInfrastructureGraph", "chatChiefOrchestrator",

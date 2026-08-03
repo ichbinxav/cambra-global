@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 
 /**
  * generateMonthlySavingsReport
@@ -225,10 +226,31 @@ Deno.serve(async (req) => {
           notes += ' Costs above baseline this month — reviewing.';
         }
 
-        // node_fee only on verified or partially-verified data
+        // node_fee only on verified or partially-verified data.
+        //
+        // REFERRAL-2 T2 (2026-08-03) — the percentage now comes from the
+        // BillingRule EFFECTIVE FOR THIS MONTH, not from the live
+        // DealActivation.node_share_percent. That field has no date window, so
+        // with it a referral discount would have applied retroactively to past
+        // months (violating Terms §8) and any BillingRule would have been
+        // ignored — including the discounted ones this chunk creates.
+        // DealActivation.node_share_percent remains the fallback for brands
+        // with no rule yet.
         const billable = (measurementMode === 'fully_verified' || measurementMode === 'estimated_from_partial_data');
-        const nodeSharePct = Number(deal.node_share_percent || 25);
+        const feeRes = await resolveFeePctForMonth(svc, {
+          deal_activation_id: deal.id,
+          brand_id,
+          provider_id: deal.provider_id || null,
+          fallbackPct: Number(deal.node_share_percent || 25),
+        }, month);
+        const nodeSharePct = Number(feeRes.pct);
         const nodeFee = billable ? Math.max(0, savingsMonthly * (nodeSharePct / 100)) : 0;
+        snapshot = {
+          ...snapshot,
+          fee_pct: nodeSharePct,
+          fee_source: feeRes.source,
+          billing_rule_id: feeRes.rule_id,
+        };
 
         // Confidence score
         const confidence = measurementMode === 'fully_verified' ? 0.95
@@ -265,6 +287,8 @@ Deno.serve(async (req) => {
           savings_monthly: Number(savingsMonthly.toFixed(2)),
           measurement_mode: measurementMode,
           node_fee: Number(nodeFee.toFixed(2)),
+          fee_pct: nodeSharePct,
+          fee_source: feeRes.source,
         });
       } catch (e) {
         errors.push({ deal_id: deal.id, reason: e.message || String(e) });

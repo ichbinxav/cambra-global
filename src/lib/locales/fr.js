@@ -3,6 +3,17 @@
 // key/value changes. i18n.jsx imports this file; API unchanged.
 export default {
     /* REFERRAL-1 — programme de parrainage (page, accès tableau de bord, pricing) */
+    /* REFERRAL-2 T3 — commission réelle sur le rapport authentifié */
+    rep_fee_eyebrow:        "Votre commission",
+    rep_fee_title:          "Ce que vous nous payez quand nous récupérons des économies",
+    rep_fee_current:        "Commission sur les économies vérifiées",
+    rep_fee_savings:        "Économies vérifiées sur la période",
+    rep_fee_net:            "Ce qui vous reste après notre commission",
+    rep_fee_standard:       "Commission standard. Elle baisse de 5 points pour chaque commerce que vous amenez et qui commence à économiser.",
+    rep_fee_discount_one:   "{fee} — inclut votre réduction pour 1 commerce que vous avez amené et qui économise déjà.",
+    rep_fee_discount_other: "{fee} — inclut votre réduction pour {n} commerces que vous avez amenés et qui économisent déjà.",
+    rep_fee_link:           "Voir votre programme de parrainage",
+
     ref_title:            "Amenez d'autres commerces, payez moins",
     ref_sub:              "Chaque commerce que vous amenez et qui commence à économiser réellement baisse votre commission de 5 points. De 25% jusqu'à 5%.",
     ref_your_link:        "Votre lien personnel",

@@ -3,6 +3,17 @@
 // key/value changes. i18n.jsx imports this file; API unchanged.
 export default {
     /* REFERRAL-1 — referral program (page, dashboard entry, pricing note) */
+    /* REFERRAL-2 T3 — real success fee on the authenticated report */
+    rep_fee_eyebrow:        "Your success fee",
+    rep_fee_title:          "What you pay us when we recover savings",
+    rep_fee_current:        "Fee on verified savings",
+    rep_fee_savings:        "Verified savings this period",
+    rep_fee_net:            "Yours after our fee",
+    rep_fee_standard:       "Standard fee. It drops 5 points for every business you bring that starts saving.",
+    rep_fee_discount_one:   "{fee} — includes your discount for 1 business you brought that is already saving.",
+    rep_fee_discount_other: "{fee} — includes your discount for {n} businesses you brought that are already saving.",
+    rep_fee_link:           "See your referral programme",
+
     ref_title:            "Bring other businesses, pay less",
     ref_sub:              "Every business you bring that starts saving for real lowers your own fee by 5 points. From 25% down to 5%.",
     ref_your_link:        "Your personal link",

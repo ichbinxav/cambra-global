@@ -1,0 +1,69 @@
+{
+  "name": "ReferralActivation",
+  "type": "object",
+  "description": "REFERRAL-2 (2026-08-03) \u2014 one row per referred business whose savings reached VERIFIED + ACTIVATED status (Terms \u00a77(c) / \u00a78). Two jobs: (1) IDEMPOTENCY KEY \u2014 applyReferralActivation claims a row BEFORE touching any counter, so replaying the activation event can never inflate activated_count and can never over-discount a fee; (2) AUDIT TRAIL \u2014 records which code was credited, which fee resulted, and which BillingRules were scheduled, so a fee on an invoice can always be traced back to a specific activation. Admin-only RLS: it holds third-party identifiers (the referred business), which the referrer must never be able to read \u2014 /Referrals only ever shows aggregate counts.",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "The ReferralLink.code that was credited for this activation."
+    },
+    "referrer_email": {
+      "type": "string",
+      "description": "owner_email of the ReferralLink credited \u2014 the merchant whose success fee drops by 5 points."
+    },
+    "referred_key": {
+      "type": "string",
+      "description": "IDEMPOTENCY KEY. Stable identifier of the referred business: its Brand id when known, otherwise its lowercased contact email. applyReferralActivation refuses to count a second row with the same key, so firing the activation event twice leaves activated_count untouched."
+    },
+    "referred_brand_id": {
+      "type": "string",
+      "description": "Brand id of the referred business when resolvable. Empty when the activation was keyed by email only."
+    },
+    "source_session": {
+      "type": "string",
+      "description": "anon_session_id of the PaymentsAnalysisSession that carried referred_by_code \u2014 the attribution evidence."
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When CAMBRA recorded the verified + activated savings that triggered this credit."
+    },
+    "activated_count_after": {
+      "type": "number",
+      "description": "The referrer's activated_count AFTER this row was applied. Reconciles the counter with its history."
+    },
+    "applied_fee_pct": {
+      "type": "number",
+      "description": "Success fee resulting from this activation (25 \u2192 20 \u2192 15 \u2192 10 \u2192 5, floor 5), computed by the shared referral ladder. Never recomputed later: Terms \u00a78 makes an acquired reduction permanent."
+    },
+    "scheduled_rules_json": {
+      "type": "object",
+      "description": "What was scheduled in billing: the new BillingRule ids, their effective_start_date (first day of the following month, per Terms \u00a78 non-retroactivity) and the ids of the rules closed."
+    },
+    "actor": {
+      "type": "string",
+      "description": "Who/what triggered the credit (admin email, 'internal', or the calling function)."
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "code",
+    "referrer_email",
+    "referred_key",
+    "activated_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

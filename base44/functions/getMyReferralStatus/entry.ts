@@ -13,7 +13,12 @@
 // Find-or-create mirrors getMyReferralLink so a merchant landing on
 // /Referrals for the first time already has a shareable link.
 
+// REFERRAL-2 T5 (2026-08-03): shares the single find-or-create implementation
+// with getMyReferralLink (base44/shared/referralLink.ts) — one row per owner,
+// duplicates consolidated with their counters summed.
+
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { findOrCreateReferralLink } from '../../shared/referralLink.ts';
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -21,21 +26,7 @@ export default async function (req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const rows = await base44.asServiceRole.entities.ReferralLink
-      .filter({ owner_email: user.email }, '-created_date', 1);
-
-    let row = rows?.[0] || null;
-    if (!row?.code) {
-      const bytes = new Uint8Array(10);
-      crypto.getRandomValues(bytes);
-      const code = Array.from(bytes).map((b) => (b % 36).toString(36)).join('');
-      row = await base44.asServiceRole.entities.ReferralLink.create({
-        code,
-        owner_email: user.email,
-        times_used: 0,
-        activated_count: 0,
-      });
-    }
+    const row = await findOrCreateReferralLink(base44.asServiceRole, user.email);
 
     return Response.json({
       ok: true,

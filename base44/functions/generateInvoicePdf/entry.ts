@@ -48,10 +48,29 @@ Deno.serve(async (req) => {
 
     y += 8;
     doc.setFontSize(10);
-    const line = `Node fee for ${report?.month || inv.month || 'period'}`;
+    // REFERRAL-2 T4 (2026-08-03) — show the APPLIED PERCENTAGE, not just the
+    // amount. With the referral programme a merchant may be billed at 20%, 15%,
+    // 10% or 5%; an invoice that only prints the total makes that impossible to
+    // check. Percentage + savings base come from billing_snapshot_json.
+    const snap = inv.billing_snapshot_json || {};
+    const feePct = Number(snap.fee_pct ?? NaN);
+    const savingsBase = Number(snap.savings ?? report?.savings ?? NaN);
+    const pctLabel = Number.isFinite(feePct) ? ` — ${feePct}% of verified savings` : '';
+    const line = `Node fee for ${report?.month || inv.month || 'period'}${pctLabel}`;
     const amount = Number(inv.total_amount ?? inv.subtotal_amount ?? 0).toFixed(2);
     doc.text(line, 20, y);
     doc.text(`€${amount}`, 170, y, { align: 'right' });
+
+    if (Number.isFinite(savingsBase) && Number.isFinite(feePct)) {
+      y += 6;
+      doc.setFontSize(9);
+      doc.text(`Verified savings this period: €${savingsBase.toFixed(2)} · fee applied: ${feePct}%`, 20, y);
+      if (Number(snap?.referral?.activated_count) > 0) {
+        y += 5;
+        doc.text(`Includes referral discount (${snap.referral.activated_count} activated referral(s))`, 20, y);
+      }
+      doc.setFontSize(10);
+    }
 
     y += 10;
     doc.text('Subtotal', 140, y);

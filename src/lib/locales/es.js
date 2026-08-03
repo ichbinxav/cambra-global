@@ -3,6 +3,17 @@
 // key/value changes. i18n.jsx imports this file; API unchanged.
 export default {
     /* REFERRAL-1 — programa de referidos (página, acceso desde panel, pricing) */
+    /* REFERRAL-2 T3 — comisión real en el informe autenticado */
+    rep_fee_eyebrow:        "Tu comisión",
+    rep_fee_title:          "Lo que nos pagas cuando recuperamos ahorro",
+    rep_fee_current:        "Comisión sobre el ahorro verificado",
+    rep_fee_savings:        "Ahorro verificado del periodo",
+    rep_fee_net:            "Lo que te queda tras nuestra comisión",
+    rep_fee_standard:       "Comisión estándar. Baja 5 puntos por cada comercio que traes y empieza a ahorrar.",
+    rep_fee_discount_one:   "{fee} — incluye tu descuento por 1 comercio que trajiste y ya está ahorrando.",
+    rep_fee_discount_other: "{fee} — incluye tu descuento por {n} comercios que trajiste y ya están ahorrando.",
+    rep_fee_link:           "Ver tu programa de referidos",
+
     ref_title:            "Trae a otros comercios y paga menos",
     ref_sub:              "Cada comercio que traes y que empieza a ahorrar de verdad baja tu comisión 5 puntos. Del 25% hasta el 5%.",
     ref_your_link:        "Tu enlace personal",

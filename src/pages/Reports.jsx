@@ -8,6 +8,7 @@ import { getBenchmarks } from "@/lib/scoreEngine";
 import { Button } from "@/components/ui/button";
 import PageHero from "@/components/shared/PageHero";
 import ReportsKPIStrip from "@/components/reports/ReportsKPIStrip";
+import EffectiveFeePanel from "@/components/reports/EffectiveFeePanel";
 
 export default function Reports() {
   const [results, setResults] = useState([]);
@@ -123,6 +124,10 @@ export default function Reports() {
         <>
           {/* KPI strip */}
           <ReportsKPIStrip results={results} />
+
+          {/* REFERRAL-2 T3 — the merchant's REAL fee (25/20/15/10/5) and what
+              they keep after it. Authenticated surface only. */}
+          {!vLoading && <EffectiveFeePanel report={lastReport} />}
 
           {/* Chart */}
           {chartData.length > 0 && (
