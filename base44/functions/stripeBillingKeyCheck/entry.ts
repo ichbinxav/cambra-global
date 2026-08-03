@@ -12,6 +12,7 @@
 // Never returns key values, only prefixes and booleans.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { assertBillingAccount, expectedAccountId } from '../../shared/stripeBilling.ts';
+import { getWebhookSecret } from '../../shared/stripeWebhookSecret.ts';
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -31,6 +32,23 @@ export default async function (req: Request): Promise<Response> {
         out[mode] = { ok: false, expected, error: (err as Error).message };
       }
     }
+
+    // Webhook signing secrets: report presence per mode and — the actual stop
+    // criterion — that the two are not the same value. Values are never returned;
+    // sameness is compared in memory only.
+    const secrets: Record<string, string | null> = {};
+    for (const mode of ['test', 'live'] as const) {
+      try {
+        secrets[mode] = getWebhookSecret(mode);
+      } catch {
+        secrets[mode] = null;
+      }
+    }
+    out.webhook_secrets = {
+      test_configured: Boolean(secrets.test),
+      live_configured: Boolean(secrets.live),
+      shared_across_modes: Boolean(secrets.test && secrets.live && secrets.test === secrets.live),
+    };
 
     return Response.json(out);
   } catch (error) {
