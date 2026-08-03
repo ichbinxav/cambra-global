@@ -94,10 +94,12 @@ Deno.serve(async (req) => {
     const pdfBytes = doc.output('arraybuffer');
 
     // Upload to private storage and return a signed URL
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    // A bare Blob is rejected by the upload endpoint ("'file' field is an empty
+    // object") because it carries no filename — it must be a named File.
     const filename = `invoice-${number.replace(/\s+/g, '-')}.pdf`;
+    const file = new File([pdfBytes], filename, { type: 'application/pdf' });
 
-    const upload = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ file: blob });
+    const upload = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ file });
     const file_uri = upload?.file_uri;
     if (!file_uri) return Response.json({ error: 'Upload failed' }, { status: 500 });
 
