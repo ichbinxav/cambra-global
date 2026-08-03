@@ -24,6 +24,8 @@ const MANIFEST = [
   "_tenantGuard", "adminOverrides", "adminSummaries", "adminUpdateApplicationStatus",
   // REFERRAL-1 / REFERRAL-2 (2026-08-03) — referral programme surface.
   "applyReferralActivation", "getMyReferralStatus",
+  // RECOVER-1 (2026-08-03) — Recover Margin mandate acceptance surface.
+  "getRecoverAcceptanceContext", "startRecoverAcceptance", "acceptRecoverMandate",
   "answerAgentQuestion", "apiAuth", "apiOpenApiSpec", "apiV1", "approveAgentRun",
   "authzScope", "benchmarkLearningEngine", "billApiUsage", "blogAgent",
   "brainOrchestrator", "buildInfrastructureGraph", "chatChiefOrchestrator",

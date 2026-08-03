@@ -14,7 +14,7 @@
 
 | Clase | Nº | Notas |
 |---|---|---|
-| A (merchant) | 31 | funnel anónimo (7), dashboard/connect/vault autenticado (24) |
+| A (merchant) | 34 | funnel anónimo (7), dashboard/connect/vault autenticado (24), aceptación Recover Margin (3 — RECOVER-1) |
 | A-API (partners) | 6 | apiAuth, apiOpenApiSpec, apiV1, mcpServer, oauthAuthorize, oauthToken |
 | B (admin/founder-OS) | 77 | incl. 44 agentes/orquestadores del founder-OS (via agentRegistry) |
 | C (scheduled) | 7 | billApiUsage, engineeringReportAgent†, processWebhookDeadLetters, purgeInactiveLeads, purgePaymentsAnalysisSessions, scheduledBenchmarkRecompute, sendMonthlySavingsSummary† |
@@ -63,6 +63,9 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | securityAuditLog | me | – | SecurityAudit | ConnectorTile |
 | createDocument / listDocuments / linkDocument / unlinkDocument / updateDocumentMeta | me (+ admin en rutas de escritura sensibles) | – | Document, DocumentLink, Brand, Provider | Vault |
 | sendMonthlySavingsSummary | me+admin (también C) | ✓ | User, Brand, AnalyzerResult | Account + scheduler |
+| getRecoverAcceptanceContext | me (+ ownership activación/marca) | ✓ | DealActivation, Brand, Baseline, BillingRule, Mandate | popup de aceptación Recover Margin |
+| startRecoverAcceptance | me (+ ownership) | ✓ | DealActivation, Brand, Baseline, BillingRule, Mandate | popup de aceptación Recover Margin |
+| acceptRecoverMandate | me (+ ownership) | ✓ | Mandate, DealActivation, Brand, Baseline, BillingRule, AuthorizationLog, OperationalLog | popup de aceptación Recover Margin |
 
 ## A-API — API de partners (6)
 
