@@ -16,8 +16,8 @@ const ITEMS = [
     roleKey: "tst_role_founder",
     revenue: "Maison Épice",
     before: "2.40%",
-    after: "1.62%",
-    savings: "€14K",
+    after: "1.20%",
+    savings: "€22K",
   },
   {
     vertical: "Atelier Nord",
@@ -26,8 +26,8 @@ const ITEMS = [
     roleKey: "tst_role_coo",
     revenue: "Atelier Nord",
     before: "2.15%",
-    after: "1.48%",
-    savings: "€11K",
+    after: "1.08%",
+    savings: "€18K",
   },
   {
     vertical: "Vela Studio",
@@ -36,8 +36,8 @@ const ITEMS = [
     roleKey: "tst_role_founder",
     revenue: "Vela Studio",
     before: "2.55%",
-    after: "1.70%",
-    savings: "€9K",
+    after: "1.15%",
+    savings: "€15K",
   },
   {
     vertical: "Brün Coffee",
@@ -46,8 +46,8 @@ const ITEMS = [
     roleKey: "tst_role_finance",
     revenue: "Brün Coffee",
     before: "2.30%",
-    after: "1.55%",
-    savings: "€8K",
+    after: "0.95%",
+    savings: "€14K",
   },
   {
     vertical: "Lume",
@@ -56,8 +56,8 @@ const ITEMS = [
     roleKey: "tst_role_founder",
     revenue: "Lume",
     before: "2.60%",
-    after: "1.75%",
-    savings: "€13K",
+    after: "1.56%",
+    savings: "€16K",
   },
 ];
 

@@ -12,21 +12,24 @@ import { useTranslation } from "@/lib/i18n.jsx";
  * Numbers derived from the SINGLE CANONICAL REFERENCE EXAMPLE used across
  * the whole public surface (see Decision_Log · "Landing reference brand"):
  *
- *   current cost      = 2.00% effective → €40,000/yr
- *   achievable cost   = 0.80% effective → €16,000/yr   (60% less)
- *   → identified gap  = €24,000/yr  →  €48,000 over 24 months
- *   → merchant keeps  = 75% = €18,000/yr → €36,000 over 24 months
- *   → CAMBRA fee      = 25% = €6,000/yr  → €12,000 over 24 months
+ *   GMV               = €2,000,000/yr
+ *   current cost      = 2.30% effective → €46,000/yr
+ *   achievable cost   = 0.92% effective → €18,400/yr   (60% less)
+ *   → identified gap  = 1.38 pts = €27,600/yr → €55,200 over 24 months
+ *   → merchant keeps  = 75% = €20,700/yr → €41,400 over 24 months
+ *   → CAMBRA fee      = 25% = €6,900/yr  → €13,800 over 24 months
  *
- * CRITICAL distinction — do NOT confuse:
- *   • €16,000/yr = what the merchant STILL pays after optimisation (floor).
+ * CRITICAL distinction — do NOT confuse (the "fabricated-telemetry" class
+ * of error this comment has always guarded against):
+ *   • €18,400/yr = FLOOR — what the merchant STILL pays after optimisation.
  *     This is NOT recoverable, ever. Never present it as savings.
- *   • €24,000/yr = the gap. THIS is what CAMBRA recovers.
+ *   • €27,600/yr = GAP. THIS, and only this, is what CAMBRA recovers.
  *
- * The three cards below decompose the €24,000/yr gap into its narrative
- * angles (blended / cross-border / fixed-fee drag). Amounts sum to €24,000
- * so the yearly figure and the 24-month headline close the same account:
- *   €24,000/yr identified × 24 mo = €48,000 identified · €36,000 for the merchant.
+ * The three cards below decompose the €27,600/yr gap into its narrative
+ * angles: blended 50% (€13,800) · cross-border 30% (€8,280) · fixed-fee
+ * drag 20% (€5,520). They sum EXACTLY to €27,600 so the yearly figure and
+ * the 24-month headline close the same account:
+ *   €27,600/yr identified × 24 mo = €55,200 identified · €41,400 for the merchant.
  *
  * The HEADLINE figure is the 24-MONTH number (maximum visual impact); the
  * yearly figure lives in the supporting copy. Overpay bars are capped at
@@ -41,10 +44,10 @@ const ITEMS = [
     icon: TrendingDown,
     categoryKey: "prob_c1_cat",
     bodyKey: "prob_c1_body",
-    amount: 12600,
-    // Largest angle — blended pricing hides most of the gap (~53% of €24,000).
-    // Visual cap +58% stays coherent with, and under, the 60% hero band.
-    overpayPct: 58,
+    amount: 13800,
+    // Largest angle — blended pricing hides half the gap (50% of €27,600).
+    // Visual cap +50% stays coherent with, and under, the 60% hero band.
+    overpayPct: 50,
     accent: "rgba(239,68,68,0.65)",
     glow: "rgba(239,68,68,0.08)",
   },
@@ -52,11 +55,12 @@ const ITEMS = [
     icon: Globe2,
     categoryKey: "prob_c2_cat",
     bodyKey: "prob_c2_body",
-    amount: 7200,
-    // ~30% of the gap on the reference example (~15% intl share, +1.75%
-    // cross-border uplift vs a negotiated ~0.9% on the same portion).
-    // Visual cap +42% keeps the bar under the 60% hero band.
-    overpayPct: 42,
+    amount: 8280,
+    // 30% of the gap on the reference example (~15% intl share, +1.75%
+    // cross-border uplift vs a negotiated ~0.9% on the same portion — a
+    // market figure independent of the 2.30/0.92 anchor, so unchanged).
+    // Visual cap +58% keeps the bar under the 60% hero band.
+    overpayPct: 58,
     accent: "rgba(249,115,22,0.65)",
     glow: "rgba(249,115,22,0.08)",
   },
@@ -64,16 +68,16 @@ const ITEMS = [
     icon: Coins,
     categoryKey: "prob_c3_cat",
     bodyKey: "prob_c3_body",
-    amount: 4200,
-    // €0.25 vs €0.15 per-tx on ~€65 avg ticket ≈ +28% overpay on the fixed
-    // component (the % component isn't affected). ~17% of the total gap.
-    overpayPct: 28,
+    amount: 5520,
+    // €0.25 vs €0.15 per-tx on ~€65 avg ticket ≈ +25% overpay on the fixed
+    // component (the % component isn't affected). 20% of the total gap.
+    overpayPct: 25,
     accent: "rgba(236,72,153,0.65)",
     glow: "rgba(236,72,153,0.08)",
   },
 ];
 
-// Yearly identified gap (€24,000) and the 24-month headline (€48,000).
+// Yearly identified gap (€27,600) and the 24-month headline (€55,200).
 const TOTAL_YEAR = ITEMS.reduce((acc, i) => acc + i.amount, 0);
 const TOTAL_24M = TOTAL_YEAR * 2;
 

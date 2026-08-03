@@ -4,9 +4,10 @@ import { useTranslation } from "@/lib/i18n.jsx";
 /**
  * Savings Curve — illustrative projection.
  * Canonical reference business (same one used by ProblemSectionWow):
- * €40,000/yr in card fees at 2.00% · achievable 0.80% · gap 1.20 pts
- * → €24,000/yr identified → €48,000 over 24 months (€36,000 stays with
+ * €2M yearly sales · paying 2.30% · achievable 0.92% · gap 1.38 pts
+ * → €27,600/yr identified → €55,200 over 24 months (€41,400 stays with
  * the merchant; CAMBRA earns 25% of what it actually recovers).
+ * Floor (€18,400/yr still paid after optimisation) is NEVER shown as savings.
  * Organic monotone 24-point cubic ease-out curve, animated on scroll.
  */
 
@@ -24,7 +25,7 @@ const DEFAULT_MONTHS = 24;
 const DEFAULT_CURVE = buildCurve(DEFAULT_MONTHS);
 
 export default function SavingsCurveChart({
-  target = 48000,
+  target = 55200,
   months = DEFAULT_MONTHS,
   curve = DEFAULT_CURVE,
   className = "",
@@ -180,7 +181,7 @@ export default function SavingsCurveChart({
               className="font-bold tabular-nums"
               style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "20px", letterSpacing: "-0.02em", lineHeight: 1, color: "var(--coral)" }}
             >
-              1.20pts
+              1.38pts
             </div>
             <div className="text-[11px] uppercase tracking-[0.16em] font-semibold mt-1.5" style={{ color: "var(--gris-1)" }}>
               {t("ric_rate_saved")}
