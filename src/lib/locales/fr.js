@@ -2,7 +2,7 @@
 // SWEEP-1 T3 (2026-07-24): extracted verbatim from src/lib/i18n.jsx — zero
 // key/value changes. i18n.jsx imports this file; API unchanged.
 export default {
-    /* REFERRAL-1 — programme de recommandation (page, accès tableau de bord, pricing) */
+    /* REFERRAL-1 — programme de parrainage (page, accès tableau de bord, pricing) */
     ref_title:            "Amenez d'autres commerces, payez moins",
     ref_sub:              "Chaque commerce que vous amenez et qui commence à économiser réellement baisse votre commission de 5 points. De 25% jusqu'à 5%.",
     ref_your_link:        "Votre lien personnel",
@@ -22,7 +22,7 @@ export default {
     dash_ref_title:       "Baissez votre commission en amenant d'autres commerces",
     dash_ref_sub:         "5 points de moins pour chaque commerce amené qui commence à économiser.",
     prc_referral_note:    "Ces 25% ne sont pas figés : ils baissent de 5 points pour chaque commerce que vous amenez et qui commence à économiser, jusqu'à 5%.",
-    prc_referral_link:    "Voir le programme de recommandation",
+    prc_referral_link:    "Voir le programme de parrainage",
 
 
     nav_dashboard:    "Tableau de bord",
