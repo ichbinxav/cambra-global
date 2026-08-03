@@ -66,6 +66,16 @@ Jerarquía invertida en la sección "Impacto real":
   pasa de `--menta-dark` a `--ink` para que ningún otro dato comparta el verde
   de acento del 14%.
 
+### COPY-4-FIX — jerarquía de 4 niveles
+
+1. Titular de sección: **+14%** en verde (`.kw-m`) — intacto.
+2. Cifra dominante de la tarjeta: **€55.200+** con el degradado de marca
+   existente `var(--g-voltio)` (mismo token que el trazo de la curva; no se creó
+   ningún degradado nuevo) + "recuperados en 24 meses".
+3. Segunda cifra: **+14% más de beneficio neto**, verde `--menta-dark`, 26px.
+4. Stats de apoyo: `€2.3k/mes` (ink) · `1.38pts` (coral) · `75%` (ink) — ninguno
+   usa el degradado de marca ni el verde de acento.
+
 ### Mensaje del reparto 75/25 → **opción (b)**
 
 Se retira de la tarjeta de recovery (clave `ric_split_note` eliminada). Motivo:

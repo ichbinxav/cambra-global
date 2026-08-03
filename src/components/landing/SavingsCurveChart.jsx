@@ -146,20 +146,35 @@ export default function SavingsCurveChart({
               fontSize: "clamp(40px, 6vw, 64px)",
               letterSpacing: "-0.045em",
               lineHeight: 1,
-              color: "var(--menta-dark)",
+              /* Existing brand gradient token (--g-voltio, same family as the
+                 curve stroke) — not a new one. */
+              background: "var(--g-voltio)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
-            {t("ric_profit_big")}
+            {formatted}
           </span>
           <span className="text-[12px] font-medium" style={{ color: "var(--gris-1)" }}>
-            {t("ric_profit_sub")}
+            {t("ric_recovered")}
           </span>
         </div>
 
-        {/* COPY-4 — €55,200 demoted to small grey support text: the +14% is
-            the only accented figure in this section. */}
-        <p className="mt-2 text-[11px] leading-snug tabular-nums" style={{ color: "var(--gris-2)" }}>
-          {formatted} {t("ric_recovered")}
+        {/* COPY-4-FIX — second figure: green, mid-size. Below the euro amount,
+            well above the grey microcopy. */}
+        <p
+          className="mt-2 font-bold tabular-nums"
+          style={{
+            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+            fontSize: "26px",
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
+            color: "var(--menta-dark)",
+          }}
+        >
+          {t("ric_profit_big")}{" "}
+          <span className="text-[13px] font-semibold">{t("ric_profit_sub")}</span>
         </p>
 
         {/* Sober stats strip */}
