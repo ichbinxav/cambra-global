@@ -124,14 +124,50 @@ export default function Partners() {
                   key={c.titleKey}
                   {...fadeUp}
                   transition={{ ...fadeUp.transition, delay: 0.1 + i * 0.08 }}
-                  className="glass-panel-strong rounded-2xl p-6"
+                  className="group relative overflow-hidden rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.10)",
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                  }}
                 >
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
-                    style={{ background: "linear-gradient(135deg, var(--voltio), var(--cian))", boxShadow: "0 0 24px rgba(91,76,245,.35)" }}>
-                    <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+                  {/* Top gradient accent line */}
+                  <span
+                    aria-hidden
+                    className="absolute top-0 left-0 right-0 h-[3px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: "linear-gradient(90deg, var(--voltio), var(--cian))" }}
+                  />
+                  {/* Giant faded index watermark */}
+                  <span
+                    aria-hidden
+                    className="absolute -bottom-4 -right-2 font-display font-black select-none pointer-events-none"
+                    style={{
+                      fontSize: "6.5rem",
+                      lineHeight: 1,
+                      color: "rgba(255,255,255,0.05)",
+                    }}
+                  >
+                    0{i + 1}
+                  </span>
+                  {/* Icon with glow ring */}
+                  <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
+                    style={{
+                      background: "linear-gradient(135deg, var(--voltio) 0%, var(--cian) 100%)",
+                      boxShadow: "0 0 0 1px rgba(255,255,255,0.08), 0 12px 32px -8px rgba(91,76,245,.55), 0 0 40px rgba(91,76,245,.25)",
+                    }}>
+                    <Icon className="h-6 w-6 text-white" strokeWidth={2} />
                   </div>
-                  <h3 className="font-display text-base font-bold mb-2 text-white">{t(c.titleKey)}</h3>
-                  <p className="text-[13px] leading-relaxed text-white/60">{t(c.bodyKey)}</p>
+                  <h3 className="relative font-display text-lg font-bold mb-2.5"
+                    style={{
+                      background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 100%)",
+                      WebkitBackgroundClip: "text",
+                      backgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}>
+                    {t(c.titleKey)}
+                  </h3>
+                  <p className="relative text-[13.5px] leading-relaxed text-white/65">{t(c.bodyKey)}</p>
                 </motion.div>
               );
             })}
@@ -156,15 +192,31 @@ export default function Partners() {
                   key={c.titleKey}
                   {...fadeUp}
                   transition={{ ...fadeUp.transition, delay: i * 0.08 }}
-                  className="group p-6 rounded-2xl transition-all duration-300 hover:-translate-y-1"
+                  className="group relative overflow-hidden p-7 rounded-2xl transition-all duration-300 hover:-translate-y-1.5"
                   style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}
                 >
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110"
-                    style={{ background: "rgba(91,76,245,0.08)", border: "1px solid rgba(91,76,245,0.15)" }}>
-                    <Icon className="h-5 w-5" style={{ color: "var(--voltio)" }} strokeWidth={2} />
+                  {/* Soft gradient glow on hover */}
+                  <span
+                    aria-hidden
+                    className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    style={{ background: "radial-gradient(closest-side, rgba(91,76,245,0.18), transparent 70%)", filter: "blur(12px)" }}
+                  />
+                  {/* Gradient icon block */}
+                  <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+                    style={{
+                      background: "linear-gradient(135deg, var(--voltio) 0%, var(--cian) 100%)",
+                      boxShadow: "0 8px 20px -6px rgba(91,76,245,.4)",
+                    }}>
+                    <Icon className="h-6 w-6 text-white" strokeWidth={2} />
                   </div>
-                  <h3 className="font-display text-base font-bold mb-2" style={{ color: "var(--ink)" }}>{t(c.titleKey)}</h3>
-                  <p className="text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(c.bodyKey)}</p>
+                  <h3 className="relative font-display text-lg font-bold mb-2.5" style={{ color: "var(--ink)" }}>{t(c.titleKey)}</h3>
+                  <p className="relative text-[13.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(c.bodyKey)}</p>
+                  {/* Bottom accent bar — reveals on hover */}
+                  <span
+                    aria-hidden
+                    className="absolute bottom-0 left-0 h-[3px] w-0 group-hover:w-full transition-all duration-400"
+                    style={{ background: "linear-gradient(90deg, var(--voltio), var(--cian))" }}
+                  />
                 </motion.div>
               );
             })}
