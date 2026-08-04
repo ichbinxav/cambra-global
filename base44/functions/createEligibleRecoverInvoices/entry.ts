@@ -128,7 +128,12 @@ export default async function (req: Request): Promise<Response> {
           effective_fee_pct: Number(report.effective_fee_pct),
           tax_rate_bps: tax.tax_rate_bps,
         });
-        if (amounts.fee_net_minor !== eurToMinor(report.fee_net_amount)) {
+        // An unset/non-finite stored fee means the report was never properly
+        // approved — treat it as a mismatch, not as an exception.
+        const storedFeeMinor = Number.isFinite(Number(report.fee_net_amount))
+          ? eurToMinor(report.fee_net_amount)
+          : null;
+        if (storedFeeMinor === null || amounts.fee_net_minor !== storedFeeMinor) {
           await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_contract', billing_block_reason: 'calculation_mismatch_reapprove' }).catch(() => null);
           outcome.error = 'calculation_mismatch_reapprove'; continue;
         }
@@ -191,13 +196,15 @@ export default async function (req: Request): Promise<Response> {
             currency: 'eur',
             auto_advance: 'false',
             footer: footer.slice(0, 500),
-            'metadata[organization_id]': activation.brand_id,
-            'metadata[brand_id]': activation.brand_id,
-            'metadata[deal_activation_id]': activation.id,
-            'metadata[mandate_id]': mandate.id,
-            'metadata[monthly_savings_report_id]': report.id,
-            'metadata[local_invoice_id]': inv.id,
-            'metadata[billing_month]': report.month,
+            // String()-coerced on purpose: URLSearchParams would otherwise send
+            // the literal "undefined" to Stripe for a missing id.
+            'metadata[organization_id]': String(activation.brand_id || ''),
+            'metadata[brand_id]': String(activation.brand_id || ''),
+            'metadata[deal_activation_id]': String(activation.id),
+            'metadata[mandate_id]': String(mandate.id),
+            'metadata[monthly_savings_report_id]': String(report.id),
+            'metadata[local_invoice_id]': String(inv.id),
+            'metadata[billing_month]': String(report.month),
           }, `r4:inv:create:${report.id}`);
           if (!created.ok) { outcome.error = `stripe_invoice_create_failed:${created.data?.error?.code || created.status}`; continue; }
           stripeInvoiceId = created.data.id;

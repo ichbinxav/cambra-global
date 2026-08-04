@@ -98,7 +98,15 @@ export default async function (req: Request): Promise<Response> {
       vies_response_snapshot: snapshot,
       vies_name: viesName,
       vies_address: viesAddress,
-      ...(status === 'valid' ? { tax_evidence_status: 'vies_validated' } : {}),
+      // Evidence must never outlive its proof: a brand that WAS 'vies_validated'
+      // and now checks invalid/unavailable drops back to 'vat_id_provided', so a
+      // stale green flag can't sit next to a red vies_status. Manual-review
+      // approvals are never overwritten here — this function doesn't grant them.
+      tax_evidence_status: status === 'valid'
+        ? 'vies_validated'
+        : (brand.tax_evidence_status === 'alternative_evidence_approved'
+            ? brand.tax_evidence_status
+            : 'vat_id_provided'),
     });
 
     await svc.entities.OperationalLog.create({

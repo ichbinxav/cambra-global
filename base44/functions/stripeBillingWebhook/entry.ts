@@ -95,10 +95,12 @@ export default async function (req: Request): Promise<Response> {
 
     const obj = event.data?.object || {};
     // Resolve the Stripe invoice id for each event family.
-    const stripeInvoiceId =
-      event.type.startsWith('invoice.') ? obj.id
-      : event.type === 'credit_note.created' ? (typeof obj.invoice === 'string' ? obj.invoice : '')
-      : /* charge.dispute.created */ (typeof obj.charge === 'string' ? '' : '') || (typeof obj.invoice === 'string' ? obj.invoice : '');
+    // invoice.*  → the object IS the invoice.
+    // credit_note.created / charge.dispute.created → it carries an `invoice` ref
+    // (a dispute may not: those fall back to the payment-intent lookup below).
+    const stripeInvoiceId = event.type.startsWith('invoice.')
+      ? String(obj.id || '')
+      : (typeof obj.invoice === 'string' ? obj.invoice : '');
 
     // Prefer metadata (we always set local_invoice_id), fall back to lookup.
     let inv: any = null;
