@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Handshake, TrendingUp, Sparkles, Briefcase, Store, Users } from "lucide-react";
+import { ArrowRight, Handshake, TrendingUp, HeartHandshake, LifeBuoy, FileText, BadgeCheck, BookOpen, Briefcase, Store, Users, Search, ShieldCheck, Zap } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
 import SectionLabel from "@/components/shared/SectionLabel";
@@ -16,11 +16,22 @@ const fadeUp = {
 };
 
 // ── Dark glass card for the "Why partner" section ──
-const WHY_ICONS = [Handshake, TrendingUp, Sparkles];
+const WHY_ICONS = [TrendingUp, HeartHandshake, LifeBuoy, FileText, BookOpen, BadgeCheck];
 const WHY = [
-  { titleKey: "pt_s2_p1_title", bodyKey: "pt_s2_p1_body" },
   { titleKey: "pt_s4_b1_title", bodyKey: "pt_s4_b1_body" },
+  { titleKey: "pt_s4_b2_title", bodyKey: "pt_s4_b2_body" },
+  { titleKey: "pt_s4_b3_title", bodyKey: "pt_s4_b3_body" },
   { titleKey: "pt_s4_b4_title", bodyKey: "pt_s4_b4_body" },
+  { titleKey: "pt_s4_b5_title", bodyKey: "pt_s4_b5_body" },
+  { titleKey: "pt_s4_b6_title", bodyKey: "pt_s4_b6_body" },
+];
+
+const STEP_ICONS = [Handshake, Search, ShieldCheck, Zap];
+const STEPS = [
+  { titleKey: "pt_s5_step1", bodyKey: "pt_s5_step1_body" },
+  { titleKey: "pt_s5_step2", bodyKey: "pt_s5_step2_body" },
+  { titleKey: "pt_s5_step3", bodyKey: "pt_s5_step3_body" },
+  { titleKey: "pt_s5_step4", bodyKey: "pt_s5_step4_body" },
 ];
 
 const WHO_ICONS = [Briefcase, Store, Users];
@@ -116,14 +127,14 @@ export default function Partners() {
               {t("pt_s4_title")}
             </motion.h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {WHY.map((c, i) => {
               const Icon = WHY_ICONS[i];
               return (
                 <motion.div
                   key={c.titleKey}
                   {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.1 + i * 0.08 }}
+                  transition={{ ...fadeUp.transition, delay: 0.1 + i * 0.06 }}
                   className="group relative overflow-hidden rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1"
                   style={{
                     background: "rgba(255,255,255,0.04)",
@@ -138,36 +149,16 @@ export default function Partners() {
                     className="absolute top-0 left-0 right-0 h-[3px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"
                     style={{ background: "linear-gradient(90deg, var(--voltio), var(--cian))" }}
                   />
-                  {/* Giant faded index watermark */}
-                  <span
-                    aria-hidden
-                    className="absolute -bottom-4 -right-2 font-display font-black select-none pointer-events-none"
-                    style={{
-                      fontSize: "6.5rem",
-                      lineHeight: 1,
-                      color: "rgba(255,255,255,0.05)",
-                    }}
-                  >
-                    0{i + 1}
-                  </span>
                   {/* Icon with glow ring */}
-                  <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
+                  <div className="relative w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110"
                     style={{
                       background: "linear-gradient(135deg, var(--voltio) 0%, var(--cian) 100%)",
-                      boxShadow: "0 0 0 1px rgba(255,255,255,0.08), 0 12px 32px -8px rgba(91,76,245,.55), 0 0 40px rgba(91,76,245,.25)",
+                      boxShadow: "0 0 0 1px rgba(255,255,255,0.08), 0 10px 28px -8px rgba(91,76,245,.55), 0 0 36px rgba(91,76,245,.22)",
                     }}>
-                    <Icon className="h-6 w-6 text-white" strokeWidth={2} />
+                    <Icon className="h-5 w-5 text-white" strokeWidth={2} />
                   </div>
-                  <h3 className="relative font-display text-lg font-bold mb-2.5"
-                    style={{
-                      background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 100%)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                    }}>
-                    {t(c.titleKey)}
-                  </h3>
-                  <p className="relative text-[13.5px] leading-relaxed text-white/65">{t(c.bodyKey)}</p>
+                  <h3 className="relative font-display text-[15px] font-bold mb-2 text-white">{t(c.titleKey)}</h3>
+                  <p className="relative text-[13px] leading-relaxed text-white/60">{t(c.bodyKey)}</p>
                 </motion.div>
               );
             })}
@@ -230,15 +221,58 @@ export default function Partners() {
         </div>
       </section>
 
-      {/* ── APPLICATION ── */}
-      <section id="apply" className="scroll-mt-20 pb-20 sm:pb-24">
-        <div className="max-w-2xl mx-auto px-5 sm:px-8">
-          <div className="mb-8 text-center">
-            <SectionLabel>{t("pt_s7_label")}</SectionLabel>
-            <h2 className="font-display mt-4 text-2xl sm:text-3xl font-black tracking-[-0.03em]" style={{ color: "var(--ink)" }}>
-              {t("pt_s7_title")}
+      {/* ── FOR YOUR CLIENTS (4-step flow) ── */}
+      <section className="px-5 py-16 sm:py-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-12 text-center">
+            <SectionLabel>{t("pt_s5_label")}</SectionLabel>
+            <h2 className="font-display mt-4 text-2xl sm:text-3xl font-black tracking-[-0.03em] max-w-2xl mx-auto" style={{ color: "var(--ink)" }}>
+              {t("pt_s5_title")}
             </h2>
-            <p className="mt-4 text-[15px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+          </div>
+          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {STEPS.map((s, i) => {
+              const Icon = STEP_ICONS[i];
+              return (
+                <motion.div
+                  key={s.titleKey}
+                  {...fadeUp}
+                  transition={{ ...fadeUp.transition, delay: i * 0.1 }}
+                  className="relative p-6 rounded-2xl transition-all duration-300 hover:-translate-y-1"
+                  style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}
+                >
+                  {/* Step number badge */}
+                  <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black"
+                    style={{ background: "linear-gradient(135deg, var(--voltio), var(--cian))", boxShadow: "0 4px 12px rgba(91,76,245,.4)" }}>
+                    {i + 1}
+                  </div>
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 mt-2"
+                    style={{ background: "rgba(91,76,245,0.08)", border: "1px solid rgba(91,76,245,0.15)" }}>
+                    <Icon className="h-5 w-5" style={{ color: "var(--voltio)" }} strokeWidth={2} />
+                  </div>
+                  <h3 className="font-display text-base font-bold mb-2" style={{ color: "var(--ink)" }}>{t(s.titleKey)}</h3>
+                  <p className="text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(s.bodyKey)}</p>
+                </motion.div>
+              );
+            })}
+          </div>
+          <p className="mt-8 text-center text-sm italic" style={{ color: "var(--gris-1)" }}>
+            {t("pt_s5_note")}
+          </p>
+        </div>
+      </section>
+
+      {/* ── APPLICATION (dark block so glass form is readable) ── */}
+      <section id="apply" className="scroll-mt-20 px-5 pb-20 sm:pb-24">
+        <div className="section-ink px-6 sm:px-12 py-14 sm:py-16 max-w-2xl mx-auto">
+          <div className="mb-8 text-center">
+            <motion.p {...fadeUp} className="text-[11px] font-bold tracking-[0.24em] uppercase mb-4" style={{ color: "#7DE3FF" }}>
+              {t("pt_s7_label")}
+            </motion.p>
+            <motion.h2 {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.06 }} className="text-white font-display text-2xl sm:text-3xl font-black tracking-[-0.03em]">
+              {t("pt_s7_title")}
+            </motion.h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-white/60">
               {t("pt_s7_body")}
             </p>
           </div>
