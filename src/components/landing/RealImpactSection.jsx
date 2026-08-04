@@ -47,7 +47,7 @@ export default function RealImpactSection() {
           >
             {t("ri_h2_pre")}
             <br />
-            <span className="kw-m whitespace-nowrap">{t("ri_h2_kw")}</span>
+            <span className="kw">{t("ri_h2_kw")}</span>
           </h2>
 
           <p className="mt-6 text-[15px] sm:text-[16px] leading-relaxed max-w-xl" style={{ color: "var(--gris-1)" }}>

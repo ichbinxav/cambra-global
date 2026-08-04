@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Settings, Shield, Activity, MessageSquareQuote, Handshake } from "lucide-react";
+import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Settings, Shield, Activity, MessageSquareQuote, Handshake, UserPlus } from "lucide-react";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 // ─────────────────────────────────────────────
 // Premium grouped structure — fintech editorial
@@ -10,54 +11,10 @@ import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 // Every href here MUST resolve to a PUBLIC route in src/App.jsx. Member-only
 // routes (Insights, ConnectTools, Dashboard, …) live in the member sidebar,
 // not the public mobile menu — including them here would bounce anonymous
-// visitors to /LoginGate on tap.
-const PUBLIC_GROUPS = [
-  {
-    label: "Home",
-    items: [
-      { label: "Homepage", sub: "Cambra overview", href: "/", Icon: Home },
-    ],
-  },
-  {
-    label: "Platform",
-    items: [
-      { label: "Infrastructure audit", sub: "Run the Analyzer", href: "/Analyzer", Icon: ScanSearch },
-      { label: "Audit workflow", sub: "How Cambra works", href: "/HowItWorks", Icon: Workflow },
-      { label: "Pricing model", sub: "How we get paid", href: "/Pricing", Icon: Receipt },
-    ],
-  },
-  {
-    label: "Proof",
-    items: [
-      { label: "Testimonials", sub: "Real brand results", href: "/Testimonials", Icon: MessageSquareQuote },
-    ],
-  },
-  {
-    label: "Company",
-    items: [
-      { label: "For providers", sub: "PSPs & TPV terminals", href: "/ForProviders", Icon: Handshake },
-      { label: "Contact", sub: "Talk to the team", href: "/Contact", Icon: MessagesSquare },
-      { label: "Help", sub: "Documentation", href: "/Help", Icon: LifeBuoy },
-    ],
-  },
-];
-
-const MEMBER_GROUPS = [
-  {
-    label: "Workspace",
-    items: [
-      { label: "Dashboard", sub: "Command center", href: "/Dashboard", Icon: LayoutDashboard },
-      { label: "Reports", sub: "Savings intelligence", href: "/Reports", Icon: BarChart3 },
-      { label: "Infrastructure audit", sub: "Run new scan", href: "/Analyzer", Icon: ScanSearch },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { label: "Account settings", sub: "Profile & billing", href: "/Account", Icon: Settings },
-    ],
-  },
-];
+// visitors to /LoginGate on tap. The Referrals route is under ProtectedRoute
+// (the user explicitly requested it in the public nav); signed-out visitors
+// will be prompted to sign in, which is the expected pattern for a referral
+// program.
 
 const itemMotion = {
   hidden: { opacity: 0, y: 6 },
@@ -107,13 +64,60 @@ function NavRow({ item, index }) {
 }
 
 export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
-  // The top navbar is the PUBLIC navbar on every public page, whether the user
-  // is signed in or not — member navigation lives inside DashboardLayout.
-  // Keep MEMBER_GROUPS declared above for future reuse but always render the
-  // public grouping here.
-  const groups = PUBLIC_GROUPS;
-  // Reference MEMBER_GROUPS so the constant isn't linted as unused.
+  const { t } = useTranslation();
+
+  const PUBLIC_GROUPS = [
+    {
+      label: t("nav_group_home"),
+      items: [
+        { label: t("nav_item_home"), sub: t("nav_item_home_sub"), href: "/", Icon: Home },
+      ],
+    },
+    {
+      label: t("nav_group_analyzer"),
+      items: [
+        { label: t("nav_item_audit"), sub: t("nav_item_audit_sub"), href: "/Analyzer", Icon: ScanSearch },
+        { label: t("nav_item_how"), sub: t("nav_item_how_sub"), href: "/HowItWorks", Icon: Workflow },
+        { label: t("nav_item_pricing"), sub: t("nav_item_pricing_sub"), href: "/Pricing", Icon: Receipt },
+      ],
+    },
+    {
+      label: t("nav_group_proof"),
+      items: [
+        { label: t("nav_item_testimonials"), sub: t("nav_item_testimonials_sub"), href: "/Testimonials", Icon: MessageSquareQuote },
+      ],
+    },
+    {
+      label: t("nav_group_company"),
+      items: [
+        { label: t("nav_item_referral"), sub: t("nav_item_referral_sub"), href: "/Referrals", Icon: UserPlus },
+        { label: t("nav_item_providers"), sub: t("nav_item_providers_sub"), href: "/ForProviders", Icon: Handshake },
+        { label: t("nav_item_contact"), sub: t("nav_item_contact_sub"), href: "/Contact", Icon: MessagesSquare },
+        { label: t("nav_item_help"), sub: t("nav_item_help_sub"), href: "/Help", Icon: LifeBuoy },
+      ],
+    },
+  ];
+
+  // MEMBER_GROUPS declared for future reuse but always render the public grouping here.
+  const MEMBER_GROUPS = [
+    {
+      label: t("nav_group_home"),
+      items: [
+        { label: t("nav_dashboard"), sub: "Command center", href: "/Dashboard", Icon: LayoutDashboard },
+        { label: t("nav_reports"), sub: "Savings intelligence", href: "/Reports", Icon: BarChart3 },
+        { label: t("nav_item_audit"), sub: t("nav_item_audit_sub"), href: "/Analyzer", Icon: ScanSearch },
+      ],
+    },
+    {
+      label: t("nav_group_company"),
+      items: [
+        { label: t("nav_settings"), sub: "Profile & billing", href: "/Account", Icon: Settings },
+      ],
+    },
+  ];
   void MEMBER_GROUPS;
+
+  const groups = PUBLIC_GROUPS;
 
   return (
     <AnimatePresence>
@@ -169,13 +173,13 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: "var(--voltio)" }} />
                 </span>
                 <span className="text-[9px] font-bold tracking-[0.22em] uppercase text-white/60">
-                  Live · Network online
+                  {t("nav_status_live")}
                 </span>
               </div>
               <LanguageSwitcher variant="dark" />
               </div>
               <p className="mt-3 text-[12px] text-white/55 leading-snug max-w-[280px]">
-                Operational infrastructure intelligence for modern commerce.
+                {t("nav_tagline")}
               </p>
             </motion.div>
 
@@ -241,7 +245,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                     />
                     <div className="relative h-12 rounded-full text-white font-bold text-[14px] inline-flex items-center justify-center gap-2 w-full overflow-hidden" style={{ background: "var(--g-voltio)" }}>
                       <Sparkles className="h-3.5 w-3.5" />
-                      Run new audit
+                      {t("nav_run_new")}
                       <ArrowRight className="h-3.5 w-3.5" />
                     </div>
                   </div>
@@ -266,7 +270,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                           transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }}
                         />
                         <Sparkles className="relative h-3.5 w-3.5" />
-                        <span className="relative">Run free audit</span>
+                        <span className="relative">{t("nav_run_free")}</span>
                         <ArrowRight className="relative h-3.5 w-3.5" />
                       </div>
                     </div>
@@ -277,18 +281,18 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                     className="w-full h-11 rounded-full text-[13px] font-semibold border border-white/[0.12] bg-white/[0.03] text-white/85 hover:bg-white/[0.06] hover:border-white/[0.2] transition-all flex items-center justify-center gap-2"
                   >
                     <Activity className="h-3.5 w-3.5" style={{ color: "var(--voltio-2)" }} strokeWidth={2} />
-                    Sign in
+                    {t("nav_sign_in")}
                   </a>
                 </>
               )}
 
               {/* Bottom meta strip */}
               <div className="pt-3 flex items-center justify-center gap-3 text-[10px] font-mono tracking-[0.15em] uppercase text-white/30">
-                <span>3 min</span>
+                <span>{t("nav_meta_3min")}</span>
                 <span className="h-1 w-1 rounded-full bg-white/15" />
-                <span>No card</span>
+                <span>{t("nav_meta_no_card")}</span>
                 <span className="h-1 w-1 rounded-full bg-white/15" />
-                <span>Free</span>
+                <span>{t("nav_meta_free")}</span>
               </div>
             </motion.div>
           </div>

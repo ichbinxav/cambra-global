@@ -146,12 +146,7 @@ export default function SavingsCurveChart({
               fontSize: "clamp(38px, 6vw, 60px)",
               letterSpacing: "-0.045em",
               lineHeight: 1,
-              /* Existing brand gradient token (--g-voltio, same family as the
-                 curve stroke) — not a new one. */
-              background: "var(--g-voltio)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              color: "var(--menta-dark)",
             }}
           >
             {formatted}

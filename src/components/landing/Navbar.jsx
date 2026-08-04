@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ArrowRight, Tag, HelpCircle, Mail, Shield, Sparkles, Activity, MessageSquareQuote } from "lucide-react";
+import { Menu, X, ArrowRight, Tag, HelpCircle, Mail, Shield, Sparkles, Activity, MessageSquareQuote, UserPlus } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import MobileNavMenu from "@/components/landing/MobileNavMenu";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
@@ -18,10 +18,11 @@ import { BRAND_ASSETS } from "@/lib/brandAssets";
 // them here breaks the flow for signed-out visitors (they get bounced to
 // /LoginGate on click).
 const NAV_PUBLIC = [
-  { label: "Analyzer",     href: "/Analyzer",     icon: Activity,           desc: "Scan your infrastructure" },
-  { label: "How it works", href: "/HowItWorks",   icon: Sparkles,           desc: "The 4-step audit" },
-  { label: "Testimonials", href: "/Testimonials", icon: MessageSquareQuote, desc: "Real brand results" },
-  { label: "Pricing model", href: "/Pricing",     icon: Tag },
+  { label: "Analyzer",     href: "/Analyzer",     icon: Activity },
+  { label: "How it works", href: "/HowItWorks",   icon: Sparkles },
+  { label: "Testimonials", href: "/Testimonials", icon: MessageSquareQuote },
+  { label: "Pricing",      href: "/Pricing",      icon: Tag },
+  { label: "Referrals",    href: "/Referrals",    icon: UserPlus },
   { label: "Help",         href: "/Help",         icon: HelpCircle },
   { label: "Contact",      href: "/Contact",      icon: Mail },
 ];
@@ -38,7 +39,11 @@ export default function Navbar() {
   const labelKey = {
     Analyzer: "nav_analyzer",
     "How it works": "nav_how",
-    "Pricing model": "nav_pricing",
+    Testimonials: "nav_testimonials",
+    Pricing: "nav_pricing",
+    Referrals: "nav_referrals",
+    Help: "nav_help",
+    Contact: "nav_contact",
     Dashboard: "nav_dashboard",
     Reports: "nav_reports",
     Account: "nav_settings",
@@ -117,7 +122,7 @@ export default function Navbar() {
                 target="_blank" rel="noopener noreferrer"
                 className="btn-base btn-ghost-dark btn-sm"
               >
-                Sign in
+                {t("nav_sign_in")}
               </a>
               <Link to="/Analyzer" className="btn-base btn-primary-inverse btn-sm">
                 {t("nav_get_started")} <ArrowRight className="h-3 w-3" />
