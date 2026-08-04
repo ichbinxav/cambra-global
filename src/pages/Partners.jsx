@@ -1,21 +1,31 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Handshake, TrendingUp, HeartHandshake, LifeBuoy, FileText, BadgeCheck, BookOpen, Briefcase, Store, Users, Search, ShieldCheck, Zap, Calculator, Rocket, Check, X } from "lucide-react";
+import {
+  ArrowRight, Handshake, TrendingUp, HeartHandshake, LifeBuoy, FileText,
+  BadgeCheck, BookOpen, Briefcase, Store, Users, Search, ShieldCheck, Zap,
+  Calculator, Rocket, Check, X,
+} from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
-import SectionLabel from "@/components/shared/SectionLabel";
 import PartnerApplicationForm from "@/components/partners/PartnerApplicationForm";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 const fadeUp = {
-  initial: { opacity: 0, y: 24 },
+  initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-60px" },
-  transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
 };
 
-// ── Dark glass card for the "Why partner" section ──
+// ── Data ──
+const PRINCIPLE_ICONS = [ShieldCheck, Users, BadgeCheck];
+const PRINCIPLES = [
+  { titleKey: "pt_s2_p1_title", bodyKey: "pt_s2_p1_body" },
+  { titleKey: "pt_s2_p2_title", bodyKey: "pt_s2_p2_body" },
+  { titleKey: "pt_s2_p3_title", bodyKey: "pt_s2_p3_body" },
+];
+
 const WHY_ICONS = [TrendingUp, HeartHandshake, LifeBuoy, FileText, BookOpen, BadgeCheck];
 const WHY = [
   { titleKey: "pt_s4_b1_title", bodyKey: "pt_s4_b1_body" },
@@ -24,14 +34,6 @@ const WHY = [
   { titleKey: "pt_s4_b4_title", bodyKey: "pt_s4_b4_body" },
   { titleKey: "pt_s4_b5_title", bodyKey: "pt_s4_b5_body" },
   { titleKey: "pt_s4_b6_title", bodyKey: "pt_s4_b6_body" },
-];
-
-const STEP_ICONS = [Handshake, Search, ShieldCheck, Zap];
-const STEPS = [
-  { titleKey: "pt_s5_step1", bodyKey: "pt_s5_step1_body" },
-  { titleKey: "pt_s5_step2", bodyKey: "pt_s5_step2_body" },
-  { titleKey: "pt_s5_step3", bodyKey: "pt_s5_step3_body" },
-  { titleKey: "pt_s5_step4", bodyKey: "pt_s5_step4_body" },
 ];
 
 const WHO_ICONS = [Briefcase, Store, Users, Calculator, Rocket];
@@ -43,21 +45,86 @@ const WHO_FOR = [
   { titleKey: "pt_s3_c5_title", bodyKey: "pt_s3_c5_body" },
 ];
 
-// Definition principle cards — replace the old 25% / 24 / 0€ stats strip.
-// These establish the non-commercial nature of the programme immediately.
-const PRINCIPLE_ICONS = [ShieldCheck, Users, BadgeCheck];
-const PRINCIPLES = [
-  { titleKey: "pt_s2_p1_title", bodyKey: "pt_s2_p1_body" },
-  { titleKey: "pt_s2_p2_title", bodyKey: "pt_s2_p2_body" },
-  { titleKey: "pt_s2_p3_title", bodyKey: "pt_s2_p3_body" },
+const STEP_ICONS = [Handshake, Search, ShieldCheck, Zap];
+const STEPS = [
+  { titleKey: "pt_s5_step1", bodyKey: "pt_s5_step1_body" },
+  { titleKey: "pt_s5_step2", bodyKey: "pt_s5_step2_body" },
+  { titleKey: "pt_s5_step3", bodyKey: "pt_s5_step3_body" },
+  { titleKey: "pt_s5_step4", bodyKey: "pt_s5_step4_body" },
 ];
 
-// "Simple by design" — the six things the programme is NOT.
 const SIMPLE_ITEMS = ["pt_s6_p1", "pt_s6_p2", "pt_s6_p3", "pt_s6_p4", "pt_s6_p5", "pt_s6_p6"];
-
-// Programme limits — what a Partner does / does not do.
 const PARTNER_DO = ["pt_princ_a_1", "pt_princ_a_2", "pt_princ_a_3", "pt_princ_a_4", "pt_princ_a_5", "pt_princ_a_6", "pt_princ_a_7"];
 const PARTNER_DONT = ["pt_princ_b_1", "pt_princ_b_2", "pt_princ_b_3", "pt_princ_b_4", "pt_princ_b_5", "pt_princ_b_6", "pt_princ_b_7"];
+
+// ── Systematic section header: mono index + tracked label + heading + intro ──
+function SectionHead({ index, label, title, intro, dark = false }) {
+  return (
+    <div className="mb-10 sm:mb-12">
+      <div className="flex items-center gap-3 mb-4">
+        <span
+          className="mono-num text-[12px] font-semibold tracking-[0.16em]"
+          style={{ color: dark ? "#7DE3FF" : "var(--voltio)" }}
+        >
+          {index}
+        </span>
+        <span
+          className="h-px w-8"
+          style={{ background: dark ? "rgba(125,227,255,0.35)" : "rgba(91,76,245,0.35)" }}
+        />
+        <span
+          className="text-[11px] font-semibold uppercase tracking-[0.2em]"
+          style={{ color: dark ? "rgba(255,255,255,0.55)" : "var(--gris-1)" }}
+        >
+          {label}
+        </span>
+      </div>
+      <motion.h2
+        {...fadeUp}
+        className="font-display text-2xl sm:text-[2rem] font-black tracking-[-0.03em] leading-[1.05]"
+        style={{ color: dark ? "#ffffff" : "var(--ink)" }}
+      >
+        {title}
+      </motion.h2>
+      {intro && (
+        <motion.p
+          {...fadeUp}
+          transition={{ ...fadeUp.transition, delay: 0.06 }}
+          className="mt-4 text-[15px] leading-relaxed max-w-2xl"
+          style={{ color: dark ? "rgba(255,255,255,0.58)" : "var(--gris-1)" }}
+        >
+          {intro}
+        </motion.p>
+      )}
+    </div>
+  );
+}
+
+// ── Unified light card ──
+function LightCard({ icon: Icon, title, body, index }) {
+  return (
+    <motion.div
+      {...fadeUp}
+      transition={{ ...fadeUp.transition, delay: (index || 0) * 0.06 }}
+      className="group relative h-full p-6 rounded-xl transition-all duration-300 hover:-translate-y-1"
+      style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 1px 2px rgba(12,12,22,0.04)" }}
+    >
+      <span
+        aria-hidden
+        className="absolute bottom-0 left-0 h-[2px] w-0 group-hover:w-full transition-all duration-400"
+        style={{ background: "linear-gradient(90deg, var(--voltio), var(--cian))" }}
+      />
+      <div
+        className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 transition-colors duration-300"
+        style={{ background: "rgba(91,76,245,0.07)", border: "1px solid rgba(91,76,245,0.14)" }}
+      >
+        <Icon className="h-[18px] w-[18px]" style={{ color: "var(--voltio)" }} strokeWidth={2} />
+      </div>
+      <h3 className="font-display text-[15px] font-bold mb-1.5 leading-tight" style={{ color: "var(--ink)" }}>{title}</h3>
+      <p className="text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{body}</p>
+    </motion.div>
+  );
+}
 
 export default function Partners() {
   const { t, lang } = useTranslation();
@@ -95,101 +162,68 @@ export default function Partners() {
         </div>
       </PublicPageHero>
 
-      {/* ── WHAT IS A PARTNER (definition + three principles) ── */}
-      <section className="py-16 sm:py-20">
-        <div className="max-w-3xl mx-auto px-5 sm:px-8 text-center">
-          <SectionLabel>{t("pt_s2_label")}</SectionLabel>
-          <motion.h2
-            {...fadeUp}
-            className="font-display mt-4 text-2xl sm:text-3xl font-black tracking-[-0.03em]"
-            style={{ color: "var(--ink)" }}
-          >
-            {t("pt_s2_title")}
-          </motion.h2>
-          <motion.p
-            {...fadeUp}
-            transition={{ ...fadeUp.transition, delay: 0.08 }}
-            className="mt-5 text-[15px] leading-relaxed"
-            style={{ color: "var(--gris-1)" }}
-          >
-            {t("pt_s2_body")}
-          </motion.p>
-        </div>
-        <div className="max-w-4xl mx-auto px-5 sm:px-8 mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {PRINCIPLES.map((c, i) => {
-            const Icon = PRINCIPLE_ICONS[i];
-            return (
-              <motion.div
+      {/* ── 01 · THE PARTNER ROLE ── */}
+      <section className="py-16 sm:py-24">
+        <div className="max-w-5xl mx-auto px-5 sm:px-8">
+          <SectionHead
+            index="01"
+            label={t("pt_s2_label")}
+            title={t("pt_s2_title")}
+            intro={t("pt_s2_body")}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {PRINCIPLES.map((c, i) => (
+              <LightCard
                 key={c.titleKey}
-                {...fadeUp}
-                transition={{ ...fadeUp.transition, delay: 0.1 + i * 0.08 }}
-                className="relative p-6 rounded-2xl text-center"
-                style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}
-              >
-                <div className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-4"
-                  style={{ background: "rgba(91,76,245,0.08)", border: "1px solid rgba(91,76,245,0.15)" }}>
-                  <Icon className="h-5 w-5" style={{ color: "var(--voltio)" }} strokeWidth={2} />
-                </div>
-                <h3 className="font-display text-[15px] font-bold mb-2" style={{ color: "var(--ink)" }}>{t(c.titleKey)}</h3>
-                <p className="text-[12.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(c.bodyKey)}</p>
-              </motion.div>
-            );
-          })}
+                index={i}
+                icon={PRINCIPLE_ICONS[i]}
+                title={t(c.titleKey)}
+                body={t(c.bodyKey)}
+              />
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── WHY PARTNER (dark premium) ── */}
+      {/* ── 02 · WHAT YOU GAIN (dark) ── */}
       <section className="px-5 py-20 sm:py-24">
         <div className="section-ink px-6 sm:px-12 py-14 sm:py-20 max-w-5xl mx-auto">
-          <div className="mb-12 text-center">
-            <motion.p
-              {...fadeUp}
-              className="text-[11px] font-bold tracking-[0.24em] uppercase mb-4"
-              style={{ color: "#7DE3FF" }}
-            >
-              {t("pt_s4_label")}
-            </motion.p>
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="mono-num text-[12px] font-semibold tracking-[0.16em]" style={{ color: "#7DE3FF" }}>02</span>
+              <span className="h-px w-8" style={{ background: "rgba(125,227,255,0.35)" }} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">{t("pt_s4_label")}</span>
+            </div>
             <motion.h2
               {...fadeUp}
-              transition={{ ...fadeUp.transition, delay: 0.06 }}
-              className="text-white"
-              style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.05 }}
+              className="font-display text-2xl sm:text-[2rem] font-black tracking-[-0.03em] leading-[1.05] text-white"
             >
               {t("pt_s4_title")}
             </motion.h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px rounded-xl overflow-hidden"
+            style={{ background: "rgba(255,255,255,0.08)" }}>
             {WHY.map((c, i) => {
               const Icon = WHY_ICONS[i];
               return (
                 <motion.div
                   key={c.titleKey}
                   {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.1 + i * 0.06 }}
-                  className="group relative overflow-hidden rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.10)",
-                    backdropFilter: "blur(20px)",
-                    WebkitBackdropFilter: "blur(20px)",
-                  }}
+                  transition={{ ...fadeUp.transition, delay: i * 0.05 }}
+                  className="group relative p-6 transition-colors duration-300 hover:bg-white/[0.03]"
+                  style={{ background: "rgba(255,255,255,0.015)" }}
                 >
-                  {/* Top gradient accent line */}
-                  <span
-                    aria-hidden
-                    className="absolute top-0 left-0 right-0 h-[3px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ background: "linear-gradient(90deg, var(--voltio), var(--cian))" }}
-                  />
-                  {/* Icon with glow ring */}
-                  <div className="relative w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110"
-                    style={{
-                      background: "linear-gradient(135deg, var(--voltio) 0%, var(--cian) 100%)",
-                      boxShadow: "0 0 0 1px rgba(255,255,255,0.08), 0 10px 28px -8px rgba(91,76,245,.55), 0 0 36px rgba(91,76,245,.22)",
-                    }}>
-                    <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}>
+                      <Icon className="h-[17px] w-[17px] text-white/85" strokeWidth={2} />
+                    </div>
+                    <span className="mono-num text-[11px] font-semibold text-white/35">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
                   </div>
-                  <h3 className="relative font-display text-[15px] font-bold mb-2 text-white">{t(c.titleKey)}</h3>
-                  <p className="relative text-[13px] leading-relaxed text-white/60">{t(c.bodyKey)}</p>
+                  <h3 className="font-display text-[14.5px] font-bold mb-1.5 text-white leading-tight">{t(c.titleKey)}</h3>
+                  <p className="text-[12.5px] leading-relaxed text-white/55">{t(c.bodyKey)}</p>
                 </motion.div>
               );
             })}
@@ -197,201 +231,181 @@ export default function Partners() {
         </div>
       </section>
 
-      {/* ── WHO CAN BECOME A PARTNER (light premium) ── */}
-      <section className="py-16 sm:py-20">
+      {/* ── 03 · WHO IT'S FOR ── */}
+      <section className="py-16 sm:py-24">
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
-          <div className="mb-12 text-center">
-            <SectionLabel>{t("pt_s3_label")}</SectionLabel>
-            <h2 className="font-display mt-4 text-2xl sm:text-3xl font-black tracking-[-0.03em] max-w-2xl mx-auto" style={{ color: "var(--ink)" }}>
-              {t("pt_s3_title")}
-            </h2>
+          <SectionHead
+            index="03"
+            label={t("pt_s3_label")}
+            title={t("pt_s3_title")}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {WHO_FOR.map((c, i) => (
+              <LightCard
+                key={c.titleKey}
+                index={i}
+                icon={WHO_ICONS[i]}
+                title={t(c.titleKey)}
+                body={t(c.bodyKey)}
+              />
+            ))}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {WHO_FOR.map((c, i) => {
-              const Icon = WHO_ICONS[i];
-              return (
-                <motion.div
-                  key={c.titleKey}
-                  {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: i * 0.08 }}
-                  className="group relative overflow-hidden p-7 rounded-2xl transition-all duration-300 hover:-translate-y-1.5"
-                  style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}
-                >
-                  {/* Soft gradient glow on hover */}
-                  <span
-                    aria-hidden
-                    className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{ background: "radial-gradient(closest-side, rgba(91,76,245,0.18), transparent 70%)", filter: "blur(12px)" }}
-                  />
-                  {/* Gradient icon block */}
-                  <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
-                    style={{
-                      background: "linear-gradient(135deg, var(--voltio) 0%, var(--cian) 100%)",
-                      boxShadow: "0 8px 20px -6px rgba(91,76,245,.4)",
-                    }}>
-                    <Icon className="h-6 w-6 text-white" strokeWidth={2} />
-                  </div>
-                  <h3 className="relative font-display text-lg font-bold mb-2.5" style={{ color: "var(--ink)" }}>{t(c.titleKey)}</h3>
-                  <p className="relative text-[13.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(c.bodyKey)}</p>
-                  {/* Bottom accent bar — reveals on hover */}
-                  <span
-                    aria-hidden
-                    className="absolute bottom-0 left-0 h-[3px] w-0 group-hover:w-full transition-all duration-400"
-                    style={{ background: "linear-gradient(90deg, var(--voltio), var(--cian))" }}
-                  />
-                </motion.div>
-              );
-            })}
-          </div>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 text-center">
-            <p className="text-sm" style={{ color: "var(--gris-1)" }}>{t("pt_s3_provider_note")}</p>
-            <Link to="/ForProviders" className="inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: "var(--voltio)" }}>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2.5 text-center">
+            <p className="text-[13px]" style={{ color: "var(--gris-1)" }}>{t("pt_s3_provider_note")}</p>
+            <Link to="/ForProviders" className="inline-flex items-center gap-1.5 text-[13px] font-semibold" style={{ color: "var(--voltio)" }}>
               {t("pt_s3_provider_cta")} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── FOR YOUR CLIENTS (4-step flow) ── */}
-      <section className="px-5 py-16 sm:py-20">
+      {/* ── 04 · HOW IT WORKS ── */}
+      <section className="px-5 py-16 sm:py-24">
         <div className="max-w-5xl mx-auto">
-          <div className="mb-12 text-center">
-            <SectionLabel>{t("pt_s5_label")}</SectionLabel>
-            <h2 className="font-display mt-4 text-2xl sm:text-3xl font-black tracking-[-0.03em] max-w-2xl mx-auto" style={{ color: "var(--ink)" }}>
-              {t("pt_s5_title")}
-            </h2>
-          </div>
-          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <SectionHead
+            index="04"
+            label={t("pt_s5_label")}
+            title={t("pt_s5_title")}
+          />
+          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {STEPS.map((s, i) => {
               const Icon = STEP_ICONS[i];
               return (
                 <motion.div
                   key={s.titleKey}
                   {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: i * 0.1 }}
-                  className="relative p-6 rounded-2xl transition-all duration-300 hover:-translate-y-1"
-                  style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}
+                  transition={{ ...fadeUp.transition, delay: i * 0.08 }}
+                  className="group relative p-6 pt-7 rounded-xl transition-all duration-300 hover:-translate-y-1"
+                  style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 1px 2px rgba(12,12,22,0.04)" }}
                 >
-                  {/* Step number badge */}
-                  <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black"
-                    style={{ background: "linear-gradient(135deg, var(--voltio), var(--cian))", boxShadow: "0 4px 12px rgba(91,76,245,.4)" }}>
-                    {i + 1}
+                  {/* Oversized mono index — sharp, systematic */}
+                  <span
+                    aria-hidden
+                    className="absolute top-3 right-4 mono-num font-black leading-none select-none transition-colors duration-300"
+                    style={{ fontSize: "2rem", color: "rgba(91,76,245,0.10)", letterSpacing: "-0.04em" }}
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
+                    style={{ background: "linear-gradient(135deg, var(--voltio), var(--cian))" }}
+                  >
+                    <Icon className="h-[18px] w-[18px] text-white" strokeWidth={2} />
                   </div>
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 mt-2"
-                    style={{ background: "rgba(91,76,245,0.08)", border: "1px solid rgba(91,76,245,0.15)" }}>
-                    <Icon className="h-5 w-5" style={{ color: "var(--voltio)" }} strokeWidth={2} />
-                  </div>
-                  <h3 className="font-display text-base font-bold mb-2" style={{ color: "var(--ink)" }}>{t(s.titleKey)}</h3>
-                  <p className="text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(s.bodyKey)}</p>
+                  <h3 className="font-display text-[15px] font-bold mb-1.5 leading-tight" style={{ color: "var(--ink)" }}>{t(s.titleKey)}</h3>
+                  <p className="text-[12.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(s.bodyKey)}</p>
                 </motion.div>
               );
             })}
           </div>
-          <p className="mt-8 text-center text-sm italic" style={{ color: "var(--gris-1)" }}>
+          <p className="mt-8 text-center text-[13px] italic" style={{ color: "var(--gris-2)" }}>
             {t("pt_s5_note")}
           </p>
         </div>
       </section>
 
-      {/* ── SIMPLE BY DESIGN ── */}
-      <section className="px-5 py-16 sm:py-20">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-10 text-center">
-            <SectionLabel>{t("pt_s6_title")}</SectionLabel>
-            <p className="mt-5 text-[15px] leading-relaxed max-w-2xl mx-auto" style={{ color: "var(--gris-1)" }}>
-              {t("pt_s6_body")}
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      {/* ── 05 · THE BOUNDARIES (promises + role) ── */}
+      <section className="px-5 py-16 sm:py-24">
+        <div className="max-w-5xl mx-auto">
+          <SectionHead
+            index="05"
+            label={t("pt_princ_title")}
+            title={t("pt_s6_title")}
+            intro={t("pt_s6_body")}
+          />
+
+          {/* Promise chips — sleek, not another card grid */}
+          <div className="flex flex-wrap justify-center gap-2.5 mb-12">
             {SIMPLE_ITEMS.map((key, i) => (
-              <motion.div
+              <motion.span
                 key={key}
                 {...fadeUp}
-                transition={{ ...fadeUp.transition, delay: i * 0.05 }}
-                className="flex items-center gap-3 p-4 rounded-xl"
-                style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 6px 18px rgba(12,12,22,.04)" }}
+                transition={{ ...fadeUp.transition, delay: i * 0.04 }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full"
+                style={{ background: "#fff", border: "1px solid var(--linea)" }}
               >
-                <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
-                  style={{ background: "linear-gradient(135deg, var(--voltio), var(--cian))" }}>
-                  <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
-                </span>
-                <span className="text-[13px] font-semibold leading-tight" style={{ color: "var(--ink)" }}>{t(key)}</span>
-              </motion.div>
+                <Check className="h-3.5 w-3.5 shrink-0" style={{ color: "var(--menta-dark)" }} strokeWidth={3} />
+                <span className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>{t(key)}</span>
+              </motion.span>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* ── PROGRAMME LIMITS (do / don't) ── */}
-      <section className="px-5 pb-16 sm:pb-20">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8 text-center">
-            <SectionLabel>{t("pt_princ_title")}</SectionLabel>
-            <p className="mt-5 text-[14px] leading-relaxed max-w-2xl mx-auto" style={{ color: "var(--gris-1)" }}>
-              {t("pt_princ_intro")}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* What a Partner does */}
+          {/* Do / Don't — two sharp panels with colored accent */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <motion.div
               {...fadeUp}
-              className="p-6 rounded-2xl"
-              style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}
+              className="relative rounded-xl overflow-hidden"
+              style={{ background: "#fff", border: "1px solid var(--linea)" }}
             >
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "rgba(47,224,168,0.12)" }}>
-                  <Check className="h-4 w-4" style={{ color: "var(--menta-dark)" }} strokeWidth={3} />
-                </span>
-                <h3 className="font-display text-base font-bold" style={{ color: "var(--ink)" }}>{t("pt_princ_a_title")}</h3>
+              <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "var(--menta)" }} />
+              <div className="p-6">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <span className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(47,224,168,0.10)" }}>
+                    <Check className="h-4 w-4" style={{ color: "var(--menta-dark)" }} strokeWidth={3} />
+                  </span>
+                  <h3 className="font-display text-[15px] font-bold" style={{ color: "var(--ink)" }}>{t("pt_princ_a_title")}</h3>
+                </div>
+                <ul className="space-y-2">
+                  {PARTNER_DO.map((key) => (
+                    <li key={key} className="flex gap-2.5 text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+                      <Check className="shrink-0 h-4 w-4 mt-px" style={{ color: "var(--menta-dark)" }} strokeWidth={2.5} />
+                      <span>{t(key)}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-2.5">
-                {PARTNER_DO.map((key) => (
-                  <li key={key} className="flex gap-2.5 text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
-                    <Check className="shrink-0 h-4 w-4 mt-0.5" style={{ color: "var(--menta-dark)" }} strokeWidth={2.5} />
-                    <span>{t(key)}</span>
-                  </li>
-                ))}
-              </ul>
             </motion.div>
-            {/* What a Partner does NOT do */}
+
             <motion.div
               {...fadeUp}
-              transition={{ ...fadeUp.transition, delay: 0.08 }}
-              className="p-6 rounded-2xl"
-              style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}
+              transition={{ ...fadeUp.transition, delay: 0.07 }}
+              className="relative rounded-xl overflow-hidden"
+              style={{ background: "#fff", border: "1px solid var(--linea)" }}
             >
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "rgba(244,91,105,0.10)" }}>
-                  <X className="h-4 w-4" style={{ color: "var(--coral)" }} strokeWidth={3} />
-                </span>
-                <h3 className="font-display text-base font-bold" style={{ color: "var(--ink)" }}>{t("pt_princ_b_title")}</h3>
+              <span aria-hidden className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "var(--coral)" }} />
+              <div className="p-6">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <span className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(244,91,105,0.09)" }}>
+                    <X className="h-4 w-4" style={{ color: "var(--coral)" }} strokeWidth={3} />
+                  </span>
+                  <h3 className="font-display text-[15px] font-bold" style={{ color: "var(--ink)" }}>{t("pt_princ_b_title")}</h3>
+                </div>
+                <ul className="space-y-2">
+                  {PARTNER_DONT.map((key) => (
+                    <li key={key} className="flex gap-2.5 text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+                      <X className="shrink-0 h-4 w-4 mt-px" style={{ color: "var(--coral)" }} strokeWidth={2.5} />
+                      <span>{t(key)}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-2.5">
-                {PARTNER_DONT.map((key) => (
-                  <li key={key} className="flex gap-2.5 text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
-                    <X className="shrink-0 h-4 w-4 mt-0.5" style={{ color: "var(--coral)" }} strokeWidth={2.5} />
-                    <span>{t(key)}</span>
-                  </li>
-                ))}
-              </ul>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ── APPLICATION (dark block so glass form is readable) ── */}
-      <section id="apply" className="scroll-mt-20 px-5 pb-20 sm:pb-24">
+      {/* ── 06 · APPLY ── */}
+      <section id="apply" className="scroll-mt-20 px-5 pb-20 sm:pb-28">
         <div className="section-ink px-6 sm:px-12 py-14 sm:py-16 max-w-2xl mx-auto">
-          <div className="mb-8 text-center">
-            <motion.p {...fadeUp} className="text-[11px] font-bold tracking-[0.24em] uppercase mb-4" style={{ color: "#7DE3FF" }}>
-              {t("pt_s7_label")}
-            </motion.p>
-            <motion.h2 {...fadeUp} transition={{ ...fadeUp.transition, delay: 0.06 }} className="text-white font-display text-2xl sm:text-3xl font-black tracking-[-0.03em]">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="mono-num text-[12px] font-semibold tracking-[0.16em]" style={{ color: "#7DE3FF" }}>06</span>
+              <span className="h-px w-8" style={{ background: "rgba(125,227,255,0.35)" }} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">{t("pt_s7_label")}</span>
+            </div>
+            <motion.h2
+              {...fadeUp}
+              className="font-display text-2xl sm:text-[2rem] font-black tracking-[-0.03em] leading-[1.05] text-white"
+            >
               {t("pt_s7_title")}
             </motion.h2>
-            <p className="mt-4 text-[15px] leading-relaxed text-white/60">
+            <motion.p
+              {...fadeUp}
+              transition={{ ...fadeUp.transition, delay: 0.06 }}
+              className="mt-4 text-[15px] leading-relaxed text-white/58"
+            >
               {t("pt_s7_body")}
-            </p>
+            </motion.p>
           </div>
           <PartnerApplicationForm />
         </div>
