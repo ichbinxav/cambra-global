@@ -1,3 +1,4 @@
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma __sync_check__.test.js.
 // BUG-4 FIX (2026-07-09) — write-side of the sync cursor.
 //
 // The corresponding block inside base44/functions/dataSyncAgent/entry.ts is

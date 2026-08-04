@@ -28,10 +28,6 @@ function eur(n) {
   if (!isFinite(n)) return "—";
   return "€" + Math.round(n).toLocaleString("en-US");
 }
-function pctFromBps(bps) {
-  if (!isFinite(bps)) return "—";
-  return (bps / 100).toFixed(2) + "%";
-}
 
 // cta_intent → CAMBRA-only presentation. Icon + i18n KEY for the button copy
 // that leads to CAMBRA's offer. NEVER a third-party destination.

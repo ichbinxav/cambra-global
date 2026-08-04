@@ -79,7 +79,6 @@ function Hero() {
     <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "var(--ink)", paddingTop: 48 }}>
       {/* DA v1.1 Chunk 1d — Aurora navy removida sobre hero claro. Spotlight
           reducido a un wash voltio suave (~25% opacidad) para no ensuciar. */}
-      {/* eslint-disable-next-line no-unused-vars */}
       <motion.div
         aria-hidden
         className="absolute pointer-events-none"

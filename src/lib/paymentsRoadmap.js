@@ -44,14 +44,6 @@
 // the classifier never disagree about "is there something here".
 const MATERIAL_ANNUAL_EUR = 200;
 
-// Effort levels — ordinal, used only for tie-break ordering (lower = easier).
-const EFFORT = { low: 1, medium: 2, high: 3 };
-
-function eurFromBpsGap(gapBps, monthlyGmvEur) {
-  if (!isFinite(gapBps) || gapBps <= 0 || !isFinite(monthlyGmvEur) || monthlyGmvEur <= 0) return 0;
-  return (gapBps / 10000) * monthlyGmvEur * 12;
-}
-
 // Internal-only: compute an effective bps for a candidate rate row at the
 // merchant's REAL ticket. Mirrors the engine's amortization
 // (percent + fixed/ticket*10000). NOT exported to any UI — used solely to size

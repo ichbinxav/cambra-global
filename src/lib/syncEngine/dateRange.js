@@ -1,3 +1,4 @@
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma __sync_check__.test.js.
 // ─── Date-range helpers — FUENTE DE VERDAD LÓGICA ───────────────────────────
 //
 // Decide la ventana de tiempo que se va a sincronizar y la inyecta en la URL

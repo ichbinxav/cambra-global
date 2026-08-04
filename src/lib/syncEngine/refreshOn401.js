@@ -1,3 +1,4 @@
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma __sync_check__.test.js.
 // ─── Refresh-on-401 wrapper — FUENTE DE VERDAD LÓGICA ──────────────────────
 //
 // Sits BETWEEN the paginator loop and `fetchWithBackoff`. Its only job is:

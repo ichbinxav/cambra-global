@@ -64,6 +64,7 @@ const MANIFEST = [
   "promoteMeToAdmin", "providerMonitorAgent", "providerResearchAgent",
   "purgeInactiveLeads", "purgePaymentsAnalysisSessions", "qaAgent", "qaMonitorAgent",
   "recommendationEngineAgent", "reconcileInvoice", "recordPayment",
+  "recoverBillingDigest",
   "regenerateMigrationTasks", "regenerateRecommendationsForBrand",
   "researchOrchestrator", "revokeApiKey", "revokeMandate", "runApiSelfTests",
   "runContinuousDiscovery", "runFlowSelfTests", "scheduledBenchmarkRecompute",

@@ -1,3 +1,4 @@
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma stripe-parity.test.js.
 // ─── stripe_transactions normalizer — FUENTE DE VERDAD LÓGICA ───────────────
 //
 // Stripe /v1/balance_transactions → CAMBRA spend rows.

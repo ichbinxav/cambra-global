@@ -15,7 +15,6 @@ export default function SecurityHero() {
   return (
     <section className="relative px-5 pt-28 sm:pt-32 pb-4 overflow-hidden">
       {/* Soft voltio spotlight — same wash as the landing hero */}
-      {/* eslint-disable-next-line no-unused-vars */}
       <motion.div
         aria-hidden
         className="absolute pointer-events-none"

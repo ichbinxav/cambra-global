@@ -69,7 +69,6 @@ export function derivePaymentsInsights(engineResult, inputSnapshot) {
   const snap = inputSnapshot || {};
 
   const currentBps = num(er.current_effective_bps);
-  const achievableBps = num(er.achievable_effective_bps);
   const monthlyGmv = num(snap.monthly_gmv_eur);
   const avgTicket = num(snap.avg_ticket_eur);
   const intlPct = num(snap.intl_pct);

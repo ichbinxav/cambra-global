@@ -1,3 +1,4 @@
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma tenantGuard.static.test.js.
 // tenantGuard — mirror of the pure helpers in base44/functions/_tenantGuard/entry.ts.
 // This file is the LOCAL testable copy of the ownership logic. Keeping the
 // bytes identical to the Deno copy is the same discipline we use for the

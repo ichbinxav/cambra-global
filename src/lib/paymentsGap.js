@@ -1,4 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma __sync_check__.test.js.
 // paymentsGap — pure ES6 engine for the payments savings calculation.
 //
 // SINGLE SOURCE OF TRUTH for how a merchant's payments gap is computed.

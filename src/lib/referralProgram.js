@@ -1,3 +1,4 @@
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma referralProgram.sync.test.js.
 // referralProgram — REFERRAL-1 (2026-08-03).
 //
 // The declared program, in one place:

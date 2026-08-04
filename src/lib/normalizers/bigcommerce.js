@@ -1,3 +1,4 @@
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma __sync_check__.test.js.
 // ─── bigcommerce_orders normalizer — FUENTE DE VERDAD LÓGICA ───────────────
 //
 // BigCommerce Orders v2 (storefront, not processor → fee:0 honest absence).

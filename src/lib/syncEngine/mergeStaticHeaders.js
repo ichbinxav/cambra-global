@@ -1,3 +1,4 @@
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma __sync_check__.test.js.
 // ─── Static-header fuser — FUENTE DE VERDAD LÓGICA ──────────────────────────
 //
 // Generic static-header fuser. Applies cfg.static_headers with two interp

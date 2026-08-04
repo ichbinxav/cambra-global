@@ -1,3 +1,4 @@
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma __sync_check__.test.js.
 // ─── Rate-limit + retry helpers — FUENTE DE VERDAD LÓGICA ───────────────────
 //
 // Dos cosas, en este orden:

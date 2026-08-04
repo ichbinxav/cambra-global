@@ -1,3 +1,4 @@
+// SYNC MASTER — no se importa en runtime por diseño. Borrarlo desarma paginators-dispatcher-parity.test.js.
 // ─── Pagination styles — FUENTE DE VERDAD LÓGICA ────────────────────────────
 //
 // Cada estilo es una función pura que, dado:

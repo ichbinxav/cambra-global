@@ -56,7 +56,6 @@ export function deriveTerminalRental(engineResult, inputSnapshot, rateRow) {
   }
 
   const rentalMonth = rentalMinor / MINOR_PER_MAJOR;
-  const annualGmv = monthlyGmv * 12;
   // Re-derive the SAME rentalBps the engine folded into current_effective_bps.
   const rentalBps = (rentalMonth / monthlyGmv) * BPS_PER_UNIT;
   const restBps = currentBps != null ? currentBps - rentalBps : null;

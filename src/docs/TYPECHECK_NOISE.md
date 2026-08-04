@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-`npm run typecheck:noise` emits **554 errors across 79 files**. **None are logic bugs.** They are all cosmetic-type noise from running `tsc` over JSX-without-annotations.
+`npm run typecheck:noise` emits **487 errors across 79 files**. **None are logic bugs.** They are all cosmetic-type noise from running `tsc` over JSX-without-annotations.
 
 The Vite build **ignores this** and compiles fine. Runtime is unaffected.
 
@@ -14,7 +14,7 @@ Do NOT act on the output without reading this document first.
 
 - `tsc -p ./jsconfig.json` runs the TypeScript compiler in `allowJs`/`checkJs` mode over `.jsx` files that have zero type annotations.
 - It compares JSX prop shapes against types exported by shadcn/ui components — which are `forwardRef` wrappers exporting `RefAttributes<any>` without proper generics for children.
-- Result: 554 errors, dominated by 4 error codes:
+- Result: 487 errors, dominated by 4 error codes:
 
 | Code | Count | Meaning |
 |---|---|---|
@@ -32,11 +32,11 @@ Sample verified by inspection (not exhaustive):
 
 ---
 
-## Why "fix all 554" is not on the roadmap
+## Why "fix all 487" is not on the roadmap
 
-**Option A — fix the 5 files the previous prompt mentioned:** theater. Leaves 549 red. `npm run typecheck` still fails. Zero closed debt.
+**Option A — fix the 5 files the previous prompt mentioned:** theater. Leaves 482 red. `npm run typecheck` still fails. Zero closed debt.
 
-**Option B — fix all 554:** 4-6 hours, medium risk of propagating new type errors across shadcn wrappers used app-wide, in exchange for a green check that has never emitted a useful signal. Violates the 90-day rule: perfect typecheck over unannotated JSX is not in the 90-day critical path. Real customer data is.
+**Option B — fix all 487:** 4-6 hours, medium risk of propagating new type errors across shadcn wrappers used app-wide, in exchange for a green check that has never emitted a useful signal. Violates the 90-day rule: perfect typecheck over unannotated JSX is not in the 90-day critical path. Real customer data is.
 
 **Option C (adopted) — rename the script + document the reality.** No hidden false alarms in future audits. Migrating to `.tsx` gradually — file by file, only when a file's logic actually needs static types — is the correct long-term path IF and WHEN it matters. Today it doesn't.
 
