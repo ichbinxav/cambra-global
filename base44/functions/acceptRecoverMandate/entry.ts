@@ -58,7 +58,14 @@ export default async function (req: Request): Promise<Response> {
     const first = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch(() => []);
     const mandate = first?.[0];
     if (!mandate) return Response.json({ error: 'mandate not found' }, { status: 404 });
-    if (user.role !== 'admin' && String(mandate.owner_email || '').toLowerCase() !== email) {
+    // RECOVER-4 audit fix (2026-08-04): NO admin bypass here, deliberately.
+    // signed_by_email below is the SESSION's email, and it is both the legal
+    // attribution of the signature and the sole recipient of the contractual
+    // copy — so an admin "helping" would have recorded themselves as the
+    // signatory and had the merchant's agreement emailed to CAMBRA instead.
+    // An electronic acceptance can only be performed by its owner; admins read
+    // and revoke, they never sign on someone's behalf.
+    if (String(mandate.owner_email || '').toLowerCase() !== email) {
       return Response.json({ error: 'forbidden' }, { status: 403 });
     }
     if (mandate.status === 'active') {

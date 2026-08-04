@@ -102,6 +102,58 @@ success fee de Recover Margin.
 - Tests unitarios espejo de la matemática (patrón sync-marker del repo) —
   pendiente; la aritmética es determinista y está aislada en un módulo.
 
+## Auditoría RECOVER-1→4 (2026-08-04) — defectos encontrados y corregidos
+
+Auditoría completa de la cadena: aceptación (R1) → método de pago (R2) → PDF
+contractual (R3) → medición/fiscalidad/facturación (R4).
+
+1. **R3 — el "segundo disparador" nunca funcionó.** `getRecoverContractStatus`
+   llamaba `fireAndForget(req, …)` en lugar de `fireAndForget(base44, …)`;
+   `req.asServiceRole` no existe, así que lanzaba y el catch lo tragaba. Es la
+   MISMA clase de fallo silencioso que el 404 de `invokeInternal`: el
+   reconciliador de 15 min era, de facto, el único disparador real. Corregido.
+2. **R1 — un admin podía firmar en nombre del comercio.** El bypass
+   `user.role !== 'admin'` dejaba a un admin aceptar un mandato ajeno, y como
+   `signed_by_email` es la sesión, quedaba registrado como firmante Y recibía
+   el contrato del comercio por email. Bypass eliminado: la aceptación
+   electrónica solo la realiza su titular (los admins leen y revocan).
+3. **`revokeMandate` (legado) — tres defectos.** (a) Escribía con la RLS del
+   usuario: como los Mandate los crea el service role, `created_by` nunca es el
+   comercio, así que TODA autorrevocación de comercio era rechazada en
+   silencio (y el OperationalLog admin-only también) — funcionaba solo para
+   admins. (b) La propiedad se comprobaba solo con `activation.user_email`,
+   ignorando `Mandate.owner_email`, el campo que R1 creó justo para eso.
+   (c) Podía **rebobinar una activación en facturación**: cualquier estado
+   distinto de migrating/live pasaba a `awaiting_authorization`, incluido
+   `monetizing`. Ahora migrating/live/monetizing → `paused`: revocar detiene la
+   acción futura, no deshace una autorización pasada ni las comisiones ya
+   devengadas sobre ahorro ya verificado.
+4. **R4 — evidencia fiscal caducada.** `checkVatVies` marcaba
+   `vies_validated` al validar pero no lo revertía: una empresa validada que
+   después fallase conservaba la bandera verde junto a un `vies_status`
+   inválido. Ahora vuelve a `vat_id_provided` (sin pisar aprobaciones manuales).
+5. **R4 — emparejamiento de disputas/abonos.** La resolución del id de factura
+   en el webhook contenía una rama muerta que nunca podía coincidir. Simplificada
+   a la referencia real + fallback por payment intent.
+6. **R4 — importes no aprobados.** Un report sin `fee_net_amount` lanzaba una
+   excepción en lugar de rechazarse como "reaprobar". Ahora es un bloqueo limpio.
+7. **R4 — metadatos Stripe.** Ids ausentes se habrían enviado como el texto
+   literal `"undefined"`. Coerción explícita.
+
+**Verificado y correcto (sin cambios):** hash de términos re-verificado 3 veces
+(apertura, firma, generación del PDF); `acceptance_started` nunca cuenta como
+autorización; supersesión con solapamiento tolerado; lease + backoff con jitter
+del PDF/email; read-back del objeto almacenado antes de declararlo generado;
+allowlist explícita en `getRecoverContractStatus`; 404-en-vez-de-403 en
+`downloadRecoverContract`; pin de cuenta Stripe por modo; `payment_method_status`
+escrito solo desde una lectura servidor de Stripe; aritmética en céntimos enteros.
+
+**Huecos conocidos (no defectos):** solo `card` en el SetupIntent — SEPA
+Direct Debit no se ofrece aún, aunque la factura y el enum de eventos ya lo
+contemplan; sin UI admin para aprobar mes ni lanzar facturación; sin schedulers
+mensuales (todo manual-admin a propósito hasta que la config fiscal esté
+aprobada).
+
 ## Bloqueos activos (criterios de parada §39)
 
 1. `RECOVER_TAX_CONFIG_JSON` NO configurado → toda facturación bloqueada

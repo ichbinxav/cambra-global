@@ -61,7 +61,12 @@ export default async function (req: Request): Promise<Response> {
         (pdfStatus === 'generating' && leaseExpired(mandate.contract_pdf_last_attempt_at)));
     const dueAt = mandate.contract_pdf_next_retry_at ? new Date(mandate.contract_pdf_next_retry_at).getTime() : 0;
     if (stalled && (!dueAt || dueAt <= Date.now())) {
-      fireAndForget(req, 'generateRecoverContractPdf', { mandate_id: mandate.id });
+      // RECOVER-4 audit fix (2026-08-04): this passed `req` instead of the SDK
+      // client. fireAndForget reads base44.asServiceRole.functions, so on `req`
+      // it threw immediately and was swallowed — meaning this "second trigger"
+      // never actually re-queued anything since RECOVER-3. Same class of bug as
+      // the 404 in invokeInternal, and equally silent.
+      fireAndForget(base44, 'generateRecoverContractPdf', { mandate_id: mandate.id });
     }
 
     const payload: Record<string, unknown> = {
