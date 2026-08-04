@@ -135,6 +135,49 @@
       "type": "string",
       "format": "date-time",
       "description": "RECOVER-2 \u2014 when the payment method became usable (payment_method_status \u2192 'ready'), verified server-side against Stripe."
+    },
+    "conditions_activated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-4 (2026-08-04) \u2014 the REAL date the newly approved conditions started applying, backed by verifiable evidence (provider confirmation, pricing schedule, first settlement at new rates, API verification or documented admin review). NEVER inferred from the RECOVER-1 acceptance, the SetupIntent, a frontend edit or an estimated migration date. Set only through the documented admin verification (recordConditionsActivation flow); its Europe/Paris calendar date anchors the whole contractual measurement calendar."
+    },
+    "conditions_activation_source": {
+      "type": "string",
+      "enum": [
+        "provider_confirmation",
+        "pricing_schedule",
+        "first_settlement",
+        "api_verification",
+        "admin_documented_review"
+      ],
+      "description": "RECOVER-4 \u2014 the class of evidence behind conditions_activated_at."
+    },
+    "conditions_activation_verified_by": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 admin who verified the activation evidence."
+    },
+    "conditions_activation_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "first_measurement_month": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 YYYY-MM: first FULL calendar month after conditions_activated_at (Europe/Paris). The activation month itself is never billable (\u00a77)."
+    },
+    "agreement_end_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-4 \u2014 end of the 24 contractual measured months. No period after this instant is measured or invoiced."
+    },
+    "first_invoice_eligible_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-4 \u2014 earliest instant the first invoice may be issued (the month after the first measured month, once verified)."
+    },
+    "first_invoice_issued_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RECOVER-4 \u2014 when the first finalized invoice was issued. The first PAID invoice moves status live \u2192 monetizing (webhook-driven, idempotent)."
     }
   },
   "required": [

@@ -30,7 +30,7 @@
     },
     "tax_id": {
       "type": "string",
-      "description": "Company Tax ID / VAT / EIN"
+      "description": "Company Tax ID / VAT / EIN (legacy free-text field, pre-RECOVER-4). The billing flow reads the RECOVER-4 structured fields below, not this."
     },
     "country": {
       "type": "string",
@@ -142,6 +142,99 @@
         "live"
       ],
       "description": "RECOVER-2 (2026-08-03) \u2014 which Stripe environment stripe_customer_id belongs to ('test' = CAMBRA's sandbox acct_1TqFip2Vr0WW305e, 'live' = acct_1TqFifJw0ka9dDf4). Exists because a Stripe Sandbox is a SEPARATE account with its own object space: a customer id from the sandbox is meaningless in live and would fail with a 'no such customer' at the worst possible moment (the first real invoice). startPaymentMethodSetup refuses to reuse a stored customer whose mode does not match the mode it is running in, and creates a fresh one instead."
+    },
+    "billing_legal_name": {
+      "type": "string",
+      "description": "RECOVER-4 (2026-08-04) \u2014 the customer's LEGAL entity name for invoicing. Structured billing identity lives on the Brand (organization = brand, same convention as Mandate.organization_id). Distinct from `name` (trading/brand name)."
+    },
+    "billing_address_line1": {
+      "type": "string"
+    },
+    "billing_address_line2": {
+      "type": "string"
+    },
+    "billing_postal_code": {
+      "type": "string"
+    },
+    "billing_city": {
+      "type": "string"
+    },
+    "billing_country": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 country of BUSINESS ESTABLISHMENT for tax purposes, ISO alpha-2. Only FR and ES are billable; anything else blocks with billing_blocked_unsupported_jurisdiction. Determined from legal/tax data \u2014 never from IP, browser language, card country or IBAN country (\u00a713)."
+    },
+    "vat_number": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 customer VAT identification as provided (e.g. FRxx\u2026, ESxx\u2026)."
+    },
+    "vat_number_normalized": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 uppercase, no spaces/dots/dashes. What VIES was queried with."
+    },
+    "vat_country": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 the 2-letter prefix of the VAT number. Must match billing_country for reverse charge."
+    },
+    "tax_customer_type": {
+      "type": "string",
+      "enum": [
+        "business_taxable_person"
+      ],
+      "description": "RECOVER-4 \u2014 the only supported customer type. B2C is never invoiced from this flow; if B2B status cannot be demonstrated the state is billing_blocked_tax_review, not a default."
+    },
+    "tax_evidence_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "vat_id_provided",
+        "vies_validated",
+        "alternative_evidence_approved"
+      ],
+      "default": "none",
+      "description": "RECOVER-4 \u2014 how the B2B/taxable-person condition is evidenced. 'alternative_evidence_approved' exists ONLY for an advisor-approved manual review (documented, with approver and date in tax_review notes) \u2014 never created automatically."
+    },
+    "tax_review_status": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "not_required",
+      "description": "RECOVER-4 \u2014 manual fiscal review state when automatic evidence (VIES) is insufficient."
+    },
+    "vies_status": {
+      "type": "string",
+      "enum": [
+        "valid",
+        "invalid",
+        "unavailable",
+        "timeout",
+        "not_checked",
+        "manual_review_approved",
+        "manual_review_rejected"
+      ],
+      "default": "not_checked",
+      "description": "RECOVER-4 \u2014 result of the latest VIES consultation for vat_number_normalized. 'invalid' NEVER auto-falls-back to French TVA (\u00a714): it blocks billing until corrected or manually reviewed. 'unavailable'/'timeout' block with retry \u2014 they are not 'invalid'."
+    },
+    "vies_checked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "vies_request_identifier": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 VIES consultation/request identifier returned by the service, kept as evidence of the check."
+    },
+    "vies_response_snapshot": {
+      "type": "object",
+      "description": "RECOVER-4 \u2014 sanitized VIES response (valid flag, name, address, request date). No secrets, kept for the invoice's vies_evidence_json."
+    },
+    "vies_name": {
+      "type": "string"
+    },
+    "vies_address": {
+      "type": "string"
     }
   },
   "required": [

@@ -1,6 +1,7 @@
 {
   "name": "Invoice",
   "type": "object",
+  "description": "RECOVER-4 (2026-08-04) extended this entity for the Recover Margin success-fee flow: Stripe Invoicing is the AUTHORITATIVE source of the legal invoice number (no local max+1 sequence \u2014 the pre-existing series/sequence fields are legacy and are NOT written by the Recover flow). Amounts are computed in integer cents (shared/recoverBillingMath.ts) and mirrored into the legacy EUR fields. A finalized invoice is never edited: corrections go through void / credit note / corrective invoice (\u00a732).",
   "properties": {
     "deal_activation_id": {
       "type": "string"
@@ -36,7 +37,8 @@
       "default": "draft"
     },
     "invoice_number": {
-      "type": "string"
+      "type": "string",
+      "description": "RECOVER-4 \u2014 copied from Stripe's finalized invoice `number`. Stripe is the numbering authority; never assigned locally before finalization, never reused."
     },
     "series": {
       "type": "string"
@@ -103,12 +105,137 @@
       "type": "string"
     },
     "billing_snapshot_json": {
-      "type": "object"
+      "type": "object",
+      "description": "RECOVER-4 \u2014 the immutable accounting/tax snapshot: report figures, baseline, fee percentages, tax decision, VIES evidence, supplier/customer details, period, rounding, Stripe references, calculation hash. Append-only after finalization."
     },
     "pdf_url": {
       "type": "string"
     },
     "notes": {
+      "type": "string"
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 today organization = Brand.id (same convention as Mandate.organization_id)."
+    },
+    "mandate_id": {
+      "type": "string"
+    },
+    "baseline_id": {
+      "type": "string"
+    },
+    "tax_treatment": {
+      "type": "string",
+      "enum": [
+        "FR_STANDARD_TVA",
+        "ES_EU_REVERSE_CHARGE",
+        "TAX_REVIEW_REQUIRED",
+        "UNSUPPORTED_JURISDICTION"
+      ],
+      "description": "RECOVER-4 \u2014 output of the shared tax engine at issuance. Only FR_STANDARD_TVA / ES_EU_REVERSE_CHARGE can reach a finalized invoice."
+    },
+    "tax_rate": {
+      "type": "number",
+      "description": "RECOVER-4 \u2014 applied rate as a percentage (20 for FR standard, 0 for reverse charge)."
+    },
+    "supplier_legal_name": {
+      "type": "string"
+    },
+    "supplier_address": {
+      "type": "string"
+    },
+    "supplier_vat_number": {
+      "type": "string"
+    },
+    "customer_legal_name": {
+      "type": "string"
+    },
+    "customer_address": {
+      "type": "string"
+    },
+    "customer_country": {
+      "type": "string"
+    },
+    "customer_vat_number": {
+      "type": "string"
+    },
+    "vies_status": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 VIES state at issuance (valid / manual_review_approved / \u2026). Frozen evidence, not a live pointer."
+    },
+    "vies_checked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "vies_evidence_json": {
+      "type": "object",
+      "description": "RECOVER-4 \u2014 sanitized VIES response snapshot (consultation id, name/address returned, service status). Never shown to other merchants."
+    },
+    "service_period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "service_period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "fee_net_amount": {
+      "type": "number",
+      "description": "RECOVER-4 \u2014 CAMBRA fee net of VAT/TVA in EUR (equals subtotal_amount for Recover invoices)."
+    },
+    "discount_type": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 'referral_commercial_discount' when a referral discount lowered the fee pct."
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "RECOVER-4 \u2014 informative EUR delta vs the 25% standard fee. The discount is applied to the fee PERCENTAGE, not as a credit line."
+    },
+    "stripe_invoice_id": {
+      "type": "string"
+    },
+    "stripe_invoice_status": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 last Stripe invoice status seen (draft/open/paid/void/uncollectible)."
+    },
+    "stripe_charge_id": {
+      "type": "string"
+    },
+    "stripe_payment_method_type": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 card / sepa_debit, from the payment attempt."
+    },
+    "stripe_event_last_processed": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 id of the last Stripe webhook event applied to this row (out-of-order guard aid)."
+    },
+    "invoice_snapshot_hash": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 SHA-256 of billing_snapshot_json at finalization. Append-only."
+    },
+    "invoice_finalized_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "collection_scheduled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "prenotification_status": {
+      "type": "string",
+      "enum": [
+        "not_applicable",
+        "provider_managed",
+        "sent",
+        "pending"
+      ],
+      "description": "RECOVER-4 \u2014 SEPA pre-notification handling. 'provider_managed' when Stripe (its Creditor ID + automatic emails) carries the notification duty; CAMBRA never sends a second contradictory one."
+    },
+    "credit_note_id": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 Stripe credit note id when this invoice was (partially) credited."
+    },
+    "void_reason": {
       "type": "string"
     }
   },

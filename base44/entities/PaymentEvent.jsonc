@@ -1,6 +1,7 @@
 {
   "name": "PaymentEvent",
   "type": "object",
+  "description": "Append-only ledger of invoice-linked payment lifecycle events. RECOVER-4 (2026-08-04) added processor_event_id/event_hash for Stripe webhook idempotency (one logical PaymentEvent per Stripe event) and extended the enum ADDITIVELY (existing values untouched). Never stores raw Stripe payloads, bank data, PANs, IBANs or secrets \u2014 only sanitized codes and references.",
   "properties": {
     "invoice_id": {
       "type": "string"
@@ -26,7 +27,12 @@
         "payment_failed",
         "refund_issued",
         "status_overridden",
-        "marked_overdue"
+        "marked_overdue",
+        "payment_processing",
+        "payment_action_required",
+        "invoice_voided",
+        "dispute_created",
+        "credit_note_created"
       ]
     },
     "processor": {
@@ -34,6 +40,14 @@
     },
     "processor_ref": {
       "type": "string"
+    },
+    "processor_event_id": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 Stripe event.id that produced this row. Uniqueness is enforced logically by the webhook handler (skip if a row with this id already exists)."
+    },
+    "event_hash": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 hash of (event id + type + invoice) for defensive dedup when the processor id is absent."
     },
     "error_code": {
       "type": "string"

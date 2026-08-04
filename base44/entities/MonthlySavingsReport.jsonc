@@ -1,6 +1,7 @@
 {
   "name": "MonthlySavingsReport",
   "type": "object",
+  "description": "One measured month per deal activation. RECOVER-4 (2026-08-04) added the billing-eligibility layer: a report only becomes invoiceable through an explicit admin approval (approveRecoverReportForInvoicing) that checks measurement_mode==='fully_verified', verification_status==='realized', evidence, the accepted baseline and the contractual calendar. Estimated/projected reports are NEVER billable.",
   "properties": {
     "deal_activation_id": {
       "type": "string"
@@ -83,7 +84,8 @@
       "default": "calculated"
     },
     "supporting_snapshot_json": {
-      "type": "object"
+      "type": "object",
+      "description": "Inputs, baseline used, formula, versions, sources, adjustments, rounding, fee. RECOVER-4: once the report is invoiced this object is append-only \u2014 corrections create a NEW report version, never rewrite this one."
     },
     "verified_by": {
       "type": "string"
@@ -123,6 +125,65 @@
     "evidence_count": {
       "type": "number",
       "default": 0
+    },
+    "calculation_version": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 version tag of the deterministic billing math (shared/recoverBillingMath.ts) that produced the billable figures."
+    },
+    "calculation_hash": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 SHA-256 of the calculation inputs+outputs (stable JSON). Proves the invoiced amounts derive from THIS measurement."
+    },
+    "billable_savings_amount": {
+      "type": "number",
+      "description": "RECOVER-4 \u2014 max(verified savings, 0) rounded to cents, in EUR. The base of the fee. Negative savings floor to zero, never carried forward (\u00a730)."
+    },
+    "fee_net_amount": {
+      "type": "number",
+      "description": "RECOVER-4 \u2014 CAMBRA fee NET of VAT/TVA in EUR: billable_savings \u00d7 effective_fee_pct, rounded per the documented policy. Tax is added on the invoice, never here (\u00a75)."
+    },
+    "standard_fee_pct": {
+      "type": "number",
+      "description": "RECOVER-4 \u2014 contractual standard fee (25)."
+    },
+    "discount_pct": {
+      "type": "number",
+      "description": "RECOVER-4 \u2014 acquired referral discount applied to the FEE (commercial discount), never to the savings and never a payment to the referrer (\u00a75)."
+    },
+    "effective_fee_pct": {
+      "type": "number",
+      "description": "RECOVER-4 \u2014 standard_fee_pct \u2212 discount_pct, sourced from the accepted Mandate snapshot and the month's BillingRule (non-retroactive)."
+    },
+    "billing_eligibility_status": {
+      "type": "string",
+      "enum": [
+        "not_ready",
+        "eligible",
+        "no_positive_savings",
+        "blocked_missing_evidence",
+        "blocked_tax",
+        "blocked_payment_method",
+        "blocked_contract",
+        "invoiced"
+      ],
+      "default": "not_ready",
+      "description": "RECOVER-4 \u2014 the gate createEligibleRecoverInvoices reads. Only 'eligible' (set by an explicit admin approval) can become an invoice; every blocked state names why in billing_block_reason."
+    },
+    "billing_block_reason": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 normalized reason code(s) for a blocked state. Safe to show in admin panels."
+    },
+    "approved_for_invoicing_by": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 admin who approved this report for invoicing."
+    },
+    "approved_for_invoicing_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "invoice_id": {
+      "type": "string",
+      "description": "RECOVER-4 \u2014 local Invoice id once invoiced. Part of the monthly idempotency key (deal_activation_id + month + report)."
     }
   },
   "required": [

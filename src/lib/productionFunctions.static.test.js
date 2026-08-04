@@ -32,6 +32,9 @@ const MANIFEST = [
   // RECOVER-3 (2026-08-03) — contractual PDF generation, storage and delivery.
   "generateRecoverContractPdf", "sendRecoverContractEmail", "getRecoverContractStatus",
   "downloadRecoverContract", "retryPendingRecoverContracts",
+  // RECOVER-4 (2026-08-04) — monthly measurement, FR/ES tax, Stripe invoicing.
+  "recordConditionsActivation", "checkVatVies", "approveRecoverReportForInvoicing",
+  "createEligibleRecoverInvoices",
   "answerAgentQuestion", "apiAuth", "apiOpenApiSpec", "apiV1", "approveAgentRun",
   "authzScope", "benchmarkLearningEngine", "billApiUsage", "blogAgent",
   "brainOrchestrator", "buildInfrastructureGraph", "chatChiefOrchestrator",
