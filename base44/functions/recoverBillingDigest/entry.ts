@@ -18,6 +18,23 @@
 // unbilled month used to be indistinguishable from a month that is up to date.
 // generateMonthlySavingsReport stays UNSCHEDULED on purpose (§9/§31 keep it a
 // human act), so the sentinel covers the gap instead of automating generation.
+//
+// DIGEST-GAP-2 (2026-08-04) — the sentinel also looks at 'paused' activations.
+// revokeMandate moves migrating/live/monetizing to 'paused', and under RECOVER-4
+// (defect c) revoking STOPS FUTURE ACTION BUT DOES NOT UNDO FEES ALREADY EARNED
+// on savings already verified. So an activation that was live throughout the
+// closed month and got paused afterwards still owes that last measured month —
+// yet a status filter of live/monetizing alone would never surface it. A paused
+// row therefore counts only if it was still in force DURING the target month
+// (agreement_end_at when populated, otherwise last_updated, compared against the
+// first day of that month), and it is flagged separately in the email and in the
+// counters so it reads as a final billable month, not a running one.
+//
+// KNOWN CEILING (2026-08-04): the queries below read 250 activations per status
+// and 500 reports sorted by -month. Fine at today's scale, but around ~500
+// merchants × 12 months the report cut-off starts truncating SILENTLY, and the
+// digest would stop seeing old blocked months. Revisit (paginate, or filter by
+// month window) before that point.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { parisMonthOf } from '../../shared/recoverBillingMath.ts';
 
@@ -75,14 +92,27 @@ export default async function (req: Request): Promise<Response> {
     const monthStart = new Date(`${targetMonth}-01T00:00:00.000Z`).getTime();
     const live = await svc.entities.DealActivation.filter({ status: 'live' }, '-created_date', 250).catch(() => []);
     const monetizing = await svc.entities.DealActivation.filter({ status: 'monetizing' }, '-created_date', 250).catch(() => []);
-    const missingReports = [...(live || []), ...(monetizing || [])].filter(a => {
+    const paused = await svc.entities.DealActivation.filter({ status: 'paused' }, '-created_date', 250).catch(() => []);
+    const candidates = [
+      ...(live || []).map(a => ({ a, was_paused: false })),
+      ...(monetizing || []).map(a => ({ a, was_paused: false })),
+      ...(paused || []).map(a => ({ a, was_paused: true })),
+    ];
+    const missingReports = candidates.filter(({ a, was_paused }) => {
       if (!a.conditions_activated_at || !a.first_measurement_month) return false;
       if (a.first_measurement_month > targetMonth) return false;
       if (a.agreement_end_at && new Date(a.agreement_end_at).getTime() < monthStart) return false;
+      // DIGEST-GAP-2 — a paused activation only owes the target month if it was
+      // still in force during it. Ended before the month started → nothing due.
+      if (was_paused) {
+        const endedAt = a.agreement_end_at || a.last_updated;
+        if (!endedAt || new Date(endedAt).getTime() < monthStart) return false;
+      }
       return !(reports || []).some(r =>
         r.deal_activation_id === a.id && r.month === targetMonth && r.status !== 'void'
       );
-    }).map(a => ({ brand_id: a.brand_id, month: targetMonth, deal_activation_id: a.id }));
+    }).map(({ a, was_paused }) => ({ brand_id: a.brand_id, month: targetMonth, deal_activation_id: a.id, was_paused }));
+    const missingReportsPaused = missingReports.filter(r => r.was_paused).length;
 
     if (!awaitingApproval.length && !approvedNotInvoiced.length && !blocked.length && !missingReports.length) {
       return Response.json({ ok: true, sent: false, reason: 'nothing_pending' });
@@ -109,7 +139,7 @@ export default async function (req: Request): Promise<Response> {
         <p style="font-size:13px;color:#666;margin:0 0 18px">Nothing below has been approved or invoiced automatically. Every action stays yours.</p>
 
         <h3 style="font-size:14px;margin:0 0 2px">Months with no report generated (${missingReports.length})</h3>
-        ${list(missingReports, () => ' · no measurement recorded for the closed month')}
+        ${list(missingReports, r => ` · no measurement recorded for the closed month${r.was_paused ? ' · activation paused' : ''}`)}
 
         <h3 style="font-size:14px;margin:0 0 2px">Verified months waiting for your approval (${awaitingApproval.length})</h3>
         ${list(awaitingApproval, r => ` · savings ${eur(r.savings)}`)}
@@ -138,6 +168,7 @@ export default async function (req: Request): Promise<Response> {
       message: 'recover_billing_digest_sent',
       data_json: {
         missing_reports: missingReports.length,
+        missing_reports_paused: missingReportsPaused,
         missing_reports_month: targetMonth,
         awaiting_approval: awaitingApproval.length,
         approved_not_invoiced: approvedNotInvoiced.length,
@@ -150,8 +181,10 @@ export default async function (req: Request): Promise<Response> {
     return Response.json({
       ok: true,
       sent: true,
-      to,
+      // The recipient is deliberately NOT returned: an anonymous caller must
+      // not learn the admin address. Only counts leave this endpoint.
       missing_reports: missingReports.length,
+      missing_reports_paused: missingReportsPaused,
       missing_reports_month: targetMonth,
       awaiting_approval: awaitingApproval.length,
       approved_not_invoiced: approvedNotInvoiced.length,
