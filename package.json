@@ -9,7 +9,7 @@
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
-    "typecheck:noise": "echo 'KNOWN NOISE — see src/docs/TYPECHECK_NOISE.md before acting on output. 554 preexisting errors, not individually classified; the Vite build ignores this check.' && tsc -p ./jsconfig.json",
+    "typecheck:noise": "echo 'KNOWN NOISE — see src/docs/TYPECHECK_NOISE.md before acting on output. 487 preexisting errors, not individually classified; the Vite build ignores this check.' && tsc -p ./jsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview"
