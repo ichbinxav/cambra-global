@@ -104,8 +104,7 @@ export default function CopilotPanel() {
           category: b.category,
           website: b.website,
           totalSavings: r?.total_savings || 0,
-          infraScore: r?.infra_score ?? null,
-          dataSource: r?.benchmark_source || "manual",
+           dataSource: r?.benchmark_source || "manual",
           lastAnalysis: r?.created_date || null,
         });
       } catch { /* non-fatal */ }

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { TrendingUp, Gauge, Layers, Sparkles } from "lucide-react";
+import { TrendingUp, Gauge, Sparkles } from "lucide-react";
 
 /**
  * KPI strip for Reports — 4 dense premium cells.
@@ -8,18 +8,28 @@ import { TrendingUp, Gauge, Layers, Sparkles } from "lucide-react";
 export default function ReportsKPIStrip({ results }) {
   const latest = results[0];
   const totalSavings = results.reduce((acc, r) => acc + (r.total_savings || 0), 0);
-  const avgScore = results.length
-    ? Math.round(results.reduce((acc, r) => acc + (r.infra_score || 0), 0) / results.length)
-    : 0;
-  const layers = latest
-    ? [latest.payment_savings, latest.shipping_savings, latest.saas_savings].filter((v) => v > 0).length
-    : 0;
+  // P0.2 — payments-only KPIs. Removed the multi-vertical composite score
+  // and the cross-vertical pillars count. Replaced with payment-specific
+  // metrics: data quality and recovery status.
+  const dataQualityLabel = !latest
+    ? "—"
+    : latest.verification_status === "verified"
+      ? "Verified"
+      : latest.verification_status === "pending_verification"
+        ? "Provisional"
+        : "Modelled";
+
+  const recoveryLabel = !latest
+    ? "—"
+    : latest.verification_status === "verified"
+      ? "Eligible"
+      : "Not started";
 
   const items = [
     {
       label: "Latest opportunity",
       value: latest ? `€${Math.round((latest.total_savings || 0) / 1000)}K` : "—",
-      hint: latest ? "Annualized recovery" : "Run a scan",
+      hint: latest ? "Annualized payment savings" : "Run a scan",
       Icon: Sparkles,
       accent: "from-[#5B4CF5] to-[#39C6F0]",
     },
@@ -31,18 +41,18 @@ export default function ReportsKPIStrip({ results }) {
       accent: "from-[#39C6F0] to-[#2FE0A8]",
     },
     {
-      label: "Infrastructure score",
-      value: `${avgScore}`,
-      hint: "Avg · all reports",
+      label: "Data quality",
+      value: dataQualityLabel,
+      hint: latest ? "Latest analysis" : "Run a scan",
       Icon: Gauge,
       accent: "from-[#8B7BFF] to-[#5B4CF5]",
     },
     {
-      label: "Pillars benchmarked",
-      value: latest ? `${layers}/3` : "—",
-      hint: "Payments · Logistics · SaaS",
-      Icon: Layers,
-      accent: "from-[#FFB05A] to-[#FF7A45]",
+      label: "Recovery",
+      value: recoveryLabel,
+      hint: latest?.verification_status === "verified" ? "Verified savings" : "Verify to activate",
+      Icon: Sparkles,
+      accent: "from-[#2FE0A8] to-[#39C6F0]",
     },
   ];
 

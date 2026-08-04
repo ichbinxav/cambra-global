@@ -1,111 +1,265 @@
-# CAMBRA — Infrastructure Intelligence Platform
+# CAMBRA — Card Payment Cost Intelligence
 
-The economic operating system for independent commerce.
+> **Current production scope: payments.** CAMBRA audits online and in-store
+> card payment costs for independent European brands. It compares a merchant's
+> effective rate (online PSP and physical terminal) against European payment
+> benchmarks built from public pricing and regulatory interchange floors,
+> quantifies the recoverable gap, and drives the recovery — free analysis,
+> success fee only on verified savings.
+>
+> Shipping, SaaS, insurance, telecom, energy, banking and other infrastructure
+> categories exist in the codebase as **dormant roadmap infrastructure** —
+> entities, normalisers, sync-engine modules — but are **not part of the live
+> product** and are not offered to merchants. See `src/lib/featureScope.js`
+> for the production/visibility flags.
 
-CAMBRA gives independent brands the infrastructure leverage usually reserved
-for large enterprises: real-time benchmarks, automated cost recovery, and a
-unified view of every system that runs the business (payments, shipping,
-SaaS, banking, telecom, HR).
-
-We don't sell software — we sell **recovered margin**.
-The diagnostic is free. We earn only on verified savings.
-
----
-
-## Three pillars
-
-1. **Payments / TPV** — fee benchmarking, PSP renegotiation, terminal contract
-   audits.
-2. **Logistics / 3PL** — carrier mix optimisation, contract re-bidding,
-   surcharge recovery.
-3. **Commerce SaaS** — stack consolidation, license renegotiation, duplicate
-   tooling cleanup.
-
-All three feed a single **Infrastructure Score** and a unified savings model
-backed by a network benchmark (n ≥ 5 cohorts).
+The app is built on [Base44](https://base44.com): a React/Vite frontend, a
+Deno-runtime backend of serverless functions, an entity-driven database with
+row-level security, and a set of AI agents that operate under explicit
+approval gates.
 
 ---
 
-## Stack
-
-- **Frontend** — React 18 + Vite + Tailwind + shadcn/ui
-- **Backend** — Base44 BaaS (entities, functions, automations)
-- **Functions runtime** — Deno Deploy
-- **AI** — OpenAI (GPT family) via `InvokeLLM`
-- **Payments** — Stripe (TPV/PSP intelligence + checkout)
-
----
-
-## Local development
+## Quick start
 
 ```bash
-# Install
+# 1. Install
 npm install
 
-# Dev server
-npm run dev
+# 2. Configure environment
+cp env.example .env          # fill in the frontend VITE_ vars
+# Backend secrets go into the Base44 dashboard, not this file.
+# (The template is named env.example without a leading dot because the
+#  Base44 sandbox silently drops dotfiles from the repo.)
 
-# Production build
-npm run build
-
-# Tests (Vitest)
-npx vitest run
+# 3. Run
+npm run dev                  # http://localhost:5173
 ```
 
-Environment variables — copy `.env.example` to `.env.local` and fill in the
-frontend values. Backend secrets (Stripe, Anthropic, Instantly, Cal.com)
-go in **Base44 dashboard → Settings → Environment variables**, not in
-`.env.local`. See `.env.example` for the full list and what each is for.
+Publish changes from the Base44 dashboard (**Publish** button). Every push
+to the linked repo is picked up by the Base44 builder.
 
 ---
 
-## Repository layout
+## Scripts
+
+| Command                   | What it does                                              |
+|---------------------------|-----------------------------------------------------------|
+| `npm run dev`             | Vite dev server, hot reload                               |
+| `npm run build`           | Production build (Vite)                                   |
+| `npm run preview`         | Serve the production build locally                        |
+| `npm run lint`            | ESLint (errors only)                                      |
+| `npm run lint:fix`        | ESLint with auto-fix (imports cleanup, safe transforms)   |
+| `npm run typecheck`       | TypeScript check against `jsconfig.json` — currently reports ~487 preexisting errors (see `src/docs/TYPECHECK_NOISE.md`); the Vite build does not run this check |
+| `npm run typecheck:noise` | Same check, prefixed with the known-noise warning         |
+| `npm test`                | Vitest, single run                                        |
+| `npm run test:watch`      | Vitest, watch mode                                        |
+| `npm run verify`          | lint + typecheck + test + build (full pipeline)           |
+
+---
+
+## Environment variables
+
+See [`env.example`](./env.example) for the full, grouped list with
+placeholder values. Two groups exist:
+
+- **Frontend (`VITE_*`)** — compiled into the bundle by Vite; safe to expose.
+  Live in `.env` / `.env.local`.
+- **Backend (Deno)** — never bundled into the frontend. Set in the Base44
+  dashboard → **Settings → Environment Variables**. Includes AI provider
+  keys, Stripe secrets, `INTEGRATION_TOKEN_KEY` (the master key that
+  encrypts every stored OAuth/API-key blob), and outbound tooling keys.
+
+Rotate any secret that leaks. Rotating `INTEGRATION_TOKEN_KEY` invalidates
+every stored integration; do not rotate without a migration plan.
+
+---
+
+## Architecture overview
 
 ```
-src/
-  pages/            Route components
-  components/       Reusable UI + feature components
-  entities/         JSON schemas (Base44 entities)
-  functions/        Deno Deploy backend functions
-  agents/           AI agent configs
-  lib/              Shared utilities (auth, i18n, scoring)
+┌───────────────────────────────────────────────────────────────────────┐
+│                          FRONTEND (Vite + React)                      │
+│  src/pages/*            src/components/*         src/lib/*            │
+│  Route table:           UI + charts +            Pure logic:          │
+│  src/App.jsx            forms                    paymentsGap, i18n,   │
+│                                                  score/roadmap/bench  │
+└───────────────────────────────────────────────────────────────────────┘
+                                    │
+                          Base44 SDK · @/api/base44Client
+                                    │
+┌───────────────────────────────────────────────────────────────────────┐
+│                    BACKEND (Base44 · Deno serverless)                 │
+│                                                                       │
+│  base44/entities/*.jsonc         JSON-schema data model + RLS         │
+│  base44/functions/*/entry.ts     HTTP handlers (Deno.serve)           │
+│                                                                       │
+│  NOTE: there is no base44/agents/*.jsonc directory. The "agent"       │
+│  layer is implemented entirely as backend functions (38+ *Agent +     │
+│  orchestrator entry.ts files) that call InvokeLLM and write to the     │
+│  AgentRun / AgentTask / Approval entities. No declarative Base44      │
+│  agent configs exist. See PRODUCTION_SURFACE_INVENTORY.md §5.         │
+│                                                                       │
+│  Key subsystems (payments-only product):                              │
+│    • Payments gap engine — anonymous form analysis                    │
+│      (submitPaymentsAnalysis → getPaymentsGapTeaser) and verified     │
+│      Stripe analysis (stripeOAuthConnect → stripeDataSync →           │
+│      computeStripeVerifiedGap). Rates come from PaymentsRateTable     │
+│      (public pricing, source-quoted rows).                            │
+│    • Benchmark engine — PaymentsRateTable-derived cohort curves      │
+│      (src/lib/paymentsBenchmark.js); modeled curves are labeled as    │
+│      modeled, never presented as empirical.                           │
+│    • AI orchestrators (backend functions, not declarative agents) —  │
+│      recommendation, spend intelligence, lead discovery, outreach.     │
+│      Buy-side orchestrators require an Approval row before any        │
+│      external action (risk_level ≥ 2). Payments/contracts are         │
+│      hard-blocked (never automated).                                 │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
-Each backend function is a standalone `Deno.serve(...)` handler — no shared
-local imports between functions. Cross-function calls go through
-`base44.functions.invoke()`.
+Frontend routing is entirely in `src/App.jsx` (no automatic layout wrapper).
+Backend function contracts and per-provider quirks live alongside the code
+in `src/docs/`.
 
 ---
 
-## CI
+## Current production scope
 
-GitHub Actions runs on every push and PR:
+CAMBRA currently launches through **card payment intelligence**:
 
-- `npm ci`
-- `npm run build`
-- `npx vitest run`
+- **Stripe** is the principal end-to-end connected analysis path.
+- **TPV statement analysis** may be used for in-store payment verification.
+- The **Analyzer is free** (€0, no card).
+- **Recovery is optional**: 25% of positive verified savings, 24 months.
+- **No positive verified saving = no fee.**
+- **Referral activations** reduce the fee down to a 5% floor.
+- Economic constants are centralized in `src/lib/economicTerms.js`.
 
-See `.github/workflows/validate.yml`.
+**Dormant roadmap infrastructure** (entities, normalisers, sync-engine
+modules for shipping, SaaS, insurance, telecom, energy, banking) is kept in
+the codebase but placed behind the feature-scope registry
+(`src/lib/featureScope.js`) with `productionEnabled: false` and
+`merchantVisible: false`. It does not appear in production navigation,
+merchant emails, reports, or the Copilot.
 
----
-
-## Security & privacy
-
-- No raw OAuth tokens or API keys ever land in entity fields — only opaque
-  references (`credential_ref`).
-- Per-brand RLS on every user-scoped entity.
-- Benchmark cohorts are anonymised and only become public at n ≥ 5.
-- Webhook endpoints validate provider signatures (Stripe `constructEventAsync`,
-  shared-secret for others).
-
-Sensitive operations (admin maintenance, scheduled jobs) verify
-`user.role === 'admin'` server-side.
+The broader infrastructure intelligence vision remains the long-term roadmap.
 
 ---
 
-## Status
+## Roadmap / NOT implemented
 
-Private beta. Live in 🇫🇷 🇪🇸 🇮🇪 with onboarding for independent commerce brands
-between €30K–€500K monthly revenue.
+The following verticals appear in dormant code paths (deprecated pages,
+V1-era entities kept for historical data, sync-engine normalizers written
+ahead of need) but are **not part of the live product** and are not offered
+to users: **shipping, SaaS, banking, insurance, telecom, finance ops, HR**.
+CAMBRA has been payments-only since the product refocus. The multi-provider
+sync normalizers (Mollie, Shopify, WooCommerce, BigCommerce, Sendcloud,
+Klarna, Zettle, Square, accounting suites…) exist as tested library code but
+only Stripe is wired end-to-end; contracts are documented in
+`src/docs/normalizers-contracts.md` with *"verify at first real connect"*
+markers.
 
-For support, contact the team through the in-app **Help** page.
+---
+
+## Tests
+
+The test suite is Vitest. It covers:
+
+- **Payments gap math** (`src/lib/paymentsGap.test.js` and the classifier,
+  in-store, roadmap, score, trend and benchmark suites next to it).
+- **Every normalizer** (`src/lib/normalizers/*.test.js`) against pinned
+  fixtures. These validate the *shape* of the normalization contract — not
+  that the numbers match a live provider (see limitations below).
+- **Sync engine helpers** — paginators, date-range window computation,
+  rate limit / backoff, refresh-on-401.
+- **Structural drift** (`src/lib/syncEngine/__sync_check__.test.js`) —
+  compares the source-of-truth JS files against the mirrored Deno copies in
+  `dataSyncAgent/entry.ts`. Fails on any semantic drift.
+- **Contract tests** (`src/pages/__contracts__/`) — analyzer → results
+  handoff fields, route aliases, brand-metadata normalization.
+- **Tenant-isolation static check** (`src/lib/tenantGuard.static.test.js`)
+  — scans every backend function and fails if one touches a tenant entity
+  via service role without an approved guard mechanism.
+- **P0 coherence tests** — Copilot payments-only
+  (`src/lib/copilotKnowledge.test.js`), economic consistency
+  (`src/lib/economicTerms.test.js`), feature-scope flags
+  (`src/lib/featureScope.test.js`), loading fallback
+  (`src/lib/loadingScreen.test.js`).
+
+Run: `npm test`. Full suite completes in seconds.
+
+---
+
+## Deploy
+
+Deployment is handled by the Base44 builder — the linked repo is the source
+of truth, and pressing **Publish** in the dashboard promotes the current
+commit. There is no separate CI/CD pipeline to configure. Function code
+under `base44/functions/**` is auto-discovered and deployed as
+`{function-name}` for each subdirectory containing an `entry.ts`.
+
+---
+
+## Security notes
+
+- **Tenant isolation**: enforced in backend functions — each function that
+  touches tenant data validates that the calling user owns the brand (or is
+  admin) before returning data. Note: for the 10 entities whose writes go
+  through service role, the `created_by` RLS rule is inert (fails closed);
+  isolation relies on the per-function checks, now verified automatically
+  by the static test above (KNOWN_DEBT BUG-6).
+- **Stored credentials are encrypted at rest**. OAuth `access_token` /
+  `refresh_token` and API-key blobs in `Integration.access_token` are
+  encrypted with AES-256-GCM using `INTEGRATION_TOKEN_KEY`. The plaintext
+  never leaves a function response — `getIntegrationStatus` and similar
+  return only status metadata.
+- **Agent approval gates**: any agent action with `risk_level ≥ 2`
+  (client-visible drafts, external actions, financial/legal) creates an
+  `Approval` row and blocks execution until a human approves. Payments and
+  contracts are hard-blocked (never automated).
+- **Copilot rate limit**: `copilotChat` requires a valid user session and
+  caps calls per user via `COPILOT_RATE_LIMIT_PER_HOUR` (default 60/h).
+- **Public endpoints by design**: `oauthRevoke` (RFC 7009 — token in body
+  as proof-of-possession) and `getBenchmarkForReport` (aggregate-only,
+  never per-brand). All other functions authenticate the caller.
+
+---
+
+## Known limitations
+
+The test suite covers *structural* correctness (shapes, invariants, drift).
+Two categories remain that only real data can close:
+
+- **Normalizer field mappings against live provider APIs**. Every
+  normalizer has a documented set of assumptions in
+  `src/docs/normalizers-contracts.md`; several field-level details are
+  marked *"verify at first real connect"* and cannot be validated without
+  a paying merchant on the other side.
+- **End-to-end savings defensibility**. The math is exhaustively tested and
+  the benchmarks are anchored to public sources (published PSP pricing,
+  interchange regulation floors), but the final claim — *"this brand can
+  recover €X"* — requires a real connection, a real audit, and a real
+  renegotiation outcome to be defended in front of a merchant.
+
+### Known dependency vulnerabilities
+
+> **Do not trust the numbers below blindly.** Run `npm audit` and
+> `npm audit --omit=dev` in your own environment and compare.
+
+As of the last manual audit, advisories were found in both dev and
+production trees. The dev-side advisories (vite/vitest/esbuild) do not
+ship to the production bundle. The production-side advisories (DOMPurify,
+PostCSS, React Router, Socket.IO parser) may enter the bundle depending
+on the import graph — verify with `npm audit --omit=dev` and trace each
+advisory's dependency path before deciding it is inert.
+
+```bash
+npm audit                # full tree
+npm audit --omit=dev     # production only
+```
+
+Do **not** run `npm audit fix --force` without reviewing breaking changes.
+
+### Support
+
+Contact the Base44 team via the dashboard for platform-level questions.

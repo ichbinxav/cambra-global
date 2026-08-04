@@ -157,8 +157,8 @@ export default {
     connect_more:                 "Connect more tools to improve accuracy",
 
     /* dashboard */
-    state_a_title:        "Map your infrastructure in 3 minutes",
-    state_a_sub:          "Enter your website. CAMBRA finds your payment providers, carriers and software tools. Then it compares your costs with anonymous data from similar European businesses.",
+    state_a_title:        "Map your payment costs in 3 minutes",
+    state_a_sub:          "Enter your website. CAMBRA finds your payment providers and compares your card-payment costs with anonymous data from similar European businesses.",
     state_a_cta:          "Start free analysis →",
     state_b_badge:        "Estimated",
     state_c_badge:        "Verified ✓",
@@ -397,11 +397,13 @@ export default {
     /* Chunk 5C — auto-materialize toasts after manual sync */
 
     /* Login gate */
-    login_gate_headline:    "Your infrastructure audit is ready.",
+    login_gate_headline:    "Your payment cost audit is ready.",
     login_gate_sub:         "Create a free account or sign in to see your results.",
     login_gate_connect_headline: "Connect your tools securely.",
     login_gate_connect_sub:      "Create a free account or sign in to connect Stripe and your other tools with read-only access.",
     login_gate_cta:         "Continue",
+    login_gate_continue:     "Continue securely",
+    login_gate_continue_sub: "The next secure screen lets you create an account or sign in.",
     login_gate_footnote:    "Free to start. No credit card. Pay only when you save.",
     login_gate_terms:       "By continuing, you agree to our",
     login_gate_terms_link:  "Terms of Service",

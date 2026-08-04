@@ -87,7 +87,6 @@ Deno.serve(async (req) => {
         const latest = analyses[0];
         const total = Math.round(latest.total_savings || 0);
         const monthly = Math.round(total / 12);
-        const score = latest.infra_score || 0;
 
         // Cumulative estimate (sum of all identified savings monthly run-rate × months active)
         const sorted = [...analyses].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
@@ -98,25 +97,14 @@ Deno.serve(async (req) => {
         );
         const cumulative = Math.round((total / 12) * monthsActive);
 
-        // EMAIL-1 — rows keyed (not labelled) here; the localized label lives
-        // in the template module. Same four sources, same filter, same maths.
-        const breakdown = [
-          { key: 'payments', v: Math.round(latest.payment_savings || 0) },
-          { key: 'shipping', v: Math.round(latest.shipping_savings || 0) },
-          { key: 'saas', v: Math.round(latest.saas_savings || 0) },
-          { key: 'insurance', v: Math.round(latest.details?.insurance_savings || 0) },
-        ].filter(x => x.v > 0);
-
-        // EMAIL-1 T4 — language from the user's stored Brand record; unknown
-        // or missing → 'en' inside the template module. The markup moved to
-        // base44/shared/emails/monthlySummary.ts (localized EN/FR/ES).
+        // P0.2 — payments-only monthly email. Removed the multi-vertical
+        // breakdown and the composite efficiency score card; the email
+        // now reports only card-payment savings + cumulative.
         const mail = monthlySummaryEmail(brand.locale, {
           firstName: u.full_name?.split(' ')[0] || '',
           total,
           monthly,
           cumulative,
-          score,
-          breakdown,
           appDomain: Deno.env.get('APP_DOMAIN') || 'cambra.global',
         });
 

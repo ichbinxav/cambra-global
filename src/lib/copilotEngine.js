@@ -19,7 +19,7 @@ const PAGE_META = {
   '/Results': {
     key: 'results',
     title: 'Results',
-    description: 'This page explains your savings estimate, category breakdown and how strong the signal is.',
+    description: 'This page explains your payment savings estimate and how strong the signal is.',
   },
   '/ConnectTools': {
     key: 'documents',
@@ -192,7 +192,7 @@ export async function getCopilotState({ pathname }) {
   const user = isAuthenticated ? await base44.auth.me() : null;
   const email = user?.email;
 
-  // FASE 1.3 — payments-only. ShippingProfile/SaaSProfile reads removed.
+  // FASE 1.3 — payments-only. Non-payment profile reads removed.
   const [brands, paymentsProfiles, results, documents, userDeals] = email ? await Promise.all([
     base44.entities.Brand.filter({ created_by: email }, '-created_date', 1),
     base44.entities.PaymentsProfile.filter({ created_by: email }, '-created_date', 1),

@@ -143,8 +143,8 @@ export default {
     payments_provisional:         "Provisional · datos Stripe parciales",
     connect_more:                 "Conectar más herramientas para mejorar la precisión",
 
-    state_a_title:        "Mapea tu infraestructura en 3 minutos",
-    state_a_sub:          "Introduce tu web. CAMBRA detecta tus proveedores de pago, transportistas y programas. Y compara tus costes con datos anónimos de comercios europeos similares.",
+    state_a_title:        "Mapea tus costes de pago en 3 minutos",
+    state_a_sub:          "Introduce tu web. CAMBRA detecta tus proveedores de pago y compara tus costes de pago con tarjeta con datos anónimos de comercios europeos similares.",
     state_a_cta:          "Iniciar análisis gratuito →",
     state_b_badge:        "Estimado",
     state_c_badge:        "Verificado ✓",
@@ -368,11 +368,13 @@ export default {
     /* Chunk 5C — auto-materialize toasts after manual sync */
 
     /* Login gate */
-    login_gate_headline:    "Tu auditoría de infraestructura está lista.",
+    login_gate_headline:    "Tu auditoría de costes de pago está lista.",
     login_gate_sub:         "Crea una cuenta gratuita o inicia sesión para ver tus resultados.",
     login_gate_connect_headline: "Conecta tus herramientas de forma segura.",
     login_gate_connect_sub:      "Crea una cuenta gratuita o inicia sesión para conectar Stripe y tus otras herramientas con acceso de solo lectura.",
     login_gate_cta:         "Continuar",
+    login_gate_continue:     "Continuar de forma segura",
+    login_gate_continue_sub: "La siguiente pantalla segura te permite crear una cuenta o iniciar sesión.",
     login_gate_footnote:    "Gratis para empezar. Sin tarjeta. Solo pagas cuando ahorras.",
     login_gate_terms:       "Al continuar, aceptas nuestros",
     login_gate_terms_link:  "Términos de servicio",

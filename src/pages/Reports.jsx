@@ -73,7 +73,7 @@ export default function Reports() {
       <PageHero
         eyebrow="Margin intelligence · History"
         title="Reports."
-        subtitle="Every scan, every benchmark, every recovered euro — mapped continuously across your stack."
+        subtitle="Every scan, every benchmark, every recovered euro — mapped continuously across your card payments."
         icon={TrendingUp}
         actions={
           <Link to="/Analyzer">
@@ -112,7 +112,7 @@ export default function Reports() {
             </div>
             <h3 className="text-xl font-black text-white tracking-tight mb-2">No reports yet</h3>
             <p className="text-sm text-white/55 mb-6 max-w-sm mx-auto">
-              Run your first infrastructure audit to see margin recovery opportunities mapped here.
+              Run your first payment cost audit to see recovery opportunities mapped here.
             </p>
             <Link to="/Analyzer">
               <Button className="rounded-full px-7 h-11 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2">
@@ -266,8 +266,11 @@ export default function Reports() {
                  </div>
                  <div className="divide-y divide-white/[0.06] relative">
                  {results.map((r, i) => {
-                   const score = r.infra_score || 0;
-                   const scoreColor = score >= 75 ? "text-[#2FE0A8] bg-[#2FE0A8]/10 border-[#2FE0A8]/25" : score >= 50 ? "text-[#7BD9F0] bg-[#7BD9F0]/10 border-[#7BD9F0]/25" : score >= 30 ? "text-[#FFB05A] bg-[#FFB05A]/10 border-[#FFB05A]/25" : "text-[#FF7A6E] bg-[#FF7A6E]/10 border-[#FF7A6E]/25";
+                   // P0.2 — replaced infra_score badge with verification status
+                   // (payment-specific honest signal, not a multi-vertical composite).
+                   const vs = r.verification_status || "estimated";
+                   const vsLabel = vs === "verified" ? "Verified" : vs === "pending_verification" ? "Provisional" : "Estimated";
+                   const scoreColor = vs === "verified" ? "text-[#2FE0A8] bg-[#2FE0A8]/10 border-[#2FE0A8]/25" : vs === "pending_verification" ? "text-[#7BD9F0] bg-[#7BD9F0]/10 border-[#7BD9F0]/25" : "text-[#FFB05A] bg-[#FFB05A]/10 border-[#FFB05A]/25";
                    return (
                  <Link key={r.id} to={`/Results?id=${r.id}`}>
                  <div className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.04] transition-colors group cursor-pointer">
@@ -281,8 +284,8 @@ export default function Reports() {
                      </div>
                    </div>
                    <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-                     <span className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold tabular-nums ${scoreColor}`}>
-                       {score}<span className="opacity-60">/100</span>
+                     <span className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold ${scoreColor}`}>
+                       {vsLabel}
                      </span>
                      <div className="text-right">
                        <p className="text-sm font-black tabular-nums tracking-tight text-white">€{r.total_savings?.toLocaleString()}<span className="text-white/40 font-normal">/yr</span></p>

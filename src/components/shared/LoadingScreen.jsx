@@ -1,5 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
+
+// P0.5 — cMarkVoltioPng is the primary loading mark. If the remote image
+// fails (CDN outage, 404, network), onError fires and we swap to a clean
+// text-based "C" mark — never a broken-image square. The animation and
+// dimensions are preserved so there is no layout shift.
 
 /**
  * CAMBRA — Loading screen.
@@ -16,6 +21,7 @@ export default function LoadingScreen({
   sublabel = "",
   fullscreen = true,
 }) {
+  const [imgError, setImgError] = useState(false);
   return (
     <div
       role="status"
@@ -68,18 +74,36 @@ export default function LoadingScreen({
             animation: "cambra-ping 2s cubic-bezier(0,0,0.2,1) infinite",
           }}
         />
-        <img
-          src={BRAND_ASSETS.cMarkVoltioPng}
-          alt="CAMBRA"
-          width={34}
-          height={34}
-          className="relative h-[34px] w-[34px]"
-          style={{
-            filter: "drop-shadow(0 0 16px rgba(91,76,245,0.65))",
-            animation: "cambra-pulse 2s ease-in-out infinite",
-          }}
-          draggable={false}
-        />
+        {imgError ? (
+          <span
+            aria-label="CAMBRA"
+            className="relative flex items-center justify-center h-[34px] w-[34px] rounded-full"
+            style={{
+              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+              fontWeight: 900,
+              fontSize: 22,
+              color: "#8B7BFF",
+              filter: "drop-shadow(0 0 16px rgba(91,76,245,0.65))",
+              animation: "cambra-pulse 2s ease-in-out infinite",
+            }}
+          >
+            C
+          </span>
+        ) : (
+          <img
+            src={BRAND_ASSETS.cMarkVoltioPng}
+            alt="CAMBRA"
+            width={34}
+            height={34}
+            className="relative h-[34px] w-[34px]"
+            style={{
+              filter: "drop-shadow(0 0 16px rgba(91,76,245,0.65))",
+              animation: "cambra-pulse 2s ease-in-out infinite",
+            }}
+            draggable={false}
+            onError={() => setImgError(true)}
+          />
+        )}
       </div>
 
       {/* Wordmark */}

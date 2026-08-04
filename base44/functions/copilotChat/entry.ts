@@ -9,31 +9,36 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // / HowItWorks / Terms pages. When those pages change, update this block.
 const CAMBRA_KNOWLEDGE = `
 ABOUT CAMBRA
-- CAMBRA GLOBAL (SASU, SIREN 105 452 916, France) — economic infrastructure for independent commerce brands.
-- Tagline: "Efficient infrastructure for independent commerce."
-- Mission: recover margin brands lose on payments, shipping, SaaS and banking, by pooling their volume and negotiating collectively.
+- CAMBRA GLOBAL (SASU, SIREN 105 452 916, France) — card payment cost intelligence for independent commerce.
+- Mission: recover the margin brands lose on card payment processing — online and in-store.
 
 WHAT USERS GET
-1. Free infrastructure audit (Analyzer) — 5 minutes, no card. Scores payments, shipping, SaaS.
-2. Real network benchmarks — how their rates compare to similar brands.
+1. Free card payment cost audit (Analyzer) — 60 seconds, no card, no connection needed.
+2. Real benchmarks — how the merchant's effective rate compares to similar European brands.
 3. AI recommendations — concrete next actions in euros.
-4. Savings verification + migration (optional recovery service).
+4. Savings verification + recovery (optional recovery service).
+
+CURRENT PRODUCT SCOPE — payments only
+- CAMBRA currently audits online PSP and in-store TPV / card-payment costs.
+- Shipping, SaaS, insurance, telecom, energy, banking and other infrastructure categories are PLANNED FUTURE EXPANSION, not currently available.
+- They are NOT covered by the current Recovery mandate.
+- Never describe those categories as current services. Only mention them as future roadmap when the user explicitly asks about it.
 
 PRICING MODEL — critical to communicate correctly
-- Analyzer: FREE during early access. No credit card.
-- SaaS optimization: FREE (0% fee, savings stay 100% with the brand).
-- Payments & Shipping recovery: 25% of VERIFIED savings, over 24 months.
-- Conditional / no-risk: if we don't recover savings, there is no fee.
-- NEVER quote 25% in isolation — always add "of verified savings, 24 months, no savings = no fee".
+- Analyzer: FREE. No credit card.
+- Recovery: optional. 25% of VERIFIED positive payment savings, over 24 months.
+- No positive verified saving = no fee.
+- Referral activations can reduce the fee down to a 5% floor.
+- NEVER quote 25% in isolation — always add "of verified positive savings, 24 months, no savings = no fee".
 
 HOW IT WORKS (4 steps)
-1. Analyze — quick brand profile + tools used (5 min).
-2. Detect — we identify overpayment across payments, shipping, SaaS.
-3. Verify — connect accounts (read-only) or upload invoices; we prove savings.
-4. Recover — we negotiate with providers, migrate, and track savings monthly.
+1. Analyze — enter GMV, average ticket, provider and country (60 seconds).
+2. Detect — we identify the gap between the effective rate and the benchmark for the cohort.
+3. Verify — connect Stripe (read-only) or upload a TPV statement; we prove the savings.
+4. Recover — we negotiate with the provider, migrate if needed, and track savings monthly.
 
 DATA & SECURITY
-- Read-only access to connected accounts (Stripe, Shopify, shipping providers, etc.).
+- Read-only access to connected accounts (Stripe).
 - Encrypted at rest (AES-256-GCM), never shared with third parties.
 - GDPR-compliant, data controller = CAMBRA GLOBAL SASU.
 
@@ -44,9 +49,9 @@ TPE / IN-STORE TERMINALS
 
 GOOD NEXT ACTIONS TO SUGGEST
 - Run the Analyzer (/Analyzer) — if they haven't done it.
-- Connect tools (/ConnectIntegrations) — to move from estimate to verified.
+- Connect Stripe (/ConnectTools) — to move from estimate to verified.
 - View Results / Dashboard — if they already ran the audit.
-- Sign up (waitlist) — for anonymous visitors ready to recover.
+- Upload a TPV statement — to replace modelled estimate with a measured rate.
 
 TONE
 - Direct, brief, practical. No hype. No jargon.
@@ -108,7 +113,7 @@ function buildFallbackAnswer(question, pageTitle, pageDescription, nextStep) {
     return `Estás en ${pageTitle}. ${pageDescription} Para el TPE, dinos solo lo básico: proveedor, cuántos terminales usas, cuánto pagas al mes, cuánto vendes en tienda y qué comisión te cobran. Siguiente paso recomendado: ${nextStep || 'completa el análisis.'}`;
   }
   if (q.includes('shipping') || q.includes('envío')) {
-    return `Estás en ${pageTitle}. ${pageDescription} Para envíos, comparte tu gasto mensual y número de envíos. Siguiente paso recomendado: ${nextStep || 'continúa con el análisis.'}`;
+    return `Estás en ${pageTitle}. ${pageDescription} CAMBRA actualmente solo analiza costes de pago con tarjeta (online y TPV). Los envíos y la logística son una expansión futura, no un servicio actual. Siguiente paso recomendado: ${nextStep || 'ejecuta el Analyzer.'}`;
   }
   if (q.includes('payment') || q.includes('pago') || q.includes('psp')) {
     return `Estás en ${pageTitle}. ${pageDescription} Para pagos online, comparte proveedor y comisión aproximada. Siguiente paso recomendado: ${nextStep || 'continúa con el análisis.'}`;
@@ -164,7 +169,7 @@ Deno.serve(async (req) => {
     const brandContext = payload?.brandContext || null;
 
     const brandInfo = brandContext
-      ? `\n\nBrand context: ${brandContext.brandName || "Unknown"} (${brandContext.country || "EU"}), category: ${brandContext.category || "unknown"}, infra score: ${brandContext.infraScore ?? "not analyzed yet"}, estimated savings: €${Math.round(brandContext.totalSavings || 0)}/yr, data source: ${brandContext.dataSource || "manual"}.`
+      ? `\n\nBrand context: ${brandContext.brandName || "Unknown"} (${brandContext.country || "EU"}), category: ${brandContext.category || "unknown"}, estimated payment savings: €${Math.round(brandContext.totalSavings || 0)}/yr, data source: ${brandContext.dataSource || "manual"}.`
       : "";
 
     const systemPrompt = `You are Cambra Copilot — the in-app assistant for CAMBRA. You know the product deeply (see knowledge base below) and answer any user question about it: what CAMBRA does, how it works, pricing, security, verticals, and next steps.
@@ -174,7 +179,8 @@ Rules:
 - Be direct, brief, practical. No hype, no jargon, no rambling. Short sentences.
 - Ground every answer in the knowledge base — never invent features, prices, or claims.
 - Always end with one concrete next action (e.g. "Run the Analyzer", "Connect your Stripe", "Upload an invoice").
-- If the user asks pricing: quote the FULL rule — "Analyzer is free · SaaS savings 0% fee · Payments & Shipping = 25% of verified savings over 24 months, no savings no fee". Never quote 25% alone.
+- If the user asks pricing: quote the FULL rule — "Analyzer is free · Recovery = 25% of verified positive savings over 24 months, no savings = no fee · referral floor 5%". Never quote 25% alone.
+- NEVER offer shipping, SaaS, insurance, telecom, energy, banking or financing as currently available services. They are future roadmap only.
 - If unsure, say so and point to /Contact or /Help.
 
 ${CAMBRA_KNOWLEDGE}
