@@ -26,7 +26,7 @@ const itemMotion = {
 };
 
 function NavRow({ item, index }) {
-  const { Icon, label, sub, href } = item;
+  const { Icon, label, href } = item;
   return (
     <motion.div custom={index} variants={itemMotion} initial="hidden" animate="show">
       <Link
@@ -49,11 +49,6 @@ function NavRow({ item, index }) {
           <p className="text-[14px] font-semibold text-white leading-tight tracking-[-0.01em]">
             {label}
           </p>
-          {sub && (
-            <p className="text-[11px] text-white/45 mt-0.5 leading-tight">
-              {sub}
-            </p>
-          )}
         </div>
 
         {/* Subtle arrow on hover */}
