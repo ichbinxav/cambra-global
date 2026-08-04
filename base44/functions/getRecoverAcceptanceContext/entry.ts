@@ -1,4 +1,4 @@
-// getRecoverAcceptanceContext — RECOVER-1 (2026-08-03).
+// getRecoverAcceptanceContext — RECOVER-1 (2026-08-03). RECOVER-3-FIX (2026-08-04): serves mandate_copy.
 //
 // READ-ONLY. Everything the acceptance popup needs: is this merchant eligible,
 // at what success fee, against which verified baseline, and the exact terms hash

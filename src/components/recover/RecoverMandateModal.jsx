@@ -118,7 +118,10 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
               <label className="mt-4 flex items-start gap-2.5 cursor-pointer">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />
                 <span className="text-[12.5px] text-white/70 leading-relaxed">
-                  I confirm I can legally bind {context.legal_entity_name || "my business"} and I accept these terms.
+                  {/* RECOVER-3-FIX — the exact server-provided contractual checkbox text
+                      (same string the PDF prints), with the legacy EN fallback. */}
+                  {context.mandate_copy?.checkbox ||
+                    `I confirm I can legally bind ${context.legal_entity_name || "my business"} and I accept these terms.`}
                 </span>
               </label>
 

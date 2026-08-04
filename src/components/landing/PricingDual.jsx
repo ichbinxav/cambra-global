@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, Check, Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionHeading from "@/components/landing/SectionHeading";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * Pricing — three-tier edition (Addendum R1, 2026-07-12).
@@ -22,19 +23,10 @@ import SectionHeading from "@/components/landing/SectionHeading";
  * The founding-cohort promise is TEXTUAL only. The Monitoring CTA points at
  * the analyzer (same as Analyze) — the actual join-monitoring flow ships later.
  */
-const FREE_FEATURES = [
-  "Anonymous 60-second audit",
-  "Verified analysis via Stripe Connect",
-  "Comparison with public prices",
-  "Your savings estimate in euros",
-];
-
-const RECOVERY_FEATURES = [
-  "Comparison vs. the minimum allowed",
-  "Payments rate negotiation",
-  "Savings verification & migration",
-  "We win when you do",
-];
+// i18n keys — resolved with t() inside the component so the cards follow
+// the active language on both the Landing and the /Pricing page.
+const FREE_FEATURE_KEYS = ["pd_t1_f1", "pd_t1_f2", "pd_t1_f3", "pd_t1_f4"];
+const RECOVERY_FEATURE_KEYS = ["pd_t2_f1", "pd_t2_f2", "pd_t2_f3", "pd_t2_f4"];
 
 function Eyebrow({ children, accent = "ink" }) {
   const color = accent === "voltio" ? "var(--voltio)" : "var(--gris-1)";
@@ -188,6 +180,7 @@ function Tier({
 }
 
 export default function PricingDual() {
+  const { t } = useTranslation();
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
       {/* ambient halo */}
@@ -208,14 +201,14 @@ export default function PricingDual() {
 
       <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         {/* Header */}
-        <SectionHeading eyebrow="Pricing" className="mb-6">
-          Free until we
+        <SectionHeading eyebrow={t("pd_eyebrow")} className="mb-6">
+          {t("pd_h2_pre")}
           <br />
-          <span className="kw">save you money.</span>
+          <span className="kw">{t("pd_h2_kw")}</span>
         </SectionHeading>
         <div className="text-center mb-12 sm:mb-14">
           <p className="text-[13px] sm:text-[14px] max-w-lg mx-auto" style={{ color: "var(--gris-1)" }}>
-            Analyze for free. Pay only when we actually recover margin — 25% of verified payment savings.
+            {t("pd_sub")}
           </p>
         </div>
 
@@ -260,16 +253,16 @@ export default function PricingDual() {
               style={{ color: "var(--gris-2)" }}
               aria-hidden
             >
-              Step 1
+              {t("pd_step1")}
             </span>
             <Tier
-              eyebrow="Analyze"
+              eyebrow={t("pd_t1_eyebrow")}
               eyebrowAccent="ink"
-              price="Free"
+              price={t("pd_t1_price")}
               priceGradient
-              caption="Always · No card"
-              features={FREE_FEATURES}
-              ctaText="Run audit"
+              caption={t("pd_t1_caption")}
+              features={FREE_FEATURE_KEYS.map((k) => t(k))}
+              ctaText={t("pd_t1_cta")}
               ctaPrimary={false}
             />
           </div>
@@ -293,7 +286,7 @@ export default function PricingDual() {
                 }}
               >
                 <Sparkles size={11} strokeWidth={2.5} />
-                Most popular
+                {t("pd_popular")}
               </span>
             </motion.div>
 
@@ -336,17 +329,17 @@ export default function PricingDual() {
                 style={{ color: "var(--voltio)" }}
                 aria-hidden
               >
-                Step 2
+                {t("pd_step2")}
               </span>
               <Tier
-                eyebrow="Recover"
+                eyebrow={t("pd_t2_eyebrow")}
                 eyebrowAccent="voltio"
                 price="25%"
-                priceSuffix="of verified payment savings · 24-month agreement"
+                priceSuffix={t("pd_t2_suffix")}
                 priceGradient
-                caption="No savings, no fee"
-                features={RECOVERY_FEATURES}
-                ctaText="Start recovering"
+                caption={t("pd_t2_caption")}
+                features={RECOVERY_FEATURE_KEYS.map((k) => t(k))}
+                ctaText={t("pd_t2_cta")}
                 ctaPrimary={true}
               />
             </div>
@@ -355,7 +348,7 @@ export default function PricingDual() {
 
         {/* Tiny footnote */}
         <p className="mt-6 text-center text-[11px]" style={{ color: "var(--gris-2)" }}>
-          Cancel anytime · No credit card required · 5-minute setup
+          {t("pd_footnote")}
         </p>
       </div>
     </section>
