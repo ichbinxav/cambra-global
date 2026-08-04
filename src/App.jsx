@@ -79,6 +79,7 @@ import Contact from '@/pages/Contact';
 import Help from '@/pages/Help';
 import HelpCategory from '@/pages/HelpCategory';
 const AdminInvoices = lazy(() => import('@/pages/admin/AdminInvoices'));
+const AdminRecoverBilling = lazy(() => import('@/pages/admin/AdminRecoverBilling'));
 const AdminWaitlist = lazy(() => import('@/pages/admin/AdminWaitlist'));
 import Invoices from '@/pages/Invoices';
 import Vault from '@/pages/Vault';
@@ -292,6 +293,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/activation" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/activation/:id" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/invoices" element={withBoundary(<AdminInvoices />)} />
+          <Route path="/admin/recover-billing" element={withBoundary(<AdminRecoverBilling />)} />
           <Route path="/admin/waitlist" element={withBoundary(<AdminWaitlist />)} />
         </Route>
         <Route path="*" element={<PageNotFound />} />

@@ -21,6 +21,7 @@ const NAV = [
   { path: "/admin/deals", label: "Deals", icon: Handshake },
   { path: "/admin/providers", label: "Providers", icon: Building2 },
   { path: "/admin/revenue", label: "Revenue", icon: BarChart2 },
+  { path: "/admin/recover-billing", label: "Recover Billing", icon: FileText },
   { path: "/admin/contracts", label: "Contracts", icon: FileCheck },
   { path: "/admin/benchmarks", label: "Benchmarks", icon: Sliders },
   { path: "/admin/recommendations", label: "Recommendations", icon: Lightbulb },
