@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import LoadingScreen from "@/components/shared/LoadingScreen";
+import { isSameOriginUrl } from "@/lib/safeRedirect";
 
 /* AuthRedirect — entry point that hands off to Base44 login.
    Honors:
@@ -18,7 +19,7 @@ export default function AuthRedirect() {
       const fromStorage = sessionStorage.getItem("cambra_redirect_after_login");
       const candidate = fromQuery || fromStorage;
       if (candidate) {
-        const safe = sameOriginUrl(candidate);
+        const safe = isSameOriginUrl(candidate, window.location.origin);
         if (safe) target = safe;
       }
     } catch {}
@@ -33,13 +34,5 @@ export default function AuthRedirect() {
   );
 }
 
-function sameOriginUrl(value) {
-  try {
-    const origin = window.location.origin;
-    if (value.startsWith("/")) return origin + value;
-    const u = new URL(value);
-    return u.origin === origin ? u.toString() : null;
-  } catch {
-    return null;
-  }
-}
+/* Open-redirect protection now lives in src/lib/safeRedirect.js
+   (isSameOriginUrl) and is unit-tested in safeRedirect.test.js. */

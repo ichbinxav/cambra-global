@@ -44,7 +44,7 @@ to the linked repo is picked up by the Base44 builder.
 | `npm run preview`         | Serve the production build locally                        |
 | `npm run lint`            | ESLint (errors only)                                      |
 | `npm run lint:fix`        | ESLint with auto-fix (imports cleanup, safe transforms)   |
-| `npm run typecheck`       | TypeScript check against `jsconfig.json` — currently reports 554 preexisting errors (see `src/docs/TYPECHECK_NOISE.md`); the Vite build does not run this check |
+| `npm run typecheck`       | TypeScript check against `jsconfig.json` — currently reports ~487 preexisting errors (see `src/docs/TYPECHECK_NOISE.md`); the Vite build does not run this check |
 | `npm run typecheck:noise` | Same check, prefixed with the known-noise warning         |
 | `npm test`                | Vitest, single run                                        |
 | `npm run test:watch`      | Vitest, watch mode                                        |
@@ -86,7 +86,12 @@ every stored integration; do not rotate without a migration plan.
 │                                                                       │
 │  base44/entities/*.jsonc         JSON-schema data model + RLS         │
 │  base44/functions/*/entry.ts     HTTP handlers (Deno.serve)           │
-│  base44/agents/*.jsonc           In-app AI agents (with approvals)    │
+│                                                                       │
+│  NOTE: there is no base44/agents/*.jsonc directory. The "agent"       │
+│  layer is implemented entirely as backend functions (38+ *Agent +     │
+│  orchestrator entry.ts files) that call InvokeLLM and write to the     │
+│  AgentRun / AgentTask / Approval entities. No declarative Base44      │
+│  agent configs exist. See PRODUCTION_SURFACE_INVENTORY.md §5.         │
 │                                                                       │
 │  Key subsystems (payments-only product):                              │
 │    • Payments gap engine — anonymous form analysis                    │
@@ -97,9 +102,11 @@ every stored integration; do not rotate without a migration plan.
 │    • Benchmark engine — PaymentsRateTable-derived cohort curves       │
 │      (src/lib/paymentsBenchmark.js); modeled curves are labeled as    │
 │      modeled, never presented as empirical.                           │
-│    • Agent orchestration — recommendation, spend intelligence, lead   │
-│      discovery, outreach. Buy-side agents require Approval before     │
-│      external action (risk_level ≥ 2).                                │
+│    • AI orchestrators (backend functions, not declarative agents) —  │
+│      recommendation, spend intelligence, lead discovery, outreach.     │
+│      Buy-side orchestrators require an Approval row before any        │
+│      external action (risk_level ≥ 2). Payments/contracts are         │
+│      hard-blocked (never automated).                                 │
 └───────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -202,12 +209,27 @@ Two categories remain that only real data can close:
 
 ### Known dependency vulnerabilities
 
-`npm audit` currently reports 7 remaining advisories (1 critical, 1 high, 5
-moderate). All 7 live in **dev-only** paths (`vite` / `vitest` / `esbuild` and
-their transitive deps) and never ship to the production bundle. Fixing them
-requires bumping `vitest` from `^2.1.9` to `^4.x`, which is a major-version
-breaking change (test runner API surface differs). Deferred as tracked debt —
-run `npm audit fix --force` once the test suite is ported to Vitest 4.
+> **Do not trust the numbers below blindly.** Run `npm audit` and
+> `npm audit --omit=dev` in your own environment and compare. The counts
+> change with every `npm install` and the advisory database updates
+> continuously. Previous versions of this README claimed all
+> vulnerabilities were dev-only — that claim was **not verified against
+> `npm audit --omit=dev`** and has been removed.
+
+As of the last manual audit, advisories were found in both dev and
+production trees. The dev-side advisories (vite/vitest/esbuild) do not
+ship to the production bundle. The production-side advisories (DOMPurify,
+PostCSS, React Router, Socket.IO parser) may enter the bundle depending
+on the import graph — verify with `npm audit --omit=dev` and trace each
+advisory's dependency path before deciding it is inert.
+
+To get the current, authoritative status:
+```bash
+npm audit                # full tree
+npm audit --omit=dev     # production only
+```
+
+Do **not** run `npm audit fix --force` without reviewing breaking changes.
 
 ### Support
 

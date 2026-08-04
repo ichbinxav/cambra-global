@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { safeReturnUrl } from "@/lib/safeRedirect";
 import LoginGateBenefits from "@/components/auth/LoginGateBenefits";
 
 /* CAMBRA — Pre-login gate.
@@ -18,10 +19,10 @@ export default function LoginGate() {
     try {
       const params = new URLSearchParams(window.location.search);
       const fromQuery = params.get("next");
-      if (fromQuery) return safeAbsoluteUrl(fromQuery);
+      if (fromQuery) return safeReturnUrl(fromQuery, window.location.origin);
 
       const stored = sessionStorage.getItem("cambra_redirect_after_login");
-      if (stored) return safeAbsoluteUrl(stored);
+      if (stored) return safeReturnUrl(stored, window.location.origin);
     } catch {}
     return `${window.location.origin}/Dashboard`;
   }, []);
@@ -182,16 +183,5 @@ export default function LoginGate() {
   );
 }
 
-/* Only allow same-origin absolute URLs or absolute paths.
-   Protects against open-redirect via crafted ?next= values. */
-function safeAbsoluteUrl(value) {
-  try {
-    const origin = window.location.origin;
-    if (value.startsWith("/")) return origin + value;
-    const u = new URL(value);
-    if (u.origin === origin) return u.toString();
-    return `${origin}/Dashboard`;
-  } catch {
-    return `${window.location.origin}/Dashboard`;
-  }
-}
+/* Open-redirect protection now lives in src/lib/safeRedirect.js
+   (safeReturnUrl) and is unit-tested in safeRedirect.test.js. */

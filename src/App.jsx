@@ -16,13 +16,17 @@ import Onboarding from '@/pages/Onboarding.jsx';
 // components. The legacy multi-vertical Analyzer / Results / AnalyzerTeaser
 // were deleted with the entire wizard + score engine consumer surface.
 import PaymentsAnalyzer from '@/pages/PaymentsAnalyzer';
-import PaymentsResults from '@/pages/PaymentsResults';
+// FIX 13b — /Results made lazy: it pulls 20+ paymentsResults sub-components
+// into a dedicated chunk instead of the initial bundle. The Suspense +
+// LazyFallback + ErrorBoundary pattern is identical to Dashboard/Reports.
+const PaymentsResults = lazy(() => import('@/pages/PaymentsResults'));
 import LoginGate from '@/pages/LoginGate';
 import HealthCheck from '@/pages/HealthCheck.jsx';
 import CookieConsent from '@/components/shared/CookieConsent';
 // FIX 13 — Lazy load heavy pages (Dashboard + ConnectTools + heavy admin pages).
-// Note: /Results was previously lazy (imported Results.jsx). Post-cutover
-// /Results renders PaymentsResults directly (eager) — it's small.
+// FIX 13b — /Results now also lazy (PaymentsResults). Its 20+ sub-components
+// (PaymentsGapCard, FeeBreakdownCard, RecoveryRoadmap, PeerBenchmark, …)
+// no longer ship in the initial chunk. jspdf was already dynamic (BACKLOG-1 T4).
 const Dashboard     = lazy(() => import('@/pages/Dashboard'));
 const ConnectTools  = lazy(() => import('@/pages/ConnectTools'));
 const Reports = lazy(() => import('@/pages/Reports'));
