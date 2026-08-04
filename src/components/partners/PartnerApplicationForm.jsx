@@ -77,42 +77,45 @@ export default function PartnerApplicationForm() {
     }
   };
 
-  const inputStyle = { background: "#FFFFFF", border: "1px solid var(--linea)", color: "var(--ink)" };
+  const inputStyle = { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" };
+  const labelStyle = { color: "rgba(255,255,255,0.65)" };
 
   if (success) {
     return (
-      <div className="text-center py-12 px-6" style={{ background: "#FFFFFF", border: "1px solid var(--linea)", borderRadius: 14, boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}>
-        <CheckCircle2 className="w-10 h-10 mx-auto mb-4" style={{ color: "var(--menta-dark)" }} />
-        <p className="text-base font-semibold" style={{ color: "var(--ink)" }}>{t("pt_form_success")}</p>
+      <div className="relative overflow-hidden text-center py-14 px-6" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: 16 }}>
+        <span aria-hidden className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "linear-gradient(90deg, var(--voltio), var(--cian))" }} />
+        <CheckCircle2 className="w-12 h-12 mx-auto mb-4" style={{ color: "var(--menta)" }} />
+        <p className="text-lg font-semibold text-white">{t("pt_form_success")}</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-6 sm:p-8" style={{ background: "#FFFFFF", border: "1px solid var(--linea)", borderRadius: 14, boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}>
+    <form onSubmit={handleSubmit} className="relative overflow-hidden space-y-4 p-6 sm:p-8" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: 16 }}>
+      <span aria-hidden className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "linear-gradient(90deg, var(--voltio), var(--cian))" }} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label className="block mb-2" style={{ color: "var(--ink)" }}>{t("pt_form_name")} *</Label>
+          <Label className="block mb-2" style={labelStyle}>{t("pt_form_name")} *</Label>
           <Input name="name" value={form.name} onChange={handleChange} required className="h-11" style={inputStyle} />
         </div>
         <div>
-          <Label className="block mb-2" style={{ color: "var(--ink)" }}>{t("pt_form_email")} *</Label>
+          <Label className="block mb-2" style={labelStyle}>{t("pt_form_email")} *</Label>
           <Input name="email" type="email" value={form.email} onChange={handleChange} required className="h-11" style={inputStyle} />
         </div>
         <div>
-          <Label className="block mb-2" style={{ color: "var(--ink)" }}>{t("pt_form_org")} *</Label>
+          <Label className="block mb-2" style={labelStyle}>{t("pt_form_org")} *</Label>
           <Input name="organisation" value={form.organisation} onChange={handleChange} required className="h-11" style={inputStyle} />
         </div>
         <div>
-          <Label className="block mb-2" style={{ color: "var(--ink)" }}>{t("pt_form_role")} *</Label>
+          <Label className="block mb-2" style={labelStyle}>{t("pt_form_role")} *</Label>
           <Input name="role" value={form.role} onChange={handleChange} required className="h-11" style={inputStyle} />
         </div>
         <div>
-          <Label className="block mb-2" style={{ color: "var(--ink)" }}>{t("pt_form_country")} *</Label>
+          <Label className="block mb-2" style={labelStyle}>{t("pt_form_country")} *</Label>
           <Input name="country" value={form.country} onChange={handleChange} required className="h-11" style={inputStyle} />
         </div>
         <div>
-          <Label className="block mb-2" style={{ color: "var(--ink)" }}>{t("pt_form_type")} *</Label>
+          <Label className="block mb-2" style={labelStyle}>{t("pt_form_type")} *</Label>
           <select
             name="partner_type"
             value={form.partner_type}
@@ -123,14 +126,14 @@ export default function PartnerApplicationForm() {
           >
             <option value="" disabled>—</option>
             {partnerTypes.map((pt) => (
-              <option key={pt.value} value={pt.value}>{pt.label}</option>
+              <option key={pt.value} value={pt.value} style={{ color: "#111" }}>{pt.label}</option>
             ))}
           </select>
         </div>
       </div>
 
       <div>
-        <Label className="block mb-2" style={{ color: "var(--ink)" }}>{t("pt_form_support")} *</Label>
+        <Label className="block mb-2" style={labelStyle}>{t("pt_form_support")} *</Label>
         <textarea
           name="support_description"
           value={form.support_description}
@@ -144,17 +147,17 @@ export default function PartnerApplicationForm() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label className="block mb-2" style={{ color: "var(--ink)" }}>{t("pt_form_website")}</Label>
+          <Label className="block mb-2" style={labelStyle}>{t("pt_form_website")}</Label>
           <Input name="website" value={form.website} onChange={handleChange} className="h-11" style={inputStyle} />
         </div>
         <div>
-          <Label className="block mb-2" style={{ color: "var(--ink)" }}>{t("pt_form_count")}</Label>
+          <Label className="block mb-2" style={labelStyle}>{t("pt_form_count")}</Label>
           <Input name="business_count" value={form.business_count} onChange={handleChange} className="h-11" style={inputStyle} />
         </div>
       </div>
 
       <div>
-        <Label className="block mb-2" style={{ color: "var(--ink)" }}>{t("pt_form_context")}</Label>
+        <Label className="block mb-2" style={labelStyle}>{t("pt_form_context")}</Label>
         <textarea
           name="additional_context"
           value={form.additional_context}
@@ -168,8 +171,8 @@ export default function PartnerApplicationForm() {
       <Button
         type="submit"
         disabled={submitting}
-        className="w-full h-12 rounded-full font-bold gap-2 text-white hover:opacity-90"
-        style={{ background: "var(--ink)" }}
+        className="w-full h-12 rounded-full font-bold gap-2 text-white transition-transform hover:-translate-y-0.5 disabled:opacity-60"
+        style={{ background: "var(--g-voltio)", boxShadow: "0 8px 24px rgba(91,76,245,.35)" }}
       >
         {submitting ? (
           <>{t("pt_form_submit")}… <Loader2 className="w-4 h-4 animate-spin" /></>
