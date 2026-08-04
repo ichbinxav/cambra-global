@@ -12,6 +12,7 @@ import { BRAND_ASSETS } from "@/lib/brandAssets";
 export default function PublicFooter() {
   const { t } = useTranslation();
   const links = [
+    { to: "/Partners", label: t("footer_partners") },
     { to: "/ForProviders", label: t("footer_for_providers") },
     { to: "/Security", label: "Security" },
     { to: "/Privacy", label: t("footer_privacy") },

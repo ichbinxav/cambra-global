@@ -78,7 +78,13 @@ Deno.serve(async (req) => {
 
     const name = String(body?.name || '').trim();
     const email = String(body?.email || '').trim().toLowerCase();
-    const message = String(body?.message || '').trim();
+    // PARTNERS-1 — topic routing. source_page is ALWAYS server-side determined
+    // (never accepted from the browser) so a client cannot fake attribution.
+    const VALID_TOPICS = ['general_contact', 'data_request', 'partner_application'];
+    const topic = String(body?.topic || 'general_contact').trim();
+    if (!VALID_TOPICS.includes(topic)) {
+      return Response.json({ ok: false, error: 'invalid_topic' }, { status: 400 });
+    }
 
     if (!name || name.length > 120) {
       return Response.json({ ok: false, error: 'invalid_name' }, { status: 400 });
@@ -86,16 +92,83 @@ Deno.serve(async (req) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) {
       return Response.json({ ok: false, error: 'invalid_email' }, { status: 400 });
     }
-    if (!message || message.length > 4000) {
-      return Response.json({ ok: false, error: 'invalid_message' }, { status: 400 });
+
+    let sourcePage: string;
+    let notes: string;
+    let emailSubject: string;
+    let emailBody: string;
+
+    if (topic === 'partner_application') {
+      // PARTNERS-1 — structured partner application with additional required
+      // fields. Optional fields are length-bounded to stay within MAX_BODY_BYTES.
+      const organisation = String(body?.organisation || '').trim();
+      const role = String(body?.role || '').trim();
+      const country = String(body?.country || '').trim();
+      const partnerType = String(body?.partner_type || '').trim();
+      const supportDescription = String(body?.support_description || '').trim();
+      const website = String(body?.website || '').trim();
+      const businessCount = String(body?.business_count || '').trim();
+      const additionalContext = String(body?.additional_context || '').trim();
+
+      const VALID_PARTNER_TYPES = ['adviser', 'agency', 'association', 'finance', 'accelerator', 'other'];
+      if (!organisation || organisation.length > 200) {
+        return Response.json({ ok: false, error: 'invalid_organisation' }, { status: 400 });
+      }
+      if (!role || role.length > 120) {
+        return Response.json({ ok: false, error: 'invalid_role' }, { status: 400 });
+      }
+      if (!country || country.length > 100) {
+        return Response.json({ ok: false, error: 'invalid_country' }, { status: 400 });
+      }
+      if (!VALID_PARTNER_TYPES.includes(partnerType)) {
+        return Response.json({ ok: false, error: 'invalid_partner_type' }, { status: 400 });
+      }
+      if (!supportDescription || supportDescription.length > 4000) {
+        return Response.json({ ok: false, error: 'invalid_support_description' }, { status: 400 });
+      }
+      if (website.length > 500) {
+        return Response.json({ ok: false, error: 'invalid_website' }, { status: 400 });
+      }
+      if (businessCount.length > 50) {
+        return Response.json({ ok: false, error: 'invalid_business_count' }, { status: 400 });
+      }
+      if (additionalContext.length > 2000) {
+        return Response.json({ ok: false, error: 'invalid_additional_context' }, { status: 400 });
+      }
+
+      sourcePage = '/Partners';
+      notes = [
+        'PARTNER APPLICATION',
+        `Organisation: ${organisation}`,
+        `Role: ${role}`,
+        `Country: ${country}`,
+        `Partner type: ${partnerType}`,
+        '',
+        `How they support: ${supportDescription}`,
+        website ? `Website: ${website}` : '',
+        businessCount ? `Businesses supported: ${businessCount}` : '',
+        additionalContext ? `Additional context: ${additionalContext}` : '',
+      ].filter(Boolean).join('\n');
+      emailSubject = `Partner application — ${organisation}`;
+      emailBody = `Partner application from ${name} <${email}>\nOrganisation: ${organisation}\nRole: ${role}\nCountry: ${country}\nPartner type: ${partnerType}\n\n${supportDescription}\n${website ? `\nWebsite: ${website}` : ''}${businessCount ? `\nBusinesses supported: ${businessCount}` : ''}${additionalContext ? `\nAdditional context: ${additionalContext}` : ''}\n\nLead ID: `;
+    } else {
+      // general_contact + data_request — existing behaviour.
+      const message = String(body?.message || '').trim();
+      if (!message || message.length > 4000) {
+        return Response.json({ ok: false, error: 'invalid_message' }, { status: 400 });
+      }
+      sourcePage = '/Contact';
+      notes = `Contact form · Name: ${name}\n\n${message}`;
+      emailSubject = `Contact form — ${name}`;
+      emailBody = `From: ${name} <${email}>\n\n${message}\n\nLead ID: `;
     }
 
     // Persist FIRST — success is only reported after the row exists.
     const lead = await base44.asServiceRole.entities.Lead.create({
       email,
       consent: true, // explicit form submission
-      source_page: '/Contact',
-      notes: `Contact form · Name: ${name}\n\n${message}`,
+      source_page: sourcePage,
+      notes,
       // EMAIL-1 T2 — language the visitor was reading the site in, so the
       // human reply (and any future automated one) starts in their language.
       locale: normalizeLocale(body?.locale),
@@ -113,8 +186,8 @@ Deno.serve(async (req) => {
             from: Deno.env.get('RESEND_FROM') || 'CAMBRA <hello@contact.cambra.global>',
             to: adminEmail,
             reply_to: email,
-            subject: `Contact form — ${name}`,
-            text: `From: ${name} <${email}>\n\n${message}\n\nLead ID: ${lead.id}`,
+            subject: emailSubject,
+            text: emailBody + lead.id,
           }),
         });
       } catch (e) {

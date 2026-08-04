@@ -76,6 +76,7 @@ import Pricing from '@/pages/Pricing.jsx';
 // /ForProviders REACTIVADO 2026-07-12 (post-M4) — página viva payments-only
 // (dos niveles Listed/Partner). Ver src/pages/ForProviders.jsx.
 import ForProviders from '@/pages/ForProviders';
+import Partners from '@/pages/Partners';
 import HowItWorks from '@/pages/HowItWorks';
 import Security from '@/pages/Security';
 import Testimonials from '@/pages/Testimonials';
@@ -233,6 +234,9 @@ const AuthenticatedApp = () => {
         <Route path="/ForProviders" element={withBoundary(<ForProviders />)} />
         <Route path="/forproviders" element={<Navigate to="/ForProviders" replace />} />
         <Route path="/for-providers" element={<Navigate to="/ForProviders" replace />} />
+        <Route path="/Partners" element={withBoundary(<Partners />)} />
+        <Route path="/partners" element={<Navigate to="/Partners" replace />} />
+        <Route path="/become-a-partner" element={<Navigate to="/Partners#apply" replace />} />
         <Route path="/Developers" element={<Navigate to="/" replace />} />
         <Route path="/developers" element={<Navigate to="/" replace />} />
         <Route path="/Developers/MCP" element={<Navigate to="/" replace />} />

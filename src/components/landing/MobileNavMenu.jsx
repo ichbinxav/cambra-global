@@ -91,6 +91,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
       label: t("nav_group_company"),
       items: [
         { label: t("nav_item_referral"), sub: t("nav_item_referral_sub"), href: "/Referrals", Icon: UserPlus },
+        { label: t("nav_item_partners"), sub: t("nav_item_partners_sub"), href: "/Partners", Icon: Handshake },
         { label: t("nav_item_providers"), sub: t("nav_item_providers_sub"), href: "/ForProviders", Icon: Handshake },
         { label: t("nav_item_contact"), sub: t("nav_item_contact_sub"), href: "/Contact", Icon: MessagesSquare },
         { label: t("nav_item_help"), sub: t("nav_item_help_sub"), href: "/Help", Icon: LifeBuoy },

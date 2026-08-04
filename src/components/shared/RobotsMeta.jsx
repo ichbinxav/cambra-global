@@ -33,6 +33,7 @@ const PUBLIC_PREFIXES = [
   "/contact",
   "/forproviders",
   "/for-providers",
+  "/partners",
   "/security",
   "/help",
   "/privacy",
