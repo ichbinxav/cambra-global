@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Handshake, TrendingUp, HeartHandshake, LifeBuoy, FileText, BadgeCheck, BookOpen, Briefcase, Store, Users, Search, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, Handshake, TrendingUp, HeartHandshake, LifeBuoy, FileText, BadgeCheck, BookOpen, Briefcase, Store, Users, Search, ShieldCheck, Zap, Calculator, Rocket, Check, X } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
 import SectionLabel from "@/components/shared/SectionLabel";
@@ -34,18 +34,30 @@ const STEPS = [
   { titleKey: "pt_s5_step4", bodyKey: "pt_s5_step4_body" },
 ];
 
-const WHO_ICONS = [Briefcase, Store, Users];
+const WHO_ICONS = [Briefcase, Store, Users, Calculator, Rocket];
 const WHO_FOR = [
   { titleKey: "pt_s3_c1_title", bodyKey: "pt_s3_c1_body" },
   { titleKey: "pt_s3_c2_title", bodyKey: "pt_s3_c2_body" },
   { titleKey: "pt_s3_c3_title", bodyKey: "pt_s3_c3_body" },
+  { titleKey: "pt_s3_c4_title", bodyKey: "pt_s3_c4_body" },
+  { titleKey: "pt_s3_c5_title", bodyKey: "pt_s3_c5_body" },
 ];
 
-const STATS = [
-  { value: "25%", labelKey: "pt_stat_fee" },
-  { value: "24", labelKey: "pt_stat_months" },
-  { value: "0€", labelKey: "pt_stat_upfront" },
+// Definition principle cards — replace the old 25% / 24 / 0€ stats strip.
+// These establish the non-commercial nature of the programme immediately.
+const PRINCIPLE_ICONS = [ShieldCheck, Users, BadgeCheck];
+const PRINCIPLES = [
+  { titleKey: "pt_s2_p1_title", bodyKey: "pt_s2_p1_body" },
+  { titleKey: "pt_s2_p2_title", bodyKey: "pt_s2_p2_body" },
+  { titleKey: "pt_s2_p3_title", bodyKey: "pt_s2_p3_body" },
 ];
+
+// "Simple by design" — the six things the programme is NOT.
+const SIMPLE_ITEMS = ["pt_s6_p1", "pt_s6_p2", "pt_s6_p3", "pt_s6_p4", "pt_s6_p5", "pt_s6_p6"];
+
+// Programme limits — what a Partner does / does not do.
+const PARTNER_DO = ["pt_princ_a_1", "pt_princ_a_2", "pt_princ_a_3", "pt_princ_a_4", "pt_princ_a_5", "pt_princ_a_6", "pt_princ_a_7"];
+const PARTNER_DONT = ["pt_princ_b_1", "pt_princ_b_2", "pt_princ_b_3", "pt_princ_b_4", "pt_princ_b_5", "pt_princ_b_6", "pt_princ_b_7"];
 
 export default function Partners() {
   const { t, lang } = useTranslation();
@@ -83,27 +95,46 @@ export default function Partners() {
         </div>
       </PublicPageHero>
 
-      {/* ── STATS STRIP ── */}
-      <section className="px-5 -mt-4 sm:-mt-6 relative z-10">
-        <div className="max-w-3xl mx-auto grid grid-cols-3 gap-3">
-          {STATS.map((s, i) => (
-            <motion.div
-              key={s.labelKey}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              className="text-center p-4 rounded-2xl"
-              style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 12px 32px rgba(12,12,22,.06)" }}
-            >
-              <p className="font-display text-2xl sm:text-3xl font-black tracking-[-0.03em]" style={{ color: "var(--voltio)" }}>
-                {s.value}
-              </p>
-              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: "var(--gris-2)" }}>
-                {t(s.labelKey)}
-              </p>
-            </motion.div>
-          ))}
+      {/* ── WHAT IS A PARTNER (definition + three principles) ── */}
+      <section className="py-16 sm:py-20">
+        <div className="max-w-3xl mx-auto px-5 sm:px-8 text-center">
+          <SectionLabel>{t("pt_s2_label")}</SectionLabel>
+          <motion.h2
+            {...fadeUp}
+            className="font-display mt-4 text-2xl sm:text-3xl font-black tracking-[-0.03em]"
+            style={{ color: "var(--ink)" }}
+          >
+            {t("pt_s2_title")}
+          </motion.h2>
+          <motion.p
+            {...fadeUp}
+            transition={{ ...fadeUp.transition, delay: 0.08 }}
+            className="mt-5 text-[15px] leading-relaxed"
+            style={{ color: "var(--gris-1)" }}
+          >
+            {t("pt_s2_body")}
+          </motion.p>
+        </div>
+        <div className="max-w-4xl mx-auto px-5 sm:px-8 mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {PRINCIPLES.map((c, i) => {
+            const Icon = PRINCIPLE_ICONS[i];
+            return (
+              <motion.div
+                key={c.titleKey}
+                {...fadeUp}
+                transition={{ ...fadeUp.transition, delay: 0.1 + i * 0.08 }}
+                className="relative p-6 rounded-2xl text-center"
+                style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}
+              >
+                <div className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-4"
+                  style={{ background: "rgba(91,76,245,0.08)", border: "1px solid rgba(91,76,245,0.15)" }}>
+                  <Icon className="h-5 w-5" style={{ color: "var(--voltio)" }} strokeWidth={2} />
+                </div>
+                <h3 className="font-display text-[15px] font-bold mb-2" style={{ color: "var(--ink)" }}>{t(c.titleKey)}</h3>
+                <p className="text-[12.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(c.bodyKey)}</p>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
@@ -116,7 +147,7 @@ export default function Partners() {
               className="text-[11px] font-bold tracking-[0.24em] uppercase mb-4"
               style={{ color: "#7DE3FF" }}
             >
-              {t("pt_s2_label")}
+              {t("pt_s4_label")}
             </motion.p>
             <motion.h2
               {...fadeUp}
@@ -259,6 +290,92 @@ export default function Partners() {
           <p className="mt-8 text-center text-sm italic" style={{ color: "var(--gris-1)" }}>
             {t("pt_s5_note")}
           </p>
+        </div>
+      </section>
+
+      {/* ── SIMPLE BY DESIGN ── */}
+      <section className="px-5 py-16 sm:py-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-10 text-center">
+            <SectionLabel>{t("pt_s6_title")}</SectionLabel>
+            <p className="mt-5 text-[15px] leading-relaxed max-w-2xl mx-auto" style={{ color: "var(--gris-1)" }}>
+              {t("pt_s6_body")}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {SIMPLE_ITEMS.map((key, i) => (
+              <motion.div
+                key={key}
+                {...fadeUp}
+                transition={{ ...fadeUp.transition, delay: i * 0.05 }}
+                className="flex items-center gap-3 p-4 rounded-xl"
+                style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 6px 18px rgba(12,12,22,.04)" }}
+              >
+                <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{ background: "linear-gradient(135deg, var(--voltio), var(--cian))" }}>
+                  <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+                </span>
+                <span className="text-[13px] font-semibold leading-tight" style={{ color: "var(--ink)" }}>{t(key)}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PROGRAMME LIMITS (do / don't) ── */}
+      <section className="px-5 pb-16 sm:pb-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8 text-center">
+            <SectionLabel>{t("pt_princ_title")}</SectionLabel>
+            <p className="mt-5 text-[14px] leading-relaxed max-w-2xl mx-auto" style={{ color: "var(--gris-1)" }}>
+              {t("pt_princ_intro")}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* What a Partner does */}
+            <motion.div
+              {...fadeUp}
+              className="p-6 rounded-2xl"
+              style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "rgba(47,224,168,0.12)" }}>
+                  <Check className="h-4 w-4" style={{ color: "var(--menta-dark)" }} strokeWidth={3} />
+                </span>
+                <h3 className="font-display text-base font-bold" style={{ color: "var(--ink)" }}>{t("pt_princ_a_title")}</h3>
+              </div>
+              <ul className="space-y-2.5">
+                {PARTNER_DO.map((key) => (
+                  <li key={key} className="flex gap-2.5 text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+                    <Check className="shrink-0 h-4 w-4 mt-0.5" style={{ color: "var(--menta-dark)" }} strokeWidth={2.5} />
+                    <span>{t(key)}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+            {/* What a Partner does NOT do */}
+            <motion.div
+              {...fadeUp}
+              transition={{ ...fadeUp.transition, delay: 0.08 }}
+              className="p-6 rounded-2xl"
+              style={{ background: "#fff", border: "1px solid var(--linea)", boxShadow: "0 8px 24px rgba(12,12,22,.06)" }}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "rgba(244,91,105,0.10)" }}>
+                  <X className="h-4 w-4" style={{ color: "var(--coral)" }} strokeWidth={3} />
+                </span>
+                <h3 className="font-display text-base font-bold" style={{ color: "var(--ink)" }}>{t("pt_princ_b_title")}</h3>
+              </div>
+              <ul className="space-y-2.5">
+                {PARTNER_DONT.map((key) => (
+                  <li key={key} className="flex gap-2.5 text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+                    <X className="shrink-0 h-4 w-4 mt-0.5" style={{ color: "var(--coral)" }} strokeWidth={2.5} />
+                    <span>{t(key)}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
         </div>
       </section>
 

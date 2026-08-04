@@ -123,3 +123,24 @@ describe("Partners page — structure", () => {
     expect(src).not.toContain("revshare");
   });
 });
+
+describe("Partner copy — no remuneration promises across all locales", () => {
+  const LOCALE_FILES = ["en.js", "fr.js", "es.js"];
+  const NO_COMMISSION = [
+    /No commission/i,
+    /Aucune commission/i,
+    /Sin comisi[oó]n/i,
+  ];
+  const FORBIDDEN = [/\bbounty\b/i, /\brevenue share\b/i, /\brevshare\b/i];
+
+  it.each(LOCALE_FILES)("%s contains an explicit no-commission message", (file) => {
+    const src = fs.readFileSync(path.join(REPO_ROOT, "src/lib/locales", file), "utf-8");
+    // Each locale must include at least one no-commission affirmation.
+    expect(NO_COMMISSION.some((re) => re.test(src))).toBe(true);
+  });
+
+  it.each(LOCALE_FILES)("%s does not promise bounty or revenue share", (file) => {
+    const src = fs.readFileSync(path.join(REPO_ROOT, "src/lib/locales", file), "utf-8");
+    FORBIDDEN.forEach((re) => expect(src).not.toMatch(re));
+  });
+});
