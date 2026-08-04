@@ -236,7 +236,7 @@ export default function ForProviders() {
       <PublicPageHero
         eyebrow="For payment providers"
         align="left"
-        title={<>Merchants are comparing you <span className="kw-c">right now.</span><br />Be the answer.</>}
+        title={<>Merchants are comparing you right now.<br /><span className="kw-c">Be the answer.</span></>}
         subtitle="CAMBRA runs a payments audit for independent brands — online and in-store. Every audit compares the merchant's current effective rate against the best publicly contractable alternative for their region and ticket size. If your pricing is public, we can cite it. If you'll offer an exclusive rate through us, we can present it."
       />
 
