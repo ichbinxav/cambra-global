@@ -1055,6 +1055,9 @@ export default {
     pt_princ_b_6: "Presentarse como proveedor de pago autorizado",
     pt_princ_b_7: "Reclamar exclusividad",
 
+    pt_stat_fee:        "comisión éxito",
+    pt_stat_months:     "meses",
+    pt_stat_upfront:    "coste inicial",
     pt_meta_title:       "Partners CAMBRA | Ayuda a las empresas independientes a proteger sus márgenes",
     pt_meta_description: "Únete al Programa Partner de CAMBRA y da a las empresas independientes que acompañas acceso a inteligencia independiente sobre los costes de pago con tarjeta.",
 };

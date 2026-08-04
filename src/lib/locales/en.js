@@ -1089,6 +1089,9 @@ export default {
     pt_princ_b_6: "Present itself as an authorised payment provider",
     pt_princ_b_7: "Claim exclusivity",
 
+    pt_stat_fee:        "success fee",
+    pt_stat_months:     "months",
+    pt_stat_upfront:    "upfront",
     pt_meta_title:       "CAMBRA Partners | Help independent businesses protect their margins",
     pt_meta_description: "Join the CAMBRA Partner Programme and give the independent businesses you support access to independent card-payment cost intelligence.",
 };

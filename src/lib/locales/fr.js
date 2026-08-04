@@ -1055,6 +1055,9 @@ export default {
     pt_princ_b_6: "Se présenter comme un fournisseur de paiement autorisé",
     pt_princ_b_7: "Revendiquer une exclusivité",
 
+    pt_stat_fee:        "commission succès",
+    pt_stat_months:     "mois",
+    pt_stat_upfront:    "coût initial",
     pt_meta_title:       "Partenaires CAMBRA | Aidez les entreprises indépendantes à protéger leurs marges",
     pt_meta_description: "Rejoignez le Programme Partenaire CAMBRA et donnez aux entreprises indépendantes que vous accompagnez l'accès à une intelligence indépendante sur les coûts de paiement par carte.",
 };
