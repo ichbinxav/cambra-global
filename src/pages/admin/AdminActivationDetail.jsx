@@ -4,6 +4,8 @@ import { Link, useSearchParams, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import RecoverContractAdminPanel from '@/components/admin/RecoverContractAdminPanel';
+import ConditionsActivationCard from '@/components/admin/recoverBilling/ConditionsActivationCard';
+import FiscalIdentityCard from '@/components/admin/recoverBilling/FiscalIdentityCard';
 
 export default function AdminActivationDetail(){
   const [sp] = useSearchParams();
@@ -36,13 +38,6 @@ export default function AdminActivationDetail(){
   const reload = async () => {
     const res = await base44.functions.invoke('getActivationAdminDetail', { id });
     setData(res.data);
-  };
-
-  const issueInvoiceFromReport = async (reportId) => {
-    const res = await base44.functions.invoke('generateInvoiceFromReport', { report_id: reportId, issue: true });
-    if (res.data?.error) { toast.error(res.data.error); return; }
-    toast.success('Invoice issued');
-    await reload();
   };
 
   const downloadInvoicePdf = async (invoiceId) => {
@@ -106,6 +101,12 @@ export default function AdminActivationDetail(){
       {/* RECOVER-3 — contract document state for this activation's mandate. */}
       {mandates?.[0] && <RecoverContractAdminPanel mandateId={mandates[0].id} />}
 
+      {/* RECOVER-4 — the two prerequisites that unblock monthly invoicing. */}
+      <div className="grid md:grid-cols-2 gap-3">
+        <ConditionsActivationCard activation={activation} onSaved={reload} />
+        {activation.brand_id && <FiscalIdentityCard brandId={activation.brand_id} />}
+      </div>
+
       <div className="grid md:grid-cols-2 gap-3">
         <div className="rounded-xl border p-4 bg-card">
           <p className="text-sm font-semibold mb-2">Migration tasks</p>
@@ -127,9 +128,7 @@ export default function AdminActivationDetail(){
                 <span>{r.month} · Savings €{(r.savings||0).toLocaleString()} · Fee €{(r.node_fee||0).toLocaleString()} · {r.measurement_mode}</span>
                 <div className="flex items-center gap-2">
                   <button onClick={()=>openOverride('verify_report', { report_id: r.id })} className="text-xs underline">Verify</button>
-                  {r.status === 'calculated' && (
-                    <button onClick={()=>issueInvoiceFromReport(r.id)} className="text-xs underline">Issue</button>
-                  )}
+                  <Link to="/admin/recover-billing" className="text-xs underline">Billing</Link>
                 </div>
               </li>
             ))}
