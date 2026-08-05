@@ -324,7 +324,7 @@ describe("override in economic view", () => {
     };
     const snap = buildSnapshot(POLICY_A, override);
     const mandate = {
-      acceptance_snapshot_json: { ...snap, fee_pct: 18 },
+      acceptance_snapshot_json: { ...snap, fee_pct: 18, standard_fee_pct: 25 },
       acceptance_snapshot_hash: "h",
       id: "m",
     };
@@ -538,7 +538,7 @@ describe("PDF economic resolution path (via buildContractEconomicView)", () => {
       authorisedBy: "admin@cambra.global", authorisedAt: "2026-08-05T10:00:00Z",
     };
     const snap = buildSnapshot(POLICY_A, override);
-    const mandate = { acceptance_snapshot_json: { ...snap, fee_pct: 15 }, acceptance_snapshot_hash: "h", id: "m" };
+    const mandate = { acceptance_snapshot_json: { ...snap, fee_pct: 15, standard_fee_pct: 25 }, acceptance_snapshot_hash: "h", id: "m" };
     const view = buildContractEconomicView({ resolvedContractPolicy: resolveContractPolicy({ mandate }), mandate });
     expect(view.successFeePct).toBe(15);
     expect(view.standardFeePct).toBe(25);

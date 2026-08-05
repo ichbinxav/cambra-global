@@ -63,10 +63,12 @@ describe("policy drift guards — backend economic hardcodes (v60.1)", () => {
     expect(src).toContain("getReferralStartPct");
     expect(src).not.toMatch(/export const BASE_FEE_PCT = 25/);
   });
-  it("recoverContractPdf.ts derives the standard fee from the snapshot/policy", () => {
+  it("recoverContractPdf.ts derives the standard fee via resolveContractPolicy (v60.2)", () => {
     const src = read("base44/shared/recoverContractPdf.ts");
     expect(src).not.toMatch(/const standard = 25/);
-    expect(src).toContain("getSuccessFeePct");
+    // v60.2: the PDF resolves terms from the contract snapshot, not the live policy.
+    expect(src).toContain("resolveContractPolicy");
+    expect(src).toContain("buildContractEconomicView");
   });
   it("acceptance flow imports the generated fee/duration", () => {
     expect(read("base44/functions/startRecoverAcceptance/entry.ts")).toContain("getFeeDurationMonths");
@@ -96,7 +98,7 @@ describe("policy drift guards — backend economic hardcodes (v60.1)", () => {
 describe("policy drift guards — v60.2 unsafe fallback elimination", () => {
   it("PDF uses resolveContractPolicy, not a local || getSuccessFeePct() fallback", () => {
     const src = read("base44/shared/recoverContractPdf.ts");
-    // The old pattern `Number(snapshot.standard_fee_pct) || getSuccessFeePct()` is gone.
+    // The old `|| getSuccessFeePct()` fallback that replaced a contractual 0 with 25 is gone.
     expect(src).not.toMatch(/\|\|\s*getSuccessFeePct\(\)/);
     // The PDF now calls resolveContractPolicy + buildContractEconomicView.
     expect(src).toContain("resolveContractPolicy");

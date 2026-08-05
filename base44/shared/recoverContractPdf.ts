@@ -19,7 +19,6 @@
 
 import { jsPDF } from 'npm:jspdf@4.0.0';
 import { checkboxTextFor, contractStrings, RECOVER_CONTRACT_TEMPLATE_VERSION, type ContractLocale } from './recoverContractTemplates.ts';
-import { getSuccessFeePct } from './generated/productPolicy.ts';
 import { resolveContractPolicy, buildContractEconomicView } from './contractPolicySnapshot.ts';
 import type { CambraLegalIdentity } from './cambraLegalIdentity.ts';
 

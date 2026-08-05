@@ -269,20 +269,38 @@ economic terms in `acceptance_snapshot_json`).
 
 **Invoice snapshot resolution:** the resolver (`resolveContractPolicy`) reads
 mandate snapshot → BillingRule → MonthlySavingsReport → legacy, in that order.
-The live policy is never used to bill an accepted contract.
+The live policy is never used to bill an accepted contract. v60.2 added a
+`resolvable: boolean` flag so callers BLOCK generation when a contract cannot
+be resolved safely (instead of silently applying the live policy), and
+`buildContractEconomicView` produces the single economic structure consumed by
+PDF, email and invoice metadata — no second resolver, no local fallback
+inside the document builders.
 
-**PDF / email parity:** both read from `acceptance_snapshot_json`. The PDF
-derives `standard_fee_pct` from the snapshot (falling back to the generated
-policy for legacy snapshots). No divergence is possible.
+**PDF / email parity:** both read from `acceptance_snapshot_json` via
+`resolveContractPolicy` + `buildContractEconomicView`. A contractual fee of 0
+is preserved (no `|| 25` fallback replaces it with the policy default). An
+unresolvable contract blocks PDF generation. No divergence is possible.
+
+**Monthly report provenance (v60.2):** `generateMonthlySavingsReport` now
+resolves the active mandate and persists contract-policy provenance on every
+report (`policy_version`, `snapshot_hash`, `policy_source`, `mandate_id`,
+`billing_rule_id`, `applied_fee_pct`, `merchant_share_pct`,
+`fee_duration_months`, `resolution_warnings`, `generated_by`). The approval
+flow (`approveRecoverReportForInvoicing`) re-resolves via the mandate and
+enforces immutability: a provenance mismatch between the report and the
+mandate blocks approval with `provenance_mismatch`.
+
+**Invoice provenance (v60.2):** `createEligibleRecoverInvoices` freezes
+`policy_version`, `policy_source` and `snapshot_hash` into both
+`billing_snapshot_json` and the Invoice record at finalization. The invoice
+never re-reads the live policy after creation.
 
 **Legacy resolver:** implemented (`resolveLegacyContractTerms`). Legacy records
-are marked `legacy_pre_policy_registry`; no policyVersion is invented.
-
-**Deferred:** `generateMonthlySavingsReport` does not yet write `policy_version`
-/ `snapshot_hash` onto the report (optional schema fields added). The resolver
-derives both from the mandate at invoice time.
+are marked `legacy_pre_policy_registry`; no policyVersion is invented. The
+resolver emits `resolvable=false` (provenance `unresolvable`) when no fee can
+be recovered from any source, so callers block instead of billing 0.
 
 ### Owner / last review
 
 - Owner: CAMBRA product + legal.
-- Last review: 2026-08-05 (v60 introduction).
+- Last review: 2026-08-05 (v60.2 — contract policy wiring closed end-to-end).
