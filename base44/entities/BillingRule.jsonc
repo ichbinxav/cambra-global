@@ -52,6 +52,10 @@
     "terms_version": {
       "type": "string"
     },
+    "policy_version": {
+      "type": "string",
+      "description": "v60.1 (2026-08-05) \u2014 policyVersion in force when this rule was created. Written by referralBilling.scheduleReferralFee from the generated PRODUCT_POLICY. Optional; legacy rules carry no value and the resolver treats them as legacy_pre_policy_registry."
+    },
     "notes": {
       "type": "string"
     },

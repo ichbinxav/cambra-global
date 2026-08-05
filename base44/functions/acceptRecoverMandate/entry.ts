@@ -22,6 +22,7 @@
 //   6. supersede older active mandates
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
+import { getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { RECOVER_CONTRACT_TEMPLATE_VERSION } from '../../shared/recoverContractTemplates.ts';
 import { deliveryIdempotencyKey, logContractEvent } from '../../shared/recoverContractState.ts';
@@ -89,7 +90,7 @@ export default async function (req: Request): Promise<Response> {
         deal_activation_id: activation.id,
         brand_id: activation.brand_id,
         provider_id: activation.provider_id,
-        fallbackPct: activation.node_share_percent ?? 25,
+        fallbackPct: activation.node_share_percent ?? getSuccessFeePct(),
       },
       month,
     );

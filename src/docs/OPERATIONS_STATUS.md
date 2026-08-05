@@ -248,16 +248,39 @@ live on the Mandate record (`acceptance_snapshot_json`,
 the measured month. Legacy mandates (no `policyVersion` in the snapshot) use
 provenance `legacy_pre_policy_registry` — no retroactive reconstruction.
 
-### Backend consumption (deferred, gated on billing parity tests)
+### Backend consumption (v60.1 — wired, 2026-08-05)
 
-The backend artifact `base44/shared/generated/productPolicy.ts` is in place. The
-existing billing modules (`billingFee.ts`, `referralBilling.ts`,
-`recoverBillingMath.ts`) still carry their own `25` / `5` constants; the
-product-policy tests assert **characterization parity** (constants equal the
-registry) so divergence is caught. Rewiring those modules to import the
-generated artifact is deferred until Recover billing has dedicated parity tests
-(STOP RULE in the v60 brief). The values are identical today, so the future
-wiring is a constant-source change, not a calculation change.
+The backend artifact `base44/shared/generated/productPolicy.ts` is consumed by
+the economic backend:
+
+- `billingFee.ts` — `getSuccessFeePct()` fallback (no `25` literal).
+- `referralProgram.ts` / `referralProgram.js` — ladder imported from generated
+  policy (SYNC block preserved verbatim).
+- `recoverAcceptance.ts` — `acceptance_snapshot_json` enriched with
+  `policy_version`, `standard_fee_pct`, `merchant_share_pct`,
+  `fee_duration_months`, `fee_base`, `template_version`.
+- `recoverContractPdf.ts` — standard fee from snapshot/policy (no `25` literal).
+- `startRecoverAcceptance` / `acceptRecoverMandate` — generated fallbacks.
+- `referralBilling.ts` — `policy_version` stamped on new BillingRules.
+- `base44/shared/contractPolicySnapshot.ts` — builder, resolver, legacy handler.
+
+**Snapshot on acceptance:** implemented (new mandates carry policy_version +
+economic terms in `acceptance_snapshot_json`).
+
+**Invoice snapshot resolution:** the resolver (`resolveContractPolicy`) reads
+mandate snapshot → BillingRule → MonthlySavingsReport → legacy, in that order.
+The live policy is never used to bill an accepted contract.
+
+**PDF / email parity:** both read from `acceptance_snapshot_json`. The PDF
+derives `standard_fee_pct` from the snapshot (falling back to the generated
+policy for legacy snapshots). No divergence is possible.
+
+**Legacy resolver:** implemented (`resolveLegacyContractTerms`). Legacy records
+are marked `legacy_pre_policy_registry`; no policyVersion is invented.
+
+**Deferred:** `generateMonthlySavingsReport` does not yet write `policy_version`
+/ `snapshot_hash` onto the report (optional schema fields added). The resolver
+derives both from the mandate at invoice time.
 
 ### Owner / last review
 

@@ -14,21 +14,24 @@
 // fails if the two texts ever diverge — a drift here would mean the panel shows
 // one fee and the invoice charges another.
 
-// SYNC-START referral-fee-ladder
-export const BASE_FEE_PCT = 25;
-export const STEP_POINTS = 5;
-export const FLOOR_FEE_PCT = 5;
+import { getReferralStartPct, getReferralStepPct, getReferralFloorPct } from "@/lib/generated/productPolicy";
 
-export function feeForActivated(activatedCount) {
+// SYNC-START referral-fee-ladder
+const BASE_FEE_PCT = getReferralStartPct();
+const STEP_POINTS = getReferralStepPct();
+const FLOOR_FEE_PCT = getReferralFloorPct();
+
+function feeForActivated(activatedCount) {
   const n = Math.max(0, Math.floor(Number(activatedCount) || 0));
   if (!Number.isFinite(n)) return BASE_FEE_PCT;
   return Math.max(FLOOR_FEE_PCT, BASE_FEE_PCT - n * STEP_POINTS);
 }
 
 // Fee after one more activated referral — null when already at the floor.
-export function nextFeePct(activatedCount) {
+function nextFeePct(activatedCount) {
   const current = feeForActivated(activatedCount);
   if (current <= FLOOR_FEE_PCT) return null;
   return feeForActivated(Math.max(0, Math.floor(Number(activatedCount) || 0)) + 1);
 }
 // SYNC-END referral-fee-ladder
+export { BASE_FEE_PCT, STEP_POINTS, FLOOR_FEE_PCT, feeForActivated, nextFeePct };

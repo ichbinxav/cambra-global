@@ -44,3 +44,44 @@ describe("policy drift guards — critical-surface hardcodes", () => {
     expect(src).not.toMatch(/price="25%"/);
   });
 });
+
+describe("policy drift guards — backend economic hardcodes (v60.1)", () => {
+  it("billingFee.ts no longer hardcodes the success-fee fallback literal", () => {
+    const src = read("base44/shared/billingFee.ts");
+    expect(src).not.toMatch(/fallbackPct\s*=\s*25\b/);
+    expect(src).not.toMatch(/\?\?\s*25\b/);
+    expect(src).toContain("getSuccessFeePct");
+  });
+  it("referralProgram.ts imports the ladder from the generated policy", () => {
+    const src = read("base44/shared/referralProgram.ts");
+    expect(src).toContain("getReferralStartPct");
+    expect(src).toContain("getReferralFloorPct");
+    expect(src).not.toMatch(/export const BASE_FEE_PCT = 25/);
+  });
+  it("referralProgram.js imports the ladder from the generated policy", () => {
+    const src = read("src/lib/referralProgram.js");
+    expect(src).toContain("getReferralStartPct");
+    expect(src).not.toMatch(/export const BASE_FEE_PCT = 25/);
+  });
+  it("recoverContractPdf.ts derives the standard fee from the snapshot/policy", () => {
+    const src = read("base44/shared/recoverContractPdf.ts");
+    expect(src).not.toMatch(/const standard = 25/);
+    expect(src).toContain("getSuccessFeePct");
+  });
+  it("acceptance flow imports the generated fee/duration", () => {
+    expect(read("base44/functions/startRecoverAcceptance/entry.ts")).toContain("getFeeDurationMonths");
+    expect(read("base44/functions/acceptRecoverMandate/entry.ts")).toContain("getSuccessFeePct");
+  });
+  it("acceptance snapshot carries policy_version", () => {
+    expect(read("base44/shared/recoverAcceptance.ts")).toContain("policy_version");
+    expect(read("base44/shared/recoverAcceptance.ts")).toContain("PRODUCT_POLICY.policyVersion");
+  });
+  it("referralBilling stamps policy_version on new rules", () => {
+    expect(read("base44/shared/referralBilling.ts")).toContain("policy_version");
+  });
+  it("contractPolicySnapshot module exists", () => {
+    expect(read("base44/shared/contractPolicySnapshot.ts")).toContain("buildContractPolicySnapshot");
+    expect(read("base44/shared/contractPolicySnapshot.ts")).toContain("resolveContractPolicy");
+    expect(read("base44/shared/contractPolicySnapshot.ts")).toContain("resolveLegacyContractTerms");
+  });
+});

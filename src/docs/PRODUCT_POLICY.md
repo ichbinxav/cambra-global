@@ -93,18 +93,39 @@ terms are still recoverable from `acceptance_snapshot_json` (fee %, duration)
 and `document_version`. No retroactive reconstruction is performed — we never
 invent which version a historical merchant accepted.
 
-## Backend consumption (deferred, gated)
+## Backend consumption (v60.1 — wired)
 
-The generated backend artifact `base44/shared/generated/productPolicy.ts` is in
-place so the backend can import it with a one-line change. The existing backend
-billing modules (`billingFee.ts`, `referralBilling.ts`, `recoverBillingMath.ts`)
-currently carry their own `25` / `5` constants; the product-policy test suite
-asserts **characterization parity** (their constants equal the registry) so
-the two can never silently diverge. Rewiring those modules to import the
-generated artifact is deferred until Recover billing has dedicated parity tests
-(see STOP RULE in the v60 brief): the values are identical today, so the
-wiring is a constant-source change, not a calculation change, and is safe to
-land in a follow-up gated on billing tests.
+The generated backend artifact `base44/shared/generated/productPolicy.ts` is
+consumed by the economic backend:
+
+- `billingFee.ts` imports `getSuccessFeePct()` for its fallback (no `25` literal).
+- `referralProgram.ts` / `referralProgram.js` import `getReferralStartPct()` /
+  `getReferralStepPct()` / `getReferralFloorPct()` (no `25/5/5` literals). The
+  SYNC block remains verbatim between the two files; only the source of the
+  constants changed (generated policy, not a literal).
+- `recoverAcceptance.ts` enriches `acceptance_snapshot_json` with
+  `policy_version`, `standard_fee_pct`, `merchant_share_pct`,
+  `fee_duration_months`, `fee_base`, `template_version` from the generated
+  policy.
+- `recoverContractPdf.ts` derives the standard fee from the snapshot or the
+  generated policy (`snapshot.standard_fee_pct || getSuccessFeePct()`).
+- `startRecoverAcceptance` / `acceptRecoverMandate` import `getSuccessFeePct()`
+  and `getFeeDurationMonths()` for fallbacks.
+- `referralBilling.ts` stamps `policy_version` on new BillingRules.
+
+The contract policy snapshot, resolver and legacy handler live in
+`base44/shared/contractPolicySnapshot.ts`. See
+`src/docs/CONTRACT_POLICY_RESOLUTION.md` for the full resolution diagram.
+
+### What remains deferred
+
+- `recoverBillingMath.ts` carries no standard-fee constant (it receives
+  `effective_fee_pct` as a parameter), so no rewiring is needed there.
+- `generateMonthlySavingsReport` does not yet write `policy_version` /
+  `snapshot_hash` onto the report (optional fields were added to the schema
+  in v60.1). The resolver derives both from the mandate at invoice time, so
+  billing is correct today; populating the report fields is a future
+  convenience for admin panels.
 
 ## Rollback
 

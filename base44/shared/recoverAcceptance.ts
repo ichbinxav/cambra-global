@@ -26,6 +26,10 @@
 //    signature so a fee change mid-popup refuses the acceptance instead of
 //    silently binding the merchant to different terms.
 
+import { PRODUCT_POLICY, getSuccessFeePct, getMerchantSharePct, getFeeDurationMonths } from './generated/productPolicy.ts';
+import { RECOVER_CONTRACT_TEMPLATE_VERSION } from './recoverContractTemplates.ts';
+import { SNAPSHOT_SCHEMA_VERSION, POLICY_SOURCE_REGISTRY } from './contractPolicySnapshot.ts';
+
 export const MANDATE_DOCUMENT_VERSION = 'recover-mandate-v1';
 
 // Activation states from which a Recover mandate may be accepted. 'authorized'
@@ -125,6 +129,24 @@ export function buildAcceptanceSnapshot({ activation, baseline, fee, month }: an
     baseline_verified_at: baseline?.verified_at || null,
     projected_savings_annual: activation.projected_savings_annual ?? activation.estimated_savings_yearly ?? null,
     projected_savings_monthly: activation.projected_savings_monthly ?? null,
+    // v60.1 — Contract Policy Snapshot. Additive: these fields enrich the
+    // snapshot with the policy terms in force at acceptance. The hash of
+    // THIS object (via hashSnapshot) includes these fields for new mandates;
+    // existing mandates keep their original hash (they are never rewritten).
+    snapshot_schema_version: SNAPSHOT_SCHEMA_VERSION,
+    policy_version: PRODUCT_POLICY.policyVersion,
+    policy_effective_date: PRODUCT_POLICY.effectiveDate,
+    policy_source: POLICY_SOURCE_REGISTRY,
+    currency: PRODUCT_POLICY.currency || 'EUR',
+    standard_fee_pct: getSuccessFeePct(),
+    merchant_share_pct: getMerchantSharePct(),
+    fee_duration_months: getFeeDurationMonths(),
+    fee_base: PRODUCT_POLICY.economicTerms.feeBase,
+    recovery_optional: !!PRODUCT_POLICY.economicTerms.recoveryOptional,
+    template_version: RECOVER_CONTRACT_TEMPLATE_VERSION,
+    referral_start_pct: Math.round(PRODUCT_POLICY.referralTerms.startRate * 100),
+    referral_step_pct: Math.round(PRODUCT_POLICY.referralTerms.stepRate * 100),
+    referral_floor_pct: Math.round(PRODUCT_POLICY.referralTerms.floorRate * 100),
   };
 }
 

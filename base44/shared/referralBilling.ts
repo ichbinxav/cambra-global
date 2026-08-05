@@ -16,6 +16,7 @@
 // first rule so the discount is waiting when billing starts.
 
 import { firstOfNextMonth, lastOfCurrentMonth } from './billingFee.ts';
+import { PRODUCT_POLICY } from './generated/productPolicy.ts';
 
 const DEAD_ACTIVATION_STATUSES = ['closed', 'revoked'];
 
@@ -90,6 +91,7 @@ export async function scheduleReferralFee(
         cap_fee: current?.cap_fee ?? undefined,
         effective_start_date: startDate,
         status: 'active',
+        policy_version: PRODUCT_POLICY.policyVersion,
         notes,
       });
 

@@ -19,6 +19,7 @@
 
 import { jsPDF } from 'npm:jspdf@4.0.0';
 import { checkboxTextFor, contractStrings, RECOVER_CONTRACT_TEMPLATE_VERSION, type ContractLocale } from './recoverContractTemplates.ts';
+import { getSuccessFeePct } from './generated/productPolicy.ts';
 import type { CambraLegalIdentity } from './cambraLegalIdentity.ts';
 
 const MARGIN = 18;
@@ -209,7 +210,7 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
   // discount are derived from it arithmetically — never re-read from the current
   // referral programme, which may have moved since acceptance.
   const effective = Number(snapshot.fee_pct);
-  const standard = 25;
+  const standard = Number(snapshot.standard_fee_pct) || getSuccessFeePct();
   const discount = Number.isFinite(effective) ? Math.max(standard - effective, 0) : 0;
   field(t.s3_standard_fee, `${standard}%`);
   field(t.s3_discount, `${discount}%`);

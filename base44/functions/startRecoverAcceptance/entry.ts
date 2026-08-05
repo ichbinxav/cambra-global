@@ -10,6 +10,7 @@
 // acceptance instead of quietly reusing stale terms.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
+import { getSuccessFeePct, getFeeDurationMonths } from '../../shared/generated/productPolicy.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   MANDATE_DOCUMENT_VERSION,
@@ -52,7 +53,7 @@ export default async function (req: Request): Promise<Response> {
         deal_activation_id: activation.id,
         brand_id: activation.brand_id,
         provider_id: activation.provider_id,
-        fallbackPct: activation.node_share_percent ?? 25,
+        fallbackPct: activation.node_share_percent ?? getSuccessFeePct(),
       },
       month,
     );
@@ -88,7 +89,7 @@ export default async function (req: Request): Promise<Response> {
         renegotiate_with_provider: true,
         migrate_provider: true,
         success_fee_pct: Number(fee.pct),
-        duration_months: 24,
+        duration_months: getFeeDurationMonths(),
       },
       document_version: MANDATE_DOCUMENT_VERSION,
       status: 'acceptance_started',

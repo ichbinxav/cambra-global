@@ -184,6 +184,14 @@
     "invoice_id": {
       "type": "string",
       "description": "RECOVER-4 \u2014 local Invoice id once invoiced. Part of the monthly idempotency key (deal_activation_id + month + report)."
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "v60.1 (2026-08-05) \u2014 policyVersion in force when this report was calculated. Optional; populated by the report generator. Legacy reports carry no value and the resolver derives it from the mandate snapshot."
+    },
+    "snapshot_hash": {
+      "type": "string",
+      "description": "v60.1 \u2014 acceptance_snapshot_hash of the mandate whose terms this report was measured against. Optional; populated by the report generator. The resolver falls back to the mandate when absent."
     }
   },
   "required": [

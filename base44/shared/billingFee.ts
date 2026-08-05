@@ -11,6 +11,8 @@
 // discount would have silently applied to past months, and any BillingRule
 // would have been ignored entirely.
 
+import { getSuccessFeePct } from './generated/productPolicy.ts';
+
 export function monthBounds(month: string): { start: string; end: string } {
   const [y, m] = String(month).split('-').map(Number);
   const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
@@ -46,7 +48,7 @@ function appliesTo(rule: any, bounds: { start: string; end: string }): boolean {
  */
 export async function resolveFeePctForMonth(
   svc: any,
-  { deal_activation_id, brand_id, provider_id, fallbackPct = 25 }: any,
+  { deal_activation_id, brand_id, provider_id, fallbackPct = getSuccessFeePct() }: any,
   month: string,
 ): Promise<{ pct: number; rule_id: string | null; source: string }> {
   const bounds = monthBounds(month);
@@ -69,5 +71,5 @@ export async function resolveFeePctForMonth(
     }
   }
 
-  return { pct: Number(fallbackPct ?? 25), rule_id: null, source: 'deal_activation_fallback' };
+  return { pct: Number(fallbackPct ?? getSuccessFeePct()), rule_id: null, source: 'deal_activation_fallback' };
 }
