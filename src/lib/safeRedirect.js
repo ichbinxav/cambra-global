@@ -10,6 +10,27 @@
 // default (always same-origin). This prevents open-redirect attacks
 // via the login flow.
 
+// Protocol-relative / backslash-relative vectors: "//evil.com",
+// "///evil.com", "/\\evil.com" and their percent-encoded forms
+// ("/%2Fevil.com", "/%5Cevil.com"). All begin with "/" so they would
+// slip past a naive startsWith("/") path guard, yet browsers resolve
+// them to a FOREIGN origin (protocol-relative URL → inherits the page
+// scheme, host = the part after //). Decode once to catch encoded
+// leading slashes/backslashes, then reject before the path shortcut.
+function isProtocolRelative(value) {
+  let decoded;
+  try {
+    decoded = decodeURIComponent(value);
+  } catch {
+    decoded = value;
+  }
+  // Two+ leading slashes → protocol-relative ("//host").
+  if (decoded.startsWith("//")) return true;
+  // Leading slash + backslash → browsers normalize "\/" to "//".
+  if (decoded.startsWith("/\\")) return true;
+  return false;
+}
+
 /**
  * Normalize a candidate return URL to a same-origin absolute URL.
  *
@@ -21,6 +42,8 @@
  */
 export function safeReturnUrl(value, origin, fallback = "/Dashboard") {
   if (!value || typeof value !== "string") return origin + fallback;
+  // Protocol-relative / backslash-relative → open-redirect vector.
+  if (isProtocolRelative(value)) return origin + fallback;
   // Absolute path → same-origin, safe.
   if (value.startsWith("/")) return origin + value;
   try {
@@ -38,6 +61,7 @@ export function safeReturnUrl(value, origin, fallback = "/Dashboard") {
  */
 export function isSameOriginUrl(value, origin) {
   if (!value || typeof value !== "string") return null;
+  if (isProtocolRelative(value)) return null;
   if (value.startsWith("/")) return origin + value;
   try {
     const u = new URL(value);

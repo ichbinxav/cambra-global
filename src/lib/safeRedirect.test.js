@@ -36,6 +36,21 @@ describe("safeReturnUrl", () => {
     expect(safeReturnUrl("//evil.com/Dashboard", ORIGIN)).toBe(
       "https://app.example.com/Dashboard"
     );
+    expect(safeReturnUrl("///evil.com", ORIGIN)).toBe("https://app.example.com/Dashboard");
+    expect(safeReturnUrl("/\\evil.com", ORIGIN)).toBe("https://app.example.com/Dashboard");
+    // Percent-encoded leading slashes/backslashes decode to // or /\.
+    expect(safeReturnUrl("/%2F%2Fevil.com", ORIGIN)).toBe("https://app.example.com/Dashboard");
+    expect(safeReturnUrl("/%5Cevil.com", ORIGIN)).toBe("https://app.example.com/Dashboard");
+  });
+
+  it("still accepts valid internal relative paths (regression guard)", () => {
+    expect(safeReturnUrl("/Dashboard", ORIGIN)).toBe("https://app.example.com/Dashboard");
+    expect(safeReturnUrl("/Results?session=abc", ORIGIN)).toBe(
+      "https://app.example.com/Results?session=abc"
+    );
+    expect(safeReturnUrl("/Analyzer?ref=code&x=1", ORIGIN)).toBe(
+      "https://app.example.com/Analyzer?ref=code&x=1"
+    );
   });
 
   it("rejects malformed values", () => {
@@ -66,6 +81,9 @@ describe("isSameOriginUrl", () => {
   it("returns null for cross-origin URLs", () => {
     expect(isSameOriginUrl("https://evil.com/Dashboard", ORIGIN)).toBeNull();
     expect(isSameOriginUrl("//evil.com", ORIGIN)).toBeNull();
+    expect(isSameOriginUrl("///evil.com", ORIGIN)).toBeNull();
+    expect(isSameOriginUrl("/\\evil.com", ORIGIN)).toBeNull();
+    expect(isSameOriginUrl("/%2F%2Fevil.com", ORIGIN)).toBeNull();
   });
 
   it("returns null for invalid input", () => {
