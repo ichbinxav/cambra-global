@@ -1,85 +1,51 @@
 // src/lib/featureScope.js
 //
-// P0.9 — Feature-scope registry. Controls which infrastructure verticals
-// are production-enabled and merchant-visible. Dormant verticals (shipping,
-// SaaS, insurance, telecom, energy, banking, financing) are kept in the
-// codebase as roadmap infrastructure but must NOT leak into merchant-facing
-// surfaces.
+// v60 — Adapter over the generated product policy. The productionEnabled /
+// merchantVisible booleans are no longer defined here; they derive from
+// config/product-policy.json via src/lib/generated/productPolicy.js. The
+// human-facing labels and dormantReason strings stay local (they are UI copy,
+// not structured policy governed by the registry).
 //
-// Usage:
-//   import { isProductionEnabled, isMerchantVisible } from '@/lib/featureScope';
-//   if (isMerchantVisible('shipping')) { ... }  // false — won't render
-//
-// This is the single source of truth. Navigation menus, Copilot, emails,
-// reports, and onboarding all consult this registry before surfacing any
-// vertical-specific UI.
+// This file preserves the v59.1 public API (FEATURE_SCOPE shape, the four
+// helpers) so every existing consumer (helpCenterData, onboarding, tests) and
+// the frozen-object invariant keep working without change.
 
-export const FEATURE_SCOPE = Object.freeze({
-  payments: {
-    productionEnabled: true,
-    merchantVisible: true,
-    label: 'Card payments (online PSP + in-store TPV)',
-  },
-  shipping: {
-    productionEnabled: false,
-    merchantVisible: false,
-    label: 'Shipping & logistics',
-    dormantReason: 'roadmap_future_expansion',
-  },
-  saas: {
-    productionEnabled: false,
-    merchantVisible: false,
-    label: 'Commerce SaaS',
-    dormantReason: 'roadmap_future_expansion',
-  },
-  insurance: {
-    productionEnabled: false,
-    merchantVisible: false,
-    label: 'Insurance',
-    dormantReason: 'roadmap_future_expansion',
-  },
-  telecom: {
-    productionEnabled: false,
-    merchantVisible: false,
-    label: 'Telecom',
-    dormantReason: 'roadmap_future_expansion',
-  },
-  energy: {
-    productionEnabled: false,
-    merchantVisible: false,
-    label: 'Energy',
-    dormantReason: 'roadmap_future_expansion',
-  },
-  banking: {
-    productionEnabled: false,
-    merchantVisible: false,
-    label: 'Banking',
-    dormantReason: 'roadmap_future_expansion',
-  },
-  financing: {
-    productionEnabled: false,
-    merchantVisible: false,
-    label: 'Financing',
-    dormantReason: 'roadmap_future_expansion',
-  },
-});
+import { PRODUCT_SCOPE_POLICY } from "@/lib/generated/productPolicy.js";
+
+// UI copy kept local — labels are not structured policy and must not bloat the
+// canonical JSON. Order matches the policy's vertical order.
+const VERTICAL_LABELS = {
+  payments: { label: "Card payments (online PSP + in-store TPV)" },
+  shipping: { label: "Shipping & logistics", dormantReason: "roadmap_future_expansion" },
+  saas: { label: "Commerce SaaS", dormantReason: "roadmap_future_expansion" },
+  insurance: { label: "Insurance", dormantReason: "roadmap_future_expansion" },
+  telecom: { label: "Telecom", dormantReason: "roadmap_future_expansion" },
+  energy: { label: "Energy", dormantReason: "roadmap_future_expansion" },
+  banking: { label: "Banking", dormantReason: "roadmap_future_expansion" },
+  financing: { label: "Financing", dormantReason: "roadmap_future_expansion" },
+};
+
+export const FEATURE_SCOPE = Object.freeze(
+  Object.fromEntries(
+    Object.entries(PRODUCT_SCOPE_POLICY).map(([k, v]) => [
+      k,
+      Object.freeze({ ...v, ...VERTICAL_LABELS[k] }),
+    ]),
+  ),
+);
 
 export function isProductionEnabled(vertical) {
-  return !!FEATURE_SCOPE[vertical]?.productionEnabled;
+  return !!PRODUCT_SCOPE_POLICY[vertical]?.productionEnabled;
 }
 
 export function isMerchantVisible(vertical) {
-  return !!FEATURE_SCOPE[vertical]?.merchantVisible;
+  return !!PRODUCT_SCOPE_POLICY[vertical]?.merchantVisible;
 }
 
 export function getMerchantVisibleVerticals() {
-  return Object.entries(FEATURE_SCOPE)
-    .filter(([, v]) => v.merchantVisible)
-    .map(([k]) => k);
+  return Object.keys(PRODUCT_SCOPE_POLICY).filter((k) => PRODUCT_SCOPE_POLICY[k].merchantVisible);
 }
 
 export function getDormantVerticals() {
-  return Object.entries(FEATURE_SCOPE)
-    .filter(([, v]) => !v.productionEnabled)
-    .map(([k]) => k);
+  return Object.keys(PRODUCT_SCOPE_POLICY).filter((k) => !PRODUCT_SCOPE_POLICY[k].productionEnabled);
 }

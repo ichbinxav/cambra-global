@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": "2026.08.01",
+  "effectiveDate": "2026-08-01",
+  "currency": "EUR",
+  "economicTerms": {
+    "analyzerPriceEur": 0,
+    "successFeeRate": 0.25,
+    "merchantShareRate": 0.75,
+    "feeDurationMonths": 24,
+    "feeBase": "positive_verified_savings",
+    "recoveryOptional": true
+  },
+  "referralTerms": {
+    "startRate": 0.25,
+    "stepRate": 0.05,
+    "floorRate": 0.05
+  },
+  "productScope": {
+    "payments": { "productionEnabled": true, "merchantVisible": true },
+    "shipping": { "productionEnabled": false, "merchantVisible": false },
+    "saas": { "productionEnabled": false, "merchantVisible": false },
+    "insurance": { "productionEnabled": false, "merchantVisible": false },
+    "telecom": { "productionEnabled": false, "merchantVisible": false },
+    "energy": { "productionEnabled": false, "merchantVisible": false },
+    "banking": { "productionEnabled": false, "merchantVisible": false },
+    "financing": { "productionEnabled": false, "merchantVisible": false }
+  },
+  "supportedChannels": {
+    "onlinePsp": true,
+    "inStoreTpv": true
+  },
+  "integrationStatus": {
+    "stripe": "implemented_live_verification_pending",
+    "statementUpload": "available",
+    "otherConnectors": "code_level_or_roadmap"
+  }
+}
