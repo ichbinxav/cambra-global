@@ -8,10 +8,14 @@
 
 ## Product scope (v59, 2026-08-05)
 
-**Source of truth:** `src/lib/featureScope.js` — `FEATURE_SCOPE` registry.
+**Source of truth:** `config/product-policy.json` → generated artifacts →
+`src/lib/featureScope.js` (adapter). The `FEATURE_SCOPE` object no longer holds
+its own booleans; it derives them from the policy registry (v60). The public API
+of `featureScope.js` is unchanged, so the Help Center (`getVisibleCategories` in
+`helpCenterData.js`) and the Help SEO dynamic resolver keep consuming it without
+change. See the **Product Policy Registry** section below.
 **Rule:** a surface may show a category only when its vertical is both
-`productionEnabled` and `merchantVisible`. The Help Center (`getVisibleCategories`
-in `helpCenterData.js`) and the Help SEO dynamic resolver consume this registry.
+`productionEnabled` and `merchantVisible`.
 
 - **Active category:** payments (card payments — online PSP + in-store TPV).
 - **Active channels:** online (PSP) and in-store (TPV / physical terminal).
@@ -178,3 +182,84 @@ localized routes exist. No migration is planned in this phase.
   tests).
 - `public/robots.txt` — `Allow: /`, `Disallow: /functions/`, `Disallow: /auth/`.
 - `src/lib/seoSurface.test.js` — invariant tests for the SEO surface.
+
+---
+
+## Product Policy Registry (v60, 2026-08-05)
+
+The single source of truth for economic terms, functional scope and
+product-level parameters is **`config/product-policy.json`**. Frontend and
+backend both derive from it through generated, byte-identical artifacts, so the
+two can never silently diverge. Full guide: `src/docs/PRODUCT_POLICY.md`.
+
+### Current policy
+
+- **policyVersion:** `2026.08.01` · **effectiveDate:** `2026-08-01`.
+- **Economic terms:** Analyzer free (€0) · success fee 25% · merchant share 75%
+  (sum = 1) · duration 24 months · fee base "positive verified savings" ·
+  recovery optional.
+- **Referral ladder:** start 25% · step 5 points · floor 5%.
+- **Product scope:** `payments` is the only production-enabled, merchant-visible
+  vertical; shipping/SaaS/insurance/telecom/energy/banking/financing are dormant.
+- **Channels:** online PSP + in-store TPV.
+- **Integration status:** Stripe = `implemented_live_verification_pending`.
+
+### Files
+
+- `config/product-policy.json` — canonical, human-edited.
+- `src/lib/productPolicySchema.js` — Zod schema + deterministic `buildArtifacts`.
+- `scripts/generate-product-policy.mjs` — generator + drift checker.
+- `src/lib/generated/productPolicy.js` · `base44/shared/generated/productPolicy.ts`
+  — generated artifacts (do not edit; byte-identical).
+- `src/lib/productPolicy.js` — public helper facade.
+- `src/lib/economicTerms.js` · `src/lib/featureScope.js` — backward-compatible
+  adapters (v59.1 API preserved; values now derive from the policy).
+
+### Commands
+
+- `npm run policy:generate` — validate + (re)write both artifacts.
+- `npm run policy:check` — validate + fail on drift (no writes). Also runs
+  inside `npm run verify` (before `typecheck`) and is asserted by
+  `src/lib/productPolicyDrift.test.js` inside `npm test`.
+
+### What it governs / does not govern
+
+- **Governed:** the structured economic constants and the scope booleans above.
+- **Not governed:** benchmarks, analysis results, provider rates, variable tax
+  rates, agent/partner commissions with different logic, financial scenarios,
+  illustrative examples, negotiated per-account fees, and legal prose. The
+  registry feeds numbers into versioned, localized legal templates; it does not
+  generate the wording.
+
+### Changing a policy
+
+Edit `config/product-policy.json` only → bump `policyVersion` + `effectiveDate`
+→ `npm run policy:check` then `policy:generate` → review the generated diff →
+**legal review** for fee/duration/share/fee-base/referral changes → `npm test` →
+release. A policyVersion already effective is never mutated in place.
+
+### Historical contracts
+
+New policy versions govern **new acceptances only**. They never recalculate an
+accepted Mandate, an issued Invoice, or a generated contract PDF. Accepted terms
+live on the Mandate record (`acceptance_snapshot_json`,
+`acceptance_snapshot_hash`, `document_version`); invoices derive their fee from
+`MonthlySavingsReport.effective_fee_pct` resolved via the BillingRule active for
+the measured month. Legacy mandates (no `policyVersion` in the snapshot) use
+provenance `legacy_pre_policy_registry` — no retroactive reconstruction.
+
+### Backend consumption (deferred, gated on billing parity tests)
+
+The backend artifact `base44/shared/generated/productPolicy.ts` is in place. The
+existing billing modules (`billingFee.ts`, `referralBilling.ts`,
+`recoverBillingMath.ts`) still carry their own `25` / `5` constants; the
+product-policy tests assert **characterization parity** (constants equal the
+registry) so divergence is caught. Rewiring those modules to import the
+generated artifact is deferred until Recover billing has dedicated parity tests
+(STOP RULE in the v60 brief). The values are identical today, so the future
+wiring is a constant-source change, not a calculation change.
+
+### Owner / last review
+
+- Owner: CAMBRA product + legal.
+- Last review: 2026-08-05 (v60 introduction).

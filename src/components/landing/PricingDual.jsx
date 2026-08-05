@@ -4,6 +4,7 @@ import { ArrowUpRight, Check, Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionHeading from "@/components/landing/SectionHeading";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { getSuccessFeePct } from "@/lib/productPolicy";
 
 /**
  * Pricing — three-tier edition (Addendum R1, 2026-07-12).
@@ -334,7 +335,7 @@ export default function PricingDual() {
               <Tier
                 eyebrow={t("pd_t2_eyebrow")}
                 eyebrowAccent="voltio"
-                price="25%"
+                price={getSuccessFeePct() + "%"}
                 priceSuffix={t("pd_t2_suffix")}
                 priceGradient
                 caption={t("pd_t2_caption")}

@@ -13,7 +13,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview",
-    "verify": "npm run lint && npm run typecheck && npm test && npm run build"
+    "policy:generate": "node scripts/generate-product-policy.mjs",
+    "policy:check": "node scripts/generate-product-policy.mjs --check",
+    "verify": "npm run lint && npm run policy:check && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.41",

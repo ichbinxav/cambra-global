@@ -5,6 +5,7 @@ import PublicPageHero from "@/components/shared/PublicPageHero";
 import SectionHeading from "@/components/landing/SectionHeading";
 import PricingDual from "@/components/landing/PricingDual";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { getMerchantSharePct, getSuccessFeePct } from "@/lib/productPolicy";
 
 // Split heading — "you keep the margin." in the voltio gradient, per language.
 const PRC_SPLIT_TITLE = {
@@ -66,7 +67,7 @@ function SplitVisual() {
                   color: "var(--menta-dark)",
                 }}
               >
-                75%
+                {getMerchantSharePct()}%
               </p>
             </div>
             <div className="text-right">
@@ -83,7 +84,7 @@ function SplitVisual() {
                   color: "var(--gris-1)",
                 }}
               >
-                25%
+                {getSuccessFeePct()}%
               </p>
             </div>
           </div>
@@ -91,8 +92,8 @@ function SplitVisual() {
           {/* Progress bar */}
           <div className="h-2.5 rounded-full overflow-hidden mb-6" style={{ background: "rgba(12,12,22,0.06)" }}>
             <div className="h-full flex">
-              <div style={{ width: "75%", background: "var(--g-menta)" }} />
-              <div style={{ width: "25%", background: "rgba(12,12,22,0.12)" }} />
+              <div style={{ width: getMerchantSharePct() + "%", background: "var(--g-menta)" }} />
+              <div style={{ width: getSuccessFeePct() + "%", background: "rgba(12,12,22,0.12)" }} />
             </div>
           </div>
 
