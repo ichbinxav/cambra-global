@@ -106,56 +106,15 @@ function readStoredLang() {
   return detectBrowserLang();
 }
 
-// Ensure a meta tag exists; create it if missing. Returns the element.
-function ensureMeta(selector, attrs) {
-  let el = document.querySelector(selector);
-  if (!el) {
-    el = document.createElement("meta");
-    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-    document.head.appendChild(el);
-  }
-  return el;
-}
-
+// SEO-1 (2026-08-05) — i18n no longer writes route meta tags. The centralized
+// SeoMeta component (src/components/shared/SeoMeta.jsx) owns document.title,
+// description, Open Graph, Twitter, canonical, robots and JSON-LD per route,
+// re-rendering on language AND location change. i18n keeps only the <html lang>
+// attribute, which is a language concern (not a route concern) and must not
+// race with SeoMeta. See src/lib/seoConfig.js for the per-route source of truth.
 function updateMetaTags(lang) {
   try {
-    const dict = DICT[lang] || DICT.en;
-    const title = dict.meta_title;
-    const description = dict.meta_description;
-
-    // <html lang>
     document.documentElement.lang = lang;
-
-    // <title>
-    if (title) document.title = title;
-
-    // Standard description
-    if (description) {
-      ensureMeta('meta[name="description"]', { name: "description" })
-        .setAttribute("content", description);
-    }
-
-    // Open Graph
-    if (title) {
-      ensureMeta('meta[property="og:title"]', { property: "og:title" })
-        .setAttribute("content", title);
-    }
-    if (description) {
-      ensureMeta('meta[property="og:description"]', { property: "og:description" })
-        .setAttribute("content", description);
-    }
-    ensureMeta('meta[property="og:locale"]', { property: "og:locale" })
-      .setAttribute("content", { en: "en_GB", fr: "fr_FR", es: "es_ES" }[lang] || "en_GB");
-
-    // Twitter
-    if (title) {
-      ensureMeta('meta[name="twitter:title"]', { name: "twitter:title" })
-        .setAttribute("content", title);
-    }
-    if (description) {
-      ensureMeta('meta[name="twitter:description"]', { name: "twitter:description" })
-        .setAttribute("content", description);
-    }
   } catch {}
 }
 

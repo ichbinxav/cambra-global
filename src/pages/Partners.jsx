@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -127,17 +126,7 @@ function LightCard({ icon: Icon, title, body, index }) {
 }
 
 export default function Partners() {
-  const { t, lang } = useTranslation();
-
-  useEffect(() => {
-    document.title = t("pt_meta_title");
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", t("pt_meta_description"));
-    return () => {
-      document.title = "CAMBRA — Card payment cost audit for independent brands";
-      if (meta) meta.setAttribute("content", "Find out how much you overpay for card payments, online and in-store. CAMBRA compares your effective rate against European payment benchmarks and recovers the negotiable margin. Free analysis — you only pay on verified savings.");
-    };
-  }, [lang, t]);
+  const { t } = useTranslation();
 
   const scrollToApply = () => {
     const el = document.getElementById("apply");
