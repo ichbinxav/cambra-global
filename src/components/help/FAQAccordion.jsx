@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, ThumbsUp, ThumbsDown } from "lucide-react";
+import { helpUi } from "@/lib/helpCenterData";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 export default function FAQAccordion({ items, defaultOpenIndex = -1, categorySlug = "" }) {
+  const { lang } = useTranslation();
   const [openIdx, setOpenIdx] = useState(defaultOpenIndex);
 
   // Auto-open FAQ matching URL hash (deep-link from search)
@@ -61,11 +64,11 @@ export default function FAQAccordion({ items, defaultOpenIndex = -1, categorySlu
                       </p>
                       <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
                         <p className="text-[11px] text-muted-foreground/50">
-                          Was this helpful?
+                          {helpUi(lang, "wasThisHelpful")}
                         </p>
                         <div className="flex items-center gap-1.5">
-                          <FeedbackButton icon={ThumbsUp} label="Yes" />
-                          <FeedbackButton icon={ThumbsDown} label="No" />
+                          <FeedbackButton icon={ThumbsUp} lang={lang} labelKey="yes" thanksKey="thanks" />
+                          <FeedbackButton icon={ThumbsDown} lang={lang} labelKey="no" thanksKey="thanks" />
                         </div>
                       </div>
                     </div>
@@ -80,7 +83,7 @@ export default function FAQAccordion({ items, defaultOpenIndex = -1, categorySlu
   );
 }
 
-function FeedbackButton({ icon: Icon, label }) {
+function FeedbackButton({ icon: Icon, lang, labelKey, thanksKey }) {
   const [clicked, setClicked] = useState(false);
   return (
     <button
@@ -88,7 +91,7 @@ function FeedbackButton({ icon: Icon, label }) {
       className={`flex items-center gap-1.5 h-7 px-2.5 rounded-md border text-[11px] font-semibold transition-colors ${clicked ? "border-foreground bg-foreground text-background" : "border-border/50 text-muted-foreground hover:border-foreground/30 hover:text-foreground"}`}
     >
       <Icon className="w-3 h-3" />
-      {clicked ? "Thanks" : label}
+      {clicked ? helpUi(lang, thanksKey) : helpUi(lang, labelKey)}
     </button>
   );
 }

@@ -1,9 +1,13 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, ArrowUpRight, Clock } from "lucide-react";
-import { POPULAR, getCategory } from "@/lib/helpCenterData";
+import { getPopularLocalized, getCategoryLocalized, helpUi } from "@/lib/helpCenterData";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 export default function PopularArticles() {
+  const { lang } = useTranslation();
+  const popular = getPopularLocalized(lang);
+
   return (
     <section
       className="py-12 px-5"
@@ -18,17 +22,17 @@ export default function PopularArticles() {
           <div>
             <p className="flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] uppercase mb-2" style={{ color: "var(--gris-2)" }}>
               <TrendingUp className="w-3 h-3" />
-              Popular this week
+              {helpUi(lang, "popularLabel")}
             </p>
             <h2 className="text-2xl md:text-3xl font-black tracking-[-0.03em]" style={{ color: "var(--ink)" }}>
-              What brands are asking.
+              {helpUi(lang, "popularTitle")}
             </h2>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {POPULAR.map((item, i) => {
-            const cat = getCategory(item.category);
+          {popular.map((item, i) => {
+            const cat = getCategoryLocalized(item.category, lang);
             return (
               <motion.div
                 key={item.slug}
@@ -64,7 +68,7 @@ export default function PopularArticles() {
                     {item.title}
                   </h3>
                   <div className="flex items-center gap-1 text-xs transition-colors" style={{ color: "var(--gris-1)" }}>
-                    <span>Read article</span>
+                    <span>{helpUi(lang, "readArticle")}</span>
                     <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </div>
                 </Link>

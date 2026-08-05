@@ -1,52 +1,37 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Activity, Upload, MessageSquare, Plug } from "lucide-react";
+import { helpUi } from "@/lib/helpCenterData";
+import { useTranslation } from "@/lib/i18n.jsx";
 
+// v59.1 — titles/descriptions resolved from HELP_UI by language; icon, href and
+// primary flag are language-neutral structure.
 const ACTIONS = [
-  {
-    icon: Activity,
-    title: "Run the Analyzer",
-    description: "Audit your infrastructure in under 3 minutes.",
-    href: "/Analyzer",
-    primary: true,
-  },
-  {
-    icon: Upload,
-    title: "Upload invoices",
-    description: "CAMBRA extracts real infrastructure economics from your statements.",
-    href: "/ConnectTools?mode=upload",
-  },
-  {
-    icon: Plug,
-    title: "Connect tools",
-    description: "Read-only integrations for the sharpest possible benchmarks.",
-    href: "/ConnectTools?mode=connect",
-  },
-  {
-    icon: MessageSquare,
-    title: "Talk to CAMBRA",
-    description: "Book onboarding or escalate an operational question.",
-    href: "/Contact",
-  },
+  { icon: Activity, titleKey: "runAnalyzer", descKey: "runAnalyzerDesc", href: "/Analyzer", primary: true },
+  { icon: Upload, titleKey: "uploadInvoices", descKey: "uploadInvoicesDesc", href: "/ConnectTools?mode=upload" },
+  { icon: Plug, titleKey: "connectTools", descKey: "connectToolsDesc", href: "/ConnectTools?mode=connect" },
+  { icon: MessageSquare, titleKey: "talkToCambra", descKey: "talkToCambraDesc", href: "/Contact" },
 ];
 
 export default function HelpCTA() {
+  const { lang } = useTranslation();
+
   return (
     <section className="py-16 px-5">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-baseline justify-between mb-8">
           <h2 className="text-2xl md:text-3xl font-black tracking-[-0.03em]" style={{ color: "var(--ink)" }}>
-            Still exploring?
+            {helpUi(lang, "stillExploring")}
           </h2>
           <p className="hidden md:block text-xs" style={{ color: "var(--gris-2)" }}>
-            Pick the path that fits your stack
+            {helpUi(lang, "pickPath")}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {ACTIONS.map((a, i) => (
             <motion.div
-              key={a.title}
+              key={a.titleKey}
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -76,8 +61,8 @@ export default function HelpCTA() {
                   </div>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-all" style={{ color: "var(--gris-2)" }} />
                 </div>
-                <h3 className="text-base font-bold tracking-tight mb-1.5" style={{ color: "var(--ink)" }}>{a.title}</h3>
-                <p className="text-xs leading-relaxed" style={{ color: "var(--gris-1)" }}>{a.description}</p>
+                <h3 className="text-base font-bold tracking-tight mb-1.5" style={{ color: "var(--ink)" }}>{helpUi(lang, a.titleKey)}</h3>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--gris-1)" }}>{helpUi(lang, a.descKey)}</p>
               </Link>
             </motion.div>
           ))}

@@ -1,17 +1,14 @@
 import { motion } from "framer-motion";
 import { Search, Command } from "lucide-react";
 import SectionLabel from "@/components/shared/SectionLabel";
-
-const PLACEHOLDERS = [
-  "How does CAMBRA estimate savings?",
-  "Do you audit in-store card payments (TPV)?",
-  "Can I upload statements and invoices?",
-  "How accurate are benchmarks?",
-  "Is my data confidential?",
-  "How does CAMBRA's commercial model work?",
-];
+import { getHeroPlaceholders, getHeroTrending, helpUi } from "@/lib/helpCenterData";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 export default function HelpHero({ onSearchOpen }) {
+  const { lang } = useTranslation();
+  const placeholders = getHeroPlaceholders(lang);
+  const trending = getHeroTrending(lang);
+
   return (
     <section className="relative pt-28 pb-16 px-5 overflow-hidden">
       {/* soft voltio wash */}
@@ -32,7 +29,7 @@ export default function HelpHero({ onSearchOpen }) {
           transition={{ duration: 0.5 }}
           className="inline-flex mb-7"
         >
-          <SectionLabel>Help Center · Infrastructure Intelligence</SectionLabel>
+          <SectionLabel>{helpUi(lang, "heroBadge")}</SectionLabel>
         </motion.div>
 
         <motion.h1
@@ -42,8 +39,8 @@ export default function HelpHero({ onSearchOpen }) {
           className="text-[clamp(2.5rem,6.5vw,5.5rem)] font-black tracking-[-0.045em] leading-[0.9] mb-5"
           style={{ color: "var(--ink)" }}
         >
-          Questions, answers,{" "}
-          <span className="kw">and operating insights.</span>
+          {helpUi(lang, "heroTitleA")}{" "}
+          <span className="kw">{helpUi(lang, "heroTitleB")}</span>
         </motion.h1>
 
         <motion.p
@@ -53,9 +50,7 @@ export default function HelpHero({ onSearchOpen }) {
           className="text-[clamp(1rem,1.6vw,1.2rem)] max-w-2xl mx-auto leading-relaxed mb-10"
           style={{ color: "var(--gris-1)" }}
         >
-          CAMBRA helps modern commerce brands analyze infrastructure costs, identify
-          inefficiencies, benchmark performance, and unlock optimization opportunities
-          across their operational stack.
+          {helpUi(lang, "heroSubtitle")}
         </motion.p>
 
         {/* Search bar — paper card */}
@@ -76,10 +71,10 @@ export default function HelpHero({ onSearchOpen }) {
               background: "#fff",
               boxShadow: "0 12px 40px -18px rgba(12,12,22,0.15)",
             }}
-            aria-label="Open search"
+            aria-label={helpUi(lang, "openSearch")}
           >
             <Search className="w-5 h-5 shrink-0" style={{ color: "var(--gris-2)" }} />
-            <RotatingPlaceholder placeholders={PLACEHOLDERS} />
+            <RotatingPlaceholder placeholders={placeholders} />
             <span
               className="ml-auto hidden sm:inline-flex items-center gap-1 h-7 px-2 rounded-md text-[10px] font-bold shrink-0"
               style={{ border: "1px solid var(--linea)", background: "rgba(12,12,22,0.04)", color: "var(--gris-1)" }}
@@ -96,8 +91,8 @@ export default function HelpHero({ onSearchOpen }) {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs"
         >
-          <span className="font-medium" style={{ color: "var(--gris-2)" }}>Trending:</span>
-          {["In-store payments", "Stripe", "Benchmarks", "GDPR", "Success fee"].map((t) => (
+          <span className="font-medium" style={{ color: "var(--gris-2)" }}>{helpUi(lang, "trendingLabelHero")}</span>
+          {trending.map((t) => (
             <button
               key={t}
               onClick={onSearchOpen}

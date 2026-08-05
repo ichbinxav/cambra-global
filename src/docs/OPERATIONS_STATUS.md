@@ -15,9 +15,15 @@ in `helpCenterData.js`) and the Help SEO dynamic resolver consume this registry.
 
 - **Active category:** payments (card payments — online PSP + in-store TPV).
 - **Active channels:** online (PSP) and in-store (TPV / physical terminal).
-- **Live connections:** Stripe — read-only OAuth (balance transactions, charges,
-  fee breakdown). Live status is conditional on the OAuth flow being operational
-  and proven with a real account; verify before any "live" claim in copy.
+- **Stripe connection (honest classification):** read-only OAuth (balance
+  transactions, charges, fee breakdown). It is implemented but NOT yet verified
+  with a real account in the deployed environment, so it is classified as
+  **"Implemented — live verification pending"** (FR: « Implémenté — validation
+  en production en attente » · ES: « Implementado — validación en producción
+  pendiente »). Do NOT describe Stripe as "live" in any merchant-facing copy,
+  operational inventory, or internal doc until the manual checklist below
+  records PASS on every item. The Help Center integrations FAQ and the
+  "Can CAMBRA analyze Stripe directly?" FAQ already use the honest wording.
 - **Upload-supported formats:** PDF, CSV, Excel (.xls/.xlsx), PNG, JPG (max 20MB).
   Statement upload works for any PSP or TPV provider, including those not on the
   connected list.
@@ -44,6 +50,29 @@ in `helpCenterData.js`) and the Help SEO dynamic resolver consume this registry.
   when explained as long-term vision.
 - **Review date:** 2026-08-05. **Owner:** product/engineering (no per-file owners
   in repo).
+
+### Stripe live-verification checklist (manual, blocks any "live" claim)
+
+Until every item below is PASS, Stripe remains "Implemented — live verification
+pending". A single FAIL or MANUAL REQUIRED re-asserts the honest classification
+and blocks the word "live" in copy. Run with a real Stripe account in the
+**deployed** environment (not just the sandbox).
+
+| # | Step | Expected | Status |
+|---|------|----------|--------|
+| 1 | OAuth start — merchant clicks "Connect Stripe", redirect to Stripe authorize URL | Redirects to `connect.stripe.com/...` with the read-only scope | ⏳ MANUAL REQUIRED |
+| 2 | OAuth callback — Stripe redirects back to CAMBRA with `code` | `StripeConnection` row created, tokens persisted, `api_status` = connected | ⏳ MANUAL REQUIRED |
+| 3 | Cancel — merchant denies on Stripe | Graceful return, no `StripeConnection` row, no error page | ⏳ MANUAL REQUIRED |
+| 4 | Connection with a real account | Real `acct_...` id stored, non-test `livemode` on data objects | ⏳ MANUAL REQUIRED |
+| 5 | Read data — balance transactions / charges / fees | Real fee breakdown surfaces in the Analyzer, non-zero volume | ⏳ MANUAL REQUIRED |
+| 6 | Refresh / reconnect on expired token | Silent refresh (or clean re-auth) keeps the connection usable | ⏳ MANUAL REQUIRED |
+| 7 | Disconnect — merchant revokes | `StripeConnection` removed/disconnected, no further reads | ⏳ MANUAL REQUIRED |
+| 8 | Tenant isolation — merchant A cannot read merchant B's data | Cross-tenant reads return empty / 403 | ⏳ MANUAL REQUIRED |
+| 9 | No write scopes — only read-only OAuth scope requested | Scope list contains no `write_*` / `*_:write` | ⏳ MANUAL REQUIRED |
+
+**Status legend:** PASS / FAIL / ⏳ MANUAL REQUIRED (not yet run). When all nine
+read PASS, update the "Stripe connection" bullet above to "Live — verified
+<date>" and lift the "live" copy restriction for Stripe only.
 
 ### Documents marked historical (do not treat as a current checklist)
 

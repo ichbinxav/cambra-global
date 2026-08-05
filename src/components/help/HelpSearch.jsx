@@ -2,26 +2,26 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X, ArrowRight, TrendingUp, Sparkles } from "lucide-react";
-import { getAllFAQs, TRENDING_SEARCHES, getVisibleCategories } from "@/lib/helpCenterData";
+import {
+  getAllFAQs,
+  getVisibleCategoriesLocalized,
+  getTrendingLocalized,
+  helpUi,
+} from "@/lib/helpCenterData";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 export default function HelpSearch({ open, onClose }) {
+  const { lang } = useTranslation();
   const [query, setQuery] = useState("");
   const inputRef = useRef(null);
-  // v59 — search only FAQs whose category is visible (featureScope-governed).
-  // Retired categories (shipping, saas) are no longer in CATEGORIES, so their
-  // FAQs are absent from getAllFAQs() and never surface in search results.
-  const visibleCategorySlugs = useMemo(
-    () => new Set(getVisibleCategories().map((c) => c.slug)),
-    []
-  );
-  const allFaqs = useMemo(
-    () => getAllFAQs().filter((f) => visibleCategorySlugs.has(f.category)),
-    [visibleCategorySlugs]
-  );
-  const visibleCategories = useMemo(
-    () => getVisibleCategories(),
-    []
-  );
+  // v59.1 — search only visible (featureScope-governed) FAQs, resolved in the
+  // active language. Retired categories are absent from FAQ_CONTENT so their
+  // FAQs never surface.
+  const allFaqs = useMemo(() => getAllFAQs(lang), [lang]);
+  const visibleCategories = useMemo(() => getVisibleCategoriesLocalized(lang), [lang]);
+  const trending = useMemo(() => getTrendingLocalized(lang), [lang]);
+  const contactLink = helpUi(lang, "contactLink");
+  const [hintBefore, hintAfter] = helpUi(lang, "noResultsHint").split("{contact}");
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
@@ -79,7 +79,7 @@ export default function HelpSearch({ open, onClose }) {
                     ref={inputRef}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Ask anything about CAMBRA infrastructure intelligence…"
+                    placeholder={helpUi(lang, "searchPlaceholder")}
                     className="flex-1 bg-transparent border-0 outline-none text-base text-foreground placeholder:text-muted-foreground/40"
                   />
                   <button
@@ -96,10 +96,10 @@ export default function HelpSearch({ open, onClose }) {
                     <div className="p-5 space-y-5">
                       <div>
                         <p className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/50 mb-3">
-                          <TrendingUp className="w-3 h-3" /> Trending searches
+                          <TrendingUp className="w-3 h-3" /> {helpUi(lang, "trendingLabel")}
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {TRENDING_SEARCHES.map((t) => (
+                          {trending.map((t) => (
                             <button
                               key={t}
                               onClick={() => setQuery(t)}
@@ -113,7 +113,7 @@ export default function HelpSearch({ open, onClose }) {
 
                       <div>
                         <p className="flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] uppercase text-muted-foreground/50 mb-3">
-                          <Sparkles className="w-3 h-3" /> Browse categories
+                          <Sparkles className="w-3 h-3" /> {helpUi(lang, "browseCategories")}
                         </p>
                         <div className="grid grid-cols-2 gap-1.5">
                           {visibleCategories.slice(0, 8).map((c) => (
@@ -133,14 +133,14 @@ export default function HelpSearch({ open, onClose }) {
                   ) : results.length === 0 ? (
                     <div className="p-10 text-center">
                       <p className="text-sm text-muted-foreground/60 mb-1">
-                        No results for "<span className="font-semibold text-foreground">{query}</span>"
+                        {helpUi(lang, "noResults").replace("{q}", query)}
                       </p>
                       <p className="text-xs text-muted-foreground/40">
-                        Try a different keyword, or{" "}
+                        {hintBefore}
                         <Link to="/Contact" onClick={onClose} className="underline hover:text-foreground">
-                          contact CAMBRA
+                          {contactLink}
                         </Link>
-                        .
+                        {hintAfter}
                       </p>
                     </div>
                   ) : (
@@ -179,9 +179,9 @@ export default function HelpSearch({ open, onClose }) {
                 <div className="flex items-center justify-between px-5 h-10 border-t border-border/40 bg-secondary/40 text-[10px] text-muted-foreground/50">
                   <span className="flex items-center gap-1">
                     <kbd className="px-1.5 py-0.5 rounded border border-border/60 bg-background font-bold">esc</kbd>
-                    to close
+                    {helpUi(lang, "escToClose")}
                   </span>
-                  <span>Powered by CAMBRA Intelligence</span>
+                  <span>{helpUi(lang, "poweredBy")}</span>
                 </div>
               </div>
             </div>

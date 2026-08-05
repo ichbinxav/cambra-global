@@ -4,7 +4,8 @@ import {
   Sparkles, Activity, Gauge, TrendingDown, CreditCard, Truck, Package,
   BarChart3, Plug, Upload, Shield, Wallet, Wrench, Scale, ArrowUpRight,
 } from "lucide-react";
-import { getVisibleCategories } from "@/lib/helpCenterData";
+import { getVisibleCategoriesLocalized, helpUi } from "@/lib/helpCenterData";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 const ICON_MAP = {
   Sparkles, Activity, Gauge, TrendingDown, CreditCard, Truck, Package,
@@ -12,20 +13,20 @@ const ICON_MAP = {
 };
 
 export default function CategoryGrid() {
-  // v59 — categories governed by featureScope (see getVisibleCategories).
-  // Dormant-vertical categories are retired (not in CATEGORIES), so they
-  // never appear here and /Help/<retired-slug> redirects to /Help.
-  const visibleCategories = getVisibleCategories();
+  // v59.1 — categories governed by featureScope + localized via LanguageProvider.
+  const { lang } = useTranslation();
+  const visibleCategories = getVisibleCategoriesLocalized(lang);
+  const countLabel = helpUi(lang, "categoriesCount").replace("{n}", String(visibleCategories.length));
 
   return (
     <section className="py-12 px-5">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-baseline justify-between mb-8">
           <h2 className="text-2xl md:text-3xl font-black tracking-[-0.03em]" style={{ color: "var(--ink)" }}>
-            Explore the knowledge base.
+            {helpUi(lang, "exploreTitle")}
           </h2>
           <p className="hidden md:block text-xs" style={{ color: "var(--gris-2)" }}>
-            {visibleCategories.length} categories · Continuously updated
+            {countLabel}
           </p>
         </div>
 
