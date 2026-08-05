@@ -192,7 +192,7 @@ export default function Partners() {
             <div className="flex items-center gap-3 mb-4">
               <span className="mono-num text-[12px] font-semibold tracking-[0.16em]" style={{ color: "#7DE3FF" }}>02</span>
               <span className="h-px w-8" style={{ background: "rgba(125,227,255,0.35)" }} />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">{t("pt_s4_label")}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.55)" }}>{t("pt_s4_label")}</span>
             </div>
             <motion.h2
               {...fadeUp}
@@ -216,14 +216,14 @@ export default function Partners() {
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                       style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}>
-                      <Icon className="h-[17px] w-[17px] text-white/85" strokeWidth={2} />
+                      <Icon className="h-[17px] w-[17px]" strokeWidth={2} style={{ color: "rgba(255,255,255,0.85)" }} />
                     </div>
-                    <span className="mono-num text-[11px] font-semibold text-white/35">
+                    <span className="mono-num text-[11px] font-semibold" style={{ color: "rgba(255,255,255,0.35)" }}>
                       {String(i + 1).padStart(2, "0")}
                     </span>
                   </div>
                   <h3 className="font-display text-[14.5px] font-bold mb-1.5 text-white leading-tight">{t(c.titleKey)}</h3>
-                  <p className="text-[12.5px] leading-relaxed text-white/55">{t(c.bodyKey)}</p>
+                  <p className="text-[12.5px] leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>{t(c.bodyKey)}</p>
                 </motion.div>
               );
             })}
@@ -391,7 +391,7 @@ export default function Partners() {
             <div className="flex items-center gap-3 mb-4">
               <span className="mono-num text-[12px] font-semibold tracking-[0.16em]" style={{ color: "#7DE3FF" }}>06</span>
               <span className="h-px w-8" style={{ background: "rgba(125,227,255,0.35)" }} />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">{t("pt_s7_label")}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.55)" }}>{t("pt_s7_label")}</span>
             </div>
             <motion.h2
               {...fadeUp}
@@ -402,7 +402,7 @@ export default function Partners() {
             <motion.p
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.06 }}
-              className="mt-4 text-[15px] leading-relaxed text-white/58"
+              className="mt-4 text-[15px] leading-relaxed" style={{ color: "rgba(255,255,255,0.58)" }}
             >
               {t("pt_s7_body")}
             </motion.p>
