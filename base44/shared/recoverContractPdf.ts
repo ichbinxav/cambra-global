@@ -20,6 +20,7 @@
 import { jsPDF } from 'npm:jspdf@4.0.0';
 import { checkboxTextFor, contractStrings, RECOVER_CONTRACT_TEMPLATE_VERSION, type ContractLocale } from './recoverContractTemplates.ts';
 import { getSuccessFeePct } from './generated/productPolicy.ts';
+import { resolveContractPolicy, buildContractEconomicView } from './contractPolicySnapshot.ts';
 import type { CambraLegalIdentity } from './cambraLegalIdentity.ts';
 
 const MARGIN = 18;
@@ -206,12 +207,19 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
 
   heading(t.s3_title);
   t.s3_body.forEach(body);
-  // The accepted snapshot carries the EFFECTIVE fee. The standard rate and the
-  // discount are derived from it arithmetically — never re-read from the current
-  // referral programme, which may have moved since acceptance.
-  const effective = Number(snapshot.fee_pct);
-  const standard = Number(snapshot.standard_fee_pct) || getSuccessFeePct();
-  const discount = Number.isFinite(effective) ? Math.max(standard - effective, 0) : 0;
+  // v60.2 — the fee terms come from resolveContractPolicy via the contract
+  // economic view, NOT from a local fallback to the live policy that could
+  // replace a contractual 0 with 25. The view is built once; the PDF reads it.
+  // An unresolvable contract BLOCKS generation instead of silently using the
+  // live policy.
+  const _resolved = resolveContractPolicy({ mandate });
+  if (!_resolved.resolvable) {
+    throw new Error('contract_unresolvable: cannot generate a contractual PDF for a contract whose fee terms cannot be resolved safely');
+  }
+  const _econView = buildContractEconomicView({ resolvedContractPolicy: _resolved, mandate });
+  const effective = _econView.successFeePct;
+  const standard = _econView.standardFeePct;
+  const discount = _econView.discountPct;
   field(t.s3_standard_fee, `${standard}%`);
   field(t.s3_discount, `${discount}%`);
   field(t.s3_effective_fee, Number.isFinite(effective) ? `${effective}%` : t.not_available);

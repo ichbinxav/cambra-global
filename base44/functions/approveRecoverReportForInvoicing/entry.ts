@@ -16,8 +16,14 @@ import {
   monthBillableWindow,
   RECOVER_CALCULATION_VERSION,
 } from '../../shared/recoverBillingMath.ts';
+import { resolveContractPolicy, buildContractEconomicView } from '../../shared/contractPolicySnapshot.ts';
+import { getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
 
-const STANDARD_FEE_PCT = 25;
+// v60.2 — the standard fee comes from the resolved contract policy (the
+// accepted snapshot's standard_fee_pct), not a hardcoded 25. For current
+// contracts this is 25; for a future policy B contract it would be 30. The
+// live policy's getSuccessFeePct() is the fallback for new/unaccepted deals.
+const STANDARD_FEE_PCT = getSuccessFeePct();
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -106,7 +112,12 @@ export default async function (req: Request): Promise<Response> {
     // ── Fee (§11): mandate-accepted pct is the CEILING; the month's
     // BillingRule may lower it (acquired referral discount, non-retroactive)
     // but can never raise it above what was accepted. ─────────────────────
-    const acceptedPct = Number(mandate?.acceptance_snapshot_json?.fee_pct);
+    // v60.2 — the accepted fee and the standard fee both come from
+    // resolveContractPolicy + buildContractEconomicView, not from a local
+    // `|| 25` fallback. An unresolvable contract blocks approval.
+    const contractResolved = resolveContractPolicy({ mandate });
+    if (mandate && !contractResolved.resolvable) block('blocked_contract', 'contract_unresolvable');
+    const acceptedPct = contractResolved.resolvable ? contractResolved.successFeePct : Number(activation.node_share_percent || STANDARD_FEE_PCT);
     if (mandate && !Number.isFinite(acceptedPct)) block('blocked_contract', 'accepted_fee_pct_unresolvable');
     const monthFee = await resolveFeePctForMonth(svc, {
       deal_activation_id: activation.id,
@@ -118,12 +129,25 @@ export default async function (req: Request): Promise<Response> {
       Number.isFinite(acceptedPct) ? acceptedPct : STANDARD_FEE_PCT,
       Number(monthFee.pct),
     );
+    // v60.2 immutability guard — a re-approval must not silently change the
+    // provenance. If the report was already approved with a fee, the new
+    // effective fee must match; a mismatch means the contract moved underneath
+    // an approved report, which blocks instead of silently re-pricing.
+    if (report.approved_for_invoicing_at && Number.isFinite(Number(report.effective_fee_pct)) && Number(report.effective_fee_pct) !== effectivePct) {
+      block('blocked_contract', `provenance_mismatch:approved=${report.effective_fee_pct};recomputed=${effectivePct}`);
+    }
+
+    // v60.2 — standard_fee_pct from the accepted snapshot (via the economic
+    // view), not the hardcoded 25. For current contracts this is 25; for a
+    // future policy B contract it would be 30. A contractual 0 is preserved.
+    const econView = buildContractEconomicView({ resolvedContractPolicy: contractResolved, mandate });
+    const standardFeePctForAmounts = contractResolved.resolvable ? econView.standardFeePct : STANDARD_FEE_PCT;
 
     // ── Amounts (integer cents, §10) ──────────────────────────────────────
     const savings = Number(report.savings || 0);
     const amounts = computeInvoiceAmounts({
       savings_eur: savings,
-      standard_fee_pct: STANDARD_FEE_PCT,
+      standard_fee_pct: standardFeePctForAmounts,
       effective_fee_pct: effectivePct,
       tax_rate_bps: 0, // tax is decided at invoice time; the report stores the NET fee only
     });
@@ -137,7 +161,7 @@ export default async function (req: Request): Promise<Response> {
         billing_block_reason: '',
         billable_savings_amount: amounts.billable_savings_eur,
         fee_net_amount: 0,
-        standard_fee_pct: STANDARD_FEE_PCT,
+        standard_fee_pct: standardFeePctForAmounts,
         discount_pct: amounts.discount_pct,
         effective_fee_pct: effectivePct,
         calculation_version: RECOVER_CALCULATION_VERSION,
@@ -177,7 +201,7 @@ export default async function (req: Request): Promise<Response> {
       mandate_id: mandate.id,
       savings_eur: savings,
       billable_savings_minor: amounts.billable_savings_minor,
-      standard_fee_pct: STANDARD_FEE_PCT,
+      standard_fee_pct: standardFeePctForAmounts,
       discount_pct: amounts.discount_pct,
       effective_fee_pct: effectivePct,
       fee_net_minor: amounts.fee_net_minor,
@@ -193,7 +217,7 @@ export default async function (req: Request): Promise<Response> {
       billing_block_reason: '',
       billable_savings_amount: amounts.billable_savings_eur,
       fee_net_amount: amounts.fee_net_eur,
-      standard_fee_pct: STANDARD_FEE_PCT,
+      standard_fee_pct: standardFeePctForAmounts,
       discount_pct: amounts.discount_pct,
       effective_fee_pct: effectivePct,
       calculation_version: RECOVER_CALCULATION_VERSION,
@@ -201,6 +225,17 @@ export default async function (req: Request): Promise<Response> {
       verification_status: 'realized',
       approved_for_invoicing_by: user.email,
       approved_for_invoicing_at: now,
+      // v60.2 — freeze contract provenance at approval. Only set when absent
+      // so a re-approval never overwrites the generation-time values.
+      ...(contractResolved.resolvable && !report.policy_version ? {
+        policy_version: contractResolved.policyVersion,
+        snapshot_hash: contractResolved.snapshotHash || undefined,
+        policy_source: contractResolved.policySource,
+        mandate_id: mandate?.id || undefined,
+        merchant_share_pct: contractResolved.merchantSharePct,
+        fee_duration_months: contractResolved.feeDurationMonths,
+        contract_template_version: contractResolved.templateVersion || undefined,
+      } : {}),
       supporting_snapshot_json: {
         ...(report.supporting_snapshot_json || {}),
         recover4_calculation: calcPayload,
@@ -230,7 +265,7 @@ export default async function (req: Request): Promise<Response> {
       billing_eligibility_status: 'eligible',
       billable_savings_eur: amounts.billable_savings_eur,
       fee_net_eur: amounts.fee_net_eur,
-      standard_fee_pct: STANDARD_FEE_PCT,
+      standard_fee_pct: standardFeePctForAmounts,
       discount_pct: amounts.discount_pct,
       effective_fee_pct: effectivePct,
       tax_treatment_preview: taxDecision.treatment,

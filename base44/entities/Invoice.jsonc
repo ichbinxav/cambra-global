@@ -1,7 +1,7 @@
 {
   "name": "Invoice",
   "type": "object",
-  "description": "RECOVER-4 (2026-08-04) extended this entity for the Recover Margin success-fee flow: Stripe Invoicing is the AUTHORITATIVE source of the legal invoice number (no local max+1 sequence \u2014 the pre-existing series/sequence fields are legacy and are NOT written by the Recover flow). Amounts are computed in integer cents (shared/recoverBillingMath.ts) and mirrored into the legacy EUR fields. A finalized invoice is never edited: corrections go through void / credit note / corrective invoice (\u00a732).",
+  "description": "RECOVER-4 (2026-08-04) extended this entity for the Recover Margin success-fee flow: Stripe Invoicing is the AUTHORITATIVE source of the legal invoice number (no local max+1 sequence \u2014 the pre-existing series/sequence fields are legacy and are NOT written by the Recover flow). Amounts are computed in integer cents (shared/recoverBillingMath.ts) and mirrored into the legacy EUR fields. A finalized invoice is never edited: corrections go through void / credit note / corrective invoice (\u00a732). v60.2 (2026-08-05) added contract-policy provenance fields (policy_version, snapshot_hash, policy_source) so an invoice never re-reads the live policy after creation.",
   "properties": {
     "deal_activation_id": {
       "type": "string"
@@ -106,7 +106,7 @@
     },
     "billing_snapshot_json": {
       "type": "object",
-      "description": "RECOVER-4 \u2014 the immutable accounting/tax snapshot: report figures, baseline, fee percentages, tax decision, VIES evidence, supplier/customer details, period, rounding, Stripe references, calculation hash. Append-only after finalization."
+      "description": "RECOVER-4 \u2014 the immutable accounting/tax snapshot: report figures, baseline, fee percentages, tax decision, VIES evidence, supplier/customer details, period, rounding, Stripe references, calculation hash. v60.2 \u2014 also carries the contract policy provenance (policy_version, policy_source, snapshot_hash). Append-only after finalization."
     },
     "pdf_url": {
       "type": "string"
@@ -237,6 +237,18 @@
     },
     "void_reason": {
       "type": "string"
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "v60.2 (2026-08-05) \u2014 policyVersion in force when this invoice was finalized. Frozen at creation; the invoice never re-reads the live policy. Optional; absent on legacy invoices."
+    },
+    "snapshot_hash": {
+      "type": "string",
+      "description": "v60.2 \u2014 acceptance_snapshot_hash of the mandate whose terms this invoice was issued against. Optional; absent on legacy invoices."
+    },
+    "policy_source": {
+      "type": "string",
+      "description": "v60.2 \u2014 provenance of the policy terms: 'product_policy_registry' or 'legacy_pre_policy_registry'. Optional."
     }
   },
   "required": [

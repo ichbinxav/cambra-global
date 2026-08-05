@@ -84,4 +84,92 @@ describe("policy drift guards — backend economic hardcodes (v60.1)", () => {
     expect(read("base44/shared/contractPolicySnapshot.ts")).toContain("resolveContractPolicy");
     expect(read("base44/shared/contractPolicySnapshot.ts")).toContain("resolveLegacyContractTerms");
   });
+  it("buildContractEconomicView exists for the common economic contract (v60.2)", () => {
+    expect(read("base44/shared/contractPolicySnapshot.ts")).toContain("buildContractEconomicView");
+  });
+  it("resolver returns a resolvable flag (v60.2)", () => {
+    expect(read("base44/shared/contractPolicySnapshot.ts")).toContain("resolvable");
+  });
+});
+
+// ── v60.2 drift guards — unsafe fallback elimination ─────────────────────
+describe("policy drift guards — v60.2 unsafe fallback elimination", () => {
+  it("PDF uses resolveContractPolicy, not a local || getSuccessFeePct() fallback", () => {
+    const src = read("base44/shared/recoverContractPdf.ts");
+    // The old pattern `Number(snapshot.standard_fee_pct) || getSuccessFeePct()` is gone.
+    expect(src).not.toMatch(/\|\|\s*getSuccessFeePct\(\)/);
+    // The PDF now calls resolveContractPolicy + buildContractEconomicView.
+    expect(src).toContain("resolveContractPolicy");
+    expect(src).toContain("buildContractEconomicView");
+    // An unresolvable contract must block generation.
+    expect(src).toContain("_resolved.resolvable");
+  });
+
+  it("MonthlySavingsReport schema has policy provenance fields (v60.2)", () => {
+    const src = read("base44/entities/MonthlySavingsReport.jsonc");
+    expect(src).toContain("policy_source");
+    expect(src).toContain("mandate_id");
+    expect(src).toContain("billing_rule_id");
+    expect(src).toContain("applied_fee_pct");
+    expect(src).toContain("merchant_share_pct");
+    expect(src).toContain("fee_duration_months");
+    expect(src).toContain("resolution_warnings");
+    expect(src).toContain("generated_by");
+  });
+
+  it("generateMonthlySavingsReport persists contract policy provenance", () => {
+    const src = read("base44/functions/generateMonthlySavingsReport/entry.ts");
+    expect(src).toContain("resolveContractPolicy");
+    expect(src).toContain("contractResolved");
+    expect(src).toContain("policy_version");
+    expect(src).toContain("snapshot_hash");
+    expect(src).toContain("mandate_id");
+    expect(src).toContain("applied_fee_pct");
+  });
+
+  it("approveRecoverReportForInvoicing uses resolveContractPolicy and getSuccessFeePct", () => {
+    const src = read("base44/functions/approveRecoverReportForInvoicing/entry.ts");
+    expect(src).toContain("resolveContractPolicy");
+    expect(src).toContain("buildContractEconomicView");
+    expect(src).toContain("getSuccessFeePct");
+    expect(src).not.toMatch(/const STANDARD_FEE_PCT = 25/);
+    // Immutability guard present.
+    expect(src).toContain("provenance_mismatch");
+  });
+
+  it("createEligibleRecoverInvoices freezes policy provenance in billing_snapshot_json", () => {
+    const src = read("base44/functions/createEligibleRecoverInvoices/entry.ts");
+    expect(src).toContain("resolveContractPolicy");
+    expect(src).toContain("policy_version");
+    expect(src).toContain("policy_source");
+    expect(src).toContain("snapshot_hash");
+  });
+
+  it("Invoice schema has policy provenance fields (v60.2)", () => {
+    const src = read("base44/entities/Invoice.jsonc");
+    expect(src).toContain("policy_version");
+    expect(src).toContain("snapshot_hash");
+    expect(src).toContain("policy_source");
+  });
+
+  it("no new hardcode 25/24/75 on contract surfaces (allowlisted exceptions only)", () => {
+    // The resolver and legacy fallback use 75/24 as defaults for missing
+    // merchant_share/duration — this is a Number.isFinite default, NOT a || fallback.
+    // The PDF and approval no longer hardcode 25.
+    const pdf = read("base44/shared/recoverContractPdf.ts");
+    expect(pdf).not.toMatch(/const standard = 25/);
+    const approval = read("base44/functions/approveRecoverReportForInvoicing/entry.ts");
+    // getSuccessFeePct() replaces the old `= 25` literal.
+    expect(approval).not.toMatch(/const STANDARD_FEE_PCT = 25/);
+  });
+
+  it("resolver no longer uses || 25 / || 75 / || 24 fallbacks (uses Number.isFinite)", () => {
+    const src = read("base44/shared/contractPolicySnapshot.ts");
+    // The mandate_snapshot branch must not use `|| 25`, `|| 75`, `|| 24`.
+    expect(src).not.toMatch(/feePct\) \|\| 25/);
+    expect(src).not.toMatch(/merchantSharePct\) \|\| 75/);
+    expect(src).not.toMatch(/feeDurationMonths\) \|\| 24/);
+    // Number.isFinite is used instead.
+    expect(src).toContain("Number.isFinite(feePct)");
+  });
 });

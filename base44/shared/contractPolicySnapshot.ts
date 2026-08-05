@@ -1,4 +1,4 @@
-// contractPolicySnapshot — CAMBRA v60.1 (2026-08-05).
+// contractPolicySnapshot — CAMBRA v60.2 (2026-08-05).
 //
 // THE CONTRACT POLICY WIRING. This module is the single place where a
 // contractual obligation is BUILT from the canonical policy, RESOLVED back
@@ -9,6 +9,17 @@
 // snapshot. Every later operation — BillingRule, MonthlySavingsReport, invoice,
 // PDF, email, reconciliation — reads from that snapshot, never from the live
 // policy. A future policy version cannot recalculate a historical obligation.
+//
+// v60.2 CHANGES (gap closure):
+//  • The resolver no longer uses `|| 25`, `|| 75`, `|| 24` fallbacks that
+//    silently replace a contractual 0 with the policy default. Number.isFinite
+//    checks preserve a contractual value of 0 and warn when a field is missing.
+//  • A `resolvable: boolean` flag on ResolvedContractTerms lets callers BLOCK
+//    invoice/PDF/email generation when a contract cannot be resolved safely,
+//    instead of silently applying the live policy.
+//  • `buildContractEconomicView` produces the single economic structure that
+//    PDF, email and invoice metadata consume — no second resolver, no local
+//    fallback inside the document builders.
 //
 // This module is pure (no SDK, no I/O) so it runs identically in Deno (backend)
 // and in vitest (node). Backend callers inject `currentPolicy` from the
@@ -74,6 +85,37 @@ export type ResolvedContractTerms = {
   hasOverride: boolean;
   warnings: string[];
   provenance: string;
+  // v60.2 — false when the contract cannot be resolved safely. Callers MUST
+  // block invoice/PDF/email generation when this is false; they must NOT
+  // silently apply the live policy.
+  resolvable: boolean;
+};
+
+// ── Contract Economic View (v60.2) ────────────────────────────────────────
+// The single economic structure consumed by PDF, email and invoice metadata.
+// Built from resolveContractPolicy + the mandate record. The PDF and email
+// never construct the fee, duration or share independently — they read this.
+export type ContractEconomicView = {
+  successFeePct: number;
+  standardFeePct: number;
+  discountPct: number;
+  merchantSharePct: number;
+  feeDurationMonths: number;
+  feeBase: string;
+  currency: string;
+  policyVersion: string;
+  policySource: string;
+  snapshotHash: string | null;
+  templateVersion: string | null;
+  documentVersion: string | null;
+  isLegacy: boolean;
+  hasOverride: boolean;
+  resolvable: boolean;
+  warnings: string[];
+  provenance: string;
+  mandateId: string;
+  brandId: string;
+  country: string;
 };
 
 // ── Canonical serialization ──────────────────────────────────────────────
@@ -167,6 +209,10 @@ export function buildContractPolicySnapshot(input: {
 //   3. MonthlySavingsReport (effective_fee_pct already persisted)
 //   4. legacy fallback (explicit, marked, never silent)
 // The LIVE policy is NEVER used to bill an accepted contract.
+//
+// v60.2: `||` fallbacks that replaced a contractual 0 with 25/75/24 are gone.
+// A missing fee_pct in a policy-enriched snapshot now falls through to the
+// next precedence level (with a warning) instead of silently becoming 25.
 export function resolveContractPolicy(input: {
   mandate?: any;
   billingRule?: any;
@@ -175,26 +221,38 @@ export function resolveContractPolicy(input: {
 }): ResolvedContractTerms {
   const warnings: string[] = [];
 
-  // 1 — explicit, policy-enriched mandate snapshot
+  // 1 — explicit, policy-enriched mandate snapshot.
+  // v60.2: Number.isFinite preserves a contractual 0; a missing fee_pct falls
+  // through instead of defaulting to 25.
   const snap = input.mandate?.acceptance_snapshot_json;
   if (snap && typeof snap === 'object' && (snap.policy_version || snap.snapshotSchemaVersion)) {
     const feePct = Number(snap.fee_pct ?? snap.economicTerms?.successFeePct);
-    return {
-      successFeePct: Number.isFinite(feePct) ? feePct : 25,
-      merchantSharePct: Number(snap.merchant_share_pct ?? snap.economicTerms?.merchantSharePct) || 75,
-      feeDurationMonths: Number(snap.fee_duration_months ?? snap.economicTerms?.feeDurationMonths) || 24,
-      feeBase: snap.fee_base ?? snap.economicTerms?.feeBase ?? 'positive_verified_savings',
-      currency: snap.currency ?? snap.baseline_currency ?? 'EUR',
-      policyVersion: String(snap.policy_version ?? snap.policyVersion ?? ''),
-      policySource: String(snap.policy_source ?? POLICY_SOURCE_REGISTRY),
-      snapshotHash: input.mandate.acceptance_snapshot_hash ?? null,
-      templateVersion: snap.template_version ?? snap.contract?.templateVersion ?? null,
-      documentVersion: input.mandate.document_version ?? null,
-      isLegacy: false,
-      hasOverride: !!(snap.override?.hasOverride ?? snap.overrides?.hasOverride),
-      warnings,
-      provenance: 'mandate_snapshot',
-    };
+    if (!Number.isFinite(feePct)) {
+      warnings.push('mandate_snapshot_fee_pct_missing');
+      // Fall through to BillingRule / report / legacy.
+    } else {
+      const sharePct = Number(snap.merchant_share_pct ?? snap.economicTerms?.merchantSharePct);
+      const durMonths = Number(snap.fee_duration_months ?? snap.economicTerms?.feeDurationMonths);
+      if (!Number.isFinite(sharePct)) warnings.push('mandate_snapshot_share_defaulted');
+      if (!Number.isFinite(durMonths)) warnings.push('mandate_snapshot_duration_defaulted');
+      return {
+        successFeePct: feePct,
+        merchantSharePct: Number.isFinite(sharePct) ? sharePct : 75,
+        feeDurationMonths: Number.isFinite(durMonths) ? durMonths : 24,
+        feeBase: snap.fee_base ?? snap.economicTerms?.feeBase ?? 'positive_verified_savings',
+        currency: snap.currency ?? snap.baseline_currency ?? 'EUR',
+        policyVersion: String(snap.policy_version ?? snap.policyVersion ?? ''),
+        policySource: String(snap.policy_source ?? POLICY_SOURCE_REGISTRY),
+        snapshotHash: input.mandate.acceptance_snapshot_hash ?? null,
+        templateVersion: snap.template_version ?? snap.contract?.templateVersion ?? null,
+        documentVersion: input.mandate.document_version ?? null,
+        isLegacy: false,
+        hasOverride: !!(snap.override?.hasOverride ?? snap.overrides?.hasOverride),
+        warnings,
+        provenance: 'mandate_snapshot',
+        resolvable: true,
+      };
+    }
   }
 
   // 2 — BillingRule (contractual fee over a date window)
@@ -215,6 +273,7 @@ export function resolveContractPolicy(input: {
       hasOverride: false,
       warnings,
       provenance: 'billing_rule',
+      resolvable: true,
     };
   }
 
@@ -236,6 +295,7 @@ export function resolveContractPolicy(input: {
       hasOverride: false,
       warnings,
       provenance: 'monthly_report',
+      resolvable: true,
     };
   }
 
@@ -268,6 +328,7 @@ export function resolveLegacyContractTerms(record: any): ResolvedContractTerms {
       hasOverride: false,
       warnings,
       provenance: 'legacy_snapshot',
+      resolvable: true,
     };
   }
 
@@ -287,6 +348,7 @@ export function resolveLegacyContractTerms(record: any): ResolvedContractTerms {
       hasOverride: false,
       warnings,
       provenance: 'legacy_billing_rule',
+      resolvable: true,
     };
   }
 
@@ -306,6 +368,7 @@ export function resolveLegacyContractTerms(record: any): ResolvedContractTerms {
       hasOverride: false,
       warnings,
       provenance: 'legacy_report',
+      resolvable: true,
     };
   }
 
@@ -324,6 +387,54 @@ export function resolveLegacyContractTerms(record: any): ResolvedContractTerms {
     hasOverride: false,
     warnings: [...warnings, 'unresolvable: no fee found on record'],
     provenance: 'unresolvable',
+    resolvable: false,
+  };
+}
+
+// ── Contract Economic View builder (v60.2) ──────────────────────────────
+// The SINGLE economic structure consumed by PDF, email and invoice metadata.
+// The standard fee is read from the snapshot safely (Number.isFinite, NOT ||)
+// so a contractual 0 is preserved. When the standard is absent, the effective
+// fee is used as the standard (no discount). When the contract is unresolvable,
+// resolvable=false propagates so callers block generation.
+export function buildContractEconomicView(input: {
+  resolvedContractPolicy: ResolvedContractTerms;
+  mandate?: any;
+  billingRule?: any;
+  report?: any;
+  invoice?: any;
+}): ContractEconomicView {
+  const r = input.resolvedContractPolicy;
+  const mandate = input.mandate;
+  const snap = mandate?.acceptance_snapshot_json;
+
+  // Standard fee: read from the snapshot without a `||` fallback. A
+  // contractual standard of 0 is preserved. When absent, the effective fee
+  // IS the standard (no discount to show).
+  const stdRaw = Number(snap?.standard_fee_pct);
+  const standardFeePct = Number.isFinite(stdRaw) ? stdRaw : r.successFeePct;
+
+  return {
+    successFeePct: r.successFeePct,
+    standardFeePct,
+    discountPct: Math.max(standardFeePct - r.successFeePct, 0),
+    merchantSharePct: r.merchantSharePct,
+    feeDurationMonths: r.feeDurationMonths,
+    feeBase: r.feeBase,
+    currency: r.currency,
+    policyVersion: r.policyVersion,
+    policySource: r.policySource,
+    snapshotHash: r.snapshotHash,
+    templateVersion: r.templateVersion,
+    documentVersion: r.documentVersion,
+    isLegacy: r.isLegacy,
+    hasOverride: r.hasOverride,
+    resolvable: r.resolvable,
+    warnings: r.warnings,
+    provenance: r.provenance,
+    mandateId: String(mandate?.id || mandate?._id || ''),
+    brandId: String(mandate?.brand_id || snap?.organization_id || snap?.brandId || ''),
+    country: String(mandate?.country || snap?.country || ''),
   };
 }
 

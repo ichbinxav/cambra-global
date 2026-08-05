@@ -1,7 +1,7 @@
 {
   "name": "MonthlySavingsReport",
   "type": "object",
-  "description": "One measured month per deal activation. RECOVER-4 (2026-08-04) added the billing-eligibility layer: a report only becomes invoiceable through an explicit admin approval (approveRecoverReportForInvoicing) that checks measurement_mode==='fully_verified', verification_status==='realized', evidence, the accepted baseline and the contractual calendar. Estimated/projected reports are NEVER billable.",
+  "description": "One measured month per deal activation. RECOVER-4 (2026-08-04) added the billing-eligibility layer: a report only becomes invoiceable through an explicit admin approval (approveRecoverReportForInvoicing) that checks measurement_mode==='fully_verified', verification_status==='realized', evidence, the accepted baseline and the contractual calendar. Estimated/projected reports are NEVER billable. v60.2 (2026-08-05) added contract-policy provenance fields (policy_source, mandate_id, billing_rule_id, applied_fee_pct, merchant_share_pct, fee_duration_months, contract_template_version, resolution_warnings, generated_by) so every report carries the exact contractual terms it was measured against, and those terms are immutable once the report is approved.",
   "properties": {
     "deal_activation_id": {
       "type": "string"
@@ -192,6 +192,42 @@
     "snapshot_hash": {
       "type": "string",
       "description": "v60.1 \u2014 acceptance_snapshot_hash of the mandate whose terms this report was measured against. Optional; populated by the report generator. The resolver falls back to the mandate when absent."
+    },
+    "policy_source": {
+      "type": "string",
+      "description": "v60.2 (2026-08-05) \u2014 provenance of the policy terms: 'product_policy_registry' for v60.1+ contracts, 'legacy_pre_policy_registry' for records predating the registry. Optional; absent on legacy reports."
+    },
+    "mandate_id": {
+      "type": "string",
+      "description": "v60.2 \u2014 the active Mandate whose terms this report was measured against. Optional; absent on legacy reports or when no active mandate exists."
+    },
+    "billing_rule_id": {
+      "type": "string",
+      "description": "v60.2 \u2014 the BillingRule whose fee_pct was applied for this month. Optional; absent when the fee came from the DealActivation fallback."
+    },
+    "applied_fee_pct": {
+      "type": "number",
+      "description": "v60.2 \u2014 the fee percentage applied at GENERATION time (from the month's BillingRule or DealActivation fallback). Distinct from effective_fee_pct, which is set at APPROVAL time (ceiling of accepted + month rule)."
+    },
+    "merchant_share_pct": {
+      "type": "number",
+      "description": "v60.2 \u2014 merchant share (75) from the resolved contractual terms. Optional; absent on legacy reports."
+    },
+    "fee_duration_months": {
+      "type": "number",
+      "description": "v60.2 \u2014 contractual fee duration (24) from the resolved terms. Optional; absent on legacy reports."
+    },
+    "contract_template_version": {
+      "type": "string",
+      "description": "v60.2 \u2014 template version of the contractual PDF in force at acceptance. Optional."
+    },
+    "resolution_warnings": {
+      "type": "string",
+      "description": "v60.2 \u2014 warnings emitted by resolveContractPolicy when the contractual terms were resolved (e.g. missing fields, legacy fallback). Semicolon-separated. Empty when resolution was clean."
+    },
+    "generated_by": {
+      "type": "string",
+      "description": "v60.2 \u2014 source job that generated this report: 'generateMonthlySavingsReport', the admin email, or 'internal'."
     }
   },
   "required": [

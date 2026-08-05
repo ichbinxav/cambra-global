@@ -17,6 +17,7 @@ import { readLegalIdentity } from '../../shared/cambraLegalIdentity.ts';
 import { determineTaxTreatment, normalizeVat, readTaxConfig, stripeTaxRateIdFor } from '../../shared/recoverTax.ts';
 import { computeInvoiceAmounts, eurToMinor, hashCalculation, monthBillableWindow } from '../../shared/recoverBillingMath.ts';
 import { monthBounds } from '../../shared/billingFee.ts';
+import { resolveContractPolicy } from '../../shared/contractPolicySnapshot.ts';
 
 const BATCH = 5;
 
@@ -236,12 +237,34 @@ export default async function (req: Request): Promise<Response> {
         if (!fin.ok) { outcome.error = `stripe_finalize_failed:${fin.data?.error?.code || fin.status}`; continue; }
         const finalized = fin.data;
 
-        // Immutable accounting snapshot + hash (§18).
+        // v60.2 — resolve contract policy to freeze the provenance in the
+        // invoice snapshot. The invoice never re-reads the live policy after
+        // creation; the snapshot carries policyVersion, policySource and
+        // snapshotHash so a future policy B cannot silently re-price an A invoice.
+        const _invResolved = resolveContractPolicy({ mandate, report });
         const snapshot = {
           report: { id: report.id, month: report.month, savings: report.savings, billable_savings: amounts.billable_savings_eur, calculation_hash: report.calculation_hash || null, calculation_version: report.calculation_version || null },
           baseline_id: report.baseline_id || null,
           mandate: { id: mandate.id, document_version: mandate.document_version, acceptance_snapshot_hash: mandate.acceptance_snapshot_hash },
           fee: { standard_pct: amounts.standard_fee_pct, discount_pct: amounts.discount_pct, effective_pct: amounts.effective_fee_pct },
+          // v60.2 — contract policy provenance, frozen at invoice creation.
+          policy: _invResolved.resolvable ? {
+            policy_version: _invResolved.policyVersion,
+            policy_source: _invResolved.policySource,
+            snapshot_hash: _invResolved.snapshotHash || mandate.acceptance_snapshot_hash || null,
+            mandate_id: mandate.id,
+            report_id: report.id,
+            billing_rule_id: null,
+            resolvable: true,
+          } : {
+            policy_version: null,
+            policy_source: 'unresolvable',
+            snapshot_hash: null,
+            mandate_id: mandate.id,
+            report_id: report.id,
+            billing_rule_id: null,
+            resolvable: false,
+          },
           tax: { treatment: tax.treatment, rate_bps: tax.tax_rate_bps, mentions: tax.mentions, vies_status: brand.vies_status || 'not_checked', vies_checked_at: brand.vies_checked_at || null },
           supplier: { legal_name: identity.identity.legal_name, vat_id: identity.identity.vat_id, address: identity.identity.registered_address },
           customer: { legal_name: brand.billing_legal_name, country: brand.billing_country, vat: customerVat },
@@ -265,6 +288,11 @@ export default async function (req: Request): Promise<Response> {
           collection_scheduled_at: now(),
           billing_snapshot_json: snapshot,
           invoice_snapshot_hash: snapshotHash,
+          // v60.2 — freeze policy provenance on the invoice record itself so
+          // it is queryable without parsing billing_snapshot_json.
+          policy_version: _invResolved.resolvable ? _invResolved.policyVersion : undefined,
+          snapshot_hash: _invResolved.resolvable ? (_invResolved.snapshotHash || mandate.acceptance_snapshot_hash || undefined) : undefined,
+          policy_source: _invResolved.resolvable ? _invResolved.policySource : undefined,
         });
         await svc.entities.MonthlySavingsReport.update(report.id, {
           billing_eligibility_status: 'invoiced',

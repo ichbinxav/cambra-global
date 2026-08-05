@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
+import { resolveContractPolicy } from '../../shared/contractPolicySnapshot.ts';
 
 /**
  * generateMonthlySavingsReport
@@ -226,6 +227,16 @@ Deno.serve(async (req) => {
           notes += ' Costs above baseline this month — reviewing.';
         }
 
+        // v60.2 — resolve the contractual terms for provenance persistence.
+        // The mandate is looked up per-activation; resolveContractPolicy reads
+        // the acceptance_snapshot_json. Legacy reports (no mandate / no
+        // policy_version) get resolvable=false and the provenance fields are
+        // left absent, so legacy records are never overwritten with invented
+        // values.
+        const mandateRow = (await svc.entities.Mandate
+          .filter({ deal_activation_id: deal.id, status: 'active' }, '-created_date', 1).catch(() => []))?.[0] || null;
+        const contractResolved = resolveContractPolicy({ mandate: mandateRow });
+
         // node_fee only on verified or partially-verified data.
         //
         // REFERRAL-2 T2 (2026-08-03) — the percentage now comes from the
@@ -278,6 +289,21 @@ Deno.serve(async (req) => {
           shipment_count_real: deal.vertical === 'shipping' ? volume : 0,
           notes: notes.trim(),
           supporting_snapshot_json: snapshot,
+          // v60.2 — contract policy provenance. Only written when the contract
+          // resolved safely; legacy reports stay absent so no value is invented.
+          ...(contractResolved.resolvable ? {
+            policy_version: contractResolved.policyVersion,
+            snapshot_hash: contractResolved.snapshotHash || undefined,
+            policy_source: contractResolved.policySource,
+            mandate_id: mandateRow?.id || undefined,
+            billing_rule_id: feeRes.rule_id || undefined,
+            applied_fee_pct: nodeSharePct,
+            merchant_share_pct: contractResolved.merchantSharePct,
+            fee_duration_months: contractResolved.feeDurationMonths,
+            contract_template_version: contractResolved.templateVersion || undefined,
+            resolution_warnings: contractResolved.warnings.length ? contractResolved.warnings.join('; ') : undefined,
+          } : {}),
+          generated_by: gate.user?.email || (gate.isInternal ? 'internal' : 'generateMonthlySavingsReport'),
         });
 
         reports.push({
