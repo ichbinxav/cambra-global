@@ -1,3 +1,6 @@
+// v59 (2026-08-05) — Help retired-slug awareness.
+import { getCategory, isRetiredHelpSlug } from "@/lib/helpCenterData";
+
 // SEO-1 (2026-08-05) — Centralized SEO source of truth for all public routes.
 //
 // This module is the SINGLE authority for per-route metadata in CAMBRA. The
@@ -271,17 +274,20 @@ export const SEO_STATIC = {
 export const SEO_DYNAMIC = [
   {
     pattern: /^\/Help\/[^/]+$/,
-    // Help category pages: indexable, canonical = current path. Title/desc
-    // are generated from the Help root copy + the slug, since we don't store
-    // per-category meta. Keeps them payments-scoped.
+    // Help category pages. A slug that maps to a live Help category is
+    // indexable (canonical = current path). A RETIRED slug (shipping, saas,
+    // …) or an unknown slug is noindex,nofollow — retired slugs redirect to
+    // /Help in the UI (HelpCategory), and must never be indexed with stale
+    // multi-vertical content.
     resolve: (pathname /* , lang */) => {
       const slug = decodeURIComponent(pathname.split("/")[2] || "");
       const base = SEO_STATIC["/Help"];
+      const live = Boolean(getCategory(slug)) && !isRetiredHelpSlug(slug);
       const label = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
       return {
         canonicalPath: pathname,
         ogType: "article",
-        robots: DEFAULT_ROBOTS,
+        robots: live ? DEFAULT_ROBOTS : NOINDEX_ROBOTS,
         title: {
           en: `${label} — CAMBRA Help`,
           fr: `${label} — Aide CAMBRA`,

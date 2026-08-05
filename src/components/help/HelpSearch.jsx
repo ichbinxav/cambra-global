@@ -2,24 +2,24 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X, ArrowRight, TrendingUp, Sparkles } from "lucide-react";
-import { getAllFAQs, TRENDING_SEARCHES, CATEGORIES } from "@/lib/helpCenterData";
+import { getAllFAQs, TRENDING_SEARCHES, getVisibleCategories } from "@/lib/helpCenterData";
 
 export default function HelpSearch({ open, onClose }) {
   const [query, setQuery] = useState("");
   const inputRef = useRef(null);
-  // M4-TPV Fase 3 (2026-07-12) — exclude FAQs whose category is hidden
-  // (shipping, saas). A visitor searching "shipping" from the Help home
-  // should not get results for a dead vertical.
-  const hiddenCategorySlugs = useMemo(
-    () => new Set(CATEGORIES.filter((c) => c.hidden).map((c) => c.slug)),
+  // v59 — search only FAQs whose category is visible (featureScope-governed).
+  // Retired categories (shipping, saas) are no longer in CATEGORIES, so their
+  // FAQs are absent from getAllFAQs() and never surface in search results.
+  const visibleCategorySlugs = useMemo(
+    () => new Set(getVisibleCategories().map((c) => c.slug)),
     []
   );
   const allFaqs = useMemo(
-    () => getAllFAQs().filter((f) => !hiddenCategorySlugs.has(f.category)),
-    [hiddenCategorySlugs]
+    () => getAllFAQs().filter((f) => visibleCategorySlugs.has(f.category)),
+    [visibleCategorySlugs]
   );
   const visibleCategories = useMemo(
-    () => CATEGORIES.filter((c) => !c.hidden),
+    () => getVisibleCategories(),
     []
   );
 

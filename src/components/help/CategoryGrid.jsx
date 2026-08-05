@@ -4,7 +4,7 @@ import {
   Sparkles, Activity, Gauge, TrendingDown, CreditCard, Truck, Package,
   BarChart3, Plug, Upload, Shield, Wallet, Wrench, Scale, ArrowUpRight,
 } from "lucide-react";
-import { CATEGORIES } from "@/lib/helpCenterData";
+import { getVisibleCategories } from "@/lib/helpCenterData";
 
 const ICON_MAP = {
   Sparkles, Activity, Gauge, TrendingDown, CreditCard, Truck, Package,
@@ -12,10 +12,10 @@ const ICON_MAP = {
 };
 
 export default function CategoryGrid() {
-  // M4-TPV Fase 3 (2026-07-12) — filter out dead-vertical categories flagged
-  // `hidden: true` (shipping, saas). Deep links to /Help/shipping still
-  // resolve via getCategory(); this only hides them from the public grid.
-  const visibleCategories = CATEGORIES.filter((c) => !c.hidden);
+  // v59 — categories governed by featureScope (see getVisibleCategories).
+  // Dormant-vertical categories are retired (not in CATEGORIES), so they
+  // never appear here and /Help/<retired-slug> redirects to /Help.
+  const visibleCategories = getVisibleCategories();
 
   return (
     <section className="py-12 px-5">

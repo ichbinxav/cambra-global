@@ -6,7 +6,7 @@ import PublicPageShell from "@/components/shared/PublicPageShell";
 import FAQAccordion from "@/components/help/FAQAccordion";
 import HelpSearch from "@/components/help/HelpSearch";
 import HelpCTA from "@/components/help/HelpCTA";
-import { CATEGORIES, getCategory, getFAQsByCategory } from "@/lib/helpCenterData";
+import { getCategory, getFAQsByCategory, getVisibleCategories, isRetiredHelpSlug } from "@/lib/helpCenterData";
 
 export default function HelpCategory() {
   const { slug } = useParams();
@@ -28,13 +28,14 @@ export default function HelpCategory() {
     }
   }, [slug]);
 
-  if (!category) return <Navigate to="/Help" replace />;
+  // v59 — retired slugs (shipping, saas, …) redirect to /Help so no stale
+  // multi-vertical content is reachable via deep link. Unknown slugs already
+  // fell through to the same redirect; retired is made explicit for clarity.
+  if (isRetiredHelpSlug(slug) || !category) return <Navigate to="/Help" replace />;
 
-  // M4-TPV Fase 3 iter 2 — also filter `hidden` categories out of related,
-  // so a visitor on /Help/payments doesn't get "Shipping & Logistics" as a
-  // suggested next topic when the category itself is hidden from the grid.
-  const relatedCategories = CATEGORIES
-    .filter((c) => c.slug !== slug && !c.hidden)
+  // Related topics come only from featureScope-governed visible categories.
+  const relatedCategories = getVisibleCategories()
+    .filter((c) => c.slug !== slug)
     .slice(0, 4);
 
   return (

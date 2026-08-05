@@ -6,6 +6,57 @@
 
 ---
 
+## Product scope (v59, 2026-08-05)
+
+**Source of truth:** `src/lib/featureScope.js` — `FEATURE_SCOPE` registry.
+**Rule:** a surface may show a category only when its vertical is both
+`productionEnabled` and `merchantVisible`. The Help Center (`getVisibleCategories`
+in `helpCenterData.js`) and the Help SEO dynamic resolver consume this registry.
+
+- **Active category:** payments (card payments — online PSP + in-store TPV).
+- **Active channels:** online (PSP) and in-store (TPV / physical terminal).
+- **Live connections:** Stripe — read-only OAuth (balance transactions, charges,
+  fee breakdown). Live status is conditional on the OAuth flow being operational
+  and proven with a real account; verify before any "live" claim in copy.
+- **Upload-supported formats:** PDF, CSV, Excel (.xls/.xlsx), PNG, JPG (max 20MB).
+  Statement upload works for any PSP or TPV provider, including those not on the
+  connected list.
+- **Code-level connectors (not live / not merchant-presented):** Shopify, WooCommerce,
+  BigCommerce (commerce platforms whose data could feed the payments analysis),
+  Google Drive, Google Sheets, Gmail, Slack. These remain in code (registry /
+  normalizers) as dormant infrastructure and MUST NOT appear in Help, onboarding,
+  navigation, pricing, or any merchant-facing claim as available integrations.
+- **Future categories (roadmap, not currently available):** shipping, SaaS,
+  insurance, telecom, energy, banking, financing. These may be presented only as
+  explicit roadmap — no launch dates, no activation CTA.
+- **Retired Help slugs:** `shipping`, `saas`, `insurance`, `telecom`, `energy`,
+  `banking`, `financing`, `cambra-pro`, `founding-period`, `logistics`
+  (see `RETIRED_HELP_SLUGS` in `helpCenterData.js`). `/Help/<retired-slug>`
+  redirects to `/Help`; SeoMeta emits `noindex,nofollow` for them.
+- **Prohibited merchant-facing claims:** "CAMBRA Pro", "Founding period",
+  "Founding membership", "membership plan", "connect all your tools",
+  "all your infrastructure", "all providers", "production-ready" for unproven
+  connectors, presenting dormant verticals as active services.
+- **Allowed vision framing:** "CAMBRA starts with card payments", "Payments are
+  the first infrastructure category", "Additional categories may be introduced
+  only after validation", "Future infrastructure categories are not currently
+  available". "Infrastructure Intelligence" may remain as corporate positioning
+  when explained as long-term vision.
+- **Review date:** 2026-08-05. **Owner:** product/engineering (no per-file owners
+  in repo).
+
+### Documents marked historical (do not treat as a current checklist)
+
+The following docs describe earlier phases or the pre-pivot multi-vertical
+product. They are kept for history; where they contradict this section, this
+section wins:
+
+- `src/docs/LAUNCH_CHECKLIST.md`, `src/docs/PENDING_KEYS.md`,
+  `src/docs/OAUTH_SETUP_PENDING.md`, `src/docs/KNOWN_DEBT.md`, `README.md`,
+  `src/README.md`, and `src/docs/Decision_Log_*.md`.
+
+---
+
 ## SEO — Centralized per-route metadata (SEO-1, 2026-08-05)
 
 ### What is implemented

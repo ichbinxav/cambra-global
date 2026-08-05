@@ -1,106 +1,70 @@
 // CAMBRA Help Center — content & taxonomy
-// Tone: sharp, intelligent, calm, infrastructure-native.
+// Tone: sharp, intelligent, calm, payments-native.
 //
-// M4-TPV Fase 3 · Coherence patch (2026-07-12).
+// v59 (2026-08-05) — payments-first coherence.
 // ─────────────────────────────────────────────────────────────────────────
-// The Help Center was written pre-R1 for the multi-vertical CAMBRA
-// (payments + shipping + saas + insurance + telecom + banking). Post-R1
-// the product is payments-only, but the Help Center content still ships
-// the old taxonomy — a visitor to /Help sees "Shipping help" and "SaaS &
-// Commerce Stack" categories that don't correspond to anything the
-// product does today.
+// The Help Center is now governed by src/lib/featureScope.js. Only verticals
+// flagged merchantVisible surface as categories. Today that is `payments`
+// alone; shipping, SaaS, insurance, telecom, energy, banking and financing are
+// dormant roadmap and MUST NOT appear as active Help categories.
 //
-// A full refactor (retone every FAQ to payments-only + translate to FR/ES
-// + rework getting-started to stop listing dead verticals) is tracked in
-// KNOWN_DEBT as "Help Center — refactor payments-only + traducción FR/ES".
-//
-// This patch is the minimum surface-correctness fix on top of that debt:
-//   1. Hide dead-vertical categories (shipping, saas) from public UI via
-//      `hidden: true`. The FAQ_GROUPS entries are LEFT IN PLACE so any
-//      deep-link (/Help/shipping) still resolves rather than 404-ing —
-//      but they no longer appear in the category grid, search results,
-//      or nav.
-//   2. Add 3 new in-store FAQs to the `payments` category, including the
-//      one that matters most: "¿qué hacéis con mis facturas?" — merchants
-//      need this answered BEFORE they upload a document.
+// Retired slugs (shipping, saas) are kept in RETIRED_HELP_SLUGS so:
+//   - HelpCategory redirects /Help/<retired-slug> → /Help (no stale content);
+//   - SeoMeta emits noindex,nofollow for them (see seoConfig.js SEO_DYNAMIC);
+//   - they never appear in the category grid, search, or sitemap.
+// No article is left reachable only because it is hidden from the grid.
 // ─────────────────────────────────────────────────────────────────────────
+
+import { isMerchantVisible } from "@/lib/featureScope";
 
 export const CATEGORIES = [
   {
     slug: "getting-started",
     title: "Getting Started",
-    description: "First steps with CAMBRA's infrastructure intelligence.",
+    description: "First steps with CAMBRA's card-payment cost audit.",
     icon: "Sparkles",
     accent: "#1F4ED8",
   },
   {
     slug: "analyzer",
-    title: "Infrastructure Analyzer",
-    description: "How the Analyzer audits your operating costs.",
+    title: "Card payment Analyzer",
+    description: "How the Analyzer audits your card-payment costs.",
     icon: "Activity",
     accent: "#2CA7C1",
   },
-  // ── REMOVED 2026-07-12 (M4-TPV Fase 3 coherence patch, iteración 2).
-  // The "Infrastructure Score" was a multi-vertical concept (composite 0-100
-  // across payments, logistics, SaaS, insurance...) that no longer exists in
-  // the payments-only product. Today's product surfaces a per-channel gap
-  // in bps plus a savings range — not a stack-maturity score. Category
-  // removed entirely rather than retoned: the concept itself is dead, not
-  // just the wording.
   {
     slug: "savings",
     title: "Savings & Optimization",
-    description: "From detection to verified optimization.",
+    description: "From detected gap to verified savings.",
     icon: "TrendingDown",
     accent: "#2CA7C1",
   },
   {
     slug: "payments",
-    title: "Payments Infrastructure",
-    description: "Processing rates, fees, and benchmark logic.",
+    title: "Card payments",
+    description: "Online PSP and in-store TPV rates, fees, and benchmark logic.",
     icon: "CreditCard",
     accent: "#635BFF",
-  },
-  // ── HIDDEN 2026-07-12 (M4-TPV Fase 3 coherence patch).
-  // Shipping / SaaS categories belong to the pre-R1 multi-vertical product.
-  // Kept in the array (not deleted) so any deep-link resolves via
-  // getCategory(slug), but excluded from the public category grid via
-  // `hidden: true`. Consumers (Help.jsx, CategoryGrid, search) filter on
-  // `!c.hidden` to render.
-  {
-    slug: "shipping",
-    title: "Shipping & Logistics",
-    description: "Carrier benchmarks and shipping economics.",
-    icon: "Truck",
-    accent: "#1F4ED8",
-    hidden: true,
-  },
-  {
-    slug: "saas",
-    title: "SaaS & Commerce Stack",
-    description: "Tooling redundancy and stack alignment.",
-    icon: "Package",
-    accent: "#2CA7C1",
-    hidden: true,
+    vertical: "payments",
   },
   {
     slug: "benchmarks",
-    title: "Benchmarks & Insights",
+    title: "Benchmarks & Methodology",
     description: "Where the data comes from and how it's modeled.",
     icon: "BarChart3",
     accent: "#1F4ED8",
   },
   {
     slug: "integrations",
-    title: "Integrations & Connections",
-    description: "Connect Stripe, Shopify, Drive, Sheets and more.",
+    title: "Connections & uploads",
+    description: "Connect Stripe (read-only) or upload statements from any provider.",
     icon: "Plug",
     accent: "#2CA7C1",
   },
   {
     slug: "uploads",
-    title: "Uploads & Invoice Analysis",
-    description: "Upload statements and invoices for deep analysis.",
+    title: "Statement uploads",
+    description: "Upload provider statements for a verified analysis.",
     icon: "Upload",
     accent: "#635BFF",
   },
@@ -113,8 +77,8 @@ export const CATEGORIES = [
   },
   {
     slug: "pricing",
-    title: "Membership & Pricing",
-    description: "Free access, CAMBRA Pro, and the Founding period.",
+    title: "Pricing & success fee",
+    description: "Free analysis, success fee only on verified savings.",
     icon: "Wallet",
     accent: "#2CA7C1",
   },
@@ -134,6 +98,27 @@ export const CATEGORIES = [
   },
 ];
 
+// Slugs that belonged to the pre-payments-only multi-vertical product. They are
+// NOT in CATEGORIES, so getCategory() returns undefined and HelpCategory
+// redirects to /Help. Listed explicitly so SeoMeta can noindex them and tests
+// can assert they are retired.
+export const RETIRED_HELP_SLUGS = ["shipping", "saas", "insurance", "telecom", "energy", "banking", "financing", "cambra-pro", "founding-period", "logistics"];
+
+export function getRetiredHelpSlugs() {
+  return RETIRED_HELP_SLUGS.slice();
+}
+
+// Categories visible to merchants, governed by featureScope. A category with a
+// `vertical` is shown only when that vertical is merchantVisible. Categories
+// without a vertical (getting-started, analyzer, savings, benchmarks, …) are
+// vertical-agnostic and always visible. Today this returns every category in
+// CATEGORIES, because the only vertical-mapped category is `payments` and
+// payments is merchantVisible. The day a vertical is flipped off, its category
+// disappears from the grid automatically.
+export function getVisibleCategories() {
+  return CATEGORIES.filter((c) => !c.vertical || isMerchantVisible(c.vertical));
+}
+
 export const FAQ_GROUPS = [
   {
     category: "getting-started",
@@ -152,30 +137,30 @@ export const FAQ_GROUPS = [
         a: "Card-payment costs, in both channels: online payments (Stripe, PayPal, Shopify Payments, Adyen, Mollie, Checkout.com, and other PSPs) and in-store terminal payments (SumUp, Stripe Terminal, Smile & Pay, Zettle, and traditional bank TPVs). Effective rates, interchange, scheme fees, cross-border uplift, fixed-fee drag, and terminal rental — every component of your all-in cost per transaction.",
       },
       {
+        q: "Does CAMBRA analyze other cost categories?",
+        a: "Not today. CAMBRA starts with card payments — that is the first infrastructure category we audit end-to-end. Shipping, SaaS, insurance, telecom, energy, banking and financing are part of the long-term vision but are not currently available. Additional categories may be introduced only after they are validated to the same evidence standard.",
+      },
+      {
         q: "Is CAMBRA a procurement platform?",
-        a: "No. CAMBRA is an intelligence and audit layer. Procurement is downstream — we focus on visibility, benchmarking, and surfacing optimization opportunities. Acting on them is a separate step, fully under your control.",
+        a: "No. CAMBRA is an intelligence and audit layer for card-payment costs. Procurement is downstream — we focus on visibility, benchmarking, and surfacing optimization opportunities. Acting on them is a separate step, fully under your control.",
       },
       {
-        q: "Is CAMBRA replacing my providers?",
-        a: "Not necessarily. Most optimizations happen by renegotiating with your current providers using benchmark evidence. Switching is one option among many — CAMBRA's job is to show you the full picture, not push a specific outcome.",
+        q: "Is CAMBRA replacing my payment provider?",
+        a: "Not necessarily. Most optimizations happen by renegotiating with your current provider using benchmark evidence. Switching is one option among many — CAMBRA's job is to show you the full picture, not push a specific outcome.",
       },
       {
-        q: "Why do modern brands overpay for infrastructure?",
-        a: "Three reasons: pricing opacity, stack drift, and benchmark blindness. Providers rarely volunteer better terms. Tools accumulate over years without audits. And without comparable peer data, brands can't tell what 'fair' looks like. CAMBRA solves all three.",
+        q: "Why do modern brands overpay for card payments?",
+        a: "Three reasons: pricing opacity, benchmark blindness, and contract drift. Providers rarely volunteer better terms. Without comparable peer data, brands can't tell what 'fair' looks like. And contracts set at launch rarely get re-audited as volumes grow. CAMBRA solves all three for card payments.",
       },
       {
         q: "What makes CAMBRA different from consultants?",
-        a: "Consultants are episodic, expensive, and inconsistent. CAMBRA is continuous, data-driven, and built on benchmark intelligence — not opinions. The platform runs in minutes, not months, and stays in place to monitor your stack going forward.",
-      },
-      {
-        q: "How does CAMBRA identify inefficiencies?",
-        a: "By combining your operating inputs, connected data, and uploaded statements against proprietary benchmark datasets and provider pricing patterns. The result: a structured map of where your stack is aligned, where it's drifting, and where margin is recoverable.",
+        a: "Consultants are episodic, expensive, and inconsistent. CAMBRA is continuous, data-driven, and built on benchmark intelligence — not opinions. The Analyzer runs in minutes, not months, and stays in place to monitor your card-payment costs going forward.",
       },
     ],
   },
   {
     category: "analyzer",
-    title: "Infrastructure Analyzer",
+    title: "Card payment Analyzer",
     items: [
       {
         q: "What is the Payments Analyzer?",
@@ -191,7 +176,7 @@ export const FAQ_GROUPS = [
       },
       {
         q: "How accurate are estimates?",
-        a: "Accuracy scales with the data you provide. Manual inputs produce a reliable directional estimate. Adding uploaded statements or connected tools tightens the range significantly. CAMBRA always shows you the confidence level of each finding.",
+        a: "Accuracy scales with the data you provide. Manual inputs produce a reliable directional estimate. Adding uploaded statements or a connected Stripe account tightens the range significantly. CAMBRA always shows you the confidence level of each finding.",
       },
       {
         q: "Why does CAMBRA ask these questions?",
@@ -199,20 +184,17 @@ export const FAQ_GROUPS = [
       },
       {
         q: "Can I edit information later?",
-        a: "Yes. Every analysis is stored and can be refined as you connect tools, upload invoices, or update inputs. The Analyzer is designed to evolve with your business.",
+        a: "Yes. Every analysis is stored and can be refined as you connect Stripe, upload statements, or update inputs. The Analyzer is designed to evolve with your business.",
       },
     ],
   },
-  // ── REMOVED 2026-07-12 (see CATEGORIES comment). Infrastructure Score
-  // was a multi-vertical composite concept that doesn't exist in the
-  // payments-only product. The 5 FAQs it held are gone rather than retoned.
   {
     category: "savings",
     title: "Savings & Optimization",
     items: [
       {
         q: "How does CAMBRA estimate savings?",
-        a: "By computing the gap between your current cost structure and the benchmark for your tier, applied to your real volumes. Estimates are conservative by design — we'd rather underpromise and overdeliver.",
+        a: "By computing the gap between your current card-payment cost and the benchmark for your tier, applied to your real volumes. Estimates are conservative by design — we'd rather underpromise and overdeliver.",
       },
       {
         q: "Are savings guaranteed?",
@@ -220,15 +202,15 @@ export const FAQ_GROUPS = [
       },
       {
         q: "What happens after analysis?",
-        a: "You receive a structured report: your per-channel effective rate, the benchmark for your cohort, the gap in basis points, and an estimated monthly and annual savings range. From there you can act independently on your provider, or use CAMBRA's optimization workflows.",
+        a: "You receive a structured report: your per-channel effective rate, the benchmark for your cohort, the gap in basis points, and an estimated monthly and annual savings range. From there you can act independently on your provider, or use CAMBRA's recovery workflows.",
       },
       {
         q: "What is CAMBRA's success fee?",
-        a: "When CAMBRA helps activate an optimization that produces verified savings, we share in those savings — typically 25% of the monthly delta, only on results that materialize. No savings, no fee.",
+        a: "When CAMBRA helps activate an optimization that produces verified savings, we share in those savings — 25% of the verified monthly delta over a 24-month agreement, only on results that materialize. No savings, no fee.",
       },
       {
         q: "Do I pay upfront?",
-        a: "No. The Analyzer, benchmarks, and gap reports are free during the Founding period. Optimization workflows are activated on a success-fee basis.",
+        a: "No. The Analyzer, benchmarks, and gap reports are free during early access. Recovery workflows are activated on a success-fee basis only when verified savings are recovered.",
       },
       {
         q: "What if no savings are found?",
@@ -242,11 +224,11 @@ export const FAQ_GROUPS = [
   },
   {
     category: "benchmarks",
-    title: "Benchmarks & Insights",
+    title: "Benchmarks & Methodology",
     items: [
       {
         q: "Where do benchmark ranges come from?",
-        a: "CAMBRA maintains proprietary benchmark datasets built from anonymized analyzer data, provider pricing intelligence, and partner-shared signals — segmented by revenue tier, geography, channel mix and category.",
+        a: "CAMBRA maintains proprietary benchmark datasets built from anonymized analyzer data, public provider pricing verified against each provider's pricing page, and regulatory interchange floors — segmented by revenue tier, geography, and channel mix.",
       },
       {
         q: "How often are benchmarks updated?",
@@ -258,17 +240,17 @@ export const FAQ_GROUPS = [
       },
       {
         q: "How does CAMBRA compare businesses?",
-        a: "By revenue tier, geography, channel mix, category, and stack composition. Two brands at the same scale but with different channel mixes are benchmarked differently — because their economics are different.",
+        a: "By revenue tier, geography, and channel mix. Two brands at the same scale but with different channel mixes are benchmarked differently — because their card-payment economics are different.",
       },
       {
-        q: "What is considered 'optimized' infrastructure?",
-        a: "Pricing within the top quartile of your peer group, no redundant tooling, no stranded contracts, and operational costs aligned with revenue scale. Most brands aren't there yet — and that's the point.",
+        q: "What is considered an optimized card-payment cost?",
+        a: "An effective rate within the top quartile of your peer group, no avoidable fixed-fee drag, cross-border uplift right-sized to your actual international volume, and terminal rental eliminated where a modern TPV allows it. Most brands aren't there yet — and that's the point.",
       },
     ],
   },
   {
     category: "payments",
-    title: "Payments Infrastructure",
+    title: "Card payments",
     items: [
       {
         q: "What payment costs does CAMBRA analyze?",
@@ -282,65 +264,31 @@ export const FAQ_GROUPS = [
         q: "Can CAMBRA analyze Stripe directly?",
         a: "Yes. Connecting Stripe gives CAMBRA read-only access to your true effective rate, volume mix, and fee breakdown — producing the sharpest possible benchmark.",
       },
-      // ── M4-TPV Fase 3 (2026-07-12) — in-store FAQs.
-      // Ordered so the "what happens to my invoices?" question sits BEFORE
-      // the invoice-requirements one — a merchant reads them in the order
-      // "do you audit my TPV → what would I have to give you → what would
-      // you do with it", and pulling the trust-critical question last would
-      // ambush them right before the upload step.
       {
         q: "Do you audit in-store card payments (TPV terminals)?",
         a: "Yes. The Analyzer covers both online (PSP) and in-store (TPV / physical terminal) card payments — same 60-second flow, pick your channel at the top. Public pricing is benchmarked verbatim for the four in-store providers we've verified in Europe (SumUp, Stripe Terminal, Smile & Pay, Zettle by PayPal); traditional bank acquirers (BNP, Crédit Agricole, Société Générale, BPCE, etc.) fall back to a regional average with a wider band, clearly labelled as an estimate. Combined mode analyzes both channels in one pass and shows a per-channel breakdown.",
       },
       {
-        q: "What invoices do you need to verify my in-store rates?",
-        a: "For an estimated audit — none. The Analyzer gives you a directional gap from your inputs alone (monthly GMV, average ticket, provider, country). To move from estimated to verified in-store, we'd need a monthly TPV provider statement showing: total fees for the period, processed volume, transaction count, and any separately listed fixed fees or terminal rental. PDF, Excel, or CSV — whatever your provider sends you. Verified in-store is currently in beta and rolling out to founding-cohort merchants; the estimated path is live for everyone today.",
+        q: "What statements do you need to verify my in-store rates?",
+        a: "For an estimated audit — none. The Analyzer gives you a directional gap from your inputs alone (monthly GMV, average ticket, provider, country). To move from estimated to verified in-store, we'd need a monthly TPV provider statement showing: total fees for the period, processed volume, transaction count, and any separately listed fixed fees or terminal rental. PDF, Excel, or CSV — whatever your provider sends you. Verified in-store is currently in beta and rolling out to early-access merchants; the estimated path is live for everyone today.",
       },
       {
-        q: "What do you do with invoices I upload?",
+        q: "What do you do with statements I upload?",
         a: "Strict pipeline, no surprises: (1) files are encrypted in transit (TLS 1.3) and at rest (AES-256), stored on EU infrastructure; (2) processed by AI models (Anthropic + OpenAI cross-check) to extract structured cost fields — total fees, volume, ticket, provider terms — nothing else; (3) your files and extractions are scoped to your account only, never shared with third parties, never used to train provider or public models; (4) you can delete any uploaded file on request, and account deletion removes all uploads within 30 days per our retention policy. Full detail lives in the Privacy notice under 'AI-assisted processing' (Privacy §4).",
       },
     ],
   },
   {
-    category: "shipping",
-    title: "Shipping & Logistics",
-    items: [
-      {
-        q: "What shipping costs does CAMBRA analyze?",
-        a: "Cost per shipment, carrier mix, surcharges, fuel and remote-area fees, returns logistics, and 3PL fulfillment economics. Benchmarks are tier- and geography-adjusted.",
-      },
-      {
-        q: "Can CAMBRA negotiate carrier contracts?",
-        a: "CAMBRA surfaces the optimization opportunity and the benchmark evidence needed to renegotiate. Execution can be done independently or through CAMBRA's optimization workflows.",
-      },
-    ],
-  },
-  {
-    category: "saas",
-    title: "SaaS & Commerce Stack",
-    items: [
-      {
-        q: "How does CAMBRA audit SaaS spend?",
-        a: "By measuring your total SaaS-to-revenue ratio against tier benchmarks, then identifying redundancies, overlapping tools, and stranded subscriptions. Most brands overspend on SaaS by 25–35%.",
-      },
-      {
-        q: "What's considered a healthy SaaS ratio?",
-        a: "For commerce brands, typically 1.5–2.5% of revenue depending on tier. Brands above that range usually have stack drift — multiple tools doing similar jobs.",
-      },
-    ],
-  },
-  {
     category: "integrations",
-    title: "Integrations & Connections",
+    title: "Connections & uploads",
     items: [
       {
         q: "Which integrations are supported?",
-        a: "Payment providers first — Stripe is live today (read-only OAuth: balance transactions, charges, fee breakdown). PayPal, Mollie, Adyen, Checkout.com and Shopify Payments are on the near-term roadmap. Statement uploads (PDF / CSV / Excel) work for any provider today, including in-store TPV providers not on the connected list.",
+        a: "Stripe is the live read-only connection today (OAuth: balance transactions, charges, fee breakdown). Other PSPs (PayPal, Mollie, Adyen, Checkout.com, Shopify Payments) are on the roadmap, not currently connectable. Statement uploads (PDF / CSV / Excel) work for any provider today, including in-store TPV providers not on the connected list.",
       },
       {
-        q: "Are integrations read-only?",
-        a: "Yes — always. CAMBRA never modifies data in your connected systems. Every integration uses minimal read-only scopes, audited and revocable at any time.",
+        q: "Is the Stripe connection read-only?",
+        a: "Yes — always. CAMBRA never modifies data in your Stripe account. The OAuth scope is minimal and read-only, audited and revocable at any time.",
       },
       {
         q: "Does CAMBRA modify my systems?",
@@ -348,16 +296,16 @@ export const FAQ_GROUPS = [
       },
       {
         q: "What happens after connection?",
-        a: "Your analysis automatically refines as fresh data flows in. Connected sources unlock tighter benchmarks, more granular optimization opportunities, and continuous monitoring.",
+        a: "Your analysis automatically refines as fresh data flows in. A connected Stripe account unlocks tighter benchmarks, more granular optimization opportunities, and continuous monitoring of your effective rate.",
       },
     ],
   },
   {
     category: "uploads",
-    title: "Uploads & Invoice Analysis",
+    title: "Statement uploads",
     items: [
       {
-        q: "Can I upload invoices?",
+        q: "Can I upload statements?",
         a: "Yes. Upload monthly statements from your payment provider — PSP (Stripe, PayPal, Adyen, Mollie, Shopify Payments...) or in-store TPV (SumUp, Stripe Terminal, Zettle, traditional bank acquirer) — and CAMBRA extracts the relevant fields (total fees, volume, transaction count, fixed fees, terminal rental) automatically using AI.",
       },
       {
@@ -365,7 +313,7 @@ export const FAQ_GROUPS = [
         a: "PDF, CSV, Excel (.xls / .xlsx), and image formats (PNG, JPG). Maximum file size is 20MB per document.",
       },
       {
-        q: "How does invoice analysis work?",
+        q: "How does statement analysis work?",
         a: "Uploaded statements are parsed for effective rates, processed volume, transaction counts, and any separately listed fixed fees or terminal rental. Extracted data feeds directly into your Analyzer, replacing form estimates with real measured numbers.",
       },
       {
@@ -410,23 +358,23 @@ export const FAQ_GROUPS = [
   },
   {
     category: "pricing",
-    title: "Membership & Pricing",
+    title: "Pricing & success fee",
     items: [
       {
         q: "Is CAMBRA free?",
-        a: "Yes. The Analyzer, benchmarks and core insights are free during the Founding period. There's no credit card required to run a full audit.",
+        a: "Yes. The Analyzer, benchmarks and core insights are free during early access. There's no credit card required to run a full audit.",
       },
       {
         q: "What's included in free access?",
         a: "Full card-payment analysis (online and in-store), your per-channel effective rate, the benchmark for your cohort, the gap in basis points, and an estimated monthly and annual savings range.",
       },
       {
-        q: "What is CAMBRA Pro?",
-        a: "CAMBRA Pro unlocks continuous monitoring, deeper integrations, optimization workflows, and access to negotiated network conditions. Pricing will be announced after the Founding period.",
+        q: "How does CAMBRA make money?",
+        a: "Only on results. When CAMBRA helps activate an optimization that produces verified savings, we charge a success fee — 25% of the verified savings over a 24-month agreement. No savings, no fee. There is no joining fee and no monthly subscription today.",
       },
       {
-        q: "What happens after the Founding period?",
-        a: "Founding members keep their early benefits for the lifetime of their account. New brands joining later will follow standard pricing.",
+        q: "Do I pay anything if no savings are found?",
+        a: "No. The analysis is free, and the success fee only applies to savings that are actually verified and recovered. If we don't recover margin, you don't owe a fee.",
       },
       {
         q: "Can I cancel anytime?",
@@ -479,10 +427,10 @@ export const POPULAR = [
 
 export const TRENDING_SEARCHES = [
   "In-store TPV",
-  "Stripe integration",
+  "Stripe connection",
   "Benchmark accuracy",
   "Success fee",
-  "Upload invoices",
+  "Upload statements",
   "GDPR",
 ];
 
@@ -504,4 +452,8 @@ export function getFAQsByCategory(slug) {
 
 export function getCategory(slug) {
   return CATEGORIES.find((c) => c.slug === slug);
+}
+
+export function isRetiredHelpSlug(slug) {
+  return RETIRED_HELP_SLUGS.includes(slug);
 }
