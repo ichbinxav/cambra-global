@@ -1221,4 +1221,29 @@ export default {
     acc_s_session:      "Session",
     acc_session_text:   "Vous déconnecter mettra fin à votre session actuelle. Vous pourrez toujours vous reconnecter avec vos identifiants.",
     acc_signout:        "Se déconnecter de CAMBRA",
+
+    /* Checkpoint H — en-tête du tableau de bord (DashboardHeroV2) */
+    dh_badge_verified:    "Vérifié",
+    dh_badge_provisional: "Provisoire",
+    dh_badge_estimated:   "Estimé",
+    dh_identified:        "Potentiel identifié",
+    dh_per_year:          "/ an",
+    dh_confidence_band:   "Fourchette de confiance",
+    dh_sharpen:           "Connectez Stripe pour affiner ce chiffre à partir de vos transactions réelles.",
+    dh_eff_rate:          "Taux effectif",
+    dh_rate_today:        "{rate} aujourd'hui",
+    dh_rate_achievable:   "{rate} atteignable",
+    dh_start_recovery:    "Lancer la récupération",
+    dh_verify_stripe:     "Vérifier avec Stripe",
+    dh_connect_stripe:    "Connecter Stripe pour vérifier",
+    dh_efficiency:        "Efficacité des paiements",
+    dh_no_score:          "Connectez votre PSP pour évaluer votre configuration.",
+
+    /* Checkpoint H — verdict d'efficacité des paiements (note → texte).
+       Évalue le COÛT du commerçant, jamais le prestataire. */
+    score_ctx_A: "Votre taux effectif est au plancher atteignable — des coûts de paiement au meilleur niveau.",
+    score_ctx_B: "Votre taux effectif est proche du plancher atteignable — vous vous en sortez bien.",
+    score_ctx_C: "Votre taux effectif se situe dans la moyenne du marché. Il y a de la marge pour le baisser.",
+    score_ctx_D: "Votre taux effectif est supérieur à ce qui est atteignable — cela vaut la peine d'agir.",
+    score_ctx_F: "Votre taux effectif est bien supérieur à ce qui est atteignable — une marge de récupération importante.",
 };

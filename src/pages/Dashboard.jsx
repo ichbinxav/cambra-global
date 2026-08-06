@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { getMyActiveBrand } from "@/lib/getMyActiveBrand";
+import { formatEur as formatEurLocal } from "@/lib/currencyFormats";
 
 import LastScanBar from "@/components/dashboard/LastScanBar";
 import AIInsightsPanel from "@/components/dashboard/AIInsightsPanel";
@@ -29,15 +30,9 @@ const CALL_GMV_MONTHLY_EUR = 250000;
 const CALL_ANNUAL_SAVINGS_EUR = 25000;
 
 /* ── helpers ─────────────────────────────────────────────────── */
-function formatEurLocal(n, lang) {
-  const v = Math.max(0, Math.round(Number(n) || 0));
-  const locale = { en: "en-IE", fr: "fr-FR", es: "es-ES" }[lang] || "en-IE";
-  try {
-    return new Intl.NumberFormat(locale, { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
-  } catch {
-    return `€${v.toLocaleString()}`;
-  }
-}
+// Checkpoint H — the local formatEurLocal moved to @/lib/currencyFormats so the
+// dashboard, the Action Center and the hero share ONE implementation. Output is
+// unchanged (same locales, same rounding).
 
 // FASE 1.1 — Payments-only UI. We keep NODE_CATEGORY / CATEGORY_ORDER as
 // tiny objects but only render payments (+ commerce, since commerce

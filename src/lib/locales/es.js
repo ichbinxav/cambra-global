@@ -1221,4 +1221,29 @@ export default {
     acc_s_session:      "Sesión",
     acc_session_text:   "Cerrar sesión finalizará tu sesión actual. Siempre podrás volver a entrar con tus credenciales.",
     acc_signout:        "Cerrar sesión en CAMBRA",
+
+    /* Checkpoint H — cabecera del panel (DashboardHeroV2) */
+    dh_badge_verified:    "Verificado",
+    dh_badge_provisional: "Provisional",
+    dh_badge_estimated:   "Estimado",
+    dh_identified:        "Potencial identificado",
+    dh_per_year:          "/ año",
+    dh_confidence_band:   "Franja de confianza",
+    dh_sharpen:           "Conecta Stripe para afinar esta cifra con tus transacciones reales.",
+    dh_eff_rate:          "Tasa efectiva",
+    dh_rate_today:        "{rate} hoy",
+    dh_rate_achievable:   "{rate} alcanzable",
+    dh_start_recovery:    "Iniciar recuperación",
+    dh_verify_stripe:     "Verificar con Stripe",
+    dh_connect_stripe:    "Conectar Stripe para verificar",
+    dh_efficiency:        "Eficiencia de pagos",
+    dh_no_score:          "Conecta tu PSP para puntuar tu configuración.",
+
+    /* Checkpoint H — veredicto de eficiencia de pagos (nota → texto).
+       Evalúa el COSTE del comercio, nunca al proveedor. */
+    score_ctx_A: "Tu tasa efectiva está en el suelo alcanzable: costes de pago de primer nivel.",
+    score_ctx_B: "Tu tasa efectiva está cerca del suelo alcanzable: lo estás haciendo bien.",
+    score_ctx_C: "Tu tasa efectiva está en la media del mercado. Hay margen para bajarla.",
+    score_ctx_D: "Tu tasa efectiva está por encima de lo alcanzable: merece la pena actuar.",
+    score_ctx_F: "Tu tasa efectiva está muy por encima de lo alcanzable: hay un margen de recuperación importante.",
 };

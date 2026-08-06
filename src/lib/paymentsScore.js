@@ -98,6 +98,15 @@ function toneFromGrade(grade) {
   }
 }
 
+// Checkpoint H (2026-08-06) — i18n key for the verdict. The English strings
+// below stay for backwards compatibility (existing callers + tests read
+// `contextLine` verbatim), but components should render t(contextKey) so the
+// verdict follows the ACTIVE app language instead of being English-only.
+// Grades the merchant's COST EFFICIENCY, never the PSP — same rule as the copy.
+function contextKeyFromGrade(grade) {
+  return `score_ctx_${["A", "B", "C", "D"].includes(grade) ? grade : "F"}`;
+}
+
 // Context line — grades the merchant's COST EFFICIENCY, never the PSP. Rendered
 // verbatim by the component. NEVER append a provider name to these.
 function contextLineFromGrade(grade) {
@@ -177,6 +186,7 @@ export function computePaymentsScore(engineResult, opts = {}) {
     grade,
     tone: toneFromGrade(grade),
     contextLine: contextLineFromGrade(grade),
+    contextKey: contextKeyFromGrade(grade),
     verified,
     mode: effectiveMode,
   };
@@ -188,4 +198,5 @@ export {
   gradeFromScore,
   toneFromGrade,
   contextLineFromGrade,
+  contextKeyFromGrade,
 };

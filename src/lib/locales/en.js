@@ -1285,4 +1285,29 @@ export default {
     acc_s_session:      "Session",
     acc_session_text:   "Signing out will end your current session. You can always sign back in with your credentials.",
     acc_signout:        "Sign out of CAMBRA",
+
+    /* Checkpoint H — Dashboard hero (DashboardHeroV2) */
+    dh_badge_verified:    "Verified",
+    dh_badge_provisional: "Provisional",
+    dh_badge_estimated:   "Estimated",
+    dh_identified:        "Identified potential",
+    dh_per_year:          "/ year",
+    dh_confidence_band:   "Confidence band",
+    dh_sharpen:           "Connect Stripe to sharpen this figure from your real transactions.",
+    dh_eff_rate:          "Effective rate",
+    dh_rate_today:        "{rate} today",
+    dh_rate_achievable:   "{rate} achievable",
+    dh_start_recovery:    "Start recovery",
+    dh_verify_stripe:     "Verify with Stripe",
+    dh_connect_stripe:    "Connect Stripe to verify",
+    dh_efficiency:        "Payments efficiency",
+    dh_no_score:          "Connect your PSP to score your setup.",
+
+    /* Checkpoint H — payments efficiency verdict (score grade → copy).
+       Grades the merchant's COST EFFICIENCY, never the provider. */
+    score_ctx_A: "Your effective rate is at the achievable floor — top-tier payment costs.",
+    score_ctx_B: "Your effective rate is close to the achievable floor — you're doing well.",
+    score_ctx_C: "Your effective rate sits mid-market. There's room to bring it down.",
+    score_ctx_D: "Your effective rate is above what's achievable — worth acting on.",
+    score_ctx_F: "Your effective rate is well above what's achievable — significant room to recover.",
 };

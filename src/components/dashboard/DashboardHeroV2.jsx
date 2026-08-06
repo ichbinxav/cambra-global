@@ -25,21 +25,23 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck, Plug, CheckCircle2 } from "lucide-react";
 import { computePaymentsScore } from "@/lib/paymentsScore.js";
+import { formatEurOrDash } from "@/lib/currencyFormats";
+import { useTranslation } from "@/lib/i18n.jsx";
 import ScoreGauge from "@/components/paymentsResults/ScoreGauge";
 import EuroCountUp from "@/components/paymentsResults/EuroCountUp";
 
 const MONO = "'JetBrains Mono', ui-monospace, monospace";
 
-function eur(n) {
-  if (!isFinite(n)) return "—";
-  return "€" + Math.round(n).toLocaleString("en-US");
-}
 function pctFromBps(bps) {
   if (!isFinite(bps)) return "—";
   return (bps / 100).toFixed(2) + "%";
 }
 
 export default function DashboardHeroV2({ latest, stripeConnected = false, onStartRecovery }) {
+  const { t, lang } = useTranslation();
+  // Checkpoint H — amounts follow the ACTIVE app language (the previous local
+  // helper hardcoded "en-US", so a French merchant saw US grouping here).
+  const eur = (n) => formatEurOrDash(n, lang);
   const engineResult = latest?.details?.engine_result || null;
   const verificationStatus = latest?.verification_status || "estimated";
   const isVerified = verificationStatus === "verified";
@@ -65,10 +67,10 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
 
   // Verification badge.
   const badge = isVerified
-    ? { label: "Verified", cls: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300", dot: "bg-emerald-400", icon: CheckCircle2 }
+    ? { label: t("dh_badge_verified"), cls: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300", dot: "bg-emerald-400", icon: CheckCircle2 }
     : isProvisional
-      ? { label: "Provisional", cls: "border-blue-400/30 bg-blue-400/10 text-blue-300", dot: "bg-blue-400", icon: ShieldCheck }
-      : { label: "Estimated", cls: "border-amber-400/30 bg-amber-400/10 text-amber-300", dot: "bg-amber-400", icon: ShieldCheck };
+      ? { label: t("dh_badge_provisional"), cls: "border-blue-400/30 bg-blue-400/10 text-blue-300", dot: "bg-blue-400", icon: ShieldCheck }
+      : { label: t("dh_badge_estimated"), cls: "border-amber-400/30 bg-amber-400/10 text-amber-300", dot: "bg-amber-400", icon: ShieldCheck };
 
   return (
     <div
@@ -112,7 +114,7 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
           </div>
 
           <p className="uppercase font-bold mb-2.5" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.22em", color: "#585868" }}>
-            Identified potential
+            {t("dh_identified")}
           </p>
 
           <div className="flex items-baseline gap-3 flex-wrap">
@@ -128,21 +130,21 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
                 textShadow: "0 0 14px rgba(34,211,238,0.20)",
               }}
             />
-            <span className="text-[13px]" style={{ color: "#585868" }}>/ year</span>
+            <span className="text-[13px]" style={{ color: "#585868" }}>{t("dh_per_year")}</span>
           </div>
 
           {isFinite(rangeLo) && isFinite(rangeHi) && (
             <p className="text-[12px] mt-2.5" style={{ color: "#585868" }}>
-              Confidence band{" "}
+              {t("dh_confidence_band")}{" "}
               <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#9A9AAB" }}>
                 {eur(rangeLo)}–{eur(rangeHi)}
-              </span>{" "}/ year
+              </span>{" "}{t("dh_per_year")}
             </p>
           )}
 
           {!isVerified && (
             <p className="text-[12px] mt-1.5" style={{ color: "#6b7a92" }}>
-              Connect Stripe to sharpen this figure from your real transactions.
+              {t("dh_sharpen")}
             </p>
           )}
 
@@ -152,13 +154,13 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
               className="mt-5 inline-flex items-center gap-2.5 flex-wrap rounded-xl px-4 py-2.5"
               style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
             >
-              <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.15em", color: "#585868" }}>Effective rate</span>
+              <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.15em", color: "#585868" }}>{t("dh_eff_rate")}</span>
               <span className="tabular-nums font-bold text-[14px]" style={{ fontFamily: MONO, color: "#F45B69" }}>
-                {pctFromBps(current)} today
+                {t("dh_rate_today", { rate: pctFromBps(current) })}
               </span>
               <span style={{ color: "#585868" }} aria-hidden="true">→</span>
               <span className="tabular-nums font-bold text-[14px]" style={{ fontFamily: MONO, color: "#7BD9F0" }}>
-                {pctFromBps(achievable)} achievable
+                {t("dh_rate_achievable", { rate: pctFromBps(achievable) })}
               </span>
             </div>
           )}
@@ -174,7 +176,7 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
                 boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
               }}
             >
-              Start recovery <ArrowRight className="h-4 w-4" />
+              {t("dh_start_recovery")} <ArrowRight className="h-4 w-4" />
             </button>
             {!isVerified && (
               <Link
@@ -182,7 +184,7 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
                 className="inline-flex items-center justify-center h-11 rounded-full px-5 text-sm font-bold gap-2 text-white/85 hover:text-white transition-colors"
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)" }}
               >
-                <Plug size={14} /> {stripeConnected ? "Verify with Stripe" : "Connect Stripe to verify"}
+                <Plug size={14} /> {stripeConnected ? t("dh_verify_stripe") : t("dh_connect_stripe")}
               </Link>
             )}
           </div>
@@ -195,9 +197,11 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
               <ScoreGauge score={scoreResult.score} grade={scoreResult.grade} tone={scoreResult.tone} muted={scoreMuted} size={150} />
               <div className="text-center max-w-[190px]">
                 <p className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.45)" }}>
-                  Payments efficiency
+                  {t("dh_efficiency")}
                 </p>
-                <p className="text-[11px] text-white/55 mt-1 leading-snug">{scoreResult.contextLine}</p>
+                {/* Checkpoint H — the verdict is rendered from its i18n key, not
+                    from the helper's English contextLine. */}
+                <p className="text-[11px] text-white/55 mt-1 leading-snug">{t(scoreResult.contextKey)}</p>
               </div>
             </>
           ) : (
@@ -206,9 +210,9 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
               style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
             >
               <p className="uppercase font-bold mb-1.5" style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.18em", color: "rgba(255,255,255,0.4)" }}>
-                Payments efficiency
+                {t("dh_efficiency")}
               </p>
-              <p className="text-[12px] text-white/55">Connect your PSP to score your setup.</p>
+              <p className="text-[12px] text-white/55">{t("dh_no_score")}</p>
             </div>
           )}
         </div>

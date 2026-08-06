@@ -17,15 +17,9 @@ import { useTranslation } from "@/lib/i18n.jsx";
 import { derivePaymentsAccount } from "@/lib/paymentsAccount.js";
 import { computePaymentsNextAction, NEXT_ACTION_INTENT } from "@/lib/paymentsNextAction.js";
 
-const eur = (n, lang) => {
-  const v = Math.max(0, Math.round(Number(n) || 0));
-  const locale = { en: "en-IE", fr: "fr-FR", es: "es-ES" }[lang] || "en-IE";
-  try {
-    return new Intl.NumberFormat(locale, { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
-  } catch {
-    return `€${v.toLocaleString()}`;
-  }
-};
+// Checkpoint H — shared with the dashboard page and the hero (was an identical
+// local copy). Same locales, same rounding, same output.
+import { formatEur as eur } from "@/lib/currencyFormats";
 
 const IMPACT_KEY = {
   verify: "ac_chip_impact_verify",
