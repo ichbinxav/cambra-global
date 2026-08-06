@@ -13,9 +13,12 @@ import {
   STAGES,
   STAGE_PRE_ECL,
   STAGE_ECL_P1,
+  STAGE_ECL_P2,
   STAGE_TRANSITIONS,
   P1_ALLOWLIST,
+  P2_ALLOWLIST,
   P1_ECL_FIELD_PATHS,
+  eclPolicyFileAllowed,
 } from "../../scripts/lib/preEclFreeze.mjs";
 
 const entryFor = (path, content) => ({ path, sha256: sha256Hex(Buffer.from(content)), allowedChange: false });
@@ -26,14 +29,57 @@ describe("ECL stage gate (v62.3)", () => {
   });
 
   it("refuses an unknown stage", () => {
-    expect(() => resolveStage({ stage: "ECL_P2" })).toThrow(/unknown stage/);
+    expect(() => resolveStage({ stage: "ECL_P3" })).toThrow(/unknown stage/);
+    expect(() => allowlistForStage("ECL_P3")).toThrow(/unknown stage/);
+    // The abbreviated name is NOT the declared P2 stage identifier.
     expect(() => allowlistForStage("ECL_P2")).toThrow(/unknown stage/);
   });
 
-  it("declares exactly two stages and never a P2 transition", () => {
-    expect(STAGES).toEqual([STAGE_PRE_ECL, STAGE_ECL_P1]);
+  it("declares exactly three stages and NEVER a PRE_ECL → P2 shortcut (v62.4)", () => {
+    expect(STAGES).toEqual([STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2]);
+    // P1 cannot be skipped: the only way out of PRE_ECL is P1.
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).toEqual([STAGE_ECL_P1]);
-    expect(Object.values(STAGE_TRANSITIONS).flat()).not.toContain("ECL_P2");
+    expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).not.toContain(STAGE_ECL_P2);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P1]).toEqual([STAGE_PRE_ECL, STAGE_ECL_P2]);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P2]).toEqual([STAGE_ECL_P1]);
+    // No P3 stage exists and none can be reached.
+    expect(Object.values(STAGE_TRANSITIONS).flat()).not.toContain("ECL_P3_RULES");
+  });
+
+  it("P2 artifacts stay blocked in stage P1 (v62.4)", () => {
+    const p1 = allowlistForStage(STAGE_ECL_P1);
+    for (const p of ["config/ecl-policy.json", "src/lib/confidenceResult.js", "src/lib/eclGates.js", "base44/shared/generated/eclDomain.ts"]) {
+      expect(p1).not.toContain(p);
+    }
+    expect(eclPolicyFileAllowed(STAGE_PRE_ECL)).toBe(false);
+    expect(eclPolicyFileAllowed(STAGE_ECL_P1)).toBe(false);
+    expect(eclPolicyFileAllowed(STAGE_ECL_P2)).toBe(true);
+  });
+
+  it("the P2 allowlist is exact paths only — no wildcard, no directory, no pattern", () => {
+    expect(P2_ALLOWLIST.slice(0, 6)).toEqual(P1_ALLOWLIST);
+    expect(P2_ALLOWLIST).toHaveLength(21);
+    for (const p of P2_ALLOWLIST) {
+      expect(p).not.toMatch(/[*?]/);
+      expect(p).toMatch(/\.(jsonc|json|js|ts|mjs)$/);
+    }
+    // Nothing beyond the declared contract layer is admitted.
+    for (const p of P2_ALLOWLIST) {
+      expect(p).not.toMatch(/ReviewQueue|lifecycle|scheduler|cron|entities\/Confidence/);
+    }
+  });
+
+  it("P2 grants NO schema permission beyond P1 (Baseline and the handler stay excluded)", () => {
+    const res = checkFreeze(
+      [
+        entryFor("base44/entities/Baseline.jsonc", '{"name":"Baseline","properties":{"freeze_eligibility":{}}}'),
+        entryFor("base44/functions/processUploadedFile/entry.ts", "import { ConfidenceResult } from 'x';"),
+      ],
+      (p) => Buffer.from(p.endsWith(".jsonc") ? '{"name":"Baseline","properties":{"freeze_eligibility":{}}}' : "import { ConfidenceResult } from 'x';"),
+      { stage: STAGE_ECL_P2 },
+    );
+    expect(res.failures.some((f) => f.includes("Baseline.jsonc"))).toBe(true);
+    expect(res.failures.some((f) => f.includes("imports ECL code"))).toBe(true);
   });
 
   it("PRE_ECL has an empty allowlist; P1 allows exactly the six schemas", () => {
@@ -81,31 +127,46 @@ describe("ECL stage gate (v62.3)", () => {
     expect(res.failures[0]).toContain("frozen file modified");
   });
 
-  it("the LIVE repo declares stage P1 with an allowlist matching the code", () => {
+  it("the LIVE repo declares stage P2 with an allowlist matching the code (v62.4)", () => {
     const freeze = JSON.parse(fs.readFileSync(new URL("../../config/pre-ecl-freeze.json", import.meta.url), "utf8"));
-    expect(resolveStage(freeze)).toBe(STAGE_ECL_P1);
-    expect([...freeze.allowlist].sort()).toEqual([...P1_ALLOWLIST].sort());
+    expect(resolveStage(freeze)).toBe(STAGE_ECL_P2);
+    expect([...freeze.allowlist].sort()).toEqual([...P2_ALLOWLIST].sort());
+    // Still the same 8 frozen entries: P2 froze no new schema.
     expect(freeze.entries).toHaveLength(8);
   });
 
-  it("the LIVE change log records the stage advance and every freeze mutation", () => {
+  it("the LIVE change log records both stage advances and every freeze mutation", () => {
     const log = JSON.parse(fs.readFileSync(new URL("../../config/freeze-change-log.json", import.meta.url), "utf8"));
     const types = log.changes.map((c) => c.type);
-    expect(types.filter((t) => t === "stage_advance")).toHaveLength(1);
+    expect(types.filter((t) => t === "stage_advance")).toHaveLength(2);
     expect(types.filter((t) => t === "freeze_update")).toHaveLength(2);
     expect(types.filter((t) => t === "freeze_add")).toHaveLength(4);
     expect(log.changes.every((c) => typeof c.reason === "string" && c.reason.trim().length > 0)).toBe(true);
   });
 
-  it("P2 has NOT started — no policy, engine, scheduler or review-queue artifact exists", () => {
+  it("P3 has NOT started — no rule engine, scheduler, lifecycle handler or review queue exists (v62.4)", () => {
     const forbidden = [
-      "config/ecl-policy.json",
       "base44/entities/ConfidenceResult.jsonc",
       "base44/entities/NormalizedEvidence.jsonc",
       "base44/entities/ReviewQueue.jsonc",
+      "src/lib/eclRules.js",
+      "src/lib/eclLifecycle.js",
+      "base44/shared/eclRules.ts",
+      "base44/functions/eclLifecycleTick/entry.ts",
+      "base44/functions/evaluateEclConfidence/entry.ts",
     ];
     for (const p of forbidden) {
       expect(fs.existsSync(new URL(`../../${p}`, import.meta.url))).toBe(false);
     }
+    // P2 ships contracts, not consumers: no production surface reads the gates.
+    const domain = fs.readFileSync(new URL("../../base44/shared/generated/eclDomain.ts", import.meta.url), "utf8");
+    expect(domain).not.toMatch(/base44\.(entities|integrations)/);
+    expect(domain).not.toMatch(/fetch\(/);
+  });
+
+  it("the ECL policy exists ONLY as an allowlisted P2 artifact", () => {
+    expect(fs.existsSync(new URL("../../config/ecl-policy.json", import.meta.url))).toBe(true);
+    expect(P2_ALLOWLIST).toContain("config/ecl-policy.json");
+    expect(P1_ALLOWLIST).not.toContain("config/ecl-policy.json");
   });
 });
