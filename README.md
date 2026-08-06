@@ -235,3 +235,4 @@ Do **not** run `npm audit fix --force` without reviewing breaking changes.
 
 Contact the Base44 team via the dashboard for platform-level questions.
 <!-- CI activo desde v62.3 -->
+
