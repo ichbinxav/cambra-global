@@ -193,23 +193,34 @@ const COUNTRY_OPTIONS = [
 ];
 
 // ── Contract §2.1 hard ranges — mirror of backend VALIDATION. UX-only guard.
+// Checkpoint H — the field labels became i18n KEYS. The ranges themselves are
+// untouched (they mirror the backend contract); only the wording is translated.
 const RANGES = {
-  monthly_gmv_eur:    { min: 500, max: 10_000_000, label: "Monthly GMV (EUR)" },
-  avg_ticket_eur:     { min: 5,   max: 5_000,      label: "Average ticket (EUR)" },
-  intl_pct:           { min: 0,   max: 100,        label: "International %" },
-  card_mix_debit_pct: { min: 0,   max: 100,        label: "Debit card share (%)" },
+  monthly_gmv_eur:    { min: 500, max: 10_000_000, labelKey: "az_lbl_gmv" },
+  avg_ticket_eur:     { min: 5,   max: 5_000,      labelKey: "az_lbl_ticket" },
+  intl_pct:           { min: 0,   max: 100,        labelKey: "az_lbl_intl" },
+  card_mix_debit_pct: { min: 0,   max: 100,        labelKey: "az_lbl_debit" },
 };
 
 // UX-1 T1 — email format check (mirrors the backend's EMAIL_RE in
 // submitPaymentsAnalysis). `required` alone is not enough — format is checked.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-function fieldRangeError(key, value) {
+// Checkpoint H — messages come from the dictionary, and the bounds are grouped
+// in the ACTIVE language (they were hardcoded to "en-US", so a Spanish merchant
+// was told the limit was "10,000,000" instead of "10.000.000").
+function fieldRangeError(key, value, t, lang) {
   const r = RANGES[key];
+  const label = t(r.labelKey);
   const n = Number(value);
-  if (!isFinite(n)) return `${r.label}: enter a number.`;
+  if (!isFinite(n)) return t("az_err_number", { label });
   if (n < r.min || n > r.max) {
-    return `${r.label}: must be between ${r.min.toLocaleString("en-US")} and ${r.max.toLocaleString("en-US")}.`;
+    const locale = { en: "en-IE", fr: "fr-FR", es: "es-ES" }[lang] || "en-IE";
+    return t("az_err_range", {
+      label,
+      min: r.min.toLocaleString(locale),
+      max: r.max.toLocaleString(locale),
+    });
   }
   return null;
 }
@@ -310,46 +321,52 @@ export default function PaymentsAnalyzer() {
   const validation = useMemo(() => {
     const errors = [];
     const isCombined = channel === "combined";
+    // Checkpoint H — every message below is dictionary-driven. In combined mode
+    // each error is prefixed with the CHANNEL name, which is itself translated
+    // (it was the English literal "Online" / "In-store" before).
+    const range = (key, value) => fieldRangeError(key, value, t, lang);
+    const onPrefix = (msg) => `${t("analyzer_channel_online")} — ${msg}`;
+    const inPrefix = (msg) => `${t("analyzer_channel_in_store")} — ${msg}`;
 
     if (isCombined) {
       // Validate ONLINE sub-form.
-      if (combinedOnline.monthly_gmv_eur === "") errors.push("Online: monthly GMV is required.");
-      else { const e = fieldRangeError("monthly_gmv_eur", combinedOnline.monthly_gmv_eur); if (e) errors.push(`Online — ${e}`); }
-      if (combinedOnline.avg_ticket_eur === "") errors.push("Online: average ticket is required.");
-      else { const e = fieldRangeError("avg_ticket_eur", combinedOnline.avg_ticket_eur); if (e) errors.push(`Online — ${e}`); }
-      if (combinedOnline.intl_pct === "") errors.push("Online: international share is required (0% is valid).");
-      else { const e = fieldRangeError("intl_pct", combinedOnline.intl_pct); if (e) errors.push(`Online — ${e}`); }
-      if (!combinedOnline.provider_slug) errors.push("Online: payment provider is required.");
+      if (combinedOnline.monthly_gmv_eur === "") errors.push(onPrefix(t("az_err_gmv_req")));
+      else { const e = range("monthly_gmv_eur", combinedOnline.monthly_gmv_eur); if (e) errors.push(onPrefix(e)); }
+      if (combinedOnline.avg_ticket_eur === "") errors.push(onPrefix(t("az_err_ticket_req")));
+      else { const e = range("avg_ticket_eur", combinedOnline.avg_ticket_eur); if (e) errors.push(onPrefix(e)); }
+      if (combinedOnline.intl_pct === "") errors.push(onPrefix(t("az_err_intl_req")));
+      else { const e = range("intl_pct", combinedOnline.intl_pct); if (e) errors.push(onPrefix(e)); }
+      if (!combinedOnline.provider_slug) errors.push(onPrefix(t("az_err_provider_req")));
 
       // Validate IN-STORE sub-form.
-      if (combinedInStore.monthly_gmv_eur === "") errors.push("In-store: monthly GMV is required.");
-      else { const e = fieldRangeError("monthly_gmv_eur", combinedInStore.monthly_gmv_eur); if (e) errors.push(`In-store — ${e}`); }
-      if (combinedInStore.avg_ticket_eur === "") errors.push("In-store: average ticket is required.");
-      else { const e = fieldRangeError("avg_ticket_eur", combinedInStore.avg_ticket_eur); if (e) errors.push(`In-store — ${e}`); }
-      if (!combinedInStore.provider_slug) errors.push("In-store: terminal provider is required.");
+      if (combinedInStore.monthly_gmv_eur === "") errors.push(inPrefix(t("az_err_gmv_req")));
+      else { const e = range("monthly_gmv_eur", combinedInStore.monthly_gmv_eur); if (e) errors.push(inPrefix(e)); }
+      if (combinedInStore.avg_ticket_eur === "") errors.push(inPrefix(t("az_err_ticket_req")));
+      else { const e = range("avg_ticket_eur", combinedInStore.avg_ticket_eur); if (e) errors.push(inPrefix(e)); }
+      if (!combinedInStore.provider_slug) errors.push(inPrefix(t("az_err_tpv_req")));
     } else {
-      if (gmv === "") errors.push("Monthly GMV is required.");
-      else { const e = fieldRangeError("monthly_gmv_eur", gmv); if (e) errors.push(e); }
+      if (gmv === "") errors.push(t("az_err_gmv_req"));
+      else { const e = range("monthly_gmv_eur", gmv); if (e) errors.push(e); }
 
-      if (avgTicket === "") errors.push("Average ticket is required.");
-      else { const e = fieldRangeError("avg_ticket_eur", avgTicket); if (e) errors.push(e); }
+      if (avgTicket === "") errors.push(t("az_err_ticket_req"));
+      else { const e = range("avg_ticket_eur", avgTicket); if (e) errors.push(e); }
 
       // In-store channel: cross-border volume is negligible in card-present
       // for the ICP, so we skip the intl question entirely and treat it as 0
       // in the payload. Online channel: intl_pct is required (0 is valid).
       if (channel === "online") {
-        if (intlPct === "") errors.push("International share is required (0% is valid).");
-        else { const e = fieldRangeError("intl_pct", intlPct); if (e) errors.push(e); }
+        if (intlPct === "") errors.push(t("az_err_intl_req"));
+        else { const e = range("intl_pct", intlPct); if (e) errors.push(e); }
       }
 
-      if (!providerSlug) errors.push("Payment provider is required.");
+      if (!providerSlug) errors.push(t(channel === "in_store" ? "az_err_tpv_req" : "az_err_provider_req"));
     }
-    if (!country) errors.push("Country is required.");
+    if (!country) errors.push(t("az_err_country_req"));
 
     // Brand name — OPTIONAL (SWEEP-1 T2). When provided, 2-80 chars.
     const trimmedBrand = brandName.trim();
     if (trimmedBrand !== "" && (trimmedBrand.length < 2 || trimmedBrand.length > 80)) {
-      errors.push("Business name: must be between 2 and 80 characters.");
+      errors.push(t("az_err_brand_len"));
     }
 
     // Website — optional; light URL sanity check only (backend does the
@@ -359,15 +376,15 @@ export default function PaymentsAnalyzer() {
     if (website.trim() !== "") {
       const w = website.trim();
       if (/\s/.test(w) || !/\./.test(w)) {
-        errors.push("Website: enter a domain like aimestudio.com.");
+        errors.push(t("az_err_website"));
       } else if (w.length > 200) {
-        errors.push("Website: must be 200 characters or fewer.");
+        errors.push(t("az_err_website_len"));
       }
     }
 
     // Sector — optional; if set, must be in the shared enum.
     if (sector !== "" && !BRAND_SECTOR_SLUGS.includes(sector)) {
-      errors.push("Sector: pick one of the listed options.");
+      errors.push(t("az_err_sector"));
     }
 
     // Email — REQUIRED in every mode (UX-1 T1). Presence + format.
@@ -376,12 +393,12 @@ export default function PaymentsAnalyzer() {
     else if (trimmedEmail.length > 254 || !EMAIL_RE.test(trimmedEmail)) errors.push(t("analyzer_email_invalid"));
 
     if (cardMixDebit !== "") {
-      const e = fieldRangeError("card_mix_debit_pct", cardMixDebit);
+      const e = range("card_mix_debit_pct", cardMixDebit);
       if (e) errors.push(e);
     }
 
     return { valid: errors.length === 0, errors };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit, brandName, website, sector, channel, combinedOnline, combinedInStore, email, t]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit, brandName, website, sector, channel, combinedOnline, combinedInStore, email, t, lang]);
 
   // ── Progress counter — 6 required fields (5 payment + brand name) plus 1
   //    optional (card mix) when the drawer is open. Website and sector are
@@ -487,17 +504,17 @@ export default function PaymentsAnalyzer() {
       if (body?.error === "rate_limited") {
         const secs = Number(body.retry_after_seconds) || 0;
         const mins = Math.max(1, Math.ceil(secs / 60));
-        setErrorBanner(`Too many analyses from your network right now. Try again in ~${mins} minute${mins > 1 ? "s" : ""}.`);
+        setErrorBanner(t("az_err_rate_limited", { mins }));
         setSubmitting(false);
         return;
       }
       if (body?.error === "invalid_input") {
-        setErrorBanner(`Please review "${body.field}" — the value is out of range.`);
+        setErrorBanner(t("az_err_invalid_input", { field: body.field }));
         setSubmitting(false);
         return;
       }
       if (!body?.ok || !body.anon_session_id) {
-        setErrorBanner("We couldn't run your analysis right now. Please try again in a moment.");
+        setErrorBanner(t("az_err_generic"));
         setSubmitting(false);
         return;
       }
@@ -506,7 +523,7 @@ export default function PaymentsAnalyzer() {
       // query string in the process, breaking the session handoff.
       navigate(`/Results?session=${encodeURIComponent(body.anon_session_id)}`);
     } catch {
-      setErrorBanner("We couldn't reach the server. Please check your connection and try again.");
+      setErrorBanner(t("az_err_network"));
       setSubmitting(false);
     }
   };
@@ -571,10 +588,10 @@ export default function PaymentsAnalyzer() {
               <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#ffffff" }} />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#ffffff" }} />
             </span>
-            <span className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "#ffffff" }}>Payments audit · anonymous</span>
+            <span className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "#ffffff" }}>{t("az_pill")}</span>
           </div>
           <span className="text-[11px] font-bold tabular-nums" style={{ color: "rgba(255,255,255,0.55)" }}>
-            {progress.done} <span style={{ color: "rgba(255,255,255,0.4)" }}>of {progress.total}</span>
+            {t("az_progress", { done: progress.done, total: progress.total })}
           </span>
         </div>
 
@@ -589,11 +606,10 @@ export default function PaymentsAnalyzer() {
             lineHeight: 1.02,
           }}
         >
-          What are you overpaying on payments?
+          {t("az_title")}
         </h1>
         <p className="text-[14px] mb-6" style={{ color: "rgba(255,255,255,0.65)" }}>
-          A few quick answers. No account required, no data connected. We estimate the gap between what you pay today
-          and what a merchant of your size + region should be paying.
+          {t("az_sub")}
         </p>
 
         {/* 3-way entry cards — Connect / Upload / Manual. Presentational only:
@@ -628,7 +644,7 @@ export default function PaymentsAnalyzer() {
         {IN_STORE_UI_ENABLED && (
           <div
             role="tablist"
-            aria-label="Payment channel"
+            aria-label={t("az_channel_aria")}
             className="mb-8 inline-flex items-center rounded-full p-1"
             style={{
               border: "1px solid rgba(255,255,255,0.10)",
@@ -742,9 +758,9 @@ export default function PaymentsAnalyzer() {
             <div id="psp-selector" className="space-y-2.5 scroll-mt-24">
               <div className="flex items-baseline justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-                  {channel === "in_store" ? "In-store terminal (TPV)" : "Payment provider"}
+                  {t(channel === "in_store" ? "az_tpv_label" : "az_provider_label")}
                 </span>
-                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>One tap</span>
+                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_one_tap")}</span>
               </div>
               <ProviderGrid
                 options={channel === "in_store" ? inStoreProviderOptions : onlineProviderOptions}
@@ -780,7 +796,7 @@ export default function PaymentsAnalyzer() {
               style={{ border: "1px solid rgba(255,255,255,0.10)", background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)", color: "rgba(255,255,255,0.8)" }}
             >
               <span className="flex items-center gap-2 text-[13px] font-medium">
-                Debit vs credit mix <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>(optional)</span>
+                {t("az_cardmix")} <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_optional")}</span>
               </span>
               {cardMixOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
@@ -845,7 +861,7 @@ export default function PaymentsAnalyzer() {
           {/* Privacy microcopy */}
           <div className="flex items-start gap-2 pt-2 text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>
             <Lock size={11} className="mt-0.5 shrink-0" />
-            <span>No account, no data connected, nothing shared. Results are stored with an anonymous session id you can revisit from this device.</span>
+            <span>{t("az_privacy_note")}</span>
           </div>
 
           {/* Primary CTA — inline, full width, at the end of the form.
@@ -863,11 +879,11 @@ export default function PaymentsAnalyzer() {
             >
               {submitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Running audit…
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t("az_running")}
                 </>
               ) : (
                 <>
-                  See my payments gap <ArrowRight className="h-4 w-4" />
+                  {t("az_cta")} <ArrowRight className="h-4 w-4" />
                 </>
               )}
             </Button>
@@ -878,9 +894,9 @@ export default function PaymentsAnalyzer() {
                 change: the validation itself is unchanged. */}
             {!validation.valid && !submitting && !errorBanner && (
               <p className="text-center text-[11.5px] leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
-                Still needed: <span style={{ color: "#ffffff" }}>{validation.errors[0].replace(/[.!]$/, "")}</span>
+                {t("az_still_needed")} <span style={{ color: "#ffffff" }}>{validation.errors[0].replace(/[.!]$/, "")}</span>
                 {validation.errors.length > 1 && (
-                  <span style={{ color: "rgba(255,255,255,0.45)" }}> · +{validation.errors.length - 1} more above</span>
+                  <span style={{ color: "rgba(255,255,255,0.45)" }}> · {t("az_more_above", { count: validation.errors.length - 1 })}</span>
                 )}
               </p>
             )}
@@ -892,7 +908,7 @@ export default function PaymentsAnalyzer() {
               style={{ color: "rgba(255,255,255,0.6)" }}
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              Back
+              {t("az_back")}
             </button>
           </div>
         </div>
