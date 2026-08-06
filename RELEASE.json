@@ -5,7 +5,7 @@
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 830,
   "sourceArchiveShaExternal": null,
-  "gitSha": "c3648382b4f99f6c87efdf499c7953d235596335",
+  "gitSha": "d693a74e2f04eeed51affe4f4a987d9a73471c81",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.01",
@@ -34,9 +34,9 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "51239949e70557349d337a43f83393eb5bf18b13278c67ee62116b6dab246dbe",
-    "startedAt": "2026-08-06T19:53:06.683Z",
-    "completedAt": "2026-08-06T19:53:29.841Z",
+    "sourceTreeHash": "1747311bfac6b49f47a746fb7a246d34b4d94e68bfb6a812970f4fce5bc93713",
+    "startedAt": "2026-08-06T19:58:17.288Z",
+    "completedAt": "2026-08-06T19:58:40.483Z",
     "exitCode": 0,
     "ciRunId": null,
     "testFiles": 314,
@@ -47,9 +47,9 @@
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "51239949e70557349d337a43f83393eb5bf18b13278c67ee62116b6dab246dbe",
-    "startedAt": "2026-08-06T19:54:14.339Z",
-    "completedAt": "2026-08-06T19:54:35.160Z",
+    "sourceTreeHash": "1747311bfac6b49f47a746fb7a246d34b4d94e68bfb6a812970f4fce5bc93713",
+    "startedAt": "2026-08-06T19:59:29.626Z",
+    "completedAt": "2026-08-06T19:59:49.703Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "1e79b6bb9583101caaedc281f728236ab3d6acedf30e92e6391e5da9a831178e",
@@ -57,37 +57,31 @@
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "51239949e70557349d337a43f83393eb5bf18b13278c67ee62116b6dab246dbe",
-    "startedAt": "2026-08-06T19:52:37.264Z",
-    "completedAt": "2026-08-06T19:52:50.129Z",
+    "sourceTreeHash": "1747311bfac6b49f47a746fb7a246d34b4d94e68bfb6a812970f4fce5bc93713",
+    "startedAt": "2026-08-06T19:57:47.957Z",
+    "completedAt": "2026-08-06T19:58:00.115Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "51239949e70557349d337a43f83393eb5bf18b13278c67ee62116b6dab246dbe",
-    "startedAt": "2026-08-06T19:52:50.949Z",
-    "completedAt": "2026-08-06T19:52:53.265Z",
+    "sourceTreeHash": "1747311bfac6b49f47a746fb7a246d34b4d94e68bfb6a812970f4fce5bc93713",
+    "startedAt": "2026-08-06T19:58:00.927Z",
+    "completedAt": "2026-08-06T19:58:03.316Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "51239949e70557349d337a43f83393eb5bf18b13278c67ee62116b6dab246dbe",
-    "startedAt": "2026-08-06T19:52:54.120Z",
-    "completedAt": "2026-08-06T19:53:05.825Z",
+    "sourceTreeHash": "1747311bfac6b49f47a746fb7a246d34b4d94e68bfb6a812970f4fce5bc93713",
+    "startedAt": "2026-08-06T19:58:04.125Z",
+    "completedAt": "2026-08-06T19:58:16.460Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
     "dist": "1e79b6bb9583101caaedc281f728236ab3d6acedf30e92e6391e5da9a831178e"
   },
-  "manualRequirements": [
-    "evidence tests: stale (run the *:evidence command)",
-    "evidence build: stale (run the *:evidence command)",
-    "evidence lint: stale (run the *:evidence command)",
-    "evidence typecheck-critical: stale (run the *:evidence command)",
-    "evidence typecheck-baseline: stale (run the *:evidence command)"
-  ],
-  "generatedAt": "2026-08-06T19:56:56.800Z"
+  "manualRequirements": [],
+  "generatedAt": "2026-08-06T19:59:50.533Z"
 }
