@@ -1094,4 +1094,63 @@ export default {
     pt_stat_upfront:    "upfront",
     pt_meta_title:       "CAMBRA Partners | Help independent businesses protect their margins",
     pt_meta_description: "Join the CAMBRA Partner Programme and give the independent businesses you support access to independent card-payment cost intelligence.",
+
+    /* ─────────────────────────────────────────────────────────────────
+       CHECKPOINT H (2026-08-06) — /Vault.
+       This page shipped with a MIXED-LANGUAGE interface: half English
+       ("Upload file", "All categories"), half hardcoded Spanish
+       ("Buscar…", "Editar documento", "Añadir"), so an English or French
+       merchant was shown Spanish regardless of their choice. Every string
+       below now routes through t().
+       The enum LABELS (categories, review statuses) are here too: the page
+       used to print the raw stored values, so a merchant read
+       "benchmark_evidence" and "superseded". The stored values are
+       unchanged — only their display.
+       ───────────────────────────────────────────────────────────────── */
+    vlt_eyebrow:        "Documents · Organized",
+    vlt_title:          "Document Vault.",
+    vlt_subtitle:       "Upload, organize, and link your business documents.",
+    vlt_category_ph:    "Category",
+    vlt_status_ph:      "Status",
+    vlt_upload:         "Upload file",
+    vlt_uploading:      "Uploading…",
+    vlt_search_ph:      "Search…",
+    vlt_all_categories: "All categories",
+    vlt_all_statuses:   "All statuses",
+    vlt_filter:         "Filter",
+    vlt_loading:        "Loading…",
+    vlt_empty:          "No documents yet",
+    vlt_open:           "Open",
+    vlt_links:          "Links",
+    vlt_edit_title:     "Edit document",
+    vlt_close:          "Close",
+    vlt_f_title:        "Title",
+    vlt_f_tags:         "Tags (comma-separated)",
+    vlt_f_notes:        "Notes",
+    vlt_open_file:      "Open file",
+    vlt_link_type_ph:   "Type",
+    vlt_link_id_ph:     "Target ID",
+    vlt_add:            "Add",
+    vlt_primary_hint:   "Mark as primary link for this target",
+    vlt_current:        "Current:",
+    vlt_remove:         "Remove",
+    vlt_no_links:       "No links",
+    vlt_primary_tag:    "primary",
+
+    vlt_cat_invoices:           "Invoices",
+    vlt_cat_statements:         "Statements",
+    vlt_cat_provider_proposals: "Provider proposals",
+    vlt_cat_contracts:          "Contracts",
+    vlt_cat_signed_mandates:    "Signed mandates",
+    vlt_cat_tax_docs:           "Tax documents",
+    vlt_cat_screenshots:        "Screenshots",
+    vlt_cat_benchmark_evidence: "Benchmark evidence",
+    vlt_cat_migration_docs:     "Migration documents",
+    vlt_cat_pricing_docs:       "Pricing documents",
+    vlt_cat_internal_files:     "Internal files",
+
+    vlt_st_pending:     "Pending",
+    vlt_st_approved:    "Approved",
+    vlt_st_rejected:    "Rejected",
+    vlt_st_superseded:  "Superseded",
 };

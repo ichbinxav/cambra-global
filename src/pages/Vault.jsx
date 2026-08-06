@@ -1,3 +1,20 @@
+// Vault — Checkpoint H (2026-08-06).
+//
+// LANGUAGE FIX: this page shipped with a mixed-language interface — half English
+// ("Upload file", "All categories", "Status"), half hardcoded Spanish ("Buscar…",
+// "Filtrar", "Editar documento", "Añadir", "Sin vínculos"). An English or French
+// merchant was shown Spanish no matter what they had chosen in the switcher. Every
+// string now routes through t(), and the category / review-status enums are
+// rendered through translated labels instead of printing the raw stored values
+// ("benchmark_evidence", "superseded").
+//
+// UNCHANGED ON PURPOSE: the stored values, every backend payload (listDocuments,
+// createDocument, updateDocumentMeta, linkDocument, unlinkDocument) and the filter
+// semantics. This is a presentation fix; nothing about what is saved moved.
+//
+// The drawer and the link editor moved to src/components/vault/ — they were a
+// second and third component living inside this page file.
+
 import { useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -8,13 +25,12 @@ import PageHero from '@/components/shared/PageHero';
 import { FolderLock } from 'lucide-react';
 import DownloadAuditButton from '@/components/paymentsResults/DownloadAuditButton';
 import { getMyActiveBrand } from '@/lib/getMyActiveBrand';
-
-const CATEGORIES = [
-  'invoices','statements','provider_proposals','contracts','signed_mandates','tax_docs','screenshots','benchmark_evidence','migration_docs','pricing_docs','internal_files'
-];
-const STATUSES = ['pending','approved','rejected','superseded'];
+import { useTranslation } from '@/lib/i18n.jsx';
+import VaultDocumentDrawer from '@/components/vault/VaultDocumentDrawer';
+import { DOC_CATEGORIES, DOC_STATUSES, categoryLabel, statusLabel } from '@/components/vault/vaultLabels';
 
 export default function Vault() {
+  const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
@@ -90,9 +106,9 @@ export default function Vault() {
   return (
     <div className="space-y-5">
       <PageHero
-        eyebrow="Documents · Organized"
-        title="Document Vault."
-        subtitle="Upload, organize, and link your business documents."
+        eyebrow={t('vlt_eyebrow')}
+        title={t('vlt_title')}
+        subtitle={t('vlt_subtitle')}
         icon={FolderLock}
         actions={
           <div className="flex items-center gap-2">
@@ -104,54 +120,58 @@ export default function Vault() {
               />
             )}
             <Select value={newCat} onValueChange={setNewCat}>
-              <SelectTrigger className="w-44 bg-white/10 border-white/20 text-white"><SelectValue placeholder="Category" /></SelectTrigger>
-              <SelectContent>{CATEGORIES.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}</SelectContent>
+              <SelectTrigger className="w-44 bg-white/10 border-white/20 text-white"><SelectValue placeholder={t('vlt_category_ph')} /></SelectTrigger>
+              <SelectContent>{DOC_CATEGORIES.map(c => (<SelectItem key={c} value={c}>{categoryLabel(t, c)}</SelectItem>))}</SelectContent>
             </Select>
             <input ref={fileRef} type="file" onChange={onUpload} className="hidden" />
-            <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-10 rounded-full px-5 bg-white text-[#06080F] hover:bg-white/90 font-bold">{uploading ? 'Uploading…' : 'Upload file'}</Button>
+            <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-10 rounded-full px-5 bg-white text-[#06080F] hover:bg-white/90 font-bold">{uploading ? t('vlt_uploading') : t('vlt_upload')}</Button>
           </div>
         }
       />
 
       <div className="flex items-center gap-2 flex-wrap">
-        <Input placeholder="Buscar…" value={q} onChange={e=>setQ(e.target.value)} className="w-52 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30" />
+        <Input placeholder={t('vlt_search_ph')} value={q} onChange={e=>setQ(e.target.value)} className="w-52 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30" />
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-44 bg-white/[0.04] border-white/10 text-white"><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectTrigger className="w-44 bg-white/[0.04] border-white/10 text-white"><SelectValue placeholder={t('vlt_category_ph')} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
-            {CATEGORIES.map(c => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+            <SelectItem value="all">{t('vlt_all_categories')}</SelectItem>
+            {DOC_CATEGORIES.map(c => (<SelectItem key={c} value={c}>{categoryLabel(t, c)}</SelectItem>))}
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-40 bg-white/[0.04] border-white/10 text-white"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-40 bg-white/[0.04] border-white/10 text-white"><SelectValue placeholder={t('vlt_status_ph')} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {STATUSES.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+            <SelectItem value="all">{t('vlt_all_statuses')}</SelectItem>
+            {DOC_STATUSES.map(s => (<SelectItem key={s} value={s}>{statusLabel(t, s)}</SelectItem>))}
           </SelectContent>
         </Select>
-        <Button variant="outline" onClick={onFilter} className="bg-white/[0.04] border-white/10 text-white hover:bg-white/10 hover:text-white">Filtrar</Button>
+        <Button variant="outline" onClick={onFilter} className="bg-white/[0.04] border-white/10 text-white hover:bg-white/10 hover:text-white">{t('vlt_filter')}</Button>
       </div>
 
       {loading ? (
-        <div className="py-24 text-center text-sm text-muted-foreground">Cargando…</div>
+        <div className="py-24 text-center text-sm text-muted-foreground">{t('vlt_loading')}</div>
+      ) : items.length === 0 ? (
+        // The grid used to render blank here — an empty result was
+        // indistinguishable from a page that had failed to load.
+        <div className="py-24 text-center text-sm text-white/50">{t('vlt_empty')}</div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {(items||[]).map(doc => (
+          {items.map(doc => (
             <div key={doc.id} className={`cambra-card p-4 cursor-pointer ${selected?.id===doc.id? 'ring-1 ring-cambra-cyan' : ''}`} onClick={()=>setSelected(doc)}>
               <div className="relative">
                 <div className="flex items-center justify-between">
                   <div className="font-semibold truncate max-w-[70%] text-white">{doc.title || doc.file_name}</div>
-                  <Badge variant="outline" className="text-[10px] border-white/15 text-white/70">{doc.category}</Badge>
+                  <Badge variant="outline" className="text-[10px] border-white/15 text-white/70">{categoryLabel(t, doc.category)}</Badge>
                 </div>
                 <div className="text-xs text-white/50 mt-1 truncate">{doc.file_name}</div>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <Badge className="border border-white/10 bg-white/[0.06] text-white/75 text-[10px]">{doc.review_status}</Badge>
+                  <Badge className="border border-white/10 bg-white/[0.06] text-white/75 text-[10px]">{statusLabel(t, doc.review_status)}</Badge>
                   <Badge variant="outline" className="text-[10px] border-white/15 text-white/70">{doc.visibility}</Badge>
-                  {Array.isArray(doc.tags) && doc.tags.slice(0,3).map(t => <Badge key={t} variant="outline" className="text-[10px] border-white/15 text-white/70">#{t}</Badge>)}
+                  {Array.isArray(doc.tags) && doc.tags.slice(0,3).map(tag => <Badge key={tag} variant="outline" className="text-[10px] border-white/15 text-white/70">#{tag}</Badge>)}
                 </div>
-                <div className="mt-3 text-xs"><a className="text-cambra-cyan underline" href={doc.file_url} target="_blank" rel="noopener noreferrer">Abrir</a></div>
+                <div className="mt-3 text-xs"><a className="text-cambra-cyan underline" href={doc.file_url} target="_blank" rel="noopener noreferrer">{t('vlt_open')}</a></div>
                 {doc.links && doc.links.length>0 && (
-                  <div className="mt-2 text-[11px] text-white/50">Vínculos: {doc.links.map(l=>`${l.target_type}:${l.target_id}`).join(', ')}</div>
+                  <div className="mt-2 text-[11px] text-white/50">{t('vlt_links')}: {doc.links.map(l=>`${l.target_type}:${l.target_id}`).join(', ')}</div>
                 )}
               </div>
             </div>
@@ -159,86 +179,13 @@ export default function Vault() {
         </div>
       )}
 
-      {/* Detail drawer */}
-      {selected && (
-        <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/50" onClick={()=>setSelected(null)} />
-          <div className="absolute right-0 top-0 h-full w-full sm:w-[440px] border-l border-white/10 p-4 overflow-auto text-white" style={{ background: "linear-gradient(180deg, #0b1020 0%, #08090f 100%)" }}>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-white">Editar documento</h2>
-              <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10" onClick={()=>setSelected(null)}>Cerrar</Button>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-xs text-white/50">Título</label>
-              <Input className="bg-white/[0.04] border-white/10 text-white" defaultValue={selected.title || ''} onBlur={(e)=>saveMeta(selected, { title: e.target.value })} />
-
-              <label className="text-xs text-white/50">Etiquetas (separadas por coma)</label>
-              <Input className="bg-white/[0.04] border-white/10 text-white" defaultValue={(selected.tags||[]).join(', ')} onBlur={(e)=>saveMeta(selected, { tags: e.target.value.split(',').map(s=>s.trim()).filter(Boolean) })} />
-
-              <label className="text-xs text-white/50">Notas</label>
-              <Input className="bg-white/[0.04] border-white/10 text-white" defaultValue={selected.notes || ''} onBlur={(e)=>saveMeta(selected, { notes: e.target.value })} />
-
-              <div className="flex items-center justify-between">
-                <a className="text-cambra-cyan underline text-sm" href={selected.file_url} target="_blank" rel="noopener noreferrer">Abrir archivo</a>
-                <span className="text-[11px] text-white/50">v{selected.version || 1}</span>
-              </div>
-
-              {/* Links */}
-              <div className="mt-4">
-                <h3 className="text-sm font-semibold mb-2">Vínculos</h3>
-                <LinkEditor doc={selected} onAdd={addLink} onRemove={removeLink} />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LinkEditor({ doc, onAdd, onRemove }){
-  const [type, setType] = useState('brand');
-  const [id, setId] = useState('');
-  const [primary, setPrimary] = useState(false);
-
-  const submit = () => {
-    onAdd(doc, { target_type: type, target_id: id, is_primary: primary });
-    setId('');
-    setPrimary(false);
-  };
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 flex-wrap">
-        <Select value={type} onValueChange={setType}>
-          <SelectTrigger className="w-48"><SelectValue placeholder="Tipo" /></SelectTrigger>
-          <SelectContent>
-            {['brand','deal_activation','provider','mandate','monthly_savings_report','invoice','contract','statement_import','verification_event','baseline','savings_evidence','payment_event'].map(t => (<SelectItem key={t} value={t}>{t}</SelectItem>))}
-          </SelectContent>
-        </Select>
-        <Input placeholder="ID de destino" value={id} onChange={e=>setId(e.target.value)} className="flex-1 min-w-[140px]" />
-        <Button onClick={submit} disabled={!id}>Añadir</Button>
-      </div>
-      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={primary}
-          onChange={(e) => setPrimary(e.target.checked)}
-          className="h-3.5 w-3.5 rounded border-border accent-foreground cursor-pointer"
-        />
-        <span>Mark as primary link for this target</span>
-      </label>
-      <div className="text-xs text-muted-foreground">Actuales:</div>
-      <ul className="space-y-1">
-        {(doc.links||[]).map(l => (
-          <li key={l.id} className="flex items-center justify-between border rounded-md px-2 py-1 text-xs">
-            <span>{l.target_type} · {l.target_id} {l.is_primary ? '· primary' : ''}</span>
-            <Button size="sm" variant="ghost" onClick={()=>onRemove(l.id)}>Quitar</Button>
-          </li>
-        ))}
-        {(doc.links||[]).length===0 && <li className="text-xs text-muted-foreground">Sin vínculos</li>}
-      </ul>
+      <VaultDocumentDrawer
+        doc={selected}
+        onClose={() => setSelected(null)}
+        onSaveMeta={saveMeta}
+        onAddLink={addLink}
+        onRemoveLink={removeLink}
+      />
     </div>
   );
 }
