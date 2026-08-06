@@ -37,7 +37,9 @@ export default async function (req: Request): Promise<Response> {
     // v61 (Checkpoint C) — the client may never carry economic-term keys. Any
     // attempt to inject fee/share/duration/policy fields rejects the request.
     const termsGuard = rejectClientTerms(body);
-    if (!termsGuard.ok) {
+    // `=== false`, not `!`: tsconfig.critical.json runs strict:false, where
+    // truthiness narrowing does NOT discriminate the union. Same runtime branch.
+    if (termsGuard.ok === false) {
       // Destructured INSIDE the guard so the union narrows to its false arm.
       const { keys } = termsGuard;
       return Response.json({ error: 'client_terms_forbidden', keys }, { status: 400 });

@@ -103,7 +103,9 @@ export default async function (req: Request): Promise<Response> {
 
     // ── 2. CAMBRA's own legal identity must exist ──────────────────────────
     const legal = readLegalIdentity();
-    if (!legal.ok) {
+    // `=== false`, not `!`: tsconfig.critical.json runs strict:false, where
+    // truthiness narrowing does NOT discriminate the union. Same runtime branch.
+    if (legal.ok === false) {
       // Destructured INSIDE the guard so the union narrows to its false arm.
       const { missing } = legal;
       await logContractEvent(svc, 'recover_contract_pdf_generation_failed', mandate, {

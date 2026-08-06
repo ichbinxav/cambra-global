@@ -4,7 +4,13 @@
   "files": [
     "base44/shared/internalSecret.ts",
     "base44/shared/webhookPublicPayload.ts",
+    "base44/shared/recoverContractPdf.ts",
     "base44/functions/dispatchWebhook/entry.ts",
+    "base44/functions/acceptRecoverMandate/entry.ts",
+    "base44/functions/startRecoverAcceptance/entry.ts",
+    "base44/functions/approveRecoverReportForInvoicing/entry.ts",
+    "base44/functions/createEligibleRecoverInvoices/entry.ts",
+    "base44/functions/generateRecoverContractPdf/entry.ts",
     "scripts/lib/sourceTreeHash.mjs",
     "scripts/lib/evidence.mjs",
     "scripts/lib/tscDiagnostics.mjs",

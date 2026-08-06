@@ -33,6 +33,32 @@ export function evidenceStatus(evidence, currentTreeHash) {
   return "valid";
 }
 
+// ── v62.2.3 — typecheck:critical evidence contract ─────────────────────────
+// The baseline approval CANNOT infer that typecheck:critical passed from the
+// candidate: the candidate runs `tsc -p jsconfig.json`, a project that does not
+// include the backend handlers at all, so "zero errors in the critical set"
+// only means "zero errors in files that project never looked at". The only
+// admissible proof is a fresh evidence artifact produced by the critical
+// project itself.
+export const CRITICAL_TYPECHECK_PROJECT = "tsconfig.critical.json";
+export const CRITICAL_TYPECHECK_EVIDENCE = "typecheck-critical";
+
+/**
+ * Returns "valid" only when the artifact proves a GREEN critical typecheck for
+ * the CURRENT tree. Any other return value must block approval.
+ * `failed` / `diagnostics` are optional (the generic wrapper does not emit them);
+ * when present they are enforced, when absent exitCode is the proof.
+ */
+export function criticalTypecheckEvidenceStatus(evidence, currentTreeHash) {
+  if (!evidence) return "missing";
+  if (!String(evidence.command || "").includes(CRITICAL_TYPECHECK_PROJECT)) return "wrong_command";
+  if (evidence.sourceTreeHash !== currentTreeHash) return "stale";
+  if (evidence.exitCode !== 0) return "failed";
+  if (evidence.failed !== undefined && evidence.failed !== null && Number(evidence.failed) !== 0) return "failed";
+  if (Array.isArray(evidence.diagnostics) && evidence.diagnostics.length > 0) return "diagnostics_present";
+  return "valid";
+}
+
 export function writeEnvironmentEvidence(lockfileSha, treeHash) {
   let npmVersion = null;
   try {

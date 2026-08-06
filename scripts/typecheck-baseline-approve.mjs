@@ -2,7 +2,9 @@
 // v62.2 CP4 — promotes a REVIEWED candidate to the approved baseline.
 // Refuses unless: the review token equals the CURRENT sourceTreeHash, the
 // candidate was generated against that same tree, it contains zero errors in
-// the critical set and zero errors in files modified this release, and the
+// the critical set and zero errors in files modified this release, FRESH GREEN
+// evidence of `tsc -p tsconfig.critical.json` exists (v62.2.3 — a green
+// critical typecheck is never inferred from the candidate), and the
 // operator passed the explicit confirmation flag. The previous baseline is
 // archived, never silently overwritten. There is NO generic --force.
 //
@@ -12,6 +14,7 @@ import fs from "node:fs";
 import process from "node:process";
 import { computeSourceTreeHash } from "./lib/sourceTreeHash.mjs";
 import { countByFingerprint } from "./lib/tscDiagnostics.mjs";
+import { readEvidence, criticalTypecheckEvidenceStatus, CRITICAL_TYPECHECK_EVIDENCE, CRITICAL_TYPECHECK_PROJECT } from "./lib/evidence.mjs";
 
 const CANDIDATE = "config/typecheck-baseline.candidate.json";
 const BASELINE = "config/typecheck-baseline.json";
@@ -39,8 +42,25 @@ if (critical.length > 0) die(`candidate has ${critical.length} error(s) in the c
 const modified = candidate.errors.filter((e) => e.modifiedThisRelease);
 if (modified.length > 0) die(`candidate has ${modified.length} error(s) in files modified this release — fix them, never absorb them`);
 
-// typecheck:critical green is implied by zero critical-set errors above, but a
-// separate evidence check keeps the invariant explicit when available.
+// v62.2.3 — MANDATORY: a green typecheck:critical must be PROVEN, never
+// inferred. The candidate runs `tsc -p jsconfig.json`, which does not include
+// the backend handlers, so its "zero critical-set errors" says nothing about
+// the critical project. Without fresh, green evidence from
+// `tsc -p tsconfig.critical.json`, approval is blocked and the baseline is left
+// untouched. tsc is NOT re-run here — the evidence artifact is the proof.
+const criticalEvidence = readEvidence(CRITICAL_TYPECHECK_EVIDENCE);
+const criticalStatus = criticalTypecheckEvidenceStatus(criticalEvidence, tree.hash);
+if (criticalStatus !== "valid") {
+  const detail = {
+    missing: "no .release-evidence/typecheck-critical.json — run: npm run typecheck:critical:evidence",
+    stale: "critical evidence was generated against a different tree — re-run: npm run typecheck:critical:evidence",
+    failed: "critical evidence reports a FAILED typecheck:critical — fix the errors, never absorb them into the baseline",
+    diagnostics_present: "critical evidence still carries diagnostics — fix them, never absorb them into the baseline",
+    wrong_command: `critical evidence was not produced by ${CRITICAL_TYPECHECK_PROJECT} — regenerate with: npm run typecheck:critical:evidence`,
+  }[criticalStatus] || `critical evidence invalid (${criticalStatus})`;
+  die(`typecheck:critical not proven green — ${detail}`);
+}
+
 if (fs.existsSync(BASELINE)) {
   const prev = JSON.parse(fs.readFileSync(BASELINE, "utf8"));
   if (prev.captured || prev.state === "APPROVED") {

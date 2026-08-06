@@ -56,13 +56,16 @@ export default async function (req: Request): Promise<Response> {
 
     // Global preconditions — fail loudly BEFORE touching any report.
     const identity = readLegalIdentity();
-    if (!identity.ok) {
+    // `=== false`, not `!`: tsconfig.critical.json runs strict:false, where
+    // truthiness narrowing does NOT discriminate the union. Same runtime branch.
+    if (identity.ok === false) {
       // Destructured INSIDE the guard so the union narrows to its false arm.
       const { missing } = identity;
       return Response.json({ ok: false, error: 'legal_identity_missing', missing }, { status: 409 });
     }
     const cfg = readTaxConfig();
-    if (!cfg.ok) {
+    // `=== false` (not `!`): strict:false does not narrow on truthiness.
+    if (cfg.ok === false) {
       const { missing } = cfg;
       return Response.json({ ok: false, error: 'tax_config_missing', missing }, { status: 409 });
     }
@@ -156,7 +159,8 @@ export default async function (req: Request): Promise<Response> {
         const amounts = prep.amounts!;
         const view = prep.economicView!;
         const taxRateRef = stripeTaxRateIdFor(tax, cfg.config, mode);
-        if (!taxRateRef.ok) {
+        // `=== false` (not `!`): strict:false does not narrow on truthiness.
+        if (taxRateRef.ok === false) {
           const { blocker } = taxRateRef;
           outcome.error = blocker;
           continue;
