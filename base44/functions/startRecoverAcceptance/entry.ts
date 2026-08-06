@@ -11,6 +11,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { getSuccessFeePct, getFeeDurationMonths } from '../../shared/generated/productPolicy.ts';
+import { rejectClientTerms } from '../../shared/contractPolicySnapshot.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   MANDATE_DOCUMENT_VERSION,
@@ -33,6 +34,12 @@ export default async function (req: Request): Promise<Response> {
     const authenticatedAt = new Date().toISOString();
 
     const body = await req.json().catch(() => ({}));
+    // v61 (Checkpoint C) — the client may never carry economic-term keys. Any
+    // attempt to inject fee/share/duration/policy fields rejects the request.
+    const termsGuard = rejectClientTerms(body);
+    if (!termsGuard.ok) {
+      return Response.json({ error: 'client_terms_forbidden', keys: termsGuard.keys }, { status: 400 });
+    }
     const svc = base44.asServiceRole;
 
     const owned = await resolveOwnedActivation(svc, user, body?.deal_activation_id);

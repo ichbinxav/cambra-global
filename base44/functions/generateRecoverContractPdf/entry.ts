@@ -19,7 +19,7 @@ import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { hashSnapshot } from '../../shared/recoverAcceptance.ts';
 import { readLegalIdentity } from '../../shared/cambraLegalIdentity.ts';
 import { buildRecoverContractPdf, sha256Hex } from '../../shared/recoverContractPdf.ts';
-import { RECOVER_CONTRACT_TEMPLATE_VERSION, contractStrings } from '../../shared/recoverContractTemplates.ts';
+import { contractStringsForVersion, resolveContractTemplateVersion } from '../../shared/recoverContractTemplateRegistry.ts';
 import {
   MAX_ATTEMPTS,
   PERMANENT_PDF_ERRORS,
@@ -121,7 +121,10 @@ export default async function (req: Request): Promise<Response> {
       });
     }
 
-    const t = contractStrings(locale);
+    // v61 (Checkpoint C) — annex labels come from the template version in force
+    // at acceptance, resolved via the immutable registry (unknown = blocked).
+    const tplVersion = resolveContractTemplateVersion(snapshot, mandate);
+    const t = contractStringsForVersion(tplVersion, locale);
     const reference = safeReference(mandate_id);
     const documentHashes = [
       { label: t.annex_document_version, value: mandate.document_version || '' },
@@ -166,7 +169,7 @@ export default async function (req: Request): Promise<Response> {
       contract_pdf_storage_key: file_uri,
       contract_pdf_sha256: pdf.sha256,
       contract_pdf_size_bytes: pdf.bytes.length,
-      contract_pdf_template_version: RECOVER_CONTRACT_TEMPLATE_VERSION,
+      contract_pdf_template_version: pdf.templateVersion,
       contract_pdf_language: locale,
       contract_pdf_source_snapshot_hash: mandate.acceptance_snapshot_hash,
       contract_pdf_last_error_code: '',
@@ -175,7 +178,7 @@ export default async function (req: Request): Promise<Response> {
       contract_delivery_idempotency_key: deliveryIdempotencyKey({
         mandateId: mandate_id,
         snapshotHash: mandate.acceptance_snapshot_hash || '',
-        templateVersion: RECOVER_CONTRACT_TEMPLATE_VERSION,
+        templateVersion: pdf.templateVersion,
         language: locale,
       }),
     });
@@ -183,7 +186,7 @@ export default async function (req: Request): Promise<Response> {
     await logContractEvent(svc, 'recover_contract_pdf_generated', mandate, {
       attempt,
       language: locale,
-      template_version: RECOVER_CONTRACT_TEMPLATE_VERSION,
+      template_version: pdf.templateVersion,
       size_bytes: pdf.bytes.length,
       hash_prefix: pdf.sha256.slice(0, 12),
     });

@@ -17,6 +17,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { recoverContractEmail } from '../../shared/emails/recoverContract.ts';
+import { resolveContractPolicy, buildContractEconomicView } from '../../shared/contractPolicySnapshot.ts';
 import {
   MAX_ATTEMPTS,
   PERMANENT_EMAIL_ERRORS,
@@ -65,6 +66,16 @@ export default async function (req: Request): Promise<Response> {
     }
   }
 
+  // v61 (Checkpoint C) — the email's contractual figures come from the resolved
+  // contract economic view (same source as the PDF), never a hardcoded 24. An
+  // unresolvable contract blocks the send — it never falls back to the live
+  // policy. (Mandate.status is never touched; the document stays downloadable.)
+  const _resolved = resolveContractPolicy({ mandate });
+  if (!_resolved.resolvable) {
+    return Response.json({ error: 'contract_unresolvable', mandate_id }, { status: 422 });
+  }
+  const econ = buildContractEconomicView({ resolvedContractPolicy: _resolved, mandate });
+
   const recipient = String(mandate.signed_by_email || '').trim();
   const locale = normalizeLocale(mandate.contract_pdf_language || mandate.language);
   const attempt = Number(mandate.contract_email_attempt_count || 0) + 1;
@@ -96,6 +107,7 @@ export default async function (req: Request): Promise<Response> {
       // Authenticated app route — NOT a signed storage URL.
       downloadUrl: `https://${appDomain}/Reports`,
       attached: false,
+      durationMonths: econ.feeDurationMonths,
     });
 
     const sent = await svc.integrations.Core.SendEmail({

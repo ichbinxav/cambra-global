@@ -18,7 +18,8 @@
 // nothing in this runtime can validate it.
 
 import { jsPDF } from 'npm:jspdf@4.0.0';
-import { checkboxTextFor, contractStrings, RECOVER_CONTRACT_TEMPLATE_VERSION, type ContractLocale } from './recoverContractTemplates.ts';
+import { checkboxTextFor, type ContractLocale } from './recoverContractTemplates.ts';
+import { contractStringsForVersion, resolveContractTemplateVersion } from './recoverContractTemplateRegistry.ts';
 import { resolveContractPolicy, buildContractEconomicView } from './contractPolicySnapshot.ts';
 import type { CambraLegalIdentity } from './cambraLegalIdentity.ts';
 
@@ -77,7 +78,11 @@ export async function sha256Hex(bytes: Uint8Array): Promise<string> {
 
 export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<ContractPdfOutput> {
   const { locale, identity, mandate, snapshot, reference } = input;
-  const t = contractStrings(locale);
+  // v61 (Checkpoint C) — render with the template version IN FORCE AT
+  // ACCEPTANCE (frozen in the snapshot), never silently with the current one.
+  // An unknown version throws template_version_unknown (permanent, blocks).
+  const tplVersion = resolveContractTemplateVersion(snapshot, mandate);
+  const t = contractStringsForVersion(tplVersion, locale);
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   let y = MARGIN;
 
@@ -165,7 +170,7 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
   field(t.label_mandate_reference, reference);
   field(t.label_accepted_on, fmtDate(mandate.signed_at, locale));
   field(t.label_document_version, mandate.document_version || '');
-  field(t.label_template_version, RECOVER_CONTRACT_TEMPLATE_VERSION);
+  field(t.label_template_version, tplVersion);
   field(t.label_language, locale.toUpperCase());
   y += 3;
 
@@ -272,7 +277,7 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
   field(t.annex_activation_id, mandate.deal_activation_id || '');
   field(t.annex_organization, mandate.organization_id || '');
   field(t.label_document_version, mandate.document_version || '');
-  field(t.annex_template_version, RECOVER_CONTRACT_TEMPLATE_VERSION);
+  field(t.annex_template_version, tplVersion);
   field(t.label_language, locale.toUpperCase());
   field(t.client_country, safe(mandate.country || snapshot.country || '') || t.not_available);
   field(t.annex_opened_at, fmtDate(mandate.acceptance_started_at, locale));
@@ -301,7 +306,7 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor('#9A9AAB');
-    doc.text(`${t.footer_note} - ${reference} - ${RECOVER_CONTRACT_TEMPLATE_VERSION}`, MARGIN, HEIGHT - 10);
+    doc.text(`${t.footer_note} - ${reference} - ${tplVersion}`, MARGIN, HEIGHT - 10);
     doc.text(`${t.page_of} ${i}/${pages}`, WIDTH - MARGIN, HEIGHT - 10, { align: 'right' });
   }
 
@@ -310,5 +315,5 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
   const header = new TextDecoder().decode(bytes.slice(0, 5));
   if (header !== '%PDF-') throw new Error('pdf_build_failed: missing PDF header');
 
-  return { bytes, sha256: await sha256Hex(bytes), templateVersion: RECOVER_CONTRACT_TEMPLATE_VERSION };
+  return { bytes, sha256: await sha256Hex(bytes), templateVersion: tplVersion };
 }

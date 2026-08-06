@@ -216,6 +216,35 @@ describe("policy drift guards — v60.2 unsafe fallback elimination", () => {
     expect(src).not.toContain("mandate_snapshot_duration_defaulted");
   });
 
+  it("v61-C: contract PDF renders with the template version frozen at acceptance", () => {
+    const pdf = read("base44/shared/recoverContractPdf.ts");
+    expect(pdf).toContain("resolveContractTemplateVersion");
+    expect(pdf).toContain("contractStringsForVersion");
+    expect(pdf).not.toContain("RECOVER_CONTRACT_TEMPLATE_VERSION");
+    const gen = read("base44/functions/generateRecoverContractPdf/entry.ts");
+    // The generator persists the RESOLVED version from the built document,
+    // never the live constant.
+    expect(gen).toContain("contract_pdf_template_version: pdf.templateVersion");
+    expect(gen).not.toContain("RECOVER_CONTRACT_TEMPLATE_VERSION");
+    // Unknown template version is a permanent pdf error.
+    expect(read("base44/shared/recoverContractState.ts")).toContain("template_version_unknown");
+  });
+
+  it("v61-C: contractual email reads the economic view (no hardcoded 24-month term)", () => {
+    const email = read("base44/shared/emails/recoverContract.ts");
+    expect(email).toContain("durationMonths");
+    expect(email).not.toMatch(/24-month term|durée de 24 mois|duración de 24 meses/);
+    const send = read("base44/functions/sendRecoverContractEmail/entry.ts");
+    expect(send).toContain("resolveContractPolicy");
+    expect(send).toContain("buildContractEconomicView");
+    expect(send).toContain("contract_unresolvable");
+  });
+
+  it("v61-C: acceptance boundaries reject client-supplied economic terms", () => {
+    expect(read("base44/functions/startRecoverAcceptance/entry.ts")).toContain("rejectClientTerms");
+    expect(read("base44/functions/acceptRecoverMandate/entry.ts")).toContain("rejectClientTerms");
+  });
+
   it("resolver no longer uses || 25 / || 75 / || 24 fallbacks (uses Number.isFinite)", () => {
     const src = read("base44/shared/contractPolicySnapshot.ts");
     // The mandate_snapshot branch must not use `|| 25`, `|| 75`, `|| 24`.

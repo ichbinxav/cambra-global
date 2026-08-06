@@ -23,6 +23,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
+import { rejectClientTerms } from '../../shared/contractPolicySnapshot.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { RECOVER_CONTRACT_TEMPLATE_VERSION } from '../../shared/recoverContractTemplates.ts';
 import { deliveryIdempotencyKey, logContractEvent } from '../../shared/recoverContractState.ts';
@@ -45,6 +46,11 @@ export default async function (req: Request): Promise<Response> {
     const authenticatedAt = new Date().toISOString();
 
     const body = await req.json().catch(() => ({}));
+    // v61 (Checkpoint C) — the client may never carry economic-term keys.
+    const termsGuard = rejectClientTerms(body);
+    if (!termsGuard.ok) {
+      return Response.json({ error: 'client_terms_forbidden', keys: termsGuard.keys }, { status: 400 });
+    }
     const { mandate_id, signed_by_name, signed_by_role, accepted } = body || {};
     if (!mandate_id) return Response.json({ error: 'mandate_id required' }, { status: 400 });
     if (accepted !== true) return Response.json({ error: 'explicit acceptance required' }, { status: 400 });

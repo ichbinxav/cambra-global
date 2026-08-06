@@ -22,6 +22,9 @@ type Vars = {
   reference: string;
   downloadUrl: string;
   attached: boolean;
+  // v61 (Checkpoint C) — contractual fee duration from the resolved contract
+  // economic view (buildContractEconomicView), never a hardcoded 24.
+  durationMonths: number;
 };
 
 const COPY = {
@@ -31,8 +34,8 @@ const COPY = {
     title: 'Your agreement is recorded',
     hello: (n: string) => `Hello ${n},`,
     recorded: 'Your electronic acceptance of Recover Margin has been recorded.',
-    terms: (d: string) =>
-      `Your agreement includes the verified baseline, the applicable success fee and the 24-month term accepted on ${d}. No payment was taken when you completed the acceptance.`,
+    terms: (d: string, m: number) =>
+      `Your agreement includes the verified baseline, the applicable success fee and the ${m}-month term accepted on ${d}. No payment was taken when you completed the acceptance.`,
     attached: 'Your agreement is attached to this email.',
     download: 'You can download your agreement securely from your CAMBRA account.',
     cta: 'Download your agreement',
@@ -46,8 +49,8 @@ const COPY = {
     title: 'Votre accord est enregistré',
     hello: (n: string) => `Bonjour ${n},`,
     recorded: 'Votre acceptation électronique de Recover Margin a bien été enregistrée.',
-    terms: (d: string) =>
-      `Votre accord reprend la référence vérifiée, la commission de succès applicable et la durée de 24 mois acceptées le ${d}. Aucun paiement n'a été prélevé lors de votre acceptation.`,
+    terms: (d: string, m: number) =>
+      `Votre accord reprend la référence vérifiée, la commission de succès applicable et la durée de ${m} mois acceptées le ${d}. Aucun paiement n'a été prélevé lors de votre acceptation.`,
     attached: 'Votre accord est joint à cet e-mail.',
     download: 'Vous pouvez télécharger votre accord de manière sécurisée depuis votre compte CAMBRA.',
     cta: 'Télécharger votre accord',
@@ -61,8 +64,8 @@ const COPY = {
     title: 'Tu acuerdo está registrado',
     hello: (n: string) => `Hola ${n},`,
     recorded: 'Tu aceptación electrónica de Recover Margin se ha registrado correctamente.',
-    terms: (d: string) =>
-      `Tu acuerdo recoge el baseline verificado, la comisión de éxito aplicable y la duración de 24 meses que aceptaste el ${d}. No se realizó ningún cobro al completar la aceptación.`,
+    terms: (d: string, m: number) =>
+      `Tu acuerdo recoge el baseline verificado, la comisión de éxito aplicable y la duración de ${m} meses que aceptaste el ${d}. No se realizó ningún cobro al completar la aceptación.`,
     attached: 'Tu acuerdo está adjunto a este email.',
     download: 'Puedes descargar tu acuerdo de forma segura desde tu cuenta de CAMBRA.',
     cta: 'Descargar tu acuerdo',
@@ -81,7 +84,7 @@ export function recoverContractEmail(locale: unknown, vars: Vars): Email {
     h1(c.title),
     p(c.hello(vars.firstName)),
     p(c.recorded),
-    p(c.terms(vars.acceptanceDate)),
+    p(c.terms(vars.acceptanceDate, vars.durationMonths)),
     // Exactly one of the two — never both.
     p(vars.attached ? c.attached : c.download),
   ];

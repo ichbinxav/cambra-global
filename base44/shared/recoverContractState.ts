@@ -24,6 +24,7 @@ export const PERMANENT_PDF_ERRORS = [
   'source_snapshot_integrity_mismatch',
   'legal_identity_missing',
   'template_invalid',
+  'template_version_unknown',
   'mandate_not_acceptable',
   'unsupported_language',
 ];
