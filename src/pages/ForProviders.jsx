@@ -17,108 +17,16 @@
 
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  ArrowLeft, ArrowRight, ShieldCheck, Sparkles, LinkIcon, Search,
-  Handshake, CheckCircle2, Globe, Mail,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, ShieldCheck, Mail } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
 import SectionLabel from "@/components/shared/SectionLabel";
+import { useTranslation } from "@/lib/i18n.jsx";
+import {
+  buildListedTier, buildPartnerTier, buildGuardrails,
+} from "@/components/providers/forProvidersContent";
 
-// ── Tier cards data ─────────────────────────────────────────────────
-
-const LISTED_TIER = {
-  eyebrow: "Tier 1",
-  title: "Listed",
-  tagline: "Public pricing → enters our benchmark.",
-  intro:
-    "If your card-payment pricing is public and citable, you belong in our achievable benchmark. Every audit CAMBRA runs compares the merchant's current effective rate against the best publicly contractable rate for their region and ticket size — and the winner surfaces by name.",
-  requirements: [
-    {
-      icon: Globe,
-      title: "Public pricing page",
-      body: "A live URL we can quote verbatim (percent + fixed fee + any monthly rental). No unlisted deals, no ‘call for quote'.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Card-payment coverage",
-      body: "Online PSP, in-store TPV, or both. Any region we cover (EU, UK, US, RoW).",
-    },
-    {
-      icon: LinkIcon,
-      title: "Point of contact",
-      body: "A single email we can reach to notify you of pricing changes we detect on our side.",
-    },
-  ],
-  benefits: [
-    {
-      icon: Search,
-      title: "Visibility to comparing merchants",
-      body: "When a merchant of your ICP runs the audit, our engine evaluates your rate at their real ticket size. If you win, your name appears in their result as the achievable anchor.",
-    },
-    {
-      icon: CheckCircle2,
-      title: "Audit trail on every citation",
-      body: "Every time we anchor to you, the source URL and verbatim quote we're using is one click away. No misquoting, no stale pricing.",
-    },
-  ],
-  cost: "No fee. No exclusivity. No commitment.",
-};
-
-const PARTNER_TIER = {
-  eyebrow: "Tier 2",
-  title: "Partner",
-  tagline: "Exclusive rate for CAMBRA-referred merchants.",
-  intro:
-    "If you want more than passive visibility, we can bring you qualified deal-flow. Partner providers offer an exclusive rate — better than your public pricing — reserved for merchants who arrive through CAMBRA with a measured gap and clear intent to switch. In exchange, we agree on a referral structure.",
-  requirements: [
-    {
-      icon: Sparkles,
-      title: "An exclusive rate we can present",
-      body: "A discount off your public pricing — percent points, fixed-fee waiver, monthly rental waiver, or any combination. Terms formalized in a signed agreement, not this page.",
-    },
-    {
-      icon: Handshake,
-      title: "Referral agreement",
-      body: "A written arrangement covering how introductions are handled, how activations are counted, and how compensation flows. Specifics are negotiated per partner.",
-    },
-    {
-      icon: LinkIcon,
-      title: "Named operational contact",
-      body: "Someone on your side to receive warm handovers and close them — not a generic sales inbox.",
-    },
-  ],
-  benefits: [
-    {
-      icon: Search,
-      title: "Qualified acquisition channel",
-      body: "Merchants who reach you already know their current effective rate to the basis point, already know your public pricing, and already know the exclusive rate you're offering. Every conversation starts pre-qualified.",
-    },
-    {
-      icon: CheckCircle2,
-      title: "Featured on the results page — labeled exclusive",
-      body: "When we present your Partner rate to a merchant, it appears in a dedicated ‘CAMBRA exclusive offer' slot — visually separate from the public benchmark, unambiguously labeled as an offer only available through us.",
-    },
-  ],
-  cost: "Commercial terms per signed agreement. Never published on this page.",
-};
-
-// ── Guardrails card — what CAMBRA WILL NOT compromise on ─────────────
-
-const GUARDRAILS = [
-  {
-    title: "The benchmark stays public.",
-    body: "The achievable rates CAMBRA publishes come from public pricing pages, cited verbatim, with a source URL on every row. A Partner's exclusive rate is NEVER mixed into that benchmark — it's presented separately, labeled as exclusive.",
-  },
-  {
-    title: "Recommendations follow the merchant's interest.",
-    body: "Our engine picks the achievable anchor by minimum effective cost at the merchant's ticket size, evaluated across every eligible verified provider. A Partner doesn't get preferential ranking — they get a dedicated slot with their exclusive terms.",
-  },
-  {
-    title: "Any interested provider gets the same door.",
-    body: "One email address, one process, same terms. No back-channel deals, no unlisted incumbents.",
-  },
-];
+// Tier + guardrail copy lives in @/components/providers/forProvidersContent.
 
 // Shared paper card style — white, --linea border, radius 14, spec shadow.
 const CARD_STYLE = {
@@ -128,7 +36,7 @@ const CARD_STYLE = {
   boxShadow: "0 8px 24px rgba(12,12,22,.06)",
 };
 
-function TierCard({ tier, accent }) {
+function TierCard({ tier, accent, t }) {
   const isPartner = accent === "partner";
   return (
     <motion.article
@@ -175,7 +83,7 @@ function TierCard({ tier, accent }) {
 
       <div className="mb-8">
         <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-3" style={{ color: "var(--gris-2)" }}>
-          What you bring
+          {t("fp_bring")}
         </p>
         <ul className="space-y-3">
           {tier.requirements.map((r) => (
@@ -197,7 +105,7 @@ function TierCard({ tier, accent }) {
 
       <div className="mb-6">
         <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-3" style={{ color: "var(--gris-2)" }}>
-          What CAMBRA delivers
+          {t("fp_deliver")}
         </p>
         <ul className="space-y-3">
           {tier.benefits.map((b) => (
@@ -222,7 +130,7 @@ function TierCard({ tier, accent }) {
 
       <div className="pt-5 mt-2" style={{ borderTop: "1px solid var(--linea)" }}>
         <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-1" style={{ color: "var(--gris-2)" }}>
-          Commercial
+          {t("fp_commercial")}
         </p>
         <p className="text-[13px]" style={{ color: "var(--gris-1)" }}>{tier.cost}</p>
       </div>
@@ -231,13 +139,18 @@ function TierCard({ tier, accent }) {
 }
 
 export default function ForProviders() {
+  const { t } = useTranslation();
+  const listedTier = buildListedTier(t);
+  const partnerTier = buildPartnerTier(t);
+  const guardrails = buildGuardrails(t);
+
   return (
     <PublicPageShell>
       <PublicPageHero
-        eyebrow="For payment providers"
+        eyebrow={t("fp_hero_eyebrow")}
         align="left"
-        title={<>Merchants are comparing you right now.<br /><span className="kw-c">Be the answer.</span></>}
-        subtitle="CAMBRA runs a payments audit for independent brands — online and in-store. Every audit compares the merchant's current effective rate against the best publicly contractable alternative for their region and ticket size. If your pricing is public, we can cite it. If you'll offer an exclusive rate through us, we can present it."
+        title={<>{t("fp_hero_title_l1")}<br /><span className="kw-c">{t("fp_hero_title_kw")}</span></>}
+        subtitle={t("fp_hero_sub")}
       />
 
       <div className="relative max-w-5xl mx-auto px-6 pt-14 pb-20">
@@ -246,7 +159,7 @@ export default function ForProviders() {
             className="mb-10 -ml-2 h-8 text-xs rounded-full px-3 inline-flex items-center transition-colors"
             style={{ color: "var(--gris-1)" }}
           >
-            <ArrowLeft size={13} className="mr-1.5" /> Back
+            <ArrowLeft size={13} className="mr-1.5" /> {t("fp_back")}
           </button>
         </Link>
 
@@ -254,7 +167,7 @@ export default function ForProviders() {
         <section className="mb-16">
           <div className="mb-8">
             <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-2" style={{ color: "var(--gris-2)" }}>
-              Two ways to work with us
+              {t("fp_ways_label")}
             </p>
             <h2
               style={{
@@ -266,16 +179,16 @@ export default function ForProviders() {
                 lineHeight: 1.02,
               }}
             >
-              Listed, or Partner.
+              {t("fp_ways_title")}
             </h2>
             <p className="mt-3 text-[14px] max-w-2xl" style={{ color: "var(--gris-1)" }}>
-              Two levels of engagement. One protects our benchmark's public integrity; the other opens a qualified acquisition channel. Both are opt-in, both are transparent about what they cost and what they deliver.
+              {t("fp_ways_sub")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <TierCard tier={LISTED_TIER} accent="listed" />
-            <TierCard tier={PARTNER_TIER} accent="partner" />
+            <TierCard tier={listedTier} accent="listed" t={t} />
+            <TierCard tier={partnerTier} accent="partner" t={t} />
           </div>
         </section>
 
@@ -283,7 +196,7 @@ export default function ForProviders() {
         <section className="mb-16">
           <div className="mb-6">
             <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-2" style={{ color: "var(--gris-2)" }}>
-              Where we won't compromise
+              {t("fp_guard_label")}
             </p>
             <h2
               style={{
@@ -295,12 +208,12 @@ export default function ForProviders() {
                 lineHeight: 1.05,
               }}
             >
-              Three rules, non-negotiable.
+              {t("fp_guard_title")}
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {GUARDRAILS.map((g, i) => (
+            {guardrails.map((g, i) => (
               <motion.div
                 key={g.title}
                 initial={{ opacity: 0, y: 12 }}
@@ -313,7 +226,7 @@ export default function ForProviders() {
                 <div className="mb-3 flex items-center gap-2">
                   <ShieldCheck size={14} style={{ color: "var(--voltio)" }} />
                   <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: "var(--gris-2)" }}>
-                    Rule {i + 1}
+                    {t("fp_rule", { n: i + 1 })}
                   </span>
                 </div>
                 <p className="text-[14px] font-semibold mb-2 leading-tight" style={{ color: "var(--ink)" }}>
@@ -334,7 +247,7 @@ export default function ForProviders() {
           className="section-ink p-6 sm:p-10 text-center"
         >
           <p className="text-[10px] font-bold tracking-[0.22em] uppercase text-cyan-300/90 mb-3">
-            Talk to us
+            {t("fp_cta_label")}
           </p>
           <h2
             className="text-white mb-3"
@@ -346,10 +259,10 @@ export default function ForProviders() {
               lineHeight: 1.05,
             }}
           >
-            One email is enough.
+            {t("fp_cta_title")}
           </h2>
           <p className="text-[14px] text-white/60 mb-6 max-w-xl mx-auto leading-relaxed">
-            Tell us which tier fits — Listed if your pricing is already public, Partner if you want to open an exclusive channel. We'll come back with the specifics and the next steps.
+            {t("fp_cta_sub")}
           </p>
           <a
             href="mailto:contact@cambra.global?subject=Provider%20program%20%E2%80%94%20CAMBRA"
@@ -364,7 +277,7 @@ export default function ForProviders() {
             <ArrowRight size={15} />
           </a>
           <p className="mt-5 text-[11px] text-white/35">
-            Founding cohort in progress. We reply within two working days.
+            {t("fp_cta_note")}
           </p>
         </motion.section>
       </div>
