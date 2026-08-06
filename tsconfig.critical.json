@@ -34,6 +34,7 @@
     "base44/shared/invokeInternal.ts",
     "base44/shared/emails/recoverContract.ts",
     "base44/shared/generated/productPolicy.ts",
+    "base44/shared/generated/eclPolicy.ts",
     "base44/functions/createEligibleRecoverInvoices/entry.ts",
     "base44/functions/generateMonthlySavingsReport/entry.ts",
     "base44/functions/approveRecoverReportForInvoicing/entry.ts",

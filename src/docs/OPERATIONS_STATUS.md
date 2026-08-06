@@ -6,12 +6,33 @@
 
 ---
 
-## Release v62.2 — Pre-ECL Gate Hardening (2026-08-06)
+## Release v0.62.4 — ECL P1/P2 Closure (2026-08-06)
 
-**ECL P1: NOT STARTED. ECL P2: NOT STARTED.** No ECL entity, config, cron,
-attestation, strike, lifecycle or rules-engine code exists in the repo
-(`config/ecl-policy.json` does not exist), and the pre-ECL freeze is
-machine-enforced.
+**ECL P1: CLOSED (schemas only). ECL P2: CLOSED (domain contracts only).
+ECL P3: NOT STARTED.** Current stage: `ECL_P2_DOMAIN_CONTRACTS` — reversible
+to P1 by design (`PRE_ECL ⇄ ECL_P1_SCHEMA_ONLY ⇄ ECL_P2_DOMAIN_CONTRACTS`;
+`PRE_ECL → P2` is invalid). What exists: the six P1 schemas (storage shapes,
+no writers), the canonical ECL policy (`config/ecl-policy.json`,
+`policyVersion ecl-2026.08`) with byte-identical generated frontend/backend
+artifacts, and the pure P2 domain modules (normalized evidence, confidence
+contract, deterministic gate evaluation, stable serialization). What does NOT
+exist (all P3): rule engines (P-01…P-08), reconciliation R-01, FEC parser,
+lifecycle handlers, scheduler/cron, reminders, functional strikes,
+`ReviewQueue`, ECL UI, billing integration. The allowlist is 21 exact paths,
+code-owned; only StatementImport and SavingsEvidence may carry ECL fields.
+The 8 frozen files remain hash-identical (`Baseline.jsonc` and
+`processUploadedFile/entry.ts` at zero diff). `npm run ecl:check` guards
+artifact drift and runs in `verify` and in the CI template. CI execution
+remains ⏳ MANUAL REQUIRED (workflow runs on GitHub Actions, outside this
+environment; the installed `ci.yml` must be updated from the template to gain
+the `ecl:check` step).
+
+## Release v62.2 — Pre-ECL Gate Hardening (2026-08-06) [HISTORICAL — superseded by v0.62.4 above]
+
+**ECL P1 / ECL P2 status in this section is HISTORICAL** (they were NOT
+STARTED at v62.2; both are now closed — see the v0.62.4 section). At v62.2 no
+ECL entity, config, cron, attestation, strike, lifecycle or rules-engine code
+existed in the repo, and the pre-ECL freeze was machine-enforced.
 
 ### Pre-ECL freeze (zero-diff mandate)
 

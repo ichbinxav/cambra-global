@@ -1,6 +1,6 @@
 {
-  "release": "0.62.3",
-  "comment": "Files modified by this release. The baseline gate refuses to absorb ANY typecheck error appearing in these files.",
+  "release": "0.62.4",
+  "comment": "Files modified by this release. The baseline gate refuses to absorb ANY typecheck error appearing in these files. v62.4 added the ECL P2 domain-contract files (policy, schema, generator, domain modules, generated artifacts) that were missing from the 0.62.3 list.",
   "files": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -30,6 +30,15 @@
     "scripts/update-freeze.mjs",
     "scripts/install-ci-workflow.mjs",
     "scripts/generate-release-manifest.mjs",
-    "scripts/check-release-manifest.mjs"
+    "scripts/check-release-manifest.mjs",
+    "config/ecl-policy.json",
+    "src/lib/eclPolicySchema.js",
+    "scripts/generate-ecl-policy.mjs",
+    "src/lib/normalizedEvidence.js",
+    "src/lib/confidenceResult.js",
+    "src/lib/eclGates.js",
+    "src/lib/eclSerialize.js",
+    "src/lib/generated/eclPolicy.js",
+    "base44/shared/generated/eclPolicy.ts"
   ]
 }

@@ -17,6 +17,11 @@ const sha256 = (file) => crypto.createHash("sha256").update(fs.readFileSync(file
 const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
 const policy = JSON.parse(fs.readFileSync("config/product-policy.json", "utf8"));
 const freeze = JSON.parse(fs.readFileSync("config/pre-ecl-freeze.json", "utf8"));
+// v62.4 — ECL provenance. The policy file exists only from stage
+// ECL_P2_DOMAIN_CONTRACTS onward; in earlier stages these fields stay null
+// (never invented).
+const eclPolicyLive = fs.existsSync("config/ecl-policy.json")
+  ? JSON.parse(fs.readFileSync("config/ecl-policy.json", "utf8")) : null;
 
 const templates = fs.readFileSync("base44/shared/recoverContractTemplates.ts", "utf8");
 const tvMatch = templates.match(/RECOVER_CONTRACT_TEMPLATE_VERSION\s*=\s*["']([^"']+)["']/);
@@ -55,6 +60,15 @@ const manifest = {
   ciEvidence: process.env.GITHUB_RUN_ID ? { runId: process.env.GITHUB_RUN_ID, workflow: process.env.GITHUB_WORKFLOW || null } : null,
   policyVersion: policy.policyVersion,
   policySchemaVersion: policy.schemaVersion,
+  eclStage: freeze.stage || null,
+  eclPolicyVersion: eclPolicyLive?.policyVersion ?? null,
+  eclPolicyFileSha: eclPolicyLive ? sha256("config/ecl-policy.json") : null,
+  eclGeneratedArtifactShas: eclPolicyLive ? {
+    "src/lib/generated/eclPolicy.js": sha256("src/lib/generated/eclPolicy.js"),
+    "base44/shared/generated/eclPolicy.ts": sha256("base44/shared/generated/eclPolicy.ts"),
+  } : null,
+  durabilityManifestSha: fs.existsSync("config/p1-durability-manifest.json")
+    ? sha256("config/p1-durability-manifest.json") : null,
   contractTemplateVersions: tvMatch ? [tvMatch[1]] : [],
   productScope: Object.entries(policy.productScope).filter(([, v]) => v.productionEnabled).map(([k]) => k),
   stripeIntegrationStatus: policy.integrationStatus.stripe,

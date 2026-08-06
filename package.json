@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.62.3",
-  "releaseName": "CAMBRA v62.3 — Core Gate Closure + ECL P1 Schemas",
+  "version": "0.62.4",
+  "releaseName": "CAMBRA v0.62.4 — ECL P1/P2 Closure",
   "type": "module",
   "engines": {
     "node": ">=20 <23",

@@ -10,7 +10,7 @@ carries no ECL field, no schema, no policy and no economic effect. Deleting it
 at any time is safe and changes no behaviour.
 
 - Created: 2026-08-06
-- Release under test: 0.62.3 (stage ECL_P1_SCHEMA_ONLY)
+- Release under test: 0.62.4 (stage ECL_P2_DOMAIN_CONTRACTS)
 - Expected CI result: the same gates that pass locally — clean:check,
-  policy:check, lint, typecheck:critical, typecheck:baseline (518 ≤ 518),
-  tests, build.
+  policy:check, ecl:check, lint, typecheck:critical, typecheck:baseline
+  (518 ≤ 518), tests, build.

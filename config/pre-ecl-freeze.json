@@ -2,7 +2,7 @@
   "freezeReason": "Pre-ECL freeze (v62.1/v62.2), staged in v62.3 — these files must have ZERO unsanctioned diffs. Changing any hash requires scripts/update-freeze.mjs with an explicit reason and confirmation token; adding an entry requires --add AND membership of the current stage's code-owned allowlist; changing the stage requires scripts/advance-stage.mjs. Every change is recorded in config/freeze-change-log.json.",
   "frozenAt": "2026-08-06",
   "stage": "ECL_P2_DOMAIN_CONTRACTS",
-  "stageComment": "v62.3 — ECL P1 is SCHEMA ONLY. The allowlist below is a MIRROR of the code-owned list in scripts/lib/preEclFreeze.mjs (P1_ALLOWLIST); clean:check fails if the two disagree, so editing this array cannot widen scope. Only StatementImport and SavingsEvidence may carry ECL fields. No P2 stage exists and none can be reached.",
+  "stageComment": "v62.4 — stage ECL_P2_DOMAIN_CONTRACTS (P1 schemas + P2 domain contracts, both CLOSED). The allowlist below is a MIRROR of the code-owned list in scripts/lib/preEclFreeze.mjs (P2_ALLOWLIST); clean:check fails if the two disagree, so editing this array cannot widen scope. Only StatementImport and SavingsEvidence may carry ECL fields — P2 added NO schema permission. P3 (rule engines, lifecycle handlers, scheduler, strikes, ReviewQueue, ECL UI, billing integration) is NOT STARTED and is not reachable from this config: any P3 artifact outside the 21 allowlisted paths is a hard clean:check failure.",
   "allowlist": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
