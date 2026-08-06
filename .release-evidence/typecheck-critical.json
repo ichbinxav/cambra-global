@@ -1,8 +1,0 @@
-{
-  "command": "npx tsc -p ./tsconfig.critical.json",
-  "sourceTreeHash": "1747311bfac6b49f47a746fb7a246d34b4d94e68bfb6a812970f4fce5bc93713",
-  "startedAt": "2026-08-06T19:58:00.927Z",
-  "completedAt": "2026-08-06T19:58:03.316Z",
-  "exitCode": 0,
-  "ciRunId": null
-}
