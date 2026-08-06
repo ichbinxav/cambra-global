@@ -13,6 +13,7 @@
 // (event dispatch is a platform-level concern) and writes delivery/DLQ audit rows.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 import { quarantineProbe } from "../../shared/internalGate.ts";
+import { isInternalCaller } from "../../shared/internalSecret.ts";
 
 const SUPPORTED_EVENTS = [
   "new_brand_created",
@@ -68,11 +69,10 @@ Deno.serve(async (req) => {
     // Allowed callers: (a) authenticated admin, (b) server-to-server callers
     // presenting the shared INTERNAL_CALL_SECRET via the x-internal-secret
     // header or payload.internal_secret. Frontend invocation is not supported.
-    const internalSecret = Deno.env.get("INTERNAL_CALL_SECRET") || "";
-    const presented = req.headers.get("x-internal-secret") || body.internal_secret || "";
     const user = await base44.auth.me().catch(() => null);
     const isAdmin = user?.role === "admin";
-    const isInternal = internalSecret.length > 0 && presented === internalSecret;
+    // v62 C4 — comparación en tiempo constante vía módulo compartido (ver internalSecret.ts)
+    const isInternal = isInternalCaller(req, body);
     if (!isAdmin && !isInternal) {
       return Response.json({ error: "forbidden" }, { status: 403 });
     }
