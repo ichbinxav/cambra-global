@@ -13,12 +13,19 @@ export const ECL_FIELD_PATTERN = /confidence_level_ecl|freeze_eligibility|"evide
 
 export const STAGE_PRE_ECL = "PRE_ECL";
 export const STAGE_ECL_P1 = "ECL_P1_SCHEMA_ONLY";
-export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1];
+// v62.4 — ECL P2: domain contracts + canonical policy. STILL no rule engine, no
+// scheduler, no lifecycle handler, no UI and no billing integration: the stage
+// widens the allowlist by EXACT PATHS only, never by category or pattern.
+export const STAGE_ECL_P2 = "ECL_P2_DOMAIN_CONTRACTS";
+export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2];
 
-// Declared transitions. P2 is NOT a declared stage: it cannot be reached.
+// Declared transitions. PRE_ECL → P2 is DELIBERATELY ABSENT: P1 cannot be
+// skipped, so a repo that never applied the schemas can never reach the
+// contracts stage. P2 → P1 exists so the stage is reversible.
 export const STAGE_TRANSITIONS = {
   [STAGE_PRE_ECL]: [STAGE_ECL_P1],
-  [STAGE_ECL_P1]: [STAGE_PRE_ECL],
+  [STAGE_ECL_P1]: [STAGE_PRE_ECL, STAGE_ECL_P2],
+  [STAGE_ECL_P2]: [STAGE_ECL_P1],
 };
 
 // CODE-OWNED allowlist for ECL P1. The six schema paths, nothing else — no
@@ -39,10 +46,43 @@ export const P1_ECL_FIELD_PATHS = [
   "base44/entities/SavingsEvidence.jsonc",
 ];
 
+// CODE-OWNED allowlist for ECL P2 = the six P1 schemas plus the EXACT paths of
+// the domain-contract layer. Every entry is a full path: no wildcard, no
+// directory, no name pattern. Anything not literally listed here is as
+// forbidden in P2 as it was in PRE_ECL — including ReviewQueue, rule engines,
+// lifecycle handlers, schedulers and UI.
+export const P2_ALLOWLIST = [
+  ...P1_ALLOWLIST,
+  "config/ecl-policy.json",
+  "src/lib/eclPolicySchema.js",
+  "scripts/generate-ecl-policy.mjs",
+  "src/lib/normalizedEvidence.js",
+  "src/lib/confidenceResult.js",
+  "src/lib/eclGates.js",
+  "src/lib/eclSerialize.js",
+  // Generated artifacts — same layout product-policy already uses in this repo.
+  "src/lib/generated/eclPolicy.js",
+  "base44/shared/generated/eclPolicy.ts",
+  "base44/shared/generated/eclDomain.ts",
+  // P2 tests.
+  "src/lib/eclPolicy.test.js",
+  "src/lib/normalizedEvidence.test.js",
+  "src/lib/confidenceResult.test.js",
+  "src/lib/eclGates.test.js",
+  "src/lib/eclParity.test.js",
+];
+
 export function allowlistForStage(stage) {
+  if (stage === STAGE_ECL_P2) return [...P2_ALLOWLIST];
   if (stage === STAGE_ECL_P1) return [...P1_ALLOWLIST];
   if (stage === STAGE_PRE_ECL) return [];
   throw new Error(`unknown stage: ${stage}`);
+}
+
+// Stages in which the ECL policy file (config/ecl-policy.json) may exist.
+// PRE_ECL and P1 must keep failing on it — the policy layer starts in P2.
+export function eclPolicyFileAllowed(stage) {
+  return stage === STAGE_ECL_P2;
 }
 
 /**
@@ -69,7 +109,11 @@ export const sha256Hex = (buf) => crypto.createHash("sha256").update(buf).digest
  */
 export function checkFreeze(entries, readFile, options = {}) {
   const stage = options.stage || STAGE_PRE_ECL;
-  const eclFieldsAllowedIn = stage === STAGE_ECL_P1 ? P1_ECL_FIELD_PATHS : [];
+  // P2 adds NO schema permission: the same two schemas, and only those, may
+  // carry ECL fields. Baseline.jsonc and processUploadedFile stay excluded in
+  // every stage, and their hashes are still checked below without exception.
+  const eclFieldsAllowedIn =
+    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 ? P1_ECL_FIELD_PATHS : [];
   const failures = [];
   for (const entry of entries) {
     const content = readFile(entry.path);

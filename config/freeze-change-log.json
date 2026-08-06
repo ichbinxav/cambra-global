@@ -69,6 +69,36 @@
       "oldHash": null,
       "newHash": "b6784fa873444af3069c14eb0f690bd0d0552d90238ce81d5557c6a3f9d8fbbc",
       "reason": "ECL P1 — new schema on the stage allowlist. Economic vs quality severity; no assignee, SLA, deadline or escalation until the review workflow is designed."
+    },
+    {
+      "date": "2026-08-06T19:28:42.925Z",
+      "type": "stage_advance",
+      "fromStage": "ECL_P1_SCHEMA_ONLY",
+      "toStage": "ECL_P2_DOMAIN_CONTRACTS",
+      "allowlist": [
+        "base44/entities/StatementImport.jsonc",
+        "base44/entities/SavingsEvidence.jsonc",
+        "base44/entities/EvidenceAttestation.jsonc",
+        "base44/entities/EvidenceLifecycleEvent.jsonc",
+        "base44/entities/EvidenceStrike.jsonc",
+        "base44/entities/ReviewCase.jsonc",
+        "config/ecl-policy.json",
+        "src/lib/eclPolicySchema.js",
+        "scripts/generate-ecl-policy.mjs",
+        "src/lib/normalizedEvidence.js",
+        "src/lib/confidenceResult.js",
+        "src/lib/eclGates.js",
+        "src/lib/eclSerialize.js",
+        "src/lib/generated/eclPolicy.js",
+        "base44/shared/generated/eclPolicy.ts",
+        "base44/shared/generated/eclDomain.ts",
+        "src/lib/eclPolicy.test.js",
+        "src/lib/normalizedEvidence.test.js",
+        "src/lib/confidenceResult.test.js",
+        "src/lib/eclGates.test.js",
+        "src/lib/eclParity.test.js"
+      ],
+      "reason": "v62.4 — ECL P2 DOMAIN CONTRACTS: canonical ecl-policy, normalized evidence model, ConfidenceResult contract, pure gate evaluation, deterministic serialization/hash, and generated frontend/backend artifacts. NO rule engines, NO scheduler, NO lifecycle handlers, NO ReviewQueue, NO UI, NO billing integration. Allowlist widened by EXACT PATHS only."
     }
   ]
 }

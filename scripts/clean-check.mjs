@@ -15,7 +15,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { checkFreeze, ECL_NAME_PATTERN, resolveStage, allowlistForStage, normalizePath, STAGE_ECL_P1 } from "./lib/preEclFreeze.mjs";
+import { checkFreeze, ECL_NAME_PATTERN, resolveStage, allowlistForStage, normalizePath, eclPolicyFileAllowed, STAGE_PRE_ECL } from "./lib/preEclFreeze.mjs";
 
 let failed = false;
 const fail = (msg) => { console.error(`clean:check FAIL — ${msg}`); failed = true; };
@@ -50,15 +50,20 @@ const walk = (dir) => {
     const p = path.join(dir, e.name);
     const rel = normalizePath(p);
     if (ECL_NAME_PATTERN.test(e.name) && !allowlist.includes(rel)) {
-      fail(stage === STAGE_ECL_P1
-        ? `ECL artifact outside the ${stage} allowlist: ${rel}`
-        : `ECL artifact present (P1/P2 must not start): ${rel}`);
+      fail(stage === STAGE_PRE_ECL
+        ? `ECL artifact present (P1/P2 must not start): ${rel}`
+        : `ECL artifact outside the ${stage} allowlist: ${rel}`);
     }
     if (e.isDirectory()) walk(p);
   }
 };
 walk(".");
-if (fs.existsSync("config/ecl-policy.json")) fail("config/ecl-policy.json exists — the ECL policy layer must not start");
+// v62.4 — this check is now STAGE-CONDITIONAL, not removed: the policy file is
+// still a hard failure in PRE_ECL and in ECL_P1_SCHEMA_ONLY, and stops failing
+// only in ECL_P2_DOMAIN_CONTRACTS, where it is an allowlisted artifact.
+if (fs.existsSync("config/ecl-policy.json") && !eclPolicyFileAllowed(stage)) {
+  fail(`config/ecl-policy.json exists in stage ${stage} — the ECL policy layer must not start before ECL_P2_DOMAIN_CONTRACTS`);
+}
 
 // 4. node_modules hygiene
 try {
