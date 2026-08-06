@@ -83,6 +83,7 @@ import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
 import Help from '@/pages/Help';
 import HelpCategory from '@/pages/HelpCategory';
+import HelpSlugRedirect from '@/components/shared/HelpSlugRedirect';
 const AdminInvoices = lazy(() => import('@/pages/admin/AdminInvoices'));
 const AdminRecoverBilling = lazy(() => import('@/pages/admin/AdminRecoverBilling'));
 const AdminWaitlist = lazy(() => import('@/pages/admin/AdminWaitlist'));
@@ -135,17 +136,47 @@ const AdminRoute = ({ children }) => {
   const { isAuthenticated, isLoadingAuth } = useAuth();
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [authFailed, setAuthFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
+  // v62 C6 — auth.me() had no catch and no finally: a rejected promise left
+  // loadingUser=true forever (permanent spinner) and an unhandled rejection.
+  // Now: failure is a state, unmount cancels the write, and loading ALWAYS ends.
   useEffect(() => {
+    let cancelled = false;
     if (isAuthenticated) {
-      base44.auth.me().then(u => { setUser(u); setLoadingUser(false); });
+      setLoadingUser(true);
+      setAuthFailed(false);
+      base44.auth.me()
+        .then(u => { if (!cancelled) setUser(u); })
+        .catch(() => { if (!cancelled) { setUser(null); setAuthFailed(true); } })
+        .finally(() => { if (!cancelled) setLoadingUser(false); });
     } else if (!isLoadingAuth) {
       setLoadingUser(false);
     }
-  }, [isAuthenticated, isLoadingAuth]);
+    return () => { cancelled = true; };
+  }, [isAuthenticated, isLoadingAuth, attempt]);
 
   if (isLoadingAuth || loadingUser) {
     return <LoadingScreen label="Verifying admin access" />;
+  }
+
+  // Authorization could not be resolved — never render admin content on doubt.
+  if (authFailed) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <h1 className="text-lg font-bold mb-2">Could not verify your access</h1>
+          <p className="text-sm text-muted-foreground mb-4">Please try again.</p>
+          <button
+            onClick={() => setAttempt(a => a + 1)}
+            className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -254,7 +285,8 @@ const AuthenticatedApp = () => {
         <Route path="/Help" element={withBoundary(<Help />)} />
         <Route path="/help" element={<Navigate to="/Help" replace />} />
         <Route path="/Help/:slug" element={withBoundary(<HelpCategory />)} />
-        <Route path="/help/:slug" element={withBoundary(<HelpCategory />)} />
+        {/* v62 H1 — lowercase alias redirects to the canonical /Help/:slug. */}
+        <Route path="/help/:slug" element={<HelpSlugRedirect />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/LoginGate" element={<LoginGate />} />
         <Route path="/logingate" element={<Navigate to="/LoginGate" replace />} />

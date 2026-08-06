@@ -15,12 +15,16 @@
 // `body` is optional — pass the already-parsed JSON body when the caller may
 // present the secret via `internal_secret` in the payload (the dispatchWebhook
 // convention for server-to-server invocations).
+// v62 C4 — secret comparison + redaction live in one shared module so no
+// boundary can drift into a non-constant-time compare or an unredacted log.
+export { redactSecrets, safeEqual, readPresentedSecret, isInternalCaller } from "./internalSecret.ts";
+import { isInternalCaller } from "./internalSecret.ts";
+
 export async function requireAdminOrInternal(req, base44, body = null) {
   const user = await base44.auth.me().catch(() => null);
   const isAdmin = user?.role === "admin";
-  const secret = Deno.env.get("INTERNAL_CALL_SECRET") ?? "";
-  const presented = req.headers.get("x-internal-secret") ?? (body && typeof body.internal_secret === "string" ? body.internal_secret : "");
-  const isInternal = secret.length > 0 && presented === secret;
+  // v62 C4 — header-preferred, constant-time comparison (see internalSecret.ts).
+  const isInternal = isInternalCaller(req, body);
   if (!isAdmin && !isInternal) {
     return { ok: false, user, isAdmin: false, isInternal: false, response: Response.json({ error: "forbidden" }, { status: 403 }) };
   }
@@ -31,9 +35,7 @@ export async function requireAdminOrInternal(req, base44, body = null) {
 // only with the internal secret. Ownership checks remain the caller's job.
 export async function requireUserOrInternal(req, base44, body = null) {
   const user = await base44.auth.me().catch(() => null);
-  const secret = Deno.env.get("INTERNAL_CALL_SECRET") ?? "";
-  const presented = req.headers.get("x-internal-secret") ?? (body && typeof body.internal_secret === "string" ? body.internal_secret : "");
-  const isInternal = secret.length > 0 && presented === secret;
+  const isInternal = isInternalCaller(req, body);
   if (!user && !isInternal) {
     return { ok: false, user: null, isAdmin: false, isInternal: false, response: Response.json({ error: "unauthorized" }, { status: 401 }) };
   }

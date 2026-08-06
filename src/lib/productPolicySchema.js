@@ -11,6 +11,9 @@
 // Stripe is never classified as "live", and every rate is a fraction in [0,1].
 
 import { z } from "zod";
+// Relative (not "@/") — this module is also imported by the Node generator
+// script, which has no Vite alias resolution.
+import { isCalendarDate, CALENDAR_DATE_MESSAGE } from "./calendarDate.js";
 
 const INTEGRATION_STATUS_ENUM = z.enum([
   "implemented_live_verification_pending",
@@ -40,7 +43,10 @@ export const productPolicySchema = z
   .object({
     schemaVersion: z.literal(1),
     policyVersion: z.string().min(1),
-    effectiveDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "effectiveDate must be YYYY-MM-DD"),
+    // v62 C5 — shape AND existence: 2026-99-99 / 2026-02-30 are rejected.
+    effectiveDate: z
+      .string()
+      .refine(isCalendarDate, `effectiveDate ${CALENDAR_DATE_MESSAGE}`),
     currency: z.literal("EUR"),
     economicTerms: z.object({
       analyzerPriceEur: z.number().min(0),
