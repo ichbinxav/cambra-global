@@ -481,6 +481,19 @@ const FORBIDDEN_CLIENT_KEYS = [
   'fee_duration_months',
   'snapshot_hash',
   'acceptance_snapshot_hash',
+  // v61 Checkpoint E (2026-08-06) — the snake_case names the BACKEND actually
+  // persists were missing, so a payload carrying `fee_pct` (the exact key inside
+  // acceptance_snapshot_json) sailed past the guard. Found by probing the live
+  // handler, not by reading the list: startRecoverAcceptance answered
+  // "activation not found" for a payload with fee_pct instead of rejecting it.
+  // A guard that only blocks the camelCase spelling of a field stored in
+  // snake_case is decoration, not a boundary.
+  'fee_pct',
+  'effective_fee_pct',
+  'applied_fee_pct',
+  'discount_pct',
+  'node_share_percent',
+  'policy_source',
 ];
 
 export function rejectClientTerms(clientPayload: any): { ok: true } | { ok: false; keys: string[] } {
