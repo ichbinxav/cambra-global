@@ -1,55 +1,51 @@
 #!/usr/bin/env node
-// v62.1 CP5.2 — fails when global typecheck debt INCREASES vs the captured
-// baseline; passes when it stays equal or shrinks (and reports eliminated debt).
-// A missing/uncaptured baseline is a hard fail with instructions — never a
-// silent pass.
+// v62.2 CP4 — baseline gate. States: SENTINEL (no approved baseline → FAIL
+// with the exact manual commands), APPROVED (compare). Fails on: total
+// increase, new fingerprint, worsened count, ANY error in the critical set,
+// ANY error in files modified this release. Passes when debt holds or shrinks
+// (eliminated debt is reported). Recapture is never silent — see the
+// candidate/approve flow.
+// v62.2.1 — verifies tsc actually ran (assertTscRan) before comparing, so a
+// broken environment can no longer be read as "no errors".
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
-import crypto from "node:crypto";
+import process from "node:process";
+import { parseTscOutput, compareToBaseline, assertTscRan } from "./lib/tscDiagnostics.mjs";
 
 const BASELINE = "config/typecheck-baseline.json";
 
 if (!fs.existsSync(BASELINE)) {
-  console.error(`typecheck:baseline FAIL — ${BASELINE} missing. Run: npm run typecheck:baseline:capture`);
+  console.error("typecheck:baseline FAIL — baseline missing. Manual flow:\n  npm run typecheck:baseline:candidate\n  (review the candidate)\n  npm run typecheck:baseline:approve -- --review-token=<sourceTreeHash> --confirm=APPROVE");
   process.exit(1);
 }
 const baseline = JSON.parse(fs.readFileSync(BASELINE, "utf8"));
-if (!baseline.captured) {
-  console.error("typecheck:baseline FAIL — baseline not captured yet (sentinel file). Run: npm run typecheck:baseline:capture");
+if (baseline.state !== "APPROVED" || !baseline.captured) {
+  console.error("typecheck:baseline FAIL — baseline is a SENTINEL (not approved). Run the candidate/approve flow (see script header). ⏳ MANUAL REQUIRED once.");
   process.exit(1);
 }
+
+const criticalFiles = JSON.parse(fs.readFileSync("tsconfig.critical.json", "utf8")).include ?? [];
+const modifiedFiles = JSON.parse(fs.readFileSync("config/release-touch-list.json", "utf8")).files ?? [];
 
 const res = spawnSync("npx", ["tsc", "-p", "./jsconfig.json", "--pretty", "false"], {
-  encoding: "utf8",
-  maxBuffer: 64 * 1024 * 1024,
+  encoding: "utf8", maxBuffer: 64 * 1024 * 1024, shell: process.platform === "win32",
 });
-const current = new Map();
-for (const line of `${res.stdout || ""}\n${res.stderr || ""}`.split(/\r?\n/)) {
-  const m = line.match(/^(.+?)\(\d+,\d+\): error (TS\d+): (.*)$/);
-  if (!m) continue;
-  const [, file, code, message] = m;
-  const fp = crypto.createHash("sha256").update(`${file}|${code}|${message}`).digest("hex").slice(0, 16);
-  const cur = current.get(fp) || { file, code, count: 0 };
-  cur.count += 1;
-  current.set(fp, cur);
-}
+const diags = parseTscOutput(`${res.stdout || ""}\n${res.stderr || ""}`);
 
-const newErrors = [];
-let currentTotal = 0;
-for (const [fp, e] of current.entries()) {
-  currentTotal += e.count;
-  const base = baseline.entries[fp];
-  if (!base) newErrors.push(`${e.file} ${e.code} ×${e.count} (new fingerprint)`);
-  else if (e.count > base.count) newErrors.push(`${e.file} ${e.code} ×${e.count} (baseline ×${base.count})`);
-}
-const eliminated = Object.entries(baseline.entries)
-  .filter(([fp]) => !current.has(fp))
-  .reduce((n, [, e]) => n + e.count, 0);
-
-if (eliminated > 0) console.log(`typecheck:baseline — ${eliminated} baseline error(s) eliminated. Consider re-capturing with --force to lock in the improvement.`);
-if (newErrors.length > 0) {
-  console.error(`typecheck:baseline FAIL — debt increased (${currentTotal} now vs ${baseline.totalErrors} baseline). New/worsened:`);
-  for (const n of newErrors.slice(0, 50)) console.error(`  ${n}`);
+const ran = assertTscRan(res, diags.length);
+if (!ran.ok) {
+  console.error(`typecheck:baseline FAIL — ${ran.reason}`);
   process.exit(1);
 }
-console.log(`typecheck:baseline PASS — ${currentTotal} errors ≤ baseline ${baseline.totalErrors}.`);
+
+const result = compareToBaseline(diags, baseline.entries, { criticalFiles, modifiedFiles });
+
+if (result.eliminated > 0) {
+  console.log(`typecheck:baseline — ${result.eliminated} baseline error(s) eliminated. Lock in the improvement via a NEW candidate/approve cycle.`);
+}
+if (!result.ok) {
+  console.error(`typecheck:baseline FAIL — ${result.currentTotal} now vs ${baseline.totalErrors} approved:`);
+  for (const f of result.failures.slice(0, 50)) console.error(`  ${f}`);
+  process.exit(1);
+}
+console.log(`typecheck:baseline PASS — ${result.currentTotal} errors ≤ approved ${baseline.totalErrors}.`);

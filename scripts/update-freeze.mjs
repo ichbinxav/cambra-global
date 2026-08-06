@@ -8,6 +8,7 @@
 // Records { date, path, oldHash, newHash, reason } in config/freeze-change-log.json.
 import fs from "node:fs";
 import crypto from "node:crypto";
+import process from "node:process";
 
 const argOf = (name) => {
   const a = process.argv.find((x) => x.startsWith(`--${name}=`));

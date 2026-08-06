@@ -7,6 +7,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { Buffer } from "node:buffer";
 
 export const SOURCE_TREE_HASH_ALGORITHM = "sha256-tree-v1";
 
@@ -24,12 +25,19 @@ export const EXCLUDED_DIRS = [
 export const EXCLUDED_FILES = [
   "RELEASE.json",
   ".test-results.json",
+  // v62.2.1 — REVIEW SCRATCH, not source. The baseline candidate is written
+  // INTO the tree by typecheck-baseline-candidate.mjs; if it counted toward
+  // the hash, the very act of generating it changed the tree and the approve
+  // step declared its own candidate "stale" — an impossible cycle.
+  "typecheck-baseline.candidate.json",
 ];
 export const EXCLUDED_PATTERNS = [
   /\.log$/i,
   /\.tmp$/i,
   /~$/,
   /^\.DS_Store$/,
+  // v62.2.1 — archived baselines are historical scratch, same reasoning.
+  /^typecheck-baseline\.previous\.\d+\.json$/,
 ];
 
 export function isExcluded(relPath) {

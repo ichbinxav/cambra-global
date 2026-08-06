@@ -5,7 +5,11 @@
 // the critical set and zero errors in files modified this release, and the
 // operator passed the explicit confirmation flag. The previous baseline is
 // archived, never silently overwritten. There is NO generic --force.
+//
+// v62.2.1 — the candidate file and archived baselines are excluded from
+// sourceTreeHash, so a freshly generated candidate is no longer self-stale.
 import fs from "node:fs";
+import process from "node:process";
 import { computeSourceTreeHash } from "./lib/sourceTreeHash.mjs";
 import { countByFingerprint } from "./lib/tscDiagnostics.mjs";
 
@@ -28,6 +32,7 @@ if (!token) die("missing --review-token=<sourceTreeHash> (proves the candidate w
 if (token !== tree.hash) die(`review token does not match current sourceTreeHash (${tree.hash})`);
 if (candidate.sourceTreeHash !== tree.hash) die("candidate is stale (tree changed since generation) — regenerate and re-review");
 if (confirm !== "APPROVE") die('missing explicit confirmation: --confirm=APPROVE');
+if (candidate.tscExitCode === null || candidate.tscExitCode === undefined) die("candidate carries no tsc exit code — regenerate it with the current candidate script");
 
 const critical = candidate.errors.filter((e) => e.inCriticalSet);
 if (critical.length > 0) die(`candidate has ${critical.length} error(s) in the critical set — fix them, never absorb them`);

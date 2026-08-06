@@ -39,6 +39,27 @@ export function countByFingerprint(diags) {
 }
 
 /**
+ * v62.2.1 — proves tsc ACTUALLY RAN. A spawn failure (binary missing, no
+ * node_modules) or a non-zero exit with no parseable diagnostic used to look
+ * exactly like "zero errors", which could mint a fake all-green baseline.
+ * Returns { ok, reason }.
+ */
+export function assertTscRan(spawnResult, diagnosticCount) {
+  if (!spawnResult) return { ok: false, reason: "tsc was not executed (no spawn result)" };
+  if (spawnResult.error) return { ok: false, reason: `tsc failed to spawn: ${spawnResult.error.message}` };
+  const status = spawnResult.status;
+  if (status === null || status === undefined) return { ok: false, reason: "tsc produced no exit code (killed or not spawned)" };
+  const out = `${spawnResult.stdout || ""}\n${spawnResult.stderr || ""}`;
+  if (status !== 0 && diagnosticCount === 0) {
+    return { ok: false, reason: `tsc exited ${status} with zero parseable diagnostics — output was not a normal type-check result:\n${out.trim().slice(0, 800)}` };
+  }
+  if (status === 0 && diagnosticCount > 0) {
+    return { ok: false, reason: `tsc exited 0 but ${diagnosticCount} diagnostics were parsed — contradictory result, refusing to trust it` };
+  }
+  return { ok: true, reason: null };
+}
+
+/**
  * Compares current diagnostics against an approved baseline.
  * Fails on: total increase, new fingerprint, worsened count, any error in the
  * critical set, any error in files modified by the current release.

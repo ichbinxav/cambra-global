@@ -8,6 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import process from "node:process";
 
 const SRC = "ci/github-workflow-ci.yml";
 const DEST = ".github/workflows/ci.yml";

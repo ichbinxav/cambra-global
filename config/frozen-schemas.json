@@ -1,9 +1,0 @@
-{
-  "comment": "v62.1 Pre-ECL freeze — these entity schemas must have ZERO diffs until ECL P1 formally starts. Enforced by scripts/clean-check.mjs (npm run clean:check, first step of npm run verify).",
-  "frozenAt": "2026-08-06",
-  "sha256": {
-    "base44/entities/StatementImport.jsonc": "cb951351bdcaa8355aaeadb499d90c3572c716d284ee19f6b2e01a76d08b314d",
-    "base44/entities/SavingsEvidence.jsonc": "806bc45580912c6764b51a12977d3d5e8a86b35b4b2db6174de7bcf69bf2b451",
-    "base44/entities/Baseline.jsonc": "a4d186074a4834aca489842447a6ce5052d526315863b5acdc9cff9b998a3bd1"
-  }
-}

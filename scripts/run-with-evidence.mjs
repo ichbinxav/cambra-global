@@ -9,6 +9,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import process from "node:process";
 import { computeSourceTreeHash, hashEntries } from "./lib/sourceTreeHash.mjs";
 import { writeEvidence, writeEnvironmentEvidence, EVIDENCE_DIR } from "./lib/evidence.mjs";
 
