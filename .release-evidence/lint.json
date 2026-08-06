@@ -1,8 +1,8 @@
 {
-  "command": "node node_modules/eslint/bin/eslint.js . --quiet",
-  "sourceTreeHash": "96e615ad2ed8e2b0c2353366667e34ac1be6171a2ac2b11e119b6d8b5185ce2e",
-  "startedAt": "2026-08-06T15:13:16.875Z",
-  "completedAt": "2026-08-06T15:13:31.075Z",
+  "command": "npx eslint . --quiet",
+  "sourceTreeHash": "51239949e70557349d337a43f83393eb5bf18b13278c67ee62116b6dab246dbe",
+  "startedAt": "2026-08-06T19:52:37.264Z",
+  "completedAt": "2026-08-06T19:52:50.129Z",
   "exitCode": 0,
   "ciRunId": null
 }
