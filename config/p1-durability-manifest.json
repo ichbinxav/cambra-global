@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v62.3.1 — Durable ECL P1 Export Fix",
-  "generatedAt": "2026-08-06T17:36:00.000Z",
+  "generatedAt": "2026-08-06T18:40:00.000Z",
   "purpose": "Durability probe. Every sha256/bytes below was read from disk at write time, never from memory. If this manifest reaches the exported ZIP but the files it declares do not, the loss happens in the export. If it does not reach the ZIP at all, the loss happens before the export. If both arrive and the hashes match, ECL P1 is physically applied.",
   "packageVersion": "0.62.3",
   "freezeStage": "ECL_P1_SCHEMA_ONLY",
@@ -24,6 +24,7 @@
     { "path": "config/pre-ecl-freeze.json", "sha256": "f8e94267cd4c6f1b0e3d435ade68ea4df3b56e016e7299b7b2735f4437102228", "bytes": 3426 },
     { "path": "config/freeze-change-log.json", "sha256": "b91f82ded27a429db8a5c9d81c280be1c3c92dbfce2c49839f36616f53f5f450", "bytes": 4239 },
     { "path": "config/release-touch-list.json", "sha256": "b283c9280d000dcb36f37992cd4c9f38ec2c447879225389a13f1eebad0c61ed", "bytes": 1464 },
+    { "path": "config/typecheck-baseline.json", "sha256": "e057c708d90dec5e81cb8d56657282872ec67f5d89db691d92541b76c3c3c8d1", "bytes": 42540 },
     { "path": "src/lib/eclP1Schemas.test.js", "sha256": "6c6cb3e66b83d1f96de80dafc1a89e898fced5ea8c09f554f03431e9c70fcfd0", "bytes": 8377 },
     { "path": "src/lib/eclP1Gate.test.js", "sha256": "3f0cf7c8accf4337f35df11fe5e74333bb1d212c5c2434fef12c0fd9144412c0", "bytes": 4996 }
   ]
