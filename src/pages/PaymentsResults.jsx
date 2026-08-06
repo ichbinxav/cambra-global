@@ -470,7 +470,7 @@ export default function PaymentsResults() {
           style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
         >
           <Loader2 size={11} className="animate-spin text-cyan-300" />
-          <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Loading your audit</span>
+          <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">{t("res_loading")}</span>
         </div>
         <LoadingSkeleton />
       </ResultsShell>
@@ -489,9 +489,9 @@ export default function PaymentsResults() {
           <ResultsHistory />
         ) : (
           <EmptyState
-            title="Run your payments analysis"
-            message="See what you're overpaying on payments in about two minutes — no account needed."
-            ctaLabel="Start analysis"
+            title={t("res_run_title")}
+            message={t("res_run_msg")}
+            ctaLabel={t("res_run_cta")}
             onCta={() => navigate("/Analyzer")}
           />
         )}
@@ -504,9 +504,9 @@ export default function PaymentsResults() {
     return (
       <ResultsShell withSidebar={isAuthenticated}>
         <EmptyState
-          title={status === "invalid" ? "This link isn't valid" : "We couldn't find that audit"}
-          message="Your session may have expired, or the link was mistyped. Run a fresh analysis in about two minutes — no account needed."
-          ctaLabel="Run your analysis"
+          title={t(status === "invalid" ? "res_invalid_title" : "res_notfound_title")}
+          message={t("res_stale_msg")}
+          ctaLabel={t("res_rerun_cta")}
           onCta={() => navigate("/Analyzer")}
         />
       </ResultsShell>
@@ -520,9 +520,9 @@ export default function PaymentsResults() {
       <ResultsShell withSidebar={isAuthenticated}>
         <EmptyState
           icon={AlertTriangle}
-          title="Too many reads from your network"
-          message={`Try again in about ${mins} minute${mins > 1 ? "s" : ""}. This limit exists to prevent abuse — your audit is safe.`}
-          ctaLabel="Retry now"
+          title={t("res_rate_title")}
+          message={t("res_rate_msg", { mins })}
+          ctaLabel={t("res_retry_now")}
           onCta={() => setAttempt((n) => n + 1)}
         />
       </ResultsShell>
@@ -535,9 +535,9 @@ export default function PaymentsResults() {
       <ResultsShell withSidebar={isAuthenticated}>
         <EmptyState
           icon={AlertTriangle}
-          title="Something went wrong"
-          message="We couldn't load your audit. Check your connection and try again."
-          ctaLabel="Retry"
+          title={t("res_err_title")}
+          message={t("res_err_msg")}
+          ctaLabel={t("res_retry")}
           onCta={() => setAttempt((n) => n + 1)}
         />
       </ResultsShell>
@@ -550,9 +550,9 @@ export default function PaymentsResults() {
       <ResultsShell>
         <EmptyState
           icon={Lock}
-          title="Sign in to view this audit"
-          message="Verified analyses are private to the merchant who ran them. Sign in with the account that connected Stripe."
-          ctaLabel="Sign in"
+          title={t("res_auth_title")}
+          message={t("res_auth_msg")}
+          ctaLabel={t("res_auth_cta")}
           onCta={() => navigate(`/LoginGate?next=${encodeURIComponent("/Results?verified=" + verifiedId)}`)}
         />
       </ResultsShell>

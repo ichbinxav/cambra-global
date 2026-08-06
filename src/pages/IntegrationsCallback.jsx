@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import LoadingScreen from "@/components/shared/LoadingScreen";
+import { useLanguage } from "@/lib/i18n.jsx";
 
 /**
  * OAuth callback landing page for the generic connector engine.
@@ -12,6 +13,7 @@ import LoadingScreen from "@/components/shared/LoadingScreen";
  */
 export default function IntegrationsCallback() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -46,17 +48,17 @@ export default function IntegrationsCallback() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="max-w-md text-center">
-          <h1 className="text-xl font-black mb-2">Couldn't complete the connection</h1>
+          <h1 className="text-xl font-black mb-2">{t("cb_error_title")}</h1>
           <p className="text-sm text-muted-foreground mb-6">{error}</p>
           <button
             onClick={() => navigate("/ConnectIntegrations")}
             className="inline-flex items-center justify-center h-10 px-5 rounded-full bg-foreground text-background text-sm font-bold"
           >
-            Back to integrations
+            {t("cb_back")}
           </button>
         </div>
       </div>
     );
   }
-  return <LoadingScreen label="Completing connection" />;
+  return <LoadingScreen label={t("cb_completing")} />;
 }

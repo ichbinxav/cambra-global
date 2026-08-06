@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import LoadingScreen from "@/components/shared/LoadingScreen";
 import { isSameOriginUrl } from "@/lib/safeRedirect";
+import { useLanguage } from "@/lib/i18n.jsx";
 
 /* AuthRedirect — entry point that hands off to Base44 login.
    Honors:
@@ -11,6 +12,7 @@ import { isSameOriginUrl } from "@/lib/safeRedirect";
    Only same-origin redirects are allowed (open-redirect protection). */
 
 export default function AuthRedirect() {
+  const { t } = useLanguage();
   useEffect(() => {
     let target = `${window.location.origin}/Dashboard`;
     try {
@@ -28,8 +30,8 @@ export default function AuthRedirect() {
 
   return (
     <LoadingScreen
-      label="Redirecting to sign in"
-      sublabel="The login window will open and you'll return automatically."
+      label={t("auth_redirecting")}
+      sublabel={t("auth_redirecting_sub")}
     />
   );
 }

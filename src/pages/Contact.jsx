@@ -24,7 +24,7 @@ function initialMessage() {
 }
 
 export default function Contact() {
-  const { lang } = useTranslation();
+  const { lang, t } = useTranslation();
   const [formData, setFormData] = useState({ name: "", email: "", message: initialMessage() });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -56,7 +56,7 @@ export default function Contact() {
       setFormData({ name: "", email: "", message: "" });
       setTimeout(() => setSubmitted(false), 4000);
     } catch (err) {
-      setError(err?.message || "Could not send your message. Please email us directly.");
+      setError(err?.message || t("ct_error"));
     } finally {
       setSubmitting(false);
     }
@@ -67,17 +67,17 @@ export default function Contact() {
   return (
     <PublicPageShell>
       <PublicPageHero
-        eyebrow="Contact · We're here to help"
-        title={<>Get in <span className="kw">touch.</span></>}
-        subtitle="Questions about CAMBRA? We're here to help."
+        eyebrow={t("ct_eyebrow")}
+        title={<>{t("ct_title_pre")}<span className="kw">{t("ct_title_kw")}</span></>}
+        subtitle={t("ct_subtitle")}
       />
 
       <div className="relative pt-16 pb-20">
         <div className="max-w-3xl mx-auto px-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
             {[
-              { icon: Mail, label: "General", value: "hello@cambra.global", href: "mailto:hello@cambra.global" },
-              { icon: MessageSquare, label: "Support", value: "support@cambra.global", href: "mailto:support@cambra.global" },
+              { icon: Mail, label: t("ct_general"), value: "hello@cambra.global", href: "mailto:hello@cambra.global" },
+              { icon: MessageSquare, label: t("ct_support"), value: "support@cambra.global", href: "mailto:support@cambra.global" },
             ].map((c, i) => (
               <motion.a
                 key={i}
@@ -120,22 +120,22 @@ export default function Contact() {
             }}
           >
             <div className="relative">
-              <h2 className="font-display text-xl font-black tracking-[-0.03em] mb-6" style={{ color: "var(--ink)" }}>Send us a message</h2>
+              <h2 className="font-display text-xl font-black tracking-[-0.03em] mb-6" style={{ color: "var(--ink)" }}>{t("ct_form_title")}</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold block mb-2" style={{ color: "var(--ink)" }}>Name</label>
+                  <label className="text-sm font-semibold block mb-2" style={{ color: "var(--ink)" }}>{t("ct_name")}</label>
                   <Input
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="Your name"
+                    placeholder={t("ct_name_ph")}
                     className="h-12"
                     style={inputStyle}
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold block mb-2" style={{ color: "var(--ink)" }}>Email</label>
+                  <label className="text-sm font-semibold block mb-2" style={{ color: "var(--ink)" }}>{t("ct_email")}</label>
                   <Input
                     name="email"
                     type="email"
@@ -148,12 +148,12 @@ export default function Contact() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold block mb-2" style={{ color: "var(--ink)" }}>Message</label>
+                  <label className="text-sm font-semibold block mb-2" style={{ color: "var(--ink)" }}>{t("ct_message")}</label>
                   <textarea
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    placeholder="Tell us how we can help..."
+                    placeholder={t("ct_message_ph")}
                     className="w-full min-h-32 p-4 rounded-lg focus:outline-none focus:ring-1"
                     style={{ ...inputStyle }}
                     required
@@ -166,10 +166,10 @@ export default function Contact() {
                   style={{ background: "var(--ink)" }}
                 >
                   {submitting
-                    ? <>Sending... <Loader2 className="w-4 h-4 animate-spin" /></>
+                    ? <>{t("ct_sending")} <Loader2 className="w-4 h-4 animate-spin" /></>
                     : submitted
-                      ? "Message sent! ✓"
-                      : <>Send message <ArrowRight className="w-4 h-4" /></>}
+                      ? t("ct_sent")
+                      : <>{t("ct_send")} <ArrowRight className="w-4 h-4" /></>}
                 </Button>
                 {error && (
                   <p className="text-xs mt-2 text-center" style={{ color: "var(--coral)" }}>{error}</p>

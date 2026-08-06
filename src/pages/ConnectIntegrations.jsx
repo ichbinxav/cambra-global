@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import ApiKeyConnectForm from "@/components/connect/ApiKeyConnectForm";
 import ShopDomainCaptureForm from "@/components/connect/ShopDomainCaptureForm";
+import { useLanguage } from "@/lib/i18n.jsx";
 
 /**
  * Fase 0 — generic OAuth connector UX.
@@ -138,6 +139,7 @@ const CLIENT_REGISTRY_MIRROR = {
 export default function ConnectIntegrations() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [brandId, setBrandId] = useState(null);
   const [detected, setDetected] = useState([]);          // DetectedIntegration[]
@@ -330,10 +332,10 @@ export default function ConnectIntegrations() {
             </span>
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-black tracking-[-0.03em]">
-            Connect your tools
+            {t("ci_title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Each tool you connect upgrades a benchmark from estimated to verified.
+            {t("ci_sub")}
           </p>
         </div>
 
@@ -349,9 +351,9 @@ export default function ConnectIntegrations() {
           <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 flex items-start gap-3">
             <AlertTriangle size={16} className="text-amber-600 mt-0.5" />
             <div>
-              <p className="text-sm font-bold">No business found</p>
+              <p className="text-sm font-bold">{t("ci_nobrand_title")}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Complete the Analyzer first to create your brand workspace.
+                {t("ci_nobrand_sub")}
               </p>
             </div>
           </div>
@@ -388,7 +390,7 @@ export default function ConnectIntegrations() {
         {!loading && brandId && rows.length === 1 && (
           // Only the demo row is showing — Discovery didn't return anything yet.
           <div className="rounded-2xl border border-border/60 bg-secondary/30 p-5">
-            <p className="text-sm font-bold">Run the Analyzer first</p>
+            <p className="text-sm font-bold">{t("ci_norun_title")}</p>
             <p className="text-xs text-muted-foreground mt-1 mb-3">
               We'll detect your tools, then show them here ready to connect.
             </p>
