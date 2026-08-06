@@ -1,0 +1,109 @@
+{
+  "name": "EvidenceAttestation",
+  "type": "object",
+  "description": "v62.3 ECL P1 (2026-08-06) \u2014 a merchant's signed declaration about a piece of evidence (the figures they assert, and the exact legal text they asserted them under). IMMUTABLE BY DOMAIN INTENT, NOT BY SCHEMA: a JSON schema cannot forbid an update, so the immutability is enforced later by the writing services and by tests \u2014 this comment exists so nobody mistakes the absence of an enforcement mechanism for permission to rewrite a record. NO writer exists in P1. PRIVACY: ip_hmac / ua_hmac are HMAC-SHA-256 digests computed with a VERSIONED backend key (fingerprint_key_version); the raw IP and user agent are NEVER stored in clear, here or anywhere else. RETENTION: PENDING LEGAL AND PRIVACY REVIEW \u2014 the provisional working assumption is 5 years, NOT confirmed by FR counsel, and no purge job may be built on it until it is.",
+  "properties": {
+    "attestor_user_id": {
+      "type": "string",
+      "description": "Platform user id of the person who attested. Resolved server-side from the authenticated session, never from a payload."
+    },
+    "brand_id": {
+      "type": "string",
+      "description": "The business the attestation belongs to (organization = brand, the same convention as Mandate.organization_id)."
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the merchant the attestation belongs to, resolved server-side. Present on all six P1 schemas so ownership never has to be inferred from created_by."
+    },
+    "evidence_entity_type": {
+      "type": "string",
+      "enum": [
+        "statement_import",
+        "savings_evidence"
+      ],
+      "description": "Which entity evidence_id points at. An explicit enum instead of a free string so a polymorphic reference can never become ambiguous."
+    },
+    "evidence_id": {
+      "type": "string",
+      "description": "Id of the attested StatementImport or SavingsEvidence."
+    },
+    "declared_metrics": {
+      "type": "object",
+      "description": "STRUCTURED (never a JSON string) verbatim record of the figures the merchant declared. Frozen evidence of what was asserted \u2014 never recomputed, never normalized after the fact."
+    },
+    "legal_text_version": {
+      "type": "string",
+      "description": "Version tag of the attestation text displayed at the moment of signing."
+    },
+    "legal_text_hash": {
+      "type": "string",
+      "description": "SHA-256 of the exact legal text shown. Proves WHICH wording was accepted; a later edit of the template can never be retro-attributed to this attestation."
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "es",
+        "fr",
+        "en"
+      ],
+      "description": "Language the attestation text was displayed and accepted in, frozen at signature time \u2014 never re-derived from the browser or from an admin's current UI."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Persisted claim key. Base44 has no transactions, so a replayed submission must find this key and return the existing record instead of creating a second attestation."
+    },
+    "declared_period_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Start of the period the declared metrics cover. Optional: some attestations are point-in-time."
+    },
+    "declared_period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "declared_source": {
+      "type": "string",
+      "description": "What the merchant says the figures come from (provider dashboard, statement, accountant export). Free text by design: it is a declaration, not a validated classification."
+    },
+    "evidence_checksum": {
+      "type": "string",
+      "description": "Checksum of the attested artifact at attestation time, so a later substitution of the underlying file is detectable."
+    },
+    "ip_hmac": {
+      "type": "string",
+      "description": "HMAC-SHA-256 of the client IP with a versioned backend key. NEVER the raw IP."
+    },
+    "ua_hmac": {
+      "type": "string",
+      "description": "HMAC-SHA-256 of the user agent with a versioned backend key. NEVER the raw user agent."
+    },
+    "fingerprint_key_version": {
+      "type": "string",
+      "description": "Version of the HMAC key used for ip_hmac / ua_hmac, so the key can be rotated without making historical digests unexplainable."
+    }
+  },
+  "required": [
+    "attestor_user_id",
+    "brand_id",
+    "owner_email",
+    "evidence_entity_type",
+    "evidence_id",
+    "declared_metrics",
+    "legal_text_version",
+    "legal_text_hash",
+    "language",
+    "idempotency_key"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

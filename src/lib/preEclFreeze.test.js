@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import { Buffer } from "node:buffer";
-import { checkFreeze, hasEclImports, sha256Hex, ECL_NAME_PATTERN } from "../../scripts/lib/preEclFreeze.mjs";
+import { checkFreeze, hasEclImports, sha256Hex, ECL_NAME_PATTERN, resolveStage } from "../../scripts/lib/preEclFreeze.mjs";
 
 const entryFor = (path, content) => ({ path, sha256: sha256Hex(Buffer.from(content)), allowedChange: false });
 
@@ -51,7 +51,7 @@ describe("pre-ECL freeze (v62.2 CP7)", () => {
     const res = checkFreeze(freeze.entries, (p) => {
       const abs = new URL(`../../${p}`, import.meta.url);
       return fs.existsSync(abs) ? fs.readFileSync(abs) : null;
-    });
+    }, { stage: resolveStage(freeze) });
     expect(res.failures).toEqual([]);
   });
 });

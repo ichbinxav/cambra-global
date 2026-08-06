@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.62.2",
-  "releaseName": "CAMBRA v62.2 — Pre-ECL Gate Hardening",
+  "version": "0.62.3",
+  "releaseName": "CAMBRA v62.3 — Core Gate Closure + ECL P1 Schemas",
   "type": "module",
   "engines": {
     "node": ">=20 <23",

@@ -1,6 +1,7 @@
 {
   "name": "StatementImport",
   "type": "object",
+  "description": "v62.3 ECL P1 (2026-08-06) \u2014 SCHEMA ONLY. The evidence-lifecycle fields below are ADDITIVE and OPTIONAL: no writer sets them yet. processUploadedFile is deliberately untouched and stays frozen; migrating the writer is a later prompt. Nothing in this schema implies a lifecycle engine, a scheduler, a rule set or any billing effect.",
   "properties": {
     "brand_id": {
       "type": "string"
@@ -66,7 +67,7 @@
         "low",
         "unverified"
       ],
-      "description": "Overall confidence from the layered extractor. `high` = Layer 1 confident AND Layer 2 sanity checks passed AND Layer 3 cross-check agreed. `medium` = Layer 1 + Layer 2 passed but Layer 3 not run or disagreed within tolerance. `low` = at least one field flagged; individual fields keep their own confidence in metadata_json.fields. `unverified` = extractor did not run (e.g. document persisted before LLM was enabled \u2014 the current default while the privacy gate is closed)."
+      "description": "Overall confidence from the layered extractor. `high` = Layer 1 confident AND Layer 2 sanity checks passed AND Layer 3 cross-check agreed. `medium` = Layer 1 + Layer 2 passed but Layer 3 not run or disagreed within tolerance. `low` = at least one field flagged; individual fields keep their own confidence in metadata_json.fields. `unverified` = extractor did not run (e.g. document persisted before LLM was enabled \u2014 the current default while the privacy gate is closed). UNCHANGED by ECL P1: the ECL confidence lives in confidence_result / SavingsEvidence.confidence_level_ecl, never here."
     },
     "provider_detected": {
       "type": "string",
@@ -100,6 +101,57 @@
           "description": "Whether the LLM extraction layer was actually invoked for this import. False while the privacy gate is closed \u2014 the file is persisted but no numbers are extracted."
         }
       }
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "ECL P1 \u2014 email of the merchant this import belongs to, resolved SERVER-SIDE from the authenticated session by a future writer, never from a payload. Exists because created_by alone cannot express ownership for records produced by service-role jobs. Optional: legacy rows have no value and RLS keeps relying on created_by, which is why the existing RLS below is unchanged."
+    },
+    "confidence_result": {
+      "type": "object",
+      "description": "ECL P1 \u2014 STRUCTURED (never a JSON string) snapshot of the confidence evaluation that a later phase will produce for this import. Empty in P1: no evaluator exists yet. Persisted as an object so it can be queried and diffed instead of parsed."
+    },
+    "confidence_result_hash": {
+      "type": "string",
+      "description": "ECL P1 \u2014 SHA-256 of the stable serialization of confidence_result, so a stored evaluation can be proven to be the one that was actually computed. Written together with confidence_result or not at all."
+    },
+    "evidence_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "estimated",
+        "accepted_provisionally",
+        "verified",
+        "rejected",
+        "expired",
+        "superseded",
+        "under_review"
+      ],
+      "description": "ECL P1 \u2014 evidence-lifecycle state of this import. DELIBERATELY DISTINCT FROM parsed_status: parsed_status describes whether the FILE could be read, this describes whether the EVIDENCE can be relied upon. No default and not required: a legacy row carries no lifecycle state, and inventing 'pending' for it would claim a lifecycle that never ran. No transition logic exists in P1."
+    },
+    "provisional_started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ECL P1 \u2014 instant the evidence entered 'accepted_provisionally'. Anchors the provisional window; the window itself is enforced by a later phase, not here."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ECL P1 \u2014 instant the provisional acceptance stops being valid. Storage only in P1: nothing reads it, no scheduler exists."
+    },
+    "next_lifecycle_action_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ECL P1 \u2014 when the next lifecycle action (reminder, expiry, review) would be due. A future scheduler will read it; P1 ships no scheduler and no automation."
+    },
+    "reminder_count": {
+      "type": "number",
+      "default": 0,
+      "description": "ECL P1 \u2014 how many merchant reminders were sent for this evidence. Defaults to 0 (a count of zero is factually true for every existing row, unlike a status)."
+    },
+    "superseded_by_id": {
+      "type": "string",
+      "description": "ECL P1 \u2014 id of the StatementImport that replaced this one. Corrections create a NEW record and point the old one here; nothing is ever rewritten in place."
     }
   },
   "required": [

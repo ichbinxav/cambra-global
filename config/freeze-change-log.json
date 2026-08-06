@@ -1,4 +1,74 @@
 {
-  "comment": "Append-only log of sanctioned pre-ECL freeze changes. Written ONLY by scripts/update-freeze.mjs. Empty during v62.2 by mandate.",
-  "changes": []
+  "comment": "Append-only log of sanctioned pre-ECL freeze changes. Written by scripts/update-freeze.mjs (freeze_update / freeze_add) and scripts/advance-stage.mjs (stage_advance). The v62.3 entries below record the ECL P1 stage advance plus every hash mutation it required; they were re-materialized verbatim in v62.3.1 after the v62.3 working tree failed to persist, with the hashes re-read from disk, never from memory.",
+  "changes": [
+    {
+      "date": "2026-08-06T16:00:00.000Z",
+      "type": "stage_advance",
+      "fromStage": "PRE_ECL",
+      "toStage": "ECL_P1_SCHEMA_ONLY",
+      "allowlist": [
+        "base44/entities/StatementImport.jsonc",
+        "base44/entities/SavingsEvidence.jsonc",
+        "base44/entities/EvidenceAttestation.jsonc",
+        "base44/entities/EvidenceLifecycleEvent.jsonc",
+        "base44/entities/EvidenceStrike.jsonc",
+        "base44/entities/ReviewCase.jsonc"
+      ],
+      "reason": "v62.3 — local pre-ECL gate closed (clean:check, policy, lint, typecheck:critical 0 errors, tests, build, baseline approved). ECL P1 is SCHEMA ONLY: six entity schemas, no engine, no scheduler, no UI, no billing effect."
+    },
+    {
+      "date": "2026-08-06T16:05:00.000Z",
+      "type": "freeze_update",
+      "stage": "ECL_P1_SCHEMA_ONLY",
+      "path": "base44/entities/StatementImport.jsonc",
+      "oldHash": "cb951351bdcaa8355aaeadb499d90c3572c716d284ee19f6b2e01a76d08b314d",
+      "newHash": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf",
+      "reason": "ECL P1 — additive optional lifecycle fields (owner_email, confidence_result(+hash), evidence_status without default, provisional_started_at, expires_at, next_lifecycle_action_at, reminder_count, superseded_by_id). No writer, no required change, RLS untouched."
+    },
+    {
+      "date": "2026-08-06T16:06:00.000Z",
+      "type": "freeze_update",
+      "stage": "ECL_P1_SCHEMA_ONLY",
+      "path": "base44/entities/SavingsEvidence.jsonc",
+      "oldHash": "806bc45580912c6764b51a12977d3d5e8a86b35b4b2db6174de7bcf69bf2b451",
+      "newHash": "68aeddd0eb728fecc66167809ff5185b0ecdae1b9da0a038bf697b86b4d40962",
+      "reason": "ECL P1 — additive optional fields (owner_email, statement_import_id, confidence_level_ecl as a SEPARATE categorical field, freeze_eligibility, rule_set_version, confidence_result(+hash)). The pre-existing numeric confidence_level keeps its meaning and its writers."
+    },
+    {
+      "date": "2026-08-06T16:07:00.000Z",
+      "type": "freeze_add",
+      "stage": "ECL_P1_SCHEMA_ONLY",
+      "path": "base44/entities/EvidenceAttestation.jsonc",
+      "oldHash": null,
+      "newHash": "1cb6bec24599aec271f527bc28d46697fe961c4a1427ab3bf7e0f5f10ce10d29",
+      "reason": "ECL P1 — new schema on the stage allowlist. Signed merchant declaration; HMAC-only fingerprints with a versioned key; retention PENDING legal/privacy review."
+    },
+    {
+      "date": "2026-08-06T16:08:00.000Z",
+      "type": "freeze_add",
+      "stage": "ECL_P1_SCHEMA_ONLY",
+      "path": "base44/entities/EvidenceLifecycleEvent.jsonc",
+      "oldHash": null,
+      "newHash": "78bfa30864dadf7574c09bcc0dfb440d39e6505ef98f8dcb077a09ab919f1412",
+      "reason": "ECL P1 — new schema on the stage allowlist. Append-only by domain intent; to_status deliberately a free string so no auditable event is ever rejected."
+    },
+    {
+      "date": "2026-08-06T16:09:00.000Z",
+      "type": "freeze_add",
+      "stage": "ECL_P1_SCHEMA_ONLY",
+      "path": "base44/entities/EvidenceStrike.jsonc",
+      "oldHash": null,
+      "newHash": "5d96ed9ae9f6cefa56a3dc652fbcec6019fdfaf536661efdd5480412d85d22f9",
+      "reason": "ECL P1 — new schema on the stage allowlist. Scoped, always-expiring, withdrawable; the two-strike consequence is NOT implemented."
+    },
+    {
+      "date": "2026-08-06T16:10:00.000Z",
+      "type": "freeze_add",
+      "stage": "ECL_P1_SCHEMA_ONLY",
+      "path": "base44/entities/ReviewCase.jsonc",
+      "oldHash": null,
+      "newHash": "b6784fa873444af3069c14eb0f690bd0d0552d90238ce81d5557c6a3f9d8fbbc",
+      "reason": "ECL P1 — new schema on the stage allowlist. Economic vs quality severity; no assignee, SLA, deadline or escalation until the review workflow is designed."
+    }
+  ]
 }

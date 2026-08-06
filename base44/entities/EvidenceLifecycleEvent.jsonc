@@ -1,0 +1,80 @@
+{
+  "name": "EvidenceLifecycleEvent",
+  "type": "object",
+  "description": "v62.3 ECL P1 (2026-08-06) \u2014 one row per evidence state transition. APPEND-ONLY AS A DOMAIN INTENT: the schema alone does not guarantee immutability, so later services must refuse update and delete on this entity and tests must prove it \u2014 the comment is here precisely so the gap is explicit rather than assumed closed. NO writer and NO transition engine exist in P1; this is the storage shape only.",
+  "properties": {
+    "evidence_entity_type": {
+      "type": "string",
+      "enum": [
+        "statement_import",
+        "savings_evidence"
+      ]
+    },
+    "evidence_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Merchant the evidence belongs to, resolved server-side."
+    },
+    "to_status": {
+      "type": "string",
+      "description": "State the evidence moved INTO. Free string rather than an enum on purpose: this log must be able to record a transition even if the status vocabulary is extended later, and a log that silently rejects an unknown value would lose exactly the events worth auditing."
+    },
+    "event": {
+      "type": "string",
+      "description": "Normalized event name that caused the transition (e.g. 'evidence_submitted', 'provisional_expired'). Never a raw provider message."
+    },
+    "actor": {
+      "type": "string",
+      "enum": [
+        "system",
+        "user",
+        "reviewer"
+      ],
+      "description": "Who caused the transition. 'system' covers scheduled/automatic actions."
+    },
+    "correlation_id": {
+      "type": "string",
+      "description": "Groups every event produced by the same logical operation, so a multi-step transition can be reconstructed."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Persisted claim key: a replayed transition must not append a duplicate event."
+    },
+    "from_status": {
+      "type": "string",
+      "description": "State the evidence moved OUT of. Optional: the first event of a record has no previous state, and writing a fake one would invent history."
+    },
+    "payload": {
+      "type": "object",
+      "description": "STRUCTURED (never a JSON string) sanitized context for the event. Never secrets, never raw file bytes."
+    }
+  },
+  "required": [
+    "evidence_entity_type",
+    "evidence_id",
+    "brand_id",
+    "owner_email",
+    "to_status",
+    "event",
+    "actor",
+    "correlation_id",
+    "idempotency_key"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

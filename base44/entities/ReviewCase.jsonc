@@ -1,0 +1,87 @@
+{
+  "name": "ReviewCase",
+  "type": "object",
+  "description": "v62.3 ECL P1 (2026-08-06) \u2014 a human review opened over a piece of evidence or a business. STORAGE ONLY: no queue, no routing, no notification and no economic gate exist in P1. DELIBERATELY ABSENT for now: assignee, SLA, deadline and escalation \u2014 adding them before the review workflow is designed would encode a process nobody has agreed to. severity separates an ECONOMIC doubt (a figure that could affect money) from a QUALITY doubt (a document that is merely poor), because they must never be triaged the same way.",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Merchant the case belongs to, resolved server-side."
+    },
+    "reason_code": {
+      "type": "string",
+      "description": "Normalized reason the case was opened. Safe to show in an admin panel."
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "economic",
+        "quality"
+      ],
+      "description": "'economic' = the doubt could affect measured savings or an invoice. 'quality' = the evidence is deficient without an economic consequence."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "awaiting_merchant",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "open",
+      "description": "Lifecycle of the case. Defaults to 'open' because a case that exists is, by definition, open."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Persisted claim key: the same trigger must not open two cases."
+    },
+    "evidence_entity_type": {
+      "type": "string",
+      "description": "Optional pointer type ('statement_import' / 'savings_evidence') when the case is about one specific piece of evidence."
+    },
+    "evidence_id": {
+      "type": "string"
+    },
+    "decision": {
+      "type": "string",
+      "description": "Normalized outcome once the case is resolved or dismissed."
+    },
+    "decision_notes": {
+      "type": "string",
+      "description": "Reviewer's written justification. Internal: never surfaced verbatim to the merchant without a sanitized projection."
+    },
+    "resolved_by": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "blocking_actions": {
+      "type": "object",
+      "description": "STRUCTURED (never a JSON string) record of which actions this case would block while open. DESCRIPTIVE ONLY in P1: nothing enforces it, and no billing or Recover path consults it."
+    }
+  },
+  "required": [
+    "brand_id",
+    "owner_email",
+    "reason_code",
+    "severity",
+    "status",
+    "idempotency_key"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

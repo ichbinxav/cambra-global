@@ -13,7 +13,7 @@ import crypto from "node:crypto";
 import process from "node:process";
 import { computeSourceTreeHash } from "./lib/sourceTreeHash.mjs";
 import { evidenceStatus } from "./lib/evidence.mjs";
-import { checkFreeze } from "./lib/preEclFreeze.mjs";
+import { checkFreeze, resolveStage } from "./lib/preEclFreeze.mjs";
 
 const ciMode = process.argv.includes("--ci");
 const sha256 = (file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
@@ -41,7 +41,11 @@ if (m.sourceTreeHash !== tree.hash) fail(`sourceTreeHash mismatch: manifest ${St
 if (m.sourceTreeHashAlgorithm !== "sha256-tree-v1") fail("unknown sourceTreeHashAlgorithm");
 
 // Frozen files — verified against the LIVE repo, not just the manifest copy
-const freezeResult = checkFreeze(freeze.entries, (p) => (fs.existsSync(p) ? fs.readFileSync(p) : null));
+// v62.3 — stage-aware: the manifest check must apply the SAME stage rules as
+// clean:check, otherwise a sanctioned P1 schema would fail here.
+let freezeStage;
+try { freezeStage = resolveStage(freeze); } catch (err) { fail(err.message); }
+const freezeResult = checkFreeze(freeze.entries, (p) => (fs.existsSync(p) ? fs.readFileSync(p) : null), { stage: freezeStage });
 for (const f of freezeResult.failures) fail(f);
 for (const e of freeze.entries) {
   if (m.frozenFiles?.[e.path] !== e.sha256) fail(`manifest frozen-file record drift: ${e.path}`);

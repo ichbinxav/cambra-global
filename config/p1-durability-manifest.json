@@ -1,0 +1,30 @@
+{
+  "release": "CAMBRA v62.3.1 — Durable ECL P1 Export Fix",
+  "generatedAt": "2026-08-06T17:36:00.000Z",
+  "purpose": "Durability probe. Every sha256/bytes below was read from disk at write time, never from memory. If this manifest reaches the exported ZIP but the files it declares do not, the loss happens in the export. If it does not reach the ZIP at all, the loss happens before the export. If both arrive and the hashes match, ECL P1 is physically applied.",
+  "packageVersion": "0.62.3",
+  "freezeStage": "ECL_P1_SCHEMA_ONLY",
+  "freezeEntryCount": 8,
+  "allowlistCount": 6,
+  "freezeChangeLogEntries": 7,
+  "packageLockPresentInRepoTree": false,
+  "packageLockNote": "package-lock.json is not part of the durable repo tree in this environment (npm-generated, unreadable through the repository read path), so its 0.62.3 sync must be applied in the operator's own checkout.",
+  "files": [
+    { "path": "base44/entities/StatementImport.jsonc", "sha256": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf", "bytes": 7967 },
+    { "path": "base44/entities/SavingsEvidence.jsonc", "sha256": "68aeddd0eb728fecc66167809ff5185b0ecdae1b9da0a038bf697b86b4d40962", "bytes": 4823 },
+    { "path": "base44/entities/EvidenceAttestation.jsonc", "sha256": "1cb6bec24599aec271f527bc28d46697fe961c4a1427ab3bf7e0f5f10ce10d29", "bytes": 4839 },
+    { "path": "base44/entities/EvidenceLifecycleEvent.jsonc", "sha256": "78bfa30864dadf7574c09bcc0dfb440d39e6505ef98f8dcb077a09ab919f1412", "bytes": 2730 },
+    { "path": "base44/entities/EvidenceStrike.jsonc", "sha256": "5d96ed9ae9f6cefa56a3dc652fbcec6019fdfaf536661efdd5480412d85d22f9", "bytes": 2658 },
+    { "path": "base44/entities/ReviewCase.jsonc", "sha256": "b6784fa873444af3069c14eb0f690bd0d0552d90238ce81d5557c6a3f9d8fbbc", "bytes": 2923 },
+    { "path": "scripts/advance-stage.mjs", "sha256": "05fb90e88d7f5c65251f4db95bcf579fac051b949cfc214bcf90c3d47e9d2cab", "bytes": 2664 },
+    { "path": "scripts/clean-check.mjs", "sha256": "0b2a412c1f3391b90aa0ddd34195d7d44837dd8f8d7f719482ec5ab549147df4", "bytes": 3717 },
+    { "path": "scripts/update-freeze.mjs", "sha256": "4cc68a517246ac303bb45181944812aa1d79449969aed9234d3e8f9de0e7e101", "bytes": 3148 },
+    { "path": "scripts/check-release-manifest.mjs", "sha256": "c126a587e2d6c8a5786adc493e6e80b66159849bcaf4e1cd29b460816c510ecf", "bytes": 6154 },
+    { "path": "scripts/lib/preEclFreeze.mjs", "sha256": "a5bb44c580e1b31aa08ae1ed0e1451c2aad62f96a71fb636cdba40110244986e", "bytes": 4406 },
+    { "path": "config/pre-ecl-freeze.json", "sha256": "f8e94267cd4c6f1b0e3d435ade68ea4df3b56e016e7299b7b2735f4437102228", "bytes": 3426 },
+    { "path": "config/freeze-change-log.json", "sha256": "b91f82ded27a429db8a5c9d81c280be1c3c92dbfce2c49839f36616f53f5f450", "bytes": 4239 },
+    { "path": "config/release-touch-list.json", "sha256": "b283c9280d000dcb36f37992cd4c9f38ec2c447879225389a13f1eebad0c61ed", "bytes": 1464 },
+    { "path": "src/lib/eclP1Schemas.test.js", "sha256": "6c6cb3e66b83d1f96de80dafc1a89e898fced5ea8c09f554f03431e9c70fcfd0", "bytes": 8377 },
+    { "path": "src/lib/eclP1Gate.test.js", "sha256": "3f0cf7c8accf4337f35df11fe5e74333bb1d212c5c2434fef12c0fd9144412c0", "bytes": 4996 }
+  ]
+}

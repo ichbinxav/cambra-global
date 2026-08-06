@@ -1,6 +1,7 @@
 {
   "name": "SavingsEvidence",
   "type": "object",
+  "description": "v62.3 ECL P1 (2026-08-06) \u2014 SCHEMA ONLY. The ECL fields below are ADDITIVE and OPTIONAL; no writer sets them yet and none of them participates in billing. confidence_level_ecl is deliberately NOT the same thing as the pre-existing numeric confidence_level, which is left untouched.",
   "properties": {
     "brand_id": {
       "type": "string"
@@ -97,6 +98,45 @@
     },
     "metadata_json": {
       "type": "object"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "ECL P1 \u2014 email of the merchant this evidence belongs to, resolved server-side from the authenticated session by a future writer, never from a payload. Optional; the existing RLS (admin / created_by) is unchanged."
+    },
+    "statement_import_id": {
+      "type": "string",
+      "description": "ECL P1 \u2014 the StatementImport this evidence was derived from, when it came from an uploaded document. Optional: API-sourced evidence has no import."
+    },
+    "confidence_level_ecl": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "unknown"
+      ],
+      "description": "ECL P1 \u2014 CATEGORICAL evidence-confidence class from the (future) ECL evaluation. Deliberately a separate field from the pre-existing numeric confidence_level, which keeps its meaning and its writers: overloading that number would silently reinterpret historical rows. 'unknown' is an explicit outcome, never a filler for 'not evaluated' (an unevaluated row simply has no value here)."
+    },
+    "freeze_eligibility": {
+      "type": "string",
+      "enum": [
+        "eligible",
+        "conditionally_eligible",
+        "not_eligible"
+      ],
+      "description": "ECL P1 \u2014 whether this evidence could support freezing a baseline figure. STORAGE ONLY in P1: no economic gate, no report and no invoice reads it. Recover Margin billing remains governed exclusively by the existing verified-savings machinery."
+    },
+    "rule_set_version": {
+      "type": "string",
+      "description": "ECL P1 \u2014 version tag of the rule set that produced confidence_level_ecl / freeze_eligibility. No rule engine exists yet; the field exists so an evaluation can never be stored without saying which rules produced it."
+    },
+    "confidence_result": {
+      "type": "object",
+      "description": "ECL P1 \u2014 STRUCTURED (never a JSON string) snapshot of the confidence evaluation: inputs, checks, outcome. Empty in P1."
+    },
+    "confidence_result_hash": {
+      "type": "string",
+      "description": "ECL P1 \u2014 SHA-256 of the stable serialization of confidence_result. Written together with it or not at all."
     }
   },
   "required": [

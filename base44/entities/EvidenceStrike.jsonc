@@ -1,0 +1,75 @@
+{
+  "name": "EvidenceStrike",
+  "type": "object",
+  "description": "v62.3 ECL P1 (2026-08-06) \u2014 a recorded strike against a business for unreliable evidence, scoped to one domain. STORAGE ONLY: the two-strike consequence, any blocking rule and any expiry job are explicitly NOT implemented in P1, and nothing in the product reads this entity yet. A strike is withdrawable by design (withdrawn_* fields) because a wrong strike must be correctable without deleting the audit trail.",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Merchant the strike belongs to, resolved server-side."
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "payments",
+        "commerce",
+        "accounting"
+      ],
+      "description": "Domain the strike applies to. Scoped rather than global so unreliable evidence in one area never silently blocks another."
+    },
+    "reason_code": {
+      "type": "string",
+      "description": "Normalized reason code, safe to show in an admin panel. Never a raw error or a free-form accusation."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the strike stops counting. REQUIRED: a strike with no expiry is a permanent sanction, which is not what the model intends \u2014 but no job enforces it in P1."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Persisted claim key: the same underlying incident must not produce two strikes."
+    },
+    "evidence_entity_type": {
+      "type": "string",
+      "description": "Optional pointer type ('statement_import' / 'savings_evidence') when the strike originates from one specific piece of evidence. Free string here because a strike may also come from an aggregate pattern with no single record behind it."
+    },
+    "evidence_id": {
+      "type": "string",
+      "description": "Optional id of the evidence that triggered the strike."
+    },
+    "withdrawn_by": {
+      "type": "string",
+      "description": "Admin who withdrew the strike. Presence of this + withdrawn_at is what makes a strike inactive; the row itself is never deleted."
+    },
+    "withdrawn_reason": {
+      "type": "string"
+    },
+    "withdrawn_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "brand_id",
+    "owner_email",
+    "scope",
+    "reason_code",
+    "expires_at",
+    "idempotency_key"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
