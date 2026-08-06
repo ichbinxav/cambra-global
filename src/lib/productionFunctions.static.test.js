@@ -35,6 +35,8 @@ const MANIFEST = [
   // RECOVER-4 (2026-08-04) — monthly measurement, FR/ES tax, Stripe invoicing.
   "recordConditionsActivation", "checkVatVies", "approveRecoverReportForInvoicing",
   "createEligibleRecoverInvoices",
+  // v61 Checkpoint D (2026-08-06) — merchant billing records, server-side scope.
+  "getMyBillingRecords",
   "answerAgentQuestion", "apiAuth", "apiOpenApiSpec", "apiV1", "approveAgentRun",
   "authzScope", "benchmarkLearningEngine", "billApiUsage", "blogAgent",
   "brainOrchestrator", "buildInfrastructureGraph", "chatChiefOrchestrator",

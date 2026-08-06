@@ -38,19 +38,15 @@ export default function Reports() {
       try {
         const me = await base44.auth.me().catch(() => null);
         if (!me) { setVLoading(false); return; }
-        const brands = await base44.entities.Brand
-          .filter({ created_by: me.email }, '-created_date', 1)
-          .catch(() => []);
-        const b = brands?.[0] || null;
-        setBrand(b);
-        if (b) {
-          const [reports, baselines] = await Promise.all([
-            base44.entities.MonthlySavingsReport.filter({ brand_id: b.id }, '-month', 1),
-            base44.entities.Baseline.filter({ brand_id: b.id, is_current: true }, '-locked_at', 1),
-          ]);
-          setLastReport(reports?.[0] || null);
-          setBaseline(baselines?.[0] || null);
-        }
+        // v61 Checkpoint D — brand, latest monthly report and current baseline
+        // all come from getMyBillingRecords: the tenant scope is resolved from
+        // the session server-side (these entities' RLS is inert for app users,
+        // so a client-side brand_id filter was both broken and unsafe).
+        const resp = await base44.functions.invoke('getMyBillingRecords', {}).catch(() => null);
+        const d = resp?.data || {};
+        setBrand(d.brand || null);
+        setLastReport(d.reports?.[0] || null);
+        setBaseline(d.baseline || null);
       } finally {
         setVLoading(false);
       }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { getMyActiveBrand } from '@/lib/getMyActiveBrand';
 import PageHero from '@/components/shared/PageHero';
 import { Receipt } from 'lucide-react';
 
@@ -13,9 +12,11 @@ export default function Invoices() {
       setLoading(true);
       const authed = await base44.auth.isAuthenticated();
       if (!authed) { setItems([]); setLoading(false); return; }
-      const { brand } = await getMyActiveBrand();
-      const invs = brand ? await base44.entities.Invoice.filter({ brand_id: brand.id }, '-issued_at', 200) : [];
-      setItems(invs || []);
+      // v61 Checkpoint D — invoices are read SERVER-SIDE, with the tenant scope
+      // resolved from the session. No brand_id travels from the browser, and
+      // the response is a projection (no billing snapshot / tax evidence).
+      const resp = await base44.functions.invoke('getMyBillingRecords', {}).catch(() => null);
+      setItems(resp?.data?.invoices || []);
       setLoading(false);
     })();
   }, []);
