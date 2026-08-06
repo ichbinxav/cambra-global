@@ -1153,4 +1153,68 @@ export default {
     vlt_st_approved:    "Approved",
     vlt_st_rejected:    "Rejected",
     vlt_st_superseded:  "Superseded",
+
+    /* ─────────────────────────────────────────────────────────────────
+       CHECKPOINT H (2026-08-06) — /Reports.
+       19 English-only literals, plus TWO raw enums printed to the merchant:
+       the verification pill did `verification_status.replaceAll("_"," ")`
+       (so a French merchant read "evidence submitted") and the history rows
+       derived their label from the same enum in English. The stored values
+       are unchanged — only their display.
+       DATES: the rows used date-fns `format()` with no locale, so every date
+       rendered in English ("August 6, 2026"). They now go through Intl with
+       the active language.
+       ───────────────────────────────────────────────────────────────── */
+    rpt_eyebrow:        "Margin intelligence · History",
+    rpt_title:          "Reports.",
+    rpt_subtitle:       "Every scan, every benchmark, every recovered euro — mapped continuously across your card payments.",
+    rpt_new_scan:       "New scan",
+    rpt_empty_title:    "No reports yet",
+    rpt_empty_sub:      "Run your first payment cost audit to see recovery opportunities mapped here.",
+    rpt_empty_cta:      "Run Analyzer",
+    rpt_chart_eyebrow:  "Savings history",
+    rpt_chart_title:    "Identified payment savings",
+    rpt_chart_note:     "Annualized · online + in-store card payments",
+    rpt_chart_series:   "Payments",
+    rpt_live:           "Live",
+    rpt_per_year:       "/yr",
+    rpt_ver_eyebrow:    "Verification",
+    rpt_ver_title:      "Checklist for verified savings",
+    rpt_step_baseline:  "Baseline locked",
+    rpt_step_evidence:  "Evidence submitted",
+    rpt_step_review:    "Under review",
+    rpt_step_verified:  "Verified",
+    rpt_step_realized:  "Realized",
+    rpt_files:          "{n} file(s)",
+    rpt_onboarding_hint:"Complete onboarding to enable verification tracking.",
+    rpt_tpv_eyebrow:    "In-store payments",
+    rpt_tpv_title:      "Terminal (TPV) benchmark and savings opportunity",
+    rpt_tpv_current:    "Current cost",
+    rpt_tpv_eff_rate:   "Effective TPE rate: {rate}%",
+    rpt_tpv_benchmark:  "Benchmark cost",
+    rpt_tpv_net_rate:   "Network rate: {rate}%",
+    rpt_tpv_opportunity:"Savings opportunity",
+    rpt_tpv_reco:       "Recommendation: renegotiate terminals and fixed fees.",
+    rpt_tpv_next:       "Next action",
+    rpt_tpv_next_val:   "Improve payment infrastructure terms.",
+    rpt_tpv_next_note:  "Include rental, contract renewal and banking fees.",
+    rpt_hist_eyebrow:   "Audit history",
+    rpt_hist_title:     "Analysis timeline",
+    rpt_count_one:      "{n} report",
+    rpt_count_many:     "{n} reports",
+    rpt_scan_complete:  "scan complete",
+    rpt_recovery_potential: "recovery potential",
+
+    rpt_vs_verified:    "Verified",
+    rpt_vs_provisional: "Provisional",
+    rpt_vs_estimated:   "Estimated",
+
+    rpt_vst_estimated:          "Estimated",
+    rpt_vst_proposed:           "Proposed",
+    rpt_vst_evidence_submitted: "Evidence submitted",
+    rpt_vst_under_review:       "Under review",
+    rpt_vst_verified:           "Verified",
+    rpt_vst_realized:           "Realized",
+    rpt_vst_invoiced:           "Invoiced",
+    rpt_vst_paid:               "Paid",
 };
