@@ -233,12 +233,35 @@ export function resolveContractPolicy(input: {
     } else {
       const sharePct = Number(snap.merchant_share_pct ?? snap.economicTerms?.merchantSharePct);
       const durMonths = Number(snap.fee_duration_months ?? snap.economicTerms?.feeDurationMonths);
-      if (!Number.isFinite(sharePct)) warnings.push('mandate_snapshot_share_defaulted');
-      if (!Number.isFinite(durMonths)) warnings.push('mandate_snapshot_duration_defaulted');
+      // v61 (audit #9) — a MODERN snapshot missing required economic fields is
+      // UNRESOLVABLE. It is never silently completed with 75/24: an incomplete
+      // modern snapshot means the acceptance record is damaged, and creating a
+      // new economic obligation from it would misrepresent the accepted terms.
+      if (!Number.isFinite(sharePct) || !Number.isFinite(durMonths)) {
+        if (!Number.isFinite(sharePct)) warnings.push('mandate_snapshot_share_missing');
+        if (!Number.isFinite(durMonths)) warnings.push('mandate_snapshot_duration_missing');
+        return {
+          successFeePct: 0,
+          merchantSharePct: 0,
+          feeDurationMonths: 0,
+          feeBase: 'unknown',
+          currency: snap.currency ?? snap.baseline_currency ?? 'EUR',
+          policyVersion: String(snap.policy_version ?? snap.policyVersion ?? ''),
+          policySource: String(snap.policy_source ?? POLICY_SOURCE_REGISTRY),
+          snapshotHash: input.mandate.acceptance_snapshot_hash ?? null,
+          templateVersion: snap.template_version ?? snap.contract?.templateVersion ?? null,
+          documentVersion: input.mandate.document_version ?? null,
+          isLegacy: false,
+          hasOverride: !!(snap.override?.hasOverride ?? snap.overrides?.hasOverride),
+          warnings: [...warnings, 'unresolvable: modern snapshot incomplete'],
+          provenance: 'mandate_snapshot_incomplete',
+          resolvable: false,
+        };
+      }
       return {
         successFeePct: feePct,
-        merchantSharePct: Number.isFinite(sharePct) ? sharePct : 75,
-        feeDurationMonths: Number.isFinite(durMonths) ? durMonths : 24,
+        merchantSharePct: sharePct,
+        feeDurationMonths: durMonths,
         feeBase: snap.fee_base ?? snap.economicTerms?.feeBase ?? 'positive_verified_savings',
         currency: snap.currency ?? snap.baseline_currency ?? 'EUR',
         policyVersion: String(snap.policy_version ?? snap.policyVersion ?? ''),

@@ -141,7 +141,10 @@ describe("policy drift guards — v60.2 unsafe fallback elimination", () => {
 
   it("createEligibleRecoverInvoices freezes policy provenance in billing_snapshot_json", () => {
     const src = read("base44/functions/createEligibleRecoverInvoices/entry.ts");
-    expect(src).toContain("resolveContractPolicy");
+    // v61: policy resolution moved into the pure core the handler imports;
+    // provenance still freezes on the invoice record and its snapshot.
+    expect(src).toContain("prepareEligibleRecoverInvoice");
+    expect(read("base44/shared/prepareEligibleRecoverInvoice.ts")).toContain("resolveContractPolicy");
     expect(src).toContain("policy_version");
     expect(src).toContain("policy_source");
     expect(src).toContain("snapshot_hash");
@@ -163,6 +166,54 @@ describe("policy drift guards — v60.2 unsafe fallback elimination", () => {
     const approval = read("base44/functions/approveRecoverReportForInvoicing/entry.ts");
     // getSuccessFeePct() replaces the old `= 25` literal.
     expect(approval).not.toMatch(/const STANDARD_FEE_PCT = 25/);
+  });
+
+  it("v61: invoice handler resolves policy via the pure core BEFORE any Stripe call", () => {
+    const src = read("base44/functions/createEligibleRecoverInvoices/entry.ts");
+    expect(src).toContain("prepareEligibleRecoverInvoice");
+    // Order guard: the pure core (which resolves the contract policy) is
+    // invoked before the first Stripe invoice call in the handler body.
+    const coreIdx = src.indexOf("prepareEligibleRecoverInvoice({");
+    const stripeIdx = src.indexOf("stripeRequest(mode, 'POST', 'invoices'");
+    expect(coreIdx).toBeGreaterThan(-1);
+    expect(stripeIdx).toBeGreaterThan(-1);
+    expect(coreIdx).toBeLessThan(stripeIdx);
+    // The old post-finalize resolution is gone.
+    expect(src).not.toMatch(/standard_fee_pct \|\| 25/);
+  });
+
+  it("v61: idempotency identity is keyed on the report id", () => {
+    const core = read("base44/shared/prepareEligibleRecoverInvoice.ts");
+    expect(core).toContain("monthly_savings_report_id: String(report.id)");
+    expect(core).toContain("idempotency_conflict_different_report");
+    const entry = read("base44/functions/createEligibleRecoverInvoices/entry.ts");
+    expect(entry).toContain("r4:inv:create:${report.id}");
+    expect(entry).toContain("r4:inv:fin:${report.id}");
+  });
+
+  it("v61: monthly report generator is payments-only and gated server-side", () => {
+    const src = read("base44/functions/generateMonthlySavingsReport/entry.ts");
+    expect(src).toContain("assertProductionEnabledVertical");
+    expect(src).not.toMatch(/vertical === 'shipping'/);
+    expect(src).not.toMatch(/vertical === 'saas'/);
+    expect(src).not.toMatch(/node_share_percent \|\| 25/);
+    // Honest measurement copy — no "live Stripe" claim while verification is pending.
+    expect(src).not.toMatch(/live Stripe/i);
+    expect(src).toContain("connected Stripe data");
+  });
+
+  it("v61: productScopeGuard exists and derives from the generated artifact", () => {
+    const src = read("base44/shared/productScopeGuard.ts");
+    expect(src).toContain("assertProductionEnabledVertical");
+    expect(src).toContain("./generated/productPolicy.ts");
+    expect(src).toContain("ProductScopeError");
+  });
+
+  it("v61: modern incomplete snapshots are unresolvable (no 75/24 completion)", () => {
+    const src = read("base44/shared/contractPolicySnapshot.ts");
+    expect(src).toContain("mandate_snapshot_incomplete");
+    expect(src).not.toContain("mandate_snapshot_share_defaulted");
+    expect(src).not.toContain("mandate_snapshot_duration_defaulted");
   });
 
   it("resolver no longer uses || 25 / || 75 / || 24 fallbacks (uses Number.isFinite)", () => {

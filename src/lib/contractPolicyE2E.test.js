@@ -9,9 +9,7 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  SNAPSHOT_SCHEMA_VERSION,
   LEGACY_POLICY_SOURCE,
-  POLICY_SOURCE_REGISTRY,
   buildContractPolicySnapshot,
   resolveContractPolicy,
   resolveLegacyContractTerms,

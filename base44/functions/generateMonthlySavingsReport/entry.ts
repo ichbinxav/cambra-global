@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { resolveContractPolicy } from '../../shared/contractPolicySnapshot.ts';
+import { assertProductionEnabledVertical, ProductScopeError } from '../../shared/productScopeGuard.ts';
 
 /**
  * generateMonthlySavingsReport
@@ -12,10 +13,21 @@ import { resolveContractPolicy } from '../../shared/contractPolicySnapshot.ts';
  * Inputs: { brand_id, month? } — month YYYY-MM, defaults to previous month
  * Auth: admin or service role only
  *
- * Source hierarchy:
- *  payments → StripeConnection (fully_verified) → AnalyzerResult (fallback_projection)
- *  shipping → DetectedIntegration carriers (fully_verified) → AnalyzerResult (fallback_projection)
- *  saas     → InfrastructureNodes inferred_from_payments (estimated_from_partial_data) → AnalyzerResult
+ * v61 (2026-08-06, audit #4/#5/#6):
+ *  • PAYMENTS-ONLY. assertProductionEnabledVertical gates every activation
+ *    server-side against the generated policy. shipping/SaaS (and every other
+ *    dormant vertical) return a typed product_scope_blocked error, generate no
+ *    report, no savings and no fee, and the attempt is logged. The old
+ *    shipping/SaaS measurement code was RETIRED from the active flow.
+ *  • NO || 25 fallback. The fee comes from the month's BillingRule; the
+ *    fallback is the RESOLVED CONTRACT (mandate snapshot), then a finite
+ *    DealActivation.node_share_percent. If none exists the deal is blocked
+ *    with fee_unresolvable — the live policy never prices an accepted contract.
+ *  • Honest measurement copy: "connected Stripe data", never "live" — the
+ *    Stripe integration status is implemented_live_verification_pending.
+ *
+ * Source hierarchy (payments):
+ *  StripeConnection (fully_verified) → AnalyzerResult (fallback_projection)
  *
  * Rules:
  *  - savings_realized >= 0 always (clamped)
@@ -42,8 +54,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // SECURITY-2 (2026-07-24) — an auth FAILURE never grants privilege (the
-    // old catch set isServiceRole=true, letting anonymous callers through).
+    // SECURITY-2 (2026-07-24) — an auth FAILURE never grants privilege.
     // Canonical gate: admin OR INTERNAL_CALL_SECRET.
     const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
@@ -67,6 +78,26 @@ Deno.serve(async (req) => {
 
     for (const deal of liveActivations) {
       try {
+        // ── v61 PRODUCT SCOPE GATE — payments only ────────────────────
+        try {
+          assertProductionEnabledVertical(deal.vertical);
+        } catch (e) {
+          if (e instanceof ProductScopeError) {
+            errors.push({ deal_id: deal.id, reason: e.code });
+            await svc.entities.OperationalLog.create({
+              deal_activation_id: deal.id,
+              brand_id,
+              event_type: 'status_changed',
+              message: 'product_scope_blocked_report_attempt',
+              data_json: { vertical: deal.vertical, month, blocked_by: 'productScopeGuard' },
+              actor_email: gate.user?.email || 'internal',
+              created_at: new Date().toISOString(),
+            }).catch(() => null);
+            continue;
+          }
+          throw e;
+        }
+
         // Idempotency check
         const existing = await svc.entities.MonthlySavingsReport
           .filter({ brand_id, deal_activation_id: deal.id, month }, '-created_date', 5).catch(() => []);
@@ -99,128 +130,52 @@ Deno.serve(async (req) => {
         let notes = '';
         let snapshot = {};
 
-        // ── PAYMENTS ──────────────────────────────────────────────
-        if (deal.vertical === 'payments') {
-          // Try Stripe first
-          let stripe = (await svc.entities.StripeConnection
-            .filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []))[0];
+        // ── PAYMENTS (the only production-enabled vertical) ───────────
+        // Try Stripe first
+        let stripe = (await svc.entities.StripeConnection
+          .filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []))[0];
 
-          // Refresh if stale
-          if (stripe && daysSince(stripe.data_as_of) > STRIPE_STALE_DAYS) {
-            try {
-              await base44.functions.invoke('stripeDataSync', { brand_id });
-              stripe = (await svc.entities.StripeConnection
-                .filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []))[0];
-            } catch (_) { /* non-fatal */ }
-          }
-
-          if (stripe && stripe.effective_fee_pct != null && stripe.monthly_volume != null && daysSince(stripe.data_as_of) <= STRIPE_STALE_DAYS) {
-            currentValue = Number(stripe.effective_fee_pct);
-            volume = Number(stripe.monthly_volume);
-            measurementSource = 'api';
-            measurementMode = 'fully_verified';
-            verificationStatus = 'verified';
-            notes = `Payments measured from live Stripe connection (effective_fee_pct=${currentValue}%, volume=€${Math.round(volume).toLocaleString()}).`;
-            snapshot = { source: 'stripe_connected', stripe_account_id: stripe.stripe_account_id, data_as_of: stripe.data_as_of };
-          } else {
-            // Fallback to AnalyzerResult
-            const latestResult = (await svc.entities.AnalyzerResult
-              .filter({ brand_id }, '-created_date', 1).catch(() => []))[0];
-            const latestInput = (await svc.entities.AnalyzerInput
-              .filter({ brand_id }, '-created_date', 1).catch(() => []))[0];
-            if (!latestResult || !latestInput) {
-              errors.push({ deal_id: deal.id, reason: 'No payment data available for measurement' });
-              continue;
-            }
-            currentValue = Number(latestResult.details?.payment_current_rate ?? baselineValue);
-            volume = Number(latestInput.monthly_revenue || 0);
-            measurementSource = 'manual_review';
-            measurementMode = 'fallback_projection';
-            verificationStatus = 'proposed';
-            notes = `Payments measured from AnalyzerResult (estimated — Stripe not connected).`;
-            snapshot = { source: 'analyzer_manual', analyzer_result_id: latestResult.id };
-          }
-
-          const rateDelta = baselineValue - currentValue; // bps in %
-          savingsMonthly = Math.max(0, (rateDelta / 100) * volume);
+        // Refresh if stale
+        if (stripe && daysSince(stripe.data_as_of) > STRIPE_STALE_DAYS) {
+          try {
+            await base44.functions.invoke('stripeDataSync', { brand_id });
+            stripe = (await svc.entities.StripeConnection
+              .filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []))[0];
+          } catch (_) { /* non-fatal */ }
         }
 
-        // ── SHIPPING ──────────────────────────────────────────────
-        else if (deal.vertical === 'shipping') {
-          const carrierSlugs = ['sendcloud', 'shipstation', 'packlink'];
-          let detectedCarrier = null;
-          for (const slug of carrierSlugs) {
-            const found = (await svc.entities.DetectedIntegration
-              .filter({ brand_id, integration_id: slug, status: 'connected' }, '-last_verified_at', 1).catch(() => []))[0];
-            if (found) { detectedCarrier = found; break; }
-          }
-
+        if (stripe && stripe.effective_fee_pct != null && stripe.monthly_volume != null && daysSince(stripe.data_as_of) <= STRIPE_STALE_DAYS) {
+          currentValue = Number(stripe.effective_fee_pct);
+          volume = Number(stripe.monthly_volume);
+          measurementSource = 'api';
+          measurementMode = 'fully_verified';
+          verificationStatus = 'verified';
+          // v61 (audit #6) — honest copy: the Stripe integration status is
+          // implemented_live_verification_pending, so the note says
+          // "connected Stripe data", never "live".
+          notes = `Payments measured from connected Stripe data (effective_fee_pct=${currentValue}%, volume=€${Math.round(volume).toLocaleString()}).`;
+          snapshot = { source: 'stripe_connected', stripe_account_id: stripe.stripe_account_id, data_as_of: stripe.data_as_of };
+        } else {
+          // Fallback to AnalyzerResult
           const latestResult = (await svc.entities.AnalyzerResult
             .filter({ brand_id }, '-created_date', 1).catch(() => []))[0];
           const latestInput = (await svc.entities.AnalyzerInput
             .filter({ brand_id }, '-created_date', 1).catch(() => []))[0];
-
           if (!latestResult || !latestInput) {
-            errors.push({ deal_id: deal.id, reason: 'No shipping data available for measurement' });
+            errors.push({ deal_id: deal.id, reason: 'No payment data available for measurement' });
             continue;
           }
-
-          currentValue = Number(latestResult.details?.shipping_current_avg ?? baselineValue);
-          volume = Number(latestInput.monthly_shipments || 0);
-
-          if (detectedCarrier) {
-            measurementSource = 'api';
-            measurementMode = 'fully_verified';
-            verificationStatus = 'verified';
-            notes = `Shipping measured via connected carrier (${detectedCarrier.integration_id}).`;
-            snapshot = { source: 'carrier_connected', integration_id: detectedCarrier.integration_id };
-          } else {
-            measurementSource = 'manual_review';
-            measurementMode = 'fallback_projection';
-            verificationStatus = 'proposed';
-            notes = `Shipping measured from AnalyzerResult (estimated — no carrier connected).`;
-            snapshot = { source: 'analyzer_manual', analyzer_result_id: latestResult.id };
-          }
-
-          const costDelta = baselineValue - currentValue;
-          savingsMonthly = Math.max(0, costDelta * volume);
+          currentValue = Number(latestResult.details?.payment_current_rate ?? baselineValue);
+          volume = Number(latestInput.monthly_revenue || 0);
+          measurementSource = 'manual_review';
+          measurementMode = 'fallback_projection';
+          verificationStatus = 'proposed';
+          notes = `Payments measured from AnalyzerResult (estimated — Stripe not connected).`;
+          snapshot = { source: 'analyzer_manual', analyzer_result_id: latestResult.id };
         }
 
-        // ── SAAS ──────────────────────────────────────────────────
-        else if (deal.vertical === 'saas') {
-          const saasNodes = await svc.entities.InfrastructureNode
-            .filter({ brand_id, node_type: 'saas_tool' }).catch(() => []);
-          const inferredNodes = saasNodes.filter(n => n.metadata?.inferred_from_payments === true && n.status !== 'inactive');
-          const inferredSpend = inferredNodes.reduce((s, n) => s + Number(n.monthly_cost || 0), 0);
-
-          if (inferredNodes.length > 0 && inferredSpend > 0) {
-            currentValue = inferredSpend;
-            measurementSource = 'hybrid';
-            measurementMode = 'estimated_from_partial_data';
-            verificationStatus = 'proposed';
-            notes = `SaaS measured from ${inferredNodes.length} infrastructure nodes inferred from payment data.`;
-            snapshot = { source: 'inferred_nodes', node_count: inferredNodes.length };
-          } else {
-            const latestInput = (await svc.entities.AnalyzerInput
-              .filter({ brand_id }, '-created_date', 1).catch(() => []))[0];
-            if (!latestInput) {
-              errors.push({ deal_id: deal.id, reason: 'No SaaS data available for measurement' });
-              continue;
-            }
-            currentValue = Number(latestInput.total_saas_spend || 0);
-            measurementSource = 'manual_review';
-            measurementMode = 'fallback_projection';
-            verificationStatus = 'proposed';
-            notes = `SaaS measured from AnalyzerInput (estimated — no SaaS connections).`;
-            snapshot = { source: 'analyzer_manual', analyzer_input_id: latestInput.id };
-          }
-
-          savingsMonthly = Math.max(0, baselineValue - currentValue);
-          volume = 1;
-        } else {
-          errors.push({ deal_id: deal.id, reason: `Unsupported vertical: ${deal.vertical}` });
-          continue;
-        }
+        const rateDelta = baselineValue - currentValue; // bps in %
+        savingsMonthly = Math.max(0, (rateDelta / 100) * volume);
 
         // Clamp note for above-baseline months
         if (currentValue > baselineValue) {
@@ -228,33 +183,33 @@ Deno.serve(async (req) => {
         }
 
         // v60.2 — resolve the contractual terms for provenance persistence.
-        // The mandate is looked up per-activation; resolveContractPolicy reads
-        // the acceptance_snapshot_json. Legacy reports (no mandate / no
-        // policy_version) get resolvable=false and the provenance fields are
-        // left absent, so legacy records are never overwritten with invented
-        // values.
         const mandateRow = (await svc.entities.Mandate
           .filter({ deal_activation_id: deal.id, status: 'active' }, '-created_date', 1).catch(() => []))?.[0] || null;
         const contractResolved = resolveContractPolicy({ mandate: mandateRow });
 
-        // node_fee only on verified or partially-verified data.
-        //
-        // REFERRAL-2 T2 (2026-08-03) — the percentage now comes from the
-        // BillingRule EFFECTIVE FOR THIS MONTH, not from the live
-        // DealActivation.node_share_percent. That field has no date window, so
-        // with it a referral discount would have applied retroactively to past
-        // months (violating Terms §8) and any BillingRule would have been
-        // ignored — including the discounted ones this chunk creates.
-        // DealActivation.node_share_percent remains the fallback for brands
-        // with no rule yet.
-        const billable = (measurementMode === 'fully_verified' || measurementMode === 'estimated_from_partial_data');
+        // ── Fee resolution — NO || 25 (v61, audit #5) ─────────────────
+        // Chain: BillingRule for the month (resolveFeePctForMonth) →
+        // resolved contract terms → finite DealActivation.node_share_percent.
+        // If none exists, the deal is BLOCKED: the live policy never prices
+        // an accepted contract, and a missing fee is never invented.
+        const dealShare = Number(deal.node_share_percent);
+        const fallbackPct = contractResolved.resolvable
+          ? contractResolved.successFeePct
+          : (Number.isFinite(dealShare) ? dealShare : null);
         const feeRes = await resolveFeePctForMonth(svc, {
           deal_activation_id: deal.id,
           brand_id,
           provider_id: deal.provider_id || null,
-          fallbackPct: Number(deal.node_share_percent || 25),
+          // NaN sentinel: resolveFeePctForMonth's own default would fall back
+          // to the LIVE policy — the NaN makes that path detectable below.
+          fallbackPct: fallbackPct === null ? Number.NaN : fallbackPct,
         }, month);
         const nodeSharePct = Number(feeRes.pct);
+        if (!Number.isFinite(nodeSharePct)) {
+          errors.push({ deal_id: deal.id, reason: 'fee_unresolvable_no_rule_no_contract' });
+          continue;
+        }
+        const billable = (measurementMode === 'fully_verified' || measurementMode === 'estimated_from_partial_data');
         const nodeFee = billable ? Math.max(0, savingsMonthly * (nodeSharePct / 100)) : 0;
         snapshot = {
           ...snapshot,
@@ -285,8 +240,7 @@ Deno.serve(async (req) => {
           status: 'calculated',
           confidence_score: confidence,
           currency: 'EUR',
-          gmv_real: deal.vertical === 'payments' ? volume : 0,
-          shipment_count_real: deal.vertical === 'shipping' ? volume : 0,
+          gmv_real: volume,
           notes: notes.trim(),
           supporting_snapshot_json: snapshot,
           // v60.2 — contract policy provenance. Only written when the contract

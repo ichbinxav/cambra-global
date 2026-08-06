@@ -1,23 +1,31 @@
-// createEligibleRecoverInvoices — RECOVER-4 (2026-08-04).
+// createEligibleRecoverInvoices — RECOVER-4 (2026-08-04), restructured v61
+// (2026-08-06, audit P0 #1/#2/#3).
 //
 // Turns an admin-approved, eligible MonthlySavingsReport into ONE Stripe
 // invoice (variable amount, charge_automatically — NEVER a Subscription, §20)
 // and its local mirror. Admin or internal (monthly scheduler).
 //
-// IDEMPOTENCY (§28): logical invoice key = deal_activation_id + month +
-// report_id. Enforced by (a) a local non-void Invoice check, (b) the report's
-// invoice_id pointer, and (c) Stripe Idempotency-Keys derived from the report
-// id on every mutating call, so a replay of any step resumes instead of
-// duplicating. Numbering: Stripe's finalized `number` is THE legal number —
-// no local max+1 sequence exists in this flow (§19).
+// v61 FLOW GUARANTEE: every economic validation — contract policy resolution
+// INCLUDED — happens inside the pure core prepareEligibleRecoverInvoice
+// BEFORE any Stripe call or local economic write. Stripe only ever receives
+// the validated output of that function. An unresolvable contract, a fee
+// mismatch, a missing standard fee (never defaulted to 25) or an idempotency
+// conflict produce ZERO Stripe side effects.
+//
+// IDEMPOTENCY (§28, v61): canonical identity = monthly_savings_report_id,
+// validated against (deal_activation_id, month, brand_id, mandate_id,
+// currency). Same report + retry → the same invoice is resumed with the same
+// Stripe idempotency keys (`r4:inv:*:${report.id}`). Same activation+month
+// with a DIFFERENT report → typed conflict, no reuse, no pointer repair.
+// Stripe's finalized `number` is THE legal number (§19).
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { resolveBillingMode, stripeRequest } from '../../shared/stripeBilling.ts';
 import { readLegalIdentity } from '../../shared/cambraLegalIdentity.ts';
 import { determineTaxTreatment, normalizeVat, readTaxConfig, stripeTaxRateIdFor } from '../../shared/recoverTax.ts';
-import { computeInvoiceAmounts, eurToMinor, hashCalculation, monthBillableWindow } from '../../shared/recoverBillingMath.ts';
+import { hashCalculation } from '../../shared/recoverBillingMath.ts';
 import { monthBounds } from '../../shared/billingFee.ts';
-import { resolveContractPolicy } from '../../shared/contractPolicySnapshot.ts';
+import { prepareEligibleRecoverInvoice } from '../../shared/prepareEligibleRecoverInvoice.ts';
 
 const BATCH = 5;
 
@@ -72,39 +80,15 @@ export default async function (req: Request): Promise<Response> {
       const outcome: any = { report_id: report.id, month: report.month };
       results.push(outcome);
       try {
+        // ── PHASE 1 — load context (reads only) ─────────────────────────
         const activation = (await svc.entities.DealActivation.filter({ id: report.deal_activation_id }, '-created_date', 1).catch(() => []))?.[0];
         const brand = activation ? (await svc.entities.Brand.filter({ id: activation.brand_id }, '-created_date', 1).catch(() => []))?.[0] : null;
         const mandate = activation ? (await svc.entities.Mandate.filter({ deal_activation_id: activation.id, status: 'active' }, '-created_date', 1).catch(() => []))?.[0] : null;
-        if (!activation || !brand || !mandate) { outcome.error = 'context_missing'; continue; }
-
-        // Mandate revoked between approval and issuance? Re-checked here (§verificación 22).
-        // Calendar re-checked too — approval could be stale.
-        const window = activation.conditions_activated_at
-          ? monthBillableWindow(report.month, activation.conditions_activated_at)
-          : { billable: false as const, reason: 'conditions_activated_at_missing' as any };
-        if (!window.billable) { outcome.error = `calendar:${(window as any).reason}`; continue; }
-
-        // Local idempotency: at most one non-void invoice per (activation, month).
-        const existing = await svc.entities.Invoice
-          .filter({ deal_activation_id: activation.id, month: report.month }, '-created_date', 10).catch(() => []);
-        let inv = (existing || []).find((i: any) => i.status !== 'void') || null;
-        if (inv && inv.invoice_number) {
-          // Fully issued already — just repair the report pointer.
-          await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'invoiced', invoice_id: inv.id, status: 'invoiced', verification_status: 'invoiced' }).catch(() => null);
-          outcome.resumed = true; outcome.invoice_id = inv.id; outcome.invoice_number = inv.invoice_number;
-          continue;
-        }
-
-        // Cross-tenant guard: customer must belong to THIS brand and mode.
-        if (!brand.stripe_customer_id || (brand.stripe_billing_mode && brand.stripe_billing_mode !== mode)) {
-          outcome.error = 'stripe_customer_missing_or_mode_mismatch'; continue;
-        }
-        if (activation.payment_method_status !== 'ready' || !activation.stripe_payment_method_id) {
-          outcome.error = 'payment_method_not_ready'; continue;
-        }
+        const existing = activation ? (await svc.entities.Invoice
+          .filter({ deal_activation_id: activation.id, month: report.month }, '-created_date', 10).catch(() => [])) : [];
 
         // Fresh tax determination at issuance (§15) — approval preview may be stale.
-        const tax = determineTaxTreatment({
+        const tax = brand ? determineTaxTreatment({
           billing_country: String(brand.billing_country || '').toUpperCase(),
           legal_name: brand.billing_legal_name || '',
           billing_address_line1: brand.billing_address_line1 || '',
@@ -113,38 +97,63 @@ export default async function (req: Request): Promise<Response> {
           vat_number: normalizeVat(brand.vat_number_normalized || brand.vat_number || ''),
           tax_customer_type: brand.tax_customer_type || '',
           vies_status: brand.vies_status || 'not_checked',
-        }, cfg.config);
-        if (tax.blockers.length) {
-          await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_tax', billing_block_reason: tax.blockers.join(',') }).catch(() => null);
-          outcome.error = `tax_blocked:${tax.blockers.join(',')}`; continue;
+        }, cfg.config) : { treatment: 'TAX_REVIEW_REQUIRED', tax_rate_bps: 0, blockers: ['context_missing'], mentions: [] as string[] };
+
+        // ── PHASE 2 — PURE validation core. Policy resolved HERE, before
+        // any Stripe call or economic write. ─────────────────────────────
+        const prep = prepareEligibleRecoverInvoice({
+          report,
+          activation,
+          mandate,
+          brand,
+          taxContext: { treatment: tax.treatment, tax_rate_bps: tax.tax_rate_bps, blockers: tax.blockers },
+          billingMode: mode,
+          existingInvoices: existing || [],
+        });
+
+        if (prep.conflict) {
+          // Typed idempotency conflict — same month, different report. No
+          // Stripe call, no reuse, no pointer repair.
+          outcome.error = prep.conflict.code;
+          outcome.conflict = prep.conflict;
+          continue;
         }
+
+        if (prep.resume?.fully_issued) {
+          // Same report already fully issued — repair the report pointer only.
+          await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'invoiced', invoice_id: prep.resume.invoice_id, status: 'invoiced', verification_status: 'invoiced' }).catch(() => null);
+          outcome.resumed = true; outcome.invoice_id = prep.resume.invoice_id; outcome.invoice_number = prep.resume.invoice_number;
+          continue;
+        }
+
+        if (!prep.eligible) {
+          const blocker = prep.blockers[0] || 'blocked';
+          // Bookkeeping writes for specific blockers (pre-existing behavior) —
+          // these mark the report blocked; they create no economic obligation.
+          if (blocker.startsWith('tax_blocked:')) {
+            await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_tax', billing_block_reason: blocker.slice('tax_blocked:'.length) }).catch(() => null);
+          } else if (blocker === 'calculation_mismatch_reapprove' || blocker === 'standard_fee_missing_reapprove' || blocker === 'effective_fee_missing_reapprove') {
+            await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_contract', billing_block_reason: blocker }).catch(() => null);
+          } else if (blocker === 'contract_policy_unresolvable' || blocker === 'policy_version_mismatch' || blocker === 'snapshot_hash_mismatch') {
+            await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_contract', billing_block_reason: blocker }).catch(() => null);
+          }
+          outcome.error = blocker;
+          outcome.blockers = prep.blockers;
+          continue;
+        }
+
+        // Eligible — frozen values from the pure core only.
+        const amounts = prep.amounts!;
+        const view = prep.economicView!;
         const taxRateRef = stripeTaxRateIdFor(tax, cfg.config, mode);
         if (!taxRateRef.ok) { outcome.error = taxRateRef.blocker; continue; }
-
-        // Deterministic amounts, cross-checked against the approved figures —
-        // a drifted stored fee means the approval is stale, not "close enough".
-        const amounts = computeInvoiceAmounts({
-          savings_eur: Number(report.savings || 0),
-          standard_fee_pct: Number(report.standard_fee_pct || 25),
-          effective_fee_pct: Number(report.effective_fee_pct),
-          tax_rate_bps: tax.tax_rate_bps,
-        });
-        // An unset/non-finite stored fee means the report was never properly
-        // approved — treat it as a mismatch, not as an exception.
-        const storedFeeMinor = Number.isFinite(Number(report.fee_net_amount))
-          ? eurToMinor(report.fee_net_amount)
-          : null;
-        if (storedFeeMinor === null || amounts.fee_net_minor !== storedFeeMinor) {
-          await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_contract', billing_block_reason: 'calculation_mismatch_reapprove' }).catch(() => null);
-          outcome.error = 'calculation_mismatch_reapprove'; continue;
-        }
-        if (amounts.fee_net_minor <= 0) { outcome.error = 'fee_rounds_to_zero'; continue; }
 
         const locale = ['en', 'fr', 'es'].includes(brand.locale) ? brand.locale : 'en';
         const bounds = monthBounds(report.month);
         const customerVat = normalizeVat(brand.vat_number_normalized || brand.vat_number || '');
 
-        // ── Local draft first (durable state before any Stripe call) ──────
+        // ── PHASE 3 — local draft (durable state before any Stripe call) ─
+        let inv = prep.resume ? (existing || []).find((i: any) => String(i.id) === prep.resume!.invoice_id) : null;
         if (!inv) {
           inv = await svc.entities.Invoice.create({
             deal_activation_id: activation.id,
@@ -181,10 +190,14 @@ export default async function (req: Request): Promise<Response> {
             discount_type: amounts.discount_pct > 0 ? 'referral_commercial_discount' : '',
             discount_amount: amounts.discount_pct > 0 ? Math.round((amounts.billable_savings_minor * amounts.discount_pct) / 100) / 100 : 0,
             prenotification_status: 'provider_managed',
+            // v61 — provenance frozen at draft creation, from the pure core.
+            policy_version: prep.policyVersion || undefined,
+            policy_source: prep.policySource || undefined,
+            snapshot_hash: prep.snapshotHash || undefined,
           });
         }
 
-        // ── Stripe invoice (idempotent per step) ──────────────────────────
+        // ── PHASE 4 — Stripe (idempotent per step, keys from report id) ──
         let stripeInvoiceId = inv.stripe_invoice_id || '';
         if (!stripeInvoiceId) {
           const footer = tax.treatment === 'ES_EU_REVERSE_CHARGE'
@@ -232,39 +245,31 @@ export default async function (req: Request): Promise<Response> {
           await stripeRequest(mode, 'POST', `customers/${brand.stripe_customer_id}/tax_ids`, { type: 'eu_vat', value: customerVat }, `r4:taxid:${brand.id}`).catch(() => null);
         }
 
-        // Finalize — Stripe assigns THE legal number here.
+        // Finalize — Stripe assigns THE legal number here. This is the LAST
+        // Stripe side effect; every validation already happened in PHASE 2.
         const fin = await stripeRequest(mode, 'POST', `invoices/${stripeInvoiceId}/finalize`, { auto_advance: 'true' }, `r4:inv:fin:${report.id}`);
         if (!fin.ok) { outcome.error = `stripe_finalize_failed:${fin.data?.error?.code || fin.status}`; continue; }
         const finalized = fin.data;
 
-        // v60.2 — resolve contract policy to freeze the provenance in the
-        // invoice snapshot. The invoice never re-reads the live policy after
-        // creation; the snapshot carries policyVersion, policySource and
-        // snapshotHash so a future policy B cannot silently re-price an A invoice.
-        const _invResolved = resolveContractPolicy({ mandate, report });
+        // ── PHASE 5 — persist result + provenance (frozen in PHASE 2) ───
         const snapshot = {
           report: { id: report.id, month: report.month, savings: report.savings, billable_savings: amounts.billable_savings_eur, calculation_hash: report.calculation_hash || null, calculation_version: report.calculation_version || null },
           baseline_id: report.baseline_id || null,
           mandate: { id: mandate.id, document_version: mandate.document_version, acceptance_snapshot_hash: mandate.acceptance_snapshot_hash },
           fee: { standard_pct: amounts.standard_fee_pct, discount_pct: amounts.discount_pct, effective_pct: amounts.effective_fee_pct },
-          // v60.2 — contract policy provenance, frozen at invoice creation.
-          policy: _invResolved.resolvable ? {
-            policy_version: _invResolved.policyVersion,
-            policy_source: _invResolved.policySource,
-            snapshot_hash: _invResolved.snapshotHash || mandate.acceptance_snapshot_hash || null,
+          // v61 — contract policy provenance, resolved BEFORE Stripe (PHASE 2).
+          policy: {
+            policy_version: prep.policyVersion,
+            policy_source: prep.policySource,
+            snapshot_hash: prep.snapshotHash,
             mandate_id: mandate.id,
             report_id: report.id,
-            billing_rule_id: null,
+            billing_rule_id: report.billing_rule_id || null,
+            merchant_share_pct: view.merchantSharePct,
+            fee_duration_months: view.feeDurationMonths,
             resolvable: true,
-          } : {
-            policy_version: null,
-            policy_source: 'unresolvable',
-            snapshot_hash: null,
-            mandate_id: mandate.id,
-            report_id: report.id,
-            billing_rule_id: null,
-            resolvable: false,
           },
+          idempotency: prep.idempotencyIdentity,
           tax: { treatment: tax.treatment, rate_bps: tax.tax_rate_bps, mentions: tax.mentions, vies_status: brand.vies_status || 'not_checked', vies_checked_at: brand.vies_checked_at || null },
           supplier: { legal_name: identity.identity.legal_name, vat_id: identity.identity.vat_id, address: identity.identity.registered_address },
           customer: { legal_name: brand.billing_legal_name, country: brand.billing_country, vat: customerVat },
@@ -288,11 +293,9 @@ export default async function (req: Request): Promise<Response> {
           collection_scheduled_at: now(),
           billing_snapshot_json: snapshot,
           invoice_snapshot_hash: snapshotHash,
-          // v60.2 — freeze policy provenance on the invoice record itself so
-          // it is queryable without parsing billing_snapshot_json.
-          policy_version: _invResolved.resolvable ? _invResolved.policyVersion : undefined,
-          snapshot_hash: _invResolved.resolvable ? (_invResolved.snapshotHash || mandate.acceptance_snapshot_hash || undefined) : undefined,
-          policy_source: _invResolved.resolvable ? _invResolved.policySource : undefined,
+          policy_version: prep.policyVersion || undefined,
+          snapshot_hash: prep.snapshotHash || undefined,
+          policy_source: prep.policySource || undefined,
         });
         await svc.entities.MonthlySavingsReport.update(report.id, {
           billing_eligibility_status: 'invoiced',
@@ -319,7 +322,7 @@ export default async function (req: Request): Promise<Response> {
           brand_id: activation.brand_id,
           event_type: 'status_changed',
           message: 'recover_invoice_finalized',
-          data_json: { invoice_id: inv.id, stripe_invoice_id: stripeInvoiceId, number: finalized.number || '', total_eur: amounts.total_eur, tax_treatment: tax.treatment, mode },
+          data_json: { invoice_id: inv.id, stripe_invoice_id: stripeInvoiceId, number: finalized.number || '', total_eur: amounts.total_eur, tax_treatment: tax.treatment, mode, policy_version: prep.policyVersion, policy_source: prep.policySource },
           actor_email: gate.user?.email || 'internal',
           created_at: now(),
         }).catch(() => null);
