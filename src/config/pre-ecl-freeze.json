@@ -1,0 +1,30 @@
+{
+  "freezeReason": "Pre-ECL freeze (v62.1/v62.2) — these files must have ZERO diffs until ECL P1 formally starts. Changing any hash requires scripts/update-freeze.mjs with an explicit reason and confirmation token; every change is recorded in config/freeze-change-log.json.",
+  "frozenAt": "2026-08-06",
+  "entries": [
+    {
+      "path": "base44/entities/StatementImport.jsonc",
+      "sha256": "cb951351bdcaa8355aaeadb499d90c3572c716d284ee19f6b2e01a76d08b314d",
+      "freezeReason": "ECL P1 input schema — frozen pre-ECL",
+      "allowedChange": false
+    },
+    {
+      "path": "base44/entities/SavingsEvidence.jsonc",
+      "sha256": "806bc45580912c6764b51a12977d3d5e8a86b35b4b2db6174de7bcf69bf2b451",
+      "freezeReason": "ECL P1 input schema — frozen pre-ECL",
+      "allowedChange": false
+    },
+    {
+      "path": "base44/entities/Baseline.jsonc",
+      "sha256": "a4d186074a4834aca489842447a6ce5052d526315863b5acdc9cff9b998a3bd1",
+      "freezeReason": "ECL P1 input schema — frozen pre-ECL",
+      "allowedChange": false
+    },
+    {
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "sha256": "b13daa2209e67aeb9650da8ad1d2a94ed8722254c3f54158c58d07ec2f844389",
+      "freezeReason": "Functional freeze — ECL must not leak into the upload pipeline before P1",
+      "allowedChange": false
+    }
+  ]
+}

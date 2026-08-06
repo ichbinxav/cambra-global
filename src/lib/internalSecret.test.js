@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
-  safeEqual, redactSecrets, REDACTED, REDACTED_MAX_DEPTH,
+  safeEqual, redactSecrets, sanitizeString, REDACTED, REDACTED_MAX_DEPTH,
 } from "../../base44/shared/internalSecret.ts";
 
 describe("safeEqual", () => {
@@ -68,9 +68,47 @@ describe("redactSecrets", () => {
   });
 
   it("does not over-redact innocent keys by partial match", () => {
-    const out = redactSecrets({ password_hint_shown: true, authorization_log_id: "al_1" });
+    const out = redactSecrets({
+      password_hint_shown: true,
+      passwordPolicy: "8+ chars",
+      tokenCount: 3,
+      authorizationStatus: "granted",
+      apiKeyLabel: "prod key",
+      secretDescription: "n/a",
+    });
     expect(out.password_hint_shown).toBe(true);
-    expect(out.authorization_log_id).toBe("al_1");
+    expect(out.passwordPolicy).toBe("8+ chars");
+    expect(out.tokenCount).toBe(3);
+    expect(out.authorizationStatus).toBe("granted");
+    expect(out.apiKeyLabel).toBe("prod key");
+    expect(out.secretDescription).toBe("n/a");
+  });
+
+  // v62.2 CP6.1 — normalized key variants (camelCase / SCREAMING / kebab)
+  it("redacts camelCase, SCREAMING_CASE and kebab-case variants of sensitive keys", () => {
+    const out = redactSecrets({
+      internalSecret: "s", INTERNAL_SECRET: "s", "x-internal-secret": "s",
+      apiKey: "s", accessToken: "s", refreshToken: "s",
+      clientSecret: "s", stripeSecret: "s", webhookSecret: "s", passwd: "s",
+    });
+    for (const k of Object.keys(out)) expect(out[k]).toBe(REDACTED);
+  });
+
+  // v62.2 CP6.2 — explicit string patterns (Error.message, URLs)
+  it("sanitizes Bearer tokens and key=value credentials inside strings", () => {
+    expect(sanitizeString("Authorization: Bearer abcDEF123456789.xyz")).toContain("Bearer [redacted]");
+    expect(sanitizeString("call failed: internal_secret=topsecret123&x=1")).toBe("call failed: internal_secret=[redacted]&x=1");
+    expect(sanitizeString("https://api.example.com/hook?api_key=k123456&page=2")).toBe("https://api.example.com/hook?api_key=[redacted]&page=2");
+    expect(sanitizeString("plain message")).toBe("plain message");
+  });
+
+  it("sanitizes credentials inside Error.message and Error.cause", () => {
+    const err = new Error("upstream 401: Bearer abcDEF123456789.xyz rejected");
+    err.cause = { refresh_token: "rt_secret" };
+    const out = redactSecrets({ error: err });
+    expect(out.error.message).toContain("Bearer [redacted]");
+    expect(out.error.cause.refresh_token).toBe(REDACTED);
+    expect(JSON.stringify(out)).not.toContain("rt_secret");
   });
 
   // v62.1 CP4 — depth limit never returns unsanitized data
@@ -112,9 +150,9 @@ describe("dispatchWebhook persistence sanitization (v62.1 CP4)", () => {
     "utf8",
   );
 
-  it("persists only the redacted payload in delivery and DLQ rows", () => {
-    expect(src).toContain("redactSecrets(payload)");
-    expect(src).toContain("payload: persistedPayload");
+  it("persists only the allowlisted public payload in delivery and DLQ rows", () => {
+    expect(src).toContain("buildPublicWebhookPayload(event_type, payload)");
+    expect(src).toContain("payload: publicPayload");
     expect(src).not.toMatch(/^\s*payload,\s*$/m);
   });
 });

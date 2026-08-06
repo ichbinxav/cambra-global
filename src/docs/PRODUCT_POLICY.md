@@ -107,8 +107,11 @@ consumed by the economic backend:
   `policy_version`, `standard_fee_pct`, `merchant_share_pct`,
   `fee_duration_months`, `fee_base`, `template_version` from the generated
   policy.
-- `recoverContractPdf.ts` derives the standard fee from the snapshot or the
-  generated policy (`snapshot.standard_fee_pct || getSuccessFeePct()`).
+- `recoverContractPdf.ts` derives the standard fee via `resolveContractPolicy`
+  + `buildContractEconomicView` (v60.2/v61): a contractual fee of **0 is
+  preserved** and an unresolvable contract **blocks** generation. There is no
+  `|| getSuccessFeePct()` fallback in the document path — that pattern would
+  silently replace an explicit 0% fee with the policy default.
 - `startRecoverAcceptance` / `acceptRecoverMandate` import `getSuccessFeePct()`
   and `getFeeDurationMonths()` for fallbacks.
 - `referralBilling.ts` stamps `policy_version` on new BillingRules.
@@ -121,11 +124,12 @@ The contract policy snapshot, resolver and legacy handler live in
 
 - `recoverBillingMath.ts` carries no standard-fee constant (it receives
   `effective_fee_pct` as a parameter), so no rewiring is needed there.
-- `generateMonthlySavingsReport` does not yet write `policy_version` /
-  `snapshot_hash` onto the report (optional fields were added to the schema
-  in v60.1). The resolver derives both from the mandate at invoice time, so
-  billing is correct today; populating the report fields is a future
-  convenience for admin panels.
+- ~~`generateMonthlySavingsReport` does not yet write `policy_version` /
+  `snapshot_hash`~~ — RESOLVED in v60.2: the report generator persists the
+  full contract-policy provenance (`policy_version`, `snapshot_hash`,
+  `policy_source`, `mandate_id`, `billing_rule_id`, `applied_fee_pct`,
+  `merchant_share_pct`, `fee_duration_months`, `resolution_warnings`,
+  `generated_by`). See OPERATIONS_STATUS.md (current operating source).
 
 ## Rollback
 
@@ -136,4 +140,6 @@ mandates/invoices are untouched because they never depended on the live JSON.
 ## Owner & last review
 
 - Owner: CAMBRA product + legal.
-- Last review: 2026-08-05 (v60 introduction).
+- Last review: 2026-08-06 (v62.2 — corrected stale fee-fallback claim and the
+  already-resolved report-provenance deferral; where this document contradicts
+  `src/docs/OPERATIONS_STATUS.md`, OPERATIONS_STATUS wins).

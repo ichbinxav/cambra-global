@@ -1,0 +1,9 @@
+{
+  "state": "SENTINEL",
+  "captured": false,
+  "note": "SENTINEL — no approved baseline exists yet. Manual flow (requires a real environment with node_modules): 1) npm run typecheck:baseline:candidate  2) review config/typecheck-baseline.candidate.json  3) npm run typecheck:baseline:approve -- --review-token=<sourceTreeHash> --confirm=APPROVE. Until approved, npm run typecheck:baseline (and therefore npm run verify) fails by design.",
+  "generatedAt": null,
+  "totalErrors": null,
+  "distinctFingerprints": 0,
+  "entries": {}
+}

@@ -6,65 +6,95 @@
 
 ---
 
-## Release v62.1 — Pre-ECL Core Readiness Final (2026-08-06)
+## Release v62.2 — Pre-ECL Gate Hardening (2026-08-06)
 
 **ECL P1: NOT STARTED. ECL P2: NOT STARTED.** No ECL entity, config, cron,
-attestation, strike, lifecycle or rules-engine code exists in the repo, and the
-pre-ECL schema freeze is machine-enforced.
+attestation, strike, lifecycle or rules-engine code exists in the repo
+(`config/ecl-policy.json` does not exist), and the pre-ECL freeze is
+machine-enforced.
 
-### Frozen schemas (zero-diff mandate)
+### Pre-ECL freeze (zero-diff mandate)
 
-`StatementImport`, `SavingsEvidence` and `Baseline` are frozen; their SHA-256
-hashes are recorded in `config/frozen-schemas.json` and verified by
-`npm run clean:check` (the first step of `npm run verify`), which also fails
-if any ECL-named artifact appears anywhere in the repo.
+`config/pre-ecl-freeze.json` freezes the 3 schemas (`StatementImport`,
+`SavingsEvidence`, `Baseline`) **and** `processUploadedFile/entry.ts`
+(functional freeze) by full SHA-256. `npm run clean:check` verifies hashes,
+missing/moved files, ECL fields in schemas, ECL imports in the frozen handler,
+and ECL-named artifacts repo-wide. Changing a frozen hash requires
+`scripts/update-freeze.mjs` (explicit reason + confirmation token) and is
+logged in `config/freeze-change-log.json` — no generic `--force` exists.
 
-### Release gate (`npm run verify`)
+### Release identity (sourceTreeHash)
 
-Ordered: `clean:check → policy:check → lint → typecheck:critical →
-typecheck:baseline → test → build → release:check`.
+`RELEASE.json` identifies the source by a deterministic **sha256-tree-v1**
+hash (`scripts/lib/sourceTreeHash.mjs`): sorted relative paths + per-file
+SHA-256, RELEASE.json itself excluded (no circularity).
+`sourceArchiveShaExternal` is null by default, filled OUTSIDE the archive, and
+never used as internal evidence.
 
-- **typecheck:critical** (`tsconfig.critical.json`): the pure economic backend
-  core (policy artifacts, contract snapshot/resolver, billing math, invoice
-  preparation, templates + registry, scope/trust gates) must compile with 0
-  errors. Deno entrypoints and the JS frontend are covered by the baseline
-  gate + vitest.
-- **typecheck:baseline**: fails when global TS debt increases vs
-  `config/typecheck-baseline.json`. ⏳ MANUAL REQUIRED (once): the baseline is
-  a sentinel until `npm run typecheck:baseline:capture` is run in a real
-  environment with node_modules — until then the gate fails by design.
-  `typecheck:report` keeps the full global report available.
-- **release:manifest / release:check**: `RELEASE.json` is generated from real
-  repo state (no invented git SHA; test totals null unless actually executed)
-  and validated for version/policy/lockfile/SDK/scope/Stripe coherence.
+### Evidence-based gate
 
-### CI
+Every gate command writes `.release-evidence/*.json` stamped with the current
+sourceTreeHash (`scripts/run-with-evidence.mjs`): environment, lint, typecheck
+critical/baseline, tests (via vitest JSON reporter), build (dist hash +
+artifact count). `release:check` FAILS on missing/stale/failed/null evidence —
+hand-written numbers cannot pass. `release:check:ci` (strict) additionally
+requires releaseBuild, gitSha, a CI run id and evidence produced in that run.
+A local pass is labeled **LOCAL VALIDATION — not release CI**.
 
-`ci/github-workflow-ci.yml` holds the workflow. ⏳ MANUAL REQUIRED (external
-blocker): Base44's GitHub sync cannot write `.github/workflows/`, so a human
-must copy the file to `.github/workflows/ci.yml` in the repository.
+### Typecheck gates
 
-### Internal secret (v62.1 CP4 — completed)
+- **typecheck:critical** (0 errors mandatory): covers the full economic path —
+  acceptance/report/approval/invoice handlers, PDF/email + template registry,
+  merchant getters, trust gates, webhook boundary, and their shared modules.
+  Pinned `npm:@base44/sdk@…` / `npm:jspdf@…` specifiers are typed against the
+  REAL installed package types (no blanket `npm:*` any-shim). The JSX frontend
+  (Reports/Invoices/AdminRoute) is exercised by vitest + baseline gate — tsc
+  JSX+checkJs coverage remains open debt, stated here, not hidden.
+- **typecheck:baseline** — three states: SENTINEL (fails with instructions),
+  CANDIDATE (`typecheck:baseline:candidate`, full per-error detail incl.
+  critical-set/modified-this-release flags), APPROVED
+  (`typecheck:baseline:approve -- --review-token=<sourceTreeHash>
+  --confirm=APPROVE`; refuses critical-set or modified-file errors, archives
+  the previous baseline; no generic --force). The gate fails on any new
+  fingerprint, worsened count, or error in critical/modified files.
+  ⏳ MANUAL REQUIRED (once): approval needs a real tsc run.
 
-`base44/shared/internalSecret.ts`: constant-time comparison (header preferred,
-body fallback, fail-closed on missing secret); redaction now covers the
-expanded sensitive-key set (authorization, api_key, access/refresh tokens,
-client/stripe/webhook secrets, password), replaces subtrees past depth 8 with
-`[REDACTED_MAX_DEPTH]` (never returns unsanitized data), handles cycles and
-Error objects. `dispatchWebhook` persists only redacted payloads in
-`WebhookDelivery`/`WebhookDeadLetter`.
+### CI (TEMPLATE_READY / WORKFLOW_INSTALLED / WORKFLOW_EXECUTED)
+
+State today: **TEMPLATE_READY**. `.github/workflows/` is unwritable by the
+Base44 GitHub sync (external platform blocker, re-verified 2026-08-06).
+`npm run ci:install` copies `ci/github-workflow-ci.yml` byte-identically to
+`.github/workflows/ci.yml` (refuses to overwrite a different file without
+--confirm); `npm run ci:check` reports the state and only passes when
+installed. WORKFLOW_EXECUTED is proven exclusively by CI evidence consumed by
+`release:check:ci` — a template is never declared CI PASS.
+
+### Secret sanitization (v62.2 CP6 — completed)
+
+`internalSecret.ts`: normalized-key allowlist (lowercase, strip `_`/`-`/space)
+covering snake/camel/SCREAMING/kebab variants of internal_secret,
+authorization, api_key, access/refresh tokens, client/stripe/webhook secrets,
+password/passwd — exact normalized match, so passwordPolicy / tokenCount /
+authorizationStatus / apiKeyLabel / secretDescription are never over-redacted.
+`sanitizeString` scrubs explicit patterns (Bearer tokens, `key=value`
+credentials, sensitive URL query params) including inside `Error.message` and
+`Error.cause`. Depth>8 → `[REDACTED_MAX_DEPTH]`, cycles → `[circular]`.
+`dispatchWebhook` builds OUTBOUND payloads by per-event ALLOWLIST
+(`base44/shared/webhookPublicPayload.ts`) — undocumented fields are omitted,
+the same public payload is sent, persisted and retried.
 
 ### Execution status (this environment cannot run npm)
 
-npm ci / lint / typecheck / vitest / build cannot execute inside the Base44
-build sandbox. All gate scripts are in place and deterministic; running the
-final validation sequence (npm ci → policy:check → lint → typecheck:critical →
-baseline capture+check → test → build → release:manifest → release:check →
-verify) is ⏳ MANUAL REQUIRED from a clean working copy. Until that run is
-recorded, this release is **CONDITIONAL PASS**, and PRE_ECL_READINESS is
-**not yet PASS**.
+npm ci / eslint / tsc / vitest / vite cannot execute inside the Base44 build
+sandbox. Every gate is scripted and deterministic; the final sequence
+(npm ci → clean:check → policy:check → typecheck:critical → baseline
+candidate/review/approve → lint:evidence → *:evidence → release:manifest →
+release:check → ci:install/push → release:check:ci) is ⏳ MANUAL REQUIRED from
+a clean working copy. Until that run is recorded: **CONDITIONAL PASS**, and
+PRE_ECL_READINESS is **FAIL** — by design, `release:check` refuses to pass
+with null/stale evidence, so a false green is not possible.
 
-### Deferred (deliberately, per v62.1 stop rules)
+### Deferred (deliberately, per stop rules)
 
 - SDK unification (6 executable versions across backend functions: 0.8.21/25/
   26/31/38/40 vs canonical ^0.8.41) — inventory done; blind mass-migration

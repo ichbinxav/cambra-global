@@ -1,0 +1,4 @@
+{
+  "comment": "Append-only log of sanctioned pre-ECL freeze changes. Written ONLY by scripts/update-freeze.mjs. Empty during v62.2 by mandate.",
+  "changes": []
+}

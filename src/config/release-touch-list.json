@@ -1,0 +1,22 @@
+{
+  "release": "0.62.2",
+  "comment": "Files modified by this release. The baseline gate refuses to absorb ANY typecheck error appearing in these files.",
+  "files": [
+    "base44/shared/internalSecret.ts",
+    "base44/shared/webhookPublicPayload.ts",
+    "base44/functions/dispatchWebhook/entry.ts",
+    "scripts/lib/sourceTreeHash.mjs",
+    "scripts/lib/evidence.mjs",
+    "scripts/lib/tscDiagnostics.mjs",
+    "scripts/lib/preEclFreeze.mjs",
+    "scripts/run-with-evidence.mjs",
+    "scripts/typecheck-baseline-candidate.mjs",
+    "scripts/typecheck-baseline-approve.mjs",
+    "scripts/check-typecheck-baseline.mjs",
+    "scripts/clean-check.mjs",
+    "scripts/update-freeze.mjs",
+    "scripts/install-ci-workflow.mjs",
+    "scripts/generate-release-manifest.mjs",
+    "scripts/check-release-manifest.mjs"
+  ]
+}

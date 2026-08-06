@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.62.1",
-  "releaseName": "CAMBRA v62.1 — Pre-ECL Core Readiness Final",
+  "version": "0.62.2",
+  "releaseName": "CAMBRA v62.2 — Pre-ECL Gate Hardening",
   "type": "module",
   "engines": {
     "node": ">=20 <23",
@@ -21,13 +21,22 @@
     "policy:generate": "node scripts/generate-product-policy.mjs",
     "policy:check": "node scripts/generate-product-policy.mjs --check",
     "clean:check": "node scripts/clean-check.mjs",
+    "lint:evidence": "node scripts/run-with-evidence.mjs lint -- npx eslint . --quiet",
     "typecheck:critical": "tsc -p ./tsconfig.critical.json",
+    "typecheck:critical:evidence": "node scripts/run-with-evidence.mjs typecheck-critical -- npx tsc -p ./tsconfig.critical.json",
     "typecheck:baseline": "node scripts/check-typecheck-baseline.mjs",
-    "typecheck:baseline:capture": "node scripts/capture-typecheck-baseline.mjs",
+    "typecheck:baseline:evidence": "node scripts/run-with-evidence.mjs typecheck-baseline -- node scripts/check-typecheck-baseline.mjs",
+    "typecheck:baseline:candidate": "node scripts/typecheck-baseline-candidate.mjs",
+    "typecheck:baseline:approve": "node scripts/typecheck-baseline-approve.mjs",
     "typecheck:report": "tsc -p ./jsconfig.json",
+    "test:evidence": "node scripts/run-with-evidence.mjs test",
+    "build:evidence": "node scripts/run-with-evidence.mjs build -- npx vite build",
     "release:manifest": "node scripts/generate-release-manifest.mjs",
     "release:check": "node scripts/check-release-manifest.mjs",
-    "verify": "npm run clean:check && npm run policy:check && npm run lint && npm run typecheck:critical && npm run typecheck:baseline && npm test && npm run build && npm run release:check"
+    "release:check:ci": "node scripts/check-release-manifest.mjs --ci",
+    "ci:install": "node scripts/install-ci-workflow.mjs",
+    "ci:check": "node scripts/install-ci-workflow.mjs --check",
+    "verify": "npm run clean:check && npm run policy:check && npm run lint:evidence && npm run typecheck:critical:evidence && npm run typecheck:baseline:evidence && npm run test:evidence && npm run build:evidence && npm run release:manifest && npm run release:check"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.41",

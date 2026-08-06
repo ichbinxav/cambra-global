@@ -1,0 +1,69 @@
+// v62.2 CP1 — deterministic source-tree hash ("sha256-tree-v1").
+// Pure algorithm: walk included files, normalize relative paths with "/",
+// sort lexicographically, sha256 each file's bytes, build entries
+// `relative/path<TAB>file_sha256<LF>`, sha256 the concatenation.
+// RELEASE.json is excluded, which breaks the circularity of embedding the
+// archive's own hash inside the archive.
+import fs from "node:fs";
+import path from "node:path";
+import crypto from "node:crypto";
+
+export const SOURCE_TREE_HASH_ALGORITHM = "sha256-tree-v1";
+
+// Versioned exclusion list — tested by src/lib/sourceTreeHash.test.js.
+export const EXCLUDED_DIRS = [
+  ".git",
+  "node_modules",
+  "dist",
+  "coverage",
+  ".release-evidence",
+  ".cache",
+  ".vite",
+  ".turbo",
+];
+export const EXCLUDED_FILES = [
+  "RELEASE.json",
+  ".test-results.json",
+];
+export const EXCLUDED_PATTERNS = [
+  /\.log$/i,
+  /\.tmp$/i,
+  /~$/,
+  /^\.DS_Store$/,
+];
+
+export function isExcluded(relPath) {
+  const segments = relPath.split("/");
+  if (segments.some((s) => EXCLUDED_DIRS.includes(s))) return true;
+  const base = segments[segments.length - 1];
+  if (EXCLUDED_FILES.includes(relPath) || EXCLUDED_FILES.includes(base)) return true;
+  return EXCLUDED_PATTERNS.some((p) => p.test(base));
+}
+
+const sha256Hex = (buf) => crypto.createHash("sha256").update(buf).digest("hex");
+
+/**
+ * Pure core: entries = [{ path: "relative/posix/path", sha256: "<hex>" }].
+ * Order-independent (sorted internally); deterministic for identical trees.
+ */
+export function hashEntries(entries) {
+  const sorted = [...entries].sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  const concatenated = sorted.map((e) => `${e.path}\t${e.sha256}\n`).join("");
+  return sha256Hex(Buffer.from(concatenated, "utf8"));
+}
+
+/** Walks `root` applying the exclusion list and returns the tree hash. */
+export function computeSourceTreeHash(root = ".") {
+  const entries = [];
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, e.name);
+      const rel = path.relative(root, abs).split(path.sep).join("/");
+      if (isExcluded(rel)) continue;
+      if (e.isDirectory()) walk(abs);
+      else if (e.isFile()) entries.push({ path: rel, sha256: sha256Hex(fs.readFileSync(abs)) });
+    }
+  };
+  walk(root);
+  return { hash: hashEntries(entries), fileCount: entries.length, algorithm: SOURCE_TREE_HASH_ALGORITHM };
+}

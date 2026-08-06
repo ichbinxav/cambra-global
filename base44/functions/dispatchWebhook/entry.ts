@@ -14,6 +14,7 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 import { quarantineProbe } from "../../shared/internalGate.ts";
 import { isInternalCaller, redactSecrets } from "../../shared/internalSecret.ts";
+import { buildPublicWebhookPayload } from "../../shared/webhookPublicPayload.ts";
 
 const SUPPORTED_EVENTS = [
   "new_brand_created",
@@ -82,11 +83,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: `unsupported_event_type: ${event_type}`, supported: SUPPORTED_EVENTS }, { status: 400 });
     }
 
-    // v62.1 CP4 — persisted audit rows (WebhookDelivery / WebhookDeadLetter)
-    // never store an unsanitized payload. The OUTBOUND delivery body keeps the
-    // original payload (delivery semantics unchanged); only persistence is
-    // sanitized.
-    const persistedPayload = redactSecrets(payload);
+    // v62.2 CP6.3 — OUTBOUND payloads are built by ALLOWLIST per event type
+    // (buildPublicWebhookPayload): undocumented fields are omitted, internal
+    // objects never leak to an external URL. The same public payload is what
+    // gets persisted (WebhookDelivery / WebhookDeadLetter) and retried, with
+    // redactSecrets as defense in depth. No internal_secret, no private
+    // headers, no arbitrary internal payload can cross this boundary.
+    const publicPayload = redactSecrets(buildPublicWebhookPayload(event_type, payload));
 
     const endpoints = await base44.asServiceRole.entities.WebhookEndpoint.filter({ status: "active" });
     const subscribed = endpoints.filter((e) => Array.isArray(e.events) && e.events.includes(event_type));
@@ -98,7 +101,7 @@ Deno.serve(async (req) => {
         event: event_type,
         delivery_id: requestId,
         timestamp: new Date().toISOString(),
-        data: payload,
+        data: publicPayload,
       });
       const signature = ep.secret ? await hmacSha256Hex(ep.secret, body) : "";
 
@@ -115,7 +118,7 @@ Deno.serve(async (req) => {
         webhook_id: ep.id,
         webhook_name: ep.name,
         event_type,
-        payload: persistedPayload,
+        payload: publicPayload,
         target_url: ep.url,
         status,
         response_code: finalResult.response_code,
@@ -132,7 +135,7 @@ Deno.serve(async (req) => {
           webhook_name: ep.name,
           event_type,
           target_url: ep.url,
-          payload: persistedPayload,
+          payload: publicPayload,
           last_response_code: finalResult.response_code,
           last_response_body: finalResult.response_body,
           last_error_message: finalResult.error_message,

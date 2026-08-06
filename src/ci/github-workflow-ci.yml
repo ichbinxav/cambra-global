@@ -1,0 +1,41 @@
+# v62.2 CP5 — CI gate TEMPLATE (not executable from this path).
+#
+# ⚠️ INSTALL: run `npm run ci:install` from a real checkout (it copies this
+# file byte-identically to .github/workflows/ci.yml), or copy it manually.
+# Base44's GitHub sync has no permission to write .github/workflows/.
+# `npm run ci:check` reports TEMPLATE_READY vs WORKFLOW_INSTALLED; only CI
+# evidence consumed by `release:check:ci` proves WORKFLOW_EXECUTED.
+#
+# Clean checkout, pinned Node, npm ci, evidence-producing gate, artifact
+# upload. No secrets, no continue-on-error, no || true.
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run policy:check
+      - run: npm run clean:check
+      - run: npm run lint:evidence
+      - run: npm run typecheck:critical:evidence
+      - run: npm run typecheck:baseline:evidence
+      - run: npm run test:evidence
+      - run: npm run build:evidence
+      - run: npm run release:manifest
+      - run: npm run release:check:ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-evidence
+          path: .release-evidence/
