@@ -10,15 +10,24 @@
 // terms changed and the popup reloads them, because re-signing stale terms is
 // exactly the bug the hash exists to prevent.
 //
-// Copy is English-only for now — the mandate text is legal wording and is on the
-// open legal-review list (see Decision_Log_RECOVER1.md), so it is deliberately
-// NOT machine-translated into FR/ES yet.
+// COPY, v61 Checkpoint H (2026-08-06): the CONTRACTUAL wording is no longer
+// restated in this file. It is served by getRecoverAcceptanceContext
+// (`mandate_copy`) from base44/shared/recoverMandateCopy.ts — the same module the
+// PDF is built from — so the popup and the document cannot say different things.
+// The header note that used to sit here ("English-only, pending legal review") was
+// stale: the FR/ES mandate wording landed in RECOVER-3-FIX and this component was
+// simply not reading it. Legal review of the TRANSLATED wording is still pending
+// (Decision_Log_RECOVER3.md) — that caveat belongs to the copy module, not here.
+//
+// The SHELL copy below (titles, field labels, button states) is interface text,
+// not contractual text, and is still EN — see the deferred list in Checkpoint H.
 
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { X, ShieldCheck, Loader2, AlertTriangle } from "lucide-react";
 import MandateTermsSummary from "./MandateTermsSummary";
+import MandateLimitsBlock from "./MandateLimitsBlock";
 
 const errText = (e) => e?.response?.data?.error || e?.message || "Something went wrong";
 
@@ -86,13 +95,13 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
             </div>
           ) : (
             <>
-              <MandateTermsSummary snapshot={context.snapshot} baseline={context.baseline} />
+              <MandateTermsSummary
+                snapshot={context.snapshot}
+                baseline={context.baseline}
+                copy={context.mandate_copy?.summary}
+              />
 
-              <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-[12.5px] text-white/65 leading-relaxed">
-                We charge {context.snapshot?.fee_pct}% of the savings we actually recover, verified against your own
-                provider statements, for 24 months. If nothing is recovered, you owe nothing. You can revoke this
-                authorization at any time; revoking does not cancel fees already earned on savings already verified.
-              </div>
+              <MandateLimitsBlock copy={context.mandate_copy} />
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <label className="block">
