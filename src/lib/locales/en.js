@@ -1217,4 +1217,72 @@ export default {
     rpt_vst_realized:           "Realized",
     rpt_vst_invoiced:           "Invoiced",
     rpt_vst_paid:               "Paid",
+
+    /* ─────────────────────────────────────────────────────────────────
+       CHECKPOINT H (2026-08-06) — /Invoices.
+       English-only, plus the invoice status printed RAW into the cell
+       ("partially_paid", "void"). Dates used toLocaleDateString() with no
+       argument, i.e. the BROWSER's locale — not the app language, so a
+       French merchant on an English laptop saw English dates inside a
+       French page. Both now go through the shared helpers.
+       ───────────────────────────────────────────────────────────────── */
+    inv_eyebrow:        "Billing · CAMBRA",
+    inv_title:          "My Invoices.",
+    inv_subtitle:       "Track invoices and payment status across activations.",
+    inv_loading:        "Loading…",
+    inv_empty:          "No invoices yet",
+    inv_col_invoice:    "Invoice",
+    inv_col_issued:     "Issued",
+    inv_col_due:        "Due",
+    inv_col_total:      "Total",
+    inv_col_status:     "Status",
+    inv_col_link:       "Link",
+    inv_pay:            "Pay",
+
+    inv_st_draft:           "Draft",
+    inv_st_issued:          "Issued",
+    inv_st_sent:            "Sent",
+    inv_st_due:             "Due",
+    inv_st_partially_paid:  "Partially paid",
+    inv_st_paid:            "Paid",
+    inv_st_failed:          "Failed",
+    inv_st_void:            "Void",
+    inv_st_disputed:        "Disputed",
+    inv_st_overdue:         "Overdue",
+    inv_st_refunded:        "Refunded",
+
+    /* ─────────────────────────────────────────────────────────────────
+       CHECKPOINT H (2026-08-06) — /Account. English-only, including the
+       "Saved" toast and every form label and placeholder.
+       ───────────────────────────────────────────────────────────────── */
+    acc_eyebrow:        "Settings · Profile & brand",
+    acc_title:          "Account.",
+    acc_subtitle:       "Manage your profile, brand and integrations.",
+    acc_saved:          "Saved",
+    acc_s_profile:      "Profile",
+    acc_full_name:      "Full name",
+    acc_email:          "Email",
+    acc_role:           "Role",
+    acc_role_member:    "Member",
+    acc_s_brand:        "Brand",
+    acc_brand_name:     "Business name",
+    acc_brand_name_ph:  "Your business",
+    acc_website:        "Website",
+    acc_country:        "Country",
+    acc_country_ph:     "e.g. Germany",
+    acc_s_tpe:          "TPE / In-store payments",
+    acc_tpe_provider:   "TPE provider",
+    acc_tpe_provider_ph:"Worldline, SumUp…",
+    acc_terminal_count: "Number of terminals",
+    acc_terminal_rental:"Monthly rental",
+    acc_banking_fees:   "Fixed banking fees",
+    acc_instore_gmv:    "In-store GMV",
+    acc_avg_ticket:     "Average ticket",
+    acc_tx_fee_pct:     "Transaction fee %",
+    acc_contract_months:"Contract duration (months)",
+    acc_renewal_date:   "Renewal date",
+    acc_s_email_notif:  "Email notifications",
+    acc_s_session:      "Session",
+    acc_session_text:   "Signing out will end your current session. You can always sign back in with your credentials.",
+    acc_signout:        "Sign out of CAMBRA",
 };
