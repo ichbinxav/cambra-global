@@ -49,7 +49,9 @@ export default async function (req: Request): Promise<Response> {
     // v61 (Checkpoint C) — the client may never carry economic-term keys.
     const termsGuard = rejectClientTerms(body);
     if (!termsGuard.ok) {
-      return Response.json({ error: 'client_terms_forbidden', keys: termsGuard.keys }, { status: 400 });
+      // Destructured INSIDE the guard so the union narrows to its false arm.
+      const { keys } = termsGuard;
+      return Response.json({ error: 'client_terms_forbidden', keys }, { status: 400 });
     }
     const { mandate_id, signed_by_name, signed_by_role, accepted } = body || {};
     if (!mandate_id) return Response.json({ error: 'mandate_id required' }, { status: 400 });

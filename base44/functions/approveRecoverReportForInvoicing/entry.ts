@@ -72,7 +72,11 @@ export default async function (req: Request): Promise<Response> {
       block('blocked_contract', 'conditions_activated_at_missing');
     } else {
       const window = monthBillableWindow(report.month, activation.conditions_activated_at);
-      if (!window.billable) block('blocked_contract', window.reason);
+      if (!window.billable) {
+        // Destructured INSIDE the guard so MonthEligibility narrows.
+        const { reason } = window;
+        block('blocked_contract', reason);
+      }
     }
 
     // ── Measurement quality (§9) ──────────────────────────────────────────
@@ -106,7 +110,10 @@ export default async function (req: Request): Promise<Response> {
       tax_customer_type: brand?.tax_customer_type || '',
       vies_status: brand?.vies_status || 'not_checked',
     }, cfg.ok ? cfg.config : null);
-    if (!cfg.ok) block('blocked_tax', `tax_config_missing:${cfg.missing.join(',')}`);
+    if (!cfg.ok) {
+      const { missing } = cfg;
+      block('blocked_tax', `tax_config_missing:${missing.join(',')}`);
+    }
     if (taxDecision.blockers.length) block('blocked_tax', taxDecision.blockers.join(','));
 
     // ── Fee (§11): mandate-accepted pct is the CEILING; the month's

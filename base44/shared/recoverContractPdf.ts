@@ -17,7 +17,9 @@
 // numbering and consistent margins. PDF/A conformance is NOT claimed, because
 // nothing in this runtime can validate it.
 
-import { jsPDF } from 'npm:jspdf@4.0.0';
+// jsPDF ships as a DEFAULT export; the shim in types/deno-shim.d.ts re-exports
+// it as such, so the import form and the declaration now agree.
+import jsPDF from 'npm:jspdf@4.0.0';
 import { checkboxTextFor, type ContractLocale } from './recoverContractTemplates.ts';
 import { contractStringsForVersion, resolveContractTemplateVersion } from './recoverContractTemplateRegistry.ts';
 import { resolveContractPolicy, buildContractEconomicView } from './contractPolicySnapshot.ts';
@@ -72,7 +74,9 @@ export type ContractPdfOutput = {
 };
 
 export async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  // TS ≥5.7: Uint8Array<ArrayBufferLike> is not a BufferSource (SharedArrayBuffer).
+  // Re-wrapping gives a plain Uint8Array<ArrayBuffer>; the digest input is identical.
+  const digest = await crypto.subtle.digest('SHA-256', new Uint8Array(bytes));
   return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 

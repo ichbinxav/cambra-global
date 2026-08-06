@@ -104,9 +104,11 @@ export default async function (req: Request): Promise<Response> {
     // ── 2. CAMBRA's own legal identity must exist ──────────────────────────
     const legal = readLegalIdentity();
     if (!legal.ok) {
+      // Destructured INSIDE the guard so the union narrows to its false arm.
+      const { missing } = legal;
       await logContractEvent(svc, 'recover_contract_pdf_generation_failed', mandate, {
         reason: 'legal_identity_missing',
-        missing: legal.missing,
+        missing,
       });
       throw new Error('legal_identity_missing');
     }
@@ -143,7 +145,11 @@ export default async function (req: Request): Promise<Response> {
 
     // ── 5. Store privately (opaque filename, no merchant identifiers) ─────
     const filename = storageFileName(mandate_id);
-    const file = new File([pdf.bytes], filename, { type: 'application/pdf' });
+    // TS ≥5.7: Uint8Array<ArrayBufferLike> includes SharedArrayBuffer, which
+    // BlobPart rejects. Re-wrapping yields a plain Uint8Array<ArrayBuffer>.
+    // Same bytes, same PDF — no change to content or flow.
+    const pdfBlobBytes = new Uint8Array(pdf.bytes);
+    const file = new File([pdfBlobBytes], filename, { type: 'application/pdf' });
     const upload = await svc.integrations.Core.UploadPrivateFile({ file }).catch((e: any) => {
       throw new Error(`storage_unavailable: ${e?.message || 'upload failed'}`);
     });

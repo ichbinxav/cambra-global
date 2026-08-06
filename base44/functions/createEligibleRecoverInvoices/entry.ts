@@ -22,7 +22,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { resolveBillingMode, stripeRequest } from '../../shared/stripeBilling.ts';
 import { readLegalIdentity } from '../../shared/cambraLegalIdentity.ts';
-import { determineTaxTreatment, normalizeVat, readTaxConfig, stripeTaxRateIdFor } from '../../shared/recoverTax.ts';
+import { determineTaxTreatment, normalizeVat, readTaxConfig, stripeTaxRateIdFor, type TaxDecision } from '../../shared/recoverTax.ts';
 import { hashCalculation } from '../../shared/recoverBillingMath.ts';
 import { monthBounds } from '../../shared/billingFee.ts';
 import { prepareEligibleRecoverInvoice } from '../../shared/prepareEligibleRecoverInvoice.ts';
@@ -56,9 +56,16 @@ export default async function (req: Request): Promise<Response> {
 
     // Global preconditions — fail loudly BEFORE touching any report.
     const identity = readLegalIdentity();
-    if (!identity.ok) return Response.json({ ok: false, error: 'legal_identity_missing', missing: identity.missing }, { status: 409 });
+    if (!identity.ok) {
+      // Destructured INSIDE the guard so the union narrows to its false arm.
+      const { missing } = identity;
+      return Response.json({ ok: false, error: 'legal_identity_missing', missing }, { status: 409 });
+    }
     const cfg = readTaxConfig();
-    if (!cfg.ok) return Response.json({ ok: false, error: 'tax_config_missing', missing: cfg.missing }, { status: 409 });
+    if (!cfg.ok) {
+      const { missing } = cfg;
+      return Response.json({ ok: false, error: 'tax_config_missing', missing }, { status: 409 });
+    }
     // French e-invoicing control (§17): when the mandatory date arrives without
     // a compliant platform integration, automatic issuance STOPS.
     if (cfg.config.einvoicing_mode === 'blocked_not_ready') {
@@ -88,7 +95,10 @@ export default async function (req: Request): Promise<Response> {
           .filter({ deal_activation_id: activation.id, month: report.month }, '-created_date', 10).catch(() => [])) : [];
 
         // Fresh tax determination at issuance (§15) — approval preview may be stale.
-        const tax = brand ? determineTaxTreatment({
+        // v62.2.2 — the fallback literal IS a valid TaxTreatment; annotating the
+        // binding stops TS widening 'TAX_REVIEW_REQUIRED' to `string`. Same value,
+        // same branches, no cast.
+        const tax: TaxDecision = brand ? determineTaxTreatment({
           billing_country: String(brand.billing_country || '').toUpperCase(),
           legal_name: brand.billing_legal_name || '',
           billing_address_line1: brand.billing_address_line1 || '',
@@ -97,7 +107,7 @@ export default async function (req: Request): Promise<Response> {
           vat_number: normalizeVat(brand.vat_number_normalized || brand.vat_number || ''),
           tax_customer_type: brand.tax_customer_type || '',
           vies_status: brand.vies_status || 'not_checked',
-        }, cfg.config) : { treatment: 'TAX_REVIEW_REQUIRED', tax_rate_bps: 0, blockers: ['context_missing'], mentions: [] as string[] };
+        }, cfg.config) : { treatment: 'TAX_REVIEW_REQUIRED', tax_rate_bps: 0, blockers: ['context_missing'], mentions: [] };
 
         // ── PHASE 2 — PURE validation core. Policy resolved HERE, before
         // any Stripe call or economic write. ─────────────────────────────
@@ -146,7 +156,11 @@ export default async function (req: Request): Promise<Response> {
         const amounts = prep.amounts!;
         const view = prep.economicView!;
         const taxRateRef = stripeTaxRateIdFor(tax, cfg.config, mode);
-        if (!taxRateRef.ok) { outcome.error = taxRateRef.blocker; continue; }
+        if (!taxRateRef.ok) {
+          const { blocker } = taxRateRef;
+          outcome.error = blocker;
+          continue;
+        }
 
         const locale = ['en', 'fr', 'es'].includes(brand.locale) ? brand.locale : 'en';
         const bounds = monthBounds(report.month);

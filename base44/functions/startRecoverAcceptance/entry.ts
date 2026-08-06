@@ -38,7 +38,9 @@ export default async function (req: Request): Promise<Response> {
     // attempt to inject fee/share/duration/policy fields rejects the request.
     const termsGuard = rejectClientTerms(body);
     if (!termsGuard.ok) {
-      return Response.json({ error: 'client_terms_forbidden', keys: termsGuard.keys }, { status: 400 });
+      // Destructured INSIDE the guard so the union narrows to its false arm.
+      const { keys } = termsGuard;
+      return Response.json({ error: 'client_terms_forbidden', keys }, { status: 400 });
     }
     const svc = base44.asServiceRole;
 
