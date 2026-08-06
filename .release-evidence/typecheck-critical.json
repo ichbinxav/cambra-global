@@ -1,8 +1,8 @@
 {
-  "command": "node node_modules/typescript/bin/tsc -p ./tsconfig.critical.json",
+  "command": "npx tsc -p ./tsconfig.critical.json",
   "sourceTreeHash": "96e615ad2ed8e2b0c2353366667e34ac1be6171a2ac2b11e119b6d8b5185ce2e",
-  "startedAt": "2026-08-06T15:10:26.701Z",
-  "completedAt": "2026-08-06T15:10:28.273Z",
+  "startedAt": "2026-08-06T16:35:40.235Z",
+  "completedAt": "2026-08-06T16:35:41.671Z",
   "exitCode": 0,
   "ciRunId": null
 }
