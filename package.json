@@ -1,8 +1,13 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.62.1",
+  "releaseName": "CAMBRA v62.1 — Pre-ECL Core Readiness Final",
   "type": "module",
+  "engines": {
+    "node": ">=20 <23",
+    "npm": ">=10"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -15,7 +20,14 @@
     "preview": "vite preview",
     "policy:generate": "node scripts/generate-product-policy.mjs",
     "policy:check": "node scripts/generate-product-policy.mjs --check",
-    "verify": "npm run lint && npm run policy:check && npm run typecheck && npm test && npm run build"
+    "clean:check": "node scripts/clean-check.mjs",
+    "typecheck:critical": "tsc -p ./tsconfig.critical.json",
+    "typecheck:baseline": "node scripts/check-typecheck-baseline.mjs",
+    "typecheck:baseline:capture": "node scripts/capture-typecheck-baseline.mjs",
+    "typecheck:report": "tsc -p ./jsconfig.json",
+    "release:manifest": "node scripts/generate-release-manifest.mjs",
+    "release:check": "node scripts/check-release-manifest.mjs",
+    "verify": "npm run clean:check && npm run policy:check && npm run lint && npm run typecheck:critical && npm run typecheck:baseline && npm test && npm run build && npm run release:check"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.41",

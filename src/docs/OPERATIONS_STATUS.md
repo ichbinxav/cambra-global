@@ -6,6 +6,80 @@
 
 ---
 
+## Release v62.1 — Pre-ECL Core Readiness Final (2026-08-06)
+
+**ECL P1: NOT STARTED. ECL P2: NOT STARTED.** No ECL entity, config, cron,
+attestation, strike, lifecycle or rules-engine code exists in the repo, and the
+pre-ECL schema freeze is machine-enforced.
+
+### Frozen schemas (zero-diff mandate)
+
+`StatementImport`, `SavingsEvidence` and `Baseline` are frozen; their SHA-256
+hashes are recorded in `config/frozen-schemas.json` and verified by
+`npm run clean:check` (the first step of `npm run verify`), which also fails
+if any ECL-named artifact appears anywhere in the repo.
+
+### Release gate (`npm run verify`)
+
+Ordered: `clean:check → policy:check → lint → typecheck:critical →
+typecheck:baseline → test → build → release:check`.
+
+- **typecheck:critical** (`tsconfig.critical.json`): the pure economic backend
+  core (policy artifacts, contract snapshot/resolver, billing math, invoice
+  preparation, templates + registry, scope/trust gates) must compile with 0
+  errors. Deno entrypoints and the JS frontend are covered by the baseline
+  gate + vitest.
+- **typecheck:baseline**: fails when global TS debt increases vs
+  `config/typecheck-baseline.json`. ⏳ MANUAL REQUIRED (once): the baseline is
+  a sentinel until `npm run typecheck:baseline:capture` is run in a real
+  environment with node_modules — until then the gate fails by design.
+  `typecheck:report` keeps the full global report available.
+- **release:manifest / release:check**: `RELEASE.json` is generated from real
+  repo state (no invented git SHA; test totals null unless actually executed)
+  and validated for version/policy/lockfile/SDK/scope/Stripe coherence.
+
+### CI
+
+`ci/github-workflow-ci.yml` holds the workflow. ⏳ MANUAL REQUIRED (external
+blocker): Base44's GitHub sync cannot write `.github/workflows/`, so a human
+must copy the file to `.github/workflows/ci.yml` in the repository.
+
+### Internal secret (v62.1 CP4 — completed)
+
+`base44/shared/internalSecret.ts`: constant-time comparison (header preferred,
+body fallback, fail-closed on missing secret); redaction now covers the
+expanded sensitive-key set (authorization, api_key, access/refresh tokens,
+client/stripe/webhook secrets, password), replaces subtrees past depth 8 with
+`[REDACTED_MAX_DEPTH]` (never returns unsanitized data), handles cycles and
+Error objects. `dispatchWebhook` persists only redacted payloads in
+`WebhookDelivery`/`WebhookDeadLetter`.
+
+### Execution status (this environment cannot run npm)
+
+npm ci / lint / typecheck / vitest / build cannot execute inside the Base44
+build sandbox. All gate scripts are in place and deterministic; running the
+final validation sequence (npm ci → policy:check → lint → typecheck:critical →
+baseline capture+check → test → build → release:manifest → release:check →
+verify) is ⏳ MANUAL REQUIRED from a clean working copy. Until that run is
+recorded, this release is **CONDITIONAL PASS**, and PRE_ECL_READINESS is
+**not yet PASS**.
+
+### Deferred (deliberately, per v62.1 stop rules)
+
+- SDK unification (6 executable versions across backend functions: 0.8.21/25/
+  26/31/38/40 vs canonical ^0.8.41) — inventory done; blind mass-migration
+  without an executable test loop is prohibited by the release's own rules.
+- Modularization of the >500-line handlers (dataSyncAgent 2369,
+  submitPaymentsAnalysis 2079, computeStripeVerifiedGap 1941, oauthConnector
+  1566, seedPaymentsRateTable 1580, apiV1 866, mcpServer 777,
+  processUploadedFile 727, chatChiefOrchestrator 750) — gated on billing/
+  tenant/SDK/release-gate being green first.
+- Correlation-ID propagation across economic flows.
+- Prerender/SSR for public routes — platform blocker unchanged (see SEO
+  section); MANUAL REQUIRED.
+
+---
+
 ## Product scope (v59, 2026-08-05)
 
 **Source of truth:** `config/product-policy.json` → generated artifacts →

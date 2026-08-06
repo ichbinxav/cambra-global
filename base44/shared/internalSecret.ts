@@ -18,9 +18,26 @@ const SECRET_KEYS = new Set([
   "internal_secret",
   "internalsecret",
   "x-internal-secret",
+  // v62.1 CP4 — expanded sensitive-key list. EXACT (lowercased) key matches
+  // only, never substring matching, so innocent fields ("password_hint_shown",
+  // "authorization_log_id") are not over-redacted.
+  "authorization",
+  "api_key",
+  "apikey",
+  "access_token",
+  "refresh_token",
+  "client_secret",
+  "stripe_secret",
+  "webhook_secret",
+  "password",
 ]);
 
 export const REDACTED = "[redacted]";
+// v62.1 CP4 — a subtree past the depth limit is NEVER returned as-is: it is
+// replaced by this marker. Returning the original object at depth>8 (the v62
+// behavior) would leak any secret nested deeper than the limit.
+export const REDACTED_MAX_DEPTH = "[REDACTED_MAX_DEPTH]";
+const CIRCULAR = "[circular]";
 
 /** Constant-time string comparison. Returns false for empty/unequal lengths. */
 export function safeEqual(a: string, b: string): boolean {
@@ -33,15 +50,26 @@ export function safeEqual(a: string, b: string): boolean {
 }
 
 /**
- * Deep copy with every internal-secret-ish key replaced by "[redacted]".
- * Use before logging ANY request payload.
+ * Deep copy with every sensitive key replaced by "[redacted]".
+ * Use before logging or persisting ANY request payload.
+ * v62.1 CP4 guarantees:
+ *   - depth > 8 → "[REDACTED_MAX_DEPTH]" (never the unsanitized original);
+ *   - cyclic references → "[circular]" (never an infinite loop);
+ *   - Error instances → { name, message } only (no stack, no custom props);
+ *   - key matching is case-insensitive but exact (no substring matching);
+ *   - the caller's object is never mutated.
  */
-export function redactSecrets(value: unknown, depth = 0): unknown {
-  if (depth > 8 || value === null || typeof value !== "object") return value;
-  if (Array.isArray(value)) return value.map((v) => redactSecrets(v, depth + 1));
+export function redactSecrets(value: unknown, depth = 0, seen?: WeakSet<object>): unknown {
+  if (value === null || typeof value !== "object") return value;
+  if (depth > 8) return REDACTED_MAX_DEPTH;
+  const tracked = seen ?? new WeakSet<object>();
+  if (tracked.has(value as object)) return CIRCULAR;
+  tracked.add(value as object);
+  if (value instanceof Error) return { name: value.name, message: value.message };
+  if (Array.isArray(value)) return value.map((v) => redactSecrets(v, depth + 1, tracked));
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-    out[k] = SECRET_KEYS.has(k.toLowerCase()) ? REDACTED : redactSecrets(v, depth + 1);
+    out[k] = SECRET_KEYS.has(k.toLowerCase()) ? REDACTED : redactSecrets(v, depth + 1, tracked);
   }
   return out;
 }

@@ -1,0 +1,26 @@
+{
+  "releaseName": "CAMBRA v62.1 — Pre-ECL Core Readiness Final",
+  "version": "0.62.1",
+  "gitSha": null,
+  "releaseBuild": false,
+  "ciRunId": null,
+  "sourceArchiveSha": "762f34fb46166ee4cf4b1bc2ed2121ace27cdb8814463991c45440753c56346e",
+  "policyVersion": "2026.08.01",
+  "policySchemaVersion": 1,
+  "templateVersions": ["recover-contract-pdf-v2"],
+  "productScope": ["payments"],
+  "stripeIntegrationStatus": "implemented_live_verification_pending",
+  "canonicalSdkVersion": "^0.8.41",
+  "node": null,
+  "npm": null,
+  "lockfileSha": "a5876764dcb16b97811d992a7067f6d87ab140b69ee7703e55ea1bc83f6c5bc2",
+  "policyFileSha": "d6f5b72d615ec9f7e1627cd5cc31e4c93f3f78c7e2d56e22efab5b382a5c12cd",
+  "frozenSchemas": {
+    "base44/entities/StatementImport.jsonc": "cb951351bdcaa8355aaeadb499d90c3572c716d284ee19f6b2e01a76d08b314d",
+    "base44/entities/SavingsEvidence.jsonc": "806bc45580912c6764b51a12977d3d5e8a86b35b4b2db6174de7bcf69bf2b451",
+    "base44/entities/Baseline.jsonc": "a4d186074a4834aca489842447a6ce5052d526315863b5acdc9cff9b998a3bd1"
+  },
+  "tests": null,
+  "buildIdentifier": "cambra-0.62.1",
+  "generatedAt": "2026-08-06T13:20:00.000Z"
+}

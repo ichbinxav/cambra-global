@@ -1,0 +1,28 @@
+{
+  "//": "v62.1 CP5.1 — typecheck:critical: the economic backend core must compile with ZERO errors. Scope: the pure shared modules that decide money (policy, snapshot/resolver, billing math, invoice preparation, templates, scope + trust gates). Deno entrypoints and the JS frontend are covered by the global baseline gate (typecheck:baseline) plus the vitest suite.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "types": []
+  },
+  "include": [
+    "types/deno-shim.d.ts",
+    "base44/shared/internalSecret.ts",
+    "base44/shared/internalGate.ts",
+    "base44/shared/productScopeGuard.ts",
+    "base44/shared/contractPolicySnapshot.ts",
+    "base44/shared/prepareEligibleRecoverInvoice.ts",
+    "base44/shared/recoverBillingMath.ts",
+    "base44/shared/merchantBillingScope.ts",
+    "base44/shared/billingFee.ts",
+    "base44/shared/recoverContractTemplates.ts",
+    "base44/shared/recoverContractTemplateRegistry.ts",
+    "base44/shared/generated/productPolicy.ts"
+  ]
+}

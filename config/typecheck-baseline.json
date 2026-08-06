@@ -1,0 +1,8 @@
+{
+  "captured": false,
+  "note": "SENTINEL — the global typecheck baseline must be captured from a real environment with node_modules installed: npm run typecheck:baseline:capture. Until captured, npm run typecheck:baseline (and therefore npm run verify) fails by design — MANUAL REQUIRED, one time.",
+  "generatedAt": null,
+  "totalErrors": null,
+  "distinctFingerprints": 0,
+  "entries": {}
+}

@@ -13,7 +13,7 @@
 // (event dispatch is a platform-level concern) and writes delivery/DLQ audit rows.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
 import { quarantineProbe } from "../../shared/internalGate.ts";
-import { isInternalCaller } from "../../shared/internalSecret.ts";
+import { isInternalCaller, redactSecrets } from "../../shared/internalSecret.ts";
 
 const SUPPORTED_EVENTS = [
   "new_brand_created",
@@ -82,6 +82,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: `unsupported_event_type: ${event_type}`, supported: SUPPORTED_EVENTS }, { status: 400 });
     }
 
+    // v62.1 CP4 — persisted audit rows (WebhookDelivery / WebhookDeadLetter)
+    // never store an unsanitized payload. The OUTBOUND delivery body keeps the
+    // original payload (delivery semantics unchanged); only persistence is
+    // sanitized.
+    const persistedPayload = redactSecrets(payload);
+
     const endpoints = await base44.asServiceRole.entities.WebhookEndpoint.filter({ status: "active" });
     const subscribed = endpoints.filter((e) => Array.isArray(e.events) && e.events.includes(event_type));
 
@@ -109,7 +115,7 @@ Deno.serve(async (req) => {
         webhook_id: ep.id,
         webhook_name: ep.name,
         event_type,
-        payload,
+        payload: persistedPayload,
         target_url: ep.url,
         status,
         response_code: finalResult.response_code,
@@ -126,7 +132,7 @@ Deno.serve(async (req) => {
           webhook_name: ep.name,
           event_type,
           target_url: ep.url,
-          payload,
+          payload: persistedPayload,
           last_response_code: finalResult.response_code,
           last_response_body: finalResult.response_body,
           last_error_message: finalResult.error_message,
