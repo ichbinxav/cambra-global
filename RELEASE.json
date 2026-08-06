@@ -5,7 +5,7 @@
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 804,
   "sourceArchiveShaExternal": null,
-  "gitSha": "d54ee5b88a73d0622260b3b2ffdffeaee636d3c2",
+  "gitSha": "5b7ce97e95d6e0e2353524183aa2e754870df2cf",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.01",
@@ -28,7 +28,19 @@
     "base44/entities/Baseline.jsonc": "a4d186074a4834aca489842447a6ce5052d526315863b5acdc9cff9b998a3bd1",
     "base44/functions/processUploadedFile/entry.ts": "b13daa2209e67aeb9650da8ad1d2a94ed8722254c3f54158c58d07ec2f844389"
   },
-  "testEvidence": null,
+  "testEvidence": {
+    "command": "node node_modules/vitest/vitest.mjs run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
+    "sourceTreeHash": "96e615ad2ed8e2b0c2353366667e34ac1be6171a2ac2b11e119b6d8b5185ce2e",
+    "startedAt": "2026-08-06T15:14:29.750Z",
+    "completedAt": "2026-08-06T15:16:00.452Z",
+    "exitCode": 0,
+    "ciRunId": null,
+    "testFiles": 282,
+    "passed": 1160,
+    "failed": 0,
+    "skipped": 2,
+    "frameworkVersion": "^2.1.9"
+  },
   "buildEvidence": {
     "command": "node node_modules/vite/bin/vite.js build",
     "sourceTreeHash": "96e615ad2ed8e2b0c2353366667e34ac1be6171a2ac2b11e119b6d8b5185ce2e",
@@ -62,8 +74,7 @@
   "manualRequirements": [
     "typecheck baseline: candidate/approve flow not completed",
     "CI workflow not installed (npm run ci:install from a real checkout)",
-    "evidence tests: missing (run the *:evidence command)",
     "evidence typecheck-baseline: missing (run the *:evidence command)"
   ],
-  "generatedAt": "2026-08-06T15:13:31.686Z"
+  "generatedAt": "2026-08-06T15:16:44.793Z"
 }
