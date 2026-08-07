@@ -1,11 +1,11 @@
 {
   "releaseName": "CAMBRA v0.62.4 — ECL P1/P2 Closure",
   "version": "0.62.4",
-  "sourceTreeHash": "164b72ebdcb7e89884c8c609d639c0baa8bf565d8418323ab6f285f6874e664c",
+  "sourceTreeHash": "bf8b9a8dbd4cb4469d640fb230e479e2b9c5b662a3d9b45d00cd82208841fc27",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 830,
   "sourceArchiveShaExternal": null,
-  "gitSha": "fb0e86c000da51c3986eeed2b70d5126817dbb4b",
+  "gitSha": "bda0f27d6ea1329e48782417a67b299a6d96525a",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.01",
@@ -15,9 +15,10 @@
   "eclPolicyFileSha": "dea9bc7bcc4f6279bf7986daa49839ed17912cf3361581b2303b2d877214c1db",
   "eclGeneratedArtifactShas": {
     "src/lib/generated/eclPolicy.js": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
-    "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94"
+    "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
+    "base44/shared/generated/eclDomain.ts": "2fc5fb79221995588620f362ed066fb4d958ae03ca158caa3e7661bb12bac1ad"
   },
-  "durabilityManifestSha": "0ad3c9d73ed97db6407f46464458845dab9cc49dfc1432b262b7edc6f1151fda",
+  "durabilityManifestSha": "35c66c3d4ef35213fb92151a3e85741fc450e3e8f68676b6e234b13fc4bc25d3",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -42,9 +43,9 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "164b72ebdcb7e89884c8c609d639c0baa8bf565d8418323ab6f285f6874e664c",
-    "startedAt": "2026-08-06T23:37:02.747Z",
-    "completedAt": "2026-08-06T23:37:15.010Z",
+    "sourceTreeHash": "bf8b9a8dbd4cb4469d640fb230e479e2b9c5b662a3d9b45d00cd82208841fc27",
+    "startedAt": "2026-08-07T08:12:13.981Z",
+    "completedAt": "2026-08-07T08:12:23.992Z",
     "exitCode": 0,
     "ciRunId": null,
     "testFiles": 314,
@@ -55,9 +56,9 @@
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "164b72ebdcb7e89884c8c609d639c0baa8bf565d8418323ab6f285f6874e664c",
-    "startedAt": "2026-08-06T23:37:15.470Z",
-    "completedAt": "2026-08-06T23:37:28.967Z",
+    "sourceTreeHash": "bf8b9a8dbd4cb4469d640fb230e479e2b9c5b662a3d9b45d00cd82208841fc27",
+    "startedAt": "2026-08-07T08:12:24.341Z",
+    "completedAt": "2026-08-07T08:12:35.303Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "1e79b6bb9583101caaedc281f728236ab3d6acedf30e92e6391e5da9a831178e",
@@ -65,25 +66,25 @@
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "164b72ebdcb7e89884c8c609d639c0baa8bf565d8418323ab6f285f6874e664c",
-    "startedAt": "2026-08-06T23:36:41.350Z",
-    "completedAt": "2026-08-06T23:36:50.122Z",
+    "sourceTreeHash": "bf8b9a8dbd4cb4469d640fb230e479e2b9c5b662a3d9b45d00cd82208841fc27",
+    "startedAt": "2026-08-07T08:11:22.956Z",
+    "completedAt": "2026-08-07T08:11:26.233Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "164b72ebdcb7e89884c8c609d639c0baa8bf565d8418323ab6f285f6874e664c",
-    "startedAt": "2026-08-06T23:36:50.561Z",
-    "completedAt": "2026-08-06T23:36:52.115Z",
+    "sourceTreeHash": "bf8b9a8dbd4cb4469d640fb230e479e2b9c5b662a3d9b45d00cd82208841fc27",
+    "startedAt": "2026-08-07T08:11:26.565Z",
+    "completedAt": "2026-08-07T08:11:27.678Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "164b72ebdcb7e89884c8c609d639c0baa8bf565d8418323ab6f285f6874e664c",
-    "startedAt": "2026-08-06T23:36:52.554Z",
-    "completedAt": "2026-08-06T23:37:02.306Z",
+    "sourceTreeHash": "bf8b9a8dbd4cb4469d640fb230e479e2b9c5b662a3d9b45d00cd82208841fc27",
+    "startedAt": "2026-08-07T08:11:27.982Z",
+    "completedAt": "2026-08-07T08:11:34.176Z",
     "exitCode": 0,
     "ciRunId": null
   },
@@ -91,5 +92,5 @@
     "dist": "1e79b6bb9583101caaedc281f728236ab3d6acedf30e92e6391e5da9a831178e"
   },
   "manualRequirements": [],
-  "generatedAt": "2026-08-06T23:37:29.425Z"
+  "generatedAt": "2026-08-07T08:12:35.631Z"
 }
