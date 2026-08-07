@@ -48,7 +48,7 @@ export const CALENDAR_DATE_MESSAGE =
  * evidence. Walks arrays, plain objects and nested combinations, and tolerates
  * cycles.
  */
-export function deepFreeze(value, seen) {
+export function deepFreeze(value, seen = undefined) {
   const visited = seen || new Set();
   if (value === null || typeof value !== "object") return value;
   if (visited.has(value)) return value;

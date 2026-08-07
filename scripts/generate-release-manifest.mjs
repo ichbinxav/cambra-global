@@ -66,6 +66,7 @@ const manifest = {
   eclGeneratedArtifactShas: eclPolicyLive ? {
     "src/lib/generated/eclPolicy.js": sha256("src/lib/generated/eclPolicy.js"),
     "base44/shared/generated/eclPolicy.ts": sha256("base44/shared/generated/eclPolicy.ts"),
+    "base44/shared/generated/eclDomain.ts": sha256("base44/shared/generated/eclDomain.ts"),
   } : null,
   durabilityManifestSha: fs.existsSync("config/p1-durability-manifest.json")
     ? sha256("config/p1-durability-manifest.json") : null,

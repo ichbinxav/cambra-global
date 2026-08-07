@@ -1,5 +1,5 @@
 {
-  "//": "v62.2 CP3 — typecheck:critical MUST report 0 errors. Scope: the full economic backend path (acceptance → report → approval → invoice → PDF/email), merchant getters, trust gates, webhook boundary and the shared pure modules they depend on. Pinned npm: specifiers are typed via types/deno-shim.d.ts against the REAL installed package types (no blanket any shim). The JS/JSX frontend (Reports.jsx, Invoices.jsx, AdminRoute) is exercised by the vitest suite and guarded by the global baseline gate — tsc has no reliable JSX+checkJs story for this codebase yet; documented in OPERATIONS_STATUS. v62.2.1: this file lives at the REPO ROOT (it was mistakenly exported under src/ in v62.2, so the gate ran the older, narrower config).",
+  "//": "v62.2 CP3 — typecheck:critical MUST report 0 errors. Scope: the full economic backend path (acceptance → report → approval → invoice → PDF/email), merchant getters, trust gates, webhook boundary and the shared pure modules they depend on. Pinned npm: specifiers are typed via types/deno-shim.d.ts against the REAL installed package types (no blanket any shim). The JS/JSX frontend (Reports.jsx, Invoices.jsx, AdminRoute) is exercised by the vitest suite and guarded by the global baseline gate — tsc has no reliable JSX+checkJs story for this codebase yet; documented in OPERATIONS_STATUS. v62.2.1: this file lives at the REPO ROOT (it was mistakenly exported under src/ in v62.2, so the gate ran the older, narrower config). v62.4.1: base44/shared/generated/eclDomain.ts added — the ECL P2 backend domain artifact is a first-class backend module and must typecheck clean inside the critical gate.",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -35,6 +35,7 @@
     "base44/shared/emails/recoverContract.ts",
     "base44/shared/generated/productPolicy.ts",
     "base44/shared/generated/eclPolicy.ts",
+    "base44/shared/generated/eclDomain.ts",
     "base44/functions/createEligibleRecoverInvoices/entry.ts",
     "base44/functions/generateMonthlySavingsReport/entry.ts",
     "base44/functions/approveRecoverReportForInvoicing/entry.ts",

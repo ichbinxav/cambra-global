@@ -226,5 +226,8 @@ export function buildEclDomainArtifact(sources) {
     return [`// ──── ${rel} ────`, kept, ""].join("\n");
   });
 
-  return header + parts.join("\n");
+  // v62.4.1 — emitted WITHOUT a trailing newline: the platform's durable write
+  // path strips a final newline, so an artifact ending in "\n" could never be
+  // persisted byte-identical to the generator output (permanent ecl:check drift).
+  return (header + parts.join("\n")).replace(/\n+$/, "");
 }
