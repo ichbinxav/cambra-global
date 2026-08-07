@@ -5,6 +5,10 @@
 //   · src/lib/normalizedEvidence.js
 //   · src/lib/confidenceResult.js
 //   · src/lib/eclGates.js
+//   · src/lib/eclLifecycle.js
+//   · src/lib/eclReconcile.js
+//   · src/lib/eclStrikes.js
+//   · src/lib/eclEngine.js
 // Regenerate: npm run ecl:generate  ·  Drift check: npm run ecl:check
 //
 // This is the BACKEND artifact of the ECL P2 domain contracts. It is not a
@@ -760,3 +764,949 @@ export function finalizeConfidenceResult(assessment, policy, context) {
     },
   });
 }
+
+// ──── src/lib/eclLifecycle.js ────
+// v62.5 — ECL P3: evidence lifecycle state machine (canonical, pure).
+//
+// PURE. No I/O, no writes, and NO wall clock: every time-dependent decision
+// takes an injected instant. This module owns the TRANSITION GRAPH over the
+// P2 evidence statuses (confidenceResult.EVIDENCE_STATUSES — reused, never
+// redeclared) and produces EvidenceLifecycleEvent RECORD INTENTS matching the
+// P1 schema exactly. It never persists anything: handlers do, idempotently,
+// keyed on the deterministic idempotency_key computed here.
+//
+// base44/shared/generated/eclDomain.ts is GENERATED from this file.
+
+
+export const ECL_LIFECYCLE_VERSION = "ecl-lifecycle-1";
+
+export const LIFECYCLE_ACTORS = ["system", "user", "reviewer"];
+
+export const EVIDENCE_ENTITY_TYPES = ["statement_import", "savings_evidence"];
+
+// Terminal: a superseded record is history; new facts create NEW records.
+export const TERMINAL_STATUSES = ["superseded"];
+
+// The declared transition graph. Anything not literally listed is illegal —
+// the engine routes illegal targets to under_review, never forces them.
+export const LIFECYCLE_TRANSITIONS = deepFreeze({
+  pending: ["processing", "estimated", "accepted_provisionally", "verified", "under_review", "rejected", "superseded"],
+  processing: ["estimated", "accepted_provisionally", "verified", "under_review", "rejected", "superseded"],
+  estimated: ["accepted_provisionally", "verified", "under_review", "superseded", "rejected"],
+  accepted_provisionally: ["verified", "expired", "under_review", "superseded", "rejected"],
+  verified: ["under_review", "superseded"],
+  expired: ["under_review", "superseded", "rejected"],
+  under_review: ["estimated", "accepted_provisionally", "verified", "rejected", "superseded"],
+  rejected: ["superseded"],
+  superseded: [],
+});
+
+export class EclLifecycleError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "EclLifecycleError";
+  }
+}
+
+const lcRequire = (cond, msg) => {
+  if (!cond) throw new EclLifecycleError(msg);
+};
+const lcNonEmpty = (v) => typeof v === "string" && v.length > 0;
+
+export function assertLifecycleStatus(status) {
+  lcRequire(EVIDENCE_STATUSES.includes(status), `unknown evidence status: ${String(status)}`);
+  return status;
+}
+
+export function isTerminalStatus(status) {
+  return TERMINAL_STATUSES.includes(status);
+}
+
+export function canTransition(fromStatus, toStatus) {
+  assertLifecycleStatus(fromStatus);
+  assertLifecycleStatus(toStatus);
+  return (LIFECYCLE_TRANSITIONS[fromStatus] || []).includes(toStatus);
+}
+
+/** Deterministic idempotency key over a stable-serialized part bag. */
+export function lifecycleIdempotencyKey(parts) {
+  return `eclp3:${sha256Hex(stableSerialize(parts)).slice(0, 40)}`;
+}
+
+/**
+ * Build one EvidenceLifecycleEvent record intent. from === to is an IDEMPOTENT
+ * NO-OP ({ changed: false }, no record) — replaying a decision must never
+ * append a duplicate event. An illegal transition THROWS here: the caller
+ * (engine) decides the fail-closed rerouting, this module never invents one.
+ */
+export function buildLifecycleTransition(input) {
+  const i = input && typeof input === "object" ? input : {};
+  lcRequire(EVIDENCE_ENTITY_TYPES.includes(i.evidenceEntityType), `evidenceEntityType must be one of ${EVIDENCE_ENTITY_TYPES.join(", ")}`);
+  lcRequire(lcNonEmpty(i.evidenceId), "evidenceId is required");
+  lcRequire(lcNonEmpty(i.brandId), "brandId is required");
+  lcRequire(lcNonEmpty(i.ownerEmail), "ownerEmail is required");
+  lcRequire(lcNonEmpty(i.event), "event is required");
+  lcRequire(lcNonEmpty(i.correlationId), "correlationId is required");
+  lcRequire(LIFECYCLE_ACTORS.includes(i.actor), `actor must be one of ${LIFECYCLE_ACTORS.join(", ")}`);
+  assertLifecycleStatus(i.fromStatus);
+  assertLifecycleStatus(i.toStatus);
+
+  const idempotencyKey = lifecycleIdempotencyKey({
+    kind: "lifecycle_event",
+    evidenceEntityType: i.evidenceEntityType,
+    evidenceId: i.evidenceId,
+    fromStatus: i.fromStatus,
+    toStatus: i.toStatus,
+    event: i.event,
+    correlationId: i.correlationId,
+  });
+
+  if (i.fromStatus === i.toStatus) {
+    return deepFreeze({ changed: false, fromStatus: i.fromStatus, toStatus: i.toStatus, event: i.event, idempotencyKey, record: null });
+  }
+  lcRequire(!isTerminalStatus(i.fromStatus), `status ${i.fromStatus} is terminal: new facts require a new record`);
+  lcRequire(
+    canTransition(i.fromStatus, i.toStatus),
+    `illegal transition ${i.fromStatus} → ${i.toStatus} (allowed: ${(LIFECYCLE_TRANSITIONS[i.fromStatus] || []).join(", ") || "none"})`,
+  );
+
+  return deepFreeze({
+    changed: true,
+    fromStatus: i.fromStatus,
+    toStatus: i.toStatus,
+    event: i.event,
+    idempotencyKey,
+    record: {
+      evidence_entity_type: i.evidenceEntityType,
+      evidence_id: i.evidenceId,
+      brand_id: i.brandId,
+      owner_email: i.ownerEmail,
+      from_status: i.fromStatus,
+      to_status: i.toStatus,
+      event: i.event,
+      actor: i.actor,
+      correlation_id: i.correlationId,
+      idempotency_key: idempotencyKey,
+      payload: i.payload && typeof i.payload === "object" ? { ...i.payload } : {},
+    },
+  });
+}
+
+/**
+ * Provisional expiry, derived EXCLUSIVELY from the policy window. No fallback
+ * constant: a policy without a valid provisionalDays is refused, never patched.
+ */
+export function deriveProvisionalExpiry(provisionalStartedAt, policy) {
+  const t = Date.parse(String(provisionalStartedAt));
+  lcRequire(!Number.isNaN(t), "provisionalStartedAt must be a parseable instant");
+  const days = policy && policy.windows ? policy.windows.provisionalDays : undefined;
+  lcRequire(Number.isInteger(days) && days > 0, "policy.windows.provisionalDays must be a positive integer (no fallback)");
+  return new Date(t + days * 86400000).toISOString();
+}
+
+/**
+ * Resolve whether a provisional acceptance has lapsed at the injected instant.
+ * Returns { lapsed, expiresAt, ambiguous }: ambiguous=true means the record is
+ * accepted_provisionally but carries NO recoverable window — the engine must
+ * route that to review, never assume it is still valid.
+ */
+export function resolveExpiry(state, policy, context) {
+  const s = state && typeof state === "object" ? state : {};
+  const nowMs = Date.parse(String(context && context.now));
+  lcRequire(!Number.isNaN(nowMs), "context.now must be a parseable instant");
+  if (s.status !== "accepted_provisionally") {
+    return deepFreeze({ lapsed: false, expiresAt: s.expiresAt || null, ambiguous: false });
+  }
+  let exp = null;
+  if (s.expiresAt && !Number.isNaN(Date.parse(String(s.expiresAt)))) {
+    exp = new Date(Date.parse(String(s.expiresAt))).toISOString();
+  } else if (s.provisionalStartedAt && !Number.isNaN(Date.parse(String(s.provisionalStartedAt)))) {
+    exp = deriveProvisionalExpiry(s.provisionalStartedAt, policy);
+  }
+  if (!exp) return deepFreeze({ lapsed: false, expiresAt: null, ambiguous: true });
+  return deepFreeze({ lapsed: nowMs > Date.parse(exp), expiresAt: exp, ambiguous: false });
+}
+
+// ── EvidenceAttestation record intent ────────────────────────────────────
+export const ATTESTATION_LANGUAGES = ["es", "fr", "en"];
+
+/**
+ * Build an EvidenceAttestation record intent (P1 schema, unchanged). The legal
+ * text hash is computed HERE from the exact text shown, so a later template
+ * edit can never be retro-attributed. ip/ua HMACs are deliberately NOT set by
+ * this pure function: absent honest evidence beats fabricated digests.
+ */
+export function buildAttestationIntent(input) {
+  const i = input && typeof input === "object" ? input : {};
+  lcRequire(lcNonEmpty(i.attestorUserId), "attestorUserId is required");
+  lcRequire(lcNonEmpty(i.brandId), "brandId is required");
+  lcRequire(lcNonEmpty(i.ownerEmail), "ownerEmail is required");
+  lcRequire(EVIDENCE_ENTITY_TYPES.includes(i.evidenceEntityType), `evidenceEntityType must be one of ${EVIDENCE_ENTITY_TYPES.join(", ")}`);
+  lcRequire(lcNonEmpty(i.evidenceId), "evidenceId is required");
+  lcRequire(
+    i.declaredMetrics && typeof i.declaredMetrics === "object" && Object.keys(i.declaredMetrics).length > 0,
+    "declaredMetrics must be a non-empty object: an attestation without figures asserts nothing",
+  );
+  lcRequire(lcNonEmpty(i.legalTextVersion), "legalTextVersion is required");
+  lcRequire(lcNonEmpty(i.legalText), "legalText (the exact text shown) is required");
+  lcRequire(ATTESTATION_LANGUAGES.includes(i.language), `language must be one of ${ATTESTATION_LANGUAGES.join(", ")}`);
+  if (i.declaredPeriodStart !== undefined && i.declaredPeriodStart !== null) {
+    lcRequire(isCalendarDate(i.declaredPeriodStart), "declaredPeriodStart must be a real calendar date");
+  }
+  if (i.declaredPeriodEnd !== undefined && i.declaredPeriodEnd !== null) {
+    lcRequire(isCalendarDate(i.declaredPeriodEnd), "declaredPeriodEnd must be a real calendar date");
+  }
+
+  const legalTextHash = sha256Hex(i.legalText);
+  const idempotencyKey = lifecycleIdempotencyKey({
+    kind: "attestation",
+    evidenceEntityType: i.evidenceEntityType,
+    evidenceId: i.evidenceId,
+    attestorUserId: i.attestorUserId,
+    legalTextHash,
+    language: i.language,
+    declaredMetrics: i.declaredMetrics,
+  });
+
+  const record = {
+    attestor_user_id: i.attestorUserId,
+    brand_id: i.brandId,
+    owner_email: i.ownerEmail,
+    evidence_entity_type: i.evidenceEntityType,
+    evidence_id: i.evidenceId,
+    declared_metrics: { ...i.declaredMetrics },
+    legal_text_version: i.legalTextVersion,
+    legal_text_hash: legalTextHash,
+    language: i.language,
+    idempotency_key: idempotencyKey,
+  };
+  if (i.declaredPeriodStart) record.declared_period_start = i.declaredPeriodStart;
+  if (i.declaredPeriodEnd) record.declared_period_end = i.declaredPeriodEnd;
+  if (lcNonEmpty(i.declaredSource)) record.declared_source = i.declaredSource;
+  if (lcNonEmpty(i.evidenceChecksum)) record.evidence_checksum = i.evidenceChecksum;
+
+  return deepFreeze({ legalTextHash, idempotencyKey, record });
+}
+
+// ──── src/lib/eclReconcile.js ────
+// v62.5 — ECL P3: reconciliation of new vs existing evidence (canonical, pure).
+//
+// Deterministic deduplication + contradiction detection. This module states
+// FACTS about how the new evidence relates to the existing set; the ENGINE
+// (eclEngine.js) decides what those facts mean for the lifecycle. Tolerances
+// come EXCLUSIVELY from the ECL policy — no fallback constant lives here, and
+// an unreadable policy value is refused, never patched.
+//
+// base44/shared/generated/eclDomain.ts is GENERATED from this file.
+
+
+export const ECL_RECONCILE_VERSION = "ecl-reconcile-1";
+
+// Statuses whose records still SPEAK for the merchant. rejected/superseded
+// evidence is history: it can still be recognized (checksum replay) but never
+// contradicts or gets superseded again.
+export const RECONCILE_LIVE_STATUSES = [
+  "pending",
+  "processing",
+  "estimated",
+  "accepted_provisionally",
+  "verified",
+  "under_review",
+  "expired",
+];
+
+export class EclReconcileError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "EclReconcileError";
+  }
+}
+
+const rcRequire = (cond, msg) => {
+  if (!cond) throw new EclReconcileError(msg);
+};
+
+/** |a−b| relative to the larger magnitude, in percent. Both zero → 0. */
+export function relativeDeltaPct(a, b) {
+  const base = Math.max(Math.abs(a), Math.abs(b));
+  if (base === 0) return 0;
+  return (Math.abs(a - b) / base) * 100;
+}
+
+const rcDateMs = (v) => {
+  if (v === null || v === undefined || v === "") return null;
+  const t = Date.parse(`${String(v)}T00:00:00.000Z`);
+  return Number.isNaN(t) ? null : t;
+};
+
+export function periodsEqual(a, b) {
+  return (
+    a.periodStart !== null && a.periodStart !== undefined &&
+    a.periodEnd !== null && a.periodEnd !== undefined &&
+    a.periodStart === b.periodStart && a.periodEnd === b.periodEnd
+  );
+}
+
+export function periodsOverlap(a, b) {
+  const aS = rcDateMs(a.periodStart);
+  const aE = rcDateMs(a.periodEnd);
+  const bS = rcDateMs(b.periodStart);
+  const bE = rcDateMs(b.periodEnd);
+  if (aS === null || aE === null || bS === null || bE === null) return false;
+  return aS <= bE && bS <= aE;
+}
+
+const GROSS_FIELD_BY_DOMAIN = { payments: "grossAmountMinor", commerce: "grossSalesAmountMinor" };
+
+function rcSharedMetricDeltas(aMetrics, bMetrics) {
+  const deltas = [];
+  const a = aMetrics || {};
+  const b = bMetrics || {};
+  for (const key of Object.keys(a)) {
+    if (b[key] === undefined) continue;
+    const deltaPct = relativeDeltaPct(a[key], b[key]);
+    if (deltaPct > 0) deltas.push({ field: key, a: a[key], b: b[key], deltaPct: Math.round(deltaPct * 100) / 100 });
+  }
+  return deltas;
+}
+
+/**
+ * Reconcile ONE new normalized evidence against the existing set.
+ *   evidence — a NormalizedEvidence envelope (domain, checksum, importId,
+ *              periodStart/End, currency, metrics).
+ *   existing — [{ id, status, evidence }] where `evidence` carries at least
+ *              the same envelope fields for the prior record.
+ * Returns deep-frozen FACTS:
+ *   duplicates      [{ existingId, reason, live }]
+ *   supersedes      [{ existingId, reason }]           (live records only)
+ *   contradictions  [{ existingId, code, detail, deltaPct? }]
+ *   crossChecks     [{ existingId, deltaPct, withinTolerance }]
+ *   ambiguities     [{ existingId, code }]              (fail-closed → review)
+ */
+export function reconcileEvidence(evidence, existing, policy) {
+  rcRequire(evidence && typeof evidence === "object" && typeof evidence.domain === "string", "evidence must be a normalized envelope with a domain");
+  rcRequire(Array.isArray(existing), "existing must be an array (pass [] when there is none)");
+  const tolerancePct = policy && policy.reconciliation ? policy.reconciliation.commerceVsPaymentsMaxDeltaPct : undefined;
+  rcRequire(
+    typeof tolerancePct === "number" && Number.isFinite(tolerancePct) && tolerancePct >= 0 && tolerancePct <= 100,
+    "policy.reconciliation.commerceVsPaymentsMaxDeltaPct must be a number in [0,100] (no fallback)",
+  );
+
+  const duplicates = [];
+  const supersedes = [];
+  const contradictions = [];
+  const crossChecks = [];
+  const ambiguities = [];
+
+  for (const ex of existing) {
+    if (!ex || typeof ex !== "object" || !ex.id || !ex.evidence || typeof ex.evidence !== "object") {
+      ambiguities.push({ existingId: (ex && ex.id) || null, code: "existing_entry_unreadable" });
+      continue;
+    }
+    const live = RECONCILE_LIVE_STATUSES.includes(ex.status);
+    const old = ex.evidence;
+    const sameDomain = old.domain === evidence.domain;
+
+    // Exact byte-identity replay — recognized against live AND historical rows.
+    if (sameDomain && evidence.checksum && old.checksum && evidence.checksum === old.checksum) {
+      duplicates.push({ existingId: ex.id, reason: "checksum_match", live });
+      continue;
+    }
+
+    if (sameDomain && live) {
+      // A corrected re-import of the same logical source: supersede, never edit.
+      if (evidence.importId && old.importId && evidence.importId === old.importId && evidence.checksum !== old.checksum) {
+        supersedes.push({ existingId: ex.id, reason: "same_import_corrected" });
+        continue;
+      }
+      if (periodsEqual(evidence, old) && evidence.sourceType && evidence.sourceType === old.sourceType) {
+        if (evidence.currency && old.currency && evidence.currency !== old.currency) {
+          contradictions.push({
+            existingId: ex.id,
+            code: "currency_mismatch",
+            detail: `${old.currency} vs ${evidence.currency} for the same period and source`,
+          });
+          continue;
+        }
+        const deltas = rcSharedMetricDeltas(evidence.metrics, old.metrics);
+        if (deltas.length === 0) {
+          supersedes.push({ existingId: ex.id, reason: "same_period_re_export" });
+        } else {
+          const worst = deltas.reduce((m, d) => (d.deltaPct > m.deltaPct ? d : m), deltas[0]);
+          contradictions.push({
+            existingId: ex.id,
+            code: "same_period_metric_mismatch",
+            detail: `${worst.field}: ${worst.b} vs ${worst.a}`,
+            deltaPct: worst.deltaPct,
+          });
+        }
+        continue;
+      }
+      if (periodsOverlap(evidence, old) && evidence.sourceType && evidence.sourceType === old.sourceType && !periodsEqual(evidence, old)) {
+        // A partial overlap cannot be resolved deterministically — review it.
+        ambiguities.push({ existingId: ex.id, code: "overlapping_period_ambiguous" });
+        continue;
+      }
+    }
+
+    // Cross-domain check: commerce gross vs payments gross for the same period.
+    if (!sameDomain && live && GROSS_FIELD_BY_DOMAIN[evidence.domain] && GROSS_FIELD_BY_DOMAIN[old.domain]) {
+      if (periodsEqual(evidence, old)) {
+        if (evidence.currency && old.currency && evidence.currency !== old.currency) {
+          ambiguities.push({ existingId: ex.id, code: "cross_domain_currency_mismatch" });
+          continue;
+        }
+        const mine = (evidence.metrics || {})[GROSS_FIELD_BY_DOMAIN[evidence.domain]];
+        const theirs = (old.metrics || {})[GROSS_FIELD_BY_DOMAIN[old.domain]];
+        if (typeof mine === "number" && typeof theirs === "number") {
+          const deltaPct = Math.round(relativeDeltaPct(mine, theirs) * 100) / 100;
+          const withinTolerance = deltaPct <= tolerancePct;
+          crossChecks.push({ existingId: ex.id, deltaPct, withinTolerance });
+          if (!withinTolerance) {
+            contradictions.push({
+              existingId: ex.id,
+              code: "commerce_vs_payments_delta_exceeded",
+              detail: `gross delta ${deltaPct}% exceeds tolerance ${tolerancePct}%`,
+              deltaPct,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return deepFreeze({
+    reconcileVersion: ECL_RECONCILE_VERSION,
+    duplicates,
+    supersedes,
+    contradictions,
+    crossChecks,
+    ambiguities,
+  });
+}
+
+// ──── src/lib/eclStrikes.js ────
+// v62.5 — ECL P3: functional strikes (canonical, pure).
+//
+// Strike ISSUANCE and COUNTING per the ECL policy. Scoped per domain (a
+// payments strike never blocks accounting), time-boxed by policy.strikes
+// .windowDays (no fallback constant), withdrawable (withdrawn_at makes a row
+// inactive without deleting it). The two-strike CONSEQUENCE stays where P2 put
+// it: the create_invoice gate reads activeStrikeCountByScope — this module
+// only produces honest counts and record intents matching the P1 schema.
+//
+// base44/shared/generated/eclDomain.ts is GENERATED from this file.
+
+
+export const ECL_STRIKES_VERSION = "ecl-strikes-1";
+
+export const STRIKE_SCOPES = ["payments", "commerce", "accounting"];
+
+export class EclStrikeError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "EclStrikeError";
+  }
+}
+
+const skRequire = (cond, msg) => {
+  if (!cond) throw new EclStrikeError(msg);
+};
+const skNonEmpty = (v) => typeof v === "string" && v.length > 0;
+
+export function strikeScopeForDomain(domain) {
+  skRequire(STRIKE_SCOPES.includes(domain), `no strike scope for domain: ${String(domain)}`);
+  return domain;
+}
+
+/**
+ * A strike counts only while: not withdrawn AND expires_at is in the future.
+ * An UNREADABLE expiry does NOT count — a sanction that cannot prove its own
+ * validity window must never punish a merchant.
+ */
+export function isStrikeActive(strike, nowMs) {
+  if (!strike || typeof strike !== "object") return false;
+  if (strike.withdrawn_at) return false;
+  const exp = Date.parse(String(strike.expires_at));
+  if (Number.isNaN(exp)) return false;
+  return exp > nowMs;
+}
+
+/** Counts by scope, every declared scope present (0 included) — the exact shape the gate context consumes. */
+export function countActiveStrikesByScope(strikes, nowMs) {
+  const counts = {};
+  for (const scope of STRIKE_SCOPES) counts[scope] = 0;
+  for (const s of Array.isArray(strikes) ? strikes : []) {
+    if (!isStrikeActive(s, nowMs)) continue;
+    const scope = s.scope;
+    if (STRIKE_SCOPES.includes(scope)) counts[scope] += 1;
+  }
+  return deepFreeze(counts);
+}
+
+/** Strike expiry from the policy window ONLY — a missing windowDays is refused. */
+export function deriveStrikeExpiry(now, policy) {
+  const t = Date.parse(String(now));
+  skRequire(!Number.isNaN(t), "now must be a parseable instant");
+  const days = policy && policy.strikes ? policy.strikes.windowDays : undefined;
+  skRequire(Number.isInteger(days) && days > 0, "policy.strikes.windowDays must be a positive integer (no fallback)");
+  return new Date(t + days * 86400000).toISOString();
+}
+
+/**
+ * Build one EvidenceStrike record intent (P1 schema, unchanged). Idempotency:
+ * the key is derived from the INCIDENT (brand, scope, reason, evidence,
+ * correlation), never from the instant — a replayed decision finds the same
+ * key and must not produce a second strike.
+ */
+export function buildStrikeIntent(input, policy, context) {
+  const i = input && typeof input === "object" ? input : {};
+  skRequire(skNonEmpty(i.brandId), "brandId is required");
+  skRequire(skNonEmpty(i.ownerEmail), "ownerEmail is required");
+  skRequire(STRIKE_SCOPES.includes(i.scope), `scope must be one of ${STRIKE_SCOPES.join(", ")}`);
+  skRequire(skNonEmpty(i.reasonCode), "reasonCode is required");
+  skRequire(skNonEmpty(i.correlationId), "correlationId is required");
+
+  const expiresAt = deriveStrikeExpiry(context && context.now, policy);
+  const idempotencyKey = `eclp3:${sha256Hex(
+    stableSerialize({
+      kind: "strike",
+      brandId: i.brandId,
+      scope: i.scope,
+      reasonCode: i.reasonCode,
+      evidenceEntityType: i.evidenceEntityType || null,
+      evidenceId: i.evidenceId || null,
+      correlationId: i.correlationId,
+    }),
+  ).slice(0, 40)}`;
+
+  const record = {
+    brand_id: i.brandId,
+    owner_email: i.ownerEmail,
+    scope: i.scope,
+    reason_code: i.reasonCode,
+    expires_at: expiresAt,
+    idempotency_key: idempotencyKey,
+  };
+  if (skNonEmpty(i.evidenceEntityType)) record.evidence_entity_type = i.evidenceEntityType;
+  if (skNonEmpty(i.evidenceId)) record.evidence_id = i.evidenceId;
+
+  return deepFreeze({ idempotencyKey, expiresAt, record });
+}
+
+/** Scopes whose active count has reached the policy threshold → human review. */
+export function scopesRequiringEscalation(countsByScope, policy) {
+  const threshold = policy && policy.strikes ? policy.strikes.threshold : undefined;
+  skRequire(Number.isInteger(threshold) && threshold >= 1, "policy.strikes.threshold must be a positive integer (no fallback)");
+  const counts = countsByScope && typeof countsByScope === "object" ? countsByScope : {};
+  return deepFreeze(STRIKE_SCOPES.filter((scope) => Number(counts[scope] || 0) >= threshold));
+}
+
+// ──── src/lib/eclEngine.js ────
+// v62.5 — ECL P3: the Evidence Lifecycle Engine (canonical, pure).
+//
+// ONE pure function — runEclEngine — takes NormalizedEvidence + the ECL policy
+// + an injected context and produces a fully-traceable DECISION: the finalized
+// ConfidenceResult (via the P2 gate layer, exclusively), the lifecycle
+// transition, and the record INTENTS (events, review cases, strikes) matching
+// the P1 schemas. It performs NO I/O and reads NO clock: `now` is injected,
+// and replaying the same inputs yields byte-identical outputs and hashes.
+//
+// FAIL-CLOSED DOCTRINE: any ambiguity, contradiction, unreadable evidence or
+// blocked critical gate routes to under_review with a ReviewCase intent.
+// Nothing is ever inferred favorably; nothing here touches billing — the
+// economic gates stay exactly where P2 put them.
+//
+// base44/shared/generated/eclDomain.ts is GENERATED from this file.
+
+
+export const ECL_ENGINE_VERSION = "ecl-engine-1";
+export const ECL_RULESET_VERSION = "ecl-rules-1";
+
+export class EclEngineError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "EclEngineError";
+  }
+}
+
+const enRequire = (cond, msg) => {
+  if (!cond) throw new EclEngineError(msg);
+};
+const enNonEmpty = (v) => typeof v === "string" && v.length > 0;
+
+// sourceType → verification method. manual_declaration is independent of
+// nothing: with an attestation it is attested_only, without one it is none.
+const METHOD_BY_SOURCE = {
+  api: "independent_api",
+  provider_statement: "independent_document",
+  bank_statement: "independent_document",
+  commerce_export: "independent_document",
+  accounting_export: "independent_document",
+  fec: "independent_document",
+  manual_declaration: null,
+};
+
+const CORE_METRICS_BY_DOMAIN = {
+  payments: ["grossAmountMinor", "feesAmountMinor"],
+  commerce: ["grossSalesAmountMinor"],
+  accounting: [],
+};
+
+function deriveVerificationMethod(evidence, hasAttestation) {
+  const mapped = METHOD_BY_SOURCE[evidence.sourceType];
+  if (mapped) return mapped;
+  if (evidence.sourceType === "manual_declaration") return hasAttestation === true ? "attested_only" : "none";
+  return "none";
+}
+
+/**
+ * Deterministic confidence classification (ruleset ecl-rules-1). Every rule
+ * that RAN is either in passedRules or failedRules — a rule that could not run
+ * (missing reference) is deliberately in neither, so absence is visible.
+ */
+export function classifyConfidence(evidence, reconciliation, options) {
+  const opts = options && typeof options === "object" ? options : {};
+  const passedRules = [];
+  const failedRules = [];
+  const warnings = [...(evidence.normalizationWarnings || [])];
+
+  const invalids = evidence.invalidFields || [];
+  if (invalids.length === 0) passedRules.push("E-01_fields_valid");
+  else failedRules.push({ id: "E-01_fields_valid", detail: invalids.map((v) => `${v.field}:${v.reason}`).join("; ") });
+
+  const core = CORE_METRICS_BY_DOMAIN[evidence.domain] || [];
+  const metrics = evidence.metrics || {};
+  const missingCore = core.filter((m) => metrics[m] === undefined);
+  const accountingEmpty = evidence.domain === "accounting" && (!Array.isArray(evidence.entries) || evidence.entries.length === 0);
+  if (missingCore.length === 0 && !accountingEmpty) passedRules.push("E-02_core_metrics_present");
+  else failedRules.push({ id: "E-02_core_metrics_present", detail: accountingEmpty ? "no readable ledger entries" : `missing: ${missingCore.join(", ")}` });
+
+  if (evidence.currency && evidence.periodStart && evidence.periodEnd) passedRules.push("E-03_envelope_complete");
+  else failedRules.push({ id: "E-03_envelope_complete", detail: `missing: ${["currency", "periodStart", "periodEnd"].filter((k) => !evidence[k]).join(", ")}` });
+
+  if (reconciliation.contradictions.length === 0) passedRules.push("E-04_no_contradictions");
+  else failedRules.push({ id: "E-04_no_contradictions", detail: reconciliation.contradictions.map((c) => c.code).join("; ") });
+
+  if (reconciliation.crossChecks.length > 0) {
+    if (reconciliation.crossChecks.every((c) => c.withinTolerance)) passedRules.push("E-05_cross_domain_agreement");
+    else failedRules.push({ id: "E-05_cross_domain_agreement", detail: "cross-domain gross delta beyond tolerance" });
+  }
+
+  // Internal fee coherence: declared feeRateBps vs the rate the amounts imply.
+  const gross = metrics.grossAmountMinor;
+  const fees = metrics.feesAmountMinor;
+  const declaredBps = metrics.feeRateBps;
+  if (typeof gross === "number" && gross > 0 && typeof fees === "number" && typeof declaredBps === "number") {
+    const impliedBps = (fees / gross) * 10000;
+    if (Math.abs(impliedBps - declaredBps) <= Math.max(1, declaredBps * 0.05)) passedRules.push("E-06_fee_rate_coherent");
+    else failedRules.push({ id: "E-06_fee_rate_coherent", detail: `declared ${declaredBps}bps vs implied ${Math.round(impliedBps)}bps` });
+  }
+
+  // Plausibility vs an injected reference rate — runs ONLY when the caller
+  // supplies one; the engine never invents a benchmark.
+  if (typeof opts.referenceFeeRateBps === "number" && opts.referenceFeeRateBps > 0 && typeof declaredBps === "number") {
+    const maxMultiple = opts.feeVsRateTableMaxMultiple;
+    enRequire(typeof maxMultiple === "number" && maxMultiple > 0, "plausibility multiple must come from the policy (no fallback)");
+    if (declaredBps <= opts.referenceFeeRateBps * maxMultiple) passedRules.push("E-07_fee_plausible");
+    else failedRules.push({ id: "E-07_fee_plausible", detail: `${declaredBps}bps exceeds ${maxMultiple}× reference ${opts.referenceFeeRateBps}bps` });
+  }
+
+  const method = deriveVerificationMethod(evidence, opts.hasAttestation);
+  const failedIds = failedRules.map((r) => r.id);
+  const structurallySound = !failedIds.includes("E-01_fields_valid") && !failedIds.includes("E-02_core_metrics_present") && !failedIds.includes("E-03_envelope_complete");
+  const noConflicts = !failedIds.includes("E-04_no_contradictions") && !failedIds.includes("E-05_cross_domain_agreement") && !failedIds.includes("E-07_fee_plausible");
+
+  let confidenceLevel = "unknown";
+  const nothingReadable = Object.keys(metrics).length === 0 && (!Array.isArray(evidence.entries) || evidence.entries.length === 0);
+  if (!nothingReadable) {
+    if (!structurallySound || !noConflicts) confidenceLevel = "low";
+    else if (method === "independent_api" || method === "independent_document") confidenceLevel = "high";
+    else if (method === "attested_only") confidenceLevel = "medium";
+    else confidenceLevel = "low";
+  }
+
+  return deepFreeze({
+    ruleSetVersion: ECL_RULESET_VERSION,
+    confidenceLevel,
+    verificationMethod: method,
+    passedRules,
+    failedRules,
+    warnings,
+    nothingReadable,
+  });
+}
+
+function reviewIntent(identity, reasonCode, severity, blockingActions, correlationId, extra) {
+  const idempotencyKey = `eclp3:${sha256Hex(
+    stableSerialize({ kind: "review_case", brandId: identity.brandId, evidenceEntityType: identity.evidenceEntityType, evidenceId: identity.evidenceId, reasonCode, correlationId }),
+  ).slice(0, 40)}`;
+  const record = {
+    brand_id: identity.brandId,
+    owner_email: identity.ownerEmail,
+    reason_code: reasonCode,
+    severity,
+    status: "open",
+    idempotency_key: idempotencyKey,
+    evidence_entity_type: identity.evidenceEntityType,
+    evidence_id: identity.evidenceId,
+    blocking_actions: { actions: blockingActions, descriptive_only: false, ...(extra && typeof extra === "object" ? extra : {}) },
+  };
+  return { idempotencyKey, record };
+}
+
+/**
+ * THE ENGINE. input = {
+ *   identity: { evidenceEntityType, evidenceId, brandId, ownerEmail },
+ *   evidence: NormalizedEvidence (from the P2 normalizers),
+ *   existing: [{ id, status, evidence }],
+ *   state:   { status, provisionalStartedAt?, expiresAt? }  — current lifecycle state,
+ *   strikes: [ EvidenceStrike rows ],
+ *   context: { now, hasAttestation, baselineLocked, hasBlockingReviewCase, referenceFeeRateBps? },
+ *   actor:   "system" | "user" | "reviewer",
+ * }
+ * Returns a deep-frozen, hashable DECISION. Throws EclEngineError on missing
+ * inputs — a guess here would silently answer a question nobody asked.
+ */
+export function runEclEngine(input, policy) {
+  const i = input && typeof input === "object" ? input : {};
+  const identity = i.identity && typeof i.identity === "object" ? i.identity : {};
+  enRequire(enNonEmpty(identity.evidenceEntityType) && enNonEmpty(identity.evidenceId) && enNonEmpty(identity.brandId) && enNonEmpty(identity.ownerEmail), "identity requires evidenceEntityType, evidenceId, brandId, ownerEmail");
+  enRequire(i.evidence && typeof i.evidence === "object" && enNonEmpty(i.evidence.domain), "evidence must be a normalized envelope");
+  enRequire(Array.isArray(i.existing), "existing must be an array (pass [] when none)");
+  enRequire(i.state && typeof i.state === "object" && enNonEmpty(i.state.status), "state.status (current lifecycle status) is required");
+  enRequire(Array.isArray(i.strikes), "strikes must be an array (pass [] when none)");
+  enRequire(policy && typeof policy === "object" && policy.gates, "policy is required");
+  const ctx = i.context && typeof i.context === "object" ? i.context : {};
+  const nowMs = Date.parse(String(ctx.now));
+  enRequire(!Number.isNaN(nowMs), "context.now must be an injected, parseable instant (no implicit clock)");
+  enRequire(ctx.hasAttestation !== undefined && ctx.hasAttestation !== null, "context.hasAttestation is required");
+  enRequire(ctx.baselineLocked !== undefined && ctx.baselineLocked !== null, "context.baselineLocked is required");
+  enRequire(ctx.hasBlockingReviewCase !== undefined && ctx.hasBlockingReviewCase !== null, "context.hasBlockingReviewCase is required");
+  const actor = ["system", "user", "reviewer"].includes(i.actor) ? i.actor : "system";
+  const nowIso = new Date(nowMs).toISOString();
+
+  // ── Trazabilidad: every decision is reproducible from this hash ─────────
+  const inputsHash = sha256Hex(
+    stableSerialize({
+      engineVersion: ECL_ENGINE_VERSION,
+      ruleSetVersion: ECL_RULESET_VERSION,
+      policyVersion: policy.policyVersion || null,
+      identity,
+      evidence: i.evidence,
+      existing: i.existing.map((e) => ({ id: e && e.id, status: e && e.status, checksum: e && e.evidence && e.evidence.checksum })),
+      state: i.state,
+      strikes: i.strikes.map((s) => ({ scope: s && s.scope, expires_at: s && s.expires_at, withdrawn_at: (s && s.withdrawn_at) || null })),
+      context: { now: nowIso, hasAttestation: ctx.hasAttestation === true, baselineLocked: ctx.baselineLocked === true, hasBlockingReviewCase: ctx.hasBlockingReviewCase === true, referenceFeeRateBps: ctx.referenceFeeRateBps === undefined ? null : ctx.referenceFeeRateBps },
+    }),
+  );
+  const correlationId = `eclp3:${inputsHash.slice(0, 40)}`;
+
+  // ── 1. Reconciliation (dedup, supersession, contradictions) ─────────────
+  const reconciliation = reconcileEvidence(i.evidence, i.existing, policy);
+
+  // Exact replay: the SAME bytes were already processed. Idempotent no-op.
+  if (reconciliation.duplicates.length > 0) {
+    return deepFreeze({
+      engineVersion: ECL_ENGINE_VERSION,
+      ruleSetVersion: ECL_RULESET_VERSION,
+      policyVersion: policy.policyVersion || null,
+      correlationId,
+      inputsHash,
+      outcome: "duplicate_replay",
+      duplicateOf: reconciliation.duplicates.map((d) => d.existingId),
+      reconciliation,
+      confidenceResult: null,
+      confidenceResultHash: null,
+      transition: null,
+      supersessions: [],
+      reviewCaseIntents: [],
+      strikeIntents: [],
+      provisional: null,
+      decisionHash: sha256Hex(stableSerialize({ inputsHash, outcome: "duplicate_replay" })),
+    });
+  }
+
+  // ── 2. Classification ────────────────────────────────────────────────────
+  const classification = classifyConfidence(i.evidence, reconciliation, {
+    hasAttestation: ctx.hasAttestation === true,
+    referenceFeeRateBps: ctx.referenceFeeRateBps,
+    feeVsRateTableMaxMultiple: policy.plausibility ? policy.plausibility.feeVsRateTableMaxMultiple : undefined,
+  });
+
+  // ── 3. Strikes: economic contradictions strike the scope, per policy ─────
+  const scope = strikeScopeForDomain(i.evidence.domain);
+  const strikeIntents = [];
+  for (const c of reconciliation.contradictions) {
+    strikeIntents.push(
+      buildStrikeIntent(
+        { brandId: identity.brandId, ownerEmail: identity.ownerEmail, scope, reasonCode: `evidence_contradiction:${c.code}`, evidenceEntityType: identity.evidenceEntityType, evidenceId: identity.evidenceId, correlationId },
+        policy,
+        { now: nowIso },
+      ),
+    );
+  }
+  const activeStrikeCountByScope = countActiveStrikesByScope(i.strikes, nowMs);
+  // Prospective counts (existing + would-be strikes) drive the escalation.
+  const prospectiveCounts = { ...activeStrikeCountByScope };
+  if (strikeIntents.length > 0) prospectiveCounts[scope] = Number(prospectiveCounts[scope] || 0) + strikeIntents.length;
+  const escalatedScopes = scopesRequiringEscalation(prospectiveCounts, policy);
+
+  // ── 4. Fail-closed review routing ────────────────────────────────────────
+  const reviewCaseIntents = [];
+  const reviewReasons = [];
+  if (reconciliation.contradictions.length > 0) {
+    reviewReasons.push("evidence_contradiction");
+    reviewCaseIntents.push(reviewIntent(identity, "evidence_contradiction", "economic", ["freeze_baseline", "create_invoice"], correlationId, { contradictions: reconciliation.contradictions.map((c) => c.code) }));
+  }
+  if (reconciliation.ambiguities.length > 0) {
+    reviewReasons.push("reconciliation_ambiguous");
+    reviewCaseIntents.push(reviewIntent(identity, "reconciliation_ambiguous", "quality", ["freeze_baseline"], correlationId, { ambiguities: reconciliation.ambiguities.map((a) => a.code) }));
+  }
+  if (classification.nothingReadable) {
+    reviewReasons.push("evidence_unreadable");
+    reviewCaseIntents.push(reviewIntent(identity, "evidence_unreadable", "quality", ["show_dashboard"], correlationId, null));
+  }
+  for (const s of escalatedScopes) {
+    reviewReasons.push(`strike_threshold_reached:${s}`);
+    reviewCaseIntents.push(reviewIntent(identity, `strike_threshold_reached:${s}`, "economic", ["create_invoice"], correlationId, { scope: s }));
+  }
+
+  // ── 5. Expiry of the CURRENT state, from the injected instant only ───────
+  const expiry = resolveExpiry(i.state, policy, { now: nowIso });
+  if (expiry.ambiguous) {
+    reviewReasons.push("provisional_window_unrecoverable");
+    reviewCaseIntents.push(reviewIntent(identity, "provisional_window_unrecoverable", "quality", ["recover_proposal"], correlationId, null));
+  }
+
+  // ── 6. Target status (never inferred favorably) ──────────────────────────
+  let toStatus;
+  if (reviewReasons.length > 0) {
+    toStatus = "under_review";
+  } else if (expiry.lapsed) {
+    toStatus = "expired";
+  } else if (classification.confidenceLevel === "high" && (classification.verificationMethod === "independent_api" || classification.verificationMethod === "independent_document")) {
+    toStatus = "verified";
+  } else if (classification.confidenceLevel === "medium" && ctx.hasAttestation === true) {
+    toStatus = "accepted_provisionally";
+  } else if (classification.confidenceLevel === "low" || classification.confidenceLevel === "medium") {
+    toStatus = "estimated";
+  } else {
+    toStatus = "under_review";
+  }
+
+  // A target the graph does not allow from the current state is itself an
+  // ambiguity → review, unless review is the target already. Terminal states
+  // never move.
+  if (isTerminalStatus(i.state.status)) {
+    toStatus = i.state.status;
+  } else if (toStatus !== i.state.status && !canTransition(i.state.status, toStatus)) {
+    if (toStatus !== "under_review" && canTransition(i.state.status, "under_review")) {
+      reviewReasons.push("illegal_transition_requested");
+      reviewCaseIntents.push(reviewIntent(identity, "illegal_transition_requested", "quality", [], correlationId, { requested: toStatus, from: i.state.status }));
+      toStatus = "under_review";
+    } else {
+      toStatus = i.state.status;
+    }
+  }
+
+  const provisional =
+    toStatus === "accepted_provisionally"
+      ? deepFreeze({ startedAt: nowIso, expiresAt: deriveProvisionalExpiry(nowIso, policy) })
+      : null;
+
+  // ── 7. Lifecycle event intents ───────────────────────────────────────────
+  const eventName =
+    reviewReasons.length > 0 ? `evidence_review_opened:${reviewReasons[0]}` : expiry.lapsed ? "provisional_expired" : `evidence_${toStatus}`;
+  const transition = buildLifecycleTransition({
+    evidenceEntityType: identity.evidenceEntityType,
+    evidenceId: identity.evidenceId,
+    brandId: identity.brandId,
+    ownerEmail: identity.ownerEmail,
+    fromStatus: i.state.status,
+    toStatus,
+    event: eventName,
+    actor,
+    correlationId,
+    payload: { inputsHash, ruleSetVersion: ECL_RULESET_VERSION, reviewReasons },
+  });
+
+  const supersessions = reconciliation.supersedes
+    .map((s) => {
+      const prior = i.existing.find((e) => e && e.id === s.existingId);
+      if (!prior || isTerminalStatus(prior.status) || !canTransition(prior.status, "superseded")) return null;
+      return buildLifecycleTransition({
+        evidenceEntityType: identity.evidenceEntityType,
+        evidenceId: s.existingId,
+        brandId: identity.brandId,
+        ownerEmail: identity.ownerEmail,
+        fromStatus: prior.status,
+        toStatus: "superseded",
+        event: `evidence_superseded:${s.reason}`,
+        actor,
+        correlationId,
+        payload: { supersededById: identity.evidenceId, inputsHash },
+      });
+    })
+    .filter((t) => t !== null);
+
+  // ── 8. Finalized ConfidenceResult through the P2 gate layer ──────────────
+  const gateContext = {
+    now: nowIso,
+    hasAttestation: ctx.hasAttestation === true,
+    hasOpenConflicts: reconciliation.contradictions.length > 0,
+    baselineLocked: ctx.baselineLocked === true,
+    activeStrikeCountByScope: prospectiveCounts,
+    hasBlockingReviewCase: ctx.hasBlockingReviewCase === true || reviewCaseIntents.length > 0,
+  };
+  const confidenceResult = finalizeConfidenceResult(
+    {
+      evidenceType: i.evidence.evidenceType,
+      sourceType: i.evidence.sourceType,
+      confidenceLevel: classification.confidenceLevel,
+      verificationMethod: classification.verificationMethod,
+      evidenceStatus: toStatus,
+      passedRules: classification.passedRules,
+      failedRules: classification.failedRules,
+      warnings: classification.warnings,
+      missingFields: i.evidence.missingFields,
+      invalidFields: i.evidence.invalidFields,
+      conflicts: reconciliation.contradictions,
+      metrics: i.evidence.metrics,
+      period: { periodStart: i.evidence.periodStart, periodEnd: i.evidence.periodEnd, coverageDays: i.evidence.coverageDays },
+      provenance: { importId: i.evidence.importId, checksum: i.evidence.checksum, parserVersion: i.evidence.parserVersion, inputsHash, correlationId },
+      expiresAt: provisional ? provisional.expiresAt : (i.state.expiresAt || null),
+      reviewRequired: reviewReasons.length > 0,
+      ruleSetVersion: ECL_RULESET_VERSION,
+      explanation: {
+        reason: reviewReasons.length > 0 ? `routed to human review: ${reviewReasons.join(", ")}` : `classified ${classification.confidenceLevel} via ${classification.verificationMethod}`,
+        actionsToImprove: classification.failedRules.map((r) => `resolve ${r.id}`),
+      },
+    },
+    policy,
+    gateContext,
+  );
+
+  const decision = {
+    engineVersion: ECL_ENGINE_VERSION,
+    ruleSetVersion: ECL_RULESET_VERSION,
+    policyVersion: policy.policyVersion || null,
+    correlationId,
+    inputsHash,
+    outcome: reviewReasons.length > 0 ? "under_review" : toStatus === i.state.status ? "no_change" : toStatus,
+    duplicateOf: [],
+    reconciliation,
+    confidenceResult,
+    confidenceResultHash: hashConfidenceResult(confidenceResult),
+    transition,
+    supersessions,
+    reviewCaseIntents,
+    strikeIntents,
+    provisional,
+  };
+  return deepFreeze({ ...decision, decisionHash: sha256Hex(stableSerialize(decision)) });
+}
+// NOTE: no "summarize gates with assumed context" helper exists ON PURPOSE —
+// a gate verdict computed with invented context (assumed attestation, assumed
+// locked baseline) would be a favorable inference, which P3 forbids. Gate
+// evaluation always goes through eclGates.evaluateGate with REAL context.

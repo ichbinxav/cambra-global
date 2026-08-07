@@ -17,15 +17,22 @@ export const STAGE_ECL_P1 = "ECL_P1_SCHEMA_ONLY";
 // scheduler, no lifecycle handler, no UI and no billing integration: the stage
 // widens the allowlist by EXACT PATHS only, never by category or pattern.
 export const STAGE_ECL_P2 = "ECL_P2_DOMAIN_CONTRACTS";
-export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2];
+// v62.5 — ECL P3: the lifecycle ENGINE (pure domain modules + one I/O handler).
+// STILL no scheduler, no reminders, no ReviewQueue UI, no billing integration:
+// the stage widens the allowlist by EXACT PATHS only, never by category.
+export const STAGE_ECL_P3 = "ECL_P3_LIFECYCLE_ENGINE";
+export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3];
 
 // Declared transitions. PRE_ECL → P2 is DELIBERATELY ABSENT: P1 cannot be
 // skipped, so a repo that never applied the schemas can never reach the
-// contracts stage. P2 → P1 exists so the stage is reversible.
+// contracts stage. P2 → P1 exists so the stage is reversible. P3 is reachable
+// ONLY from P2 (never from PRE_ECL or P1 — a repo without the domain
+// contracts can never gain a lifecycle engine), and P3 → P2 is the rollback.
 export const STAGE_TRANSITIONS = {
   [STAGE_PRE_ECL]: [STAGE_ECL_P1],
   [STAGE_ECL_P1]: [STAGE_PRE_ECL, STAGE_ECL_P2],
-  [STAGE_ECL_P2]: [STAGE_ECL_P1],
+  [STAGE_ECL_P2]: [STAGE_ECL_P1, STAGE_ECL_P3],
+  [STAGE_ECL_P3]: [STAGE_ECL_P2],
 };
 
 // CODE-OWNED allowlist for ECL P1. The six schema paths, nothing else — no
@@ -72,7 +79,25 @@ export const P2_ALLOWLIST = [
   "src/lib/eclParity.test.js",
 ];
 
+// CODE-OWNED allowlist for ECL P3 = everything P2 allowed plus the EXACT paths
+// of the lifecycle engine: four pure domain modules, their tests, and ONE I/O
+// handler. NO scheduler, NO reminder job, NO ReviewQueue UI, NO billing file is
+// listed — adding any of those requires a new stage, not an edit here.
+export const P3_ALLOWLIST = [
+  ...P2_ALLOWLIST,
+  "src/lib/eclLifecycle.js",
+  "src/lib/eclReconcile.js",
+  "src/lib/eclStrikes.js",
+  "src/lib/eclEngine.js",
+  "src/lib/eclLifecycle.test.js",
+  "src/lib/eclReconcile.test.js",
+  "src/lib/eclStrikes.test.js",
+  "src/lib/eclEngine.test.js",
+  "base44/functions/eclProcessEvidence/entry.ts",
+];
+
 export function allowlistForStage(stage) {
+  if (stage === STAGE_ECL_P3) return [...P3_ALLOWLIST];
   if (stage === STAGE_ECL_P2) return [...P2_ALLOWLIST];
   if (stage === STAGE_ECL_P1) return [...P1_ALLOWLIST];
   if (stage === STAGE_PRE_ECL) return [];
@@ -82,7 +107,7 @@ export function allowlistForStage(stage) {
 // Stages in which the ECL policy file (config/ecl-policy.json) may exist.
 // PRE_ECL and P1 must keep failing on it — the policy layer starts in P2.
 export function eclPolicyFileAllowed(stage) {
-  return stage === STAGE_ECL_P2;
+  return stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3;
 }
 
 /**
@@ -113,7 +138,7 @@ export function checkFreeze(entries, readFile, options = {}) {
   // carry ECL fields. Baseline.jsonc and processUploadedFile stay excluded in
   // every stage, and their hashes are still checked below without exception.
   const eclFieldsAllowedIn =
-    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 ? P1_ECL_FIELD_PATHS : [];
+    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 ? P1_ECL_FIELD_PATHS : [];
   const failures = [];
   for (const entry of entries) {
     const content = readFile(entry.path);

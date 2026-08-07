@@ -195,11 +195,16 @@ export const DOMAIN_SOURCE_ORDER = [
   "src/lib/normalizedEvidence.js",
   "src/lib/confidenceResult.js",
   "src/lib/eclGates.js",
+  // v62.5 — ECL P3 lifecycle engine modules, in dependency order.
+  "src/lib/eclLifecycle.js",
+  "src/lib/eclReconcile.js",
+  "src/lib/eclStrikes.js",
+  "src/lib/eclEngine.js",
 ];
 
 // Matches a whole import statement, including the multi-line brace form.
 const SIBLING_IMPORT_BLOCK =
-  /^import\s+[^;]*?from\s+"\.\/(?:calendarDate|eclSerialize|normalizedEvidence|confidenceResult)\.js";[ \t]*\r?\n/gm;
+  /^import\s+[^;]*?from\s+"\.\/(?:calendarDate|eclSerialize|normalizedEvidence|confidenceResult|eclGates|eclLifecycle|eclReconcile|eclStrikes)\.js";[ \t]*\r?\n/gm;
 
 export function buildEclDomainArtifact(sources) {
   const header = [
