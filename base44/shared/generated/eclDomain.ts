@@ -979,11 +979,13 @@ export function buildAttestationIntent(input) {
     legal_text_hash: legalTextHash,
     language: i.language,
     idempotency_key: idempotencyKey,
+    // Optional fields via spread (never post-assignment): keeps the generated
+    // backend artifact clean under the critical typecheck's literal inference.
+    ...(i.declaredPeriodStart ? { declared_period_start: i.declaredPeriodStart } : {}),
+    ...(i.declaredPeriodEnd ? { declared_period_end: i.declaredPeriodEnd } : {}),
+    ...(lcNonEmpty(i.declaredSource) ? { declared_source: i.declaredSource } : {}),
+    ...(lcNonEmpty(i.evidenceChecksum) ? { evidence_checksum: i.evidenceChecksum } : {}),
   };
-  if (i.declaredPeriodStart) record.declared_period_start = i.declaredPeriodStart;
-  if (i.declaredPeriodEnd) record.declared_period_end = i.declaredPeriodEnd;
-  if (lcNonEmpty(i.declaredSource)) record.declared_source = i.declaredSource;
-  if (lcNonEmpty(i.evidenceChecksum)) record.evidence_checksum = i.evidenceChecksum;
 
   return deepFreeze({ legalTextHash, idempotencyKey, record });
 }
@@ -1287,9 +1289,11 @@ export function buildStrikeIntent(input, policy, context) {
     reason_code: i.reasonCode,
     expires_at: expiresAt,
     idempotency_key: idempotencyKey,
+    // Optional pointer via spread (never post-assignment): keeps the generated
+    // backend artifact clean under the critical typecheck's literal inference.
+    ...(skNonEmpty(i.evidenceEntityType) ? { evidence_entity_type: i.evidenceEntityType } : {}),
+    ...(skNonEmpty(i.evidenceId) ? { evidence_id: i.evidenceId } : {}),
   };
-  if (skNonEmpty(i.evidenceEntityType)) record.evidence_entity_type = i.evidenceEntityType;
-  if (skNonEmpty(i.evidenceId)) record.evidence_id = i.evidenceId;
 
   return deepFreeze({ idempotencyKey, expiresAt, record });
 }

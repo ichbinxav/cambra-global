@@ -100,9 +100,11 @@ export function buildStrikeIntent(input, policy, context) {
     reason_code: i.reasonCode,
     expires_at: expiresAt,
     idempotency_key: idempotencyKey,
+    // Optional pointer via spread (never post-assignment): keeps the generated
+    // backend artifact clean under the critical typecheck's literal inference.
+    ...(skNonEmpty(i.evidenceEntityType) ? { evidence_entity_type: i.evidenceEntityType } : {}),
+    ...(skNonEmpty(i.evidenceId) ? { evidence_id: i.evidenceId } : {}),
   };
-  if (skNonEmpty(i.evidenceEntityType)) record.evidence_entity_type = i.evidenceEntityType;
-  if (skNonEmpty(i.evidenceId)) record.evidence_id = i.evidenceId;
 
   return deepFreeze({ idempotencyKey, expiresAt, record });
 }
