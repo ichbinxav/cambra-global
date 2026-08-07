@@ -1,11 +1,11 @@
 {
-  "releaseName": "CAMBRA v0.62.4 — ECL P1/P2 Closure",
+  "releaseName": "CAMBRA v0.62.5 — ECL P3 Lifecycle Engine",
   "version": "0.62.5",
-  "sourceTreeHash": "183e02d74711b2d95a188dc43d75b6c13e262183b0e848b0751717848fc8e093",
+  "sourceTreeHash": "ba0cf45b890dcfc970d8a12c60fb8e1b152a23518232d113818f8338a2f1c348",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 839,
   "sourceArchiveShaExternal": null,
-  "gitSha": "a1a3eb1c765b467d9f4efa75d7c1514037dc8ab5",
+  "gitSha": "8bf5662682e013d7e3bed6d28fab316629a703c8",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.01",
@@ -18,7 +18,7 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "fb0f5dac3990da26d2054c5de571e8f2a9f6970a77aead1cf227ebf1c92aace4"
   },
-  "durabilityManifestSha": "35c66c3d4ef35213fb92151a3e85741fc450e3e8f68676b6e234b13fc4bc25d3",
+  "durabilityManifestSha": "4a0d94ff72227c4d5c3a1c9ecd40d71e11ae75fed2ecdf3fb915f8b5aec16e1a",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -92,9 +92,11 @@
     "dist": "1e79b6bb9583101caaedc281f728236ab3d6acedf30e92e6391e5da9a831178e"
   },
   "manualRequirements": [
+    "evidence tests: stale (run the *:evidence command)",
+    "evidence build: stale (run the *:evidence command)",
     "evidence lint: stale (run the *:evidence command)",
     "evidence typecheck-critical: stale (run the *:evidence command)",
     "evidence typecheck-baseline: stale (run the *:evidence command)"
   ],
-  "generatedAt": "2026-08-07T23:17:20.023Z"
+  "generatedAt": "2026-08-07T23:19:13.880Z"
 }
