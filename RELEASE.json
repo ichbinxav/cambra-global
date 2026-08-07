@@ -1,11 +1,11 @@
 {
   "releaseName": "CAMBRA v0.62.5 — ECL P3 Lifecycle Engine",
   "version": "0.62.5",
-  "sourceTreeHash": "046e860b3bbd1814cd21a6016c132abe296be9dc1394842eff0781facaca66c7",
+  "sourceTreeHash": "8c8cd4f6d5c0508009ee349ca37701e7fe3637296ead3de4daf529e12571e42a",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 839,
+  "sourceTreeFileCount": 838,
   "sourceArchiveShaExternal": null,
-  "gitSha": "0df2751057740cd5840e216d6ee1740ed0c35e19",
+  "gitSha": "bc08b3130f6a22ffd125e3fe4f622714f4fc89f6",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.01",
@@ -18,7 +18,7 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "fb0f5dac3990da26d2054c5de571e8f2a9f6970a77aead1cf227ebf1c92aace4"
   },
-  "durabilityManifestSha": "a4a1e5d3524765e1c1825b7640ea1371986e47bbc4ce052e70d86060c786f747",
+  "durabilityManifestSha": "d7c19ab9bd4bb4b842cb306f887250cd092b1f7a274a7a814e464c6630f2c6c9",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -43,9 +43,9 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "046e860b3bbd1814cd21a6016c132abe296be9dc1394842eff0781facaca66c7",
-    "startedAt": "2026-08-07T23:22:13.330Z",
-    "completedAt": "2026-08-07T23:22:23.752Z",
+    "sourceTreeHash": "8c8cd4f6d5c0508009ee349ca37701e7fe3637296ead3de4daf529e12571e42a",
+    "startedAt": "2026-08-07T23:28:09.362Z",
+    "completedAt": "2026-08-07T23:28:19.611Z",
     "exitCode": 0,
     "ciRunId": null,
     "testFiles": 335,
@@ -56,9 +56,9 @@
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "046e860b3bbd1814cd21a6016c132abe296be9dc1394842eff0781facaca66c7",
-    "startedAt": "2026-08-07T23:22:24.233Z",
-    "completedAt": "2026-08-07T23:22:39.537Z",
+    "sourceTreeHash": "8c8cd4f6d5c0508009ee349ca37701e7fe3637296ead3de4daf529e12571e42a",
+    "startedAt": "2026-08-07T23:28:20.082Z",
+    "completedAt": "2026-08-07T23:28:34.980Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "1e79b6bb9583101caaedc281f728236ab3d6acedf30e92e6391e5da9a831178e",
@@ -66,25 +66,25 @@
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "046e860b3bbd1814cd21a6016c132abe296be9dc1394842eff0781facaca66c7",
-    "startedAt": "2026-08-07T23:20:07.973Z",
-    "completedAt": "2026-08-07T23:20:17.127Z",
+    "sourceTreeHash": "8c8cd4f6d5c0508009ee349ca37701e7fe3637296ead3de4daf529e12571e42a",
+    "startedAt": "2026-08-07T23:26:29.489Z",
+    "completedAt": "2026-08-07T23:26:38.755Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "046e860b3bbd1814cd21a6016c132abe296be9dc1394842eff0781facaca66c7",
-    "startedAt": "2026-08-07T23:21:19.773Z",
-    "completedAt": "2026-08-07T23:21:21.354Z",
+    "sourceTreeHash": "8c8cd4f6d5c0508009ee349ca37701e7fe3637296ead3de4daf529e12571e42a",
+    "startedAt": "2026-08-07T23:26:39.240Z",
+    "completedAt": "2026-08-07T23:26:40.724Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "046e860b3bbd1814cd21a6016c132abe296be9dc1394842eff0781facaca66c7",
-    "startedAt": "2026-08-07T23:21:21.848Z",
-    "completedAt": "2026-08-07T23:21:30.653Z",
+    "sourceTreeHash": "8c8cd4f6d5c0508009ee349ca37701e7fe3637296ead3de4daf529e12571e42a",
+    "startedAt": "2026-08-07T23:26:41.192Z",
+    "completedAt": "2026-08-07T23:26:50.028Z",
     "exitCode": 0,
     "ciRunId": null
   },
@@ -92,5 +92,5 @@
     "dist": "1e79b6bb9583101caaedc281f728236ab3d6acedf30e92e6391e5da9a831178e"
   },
   "manualRequirements": [],
-  "generatedAt": "2026-08-07T23:23:33.071Z"
+  "generatedAt": "2026-08-07T23:29:51.772Z"
 }
