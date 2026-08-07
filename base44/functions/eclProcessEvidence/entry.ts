@@ -216,11 +216,10 @@ Deno.serve(async (req) => {
         evidence_status: toStatus,
         confidence_result: resultSnapshot,
         confidence_result_hash: decision.confidenceResultHash,
+        ...(decision.provisional
+          ? { provisional_started_at: decision.provisional.startedAt, expires_at: decision.provisional.expiresAt }
+          : {}),
       };
-      if (decision.provisional) {
-        update.provisional_started_at = decision.provisional.startedAt;
-        update.expires_at = decision.provisional.expiresAt;
-      }
       await svc.entities.StatementImport.update(payload.evidenceId, update);
     } else {
       await svc.entities.SavingsEvidence.update(payload.evidenceId, {
