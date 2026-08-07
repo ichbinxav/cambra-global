@@ -103,11 +103,6 @@
       "bytes": 5413
     },
     {
-      "path": "RELEASE.json",
-      "sha256": "cf2454879cc357ad1c6391a448f7b0288cd29d93f02661715b6bee8b161562e4",
-      "bytes": 4608
-    },
-    {
       "path": "scripts/advance-stage.mjs",
       "sha256": "05fb90e88d7f5c65251f4db95bcf579fac051b949cfc214bcf90c3d47e9d2cab",
       "bytes": 2664
