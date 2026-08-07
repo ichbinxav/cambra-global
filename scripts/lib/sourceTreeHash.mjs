@@ -30,6 +30,10 @@ export const EXCLUDED_FILES = [
   // the hash, the very act of generating it changed the tree and the approve
   // step declared its own candidate "stale" — an impossible cycle.
   "typecheck-baseline.candidate.json",
+  // v62.5 — durability EVIDENCE, not source. The manifest records hashes OF the
+  // tree; if it counted toward the hash, writing it would change the tree it
+  // describes — the same circularity RELEASE.json already breaks.
+  "config/p1-durability-manifest.json",
 ];
 export const EXCLUDED_PATTERNS = [
   /\.log$/i,
