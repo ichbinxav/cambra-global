@@ -181,7 +181,10 @@ describe("ECL stage gate (v62.3)", () => {
     expect(domain).not.toMatch(/base44\.(entities|integrations)/);
     expect(domain).not.toMatch(/fetch\(/);
     expect(domain).not.toMatch(/new Date\(\)/);
-    expect(domain).not.toMatch(/Date\.now\(\)/);
+    // No wall-clock CALL anywhere in code (the doctrine comment in eclGates
+    // mentions the token, so comments are excluded line-by-line).
+    const codeLines = domain.split("\n").filter((l) => !/^\s*(\/\/|\*)/.test(l));
+    expect(codeLines.some((l) => l.includes("Date.now()"))).toBe(false);
   });
 
   it("the ECL policy exists ONLY as an allowlisted P2 artifact", () => {
