@@ -1,7 +1,7 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.62.4",
+  "version": "0.62.5",
   "releaseName": "CAMBRA v0.62.4 — ECL P1/P2 Closure",
   "type": "module",
   "engines": {

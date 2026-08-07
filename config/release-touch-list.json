@@ -1,6 +1,6 @@
 {
-  "release": "0.62.4",
-  "comment": "Files modified by this release. The baseline gate refuses to absorb ANY typecheck error appearing in these files. v62.4 added the ECL P2 domain-contract files (policy, schema, generator, domain modules, generated artifacts) that were missing from the 0.62.3 list. v62.4.1 added base44/shared/generated/eclDomain.ts (the backend domain artifact promoted into the critical gate).",
+  "release": "0.62.5",
+  "comment": "Files modified by this release. v62.5 added the ECL P3 lifecycle-engine files (eclLifecycle/eclReconcile/eclStrikes/eclEngine + the eclProcessEvidence handler). The baseline gate refuses to absorb ANY typecheck error appearing in these files. v62.4 added the ECL P2 domain-contract files (policy, schema, generator, domain modules, generated artifacts) that were missing from the 0.62.3 list. v62.4.1 added base44/shared/generated/eclDomain.ts (the backend domain artifact promoted into the critical gate).",
   "files": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -40,6 +40,12 @@
     "src/lib/eclSerialize.js",
     "src/lib/generated/eclPolicy.js",
     "base44/shared/generated/eclPolicy.ts",
-    "base44/shared/generated/eclDomain.ts"
+    "base44/shared/generated/eclDomain.ts",
+    "src/lib/eclLifecycle.js",
+    "src/lib/eclReconcile.js",
+    "src/lib/eclStrikes.js",
+    "src/lib/eclEngine.js",
+    "base44/functions/eclProcessEvidence/entry.ts",
+    "tsconfig.critical.json"
   ]
 }
