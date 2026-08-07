@@ -71,6 +71,7 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | refreshPaymentMethodStatus | me (+ ownership) | ✓ | DealActivation | PaymentMethodSetupCard (RECOVER-2) |
 | getRecoverContractStatus | me (+ ownership) o admin | ✓ | Mandate, DealActivation, Brand | ContractDocumentCard (RECOVER-3) |
 | downloadRecoverContract | me (+ ownership) o admin | ✓ | Mandate, DealActivation, Brand | ContractDocumentCard / RecoverContractAdminPanel |
+| eclProcessEvidence | admin (service role para lecturas/escrituras; ownership resuelto server-side del registro) | ✓ | StatementImport, SavingsEvidence, EvidenceLifecycleEvent, EvidenceAttestation, EvidenceStrike, ReviewCase, Baseline | admin (v62.5 ECL P3 — único límite I/O del motor puro en eclDomain.ts; sin efecto en billing) |
 | generateRecoverContractPdf | gate (interno) o admin | ✓ | Mandate, DealActivation, Brand, OperationalLog | acceptRecoverMandate (fire-and-forget), reconciliador, admin |
 | sendRecoverContractEmail | gate (interno) o admin | ✓ | Mandate, OperationalLog | generateRecoverContractPdf, reconciliador, admin (resend explícito) |
 | stripeBillingWebhook | pública por diseño — firma HMAC de Stripe (`stripe-signature`) + secret por modo | ✓ | DealActivation, Invoice, PaymentEvent, MonthlySavingsReport | Stripe (cuenta de facturación de CAMBRA) — RECOVER-4: también invoice.*/dispute/credit_note, dedupe por event.id |

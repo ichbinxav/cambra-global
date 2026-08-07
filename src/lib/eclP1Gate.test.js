@@ -14,9 +14,11 @@ import {
   STAGE_PRE_ECL,
   STAGE_ECL_P1,
   STAGE_ECL_P2,
+  STAGE_ECL_P3,
   STAGE_TRANSITIONS,
   P1_ALLOWLIST,
   P2_ALLOWLIST,
+  P3_ALLOWLIST,
   P1_ECL_FIELD_PATHS,
   eclPolicyFileAllowed,
 } from "../../scripts/lib/preEclFreeze.mjs";
@@ -35,15 +37,17 @@ describe("ECL stage gate (v62.3)", () => {
     expect(() => allowlistForStage("ECL_P2")).toThrow(/unknown stage/);
   });
 
-  it("declares exactly three stages and NEVER a PRE_ECL → P2 shortcut (v62.4)", () => {
-    expect(STAGES).toEqual([STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2]);
+  it("declares exactly four stages and NEVER a skip shortcut (v62.5)", () => {
+    expect(STAGES).toEqual([STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3]);
     // P1 cannot be skipped: the only way out of PRE_ECL is P1.
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).toEqual([STAGE_ECL_P1]);
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).not.toContain(STAGE_ECL_P2);
     expect(STAGE_TRANSITIONS[STAGE_ECL_P1]).toEqual([STAGE_PRE_ECL, STAGE_ECL_P2]);
-    expect(STAGE_TRANSITIONS[STAGE_ECL_P2]).toEqual([STAGE_ECL_P1]);
-    // No P3 stage exists and none can be reached.
-    expect(Object.values(STAGE_TRANSITIONS).flat()).not.toContain("ECL_P3_RULES");
+    // P3 is reachable ONLY from P2, and P3 → P2 is the only rollback.
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P2]).toEqual([STAGE_ECL_P1, STAGE_ECL_P3]);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P3]).toEqual([STAGE_ECL_P2]);
+    expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).not.toContain(STAGE_ECL_P3);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P1]).not.toContain(STAGE_ECL_P3);
   });
 
   it("P2 artifacts stay blocked in stage P1 (v62.4)", () => {
@@ -54,6 +58,7 @@ describe("ECL stage gate (v62.3)", () => {
     expect(eclPolicyFileAllowed(STAGE_PRE_ECL)).toBe(false);
     expect(eclPolicyFileAllowed(STAGE_ECL_P1)).toBe(false);
     expect(eclPolicyFileAllowed(STAGE_ECL_P2)).toBe(true);
+    expect(eclPolicyFileAllowed(STAGE_ECL_P3)).toBe(true);
   });
 
   it("the P2 allowlist is exact paths only — no wildcard, no directory, no pattern", () => {
@@ -127,30 +132,42 @@ describe("ECL stage gate (v62.3)", () => {
     expect(res.failures[0]).toContain("frozen file modified");
   });
 
-  it("the LIVE repo declares stage P2 with an allowlist matching the code (v62.4)", () => {
+  it("the LIVE repo declares stage P3 with an allowlist matching the code (v62.5)", () => {
     const freeze = JSON.parse(fs.readFileSync(new URL("../../config/pre-ecl-freeze.json", import.meta.url), "utf8"));
-    expect(resolveStage(freeze)).toBe(STAGE_ECL_P2);
-    expect([...freeze.allowlist].sort()).toEqual([...P2_ALLOWLIST].sort());
-    // Still the same 8 frozen entries: P2 froze no new schema.
+    expect(resolveStage(freeze)).toBe(STAGE_ECL_P3);
+    expect([...freeze.allowlist].sort()).toEqual([...P3_ALLOWLIST].sort());
+    // Still the same 8 frozen entries: neither P2 nor P3 froze a new schema.
     expect(freeze.entries).toHaveLength(8);
+  });
+
+  it("the P3 allowlist widens P2 by EXACT engine paths only — no wildcard, no new schema, no scheduler (v62.5)", () => {
+    expect(P3_ALLOWLIST.slice(0, P2_ALLOWLIST.length)).toEqual(P2_ALLOWLIST);
+    expect(P3_ALLOWLIST).toHaveLength(30);
+    for (const p of P3_ALLOWLIST) {
+      expect(p).not.toMatch(/[*?]/);
+      expect(p).not.toMatch(/ReviewQueue|scheduler|cron|reminder|entities\/Confidence/);
+    }
+    // P3 grants NO new entity permission: the only entities on the list are P1's six.
+    expect(P3_ALLOWLIST.filter((p) => p.startsWith("base44/entities/"))).toEqual(P1_ALLOWLIST);
+    // Exactly ONE I/O surface: the eclProcessEvidence handler.
+    expect(P3_ALLOWLIST.filter((p) => p.startsWith("base44/functions/"))).toEqual(["base44/functions/eclProcessEvidence/entry.ts"]);
   });
 
   it("the LIVE change log records both stage advances and every freeze mutation", () => {
     const log = JSON.parse(fs.readFileSync(new URL("../../config/freeze-change-log.json", import.meta.url), "utf8"));
     const types = log.changes.map((c) => c.type);
-    expect(types.filter((t) => t === "stage_advance")).toHaveLength(2);
+    expect(types.filter((t) => t === "stage_advance")).toHaveLength(3);
     expect(types.filter((t) => t === "freeze_update")).toHaveLength(2);
     expect(types.filter((t) => t === "freeze_add")).toHaveLength(4);
     expect(log.changes.every((c) => typeof c.reason === "string" && c.reason.trim().length > 0)).toBe(true);
   });
 
-  it("P3 has NOT started — no rule engine, scheduler, lifecycle handler or review queue exists (v62.4)", () => {
+  it("P3 scope stays BOUNDED — no scheduler, no reminders, no ReviewQueue, no new entity (v62.5)", () => {
     const forbidden = [
       "base44/entities/ConfidenceResult.jsonc",
       "base44/entities/NormalizedEvidence.jsonc",
       "base44/entities/ReviewQueue.jsonc",
       "src/lib/eclRules.js",
-      "src/lib/eclLifecycle.js",
       "base44/shared/eclRules.ts",
       "base44/functions/eclLifecycleTick/entry.ts",
       "base44/functions/evaluateEclConfidence/entry.ts",
@@ -158,10 +175,13 @@ describe("ECL stage gate (v62.3)", () => {
     for (const p of forbidden) {
       expect(fs.existsSync(new URL(`../../${p}`, import.meta.url))).toBe(false);
     }
-    // P2 ships contracts, not consumers: no production surface reads the gates.
+    // The generated domain artifact (engine included) stays PURE: no SDK, no
+    // network, no clock. All I/O lives in the one allowlisted handler.
     const domain = fs.readFileSync(new URL("../../base44/shared/generated/eclDomain.ts", import.meta.url), "utf8");
     expect(domain).not.toMatch(/base44\.(entities|integrations)/);
     expect(domain).not.toMatch(/fetch\(/);
+    expect(domain).not.toMatch(/new Date\(\)/);
+    expect(domain).not.toMatch(/Date\.now\(\)/);
   });
 
   it("the ECL policy exists ONLY as an allowlisted P2 artifact", () => {

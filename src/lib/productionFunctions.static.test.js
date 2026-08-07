@@ -45,7 +45,9 @@ const MANIFEST = [
   "contractIPAgent", "copilotChat", "createApiKey", "createDocument",
   "createPaymentLink", "createSelfTestBrand", "crmAgent", "dataSyncAgent",
   "discoverCompanyInfrastructure", "discoveryTechStackAgent", "dispatchWebhook",
-  "driveConnectionCheck", "engineeringReportAgent", "fixValidatorAgent",
+  "driveConnectionCheck",
+  // v62.5 ECL P3 — único límite I/O del motor de ciclo de vida de evidencia.
+  "eclProcessEvidence", "engineeringReportAgent", "fixValidatorAgent",
   "followUpAgent", "founderCopilotAgent", "gdprAgent", "generateInvoiceFromReport",
   "generateInvoicePdf", "generateMonthlySavingsReport", "generateRecommendations",
   "getActivationAdminDetail", "getAdminRecommendationQueue", "getBenchmarkForReport",
