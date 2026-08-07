@@ -1415,7 +1415,11 @@ export function classifyConfidence(evidence, reconciliation, options) {
   const method = deriveVerificationMethod(evidence, opts.hasAttestation);
   const failedIds = failedRules.map((r) => r.id);
   const structurallySound = !failedIds.includes("E-01_fields_valid") && !failedIds.includes("E-02_core_metrics_present") && !failedIds.includes("E-03_envelope_complete");
-  const noConflicts = !failedIds.includes("E-04_no_contradictions") && !failedIds.includes("E-05_cross_domain_agreement") && !failedIds.includes("E-07_fee_plausible");
+  const noConflicts =
+    !failedIds.includes("E-04_no_contradictions") &&
+    !failedIds.includes("E-05_cross_domain_agreement") &&
+    !failedIds.includes("E-06_fee_rate_coherent") &&
+    !failedIds.includes("E-07_fee_plausible");
 
   let confidenceLevel = "unknown";
   const nothingReadable = Object.keys(metrics).length === 0 && (!Array.isArray(evidence.entries) || evidence.entries.length === 0);

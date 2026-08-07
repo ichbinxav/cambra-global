@@ -99,6 +99,45 @@
         "src/lib/eclParity.test.js"
       ],
       "reason": "v62.4 — ECL P2 DOMAIN CONTRACTS: canonical ecl-policy, normalized evidence model, ConfidenceResult contract, pure gate evaluation, deterministic serialization/hash, and generated frontend/backend artifacts. NO rule engines, NO scheduler, NO lifecycle handlers, NO ReviewQueue, NO UI, NO billing integration. Allowlist widened by EXACT PATHS only."
+    },
+    {
+      "date": "2026-08-07T16:53:55.702Z",
+      "type": "stage_advance",
+      "fromStage": "ECL_P2_DOMAIN_CONTRACTS",
+      "toStage": "ECL_P3_LIFECYCLE_ENGINE",
+      "allowlist": [
+        "base44/entities/StatementImport.jsonc",
+        "base44/entities/SavingsEvidence.jsonc",
+        "base44/entities/EvidenceAttestation.jsonc",
+        "base44/entities/EvidenceLifecycleEvent.jsonc",
+        "base44/entities/EvidenceStrike.jsonc",
+        "base44/entities/ReviewCase.jsonc",
+        "config/ecl-policy.json",
+        "src/lib/eclPolicySchema.js",
+        "scripts/generate-ecl-policy.mjs",
+        "src/lib/normalizedEvidence.js",
+        "src/lib/confidenceResult.js",
+        "src/lib/eclGates.js",
+        "src/lib/eclSerialize.js",
+        "src/lib/generated/eclPolicy.js",
+        "base44/shared/generated/eclPolicy.ts",
+        "base44/shared/generated/eclDomain.ts",
+        "src/lib/eclPolicy.test.js",
+        "src/lib/normalizedEvidence.test.js",
+        "src/lib/confidenceResult.test.js",
+        "src/lib/eclGates.test.js",
+        "src/lib/eclParity.test.js",
+        "src/lib/eclLifecycle.js",
+        "src/lib/eclReconcile.js",
+        "src/lib/eclStrikes.js",
+        "src/lib/eclEngine.js",
+        "src/lib/eclLifecycle.test.js",
+        "src/lib/eclReconcile.test.js",
+        "src/lib/eclStrikes.test.js",
+        "src/lib/eclEngine.test.js",
+        "base44/functions/eclProcessEvidence/entry.ts"
+      ],
+      "reason": "v62.5 ECL P3: lifecycle engine (pure domain modules eclLifecycle/eclReconcile/eclStrikes/eclEngine + eclProcessEvidence handler + tests). No scheduler, no reminders, no ReviewQueue UI, no billing integration."
     }
   ]
 }
