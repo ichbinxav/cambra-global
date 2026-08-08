@@ -1,13 +1,13 @@
 {
   "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-  "sourceTreeHash": "4d32a78d0680ddb76101725bdaeb3d7011a6b2ef20fcde22bb604a42e4e3bd0c",
-  "startedAt": "2026-08-08T22:05:26.576Z",
-  "completedAt": "2026-08-08T22:05:36.976Z",
-  "exitCode": 1,
+  "sourceTreeHash": "4fcff4e65e85ee8ef024523c4c798e76b89c2e7542fa27e0f2eee5f46725240e",
+  "startedAt": "2026-08-08T22:08:07.620Z",
+  "completedAt": "2026-08-08T22:08:17.322Z",
+  "exitCode": 0,
   "ciRunId": null,
   "testFiles": 362,
-  "passed": 1470,
-  "failed": 1,
+  "passed": 1471,
+  "failed": 0,
   "skipped": 2,
   "frameworkVersion": "^2.1.9"
 }
