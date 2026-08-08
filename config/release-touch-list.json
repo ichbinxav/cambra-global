@@ -1,6 +1,6 @@
 {
-  "release": "0.63.2",
-  "comment": "CAMBRA v0.63.2 — ECL P4 Production Proof. P1/P2/P3/P4 remain authoritative. This release restores the fail-closed P4 persistence/reprocess hardening, persists the material E-07 evaluationContext for deterministic review reprocessing, adds best-effort AgentTask scheduler runtime proof, and exposes an admin-only Evidence Review surface through eclReviewWorkflow. The active ECL stage is ECL_P4_PRODUCTION_PROOF with 38 exact allowlisted paths and no billing, invoicing, collections, Stripe settlement, payout or success-fee effect.",
+  "release": "0.63.3",
+  "comment": "CAMBRA v0.63.3 — ECL P4 Production Scheduler. P1/P2/P3/P4 remain authoritative. Production Proof now versions the native Base44 automation for eclLifecycleScheduler every 15 minutes with batch limit 25, in addition to the fail-closed P4 hardening, deterministic evaluationContext, AgentTask runtime proof and admin-only Evidence Review surface. The active stage has 39 exact ECL paths and still has no billing, invoicing, collections, Stripe settlement, payout or success-fee effect.",
   "files": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -52,6 +52,7 @@
     "src/lib/eclP4ProductionProof.test.js",
     "base44/shared/eclPersistence.ts",
     "base44/functions/eclLifecycleScheduler/entry.ts",
+    "base44/functions/eclLifecycleScheduler/function.jsonc",
     "base44/functions/eclReviewWorkflow/entry.ts",
     "src/pages/admin/ReviewQueue.jsx",
     "src/App.jsx",
