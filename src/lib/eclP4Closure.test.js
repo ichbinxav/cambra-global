@@ -92,6 +92,42 @@ describe("P4-A · due discovery", () => {
   });
 });
 
+// ── P3 → P4 handoff · the initial operational timestamp ───────────────────
+describe("P3 → P4 handoff · initial next_lifecycle_action_at", () => {
+  const P3_SRC = fs.readFileSync("base44/functions/eclProcessEvidence/entry.ts", "utf8");
+
+  it("a newly accepted provisional record is given its FIRST operational timestamp", () => {
+    const p = planOperationalAction(provisional(), ECL_POLICY, { now: START });
+    expect(p.nextActionAt).toBe(at(REMIND[0]));
+    expect(P3_SRC).toMatch(/next_lifecycle_action_at: nextActionAt \|\| ''/);
+    expect(P3_SRC).toMatch(/P3 → P4 HANDOFF/);
+  });
+  it("the handoff uses the SAME pure planner as the scheduler (one calculation)", () => {
+    expect(P3_SRC).toMatch(/planOperationalAction\(/);
+    expect(SCHED_SRC).toMatch(/planOperationalAction\(state, ECL_POLICY, \{ now \}\)/);
+  });
+  it("reload preserves the schedule and re-processing never renews the window", () => {
+    const reloaded = provisional({ reminderCount: 0 });
+    const first = planOperationalAction(reloaded, ECL_POLICY, { now: START });
+    const later = planOperationalAction(reloaded, ECL_POLICY, { now: at(REMIND[0] - 2) });
+    expect(later.nextActionAt).toBe(first.nextActionAt);
+    expect(later.expiresAt).toBe(EXPIRES);
+    // The handoff derives from the ORIGINAL window, never from the clock.
+    expect(P3_SRC).toMatch(/never from\n\s*\/\/ "now"/);
+  });
+  it("once due, the scheduler discovers the record by that very timestamp", () => {
+    const due = selectDueLifecycleItems(
+      [{ id: "si-1", next_lifecycle_action_at: at(REMIND[0]), evidence_status: "accepted_provisionally" }],
+      { now: at(REMIND[0]) },
+    );
+    expect(due.items.map((i) => i.id)).toEqual(["si-1"]);
+  });
+  it("a non-operational outcome clears the schedule instead of leaving a stale one", () => {
+    const p = planOperationalAction({ status: "verified" }, ECL_POLICY, { now: START });
+    expect(p.nextActionAt).toBe(null);
+  });
+});
+
 // ── 7-12 · provisional expiration ─────────────────────────────────────────
 describe("P4-C · automatic provisional expiration", () => {
   it("7. expires at/after the exact boundary", () => {

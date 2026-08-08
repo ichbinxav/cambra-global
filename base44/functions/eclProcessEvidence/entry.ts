@@ -38,6 +38,10 @@ import {
   buildPersistedEvidenceSnapshot,
   restoreLifecycleFromSnapshot,
   markSnapshotSuperseded,
+  // v62.7 (P4 handoff) — the SAME pure planner the scheduler uses, so the
+  // initial operational timestamp is derived here exactly as it will be
+  // re-derived later. Never a second scheduling calculation.
+  planOperationalAction,
 } from '../../shared/generated/eclDomain.ts';
 import { ECL_POLICY } from '../../shared/generated/eclPolicy.ts';
 import { badRequest, createOnce, persistLifecycleEvent } from '../../shared/eclPersistence.ts';
@@ -245,10 +249,23 @@ Deno.serve(async (req) => {
     };
     const { snapshot, snapshotHash } = buildPersistedEvidenceSnapshot(decision, evidence, lifecycle);
     if (payload.evidenceEntityType === 'statement_import') {
+      // P3 → P4 HANDOFF: a lifecycle state that owes a future operational
+      // action must persist WHEN that action is due, or the scheduler (which
+      // only discovers due timestamps) would never see this record. Derived
+      // from the ORIGINAL window + the persisted reminder counter, never from
+      // "now", so re-processing can never shift or renew an existing window.
+      const reminderCount = Number.isInteger(record.reminder_count) ? record.reminder_count : 0;
+      const opPlan = planOperationalAction(
+        { status: toStatus, provisionalStartedAt: lifecycle.provisionalStartedAt, expiresAt: lifecycle.expiresAt, reminderCount },
+        ECL_POLICY,
+        { now },
+      );
+      const nextActionAt = opPlan.action === 'none' ? opPlan.nextActionAt : opPlan.dueAt || opPlan.nextActionAt;
       const update = {
         evidence_status: toStatus,
         confidence_result: snapshot,
         confidence_result_hash: snapshotHash,
+        next_lifecycle_action_at: nextActionAt || '',
         ...(decision.provisional
           ? { provisional_started_at: decision.provisional.startedAt, expires_at: decision.provisional.expiresAt }
           : {}),
