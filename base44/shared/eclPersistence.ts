@@ -4,7 +4,7 @@
 // (eclProcessEvidence, eclLifecycleScheduler, eclReviewWorkflow). Extracted so
 // the idempotent-create contract can never drift between handlers.
 //
-// GUARANTEE, NAMED HONESTLY: createOnce is REPLAY-SAFE (a sequential retry
+// GUARANTEE, NAMED HONESTLY: createOnce is replay-safe (a sequential retry
 // always finds the persisted claim and returns the existing row) with
 // best-effort concurrent collapse — it is NOT database-enforced exactly-once,
 // because Base44 exposes no unique constraint and no atomic upsert. Two truly
