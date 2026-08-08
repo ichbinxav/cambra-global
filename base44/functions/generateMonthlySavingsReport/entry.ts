@@ -275,7 +275,7 @@ Deno.serve(async (req) => {
             ownerEmail: null,
             now: new Date().toISOString(),
           }).catch((e) => ({ ok: false, code: e?.message || 'ecl_materialization_error' }));
-          if (!eclEvidence.ok) {
+          if (eclEvidence.ok === false) {
             await svc.entities.OperationalLog.create({
               deal_activation_id: deal.id,
               brand_id,
