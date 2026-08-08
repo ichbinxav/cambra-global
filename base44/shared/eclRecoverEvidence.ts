@@ -99,6 +99,7 @@ async function resolveStripeSource(svc: any, brandId: string, now: string) {
       referenceFeeRateBps: finite(verified.engine_result?.achievable_effective_bps)
         ? safeBps(verified.engine_result.achievable_effective_bps)
         : undefined,
+      ownerEmail: nonEmpty(verified.owner_email) ? verified.owner_email : null,
       metadata: {
         payments_analysis_verified_id: verified.id,
         integration_id: verified.integration_id || null,
@@ -145,6 +146,7 @@ async function resolveStripeSource(svc: any, brandId: string, now: string) {
         currentBps: Number(stripe.effective_fee_pct) * 100,
         transactionCount: Number.isInteger(stripe.total_transactions) ? stripe.total_transactions : null,
         referenceFeeRateBps: undefined,
+        ownerEmail: null,
         metadata: { source_snapshot: sourceSnapshot, rounding: 'major_to_minor_half_up_nearest_cent; measured_bps_nearest_integer' },
       },
     };
@@ -185,11 +187,17 @@ export async function inspectRecoverEvidenceSource({ svc, activation, now }: any
 export async function ensureRecoverSavingsEvidence({ base44, svc, activation, baseline, ownerEmail, now }: any) {
   if (!activation?.id || !activation?.brand_id) return { ok: false, code: 'ecl_activation_identity_missing' };
   if (!baseline?.id || baseline.locked !== true) return { ok: false, code: 'ecl_verified_baseline_unavailable' };
-  if (!nonEmpty(ownerEmail)) return { ok: false, code: 'ecl_owner_unavailable' };
 
   const selected = await resolveStripeSource(svc, activation.brand_id, now);
   if (!selected.ok) return selected;
   const source = selected.source;
+  let resolvedOwnerEmail = nonEmpty(ownerEmail) ? ownerEmail : (nonEmpty(source.ownerEmail) ? source.ownerEmail : '');
+  if (!resolvedOwnerEmail) {
+    const brands = await svc.entities.Brand.filter({ id: activation.brand_id }, '-created_date', 1);
+    const brand = (brands || [])[0] || null;
+    resolvedOwnerEmail = nonEmpty(brand?.contact_email) ? brand.contact_email : (nonEmpty(brand?.created_by) ? brand.created_by : '');
+  }
+  if (!resolvedOwnerEmail) return { ok: false, code: 'ecl_owner_unavailable' };
   const metrics = evidenceMetricsFromSource(source);
   if (!source.periodStart || !source.periodEnd || !nonEmpty(source.currency)) {
     return { ok: false, code: 'ecl_source_envelope_incomplete' };
@@ -222,7 +230,7 @@ export async function ensureRecoverSavingsEvidence({ base44, svc, activation, ba
       confidence_level: 0.95,
       verification_status: 'accepted',
       checksum: source.checksum,
-      owner_email: ownerEmail,
+      owner_email: resolvedOwnerEmail,
       metadata_json: {
         source_kind: source.kind,
         source_id: source.sourceId,
