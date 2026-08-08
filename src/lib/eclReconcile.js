@@ -10,7 +10,11 @@
 
 import { deepFreeze } from "./eclSerialize.js";
 
-export const ECL_RECONCILE_VERSION = "ecl-reconcile-1";
+// v62.6 — reconcile-2: supersession now requires POSITIVE COMPARABILITY. "No
+// detected difference" is NOT "evidence matches" when there was nothing
+// comparable to inspect: an unreadable replacement can never silently
+// supersede verified evidence — it routes to review instead.
+export const ECL_RECONCILE_VERSION = "ecl-reconcile-2";
 
 // Statuses whose records still SPEAK for the merchant. rejected/superseded
 // evidence is history: it can still be recognized (checksum replay) but never
@@ -67,6 +71,36 @@ export function periodsOverlap(a, b) {
 }
 
 const GROSS_FIELD_BY_DOMAIN = { payments: "grossAmountMinor", commerce: "grossSalesAmountMinor" };
+
+// v62.6 — the core metric set each domain must expose for two records to be
+// MEANINGFULLY comparable. Accounting has no aggregate contract, so its
+// comparable core is derived from the readable ledger entries.
+const CORE_COMPARABLE_BY_DOMAIN = { payments: ["grossAmountMinor", "feesAmountMinor"], commerce: ["grossSalesAmountMinor"] };
+
+/**
+ * The comparable core of an envelope, or null when the evidence cannot be
+ * meaningfully compared (a core metric missing, or no readable entries).
+ * Null NEVER means "matches" — the caller must route to review.
+ */
+export function comparableCore(env) {
+  const e = env && typeof env === "object" ? env : {};
+  if (e.domain === "accounting") {
+    const entries = Array.isArray(e.entries) ? e.entries : [];
+    if (entries.length === 0) return null;
+    let total = 0;
+    for (const it of entries) total += it && typeof it.amountMinor === "number" ? it.amountMinor : 0;
+    return { entriesTotalMinor: total, entryCount: entries.length };
+  }
+  const core = CORE_COMPARABLE_BY_DOMAIN[e.domain] || [];
+  if (core.length === 0) return null;
+  const m = e.metrics || {};
+  const out = {};
+  for (const k of core) {
+    if (typeof m[k] !== "number") return null;
+    out[k] = m[k];
+  }
+  return out;
+}
 
 function rcSharedMetricDeltas(aMetrics, bMetrics) {
   const deltas = [];
@@ -125,8 +159,11 @@ export function reconcileEvidence(evidence, existing, policy) {
 
     if (sameDomain && live) {
       // A corrected re-import of the same logical source: supersede, never edit.
+      // v62.6 — only when the replacement itself is readable enough to compare;
+      // an unreadable correction routes to review instead of replacing anything.
       if (evidence.importId && old.importId && evidence.importId === old.importId && evidence.checksum !== old.checksum) {
-        supersedes.push({ existingId: ex.id, reason: "same_import_corrected" });
+        if (comparableCore(evidence)) supersedes.push({ existingId: ex.id, reason: "same_import_corrected" });
+        else ambiguities.push({ existingId: ex.id, code: "replacement_not_comparable" });
         continue;
       }
       if (periodsEqual(evidence, old) && evidence.sourceType && evidence.sourceType === old.sourceType) {
@@ -138,7 +175,15 @@ export function reconcileEvidence(evidence, existing, policy) {
           });
           continue;
         }
-        const deltas = rcSharedMetricDeltas(evidence.metrics, old.metrics);
+        // v62.6 — POSITIVE COMPARABILITY required before an empty delta set may
+        // mean "same figures": both sides must expose the full comparable core.
+        const mineCore = comparableCore(evidence);
+        const theirsCore = comparableCore(old);
+        if (!mineCore || !theirsCore) {
+          ambiguities.push({ existingId: ex.id, code: "insufficient_comparable_evidence" });
+          continue;
+        }
+        const deltas = evidence.domain === "accounting" ? rcSharedMetricDeltas(mineCore, theirsCore) : rcSharedMetricDeltas(evidence.metrics, old.metrics);
         if (deltas.length === 0) {
           supersedes.push({ existingId: ex.id, reason: "same_period_re_export" });
         } else {

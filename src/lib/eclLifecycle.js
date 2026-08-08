@@ -193,14 +193,23 @@ export function buildAttestationIntent(input) {
   }
 
   const legalTextHash = sha256Hex(i.legalText);
+  // v62.6 — the idempotency identity covers EVERY field that materially
+  // defines the declaration: two attestations differing in legal version,
+  // declared source, declared period or the attested artifact's checksum are
+  // DIFFERENT declarations and must never collapse into one record.
   const idempotencyKey = lifecycleIdempotencyKey({
     kind: "attestation",
     evidenceEntityType: i.evidenceEntityType,
     evidenceId: i.evidenceId,
     attestorUserId: i.attestorUserId,
     legalTextHash,
+    legalTextVersion: i.legalTextVersion,
     language: i.language,
     declaredMetrics: i.declaredMetrics,
+    declaredSource: lcNonEmpty(i.declaredSource) ? i.declaredSource : null,
+    declaredPeriodStart: i.declaredPeriodStart || null,
+    declaredPeriodEnd: i.declaredPeriodEnd || null,
+    evidenceChecksum: lcNonEmpty(i.evidenceChecksum) ? i.evidenceChecksum : null,
   });
 
   const record = {

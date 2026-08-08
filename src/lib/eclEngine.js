@@ -20,8 +20,11 @@ import { buildLifecycleTransition, deriveProvisionalExpiry, resolveExpiry, canTr
 import { reconcileEvidence } from "./eclReconcile.js";
 import { countActiveStrikesByScope, buildStrikeIntent, scopesRequiringEscalation, strikeScopeForDomain } from "./eclStrikes.js";
 
-export const ECL_ENGINE_VERSION = "ecl-engine-1";
-export const ECL_RULESET_VERSION = "ecl-rules-1";
+// v62.6 — engine-2/rules-2: inputsHash now covers COMPLETE sibling envelopes,
+// the provisional window is never renewed by replay, and rule E-08 requires
+// auditable provenance before an independent document can classify high.
+export const ECL_ENGINE_VERSION = "ecl-engine-2";
+export const ECL_RULESET_VERSION = "ecl-rules-2";
 
 export class EclEngineError extends Error {
   constructor(message) {
@@ -113,6 +116,16 @@ export function classifyConfidence(evidence, reconciliation, options) {
   }
 
   const method = deriveVerificationMethod(evidence, opts.hasAttestation);
+
+  // E-08 (v62.6) — provenance. An "independent document" the platform cannot
+  // point back to (no checksum, no importId) is not auditable: structural
+  // completeness of the figures alone must never yield high/verified.
+  if (method === "independent_document") {
+    const missingProv = ["checksum", "importId"].filter((k) => !enNonEmpty(evidence[k]));
+    if (missingProv.length === 0) passedRules.push("E-08_provenance_present");
+    else failedRules.push({ id: "E-08_provenance_present", detail: `missing: ${missingProv.join(", ")}` });
+  }
+
   const failedIds = failedRules.map((r) => r.id);
   const structurallySound = !failedIds.includes("E-01_fields_valid") && !failedIds.includes("E-02_core_metrics_present") && !failedIds.includes("E-03_envelope_complete");
   const noConflicts =
@@ -121,11 +134,16 @@ export function classifyConfidence(evidence, reconciliation, options) {
     !failedIds.includes("E-06_fee_rate_coherent") &&
     !failedIds.includes("E-07_fee_plausible");
 
+  const provenanceSound = !failedIds.includes("E-08_provenance_present");
+
   let confidenceLevel = "unknown";
   const nothingReadable = Object.keys(metrics).length === 0 && (!Array.isArray(evidence.entries) || evidence.entries.length === 0);
   if (!nothingReadable) {
     if (!structurallySound || !noConflicts) confidenceLevel = "low";
-    else if (method === "independent_api" || method === "independent_document") confidenceLevel = "high";
+    else if (method === "independent_api") confidenceLevel = "high";
+    // v62.6 — an independent document without auditable provenance fails
+    // closed to low (explicit E-08 failure), never to high/verified.
+    else if (method === "independent_document") confidenceLevel = provenanceSound ? "high" : "low";
     else if (method === "attested_only") confidenceLevel = "medium";
     else confidenceLevel = "low";
   }
@@ -198,7 +216,10 @@ export function runEclEngine(input, policy) {
       policyVersion: policy.policyVersion || null,
       identity,
       evidence: i.evidence,
-      existing: i.existing.map((e) => ({ id: e && e.id, status: e && e.status, checksum: e && e.evidence && e.evidence.checksum })),
+      // v62.6 — COMPLETE sibling envelopes: reconciliation consumes periods,
+      // currency, sourceType, importId and every metric of every sibling, so
+      // identical inputsHash must mean identical COMPLETE decision inputs.
+      existing: i.existing.map((e) => ({ id: (e && e.id) || null, status: (e && e.status) || null, evidence: (e && e.evidence) || null })),
       state: i.state,
       strikes: i.strikes.map((s) => ({ scope: s && s.scope, expires_at: s && s.expires_at, withdrawn_at: (s && s.withdrawn_at) || null })),
       context: { now: nowIso, hasAttestation: ctx.hasAttestation === true, baselineLocked: ctx.baselineLocked === true, hasBlockingReviewCase: ctx.hasBlockingReviewCase === true, referenceFeeRateBps: ctx.referenceFeeRateBps === undefined ? null : ctx.referenceFeeRateBps },
@@ -314,10 +335,20 @@ export function runEclEngine(input, policy) {
     }
   }
 
-  const provisional =
-    toStatus === "accepted_provisionally"
-      ? deepFreeze({ startedAt: nowIso, expiresAt: deriveProvisionalExpiry(nowIso, policy) })
-      : null;
+  // v62.6 — THE PROVISIONAL CLOCK STARTS ONCE. Reprocessing evidence that is
+  // already accepted_provisionally preserves the ORIGINAL startedAt/expiresAt;
+  // only a genuine transition INTO the provisional state opens a new window.
+  // (A provisional state with no recoverable window was already routed to
+  // review above, so the preserved branch always has a real startedAt.)
+  let provisional = null;
+  if (toStatus === "accepted_provisionally") {
+    if (i.state.status === "accepted_provisionally" && i.state.provisionalStartedAt && !Number.isNaN(Date.parse(String(i.state.provisionalStartedAt)))) {
+      const startedAt = new Date(Date.parse(String(i.state.provisionalStartedAt))).toISOString();
+      provisional = deepFreeze({ startedAt, expiresAt: expiry.expiresAt || deriveProvisionalExpiry(startedAt, policy) });
+    } else {
+      provisional = deepFreeze({ startedAt: nowIso, expiresAt: deriveProvisionalExpiry(nowIso, policy) });
+    }
+  }
 
   // ── 7. Lifecycle event intents ───────────────────────────────────────────
   const eventName =
@@ -410,6 +441,79 @@ export function runEclEngine(input, policy) {
   };
   return deepFreeze({ ...decision, decisionHash: sha256Hex(stableSerialize(decision)) });
 }
+// ── v62.6 — canonical persisted snapshot (pure) ─────────────────────────
+// The handler persists confidence_result as ONE canonical snapshot built here,
+// and confidence_result_hash MUST hash exactly that persisted object — never an
+// inner sub-object. Lifecycle state (status, provisional window, supersession)
+// lives INSIDE the snapshot because SavingsEvidence's frozen schema carries no
+// top-level lifecycle columns: persist → reload → process must round-trip.
+
+/** Build the exact object the handler persists as confidence_result, plus its hash. */
+export function buildPersistedEvidenceSnapshot(decision, evidence, lifecycle) {
+  enRequire(decision && typeof decision === "object" && enNonEmpty(decision.inputsHash), "decision with inputsHash is required");
+  enRequire(evidence && typeof evidence === "object", "normalized evidence is required");
+  enRequire(lifecycle && typeof lifecycle === "object" && enNonEmpty(lifecycle.status), "lifecycle.status is required");
+  const snapshot = {
+    engineVersion: decision.engineVersion,
+    ruleSetVersion: decision.ruleSetVersion,
+    policyVersion: decision.policyVersion,
+    correlationId: decision.correlationId,
+    inputsHash: decision.inputsHash,
+    decisionHash: decision.decisionHash,
+    outcome: decision.outcome,
+    normalizedEvidence: evidence,
+    confidenceResult: decision.confidenceResult,
+    lifecycle: {
+      status: lifecycle.status,
+      provisionalStartedAt: lifecycle.provisionalStartedAt || null,
+      expiresAt: lifecycle.expiresAt || null,
+      supersededById: lifecycle.supersededById || null,
+    },
+  };
+  return deepFreeze({ snapshot, snapshotHash: sha256Hex(stableSerialize(snapshot)) });
+}
+
+/**
+ * Restore the lifecycle state from a persisted snapshot. Returns null when the
+ * snapshot carries no recoverable state (the handler then treats the record as
+ * pending). Legacy snapshots (pre-v62.6, no lifecycle block) fall back to the
+ * evidenceStatus inside the stored confidenceResult — read, never invented.
+ */
+export function restoreLifecycleFromSnapshot(snapshot) {
+  const s = snapshot && typeof snapshot === "object" ? snapshot : null;
+  if (!s) return null;
+  const lc = s.lifecycle && typeof s.lifecycle === "object" ? s.lifecycle : null;
+  if (lc && enNonEmpty(lc.status)) {
+    return deepFreeze({
+      status: lc.status,
+      provisionalStartedAt: lc.provisionalStartedAt || null,
+      expiresAt: lc.expiresAt || null,
+      supersededById: lc.supersededById || null,
+    });
+  }
+  const legacy = s.confidenceResult && typeof s.confidenceResult === "object" ? s.confidenceResult : null;
+  if (legacy && enNonEmpty(legacy.evidenceStatus)) {
+    return deepFreeze({ status: legacy.evidenceStatus, provisionalStartedAt: null, expiresAt: legacy.expiresAt || null, supersededById: null });
+  }
+  return null;
+}
+
+/**
+ * Mark a persisted snapshot as superseded (returns a NEW snapshot + hash; the
+ * original is never mutated). This is how SavingsEvidence supersession
+ * survives reload: the canonical persisted representation itself says so.
+ */
+export function markSnapshotSuperseded(snapshot, supersededById) {
+  enRequire(snapshot && typeof snapshot === "object", "snapshot is required");
+  enRequire(enNonEmpty(supersededById), "supersededById is required");
+  const prior = restoreLifecycleFromSnapshot(snapshot) || { status: "pending", provisionalStartedAt: null, expiresAt: null, supersededById: null };
+  const next = {
+    ...snapshot,
+    lifecycle: { status: "superseded", provisionalStartedAt: prior.provisionalStartedAt, expiresAt: prior.expiresAt, supersededById },
+  };
+  return deepFreeze({ snapshot: next, snapshotHash: sha256Hex(stableSerialize(next)) });
+}
+
 // NOTE: no "summarize gates with assumed context" helper exists ON PURPOSE —
 // a gate verdict computed with invented context (assumed attestation, assumed
 // locked baseline) would be a favorable inference, which P3 forbids. Gate

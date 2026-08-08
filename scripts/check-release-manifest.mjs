@@ -32,6 +32,13 @@ if (m.releaseName !== pkg.releaseName) fail(`releaseName mismatch: "${m.releaseN
 if (m.policyVersion !== policy.policyVersion) fail(`policy drift: manifest ${m.policyVersion} vs live ${policy.policyVersion}`);
 if (m.policyFileSha !== sha256("config/product-policy.json")) fail("stale manifest: product policy changed since generation");
 if (m.lockfileSha !== sha256("package-lock.json")) fail("stale manifest: package-lock.json changed since generation");
+// v62.6 — the durability manifest is EXCLUDED from sourceTreeHash (it hashes
+// the tree it lives in), so its dedicated SHA must be independently verified:
+// otherwise closure would be silently mutable after sealing.
+if (fs.existsSync("config/p1-durability-manifest.json")) {
+  if (!m.durabilityManifestSha) fail("durabilityManifestSha is null while config/p1-durability-manifest.json exists");
+  else if (m.durabilityManifestSha !== sha256("config/p1-durability-manifest.json")) fail("durability manifest changed since manifest generation (durabilityManifestSha mismatch)");
+}
 if (m.canonicalSdkVersion !== pkg.dependencies["@base44/sdk"]) fail("SDK version mismatch vs package.json");
 if (!Array.isArray(m.contractTemplateVersions) || m.contractTemplateVersions.length === 0) fail("contractTemplateVersions empty");
 
