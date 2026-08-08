@@ -19,6 +19,10 @@ import ContractDocumentCard from "./ContractDocumentCard";
 const BLOCKER_COPY = {
   no_verified_baseline:
     "We need a verified starting figure before you can authorize us. Connect your provider or upload a statement — once our team confirms it, this unlocks.",
+  ecl_verified_payment_source_unavailable:
+    "We need fresh verified payment data before Recover Margin can be authorized. Sync your payment provider and try again.",
+  ecl_source_vertical_unsupported:
+    "Recover Margin evidence enforcement is currently available for payments only.",
   mandate_already_active: null, // handled as the accepted state below
 };
 
