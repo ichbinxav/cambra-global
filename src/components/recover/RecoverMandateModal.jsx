@@ -33,6 +33,8 @@ const errText = (e) => e?.response?.data?.error || e?.message || "Something went
 
 export default function RecoverMandateModal({ context, onClose, onAccepted }) {
   const [mandateId, setMandateId] = useState(null);
+  const [startedSnapshot, setStartedSnapshot] = useState(null);
+  const [evidencePreview, setEvidencePreview] = useState(null);
   const [starting, setStarting] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -45,7 +47,12 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
     let alive = true;
     base44.functions
       .invoke("startRecoverAcceptance", { deal_activation_id: context.deal_activation_id })
-      .then((r) => { if (alive) setMandateId(r?.data?.mandate_id || null); })
+      .then((r) => {
+        if (!alive) return;
+        setMandateId(r?.data?.mandate_id || null);
+        setStartedSnapshot(r?.data?.acceptance_snapshot || null);
+        setEvidencePreview(r?.data?.evidence_preview || null);
+      })
       .catch((e) => { if (alive) setError(errText(e)); })
       .finally(() => { if (alive) setStarting(false); });
     return () => { alive = false; };
@@ -98,10 +105,22 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
           ) : (
             <>
               <MandateTermsSummary
-                snapshot={context.snapshot}
+                snapshot={startedSnapshot || context.snapshot}
                 baseline={context.baseline}
                 copy={context.mandate_copy?.summary}
               />
+
+              {evidencePreview?.current_rate_pct != null && (
+                <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                  <p className="text-xs text-white/55 mb-1.5">Verified payment evidence</p>
+                  <p className="text-base font-black text-white tabular-nums">{Number(evidencePreview.current_rate_pct).toFixed(2)}%</p>
+                  {(evidencePreview.period_start || evidencePreview.period_end) && (
+                    <p className="text-[11px] text-white/45 font-mono mt-1">
+                      {evidencePreview.period_start || "—"} → {evidencePreview.period_end || "—"}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <MandateLimitsBlock copy={context.mandate_copy} />
 
