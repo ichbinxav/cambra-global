@@ -64,6 +64,7 @@
     "src/docs/PRODUCTION_FUNCTIONS.md",
     "package.json",
     "package-lock.json",
+    "types/deno-shim.d.ts",
     "tsconfig.critical.json"
   ]
 }
