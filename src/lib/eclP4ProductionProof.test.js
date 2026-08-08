@@ -108,6 +108,7 @@ describe("ECL P4 Production Proof closure", () => {
       function_args: { limit: 25 },
       ends_type: "never",
     });
+    expect(SCHED_SRC).toMatch(/body\?\.args\?\.limit \?\? body\?\.limit/);
   });
 
   it("keeps reminder delivery and all monetary side effects outside Production Proof", () => {
