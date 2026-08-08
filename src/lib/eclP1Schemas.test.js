@@ -123,7 +123,7 @@ describe("ECL P1 — new schemas", () => {
   it("ReviewCase separates economic from quality doubt and defaults to open", () => {
     expect(ReviewCase.properties.severity.enum).toEqual(["economic", "quality"]);
     expect(ReviewCase.properties.status.default).toBe("open");
-    expect(ReviewCase.properties.status.enum).toEqual(["open", "awaiting_merchant", "resolved", "dismissed"]);
+    expect(ReviewCase.properties.status.enum).toEqual(["open", "awaiting_merchant", "resolving", "resolved", "dismissed"]);
   });
 
   it("ReviewCase deliberately has NO assignee, SLA, deadline or escalation", () => {
