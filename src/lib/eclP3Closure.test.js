@@ -253,16 +253,18 @@ describe("positive comparability — supersession requires comparable evidence",
 // ── 20-25. handler source contracts (auth + server-resolved binding) ──────
 describe("eclProcessEvidence handler contracts (source)", () => {
   const SRC = fs.readFileSync("base44/functions/eclProcessEvidence/entry.ts", "utf8");
-  const PROCESS_MARKER = "action: process/reprocess (ADMIN-ONLY)";
+  const PROCESS_MARKER = "action: process/reprocess (ADMIN EXTERNAL OR TRUSTED INTERNAL)";
   const processSection = SRC.slice(SRC.indexOf(PROCESS_MARKER));
 
   it("attest is OWNER-ONLY", () => {
     expect(SRC).toMatch(/user\.email !== ownerEmail/);
     expect(SRC).toMatch(/only the evidence owner may attest/);
   });
-  it("process remains ADMIN-ONLY", () => {
+  it("external process remains ADMIN-ONLY; P5 adds only the explicit trusted-internal path", () => {
     expect(SRC.indexOf(PROCESS_MARKER)).toBeGreaterThan(-1);
-    expect(processSection).toMatch(/user\.role !== 'admin'/);
+    expect(processSection).toMatch(/isInternalCaller\(req, payload\)/);
+    expect(processSection).toMatch(/user\?\.role !== 'admin' && !isInternal/);
+    expect(processSection).toMatch(/status: 403/);
   });
   it("the processing admin is never written as attestor", () => {
     expect(SRC).toMatch(/attestorUserId: user\.id/);
