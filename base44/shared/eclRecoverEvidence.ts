@@ -153,6 +153,24 @@ async function resolveStripeSource(svc: any, brandId: string, now: string) {
   return { ok: false, code: 'ecl_verified_payment_source_unavailable' };
 }
 
+export function projectRecoverEvidenceBinding(evidence: any) {
+  if (!evidence?.id || !nonEmpty(evidence.checksum) || !nonEmpty(evidence.confidence_result_hash)) {
+    return null;
+  }
+  const currentRate = Number(evidence.after_value);
+  return Object.freeze({
+    evidence_id: evidence.id,
+    checksum: evidence.checksum,
+    confidence_result_hash: evidence.confidence_result_hash,
+    evidence_status: evidence.evidence_status || null,
+    confidence_level_ecl: evidence.confidence_level_ecl || null,
+    current_rate_pct: Number.isFinite(currentRate) ? currentRate : null,
+    period_start: evidence.period_start || null,
+    period_end: evidence.period_end || null,
+    source_type: evidence.source_type || null,
+  });
+}
+
 /** Read-only source readiness check used by the acceptance context. */
 export async function inspectRecoverEvidenceSource({ svc, activation, now }: any) {
   if (!activation?.brand_id) return { ok: false, code: 'ecl_activation_brand_missing' };
@@ -268,6 +286,7 @@ export async function ensureRecoverSavingsEvidence({ base44, svc, activation, ba
  */
 export async function createRecoverEvidenceAttestation({
   svc, user, activation, baseline, ownerEmail, legalText, legalTextVersion, language,
+  expectedEvidenceId, expectedChecksum,
 }: any) {
   if (!user?.id || !nonEmpty(ownerEmail)) return { ok: false, code: 'ecl_attestor_unavailable' };
   const rows = await svc.entities.SavingsEvidence.filter({
@@ -276,6 +295,10 @@ export async function createRecoverEvidenceAttestation({
   }, '-created_date', 10);
   const evidence = (rows || [])[0] || null;
   if (!evidence?.id || !nonEmpty(evidence.checksum)) return { ok: false, code: 'ecl_attestable_evidence_unavailable' };
+  if ((nonEmpty(expectedEvidenceId) && evidence.id !== expectedEvidenceId) ||
+      (nonEmpty(expectedChecksum) && evidence.checksum !== expectedChecksum)) {
+    return { ok: false, code: 'ecl_attestation_binding_changed' };
+  }
 
   const declaredMetrics: Record<string, number> = {};
   const baselineRate = Number(baseline?.baseline_value);
