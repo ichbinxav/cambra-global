@@ -28,6 +28,7 @@ import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { RECOVER_CONTRACT_TEMPLATE_VERSION } from '../../shared/recoverContractTemplates.ts';
 import { deliveryIdempotencyKey, logContractEvent } from '../../shared/recoverContractState.ts';
 import { fireAndForget } from '../../shared/invokeInternal.ts';
+import { economicGateDeniedResponse, evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   acceptanceEvidence,
@@ -111,6 +112,21 @@ export default async function (req: Request): Promise<Response> {
         { status: 409 },
       );
     }
+
+    // ECL P5 TOCTOU seal — the evidence can change while the popup is open.
+    // Re-evaluate immediately before the first contractual write; a proposal
+    // that was valid at start cannot be accepted after review/rejection/expiry.
+    const eclNow = new Date().toISOString();
+    const freezeGate = await evaluateRecoverEconomicGate({
+      svc, gateName: 'freeze_baseline', brandId: activation.brand_id,
+      dealActivationId: activation.id, baseline, now: eclNow,
+    });
+    if (!freezeGate.allowed) return economicGateDeniedResponse(freezeGate);
+    const proposalGate = await evaluateRecoverEconomicGate({
+      svc, gateName: 'recover_proposal', brandId: activation.brand_id,
+      dealActivationId: activation.id, baseline, now: eclNow,
+    });
+    if (!proposalGate.allowed) return economicGateDeniedResponse(proposalGate);
 
     // 2 — re-read the mandate immediately before writing it.
     const recheck = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch(() => []);
