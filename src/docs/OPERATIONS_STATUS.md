@@ -6,6 +6,12 @@
 
 ---
 
+## Release v0.63.3 — ECL P4 Production Scheduler (2026-08-08)
+
+**Current stage remains `ECL_P4_PRODUCTION_PROOF`, now with 39 exact ECL paths.** The native Base44 scheduler configuration is versioned in `base44/functions/eclLifecycleScheduler/function.jsonc`: one active recurring automation, `ECL Lifecycle Sweep`, every 15 minutes with `function_args.limit = 25`. The schedule is deployed atomically with the function, so a later function deploy cannot silently erase or overwrite an out-of-band dashboard cron. P4 historical scope remains unchanged at 36 paths.
+
+The production scheduler still has the same boundaries as v0.63.2: reminder delivery is `intent_only`; runtime proof is written best-effort to `AgentTask`; due discovery/retry/escalation remain fail-closed; and there are no billing, invoice, Stripe settlement, collection, payout or success-fee side effects. A manual one-shot run remains available in Admin Evidence Review for operator diagnostics.
+
 ## Release v0.63.2 — ECL P4 Production Proof (2026-08-08)
 
 **Current stage: `ECL_P4_PRODUCTION_PROOF` — 38 exact ECL paths, 8 frozen entries.** P1/P2/P3/P4 remain authoritative. This release adds no new economic semantics: it exposes the already-closed P4 review workflow to an admin operator and adds runtime proof for lifecycle-scheduler invocation. The stage is directly reversible to `ECL_P4_OPERATIONAL_WORKFLOW`; no earlier-stage shortcut exists.
