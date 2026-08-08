@@ -16,6 +16,8 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: npm run policy:check
+      - run: npm run ecl:check
+      - run: npm run durability:check
       - run: npm run clean:check
       - run: npm run lint:evidence
       - run: npm run typecheck:critical:evidence
