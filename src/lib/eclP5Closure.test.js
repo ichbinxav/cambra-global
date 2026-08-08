@@ -35,6 +35,9 @@ const MODAL = read("src/components/recover/RecoverMandateModal.jsx");
 const PROCESS = read("base44/functions/eclProcessEvidence/entry.ts");
 const GATE = read("base44/shared/eclEconomicGate.ts");
 const SOURCE = read("base44/shared/eclRecoverEvidence.ts");
+const CLEAN = read("scripts/clean-check.mjs");
+const CI_TEMPLATE = read("ci/github-workflow-ci.yml");
+const CI_INSTALLED = read(".github/workflows/ci.yml");
 
 function confidenceResult(overrides = {}) {
   return {
@@ -279,6 +282,14 @@ describe("ECL P5 — Economic Enforcement", () => {
     expect(PROCESS).toContain("user.email !== ownerEmail");
     expect(PROCESS).toContain("isInternalCaller(req, payload)");
     expect(PROCESS).toContain("user?.role !== 'admin' && !isInternal");
+  });
+
+  it("keeps GitHub workflow byte-identical to the installed remote while clean:check transitively enforces ECL + durability", () => {
+    expect(CI_INSTALLED).toBe(CI_TEMPLATE);
+    expect(CI_TEMPLATE).toContain("- run: npm run clean:check");
+    expect(CLEAN).toContain('runRequiredGate("ecl:check", "scripts/generate-ecl-policy.mjs")');
+    expect(CLEAN).toContain('runRequiredGate("durability:check", "scripts/generate-durability-manifest.mjs")');
+    expect(CLEAN).toContain('spawnSync(process.execPath, [scriptPath, "--check"]');
   });
 
   it("rechecks create_invoice binding immediately before the first economic write and freezes ECL provenance into Stripe + billing snapshot", () => {
