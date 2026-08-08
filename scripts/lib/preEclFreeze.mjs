@@ -114,8 +114,13 @@ export const P3_ALLOWLIST = [
 export const P4_ALLOWLIST = [
   ...P3_ALLOWLIST,
   "src/lib/eclOperations.js",
-  "src/lib/eclOperations.test.js",
   "src/lib/eclP4Closure.test.js",
+  // v62.7 fix — the shared idempotent-persistence adapter is P4 PRODUCTION
+  // code imported by all three ECL boundaries; omitting it left critical ECL
+  // code outside the freeze contract. src/lib/eclOperations.test.js was listed
+  // but never existed: an allowlist entry for a non-existent file is a false
+  // guarantee, so it is removed (its coverage lives in eclP4Closure.test.js).
+  "base44/shared/eclPersistence.ts",
   "base44/functions/eclLifecycleScheduler/entry.ts",
   "base44/functions/eclReviewWorkflow/entry.ts",
 ];
