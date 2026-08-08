@@ -49,7 +49,13 @@ const walk = (dir) => {
     if (["node_modules", ".git", "dist", "coverage", ".release-evidence"].includes(e.name)) continue;
     const p = path.join(dir, e.name);
     const rel = normalizePath(p);
-    if (ECL_NAME_PATTERN.test(e.name) && !allowlist.includes(rel)) {
+    // Exact files remain the authority. A matching directory name is permitted
+    // only when it is an ancestor of at least one exact allowlisted file; this
+    // lets `base44/functions/eclLifecycleScheduler/entry.ts` exist without
+    // turning the whole directory into a wildcard permission.
+    const isAllowlistedFile = allowlist.includes(rel);
+    const isAllowlistedAncestor = e.isDirectory() && allowlist.some((p) => p.startsWith(`${rel}/`));
+    if (ECL_NAME_PATTERN.test(e.name) && !isAllowlistedFile && !isAllowlistedAncestor) {
       fail(stage === STAGE_PRE_ECL
         ? `ECL artifact present (P1/P2 must not start): ${rel}`
         : `ECL artifact outside the ${stage} allowlist: ${rel}`);
