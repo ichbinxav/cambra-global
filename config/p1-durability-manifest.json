@@ -1,12 +1,12 @@
 {
   "release": "CAMBRA v0.63.3 — ECL P4 Production Scheduler (durability manifest)",
-  "generatedAt": "2026-08-08T22:04:57.945Z",
+  "generatedAt": "2026-08-08T22:07:38.951Z",
   "packageVersion": "0.63.3",
   "stage": "ECL_P4_PRODUCTION_PROOF",
   "freezeStage": "ECL_P4_PRODUCTION_PROOF",
   "freezeEntryCount": 8,
   "allowlistCount": 39,
-  "fileCount": 77,
+  "fileCount": 79,
   "purpose": "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
   "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest now covers every active ECL stage through P4 Production Proof.",
   "stageNote": "P1/P2/P3/P4 remain authoritative. P4 Production Proof adds the admin ReviewQueue consumer and scheduler runtime observability without adding billing, invoicing, collections, Stripe settlement, payouts or success-fee effects. A recurring Base44 platform automation remains external configuration and a GitHub CI seal requires a real Actions run.",
@@ -155,8 +155,8 @@
     },
     {
       "path": "config/release-touch-list.json",
-      "sha256": "69632008c527d214dd70d71bd69d30cc8dbe7107fd5892970526a0fab9736f8f",
-      "bytes": 3116
+      "sha256": "e698d368b0d0e5c595218adbce7f9491031582aacf18ab2d0443c0653943a45a",
+      "bytes": 3185
     },
     {
       "path": "config/typecheck-baseline.json",
@@ -312,6 +312,16 @@
       "path": "src/lib/eclOperations.js",
       "sha256": "ff612d2ca7ca07ca45a3e6f03a33692e8c5fe393cc72f5477cb6ad4e5b1aa9bf",
       "bytes": 27812
+    },
+    {
+      "path": "src/lib/eclP1Gate.test.js",
+      "sha256": "dfa9a99f5c238b6d613c0c6b8bf08d4f17ea012a4026722aa03e7a026abe9dde",
+      "bytes": 12372
+    },
+    {
+      "path": "src/lib/eclP1Schemas.test.js",
+      "sha256": "c10305afe8a48b706d5087aa64917b351527da0c1c4620d9cc4bc46659dac045",
+      "bytes": 8390
     },
     {
       "path": "src/lib/eclP3Closure.test.js",
