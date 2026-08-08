@@ -29,7 +29,12 @@ const START = read("base44/functions/startRecoverAcceptance/entry.ts");
 const ACCEPT = read("base44/functions/acceptRecoverMandate/entry.ts");
 const APPROVE = read("base44/functions/approveRecoverReportForInvoicing/entry.ts");
 const INVOICE = read("base44/functions/createEligibleRecoverInvoices/entry.ts");
+const CONTEXT = read("base44/functions/getRecoverAcceptanceContext/entry.ts");
+const REPORT = read("base44/functions/generateMonthlySavingsReport/entry.ts");
+const MODAL = read("src/components/recover/RecoverMandateModal.jsx");
+const PROCESS = read("base44/functions/eclProcessEvidence/entry.ts");
 const GATE = read("base44/shared/eclEconomicGate.ts");
+const SOURCE = read("base44/shared/eclRecoverEvidence.ts");
 
 function confidenceResult(overrides = {}) {
   return {
@@ -105,17 +110,20 @@ describe("ECL P5 — Economic Enforcement", () => {
     expect(allowlistForStage(STAGE_ECL_P5)).toEqual(P5_ALLOWLIST);
   });
 
-  it("widens Production Proof by exactly six paths and no economic schema", () => {
+  it("widens Production Proof by exactly nine paths and no economic schema", () => {
     expect(P5_ALLOWLIST.slice(0, P4_PROOF_ALLOWLIST.length)).toEqual(P4_PROOF_ALLOWLIST);
     expect(P5_ALLOWLIST.slice(P4_PROOF_ALLOWLIST.length)).toEqual([
       "base44/shared/eclEconomicGate.ts",
+      "base44/shared/eclRecoverEvidence.ts",
+      "base44/functions/getRecoverAcceptanceContext/entry.ts",
       "base44/functions/startRecoverAcceptance/entry.ts",
       "base44/functions/acceptRecoverMandate/entry.ts",
+      "base44/functions/generateMonthlySavingsReport/entry.ts",
       "base44/functions/approveRecoverReportForInvoicing/entry.ts",
       "base44/functions/createEligibleRecoverInvoices/entry.ts",
       "src/lib/eclP5Closure.test.js",
     ]);
-    expect(P5_ALLOWLIST).toHaveLength(45);
+    expect(P5_ALLOWLIST).toHaveLength(48);
     expect(P5_ALLOWLIST.filter((p) => p.startsWith("base44/entities/"))).toEqual(P4_PROOF_ALLOWLIST.filter((p) => p.startsWith("base44/entities/")));
     for (const p of P5_ALLOWLIST) expect(p).not.toMatch(/[*?]/);
   });
@@ -174,15 +182,30 @@ describe("ECL P5 — Economic Enforcement", () => {
     expect((await evaluateRecoverEconomicGate(input(struck.svc, "create_invoice"))).reasons).toContain("blocking_strikes:payments:2");
   });
 
-  it("contract proposal is gated both when opened and immediately before acceptance", () => {
-    for (const src of [START, ACCEPT]) {
-      const freeze = src.indexOf("gateName: 'freeze_baseline'");
-      const proposal = src.indexOf("gateName: 'recover_proposal'");
-      expect(freeze).toBeGreaterThan(-1);
-      expect(proposal).toBeGreaterThan(freeze);
-    }
-    expect(START.indexOf("gateName: 'recover_proposal'")).toBeLessThan(START.indexOf("entities.Mandate.create"));
-    expect(ACCEPT.indexOf("gateName: 'recover_proposal'")).toBeLessThan(ACCEPT.indexOf("entities.Mandate.update(mandate_id"));
+  it("materializes + freezes evidence on open, then attests before the Recover proposal gate at acceptance", () => {
+    const startMaterialize = START.indexOf("ensureRecoverSavingsEvidence({");
+    const startFreeze = START.indexOf("gateName: 'freeze_baseline'");
+    const mandateCreate = START.indexOf("entities.Mandate.create");
+    expect(startMaterialize).toBeGreaterThan(-1);
+    expect(startFreeze).toBeGreaterThan(startMaterialize);
+    expect(mandateCreate).toBeGreaterThan(startFreeze);
+    expect(START).not.toContain("gateName: 'recover_proposal'");
+    expect(START).toContain("projectRecoverEvidenceBinding(materialized.evidence)");
+    expect(START).toContain("buildAcceptanceSnapshot({ activation, baseline, fee, month, evidenceBinding })");
+
+    const explicitAttestation = ACCEPT.indexOf("evidence_attestation_accepted !== true");
+    const refresh = ACCEPT.indexOf("ensureRecoverSavingsEvidence({");
+    const attestation = ACCEPT.indexOf("createRecoverEvidenceAttestation({");
+    const proposal = ACCEPT.indexOf("gateName: 'recover_proposal'");
+    const mandateUpdate = ACCEPT.indexOf("entities.Mandate.update(mandate_id");
+    expect(explicitAttestation).toBeGreaterThan(-1);
+    expect(refresh).toBeGreaterThan(explicitAttestation);
+    expect(attestation).toBeGreaterThan(refresh);
+    expect(proposal).toBeGreaterThan(attestation);
+    expect(mandateUpdate).toBeGreaterThan(proposal);
+    expect(ACCEPT).toContain("expectedEvidenceId: evidenceBinding.evidence_id");
+    expect(ACCEPT).toContain("expectedChecksum: evidenceBinding.checksum");
+    expect(ACCEPT).toContain("terms_changed");
   });
 
   it("approve_report executes before any eligibility write", () => {
@@ -202,16 +225,26 @@ describe("ECL P5 — Economic Enforcement", () => {
     expect(stripePost).toBeGreaterThan(gate);
   });
 
-  it("the P5 adapter is read-only and economic handlers never upgrade ECL", () => {
+  it("the P5 gate adapter is read-only; raw evidence materialization delegates every ECL classification write to eclProcessEvidence", () => {
     const helperCode = codeOnly(GATE);
+    const sourceCode = codeOnly(SOURCE);
     expect(helperCode).not.toMatch(/entities\.[A-Za-z]+\.(create|update|updateMany|delete|bulkCreate)\s*\(/);
+    expect(sourceCode).toContain("entities.SavingsEvidence.create({");
+    expect(sourceCode).toContain("invokeInternal(base44, 'eclProcessEvidence'");
+    expect(sourceCode).not.toMatch(/SavingsEvidence\.(update|updateMany)\s*\(/);
+    expect(sourceCode).not.toMatch(/confidence_result\s*:/);
+    expect(sourceCode).not.toMatch(/confidence_level_ecl\s*:/);
+    expect(sourceCode).not.toMatch(/evidence_status\s*:/);
+    expect(sourceCode).not.toMatch(/freeze_eligibility\s*:/);
     for (const src of [START, ACCEPT, APPROVE, INVOICE]) {
       const code = codeOnly(src);
-      expect(code).not.toMatch(/confidence_result\s*:/);
-      expect(code).not.toMatch(/confidence_level_ecl\s*:/);
-      expect(code).not.toMatch(/evidence_status\s*:/);
+      expect(code).not.toMatch(/SavingsEvidence\.(update|updateMany)\s*\(/);
       expect(code).not.toMatch(/freeze_eligibility\s*:/);
     }
+    // Invoice audit provenance may legitimately contain field names such as
+    // evidence_status; that is a frozen copy, never a SavingsEvidence mutation.
+    expect(INVOICE).toContain("billing_snapshot_json: snapshot");
+    expect(INVOICE).toContain("confidence_result_hash: eclInvoiceGateFinal.confidenceResultHash");
   });
 
   it("client payload cannot supply confidence/status/attestation/baseline lock to the P5 adapter", () => {
@@ -223,5 +256,37 @@ describe("ECL P5 — Economic Enforcement", () => {
     expect(GATE).toContain("svc.entities.EvidenceAttestation.filter");
     expect(GATE).toContain("svc.entities.ReviewCase.filter");
     expect(GATE).toContain("svc.entities.EvidenceStrike.filter");
+  });
+
+  it("makes the Recover flow operational: source readiness, explicit merchant attestation and monthly evidence refresh", () => {
+    expect(CONTEXT).toContain("inspectRecoverEvidenceSource({ svc, activation");
+    expect(CONTEXT).toContain("evidence_attestation:");
+    expect(MODAL).toContain("evidenceAgreed");
+    expect(MODAL).toContain("context.evidence_attestation?.text");
+    expect(MODAL).toContain("evidence_attestation_accepted: true");
+    expect(REPORT).toContain("ensureRecoverSavingsEvidence({");
+    expect(REPORT).toContain("measurementMode === 'fully_verified'");
+    expect(SOURCE).toContain("PaymentsAnalysisVerified.filter");
+    expect(SOURCE).toContain("StripeConnection.filter");
+    expect(SOURCE).toContain("RECOVER_ECL_SOURCE_MAX_AGE_DAYS = 35");
+  });
+
+  it("keeps eclProcessEvidence owner-only for attest and external-admin-only for process, with one trusted internal backend path", () => {
+    expect(PROCESS).toContain("if (!user) return Response.json({ ok: false, error: 'Unauthorized' }");
+    expect(PROCESS).toContain("user.email !== ownerEmail");
+    expect(PROCESS).toContain("isInternalCaller(req, payload)");
+    expect(PROCESS).toContain("user?.role !== 'admin' && !isInternal");
+  });
+
+  it("rechecks create_invoice binding immediately before the first economic write and freezes ECL provenance into Stripe + billing snapshot", () => {
+    expect((INVOICE.match(/gateName: 'create_invoice'/g) || [])).toHaveLength(2);
+    const finalGate = INVOICE.lastIndexOf("gateName: 'create_invoice'");
+    const invoiceCreate = INVOICE.indexOf("entities.Invoice.create({");
+    expect(finalGate).toBeGreaterThan(-1);
+    expect(invoiceCreate).toBeGreaterThan(finalGate);
+    expect(INVOICE).toContain("ecl_binding_changed_before_invoice_write");
+    expect(INVOICE).toContain("metadata[ecl_evidence_id]");
+    expect(INVOICE).toContain("metadata[ecl_confidence_hash]");
+    expect(INVOICE).toContain("ecl: {");
   });
 });
