@@ -13,7 +13,7 @@ import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { getSuccessFeePct, getFeeDurationMonths } from '../../shared/generated/productPolicy.ts';
 import { rejectClientTerms } from '../../shared/contractPolicySnapshot.ts';
 import { economicGateDeniedResponse, evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
-import { ensureRecoverSavingsEvidence } from '../../shared/eclRecoverEvidence.ts';
+import { ensureRecoverSavingsEvidence, projectRecoverEvidenceBinding } from '../../shared/eclRecoverEvidence.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   MANDATE_DOCUMENT_VERSION,
@@ -77,6 +77,8 @@ export default async function (req: Request): Promise<Response> {
       dealActivationId: activation.id, baseline, now: eclNow,
     });
     if (!freezeGate.allowed) return economicGateDeniedResponse(freezeGate);
+    const evidenceBinding = projectRecoverEvidenceBinding(materialized.evidence);
+    if (!evidenceBinding) return Response.json({ ok: false, error: 'ecl_evidence_binding_unavailable' }, { status: 409 });
 
     const fee = await resolveFeePctForMonth(
       svc,
@@ -89,7 +91,7 @@ export default async function (req: Request): Promise<Response> {
       month,
     );
 
-    const snapshot = buildAcceptanceSnapshot({ activation, baseline, fee, month });
+    const snapshot = buildAcceptanceSnapshot({ activation, baseline, fee, month, evidenceBinding });
     const snapshot_hash = await hashSnapshot(snapshot);
     const idempotency_key = idempotencyKeyFor(activation.id, ownerEmail, snapshot_hash);
 
@@ -97,11 +99,11 @@ export default async function (req: Request): Promise<Response> {
     const claimed = await svc.entities.Mandate.filter({ idempotency_key }, '-created_date', 5).catch(() => []);
     const reusable = (claimed || []).find((m: any) => m.status === 'acceptance_started');
     if (reusable) {
-      return Response.json({ ok: true, reused: true, mandate_id: reusable.id, snapshot_hash, fee_pct: Number(fee.pct) });
+      return Response.json({ ok: true, reused: true, mandate_id: reusable.id, snapshot_hash, fee_pct: Number(fee.pct), acceptance_snapshot: reusable.acceptance_snapshot_json || snapshot, evidence_preview: (reusable.acceptance_snapshot_json || snapshot).ecl_evidence_binding || evidenceBinding });
     }
     const alreadyActive = (claimed || []).find((m: any) => m.status === 'active');
     if (alreadyActive) {
-      return Response.json({ ok: true, already_active: true, mandate_id: alreadyActive.id, snapshot_hash });
+      return Response.json({ ok: true, already_active: true, mandate_id: alreadyActive.id, snapshot_hash, acceptance_snapshot: alreadyActive.acceptance_snapshot_json || snapshot, evidence_preview: (alreadyActive.acceptance_snapshot_json || snapshot).ecl_evidence_binding || evidenceBinding });
     }
 
     const evidence = acceptanceEvidence(req, authenticatedAt);
@@ -146,6 +148,8 @@ export default async function (req: Request): Promise<Response> {
       snapshot_hash,
       fee_pct: Number(fee.pct),
       document_version: MANDATE_DOCUMENT_VERSION,
+      acceptance_snapshot: snapshot,
+      evidence_preview: evidenceBinding,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
