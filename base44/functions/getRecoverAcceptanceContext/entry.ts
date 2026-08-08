@@ -69,7 +69,7 @@ export default async function (req: Request): Promise<Response> {
 
     const blockers: string[] = [];
     if (!baseline) blockers.push('no_verified_baseline');
-    else if (!evidenceSource.ok) blockers.push(evidenceSource.code || 'ecl_verified_evidence_unavailable');
+    else if (evidenceSource.ok === false) blockers.push(evidenceSource.code || 'ecl_verified_evidence_unavailable');
     if (!ACCEPTABLE_ACTIVATION_STATES.includes(activation.status)) blockers.push(`activation_status:${activation.status}`);
     if (activeMandate) blockers.push('mandate_already_active');
 
