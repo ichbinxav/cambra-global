@@ -586,9 +586,29 @@ describe("P4 closure hardening regressions", () => {
   });
 
   it("persists the material E-07 evaluation context and review reprocess restores it", () => {
-    const ev = evidence({ feeRateBps: 170 });
+    const ev = normalizePaymentsEvidence({
+      evidenceType: "statement_csv",
+      sourceType: "provider_statement",
+      checksum: "chk-context",
+      importId: "imp-context",
+      parserVersion: "p1",
+      currency: "EUR",
+      periodStart: "2026-07-01",
+      periodEnd: "2026-07-31",
+      grossAmountMinor: 1000000,
+      feesAmountMinor: 17000,
+      feeRateBps: 170,
+    });
     const ctx = { now: START, hasAttestation: false, baselineLocked: false, hasBlockingReviewCase: false, referenceFeeRateBps: 100 };
-    const d = runEclEngine(engineInput({ evidence: ev, context: ctx }), ECL_POLICY);
+    const d = runEclEngine({
+      identity: { evidenceEntityType: "statement_import", evidenceId: "si-context", brandId: "brand-1", ownerEmail: "m@x.com" },
+      evidence: ev,
+      existing: [],
+      state: { status: "pending" },
+      strikes: [],
+      context: ctx,
+      actor: "system",
+    }, ECL_POLICY);
     const lifecycle = { status: d.transition ? d.transition.toStatus : "pending", provisionalStartedAt: d.provisional?.startedAt || null, expiresAt: d.provisional?.expiresAt || null, supersededById: null };
     const { snapshot } = buildPersistedEvidenceSnapshot(d, ev, lifecycle);
     expect(snapshot.evaluationContext).toEqual({ version: 1, referenceFeeRateBps: 100 });
