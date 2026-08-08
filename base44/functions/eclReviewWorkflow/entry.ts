@@ -5,7 +5,7 @@
 // recovered. Approve/dismiss re-enter the canonical P3 handler using the exact
 // normalized evidence already persisted; reject uses the P3 transition graph.
 // No review action can directly force `verified`.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import {
   planReviewResolution,
   projectReviewCase,
@@ -153,7 +153,10 @@ Deno.serve(async (req) => {
       if (typeof payload.reasonCode === 'string' && payload.reasonCode) query.reason_code = payload.reasonCode;
       if (typeof payload.brandId === 'string' && payload.brandId) query.brand_id = payload.brandId;
       if (typeof payload.evidenceEntityType === 'string' && payload.evidenceEntityType) query.evidence_entity_type = payload.evidenceEntityType;
-      const rows = await svc.entities.ReviewCase.filter(query, '-created_date', limit).catch(() => []);
+      // Queue discovery is authoritative: a persistence outage is a 500, never
+      // an apparently empty queue that could make an operator believe all
+      // blocking reviews were cleared.
+      const rows = await svc.entities.ReviewCase.filter(query, '-created_date', limit);
       return Response.json({ ok: true, action: 'list', count: (rows || []).length, limit, cases: (rows || []).map((r) => projectReviewCase(r, { detail: false })) });
     }
 
