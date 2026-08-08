@@ -62,7 +62,15 @@ function evidenceMetricsFromSource(source: any) {
   };
 }
 
-async function resolveStripeSource(svc: any, brandId: string, now: string) {
+type RecoverSourceResult =
+  | { ok: true; source: any }
+  | { ok: false; code: string };
+
+type RecoverEvidenceResult =
+  | { ok: true; evidence: any; sourceKind: string }
+  | { ok: false; code: string; detail?: unknown; evidenceId?: string };
+
+async function resolveStripeSource(svc: any, brandId: string, now: string): Promise<RecoverSourceResult> {
   const [verifiedRows, stripeRows] = await Promise.all([
     svc.entities.PaymentsAnalysisVerified.filter({ brand_id: brandId }, '-created_date', 10),
     svc.entities.StripeConnection.filter({ brand_id: brandId, connection_status: 'connected' }, '-data_as_of', 10),
@@ -184,12 +192,12 @@ export async function inspectRecoverEvidenceSource({ svc, activation, now }: any
  * Ensure one raw SavingsEvidence row exists for the freshest authoritative
  * Stripe measurement, then route it through the canonical eclProcessEvidence.
  */
-export async function ensureRecoverSavingsEvidence({ base44, svc, activation, baseline, ownerEmail, now }: any) {
+export async function ensureRecoverSavingsEvidence({ base44, svc, activation, baseline, ownerEmail, now }: any): Promise<RecoverEvidenceResult> {
   if (!activation?.id || !activation?.brand_id) return { ok: false, code: 'ecl_activation_identity_missing' };
   if (!baseline?.id || baseline.locked !== true) return { ok: false, code: 'ecl_verified_baseline_unavailable' };
 
   const selected = await resolveStripeSource(svc, activation.brand_id, now);
-  if (!selected.ok) return selected;
+  if (selected.ok === false) return selected;
   const source = selected.source;
   let resolvedOwnerEmail = nonEmpty(ownerEmail) ? ownerEmail : (nonEmpty(source.ownerEmail) ? source.ownerEmail : '');
   if (!resolvedOwnerEmail) {
