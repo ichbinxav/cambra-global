@@ -6,6 +6,22 @@
 
 ---
 
+## Release v0.64.0 — ECL P5 Economic Enforcement (2026-08-09)
+
+**Current stage: `ECL_P5_ECONOMIC_ENFORCEMENT` — 48 exact ECL paths, 8 frozen entries.** P1/P2/P3/P4/Production Proof remain the semantic and operational authority. P5 does not invent a second confidence model: it makes the existing canonical ECL gates mandatory at the Recover boundaries where verified evidence can become a contractual or monetary effect.
+
+The operational chain is now end-to-end. `getRecoverAcceptanceContext` refuses the Recover UI when no fresh verified payments source is available. `startRecoverAcceptance` materializes the freshest server-resolved Stripe measurement into `SavingsEvidence` and routes classification through the canonical `eclProcessEvidence` engine, then requires `freeze_baseline` before any Mandate row is created. The exact `evidence_id`, checksum, `confidence_result_hash`, current rate and measurement period are frozen into the acceptance snapshot shown to the merchant.
+
+Acceptance has a separate explicit ECL evidence declaration. `acceptRecoverMandate` refreshes the server source, verifies that the ECL evidence binding is still byte-identical to the one shown, creates an idempotent `EvidenceAttestation` bound to that evidence id/checksum, then evaluates `freeze_baseline` and `recover_proposal` immediately before the first contractual write. A changed Stripe measurement, review case, rejection, expiry, strike threshold, missing attestation, hash mismatch or persistence failure blocks rather than falls back to legacy confidence fields.
+
+Monthly measurement remains non-monetary and may be persisted for review, but a fully verified report attempts to refresh canonical ECL evidence. `approveRecoverReportForInvoicing` requires `approve_report`; `createEligibleRecoverInvoices` requires `create_invoice` after the existing pure Recover billing validation and rechecks the same evidence binding immediately before the first new Invoice/Stripe write. Stripe metadata and `billing_snapshot_json` freeze the ECL evidence id, confidence snapshot hash and ECL policy version for audit.
+
+P5 widens **no economic entity schema**. `Invoice`, `MonthlySavingsReport`, `Baseline`, `Mandate` and `BillingRule` keep their existing shapes; ECL provenance is stored inside already-existing JSON/metadata surfaces. The public processing path of `eclProcessEvidence` remains admin-only; P5 adds one trusted `internal_secret` backend path so Recover can reuse that same engine instead of copying domain logic. Merchant attestation remains owner-session-only.
+
+The production database was checked before sealing: there were **0 `SavingsEvidence` rows and 0 pending/eligible MonthlySavingsReport rows**, so P5 does not interrupt an invoice already in flight. Existing activations/mandates without a fresh verified payments source will fail closed until Stripe evidence is available; this is intentional economic enforcement, not a fallback condition.
+
+**Seal distinction remains unchanged:** local/Base44 verification can prove repository reproducibility, but `release:check:ci` may only be called green after a real GitHub Actions execution provides its CI run id and same-run evidence.
+
 ## Release v0.63.3 — ECL P4 Production Scheduler (2026-08-08)
 
 **Current stage remains `ECL_P4_PRODUCTION_PROOF`, now with 39 exact ECL paths.** The native Base44 scheduler configuration is versioned in `base44/functions/eclLifecycleScheduler/function.jsonc`: one active recurring automation, `ECL Lifecycle Sweep`, every 15 minutes with `function_args.limit = 25`. The schedule is deployed atomically with the function, so a later function deploy cannot silently erase or overwrite an out-of-band dashboard cron. P4 historical scope remains unchanged at 36 paths.
