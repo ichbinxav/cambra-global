@@ -1602,6 +1602,10 @@ export function runEclEngine(input, policy) {
   enRequire(ctx.hasBlockingReviewCase !== undefined && ctx.hasBlockingReviewCase !== null, "context.hasBlockingReviewCase is required");
   const actor = ["system", "user", "reviewer"].includes(i.actor) ? i.actor : "system";
   const nowIso = new Date(nowMs).toISOString();
+  // Persist the material non-record context that can alter a rule outcome. In
+  // particular E-07 depends on referenceFeeRateBps, so a later human review
+  // must not reprocess the same normalized evidence under a different/omitted
+  // reference and accidentally become more favorable.
   const evaluationContext = deepFreeze({
     version: ECL_EVALUATION_CONTEXT_VERSION,
     referenceFeeRateBps: ctx.referenceFeeRateBps === undefined ? null : ctx.referenceFeeRateBps,
