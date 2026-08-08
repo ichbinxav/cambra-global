@@ -69,7 +69,7 @@ export default async function (req: Request): Promise<Response> {
     const materialized = await ensureRecoverSavingsEvidence({
       base44, svc, activation, baseline, ownerEmail, now: eclNow,
     });
-    if (!materialized.ok) {
+    if (materialized.ok === false) {
       return Response.json({ ok: false, error: materialized.code || 'ecl_evidence_materialization_failed' }, { status: 409 });
     }
     const freezeGate = await evaluateRecoverEconomicGate({
