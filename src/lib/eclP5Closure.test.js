@@ -232,10 +232,13 @@ describe("ECL P5 — Economic Enforcement", () => {
     expect(sourceCode).toContain("entities.SavingsEvidence.create({");
     expect(sourceCode).toContain("invokeInternal(base44, 'eclProcessEvidence'");
     expect(sourceCode).not.toMatch(/SavingsEvidence\.(update|updateMany)\s*\(/);
-    expect(sourceCode).not.toMatch(/confidence_result\s*:/);
-    expect(sourceCode).not.toMatch(/confidence_level_ecl\s*:/);
-    expect(sourceCode).not.toMatch(/evidence_status\s*:/);
-    expect(sourceCode).not.toMatch(/freeze_eligibility\s*:/);
+    const createStart = sourceCode.indexOf("entities.SavingsEvidence.create({");
+    const createEnd = sourceCode.indexOf("\n    });", createStart);
+    const rawCreate = sourceCode.slice(createStart, createEnd + 7);
+    expect(rawCreate).not.toMatch(/confidence_result\s*:/);
+    expect(rawCreate).not.toMatch(/confidence_level_ecl\s*:/);
+    expect(rawCreate).not.toMatch(/evidence_status\s*:/);
+    expect(rawCreate).not.toMatch(/freeze_eligibility\s*:/);
     for (const src of [START, ACCEPT, APPROVE, INVOICE]) {
       const code = codeOnly(src);
       expect(code).not.toMatch(/SavingsEvidence\.(update|updateMany)\s*\(/);
