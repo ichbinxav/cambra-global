@@ -350,7 +350,10 @@ describe("attestation idempotency identity", () => {
 
 // ── 33-34. createOnce — replay-safe, explicitly NOT exactly-once ──────────
 describe("createOnce concurrency contract (handler source)", () => {
-  const SRC = fs.readFileSync("base44/functions/eclProcessEvidence/entry.ts", "utf8");
+  // v62.7 (P4): createOnce was EXTRACTED, unchanged, into the one shared ECL
+  // persistence module now imported by all three ECL boundaries. The contract
+  // asserted here is identical — only its location moved.
+  const SRC = fs.readFileSync("base44/shared/eclPersistence.ts", "utf8");
 
   it("sequential replay finds the persisted claim and never creates a second logical claim", () => {
     // Pre-read on the persisted idempotency key returns the existing row…

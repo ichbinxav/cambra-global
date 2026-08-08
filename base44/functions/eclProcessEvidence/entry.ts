@@ -40,6 +40,7 @@ import {
   markSnapshotSuperseded,
 } from '../../shared/generated/eclDomain.ts';
 import { ECL_POLICY } from '../../shared/generated/eclPolicy.ts';
+import { badRequest, createOnce, persistLifecycleEvent } from '../../shared/eclPersistence.ts';
 
 const ENTITY_BY_TYPE = { statement_import: 'StatementImport', savings_evidence: 'SavingsEvidence' };
 const NORMALIZERS = {
@@ -48,36 +49,10 @@ const NORMALIZERS = {
   accounting: normalizeAccountingEvidence,
 };
 
-const badRequest = (msg) => Response.json({ ok: false, error: msg }, { status: 400 });
-
-// Idempotent create — the persisted claim key stands in for the transaction
-// Base44 lacks. GUARANTEE, NAMED HONESTLY: this is replay-safe (a sequential
-// retry always finds the claim and returns the existing row) with best-effort
-// concurrent collapse — it is NOT database-enforced exactly-once, because
-// Base44 exposes no unique constraint and no atomic upsert. Two truly
-// concurrent writers can both pass the pre-read; the post-create re-read then
-// collapses deterministically to the OLDEST row and removes the loser (the
-// same collapse-on-re-read pattern shared/referralLink.ts uses). A crash
-// between create and collapse can leave a transient duplicate, which the next
-// replay collapses. Do not describe this anywhere as transactional.
-async function createOnce(svc, entityName, idempotencyKey, record) {
-  const existing = await svc.entities[entityName].filter({ idempotency_key: idempotencyKey }, 'created_date', 1).catch(() => []);
-  if (existing && existing.length > 0) return { created: false, id: existing[0].id };
-  const row = await svc.entities[entityName].create(record);
-  const all = await svc.entities[entityName].filter({ idempotency_key: idempotencyKey }, 'created_date', 5).catch(() => []);
-  const winner = (all && all[0]) || row;
-  if (winner.id !== row.id) {
-    // Lost the race: keep the oldest claim, drop our duplicate.
-    await svc.entities[entityName].delete(row.id).catch(() => null);
-    return { created: false, id: winner.id };
-  }
-  return { created: true, id: row.id };
-}
-
-async function persistLifecycleEvent(svc, transition) {
-  if (!transition || transition.changed !== true || !transition.record) return null;
-  return await createOnce(svc, 'EvidenceLifecycleEvent', transition.idempotencyKey, transition.record);
-}
+// v62.7 (P4) — badRequest / createOnce / persistLifecycleEvent now live in ONE
+// shared module so the idempotent-create contract cannot drift between the ECL
+// boundaries. The guarantee is documented there and is unchanged: replay-safe
+// with best-effort concurrent collapse, never transactional exactly-once.
 
 Deno.serve(async (req) => {
   try {

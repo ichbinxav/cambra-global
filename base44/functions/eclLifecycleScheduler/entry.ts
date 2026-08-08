@@ -39,29 +39,14 @@ import {
   restoreLifecycleFromSnapshot,
 } from '../../shared/generated/eclDomain.ts';
 import { ECL_POLICY } from '../../shared/generated/eclPolicy.ts';
+// ONE idempotent-create contract, shared by every ECL boundary (see the module
+// for the honest guarantee: replay-safe, best-effort collapse, not exactly-once).
+import { createOnce } from '../../shared/eclPersistence.ts';
 
 const ENTITY = 'StatementImport';
 const ENTITY_TYPE = 'statement_import';
 const DEFAULT_BATCH = 25; // bounded by design
 const MAX_BATCH = 100;
-
-// Idempotent create — identical to the P3 boundary's contract, and named just
-// as honestly: replay-safe with best-effort concurrent collapse, NOT
-// database-enforced exactly-once (Base44 exposes no unique constraint and no
-// atomic upsert). Two truly concurrent writers can both pass the pre-read; the
-// post-create re-read collapses deterministically to the OLDEST row.
-async function createOnce(svc, entityName, idempotencyKey, record) {
-  const existing = await svc.entities[entityName].filter({ idempotency_key: idempotencyKey }, 'created_date', 1).catch(() => []);
-  if (existing && existing.length > 0) return { created: false, id: existing[0].id };
-  const row = await svc.entities[entityName].create(record);
-  const all = await svc.entities[entityName].filter({ idempotency_key: idempotencyKey }, 'created_date', 5).catch(() => []);
-  const winner = (all && all[0]) || row;
-  if (winner.id !== row.id) {
-    await svc.entities[entityName].delete(row.id).catch(() => null);
-    return { created: false, id: winner.id };
-  }
-  return { created: true, id: row.id };
-}
 
 class PermanentFailure extends Error {
   constructor(code, message) {
