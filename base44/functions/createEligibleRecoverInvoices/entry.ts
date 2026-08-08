@@ -26,6 +26,7 @@ import { determineTaxTreatment, normalizeVat, readTaxConfig, stripeTaxRateIdFor,
 import { hashCalculation } from '../../shared/recoverBillingMath.ts';
 import { monthBounds } from '../../shared/billingFee.ts';
 import { prepareEligibleRecoverInvoice } from '../../shared/prepareEligibleRecoverInvoice.ts';
+import { evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
 
 const BATCH = 5;
 
@@ -94,6 +95,11 @@ export default async function (req: Request): Promise<Response> {
         const activation = (await svc.entities.DealActivation.filter({ id: report.deal_activation_id }, '-created_date', 1).catch(() => []))?.[0];
         const brand = activation ? (await svc.entities.Brand.filter({ id: activation.brand_id }, '-created_date', 1).catch(() => []))?.[0] : null;
         const mandate = activation ? (await svc.entities.Mandate.filter({ deal_activation_id: activation.id, status: 'active' }, '-created_date', 1).catch(() => []))?.[0] : null;
+        // P5: exact report baseline, authoritative read. A persistence outage or
+        // missing row must never become baselineLocked=false by a swallowed read.
+        const baseline = report.baseline_id
+          ? (await svc.entities.Baseline.filter({ id: report.baseline_id }, '-created_date', 1))?.[0] || null
+          : null;
         const existing = activation ? (await svc.entities.Invoice
           .filter({ deal_activation_id: activation.id, month: report.month }, '-created_date', 10).catch(() => [])) : [];
 
@@ -152,6 +158,28 @@ export default async function (req: Request): Promise<Response> {
           }
           outcome.error = blocker;
           outcome.blockers = prep.blockers;
+          continue;
+        }
+
+        // ECL P5 — LAST fail-closed gate before a new local Invoice or Stripe
+        // side effect. Existing economic validations remain necessary but can no
+        // longer stand in for canonical ECL evidence.
+        const eclInvoiceGate = await evaluateRecoverEconomicGate({
+          svc,
+          gateName: 'create_invoice',
+          brandId: activation.brand_id,
+          dealActivationId: activation.id,
+          baseline,
+          now: now(),
+        });
+        if (!eclInvoiceGate.allowed) {
+          const reason = eclInvoiceGate.reasons.join(' | ').slice(0, 1900);
+          await svc.entities.MonthlySavingsReport.update(report.id, {
+            billing_eligibility_status: 'blocked_missing_evidence',
+            billing_block_reason: `ecl_create_invoice:${reason}`,
+          });
+          outcome.error = 'ecl_create_invoice_denied';
+          outcome.ecl_gate = { gate: eclInvoiceGate.gateName, reasons: eclInvoiceGate.reasons, evidence_id: eclInvoiceGate.evidenceId || null };
           continue;
         }
 
