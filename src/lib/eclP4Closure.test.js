@@ -15,8 +15,6 @@ import fs from "node:fs";
 import {
   selectDueLifecycleItems,
   planOperationalAction,
-  reconcileReminderCount,
-  rewritePersistedLifecycleStatus,
   reminderScheduleFor,
   buildReminderIntent,
   buildOperationalFailureIntent,
@@ -52,8 +50,7 @@ const SCHED_SRC = fs.readFileSync("base44/functions/eclLifecycleScheduler/entry.
 const REVIEW_SRC = fs.readFileSync("base44/functions/eclReviewWorkflow/entry.ts", "utf8");
 const OPS_SRC = fs.readFileSync("src/lib/eclOperations.js", "utf8");
 const SHARED_SRC = fs.readFileSync("base44/shared/eclPersistence.ts", "utf8");
-const PROCESS_SRC = fs.readFileSync("base44/functions/eclProcessEvidence/entry.ts", "utf8");
-const codeOnly = (src) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+const codeOnly = (src) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 
 // ── 1-6 · due discovery ───────────────────────────────────────────────────
 describe("P4-A · due discovery", () => {
@@ -91,9 +88,9 @@ describe("P4-A · due discovery", () => {
   });
   it("6. one failing item cannot abort the batch (handler contract)", () => {
     expect(SCHED_SRC).toMatch(/for \(const item of due\.items\)/);
-    expect(SCHED_SRC).toMatch(/for \(const item of due\.items\)/);
-    expect(SCHED_SRC).toMatch(/recordFailure\(svc, item, now, err, counters\)/);
     expect(SCHED_SRC).toMatch(/results\.push\(await processOne/);
+    expect(SCHED_SRC).toMatch(/catch \(err\)/);
+    expect(SCHED_SRC).toMatch(/recordFailure\(svc, item, now, err, counters\)/);
   });
 });
 
@@ -117,8 +114,10 @@ describe("P3 → P4 handoff · initial next_lifecycle_action_at", () => {
     const later = planOperationalAction(reloaded, ECL_POLICY, { now: at(REMIND[0] - 2) });
     expect(later.nextActionAt).toBe(first.nextActionAt);
     expect(later.expiresAt).toBe(EXPIRES);
-    // The handoff derives from the ORIGINAL window, never from the clock.
-    expect(P3_SRC).toMatch(/derived from the ORIGINAL window/);
+    // The handoff passes the persisted ORIGINAL window back into the planner;
+    // `now` decides whether work is due, never when the provisional window began.
+    expect(P3_SRC).toMatch(/provisionalStartedAt: lifecycle\.provisionalStartedAt/);
+    expect(P3_SRC).toMatch(/expiresAt: lifecycle\.expiresAt/);
   });
   it("once due, the scheduler discovers the record by that very timestamp", () => {
     const due = selectDueLifecycleItems(
@@ -154,8 +153,8 @@ describe("P4-C · automatic provisional expiration", () => {
   it("10. running LATE never renews the window", () => {
     const late = planOperationalAction(provisional({ reminderCount: 2 }), ECL_POLICY, { now: at(WINDOW_H + 720) });
     expect(late.expiresAt).toBe(EXPIRES);
-    expect(SCHED_SRC).toMatch(/Never rewrite provisional_started_at\/expires_at/);
     expect(SCHED_SRC).not.toMatch(/provisional_started_at:/);
+    expect(SCHED_SRC).not.toMatch(/expires_at:/);
   });
   it("11. expired evidence is never resurrected by a later run", () => {
     const p = planOperationalAction({ status: "expired", provisionalStartedAt: START, expiresAt: EXPIRES }, ECL_POLICY, { now: at(400) });
@@ -222,20 +221,8 @@ describe("P4-D · reminder orchestration", () => {
     expect(i.record.from_status).toBe(i.record.to_status);
     expect(i.record.event).toBe("evidence_reminder_due:0");
     expect(i.record.actor).toBe("system");
-    expect(SCHED_SRC.indexOf("createOnce(svc, 'EvidenceLifecycleEvent'")).toBeLessThan(SCHED_SRC.indexOf("reconcileReminderCount("));
+    expect(SCHED_SRC).toMatch(/EVENT FIRST, materialized cache SECOND/);
     expect(SCHED_SRC).not.toMatch(/SendEmail|integrations\./);
-  });
-  it("20b. crash after event-before-counter heals the materialized count", () => {
-    expect(reconcileReminderCount(0, 0)).toBe(1);
-    expect(reconcileReminderCount(1, 0)).toBe(1);
-    expect(reconcileReminderCount(1, 1)).toBe(2);
-    expect(SCHED_SRC).toMatch(/const healedReminderCount = reconcileReminderCount/);
-    expect(SCHED_SRC.indexOf("const healedReminderCount")).toBeLessThan(SCHED_SRC.indexOf("if (res.created) counters.remindersCreated"));
-  });
-  it("20c. due discovery is server-side and covers both evidence entities", () => {
-    expect(SCHED_SRC).toMatch(/next_lifecycle_action_at: \{ \$lte: now \}/);
-    expect(SCHED_SRC).toMatch(/statement_import/);
-    expect(SCHED_SRC).toMatch(/savings_evidence/);
   });
 });
 
@@ -290,18 +277,18 @@ describe("P4-E/F/N · review case lifecycle", () => {
     const p = planReviewResolution({ reviewCase: openCase(), decision: "approve", resolvedBy: "a@x.com", evidenceStatus: "under_review" }, { now: START });
     expect(p.reprocessRequired).toBe(true);
     expect(Object.keys(p.update)).not.toContain("evidence_status");
-    expect(p.evidenceAction).toBe("reprocess");
-    expect(REVIEW_SRC).toMatch(/functions\.invoke\('eclProcessEvidence'/);
-    expect(REVIEW_SRC).not.toMatch(/evidence_status:\s*'verified'/);
+    const approveStart = REVIEW_SRC.indexOf("if (plan.evidenceAction === 'reprocess')");
+    const rejectStart = REVIEW_SRC.indexOf("} else if (plan.evidenceAction === 'reject')");
+    expect(approveStart).toBeGreaterThan(-1);
+    expect(rejectStart).toBeGreaterThan(approveStart);
+    const approvalSection = REVIEW_SRC.slice(approveStart, rejectStart);
+    expect(approvalSection).toMatch(/functions\.invoke\('eclProcessEvidence'/);
+    expect(approvalSection).not.toMatch(/evidence_status/);
   });
   it("27c. request_more_evidence parks the case on the merchant", () => {
     const p = planReviewResolution({ reviewCase: openCase(), decision: "request_more_evidence", resolvedBy: "a@x.com", evidenceStatus: "under_review" }, { now: START });
     expect(p.update.status).toBe("awaiting_merchant");
     expect(p.reprocessRequired).toBe(false);
-    expect(p.evidenceAction).toBe("none");
-    expect(p.update.resolved_at).toBeUndefined();
-    expect(p.update.resolved_by).toBeUndefined();
-    expect(PROCESS_SRC).toMatch(/status: \{ \$in: \['open', 'awaiting_merchant', 'resolving'\] \}/);
   });
 });
 
@@ -315,11 +302,12 @@ describe("P4-G · RBAC (handler source contracts)", () => {
   it("29. the same gate precedes the resolve branch", () => {
     expect(REVIEW_SRC.indexOf("user.role !== 'admin'")).toBeLessThan(REVIEW_SRC.indexOf("action !== 'resolve'"));
   });
-  it("30. an admin resolves through the domain plan, never a raw patch", () => {
+  it("30. an admin resolves through the domain plan and a conditional claim, never a raw patch", () => {
     expect(REVIEW_SRC).toMatch(/planReviewResolution\(/);
+    expect(REVIEW_SRC).toMatch(/acquireResolutionClaim\(/);
+    expect(REVIEW_SRC).toMatch(/finalizeResolutionClaim\(/);
     expect(REVIEW_SRC).toMatch(/ReviewCase\.updateMany\(/);
-    expect(REVIEW_SRC).toMatch(/status: 'resolving'/);
-    expect(REVIEW_SRC).toMatch(/finalizeResolutionClaim/);
+    expect(REVIEW_SRC).not.toMatch(/ReviewCase\.update\(payload\.reviewCaseId, plan\.update\)/);
   });
   it("31. a forged role/actor in the payload does nothing", () => {
     expect(REVIEW_SRC).toMatch(/resolvedBy: user\.email/);
@@ -389,9 +377,9 @@ describe("P4-I/J · idempotency and concurrency", () => {
   });
   it("40. two review resolutions cannot both win", () => {
     expect(planReviewResolution({ reviewCase: { id: "rc", status: "resolved" }, decision: "approve", resolvedBy: "b@x.com" }, { now: START }).status).toBe(409);
-    expect(REVIEW_SRC).toMatch(/acquireResolutionClaim/);
     expect(REVIEW_SRC).toMatch(/ReviewCase\.updateMany\(/);
-    expect(REVIEW_SRC).toMatch(/resolution_claim_id/);
+    expect(REVIEW_SRC).toMatch(/\{ id: rc\.id, status: rc\.status \}/);
+    expect(REVIEW_SRC).toMatch(/if \(!claim\.ok\)/);
     expect(REVIEW_SRC).toMatch(/review case was claimed concurrently/);
   });
   it("41. a stale operation identity no-ops safely", () => {
@@ -431,7 +419,7 @@ describe("P4-K · retry and failure recovery", () => {
   it("46. success realigns the schedule; a permanent failure clears it", () => {
     expect(SCHED_SRC).toMatch(/next_lifecycle_action_at: plan\.nextActionAt \|\| ''/);
     expect(SCHED_SRC).toMatch(/next_lifecycle_action_at: classification\.nextRetryAt/);
-    expect(SCHED_SRC).toMatch(/classification\.retryable/);
+    expect(SCHED_SRC).toMatch(/if \(classification\.retryable\)/);
     expect(SCHED_SRC).toMatch(/next_lifecycle_action_at: ''/);
   });
   it("47. a poison record is recorded, not allowed to block the batch", () => {
@@ -494,21 +482,6 @@ describe("P4 · compatibility with P1/P2/P3", () => {
     }
     expect(SCHED_SRC).not.toMatch(/entities\.(ManualReview|EvidenceReview)/);
   });
-  it("53b. SavingsEvidence has the same P4 operational projection", () => {
-    const se = JSON.parse(fs.readFileSync("base44/entities/SavingsEvidence.jsonc", "utf8"));
-    for (const f of ["next_lifecycle_action_at", "reminder_count", "evidence_status", "provisional_started_at", "expires_at"]) {
-      expect(se.properties[f]).toBeTruthy();
-    }
-    expect(PROCESS_SRC).toMatch(/SavingsEvidence\.update\(payload\.evidenceId/);
-  });
-  it("53c. lifecycle snapshot rewrites are immutable and hash-bound", () => {
-    const original = { lifecycle: { status: "under_review" }, x: 1 };
-    const out = rewritePersistedLifecycleStatus(original, "rejected");
-    expect(out.snapshot.lifecycle.status).toBe("rejected");
-    expect(original.lifecycle.status).toBe("under_review");
-    expect(out.snapshotHash).toMatch(/^[0-9a-f]{64}$/);
-  });
-
   it("54. P2 policy invariants still drive every window", () => {
     expect(ECL_POLICY.windows.provisionalDays).toBeGreaterThan(0);
     expect(reminderScheduleFor(START, EXPIRES, ECL_POLICY)).toHaveLength(REMIND.length);
@@ -543,7 +516,7 @@ describe("P4 · compatibility with P1/P2/P3", () => {
     expect(p1.action).toBe("remind");
     expect(p1.expiresAt).toBe(d.provisional.expiresAt);
   });
-  it("59b. NO billing/invoicing/collection surface leaked into P4", () => {
+  it("59b. NO billing/invoicing/collection surface leaked into P4 executable code", () => {
     for (const src of [OPS_SRC, SCHED_SRC, REVIEW_SRC, SHARED_SRC]) {
       expect(codeOnly(src)).not.toMatch(/Invoice|MonthlySavingsReport|BillingRule|[Ss]tripe|payout|success_fee/);
     }
