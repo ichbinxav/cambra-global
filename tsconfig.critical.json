@@ -1,10 +1,13 @@
 {
-  "//": "v62.5: base44/functions/eclProcessEvidence/entry.ts added — the ONLY I/O boundary of the ECL P3 lifecycle engine belongs in the critical gate. v62.2 CP3 — typecheck:critical MUST report 0 errors. Scope: the full economic backend path (acceptance → report → approval → invoice → PDF/email), merchant getters, trust gates, webhook boundary and the shared pure modules they depend on. Pinned npm: specifiers are typed via types/deno-shim.d.ts against the REAL installed package types (no blanket any shim). The JS/JSX frontend (Reports.jsx, Invoices.jsx, AdminRoute) is exercised by the vitest suite and guarded by the global baseline gate — tsc has no reliable JSX+checkJs story for this codebase yet; documented in OPERATIONS_STATUS. v62.2.1: this file lives at the REPO ROOT (it was mistakenly exported under src/ in v62.2, so the gate ran the older, narrower config). v62.4.1: base44/shared/generated/eclDomain.ts added — the ECL P2 backend domain artifact is a first-class backend module and must typecheck clean inside the critical gate.",
+  "//": "v0.63.0 ECL P4: critical typecheck includes shared ECL persistence plus process, scheduler and review I/O boundaries, in addition to the existing economic backend path. P4 may not escape typecheck through generated or Deno boundaries.",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2022", "DOM"],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "skipLibCheck": true,
@@ -45,6 +48,9 @@
     "base44/functions/sendRecoverContractEmail/entry.ts",
     "base44/functions/generateRecoverContractPdf/entry.ts",
     "base44/functions/dispatchWebhook/entry.ts",
-    "base44/functions/eclProcessEvidence/entry.ts"
+    "base44/functions/eclProcessEvidence/entry.ts",
+    "base44/shared/eclPersistence.ts",
+    "base44/functions/eclLifecycleScheduler/entry.ts",
+    "base44/functions/eclReviewWorkflow/entry.ts"
   ]
 }

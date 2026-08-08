@@ -1,6 +1,6 @@
 # PRODUCTION_FUNCTIONS.md — Manifiesto de funciones backend (CONSOLIDATE-1 T1)
 
-**Censo:** 2026-07-24 (actualizado 2026-08-03 con RECOVER-1/RECOVER-2) · **Total: 147 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
+**Censo:** 2026-07-24 (actualizado 2026-08-08 con ECL P4) · **Total: 166 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
 
 **Tripwire:** `src/lib/productionFunctions.static.test.js` falla si aparece una función no listada aquí (o si se borra una listada sin actualizar el manifiesto).
 
@@ -16,8 +16,8 @@
 |---|---|---|
 | A (merchant) | 37 | funnel anónimo (7), dashboard/connect/vault autenticado (24), aceptación Recover Margin (3 — RECOVER-1), cobro del success fee (3 — RECOVER-2: alta de método de pago, refresco de estado y webhook firmado) |
 | A-API (partners) | 6 | apiAuth, apiOpenApiSpec, apiV1, mcpServer, oauthAuthorize, oauthToken |
-| B (admin/founder-OS) | 77 | incl. 44 agentes/orquestadores del founder-OS (via agentRegistry) |
-| C (scheduled) | 7 | billApiUsage, engineeringReportAgent†, processWebhookDeadLetters, purgeInactiveLeads, purgePaymentsAnalysisSessions, scheduledBenchmarkRecompute, sendMonthlySavingsSummary† |
+| B (admin/founder-OS) | 78 | incl. 44 agentes/orquestadores del founder-OS (via agentRegistry) |
+| C (scheduled / scheduler-ready) | 10 | billApiUsage, engineeringReportAgent†, processWebhookDeadLetters, purgeInactiveLeads, purgePaymentsAnalysisSessions, scheduledBenchmarkRecompute, sendMonthlySavingsSummary† |
 | D (dev/test/seed) | 11 | _tenantGuard, createSelfTestBrand, phase2CleanupLegacyFields, runApiSelfTests, runFlowSelfTests, seedComplianceRules, seedDemoData, seedIntegrationCatalog, seedPaymentsRateTable, sendTestWebhook, verifyRegistrySync |
 | E (QUARANTINE 15-ago) | 16 | ver tabla — probe de invocación activo (OperationalLog `quarantine_probe`) |
 | F (vertical futura) | 1 | inferVendorsFromBankData (banking) |
@@ -71,7 +71,7 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | refreshPaymentMethodStatus | me (+ ownership) | ✓ | DealActivation | PaymentMethodSetupCard (RECOVER-2) |
 | getRecoverContractStatus | me (+ ownership) o admin | ✓ | Mandate, DealActivation, Brand | ContractDocumentCard (RECOVER-3) |
 | downloadRecoverContract | me (+ ownership) o admin | ✓ | Mandate, DealActivation, Brand | ContractDocumentCard / RecoverContractAdminPanel |
-| eclProcessEvidence | admin (service role para lecturas/escrituras; ownership resuelto server-side del registro) | ✓ | StatementImport, SavingsEvidence, EvidenceLifecycleEvent, EvidenceAttestation, EvidenceStrike, ReviewCase, Baseline | admin (v62.5 ECL P3 — único límite I/O del motor puro en eclDomain.ts; sin efecto en billing) |
+| eclProcessEvidence | admin (service role para lecturas/escrituras; ownership resuelto server-side del registro) | ✓ | StatementImport, SavingsEvidence, EvidenceLifecycleEvent, EvidenceAttestation, EvidenceStrike, ReviewCase, Baseline | admin / eclReviewWorkflow (v0.63.0 ECL P4: process + canonical reprocess; sin efecto en billing) |
 | generateRecoverContractPdf | gate (interno) o admin | ✓ | Mandate, DealActivation, Brand, OperationalLog | acceptRecoverMandate (fire-and-forget), reconciliador, admin |
 | sendRecoverContractEmail | gate (interno) o admin | ✓ | Mandate, OperationalLog | generateRecoverContractPdf, reconciliador, admin (resend explícito) |
 | stripeBillingWebhook | pública por diseño — firma HMAC de Stripe (`stripe-signature`) + secret por modo | ✓ | DealActivation, Invoice, PaymentEvent, MonthlySavingsReport | Stripe (cuenta de facturación de CAMBRA) — RECOVER-4: también invoice.*/dispute/credit_note, dedupe por event.id |
@@ -91,7 +91,7 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | oauthAuthorize | me | ✓ | OAuthApp, OrganizationMember, OAuthAuthorizationCode |
 | oauthToken | client_secret + cap 10KB | ✓ | OAuthApp, OAuthAuthorizationCode, OAuthToken |
 
-## C — Scheduled (8)
+## C — Scheduled / scheduler-ready (10)
 
 | Función | Trigger | Auth | Entidades |
 |---|---|---|---|
@@ -104,6 +104,7 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | engineeringReportAgent | diario 07:00 y 15:00 | me+admin | AgentTask, Event |
 | retryPendingRecoverContracts | cada 15 min | gate (admin o interno) | Mandate, OperationalLog |
 | recoverBillingDigest | lunes 09:00 (Europe/Madrid) | **SIN GATE — ver nota** | MonthlySavingsReport, DealActivation, Brand, OperationalLog |
+| eclLifecycleScheduler | **scheduler-ready; cron de plataforma no representado/probado en este repo** | gate (admin o interno) | StatementImport, SavingsEvidence, EvidenceLifecycleEvent, ReviewCase |
 
 **Nota sobre `recoverBillingDigest` (único endpoint sin mecanismo de auth).** La invocación del scheduler no lleva sesión de usuario y no puede portar el secreto interno, así que la función es alcanzable sin autenticar. Es el ÚNICO endpoint cuya seguridad descansa en un argumento y no en un mecanismo, y por eso queda escrito aquí y no solo en el comentario del código. El argumento, en cuatro puntos: (1) no acepta ningún parámetro — el cuerpo de la petición se ignora por completo, así que un llamante no puede influir en qué se lee ni a quién se escribe; (2) su respuesta son solo contadores agregados (cuántos meses cerrados no tienen informe generado —y cuántos de ellos corresponden a activaciones pausadas—, cuántos informes esperan aprobación, cuántos esperan factura, cuántos están bloqueados) más el mes vigilado en formato `YYYY-MM` — cero PII, cero importes, cero identificadores, **ni la dirección del destinatario**: DIGEST-GAP-2 (2026-08-04) dejó de devolver `to`, que era el único dato no numérico que se escapaba y contradecía literalmente esta propiedad. DIGEST-GAP-1 añadió el contador de meses sin informe y la lectura de `DealActivation`, y por diseño solo aumenta el recuento: el nombre del comercio y el mes viajan únicamente dentro del correo al destinatario de entorno, nunca en la respuesta HTTP; (3) solo puede enviar correo a la dirección configurada en el entorno (`ADMIN_NOTIFICATION_EMAIL` / `FOUNDER_EMAIL`), nunca a un destinatario suministrado; (4) ventana de 6 h verificada contra `OperationalLog` antes de enviar, de modo que un llamante anónimo no puede usarla para inundar ese buzón. No aprueba informes ni emite facturas: es un recordatorio. Si alguna de esas cuatro propiedades cambia, la función necesita un gate real.
 
@@ -119,7 +120,7 @@ Todas con auth `me+admin` (o `gate`) y mayoritariamente SR. Agrupadas:
 | getMyReferralStatus | me (`auth.me()` + 401) | ✓ | ReferralLink | Referrals / EffectiveFeePanel |
 | applyReferralActivation | admin o `gate` (internalGate) | ✓ | ReferralActivation, ReferralLink, PaymentsAnalysisSession, Brand, DealActivation, BillingRule | admin / futura automatización sobre MonthlySavingsReport |
 
-**Paneles admin (32):** adminOverrides, adminSummaries, adminUpdateApplicationStatus, answerAgentQuestion, chatChiefOrchestrator, createApiKey, createPaymentLink, discoveryTechStackAgent, driveConnectionCheck, generateInvoicePdf, generateMonthlySavingsReport (gate), getActivationAdminDetail, getAdminRecommendationQueue, getCommandCenterPulse, getWaitlistAggregate, getWaitlistLeads, gmailConnectionCheck, integritySummary, reconcileInvoice, recordPayment (gate), regenerateRecommendationsForBrand (gate), revokeApiKey, stripeBillingKeyCheck (RECOVER-2 — diagnóstico de claves/secrets de la cuenta de facturación; nunca devuelve valores), sheetsConnectionCheck, slackConnectionCheck, copilotChat (founder copilot), founderCopilotAgent, investorUpdateAgent, qaAgent, getBenchmarkForReport (verificado: sin gate por diseño — devuelve solo agregados de cohorte, filtra `is_public=false` (cohortes con n<5) y nunca emite `source_anon_id` ni contribuciones individuales), buildInfrastructureGraph (sin caller), discoverCompanyInfrastructure (sin caller)
+**Paneles admin (33):** eclReviewWorkflow (ECL P4 — list/get/resolve ReviewCase, admin-only, CAS `resolving`, reprocess canónico), adminOverrides, adminSummaries, adminUpdateApplicationStatus, answerAgentQuestion, chatChiefOrchestrator, createApiKey, createPaymentLink, discoveryTechStackAgent, driveConnectionCheck, generateInvoicePdf, generateMonthlySavingsReport (gate), getActivationAdminDetail, getAdminRecommendationQueue, getCommandCenterPulse, getWaitlistAggregate, getWaitlistLeads, gmailConnectionCheck, integritySummary, reconcileInvoice, recordPayment (gate), regenerateRecommendationsForBrand (gate), revokeApiKey, stripeBillingKeyCheck (RECOVER-2 — diagnóstico de claves/secrets de la cuenta de facturación; nunca devuelve valores), sheetsConnectionCheck, slackConnectionCheck, copilotChat (founder copilot), founderCopilotAgent, investorUpdateAgent, qaAgent, getBenchmarkForReport (verificado: sin gate por diseño — devuelve solo agregados de cohorte, filtra `is_public=false` (cohortes con n<5) y nunca emite `source_anon_id` ni contribuciones individuales), buildInfrastructureGraph (sin caller), discoverCompanyInfrastructure (sin caller)
 
 **DEPRECATED (BILLING-FIX-1, 2026-08-04):** generateInvoiceFromReport — stub 410 Gone. Emitía numeración local `max+1` sin unicidad en `(series, sequence)` y no comprobaba si el informe ya estaba facturado. Sustituida por `createEligibleRecoverInvoices` (numeración de Stripe + dedupe por `(deal_activation_id, month)`). Se conserva el fichero para que un trigger de plataforma no visible en el repo falle ruidosamente en vez de duplicar facturas. Ver `Decision_Log_BILLING_FIX1.md`.
 
