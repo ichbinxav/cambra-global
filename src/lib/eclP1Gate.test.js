@@ -42,7 +42,7 @@ describe("ECL stage gate (v62.3)", () => {
     expect(() => allowlistForStage("ECL_P2")).toThrow(/unknown stage/);
   });
 
-  it("declares exactly six stages and NEVER a skip shortcut (v0.63.2)", () => {
+  it("declares exactly six stages and NEVER a skip shortcut (v0.63.3)", () => {
     expect(STAGES).toEqual([STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF]);
     // P1 cannot be skipped: the only way out of PRE_ECL is P1.
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).toEqual([STAGE_ECL_P1]);
@@ -144,7 +144,7 @@ describe("ECL stage gate (v62.3)", () => {
     expect(res.failures[0]).toContain("frozen file modified");
   });
 
-  it("the LIVE repo declares P4 Production Proof with an allowlist matching the code (v0.63.2)", () => {
+  it("the LIVE repo declares P4 Production Proof with an allowlist matching the code (v0.63.3)", () => {
     const freeze = JSON.parse(fs.readFileSync(new URL("../../config/pre-ecl-freeze.json", import.meta.url), "utf8"));
     expect(resolveStage(freeze)).toBe(STAGE_ECL_P4_PROOF);
     expect([...freeze.allowlist].sort()).toEqual([...P4_PROOF_ALLOWLIST].sort());
@@ -216,10 +216,11 @@ describe("ECL stage gate (v62.3)", () => {
 
   it("P4 Production Proof widens P4 by the exact operator surface only — still no billing", () => {
     expect(P4_PROOF_ALLOWLIST.slice(0, P4_ALLOWLIST.length)).toEqual(P4_ALLOWLIST);
-    expect(P4_PROOF_ALLOWLIST).toHaveLength(38);
+    expect(P4_PROOF_ALLOWLIST).toHaveLength(39);
     expect(P4_PROOF_ALLOWLIST.slice(P4_ALLOWLIST.length)).toEqual([
       "src/pages/admin/ReviewQueue.jsx",
       "src/lib/eclP4ProductionProof.test.js",
+      "base44/functions/eclLifecycleScheduler/function.jsonc",
     ]);
     for (const p of P4_PROOF_ALLOWLIST) {
       expect(p).not.toMatch(/[*?]/);
