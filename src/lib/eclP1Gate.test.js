@@ -16,12 +16,15 @@ import {
   STAGE_ECL_P2,
   STAGE_ECL_P3,
   STAGE_ECL_P4,
+  STAGE_ECL_P4_PROOF,
   STAGE_TRANSITIONS,
   P1_ALLOWLIST,
   P2_ALLOWLIST,
   P3_ALLOWLIST,
   P4_ALLOWLIST,
+  P4_PROOF_ALLOWLIST,
   P1_ECL_FIELD_PATHS,
+  ECL_NAME_PATTERN,
   eclPolicyFileAllowed,
 } from "../../scripts/lib/preEclFreeze.mjs";
 
@@ -39,8 +42,8 @@ describe("ECL stage gate (v62.3)", () => {
     expect(() => allowlistForStage("ECL_P2")).toThrow(/unknown stage/);
   });
 
-  it("declares exactly five stages and NEVER a skip shortcut (v62.7)", () => {
-    expect(STAGES).toEqual([STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4]);
+  it("declares exactly six stages and NEVER a skip shortcut (v0.63.2)", () => {
+    expect(STAGES).toEqual([STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF]);
     // P1 cannot be skipped: the only way out of PRE_ECL is P1.
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).toEqual([STAGE_ECL_P1]);
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).not.toContain(STAGE_ECL_P2);
@@ -48,7 +51,8 @@ describe("ECL stage gate (v62.3)", () => {
     // P3 is reachable ONLY from P2. P4 is reachable ONLY from P3.
     expect(STAGE_TRANSITIONS[STAGE_ECL_P2]).toEqual([STAGE_ECL_P1, STAGE_ECL_P3]);
     expect(STAGE_TRANSITIONS[STAGE_ECL_P3]).toEqual([STAGE_ECL_P2, STAGE_ECL_P4]);
-    expect(STAGE_TRANSITIONS[STAGE_ECL_P4]).toEqual([STAGE_ECL_P3]);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P4]).toEqual([STAGE_ECL_P3, STAGE_ECL_P4_PROOF]);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P4_PROOF]).toEqual([STAGE_ECL_P4]);
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).not.toContain(STAGE_ECL_P3);
     expect(STAGE_TRANSITIONS[STAGE_ECL_P1]).not.toContain(STAGE_ECL_P3);
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).not.toContain(STAGE_ECL_P4);
@@ -66,6 +70,7 @@ describe("ECL stage gate (v62.3)", () => {
     expect(eclPolicyFileAllowed(STAGE_ECL_P2)).toBe(true);
     expect(eclPolicyFileAllowed(STAGE_ECL_P3)).toBe(true);
     expect(eclPolicyFileAllowed(STAGE_ECL_P4)).toBe(true);
+    expect(eclPolicyFileAllowed(STAGE_ECL_P4_PROOF)).toBe(true);
   });
 
   it("the P2 allowlist is exact paths only — no wildcard, no directory, no pattern", () => {
@@ -139,11 +144,11 @@ describe("ECL stage gate (v62.3)", () => {
     expect(res.failures[0]).toContain("frozen file modified");
   });
 
-  it("the LIVE repo declares stage P4 with an allowlist matching the code (v62.7)", () => {
+  it("the LIVE repo declares P4 Production Proof with an allowlist matching the code (v0.63.2)", () => {
     const freeze = JSON.parse(fs.readFileSync(new URL("../../config/pre-ecl-freeze.json", import.meta.url), "utf8"));
-    expect(resolveStage(freeze)).toBe(STAGE_ECL_P4);
-    expect([...freeze.allowlist].sort()).toEqual([...P4_ALLOWLIST].sort());
-    // Still the same 8 frozen entries: P4 widens operational code, not model count.
+    expect(resolveStage(freeze)).toBe(STAGE_ECL_P4_PROOF);
+    expect([...freeze.allowlist].sort()).toEqual([...P4_PROOF_ALLOWLIST].sort());
+    // Still the same 8 frozen entries: Production Proof adds operator surfaces, not model count.
     expect(freeze.entries).toHaveLength(8);
   });
 
@@ -207,6 +212,28 @@ describe("ECL stage gate (v62.3)", () => {
       "base44/functions/eclLifecycleScheduler/entry.ts",
       "base44/functions/eclReviewWorkflow/entry.ts",
     ]);
+  });
+
+  it("P4 Production Proof widens P4 by the exact operator surface only — still no billing", () => {
+    expect(P4_PROOF_ALLOWLIST.slice(0, P4_ALLOWLIST.length)).toEqual(P4_ALLOWLIST);
+    expect(P4_PROOF_ALLOWLIST).toHaveLength(38);
+    expect(P4_PROOF_ALLOWLIST.slice(P4_ALLOWLIST.length)).toEqual([
+      "src/pages/admin/ReviewQueue.jsx",
+      "src/lib/eclP4ProductionProof.test.js",
+    ]);
+    for (const p of P4_PROOF_ALLOWLIST) {
+      expect(p).not.toMatch(/[*?]/);
+      expect(p).not.toMatch(/Invoice|MonthlySavingsReport|BillingRule|stripe|payout|success_fee/i);
+    }
+  });
+
+  it("P4 name detection catches camelCase ECL production artifacts without bare-ecl false positives", () => {
+    for (const name of ["eclOperations.js", "eclPersistence.ts", "eclLifecycleScheduler", "eclReviewWorkflow", "eclProcessEvidence", "eclP4ProductionProof.test.js"]) {
+      expect(ECL_NAME_PATTERN.test(name), `must detect ${name}`).toBe(true);
+    }
+    for (const safe of ["declare.js", "reclassify.ts", "vehicle.js"]) {
+      expect(ECL_NAME_PATTERN.test(safe), `must not false-positive ${safe}`).toBe(false);
+    }
   });
 
   it("the ECL policy exists ONLY as an allowlisted P2+ artifact", () => {
