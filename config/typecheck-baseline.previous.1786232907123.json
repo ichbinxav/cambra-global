@@ -1,11 +1,11 @@
 {
   "state": "APPROVED",
   "captured": true,
-  "approvedAt": "2026-08-08T23:48:27.125Z",
-  "sourceTreeHash": "91c6a5c66b94cf47694356d9c1903c34fa452a9e15e3ddad21bd4dc7e5640269",
+  "approvedAt": "2026-08-06T18:38:31.305Z",
+  "sourceTreeHash": "1bbdb8efef9cdac60d315feeb7bcb0f87f276142ee10fc3294fb7d981150da83",
   "typescriptVersion": "Version 5.9.3",
-  "totalErrors": 516,
-  "distinctFingerprints": 318,
+  "totalErrors": 518,
+  "distinctFingerprints": 320,
   "entries": {
     "00561a5fcac63e23": {
       "file": "src/components/admin/integrations/WebhooksTable.jsx",
@@ -657,6 +657,11 @@
       "code": "TS2322",
       "count": 1
     },
+    "6b318da1ee8d6e56": {
+      "file": "src/components/recover/RecoverMandateModal.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
     "6c60a454192ff644": {
       "file": "src/pages/Invoices.jsx",
       "code": "TS2739",
@@ -969,6 +974,11 @@
     },
     "9a3cf940a7073e09": {
       "file": "src/components/admin/integrations/FlowSelfTestPanel.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "9a73d0c028fd93f8": {
+      "file": "src/components/recover/RecoverMandatePanel.jsx",
       "code": "TS2322",
       "count": 1
     },
