@@ -1,12 +1,12 @@
 {
-  "release": "CAMBRA v0.63.3 — ECL P4 Production Scheduler (durability manifest)",
-  "generatedAt": "2026-08-08T22:07:38.951Z",
-  "packageVersion": "0.63.3",
-  "stage": "ECL_P4_PRODUCTION_PROOF",
-  "freezeStage": "ECL_P4_PRODUCTION_PROOF",
+  "release": "CAMBRA v0.64.0 — ECL P5 Economic Enforcement (durability manifest)",
+  "generatedAt": "2026-08-08T23:38:55.544Z",
+  "packageVersion": "0.64.0",
+  "stage": "ECL_P5_ECONOMIC_ENFORCEMENT",
+  "freezeStage": "ECL_P5_ECONOMIC_ENFORCEMENT",
   "freezeEntryCount": 8,
-  "allowlistCount": 39,
-  "fileCount": 79,
+  "allowlistCount": 48,
+  "fileCount": 87,
   "purpose": "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
   "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest now covers every active ECL stage through P4 Production Proof.",
   "stageNote": "P1/P2/P3/P4 remain authoritative. P4 Production Proof adds the admin ReviewQueue consumer and scheduler runtime observability without adding billing, invoicing, collections, Stripe settlement, payouts or success-fee effects. A recurring Base44 platform automation remains external configuration and a GitHub CI seal requires a real Actions run.",
@@ -20,8 +20,8 @@
   "files": [
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "f0ba65dc252f197a0c8671528d404243e4a4142418558b1515407ccf2a7c3b12",
-      "bytes": 793
+      "sha256": "d9b096e8bbfd59795810b3c60b52fbdcba0f47b07f2e77d0453841044d6789c8",
+      "bytes": 861
     },
     {
       "path": "base44/entities/EvidenceAttestation.jsonc",
@@ -55,18 +55,18 @@
     },
     {
       "path": "base44/functions/acceptRecoverMandate/entry.ts",
-      "sha256": "0567e70ff4f18710f0f7353096d2e914995566240fe9965845a30d3927f48dc4",
-      "bytes": 12000
+      "sha256": "6f60056d02841267ca25651bb4d16c96d59936fe583f4f98ccea07048358ad03",
+      "bytes": 14901
     },
     {
       "path": "base44/functions/approveRecoverReportForInvoicing/entry.ts",
-      "sha256": "589717fffeae543a34c9a0e2369b651540965dc925d5a7173875f91df789e0e1",
-      "bytes": 15877
+      "sha256": "3f247e63654904ca8a98c0a2762df45c45a65385270c7e6d9351a4f08e7eb375",
+      "bytes": 16984
     },
     {
       "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
-      "sha256": "bc1d41e086c19ec58825c92bd36682f8fdf5ba49759d9f2f763775b4f2505a27",
-      "bytes": 21050
+      "sha256": "70dce48d6b7ee75ca466a01279862afc24a9fbcb169a33e6b7ab84928d4141b6",
+      "bytes": 24926
     },
     {
       "path": "base44/functions/dispatchWebhook/entry.ts",
@@ -85,8 +85,8 @@
     },
     {
       "path": "base44/functions/eclProcessEvidence/entry.ts",
-      "sha256": "e64ae5d19d1d108cb486e2d03984a9dbe5d359b87dbca0219c4e4d31ff4b22b6",
-      "bytes": 18620
+      "sha256": "3a4e2e972639c818a3e0254ddbe25d9e95fa39368d09be2929ec030ca4afb6a3",
+      "bytes": 18943
     },
     {
       "path": "base44/functions/eclReviewWorkflow/entry.ts",
@@ -94,19 +94,39 @@
       "bytes": 14765
     },
     {
+      "path": "base44/functions/generateMonthlySavingsReport/entry.ts",
+      "sha256": "0e4ae1809afa95f7526a268adbfdfd881dc98bce8a5bee677be4cc7a619ed3a6",
+      "bytes": 14641
+    },
+    {
       "path": "base44/functions/generateRecoverContractPdf/entry.ts",
       "sha256": "a92c931d0b5d4907d36a132deb158d3d1086d1b784c7082981b51e79271fe23a",
       "bytes": 11565
     },
     {
+      "path": "base44/functions/getRecoverAcceptanceContext/entry.ts",
+      "sha256": "2ee0a5d45c74bb28de3c76b00c098cd75b36de39bcd8778842a9b95836fa89df",
+      "bytes": 5353
+    },
+    {
       "path": "base44/functions/startRecoverAcceptance/entry.ts",
-      "sha256": "51d08dde00540c68d12fa9dd641013b130a8b8749b928a21edc08e4ceeaa7a81",
-      "bytes": 5925
+      "sha256": "bd4308f6cf8932d76a24a8873f27e0bc6b77c4e8cf6b3b9ca87d39b274f9eb5a",
+      "bytes": 7803
+    },
+    {
+      "path": "base44/shared/eclEconomicGate.ts",
+      "sha256": "944b587a169e7c61798e209d68e8d9ad25eba06370707bc43e6667f0145e5e89",
+      "bytes": 7660
     },
     {
       "path": "base44/shared/eclPersistence.ts",
       "sha256": "2b45a1db62bd3aabaef612c108752fba652304d8a56d748a64e32e23f3f47a17",
       "bytes": 2896
+    },
+    {
+      "path": "base44/shared/eclRecoverEvidence.ts",
+      "sha256": "4cb8b717c372592b5847960b85b4ff2ef879af21ddb889db253ac2bd98da143d",
+      "bytes": 15069
     },
     {
       "path": "base44/shared/generated/eclDomain.ts",
@@ -129,6 +149,11 @@
       "bytes": 13804
     },
     {
+      "path": "base44/shared/recoverMandateCopy.ts",
+      "sha256": "ca82f6f1edcafdbdb779ef56b0b87fa8c053897ab8120a243db33bd305947b8b",
+      "bytes": 11884
+    },
+    {
       "path": "base44/shared/webhookPublicPayload.ts",
       "sha256": "25c8dbfb057294630610e399d55783f66448b60542290ea4c6626f1930fcdc63",
       "bytes": 1942
@@ -145,18 +170,18 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "86141cfb9965668926e9c6bb77c81d953f90e0e23278f91dad649a55d1be40a6",
-      "bytes": 12288
+      "sha256": "8e1282859b4de6b69bf3c8dd46e74261f2c98ea69156fac63a81d262429dbac5",
+      "bytes": 19497
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "d866708d2e048822f1d10b3012de817dfb96cb467086299fb70a49df175a1528",
-      "bytes": 4843
+      "sha256": "e3590b89b4b8bb60814867986dd17bc4416142f075c693fe09be584582407d4d",
+      "bytes": 5509
     },
     {
       "path": "config/release-touch-list.json",
-      "sha256": "e698d368b0d0e5c595218adbce7f9491031582aacf18ab2d0443c0653943a45a",
-      "bytes": 3185
+      "sha256": "104d4cfa4bc3f3005aed52a8d3832d8c19967bbb6cd221b94f380e1baafb4417",
+      "bytes": 3544
     },
     {
       "path": "config/typecheck-baseline.json",
@@ -165,13 +190,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "67504df817d5472ae604ee1dd4754a0c9f0a043f3a0cdd416547315e862acbf8",
+      "sha256": "c19468229daafed94cb899d5a764f4fc10ab0d92c888c836cf81d8e7bda37e01",
       "bytes": 404666
     },
     {
       "path": "package.json",
-      "sha256": "97877bca234a9ee90bed9b1ddc9fe19efc7c295e9a7a93cff218c99e13d0f49e",
-      "bytes": 5602
+      "sha256": "d1c8c40113671e45cb6c4e01ca4cc79bc9ca31f7ca34f81d85729dcdc9535528",
+      "bytes": 5603
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -220,8 +245,8 @@
     },
     {
       "path": "scripts/lib/preEclFreeze.mjs",
-      "sha256": "5eb694d509151d441d9159ef1c9abaaf7d9f06df685f08f5e3f2df6fb8ac41b8",
-      "bytes": 11102
+      "sha256": "e4e3efd2077e1a3e3c1341028e7233b8f7c6da65a93b60d084422c1164cc2885",
+      "bytes": 12412
     },
     {
       "path": "scripts/lib/sourceTreeHash.mjs",
@@ -259,14 +284,24 @@
       "bytes": 21169
     },
     {
+      "path": "src/components/recover/RecoverMandateModal.jsx",
+      "sha256": "69fb7c2627d278cefbe106c2db55c06a464dfeb0061380ae5f569bd185a6f8bc",
+      "bytes": 9315
+    },
+    {
+      "path": "src/components/recover/RecoverMandatePanel.jsx",
+      "sha256": "9c61b20696e9993d08f6c7ad903d22eb086d71026ddeeb24a0d70986b6d86637",
+      "bytes": 5231
+    },
+    {
       "path": "src/docs/OPERATIONS_STATUS.md",
-      "sha256": "c5610905a24f0af92df3b135c33377bb1109b3ded31846c2f2e1cb232b34d174",
-      "bytes": 27711
+      "sha256": "4f815ee04a112f6209651a15d695fd973afe5d1066b06679bd68b9bd485f436d",
+      "bytes": 30904
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "72c26b77b898e0d3a94b1f803b3231b1a460f5440124d1831cafab60d262253b",
-      "bytes": 17016
+      "sha256": "030ebf85b33ad74a3343bd687fbd586de96981f5837afc5f66ff9b9510b625d8",
+      "bytes": 17705
     },
     {
       "path": "src/lib/confidenceResult.js",
@@ -315,8 +350,8 @@
     },
     {
       "path": "src/lib/eclP1Gate.test.js",
-      "sha256": "dfa9a99f5c238b6d613c0c6b8bf08d4f17ea012a4026722aa03e7a026abe9dde",
-      "bytes": 12372
+      "sha256": "ef22a002161fc323e198077c7d5ec96e6a68f52dc5eea275707cb8a2dd1304b8",
+      "bytes": 13084
     },
     {
       "path": "src/lib/eclP1Schemas.test.js",
@@ -325,8 +360,8 @@
     },
     {
       "path": "src/lib/eclP3Closure.test.js",
-      "sha256": "984bde1163e675d47a68b5ffaf03b12c75448428e7ceafb4c6adbe7fcc0bedec",
-      "bytes": 20164
+      "sha256": "8d7bcc17ca6a450cf73371e9e4d75715fe100c7db377c61555ff0118a31420ba",
+      "bytes": 20386
     },
     {
       "path": "src/lib/eclP4Closure.test.js",
@@ -335,8 +370,13 @@
     },
     {
       "path": "src/lib/eclP4ProductionProof.test.js",
-      "sha256": "04e65c4ef834b84421099e0def89fa8f4dc154b1cb487a9ea0e0ce8c3b9d5a2e",
-      "bytes": 5898
+      "sha256": "61dd4b4b666cc234061a47f802235e4aee7c950f1cfb715e7c91b25bc2a287ef",
+      "bytes": 6016
+    },
+    {
+      "path": "src/lib/eclP5Closure.test.js",
+      "sha256": "cba0a0f013d828d470efba15b247d93e18da8163e46d230352f60d8038037a58",
+      "bytes": 14865
     },
     {
       "path": "src/lib/eclParity.test.js",
@@ -405,8 +445,8 @@
     },
     {
       "path": "tsconfig.critical.json",
-      "sha256": "8597e04f0ef906fdfbccd4ecceef5f88088a569bbb6ffd8d9b674cc1598bb276",
-      "bytes": 2384
+      "sha256": "2b86851cdad18ae7a8bb7707dfaba11f66284ba188eeebae6afc0a048287e5d2",
+      "bytes": 2554
     },
     {
       "path": "types/deno-shim.d.ts",
