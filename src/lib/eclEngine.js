@@ -25,6 +25,7 @@ import { countActiveStrikesByScope, buildStrikeIntent, scopesRequiringEscalation
 // auditable provenance before an independent document can classify high.
 export const ECL_ENGINE_VERSION = "ecl-engine-2";
 export const ECL_RULESET_VERSION = "ecl-rules-2";
+export const ECL_EVALUATION_CONTEXT_VERSION = 1;
 
 export class EclEngineError extends Error {
   constructor(message) {
@@ -207,6 +208,14 @@ export function runEclEngine(input, policy) {
   enRequire(ctx.hasBlockingReviewCase !== undefined && ctx.hasBlockingReviewCase !== null, "context.hasBlockingReviewCase is required");
   const actor = ["system", "user", "reviewer"].includes(i.actor) ? i.actor : "system";
   const nowIso = new Date(nowMs).toISOString();
+  // Persist the material non-record context that can alter a rule outcome. In
+  // particular E-07 depends on referenceFeeRateBps, so a later human review
+  // must not reprocess the same normalized evidence under a different/omitted
+  // reference and accidentally become more favorable.
+  const evaluationContext = deepFreeze({
+    version: ECL_EVALUATION_CONTEXT_VERSION,
+    referenceFeeRateBps: ctx.referenceFeeRateBps === undefined ? null : ctx.referenceFeeRateBps,
+  });
 
   // ── Trazabilidad: every decision is reproducible from this hash ─────────
   const inputsHash = sha256Hex(
@@ -243,6 +252,7 @@ export function runEclEngine(input, policy) {
       reconciliation,
       confidenceResult: null,
       confidenceResultHash: null,
+      evaluationContext,
       transition: null,
       supersessions: [],
       reviewCaseIntents: [],
@@ -433,6 +443,7 @@ export function runEclEngine(input, policy) {
     reconciliation,
     confidenceResult,
     confidenceResultHash: hashConfidenceResult(confidenceResult),
+    evaluationContext,
     transition,
     supersessions,
     reviewCaseIntents,
@@ -463,6 +474,9 @@ export function buildPersistedEvidenceSnapshot(decision, evidence, lifecycle) {
     outcome: decision.outcome,
     normalizedEvidence: evidence,
     confidenceResult: decision.confidenceResult,
+    evaluationContext: decision.evaluationContext && typeof decision.evaluationContext === "object"
+      ? { ...decision.evaluationContext }
+      : { version: ECL_EVALUATION_CONTEXT_VERSION, referenceFeeRateBps: null },
     lifecycle: {
       status: lifecycle.status,
       provisionalStartedAt: lifecycle.provisionalStartedAt || null,
