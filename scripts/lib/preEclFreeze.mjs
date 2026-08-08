@@ -132,15 +132,17 @@ export const P4_ALLOWLIST = [
   "base44/functions/eclReviewWorkflow/entry.ts",
 ];
 
-// P4 Production Proof widens P4 by exactly TWO ECL-named artifacts: the admin
-// ReviewQueue consumer and its closure test. Runtime scheduler observability is
-// implemented inside the already-sanctioned P4 scheduler boundary. App.jsx and
-// AdminLayout only wire a protected route/navigation item and are governed by
-// normal release evidence rather than by an ECL wildcard exception.
+// P4 Production Proof widens P4 by exactly THREE ECL-named artifacts: the admin
+// ReviewQueue consumer, its closure test, and the scheduler's versioned Base44
+// automation config. Runtime scheduler observability remains inside the already-
+// sanctioned P4 scheduler boundary. App.jsx and AdminLayout only wire a protected
+// route/navigation item and are governed by normal release evidence rather than
+// by an ECL wildcard exception.
 export const P4_PROOF_ALLOWLIST = [
   ...P4_ALLOWLIST,
   "src/pages/admin/ReviewQueue.jsx",
   "src/lib/eclP4ProductionProof.test.js",
+  "base44/functions/eclLifecycleScheduler/function.jsonc",
 ];
 
 export function allowlistForStage(stage) {
