@@ -15,6 +15,8 @@ import fs from "node:fs";
 import {
   selectDueLifecycleItems,
   planOperationalAction,
+  reconcileReminderCount,
+  rewritePersistedLifecycleStatus,
   reminderScheduleFor,
   buildReminderIntent,
   buildOperationalFailureIntent,
@@ -50,6 +52,8 @@ const SCHED_SRC = fs.readFileSync("base44/functions/eclLifecycleScheduler/entry.
 const REVIEW_SRC = fs.readFileSync("base44/functions/eclReviewWorkflow/entry.ts", "utf8");
 const OPS_SRC = fs.readFileSync("src/lib/eclOperations.js", "utf8");
 const SHARED_SRC = fs.readFileSync("base44/shared/eclPersistence.ts", "utf8");
+const PROCESS_SRC = fs.readFileSync("base44/functions/eclProcessEvidence/entry.ts", "utf8");
+const codeOnly = (src) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
 
 // ── 1-6 · due discovery ───────────────────────────────────────────────────
 describe("P4-A · due discovery", () => {
@@ -87,7 +91,8 @@ describe("P4-A · due discovery", () => {
   });
   it("6. one failing item cannot abort the batch (handler contract)", () => {
     expect(SCHED_SRC).toMatch(/for \(const item of due\.items\)/);
-    expect(SCHED_SRC).toMatch(/One poison record can never abort the batch/);
+    expect(SCHED_SRC).toMatch(/for \(const item of due\.items\)/);
+    expect(SCHED_SRC).toMatch(/recordFailure\(svc, item, now, err, counters\)/);
     expect(SCHED_SRC).toMatch(/results\.push\(await processOne/);
   });
 });
@@ -113,7 +118,7 @@ describe("P3 → P4 handoff · initial next_lifecycle_action_at", () => {
     expect(later.nextActionAt).toBe(first.nextActionAt);
     expect(later.expiresAt).toBe(EXPIRES);
     // The handoff derives from the ORIGINAL window, never from the clock.
-    expect(P3_SRC).toMatch(/never from\n\s*\/\/ "now"/);
+    expect(P3_SRC).toMatch(/derived from the ORIGINAL window/);
   });
   it("once due, the scheduler discovers the record by that very timestamp", () => {
     const due = selectDueLifecycleItems(
@@ -149,7 +154,7 @@ describe("P4-C · automatic provisional expiration", () => {
   it("10. running LATE never renews the window", () => {
     const late = planOperationalAction(provisional({ reminderCount: 2 }), ECL_POLICY, { now: at(WINDOW_H + 720) });
     expect(late.expiresAt).toBe(EXPIRES);
-    expect(SCHED_SRC).toMatch(/The provisional window itself is NEVER rewritten here/);
+    expect(SCHED_SRC).toMatch(/Never rewrite provisional_started_at\/expires_at/);
     expect(SCHED_SRC).not.toMatch(/provisional_started_at:/);
   });
   it("11. expired evidence is never resurrected by a later run", () => {
@@ -217,8 +222,20 @@ describe("P4-D · reminder orchestration", () => {
     expect(i.record.from_status).toBe(i.record.to_status);
     expect(i.record.event).toBe("evidence_reminder_due:0");
     expect(i.record.actor).toBe("system");
-    expect(SCHED_SRC).toMatch(/EVENT FIRST, then the counter/);
+    expect(SCHED_SRC.indexOf("createOnce(svc, 'EvidenceLifecycleEvent'")).toBeLessThan(SCHED_SRC.indexOf("reconcileReminderCount("));
     expect(SCHED_SRC).not.toMatch(/SendEmail|integrations\./);
+  });
+  it("20b. crash after event-before-counter heals the materialized count", () => {
+    expect(reconcileReminderCount(0, 0)).toBe(1);
+    expect(reconcileReminderCount(1, 0)).toBe(1);
+    expect(reconcileReminderCount(1, 1)).toBe(2);
+    expect(SCHED_SRC).toMatch(/const healedReminderCount = reconcileReminderCount/);
+    expect(SCHED_SRC.indexOf("const healedReminderCount")).toBeLessThan(SCHED_SRC.indexOf("if (res.created) counters.remindersCreated"));
+  });
+  it("20c. due discovery is server-side and covers both evidence entities", () => {
+    expect(SCHED_SRC).toMatch(/next_lifecycle_action_at: \{ \$lte: now \}/);
+    expect(SCHED_SRC).toMatch(/statement_import/);
+    expect(SCHED_SRC).toMatch(/savings_evidence/);
   });
 });
 
@@ -273,13 +290,18 @@ describe("P4-E/F/N · review case lifecycle", () => {
     const p = planReviewResolution({ reviewCase: openCase(), decision: "approve", resolvedBy: "a@x.com", evidenceStatus: "under_review" }, { now: START });
     expect(p.reprocessRequired).toBe(true);
     expect(Object.keys(p.update)).not.toContain("evidence_status");
-    expect(REVIEW_SRC).not.toMatch(/evidence_status:/);
-    expect(REVIEW_SRC).toMatch(/An approval does NOT set an evidence status here/);
+    expect(p.evidenceAction).toBe("reprocess");
+    expect(REVIEW_SRC).toMatch(/functions\.invoke\('eclProcessEvidence'/);
+    expect(REVIEW_SRC).not.toMatch(/evidence_status:\s*'verified'/);
   });
   it("27c. request_more_evidence parks the case on the merchant", () => {
     const p = planReviewResolution({ reviewCase: openCase(), decision: "request_more_evidence", resolvedBy: "a@x.com", evidenceStatus: "under_review" }, { now: START });
     expect(p.update.status).toBe("awaiting_merchant");
     expect(p.reprocessRequired).toBe(false);
+    expect(p.evidenceAction).toBe("none");
+    expect(p.update.resolved_at).toBeUndefined();
+    expect(p.update.resolved_by).toBeUndefined();
+    expect(PROCESS_SRC).toMatch(/status: \{ \$in: \['open', 'awaiting_merchant', 'resolving'\] \}/);
   });
 });
 
@@ -295,7 +317,9 @@ describe("P4-G · RBAC (handler source contracts)", () => {
   });
   it("30. an admin resolves through the domain plan, never a raw patch", () => {
     expect(REVIEW_SRC).toMatch(/planReviewResolution\(/);
-    expect(REVIEW_SRC).toMatch(/ReviewCase\.update\(payload\.reviewCaseId, plan\.update\)/);
+    expect(REVIEW_SRC).toMatch(/ReviewCase\.updateMany\(/);
+    expect(REVIEW_SRC).toMatch(/status: 'resolving'/);
+    expect(REVIEW_SRC).toMatch(/finalizeResolutionClaim/);
   });
   it("31. a forged role/actor in the payload does nothing", () => {
     expect(REVIEW_SRC).toMatch(/resolvedBy: user\.email/);
@@ -365,12 +389,13 @@ describe("P4-I/J · idempotency and concurrency", () => {
   });
   it("40. two review resolutions cannot both win", () => {
     expect(planReviewResolution({ reviewCase: { id: "rc", status: "resolved" }, decision: "approve", resolvedBy: "b@x.com" }, { now: START }).status).toBe(409);
-    expect(REVIEW_SRC).toMatch(/Re-read immediately before the write/);
-    expect(REVIEW_SRC).toMatch(/review case was resolved concurrently/);
-    expect(REVIEW_SRC.indexOf("const fresh = await svc.entities.ReviewCase.get")).toBeLessThan(REVIEW_SRC.indexOf("ReviewCase.update(payload.reviewCaseId, plan.update)"));
+    expect(REVIEW_SRC).toMatch(/acquireResolutionClaim/);
+    expect(REVIEW_SRC).toMatch(/ReviewCase\.updateMany\(/);
+    expect(REVIEW_SRC).toMatch(/resolution_claim_id/);
+    expect(REVIEW_SRC).toMatch(/review case was claimed concurrently/);
   });
   it("41. a stale operation identity no-ops safely", () => {
-    expect(SCHED_SRC).toMatch(/Authoritative state, re-read at processing time/);
+    expect(SCHED_SRC).toMatch(/Authoritative state is re-read at processing time/);
     expect(planOperationalAction({ status: "verified" }, ECL_POLICY, { now: at(REMIND[0]) }).action).toBe("none");
   });
   it("42. a scheduler-vs-supersession race cannot resurrect old evidence", () => {
@@ -406,7 +431,8 @@ describe("P4-K · retry and failure recovery", () => {
   it("46. success realigns the schedule; a permanent failure clears it", () => {
     expect(SCHED_SRC).toMatch(/next_lifecycle_action_at: plan\.nextActionAt \|\| ''/);
     expect(SCHED_SRC).toMatch(/next_lifecycle_action_at: classification\.nextRetryAt/);
-    expect(SCHED_SRC).toMatch(/never enter an infinite retry/);
+    expect(SCHED_SRC).toMatch(/classification\.retryable/);
+    expect(SCHED_SRC).toMatch(/next_lifecycle_action_at: ''/);
   });
   it("47. a poison record is recorded, not allowed to block the batch", () => {
     expect(SCHED_SRC).toMatch(/recordFailure\(svc, item, now, err, counters\)/);
@@ -468,6 +494,21 @@ describe("P4 · compatibility with P1/P2/P3", () => {
     }
     expect(SCHED_SRC).not.toMatch(/entities\.(ManualReview|EvidenceReview)/);
   });
+  it("53b. SavingsEvidence has the same P4 operational projection", () => {
+    const se = JSON.parse(fs.readFileSync("base44/entities/SavingsEvidence.jsonc", "utf8"));
+    for (const f of ["next_lifecycle_action_at", "reminder_count", "evidence_status", "provisional_started_at", "expires_at"]) {
+      expect(se.properties[f]).toBeTruthy();
+    }
+    expect(PROCESS_SRC).toMatch(/SavingsEvidence\.update\(payload\.evidenceId/);
+  });
+  it("53c. lifecycle snapshot rewrites are immutable and hash-bound", () => {
+    const original = { lifecycle: { status: "under_review" }, x: 1 };
+    const out = rewritePersistedLifecycleStatus(original, "rejected");
+    expect(out.snapshot.lifecycle.status).toBe("rejected");
+    expect(original.lifecycle.status).toBe("under_review");
+    expect(out.snapshotHash).toMatch(/^[0-9a-f]{64}$/);
+  });
+
   it("54. P2 policy invariants still drive every window", () => {
     expect(ECL_POLICY.windows.provisionalDays).toBeGreaterThan(0);
     expect(reminderScheduleFor(START, EXPIRES, ECL_POLICY)).toHaveLength(REMIND.length);
@@ -504,7 +545,7 @@ describe("P4 · compatibility with P1/P2/P3", () => {
   });
   it("59b. NO billing/invoicing/collection surface leaked into P4", () => {
     for (const src of [OPS_SRC, SCHED_SRC, REVIEW_SRC, SHARED_SRC]) {
-      expect(src).not.toMatch(/Invoice|MonthlySavingsReport|BillingRule|[Ss]tripe|payout|success_fee/);
+      expect(codeOnly(src)).not.toMatch(/Invoice|MonthlySavingsReport|BillingRule|[Ss]tripe|payout|success_fee/);
     }
   });
 });

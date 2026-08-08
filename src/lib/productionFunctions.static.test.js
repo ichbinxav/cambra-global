@@ -19,7 +19,7 @@ const THIS_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(THIS_DIR, "..", "..");
 const FUNCTIONS_DIR = path.join(REPO_ROOT, "base44", "functions");
 
-// Censo 2026-07-24 — 141 funciones. Fuente: src/docs/PRODUCTION_FUNCTIONS.md.
+// Censo actualizado para ECL P4 — fuente: src/docs/PRODUCTION_FUNCTIONS.md.
 const MANIFEST = [
   "_tenantGuard", "adminOverrides", "adminSummaries", "adminUpdateApplicationStatus",
   // REFERRAL-1 / REFERRAL-2 (2026-08-03) — referral programme surface.
@@ -47,7 +47,7 @@ const MANIFEST = [
   "discoverCompanyInfrastructure", "discoveryTechStackAgent", "dispatchWebhook",
   "driveConnectionCheck",
   // v62.5 ECL P3 — único límite I/O del motor de ciclo de vida de evidencia.
-  "eclProcessEvidence", "engineeringReportAgent", "fixValidatorAgent",
+  "eclProcessEvidence", "eclLifecycleScheduler", "eclReviewWorkflow", "engineeringReportAgent", "fixValidatorAgent",
   "followUpAgent", "founderCopilotAgent", "gdprAgent", "generateInvoiceFromReport",
   "generateInvoicePdf", "generateMonthlySavingsReport", "generateRecommendations",
   "getActivationAdminDetail", "getAdminRecommendationQueue", "getBenchmarkForReport",
