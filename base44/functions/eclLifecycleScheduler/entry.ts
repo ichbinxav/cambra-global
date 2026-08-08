@@ -274,15 +274,30 @@ async function recordFailure(svc, item, now: string, err, counters) {
 }
 
 Deno.serve(async (req) => {
+  let svc = null;
+  let task = null;
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
 
-    const svc = base44.asServiceRole;
+    svc = base44.asServiceRole;
     const now = new Date().toISOString();
     const limit = Number.isInteger(body?.limit) && body.limit > 0 ? Math.min(body.limit, MAX_BATCH) : DEFAULT_BATCH;
+    const trigger = req.headers.get('base44-scheduled-task') === 'true' ? 'scheduled' : 'manual_or_internal';
+
+    // Runtime proof only: lifecycle correctness must never depend on telemetry.
+    task = await svc.entities.AgentTask.create({
+      brand_id: PLATFORM_TENANT,
+      agent_name: SCHEDULER_AGENT_NAME,
+      task_type: SCHEDULER_TASK_TYPE,
+      status: 'running',
+      requires_approval: false,
+      risk_level: 1,
+      input_summary: `ECL lifecycle sweep · ${trigger} · batch ${limit}`,
+      started_at: now,
+    }).catch(() => null);
 
     // True server-side due discovery: no future rows are fetched and therefore
     // future/legacy rows cannot starve due work. Each entity is bounded, then
@@ -293,13 +308,15 @@ Deno.serve(async (req) => {
     };
     const pages = await Promise.all(
       TARGET_LIST.map(async (target) => {
+        // Discovery is authoritative. A persistence read failure is NOT an
+        // empty queue: let it fail the run so monitoring sees the outage.
         const rows = await svc.entities[target.entityName]
-          .filter(dueQuery, 'next_lifecycle_action_at', MAX_BATCH)
-          .catch(() => []);
+          .filter(dueQuery, 'next_lifecycle_action_at', DISCOVERY_PAGE);
         return (rows || []).map((r) => ({ ...r, __entityType: target.entityType }));
       }),
     );
     const candidates = pages.flat();
+    const discoveryTruncated = pages.some((page) => page.length >= DISCOVERY_PAGE);
     const due = selectDueLifecycleItems(candidates, {
       now,
       limit,
@@ -342,14 +359,34 @@ Deno.serve(async (req) => {
       }
     }
 
+    const summary = buildOperationalSummary(counters, { now, batchLimit: limit, truncated: due.truncated || discoveryTruncated });
+    let observabilityRecorded = false;
+    if (task?.id) {
+      observabilityRecorded = await svc.entities.AgentTask.update(task.id, {
+        status: 'completed',
+        output_summary: `ECL sweep: ${summary.counters.processed}/${summary.counters.dueFound} processed · ${summary.counters.remindersCreated} reminder intents · ${summary.counters.expired} expired · ${summary.counters.reviewCasesCreated} review cases`,
+        output_payload_json: summary,
+        completed_at: new Date().toISOString(),
+      }).then(() => true).catch(() => false);
+    }
+
     return Response.json({
       ok: true,
       reminderGuarantee: 'intent_only',
       schedulerGuarantee: 'invocation_ready',
-      summary: buildOperationalSummary(counters, { now, batchLimit: limit, truncated: due.truncated }),
+      observabilityGuarantee: observabilityRecorded ? 'agent_task_recorded' : 'best_effort_unavailable',
+      summary,
       results,
     });
   } catch (error) {
-    return Response.json({ ok: false, error: 'scheduler_run_failed', message: error.message }, { status: 500 });
+    const message = String(error?.message || error || 'unknown error');
+    if (svc && task?.id) {
+      await svc.entities.AgentTask.update(task.id, {
+        status: 'failed',
+        error: message.slice(0, 500),
+        completed_at: new Date().toISOString(),
+      }).catch(() => null);
+    }
+    return Response.json({ ok: false, error: 'scheduler_run_failed', message }, { status: 500 });
   }
 });
