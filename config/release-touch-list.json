@@ -1,6 +1,6 @@
 {
-  "release": "0.62.6",
-  "comment": "Files modified by this release. v62.6 closed ECL P3: hardened inputsHash (complete sibling envelopes), snapshot-exact confidence_result_hash, non-renewing provisional windows, E-08 provenance, positive-comparability supersession, server-resolved attestation binding, and the P3 closure regression matrix (eclP3Closure.test.js). v62.5 added the ECL P3 lifecycle-engine files (eclLifecycle/eclReconcile/eclStrikes/eclEngine + the eclProcessEvidence handler). The baseline gate refuses to absorb ANY typecheck error appearing in these files. v62.4 added the ECL P2 domain-contract files (policy, schema, generator, domain modules, generated artifacts) that were missing from the 0.62.3 list. v62.4.1 added base44/shared/generated/eclDomain.ts (the backend domain artifact promoted into the critical gate).",
+  "release": "0.63.2",
+  "comment": "CAMBRA v0.63.2 — ECL P4 Production Proof. P1/P2/P3/P4 remain authoritative. This release restores the fail-closed P4 persistence/reprocess hardening, persists the material E-07 evaluationContext for deterministic review reprocessing, adds best-effort AgentTask scheduler runtime proof, and exposes an admin-only Evidence Review surface through eclReviewWorkflow. The active ECL stage is ECL_P4_PRODUCTION_PROOF with 38 exact allowlisted paths and no billing, invoicing, collections, Stripe settlement, payout or success-fee effect.",
   "files": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -47,6 +47,22 @@
     "src/lib/eclEngine.js",
     "base44/functions/eclProcessEvidence/entry.ts",
     "src/lib/eclP3Closure.test.js",
+    "src/lib/eclOperations.js",
+    "src/lib/eclP4Closure.test.js",
+    "src/lib/eclP4ProductionProof.test.js",
+    "base44/shared/eclPersistence.ts",
+    "base44/functions/eclLifecycleScheduler/entry.ts",
+    "base44/functions/eclReviewWorkflow/entry.ts",
+    "src/pages/admin/ReviewQueue.jsx",
+    "src/App.jsx",
+    "src/pages/admin/AdminLayout.jsx",
+    "scripts/generate-durability-manifest.mjs",
+    "config/pre-ecl-freeze.json",
+    "config/freeze-change-log.json",
+    "src/docs/OPERATIONS_STATUS.md",
+    "src/docs/PRODUCTION_FUNCTIONS.md",
+    "package.json",
+    "package-lock.json",
     "tsconfig.critical.json"
   ]
 }
