@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 // Precise ECL artifact names — word-anchored so "declare"/"reclassify" never
 // false-positive the way a bare /ecl/i would. P4 explicitly covers the
 // camelCase production/domain names that the old pattern missed.
-export const ECL_NAME_PATTERN = /\becl(?:-policy|Policy(?:Schema)?|Domain|Gates|Serialize|Lifecycle(?:Scheduler)?|Reconcile|Strikes|Engine|Parity|ProcessEvidence|Operations|Persistence|ReviewWorkflow|P3Closure|P4Closure)(?:\b|[._-])|EvidenceAttestation|EvidenceLifecycleEvent|EvidenceStrike|ReviewCase|ReviewQueue|ConfidenceResult|NormalizedEvidence/;
+export const ECL_NAME_PATTERN = /\becl(?:-policy|Policy(?:Schema)?|Domain|Gates|Serialize|Lifecycle(?:Scheduler)?|Reconcile|Strikes|Engine|Parity|ProcessEvidence|Operations|Persistence|ReviewWorkflow|P3Closure|P4Closure|P4ProductionProof)(?:\b|[._-])|EvidenceAttestation|EvidenceLifecycleEvent|EvidenceStrike|ReviewCase|ReviewQueue|ConfidenceResult|NormalizedEvidence/;
 export const ECL_FIELD_PATTERN = /confidence_level_ecl|freeze_eligibility|"evidence_status"/;
 
 export const STAGE_PRE_ECL = "PRE_ECL";
@@ -27,7 +27,12 @@ export const STAGE_ECL_P3 = "ECL_P3_LIFECYCLE_ENGINE";
 // invoicing, no collections, no Stripe: the stage widens the allowlist by EXACT
 // PATHS only, never by category, and no monetary file is listed.
 export const STAGE_ECL_P4 = "ECL_P4_OPERATIONAL_WORKFLOW";
-export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4];
+// v0.63.2 — P4 PRODUCTION PROOF: no new economic semantics. This stage only
+// exposes the already-closed P4 review workflow to an admin operator surface
+// and adds runtime observability around scheduler invocation. Billing remains
+// outside ECL; the future economic-enforcement stage is deliberately separate.
+export const STAGE_ECL_P4_PROOF = "ECL_P4_PRODUCTION_PROOF";
+export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF];
 
 // Declared transitions. PRE_ECL → P2 is DELIBERATELY ABSENT: P1 cannot be
 // skipped, so a repo that never applied the schemas can never reach the
@@ -41,7 +46,8 @@ export const STAGE_TRANSITIONS = {
   // P4 is reachable ONLY from P3 (a repo without the lifecycle engine can never
   // gain an operational workflow), and P4 → P3 is the only rollback.
   [STAGE_ECL_P3]: [STAGE_ECL_P2, STAGE_ECL_P4],
-  [STAGE_ECL_P4]: [STAGE_ECL_P3],
+  [STAGE_ECL_P4]: [STAGE_ECL_P3, STAGE_ECL_P4_PROOF],
+  [STAGE_ECL_P4_PROOF]: [STAGE_ECL_P4],
 };
 
 // CODE-OWNED allowlist for ECL P1. The six schema paths, nothing else — no
@@ -126,7 +132,19 @@ export const P4_ALLOWLIST = [
   "base44/functions/eclReviewWorkflow/entry.ts",
 ];
 
+// P4 Production Proof widens P4 by exactly TWO ECL-named artifacts: the admin
+// ReviewQueue consumer and its closure test. Runtime scheduler observability is
+// implemented inside the already-sanctioned P4 scheduler boundary. App.jsx and
+// AdminLayout only wire a protected route/navigation item and are governed by
+// normal release evidence rather than by an ECL wildcard exception.
+export const P4_PROOF_ALLOWLIST = [
+  ...P4_ALLOWLIST,
+  "src/pages/admin/ReviewQueue.jsx",
+  "src/lib/eclP4ProductionProof.test.js",
+];
+
 export function allowlistForStage(stage) {
+  if (stage === STAGE_ECL_P4_PROOF) return [...P4_PROOF_ALLOWLIST];
   if (stage === STAGE_ECL_P4) return [...P4_ALLOWLIST];
   if (stage === STAGE_ECL_P3) return [...P3_ALLOWLIST];
   if (stage === STAGE_ECL_P2) return [...P2_ALLOWLIST];
@@ -138,7 +156,7 @@ export function allowlistForStage(stage) {
 // Stages in which the ECL policy file (config/ecl-policy.json) may exist.
 // PRE_ECL and P1 must keep failing on it — the policy layer starts in P2.
 export function eclPolicyFileAllowed(stage) {
-  return stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4;
+  return stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF;
 }
 
 /**
@@ -169,7 +187,7 @@ export function checkFreeze(entries, readFile, options = {}) {
   // carry ECL fields. Baseline.jsonc and processUploadedFile stay excluded in
   // every stage, and their hashes are still checked below without exception.
   const eclFieldsAllowedIn =
-    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4
+    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF
       ? P1_ECL_FIELD_PATHS
       : [];
   const failures = [];
