@@ -12,6 +12,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { getSuccessFeePct, getFeeDurationMonths } from '../../shared/generated/productPolicy.ts';
 import { rejectClientTerms } from '../../shared/contractPolicySnapshot.ts';
+import { economicGateDeniedResponse, evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   MANDATE_DOCUMENT_VERSION,
@@ -57,6 +58,21 @@ export default async function (req: Request): Promise<Response> {
     const month = currentMonth();
     const baseline = await findVerifiedBaseline(svc, activation);
     if (!baseline) return Response.json({ error: 'no_verified_baseline' }, { status: 409 });
+
+    // ECL P5 — first economic/contractual use of a baseline. No Mandate write
+    // happens until the SAME canonical evidence passes both the strict baseline
+    // freeze gate and the attested Recover proposal gate.
+    const eclNow = new Date().toISOString();
+    const freezeGate = await evaluateRecoverEconomicGate({
+      svc, gateName: 'freeze_baseline', brandId: activation.brand_id,
+      dealActivationId: activation.id, baseline, now: eclNow,
+    });
+    if (!freezeGate.allowed) return economicGateDeniedResponse(freezeGate);
+    const proposalGate = await evaluateRecoverEconomicGate({
+      svc, gateName: 'recover_proposal', brandId: activation.brand_id,
+      dealActivationId: activation.id, baseline, now: eclNow,
+    });
+    if (!proposalGate.allowed) return economicGateDeniedResponse(proposalGate);
 
     const fee = await resolveFeePctForMonth(
       svc,
