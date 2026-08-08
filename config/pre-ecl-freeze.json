@@ -44,8 +44,11 @@
     "src/lib/eclP4ProductionProof.test.js",
     "base44/functions/eclLifecycleScheduler/function.jsonc",
     "base44/shared/eclEconomicGate.ts",
+    "base44/shared/eclRecoverEvidence.ts",
+    "base44/functions/getRecoverAcceptanceContext/entry.ts",
     "base44/functions/startRecoverAcceptance/entry.ts",
     "base44/functions/acceptRecoverMandate/entry.ts",
+    "base44/functions/generateMonthlySavingsReport/entry.ts",
     "base44/functions/approveRecoverReportForInvoicing/entry.ts",
     "base44/functions/createEligibleRecoverInvoices/entry.ts",
     "src/lib/eclP5Closure.test.js"
