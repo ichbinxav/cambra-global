@@ -29,6 +29,8 @@ import { RECOVER_CONTRACT_TEMPLATE_VERSION } from '../../shared/recoverContractT
 import { deliveryIdempotencyKey, logContractEvent } from '../../shared/recoverContractState.ts';
 import { fireAndForget } from '../../shared/invokeInternal.ts';
 import { economicGateDeniedResponse, evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
+import { createRecoverEvidenceAttestation, ensureRecoverSavingsEvidence, projectRecoverEvidenceBinding } from '../../shared/eclRecoverEvidence.ts';
+import { evidenceAttestationTextFor, RECOVER_EVIDENCE_ATTESTATION_VERSION } from '../../shared/recoverMandateCopy.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   acceptanceEvidence,
@@ -56,9 +58,10 @@ export default async function (req: Request): Promise<Response> {
       const { keys } = termsGuard;
       return Response.json({ error: 'client_terms_forbidden', keys }, { status: 400 });
     }
-    const { mandate_id, signed_by_name, signed_by_role, accepted } = body || {};
+    const { mandate_id, signed_by_name, signed_by_role, evidence_attestation_accepted, accepted } = body || {};
     if (!mandate_id) return Response.json({ error: 'mandate_id required' }, { status: 400 });
     if (accepted !== true) return Response.json({ error: 'explicit acceptance required' }, { status: 400 });
+    if (evidence_attestation_accepted !== true) return Response.json({ error: 'explicit evidence attestation required' }, { status: 400 });
     if (!signed_by_name || String(signed_by_name).trim().length < 2) {
       return Response.json({ error: 'signed_by_name required' }, { status: 400 });
     }
@@ -89,7 +92,7 @@ export default async function (req: Request): Promise<Response> {
 
     const owned = await resolveOwnedActivation(svc, user, mandate.deal_activation_id);
     if (!owned.ok) return Response.json({ error: owned.error }, { status: owned.status });
-    const { activation } = owned;
+    const { activation, ownerEmail } = owned;
 
     // 1 — terms must be identical to what was displayed.
     const month = currentMonth();
@@ -105,7 +108,20 @@ export default async function (req: Request): Promise<Response> {
       },
       month,
     );
-    const freshHash = await hashSnapshot(buildAcceptanceSnapshot({ activation, baseline, fee, month }));
+    // Refresh the server-resolved evidence immediately before signature. If
+    // Stripe changed while the modal was open, this creates/processes the newer
+    // evidence and the snapshot hash below changes → terms_changed.
+    const eclNow = new Date().toISOString();
+    const materialized = await ensureRecoverSavingsEvidence({
+      base44, svc, activation, baseline, ownerEmail, now: eclNow,
+    });
+    if (!materialized.ok) {
+      return Response.json({ ok: false, error: materialized.code || 'ecl_evidence_materialization_failed' }, { status: 409 });
+    }
+    const evidenceBinding = projectRecoverEvidenceBinding(materialized.evidence);
+    if (!evidenceBinding) return Response.json({ ok: false, error: 'ecl_evidence_binding_unavailable' }, { status: 409 });
+
+    const freshHash = await hashSnapshot(buildAcceptanceSnapshot({ activation, baseline, fee, month, evidenceBinding }));
     if (freshHash !== mandate.acceptance_snapshot_hash) {
       return Response.json(
         { error: 'terms_changed', expected: mandate.acceptance_snapshot_hash, actual: freshHash },
@@ -113,10 +129,24 @@ export default async function (req: Request): Promise<Response> {
       );
     }
 
-    // ECL P5 TOCTOU seal — the evidence can change while the popup is open.
-    // Re-evaluate immediately before the first contractual write; a proposal
-    // that was valid at start cannot be accepted after review/rejection/expiry.
-    const eclNow = new Date().toISOString();
+    // The merchant's explicit second checkbox becomes a durable
+    // EvidenceAttestation bound to the exact evidence id+checksum frozen in the
+    // acceptance snapshot. Only AFTER that attestation exists may the
+    // recover_proposal gate pass.
+    const language = normalizeLocale(owned.brand?.locale);
+    const attestation = await createRecoverEvidenceAttestation({
+      svc, user, activation, baseline, ownerEmail,
+      legalText: evidenceAttestationTextFor(language),
+      legalTextVersion: RECOVER_EVIDENCE_ATTESTATION_VERSION,
+      language,
+      expectedEvidenceId: evidenceBinding.evidence_id,
+      expectedChecksum: evidenceBinding.checksum,
+    });
+    if (!attestation.ok) return Response.json({ ok: false, error: attestation.code || 'ecl_attestation_failed' }, { status: 409 });
+
+    // ECL P5 TOCTOU seal — re-evaluate immediately before the first contractual
+    // write. A proposal that was valid at start cannot be accepted after
+    // review/rejection/expiry, and recover_proposal now sees the attestation.
     const freezeGate = await evaluateRecoverEconomicGate({
       svc, gateName: 'freeze_baseline', brandId: activation.brand_id,
       dealActivationId: activation.id, baseline, now: eclNow,
@@ -143,7 +173,6 @@ export default async function (req: Request): Promise<Response> {
     // RECOVER-3 — the document language is FROZEN here, from the STORED
     // Brand.locale, never from a header or the browser: a copy regenerated months
     // later must read in the language the merchant accepted in.
-    const language = normalizeLocale(owned.brand?.locale);
     await svc.entities.Mandate.update(mandate_id, {
       status: 'active',
       // RECOVER-3 — delivery is marked owed BEFORE anything is attempted and
