@@ -2,7 +2,7 @@
   "name": "base44-app",
   "private": true,
   "version": "0.64.0",
-  "releaseName": "CAMBRA v0.63.3 — ECL P4 Production Scheduler",
+  "releaseName": "CAMBRA v0.64.0 — ECL P5 Economic Enforcement",
   "type": "module",
   "engines": {
     "node": ">=20 <23",

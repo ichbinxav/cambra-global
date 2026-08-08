@@ -1,6 +1,6 @@
 {
-  "release": "0.63.3",
-  "comment": "CAMBRA v0.63.3 — ECL P4 Production Scheduler. P1/P2/P3/P4 remain authoritative. Production Proof now versions the native Base44 automation for eclLifecycleScheduler every 15 minutes with batch limit 25, in addition to the fail-closed P4 hardening, deterministic evaluationContext, AgentTask runtime proof and admin-only Evidence Review surface. The active stage has 39 exact ECL paths and still has no billing, invoicing, collections, Stripe settlement, payout or success-fee effect.",
+  "release": "0.64.0",
+  "comment": "CAMBRA v0.64.0 — ECL P5 Economic Enforcement. Active stage ECL_P5_ECONOMIC_ENFORCEMENT with 48 exact ECL paths and 8 frozen entries. Canonical ECL evidence now gates Recover baseline/proposal/report/invoice boundaries fail-closed; verified Stripe evidence is materialized through eclProcessEvidence, merchant acceptance creates a checksum-bound EvidenceAttestation, and invoice issuance freezes ECL provenance.",
   "files": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -67,6 +67,15 @@
     "package.json",
     "package-lock.json",
     "types/deno-shim.d.ts",
-    "tsconfig.critical.json"
+    "tsconfig.critical.json",
+    "base44/shared/eclEconomicGate.ts",
+    "base44/shared/eclRecoverEvidence.ts",
+    "base44/shared/recoverMandateCopy.ts",
+    "base44/functions/getRecoverAcceptanceContext/entry.ts",
+    "base44/functions/generateMonthlySavingsReport/entry.ts",
+    "src/components/recover/RecoverMandateModal.jsx",
+    "src/components/recover/RecoverMandatePanel.jsx",
+    "src/lib/eclP5Closure.test.js",
+    "config/release-touch-list.json"
   ]
 }
