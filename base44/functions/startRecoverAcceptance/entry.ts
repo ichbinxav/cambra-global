@@ -13,6 +13,7 @@ import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { getSuccessFeePct, getFeeDurationMonths } from '../../shared/generated/productPolicy.ts';
 import { rejectClientTerms } from '../../shared/contractPolicySnapshot.ts';
 import { economicGateDeniedResponse, evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
+import { ensureRecoverSavingsEvidence } from '../../shared/eclRecoverEvidence.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   MANDATE_DOCUMENT_VERSION,
@@ -59,20 +60,23 @@ export default async function (req: Request): Promise<Response> {
     const baseline = await findVerifiedBaseline(svc, activation);
     if (!baseline) return Response.json({ error: 'no_verified_baseline' }, { status: 409 });
 
-    // ECL P5 — first economic/contractual use of a baseline. No Mandate write
-    // happens until the SAME canonical evidence passes both the strict baseline
-    // freeze gate and the attested Recover proposal gate.
+    // ECL P5 — materialize the freshest server-resolved Stripe measurement
+    // through the canonical ECL engine before the baseline can enter a Recover
+    // acceptance. Opening the modal is NOT an attestation, so recover_proposal
+    // is deliberately deferred to acceptRecoverMandate after the merchant ticks
+    // the explicit evidence-declaration checkbox.
     const eclNow = new Date().toISOString();
+    const materialized = await ensureRecoverSavingsEvidence({
+      base44, svc, activation, baseline, ownerEmail, now: eclNow,
+    });
+    if (!materialized.ok) {
+      return Response.json({ ok: false, error: materialized.code || 'ecl_evidence_materialization_failed' }, { status: 409 });
+    }
     const freezeGate = await evaluateRecoverEconomicGate({
       svc, gateName: 'freeze_baseline', brandId: activation.brand_id,
       dealActivationId: activation.id, baseline, now: eclNow,
     });
     if (!freezeGate.allowed) return economicGateDeniedResponse(freezeGate);
-    const proposalGate = await evaluateRecoverEconomicGate({
-      svc, gateName: 'recover_proposal', brandId: activation.brand_id,
-      dealActivationId: activation.id, baseline, now: eclNow,
-    });
-    if (!proposalGate.allowed) return economicGateDeniedResponse(proposalGate);
 
     const fee = await resolveFeePctForMonth(
       svc,
