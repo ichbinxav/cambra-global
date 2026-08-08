@@ -1,8 +1,8 @@
 {
   "command": "node scripts/check-typecheck-baseline.mjs",
-  "sourceTreeHash": "4fcff4e65e85ee8ef024523c4c798e76b89c2e7542fa27e0f2eee5f46725240e",
-  "startedAt": "2026-08-08T22:08:01.303Z",
-  "completedAt": "2026-08-08T22:08:07.318Z",
-  "exitCode": 0,
+  "sourceTreeHash": "16d8d663e4606fcab197a461966cb8d08b949e2b0e6f0463675b4e6745a85a21",
+  "startedAt": "2026-08-08T23:39:36.351Z",
+  "completedAt": "2026-08-08T23:39:45.035Z",
+  "exitCode": 1,
   "ciRunId": null
 }
