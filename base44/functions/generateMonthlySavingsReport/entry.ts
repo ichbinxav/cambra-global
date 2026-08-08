@@ -3,6 +3,7 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { resolveContractPolicy } from '../../shared/contractPolicySnapshot.ts';
 import { assertProductionEnabledVertical, ProductScopeError } from '../../shared/productScopeGuard.ts';
+import { ensureRecoverSavingsEvidence } from '../../shared/eclRecoverEvidence.ts';
 
 /**
  * generateMonthlySavingsReport
@@ -259,6 +260,33 @@ Deno.serve(async (req) => {
           } : {}),
           generated_by: gate.user?.email || (gate.isInternal ? 'internal' : 'generateMonthlySavingsReport'),
         });
+
+        // ECL P5 — a report itself is not an economic side effect, so evidence
+        // materialization failure does NOT delete the report. Instead we try to
+        // refresh the canonical SavingsEvidence from the same Stripe source;
+        // approve_report/create_invoice will fail closed later if this cannot be
+        // produced or processed.
+        if (measurementMode === 'fully_verified') {
+          const eclEvidence = await ensureRecoverSavingsEvidence({
+            base44,
+            svc,
+            activation: deal,
+            baseline,
+            ownerEmail: null,
+            now: new Date().toISOString(),
+          }).catch((e) => ({ ok: false, code: e?.message || 'ecl_materialization_error' }));
+          if (!eclEvidence.ok) {
+            await svc.entities.OperationalLog.create({
+              deal_activation_id: deal.id,
+              brand_id,
+              event_type: 'status_changed',
+              message: 'ecl_savings_evidence_materialization_failed',
+              data_json: { report_id: report.id, code: eclEvidence.code || 'unknown' },
+              actor_email: gate.user?.email || 'internal',
+              created_at: new Date().toISOString(),
+            }).catch(() => null);
+          }
+        }
 
         reports.push({
           report_id: report.id,
