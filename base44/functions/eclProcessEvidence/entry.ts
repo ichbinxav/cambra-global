@@ -46,6 +46,7 @@ import {
 } from '../../shared/generated/eclDomain.ts';
 import { ECL_POLICY } from '../../shared/generated/eclPolicy.ts';
 import { badRequest, createOnce, persistLifecycleEvent } from '../../shared/eclPersistence.ts';
+import { isInternalCaller } from '../../shared/internalSecret.ts';
 
 const ENTITY_BY_TYPE = { statement_import: 'StatementImport', savings_evidence: 'SavingsEvidence' };
 const NORMALIZERS = {
@@ -68,7 +69,6 @@ Deno.serve(async (req) => {
     } catch {
       user = null;
     }
-    if (!user) return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
     const payload = await req.json().catch(() => null);
     if (!payload || typeof payload !== 'object') return badRequest('JSON payload required');
@@ -92,6 +92,7 @@ Deno.serve(async (req) => {
 
     // ── action: attest ──────────────────────────────────────────────────────
     if (payload.action === 'attest') {
+      if (!user) return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
       // ATTESTOR SEMANTICS (v62.6): the attestation is the declaration of the
       // merchant who OWNS the evidence. Only the owner's authenticated session
       // may attest; an admin who processes evidence never becomes its attestor.
@@ -133,12 +134,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── action: process/reprocess (ADMIN-ONLY) ───────────────────────────────
+    // ── action: process/reprocess (ADMIN EXTERNAL OR TRUSTED INTERNAL) ───────
+    // P3's public contract remains admin-only. P5 adds the canonical internal
+    // backend path so Recover can materialize server-resolved Stripe evidence
+    // through THIS SAME engine instead of duplicating processing logic.
     // `reprocess` is the P4 review-workflow return path. It reuses the EXACT
     // normalized evidence already persisted in the canonical snapshot, so a
     // human approval cannot smuggle new evidence values around the P3 gates.
     if (!['process', 'reprocess'].includes(payload.action)) return badRequest('action must be "process", "reprocess" or "attest"');
-    if (user.role !== 'admin') return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+    const isInternal = isInternalCaller(req, payload);
+    if (user?.role !== 'admin' && !isInternal) return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
     let evidence;
     let referenceFeeRateBps;
     if (payload.action === 'reprocess') {
