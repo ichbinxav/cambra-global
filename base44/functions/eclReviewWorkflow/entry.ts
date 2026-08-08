@@ -215,6 +215,7 @@ Deno.serve(async (req) => {
     }
 
     let evidenceActionResult = null;
+    let eventId = null;
     try {
       if (plan.evidenceAction === 'reprocess') {
         const invoke = await base44.asServiceRole.functions.invoke('eclProcessEvidence', {
@@ -232,32 +233,37 @@ Deno.serve(async (req) => {
         evidenceActionResult = await rejectEvidenceThroughP3Graph(svc, rc, evidence, user.email, now);
       }
 
+      // Audit is part of the resolution contract, not best-effort logging. It is
+      // persisted while the exclusive claim is held and BEFORE the case is
+      // finalized. If this write fails the claim is rolled back; a retry uses
+      // the deterministic event claim and cannot append the same semantic event.
+      const freshEvidence = entityName && rc.evidence_id
+        ? await svc.entities[entityName].get(rc.evidence_id).catch(() => evidence)
+        : evidence;
+      if (freshEvidence && rc.brand_id && (rc.owner_email || freshEvidence.owner_email || freshEvidence.created_by)) {
+        const correlationId = operationalCorrelationId({ kind: 'review_resolution', reviewCaseId: rc.id, decision: plan.update.decision });
+        const intent = buildReviewResolutionEventIntent({
+          evidenceEntityType: rc.evidence_entity_type,
+          evidenceId: rc.evidence_id,
+          brandId: rc.brand_id,
+          ownerEmail: rc.owner_email || freshEvidence.owner_email || freshEvidence.created_by,
+          status: readEvidenceStatus(rc.evidence_entity_type, freshEvidence),
+          reviewCaseId: rc.id,
+          decision: plan.update.decision,
+          resolvedBy: user.email,
+          evidenceChecksum,
+          reprocessRequired: plan.reprocessRequired === true,
+          correlationId,
+        });
+        const evt = await createOnce(svc, 'EvidenceLifecycleEvent', intent.idempotencyKey, intent.record);
+        eventId = evt.id;
+      }
+
       const finalized = await finalizeResolutionClaim(svc, rc.id, claim.claimId, plan.update);
       if (!finalized) throw new Error('resolution claim was lost before finalization');
     } catch (err) {
       await rollbackResolutionClaim(svc, rc.id, claim.claimId, claim.previousStatus);
       return Response.json({ ok: false, error: 'review resolution failed safely', code: 'review_resolution_action_failed', message: err.message }, { status: 409 });
-    }
-
-    const freshEvidence = entityName && rc.evidence_id ? await svc.entities[entityName].get(rc.evidence_id).catch(() => evidence) : evidence;
-    let eventId = null;
-    if (freshEvidence && rc.brand_id && (rc.owner_email || freshEvidence.owner_email || freshEvidence.created_by)) {
-      const correlationId = operationalCorrelationId({ kind: 'review_resolution', reviewCaseId: rc.id, decision: plan.update.decision });
-      const intent = buildReviewResolutionEventIntent({
-        evidenceEntityType: rc.evidence_entity_type,
-        evidenceId: rc.evidence_id,
-        brandId: rc.brand_id,
-        ownerEmail: rc.owner_email || freshEvidence.owner_email || freshEvidence.created_by,
-        status: readEvidenceStatus(rc.evidence_entity_type, freshEvidence),
-        reviewCaseId: rc.id,
-        decision: plan.update.decision,
-        resolvedBy: user.email,
-        evidenceChecksum,
-        reprocessRequired: plan.reprocessRequired === true,
-        correlationId,
-      });
-      const evt = await createOnce(svc, 'EvidenceLifecycleEvent', intent.idempotencyKey, intent.record).catch(() => null);
-      eventId = evt ? evt.id : null;
     }
 
     return Response.json({
