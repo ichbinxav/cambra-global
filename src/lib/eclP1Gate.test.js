@@ -142,7 +142,7 @@ describe("ECL stage gate (v62.3)", () => {
 
   it("the P3 allowlist widens P2 by EXACT engine paths only — no wildcard, no new schema, no scheduler (v62.5)", () => {
     expect(P3_ALLOWLIST.slice(0, P2_ALLOWLIST.length)).toEqual(P2_ALLOWLIST);
-    expect(P3_ALLOWLIST).toHaveLength(30);
+    expect(P3_ALLOWLIST).toHaveLength(31);
     for (const p of P3_ALLOWLIST) {
       expect(p).not.toMatch(/[*?]/);
       expect(p).not.toMatch(/ReviewQueue|scheduler|cron|reminder|entities\/Confidence/);

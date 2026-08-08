@@ -93,6 +93,8 @@ export const P3_ALLOWLIST = [
   "src/lib/eclReconcile.test.js",
   "src/lib/eclStrikes.test.js",
   "src/lib/eclEngine.test.js",
+  // v62.6 — P3 CLOSURE regression matrix (release-created critical test).
+  "src/lib/eclP3Closure.test.js",
   "base44/functions/eclProcessEvidence/entry.ts",
 ];
 

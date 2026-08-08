@@ -233,3 +233,38 @@ export function buildAttestationIntent(input) {
 
   return deepFreeze({ legalTextHash, idempotencyKey, record });
 }
+
+// ── v62.6 closure — server-resolved attestation evidence binding ─────────
+/**
+ * Resolve the AUTHORITATIVE checksum an attestation binds to. The STORED
+ * evidence record is the only source of truth:
+ *   - no usable stored checksum → fail CLOSED (422-style): an attestation
+ *     cannot bind to an artifact the platform cannot point back to, and a
+ *     client-supplied checksum is NEVER accepted as a substitute;
+ *   - a claimed checksum that differs from the stored one → refused (409);
+ *   - claimed omitted or equal → resolved to the STORED checksum, only.
+ * Pure and deterministic; the handler maps status/code onto its HTTP response.
+ */
+export function resolveAttestationChecksum(storedChecksum, claimedChecksum) {
+  const stored = lcNonEmpty(storedChecksum) ? storedChecksum : null;
+  const claimed = lcNonEmpty(claimedChecksum) ? claimedChecksum : null;
+  if (stored === null) {
+    return deepFreeze({
+      ok: false,
+      status: 422,
+      code: "attestation_checksum_unresolvable",
+      checksum: null,
+      reason: "stored evidence record carries no usable checksum — refusing to attest an unbindable artifact (a client-supplied checksum is never trusted)",
+    });
+  }
+  if (claimed !== null && claimed !== stored) {
+    return deepFreeze({
+      ok: false,
+      status: 409,
+      code: "attestation_checksum_mismatch",
+      checksum: null,
+      reason: "evidenceChecksum does not match the stored evidence artifact",
+    });
+  }
+  return deepFreeze({ ok: true, status: 200, code: "server_resolved", checksum: stored, reason: null });
+}

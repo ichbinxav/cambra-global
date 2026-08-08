@@ -34,6 +34,7 @@ import {
   normalizeCommerceEvidence,
   normalizeAccountingEvidence,
   buildAttestationIntent,
+  resolveAttestationChecksum,
   buildPersistedEvidenceSnapshot,
   restoreLifecycleFromSnapshot,
   markSnapshotSuperseded,
@@ -117,11 +118,14 @@ Deno.serve(async (req) => {
       if (user.email !== ownerEmail) {
         return Response.json({ ok: false, error: 'only the evidence owner may attest — a processing admin is not the attestor' }, { status: 403 });
       }
-      // Evidence binding: the checksum stored on the record is authoritative.
-      // A payload claiming a different artifact is refused, never recorded.
-      const serverChecksum = typeof record.checksum === 'string' && record.checksum ? record.checksum : null;
-      if (payload.evidenceChecksum && serverChecksum && payload.evidenceChecksum !== serverChecksum) {
-        return Response.json({ ok: false, error: 'evidenceChecksum does not match the stored evidence artifact' }, { status: 409 });
+      // v62.6 closure — evidence binding is SERVER-RESOLVED ONLY: the
+      // authoritative checksum comes exclusively from the stored evidence
+      // record. No stored checksum → fail CLOSED (422); a payload claiming a
+      // different artifact → 409. A client-supplied checksum is NEVER accepted
+      // as the authoritative binding, not even when the record carries none.
+      const checksumResolution = resolveAttestationChecksum(record.checksum, payload.evidenceChecksum);
+      if (checksumResolution.ok !== true) {
+        return Response.json({ ok: false, error: checksumResolution.reason, code: checksumResolution.code }, { status: checksumResolution.status });
       }
       const intent = buildAttestationIntent({
         attestorUserId: user.id,
@@ -136,7 +140,7 @@ Deno.serve(async (req) => {
         declaredPeriodStart: payload.declaredPeriodStart,
         declaredPeriodEnd: payload.declaredPeriodEnd,
         declaredSource: payload.declaredSource,
-        evidenceChecksum: serverChecksum || payload.evidenceChecksum,
+        evidenceChecksum: checksumResolution.checksum,
       });
       const res = await createOnce(svc, 'EvidenceAttestation', intent.idempotencyKey, intent.record);
       return Response.json({
