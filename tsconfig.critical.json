@@ -1,5 +1,5 @@
 {
-  "//": "v0.63.2 ECL P4 Production Proof: critical typecheck includes shared ECL persistence plus process, scheduler and review I/O boundaries, in addition to the existing economic backend path. Production Proof adds no new backend economic boundary and P4 may not escape typecheck through generated or Deno boundaries.",
+  "//": "v0.63.3 ECL P4 Production Scheduler: critical typecheck includes shared ECL persistence plus process, scheduler and review I/O boundaries, in addition to the existing economic backend path. The new function.jsonc schedule adds no backend economic boundary and P4 may not escape typecheck through generated or Deno boundaries.",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
