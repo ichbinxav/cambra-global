@@ -464,6 +464,7 @@ export function buildPersistedEvidenceSnapshot(decision, evidence, lifecycle) {
   enRequire(decision && typeof decision === "object" && enNonEmpty(decision.inputsHash), "decision with inputsHash is required");
   enRequire(evidence && typeof evidence === "object", "normalized evidence is required");
   enRequire(lifecycle && typeof lifecycle === "object" && enNonEmpty(lifecycle.status), "lifecycle.status is required");
+  enRequire(decision.evaluationContext && decision.evaluationContext.version === ECL_EVALUATION_CONTEXT_VERSION, "decision.evaluationContext is required");
   const snapshot = {
     engineVersion: decision.engineVersion,
     ruleSetVersion: decision.ruleSetVersion,
@@ -474,9 +475,7 @@ export function buildPersistedEvidenceSnapshot(decision, evidence, lifecycle) {
     outcome: decision.outcome,
     normalizedEvidence: evidence,
     confidenceResult: decision.confidenceResult,
-    evaluationContext: decision.evaluationContext && typeof decision.evaluationContext === "object"
-      ? { ...decision.evaluationContext }
-      : { version: ECL_EVALUATION_CONTEXT_VERSION, referenceFeeRateBps: null },
+    evaluationContext: { ...decision.evaluationContext },
     lifecycle: {
       status: lifecycle.status,
       provisionalStartedAt: lifecycle.provisionalStartedAt || null,
