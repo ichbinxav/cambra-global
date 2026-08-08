@@ -1,8 +1,8 @@
 {
-  "freezeReason": "Pre-ECL freeze (v62.1/v62.2), staged in v62.3 — these files must have ZERO unsanctioned diffs. Changing any hash requires scripts/update-freeze.mjs with an explicit reason and confirmation token; adding an entry requires --add AND membership of the current stage's code-owned allowlist; changing the stage requires scripts/advance-stage.mjs. Every change is recorded in config/freeze-change-log.json.",
+  "freezeReason": "Pre-ECL freeze (v62.1/v62.2), staged in v62.3 \u2014 these files must have ZERO unsanctioned diffs. Changing any hash requires scripts/update-freeze.mjs with an explicit reason and confirmation token; adding an entry requires --add AND membership of the current stage's code-owned allowlist; changing the stage requires scripts/advance-stage.mjs. Every change is recorded in config/freeze-change-log.json.",
   "frozenAt": "2026-08-06",
   "stage": "ECL_P4_OPERATIONAL_WORKFLOW",
-  "stageComment": "v0.63.0 — stage ECL_P4_OPERATIONAL_WORKFLOW. P1 schemas, P2 domain contracts and P3 lifecycle semantics remain authoritative; P4 adds the pure eclOperations layer, shared idempotent persistence, lifecycle scheduler, admin review workflow and the P4 closure regression matrix. The 36-path allowlist below mirrors the code-owned P4_ALLOWLIST exactly. P4 materializes only the operational fields already sanctioned on StatementImport/SavingsEvidence and race-safe review-claim fields on ReviewCase. Reminder delivery is intent/event-only. Billing, invoicing, collections, Stripe settlement and every monetary effect remain outside P4 by design.",
+  "stageComment": "v0.63.0 \u2014 stage ECL_P4_OPERATIONAL_WORKFLOW. P1 schemas + P2 contracts + P3 deterministic lifecycle remain authoritative; P4 adds dual-evidence operational scheduling, server-side due discovery, bounded reminder intents with replay healing, automatic expiry, admin ReviewCase workflow with exclusive resolution claims, and canonical P3 reprocessing. Exact-path allowlist only. Reminder guarantee is intent/event persistence; scheduler invocation is backend-ready unless an external platform cron is configured. Billing/money movement remain outside ECL P4.",
   "allowlist": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -45,49 +45,49 @@
     {
       "path": "base44/entities/StatementImport.jsonc",
       "sha256": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf",
-      "freezeReason": "ECL P1 input schema — extended additively in v62.3, frozen at the approved shape",
+      "freezeReason": "ECL P1 input schema \u2014 extended additively in v62.3, frozen at the approved shape",
       "allowedChange": false
     },
     {
       "path": "base44/entities/SavingsEvidence.jsonc",
       "sha256": "5e09871212a3b00be0c76a85dc8695c27f1d9ac323eebeb56d4273469a37c911",
-      "freezeReason": "ECL P1 input schema — extended additively in v62.3, frozen at the approved shape",
+      "freezeReason": "ECL P1 input schema \u2014 extended additively in v62.3, frozen at the approved shape",
       "allowedChange": false
     },
     {
       "path": "base44/entities/Baseline.jsonc",
       "sha256": "a4d186074a4834aca489842447a6ce5052d526315863b5acdc9cff9b998a3bd1",
-      "freezeReason": "ECL P1 input schema — frozen pre-ECL, ZERO diffs in v62.3",
+      "freezeReason": "ECL P1 input schema \u2014 frozen pre-ECL, ZERO diffs in v62.3",
       "allowedChange": false
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
       "sha256": "b13daa2209e67aeb9650da8ad1d2a94ed8722254c3f54158c58d07ec2f844389",
-      "freezeReason": "Functional freeze — ECL must not leak into the upload pipeline; the P1 fields stay inert until the writer is migrated in a later prompt",
+      "freezeReason": "Functional freeze \u2014 ECL must not leak into the upload pipeline; the P1 fields stay inert until the writer is migrated in a later prompt",
       "allowedChange": false
     },
     {
       "path": "base44/entities/EvidenceAttestation.jsonc",
       "sha256": "1cb6bec24599aec271f527bc28d46697fe961c4a1427ab3bf7e0f5f10ce10d29",
-      "freezeReason": "ECL P1 schema (v62.3) — storage shape only, no writer",
+      "freezeReason": "ECL P1 schema (v62.3) \u2014 storage shape only, no writer",
       "allowedChange": false
     },
     {
       "path": "base44/entities/EvidenceLifecycleEvent.jsonc",
       "sha256": "78bfa30864dadf7574c09bcc0dfb440d39e6505ef98f8dcb077a09ab919f1412",
-      "freezeReason": "ECL P1 schema (v62.3) — storage shape only, no transition engine",
+      "freezeReason": "ECL P1 schema (v62.3) \u2014 storage shape only, no transition engine",
       "allowedChange": false
     },
     {
       "path": "base44/entities/EvidenceStrike.jsonc",
       "sha256": "5d96ed9ae9f6cefa56a3dc652fbcec6019fdfaf536661efdd5480412d85d22f9",
-      "freezeReason": "ECL P1 schema (v62.3) — storage shape only, no strike consequence",
+      "freezeReason": "ECL P1 schema (v62.3) \u2014 storage shape only, no strike consequence",
       "allowedChange": false
     },
     {
       "path": "base44/entities/ReviewCase.jsonc",
       "sha256": "5cb3f83d7f0d1418e9f4343e47b6204e92162facd8a261274731c6e62c0570e1",
-      "freezeReason": "ECL P1 schema (v62.3) — storage shape only, no queue and no routing",
+      "freezeReason": "ECL P1 schema (v62.3) \u2014 storage shape only, no queue and no routing",
       "allowedChange": false
     }
   ]
