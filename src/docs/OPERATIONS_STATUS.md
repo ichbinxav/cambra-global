@@ -6,6 +6,20 @@
 
 ---
 
+## Release v0.63.2 — ECL P4 Production Proof (2026-08-08)
+
+**Current stage: `ECL_P4_PRODUCTION_PROOF` — 38 exact ECL paths, 8 frozen entries.** P1/P2/P3/P4 remain authoritative. This release adds no new economic semantics: it exposes the already-closed P4 review workflow to an admin operator and adds runtime proof for lifecycle-scheduler invocation. The stage is directly reversible to `ECL_P4_OPERATIONAL_WORKFLOW`; no earlier-stage shortcut exists.
+
+The admin app now exposes `/admin/evidence-review` inside the existing `AdminRoute` shell. The page never reads or mutates `ReviewCase` or `AgentTask` directly: runtime/list/get/resolve all go through the admin-only `eclReviewWorkflow`. Human resolutions bind to the server-returned evidence checksum when available. Approve/dismiss re-enter the canonical P3 engine, reject follows the lifecycle transition graph, and request-more-evidence parks the case on the merchant. The UI has no direct `verified` override and no Invoice/Stripe/payment path.
+
+P4 persistence is fail-closed at the material boundaries: due discovery and retry history cannot turn read outages into empty state, permanent failures are unscheduled only after a ReviewCase is durably ensured, failure telemetry cannot claim `recorded=true` after a failed write, review-list outages do not look like an empty queue, canonical P3 sibling/attestation/strike/review/Baseline reads do not default to empty, and supersession materialization is not best-effort. Shared `createOnce` treats idempotency reads as authoritative and heals later duplicate claims on replay.
+
+`referenceFeeRateBps` can alter E-07 and therefore the decision, so the canonical persisted snapshot now carries versioned `evaluationContext`. Review reprocessing restores that exact material context. Legacy snapshots without the versioned context fail closed with `reprocess_context_unavailable` rather than silently omitting a reference that could make the result more favorable. The three ECL I/O boundaries use Base44 SDK 0.8.41 and remain in critical typecheck.
+
+`eclLifecycleScheduler` records each invocation as a best-effort `AgentTask` named `ecl_lifecycle_scheduler` with its deterministic P4 summary. Observability is deliberately non-blocking: an AgentTask write outage cannot suppress lifecycle work. The Evidence Review page can invoke one bounded admin run and display the latest runtime proof. Reminder delivery remains `intent_only`.
+
+**External proofs remain distinct.** The available exported repo and Base44 CLI do not expose creation of a recurring platform automation, so recurring cron configuration is an external Base44 setting even though the function is scheduler-ready. Likewise a GitHub CI seal requires a real GitHub Actions run; local/Base44 validation is never labeled CI.
+
 ## Release v0.62.4 — ECL P1/P2 Closure (2026-08-06)
 
 **ECL P1: CLOSED (schemas only). ECL P2: CLOSED (domain contracts only).
