@@ -4,9 +4,11 @@ import {
   allowlistForStage,
   P4_ALLOWLIST,
   P4_PROOF_ALLOWLIST,
+  P5_ALLOWLIST,
   resolveStage,
   STAGE_ECL_P4,
   STAGE_ECL_P4_PROOF,
+  STAGE_ECL_P5,
   STAGE_TRANSITIONS,
 } from "../../scripts/lib/preEclFreeze.mjs";
 
@@ -21,7 +23,7 @@ const REVIEW_SRC = read("base44/functions/eclReviewWorkflow/entry.ts");
 describe("ECL P4 Production Proof closure", () => {
   it("is a reversible stage after P4, never a shortcut", () => {
     expect(STAGE_TRANSITIONS[STAGE_ECL_P4]).toContain(STAGE_ECL_P4_PROOF);
-    expect(STAGE_TRANSITIONS[STAGE_ECL_P4_PROOF]).toEqual([STAGE_ECL_P4]);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P4_PROOF]).toEqual([STAGE_ECL_P4, STAGE_ECL_P5]);
     expect(allowlistForStage(STAGE_ECL_P4_PROOF)).toEqual(P4_PROOF_ALLOWLIST);
   });
 
@@ -38,10 +40,11 @@ describe("ECL P4 Production Proof closure", () => {
     }
   });
 
-  it("the live freeze declares Production Proof with the code-owned allowlist", () => {
+  it("keeps the Production Proof contract exact while the live repo advances to P5", () => {
+    expect(allowlistForStage(STAGE_ECL_P4_PROOF)).toEqual(P4_PROOF_ALLOWLIST);
     const freeze = JSON.parse(read("config/pre-ecl-freeze.json"));
-    expect(resolveStage(freeze)).toBe(STAGE_ECL_P4_PROOF);
-    expect([...freeze.allowlist].sort()).toEqual([...P4_PROOF_ALLOWLIST].sort());
+    expect(resolveStage(freeze)).toBe(STAGE_ECL_P5);
+    expect([...freeze.allowlist].sort()).toEqual([...P5_ALLOWLIST].sort());
     expect(freeze.entries).toHaveLength(8);
   });
 
