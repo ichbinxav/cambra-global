@@ -7,7 +7,7 @@
 //
 // Reminder guarantee in P4: reminder INTENT/event persistence only. No provider
 // delivery happens here. Billing and money movement are outside this function.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import {
   selectDueLifecycleItems,
@@ -34,6 +34,12 @@ const TARGETS = {
 const TARGET_LIST = Object.values(TARGETS);
 const DEFAULT_BATCH = 25;
 const MAX_BATCH = 100;
+// A full persistence page is conservatively treated as truncated. The SDK may
+// cap reads at MAX_BATCH, so we never depend on fetching a sentinel row 101.
+const DISCOVERY_PAGE = MAX_BATCH;
+const PLATFORM_TENANT = '_platform';
+const SCHEDULER_AGENT_NAME = 'ecl_lifecycle_scheduler';
+const SCHEDULER_TASK_TYPE = 'ecl_lifecycle_sweep';
 
 class PermanentFailure extends Error {
   code: string;
@@ -50,11 +56,14 @@ function targetFor(entityType: string) {
 }
 
 async function priorRetryableAttempts(svc, evidenceEntityType: string, evidenceId: string) {
+  // Retry history is authoritative. If it cannot be read, the bounded ladder
+  // must NOT silently reset to attempt 1; let the item remain due and fail the
+  // recording attempt so the next run retries from an unknown-but-safe state.
   const rows = await svc.entities.EvidenceLifecycleEvent.filter(
     { evidence_entity_type: evidenceEntityType, evidence_id: evidenceId },
     '-created_date',
     20,
-  ).catch(() => []);
+  );
   let n = 0;
   for (const r of rows || []) {
     const ev = r && typeof r.event === 'string' ? r.event : '';
