@@ -15,6 +15,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { spawnSync } from "node:child_process";
 import { checkFreeze, ECL_NAME_PATTERN, resolveStage, allowlistForStage, normalizePath, eclPolicyFileAllowed, STAGE_PRE_ECL } from "./lib/preEclFreeze.mjs";
 
 let failed = false;
@@ -82,5 +83,18 @@ try {
 const installed = fs.existsSync(".github/workflows/ci.yml");
 console.log(`clean:check — CI workflow state: ${installed ? "WORKFLOW_INSTALLED" : "TEMPLATE_READY (run: npm run ci:install)"}`);
 
+// 6. CI-transitive governed checks. GitHub's installed workflow invokes clean:check;
+// keeping these two gates here means the remote workflow still enforces ECL policy
+// and durability even when the GitHub App credential cannot edit workflow YAML.
+// Fail closed: any non-zero child result makes clean:check itself fail.
+const runRequiredGate = (label, scriptPath) => {
+  const child = spawnSync(process.execPath, [scriptPath, "--check"], { stdio: "inherit" });
+  if (child.status !== 0) fail(`${label} failed inside clean:check`);
+};
+if (!failed) {
+  runRequiredGate("ecl:check", "scripts/generate-ecl-policy.mjs");
+  runRequiredGate("durability:check", "scripts/generate-durability-manifest.mjs");
+}
+
 if (failed) process.exit(1);
-console.log(`clean:check PASS — stage ${stage}: freeze intact (${freeze.entries.length} entries), ECL artifacts limited to the ${allowlist.length} allowlisted path(s).`);
+console.log(`clean:check PASS — stage ${stage}: freeze intact (${freeze.entries.length} entries), ECL artifacts limited to the ${allowlist.length} allowlisted path(s); ECL policy + durability checks enforced transitively.`);
