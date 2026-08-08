@@ -132,12 +132,26 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── action: process (ADMIN-ONLY) ────────────────────────────────────────
-    if (payload.action !== 'process') return badRequest('action must be "process" or "attest"');
+    // ── action: process/reprocess (ADMIN-ONLY) ───────────────────────────────
+    // `reprocess` is the P4 review-workflow return path. It reuses the EXACT
+    // normalized evidence already persisted in the canonical snapshot, so a
+    // human approval cannot smuggle new evidence values around the P3 gates.
+    if (!['process', 'reprocess'].includes(payload.action)) return badRequest('action must be "process", "reprocess" or "attest"');
     if (user.role !== 'admin') return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
-    const normalize = NORMALIZERS[payload.domain];
-    if (!normalize) return badRequest('domain must be payments, commerce or accounting');
-    const evidence = normalize(payload.evidence || {});
+    let evidence;
+    if (payload.action === 'reprocess') {
+      const persistedNormalized = record.confidence_result && typeof record.confidence_result === 'object'
+        ? record.confidence_result.normalizedEvidence
+        : null;
+      if (!persistedNormalized || typeof persistedNormalized !== 'object') {
+        return Response.json({ ok: false, error: 'persisted normalized evidence is unavailable for review reprocessing', code: 'reprocess_input_unavailable' }, { status: 409 });
+      }
+      evidence = persistedNormalized;
+    } else {
+      const normalize = NORMALIZERS[payload.domain];
+      if (!normalize) return badRequest('domain must be payments, commerce or accounting');
+      evidence = normalize(payload.evidence || {});
+    }
 
     // Real state, loaded — never assumed. StatementImport carries top-level
     // lifecycle columns (P1); SavingsEvidence restores its lifecycle from the
@@ -145,24 +159,28 @@ Deno.serve(async (req) => {
     // back to the stored confidenceResult.evidenceStatus).
     const priorSnapshot = record.confidence_result && typeof record.confidence_result === 'object' ? record.confidence_result : null;
     const restored = restoreLifecycleFromSnapshot(priorSnapshot);
-    const state =
-      payload.evidenceEntityType === 'statement_import'
-        ? {
-            status: record.evidence_status || (restored && restored.status) || 'pending',
-            provisionalStartedAt: record.provisional_started_at || (restored && restored.provisionalStartedAt) || null,
-            expiresAt: record.expires_at || (restored && restored.expiresAt) || null,
-          }
-        : {
-            status: (restored && restored.status) || 'pending',
-            provisionalStartedAt: (restored && restored.provisionalStartedAt) || null,
-            expiresAt: (restored && restored.expiresAt) || null,
-          };
+    const state = {
+      // P4 materializes the same lifecycle projection on BOTH evidence types so
+      // due discovery never has to scan confidence_result JSON. The canonical
+      // snapshot remains the reload fallback for legacy rows.
+      status: record.evidence_status || (restored && restored.status) || 'pending',
+      provisionalStartedAt: record.provisional_started_at || (restored && restored.provisionalStartedAt) || null,
+      expiresAt: record.expires_at || (restored && restored.expiresAt) || null,
+    };
 
-    const [siblings, attestations, strikes, openCases, baselines] = await Promise.all([
+    const [siblings, attestations, strikes, blockingCases, baselines] = await Promise.all([
       svc.entities[entityName].filter({ brand_id: brandId }, '-created_date', 100).catch(() => []),
       svc.entities.EvidenceAttestation.filter({ evidence_entity_type: payload.evidenceEntityType, evidence_id: payload.evidenceId }, '-created_date', 1).catch(() => []),
       svc.entities.EvidenceStrike.filter({ brand_id: brandId }, '-created_date', 200).catch(() => []),
-      svc.entities.ReviewCase.filter({ brand_id: brandId, status: 'open' }, '-created_date', 50).catch(() => []),
+      // P4: query the SPECIFIC evidence directly. awaiting_merchant remains
+      // blocking, and resolving remains blocking for everyone except the one
+      // claimed case explicitly re-entering P3 below. No 50-row brand scan.
+      svc.entities.ReviewCase.filter({
+        brand_id: brandId,
+        evidence_entity_type: payload.evidenceEntityType,
+        evidence_id: payload.evidenceId,
+        status: { $in: ['open', 'awaiting_merchant', 'resolving'] },
+      }, '-created_date', 20).catch(() => []),
       svc.entities.Baseline.filter({ brand_id: brandId, is_current: true }, '-locked_at', 1).catch(() => []),
     ]);
 
@@ -182,9 +200,10 @@ Deno.serve(async (req) => {
         };
       });
 
-    const hasBlockingReviewCase = (openCases || []).some(
-      (c) => c && c.evidence_entity_type === payload.evidenceEntityType && c.evidence_id === payload.evidenceId,
-    );
+    const ignoredReviewCaseId = payload.action === 'reprocess' && typeof payload.ignoreReviewCaseId === 'string'
+      ? payload.ignoreReviewCaseId
+      : null;
+    const hasBlockingReviewCase = (blockingCases || []).some((c) => c && c.id !== ignoredReviewCaseId);
     const baseline = (baselines || [])[0] || null;
 
     const decision = runEclEngine(
@@ -227,7 +246,13 @@ Deno.serve(async (req) => {
         const sib = (siblings || []).find((s) => s && s.id === sup.record.evidence_id);
         if (sib && sib.confidence_result && typeof sib.confidence_result === 'object') {
           const marked = markSnapshotSuperseded(sib.confidence_result, payload.evidenceId);
-          await svc.entities.SavingsEvidence.update(sup.record.evidence_id, { confidence_result: marked.snapshot, confidence_result_hash: marked.snapshotHash }).catch(() => null);
+          await svc.entities.SavingsEvidence.update(sup.record.evidence_id, {
+            evidence_status: 'superseded',
+            superseded_by_id: payload.evidenceId,
+            next_lifecycle_action_at: '',
+            confidence_result: marked.snapshot,
+            confidence_result_hash: marked.snapshotHash,
+          }).catch(() => null);
         }
       }
     }
@@ -248,31 +273,35 @@ Deno.serve(async (req) => {
       supersededById: null,
     };
     const { snapshot, snapshotHash } = buildPersistedEvidenceSnapshot(decision, evidence, lifecycle);
+    // P3 → P4 HANDOFF for BOTH evidence entities: a lifecycle state that owes
+    // a future action persists WHEN it is due, using the exact same planner the
+    // scheduler uses. This is derived from the ORIGINAL window and persisted
+    // reminder counter, never from a renewed clock window.
+    const reminderCount = Number.isInteger(record.reminder_count) ? record.reminder_count : 0;
+    const opPlan = planOperationalAction(
+      { status: toStatus, provisionalStartedAt: lifecycle.provisionalStartedAt, expiresAt: lifecycle.expiresAt, reminderCount },
+      ECL_POLICY,
+      { now },
+    );
+    const nextActionAt = opPlan.action === 'none' ? opPlan.nextActionAt : opPlan.dueAt || opPlan.nextActionAt;
+    const lifecycleProjection = {
+      evidence_status: toStatus,
+      next_lifecycle_action_at: nextActionAt || '',
+      reminder_count: reminderCount,
+      ...(decision.provisional
+        ? { provisional_started_at: decision.provisional.startedAt, expires_at: decision.provisional.expiresAt }
+        : {}),
+    };
+
     if (payload.evidenceEntityType === 'statement_import') {
-      // P3 → P4 HANDOFF: a lifecycle state that owes a future operational
-      // action must persist WHEN that action is due, or the scheduler (which
-      // only discovers due timestamps) would never see this record. Derived
-      // from the ORIGINAL window + the persisted reminder counter, never from
-      // "now", so re-processing can never shift or renew an existing window.
-      const reminderCount = Number.isInteger(record.reminder_count) ? record.reminder_count : 0;
-      const opPlan = planOperationalAction(
-        { status: toStatus, provisionalStartedAt: lifecycle.provisionalStartedAt, expiresAt: lifecycle.expiresAt, reminderCount },
-        ECL_POLICY,
-        { now },
-      );
-      const nextActionAt = opPlan.action === 'none' ? opPlan.nextActionAt : opPlan.dueAt || opPlan.nextActionAt;
-      const update = {
-        evidence_status: toStatus,
+      await svc.entities.StatementImport.update(payload.evidenceId, {
+        ...lifecycleProjection,
         confidence_result: snapshot,
         confidence_result_hash: snapshotHash,
-        next_lifecycle_action_at: nextActionAt || '',
-        ...(decision.provisional
-          ? { provisional_started_at: decision.provisional.startedAt, expires_at: decision.provisional.expiresAt }
-          : {}),
-      };
-      await svc.entities.StatementImport.update(payload.evidenceId, update);
+      });
     } else {
       await svc.entities.SavingsEvidence.update(payload.evidenceId, {
+        ...lifecycleProjection,
         confidence_result: snapshot,
         confidence_result_hash: snapshotHash,
         confidence_level_ecl: decision.confidenceResult.confidenceLevel,

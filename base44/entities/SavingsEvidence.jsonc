@@ -137,6 +137,45 @@
     "confidence_result_hash": {
       "type": "string",
       "description": "ECL P1 \u2014 SHA-256 of the stable serialization of confidence_result. Written together with it or not at all."
+    },
+    "evidence_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "estimated",
+        "accepted_provisionally",
+        "verified",
+        "rejected",
+        "expired",
+        "superseded",
+        "under_review"
+      ],
+      "description": "ECL P4 \u2014 materialized lifecycle status for operational due queries. Canonical snapshots remain authoritative/auditable; this top-level projection lets the scheduler discover provisional SavingsEvidence without scanning JSON blobs."
+    },
+    "provisional_started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ECL P4 \u2014 original start of a provisional SavingsEvidence window. Never renewed by scheduler replay."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ECL P4 \u2014 fixed expiry of the original provisional window."
+    },
+    "next_lifecycle_action_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ECL P4 \u2014 next due operational action, derived by the canonical planner."
+    },
+    "reminder_count": {
+      "type": "number",
+      "default": 0,
+      "description": "ECL P4 \u2014 materialized count of semantic reminder events. Reconciled from persisted reminder claims after crashes/replay."
+    },
+    "superseded_by_id": {
+      "type": "string",
+      "description": "ECL P4 \u2014 id of the SavingsEvidence record that superseded this evidence."
     }
   },
   "required": [

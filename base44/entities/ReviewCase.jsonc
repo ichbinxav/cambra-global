@@ -27,11 +27,12 @@
       "enum": [
         "open",
         "awaiting_merchant",
+        "resolving",
         "resolved",
         "dismissed"
       ],
       "default": "open",
-      "description": "Lifecycle of the case. Defaults to 'open' because a case that exists is, by definition, open."
+      "description": "Lifecycle of the case. 'resolving' is a short-lived P4 exclusive claim used to prevent two reviewers from winning concurrently; stale claims are recoverable."
     },
     "idempotency_key": {
       "type": "string",
@@ -58,6 +59,15 @@
     "resolved_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "resolution_claim_id": {
+      "type": "string",
+      "description": "ECL P4 \u2014 transient exclusive resolution claim. Never supplied by the client."
+    },
+    "resolution_claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ECL P4 \u2014 server timestamp for stale resolution-claim recovery."
     },
     "blocking_actions": {
       "type": "object",
