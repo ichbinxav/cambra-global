@@ -253,7 +253,7 @@ describe("positive comparability — supersession requires comparable evidence",
 // ── 20-25. handler source contracts (auth + server-resolved binding) ──────
 describe("eclProcessEvidence handler contracts (source)", () => {
   const SRC = fs.readFileSync("base44/functions/eclProcessEvidence/entry.ts", "utf8");
-  const PROCESS_MARKER = "action: process (ADMIN-ONLY)";
+  const PROCESS_MARKER = "action: process/reprocess (ADMIN-ONLY)";
   const processSection = SRC.slice(SRC.indexOf(PROCESS_MARKER));
 
   it("attest is OWNER-ONLY", () => {
