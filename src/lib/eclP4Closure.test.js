@@ -525,6 +525,85 @@ describe("P4 · compatibility with P1/P2/P3", () => {
   });
 });
 
+// ── P4 closure hardening regressions ──────────────────────────────────────
+describe("P4 closure hardening regressions", () => {
+  const P3_SRC = fs.readFileSync("base44/functions/eclProcessEvidence/entry.ts", "utf8");
+
+  it("server-side due discovery cannot fail open to an empty queue", () => {
+    expect(SCHED_SRC).toMatch(/\.filter\(dueQuery, 'next_lifecycle_action_at', DISCOVERY_PAGE\)/);
+    expect(SCHED_SRC).not.toMatch(/\.filter\(dueQuery, 'next_lifecycle_action_at'[^;]*\.catch\(\(\) => \[\]\)/);
+    expect(SCHED_SRC).toMatch(/discoveryTruncated = pages\.some/);
+  });
+
+  it("retry history cannot reset the bounded ladder on a read outage", () => {
+    const start = SCHED_SRC.indexOf("async function priorRetryableAttempts");
+    const end = SCHED_SRC.indexOf("function lifecyclePatch", start);
+    const section = SCHED_SRC.slice(start, end);
+    expect(section).toMatch(/EvidenceLifecycleEvent\.filter\(/);
+    expect(section).not.toMatch(/\.catch\(\(\) => \[\]\)/);
+  });
+
+  it("a permanent failure is unscheduled only after ReviewCase persistence succeeds", () => {
+    const start = SCHED_SRC.indexOf("const esc = buildOperationalEscalationIntent", SCHED_SRC.indexOf("async function recordFailure"));
+    const review = SCHED_SRC.indexOf("await createOnce(svc, 'ReviewCase'", start);
+    const clear = SCHED_SRC.indexOf("next_lifecycle_action_at: ''", review);
+    expect(review).toBeGreaterThan(start);
+    expect(clear).toBeGreaterThan(review);
+    expect(SCHED_SRC.slice(review, clear)).not.toMatch(/catch\(\(\) => null\)/);
+  });
+
+  it("failure telemetry never claims recorded=true after a best-effort write", () => {
+    const start = SCHED_SRC.indexOf("async function recordFailure");
+    const end = SCHED_SRC.indexOf("Deno.serve", start);
+    const section = SCHED_SRC.slice(start, end);
+    expect(section).toMatch(/await createOnce\(svc, 'EvidenceLifecycleEvent'/);
+    expect(section).not.toMatch(/createOnce\(svc, 'EvidenceLifecycleEvent'[^;]*catch/);
+    expect(section).toMatch(/recorded: true/);
+  });
+
+  it("admin review list persistence failures do not look like an empty queue", () => {
+    expect(REVIEW_SRC).toMatch(/ReviewCase\.filter\(query, '-created_date', limit\)/);
+    expect(REVIEW_SRC).not.toMatch(/ReviewCase\.filter\(query, '-created_date', limit\)\.catch\(\(\) => \[\]\)/);
+  });
+
+  it("canonical P3 state reads fail closed instead of assuming empty state", () => {
+    for (const token of ["EvidenceAttestation.filter", "EvidenceStrike.filter", "ReviewCase.filter", "Baseline.filter"]) {
+      const idx = P3_SRC.indexOf(token);
+      expect(idx).toBeGreaterThan(-1);
+      expect(P3_SRC.slice(idx, idx + 500)).not.toMatch(/\.catch\(\(\) => \[\]\)/);
+    }
+    const siblingIdx = P3_SRC.indexOf("svc.entities[entityName].filter({ brand_id: brandId }");
+    expect(siblingIdx).toBeGreaterThan(-1);
+    expect(P3_SRC.slice(siblingIdx, siblingIdx + 300)).not.toMatch(/\.catch\(\(\) => \[\]\)/);
+  });
+
+  it("supersession materialization is not best-effort", () => {
+    const start = P3_SRC.indexOf("for (const sup of decision.supersessions)");
+    const end = P3_SRC.indexOf("for (const rc of decision.reviewCaseIntents)", start);
+    const section = P3_SRC.slice(start, end);
+    expect(section).not.toMatch(/\.catch\(\(\) => null\)/);
+    expect(section).toMatch(/supersession snapshot unavailable/);
+  });
+
+  it("persists the material E-07 evaluation context and review reprocess restores it", () => {
+    const ev = evidence({ feeRateBps: 170 });
+    const ctx = { now: START, hasAttestation: false, baselineLocked: false, hasBlockingReviewCase: false, referenceFeeRateBps: 100 };
+    const d = runEclEngine(engineInput({ evidence: ev, context: ctx }), ECL_POLICY);
+    const lifecycle = { status: d.transition ? d.transition.toStatus : "pending", provisionalStartedAt: d.provisional?.startedAt || null, expiresAt: d.provisional?.expiresAt || null, supersededById: null };
+    const { snapshot } = buildPersistedEvidenceSnapshot(d, ev, lifecycle);
+    expect(snapshot.evaluationContext).toEqual({ version: 1, referenceFeeRateBps: 100 });
+    expect(P3_SRC).toMatch(/persistedContext\.version !== ECL_EVALUATION_CONTEXT_VERSION/);
+    expect(P3_SRC).toMatch(/referenceFeeRateBps = persistedContext\.referenceFeeRateBps/);
+    expect(P3_SRC).toMatch(/reprocess_context_unavailable/);
+  });
+
+  it("all three ECL I/O boundaries use the canonical Base44 SDK pin", () => {
+    for (const src of [P3_SRC, SCHED_SRC, REVIEW_SRC]) {
+      expect(src).toContain("npm:@base44/sdk@0.8.41");
+    }
+  });
+});
+
 // ── observability + projections ───────────────────────────────────────────
 describe("P4-L · observability", () => {
   it("exposes a deterministic aggregate summary with stable counters", () => {
