@@ -1,7 +1,7 @@
 {
   "freezeReason": "Pre-ECL freeze (v62.1/v62.2), staged in v62.3 — these files must have ZERO unsanctioned diffs. Changing any hash requires scripts/update-freeze.mjs with an explicit reason and confirmation token; adding an entry requires --add AND membership of the current stage's code-owned allowlist; changing the stage requires scripts/advance-stage.mjs. Every change is recorded in config/freeze-change-log.json.",
   "frozenAt": "2026-08-06",
-  "stage": "ECL_P4_PRODUCTION_PROOF",
+  "stage": "ECL_P5_ECONOMIC_ENFORCEMENT",
   "stageComment": "v0.63.3 — stage ECL_P4_PRODUCTION_PROOF. P1/P2/P3/P4 remain authoritative. Production Proof adds the admin ReviewQueue consumer, its closure test, fail-closed P4 persistence/reprocess guarantees, best-effort AgentTask runtime proof, and a versioned Base44 scheduled automation for eclLifecycleScheduler every 15 minutes with batch limit 25. Reminder delivery remains intent_only. Billing, invoicing, collections, Stripe settlement, payouts and success-fee effects remain outside this stage.",
   "allowlist": [
     "base44/entities/StatementImport.jsonc",
@@ -42,7 +42,13 @@
     "base44/functions/eclReviewWorkflow/entry.ts",
     "src/pages/admin/ReviewQueue.jsx",
     "src/lib/eclP4ProductionProof.test.js",
-    "base44/functions/eclLifecycleScheduler/function.jsonc"
+    "base44/functions/eclLifecycleScheduler/function.jsonc",
+    "base44/shared/eclEconomicGate.ts",
+    "base44/functions/startRecoverAcceptance/entry.ts",
+    "base44/functions/acceptRecoverMandate/entry.ts",
+    "base44/functions/approveRecoverReportForInvoicing/entry.ts",
+    "base44/functions/createEligibleRecoverInvoices/entry.ts",
+    "src/lib/eclP5Closure.test.js"
   ],
   "entries": [
     {
