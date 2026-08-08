@@ -3,7 +3,6 @@ import fs from "node:fs";
 import {
   evaluateRecoverEconomicGate,
 } from "../../base44/shared/eclEconomicGate.ts";
-import { sha256Hex, stableSerialize } from "./generated/../generated/eclPolicy.js";
 import {
   P4_PROOF_ALLOWLIST,
   P5_ALLOWLIST,
