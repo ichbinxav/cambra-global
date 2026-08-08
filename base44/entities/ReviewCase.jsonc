@@ -69,6 +69,14 @@
       "format": "date-time",
       "description": "ECL P4 \u2014 server timestamp for stale resolution-claim recovery."
     },
+    "resolution_previous_status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "awaiting_merchant"
+      ],
+      "description": "ECL P4 \u2014 unresolved status restored if a transient resolution claim expires or the claimed action fails."
+    },
     "blocking_actions": {
       "type": "object",
       "description": "STRUCTURED (never a JSON string) record of which actions this case would block while open. DESCRIPTIVE ONLY in P1: nothing enforces it, and no billing or Recover path consults it."
