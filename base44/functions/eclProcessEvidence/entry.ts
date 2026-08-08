@@ -27,7 +27,7 @@
 //   { action: "process", evidenceEntityType, evidenceId, domain, evidence }
 //   { action: "attest",  evidenceEntityType, evidenceId, declaredMetrics,
 //     legalTextVersion, legalText, language, ... }
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import {
   runEclEngine,
   normalizePaymentsEvidence,
@@ -42,6 +42,7 @@ import {
   // initial operational timestamp is derived here exactly as it will be
   // re-derived later. Never a second scheduling calculation.
   planOperationalAction,
+  ECL_EVALUATION_CONTEXT_VERSION,
 } from '../../shared/generated/eclDomain.ts';
 import { ECL_POLICY } from '../../shared/generated/eclPolicy.ts';
 import { badRequest, createOnce, persistLifecycleEvent } from '../../shared/eclPersistence.ts';
@@ -139,6 +140,7 @@ Deno.serve(async (req) => {
     if (!['process', 'reprocess'].includes(payload.action)) return badRequest('action must be "process", "reprocess" or "attest"');
     if (user.role !== 'admin') return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
     let evidence;
+    let referenceFeeRateBps;
     if (payload.action === 'reprocess') {
       const persistedNormalized = record.confidence_result && typeof record.confidence_result === 'object'
         ? record.confidence_result.normalizedEvidence
@@ -146,11 +148,25 @@ Deno.serve(async (req) => {
       if (!persistedNormalized || typeof persistedNormalized !== 'object') {
         return Response.json({ ok: false, error: 'persisted normalized evidence is unavailable for review reprocessing', code: 'reprocess_input_unavailable' }, { status: 409 });
       }
+      // E-07 can change when referenceFeeRateBps changes. Review approval must
+      // therefore restore the exact material evaluation context used when this
+      // snapshot was created. Legacy snapshots without it fail closed instead
+      // of silently omitting the reference and becoming more favorable.
+      const persistedContext = record.confidence_result.evaluationContext;
+      const validReference = persistedContext && (
+        persistedContext.referenceFeeRateBps === null ||
+        (typeof persistedContext.referenceFeeRateBps === 'number' && Number.isFinite(persistedContext.referenceFeeRateBps))
+      );
+      if (!persistedContext || persistedContext.version !== ECL_EVALUATION_CONTEXT_VERSION || !validReference) {
+        return Response.json({ ok: false, error: 'persisted evaluation context is unavailable for deterministic review reprocessing', code: 'reprocess_context_unavailable' }, { status: 409 });
+      }
+      referenceFeeRateBps = persistedContext.referenceFeeRateBps === null ? undefined : persistedContext.referenceFeeRateBps;
       evidence = persistedNormalized;
     } else {
       const normalize = NORMALIZERS[payload.domain];
       if (!normalize) return badRequest('domain must be payments, commerce or accounting');
       evidence = normalize(payload.evidence || {});
+      referenceFeeRateBps = typeof payload.referenceFeeRateBps === 'number' ? payload.referenceFeeRateBps : undefined;
     }
 
     // Real state, loaded — never assumed. StatementImport carries top-level
@@ -168,10 +184,13 @@ Deno.serve(async (req) => {
       expiresAt: record.expires_at || (restored && restored.expiresAt) || null,
     };
 
+    // Canonical evidence state is authoritative. A read outage must abort the
+    // evaluation, never masquerade as "no siblings / no attestation / no
+    // strikes / no blocking review / no baseline" and create a favorable path.
     const [siblings, attestations, strikes, blockingCases, baselines] = await Promise.all([
-      svc.entities[entityName].filter({ brand_id: brandId }, '-created_date', 100).catch(() => []),
-      svc.entities.EvidenceAttestation.filter({ evidence_entity_type: payload.evidenceEntityType, evidence_id: payload.evidenceId }, '-created_date', 1).catch(() => []),
-      svc.entities.EvidenceStrike.filter({ brand_id: brandId }, '-created_date', 200).catch(() => []),
+      svc.entities[entityName].filter({ brand_id: brandId }, '-created_date', 100),
+      svc.entities.EvidenceAttestation.filter({ evidence_entity_type: payload.evidenceEntityType, evidence_id: payload.evidenceId }, '-created_date', 1),
+      svc.entities.EvidenceStrike.filter({ brand_id: brandId }, '-created_date', 200),
       // P4: query the SPECIFIC evidence directly. awaiting_merchant remains
       // blocking, and resolving remains blocking for everyone except the one
       // claimed case explicitly re-entering P3 below. No 50-row brand scan.
@@ -180,8 +199,8 @@ Deno.serve(async (req) => {
         evidence_entity_type: payload.evidenceEntityType,
         evidence_id: payload.evidenceId,
         status: { $in: ['open', 'awaiting_merchant', 'resolving'] },
-      }, '-created_date', 20).catch(() => []),
-      svc.entities.Baseline.filter({ brand_id: brandId, is_current: true }, '-locked_at', 1).catch(() => []),
+      }, '-created_date', 20),
+      svc.entities.Baseline.filter({ brand_id: brandId, is_current: true }, '-locked_at', 1),
     ]);
 
     const existing = (siblings || [])
@@ -218,7 +237,7 @@ Deno.serve(async (req) => {
           hasAttestation: (attestations || []).length > 0,
           baselineLocked: baseline !== null && baseline.locked === true,
           hasBlockingReviewCase,
-          referenceFeeRateBps: typeof payload.referenceFeeRateBps === 'number' ? payload.referenceFeeRateBps : undefined,
+          referenceFeeRateBps,
         },
         actor: 'system',
       },
@@ -241,19 +260,20 @@ Deno.serve(async (req) => {
       // StatementImport via its top-level columns, SavingsEvidence via its
       // canonical persisted snapshot (lifecycle.status = superseded).
       if (payload.evidenceEntityType === 'statement_import') {
-        await svc.entities.StatementImport.update(sup.record.evidence_id, { evidence_status: 'superseded', superseded_by_id: payload.evidenceId }).catch(() => null);
+        await svc.entities.StatementImport.update(sup.record.evidence_id, { evidence_status: 'superseded', superseded_by_id: payload.evidenceId });
       } else {
         const sib = (siblings || []).find((s) => s && s.id === sup.record.evidence_id);
-        if (sib && sib.confidence_result && typeof sib.confidence_result === 'object') {
-          const marked = markSnapshotSuperseded(sib.confidence_result, payload.evidenceId);
-          await svc.entities.SavingsEvidence.update(sup.record.evidence_id, {
-            evidence_status: 'superseded',
-            superseded_by_id: payload.evidenceId,
-            next_lifecycle_action_at: '',
-            confidence_result: marked.snapshot,
-            confidence_result_hash: marked.snapshotHash,
-          }).catch(() => null);
+        if (!sib || !sib.confidence_result || typeof sib.confidence_result !== 'object') {
+          throw new Error(`supersession snapshot unavailable for ${sup.record.evidence_id}`);
         }
+        const marked = markSnapshotSuperseded(sib.confidence_result, payload.evidenceId);
+        await svc.entities.SavingsEvidence.update(sup.record.evidence_id, {
+          evidence_status: 'superseded',
+          superseded_by_id: payload.evidenceId,
+          next_lifecycle_action_at: '',
+          confidence_result: marked.snapshot,
+          confidence_result_hash: marked.snapshotHash,
+        });
       }
     }
     for (const rc of decision.reviewCaseIntents) {
