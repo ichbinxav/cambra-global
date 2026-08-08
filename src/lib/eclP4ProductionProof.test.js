@@ -15,6 +15,7 @@ const APP_SRC = read("src/App.jsx");
 const NAV_SRC = read("src/pages/admin/AdminLayout.jsx");
 const QUEUE_SRC = read("src/pages/admin/ReviewQueue.jsx");
 const SCHED_SRC = read("base44/functions/eclLifecycleScheduler/entry.ts");
+const SCHED_CONFIG = JSON.parse(read("base44/functions/eclLifecycleScheduler/function.jsonc"));
 const REVIEW_SRC = read("base44/functions/eclReviewWorkflow/entry.ts");
 
 describe("ECL P4 Production Proof closure", () => {
@@ -24,13 +25,14 @@ describe("ECL P4 Production Proof closure", () => {
     expect(allowlistForStage(STAGE_ECL_P4_PROOF)).toEqual(P4_PROOF_ALLOWLIST);
   });
 
-  it("widens P4 by exactly two ECL artifacts and every allowlisted path exists", () => {
+  it("widens P4 by exactly three ECL artifacts and every allowlisted path exists", () => {
     expect(P4_PROOF_ALLOWLIST.slice(0, P4_ALLOWLIST.length)).toEqual(P4_ALLOWLIST);
     expect(P4_PROOF_ALLOWLIST.slice(P4_ALLOWLIST.length)).toEqual([
       "src/pages/admin/ReviewQueue.jsx",
       "src/lib/eclP4ProductionProof.test.js",
+      "base44/functions/eclLifecycleScheduler/function.jsonc",
     ]);
-    expect(P4_PROOF_ALLOWLIST).toHaveLength(38);
+    expect(P4_PROOF_ALLOWLIST).toHaveLength(39);
     for (const path of P4_PROOF_ALLOWLIST) {
       expect(fs.existsSync(new URL(`../../${path}`, import.meta.url)), `missing allowlisted path: ${path}`).toBe(true);
     }
@@ -89,6 +91,23 @@ describe("ECL P4 Production Proof closure", () => {
     expect(QUEUE_SRC).toMatch(/functions\.invoke\("eclLifecycleScheduler", \{ limit: 25 \}\)/);
     expect(QUEUE_SRC).toContain("Run once now");
     expect(REVIEW_SRC).toContain("SCHEDULER_AGENT_NAME = 'ecl_lifecycle_scheduler'");
+  });
+
+  it("versions the recurring Base44 scheduler at 15 minutes with the same bounded batch", () => {
+    expect(SCHED_CONFIG.name).toBe("eclLifecycleScheduler");
+    expect(SCHED_CONFIG.entry).toBe("entry.ts");
+    expect(SCHED_CONFIG.automations).toHaveLength(1);
+    expect(SCHED_CONFIG.automations[0]).toMatchObject({
+      type: "scheduled",
+      name: "ECL Lifecycle Sweep",
+      is_active: true,
+      schedule_mode: "recurring",
+      schedule_type: "simple",
+      repeat_unit: "minutes",
+      repeat_interval: 15,
+      function_args: { limit: 25 },
+      ends_type: "never",
+    });
   });
 
   it("keeps reminder delivery and all monetary side effects outside Production Proof", () => {
