@@ -1,5 +1,5 @@
 {
-  "//": "v0.63.3 ECL P4 Production Scheduler: critical typecheck includes shared ECL persistence plus process, scheduler and review I/O boundaries, in addition to the existing economic backend path. The new function.jsonc schedule adds no backend economic boundary and P4 may not escape typecheck through generated or Deno boundaries.",
+  "//": "v0.64.0 ECL P5 Economic Enforcement: critical typecheck covers the canonical ECL engine boundaries, the P5 economic gate/evidence bridge, Recover acceptance/context, monthly measurement, report approval and invoice issuance. No ECL economic boundary may escape critical tsc through generated or Deno modules.",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -50,6 +50,10 @@
     "base44/functions/dispatchWebhook/entry.ts",
     "base44/functions/eclProcessEvidence/entry.ts",
     "base44/shared/eclPersistence.ts",
+    "base44/shared/eclEconomicGate.ts",
+    "base44/shared/eclRecoverEvidence.ts",
+    "base44/shared/recoverMandateCopy.ts",
+    "base44/functions/getRecoverAcceptanceContext/entry.ts",
     "base44/functions/eclLifecycleScheduler/entry.ts",
     "base44/functions/eclReviewWorkflow/entry.ts"
   ]
