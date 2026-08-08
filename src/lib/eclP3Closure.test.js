@@ -355,13 +355,17 @@ describe("createOnce concurrency contract (handler source)", () => {
   // asserted here is identical — only its location moved.
   const SRC = fs.readFileSync("base44/shared/eclPersistence.ts", "utf8");
 
-  it("sequential replay finds the persisted claim and never creates a second logical claim", () => {
-    // Pre-read on the persisted idempotency key returns the existing row…
-    expect(SRC).toMatch(/filter\(\{ idempotency_key: idempotencyKey \}, 'created_date', 1\)/);
-    expect(SRC).toMatch(/return \{ created: false, id: existing\[0\]\.id \}/);
-    // …and the post-create re-read collapses concurrent losers to the OLDEST row.
-    expect(SRC).toMatch(/filter\(\{ idempotency_key: idempotencyKey \}, 'created_date', 5\)/);
-    expect(SRC).toMatch(/delete\(row\.id\)/);
+  it("sequential replay treats persisted claims as authoritative and heals duplicate logical claims", () => {
+    // Both the pre-read and post-create read inspect a bounded duplicate set;
+    // neither read is caught and converted into an empty list.
+    expect((SRC.match(/filter\(\{ idempotency_key: idempotencyKey \}, 'created_date', 5\)/g) || [])).toHaveLength(2);
+    expect(SRC).not.toMatch(/filter\(\{ idempotency_key: idempotencyKey \}[^\n]*\.catch/);
+    expect(SRC).toMatch(/const existingWinner = await collapseClaims/);
+    expect(SRC).toMatch(/if \(existingWinner\) return \{ created: false, id: existingWinner\.id \}/);
+    // A replay heals every later claim, not merely the row created by this worker.
+    expect(SRC).toMatch(/for \(const duplicate of claims\.slice\(1\)\)/);
+    expect(SRC).toMatch(/delete\(duplicate\.id\)/);
+    expect(SRC).toMatch(/if \(!winner\) throw new Error/);
   });
 
   it("the contract remains explicitly non-transactional / not exactly-once", () => {
