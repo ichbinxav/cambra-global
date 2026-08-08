@@ -22,6 +22,7 @@ const ENTITY_BY_TYPE = { statement_import: 'StatementImport', savings_evidence: 
 const LIST_MAX = 100;
 const LIST_DEFAULT = 25;
 const RESOLUTION_CLAIM_TTL_MS = 10 * 60 * 1000;
+const SCHEDULER_AGENT_NAME = 'ecl_lifecycle_scheduler';
 
 function readEvidenceStatus(entityType, record) {
   if (!record) return null;
@@ -145,6 +146,23 @@ Deno.serve(async (req) => {
     const now = new Date().toISOString();
     const nowMs = Date.parse(now);
 
+    if (payload.action === 'runtime') {
+      const rows = await svc.entities.AgentTask.filter({ agent_name: SCHEDULER_AGENT_NAME }, '-created_date', 1);
+      const task = (rows || [])[0] || null;
+      return Response.json({
+        ok: true,
+        action: 'runtime',
+        scheduler: task ? {
+          id: task.id,
+          status: task.status || null,
+          startedAt: task.started_at || task.created_date || null,
+          completedAt: task.completed_at || null,
+          summary: task.output_payload_json && typeof task.output_payload_json === 'object' ? task.output_payload_json : null,
+          error: task.status === 'failed' ? (task.error || null) : null,
+        } : null,
+      });
+    }
+
     if (payload.action === 'list') {
       const limit = Number.isInteger(payload.limit) && payload.limit > 0 ? Math.min(payload.limit, LIST_MAX) : LIST_DEFAULT;
       const query: Record<string, unknown> = {};
@@ -183,7 +201,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (payload.action !== 'resolve') return badRequest('action must be "list", "get" or "resolve"');
+    if (payload.action !== 'resolve') return badRequest('action must be "runtime", "list", "get" or "resolve"');
     if (typeof payload.reviewCaseId !== 'string' || !payload.reviewCaseId) return badRequest('reviewCaseId is required');
     let rc = await svc.entities.ReviewCase.get(payload.reviewCaseId).catch(() => null);
     if (!rc) return Response.json({ ok: false, error: 'review case not found', code: 'not_found' }, { status: 404 });
