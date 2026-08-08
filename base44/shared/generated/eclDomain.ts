@@ -2377,6 +2377,56 @@ export function planReviewResolution(input, context) {
   });
 }
 
+/**
+ * Audit event for a review resolution. A resolution is NOT a status change (the
+ * engine owns those), so from_status === to_status here on purpose: the event
+ * records WHO decided WHAT on WHICH case, bound to the authoritative evidence
+ * identity and its stored checksum. The idempotency key covers the case, the
+ * decision and the resolver, so a replayed resolution appends nothing.
+ */
+export function buildReviewResolutionEventIntent(input) {
+  const i = input && typeof input === "object" ? input : {};
+  opRequire(EVIDENCE_ENTITY_TYPES.includes(i.evidenceEntityType), "evidenceEntityType is required");
+  opRequire(opNonEmpty(i.evidenceId), "evidenceId is required");
+  opRequire(opNonEmpty(i.brandId), "brandId is required");
+  opRequire(opNonEmpty(i.ownerEmail), "ownerEmail is required");
+  opRequire(opNonEmpty(i.status), "status is required");
+  opRequire(opNonEmpty(i.reviewCaseId), "reviewCaseId is required");
+  opRequire(opNonEmpty(i.decision), "decision is required");
+  opRequire(opNonEmpty(i.resolvedBy), "resolvedBy is required");
+  opRequire(opNonEmpty(i.correlationId), "correlationId is required");
+
+  const idempotencyKey = lifecycleIdempotencyKey({
+    kind: "review_resolution",
+    reviewCaseId: i.reviewCaseId,
+    decision: i.decision,
+    resolvedBy: i.resolvedBy,
+  });
+  return deepFreeze({
+    idempotencyKey,
+    record: {
+      evidence_entity_type: i.evidenceEntityType,
+      evidence_id: i.evidenceId,
+      brand_id: i.brandId,
+      owner_email: i.ownerEmail,
+      from_status: i.status,
+      to_status: i.status,
+      event: `review_case_${i.decision}`,
+      actor: "reviewer",
+      correlation_id: i.correlationId,
+      idempotency_key: idempotencyKey,
+      payload: {
+        reviewCaseId: i.reviewCaseId,
+        decision: i.decision,
+        resolvedBy: i.resolvedBy,
+        evidenceChecksum: opNonEmpty(i.evidenceChecksum) ? i.evidenceChecksum : null,
+        reprocessRequired: i.reprocessRequired === true,
+        operationsVersion: ECL_OPERATIONS_VERSION,
+      },
+    },
+  });
+}
+
 /** Deterministic, bounded projection of a ReviewCase for the review queue. */
 export function projectReviewCase(row, options) {
   const r = row && typeof row === "object" ? row : {};

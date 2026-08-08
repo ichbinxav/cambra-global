@@ -42,7 +42,7 @@ import { ECL_POLICY } from '../../shared/generated/eclPolicy.ts';
 
 const ENTITY = 'StatementImport';
 const ENTITY_TYPE = 'statement_import';
-const DEFAULT_BATCH = 25;
+const DEFAULT_BATCH = 25; // bounded by design
 const MAX_BATCH = 100;
 
 // Idempotent create — identical to the P3 boundary's contract, and named just
