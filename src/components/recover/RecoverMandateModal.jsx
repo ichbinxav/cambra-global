@@ -24,7 +24,6 @@
 
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
 import { X, ShieldCheck, Loader2, AlertTriangle } from "lucide-react";
 import MandateTermsSummary from "./MandateTermsSummary";
 import MandateLimitsBlock from "./MandateLimitsBlock";
@@ -169,14 +168,15 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
                 </div>
               )}
 
-              <Button
+              <button
+                type="button"
                 onClick={submit}
                 disabled={!canSubmit}
-                className="mt-5 w-full rounded-full h-11 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2"
+                className="mt-5 w-full rounded-full h-11 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
               >
                 {submitting ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
                 {submitting ? "Recording your acceptance…" : "Accept and authorize"}
-              </Button>
+              </button>
               <p className="mt-2.5 text-[11px] text-white/40 text-center font-mono">
                 Signed as {context.owner_email_display || "your account"} · {context.document_version}
               </p>
