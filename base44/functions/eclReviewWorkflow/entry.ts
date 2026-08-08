@@ -121,7 +121,7 @@ async function rejectEvidenceThroughP3Graph(svc, rc, evidence, userEmail, now) {
   if (transition.changed && transition.record) {
     await createOnce(svc, 'EvidenceLifecycleEvent', transition.idempotencyKey, transition.record);
   }
-  const patch = { evidence_status: 'rejected', next_lifecycle_action_at: '' };
+  const patch: Record<string, unknown> = { evidence_status: 'rejected', next_lifecycle_action_at: '' };
   if (evidence.confidence_result && typeof evidence.confidence_result === 'object') {
     const rewritten = rewritePersistedLifecycleStatus(evidence.confidence_result, 'rejected');
     patch.confidence_result = rewritten.snapshot;
@@ -147,7 +147,7 @@ Deno.serve(async (req) => {
 
     if (payload.action === 'list') {
       const limit = Number.isInteger(payload.limit) && payload.limit > 0 ? Math.min(payload.limit, LIST_MAX) : LIST_DEFAULT;
-      const query = {};
+      const query: Record<string, unknown> = {};
       if (typeof payload.status === 'string' && payload.status) query.status = payload.status;
       if (typeof payload.severity === 'string' && payload.severity) query.severity = payload.severity;
       if (typeof payload.reasonCode === 'string' && payload.reasonCode) query.reason_code = payload.reasonCode;

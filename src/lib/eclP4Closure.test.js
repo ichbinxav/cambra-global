@@ -153,8 +153,10 @@ describe("P4-C · automatic provisional expiration", () => {
   it("10. running LATE never renews the window", () => {
     const late = planOperationalAction(provisional({ reminderCount: 2 }), ECL_POLICY, { now: at(WINDOW_H + 720) });
     expect(late.expiresAt).toBe(EXPIRES);
-    expect(SCHED_SRC).not.toMatch(/provisional_started_at:/);
-    expect(SCHED_SRC).not.toMatch(/expires_at:/);
+    // Reading the original window is required; writing it would renew the window.
+    const schedulerUpdates = [...SCHED_SRC.matchAll(/\.update\([^;]+/g)].map((m) => m[0]).join("\n");
+    expect(schedulerUpdates).not.toMatch(/provisional_started_at:/);
+    expect(schedulerUpdates).not.toMatch(/expires_at:/);
   });
   it("11. expired evidence is never resurrected by a later run", () => {
     const p = planOperationalAction({ status: "expired", provisionalStartedAt: START, expiresAt: EXPIRES }, ECL_POLICY, { now: at(400) });
