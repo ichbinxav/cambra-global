@@ -29,6 +29,11 @@ declare module "npm:@base44/sdk@0.8.40" {
   export { default } from "@base44/sdk";
   export function createClientFromRequest(req: Request): any;
 }
+declare module "npm:@base44/sdk@0.8.41" {
+  export * from "@base44/sdk";
+  export { default } from "@base44/sdk";
+  export function createClientFromRequest(req: Request): any;
+}
 
 // Shared PDF builder dependency → real installed jspdf types.
 // jspdf ships jsPDF as a DEFAULT export, so re-exporting only named symbols
