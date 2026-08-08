@@ -150,14 +150,18 @@ export const P4_PROOF_ALLOWLIST = [
   "base44/functions/eclLifecycleScheduler/function.jsonc",
 ];
 
-// P5 adds exactly one server-side gate adapter, four existing economic/contract
-// boundaries, and its closure matrix. Generated policy/domain stay canonical;
-// no Invoice, MonthlySavingsReport, Baseline or BillingRule schema is widened.
+// P5 adds two server-side adapters, the existing Recover economic/contract
+// boundaries, two upstream evidence-readiness/materialization boundaries, and
+// its closure matrix. Generated policy/domain stay canonical; no Invoice,
+// MonthlySavingsReport, Baseline or BillingRule schema is widened.
 export const P5_ALLOWLIST = [
   ...P4_PROOF_ALLOWLIST,
   "base44/shared/eclEconomicGate.ts",
+  "base44/shared/eclRecoverEvidence.ts",
+  "base44/functions/getRecoverAcceptanceContext/entry.ts",
   "base44/functions/startRecoverAcceptance/entry.ts",
   "base44/functions/acceptRecoverMandate/entry.ts",
+  "base44/functions/generateMonthlySavingsReport/entry.ts",
   "base44/functions/approveRecoverReportForInvoicing/entry.ts",
   "base44/functions/createEligibleRecoverInvoices/entry.ts",
   "src/lib/eclP5Closure.test.js",
