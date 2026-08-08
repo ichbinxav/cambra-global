@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 // Precise ECL artifact names — word-anchored so "declare"/"reclassify" never
 // false-positive the way a bare /ecl/i would. P4 explicitly covers the
 // camelCase production/domain names that the old pattern missed.
-export const ECL_NAME_PATTERN = /\becl(?:-policy|Policy(?:Schema)?|Domain|Gates|Serialize|Lifecycle(?:Scheduler)?|Reconcile|Strikes|Engine|Parity|ProcessEvidence|Operations|Persistence|ReviewWorkflow|EconomicGate|P3Closure|P4Closure|P4ProductionProof|P5Closure)(?:\b|[._-])|EvidenceAttestation|EvidenceLifecycleEvent|EvidenceStrike|ReviewCase|ReviewQueue|ConfidenceResult|NormalizedEvidence/;
+export const ECL_NAME_PATTERN = /\becl(?:-policy|Policy(?:Schema)?|Domain|Gates|Serialize|Lifecycle(?:Scheduler)?|Reconcile|Strikes|Engine|Parity|ProcessEvidence|Operations|Persistence|ReviewWorkflow|EconomicGate|RecoverEvidence|P3Closure|P4Closure|P4ProductionProof|P5Closure)(?:\b|[._-])|EvidenceAttestation|EvidenceLifecycleEvent|EvidenceStrike|ReviewCase|ReviewQueue|ConfidenceResult|NormalizedEvidence/;
 export const ECL_FIELD_PATTERN = /confidence_level_ecl|freeze_eligibility|"evidence_status"/;
 
 export const STAGE_PRE_ECL = "PRE_ECL";
