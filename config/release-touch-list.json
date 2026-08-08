@@ -50,6 +50,8 @@
     "src/lib/eclOperations.js",
     "src/lib/eclP4Closure.test.js",
     "src/lib/eclP4ProductionProof.test.js",
+    "src/lib/eclP1Gate.test.js",
+    "src/lib/eclP1Schemas.test.js",
     "base44/shared/eclPersistence.ts",
     "base44/functions/eclLifecycleScheduler/entry.ts",
     "base44/functions/eclLifecycleScheduler/function.jsonc",
