@@ -18,6 +18,7 @@ import {
 } from '../../shared/recoverBillingMath.ts';
 import { resolveContractPolicy, buildContractEconomicView } from '../../shared/contractPolicySnapshot.ts';
 import { getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
+import { evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
 
 // v60.2 — the standard fee comes from the resolved contract policy (the
 // accepted snapshot's standard_fee_pct), not a hardcoded 25. For current
@@ -65,6 +66,26 @@ export default async function (req: Request): Promise<Response> {
     if (mandate && !snapshotBaselineId) block('blocked_contract', 'mandate_snapshot_missing_baseline');
     if (mandate && snapshotBaselineId && report.baseline_id !== snapshotBaselineId) {
       block('blocked_contract', `baseline_mismatch:report=${report.baseline_id || 'none'};accepted=${snapshotBaselineId}`);
+    }
+    // P5 reads the exact accepted baseline; no "current baseline" substitution.
+    const acceptedBaseline = snapshotBaselineId
+      ? (await svc.entities.Baseline.filter({ id: snapshotBaselineId }, '-created_date', 1))?.[0] || null
+      : null;
+    if (snapshotBaselineId && !acceptedBaseline) block('blocked_contract', 'accepted_baseline_not_found');
+
+    // ECL P5 — report approval is the first point a measured result can become
+    // invoiceable. Gate the server-resolved activation evidence before any
+    // eligibility write; legacy report fields never substitute for ECL.
+    const eclApproveGate = await evaluateRecoverEconomicGate({
+      svc,
+      gateName: 'approve_report',
+      brandId: report.brand_id || activation.brand_id,
+      dealActivationId: activation.id,
+      baseline: acceptedBaseline,
+      now: new Date().toISOString(),
+    });
+    if (!eclApproveGate.allowed) {
+      for (const reason of eclApproveGate.reasons) block('blocked_missing_evidence', `ecl_approve_report:${reason}`);
     }
 
     // Contractual calendar (§6–§7).
