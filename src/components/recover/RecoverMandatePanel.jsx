@@ -10,7 +10,6 @@
 
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
 import { ShieldCheck, CheckCircle2 } from "lucide-react";
 import RecoverMandateModal from "./RecoverMandateModal";
 import PaymentMethodSetupCard from "./PaymentMethodSetupCard";
@@ -83,12 +82,13 @@ export default function RecoverMandatePanel() {
               We'll negotiate with your provider, or move you to a better rate, and charge {ctx.fee_pct}% of what we
               actually recover — verified against your statements. No recovery, no fee.
             </p>
-            <Button
+            <button
+              type="button"
               onClick={() => setOpen(true)}
-              className="rounded-full h-10 px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2"
+              className="rounded-full h-10 px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 inline-flex items-center justify-center gap-2"
             >
               <ShieldCheck size={14} /> Review and authorize
-            </Button>
+            </button>
           </>
         ) : (
           <p className="text-[12.5px] text-white/60 leading-relaxed">
