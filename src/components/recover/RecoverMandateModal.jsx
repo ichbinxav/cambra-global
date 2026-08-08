@@ -38,6 +38,7 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
   const [error, setError] = useState(null);
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
+  const [evidenceAgreed, setEvidenceAgreed] = useState(false);
   const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
@@ -58,6 +59,7 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
         mandate_id: mandateId,
         signed_by_name: name.trim(),
         signed_by_role: role.trim(),
+        evidence_attestation_accepted: true,
         accepted: true,
       });
       onAccepted(r?.data);
@@ -73,7 +75,7 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
     }
   };
 
-  const canSubmit = !!mandateId && agreed && name.trim().length >= 2 && !submitting;
+  const canSubmit = !!mandateId && evidenceAgreed && agreed && name.trim().length >= 2 && !submitting;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -125,6 +127,14 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
               </div>
 
               <label className="mt-4 flex items-start gap-2.5 cursor-pointer">
+                <input type="checkbox" checked={evidenceAgreed} onChange={(e) => setEvidenceAgreed(e.target.checked)} className="mt-0.5" />
+                <span className="text-[12.5px] text-white/70 leading-relaxed">
+                  {context.evidence_attestation?.text ||
+                    "I confirm, to the best of my knowledge, that the verified baseline and payment-cost figures shown here are accurate."}
+                </span>
+              </label>
+
+              <label className="mt-3 flex items-start gap-2.5 cursor-pointer">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />
                 <span className="text-[12.5px] text-white/70 leading-relaxed">
                   {/* RECOVER-3-FIX — the exact server-provided contractual checkbox text
