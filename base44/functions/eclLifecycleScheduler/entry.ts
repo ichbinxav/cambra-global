@@ -239,10 +239,12 @@ async function recordFailure(svc, item, now: string, err, counters) {
     correlationId,
     classification,
   });
-  await createOnce(svc, 'EvidenceLifecycleEvent', failIntent.idempotencyKey, failIntent.record).catch(() => null);
+  // Failure telemetry is part of the operational truth. If the event write
+  // fails, do NOT report recorded=true and do NOT mutate the schedule.
+  await createOnce(svc, 'EvidenceLifecycleEvent', failIntent.idempotencyKey, failIntent.record);
 
   if (classification.retryable) {
-    await svc.entities[target.entityName].update(item.id, { next_lifecycle_action_at: classification.nextRetryAt }).catch(() => null);
+    await svc.entities[target.entityName].update(item.id, { next_lifecycle_action_at: classification.nextRetryAt });
   } else {
     const esc = buildOperationalEscalationIntent({
       evidenceEntityType: target.entityType,
@@ -253,9 +255,12 @@ async function recordFailure(svc, item, now: string, err, counters) {
       severity: 'quality',
       blockingActions: { show_dashboard: true },
     });
-    const rc = await createOnce(svc, 'ReviewCase', esc.idempotencyKey, esc.record).catch(() => null);
-    if (rc && rc.created) counters.reviewCasesCreated += 1;
-    await svc.entities[target.entityName].update(item.id, { next_lifecycle_action_at: '' }).catch(() => null);
+    // Loss-safe escalation: a permanent/exhausted item is unscheduled ONLY
+    // after the human ReviewCase has been durably ensured. If this fails, the
+    // item stays due and the next run retries the escalation.
+    const rc = await createOnce(svc, 'ReviewCase', esc.idempotencyKey, esc.record);
+    if (rc.created) counters.reviewCasesCreated += 1;
+    await svc.entities[target.entityName].update(item.id, { next_lifecycle_action_at: '' });
   }
   return {
     id: item.id,
