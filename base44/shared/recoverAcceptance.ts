@@ -111,7 +111,7 @@ export async function findVerifiedBaseline(svc: any, activation: any) {
  * Everything shown to the merchant, frozen. The hash of THIS object is what makes
  * a mid-popup fee or baseline change fail loudly at signature.
  */
-export function buildAcceptanceSnapshot({ activation, baseline, fee, month }: any) {
+export function buildAcceptanceSnapshot({ activation, baseline, fee, month, evidenceBinding = null }: any) {
   return {
     document_version: MANDATE_DOCUMENT_VERSION,
     month,
@@ -129,6 +129,10 @@ export function buildAcceptanceSnapshot({ activation, baseline, fee, month }: an
     baseline_verified_at: baseline?.verified_at || null,
     projected_savings_annual: activation.projected_savings_annual ?? activation.estimated_savings_yearly ?? null,
     projected_savings_monthly: activation.projected_savings_monthly ?? null,
+    // ECL P5 — exact evidence the merchant saw when this snapshot was opened.
+    // Optional only for legacy/read-only preflight contexts; startRecoverAcceptance
+    // always supplies it before persisting a new Mandate.
+    ...(evidenceBinding ? { ecl_evidence_binding: { ...evidenceBinding } } : {}),
     // v60.1 — Contract Policy Snapshot. Additive: these fields enrich the
     // snapshot with the policy terms in force at acceptance. The hash of
     // THIS object (via hashSnapshot) includes these fields for new mandates;
