@@ -23,6 +23,7 @@
 // still pending before use with real clients (see Decision_Log_RECOVER3.md).
 
 export const MANDATE_COPY_VERSION = 'recover-mandate-copy-v1';
+export const RECOVER_EVIDENCE_ATTESTATION_VERSION = 'recover-evidence-attestation-v1';
 
 export type MandateLocale = 'en' | 'fr' | 'es';
 
@@ -65,6 +66,19 @@ export type MandateCopy = {
  * acceptance. FR/ES had no acceptance before this change, so they carry the full
  * wording specified in RECOVER-1 §13.
  */
+/** Separate evidence declaration added by ECL P5. It is intentionally NOT
+ * folded into the legacy mandate checkbox: historical English acceptances are
+ * immutable evidence of the exact v1 wording they saw. */
+export function evidenceAttestationTextFor(locale: MandateLocale): string {
+  if (locale === 'fr') {
+    return "Je confirme, au meilleur de ma connaissance, que la référence vérifiée et les chiffres de coûts de paiement présentés dans cette autorisation sont exacts et peuvent être utilisés par CAMBRA pour évaluer et vérifier les économies Recover Margin.";
+  }
+  if (locale === 'es') {
+    return 'Confirmo, según mi leal saber y entender, que el baseline verificado y las cifras de costes de pago mostradas en esta autorización son correctos y pueden ser utilizados por CAMBRA para evaluar y verificar el ahorro de Recover Margin.';
+  }
+  return 'I confirm, to the best of my knowledge, that the verified baseline and payment-cost figures shown in this authorization are accurate and may be used by CAMBRA to evaluate and verify Recover Margin savings.';
+}
+
 export function checkboxTextFor(locale: MandateLocale, entity: string, feePct?: number | string): string {
   const fallback = { en: 'my business', fr: 'mon entreprise', es: 'mi empresa' }[locale] || 'my business';
   const name = entity && String(entity).trim() ? String(entity).trim() : fallback;
