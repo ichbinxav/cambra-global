@@ -50,7 +50,7 @@
     },
     {
       "path": "base44/entities/SavingsEvidence.jsonc",
-      "sha256": "68aeddd0eb728fecc66167809ff5185b0ecdae1b9da0a038bf697b86b4d40962",
+      "sha256": "5e09871212a3b00be0c76a85dc8695c27f1d9ac323eebeb56d4273469a37c911",
       "freezeReason": "ECL P1 input schema — extended additively in v62.3, frozen at the approved shape",
       "allowedChange": false
     },
@@ -86,7 +86,7 @@
     },
     {
       "path": "base44/entities/ReviewCase.jsonc",
-      "sha256": "b6784fa873444af3069c14eb0f690bd0d0552d90238ce81d5557c6a3f9d8fbbc",
+      "sha256": "5cb3f83d7f0d1418e9f4343e47b6204e92162facd8a261274731c6e62c0570e1",
       "freezeReason": "ECL P1 schema (v62.3) — storage shape only, no queue and no routing",
       "allowedChange": false
     }

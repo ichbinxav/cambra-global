@@ -183,6 +183,24 @@
         "base44/functions/eclReviewWorkflow/entry.ts"
       ],
       "reason": "ECL P4 operational workflow closure: scheduler, due discovery, bounded reminder intents, automatic expiry, review workflow, idempotent persistence, retry/recovery and observability; no billing or monetary effects."
+    },
+    {
+      "date": "2026-08-08T19:22:05.187Z",
+      "type": "freeze_update",
+      "stage": "ECL_P4_OPERATIONAL_WORKFLOW",
+      "path": "base44/entities/SavingsEvidence.jsonc",
+      "oldHash": "68aeddd0eb728fecc66167809ff5185b0ecdae1b9da0a038bf697b86b4d40962",
+      "newHash": "5e09871212a3b00be0c76a85dc8695c27f1d9ac323eebeb56d4273469a37c911",
+      "reason": "ECL P4 operational projection fields for due discovery, immutable provisional window, scheduler timestamp, reminder count and supersession."
+    },
+    {
+      "date": "2026-08-08T19:22:05.231Z",
+      "type": "freeze_update",
+      "stage": "ECL_P4_OPERATIONAL_WORKFLOW",
+      "path": "base44/entities/ReviewCase.jsonc",
+      "oldHash": "b6784fa873444af3069c14eb0f690bd0d0552d90238ce81d5557c6a3f9d8fbbc",
+      "newHash": "5cb3f83d7f0d1418e9f4343e47b6204e92162facd8a261274731c6e62c0570e1",
+      "reason": "ECL P4 race-safe review resolution claim fields for conditional concurrency control and stale-claim recovery."
     }
   ]
 }
