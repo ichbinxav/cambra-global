@@ -70,6 +70,7 @@
     "tsconfig.critical.json",
     "base44/shared/eclEconomicGate.ts",
     "base44/shared/eclRecoverEvidence.ts",
+    "base44/shared/recoverAcceptance.ts",
     "base44/shared/recoverMandateCopy.ts",
     "base44/functions/getRecoverAcceptanceContext/entry.ts",
     "base44/functions/generateMonthlySavingsReport/entry.ts",
