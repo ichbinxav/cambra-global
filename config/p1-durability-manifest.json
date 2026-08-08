@@ -1,12 +1,12 @@
 {
   "release": "CAMBRA v0.64.0 — ECL P5 Economic Enforcement (durability manifest)",
-  "generatedAt": "2026-08-08T23:41:33.606Z",
+  "generatedAt": "2026-08-08T23:48:51.278Z",
   "packageVersion": "0.64.0",
   "stage": "ECL_P5_ECONOMIC_ENFORCEMENT",
   "freezeStage": "ECL_P5_ECONOMIC_ENFORCEMENT",
   "freezeEntryCount": 8,
   "allowlistCount": 48,
-  "fileCount": 87,
+  "fileCount": 88,
   "purpose": "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
   "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest now covers every active ECL stage through P4 Production Proof.",
   "stageNote": "P1/P2/P3/P4 remain authoritative. P4 Production Proof adds the admin ReviewQueue consumer and scheduler runtime observability without adding billing, invoicing, collections, Stripe settlement, payouts or success-fee effects. A recurring Base44 platform automation remains external configuration and a GitHub CI seal requires a real Actions run.",
@@ -144,6 +144,11 @@
       "bytes": 5565
     },
     {
+      "path": "base44/shared/recoverAcceptance.ts",
+      "sha256": "6a1cc91b6183d27f1ccb87850b337be4bad75fe7fdd874f4b4e6cc29ad10a04a",
+      "bytes": 8602
+    },
+    {
       "path": "base44/shared/recoverContractPdf.ts",
       "sha256": "02baaf85b80eec66bc7ce6ff23f0bd227c9dda864c8fa12af9cc4f39559843ec",
       "bytes": 13804
@@ -180,13 +185,13 @@
     },
     {
       "path": "config/release-touch-list.json",
-      "sha256": "104d4cfa4bc3f3005aed52a8d3832d8c19967bbb6cd221b94f380e1baafb4417",
-      "bytes": 3544
+      "sha256": "7f2f4153231137d390ea47b31c655787224cc2f2790d954aaaf56b7bb635215d",
+      "bytes": 3586
     },
     {
       "path": "config/typecheck-baseline.json",
-      "sha256": "e057c708d90dec5e81cb8d56657282872ec67f5d89db691d92541b76c3c3c8d1",
-      "bytes": 42540
+      "sha256": "2fc1d25432e3c581a8c20e7816eed6a38dbedcd9d476fdec20740fb2a0f34d38",
+      "bytes": 42264
     },
     {
       "path": "package-lock.json",
@@ -245,8 +250,8 @@
     },
     {
       "path": "scripts/lib/preEclFreeze.mjs",
-      "sha256": "e4e3efd2077e1a3e3c1341028e7233b8f7c6da65a93b60d084422c1164cc2885",
-      "bytes": 12412
+      "sha256": "596d57c16a5e92e3d150302d37fc61b1befa06319b76ace7285862670bac1b3b",
+      "bytes": 12428
     },
     {
       "path": "scripts/lib/sourceTreeHash.mjs",
@@ -300,8 +305,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "030ebf85b33ad74a3343bd687fbd586de96981f5837afc5f66ff9b9510b625d8",
-      "bytes": 17705
+      "sha256": "91264b3888163f9a3646ad87093a645f6e95375b463a7d627756c6f2b29191d2",
+      "bytes": 17676
     },
     {
       "path": "src/lib/confidenceResult.js",

@@ -239,7 +239,7 @@ describe("ECL stage gate (v62.3)", () => {
   });
 
   it("P5 name detection catches camelCase ECL production artifacts without bare-ecl false positives", () => {
-    for (const name of ["eclOperations.js", "eclPersistence.ts", "eclLifecycleScheduler", "eclReviewWorkflow", "eclProcessEvidence", "eclP4ProductionProof.test.js", "eclEconomicGate.ts", "eclP5Closure.test.js"]) {
+    for (const name of ["eclOperations.js", "eclPersistence.ts", "eclLifecycleScheduler", "eclReviewWorkflow", "eclProcessEvidence", "eclP4ProductionProof.test.js", "eclEconomicGate.ts", "eclRecoverEvidence.ts", "eclP5Closure.test.js"]) {
       expect(ECL_NAME_PATTERN.test(name), `must detect ${name}`).toBe(true);
     }
     for (const safe of ["declare.js", "reclassify.ts", "vehicle.js"]) {
