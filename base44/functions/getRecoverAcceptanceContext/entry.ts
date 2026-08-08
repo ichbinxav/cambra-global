@@ -11,7 +11,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
-import { checkboxTextFor, mandateCopy, MANDATE_COPY_VERSION } from '../../shared/recoverMandateCopy.ts';
+import { checkboxTextFor, evidenceAttestationTextFor, mandateCopy, MANDATE_COPY_VERSION, RECOVER_EVIDENCE_ATTESTATION_VERSION } from '../../shared/recoverMandateCopy.ts';
+import { inspectRecoverEvidenceSource } from '../../shared/eclRecoverEvidence.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   MANDATE_DOCUMENT_VERSION,
@@ -44,6 +45,9 @@ export default async function (req: Request): Promise<Response> {
 
     const month = currentMonth();
     const baseline = await findVerifiedBaseline(svc, activation);
+    const evidenceSource = baseline
+      ? await inspectRecoverEvidenceSource({ svc, activation, now: new Date().toISOString() })
+      : { ok: false, code: 'no_verified_baseline' };
     const fee = await resolveFeePctForMonth(
       svc,
       {
@@ -65,6 +69,7 @@ export default async function (req: Request): Promise<Response> {
 
     const blockers: string[] = [];
     if (!baseline) blockers.push('no_verified_baseline');
+    else if (!evidenceSource.ok) blockers.push(evidenceSource.code || 'ecl_verified_evidence_unavailable');
     if (!ACCEPTABLE_ACTIVATION_STATES.includes(activation.status)) blockers.push(`activation_status:${activation.status}`);
     if (activeMandate) blockers.push('mandate_already_active');
 
@@ -88,6 +93,10 @@ export default async function (req: Request): Promise<Response> {
         limits_bullets: copy.limits_bullets,
         summary: copy.summary,
         checkbox: checkboxTextFor(locale, brand?.name || '', Number(fee.pct)),
+      },
+      evidence_attestation: {
+        version: RECOVER_EVIDENCE_ATTESTATION_VERSION,
+        text: evidenceAttestationTextFor(locale),
       },
       organization_id: activation.brand_id || '',
       deal_activation_id: activation.id,
