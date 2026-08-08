@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.64.0 — ECL P5 Economic Enforcement (durability manifest)",
-  "generatedAt": "2026-08-08T23:48:51.278Z",
+  "generatedAt": "2026-08-08T23:50:43.324Z",
   "packageVersion": "0.64.0",
   "stage": "ECL_P5_ECONOMIC_ENFORCEMENT",
   "freezeStage": "ECL_P5_ECONOMIC_ENFORCEMENT",
@@ -355,8 +355,8 @@
     },
     {
       "path": "src/lib/eclP1Gate.test.js",
-      "sha256": "ef22a002161fc323e198077c7d5ec96e6a68f52dc5eea275707cb8a2dd1304b8",
-      "bytes": 13084
+      "sha256": "f8f1193e1849ae16b6d1da401369d8368f010fc87627eaf8d67ef8ea243a725d",
+      "bytes": 13109
     },
     {
       "path": "src/lib/eclP1Schemas.test.js",
