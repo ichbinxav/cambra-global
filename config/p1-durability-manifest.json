@@ -1,12 +1,12 @@
 {
   "release": "CAMBRA v0.63.3 — ECL P4 Production Scheduler (durability manifest)",
-  "generatedAt": "2026-08-08T22:02:32.891Z",
+  "generatedAt": "2026-08-08T22:04:57.945Z",
   "packageVersion": "0.63.3",
   "stage": "ECL_P4_PRODUCTION_PROOF",
   "freezeStage": "ECL_P4_PRODUCTION_PROOF",
   "freezeEntryCount": 8,
   "allowlistCount": 39,
-  "fileCount": 76,
+  "fileCount": 77,
   "purpose": "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
   "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest now covers every active ECL stage through P4 Production Proof.",
   "stageNote": "P1/P2/P3/P4 remain authoritative. P4 Production Proof adds the admin ReviewQueue consumer and scheduler runtime observability without adding billing, invoicing, collections, Stripe settlement, payouts or success-fee effects. A recurring Base44 platform automation remains external configuration and a GitHub CI seal requires a real Actions run.",
@@ -155,8 +155,8 @@
     },
     {
       "path": "config/release-touch-list.json",
-      "sha256": "a0fd4caf32b5f598f342eb91b7435b310fc2eb884713f4846ed7fd32ee3ab9ad",
-      "bytes": 3088
+      "sha256": "69632008c527d214dd70d71bd69d30cc8dbe7107fd5892970526a0fab9736f8f",
+      "bytes": 3116
     },
     {
       "path": "config/typecheck-baseline.json",
@@ -397,6 +397,11 @@
       "path": "tsconfig.critical.json",
       "sha256": "8597e04f0ef906fdfbccd4ecceef5f88088a569bbb6ffd8d9b674cc1598bb276",
       "bytes": 2384
+    },
+    {
+      "path": "types/deno-shim.d.ts",
+      "sha256": "08561cccf925611e4616308b1f37c230de036f6eeee1fcd4a25b8888de6fa437",
+      "bytes": 1881
     }
   ]
 }
