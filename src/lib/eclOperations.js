@@ -200,6 +200,15 @@ export function planOperationalAction(state, policy, context) {
   return deepFreeze({ action: "none", reason: "awaiting_expiry", dueAt: null, nextActionAt: expiry.expiresAt, reminderIndex: null, expiresAt: expiry.expiresAt });
 }
 
+// Materialized reminder_count is a cache of persisted semantic reminder events.
+// After a crash between event creation and the counter write, replay must heal
+// the cache forward, never retry the same reminder forever or move it backward.
+export function reconcileReminderCount(reminderCount, reminderIndex) {
+  const current = Number.isInteger(reminderCount) && reminderCount > 0 ? reminderCount : 0;
+  opRequire(Number.isInteger(reminderIndex) && reminderIndex >= 0, "reminderIndex must be a non-negative integer");
+  return Math.max(current, reminderIndex + 1);
+}
+
 // ── P4-D · Reminder intent (event first, delivery after) ─────────────────
 /**
  * Build the EvidenceLifecycleEvent record intent for ONE reminder. The reminder
