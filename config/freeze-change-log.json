@@ -138,6 +138,51 @@
         "base44/functions/eclProcessEvidence/entry.ts"
       ],
       "reason": "v62.5 ECL P3: lifecycle engine (pure domain modules eclLifecycle/eclReconcile/eclStrikes/eclEngine + eclProcessEvidence handler + tests). No scheduler, no reminders, no ReviewQueue UI, no billing integration."
+    },
+    {
+      "date": "2026-08-08T19:21:00.871Z",
+      "type": "stage_advance",
+      "fromStage": "ECL_P3_LIFECYCLE_ENGINE",
+      "toStage": "ECL_P4_OPERATIONAL_WORKFLOW",
+      "allowlist": [
+        "base44/entities/StatementImport.jsonc",
+        "base44/entities/SavingsEvidence.jsonc",
+        "base44/entities/EvidenceAttestation.jsonc",
+        "base44/entities/EvidenceLifecycleEvent.jsonc",
+        "base44/entities/EvidenceStrike.jsonc",
+        "base44/entities/ReviewCase.jsonc",
+        "config/ecl-policy.json",
+        "src/lib/eclPolicySchema.js",
+        "scripts/generate-ecl-policy.mjs",
+        "src/lib/normalizedEvidence.js",
+        "src/lib/confidenceResult.js",
+        "src/lib/eclGates.js",
+        "src/lib/eclSerialize.js",
+        "src/lib/generated/eclPolicy.js",
+        "base44/shared/generated/eclPolicy.ts",
+        "base44/shared/generated/eclDomain.ts",
+        "src/lib/eclPolicy.test.js",
+        "src/lib/normalizedEvidence.test.js",
+        "src/lib/confidenceResult.test.js",
+        "src/lib/eclGates.test.js",
+        "src/lib/eclParity.test.js",
+        "src/lib/eclLifecycle.js",
+        "src/lib/eclReconcile.js",
+        "src/lib/eclStrikes.js",
+        "src/lib/eclEngine.js",
+        "src/lib/eclLifecycle.test.js",
+        "src/lib/eclReconcile.test.js",
+        "src/lib/eclStrikes.test.js",
+        "src/lib/eclEngine.test.js",
+        "src/lib/eclP3Closure.test.js",
+        "base44/functions/eclProcessEvidence/entry.ts",
+        "src/lib/eclOperations.js",
+        "src/lib/eclP4Closure.test.js",
+        "base44/shared/eclPersistence.ts",
+        "base44/functions/eclLifecycleScheduler/entry.ts",
+        "base44/functions/eclReviewWorkflow/entry.ts"
+      ],
+      "reason": "ECL P4 operational workflow closure: scheduler, due discovery, bounded reminder intents, automatic expiry, review workflow, idempotent persistence, retry/recovery and observability; no billing or monetary effects."
     }
   ]
 }
