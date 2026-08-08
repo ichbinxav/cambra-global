@@ -1,73 +1,397 @@
 {
-  "release": "CAMBRA v0.62.6 — ECL P3 Closure (durability manifest)",
-  "generatedAt": "2026-08-08T15:52:00.000Z",
-  "packageVersion": "0.62.6",
-  "stage": "ECL_P3_LIFECYCLE_ENGINE",
-  "freezeStage": "ECL_P3_LIFECYCLE_ENGINE",
+  "release": "CAMBRA v0.63.2 — ECL P4 Production Proof (durability manifest)",
+  "generatedAt": "2026-08-08T20:56:06.468Z",
+  "packageVersion": "0.63.2",
+  "stage": "ECL_P4_PRODUCTION_PROOF",
+  "freezeStage": "ECL_P4_PRODUCTION_PROOF",
   "freezeEntryCount": 8,
-  "allowlistCount": 31,
-  "fileCount": 51,
-  "purpose": "Durability probe. Every sha256/bytes below was read from disk at write time, never from memory, and the whole file was re-verified against disk after persistence (0 mismatches required). If this manifest reaches the exported ZIP but the files it declares do not, the loss happens in the export. If it does not reach the ZIP at all, the loss happens before the export. If both arrive and the hashes match, ECL P1 (schemas), P2 (domain contracts) and P3 (lifecycle engine + closure fixes) are physically applied.",
-  "nameNote": "The file keeps the historical name p1-durability-manifest.json on purpose: it now covers P1, P2 and P3, but renaming it would only churn references for zero informational gain.",
-  "stageNote": "P1, P2 and P3 are CLOSED at v0.62.6. P3 = pure lifecycle engine (eclLifecycle/eclReconcile/eclStrikes/eclEngine), ONE I/O handler (eclProcessEvidence) and the v62.6 closure hardening: complete sibling envelopes in inputsHash, snapshot-exact confidence_result_hash, non-renewing provisional windows, E-08 provenance, positive-comparability supersession, server-resolved attestation evidence binding, and the eclP3Closure.test.js regression matrix. STILL ABSENT BY DESIGN: scheduler, reminders, ReviewQueue UI, billing integration — those require a NEW stage. Only StatementImport and SavingsEvidence may carry ECL fields, exactly as in P1.",
-  "ciWorkflowNote": "CURRENT STATE (2026-08-08): .github/workflows/ci.yml can NOT be persisted through the Base44 write path — the platform explicitly rejects writes under .github/workflows/ (the GitHub sync app has no permission over Actions workflows; rejection reproduced this cut). The installed workflow therefore remains OUTDATED versus the canonical ci/github-workflow-ci.yml (it is missing the ecl:check step), and `npm run ci:check` honestly FAILS with template drift. ONLY pending external action for CI readiness: from a real checkout, run `npm run ci:install -- --confirm` (or copy ci/github-workflow-ci.yml over .github/workflows/ci.yml byte-identically) and push to main. Until then the exported repository is NOT CI-ready and no CI seal exists.",
-  "packageLockNote": "package-lock.json was version-synced to 0.62.6 (both the root `version` and packages[\"\"].version) by writing it directly on disk: the Base44 repository write path does not address the lockfile (find_replace/write_file both reject it, reproduced this cut). Its hash below is the on-disk truth at generation time. The previous export tracked package.json's version in the lockfile, but this is NOT guaranteed: if the exported lockfile still says 0.62.5, re-apply the two version fields manually — no resolved versions or integrity fields were touched.",
+  "allowlistCount": 38,
+  "fileCount": 75,
+  "purpose": "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
+  "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest now covers every active ECL stage through P4 Production Proof.",
+  "stageNote": "P1/P2/P3/P4 remain authoritative. P4 Production Proof adds the admin ReviewQueue consumer and scheduler runtime observability without adding billing, invoicing, collections, Stripe settlement, payouts or success-fee effects. A recurring Base44 platform automation remains external configuration and a GitHub CI seal requires a real Actions run.",
   "history": {
-    "p1": "v62.3/v0.62.3.x — the six ECL P1 evidence schemas applied additively (StatementImport, SavingsEvidence, EvidenceAttestation, EvidenceLifecycleEvent, EvidenceStrike, ReviewCase); Baseline.jsonc and processUploadedFile/entry.ts frozen with zero diffs.",
-    "p2": "v62.4/v0.62.4.x — domain contracts + canonical ECL policy (config/ecl-policy.json, eclPolicySchema, normalizedEvidence, confidenceResult, eclGates, eclSerialize, generated eclPolicy/eclDomain artifacts), 21-path allowlist, eclDomain.ts promoted into the critical typecheck.",
-    "p3": "v0.62.5 shipped the lifecycle engine; v0.62.6 closed it (this manifest's stageNote lists the closure invariants)."
+    "p1": "Evidence lifecycle schemas and frozen-field boundary.",
+    "p2": "Domain contracts, policy, serialization and gate semantics.",
+    "p3": "Deterministic lifecycle engine and canonical process/reprocess boundary.",
+    "p4": "Operational scheduler/review workflow with fail-closed persistence, replay and concurrency hardening.",
+    "p4ProductionProof": "Admin operator surface plus best-effort scheduler runtime proof; no economic effects."
   },
   "files": [
-    { "path": "base44/entities/EvidenceAttestation.jsonc", "sha256": "1cb6bec24599aec271f527bc28d46697fe961c4a1427ab3bf7e0f5f10ce10d29", "bytes": 4839 },
-    { "path": "base44/entities/EvidenceLifecycleEvent.jsonc", "sha256": "78bfa30864dadf7574c09bcc0dfb440d39e6505ef98f8dcb077a09ab919f1412", "bytes": 2730 },
-    { "path": "base44/entities/EvidenceStrike.jsonc", "sha256": "5d96ed9ae9f6cefa56a3dc652fbcec6019fdfaf536661efdd5480412d85d22f9", "bytes": 2658 },
-    { "path": "base44/entities/ReviewCase.jsonc", "sha256": "b6784fa873444af3069c14eb0f690bd0d0552d90238ce81d5557c6a3f9d8fbbc", "bytes": 2923 },
-    { "path": "base44/entities/SavingsEvidence.jsonc", "sha256": "68aeddd0eb728fecc66167809ff5185b0ecdae1b9da0a038bf697b86b4d40962", "bytes": 4823 },
-    { "path": "base44/entities/StatementImport.jsonc", "sha256": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf", "bytes": 7967 },
-    { "path": "base44/functions/eclProcessEvidence/entry.ts", "sha256": "50a6e6cfc70ff6a007d5147627f03784415773e4b5ac4b4dc9b13e33c80004fd", "bytes": 16243 },
-    { "path": "base44/shared/generated/eclDomain.ts", "sha256": "6e054187f678440775acbc5d43e7ffc0ed399f9c0638a5acc98cc2e0099bae8c", "bytes": 85799 },
-    { "path": "base44/shared/generated/eclPolicy.ts", "sha256": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94", "bytes": 5037 },
-    { "path": "ci/CI_SMOKE.md", "sha256": "4135f69618fe7508e1acb59695d167a39e98b7fd197ec6d416f49790d5c02a27", "bytes": 777 },
-    { "path": "ci/github-workflow-ci.yml", "sha256": "fa645247d3bdccfcec687f78c822306f5aac8df03d634fc2284717785f60299b", "bytes": 823 },
-    { "path": "config/ecl-policy.json", "sha256": "dea9bc7bcc4f6279bf7986daa49839ed17912cf3361581b2303b2d877214c1db", "bytes": 3546 },
-    { "path": "config/freeze-change-log.json", "sha256": "f40a12586d3827533d5c9f2792c2b84726fd1d59f5012b28080e29ab85e8db73", "bytes": 7381 },
-    { "path": "config/pre-ecl-freeze.json", "sha256": "19e4aab870f2a1db8f825c1705158060819bcaeee27dd6c7d8467e75a428b79b", "bytes": 4716 },
-    { "path": "config/release-touch-list.json", "sha256": "789f2eaaf8370c49b0937c50576513d0b04c1571d21196e507dbca10375c3f22", "bytes": 2749 },
-    { "path": "config/typecheck-baseline.json", "sha256": "e057c708d90dec5e81cb8d56657282872ec67f5d89db691d92541b76c3c3c8d1", "bytes": 42540 },
-    { "path": "package-lock.json", "sha256": "ff912669ca9fcc973eddf00813026522c84c18371c75798c01695b195bce0e73", "bytes": 404666 },
-    { "path": "package.json", "sha256": "63ae017461f13766c494ef23bb83238384cd3a06df1ba061461086f1d13171b0", "bytes": 5404 },
-    { "path": "scripts/advance-stage.mjs", "sha256": "05fb90e88d7f5c65251f4db95bcf579fac051b949cfc214bcf90c3d47e9d2cab", "bytes": 2664 },
-    { "path": "scripts/check-release-manifest.mjs", "sha256": "996413a618a6cc7d2ddbfaa1ff44ffa1e48cd917a99ca5815b9dd4e3c7eeae3e", "bytes": 6736 },
-    { "path": "scripts/clean-check.mjs", "sha256": "5c3ab8627f780663893bbf757271e818aa6458515f1bef570b48fd8bebdffab4", "bytes": 4063 },
-    { "path": "scripts/generate-ecl-policy.mjs", "sha256": "364f04b54ba2540498b95f75af44ec70ae4ad13e298ac9f442c70ec840182892", "bytes": 3691 },
-    { "path": "scripts/generate-release-manifest.mjs", "sha256": "4a3c7b604c6180bcba98dc5b6993b685751ff42d8497133791e308d0e4c45e10", "bytes": 5234 },
-    { "path": "scripts/lib/preEclFreeze.mjs", "sha256": "302230235e7d6fe93555ded39fb835170bd6478fe81fbe0b8201212c4bc61de1", "bytes": 7864 },
-    { "path": "scripts/update-freeze.mjs", "sha256": "4cc68a517246ac303bb45181944812aa1d79449969aed9234d3e8f9de0e7e101", "bytes": 3148 },
-    { "path": "src/docs/OPERATIONS_STATUS.md", "sha256": "db745a9a8ae1234546f054ca4e5bd2eb74851099079cd07b5c2fbb5cc1d89cb5", "bytes": 23946 },
-    { "path": "src/docs/PRODUCTION_FUNCTIONS.md", "sha256": "9a721ae5b6775fc6b7b176c3caedbd01818095c0e7a10a29e3f78528a6f09568", "bytes": 16378 },
-    { "path": "src/lib/confidenceResult.js", "sha256": "9812d3cca091b8eb7c25f7f506202210cbc6d69c8e1b61d766108d591e877f92", "bytes": 5437 },
-    { "path": "src/lib/confidenceResult.test.js", "sha256": "4a3fa51190f07ed3f5114b348d3b753918a825277389f2d3cd9b3cb489271610", "bytes": 7304 },
-    { "path": "src/lib/eclEngine.js", "sha256": "72570eaae13c49f8e600447aac12435f5e970fd2618fd82e1fd7d41c1bb1cc8d", "bytes": 27226 },
-    { "path": "src/lib/eclEngine.test.js", "sha256": "994cc7fbb86248828b3b90c3afeac07e34b103e7c19e75579f040e718e2c1c3e", "bytes": 9482 },
-    { "path": "src/lib/eclGates.js", "sha256": "f59fd38df73feb10e570b2461f8df88580da3c8ecfc0ac05ec641c89ca7ab61b", "bytes": 7957 },
-    { "path": "src/lib/eclGates.test.js", "sha256": "72769d6ad5e591c37cc3634a461bb4c7de00abb60a1aa507f10767f3a3215356", "bytes": 8179 },
-    { "path": "src/lib/eclLifecycle.js", "sha256": "43684554c9dcace4d0b5990bf8fe5a36ac4e6da6c9fb2b17eb8040769882a4a2", "bytes": 12590 },
-    { "path": "src/lib/eclLifecycle.test.js", "sha256": "d1c33e18451e750b694a7b6ba0a1844dea4cdf095aa5f5b74a49943f7e9855f8", "bytes": 6871 },
-    { "path": "src/lib/eclP1Gate.test.js", "sha256": "84051241b345408f2237ee9e7c78bbc70dbeb37130d2e5bd79cc51881ed26b72", "bytes": 9641 },
-    { "path": "src/lib/eclP1Schemas.test.js", "sha256": "6c6cb3e66b83d1f96de80dafc1a89e898fced5ea8c09f554f03431e9c70fcfd0", "bytes": 8377 },
-    { "path": "src/lib/eclP3Closure.test.js", "sha256": "a8ee937cff1a8b35d2a132de3c800da96bb4cc1eac346c50a225cbc4f151eb0d", "bytes": 19622 },
-    { "path": "src/lib/eclParity.test.js", "sha256": "5c3272983592d087d9b0dc5d8cf56814b36c91d8131f9c113eedae6e48589ecc", "bytes": 5957 },
-    { "path": "src/lib/eclPolicy.test.js", "sha256": "a6896c913965a5faabc07c27d196ccbe7f3ad5365f1e9421b5fd336c6fee3f96", "bytes": 5636 },
-    { "path": "src/lib/eclPolicySchema.js", "sha256": "d5e483bb35452e78f44b1d06881c7ff5bb6a47f489a94aaf6952cb65fa8f1eed", "bytes": 11810 },
-    { "path": "src/lib/eclReconcile.js", "sha256": "68ef332711375b93ae51c8df82a8cfe4107588cf83ab3363644b77a5e4626784", "bytes": 10276 },
-    { "path": "src/lib/eclReconcile.test.js", "sha256": "6d7a9cd5a43bad84dd9cae02a43a6aacd1c5513d4e4071902e8ea48137ff8af6", "bytes": 6044 },
-    { "path": "src/lib/eclSerialize.js", "sha256": "a812e2308ba7f8b68a08f1403365af01424e2eec2effbb103b5a4e13eff60f60", "bytes": 6404 },
-    { "path": "src/lib/eclStrikes.js", "sha256": "c66aba368832f45dbb94d2fccc4e291cd723f01369f1148e9c6bb1acce5deda4", "bytes": 4990 },
-    { "path": "src/lib/eclStrikes.test.js", "sha256": "38e1ca3f324e313e504feecb559361738035dee7b4a925cc32b72c132d3765d3", "bytes": 4330 },
-    { "path": "src/lib/generated/eclPolicy.js", "sha256": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94", "bytes": 5037 },
-    { "path": "src/lib/normalizedEvidence.js", "sha256": "88f5bcc8519f3a0309fdf44890f16e4a0cf69f842c6ff3e652f1090358f32409", "bytes": 10039 },
-    { "path": "src/lib/normalizedEvidence.test.js", "sha256": "3c993462874a80c6fb34f73a51f0d6291acf174a03553ff8b526f2b66771124f", "bytes": 6960 },
-    { "path": "src/lib/productionFunctions.static.test.js", "sha256": "f428191f92367ab1dd3857900b94279b3050539418c2c73ef48293e711541438", "bytes": 6725 },
-    { "path": "tsconfig.critical.json", "sha256": "d282a04755124088d8a0cf598594206257217f1bba4c6b0d8549c33b025a0421", "bytes": 2951 }
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "f0ba65dc252f197a0c8671528d404243e4a4142418558b1515407ccf2a7c3b12",
+      "bytes": 793
+    },
+    {
+      "path": "base44/entities/EvidenceAttestation.jsonc",
+      "sha256": "1cb6bec24599aec271f527bc28d46697fe961c4a1427ab3bf7e0f5f10ce10d29",
+      "bytes": 4839
+    },
+    {
+      "path": "base44/entities/EvidenceLifecycleEvent.jsonc",
+      "sha256": "78bfa30864dadf7574c09bcc0dfb440d39e6505ef98f8dcb077a09ab919f1412",
+      "bytes": 2730
+    },
+    {
+      "path": "base44/entities/EvidenceStrike.jsonc",
+      "sha256": "5d96ed9ae9f6cefa56a3dc652fbcec6019fdfaf536661efdd5480412d85d22f9",
+      "bytes": 2658
+    },
+    {
+      "path": "base44/entities/ReviewCase.jsonc",
+      "sha256": "5cb3f83d7f0d1418e9f4343e47b6204e92162facd8a261274731c6e62c0570e1",
+      "bytes": 3625
+    },
+    {
+      "path": "base44/entities/SavingsEvidence.jsonc",
+      "sha256": "5e09871212a3b00be0c76a85dc8695c27f1d9ac323eebeb56d4273469a37c911",
+      "bytes": 6326
+    },
+    {
+      "path": "base44/entities/StatementImport.jsonc",
+      "sha256": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf",
+      "bytes": 7967
+    },
+    {
+      "path": "base44/functions/acceptRecoverMandate/entry.ts",
+      "sha256": "0567e70ff4f18710f0f7353096d2e914995566240fe9965845a30d3927f48dc4",
+      "bytes": 12000
+    },
+    {
+      "path": "base44/functions/approveRecoverReportForInvoicing/entry.ts",
+      "sha256": "589717fffeae543a34c9a0e2369b651540965dc925d5a7173875f91df789e0e1",
+      "bytes": 15877
+    },
+    {
+      "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
+      "sha256": "bc1d41e086c19ec58825c92bd36682f8fdf5ba49759d9f2f763775b4f2505a27",
+      "bytes": 21050
+    },
+    {
+      "path": "base44/functions/dispatchWebhook/entry.ts",
+      "sha256": "2ad4e85fcb1b23d45db2cc959051ade1dae87215b04b17150de5ea96019ccfd8",
+      "bytes": 7739
+    },
+    {
+      "path": "base44/functions/eclLifecycleScheduler/entry.ts",
+      "sha256": "95703fb34c86073c03298f9dfe931d9172a793f8114205cdc77924d1e14bf9c6",
+      "bytes": 15655
+    },
+    {
+      "path": "base44/functions/eclProcessEvidence/entry.ts",
+      "sha256": "e64ae5d19d1d108cb486e2d03984a9dbe5d359b87dbca0219c4e4d31ff4b22b6",
+      "bytes": 18620
+    },
+    {
+      "path": "base44/functions/eclReviewWorkflow/entry.ts",
+      "sha256": "34f180daae8f187f8d5709ccc7f2146097e3a4e647c4a047c6ae5a11ec2fcc0e",
+      "bytes": 14765
+    },
+    {
+      "path": "base44/functions/generateRecoverContractPdf/entry.ts",
+      "sha256": "a92c931d0b5d4907d36a132deb158d3d1086d1b784c7082981b51e79271fe23a",
+      "bytes": 11565
+    },
+    {
+      "path": "base44/functions/startRecoverAcceptance/entry.ts",
+      "sha256": "51d08dde00540c68d12fa9dd641013b130a8b8749b928a21edc08e4ceeaa7a81",
+      "bytes": 5925
+    },
+    {
+      "path": "base44/shared/eclPersistence.ts",
+      "sha256": "2b45a1db62bd3aabaef612c108752fba652304d8a56d748a64e32e23f3f47a17",
+      "bytes": 2896
+    },
+    {
+      "path": "base44/shared/generated/eclDomain.ts",
+      "sha256": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd",
+      "bytes": 114288
+    },
+    {
+      "path": "base44/shared/generated/eclPolicy.ts",
+      "sha256": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
+      "bytes": 5037
+    },
+    {
+      "path": "base44/shared/internalSecret.ts",
+      "sha256": "48be0d79034c0c442c4dc121ecf9a110b9910399d1f315b00308b75f42074cf0",
+      "bytes": 5565
+    },
+    {
+      "path": "base44/shared/recoverContractPdf.ts",
+      "sha256": "02baaf85b80eec66bc7ce6ff23f0bd227c9dda864c8fa12af9cc4f39559843ec",
+      "bytes": 13804
+    },
+    {
+      "path": "base44/shared/webhookPublicPayload.ts",
+      "sha256": "25c8dbfb057294630610e399d55783f66448b60542290ea4c6626f1930fcdc63",
+      "bytes": 1942
+    },
+    {
+      "path": "ci/github-workflow-ci.yml",
+      "sha256": "fa645247d3bdccfcec687f78c822306f5aac8df03d634fc2284717785f60299b",
+      "bytes": 823
+    },
+    {
+      "path": "config/ecl-policy.json",
+      "sha256": "dea9bc7bcc4f6279bf7986daa49839ed17912cf3361581b2303b2d877214c1db",
+      "bytes": 3546
+    },
+    {
+      "path": "config/freeze-change-log.json",
+      "sha256": "86141cfb9965668926e9c6bb77c81d953f90e0e23278f91dad649a55d1be40a6",
+      "bytes": 12288
+    },
+    {
+      "path": "config/pre-ecl-freeze.json",
+      "sha256": "43d37bc8230d57ea0fac0f15e8abcb7992a6b069d0deae453510a432b77f9f37",
+      "bytes": 4920
+    },
+    {
+      "path": "config/release-touch-list.json",
+      "sha256": "fd28fa90ef1209ad0e8d1443cb5e86e333d0c484efd4960a71034a23afa00a6c",
+      "bytes": 3075
+    },
+    {
+      "path": "config/typecheck-baseline.json",
+      "sha256": "e057c708d90dec5e81cb8d56657282872ec67f5d89db691d92541b76c3c3c8d1",
+      "bytes": 42540
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "2b789d66131d851d288911f3945cb9f8a7607c8c1e28a6db153218fa568657cc",
+      "bytes": 404666
+    },
+    {
+      "path": "package.json",
+      "sha256": "5188680b8379553fcb00aa0b6cdc29332ef41c14297da5fb41b8823eb8df41db",
+      "bytes": 5598
+    },
+    {
+      "path": "scripts/advance-stage.mjs",
+      "sha256": "05fb90e88d7f5c65251f4db95bcf579fac051b949cfc214bcf90c3d47e9d2cab",
+      "bytes": 2664
+    },
+    {
+      "path": "scripts/check-release-manifest.mjs",
+      "sha256": "996413a618a6cc7d2ddbfaa1ff44ffa1e48cd917a99ca5815b9dd4e3c7eeae3e",
+      "bytes": 6736
+    },
+    {
+      "path": "scripts/check-typecheck-baseline.mjs",
+      "sha256": "053b7dbffd0469f925e1c6109b3c4118a2085b1f316e1920ea3c6a938b15d3ad",
+      "bytes": 2631
+    },
+    {
+      "path": "scripts/clean-check.mjs",
+      "sha256": "b772ab73eeecd797378d0ccb87aac25e6cc083057e57dc079a867224bd9fe546",
+      "bytes": 4538
+    },
+    {
+      "path": "scripts/generate-durability-manifest.mjs",
+      "sha256": "a1602f24acdd1bd795095c183a77fd9758fbb8cb9707addd2489d77911b05fb3",
+      "bytes": 6704
+    },
+    {
+      "path": "scripts/generate-ecl-policy.mjs",
+      "sha256": "364f04b54ba2540498b95f75af44ec70ae4ad13e298ac9f442c70ec840182892",
+      "bytes": 3691
+    },
+    {
+      "path": "scripts/generate-release-manifest.mjs",
+      "sha256": "4a3c7b604c6180bcba98dc5b6993b685751ff42d8497133791e308d0e4c45e10",
+      "bytes": 5234
+    },
+    {
+      "path": "scripts/install-ci-workflow.mjs",
+      "sha256": "dde0c0d4a8b0e89c2f8a4fbf2d8f702dd8dffdeb8260e5fd3be0ab57effa5ad0",
+      "bytes": 2346
+    },
+    {
+      "path": "scripts/lib/evidence.mjs",
+      "sha256": "8359afaef6d105e60d396fb3445846046dc8d0b6a7824ffd305e00bc6fd944e2",
+      "bytes": 3485
+    },
+    {
+      "path": "scripts/lib/preEclFreeze.mjs",
+      "sha256": "25a5f9869bcb8a798cd42f4d7a6e45cb619db5508c76a54f01192d18a5bad933",
+      "bytes": 10991
+    },
+    {
+      "path": "scripts/lib/sourceTreeHash.mjs",
+      "sha256": "195f8e59c99b9b40097ea92f166f7541cd0c87a57b2ff465cf3d4ac24c154f9b",
+      "bytes": 3215
+    },
+    {
+      "path": "scripts/lib/tscDiagnostics.mjs",
+      "sha256": "9ec227d3aa1a3af4b87ab01c11b7785e8f749280bcd039ddaadd201887ec66b6",
+      "bytes": 3929
+    },
+    {
+      "path": "scripts/run-with-evidence.mjs",
+      "sha256": "a6884fe5dea8a9175dd0fd8409cca5e918112051813bcdb342b95559883271e2",
+      "bytes": 3416
+    },
+    {
+      "path": "scripts/typecheck-baseline-approve.mjs",
+      "sha256": "1ca44ea370533940fa119d67c938efc25ff05bc66b3c24432dc8ccff36489323",
+      "bytes": 5022
+    },
+    {
+      "path": "scripts/typecheck-baseline-candidate.mjs",
+      "sha256": "2f745c50919a0212bded2c0b57fa23601ce3c756008bc2d0fa18013aba0d7a0f",
+      "bytes": 2842
+    },
+    {
+      "path": "scripts/update-freeze.mjs",
+      "sha256": "4cc68a517246ac303bb45181944812aa1d79449969aed9234d3e8f9de0e7e101",
+      "bytes": 3148
+    },
+    {
+      "path": "src/App.jsx",
+      "sha256": "a36f73d41b45bc8de200ab80e8176999d8e2ef5caa970fb451d544734acd552b",
+      "bytes": 21169
+    },
+    {
+      "path": "src/docs/OPERATIONS_STATUS.md",
+      "sha256": "360fb19382f2c2aaad06c8e0c854c9a230bb288eae8e12e3e5a81cfafe1826f4",
+      "bytes": 26742
+    },
+    {
+      "path": "src/docs/PRODUCTION_FUNCTIONS.md",
+      "sha256": "8d832f4e29ea2c5dcf24bb13df5af7ed4ac003da8d55bb129165be9a6cdf0d69",
+      "bytes": 17019
+    },
+    {
+      "path": "src/lib/confidenceResult.js",
+      "sha256": "9812d3cca091b8eb7c25f7f506202210cbc6d69c8e1b61d766108d591e877f92",
+      "bytes": 5437
+    },
+    {
+      "path": "src/lib/confidenceResult.test.js",
+      "sha256": "4a3fa51190f07ed3f5114b348d3b753918a825277389f2d3cd9b3cb489271610",
+      "bytes": 7304
+    },
+    {
+      "path": "src/lib/eclEngine.js",
+      "sha256": "e32aa374c075fdd76e2f509fb77df338f15e2d4bf16f24a7b7286b6d5258b6ea",
+      "bytes": 28016
+    },
+    {
+      "path": "src/lib/eclEngine.test.js",
+      "sha256": "994cc7fbb86248828b3b90c3afeac07e34b103e7c19e75579f040e718e2c1c3e",
+      "bytes": 9482
+    },
+    {
+      "path": "src/lib/eclGates.js",
+      "sha256": "f59fd38df73feb10e570b2461f8df88580da3c8ecfc0ac05ec641c89ca7ab61b",
+      "bytes": 7957
+    },
+    {
+      "path": "src/lib/eclGates.test.js",
+      "sha256": "72769d6ad5e591c37cc3634a461bb4c7de00abb60a1aa507f10767f3a3215356",
+      "bytes": 8179
+    },
+    {
+      "path": "src/lib/eclLifecycle.js",
+      "sha256": "43684554c9dcace4d0b5990bf8fe5a36ac4e6da6c9fb2b17eb8040769882a4a2",
+      "bytes": 12590
+    },
+    {
+      "path": "src/lib/eclLifecycle.test.js",
+      "sha256": "d1c33e18451e750b694a7b6ba0a1844dea4cdf095aa5f5b74a49943f7e9855f8",
+      "bytes": 6871
+    },
+    {
+      "path": "src/lib/eclOperations.js",
+      "sha256": "ff612d2ca7ca07ca45a3e6f03a33692e8c5fe393cc72f5477cb6ad4e5b1aa9bf",
+      "bytes": 27812
+    },
+    {
+      "path": "src/lib/eclP3Closure.test.js",
+      "sha256": "984bde1163e675d47a68b5ffaf03b12c75448428e7ceafb4c6adbe7fcc0bedec",
+      "bytes": 20164
+    },
+    {
+      "path": "src/lib/eclP4Closure.test.js",
+      "sha256": "b7bc89432bd13c5850f66849cfedbffdbbbc895a40533ba7de967ab0ef2e1667",
+      "bytes": 39280
+    },
+    {
+      "path": "src/lib/eclP4ProductionProof.test.js",
+      "sha256": "ae5cc0dbfd281f91c85221b513908876220c3a6cdfad5af0c1456bda665f7a13",
+      "bytes": 5062
+    },
+    {
+      "path": "src/lib/eclParity.test.js",
+      "sha256": "5c3272983592d087d9b0dc5d8cf56814b36c91d8131f9c113eedae6e48589ecc",
+      "bytes": 5957
+    },
+    {
+      "path": "src/lib/eclPolicy.test.js",
+      "sha256": "a6896c913965a5faabc07c27d196ccbe7f3ad5365f1e9421b5fd336c6fee3f96",
+      "bytes": 5636
+    },
+    {
+      "path": "src/lib/eclPolicySchema.js",
+      "sha256": "7b00ba25e5920ebaba1bce2ed2b666e36e9d4ccf28fc5b6f8bdc27626f542570",
+      "bytes": 11992
+    },
+    {
+      "path": "src/lib/eclReconcile.js",
+      "sha256": "68ef332711375b93ae51c8df82a8cfe4107588cf83ab3363644b77a5e4626784",
+      "bytes": 10276
+    },
+    {
+      "path": "src/lib/eclReconcile.test.js",
+      "sha256": "6d7a9cd5a43bad84dd9cae02a43a6aacd1c5513d4e4071902e8ea48137ff8af6",
+      "bytes": 6044
+    },
+    {
+      "path": "src/lib/eclSerialize.js",
+      "sha256": "a812e2308ba7f8b68a08f1403365af01424e2eec2effbb103b5a4e13eff60f60",
+      "bytes": 6404
+    },
+    {
+      "path": "src/lib/eclStrikes.js",
+      "sha256": "c66aba368832f45dbb94d2fccc4e291cd723f01369f1148e9c6bb1acce5deda4",
+      "bytes": 4990
+    },
+    {
+      "path": "src/lib/eclStrikes.test.js",
+      "sha256": "38e1ca3f324e313e504feecb559361738035dee7b4a925cc32b72c132d3765d3",
+      "bytes": 4330
+    },
+    {
+      "path": "src/lib/generated/eclPolicy.js",
+      "sha256": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
+      "bytes": 5037
+    },
+    {
+      "path": "src/lib/normalizedEvidence.js",
+      "sha256": "88f5bcc8519f3a0309fdf44890f16e4a0cf69f842c6ff3e652f1090358f32409",
+      "bytes": 10039
+    },
+    {
+      "path": "src/lib/normalizedEvidence.test.js",
+      "sha256": "3c993462874a80c6fb34f73a51f0d6291acf174a03553ff8b526f2b66771124f",
+      "bytes": 6960
+    },
+    {
+      "path": "src/pages/admin/AdminLayout.jsx",
+      "sha256": "f7c7e657855bec466c5a45abc1300c47cd7117e167ca66efd1aaf5d636ea66e7",
+      "bytes": 11934
+    },
+    {
+      "path": "src/pages/admin/ReviewQueue.jsx",
+      "sha256": "aeb1c2899fd4ff8dd1dabc6014f89717809357b840534887fade60558513d2c5",
+      "bytes": 19919
+    },
+    {
+      "path": "tsconfig.critical.json",
+      "sha256": "5cb98c74cfb9ea1bde6a23213ec18e6b98d1e844e9a3cbb3ce5ee70089b01a22",
+      "bytes": 2369
+    }
   ]
 }
