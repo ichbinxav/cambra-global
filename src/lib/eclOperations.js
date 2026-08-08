@@ -107,13 +107,13 @@ export function selectDueLifecycleItems(records, options) {
     if (dueMs === null || dueMs > nowMs) continue;
     const status = opNonEmpty(r.status) ? r.status : "pending";
     if (OPERATIONALLY_DEAD_STATUSES.includes(status) || isTerminalStatus(status)) continue;
-    due.push({ id: r.id, dueAt: new Date(dueMs).toISOString(), dueMs, status });
+    due.push({ id: r.id, dueAt: new Date(dueMs).toISOString(), dueMs, status, entityType: opNonEmpty(r.entityType) ? r.entityType : null });
   }
   due.sort((a, b) => (a.dueMs === b.dueMs ? (a.id < b.id ? -1 : a.id > b.id ? 1 : 0) : a.dueMs - b.dueMs));
   return deepFreeze({
     total: due.length,
     truncated: due.length > limit,
-    items: due.slice(0, limit).map((d) => ({ id: d.id, dueAt: d.dueAt, status: d.status })),
+    items: due.slice(0, limit).map((d) => ({ id: d.id, dueAt: d.dueAt, status: d.status, ...(d.entityType ? { entityType: d.entityType } : {}) })),
   });
 }
 
@@ -431,32 +431,33 @@ export function planReviewResolution(input, context) {
   }
 
   // `request_more_evidence` parks the case on the merchant instead of closing it.
+  // It remains unresolved and therefore records no `resolved_*` fields.
   if (i.decision === "request_more_evidence") {
     return deepFreeze({
       ok: true,
       status: 200,
       code: "review_case_awaiting_merchant",
       reprocessRequired: false,
+      evidenceAction: "none",
       reason: "additional evidence requested from the merchant",
       update: {
         status: "awaiting_merchant",
         decision: "request_more_evidence",
         decision_notes: opNonEmpty(i.notes) ? i.notes : "",
-        resolved_by: i.resolvedBy,
-        resolved_at: nowIso,
       },
     });
   }
 
   const closing = i.decision === "dismiss" ? "dismissed" : "resolved";
+  const evidenceAction = i.decision === "reject" ? "reject" : "reprocess";
   return deepFreeze({
     ok: true,
     status: 200,
     code: "review_case_resolved",
-    // Only an approval re-enters the lifecycle: the engine, not the reviewer,
-    // decides what the evidence becomes. A rejection/dismissal changes no
-    // evidence status by itself.
-    reprocessRequired: i.decision === "approve",
+    // approve/dismiss remove this case as a blocker and re-enter the SAME P3
+    // engine; reject uses the P3 transition graph to reach `rejected`.
+    reprocessRequired: evidenceAction === "reprocess",
+    evidenceAction,
     reason: `review resolved: ${i.decision}`,
     update: {
       status: closing,
@@ -466,6 +467,23 @@ export function planReviewResolution(input, context) {
       resolved_at: nowIso,
     },
   });
+}
+
+/**
+ * Rewrite ONLY the lifecycle status inside an already-persisted canonical ECL
+ * snapshot, then hash exactly those bytes. Used by review rejection so the
+ * top-level lifecycle column and the persisted snapshot can never disagree.
+ * The input is cloned via stable serialization: no caller-owned object is
+ * mutated or frozen as a side effect.
+ */
+export function rewritePersistedLifecycleStatus(snapshot, status) {
+  opRequire(snapshot && typeof snapshot === "object", "persisted snapshot is required");
+  opRequire(opNonEmpty(status), "status is required");
+  const next = JSON.parse(stableSerialize(snapshot));
+  next.lifecycle = next.lifecycle && typeof next.lifecycle === "object" ? next.lifecycle : {};
+  next.lifecycle.status = status;
+  const snapshotHash = sha256Hex(stableSerialize(next));
+  return deepFreeze({ snapshot: next, snapshotHash });
 }
 
 /**
