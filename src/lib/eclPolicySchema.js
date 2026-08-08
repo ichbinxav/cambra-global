@@ -200,6 +200,9 @@ export const DOMAIN_SOURCE_ORDER = [
   "src/lib/eclReconcile.js",
   "src/lib/eclStrikes.js",
   "src/lib/eclEngine.js",
+  // v62.7 — ECL P4 operational layer (pure): depends on eclSerialize +
+  // eclLifecycle only, so it stays self-contained in the generated artifact.
+  "src/lib/eclOperations.js",
 ];
 
 // Matches a whole import statement, including the multi-line brace form.
