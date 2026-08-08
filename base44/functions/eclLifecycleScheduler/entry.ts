@@ -284,7 +284,11 @@ Deno.serve(async (req) => {
 
     svc = base44.asServiceRole;
     const now = new Date().toISOString();
-    const limit = Number.isInteger(body?.limit) && body.limit > 0 ? Math.min(body.limit, MAX_BATCH) : DEFAULT_BATCH;
+    // Base44 scheduled automations deliver function_args under body.args;
+    // manual/admin calls use the top-level body. Support both without letting
+    // either exceed the same hard MAX_BATCH.
+    const requestedLimit = body?.args?.limit ?? body?.limit;
+    const limit = Number.isInteger(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, MAX_BATCH) : DEFAULT_BATCH;
     const trigger = req.headers.get('base44-scheduled-task') === 'true' ? 'scheduled' : 'manual_or_internal';
 
     // Runtime proof only: lifecycle correctness must never depend on telemetry.
