@@ -198,6 +198,34 @@ export default async function (req: Request): Promise<Response> {
         const bounds = monthBounds(report.month);
         const customerVat = normalizeVat(brand.vat_number_normalized || brand.vat_number || '');
 
+        // Narrow the TOCTOU window again immediately before the first new
+        // economic write. It must still be allowed AND bound to the same exact
+        // evidence/hash that passed PHASE 2.
+        const eclInvoiceGateFinal = await evaluateRecoverEconomicGate({
+          svc,
+          gateName: 'create_invoice',
+          brandId: activation.brand_id,
+          dealActivationId: activation.id,
+          baseline,
+          now: now(),
+        });
+        const eclBindingChanged =
+          eclInvoiceGateFinal.evidenceId !== eclInvoiceGate.evidenceId ||
+          eclInvoiceGateFinal.confidenceResultHash !== eclInvoiceGate.confidenceResultHash;
+        if (!eclInvoiceGateFinal.allowed || eclBindingChanged) {
+          const reasons = [
+            ...(eclInvoiceGateFinal.reasons || []),
+            ...(eclBindingChanged ? ['ecl_binding_changed_before_invoice_write'] : []),
+          ];
+          await svc.entities.MonthlySavingsReport.update(report.id, {
+            billing_eligibility_status: 'blocked_missing_evidence',
+            billing_block_reason: `ecl_create_invoice:${reasons.join(' | ').slice(0, 1900)}`,
+          });
+          outcome.error = 'ecl_create_invoice_denied_final';
+          outcome.ecl_gate = { gate: 'create_invoice', reasons, evidence_id: eclInvoiceGateFinal.evidenceId || null };
+          continue;
+        }
+
         // ── PHASE 3 — local draft (durable state before any Stripe call) ─
         let inv = prep.resume ? (existing || []).find((i: any) => String(i.id) === prep.resume!.invoice_id) : null;
         if (!inv) {
@@ -265,6 +293,9 @@ export default async function (req: Request): Promise<Response> {
             'metadata[monthly_savings_report_id]': String(report.id),
             'metadata[local_invoice_id]': String(inv.id),
             'metadata[billing_month]': String(report.month),
+            'metadata[ecl_evidence_id]': String(eclInvoiceGateFinal.evidenceId || ''),
+            'metadata[ecl_confidence_hash]': String(eclInvoiceGateFinal.confidenceResultHash || ''),
+            'metadata[ecl_policy_version]': String(eclInvoiceGateFinal.policyVersion || ''),
           }, `r4:inv:create:${report.id}`);
           if (!created.ok) { outcome.error = `stripe_invoice_create_failed:${created.data?.error?.code || created.status}`; continue; }
           stripeInvoiceId = created.data.id;
@@ -314,6 +345,17 @@ export default async function (req: Request): Promise<Response> {
             merchant_share_pct: view.merchantSharePct,
             fee_duration_months: view.feeDurationMonths,
             resolvable: true,
+          },
+          ecl: {
+            gate: 'create_invoice',
+            policy_version: eclInvoiceGateFinal.policyVersion,
+            evidence_entity_type: eclInvoiceGateFinal.evidenceEntityType,
+            evidence_id: eclInvoiceGateFinal.evidenceId,
+            confidence_result_hash: eclInvoiceGateFinal.confidenceResultHash,
+            evidence_status: eclInvoiceGateFinal.evidenceStatus,
+            confidence_level: eclInvoiceGateFinal.confidenceLevel,
+            verification_method: eclInvoiceGateFinal.verificationMethod,
+            baseline_id: eclInvoiceGateFinal.baselineId,
           },
           idempotency: prep.idempotencyIdentity,
           tax: { treatment: tax.treatment, rate_bps: tax.tax_rate_bps, mentions: tax.mentions, vies_status: brand.vies_status || 'not_checked', vies_checked_at: brand.vies_checked_at || null },
@@ -368,7 +410,7 @@ export default async function (req: Request): Promise<Response> {
           brand_id: activation.brand_id,
           event_type: 'status_changed',
           message: 'recover_invoice_finalized',
-          data_json: { invoice_id: inv.id, stripe_invoice_id: stripeInvoiceId, number: finalized.number || '', total_eur: amounts.total_eur, tax_treatment: tax.treatment, mode, policy_version: prep.policyVersion, policy_source: prep.policySource },
+          data_json: { invoice_id: inv.id, stripe_invoice_id: stripeInvoiceId, number: finalized.number || '', total_eur: amounts.total_eur, tax_treatment: tax.treatment, mode, policy_version: prep.policyVersion, policy_source: prep.policySource, ecl_evidence_id: eclInvoiceGateFinal.evidenceId, ecl_confidence_result_hash: eclInvoiceGateFinal.confidenceResultHash, ecl_policy_version: eclInvoiceGateFinal.policyVersion },
           actor_email: gate.user?.email || 'internal',
           created_at: now(),
         }).catch(() => null);
