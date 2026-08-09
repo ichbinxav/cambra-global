@@ -4,7 +4,7 @@
   "automations": [
     {
       "type": "scheduled",
-      "name": "ECL Production Health",
+      "name": "ECL Production Health — 10 min",
       "description": "P7 authoritative health sweep every 10 minutes. Detects critical worker liveness, overdue evidence/DLQ backlogs, reconciliation drift and stuck reviews; materializes incidents but never executes recovery or economic effects.",
       "function_args": {},
       "is_active": true,
