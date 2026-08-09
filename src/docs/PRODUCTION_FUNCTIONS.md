@@ -111,7 +111,14 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 
 **Nota sobre `recoverBillingDigest` (único endpoint sin mecanismo de auth).** La invocación del scheduler no lleva sesión de usuario y no puede portar el secreto interno, así que la función es alcanzable sin autenticar. Es el ÚNICO endpoint cuya seguridad descansa en un argumento y no en un mecanismo, y por eso queda escrito aquí y no solo en el comentario del código. El argumento, en cuatro puntos: (1) no acepta ningún parámetro — el cuerpo de la petición se ignora por completo, así que un llamante no puede influir en qué se lee ni a quién se escribe; (2) su respuesta son solo contadores agregados (cuántos meses cerrados no tienen informe generado —y cuántos de ellos corresponden a activaciones pausadas—, cuántos informes esperan aprobación, cuántos esperan factura, cuántos están bloqueados) más el mes vigilado en formato `YYYY-MM` — cero PII, cero importes, cero identificadores, **ni la dirección del destinatario**: DIGEST-GAP-2 (2026-08-04) dejó de devolver `to`, que era el único dato no numérico que se escapaba y contradecía literalmente esta propiedad. DIGEST-GAP-1 añadió el contador de meses sin informe y la lectura de `DealActivation`, y por diseño solo aumenta el recuento: el nombre del comercio y el mes viajan únicamente dentro del correo al destinatario de entorno, nunca en la respuesta HTTP; (3) solo puede enviar correo a la dirección configurada en el entorno (`ADMIN_NOTIFICATION_EMAIL` / `FOUNDER_EMAIL`), nunca a un destinatario suministrado; (4) ventana de 6 h verificada contra `OperationalLog` antes de enviar, de modo que un llamante anónimo no puede usarla para inundar ese buzón. No aprueba informes ni emite facturas: es un recordatorio. Si alguna de esas cuatro propiedades cambia, la función necesita un gate real.
 
-## B — Admin / founder-OS interno (77)
+## B — Admin / founder-OS interno (79)
+
+| Función | Auth | SR | Entidades | Caller principal |
+|---|---|---|---|---|
+| getAdminOperationsCockpit | admin | ✓ | AgentTask, OperationalIncident, Approval, AgentQuestion, ReviewCase, MonthlySavingsReport, Invoice, WebhookDeadLetter | P8 `/admin` + `/admin/automations`; proyección read-only de salud/atención |
+| adminAgentOperations | admin | ✓ | AgentTask, OperationalLog + invocación de allowlist fija de agentes | P8 `/admin/agents`; status + run manual allowlisted, sin arbitrary function invocation |
+
+
 
 Todas con auth `me+admin` (o `gate`) y mayoritariamente SR. Agrupadas:
 

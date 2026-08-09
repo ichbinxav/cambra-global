@@ -21,7 +21,7 @@ const FUNCTIONS_DIR = path.join(REPO_ROOT, "base44", "functions");
 
 // Censo actualizado para ECL P4 — fuente: src/docs/PRODUCTION_FUNCTIONS.md.
 const MANIFEST = [
-  "_tenantGuard", "adminOverrides", "adminSummaries", "adminUpdateApplicationStatus",
+  "_tenantGuard", "adminAgentOperations", "adminOverrides", "adminSummaries", "adminUpdateApplicationStatus",
   // REFERRAL-1 / REFERRAL-2 (2026-08-03) — referral programme surface.
   "applyReferralActivation", "getMyReferralStatus",
   // RECOVER-1 (2026-08-03) — Recover Margin mandate acceptance surface.
@@ -50,7 +50,7 @@ const MANIFEST = [
   "eclProcessEvidence", "eclLifecycleScheduler", "eclReviewWorkflow", "eclProductionHealth", "eclIncidentWorkflow", "engineeringReportAgent", "fixValidatorAgent",
   "followUpAgent", "founderCopilotAgent", "gdprAgent", "generateInvoiceFromReport",
   "generateInvoicePdf", "generateMonthlySavingsReport", "generateRecommendations",
-  "getActivationAdminDetail", "getAdminRecommendationQueue", "getBenchmarkForReport",
+  "getActivationAdminDetail", "getAdminOperationsCockpit", "getAdminRecommendationQueue", "getBenchmarkForReport",
   "getBrandSavings", "getCommandCenterPulse", "getInfrastructureGraph",
   "getIntegrationStatus", "getMyPaymentsHistory", "getMyReferralLink",
   "getOnboardingStatus",
