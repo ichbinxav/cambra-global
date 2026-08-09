@@ -1,0 +1,104 @@
+{
+  "type": "object",
+  "properties": {
+    "brand_id": {
+      "type": "string"
+    },
+    "deal_activation_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "github",
+        "gitlab",
+        "bitbucket"
+      ]
+    },
+    "repo_owner": {
+      "type": "string"
+    },
+    "repo_name": {
+      "type": "string"
+    },
+    "repo_full_name": {
+      "type": "string"
+    },
+    "default_branch": {
+      "type": "string"
+    },
+    "target_provider": {
+      "type": "string"
+    },
+    "current_provider": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "connected",
+        "scanned",
+        "planning",
+        "ready",
+        "migrating",
+        "verifying",
+        "completed",
+        "blocked",
+        "revoked"
+      ],
+      "default": "draft"
+    },
+    "stack_snapshot": {
+      "type": "object"
+    },
+    "policy": {
+      "type": "object"
+    },
+    "last_scan_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by_email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "brand_id",
+    "provider",
+    "repo_full_name",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.created_by_email": "{{user.email}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.created_by_email": "{{user.email}}"
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "name": "DeveloperWorkspace"
+}

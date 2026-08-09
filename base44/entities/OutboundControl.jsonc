@@ -1,0 +1,53 @@
+{
+  "name": "OutboundControl",
+  "type": "object",
+  "description": "Singleton master switch for CAMBRA autonomous acquisition sending. Keeps acquisition configured but inert until explicit admin activation.",
+  "properties": {
+    "control_key": {
+      "type": "string"
+    },
+    "acquisition_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "premium_outlook_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "volume_resend_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "activated_by": {
+      "type": "string"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "paused_reason": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "control_key",
+    "acquisition_enabled",
+    "premium_outlook_enabled",
+    "volume_resend_enabled"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "name": "OutboundSendingProfile",
+  "type": "object",
+  "description": "Admin-only deliverability and capacity policy for CAMBRA outbound infrastructure. Limits are safety ceilings, not provider-limit bypasses.",
+  "properties": {
+    "profile_key": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "outlook",
+        "resend"
+      ]
+    },
+    "domain": {
+      "type": "string"
+    },
+    "from_address": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "warming",
+        "active",
+        "paused"
+      ],
+      "default": "warming"
+    },
+    "current_daily_cap": {
+      "type": "number"
+    },
+    "target_daily_cap": {
+      "type": "number"
+    },
+    "ramp_step": {
+      "type": "number"
+    },
+    "ramp_min_days": {
+      "type": "number"
+    },
+    "bounce_pause_threshold_pct": {
+      "type": "number"
+    },
+    "complaint_pause_threshold_pct": {
+      "type": "number"
+    },
+    "complaint_slow_threshold_pct": {
+      "type": "number"
+    },
+    "open_tracking": {
+      "type": "boolean"
+    },
+    "click_tracking": {
+      "type": "boolean"
+    },
+    "last_review_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_ramp_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "healthy_days": {
+      "type": "number"
+    },
+    "sent_window": {
+      "type": "number"
+    },
+    "bounced_window": {
+      "type": "number"
+    },
+    "complained_window": {
+      "type": "number"
+    },
+    "bounce_rate_pct": {
+      "type": "number"
+    },
+    "complaint_rate_pct": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "profile_key",
+    "provider",
+    "domain",
+    "status",
+    "current_daily_cap",
+    "target_daily_cap"
+  ]
+}

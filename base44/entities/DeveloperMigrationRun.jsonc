@@ -1,0 +1,130 @@
+{
+  "type": "object",
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "deal_activation_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "scanning",
+        "planned",
+        "awaiting_approval",
+        "branching",
+        "patching",
+        "testing",
+        "pr_open",
+        "awaiting_cutover_approval",
+        "cutting_over",
+        "verifying",
+        "completed",
+        "failed",
+        "rolled_back"
+      ],
+      "default": "queued"
+    },
+    "source_provider": {
+      "type": "string"
+    },
+    "target_provider": {
+      "type": "string"
+    },
+    "base_branch": {
+      "type": "string"
+    },
+    "working_branch": {
+      "type": "string"
+    },
+    "pull_request_url": {
+      "type": "string"
+    },
+    "pull_request_number": {
+      "type": "number"
+    },
+    "commit_sha": {
+      "type": "string"
+    },
+    "rollback_sha": {
+      "type": "string"
+    },
+    "detected_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "migration_plan": {
+      "type": "object"
+    },
+    "test_results": {
+      "type": "object"
+    },
+    "verification": {
+      "type": "object"
+    },
+    "failure": {
+      "type": "object"
+    },
+    "approval_id": {
+      "type": "string"
+    },
+    "cutover_approval_id": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by_email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "workspace_id",
+    "brand_id",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.created_by_email": "{{user.email}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.created_by_email": "{{user.email}}"
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  },
+  "name": "DeveloperMigrationRun"
+}
