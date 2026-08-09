@@ -14,6 +14,9 @@ export default function RecoverMandatePanel() {
   const [ctx, setCtx] = useState(null);
   const [open, setOpen] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [revoking, setRevoking] = useState(false);
+  const [revoked, setRevoked] = useState(false);
+  const [revokeError, setRevokeError] = useState('');
 
   useEffect(() => {
     let alive = true;
@@ -30,7 +33,24 @@ export default function RecoverMandatePanel() {
 
   if (!ctx) return null;
 
-  const isAccepted = accepted || !!ctx.active_mandate_id;
+  const revoke = async () => {
+    if (revoking || revoked) return;
+    if (!window.confirm(c.revokeConfirm)) return;
+    setRevoking(true);
+    setRevokeError('');
+    try {
+      const r = await base44.functions.invoke('revokeMandate', { dealActivationId: ctx.deal_activation_id, reason: 'merchant_self_service' });
+      if (!r?.data?.ok || r?.data?.error) { setRevokeError(c.revokeError); return; }
+      setRevoked(true);
+      setAccepted(false);
+    } catch {
+      setRevokeError(c.revokeError);
+    } finally {
+      setRevoking(false);
+    }
+  };
+
+  const isAccepted = !revoked && (accepted || !!ctx.active_mandate_id);
   const blocker = (ctx.blockers || []).map((b) => c.blockers[b]).find(Boolean);
 
   return (
@@ -39,10 +59,21 @@ export default function RecoverMandatePanel() {
         <p className="cc-eyebrow mb-1">{c.eyebrow}</p>
         <p className="text-sm font-semibold text-white mb-4">{isAccepted ? c.authorized : c.authorize}</p>
 
-        {isAccepted ? (
-          <div className="flex items-start gap-2.5 text-[12.5px] text-white/70 leading-relaxed">
+        {revoked ? (
+          <div className="flex items-start gap-2.5 text-[12.5px] text-white/70 leading-relaxed" role="status">
             <CheckCircle2 size={16} className="shrink-0 mt-0.5" style={{ color: "#2FE0A8" }} />
-            <span>{c.accepted(ctx.fee_pct)}</span>
+            <span>{c.revoked}</span>
+          </div>
+        ) : isAccepted ? (
+          <div className="space-y-3">
+            <div className="flex items-start gap-2.5 text-[12.5px] text-white/70 leading-relaxed">
+              <CheckCircle2 size={16} className="shrink-0 mt-0.5" style={{ color: "#2FE0A8" }} />
+              <span>{c.accepted(ctx.fee_pct)}</span>
+            </div>
+            <button type="button" onClick={revoke} disabled={revoking} className="text-[11.5px] text-white/45 underline underline-offset-4 hover:text-white/70 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+              {revoking ? c.revoking : c.revoke}
+            </button>
+            {revokeError && <p className="text-[11.5px]" style={{ color: '#F45B69' }} role="alert">{revokeError}</p>}
           </div>
         ) : blocker ? (
           <p className="text-[12.5px] text-white/60 leading-relaxed">{blocker}</p>
