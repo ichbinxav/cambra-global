@@ -17,7 +17,8 @@ import { useTranslation } from "@/lib/i18n.jsx";
  * M3 — Stripe Connect card.
  * Three states: not_connected · connected · coming_soon (env vars missing).
  */
-export default function StripeConnectCard({ redirectAfter, brandId } = {}) {
+/** @param {{ redirectAfter?: string, brandId?: string }} [props] */
+export default function StripeConnectCard({ redirectAfter = undefined, brandId = undefined } = {}) {
   const { toast } = useToast();
   const { t } = useTranslation();
   const navigate = useNavigate();
