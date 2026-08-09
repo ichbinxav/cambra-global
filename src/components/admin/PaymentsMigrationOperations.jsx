@@ -10,9 +10,55 @@ const COPY = {
   es: { title:'P9 · Operaciones de migración de pagos', sub:'CAMBRA se encarga de la ejecución. Avanza tareas solo con evidencia operativa; el go-live y la verificación están protegidos.', start:'Iniciar orquestación', ready:'Orquestación de migración preparada', none:'Todavía no hay un plan de migración P9.', owner:'responsable', provider:'acción del proveedor', merchant:'acción del comercio', blocked:'Bloqueado', startTask:'Iniciar', retry:'Reintentar', complete:'Completar', completeOk:'Completar con nota de evidencia', completeNeed:'Añade una nota de evidencia antes de completar', note:'Nota operativa interna / evidencia', block:'Bloquear', merchantRequired:'La acción del comercio es realmente imprescindible', merchantCopy:'Mensaje visible para el comercio — los tres idiomas son obligatorios', genericError:'No se pudo completar la operación. Revisa el estado e inténtalo de nuevo.', en:'English', fr:'Français', es:'Español' },
 };
 
+const STEP_COPY = {
+  en: {
+    takeover:['CAMBRA takes over','Open the migration case, lock scope and assign operational ownership.'],
+    provider_coordination:['Provider coordination','Coordinate commercial onboarding and required provider documentation.'],
+    provider_ready:['Provider ready','Confirm the target PSP account, pricing and payment capabilities.'],
+    technical_configuration:['Payment configuration','Prepare payment configuration and integration changes required for cutover.'],
+    migration_testing:['Migration testing','Validate payment, 3DS, refund, webhook and reconciliation flows before live traffic moves.'],
+    cutover_ready:['Cutover ready','Confirm rollback, timing and every go-live prerequisite.'],
+    go_live:['Going live','Move the approved payment scope to the new provider or conditions.'],
+    verify_savings:['Verify savings','Observe live payment data against the locked baseline before savings become billable.'],
+  },
+  fr: {
+    takeover:['CAMBRA prend la main','Ouvrir le dossier de migration, verrouiller le périmètre et attribuer la responsabilité opérationnelle.'],
+    provider_coordination:['Coordination prestataire','Coordonner l’onboarding commercial et les documents requis par le prestataire.'],
+    provider_ready:['Prestataire prêt','Confirmer le compte PSP cible, la tarification et les capacités de paiement.'],
+    technical_configuration:['Configuration des paiements','Préparer la configuration et les changements d’intégration nécessaires à la bascule.'],
+    migration_testing:['Tests de migration','Valider paiements, 3DS, remboursements, webhooks et rapprochement avant le trafic réel.'],
+    cutover_ready:['Prêt pour la bascule','Confirmer le rollback, le timing et tous les prérequis de mise en ligne.'],
+    go_live:['Mise en ligne','Basculer le périmètre de paiements approuvé vers le nouveau prestataire ou les nouvelles conditions.'],
+    verify_savings:['Vérifier les économies','Observer les données réelles face à la référence verrouillée avant toute facturation.'],
+  },
+  es: {
+    takeover:['CAMBRA toma el control','Abrir el caso de migración, fijar el alcance y asignar la responsabilidad operativa.'],
+    provider_coordination:['Coordinación con el proveedor','Coordinar el alta comercial y la documentación requerida por el proveedor.'],
+    provider_ready:['Proveedor preparado','Confirmar la cuenta PSP objetivo, los precios y las capacidades de pago.'],
+    technical_configuration:['Configuración de pagos','Preparar la configuración y los cambios de integración necesarios para el cambio.'],
+    migration_testing:['Pruebas de migración','Validar pagos, 3DS, reembolsos, webhooks y conciliación antes de mover tráfico real.'],
+    cutover_ready:['Listo para el cambio','Confirmar rollback, timing y todos los requisitos de go-live.'],
+    go_live:['Activación','Mover el alcance de pagos aprobado al nuevo proveedor o a las nuevas condiciones.'],
+    verify_savings:['Verificar el ahorro','Observar los datos reales frente a la baseline bloqueada antes de que exista ahorro facturable.'],
+  },
+};
+const STATUS_COPY = {
+  en:{pending:'Pending',in_progress:'In progress',blocked:'Blocked',done:'Done',canceled:'Canceled'},
+  fr:{pending:'En attente',in_progress:'En cours',blocked:'Bloqué',done:'Terminé',canceled:'Annulé'},
+  es:{pending:'Pendiente',in_progress:'En curso',blocked:'Bloqueado',done:'Completado',canceled:'Cancelado'},
+};
+const OWNER_COPY = {
+  en:{admin:'CAMBRA',provider:'Provider',brand:'Merchant'},
+  fr:{admin:'CAMBRA',provider:'Prestataire',brand:'Commerçant'},
+  es:{admin:'CAMBRA',provider:'Proveedor',brand:'Comercio'},
+};
+
 export default function PaymentsMigrationOperations({ activation, tasks = [], onChanged }){
   const { lang } = useTranslation();
   const c = COPY[lang] || COPY.en;
+  const stepCopy = STEP_COPY[lang] || STEP_COPY.en;
+  const statusCopy = STATUS_COPY[lang] || STATUS_COPY.en;
+  const ownerCopy = OWNER_COPY[lang] || OWNER_COPY.en;
   const [busy,setBusy] = useState('');
   const [note,setNote] = useState({});
   const [merchantRequired,setMerchantRequired] = useState({});
@@ -38,7 +84,7 @@ export default function PaymentsMigrationOperations({ activation, tasks = [], on
       merchant_required:requiresMerchant,
       merchant_message_i18n: requiresMerchant ? merchantCopy[task.id] : undefined,
     }).catch(()=>({data:{error:'request_failed'}}));
-    if(r?.data?.error) showError(r.data.error); else toast.success(`${task.step_name} → ${status}`);
+    if(r?.data?.error) showError(r.data.error); else toast.success(`${stepCopy[task.step_name]?.[0] || task.step_name} → ${statusCopy[status] || status}`);
     setBusy(''); await onChanged?.();
   }
   return <div className="rounded-xl border p-4 bg-card">
@@ -50,7 +96,7 @@ export default function PaymentsMigrationOperations({ activation, tasks = [], on
       const merchantNeeded = merchantRequired[t.id] === true;
       return <div key={t.id} className="rounded-lg border border-border p-3">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex gap-2 min-w-0">{t.status==='done'?<CheckCircle2 size={15} className="text-emerald-500 shrink-0 mt-0.5"/>:t.status==='blocked'?<Ban size={15} className="text-amber-500 shrink-0 mt-0.5"/>:<CircleDot size={15} className="text-muted-foreground shrink-0 mt-0.5"/>}<div><p className="text-xs font-bold">{t.order}. {t.step_name}</p><p className="text-[11px] text-muted-foreground mt-0.5">{t.description}</p><p className="text-[10px] text-muted-foreground mt-1">{t.status} · {c.owner} {t.owner_type || 'admin'}{t.requires_provider_input?` · ${c.provider}`:''}{t.requires_brand_input?` · ${c.merchant}`:''}{t.due_date?` · SLA ${t.due_date}`:''}</p>{t.blocked_reason&&<p className="text-[11px] text-amber-600 mt-1">{c.blocked}: {t.blocked_reason}</p>}</div></div>
+          <div className="flex gap-2 min-w-0">{t.status==='done'?<CheckCircle2 size={15} className="text-emerald-500 shrink-0 mt-0.5"/>:t.status==='blocked'?<Ban size={15} className="text-amber-500 shrink-0 mt-0.5"/>:<CircleDot size={15} className="text-muted-foreground shrink-0 mt-0.5"/>}<div><p className="text-xs font-bold">{t.order}. {stepCopy[t.step_name]?.[0] || t.step_name}</p><p className="text-[11px] text-muted-foreground mt-0.5">{stepCopy[t.step_name]?.[1] || t.description}</p><p className="text-[9px] font-mono text-muted-foreground/70 mt-1">{t.step_name}</p><p className="text-[10px] text-muted-foreground mt-1">{statusCopy[t.status] || t.status} · {c.owner} {ownerCopy[t.owner_type || 'admin'] || t.owner_type || 'CAMBRA'}{t.requires_provider_input?` · ${c.provider}`:''}{t.requires_brand_input?` · ${c.merchant}`:''}{t.due_date?` · SLA ${t.due_date}`:''}</p>{t.blocked_reason&&<p className="text-[11px] text-amber-600 mt-1">{c.blocked}: {t.blocked_reason}</p>}</div></div>
           <div className="flex gap-1 shrink-0">
             {t.status==='pending'&&<button title={c.startTask} onClick={()=>move(t,'in_progress')} disabled={!!busy} className="p-1.5 rounded border disabled:opacity-50"><Play size={12}/></button>}
             {t.status==='blocked'&&<button title={c.retry} onClick={()=>move(t,'in_progress')} disabled={!!busy} className="p-1.5 rounded border disabled:opacity-50"><RotateCcw size={12}/></button>}

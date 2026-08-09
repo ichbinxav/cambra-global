@@ -76,6 +76,7 @@ export default async function (req: Request): Promise<Response> {
       })),
     }});
   } catch (error) {
-    return Response.json({ error: error?.message || 'migration_projection_failed' }, { status: 500 });
+    console.error('getMyPaymentsMigration failed', error);
+    return Response.json({ error: 'migration_projection_failed' }, { status: 500 });
   }
 }
