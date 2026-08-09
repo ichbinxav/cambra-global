@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.67.0 — ECL P8 Production Admin, Automation & AI Operations (durability manifest)",
-  "generatedAt": "2026-08-09T14:26:16.066Z",
-  "packageVersion": "0.67.0",
+  "release": "CAMBRA v0.68.0 — P9 Recover Fulfilment & Payments Migration Operations (durability manifest)",
+  "generatedAt": "2026-08-09T14:33:34.398Z",
+  "packageVersion": "0.68.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -307,13 +307,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "b66c30a0849fc5bb12a777bc2e477d3e3177455b9d8942d8cc03b2a6aa25c6f9",
+      "sha256": "643435ce82b1f428a7b391c37354aa226c686844be914a5c91b228833c85e168",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "ba4c282c421e38144e9c6f4acb9e7bfbac11ba908fa9b1ff00ffefaf2e11cac8",
-      "bytes": 5710
+      "sha256": "cd7b21fb0591d56e1a5a5236de0e0e31c0f61e55fe210ab5b302548ca9727fcd",
+      "bytes": 5712
     },
     {
       "path": "scripts/advance-stage.mjs",
