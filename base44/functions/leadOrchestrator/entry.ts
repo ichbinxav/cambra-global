@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
     ];
 
     const executed = [];
+    let chainLeadIds = [];
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
       let childTaskId = null;
@@ -44,8 +45,10 @@ Deno.serve(async (req) => {
 
       try {
         const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
-        const res = await base44.functions.invoke(step.name, { ...step.payload, internal_secret: internal });
+        const payload = { ...step.payload, ...(chainLeadIds.length && step.name !== 'leadDiscoveryAgent' ? { lead_ids: chainLeadIds, limit: chainLeadIds.length } : {}), internal_secret: internal };
+        const res = await base44.functions.invoke(step.name, payload);
         const data = res?.data || res || {};
+        if (step.name === 'leadDiscoveryAgent' && Array.isArray(data.created_ids)) chainLeadIds = data.created_ids.filter(Boolean);
         childTaskId = data.task_id || null;
 
         // Re-read the child AgentTask to know its real status (source of truth)
