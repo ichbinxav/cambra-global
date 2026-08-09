@@ -1,3 +1,4 @@
+import { sha256 } from '../../shared/intelligenceCore.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { resolveRecoverEconomicMandate } from '../../shared/recoverEconomicMandate.ts';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
@@ -230,8 +231,13 @@ Deno.serve(async (req) => {
           : measurementMode === 'estimated_from_partial_data' ? 0.7
           : 0.4;
 
+        const reportSnapshotPayload={deal_activation_id:deal.id,brand_id,provider_id:deal.provider_id||'',vertical:deal.vertical,month,baseline:{id:baseline.id,value:Number(baselineValue.toFixed(2))},measurement:{source:measurementSource,mode:measurementMode,current_value:Number(currentValue.toFixed(2)),volume,confidence},contract:{policy_version:contractResolved.policyVersion||null,snapshot_hash:contractResolved.snapshotHash||null,billing_rule_id:feeRes.rule_id||null,fee_pct:nodeSharePct},supporting_snapshot:snapshot};
+        const reportSnapshotHash=await sha256(reportSnapshotPayload);
+        const intelligenceSnapshot=await svc.entities.IntelligenceSnapshot.create({snapshot_key:`recover-report:${deal.id}:${month}:${reportSnapshotHash.slice(0,16)}`,snapshot_type:'recover_measurement',related_entity_type:'DealActivation',related_entity_id:deal.id,brand_id,vertical:deal.vertical,claim_ids:[],pricing_version_ids:[],benchmark_refs_json:{},policy_version:contractResolved.policyVersion||undefined,calculation_version:'recover-billing',snapshot_json:reportSnapshotPayload,snapshot_hash:reportSnapshotHash,captured_at:new Date().toISOString()}).catch(()=>null);
+
         const report = await svc.entities.MonthlySavingsReport.create({
           brand_id,
+          intelligence_snapshot_id: intelligenceSnapshot?.id || undefined,
           deal_activation_id: deal.id,
           provider_id: deal.provider_id || '',
           vertical: deal.vertical,

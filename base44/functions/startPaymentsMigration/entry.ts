@@ -4,6 +4,7 @@
 // CAMBRA/provider, not pushed back to the merchant.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { requireUserOrInternal } from '../../shared/internalGate.ts';
+import { sha256 } from '../../shared/intelligenceCore.ts';
 
 const PLAN_VERSION = 'payments-recover-p9-v1';
 const PLAN = [
@@ -70,8 +71,13 @@ export default async function (req: Request): Promise<Response> {
       for (const legacy of tasks.filter(t => !['done','canceled'].includes(t.status))) {
         await svc.entities.MigrationTask.update(legacy.id, { status: 'canceled', updated_at: new Date().toISOString(), metadata_json: { ...(legacy.metadata_json || {}), superseded_by_plan: PLAN_VERSION } }).catch(() => null);
       }
+      const approvedNegotiation=(await svc.entities.NegotiationCase.filter({recover_id:activationId,status:'approved'},'-closed_at',1).catch(()=>[]))[0]||null;
+      const migrationSnapshotPayload={activation_id:activationId,brand_id:activation.brand_id||'',provider_id:activation.provider_id||'',mandate_id:mandates[0]?.id||null,mandate_snapshot_hash:mandates[0]?.acceptance_snapshot_hash||null,approved_negotiation_case_id:approvedNegotiation?.id||null,approved_offer_id:approvedNegotiation?.approved_offer_id||null,plan_version:PLAN_VERSION};
+      const migrationSnapshotHash=await sha256(migrationSnapshotPayload);
+      const migrationSnapshot=await svc.entities.IntelligenceSnapshot.create({snapshot_key:`migration:${activationId}:${migrationSnapshotHash.slice(0,16)}`,snapshot_type:'payments_migration_start',related_entity_type:'DealActivation',related_entity_id:activationId,brand_id:activation.brand_id||'',vertical:'payments',claim_ids:[],pricing_version_ids:[],benchmark_refs_json:{},policy_version:mandates[0]?.policy_version||undefined,calculation_version:PLAN_VERSION,snapshot_json:migrationSnapshotPayload,snapshot_hash:migrationSnapshotHash,captured_at:new Date().toISOString()}).catch(()=>null);
       await svc.entities.MigrationTask.bulkCreate(PLAN.map((p:any[], idx:number) => ({
         deal_activation_id: activationId,
+        intelligence_snapshot_id: migrationSnapshot?.id || undefined,
         brand_id: activation.brand_id || '',
         provider_id: activation.provider_id || '',
         task_type: p[0], step_name: p[0], description: p[2],

@@ -1,4 +1,5 @@
 // claimAnonPaymentsResult — the payments-only handoff step. SINGLE SOURCE OF
+import { sha256 } from '../../shared/intelligenceCore.ts';
 // TRUTH for the anonymous→authenticated claim (the only claim function; the
 // former `claimPaymentsAnalysisSession` was deleted 2026-07-13).
 //
@@ -193,6 +194,12 @@ Deno.serve(async (req) => {
     } catch (e) {
       console.warn('claimAnonPaymentsResult: dedup verify skipped:', (e as any)?.message);
     }
+
+    // P12 — freeze the intelligence context that produced the historical AnalyzerResult.
+    const analyzerSnapshotPayload = { engine_version: engineVersion, cohort: engineResult.cohort || null, input_snapshot: { monthly_gmv_eur: snapshot.monthly_gmv_eur ?? null, avg_ticket_eur: snapshot.avg_ticket_eur ?? null, provider_slug: snapshot.provider_slug ?? null, country: snapshot.country ?? null }, assumptions: Array.isArray(engineResult.assumptions) ? engineResult.assumptions : [], source: 'anonymous_estimated' };
+    const analyzerSnapshotHash = await sha256(analyzerSnapshotPayload);
+    const intelSnapshot = await base44.asServiceRole.entities.IntelligenceSnapshot.create({ snapshot_key: `analyzer:${winnerId}:${analyzerSnapshotHash.slice(0,16)}`, snapshot_type: 'analyzer_result', related_entity_type: 'AnalyzerResult', related_entity_id: winnerId, brand_id: brand.id, vertical: 'payments', claim_ids: [], pricing_version_ids: [], benchmark_refs_json: { cohort: engineResult.cohort || null }, calculation_version: engineVersion || undefined, snapshot_json: analyzerSnapshotPayload, snapshot_hash: analyzerSnapshotHash, captured_at: new Date().toISOString() }).catch(() => null);
+    if (intelSnapshot?.id) await base44.asServiceRole.entities.AnalyzerResult.update(winnerId,{ intelligence_snapshot_id: intelSnapshot.id }).catch(() => null);
 
     return Response.json({
       ok: true,
