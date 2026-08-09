@@ -25,21 +25,8 @@ Deno.serve(async (req) => {
     let result = null; let activationId = null;
 
     switch(action){
-      case 'pause_activation': {
-        const { activation_id } = payload||{}; assert(activation_id, 'activation_id required');
-        const [act] = await base44.asServiceRole.entities.DealActivation.filter({ id: activation_id }); assert(act, 'Activation not found');
-        await base44.asServiceRole.entities.DealActivation.update(activation_id, { status: 'paused', last_updated: new Date().toISOString() });
-        await log(activation_id, 'status_changed', 'Activation paused');
-        result = { status: 'paused' }; activationId = activation_id; break;
-      }
-      case 'resume_activation': {
-        const { activation_id } = payload||{}; assert(activation_id, 'activation_id required');
-        const [act] = await base44.asServiceRole.entities.DealActivation.filter({ id: activation_id }); assert(act, 'Activation not found');
-        const next = act.status==='paused' ? 'migrating' : act.status;
-        await base44.asServiceRole.entities.DealActivation.update(activation_id, { status: next, last_updated: new Date().toISOString() });
-        await log(activation_id, 'status_changed', 'Activation resumed', { to: next });
-        result = { status: next }; activationId = activation_id; break;
-      }
+      case 'pause_activation': throw new Error('activation_state_override_retired_use_canonical_operation');
+      case 'resume_activation': throw new Error('activation_state_override_retired_use_canonical_operation');
       case 'void_invoice': throw new Error('economic_override_retired_use_canonical_recover_flow');
       case 'verify_report': throw new Error('economic_override_retired_use_canonical_recover_flow');
       case 'correct_node_fee': throw new Error('economic_override_retired_use_canonical_recover_flow');

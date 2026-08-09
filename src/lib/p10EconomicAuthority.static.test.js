@@ -9,6 +9,9 @@ const OPENAPI = read('base44/functions/apiOpenApiSpec/entry.ts');
 const OVERRIDES = read('base44/functions/adminOverrides/entry.ts');
 const ADMIN_REPORTS = read('src/components/admin/MonthlyReportsTable.jsx');
 const ADMIN_ACTIVATION = read('src/pages/admin/AdminActivationDetail.jsx');
+const LEGACY_ACT = read('base44/functions/updateDealActivationStatus/entry.ts');
+const LEGACY_TASK = read('base44/functions/updateMigrationTaskStatus/entry.ts');
+const LEGACY_GENERATOR = read('base44/functions/regenerateMigrationTasks/entry.ts');
 
 // P10: clients and LLM-facing protocols may observe economic state, but they
 // are never authority for DealActivation status or realized savings. Those
@@ -46,6 +49,21 @@ describe('P10 — external/AI economic authority boundary', () => {
       expect(source).not.toContain('MonthlySavingsReport.update');
     }
     expect(ADMIN_ACTIVATION).not.toContain("openOverride('void_invoice'");
+  });
+
+
+  it('keeps every pre-P9 state mutator fail-closed', () => {
+    expect(LEGACY_ACT).toContain('legacy_activation_mutator_retired');
+    expect(LEGACY_TASK).toContain('legacy_migration_mutator_retired');
+    expect(LEGACY_GENERATOR).toContain('legacy_migration_generator_retired');
+    for (const source of [LEGACY_ACT, LEGACY_TASK, LEGACY_GENERATOR]) {
+      expect(source).not.toContain('DealActivation.update');
+      expect(source).not.toContain('MigrationTask.update');
+      expect(source).not.toContain('bulkCreate');
+    }
+    expect(OVERRIDES).toContain("case 'pause_activation': throw new Error('activation_state_override_retired_use_canonical_operation')");
+    expect(OVERRIDES).toContain("case 'resume_activation': throw new Error('activation_state_override_retired_use_canonical_operation')");
+    expect(OVERRIDES).not.toContain("status: 'paused'");
   });
 
   it('does not grant or advertise the deprecated economic mutation scope', () => {
