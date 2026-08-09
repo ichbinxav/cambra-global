@@ -1,6 +1,6 @@
 export type CambraModelTier='standard'|'high_reasoning';
-export const CAMBRA_STANDARD_MODEL='claude-sonnet-4-5';
-export const CAMBRA_OPUS_MODEL='claude-opus-4-1-20250805';
+export const CAMBRA_STANDARD_MODEL='claude-sonnet-5';
+export const CAMBRA_OPUS_MODEL='claude-opus-5';
 export function commercialNeedsHighReasoning(engine:string,text:string){
  const e=String(engine||''); const t=String(text||'').toLowerCase();
  if(e==='provider_negotiation') return true;
