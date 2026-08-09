@@ -741,6 +741,7 @@ Deno.serve(async (req) => {
       fields: verdict.fields,
     });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    console.error('processUploadedFile failed', error);
+    return Response.json({ error: 'process_uploaded_file_failed' }, { status: 500 });
   }
 });
