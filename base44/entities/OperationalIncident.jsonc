@@ -1,0 +1,144 @@
+{
+  "name": "OperationalIncident",
+  "type": "object",
+  "description": "ECL P7 operational incident ledger. One active episode per dedupe_key is maintained by eclProductionHealth; resolved episodes stay immutable history except for explicit status/audit fields. Incidents never authorize economic actions and never contain secrets or raw processor payloads.",
+  "properties": {
+    "dedupe_key": {
+      "type": "string",
+      "description": "Stable signal identity, e.g. worker:ecl_lifecycle_scheduler or invoice_reconciliation_mismatch:<invoice_id>."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Bucketed persisted claim key used to collapse concurrent health sweeps for the same incident episode."
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "ecl_production_health",
+        "admin_recovery"
+      ]
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "evidence_lifecycle",
+        "billing_reconciliation",
+        "webhook_delivery",
+        "review_workflow",
+        "platform"
+      ]
+    },
+    "incident_type": {
+      "type": "string",
+      "description": "Free string by design so an operational signal is never dropped merely because a new incident type was introduced."
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "warning",
+        "critical"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "acknowledged",
+        "recovering",
+        "resolved"
+      ],
+      "default": "open"
+    },
+    "subject_type": {
+      "type": "string"
+    },
+    "subject_id": {
+      "type": "string"
+    },
+    "recovery_action": {
+      "type": "string",
+      "enum": [
+        "run_ecl_lifecycle_scheduler",
+        "run_recover_billing_reconciler",
+        "run_webhook_dead_letters",
+        "replay_webhook_dead_letter",
+        "inspect_manual"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "details_json": {
+      "type": "object",
+      "description": "Sanitized diagnostics only. Never raw Stripe/webhook bodies, secrets, access tokens, bank data or card data."
+    },
+    "first_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "occurrence_count": {
+      "type": "number",
+      "default": 1
+    },
+    "acknowledged_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "acknowledged_by": {
+      "type": "string"
+    },
+    "last_recovery_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_recovery_by": {
+      "type": "string"
+    },
+    "recovery_attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "last_recovery_error": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved_by": {
+      "type": "string"
+    },
+    "resolution_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "dedupe_key",
+    "idempotency_key",
+    "source",
+    "domain",
+    "incident_type",
+    "severity",
+    "status",
+    "recovery_action",
+    "summary",
+    "first_seen_at",
+    "last_seen_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
