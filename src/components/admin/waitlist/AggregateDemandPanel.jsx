@@ -162,7 +162,7 @@ function countryRows(byCountry) {
     .slice(0, 8);
 }
 
-function BreakdownCard({ title, rows, icon: Icon }) {
+function BreakdownCard({ title, rows, icon: Icon = null }) {
   return (
     <div
       className="rounded-xl px-4 py-4"
