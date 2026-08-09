@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.65.0 — ECL P6 Economic Execution & Reconciliation (durability manifest)",
-  "generatedAt": "2026-08-09T00:55:45.290Z",
+  "generatedAt": "2026-08-09T00:59:15.415Z",
   "packageVersion": "0.65.0",
   "stage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
   "freezeStage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
@@ -402,8 +402,8 @@
     },
     {
       "path": "src/lib/eclP1Gate.test.js",
-      "sha256": "f8f1193e1849ae16b6d1da401369d8368f010fc87627eaf8d67ef8ea243a725d",
-      "bytes": 13109
+      "sha256": "006285f813c3023944a2cfc41976190f82d4e4a6add5f5dddf1d28184dcf6dac",
+      "bytes": 13767
     },
     {
       "path": "src/lib/eclP1Schemas.test.js",
@@ -422,8 +422,8 @@
     },
     {
       "path": "src/lib/eclP4ProductionProof.test.js",
-      "sha256": "61dd4b4b666cc234061a47f802235e4aee7c950f1cfb715e7c91b25bc2a287ef",
-      "bytes": 6016
+      "sha256": "cd89b22418439a1fdc68ef6bb1973eb4da07cf5c90501cd3643308467e2ca8ff",
+      "bytes": 6112
     },
     {
       "path": "src/lib/eclP5Closure.test.js",
