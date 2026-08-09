@@ -1,0 +1,20 @@
+{
+  "name": "recoverAutopilotWorker",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "Recover Verification & Billing Autopilot \u2014 daily",
+      "description": "Generates due monthly measurements, creates invoices only for reports already approved eligible, and reconciles Stripe state. Never auto-approves a report.",
+      "function_args": {},
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "days",
+      "repeat_interval": 1,
+      "ends_type": "never",
+      "function_name": "recoverAutopilotWorker",
+      "starts_at": "2026-08-10T06:00:00.000Z"
+    }
+  ]
+}

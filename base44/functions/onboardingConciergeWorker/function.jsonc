@@ -1,0 +1,20 @@
+{
+  "name": "onboardingConciergeWorker",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "Onboarding Concierge \u2014 hourly",
+      "description": "Policy-gated onboarding chase for incomplete merchant accounts using payments readiness/missing fields; suppression-aware and canonical-thread based.",
+      "function_args": {},
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "hours",
+      "repeat_interval": 1,
+      "ends_type": "never",
+      "function_name": "onboardingConciergeWorker",
+      "starts_at": "2026-08-09T22:00:00.000Z"
+    }
+  ]
+}

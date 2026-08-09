@@ -14,7 +14,8 @@
       "enum": [
         "merchant_acquisition",
         "partner_acquisition",
-        "provider_negotiation"
+        "provider_negotiation",
+        "merchant_operations"
       ]
     },
     "status": {
