@@ -1,6 +1,6 @@
 # PRODUCTION_FUNCTIONS.md — Manifiesto de funciones backend (CONSOLIDATE-1 T1)
 
-**Censo:** 2026-07-24 (actualizado 2026-08-09 con ECL P8 Production Admin, Automation & AI Operations v0.67.0) · **Total: 167 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
+**Censo:** 2026-07-24 (actualizado 2026-08-09 con ECL P8 + P9 Recover Fulfilment & Payments Migration) · **Total: 170 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
 
 **Tripwire:** `src/lib/productionFunctions.static.test.js` falla si aparece una función no listada aquí (o si se borra una listada sin actualizar el manifiesto).
 
@@ -14,9 +14,9 @@
 
 | Clase | Nº | Notas |
 |---|---|---|
-| A (merchant) | 37 | funnel anónimo (7), dashboard/connect/vault autenticado (24), aceptación Recover Margin (3 — RECOVER-1), cobro del success fee (3 — RECOVER-2: alta de método de pago, refresco de estado y webhook firmado) |
+| A (merchant) | 39 | funnel, dashboard/connect/vault, Recover acceptance/billing y P9 payments migration (proyección cliente + arranque idempotente) |
 | A-API (partners) | 6 | apiAuth, apiOpenApiSpec, apiV1, mcpServer, oauthAuthorize, oauthToken |
-| B (admin/founder-OS) | 78 | incl. 44 agentes/orquestadores del founder-OS (via agentRegistry) |
+| B (admin/founder-OS) | 79 | incl. founder-OS y P9 migration operations admin |
 | C (scheduled / scheduler-ready) | 11 | billApiUsage, engineeringReportAgent†, processWebhookDeadLetters, purgeInactiveLeads, purgePaymentsAnalysisSessions, scheduledBenchmarkRecompute, sendMonthlySavingsSummary† |
 | D (dev/test/seed) | 11 | _tenantGuard, createSelfTestBrand, phase2CleanupLegacyFields, runApiSelfTests, runFlowSelfTests, seedComplianceRules, seedDemoData, seedIntegrationCatalog, seedPaymentsRateTable, sendTestWebhook, verifyRegistrySync |
 | E (QUARANTINE 15-ago) | 16 | ver tabla — probe de invocación activo (OperationalLog `quarantine_probe`) |
@@ -45,6 +45,8 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | getPaymentsAnalysisVerified | me | ✓ | PaymentsAnalysisVerified, Brand | PaymentsResults |
 | getMyPaymentsHistory | me | ✓ | AnalyzerResult | ResultsHistory |
 | getMyBillingRecords | me | ✓ | Brand, Invoice, MonthlySavingsReport, Baseline | Invoices, Reports (v61-D: tenant scope desde la sesión, sin brand_id del cliente; respuesta proyectada) |
+| getMyPaymentsMigration | me (+ ownership server-side) | ✓ | DealActivation, MigrationTask | PaymentsMigrationCard (P9: proyección customer-safe; oculta notas/owners/retries internos y solo expone blockers que requieren al comercio) |
+| startPaymentsMigration | me owner o admin; exige Mandate active | ✓ | DealActivation, Mandate, MigrationTask, OperationalLog | acceptRecoverMandate fire-and-forget + bootstrap idempotente P9; authorized → migrating y crea plan CAMBRA-owned |
 | getBrandSavings | me | ✓ | Brand, AnalyzerResult, BrandSavings +3 | SavingsTrendPanel |
 | getInfrastructureGraph | me | ✓ | Brand, InfrastructureNode, InfrastructureEdge +1 | Dashboard |
 | getIntegrationStatus | me | ✓ | Brand, IntegrationCatalog, DetectedIntegration +3 | ConnectTools |
@@ -117,6 +119,7 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 |---|---|---|---|---|
 | getAdminOperationsCockpit | admin | ✓ | AgentTask, OperationalIncident, Approval, AgentQuestion, ReviewCase, MonthlySavingsReport, Invoice, WebhookDeadLetter | P8 `/admin` + `/admin/automations`; proyección read-only de salud/atención |
 | adminAgentOperations | admin | ✓ | AgentTask, OperationalLog + invocación de allowlist fija de agentes | P8 `/admin/agents`; status + run manual allowlisted, sin arbitrary function invocation |
+| updatePaymentsMigrationTask | admin | ✓ | MigrationTask, DealActivation, OperationalLog | P9 AdminActivationDetail; avance secuencial, blocker/retry, go-live gate y verificación exige conditions activation evidence |
 
 
 
