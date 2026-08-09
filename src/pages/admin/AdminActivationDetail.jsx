@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import RecoverContractAdminPanel from '@/components/admin/RecoverContractAdminPanel';
 import ConditionsActivationCard from '@/components/admin/recoverBilling/ConditionsActivationCard';
 import FiscalIdentityCard from '@/components/admin/recoverBilling/FiscalIdentityCard';
+import PaymentsMigrationOperations from '@/components/admin/PaymentsMigrationOperations';
 
 export default function AdminActivationDetail(){
   const [sp] = useSearchParams();
@@ -107,18 +108,11 @@ export default function AdminActivationDetail(){
         {activation.brand_id && <FiscalIdentityCard brandId={activation.brand_id} />}
       </div>
 
+      {activation.vertical === 'payments' && (
+        <PaymentsMigrationOperations activation={activation} tasks={tasks || []} onChanged={reload} />
+      )}
+
       <div className="grid md:grid-cols-2 gap-3">
-        <div className="rounded-xl border p-4 bg-card">
-          <p className="text-sm font-semibold mb-2">Migration tasks</p>
-          <ul className="space-y-1 text-sm">
-            {tasks.map(t=> (
-              <li key={t.id} className="flex items-center justify-between border rounded-md px-2 py-1">
-                <span>{t.step_name} · {t.status}</span>
-                <span className="text-xs text-muted-foreground">{t.owner_type||'admin'}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
         <div className="rounded-xl border p-4 bg-card">
           <p className="text-sm font-semibold mb-2">Reports & invoices</p>
           <div className="text-xs text-muted-foreground mb-2">Latest</div>
