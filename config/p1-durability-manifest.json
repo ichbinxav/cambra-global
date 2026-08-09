@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.72.0 — P12 Intelligence & Proprietary Moat Layer (durability manifest)",
-  "generatedAt": "2026-08-09T22:35:18.788Z",
-  "packageVersion": "0.72.0",
+  "release": "CAMBRA v0.73.0 — P13 Payment Routing Intelligence & Shadow Orchestration (durability manifest)",
+  "generatedAt": "2026-08-09T23:13:02.974Z",
+  "packageVersion": "0.73.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -157,8 +157,8 @@
     },
     {
       "path": "base44/functions/autonomousOperationsSupervisor/entry.ts",
-      "sha256": "1ec4e4a7c55199bc809ab51b0ce6584d615778f0f0a70dfcead4ade094d6dc05",
-      "bytes": 6134
+      "sha256": "d596bff13f8a2f980dfa1a0c21e350f0ac3c580d3a49c9c950609d946b4ed037",
+      "bytes": 7735
     },
     {
       "path": "base44/functions/claimAnonPaymentsResult/entry.ts",
@@ -302,8 +302,8 @@
     },
     {
       "path": "base44/functions/moatCuratorWorker/entry.ts",
-      "sha256": "9868e348222c71be1c16ba4c2a734a0a891c325a3dea8157d0f5b499a5e3ab2c",
-      "bytes": 3509
+      "sha256": "4cd8e92d767e1297c573ea64548de37d795f80fad3ee5866be06d51e74f62a94",
+      "bytes": 6168
     },
     {
       "path": "base44/functions/moatCuratorWorker/function.jsonc",
@@ -522,8 +522,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "bd390fecd54280403ada61b851d76c9851967e49839deaade1574b55e8789072",
-      "bytes": 5700
+      "sha256": "9b74f54ede52e4606e1a67b45081ab134bbca7e151f84abed9203a11917e7b67",
+      "bytes": 5714
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -557,8 +557,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "2b4e75f1054c497339a11e949d7018bac1daceb30ba52182113e3659f7cf3c38",
-      "bytes": 6338
+      "sha256": "849d6725d8aa02d69dca23608d35e4afcc88496f0dfd97ab8ff885405b58eea6",
+      "bytes": 6772
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
@@ -607,8 +607,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "24cc99d01465bca7b80d41866d031902c9a02fbbde82d60d033649cb64256fb9",
-      "bytes": 22126
+      "sha256": "f576012e03c61fa1219a1457b30d436a50d2ab625502431a655b15a6e9b608a0",
+      "bytes": 22329
     },
     {
       "path": "src/components/recover/RecoverMandateModal.jsx",
@@ -817,8 +817,8 @@
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "81781ea9ff04393ee4645a4d28a693978e9210267fd7ec567cc1fbeb7e39bad4",
-      "bytes": 12436
+      "sha256": "5046cfa4e054b04d4d2a52d7b3d15c43a07ecd532b251b3fe8364e4494f1aa69",
+      "bytes": 12530
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",
