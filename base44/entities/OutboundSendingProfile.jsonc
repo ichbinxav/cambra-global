@@ -92,5 +92,17 @@
     "status",
     "current_daily_cap",
     "target_daily_cap"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { Webhook } from 'npm:svix';
-import { classifyHardStop, normalizeEmail, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
+import { classifyHardStop, commercialTimezone, computeInboundReplySchedule, normalizeEmail, policyIsActive, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 
 function threadIdFromRecipients(to:any[]) {
   for (const raw of Array.isArray(to) ? to : []) {
@@ -68,6 +68,10 @@ Deno.serve(async (req) => {
     if (!thread) return Response.json({ ok:true, routed:false, reason:'thread_not_found' });
 
     const now = new Date().toISOString();
+    const receivedAt = String(email?.created_at || data?.created_at || event?.created_at || now);
+    const policies=await svc.entities.CommercialPolicy.filter({policy_key:thread.policy_key,status:'active'},'-created_date',5).catch(()=>[]);
+    const policy=policies.find((p:any)=>p.version===thread.policy_version&&policyIsActive(p))||policies.find((p:any)=>policyIsActive(p))||null;
+    const timing=computeInboundReplySchedule(receivedAt,policy||{},emailId,commercialTimezone(thread,policy));
     const from = normalizeEmail(email?.from || data?.from);
     const text = sanitizeExternalText(email?.text || '', 12000);
     const hardStop = classifyHardStop(text || email?.subject || '');
@@ -76,10 +80,10 @@ Deno.serve(async (req) => {
       internet_message_id:String(email?.message_id || data?.message_id || ''), from_email:from,
       to_emails:Array.isArray(email?.to) ? email.to.map(normalizeEmail) : [], subject:sanitizeExternalText(email?.subject || data?.subject,300),
       text_body:text, html_body:sanitizeExternalText(email?.html || '',20000), attachments_json:Array.isArray(email?.attachments) ? email.attachments : [],
-      headers_json:email?.headers || {}, classification:hardStop || null, send_status:'received', received_at:now,
+      headers_json:email?.headers || {}, classification:hardStop || null, send_status:'received', received_at:receivedAt, earliest_reply_at:timing.earliest_reply_at, scheduled_send_at:timing.scheduled_send_at,
       raw_event_json:{ type, event_created_at:event?.created_at || null }
     });
-    await svc.entities.CommunicationThread.update(thread.id, { status:'awaiting_cambra', last_inbound_at:now, last_message_at:now, counterparty_email:from || thread.counterparty_email });
+    await svc.entities.CommunicationThread.update(thread.id, { status:'awaiting_cambra', last_inbound_at:receivedAt, last_message_at:receivedAt, next_action_at:timing.scheduled_send_at, counterparty_email:from || thread.counterparty_email });
 
     if (hardStop === 'unsubscribe' || hardStop === 'complaint') {
       if (from) {
