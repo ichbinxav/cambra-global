@@ -40,7 +40,7 @@ function eur(n) {
   return "€" + Math.round(n).toLocaleString("en-US");
 }
 
-export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMetrics, measurementWindow, compact = false, isAnonymous = false, onScoreCTA }) {
+export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMetrics = null, measurementWindow = null, compact = false, isAnonymous = false, onScoreCTA }) {
   const { t } = useTranslation();
   const current = engineResult?.current_effective_bps;
   const achievable = engineResult?.achievable_effective_bps;
