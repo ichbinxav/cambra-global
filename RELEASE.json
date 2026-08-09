@@ -1,11 +1,11 @@
 {
   "releaseName": "CAMBRA v0.71.0 — Final Autonomous Platform Seal",
   "version": "0.71.0",
-  "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
+  "sourceTreeHash": "aad0086ab6bd763278bf5730decd1c648894f708a4c8e05e2cf395534d2ecbf4",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 967,
+  "sourceTreeFileCount": 971,
   "sourceArchiveShaExternal": null,
-  "gitSha": "91df86009d4d0beb7d4923c8deb8591e57a6cddc",
+  "gitSha": "eed344463e0b1c519898f8500bae4221d848436c",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -93,7 +93,12 @@
   },
   "manualRequirements": [
     "LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled",
-    "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal"
+    "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal",
+    "evidence tests: stale (run the *:evidence command)",
+    "evidence build: stale (run the *:evidence command)",
+    "evidence lint: stale (run the *:evidence command)",
+    "evidence typecheck-critical: stale (run the *:evidence command)",
+    "evidence typecheck-baseline: stale (run the *:evidence command)"
   ],
-  "generatedAt": "2026-08-09T21:16:24.586Z"
+  "generatedAt": "2026-08-09T21:34:55.138Z"
 }
