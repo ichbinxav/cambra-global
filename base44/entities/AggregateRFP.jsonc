@@ -1,0 +1,83 @@
+{
+  "name": "AggregateRFP",
+  "type": "object",
+  "description": "P14 provider procurement/RFP state. Contains only anonymized aggregate demand and truthful volume classes.",
+  "properties": {
+    "rfp_key": {
+      "type": "string"
+    },
+    "pool_id": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "prepared",
+        "open",
+        "negotiating",
+        "final_offer",
+        "human_approval",
+        "contracting",
+        "won",
+        "closed",
+        "cancelled"
+      ]
+    },
+    "provider_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "demand_snapshot_json": {
+      "type": "object"
+    },
+    "requirements_json": {
+      "type": "object"
+    },
+    "authority_policy_key": {
+      "type": "string"
+    },
+    "authority_policy_version": {
+      "type": "string"
+    },
+    "intelligence_snapshot_id": {
+      "type": "string"
+    },
+    "opened_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "closed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "rfp_key",
+    "pool_id",
+    "vertical",
+    "status",
+    "demand_snapshot_json",
+    "created_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
