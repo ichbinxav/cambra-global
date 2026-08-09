@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: `Invalid transition ${inv.status} -> ${target_status}` }, { status: 400 });
     }
 
-    const patch = { status: target_status };
+    const patch: Record<string, unknown> = { status: target_status };
     if (adjustments && (typeof adjustments.amount_delta === 'number' || typeof adjustments.tax_delta === 'number')) {
       // Finalized/issued invoices are immutable. Legacy draft-only adjustment
       // remains available for non-Recover invoices before legal issuance.
