@@ -5,12 +5,10 @@
 // looks at what is waiting and emails the admin a list, so a verified month
 // never sits unnoticed and a first invoice is never issued late by accident.
 //
-// Callable by an admin, by the internal secret, or by the weekly scheduler
-// (which carries no user session). Because the last case cannot be
-// authenticated, the endpoint is deliberately harmless: it accepts no
-// parameters, returns only counts, and can only ever send to the ONE address
-// configured in the environment — plus a 6-hour send window, so an anonymous
-// caller cannot use it to flood that inbox.
+// Callable by an admin, by the internal secret, or by the versioned weekly
+// Base44 scheduler. The platform scheduler authenticates as the app-owner admin,
+// matching the established scheduledBenchmarkRecompute pattern. Anonymous calls
+// fail closed. The 6-hour send window remains as a replay/idempotency guard.
 //
 // DIGEST-GAP-1 (2026-08-04) — it also watches for the ABSENCE of a report. The
 // three counters below can only see rows that exist: an activation that never
@@ -35,6 +33,7 @@
 // OperationalLog so operators know to inspect/paginate manually until a native
 // cursor/filter path is available for these entity queries.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { parisMonthOf } from '../../shared/recoverBillingMath.ts';
 
 const SEND_WINDOW_MS = 6 * 60 * 60 * 1000;
@@ -51,6 +50,9 @@ const eur = (n) => `€${(Number(n) || 0).toLocaleString('en-US', { minimumFract
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
+    const body = await req.json().catch(() => ({}));
+    const gate = await requireAdminOrInternal(req, base44, body);
+    if (!gate.ok) return gate.response;
     const svc = base44.asServiceRole;
 
     const last = await svc.entities.OperationalLog.filter(
