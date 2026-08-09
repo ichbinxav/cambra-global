@@ -98,6 +98,15 @@
     "counterparty_timezone": {
       "type": "string",
       "description": "IANA timezone when reliably known; otherwise Europe/Paris fallback is used."
+    },
+    "experiment_key": {
+      "type": "string"
+    },
+    "experiment_variant": {
+      "type": "string"
+    },
+    "personalization_json": {
+      "type": "object"
     }
   },
   "required": [
