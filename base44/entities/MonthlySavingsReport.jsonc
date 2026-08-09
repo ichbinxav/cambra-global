@@ -228,6 +228,10 @@
     "generated_by": {
       "type": "string",
       "description": "v60.2 \u2014 source job that generated this report: 'generateMonthlySavingsReport', the admin email, or 'internal'."
+    },
+    "intelligence_snapshot_id": {
+      "type": "string",
+      "description": "P12 immutable decision-time intelligence provenance snapshot. Additive; historical rows may be null."
     }
   },
   "required": [

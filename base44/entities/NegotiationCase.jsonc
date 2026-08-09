@@ -103,6 +103,10 @@
     "closed_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "intelligence_snapshot_id": {
+      "type": "string",
+      "description": "P12 immutable decision-time intelligence provenance snapshot. Additive; historical rows may be null."
     }
   },
   "required": [
