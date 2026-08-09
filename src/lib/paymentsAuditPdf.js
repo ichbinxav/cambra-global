@@ -25,10 +25,15 @@ import { computePaymentsBenchmark } from "@/lib/paymentsBenchmark.js";
 import { computePaymentsScore } from "@/lib/paymentsScore.js";
 import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
 
+/** @type {[number, number, number]} */
 const NAVY = [11, 16, 32];
+/** @type {[number, number, number]} */
 const CYAN = [34, 150, 190];
+/** @type {[number, number, number]} */
 const INK = [30, 36, 48];
+/** @type {[number, number, number]} */
 const MUTED = [110, 122, 140];
+/** @type {[number, number, number]} */
 const LINE = [222, 228, 236];
 
 function eur(n) {
