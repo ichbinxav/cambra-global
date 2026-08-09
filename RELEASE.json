@@ -5,7 +5,7 @@
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 879,
   "sourceArchiveShaExternal": null,
-  "gitSha": "9f91ec5d9c1b4bd1c734dbc7dd5b2355955311b6",
+  "gitSha": "1040fd840b95122f0efe8a81cb44fb2c7805eb26",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.01",
@@ -44,8 +44,8 @@
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
     "sourceTreeHash": "cdc09d4ad71887617b2304c4596715ab3220d6ca2fd5a1ea3d816bd809dd745b",
-    "startedAt": "2026-08-09T14:34:00.515Z",
-    "completedAt": "2026-08-09T14:34:10.265Z",
+    "startedAt": "2026-08-09T14:44:56.180Z",
+    "completedAt": "2026-08-09T14:45:04.933Z",
     "exitCode": 0,
     "ciRunId": null,
     "testFiles": 372,
@@ -57,8 +57,8 @@
   "buildEvidence": {
     "command": "npx vite build",
     "sourceTreeHash": "cdc09d4ad71887617b2304c4596715ab3220d6ca2fd5a1ea3d816bd809dd745b",
-    "startedAt": "2026-08-09T14:34:10.739Z",
-    "completedAt": "2026-08-09T14:34:26.186Z",
+    "startedAt": "2026-08-09T14:45:05.349Z",
+    "completedAt": "2026-08-09T14:45:17.362Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "40fcbe600096122390ab53f9a6b0cb5e241e46344dcb2a372219d9914397630c",
@@ -67,24 +67,24 @@
   "lintEvidence": {
     "command": "npx eslint . --quiet",
     "sourceTreeHash": "cdc09d4ad71887617b2304c4596715ab3220d6ca2fd5a1ea3d816bd809dd745b",
-    "startedAt": "2026-08-09T14:33:36.035Z",
-    "completedAt": "2026-08-09T14:33:45.556Z",
+    "startedAt": "2026-08-09T14:44:37.500Z",
+    "completedAt": "2026-08-09T14:44:41.593Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
     "sourceTreeHash": "cdc09d4ad71887617b2304c4596715ab3220d6ca2fd5a1ea3d816bd809dd745b",
-    "startedAt": "2026-08-09T14:33:46.157Z",
-    "completedAt": "2026-08-09T14:33:49.203Z",
+    "startedAt": "2026-08-09T14:44:42.029Z",
+    "completedAt": "2026-08-09T14:44:44.819Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
     "sourceTreeHash": "cdc09d4ad71887617b2304c4596715ab3220d6ca2fd5a1ea3d816bd809dd745b",
-    "startedAt": "2026-08-09T14:33:49.680Z",
-    "completedAt": "2026-08-09T14:34:00.020Z",
+    "startedAt": "2026-08-09T14:44:45.237Z",
+    "completedAt": "2026-08-09T14:44:55.777Z",
     "exitCode": 0,
     "ciRunId": null
   },
@@ -92,5 +92,5 @@
     "dist": "40fcbe600096122390ab53f9a6b0cb5e241e46344dcb2a372219d9914397630c"
   },
   "manualRequirements": [],
-  "generatedAt": "2026-08-09T14:34:26.686Z"
+  "generatedAt": "2026-08-09T14:45:17.770Z"
 }
