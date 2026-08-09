@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.69.0 — Recover Economics V2 / 24-Month Recovery Right (durability manifest)",
-  "generatedAt": "2026-08-09T16:20:58.710Z",
-  "packageVersion": "0.69.0",
+  "release": "CAMBRA v0.70.0 — Payments V1 Final Technical Seal (durability manifest)",
+  "generatedAt": "2026-08-09T17:01:20.411Z",
+  "packageVersion": "0.70.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -62,8 +62,8 @@
     },
     {
       "path": "base44/entities/SavingsEvidence.jsonc",
-      "sha256": "5e09871212a3b00be0c76a85dc8695c27f1d9ac323eebeb56d4273469a37c911",
-      "bytes": 6326
+      "sha256": "21be09e33b376f57e03aef336fc1bc4b06d641ca72d840ad8f671a2ab4af1731",
+      "bytes": 6209
     },
     {
       "path": "base44/entities/StatementImport.jsonc",
@@ -112,8 +112,8 @@
     },
     {
       "path": "base44/functions/eclLifecycleScheduler/function.jsonc",
-      "sha256": "a44d528f3896be47f47fe9b78652dd33ebc8c486c46cc1fcf9d53a6aafaa7d8a",
-      "bytes": 591
+      "sha256": "453fb19366773542bb4bb8846e4b5e9afc2011ef6c108f4fa1e7588f46ba2961",
+      "bytes": 686
     },
     {
       "path": "base44/functions/eclProcessEvidence/entry.ts",
@@ -127,8 +127,8 @@
     },
     {
       "path": "base44/functions/eclProductionHealth/function.jsonc",
-      "sha256": "00831d749198bf866e3b0102e4712c12e42a9f7861d2c62f342dcfbd699747b4",
-      "bytes": 619
+      "sha256": "105f8277968379459fdee13f90c57c0d64edcc4a9d22f660f24824d10e1ec8bf",
+      "bytes": 723
     },
     {
       "path": "base44/functions/eclReviewWorkflow/entry.ts",
@@ -147,13 +147,13 @@
     },
     {
       "path": "base44/functions/getAdminOperationsCockpit/entry.ts",
-      "sha256": "4756df6db276712ab48baf11187b7070a1da89ced699dec01d484aa68a8db961",
-      "bytes": 5728
+      "sha256": "abf983bd407ebb5caa515db6d635ccc16850ba674ef9775e371f2f8e2c2b1e43",
+      "bytes": 6532
     },
     {
       "path": "base44/functions/getRecoverAcceptanceContext/entry.ts",
-      "sha256": "60e1e710dc1c3081219bbfff943e7adccc219b6e2365e6b13d874f0a322cd73d",
-      "bytes": 7227
+      "sha256": "d28c5818b6d09c436a8b36d28b0a4a35960a1564f891d3d7e2687d95f246069d",
+      "bytes": 7261
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
@@ -162,8 +162,8 @@
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/function.jsonc",
-      "sha256": "79e7889e14209f162bcd3b25b463c9d9603eceee6b3fc53b6316cfd5d0819a58",
-      "bytes": 630
+      "sha256": "c2f7d19181086d9b2656feaa995142ff4003374aa0d66f0fab96b2b19287e3a4",
+      "bytes": 743
     },
     {
       "path": "base44/functions/purgeInactiveLeads/function.jsonc",
@@ -187,8 +187,8 @@
     },
     {
       "path": "base44/functions/reconcileRecoverBilling/function.jsonc",
-      "sha256": "e8e9e68ef84439bedc21e5cca7a79fdc81c22e8566a8cf0f120e99d1e163bdf1",
-      "bytes": 681
+      "sha256": "7d2eb91d09e94beb4879970e35bf9d2ea7843a602708a15061056ae49d39a276",
+      "bytes": 792
     },
     {
       "path": "base44/functions/recordPayment/entry.ts",
@@ -287,12 +287,12 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "95dbf67c4e56908f7ffc7b04af3c807a305f9862401eda8009c3425b3a40166a",
-      "bytes": 30419
+      "sha256": "60ee285779d6ceaedaf1859688ecb963eb4a7fc39fde9d7da93c599dd3d4c712",
+      "bytes": 31592
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "7dada09014afa47b13b2ee9793a7bfc27c03aee0727c7a6f883521f2a0874cd5",
+      "sha256": "9ba05d108d4cfe1514d6a124be66f20d4ef59f9bbd523c6e527f5e1ba346fbe3",
       "bytes": 6981
     },
     {
@@ -307,13 +307,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "e2320d639034e43679183df01b6decf4bf84e5374f84d27f0c7f4d8cf3831bd3",
+      "sha256": "c05333a0232d3df8c803a4e34ee73bc67e91f9cef59219204c225ddbb02929d2",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "ba4896866016e87306418fa0d1cc408c68bc03708fe963a1484aed3d69cc9d5b",
-      "bytes": 5705
+      "sha256": "f4cbf19e3afc2f7c3bc7d03d460f43646204e25e879dfde5ba80c7f993e645db",
+      "bytes": 5691
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -347,8 +347,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "6a76df7031c0ff30a3bfd4ead9e4ecf7b724ee48e302771e02562ada9513897a",
-      "bytes": 5694
+      "sha256": "a83ba1b97e42d507cd475b5bf9895c05178d62b8eade77cb8b76b8de7f4d7de1",
+      "bytes": 6016
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
@@ -397,8 +397,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "84ae726768931fa10c3bef93ef925ee9234633df6a7bb1f51232916aa2865d30",
-      "bytes": 21654
+      "sha256": "da0ca83364568cff425ec95cb70b1e9028056870a999dbc7d29ef708639db1c7",
+      "bytes": 21590
     },
     {
       "path": "src/components/recover/RecoverMandateModal.jsx",
@@ -412,13 +412,13 @@
     },
     {
       "path": "src/docs/OPERATIONS_STATUS.md",
-      "sha256": "83ee982361a843bbab803b140536bdd4e8244bb88e27503e8fc384601c24cebb",
-      "bytes": 40376
+      "sha256": "5854b40d35945249d069add6ffb89faaa51798c570d1c478d02563aeabf19152",
+      "bytes": 41485
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "916f7df95f90abe242661db5c769db02cd54bd31ee541ad2bfabd894a09d65f2",
-      "bytes": 20658
+      "sha256": "bc74163eb19293d5187dd98ed730bc299e9d7a5f907954c3bb6fc1a748c90b4e",
+      "bytes": 19532
     },
     {
       "path": "src/lib/confidenceResult.js",
@@ -472,8 +472,8 @@
     },
     {
       "path": "src/lib/eclP1Schemas.test.js",
-      "sha256": "c10305afe8a48b706d5087aa64917b351527da0c1c4620d9cc4bc46659dac045",
-      "bytes": 8390
+      "sha256": "c97a118f6fc1db7b54f42ffd54ea3fe9227c6bb395a944537b2ae2b9d9924926",
+      "bytes": 8419
     },
     {
       "path": "src/lib/eclP3Closure.test.js",
@@ -582,8 +582,8 @@
     },
     {
       "path": "src/pages/admin/AdminCommand.jsx",
-      "sha256": "30bab579655bcacab6da97cf4c15a4779f70411cff76dd2d307c00ac1d0d3b41",
-      "bytes": 6469
+      "sha256": "43566b6c2311214f9c06044f1c5fe357d8d0aac5c5b3e914451d1d18359a1e32",
+      "bytes": 6626
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",

@@ -6,6 +6,12 @@
 
 ---
 
+## Release v0.70.0 — Payments V1 Final Technical Seal (2026-08-09)
+
+**Current stage remains `ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS`.** v0.70.0 is a closure/hardening release, not a new ECL/economic stage. It closes the file-upload SSRF trust boundary, hardens direct-write RLS on contractual/economic derived entities, fixes the Stripe disconnect → active-Recover verification path, removes illustrative testimonials from public product surfaces, makes Admin source-read degradation visible, versions/gates the Recover billing digest, and adds fail-closed release requirements for Recover V2 legal approval and Stripe live validation. Full detail: `PAYMENTS_V1_FINAL_TECHNICAL_SEAL.md`.
+
+Runtime evidence at seal preparation is intentionally distinguished from static configuration: Webhook DLQ and ECL lifecycle schedules have recent completed `AgentTask` proof; no runtime task has yet been observed for Production Health or Recover Billing Reconciliation despite valid explicit schedule configs. Those two remain a deployment/runtime verification condition and are not described as proven.
+
 ## Release v0.67.0 — ECL P8 Production Admin, Automation & AI Operations (2026-08-09)
 
 **Current stage: `ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS` — 77 exact paths, 8 frozen entries.** P8 is the founder/admin operating closure, not a new economic authority. `/admin` is now the production cockpit: health, attention queues, P7 incidents, critical automation freshness and AI workforce runtime are visible from one surface. `/admin/agents` exposes the registered AI workforce behind an admin-only, fixed function allowlist; manual runs are logged and cannot invoke arbitrary backend functions or bypass existing Approval/ECL/billing/legal gates. `/admin/automations` exposes runtime proof for the four critical P4/P6/P7 workers.
