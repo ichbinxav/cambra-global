@@ -50,7 +50,7 @@ function ConfidenceMeter({ level }) {
   );
 }
 
-function Stat({ label, children, note, accent = "cyan" }) {
+function Stat({ label, children, note = null, accent = "cyan" }) {
   const accentColor = accent === "red" ? "rgb(248,113,113)" : accent === "emerald" ? "rgb(52,211,153)" : "rgb(103,232,249)";
   return (
     <div>
