@@ -231,7 +231,9 @@ export function downloadPaymentsAuditPdf({ engineResult, inputSnapshot, rateTabl
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   const badgeW = doc.getTextWidth(badgeLabel) + 16;
-  doc.setFillColor(...(isVerified ? [22, 130, 100] : [180, 130, 30]));
+  /** @type {[number, number, number]} */
+  const badgeColor = isVerified ? [22, 130, 100] : [180, 130, 30];
+  doc.setFillColor(...badgeColor);
   doc.roundedRect(R - badgeW, 30, badgeW, 18, 4, 4, "F");
   doc.setTextColor(255, 255, 255);
   doc.text(badgeLabel, R - badgeW / 2, 42, { align: "center" });
