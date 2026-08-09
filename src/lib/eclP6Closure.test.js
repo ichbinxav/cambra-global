@@ -135,7 +135,7 @@ describe('ECL P6 — Economic Execution & Reconciliation', () => {
     const dedupe = WEBHOOK.indexOf('PaymentEvent.filter');
     const remoteGet = WEBHOOK.indexOf("stripeRequest(mode, 'GET'");
     const binding = WEBHOOK.indexOf('const binding = validateStripeInvoiceBinding');
-    const update = WEBHOOK.indexOf('entities.Invoice.update(inv.id');
+    const update = WEBHOOK.indexOf('entities.Invoice.update(inv.id', binding);
     expect(signature).toBeGreaterThan(-1);
     expect(dedupe).toBeGreaterThan(signature);
     expect(remoteGet).toBeGreaterThan(dedupe);
