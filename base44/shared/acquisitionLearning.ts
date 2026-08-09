@@ -1,0 +1,6 @@
+export type Outcome='reply'|'positive_reply'|'meeting'|'won'|'verified_savings';
+const W:any={reply:0.08,positive_reply:0.18,meeting:0.32,won:0.55,verified_savings:1};
+export function cohortKey(lead:any){const b=lead?.score_breakdown_json||{};const sig=b.signals||{};const title=String(lead?.contact_title||'').toLowerCase();const role=/cfo|finance|payments/.test(title)?'finance':/founder|ceo/.test(title)?'founder_exec':/ecommerce|commerce/.test(title)?'commerce':'other';return [String(lead?.country||'unknown').toLowerCase(),String(lead?.industry||'unknown').toLowerCase(),sig.commerce_platform||'unknown',sig.payment_provider||'unknown',role].join('|')}
+export function outcomeValue(o:Outcome,verifiedSavings=0){const base=W[o]||0;return o==='verified_savings'?Math.min(2,base+Math.log10(1+Math.max(0,verifiedSavings))/10):base}
+export function boundedLearningMultiplier(stats:any){const n=Number(stats?.sample_size||0);if(n<20)return 1;const rate=Number(stats?.mean_outcome_value||0);const shrink=n/(n+100);return Number(Math.max(.85,Math.min(1.15,1+(rate-.2)*.35*shrink)).toFixed(4))}
+export function learnedPriority(opportunity:number,confidence:number,stats:any){return opportunity*confidence*boundedLearningMultiplier(stats)}
