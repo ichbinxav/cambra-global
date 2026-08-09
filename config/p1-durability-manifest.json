@@ -1,21 +1,23 @@
 {
-  "release": "CAMBRA v0.64.0 — ECL P5 Economic Enforcement (durability manifest)",
-  "generatedAt": "2026-08-09T00:00:16.613Z",
-  "packageVersion": "0.64.0",
-  "stage": "ECL_P5_ECONOMIC_ENFORCEMENT",
-  "freezeStage": "ECL_P5_ECONOMIC_ENFORCEMENT",
+  "release": "CAMBRA v0.65.0 — ECL P6 Economic Execution & Reconciliation (durability manifest)",
+  "generatedAt": "2026-08-09T00:52:01.559Z",
+  "packageVersion": "0.65.0",
+  "stage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
+  "freezeStage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
   "freezeEntryCount": 8,
-  "allowlistCount": 48,
-  "fileCount": 88,
+  "allowlistCount": 58,
+  "fileCount": 99,
   "purpose": "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
-  "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest now covers every active ECL stage through P4 Production Proof.",
-  "stageNote": "P1/P2/P3/P4 remain authoritative. P4 Production Proof adds the admin ReviewQueue consumer and scheduler runtime observability without adding billing, invoicing, collections, Stripe settlement, payouts or success-fee effects. A recurring Base44 platform automation remains external configuration and a GitHub CI seal requires a real Actions run.",
+  "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest covers every active ECL stage through P6 Economic Execution & Reconciliation.",
+  "stageNote": "P1-P5 remain authoritative for evidence, lifecycle, review and economic authorization. P6 protects execution of already-authorized Recover invoices: deterministic local claims, Stripe idempotency, current-state webhook reconciliation, a versioned read-only Stripe reconciler, immutable finalized economics and no local/manual second payment truth. GitHub CI sealing remains a separate real-Actions proof.",
   "history": {
     "p1": "Evidence lifecycle schemas and frozen-field boundary.",
     "p2": "Domain contracts, policy, serialization and gate semantics.",
     "p3": "Deterministic lifecycle engine and canonical process/reprocess boundary.",
     "p4": "Operational scheduler/review workflow with fail-closed persistence, replay and concurrency hardening.",
-    "p4ProductionProof": "Admin operator surface plus best-effort scheduler runtime proof; no economic effects."
+    "p4ProductionProof": "Admin operator surface plus best-effort scheduler runtime proof; no economic effects.",
+    "p5": "Canonical ECL gates become mandatory before Recover contractual and invoice effects.",
+    "p6": "Already-authorized economic effects execute replay-safely and reconcile against Stripe current state without a second local payment truth."
   },
   "files": [
     {
@@ -37,6 +39,16 @@
       "path": "base44/entities/EvidenceStrike.jsonc",
       "sha256": "5d96ed9ae9f6cefa56a3dc652fbcec6019fdfaf536661efdd5480412d85d22f9",
       "bytes": 2658
+    },
+    {
+      "path": "base44/entities/Invoice.jsonc",
+      "sha256": "c578f89dbd4448e7abcc41aa783b535c0f44308d2721245f586e15cecf6c6041",
+      "bytes": 9383
+    },
+    {
+      "path": "base44/entities/PaymentEvent.jsonc",
+      "sha256": "0ace5472ca2730d99c90b7c7b87bf1e8ca9da2fec8427962908ad1fffc078434",
+      "bytes": 2234
     },
     {
       "path": "base44/entities/ReviewCase.jsonc",
@@ -65,8 +77,13 @@
     },
     {
       "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
-      "sha256": "70dce48d6b7ee75ca466a01279862afc24a9fbcb169a33e6b7ab84928d4141b6",
-      "bytes": 24926
+      "sha256": "8a4d3f529cafb0b762e7bb5e02e086413f972d4352b459a862b3c4a178025cb0",
+      "bytes": 25520
+    },
+    {
+      "path": "base44/functions/createPaymentLink/entry.ts",
+      "sha256": "c0cfa850d239fc4b1d6e3a9a1d2ab34af876f55496a559bd1dea565317f44de1",
+      "bytes": 3109
     },
     {
       "path": "base44/functions/dispatchWebhook/entry.ts",
@@ -109,9 +126,34 @@
       "bytes": 5353
     },
     {
+      "path": "base44/functions/reconcileInvoice/entry.ts",
+      "sha256": "5455d7eb02265e319f2ca408410bbff833ae2364916ede9453d9bf80a13203fc",
+      "bytes": 3672
+    },
+    {
+      "path": "base44/functions/reconcileRecoverBilling/entry.ts",
+      "sha256": "a4ef2450a38734697228d82969a61bc8459e4d03f957611ccc795e0281526f85",
+      "bytes": 6460
+    },
+    {
+      "path": "base44/functions/reconcileRecoverBilling/function.jsonc",
+      "sha256": "e8e9e68ef84439bedc21e5cca7a79fdc81c22e8566a8cf0f120e99d1e163bdf1",
+      "bytes": 681
+    },
+    {
+      "path": "base44/functions/recordPayment/entry.ts",
+      "sha256": "64d3b24fbf40d2971c703d54eb19c85ca86cb8ba6bcc42740a91f0a964f34b66",
+      "bytes": 5475
+    },
+    {
       "path": "base44/functions/startRecoverAcceptance/entry.ts",
       "sha256": "bd4308f6cf8932d76a24a8873f27e0bc6b77c4e8cf6b3b9ca87d39b274f9eb5a",
       "bytes": 7803
+    },
+    {
+      "path": "base44/functions/stripeBillingWebhook/entry.ts",
+      "sha256": "74dc30fbfddd2ff72bba3db9d3d9e7f30d22953a6aca71d00e44ca8b8757041a",
+      "bytes": 9637
     },
     {
       "path": "base44/shared/eclEconomicGate.ts",
@@ -127,6 +169,11 @@
       "path": "base44/shared/eclRecoverEvidence.ts",
       "sha256": "4cb8b717c372592b5847960b85b4ff2ef879af21ddb889db253ac2bd98da143d",
       "bytes": 15069
+    },
+    {
+      "path": "base44/shared/economicExecution.ts",
+      "sha256": "b14ca7c1b394579c0ee874e42fe28d65fc9bfefafb41b3e903eb44c8a74daf8e",
+      "bytes": 9439
     },
     {
       "path": "base44/shared/generated/eclDomain.ts",
@@ -175,18 +222,18 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "8e1282859b4de6b69bf3c8dd46e74261f2c98ea69156fac63a81d262429dbac5",
-      "bytes": 19497
+      "sha256": "cd35a612e28c44e843e5579161600041710a5a20f5e46176e599eeab2c6087b7",
+      "bytes": 22623
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "e3590b89b4b8bb60814867986dd17bc4416142f075c693fe09be584582407d4d",
-      "bytes": 5509
+      "sha256": "951fca537b4e916689cb5e186aaa466f3a392840ffcf793f1db4af001513af4e",
+      "bytes": 5977
     },
     {
       "path": "config/release-touch-list.json",
-      "sha256": "7f2f4153231137d390ea47b31c655787224cc2f2790d954aaaf56b7bb635215d",
-      "bytes": 3586
+      "sha256": "0e6815030ac47786faddfd8b1fdace132076c951858962459965f747c8d0ccb3",
+      "bytes": 4111
     },
     {
       "path": "config/typecheck-baseline.json",
@@ -195,13 +242,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "c19468229daafed94cb899d5a764f4fc10ab0d92c888c836cf81d8e7bda37e01",
+      "sha256": "984298d313d31c2ccbdc3bdebb15c5c4534ba7454221ae1aad14c6afad7e5ad4",
       "bytes": 404666
     },
     {
       "path": "package.json",
-      "sha256": "d1c8c40113671e45cb6c4e01ca4cc79bc9ca31f7ca34f81d85729dcdc9535528",
-      "bytes": 5603
+      "sha256": "4f78b432fce92ccce9c3c3842c32bdc1ee89675fb5acca6c1a0e28864e103a8e",
+      "bytes": 5618
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -225,8 +272,8 @@
     },
     {
       "path": "scripts/generate-durability-manifest.mjs",
-      "sha256": "a1602f24acdd1bd795095c183a77fd9758fbb8cb9707addd2489d77911b05fb3",
-      "bytes": 6704
+      "sha256": "50bf90751f4f1a5e30340b834bc0cbc636eec338daeabb870f00564e47c7c397",
+      "bytes": 7029
     },
     {
       "path": "scripts/generate-ecl-policy.mjs",
@@ -250,8 +297,8 @@
     },
     {
       "path": "scripts/lib/preEclFreeze.mjs",
-      "sha256": "596d57c16a5e92e3d150302d37fc61b1befa06319b76ace7285862670bac1b3b",
-      "bytes": 12428
+      "sha256": "97b00d29e3623ac5aae0d38af2959f12955ea010b8dc2e19387d9629bc4d08d8",
+      "bytes": 13869
     },
     {
       "path": "scripts/lib/sourceTreeHash.mjs",
@@ -300,13 +347,13 @@
     },
     {
       "path": "src/docs/OPERATIONS_STATUS.md",
-      "sha256": "4f815ee04a112f6209651a15d695fd973afe5d1066b06679bd68b9bd485f436d",
-      "bytes": 30904
+      "sha256": "78f28af83df6e78332a29b767a296dbfe0b495e4112da76181621c39e92738f5",
+      "bytes": 33686
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "91264b3888163f9a3646ad87093a645f6e95375b463a7d627756c6f2b29191d2",
-      "bytes": 17676
+      "sha256": "beea820cf2860553e288b33ade3f58a77b1dcba9ae7e43bc01513772b21def52",
+      "bytes": 18199
     },
     {
       "path": "src/lib/confidenceResult.js",
@@ -380,8 +427,13 @@
     },
     {
       "path": "src/lib/eclP5Closure.test.js",
-      "sha256": "c69cf9a39e802e89c561f21f66f95fb2b48f62077fd6ed903c90f87acc9a3af5",
-      "bytes": 15564
+      "sha256": "17b5d1f438000d5385cc943788b5066a13cffbb277a9b9f44b7677bbe5a751a8",
+      "bytes": 15647
+    },
+    {
+      "path": "src/lib/eclP6Closure.test.js",
+      "sha256": "45b00163cef238b9ecc2b74c6f9ba141c4a2ccae0f4602044edf6107c723d792",
+      "bytes": 8563
     },
     {
       "path": "src/lib/eclParity.test.js",
@@ -439,6 +491,11 @@
       "bytes": 6960
     },
     {
+      "path": "src/lib/productionFunctions.static.test.js",
+      "sha256": "26391e598ef9c76b056fee216af9fb989a26948a708b1f96d90259fa27f7dd5e",
+      "bytes": 6796
+    },
+    {
       "path": "src/pages/admin/AdminLayout.jsx",
       "sha256": "f7c7e657855bec466c5a45abc1300c47cd7117e167ca66efd1aaf5d636ea66e7",
       "bytes": 11934
@@ -450,8 +507,8 @@
     },
     {
       "path": "tsconfig.critical.json",
-      "sha256": "2b86851cdad18ae7a8bb7707dfaba11f66284ba188eeebae6afc0a048287e5d2",
-      "bytes": 2554
+      "sha256": "6c5bd0b34e11b857ece25eb38ef24489fc023fe3c5bac9c3b0a2e8c89dca984b",
+      "bytes": 2804
     },
     {
       "path": "types/deno-shim.d.ts",
