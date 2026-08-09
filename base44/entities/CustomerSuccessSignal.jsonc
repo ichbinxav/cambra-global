@@ -1,0 +1,81 @@
+{
+  "name": "CustomerSuccessSignal",
+  "type": "object",
+  "description": "Retention/expansion signal for an active merchant. Advisory until acted upon through policy-gated merchant operations.",
+  "properties": {
+    "signal_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "retention_risk",
+        "expansion_opportunity"
+      ]
+    },
+    "category": {
+      "type": "string"
+    },
+    "score": {
+      "type": "number"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "estimated_value": {
+      "type": "number"
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_refs_json": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "actioned",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "open"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "signal_key",
+    "brand_id",
+    "type",
+    "category",
+    "score",
+    "confidence",
+    "status",
+    "created_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

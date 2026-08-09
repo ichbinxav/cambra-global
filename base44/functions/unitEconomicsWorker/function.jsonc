@@ -1,0 +1,1 @@
+{"name":"unitEconomicsWorker","automations":[{"name":"Merchant unit economics","schedule":"45 8 * * *","input":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"}}]}

@@ -1,0 +1,49 @@
+{
+  "name": "ExecutiveDigest",
+  "type": "object",
+  "description": "Daily deterministic founder digest. Aggregates authoritative domain state; no LLM-generated financial truth.",
+  "properties": {
+    "digest_key": {
+      "type": "string"
+    },
+    "period_date": {
+      "type": "string"
+    },
+    "yesterday_json": {
+      "type": "object"
+    },
+    "today_json": {
+      "type": "object"
+    },
+    "risks_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "financial_json": {
+      "type": "object"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "digest_key",
+    "period_date",
+    "generated_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

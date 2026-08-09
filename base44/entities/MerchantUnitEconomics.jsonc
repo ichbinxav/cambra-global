@@ -1,0 +1,81 @@
+{
+  "name": "MerchantUnitEconomics",
+  "type": "object",
+  "description": "Per-merchant unit economics snapshot. Unknown inputs stay null and are surfaced in missing_inputs; no invented CAC/LTV/AI costs.",
+  "properties": {
+    "economics_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "cac": {
+      "type": "number"
+    },
+    "collected_revenue": {
+      "type": "number"
+    },
+    "gross_margin": {
+      "type": "number"
+    },
+    "operational_cost": {
+      "type": "number"
+    },
+    "ai_api_cost": {
+      "type": "number"
+    },
+    "human_cost": {
+      "type": "number"
+    },
+    "payback_months": {
+      "type": "number"
+    },
+    "ltv": {
+      "type": "number"
+    },
+    "retention_probability": {
+      "type": "number"
+    },
+    "expansion_probability": {
+      "type": "number"
+    },
+    "founder_minutes": {
+      "type": "number"
+    },
+    "founder_minutes_per_1k_revenue": {
+      "type": "number"
+    },
+    "missing_inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "calculated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "economics_key",
+    "brand_id",
+    "missing_inputs",
+    "confidence",
+    "calculated_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
