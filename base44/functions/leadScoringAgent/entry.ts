@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { deterministicMerchantOpportunity } from '../../shared/merchantOpportunity.ts';
 
 const AGENT_NAME = "lead_scoring";
 const TASK_TYPE = "score_leads";
@@ -114,15 +115,8 @@ Deno.serve(async (req) => {
     }
 
     // Apply scores back to OutboundLead
-    const updates = scored
-      .filter(s => s?.id && typeof s.score === "number")
-      .map(s => ({
-        id: s.id,
-        score: Math.max(0, Math.min(100, Math.round(s.score))),
-        score_breakdown_json: { breakdown: s.breakdown, reasoning: s.reasoning },
-        next_action: s.next_action || null,
-        stage: "scored",
-      }));
+    const byId = new Map(leads.map((l:any)=>[l.id,l]));
+    const updates = scored.filter(s=>s?.id&&typeof s.score==='number').map(s=>{const lead:any=byId.get(s.id)||{};const det=deterministicMerchantOpportunity(lead);const llm=Math.max(0,Math.min(100,Math.round(s.score)));const final=Math.round(det.opportunity_score*0.7+llm*0.3);return {id:s.id,score:final,score_breakdown_json:{breakdown:det.breakdown,llm_breakdown:s.breakdown,reasoning:s.reasoning,opportunity_score:det.opportunity_score,evidence_confidence:det.evidence_confidence,evidence_count:det.evidence_count,signals:det.signals,scoring_version:'merchant-opportunity-v2',weights:{deterministic:0.7,llm:0.3}},next_action:s.next_action||null,stage:'scored'};});
 
     if (updates.length) {
       try {
