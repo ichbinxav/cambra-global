@@ -1,0 +1,66 @@
+{
+  "name": "AggregatePoolMember",
+  "type": "object",
+  "description": "P14 pool membership. Membership never creates a volume commitment; committed volume can only come from an active AggregateCommitment.",
+  "properties": {
+    "membership_key": {
+      "type": "string"
+    },
+    "pool_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "demand_unit_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "eligible",
+        "potential",
+        "inactive"
+      ]
+    },
+    "observed_volume_minor": {
+      "type": "number"
+    },
+    "addressable_volume_minor": {
+      "type": "number"
+    },
+    "committed_volume_minor": {
+      "type": "number"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "joined_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "membership_key",
+    "pool_id",
+    "brand_id",
+    "demand_unit_id",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
