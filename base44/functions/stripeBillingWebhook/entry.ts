@@ -37,7 +37,8 @@ export default async function (req: Request): Promise<Response> {
     try {
       event = await stripe.webhooks.constructEventAsync(rawBody, signature, getWebhookSecret(mode));
     } catch (err) {
-      return Response.json({ error: `signature_invalid: ${(err as Error).message}` }, { status: 400 });
+      console.warn('stripeBillingWebhook signature verification failed', (err as Error)?.name || 'Error');
+      return Response.json({ error: 'signature_invalid' }, { status: 400 });
     }
     if ((event.livemode === true) !== (mode === 'live')) {
       return Response.json({ ignored: 'livemode_mismatch', mode, livemode: event.livemode });
@@ -45,22 +46,36 @@ export default async function (req: Request): Promise<Response> {
 
     const svc = createClientFromRequest(req).asServiceRole;
 
-    // RECOVER-2 setup-intent lifecycle remains independent from invoice P6.
+    // RECOVER-2 setup-intent lifecycle. Never trust delivery order: reconcile
+    // the CURRENT Stripe object before mutating local payment-method state.
     if (event.type === 'setup_intent.succeeded' || event.type === 'setup_intent.setup_failed') {
-      const intent = event.data?.object || {};
-      const activation = (await svc.entities.DealActivation.filter({ stripe_setup_intent_id: intent.id }, '-created_date', 1))?.[0];
-      if (!activation) return Response.json({ ignored: 'activation_not_found', setup_intent_id: intent.id });
-      if (event.type === 'setup_intent.succeeded') {
+      const deliveredIntent = event.data?.object || {};
+      const intentId = String(deliveredIntent.id || '');
+      if (!intentId) return Response.json({ ignored: 'setup_intent_id_missing' });
+      const activation = (await svc.entities.DealActivation.filter({ stripe_setup_intent_id: intentId }, '-created_date', 1))?.[0];
+      if (!activation) return Response.json({ ignored: 'activation_not_found' });
+
+      const current = await stripe.setupIntents.retrieve(intentId);
+      const currentStatus = String(current?.status || '');
+      if (currentStatus === 'succeeded') {
+        const paymentMethodId = typeof current.payment_method === 'string' ? current.payment_method : current.payment_method?.id || '';
+        if (!paymentMethodId) throw new Error('setup_intent_succeeded_without_payment_method');
         await svc.entities.DealActivation.update(activation.id, {
           payment_method_status: 'ready',
-          stripe_payment_method_id: typeof intent.payment_method === 'string' ? intent.payment_method : '',
+          stripe_payment_method_id: paymentMethodId,
           stripe_billing_mode: mode,
-          payment_method_ready_at: new Date().toISOString(),
+          payment_method_ready_at: activation.payment_method_ready_at || new Date().toISOString(),
         });
-      } else {
-        await svc.entities.DealActivation.update(activation.id, { payment_method_status: 'failed' });
+      } else if (['canceled'].includes(currentStatus)) {
+        // Only a terminal CURRENT Stripe state may regress local readiness.
+        await svc.entities.DealActivation.update(activation.id, {
+          payment_method_status: 'failed',
+          stripe_payment_method_id: '',
+        });
       }
-      return Response.json({ received: true, type: event.type, deal_activation_id: activation.id });
+      // processing/requires_* states are intentionally no-ops: a stale failure
+      // delivery must never overwrite a newer successful authorization.
+      return Response.json({ received: true, type: event.type, reconciled: true, deal_activation_id: activation.id });
     }
 
     if (!(event.type in INVOICE_EVENTS)) return Response.json({ ignored: event.type });
@@ -184,6 +199,7 @@ export default async function (req: Request): Promise<Response> {
 
     return Response.json({ received: true, type: event.type, invoice_id: inv.id, reconciled: true });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    console.error('stripeBillingWebhook failed', error);
+    return Response.json({ error: 'webhook_processing_failed' }, { status: 500 });
   }
 }
