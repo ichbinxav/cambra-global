@@ -33,6 +33,11 @@ const MINOR_PER_MAJOR = 100;
 const num = (v) => (isFinite(Number(v)) ? Number(v) : null);
 const bpsToPct = (bps) => (isFinite(bps) ? bps / 100 : null);
 
+/** @typedef {{ available: false, reason: string } | { available: true, rental_month_eur: number, rental_year_eur: number, rental_bps: number, rental_pct: number, current_bps: number, current_pct: number, rest_bps: number, rest_pct: number, annual_rental_eur: number, coherent: boolean }} TerminalRentalResult */
+/** @typedef {{ channel: "online" | "in_store", rate_pct: number, annual_fees_eur: number, annual_savings_eur: number }} ChannelSplitRow */
+/** @typedef {{ available: false, reason: string } | { available: true, channels: ChannelSplitRow[], total_savings_eur: number }} ChannelSplitResult */
+/** @typedef {{ available: false, reason: string } | { available: true, monthly_gmv: number, payg_rate_pct: number, sub_rate_pct: number, sub_fee_month_eur: number, crossover_gmv_eur: number, payg_monthly_cost_eur: number, sub_monthly_cost_eur: number, monthly_delta_eur: number, sub_wins: boolean }} SubVsPaygResult */
+
 // ── 1. TERMINAL RENTAL AS ITS OWN COST (inside the rate, not on top) ─────────
 //
 // rateRow: the merchant's PaymentsRateTable row (carries terminal_rental_monthly_minor).
@@ -40,6 +45,7 @@ const bpsToPct = (bps) => (isFinite(bps) ? bps / 100 : null);
 //
 // Returns the rental €/month, its amortized bps/%, and the rest of the rate,
 // with a coherence flag proving rental + rest === current_effective_bps.
+/** @returns {TerminalRentalResult} */
 export function deriveTerminalRental(engineResult, inputSnapshot, rateRow) {
   const er = engineResult || {};
   const snap = inputSnapshot || {};
@@ -54,17 +60,18 @@ export function deriveTerminalRental(engineResult, inputSnapshot, rateRow) {
   if (rentalMinor == null || rentalMinor <= 0 || monthlyGmv == null || monthlyGmv <= 0) {
     return { available: false, reason: "no_rental" };
   }
+  // The tile promises to reconcile rental + rest to the merchant's current
+  // effective rate. Without that authoritative rate, showing the tile would be
+  // an incomplete claim, so hide instead of emitting nullable economics.
+  if (currentBps == null) return { available: false, reason: "no_current_rate" };
 
   const rentalMonth = rentalMinor / MINOR_PER_MAJOR;
   // Re-derive the SAME rentalBps the engine folded into current_effective_bps.
   const rentalBps = (rentalMonth / monthlyGmv) * BPS_PER_UNIT;
-  const restBps = currentBps != null ? currentBps - rentalBps : null;
+  const restBps = currentBps - rentalBps;
 
   // Coherence: rental + rest reconciles to current (proof, not decoration).
-  const coherent =
-    currentBps != null && restBps != null
-      ? Math.abs(rentalBps + restBps - currentBps) < 1e-6
-      : false;
+  const coherent = Math.abs(rentalBps + restBps - currentBps) < 1e-6;
 
   return {
     available: true,
@@ -73,9 +80,9 @@ export function deriveTerminalRental(engineResult, inputSnapshot, rateRow) {
     rental_bps: rentalBps,
     rental_pct: bpsToPct(rentalBps),
     current_bps: currentBps,
-    current_pct: bpsToPct(currentBps),
+    current_pct: currentBps / 100,
     rest_bps: restBps,
-    rest_pct: restBps != null ? bpsToPct(restBps) : null,
+    rest_pct: restBps / 100,
     annual_rental_eur: rentalMonth * 12,
     coherent, // must be true; if false the tile shows without the "of your rate" split
   };
@@ -91,6 +98,7 @@ export function deriveTerminalRental(engineResult, inputSnapshot, rateRow) {
 // its annual savings (from that channel's engine_result). The two channels'
 // savings must SUM to the combined total — we return both so the tile can
 // display the sum-check.
+/** @returns {ChannelSplitResult} */
 export function deriveChannelSplit(perChannel) {
   if (!Array.isArray(perChannel) || perChannel.length < 2) {
     return { available: false, reason: "not_combined" };
@@ -108,7 +116,7 @@ export function deriveChannelSplit(perChannel) {
     totalSavings += savings;
     channels.push({
       channel: ch.channel === "in_store" ? "in_store" : "online",
-      rate_pct: bpsToPct(bps),
+      rate_pct: bps / 100,
       annual_fees_eur: annualGmv * (bps / BPS_PER_UNIT),
       annual_savings_eur: savings,
     });
@@ -133,6 +141,7 @@ export function deriveChannelSplit(perChannel) {
 // paygRow / subRow: PaymentsRateTable rows chosen by the caller as the market
 // references (e.g. a no-rental modern TPV vs a rental-bearing sub TPV). Missing
 // rows or a non-positive rate gap → { available: false } (honest hide).
+/** @returns {SubVsPaygResult} */
 export function deriveSubVsPayg(inputSnapshot, paygRow, subRow) {
   const snap = inputSnapshot || {};
   const monthlyGmv = num(snap.monthly_gmv_eur);
@@ -159,8 +168,8 @@ export function deriveSubVsPayg(inputSnapshot, paygRow, subRow) {
   return {
     available: true,
     monthly_gmv: monthlyGmv,
-    payg_rate_pct: bpsToPct(paygBps),
-    sub_rate_pct: bpsToPct(subBps),
+    payg_rate_pct: paygBps / 100,
+    sub_rate_pct: subBps / 100,
     sub_fee_month_eur: subFeeMonth,
     crossover_gmv_eur: crossoverGmv,
     payg_monthly_cost_eur: paygMonthlyCost,
