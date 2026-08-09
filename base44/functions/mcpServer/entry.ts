@@ -403,31 +403,9 @@ const TOOLS = [
       return { trackers: items.map(serializeTracker), count: items.length };
     },
   },
-  {
-    name: "update_tracker",
-    description: "Update a deal activation tracker (status, realized savings).",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: { type: "string" },
-        status: { type: "string" },
-        realized_savings_monthly: { type: "number" },
-        realized_savings_yearly: { type: "number" },
-        activated_savings_yearly: { type: "number" },
-      },
-      required: ["id"],
-    },
-    scope: "update:trackers",
-    handler: async (base44, args, principal) => {
-      // FIX 4 — load first, assert ownership, only then update
-      const existing = await base44.asServiceRole.entities.DealActivation.get(args.id).catch(() => null);
-      assertTenant(principal, existing);
-      const allowed = ["status", "realized_savings_monthly", "realized_savings_yearly", "activated_savings_yearly"];
-      const updates = { last_updated: new Date().toISOString() };
-      for (const k of allowed) if (args[k] !== undefined) updates[k] = args[k];
-      return serializeTracker(await base44.asServiceRole.entities.DealActivation.update(args.id, updates));
-    },
-  },
+  // P10: tracker mutations deliberately NOT exposed through MCP. DealActivation
+  // state and realized savings are server-managed economic authority and may
+  // only advance through Recover/P9/ECL deterministic gates.
 
   // -------- PROVIDERS --------
   {

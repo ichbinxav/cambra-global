@@ -10,7 +10,7 @@ const ALL_SCOPES = [
   "read:brands", "read:analyses", "read:documents", "read:providers", "read:kpis",
   "read:savings", "read:trackers", "read:reports", "read:integrations",
   "write:reports", "write:documents", "write:trackers",
-  "trigger:analysis", "update:trackers",
+  "trigger:analysis",
 ];
 
 async function sha256Hex(input) {

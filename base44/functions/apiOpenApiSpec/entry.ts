@@ -21,7 +21,6 @@ Deno.serve(async (req) => {
     "read:integrations": "List integrations",
     "write:reports": "Create reports",
     "trigger:analysis": "Trigger a new analyzer run",
-    "update:trackers": "Update savings activation trackers",
   };
 
   const moneySchema = {
@@ -180,7 +179,6 @@ Deno.serve(async (req) => {
       "/v1/providers":            { get: path("List providers",               "read:providers",  "listProviders",  { type: "array", items: { type: "object" } }, { parameters: paginationParams }) },
       "/v1/savings":              { get: path("List savings",                 "read:savings",    "listSavings",    { type: "array", items: { type: "object" } }, { parameters: paginationParams }) },
       "/v1/trackers":             { get: path("List trackers",                "read:trackers",   "listTrackers",   { type: "array", items: { $ref: "#/components/schemas/Tracker" } }, { parameters: paginationParams }) },
-      "/v1/trackers/{id}":        { patch: path("Update tracker",             "update:trackers", "updateTracker",  { $ref: "#/components/schemas/Tracker" }, { parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }, idempotencyHeader] }) },
       "/v1/reports":              { get: path("List reports",                 "read:reports",    "listReports",    { type: "array", items: { type: "object" } }, { parameters: paginationParams }),
                                     post: path("Create report",               "write:reports",   "createReport",   { type: "object" }, { parameters: [idempotencyHeader] }) },
       "/v1/kpis":                 { get: path("Platform KPIs",                "read:kpis",       "getKpis",        { type: "object" }) },

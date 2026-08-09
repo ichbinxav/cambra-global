@@ -19,7 +19,7 @@ const EXPECTED_SCOPES = [
   "read:kpis", "read:brands", "read:analyses", "read:documents", "read:providers",
   "read:savings", "read:trackers", "read:reports", "read:integrations",
   "write:reports", "write:documents", "write:trackers",
-  "trigger:analysis", "update:trackers", "manage:integrations", "manage:webhooks",
+  "trigger:analysis", "manage:integrations", "manage:webhooks",
 ];
 
 Deno.serve(async (req) => {

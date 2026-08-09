@@ -18,7 +18,7 @@
 //   GET    /v1/providers                   read:providers
 //   GET    /v1/savings                     read:savings
 //   GET    /v1/trackers                    read:trackers
-//   PATCH  /v1/trackers/:id                update:trackers
+//   PATCH  /v1/trackers/:id                DEPRECATED — economic tracker state is server-managed
 //   GET    /v1/reports                     read:reports
 //   POST   /v1/reports                     write:reports
 //   GET    /v1/kpis                        read:kpis
@@ -429,17 +429,13 @@ const RESOURCES = {
     },
   },
   "PATCH /v1/trackers/:id": {
-    scope: "update:trackers",
-    handler: async (base44, { params, body, principal }) => {
-      // FIX 3 — load first, assert ownership, only then update
-      const existing = await base44.asServiceRole.entities.DealActivation.get(params.id).catch(() => null);
-      assertTenant(principal, existing);
-      const allowed = ["status", "realized_savings_monthly", "realized_savings_yearly", "activated_savings_yearly"];
-      const update = {};
-      for (const k of allowed) if (body[k] !== undefined) update[k] = body[k];
-      update.last_updated = new Date().toISOString();
-      const updated = await base44.asServiceRole.entities.DealActivation.update(params.id, update);
-      return { data: serializeTracker(updated) };
+    scope: "read:trackers",
+    handler: async (_base44, _ctx) => {
+      // P10 CRITICAL: DealActivation status and realized savings are economic
+      // authority. External API principals — including AI clients — may read
+      // them but must never bypass Recover/P9/ECL verification by writing them.
+      const e = new Error("economic_tracker_state_is_server_managed");
+      e.code = "forbidden"; e.status = 403; throw e;
     },
   },
 

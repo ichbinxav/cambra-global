@@ -13,7 +13,6 @@ const SCOPES = [
   { id: "read:analyses", label: "Read analyses", desc: "Analyzer results" },
   { id: "write:reports", label: "Write reports", desc: "Push reports to CAMBRA" },
   { id: "trigger:analysis", label: "Trigger analysis", desc: "Start a new analysis run" },
-  { id: "update:trackers", label: "Update trackers", desc: "Update savings activation trackers" },
 ];
 
 const TOOLS = [
