@@ -27,6 +27,7 @@
         "queued",
         "running",
         "waiting_approval",
+        "waiting_input",
         "completed",
         "failed",
         "retrying",
@@ -69,7 +70,7 @@
         4
       ],
       "default": 0,
-      "description": "0-1 auto, 2 client-visible draft, 3 external action, 4 financial/legal. Never use for forbidden actions (payments, contracts)."
+      "description": "0 deterministic/internal, 1 read/analyze/internal task, 2 external draft or controlled reversible action, 3 meaningful external action allowed only inside an approved policy/mandate, 4 legal/financial/destructive commitment requiring human approval. Forbidden actions never bypass deterministic gates."
     },
     "approval_id": {
       "type": "string",
