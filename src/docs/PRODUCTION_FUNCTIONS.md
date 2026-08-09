@@ -198,3 +198,16 @@ _tenantGuard · createSelfTestBrand · phase2CleanupLegacyFields (migración one
 | getIntelligenceCommandCenter | B/admin | P12 intelligence aggregates | Admin-only command-center projection; no raw foreign-tenant evidence export. |
 | intelligenceAdmin | B/admin | KnowledgeClaim, KnowledgeConflict, IntelligenceEvidence, OperationalLog | Explicit reason-required override actions with before/after audit. Inferred claims cannot be promoted to verified by override alone. |
 | intelligenceBackfill | B/internal + admin gate | Existing representable pricing/outcome provenance | Idempotent orchestrated backfill. Does not fabricate historical source type or effective date. |
+
+
+### P13 — Payment Routing Intelligence & Shadow Orchestration (2026-08-10)
+
+| Function | Class / auth | Core data | Boundary |
+|---|---|---|---|
+| recordRoutingObservation | B/internal + admin gate | PaymentRoutingObservation, Event | Minimized read/simulate ingestion only. Rejects PAN/CVV-like fields. Production learning requires explicit production classification; unknown/internal/test data is non-learning by default. |
+| routingHistoricalBackfill | C/internal + admin gate | PaymentsAnalysisVerified → PaymentRoutingObservation | Aggregate-window backfill only. Safe-defaults historical non-demo rows to `internal_test`; only explicitly confirmed production brand IDs become learning-eligible. Never fabricates transaction features. |
+| shadowRoutingEngine | C/internal + admin gate | PaymentRoutingObservation, ProviderPricingVersion, RoutingProviderPerformance, ShadowRoutingDecision, RoutingOpportunity, IntelligenceSnapshot | Counterfactual shadow decisions only. `REAL_ROUTING_ALLOWED=false`; no PaymentIntent/capture/refund/retry/checkout mutation. Opportunities require production-eligible evidence. |
+| routingPerformanceWorker | C/internal · scheduled | PaymentRoutingObservation → RoutingProviderPerformance | Approval-performance aggregation from eligible transaction-level observed outcomes; no counterfactuals become observed truth. |
+| routingSimulator | B/internal + admin gate | ShadowRoutingDecision → RoutingSimulation | Retrospective simulation only; never deploys a rule or touches payment execution. |
+| routingReadinessWorker | C/internal · scheduled | Production-eligible routing evidence → RoutingReadinessAssessment | R0–R3 evidence assessment only. Real routing is explicitly prohibited and gated on future PCI/regulatory/reliability decisions. |
+| getRoutingIntelligenceCommandCenter | B/admin | Routing aggregates | Admin-only read projection. No activation endpoint and no payment execution authority. |

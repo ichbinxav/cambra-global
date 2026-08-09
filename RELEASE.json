@@ -1,11 +1,11 @@
 {
-  "releaseName": "CAMBRA v0.72.0 — P12 Intelligence & Proprietary Moat Layer",
-  "version": "0.72.0",
-  "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
+  "releaseName": "CAMBRA v0.73.0 — P13 Payment Routing Intelligence & Shadow Orchestration",
+  "version": "0.73.0",
+  "sourceTreeHash": "2e126e55954d464f4a54a515c87e648948857c2e19f19497894965387a45bf24",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1023,
+  "sourceTreeFileCount": 1047,
   "sourceArchiveShaExternal": null,
-  "gitSha": "875dca6a41a95414ddf8f8e0a19395e0ab91a753",
+  "gitSha": "9d63a4db63eb4b837f2082835803a2853cc17be5",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,7 +18,7 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "1ebb7a00314d776e5418b734b07be5717566a0f19c30bc6b214d58bccfd2cb64",
+  "durabilityManifestSha": "15a234dd9bc76f15a2ea1152ad559d4a1ff920509f05762f0411fbcbd56ed024",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -43,58 +43,59 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
-    "startedAt": "2026-08-09T22:35:50.740Z",
-    "completedAt": "2026-08-09T22:36:08.926Z",
+    "sourceTreeHash": "2e126e55954d464f4a54a515c87e648948857c2e19f19497894965387a45bf24",
+    "startedAt": "2026-08-09T23:14:24.998Z",
+    "completedAt": "2026-08-09T23:14:38.527Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 443,
-    "passed": 1700,
+    "testFiles": 445,
+    "passed": 1708,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
-    "startedAt": "2026-08-09T22:36:09.636Z",
-    "completedAt": "2026-08-09T22:36:26.986Z",
+    "sourceTreeHash": "2e126e55954d464f4a54a515c87e648948857c2e19f19497894965387a45bf24",
+    "startedAt": "2026-08-09T23:14:39.073Z",
+    "completedAt": "2026-08-09T23:14:55.648Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "247295fbb13d2c7ca273204959b2d387d50e3d845d07c79a2879bd1cc3476bae",
-    "artifactCount": 65
+    "distHash": "35634011733228302cc5ee0190354e408a613f02d0023423346f80edc329c9c7",
+    "artifactCount": 66
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
-    "startedAt": "2026-08-09T22:35:21.101Z",
-    "completedAt": "2026-08-09T22:35:33.317Z",
+    "sourceTreeHash": "2e126e55954d464f4a54a515c87e648948857c2e19f19497894965387a45bf24",
+    "startedAt": "2026-08-09T23:14:00.365Z",
+    "completedAt": "2026-08-09T23:14:10.031Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
-    "startedAt": "2026-08-09T22:35:33.945Z",
-    "completedAt": "2026-08-09T22:35:37.517Z",
+    "sourceTreeHash": "2e126e55954d464f4a54a515c87e648948857c2e19f19497894965387a45bf24",
+    "startedAt": "2026-08-09T23:14:10.601Z",
+    "completedAt": "2026-08-09T23:14:13.336Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
-    "startedAt": "2026-08-09T22:35:38.155Z",
-    "completedAt": "2026-08-09T22:35:50.090Z",
+    "sourceTreeHash": "2e126e55954d464f4a54a515c87e648948857c2e19f19497894965387a45bf24",
+    "startedAt": "2026-08-09T23:14:13.834Z",
+    "completedAt": "2026-08-09T23:14:24.434Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
-    "dist": "247295fbb13d2c7ca273204959b2d387d50e3d845d07c79a2879bd1cc3476bae"
+    "dist": "35634011733228302cc5ee0190354e408a613f02d0023423346f80edc329c9c7"
   },
   "manualRequirements": [
     "LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled",
     "LEGAL/PRIVACY REVIEW REQUIRED: approve P12 retention/deletion, lawful basis and cross-tenant aggregation/anonymization policy before relying on derived intelligence retention beyond tenant deletion or widening benchmark use",
+    "ROUTING ACTIVATION PROHIBITED: P13 is shadow/simulation only. Before any real routing, complete PCI DSS scope, PSD2/SCA and regulatory assessment, provider/network contractual review, real-time SLA/SLO and incident architecture, kill switch, payment idempotency/reconciliation proof, merchant controls and financial-liability review.",
     "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal"
   ],
-  "generatedAt": "2026-08-09T22:36:27.567Z"
+  "generatedAt": "2026-08-09T23:14:56.200Z"
 }

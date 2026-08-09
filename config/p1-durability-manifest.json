@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.73.0 — P13 Payment Routing Intelligence & Shadow Orchestration (durability manifest)",
-  "generatedAt": "2026-08-09T23:13:02.974Z",
+  "generatedAt": "2026-08-09T23:13:58.653Z",
   "packageVersion": "0.73.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -632,8 +632,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "5f3cd54cf29e6cfa9918b66816ae5eefc7cd5f48d4966910bd590d14bbe2ac92",
-      "bytes": 29004
+      "sha256": "00b84c050257e7c8319d2f0ac21d0eac3048577158e1f0b629c0e5f6ddccf8de",
+      "bytes": 30960
     },
     {
       "path": "src/lib/commercialModelRouter.test.js",
@@ -792,8 +792,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "ab13f72c5d52c5fe03bff0055c459a58a3dd681ddace3dad0e051d5e4e24076a",
-      "bytes": 8119
+      "sha256": "fde5120176c30f221847bdd11b716b2e4e6237829a1f69a58372fb7b45b89f96",
+      "bytes": 8314
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",

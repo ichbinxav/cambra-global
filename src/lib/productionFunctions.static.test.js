@@ -24,6 +24,7 @@ const MANIFEST = [
   "_tenantGuard", "adminAgentOperations", "adminOverrides", "adminSummaries", "adminUpdateApplicationStatus",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
   "acquisitionAttributionWorker", "acquisitionLearningWorker", "autonomousCommercialWorker", "autonomousOperationsSupervisor", "autonomousPartnerWorker", "commercialFollowUpWorker", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
+  "getRoutingIntelligenceCommandCenter", "recordRoutingObservation", "routingHistoricalBackfill", "routingPerformanceWorker", "routingReadinessWorker", "routingSimulator", "shadowRoutingEngine",
   "negotiationMemoryWorker", "onboardingConciergeWorker", "outlookInboundRouter", "outlookMeetingCoordinator", "outboundControlAdmin", "outboundDeliverabilityManager", "outboundVolumeWorker", "outreachExperimentLearningWorker", "postMeetingWorker", "providerContactResolver", "providerNegotiationAgent", "recoverAutopilotWorker", "resendInboundWebhook", "resolveCommercialApproval", "reviewProviderContract", "startProviderNegotiation",
   // REFERRAL-1 / REFERRAL-2 (2026-08-03) — referral programme surface.
   "applyReferralActivation", "getMyReferralStatus",
