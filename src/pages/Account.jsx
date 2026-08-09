@@ -17,6 +17,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { LogOut, User, Building2, Shield, Store, Mail, Settings } from "lucide-react";
 import MonthlyEmailPreference from "@/components/account/MonthlyEmailPreference";
+import RecoverCommitmentsCard from "@/components/account/RecoverCommitmentsCard";
 import PageHero from "@/components/shared/PageHero";
 import AccountFieldSection from "@/components/account/AccountFieldSection";
 import { BRAND_FIELDS, PAYMENTS_PROFILE_FIELDS } from "@/components/account/accountFields";
@@ -137,6 +138,8 @@ export default function Account() {
         <Section icon={Mail} title={t("acc_s_email_notif")}>
           <MonthlyEmailPreference user={user} onUpdate={setUser} />
         </Section>
+
+        <RecoverCommitmentsCard />
 
         <Section icon={Shield} title={t("acc_s_session")}>
           <p className="text-sm text-white/55 mb-5">{t("acc_session_text")}</p>

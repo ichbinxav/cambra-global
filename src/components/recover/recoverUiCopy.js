@@ -9,6 +9,8 @@ export const RECOVER_UI_COPY = {
         no_verified_baseline: 'We need a verified starting figure before you can authorize us. Connect your provider or upload a statement — once our team confirms it, this unlocks.',
         ecl_verified_payment_source_unavailable: 'We need fresh verified payment data before Recover can be authorized. Sync your payment provider and try again.',
         ecl_source_vertical_unsupported: 'Recover evidence enforcement is currently available for payments only.',
+        recover_v2_legal_review_required: 'The new 24-month Recover economics are prepared but are not yet available for acceptance while the contractual wording completes legal review.',
+        cambra_service_cancelled: 'Your CAMBRA service is cancelled, so no new Recover can be authorized.',
       },
     },
     modal: {
@@ -38,6 +40,8 @@ export const RECOVER_UI_COPY = {
         no_verified_baseline: 'Nous avons besoin d’une référence vérifiée avant votre autorisation. Connectez votre prestataire ou importez un relevé ; dès validation, cette étape sera débloquée.',
         ecl_verified_payment_source_unavailable: 'Nous avons besoin de données de paiement récentes et vérifiées avant d’autoriser Recover. Synchronisez votre prestataire de paiement puis réessayez.',
         ecl_source_vertical_unsupported: 'La vérification des preuves Recover est actuellement disponible uniquement pour les paiements.',
+        recover_v2_legal_review_required: 'La nouvelle économie Recover sur 24 mois est prête, mais ne peut pas encore être acceptée tant que la rédaction contractuelle est en revue juridique.',
+        cambra_service_cancelled: 'Votre service CAMBRA est résilié ; aucun nouveau Recover ne peut être autorisé.',
       },
     },
     modal: {
@@ -67,6 +71,8 @@ export const RECOVER_UI_COPY = {
         no_verified_baseline: 'Necesitamos una referencia verificada antes de que puedas autorizarnos. Conecta tu proveedor o sube un extracto; cuando quede confirmado, se desbloqueará esta etapa.',
         ecl_verified_payment_source_unavailable: 'Necesitamos datos de pago recientes y verificados antes de autorizar Recover. Sincroniza tu proveedor de pagos e inténtalo de nuevo.',
         ecl_source_vertical_unsupported: 'La verificación de evidencia de Recover está disponible actualmente solo para pagos.',
+        recover_v2_legal_review_required: 'El nuevo modelo económico Recover de 24 meses está preparado, pero todavía no puede aceptarse mientras finaliza la revisión jurídica del texto contractual.',
+        cambra_service_cancelled: 'Tu servicio CAMBRA está cancelado, por lo que no se pueden autorizar nuevos Recover.',
       },
     },
     modal: {

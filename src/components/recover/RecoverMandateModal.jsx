@@ -92,6 +92,23 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
             <>
               <MandateTermsSummary snapshot={startedSnapshot || context.snapshot} baseline={context.baseline} copy={context.mandate_copy?.summary} />
 
+              {(startedSnapshot || context.snapshot)?.recovery_economics?.version === 'recover-economics-v2' && context.recovery_economics_copy && (
+                <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                  <p className="text-xs font-bold text-white mb-3">{context.recovery_economics_copy.title}</p>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    {[
+                      [context.recovery_economics_copy.y1, '25%', '75%'],
+                      [context.recovery_economics_copy.y2, '15%', '85%'],
+                      [context.recovery_economics_copy.after, '0%', '100%'],
+                    ].map(([label,fee,keep]) => <div key={label} className="rounded-lg border border-white/10 p-2"><p className="text-[10px] text-white/45">{label}</p><p className="text-sm font-black text-white mt-1">{fee}</p><p className="text-[9px] text-white/45">{context.recovery_economics_copy.cambra}</p><p className="text-[10px] text-white/70 mt-1">{context.recovery_economics_copy.keep}: {keep}</p></div>)}
+                  </div>
+                  <p className="mt-3 text-[11.5px] text-white/60 leading-relaxed">{context.recovery_economics_copy.referrals}</p>
+                  <p className="mt-2 text-[11.5px] text-white/70 leading-relaxed">{context.recovery_economics_copy.verified}</p>
+                  <p className="mt-2 text-[11.5px] text-white/55 leading-relaxed">{context.recovery_economics_copy.survival}</p>
+                  <p className="mt-2 text-[11.5px] text-white/55 leading-relaxed">{context.recovery_economics_copy.data}</p>
+                </div>
+              )}
+
               {evidencePreview?.current_rate_pct != null && (
                 <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
                   <p className="text-xs text-white/55 mb-1.5">{c.evidence}</p>
