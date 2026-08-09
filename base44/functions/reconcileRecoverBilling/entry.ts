@@ -17,8 +17,12 @@ import {
 } from '../../shared/economicExecution.ts';
 
 const MAX_BATCH = 100;
+const PLATFORM_TENANT = '_platform';
+const RECONCILER_AGENT = 'recover_billing_reconciler';
 
 export default async function (req: Request): Promise<Response> {
+  let svc: any = null;
+  let task: any = null;
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
@@ -27,8 +31,18 @@ export default async function (req: Request): Promise<Response> {
 
     const requested = Number(body?.args?.limit ?? body?.limit ?? 50);
     const limit = Math.max(1, Math.min(MAX_BATCH, Number.isFinite(requested) ? Math.floor(requested) : 50));
-    const svc = base44.asServiceRole;
+    svc = base44.asServiceRole;
     const mode = resolveBillingMode();
+    task = await svc.entities.AgentTask.create({
+      brand_id: PLATFORM_TENANT,
+      agent_name: RECONCILER_AGENT,
+      task_type: 'recover_billing_reconciliation',
+      status: 'running',
+      requires_approval: false,
+      risk_level: 1,
+      input_summary: `P7-observed P6 Stripe read-only reconciliation · limit ${limit}`,
+      started_at: new Date().toISOString(),
+    }).catch(() => null);
     const rows = await svc.entities.Invoice.filter({ payment_provider: 'stripe' }, '-created_date', 250);
     const candidates = (rows || [])
       .filter((inv: any) => inv.monthly_savings_report_id && inv.stripe_invoice_id)
@@ -134,7 +148,7 @@ export default async function (req: Request): Promise<Response> {
       }
     }
 
-    return Response.json({
+    const summary = {
       ok: errors === 0,
       mode,
       scanned: candidates.length,
@@ -144,8 +158,18 @@ export default async function (req: Request): Promise<Response> {
       errors,
       results,
       guarantee: 'stripe_read_only_local_convergence',
-    });
+    };
+    if (task?.id) await svc.entities.AgentTask.update(task.id, {
+      status: errors === 0 ? 'completed' : 'failed',
+      output_summary: `Recover reconciliation: ${matched} matched · ${corrected} corrected · ${mismatched} mismatch · ${errors} errors`,
+      output_payload_json: { scanned: candidates.length, matched, corrected, mismatched, errors, guarantee: summary.guarantee },
+      ...(errors > 0 ? { error: `${errors} invoice reconciliation error(s)` } : {}),
+      completed_at: new Date().toISOString(),
+    }).catch(() => null);
+    return Response.json(summary);
   } catch (error) {
-    return Response.json({ ok: false, error: (error as Error).message }, { status: 500 });
+    const message = String((error as Error)?.message || error || 'reconciliation_failed');
+    if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: 'failed', error: message.slice(0, 500), completed_at: new Date().toISOString() }).catch(() => null);
+    return Response.json({ ok: false, error: message }, { status: 500 });
   }
 }
