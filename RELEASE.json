@@ -1,11 +1,11 @@
 {
   "releaseName": "CAMBRA v0.64.0 — ECL P5 Economic Enforcement",
   "version": "0.64.0",
-  "sourceTreeHash": "3395a8c88a0d4713f3610d84bb39a8c8d85baa75e1353b1666a0dfb5a95f42ba",
+  "sourceTreeHash": "1f63e6092fb0220ef94c997bdea5ba85e214b46a381c011894966eac96820b84",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 851,
   "sourceArchiveShaExternal": null,
-  "gitSha": "8436be4da54c0ff8a789831a263f74eb66466574",
+  "gitSha": "58879b506d2f0c74da80249117abff3917362494",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.01",
@@ -18,7 +18,7 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "56727ad359c9805fb37a5f2748d7b80fe763fa4a5a652ce9153897b3a6421f48",
+  "durabilityManifestSha": "3ea258ae3907824f3c16ed64819a0a0ee99d802d6f3bd3a9d316e8196b6e1b73",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -43,22 +43,22 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "3395a8c88a0d4713f3610d84bb39a8c8d85baa75e1353b1666a0dfb5a95f42ba",
-    "startedAt": "2026-08-08T23:52:43.324Z",
-    "completedAt": "2026-08-08T23:52:52.329Z",
+    "sourceTreeHash": "1f63e6092fb0220ef94c997bdea5ba85e214b46a381c011894966eac96820b84",
+    "startedAt": "2026-08-09T00:01:10.293Z",
+    "completedAt": "2026-08-09T00:01:19.174Z",
     "exitCode": 0,
     "ciRunId": null,
     "testFiles": 364,
-    "passed": 1487,
+    "passed": 1488,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^2.1.9"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "3395a8c88a0d4713f3610d84bb39a8c8d85baa75e1353b1666a0dfb5a95f42ba",
-    "startedAt": "2026-08-08T23:52:52.710Z",
-    "completedAt": "2026-08-08T23:53:04.437Z",
+    "sourceTreeHash": "1f63e6092fb0220ef94c997bdea5ba85e214b46a381c011894966eac96820b84",
+    "startedAt": "2026-08-09T00:01:19.550Z",
+    "completedAt": "2026-08-09T00:01:31.377Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "71e7769350b0f12df8a5a8ae1b4b84106af5189827f2c9e3ae071f191fa18101",
@@ -66,25 +66,25 @@
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "3395a8c88a0d4713f3610d84bb39a8c8d85baa75e1353b1666a0dfb5a95f42ba",
-    "startedAt": "2026-08-08T23:52:22.270Z",
-    "completedAt": "2026-08-08T23:52:31.347Z",
+    "sourceTreeHash": "1f63e6092fb0220ef94c997bdea5ba85e214b46a381c011894966eac96820b84",
+    "startedAt": "2026-08-09T00:00:49.733Z",
+    "completedAt": "2026-08-09T00:00:58.801Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "3395a8c88a0d4713f3610d84bb39a8c8d85baa75e1353b1666a0dfb5a95f42ba",
-    "startedAt": "2026-08-08T23:52:31.713Z",
-    "completedAt": "2026-08-08T23:52:33.352Z",
+    "sourceTreeHash": "1f63e6092fb0220ef94c997bdea5ba85e214b46a381c011894966eac96820b84",
+    "startedAt": "2026-08-09T00:00:59.190Z",
+    "completedAt": "2026-08-09T00:01:00.831Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "3395a8c88a0d4713f3610d84bb39a8c8d85baa75e1353b1666a0dfb5a95f42ba",
-    "startedAt": "2026-08-08T23:52:33.708Z",
-    "completedAt": "2026-08-08T23:52:42.911Z",
+    "sourceTreeHash": "1f63e6092fb0220ef94c997bdea5ba85e214b46a381c011894966eac96820b84",
+    "startedAt": "2026-08-09T00:01:01.180Z",
+    "completedAt": "2026-08-09T00:01:09.920Z",
     "exitCode": 0,
     "ciRunId": null
   },
@@ -92,5 +92,5 @@
     "dist": "71e7769350b0f12df8a5a8ae1b4b84106af5189827f2c9e3ae071f191fa18101"
   },
   "manualRequirements": [],
-  "generatedAt": "2026-08-08T23:53:04.847Z"
+  "generatedAt": "2026-08-09T00:01:31.783Z"
 }
