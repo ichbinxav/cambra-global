@@ -46,6 +46,8 @@ export default async function (req: Request): Promise<Response> {
     if (!['migrating','live'].includes(activation.status)) {
       return Response.json({ error: 'migration_activation_not_operational', activation_status: activation.status }, { status: 409 });
     }
+    const activeMandates = await svc.entities.Mandate.filter({ deal_activation_id: activation.id, status: 'active' }, '-created_date', 1).catch(() => []);
+    if (!activeMandates.length) return Response.json({ error: 'active_mandate_required' }, { status: 409 });
 
     const allTasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
     const tasks = allTasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION && t.status !== 'canceled');
