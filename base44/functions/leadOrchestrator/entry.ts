@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 
 const ORCHESTRATOR_NAME = "lead_orchestrator";
 const TASK_TYPE = "orchestrate";
@@ -10,11 +11,9 @@ Deno.serve(async (req) => {
   let parent = null;
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
-    if (user.role !== "admin") return Response.json({ error: "Forbidden" }, { status: 403 });
-
     const body = await req.json().catch(() => ({}));
+    const gate = await requireAdminOrInternal(req, base44, body);
+    if (!gate.ok) return gate.response;
     const icp = body?.icp || {};
 
     parent = await base44.asServiceRole.entities.AgentTask.create({
@@ -44,7 +43,8 @@ Deno.serve(async (req) => {
       let stepError = null;
 
       try {
-        const res = await base44.functions.invoke(step.name, step.payload);
+        const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
+        const res = await base44.functions.invoke(step.name, { ...step.payload, internal_secret: internal });
         const data = res?.data || res || {};
         childTaskId = data.task_id || null;
 
