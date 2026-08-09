@@ -1,0 +1,115 @@
+{
+  "name": "CommunicationThread",
+  "type": "object",
+  "description": "Canonical bidirectional commercial/operations conversation. Admin-only; messages carry provenance and provider ids.",
+  "properties": {
+    "thread_key": {
+      "type": "string"
+    },
+    "engine": {
+      "type": "string",
+      "enum": [
+        "merchant_acquisition",
+        "provider_negotiation",
+        "merchant_operations",
+        "support"
+      ]
+    },
+    "related_entity_type": {
+      "type": "string"
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "recover_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "lead_id": {
+      "type": "string"
+    },
+    "counterparty_email": {
+      "type": "string"
+    },
+    "counterparty_name": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr",
+        "es"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "awaiting_counterparty",
+        "awaiting_cambra",
+        "awaiting_approval",
+        "closed",
+        "suppressed"
+      ],
+      "default": "open"
+    },
+    "classification": {
+      "type": "string"
+    },
+    "policy_key": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "external_thread_id": {
+      "type": "string"
+    },
+    "last_message_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "next_action_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_inbound_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_outbound_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "automation_paused": {
+      "type": "boolean",
+      "default": false
+    },
+    "pause_reason": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "thread_key",
+    "engine",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
