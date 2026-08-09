@@ -71,6 +71,11 @@ Deno.serve(async (req) => {
     }
 
     const start=new Date(chosen); const end=new Date(chosen+SLOT_MS);
+    const allowedMeetingTypes=new Set(['low_value','operational','technical','commercial','strategic','legal','executive']);
+    const defaultMeetingType=thread.engine==='aggregate_procurement'?'strategic':'commercial';
+    const meetingClassification=allowedMeetingTypes.has(String(body?.meeting_classification||''))?String(body.meeting_classification):defaultMeetingType;
+    const founderRequired=['strategic','legal','executive'].includes(meetingClassification);
+    const meetingBrief={classification:meetingClassification,founder_required:founderRequired,counterparty:thread.counterparty_name||attendee,engine:thread.engine,thread_summary:thread.summary||'',current_stage:thread.classification||thread.status,red_lines:['No material contract acceptance without L4','No volume guarantee without explicit authority','No invented meeting notes or commitments'],source:'real_thread_context'};
     const transactionId=`cambra-${thread.id}-${start.toISOString().slice(0,16)}`.replace(/[^a-zA-Z0-9-]/g,'').slice(0,120);
     const subject=sanitizeExternalText(body?.subject || (thread.engine==='aggregate_procurement'?'CAMBRA — Aggregate procurement discussion':'CAMBRA — Payments infrastructure review'),200);
     const eventRes=await fetch('https://graph.microsoft.com/v1.0/me/events',{
@@ -88,12 +93,12 @@ Deno.serve(async (req) => {
     if(!eventRes.ok) throw new Error(`outlook_event_create_failed:${eventRes.status}`);
 
     const now=new Date().toISOString();
-    await svc.entities.CommunicationThread.update(thread.id,{status:'closed',automation_paused:true,pause_reason:'meeting_booked',next_action_at:null,meeting_event_id:event.id||'',meeting_start_at:start.toISOString(),meeting_end_at:end.toISOString(),post_meeting_status:'pending',summary:`Meeting booked ${start.toISOString()} · ${attendee}`});
+    await svc.entities.CommunicationThread.update(thread.id,{status:'closed',automation_paused:true,pause_reason:'meeting_booked',next_action_at:null,meeting_event_id:event.id||'',meeting_start_at:start.toISOString(),meeting_end_at:end.toISOString(),meeting_classification:meetingClassification,founder_required:founderRequired,meeting_brief_json:meetingBrief,post_meeting_status:'pending',summary:`Meeting booked ${start.toISOString()} · ${attendee}`});
     if(thread.engine==='merchant_acquisition'&&thread.lead_id) await svc.entities.OutboundLead.update(thread.lead_id,{stage:'meeting',next_action:`Meeting booked ${start.toISOString()}`}).catch(()=>null);
     if(thread.engine==='partner_acquisition'&&thread.related_entity_id) await svc.entities.PartnerProspect.update(thread.related_entity_id,{stage:'meeting',next_action_at:null}).catch(()=>null);
     await svc.entities.OperationalLog.create({event_type:'commercial_meeting_booked',message:`Outlook meeting with ${attendee}`,data_json:{thread_id:thread.id,lead_id:thread.lead_id||null,event_id:event.id||null,start:start.toISOString(),end:end.toISOString(),organizer,attendee},created_at:now}).catch(()=>null);
     await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Outlook meeting booked ${start.toISOString()} with ${attendee}`,output_payload_json:{event_id:event.id||null,start:start.toISOString(),end:end.toISOString(),organizer,attendee},completed_at:now});
-    return Response.json({ok:true,task_id:task.id,event_id:event.id||null,start:start.toISOString(),end:end.toISOString(),organizer,attendee});
+    return Response.json({ok:true,task_id:task.id,event_id:event.id||null,start:start.toISOString(),end:end.toISOString(),organizer,attendee,meeting_classification:meetingClassification,founder_required:founderRequired,meeting_brief:meetingBrief});
   } catch(error) {
     console.error('outlookMeetingCoordinator failed',error);
     if(task?.id){try{const b=createClientFromRequest(req);await b.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:'outlook_meeting_failed',completed_at:new Date().toISOString()});}catch{}}
