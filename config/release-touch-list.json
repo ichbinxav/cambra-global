@@ -1,6 +1,6 @@
 {
-  "release": "0.65.0",
-  "comment": "CAMBRA v0.65.0 — ECL P6 Economic Execution & Reconciliation. Active stage ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION with 58 exact paths and 8 frozen entries. P5 remains the authorization authority; P6 adds deterministic local invoice execution claims, Stripe-current-state webhook/reconciliation, additive reconciliation provenance, and blocks local/manual second payment truths for Recover Stripe invoices.",
+  "release": "0.66.0",
+  "comment": "CAMBRA v0.66.0 — ECL P7 Production Operations & Incident Recovery. Active stage ECL_P7_PRODUCTION_OPERATIONS_INCIDENT_RECOVERY with 67 exact paths and 8 frozen entries. P7 adds authoritative worker/backlog/drift detection, idempotent OperationalIncident episodes, versioned webhook DLQ scheduling, and explicit admin-only bounded recovery while preserving P5/P6 economic authority and Stripe read-only reconciliation.",
   "files": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -88,6 +88,15 @@
     "base44/functions/recordPayment/entry.ts",
     "base44/functions/createPaymentLink/entry.ts",
     "src/lib/eclP6Closure.test.js",
-    "src/lib/productionFunctions.static.test.js"
+    "src/lib/productionFunctions.static.test.js",
+    "base44/entities/OperationalIncident.jsonc",
+    "base44/shared/eclOperationalRecovery.ts",
+    "base44/functions/eclProductionHealth/entry.ts",
+    "base44/functions/eclProductionHealth/function.jsonc",
+    "base44/functions/eclIncidentWorkflow/entry.ts",
+    "base44/functions/processWebhookDeadLetters/entry.ts",
+    "base44/functions/processWebhookDeadLetters/function.jsonc",
+    "src/pages/admin/EclOperations.jsx",
+    "src/lib/eclP7Closure.test.js"
   ]
 }
