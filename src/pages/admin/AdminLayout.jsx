@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch
+  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -11,6 +11,8 @@ import { base44 } from "@/api/base44Client";
 const NAV = [
   { path: "/admin", label: "Command Center", icon: LayoutDashboard, exact: true },
   { path: "/admin/inbox", label: "Inbox", icon: Inbox, showQuestionsBadge: true },
+  { path: "/admin/agents", label: "AI Operations", icon: Bot },
+  { path: "/admin/automations", label: "Automations", icon: Workflow },
   { path: "/admin/chat", label: "Chat", icon: MessageSquare },
   { path: "/admin/discovery", label: "Discovery", icon: Search },
   { path: "/admin/evidence-review", label: "Evidence Review", icon: FileSearch },

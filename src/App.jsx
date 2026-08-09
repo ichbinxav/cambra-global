@@ -66,6 +66,8 @@ const AdminActivity = lazy(() => import('@/pages/admin/AdminActivity'));
 const AdminApprovals = lazy(() => import('@/pages/admin/AdminApprovals'));
 const AdminCopilot = lazy(() => import('@/pages/admin/AdminCopilot'));
 const AdminCommand = lazy(() => import('@/pages/admin/AdminCommand'));
+const AdminAgents = lazy(() => import('@/pages/admin/AdminAgents'));
+const AdminAutomations = lazy(() => import('@/pages/admin/AdminAutomations'));
 const AdminInbox = lazy(() => import('@/pages/admin/AdminInbox'));
 const AdminChat = lazy(() => import('@/pages/admin/AdminChat'));
 const AdminDiscovery = lazy(() => import('@/pages/admin/AdminDiscovery'));
@@ -311,6 +313,8 @@ const AuthenticatedApp = () => {
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
           <Route path="/admin" element={withBoundary(<AdminCommand />)} />
           <Route path="/admin/command" element={withBoundary(<AdminCommand />)} />
+          <Route path="/admin/agents" element={withBoundary(<AdminAgents />)} />
+          <Route path="/admin/automations" element={withBoundary(<AdminAutomations />)} />
           <Route path="/admin/inbox" element={withBoundary(<AdminInbox />)} />
           <Route path="/admin/chat" element={withBoundary(<AdminChat />)} />
           <Route path="/admin/discovery" element={withBoundary(<AdminDiscovery />)} />
