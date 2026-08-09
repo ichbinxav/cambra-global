@@ -176,7 +176,7 @@ async function runLayer1Anthropic(fileUrl: string, fileName: string) {
   // for both PDF (document block) and images (image block).
   let base64Data: string;
   try {
-    const fileRes = await fetch(fileUrl);
+    const fileRes = await fetch(fileUrl, { redirect: 'error' });
     if (!fileRes.ok) return null;
     const buf = new Uint8Array(await fileRes.arrayBuffer());
     if (buf.length > 15 * 1024 * 1024) return null; // CONSOLIDATE-1 T3 — 15MB cap, degrades to format_unknown
@@ -358,7 +358,7 @@ RULES:
   } else {
     // PDF path — fetch + base64 inline as a file part.
     try {
-      const fileRes = await fetch(fileUrl);
+      const fileRes = await fetch(fileUrl, { redirect: 'error' });
       if (!fileRes.ok) return null;
       const buf = new Uint8Array(await fileRes.arrayBuffer());
     if (buf.length > 15 * 1024 * 1024) return null; // CONSOLIDATE-1 T3 — 15MB cap, degrades to format_unknown
@@ -556,6 +556,22 @@ async function runExtraction(base44: any, fileUrl: string, fileName: string, mon
   };
 }
 
+// ─── Upload trust boundary ──────────────────────────────────────────────────
+// UploadFile returns media.base44.com URLs. Never fetch an arbitrary client URL:
+// that would turn this authenticated endpoint into an SSRF primitive. Redirects
+// are also refused in the extractor fetches so an allowlisted URL cannot bounce
+// to an untrusted/internal destination.
+const TRUSTED_UPLOAD_HOSTS = new Set(['media.base44.com']);
+export function validateTrustedUploadUrl(raw: unknown): { ok: true; url: string } | { ok: false } {
+  try {
+    const u = new URL(String(raw || ''));
+    if (u.protocol !== 'https:' || u.username || u.password || !TRUSTED_UPLOAD_HOSTS.has(u.hostname.toLowerCase())) return { ok: false };
+    return { ok: true, url: u.toString() };
+  } catch {
+    return { ok: false };
+  }
+}
+
 // ─── HTTP endpoint ───────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   try {
@@ -566,11 +582,14 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { file_url, file_name, brand_id: requestedBrandId } = body || {};
     if (!file_url) return Response.json({ error: 'file_url is required' }, { status: 400 });
+    const trustedUpload = validateTrustedUploadUrl(file_url);
+    if (!trustedUpload.ok) return Response.json({ error: 'untrusted_file_url' }, { status: 400 });
+    const trustedFileUrl = trustedUpload.url;
 
     // CONSOLIDATE-1 T3 — pure input validation: extension allowlist. Covers
     // every format any layer can actually parse (csv/xlsx/pdf/images/json);
     // anything else was already dead weight ('other' parser, no extraction).
-    const extName = String(file_name || file_url).split('?')[0].toLowerCase();
+    const extName = String(file_name || trustedFileUrl).split('?')[0].toLowerCase();
     if (!/\.(csv|xlsx?|pdf|png|jpe?g|webp|gif|json)$/.test(extName)) {
       return Response.json({ error: 'unsupported_file_type' }, { status: 400 });
     }
@@ -597,7 +616,7 @@ Deno.serve(async (req) => {
     }
 
     // Run the 3-layer extractor. Everything downstream reads its verdict.
-    const verdict = await runExtraction(base44, file_url, file_name || '', monthlyRevenue);
+    const verdict = await runExtraction(base44, trustedFileUrl, file_name || '', monthlyRevenue);
 
     // Persist the audit trail on StatementImport regardless of outcome — the
     // whole point is that we can show the founder "we tried, here's what we
@@ -615,7 +634,7 @@ Deno.serve(async (req) => {
       })();
       const created = await base44.entities.StatementImport.create({
         brand_id: brandId,
-        file_url,
+        file_url: trustedFileUrl,
         parser: parserGuess,
         parsed_status: verdict.status,
         extraction_confidence: verdict.extraction_confidence,
