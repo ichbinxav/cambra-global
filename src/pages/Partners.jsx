@@ -57,7 +57,7 @@ const PARTNER_DO = ["pt_princ_a_1", "pt_princ_a_2", "pt_princ_a_3", "pt_princ_a_
 const PARTNER_DONT = ["pt_princ_b_1", "pt_princ_b_2", "pt_princ_b_3", "pt_princ_b_4", "pt_princ_b_5", "pt_princ_b_6", "pt_princ_b_7"];
 
 // ── Systematic section header: mono index + tracked label + heading + intro ──
-function SectionHead({ index, label, title, intro, dark = false }) {
+function SectionHead({ index, label, title, intro = null, dark = false }) {
   return (
     <div className="mb-10 sm:mb-12">
       <div className="flex items-center gap-3 mb-4">
