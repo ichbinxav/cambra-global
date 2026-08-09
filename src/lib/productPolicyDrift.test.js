@@ -74,6 +74,13 @@ describe("policy drift guards — backend economic hardcodes (v60.1)", () => {
     expect(read("base44/functions/startRecoverAcceptance/entry.ts")).toContain("getFeeDurationMonths");
     expect(read("base44/functions/acceptRecoverMandate/entry.ts")).toContain("getSuccessFeePct");
   });
+  it("Recover context/commitments never hardcode a 25% fallback", () => {
+    for (const rel of ["base44/functions/getRecoverAcceptanceContext/entry.ts", "base44/functions/getMyRecoveryCommitments/entry.ts"]) {
+      const src = read(rel);
+      expect(src).toContain("getSuccessFeePct");
+      expect(src).not.toMatch(/fallbackPct\s*:\s*25\b/);
+    }
+  });
   it("acceptance snapshot carries policy_version", () => {
     expect(read("base44/shared/recoverAcceptance.ts")).toContain("policy_version");
     expect(read("base44/shared/recoverAcceptance.ts")).toContain("PRODUCT_POLICY.policyVersion");

@@ -68,11 +68,11 @@ describe("ECL P1 — extended schemas (additive only)", () => {
     ]);
   });
 
-  it("both extended schemas keep their ORIGINAL owner-or-admin RLS", () => {
+  it("StatementImport stays owner-writable while derived SavingsEvidence is server/admin-write only", () => {
     expect(StatementImport.rls.read).toEqual(OWNER_OR_ADMIN);
     expect(StatementImport.rls.write).toEqual(OWNER_OR_ADMIN);
     expect(SavingsEvidence.rls.read).toEqual(OWNER_OR_ADMIN);
-    expect(SavingsEvidence.rls.write).toEqual(OWNER_OR_ADMIN);
+    expect(SavingsEvidence.rls.write).toEqual(ADMIN_ONLY);
   });
 });
 

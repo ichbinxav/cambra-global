@@ -30,11 +30,10 @@
 // first day of that month), and it is flagged separately in the email and in the
 // counters so it reads as a final billable month, not a running one.
 //
-// KNOWN CEILING (2026-08-04): the queries below read 250 activations per status
-// and 500 reports sorted by -month. Fine at today's scale, but around ~500
-// merchants × 12 months the report cut-off starts truncating SILENTLY, and the
-// digest would stop seeing old blocked months. Revisit (paginate, or filter by
-// month window) before that point.
+// Coverage guard: the SDK calls below are bounded. Hitting a bound must NEVER
+// look like complete coverage: coverage_truncated is surfaced in the digest and
+// OperationalLog so operators know to inspect/paginate manually until a native
+// cursor/filter path is available for these entity queries.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { parisMonthOf } from '../../shared/recoverBillingMath.ts';
 
@@ -93,6 +92,7 @@ export default async function (req: Request): Promise<Response> {
     const live = await svc.entities.DealActivation.filter({ status: 'live' }, '-created_date', 250).catch(() => []);
     const monetizing = await svc.entities.DealActivation.filter({ status: 'monetizing' }, '-created_date', 250).catch(() => []);
     const paused = await svc.entities.DealActivation.filter({ status: 'paused' }, '-created_date', 250).catch(() => []);
+    const coverageTruncated = (reports || []).length >= 500 || (live || []).length >= 250 || (monetizing || []).length >= 250 || (paused || []).length >= 250;
     const candidates = [
       ...(live || []).map(a => ({ a, was_paused: false })),
       ...(monetizing || []).map(a => ({ a, was_paused: false })),
@@ -121,7 +121,7 @@ export default async function (req: Request): Promise<Response> {
     }).map(({ a, was_paused }) => ({ brand_id: a.brand_id, month: targetMonth, deal_activation_id: a.id, was_paused, recovery_economics_version: a.recovery_economics_version || 'legacy-v1' }));
     const missingReportsPaused = missingReports.filter(r => r.was_paused).length;
 
-    if (!awaitingApproval.length && !approvedNotInvoiced.length && !blocked.length && !missingReports.length) {
+    if (!awaitingApproval.length && !approvedNotInvoiced.length && !blocked.length && !missingReports.length && !coverageTruncated) {
       return Response.json({ ok: true, sent: false, reason: 'nothing_pending' });
     }
 
@@ -144,6 +144,7 @@ export default async function (req: Request): Promise<Response> {
       <div style="font-family:Inter,Arial,sans-serif;max-width:640px">
         <h2 style="font-size:18px;margin:0 0 4px">Recover billing — weekly check</h2>
         <p style="font-size:13px;color:#666;margin:0 0 18px">Nothing below has been approved or invoiced automatically. Every action stays yours.</p>
+        ${coverageTruncated ? '<p style="font-size:13px;color:#9a3412;margin:0 0 18px;font-weight:700">Coverage warning: one or more bounded queries reached their limit. Treat these counts as incomplete until manually reviewed.</p>' : ''}
 
         <h3 style="font-size:14px;margin:0 0 2px">Months with no report generated (${missingReports.length})</h3>
         ${list(missingReports, r => ` · no measurement recorded for the closed month${r.was_paused ? ' · activation paused' : ''}`)}
@@ -180,6 +181,7 @@ export default async function (req: Request): Promise<Response> {
         awaiting_approval: awaitingApproval.length,
         approved_not_invoiced: approvedNotInvoiced.length,
         blocked: blocked.length,
+        coverage_truncated: coverageTruncated,
       },
       actor_email: 'scheduler',
       created_at: new Date().toISOString(),
@@ -196,8 +198,10 @@ export default async function (req: Request): Promise<Response> {
       awaiting_approval: awaitingApproval.length,
       approved_not_invoiced: approvedNotInvoiced.length,
       blocked: blocked.length,
+      coverage_truncated: coverageTruncated,
     });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    console.error('recoverBillingDigest failed', error);
+    return Response.json({ error: 'recover_billing_digest_failed' }, { status: 500 });
   }
 }
