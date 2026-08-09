@@ -1,0 +1,105 @@
+{
+  "name": "DemandUnit",
+  "type": "object",
+  "description": "P14 normalized negotiable merchant demand. Production evidence only. Observed, addressable and explicitly committed demand remain distinct.",
+  "properties": {
+    "demand_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "subcategory": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "current_provider_slug": {
+      "type": "string"
+    },
+    "observed_annual_volume_minor": {
+      "type": "number"
+    },
+    "addressable_annual_volume_minor": {
+      "type": "number"
+    },
+    "committed_annual_volume_minor": {
+      "type": "number"
+    },
+    "probable_annual_volume_minor": {
+      "type": "number"
+    },
+    "transaction_count_annualized": {
+      "type": "number"
+    },
+    "annual_spend_minor": {
+      "type": "number"
+    },
+    "migration_readiness": {
+      "type": "number"
+    },
+    "switching_friction": {
+      "type": "number"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "demand_profile_json": {
+      "type": "object"
+    },
+    "evidence_json": {
+      "type": "object"
+    },
+    "data_classification": {
+      "type": "string",
+      "enum": [
+        "production",
+        "internal_test",
+        "sandbox",
+        "demo",
+        "unknown"
+      ]
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "demand_key",
+    "brand_id",
+    "vertical",
+    "currency",
+    "observed_annual_volume_minor",
+    "addressable_annual_volume_minor",
+    "committed_annual_volume_minor",
+    "confidence",
+    "data_classification"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
