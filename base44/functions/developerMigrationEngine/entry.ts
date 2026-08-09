@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 
 const ENGINE_VERSION = 'cambra-developer-v1';
 const GITHUB_API = 'https://api.github.com';
@@ -34,18 +35,7 @@ async function connection(svc:any) {
   return conn.accessToken as string;
 }
 
-async function callClaude(prompt:string, maxTokens=7000) {
-  const key = Deno.env.get('ANTHROPIC_API_KEY');
-  if (!key) throw new Error('anthropic_required');
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
-    body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`anthropic_${res.status}:${data?.error?.message || 'request_failed'}`);
-  return data?.content?.map((x:any)=>x?.text||'').join('\n') || '';
-}
+async function callClaude(prompt:string,maxTokens=7000){return (await callCambraClaude(prompt,{tier:'high_reasoning',maxTokens})).text}
 
 function parseJson(text:string) {
   const cleaned = String(text||'').replace(/```json\s*/gi,'').replace(/```/g,'').trim();

@@ -1,15 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { L4_CLASSIFICATIONS, SAFE_ROUTINE_CLASSIFICATIONS, classifyHardStop, communicationQuality, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
+import { callCambraClaude, commercialNeedsHighReasoning } from '../../shared/commercialModelRouter.ts';
 
-async function callClaude(prompt:string) {
-  const key = Deno.env.get('ANTHROPIC_API_KEY');
-  if (!key) throw new Error('anthropic_not_configured');
-  const res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01' }, body:JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:2200, messages:[{role:'user',content:prompt}] }) });
-  const data = await res.json().catch(()=>({}));
-  if (!res.ok) throw new Error(`anthropic_failed:${res.status}`);
-  return String(data?.content?.[0]?.text || '');
-}
+async function callClaude(prompt:string,tier:'standard'|'high_reasoning'='standard'){return (await callCambraClaude(prompt,{tier,maxTokens:2200})).text}
 function parseJson(text:string) {
   const clean=text.replace(/```json\s*/gi,'').replace(/```/g,'').trim();
   try{return JSON.parse(clean)}catch{}
@@ -45,7 +39,7 @@ Deno.serve(async (req)=>{
         'Writing: concise, specific, natural, no fake human identity, no generic enthusiasm, no AI meta language, no formulaic opener, no unnecessary bullets or em-dash-heavy prose.',
         'THREAD:',JSON.stringify(transcript)
       ].join('\n');
-      result=parseJson(await callClaude(prompt));
+      const tier=commercialNeedsHighReasoning(thread.engine,String(message.subject||'')+' '+String(message.text_body||''))?'high_reasoning':'standard';result=parseJson(await callClaude(prompt,tier));
       if(!result||!result.classification)throw new Error('reply_classification_unparseable');
     }
     const classification=String(result.classification||'unknown');
@@ -105,7 +99,7 @@ Deno.serve(async (req)=>{
     }
 
     let quality=communicationQuality(String(result.reply_body||''));
-    if(result.response_required&& !quality.ok){ const retryPrompt=['Rewrite this CAMBRA reply so it is concise, contextual and natural. Preserve facts, intent and language. No generic opener, no corporate filler, no unnecessary list, no invented identity. Return ONLY JSON {\"reply_subject\":\"...\",\"reply_body\":\"...\"}.',JSON.stringify({subject:result.reply_subject,body:result.reply_body,quality_reasons:quality.reasons})].join('\n'); const retry=parseJson(await callClaude(retryPrompt)); if(retry?.reply_body){result.reply_body=retry.reply_body;result.reply_subject=retry.reply_subject||result.reply_subject;quality=communicationQuality(String(result.reply_body||''));} if(!quality.ok){await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:true,pause_reason:'communication_quality_gate_failed'});await svc.entities.AgentTask.update(task.id,{status:'waiting_input',output_summary:'Reply failed communication quality gate after regeneration',output_payload_json:{classification,quality},completed_at:new Date().toISOString()});return Response.json({ok:true,automatic:false,escalated:true,error:'communication_quality_gate_failed',quality});}}
+    if(result.response_required&& !quality.ok){ const retryPrompt=['Rewrite this CAMBRA reply so it is concise, contextual and natural. Preserve facts, intent and language. No generic opener, no corporate filler, no unnecessary list, no invented identity. Return ONLY JSON {\"reply_subject\":\"...\",\"reply_body\":\"...\"}.',JSON.stringify({subject:result.reply_subject,body:result.reply_body,quality_reasons:quality.reasons})].join('\n'); const retry=parseJson(await callClaude(retryPrompt,commercialNeedsHighReasoning(thread.engine,String(message.text_body||''))?'high_reasoning':'standard')); if(retry?.reply_body){result.reply_body=retry.reply_body;result.reply_subject=retry.reply_subject||result.reply_subject;quality=communicationQuality(String(result.reply_body||''));} if(!quality.ok){await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:true,pause_reason:'communication_quality_gate_failed'});await svc.entities.AgentTask.update(task.id,{status:'waiting_input',output_summary:'Reply failed communication quality gate after regeneration',output_payload_json:{classification,quality},completed_at:new Date().toISOString()});return Response.json({ok:true,automatic:false,escalated:true,error:'communication_quality_gate_failed',quality});}}
 
     const policies=await svc.entities.CommercialPolicy.filter({policy_key:thread.policy_key,status:'active'},'-created_date',5).catch(()=>[]); const policy=policies.find((p:any)=>p.version===thread.policy_version)||policies[0]||null;
     const action=String(result.action||'routine_reply'); const authz=routineActionAllowed(policy,action,classification);

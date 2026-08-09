@@ -1,8 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { isBusinessHour, policyIsActive, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 
-async function claude(prompt:string){const k=Deno.env.get('ANTHROPIC_API_KEY');if(!k)throw new Error('anthropic_not_configured');const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1200,messages:[{role:'user',content:prompt}]})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(`anthropic_failed:${r.status}`);return String(d?.content?.[0]?.text||'')}
+async function claude(prompt:string){return (await callCambraClaude(prompt,{tier:'standard',maxTokens:1200})).text}
 function parse(t:string){const c=t.replace(/```json\s*/gi,'').replace(/```/g,'').trim();try{return JSON.parse(c)}catch{}const m=c.match(/\{[\s\S]*\}/);if(m){try{return JSON.parse(m[0])}catch{}}return null}
 
 Deno.serve(async(req)=>{let task:any=null;try{
