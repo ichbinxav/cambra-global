@@ -23,6 +23,14 @@ Deno.serve(async(req)=>{try{
    return Response.json({ok:true,status:'approved',case_id:c.id,offer_id:offer.id,revalidated:true,continued:'contract_request'});
  }
 
+ if(ap.action_type==='contract_mismatch'||ap.action_type==='contract_exception'){
+   const c=await svc.entities.NegotiationCase.get(ap.related_entity_id).catch(()=>null);if(!c)return Response.json({ok:false,error:'negotiation_case_missing'},{status:409});
+   await svc.entities.Approval.update(ap.id,{status:'approved',approved_by:user.email,approved_at:now});
+   await svc.entities.NegotiationCase.update(c.id,{status:'contract_received',next_action:'manual_contract_resolution_required'}).catch(()=>null);
+   await svc.entities.OperationalLog.create({event_type:'provider_contract_exception_acknowledged',message:ap.action_type,data_json:{approval_id:ap.id,case_id:c.id,contract_execution:false,migration_go_live:false},actor_email:user.email,created_at:now}).catch(()=>null);
+   return Response.json({ok:true,status:'approved',continued:'manual_contract_resolution_required',contract_execution:false});
+ }
+
  if(ap.action_type==='commercial_reply_exception'||ap.action_type==='provider_negotiation_review'){
    const payload=ap.draft_payload_json||{};const thread=await svc.entities.CommunicationThread.get(String(payload.thread_id||ap.related_entity_id||'')).catch(()=>null);if(!thread)return Response.json({ok:false,error:'thread_missing'},{status:409});
    await svc.entities.Approval.update(ap.id,{status:'approved',approved_by:user.email,approved_at:now});
