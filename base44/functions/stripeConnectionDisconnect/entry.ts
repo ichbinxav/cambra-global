@@ -141,6 +141,11 @@ Deno.serve(async (req) => {
       }
     } catch { /* consents are optional plumbing — don't fail the disconnect */ }
 
+    const activeRecoveries = await svc.entities.DealActivation.filter({ brand_id, economic_right_status: 'active' }, '-created_date', 100).catch(() => []);
+    for (const recovery of activeRecoveries || []) {
+      await svc.entities.DealActivation.update(recovery.id, { verification_access_status: 'missing' }).catch(() => null);
+    }
+    await svc.entities.OperationalLog.create({ brand_id, event_type: 'status_changed', message: 'recovery_verification_source_disconnected', data_json: { active_recovery_ids: (activeRecoveries || []).map((r:any)=>r.id), billing_effect: 'verification_required_no_estimated_billing' }, actor_email: user.email || '', created_at: now }).catch(() => null);
     return Response.json({ ok: true, disconnected: counters });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });

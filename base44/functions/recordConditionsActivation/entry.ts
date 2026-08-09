@@ -67,6 +67,12 @@ export default async function (req: Request): Promise<Response> {
     const activeMandate = mandates[0];
     const isV2 = activeMandate?.acceptance_snapshot_json?.recovery_economics?.version === RECOVERY_ECONOMICS_V2;
     const v2Term = isV2 ? recoveryTermFromActivation(iso) : null;
+    const attributionKey = isV2 ? [activation.brand_id || '', activation.vertical || 'payments', activation.provider_id || activation.provider_to || 'provider-scope'].join(':') : null;
+    if (isV2) {
+      const siblings = await svc.entities.DealActivation.filter({ brand_id: activation.brand_id, economic_right_status: 'active' }, '-created_date', 100).catch(() => []);
+      const overlap = (siblings || []).find((a:any) => a.id !== activation.id && String(a.recovery_attribution_key || '') === attributionKey && (!a.recovery_term_end_date || a.recovery_term_end_date > v2Term.start));
+      if (overlap) return Response.json({ error: 'overlapping_recovery_attribution_required', conflicting_activation_id: overlap.id }, { status: 409 });
+    }
     const endAt = agreementEndAt(iso);
     // First invoice is issuable in the month AFTER the first measured month.
     const [fy, fm] = firstMonth.split('-').map(Number);
@@ -80,7 +86,7 @@ export default async function (req: Request): Promise<Response> {
       first_measurement_month: firstMonth,
       agreement_end_at: isV2 ? new Date(`${v2Term.endExclusive}T00:00:00Z`).toISOString() : endAt,
       first_invoice_eligible_at: firstInvoiceEligible,
-      ...(isV2 ? { recovery_economics_version: RECOVERY_ECONOMICS_V2, recovery_term_start_date: v2Term.start, recovery_term_year2_start_date: v2Term.year2Start, recovery_term_end_date: v2Term.endExclusive, economic_right_status: 'active', verification_access_status: 'connected' } : {}),
+      ...(isV2 ? { recovery_economics_version: RECOVERY_ECONOMICS_V2, recovery_term_start_date: v2Term.start, recovery_term_year2_start_date: v2Term.year2Start, recovery_term_end_date: v2Term.endExclusive, economic_right_status: 'active', verification_access_status: 'connected', recovery_attribution_key: attributionKey } : {}),
     });
 
     await svc.entities.OperationalLog.create({
@@ -94,7 +100,7 @@ export default async function (req: Request): Promise<Response> {
         activation_month: parisMonthOf(iso),
         first_measurement_month: firstMonth,
         agreement_end_at: isV2 ? v2Term.endExclusive : endAt,
-        ...(isV2 ? { recovery_economics_version: RECOVERY_ECONOMICS_V2, recovery_term_start_date: v2Term.start, recovery_term_year2_start_date: v2Term.year2Start, recovery_term_end_date: v2Term.endExclusive, economic_right_status: 'active' } : {}),
+        ...(isV2 ? { recovery_economics_version: RECOVERY_ECONOMICS_V2, recovery_term_start_date: v2Term.start, recovery_term_year2_start_date: v2Term.year2Start, recovery_term_end_date: v2Term.endExclusive, economic_right_status: 'active', recovery_attribution_key: attributionKey } : {}),
         source,
         evidence_note: String(evidence_note).slice(0, 2000),
         previous_value: activation.conditions_activated_at || null,
@@ -112,7 +118,7 @@ export default async function (req: Request): Promise<Response> {
       first_measurement_month: firstMonth,
       first_invoice_eligible_at: firstInvoiceEligible,
       agreement_end_at: isV2 ? v2Term.endExclusive : endAt,
-      ...(isV2 ? { recovery_term_start_date: v2Term.start, recovery_term_year2_start_date: v2Term.year2Start, recovery_term_end_date: v2Term.endExclusive, economic_right_status: 'active' } : {}),
+      ...(isV2 ? { recovery_term_start_date: v2Term.start, recovery_term_year2_start_date: v2Term.year2Start, recovery_term_end_date: v2Term.endExclusive, economic_right_status: 'active', recovery_attribution_key: attributionKey } : {}),
     });
   } catch (error) {
     return Response.json({ error: (error as Error).message }, { status: 500 });
