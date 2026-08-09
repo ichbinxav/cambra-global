@@ -1,0 +1,89 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { L4_CLASSIFICATIONS, SAFE_ROUTINE_CLASSIFICATIONS, classifyHardStop, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
+
+async function callClaude(prompt:string) {
+  const key = Deno.env.get('ANTHROPIC_API_KEY');
+  if (!key) throw new Error('anthropic_not_configured');
+  const res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01' }, body:JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:2200, messages:[{role:'user',content:prompt}] }) });
+  const data = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(`anthropic_failed:${res.status}`);
+  return String(data?.content?.[0]?.text || '');
+}
+function parseJson(text:string) {
+  const clean=text.replace(/```json\s*/gi,'').replace(/```/g,'').trim();
+  try{return JSON.parse(clean)}catch{}
+  const m=clean.match(/\{[\s\S]*\}/); if(m){try{return JSON.parse(m[0])}catch{}}
+  return null;
+}
+
+Deno.serve(async (req)=>{
+  let task:any=null;
+  try{
+    const base44=createClientFromRequest(req); const body=await req.json().catch(()=>({}));
+    const gate=await requireAdminOrInternal(req,base44,body); if(!gate.ok)return gate.response;
+    const svc=base44.asServiceRole;
+    const thread=await svc.entities.CommunicationThread.get(String(body?.thread_id||'')).catch(()=>null);
+    const message=await svc.entities.CommunicationMessage.get(String(body?.message_id||'')).catch(()=>null);
+    if(!thread||!message||message.thread_id!==thread.id||message.direction!=='inbound')return Response.json({ok:false,error:'thread_message_not_found'},{status:404});
+    task=await svc.entities.AgentTask.create({ brand_id:thread.related_entity_type==='Brand'?thread.related_entity_id:'_platform', agent_name:'commercial_reply', task_type:'classify_and_reply', related_entity_type:'CommunicationThread', related_entity_id:thread.id, status:'running', requires_approval:false, risk_level:2, input_summary:`Inbound ${thread.engine} reply from ${message.from_email||'counterparty'}`, started_at:new Date().toISOString() });
+
+    const hard=classifyHardStop(message.text_body||message.subject||'');
+    let result:any;
+    if(hard){ result={ classification:hard, confidence:1, response_required:false, action:'stop', escalation_reason:hard, reply_subject:'', reply_body:'' }; }
+    else{
+      const previous=await svc.entities.CommunicationMessage.filter({thread_id:thread.id},'-created_date',12).catch(()=>[]);
+      const transcript=[...previous].reverse().map((m:any)=>({direction:m.direction,subject:m.subject,text:String(m.text_body||'').slice(0,3000)}));
+      const prompt=[
+        'You are CAMBRA commercial operations. Classify the latest real email and draft the next response only when routine.',
+        `Engine: ${thread.engine}. Language: ${thread.language||'en'}. Preserve thread language.`,
+        'Never invent merchant fees, GMV, savings, provider responses, people, contract terms or authority.',
+        'Escalate anything involving final pricing acceptance, custom economics, contract/legal/security/complaint, lock-in, minimum volume, termination fees, migration go-live, sensitive-document disclosure, press/investor/strategic partnership.',
+        'For merchant acquisition classifications use: interested, question, objection, not_interested, wrong_person, referral, meeting, unsubscribe, ooo, bounce, legal, security, complaint, custom_economics.',
+        'For provider negotiations use: acknowledgement, information_request, document_request, offer, counteroffer, rejection, manager_approval, contract, clarification, final_offer, technical_question, implementation_question, legal, security, complaint.',
+        'Return ONLY JSON: {"classification":"...","confidence":0-1,"response_required":true|false,"action":"routine_reply|meeting_offer|pricing_request|clarification|technical_question|implementation_question|contract_request|escalate|stop","reply_subject":"...","reply_body":"...","escalation_reason":"...","material_commitment":true|false}',
+        'Writing: concise, specific, natural, no fake human identity, no generic enthusiasm, no AI meta language, no formulaic opener, no unnecessary bullets or em-dash-heavy prose.',
+        'THREAD:',JSON.stringify(transcript)
+      ].join('\n');
+      result=parseJson(await callClaude(prompt));
+      if(!result||!result.classification)throw new Error('reply_classification_unparseable');
+    }
+    const classification=String(result.classification||'unknown');
+    await svc.entities.CommunicationMessage.update(message.id,{ classification, classification_confidence:Math.max(0,Math.min(1,Number(result.confidence)||0)), classification_reason:sanitizeExternalText(result.escalation_reason||'',1000), agent_name:'commercial_reply' });
+
+    if(['unsubscribe','not_interested'].includes(classification)){
+      if(message.from_email){const e=String(message.from_email).toLowerCase();const ex=await svc.entities.ContactSuppression.filter({email:e,active:true},'-created_date',1).catch(()=>[]);if(!ex.length)await svc.entities.ContactSuppression.create({email:e,reason:'opt_out',source:'reply_classification',source_message_id:message.id,active:true,suppressed_at:new Date().toISOString()});}
+      await svc.entities.CommunicationThread.update(thread.id,{status:'suppressed',automation_paused:true,pause_reason:classification,classification});
+      await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Hard stop: ${classification}`,output_payload_json:{classification},completed_at:new Date().toISOString()});
+      return Response.json({ok:true,task_id:task.id,classification,stopped:true});
+    }
+
+    const l4=L4_CLASSIFICATIONS.has(classification)||result.material_commitment===true||String(result.action)==='escalate'||classification==='offer'||classification==='counteroffer'||classification==='manager_approval';
+    if(l4){
+      const approval=await svc.entities.Approval.create({ brand_id:thread.related_entity_type==='Brand'?thread.related_entity_id:'_platform', agent_task_id:task.id, action_type:thread.engine==='provider_negotiation'?'provider_negotiation_review':'commercial_reply_exception', related_entity_type:'CommunicationThread', related_entity_id:thread.id, risk_level:4, draft_content:`Classification: ${classification}\n\n${sanitizeExternalText(result.reply_body||'',5000)}`, draft_payload_json:{thread_id:thread.id,message_id:message.id,classification,proposed_action:result.action,proposed_reply:result.reply_body||'',reason:result.escalation_reason||'',material_commitment:!!result.material_commitment}, status:'pending', expires_at:new Date(Date.now()+7*86400000).toISOString() });
+      await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_approval',automation_paused:true,pause_reason:`l4:${classification}`,classification});
+      await svc.entities.AgentTask.update(task.id,{status:'waiting_approval',requires_approval:true,risk_level:4,approval_id:approval.id,output_summary:`${classification} requires founder approval`,output_payload_json:{classification,approval_id:approval.id},completed_at:new Date().toISOString()});
+      return Response.json({ok:true,task_id:task.id,classification,approval_id:approval.id,escalated:true});
+    }
+
+    const policies=await svc.entities.CommercialPolicy.filter({policy_key:thread.policy_key,status:'active'},'-created_date',5).catch(()=>[]); const policy=policies.find((p:any)=>p.version===thread.policy_version)||policies[0]||null;
+    const action=String(result.action||'routine_reply'); const authz=routineActionAllowed(policy,action,classification);
+    if(!policyIsActive(policy)||!SAFE_ROUTINE_CLASSIFICATIONS.has(classification)||!authz.allowed||!result.response_required){
+      await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:true,pause_reason:authz.reason||'manual_review',classification});
+      await svc.entities.AgentTask.update(task.id,{status:'waiting_input',output_summary:`Reply needs review: ${classification}`,output_payload_json:{classification,reason:authz.reason,proposal:result},completed_at:new Date().toISOString()});
+      return Response.json({ok:true,task_id:task.id,classification,automatic:false,reason:authz.reason});
+    }
+
+    const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
+    const send=await svc.functions.invoke('commercialSendMessage',{ thread_id:thread.id, action, classification, subject:sanitizeExternalText(result.reply_subject||`Re: ${message.subject||''}`,300), text:sanitizeExternalText(result.reply_body||'',5000), agent_name:'commercial_reply', idempotency_key:`reply:${message.id}:${policy.version}`, internal_secret:internal });
+    const sendData=send?.data||send||{};
+    if(sendData?.ok===false)throw new Error(`commercial_send_rejected:${sendData?.error||'unknown'}`);
+    await svc.entities.CommunicationThread.update(thread.id,{classification,automation_paused:false,pause_reason:null});
+    await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Autonomous ${classification} reply sent inside policy ${policy.version}`,output_payload_json:{classification,action,send:sendData},completed_at:new Date().toISOString()});
+    return Response.json({ok:true,task_id:task.id,classification,automatic:true});
+  }catch(error){
+    console.error('commercialReplyAgent failed',error);
+    if(task?.id){try{const b=createClientFromRequest(req);await b.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:'commercial_reply_failed',completed_at:new Date().toISOString()});}catch{}}
+    return Response.json({ok:false,error:'commercial_reply_failed',task_id:task?.id||null},{status:500});
+  }
+});
