@@ -36,3 +36,16 @@ describe('V2 pinned economic contract survival',()=>{
   expect(approval).toContain('resolveRecoverEconomicMandate(svc, activation)');
  });
 });
+
+describe('V2 legal launch gate',()=>{
+ it('blocks V2 acceptance until explicit legal approval and keeps a versioned legal draft',()=>{
+  const policy=JSON.parse(read('config/product-policy.json'));
+  const start=read('base44/functions/startRecoverAcceptance/entry.ts');
+  const ctx=read('base44/functions/getRecoverAcceptanceContext/entry.ts');
+  const draft=read('src/docs/RECOVER_ECONOMICS_V2_LEGAL_DRAFT.md');
+  expect(policy.economicTerms.recoverEconomicsV2LegalApproved).toBe(false);
+  expect(start).toContain('recover_v2_legal_review_required');
+  expect(ctx).toContain('recover_v2_legal_review_required');
+  expect(draft).toContain('LEGAL REVIEW REQUIRED');
+ });
+});

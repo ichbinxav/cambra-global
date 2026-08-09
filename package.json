@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.68.0",
-  "releaseName": "CAMBRA v0.68.0 — P9 Recover Fulfilment & Payments Migration Operations",
+  "version": "0.69.0",
+  "releaseName": "CAMBRA v0.69.0 — Recover Economics V2 / 24-Month Recovery Right",
   "type": "module",
   "engines": {
     "node": ">=20 <23",
