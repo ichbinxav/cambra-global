@@ -281,7 +281,7 @@ export function checkFreeze(entries, readFile, options = {}) {
   // carry ECL fields. Baseline.jsonc and processUploadedFile stay excluded in
   // every stage, and their hashes are still checked below without exception.
   const eclFieldsAllowedIn =
-    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5 || stage === STAGE_ECL_P6 || stage === STAGE_ECL_P7
+    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5 || stage === STAGE_ECL_P6 || stage === STAGE_ECL_P7 || stage === STAGE_ECL_P8
       ? P1_ECL_FIELD_PATHS
       : [];
   const failures = [];
