@@ -8,6 +8,7 @@ import {
   P5_ALLOWLIST,
   STAGE_ECL_P4_PROOF,
   STAGE_ECL_P5,
+  STAGE_ECL_P6,
   STAGE_TRANSITIONS,
   allowlistForStage,
 } from "../../scripts/lib/preEclFreeze.mjs";
@@ -107,9 +108,9 @@ const input = (svc, gateName, baseline = { id: "b1", locked: true }) => ({
 });
 
 describe("ECL P5 — Economic Enforcement", () => {
-  it("is reachable only from Production Proof and rolls back only there", () => {
+  it("remains reachable from Production Proof, can advance only to P6, and can still roll back to Production Proof", () => {
     expect(STAGE_TRANSITIONS[STAGE_ECL_P4_PROOF]).toEqual(expect.arrayContaining([STAGE_ECL_P5]));
-    expect(STAGE_TRANSITIONS[STAGE_ECL_P5]).toEqual([STAGE_ECL_P4_PROOF]);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P5]).toEqual([STAGE_ECL_P4_PROOF, STAGE_ECL_P6]);
     expect(allowlistForStage(STAGE_ECL_P5)).toEqual(P5_ALLOWLIST);
   });
 
@@ -218,13 +219,13 @@ describe("ECL P5 — Economic Enforcement", () => {
     expect(firstUpdate).toBeGreaterThan(gate);
   });
 
-  it("create_invoice executes after pure prep but before Invoice.create and every Stripe POST", () => {
+  it("create_invoice executes after pure prep but before the P6 local execution claim and every Stripe POST", () => {
     const prep = INVOICE.indexOf("prepareEligibleRecoverInvoice({");
     const gate = INVOICE.indexOf("gateName: 'create_invoice'");
-    const invoiceCreate = INVOICE.indexOf("entities.Invoice.create({");
+    const invoiceClaim = INVOICE.indexOf("claimRecoverInvoiceDraft(");
     const stripePost = INVOICE.indexOf("stripeRequest(mode, 'POST'");
     expect(gate).toBeGreaterThan(prep);
-    expect(invoiceCreate).toBeGreaterThan(gate);
+    expect(invoiceClaim).toBeGreaterThan(gate);
     expect(stripePost).toBeGreaterThan(gate);
   });
 
@@ -295,9 +296,9 @@ describe("ECL P5 — Economic Enforcement", () => {
   it("rechecks create_invoice binding immediately before the first economic write and freezes ECL provenance into Stripe + billing snapshot", () => {
     expect((INVOICE.match(/gateName: 'create_invoice'/g) || [])).toHaveLength(2);
     const finalGate = INVOICE.lastIndexOf("gateName: 'create_invoice'");
-    const invoiceCreate = INVOICE.indexOf("entities.Invoice.create({");
+    const invoiceClaim = INVOICE.indexOf("claimRecoverInvoiceDraft(");
     expect(finalGate).toBeGreaterThan(-1);
-    expect(invoiceCreate).toBeGreaterThan(finalGate);
+    expect(invoiceClaim).toBeGreaterThan(finalGate);
     expect(INVOICE).toContain("ecl_binding_changed_before_invoice_write");
     expect(INVOICE).toContain("metadata[ecl_evidence_id]");
     expect(INVOICE).toContain("metadata[ecl_confidence_hash]");
