@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.67.0 — ECL P8 Production Admin, Automation & AI Operations (durability manifest)",
-  "generatedAt": "2026-08-09T14:08:37.347Z",
+  "generatedAt": "2026-08-09T14:26:16.066Z",
   "packageVersion": "0.67.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -72,8 +72,8 @@
     },
     {
       "path": "base44/functions/acceptRecoverMandate/entry.ts",
-      "sha256": "6f60056d02841267ca25651bb4d16c96d59936fe583f4f98ccea07048358ad03",
-      "bytes": 14901
+      "sha256": "8258bd8f2ec1c73e842386d4d061d914ffa894bd6b999d20ab8b5c7dd60cbaaf",
+      "bytes": 15364
     },
     {
       "path": "base44/functions/adminAgentOperations/entry.ts",
@@ -417,8 +417,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "504d4221fced8b91f57ea3a69cf87b5590bc9426601a3b8d79e46beeaf7f37d3",
-      "bytes": 19637
+      "sha256": "0f084b42eb338e30b108e69158e0b9d98f91f0972dff0d883f59ada41750cf20",
+      "bytes": 20238
     },
     {
       "path": "src/lib/confidenceResult.js",
@@ -567,8 +567,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "649a843ddfdb7c661e0720904ef8c0648d8bbd9cf84d5d2c1422d152408de3c5",
-      "bytes": 6895
+      "sha256": "30a8a3ef53bfb8bfa6662fb6d098de8050dc309ed18e12a75dc3692585f578bc",
+      "bytes": 7057
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
