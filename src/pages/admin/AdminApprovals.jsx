@@ -60,7 +60,7 @@ export default function AdminApprovals() {
   const handleApprove = async (approval) => {
     setBusyId(approval.id);
     try {
-      const commercial = ["final_provider_deal", "commercial_reply_exception", "provider_negotiation_review"].includes(approval.action_type);
+      const commercial = ["final_provider_deal", "commercial_reply_exception", "provider_negotiation_review", "contract_mismatch", "contract_exception"].includes(approval.action_type);
       if (commercial) {
         const res = await base44.functions.invoke("resolveCommercialApproval", { approval_id: approval.id, decision: "approve" });
         const data = res?.data || res || {};
@@ -83,7 +83,7 @@ export default function AdminApprovals() {
   const handleReject = async (approval, reason) => {
     setBusyId(approval.id);
     try {
-      const commercial = ["final_provider_deal", "commercial_reply_exception", "provider_negotiation_review"].includes(approval.action_type);
+      const commercial = ["final_provider_deal", "commercial_reply_exception", "provider_negotiation_review", "contract_mismatch", "contract_exception"].includes(approval.action_type);
       if (commercial) {
         const res = await base44.functions.invoke("resolveCommercialApproval", { approval_id: approval.id, decision: "reject", reason: reason || null });
         const data = res?.data || res || {};
