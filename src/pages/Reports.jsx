@@ -25,6 +25,7 @@ import PageHero from "@/components/shared/PageHero";
 import ReportsKPIStrip from "@/components/reports/ReportsKPIStrip";
 import EffectiveFeePanel from "@/components/reports/EffectiveFeePanel";
 import RecoverMandatePanel from "@/components/recover/RecoverMandatePanel";
+import PaymentsMigrationCard from "@/components/recover/PaymentsMigrationCard";
 import VerificationChecklist from "@/components/reports/VerificationChecklist";
 import InStoreBenchmarkPanel from "@/components/reports/InStoreBenchmarkPanel";
 import AuditHistoryList from "@/components/reports/AuditHistoryList";
@@ -144,6 +145,11 @@ export default function Reports() {
           {/* RECOVER-1 — acceptance entry point. Renders nothing unless the
               merchant actually has an activation to authorize. */}
           <RecoverMandatePanel />
+
+          {/* P9 — once Recover is accepted, the recommendation disappears into
+              execution: CAMBRA owns the migration and the merchant sees only the
+              simple operational journey plus true merchant-required blockers. */}
+          <PaymentsMigrationCard />
 
           {chartData.length > 0 && (
             <div className="cambra-card p-7 mb-6">
