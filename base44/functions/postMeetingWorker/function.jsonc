@@ -1,0 +1,20 @@
+{
+  "name": "postMeetingWorker",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "Post-meeting Continuation \u2014 hourly",
+      "description": "Sends policy-gated, evidence-safe post-meeting follow-ups after booked acquisition meetings without restarting the cold sequence.",
+      "function_args": {},
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "hours",
+      "repeat_interval": 1,
+      "ends_type": "never",
+      "function_name": "postMeetingWorker",
+      "starts_at": "2026-08-09T22:00:00.000Z"
+    }
+  ]
+}

@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
     if(!eventRes.ok) throw new Error(`outlook_event_create_failed:${eventRes.status}`);
 
     const now=new Date().toISOString();
-    await svc.entities.CommunicationThread.update(thread.id,{status:'closed',automation_paused:true,pause_reason:'meeting_booked',next_action_at:null,summary:`Meeting booked ${start.toISOString()} · ${attendee}`});
+    await svc.entities.CommunicationThread.update(thread.id,{status:'closed',automation_paused:true,pause_reason:'meeting_booked',next_action_at:null,meeting_event_id:event.id||'',meeting_start_at:start.toISOString(),meeting_end_at:end.toISOString(),post_meeting_status:'pending',summary:`Meeting booked ${start.toISOString()} · ${attendee}`});
     if(thread.engine==='merchant_acquisition'&&thread.lead_id) await svc.entities.OutboundLead.update(thread.lead_id,{stage:'meeting',next_action:`Meeting booked ${start.toISOString()}`}).catch(()=>null);
     if(thread.engine==='partner_acquisition'&&thread.related_entity_id) await svc.entities.PartnerProspect.update(thread.related_entity_id,{stage:'meeting',next_action_at:null}).catch(()=>null);
     await svc.entities.OperationalLog.create({event_type:'commercial_meeting_booked',message:`Outlook meeting with ${attendee}`,data_json:{thread_id:thread.id,lead_id:thread.lead_id||null,event_id:event.id||null,start:start.toISOString(),end:end.toISOString(),organizer,attendee},created_at:now}).catch(()=>null);

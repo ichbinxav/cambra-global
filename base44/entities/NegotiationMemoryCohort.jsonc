@@ -1,0 +1,50 @@
+{
+  "name": "NegotiationMemoryCohort",
+  "type": "object",
+  "properties": {
+    "cohort_key": {
+      "type": "string"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "sample_size": {
+      "type": "number"
+    },
+    "median_rounds": {
+      "type": "number"
+    },
+    "best_observed_variable_fee_bps": {
+      "type": "number"
+    },
+    "avg_improvement_bps": {
+      "type": "number"
+    },
+    "common_concessions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "cohort_key",
+    "provider_name"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

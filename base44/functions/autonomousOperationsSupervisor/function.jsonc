@@ -1,0 +1,20 @@
+{
+  "name": "autonomousOperationsSupervisor",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "Autonomous Operations Supervisor \u2014 15 min",
+      "description": "Cross-loop supervisor for stale tasks, due communications, provider negotiation follow-up repair, blocked migrations and missing verification evidence. Safe recoveries only; never changes money or L4 authority.",
+      "function_args": {},
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 15,
+      "ends_type": "never",
+      "function_name": "autonomousOperationsSupervisor",
+      "starts_at": "2026-08-09T22:00:00.000Z"
+    }
+  ]
+}

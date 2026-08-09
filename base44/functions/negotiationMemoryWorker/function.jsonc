@@ -1,0 +1,20 @@
+{
+  "name": "negotiationMemoryWorker",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "Negotiation Memory \u2014 daily",
+      "description": "Builds bounded provider negotiation memory from closed/approved cases. Advisory only; no authority changes.",
+      "function_args": {},
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "days",
+      "repeat_interval": 1,
+      "ends_type": "never",
+      "function_name": "negotiationMemoryWorker",
+      "starts_at": "2026-08-10T05:30:00.000Z"
+    }
+  ]
+}

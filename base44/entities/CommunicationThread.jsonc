@@ -107,6 +107,27 @@
     },
     "personalization_json": {
       "type": "object"
+    },
+    "meeting_event_id": {
+      "type": "string"
+    },
+    "meeting_start_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "meeting_end_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "post_meeting_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "sent",
+        "suppressed",
+        "not_applicable"
+      ],
+      "default": "not_applicable"
     }
   },
   "required": [

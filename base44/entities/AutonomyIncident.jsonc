@@ -1,0 +1,70 @@
+{
+  "name": "AutonomyIncident",
+  "type": "object",
+  "properties": {
+    "dedupe_key": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "warning",
+        "critical"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "resolved"
+      ],
+      "default": "open"
+    },
+    "subject_type": {
+      "type": "string"
+    },
+    "subject_id": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "details_json": {
+      "type": "object"
+    },
+    "first_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "dedupe_key",
+    "domain",
+    "severity",
+    "status",
+    "summary"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
