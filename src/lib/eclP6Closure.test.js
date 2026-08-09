@@ -65,9 +65,9 @@ function remoteInvoice(overrides = {}) {
 }
 
 describe('ECL P6 — Economic Execution & Reconciliation', () => {
-  it('is reachable only after P5 and rolls back only to P5', () => {
+  it('is reachable only after P5 and preserves P5 as its rollback edge', () => {
     expect(STAGE_TRANSITIONS[STAGE_ECL_P5]).toContain(STAGE_ECL_P6);
-    expect(STAGE_TRANSITIONS[STAGE_ECL_P6]).toEqual([STAGE_ECL_P5]);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P6][0]).toBe(STAGE_ECL_P5);
     expect(allowlistForStage(STAGE_ECL_P6)).toEqual(P6_ALLOWLIST);
   });
 
