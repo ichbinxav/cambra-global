@@ -38,7 +38,9 @@ const THIS_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(THIS_DIR, "..", "..");
 const FUNCTIONS_DIR = path.join(REPO_ROOT, "base44", "functions");
 
-// ── The 10 entities whose RLS is inert (service-role writes) — BUG-6 ────────
+// ── Tenant/economic entities whose service-role access must never bypass a trust boundary.
+// P10 expands the original BUG-6 perimeter beyond the ten 2026-07-24 entities
+// so Recover, P9 and billing cannot silently fall outside this tripwire.
 const TENANT_ENTITIES = [
   "Integration",
   "AnalyzerInput",
@@ -50,6 +52,15 @@ const TENANT_ENTITIES = [
   "Event",
   "AgentTask",
   "Brand",
+  "DealActivation",
+  "Mandate",
+  "MigrationTask",
+  "MonthlySavingsReport",
+  "Invoice",
+  "StripeConnection",
+  "Baseline",
+  "SavingsEvidence",
+  "PaymentsAnalysisVerified",
 ];
 
 // ── Approved isolation mechanisms ────────────────────────────────────────────
@@ -96,7 +107,16 @@ const MECHANISMS = [
 // Every entry MUST carry its reason. Empty today: the 2026-07-24 census found
 // all 59 tenant-touching functions carry at least one approved mechanism.
 // (Format: { fn: "functionName", reason: "…" })
-const ALLOWLIST = [];
+const ALLOWLIST = [
+  {
+    fn: "stripeBillingWebhook",
+    reason: "Public Stripe webhook: trust is established by Stripe signature verification before any service-role side effect; user auth is intentionally not applicable.",
+  },
+  {
+    fn: "recoverBillingDigest",
+    reason: "Read-only scheduler sentinel returns aggregate counts only and can send solely to a fixed server-configured admin recipient; no tenant data is returned or mutated.",
+  },
+];
 
 function listFunctionDirs() {
   return fs
@@ -107,7 +127,7 @@ function listFunctionDirs() {
 
 function usedTenantEntities(src) {
   return TENANT_ENTITIES.filter((e) =>
-    new RegExp(`asServiceRole\\.entities\\.${e}\\b`).test(src)
+    new RegExp(`(?:asServiceRole|svc)\\.entities\\.${e}\\b`).test(src)
   );
 }
 
