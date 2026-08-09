@@ -93,6 +93,10 @@
     },
     "summary": {
       "type": "string"
+    },
+    "counterparty_timezone": {
+      "type": "string",
+      "description": "IANA timezone when reliably known; otherwise Europe/Paris fallback is used."
     }
   },
   "required": [

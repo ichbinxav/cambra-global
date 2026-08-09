@@ -113,6 +113,12 @@
     "expires_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "fallback_timezone": {
+      "type": "string"
+    },
+    "minimum_inbound_reply_delay_minutes": {
+      "type": "number"
     }
   },
   "required": [

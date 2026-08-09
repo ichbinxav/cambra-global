@@ -105,6 +105,21 @@
     },
     "raw_event_json": {
       "type": "object"
+    },
+    "earliest_reply_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "scheduled_send_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actual_sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "quality_gate_json": {
+      "type": "object"
     }
   },
   "required": [

@@ -38,7 +38,9 @@ Deno.serve(async (req) => {
         daily_send_limit: Math.max(1, Math.min(Number(body?.daily_send_limit) || 30, 200)),
         min_lead_score: Math.max(0, Math.min(Number(body?.min_lead_score) || 70, 100)),
         business_hours_start: Math.max(0, Math.min(Number(body?.business_hours_start) || 8, 23)),
-        business_hours_end: Math.max(1, Math.min(Number(body?.business_hours_end) || 18, 24)),
+        business_hours_end: Math.max(1, Math.min(Number(body?.business_hours_end) || 19, 24)),
+        fallback_timezone: String(body?.fallback_timezone || 'Europe/Paris'),
+        minimum_inbound_reply_delay_minutes: 25,
         max_followups: Math.max(0, Math.min(Number(body?.max_followups) || 3, 5)),
         followup_intervals_hours: Array.isArray(body?.followup_intervals_hours) ? body.followup_intervals_hours.slice(0,5) : [72,120,168],
         allowed_routine_actions: Array.isArray(body?.allowed_routine_actions) ? body.allowed_routine_actions : allowedDefault,
@@ -65,7 +67,7 @@ Deno.serve(async (req) => {
         icp_json: policy.icp_json || {}, excluded_domains: policy.excluded_domains || [],
         daily_send_limit: policy.daily_send_limit, min_lead_score: policy.min_lead_score,
         allowed_routine_actions: policy.allowed_routine_actions || [], prohibited_actions: policy.prohibited_actions || [],
-        style_policy_version: policy.style_policy_version
+        style_policy_version: policy.style_policy_version, business_hours_start:policy.business_hours_start, business_hours_end:policy.business_hours_end, fallback_timezone:policy.fallback_timezone||'Europe/Paris', minimum_inbound_reply_delay_minutes:25
       };
       const updated = await svc.entities.CommercialPolicy.update(policy.id, {
         status:'active', approved_by:user.email, approved_at:now, effective_at:now,
