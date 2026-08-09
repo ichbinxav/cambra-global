@@ -131,7 +131,7 @@ export default function FlowSelfTestPanel() {
   );
 }
 
-function Metric({ label, value, tone }) {
+function Metric({ label, value, tone = null }) {
   const cls = tone === "green" ? "border-green-500/30 bg-green-500/5 text-green-700"
     : tone === "red" ? "border-red-500/30 bg-red-500/5 text-red-700"
     : "border-border/60";
