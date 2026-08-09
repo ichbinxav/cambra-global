@@ -116,7 +116,7 @@ export default function ApprovalCard({ approval, agentName, onApprove, onReject,
               <X size={12} /> Reject
             </button>
             <span className="ml-auto text-[10px] text-muted-foreground">
-              Approval only updates status. Execution wiring comes with the agents.
+              L4 commercial approvals revalidate mandate, offer and thread state server-side before continuing.
             </span>
           </div>
         ) : (
