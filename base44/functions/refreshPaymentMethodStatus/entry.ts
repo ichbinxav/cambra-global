@@ -41,7 +41,8 @@ export default async function (req: Request): Promise<Response> {
 
     const { ok, status, data } = await stripeRequest(mode, 'GET', `setup_intents/${activation.stripe_setup_intent_id}`);
     if (!ok) {
-      return Response.json({ error: `stripe_setup_intent_unreadable: ${data?.error?.message || status}` }, { status: 502 });
+      console.error('refreshPaymentMethodStatus Stripe read failed', status, data?.error?.type || 'unknown');
+      return Response.json({ error: 'stripe_setup_status_unavailable' }, { status: 502 });
     }
 
     const patch: Record<string, unknown> = {};
@@ -67,6 +68,7 @@ export default async function (req: Request): Promise<Response> {
       error_message: data.last_setup_error?.message || null,
     });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    console.error('refreshPaymentMethodStatus failed', error);
+    return Response.json({ error: 'payment_method_refresh_failed' }, { status: 500 });
   }
 }

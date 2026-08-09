@@ -118,6 +118,7 @@ export default async function (req: Request): Promise<Response> {
       active_mandate_id: activeMandate?.id || null,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('getRecoverAcceptanceContext failed', error);
+    return Response.json({ error: 'recover_context_failed' }, { status: 500 });
   }
 }

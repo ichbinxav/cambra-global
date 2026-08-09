@@ -67,6 +67,7 @@ Deno.serve(async (req) => {
       baseline: (keepRowsForBrand(baselines || [], brand.id).map(projectBaseline))[0] || null,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('getMyBillingRecords failed', error);
+    return Response.json({ error: 'billing_records_failed' }, { status: 500 });
   }
 });

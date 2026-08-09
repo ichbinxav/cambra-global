@@ -152,6 +152,7 @@ export default async function (req: Request): Promise<Response> {
       evidence_preview: evidenceBinding,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('startRecoverAcceptance failed', error);
+    return Response.json({ error: 'recover_acceptance_start_failed' }, { status: 500 });
   }
 }

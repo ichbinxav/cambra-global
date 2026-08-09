@@ -106,6 +106,7 @@ export default async function (req: Request): Promise<Response> {
 
     return Response.json({ ok: true, activation_id: activationId, status: activation.status === 'authorized' ? 'migrating' : activation.status, task_count: p9Tasks.length, plan_version: PLAN_VERSION });
   } catch (error) {
-    return Response.json({ error: error?.message || 'migration_start_failed' }, { status: 500 });
+    console.error('startPaymentsMigration failed', error);
+    return Response.json({ error: 'migration_start_failed' }, { status: 500 });
   }
 }

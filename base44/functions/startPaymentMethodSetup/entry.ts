@@ -71,7 +71,8 @@ export default async function (req: Request): Promise<Response> {
         'metadata[app]': 'cambra',
       }, `cambra-customer-${brand.id}-${mode}`);
       if (!created.ok) {
-        return Response.json({ error: `stripe_customer_failed: ${created.data?.error?.message || created.status}` }, { status: 502 });
+        console.error('startPaymentMethodSetup Stripe customer creation failed', created.status, created.data?.error?.type || 'unknown');
+        return Response.json({ error: 'stripe_customer_unavailable' }, { status: 502 });
       }
       customerId = created.data.id;
       await svc.entities.Brand.update(brand.id, { stripe_customer_id: customerId, stripe_billing_mode: mode });
@@ -97,7 +98,8 @@ export default async function (req: Request): Promise<Response> {
         'metadata[brand_id]': brand.id,
       });
       if (!createdIntent.ok) {
-        return Response.json({ error: `stripe_setup_intent_failed: ${createdIntent.data?.error?.message || createdIntent.status}` }, { status: 502 });
+        console.error('startPaymentMethodSetup SetupIntent creation failed', createdIntent.status, createdIntent.data?.error?.type || 'unknown');
+        return Response.json({ error: 'stripe_setup_unavailable' }, { status: 502 });
       }
       intent = createdIntent.data;
     }
@@ -117,6 +119,7 @@ export default async function (req: Request): Promise<Response> {
       status: intent.status,
     });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    console.error('startPaymentMethodSetup failed', error);
+    return Response.json({ error: 'payment_method_setup_failed' }, { status: 500 });
   }
 }

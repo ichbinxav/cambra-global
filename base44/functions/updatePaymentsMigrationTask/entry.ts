@@ -111,6 +111,7 @@ export default async function (req: Request): Promise<Response> {
 
     return Response.json({ ok: true, task_id: taskId, status: nextStatus });
   } catch (error) {
-    return Response.json({ error: error?.message || 'migration_task_update_failed' }, { status: 500 });
+    console.error('updatePaymentsMigrationTask failed', error);
+    return Response.json({ error: 'migration_task_update_failed' }, { status: 500 });
   }
 }

@@ -83,6 +83,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, items });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('getMyPaymentsHistory failed', error);
+    return Response.json({ error: 'payments_history_failed' }, { status: 500 });
   }
 });

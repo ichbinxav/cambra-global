@@ -295,6 +295,7 @@ export default async function (req: Request): Promise<Response> {
       superseded_mandate_ids: superseded,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('acceptRecoverMandate failed', error);
+    return Response.json({ error: 'recover_acceptance_failed' }, { status: 500 });
   }
 }
