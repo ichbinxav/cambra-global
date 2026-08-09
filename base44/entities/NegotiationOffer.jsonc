@@ -1,0 +1,110 @@
+{
+  "name": "NegotiationOffer",
+  "type": "object",
+  "description": "Structured offer ledger extracted from provider communications/documents. Original evidence reference is preserved; no offer becomes binding without L4 approval.",
+  "properties": {
+    "negotiation_case_id": {
+      "type": "string"
+    },
+    "round": {
+      "type": "number"
+    },
+    "source_message_id": {
+      "type": "string"
+    },
+    "source_document_id": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "variable_fee_bps": {
+      "type": "number"
+    },
+    "fixed_fee_minor": {
+      "type": "number"
+    },
+    "pricing_model": {
+      "type": "string"
+    },
+    "interchange_treatment": {
+      "type": "string"
+    },
+    "scheme_fee_treatment": {
+      "type": "string"
+    },
+    "gateway_fee_json": {
+      "type": "object"
+    },
+    "refund_fee_json": {
+      "type": "object"
+    },
+    "chargeback_fee_json": {
+      "type": "object"
+    },
+    "settlement_terms": {
+      "type": "string"
+    },
+    "reserve_terms": {
+      "type": "string"
+    },
+    "minimum_commitment": {
+      "type": "string"
+    },
+    "contract_term_months": {
+      "type": "number"
+    },
+    "termination_terms": {
+      "type": "string"
+    },
+    "setup_terms": {
+      "type": "string"
+    },
+    "hardware_terms": {
+      "type": "string"
+    },
+    "conditions_json": {
+      "type": "object"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "extraction_confidence": {
+      "type": "number"
+    },
+    "extraction_version": {
+      "type": "string"
+    },
+    "normalized_annual_cost_minor": {
+      "type": "number"
+    },
+    "normalized_savings_annual_minor": {
+      "type": "number"
+    },
+    "material_commitment": {
+      "type": "boolean",
+      "default": false
+    },
+    "raw_extraction_json": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "negotiation_case_id",
+    "round",
+    "currency"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
