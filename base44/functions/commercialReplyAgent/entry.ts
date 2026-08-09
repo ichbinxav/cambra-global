@@ -58,7 +58,20 @@ Deno.serve(async (req)=>{
       return Response.json({ok:true,task_id:task.id,classification,stopped:true});
     }
 
-    const l4=L4_CLASSIFICATIONS.has(classification)||result.material_commitment===true||String(result.action)==='escalate'||classification==='offer'||classification==='counteroffer'||classification==='manager_approval';
+    if(thread.engine==='provider_negotiation'&&['offer','counteroffer'].includes(classification)){
+      const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
+      const run=await svc.functions.invoke('providerNegotiationAgent',{action:'process_offer',case_id:thread.related_entity_id,message_id:message.id,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));
+      const rd=run?.data||run||{};
+      if(rd.ok===false){
+        await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:true,pause_reason:'provider_offer_processing_failed',classification});
+        await svc.entities.AgentTask.update(task.id,{status:'failed',error:'provider_offer_processing_failed',output_payload_json:{classification,provider_negotiation:rd},completed_at:new Date().toISOString()});
+        return Response.json({ok:false,task_id:task.id,error:'provider_offer_processing_failed'},{status:500});
+      }
+      await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Provider ${classification} handed to persistent negotiation case`,output_payload_json:{classification,provider_negotiation:rd},completed_at:new Date().toISOString()});
+      return Response.json({ok:true,task_id:task.id,classification,negotiation:rd});
+    }
+
+    const l4=L4_CLASSIFICATIONS.has(classification)||result.material_commitment===true||String(result.action)==='escalate'||classification==='manager_approval';
     if(l4){
       const approval=await svc.entities.Approval.create({ brand_id:thread.related_entity_type==='Brand'?thread.related_entity_id:'_platform', agent_task_id:task.id, action_type:thread.engine==='provider_negotiation'?'provider_negotiation_review':'commercial_reply_exception', related_entity_type:'CommunicationThread', related_entity_id:thread.id, risk_level:4, draft_content:`Classification: ${classification}\n\n${sanitizeExternalText(result.reply_body||'',5000)}`, draft_payload_json:{thread_id:thread.id,message_id:message.id,classification,proposed_action:result.action,proposed_reply:result.reply_body||'',reason:result.escalation_reason||'',material_commitment:!!result.material_commitment}, status:'pending', expires_at:new Date(Date.now()+7*86400000).toISOString() });
       await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_approval',automation_paused:true,pause_reason:`l4:${classification}`,classification});
