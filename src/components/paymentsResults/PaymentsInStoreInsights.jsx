@@ -30,7 +30,7 @@ const pct = (n) => (isFinite(n) ? n.toFixed(2) + "%" : "—");
 const bigNum = { fontFamily: MONO, fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1 };
 
 // One horizontal proportion bar (rental vs rest of the rate).
-function RateBar({ label, valueLabel, pctOfMax, color, note }) {
+function RateBar({ label, valueLabel, pctOfMax, color, note = null }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between gap-3">
@@ -80,8 +80,9 @@ export default function PaymentsInStoreInsights({ engineResult, inputSnapshot, p
     return rows.filter((x) => !x.country || (country && x.country === country));
   }, [rows, country]);
 
+  /** @type {ReturnType<typeof deriveTerminalRental>} */
   const rental = useMemo(() => {
-    if (!pool) return { available: false };
+    if (!pool) return { available: false, reason: "rates_pending" };
     // COHERENCE-1 Tarea 1.3 — merchant's own row, FIELD-based and country-
     // aware, replicating the engine's preference order: (1) row pinned to the
     // merchant's country matching slug/region/channel, (2) pan-regional row,
@@ -98,8 +99,9 @@ export default function PaymentsInStoreInsights({ engineResult, inputSnapshot, p
 
   const split = useMemo(() => deriveChannelSplit(perChannel), [perChannel]);
 
+  /** @type {ReturnType<typeof deriveSubVsPayg>} */
   const subVsPayg = useMemo(() => {
-    if (!pool) return { available: false };
+    if (!pool) return { available: false, reason: "rates_pending" };
     // Market references (internal only — NEVER shown as destinations):
     //   payg = the lowest-% no-rental verified in-store row in the region.
     //   sub  = the lowest-% WITH-rental in-store row in the region.
