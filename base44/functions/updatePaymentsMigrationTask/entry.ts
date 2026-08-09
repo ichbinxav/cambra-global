@@ -61,7 +61,8 @@ export default async function (req: Request): Promise<Response> {
           String(r.month || '') >= String(activation.first_measurement_month || '') &&
           r.measurement_mode === 'fully_verified' &&
           ['verified','realized'].includes(r.verification_status) &&
-          Number.isFinite(Number(r.savings))
+          Number.isFinite(Number(r.savings)) &&
+          Number(r.savings) > 0
         );
         if (!verified) return Response.json({ error: 'verified_real_savings_report_required' }, { status: 409 });
       }
