@@ -1,0 +1,1 @@
+{"name":"revenueLifecycleWorker","automations":[{"name":"Revenue lifecycle reconciliation","schedule":"*/30 * * * *","input":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"}}]}
