@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.64.0",
-  "releaseName": "CAMBRA v0.64.0 — ECL P5 Economic Enforcement",
+  "version": "0.65.0",
+  "releaseName": "CAMBRA v0.65.0 — ECL P6 Economic Execution & Reconciliation",
   "type": "module",
   "engines": {
     "node": ">=20 <23",

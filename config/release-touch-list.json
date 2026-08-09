@@ -1,6 +1,6 @@
 {
-  "release": "0.64.0",
-  "comment": "CAMBRA v0.64.0 — ECL P5 Economic Enforcement. Active stage ECL_P5_ECONOMIC_ENFORCEMENT with 48 exact ECL paths and 8 frozen entries. Canonical ECL evidence now gates Recover baseline/proposal/report/invoice boundaries fail-closed; verified Stripe evidence is materialized through eclProcessEvidence, merchant acceptance creates a checksum-bound EvidenceAttestation, and invoice issuance freezes ECL provenance.",
+  "release": "0.65.0",
+  "comment": "CAMBRA v0.65.0 — ECL P6 Economic Execution & Reconciliation. Active stage ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION with 58 exact paths and 8 frozen entries. P5 remains the authorization authority; P6 adds deterministic local invoice execution claims, Stripe-current-state webhook/reconciliation, additive reconciliation provenance, and blocks local/manual second payment truths for Recover Stripe invoices.",
   "files": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -77,6 +77,17 @@
     "src/components/recover/RecoverMandateModal.jsx",
     "src/components/recover/RecoverMandatePanel.jsx",
     "src/lib/eclP5Closure.test.js",
-    "config/release-touch-list.json"
+    "config/release-touch-list.json",
+    "base44/shared/economicExecution.ts",
+    "base44/entities/Invoice.jsonc",
+    "base44/entities/PaymentEvent.jsonc",
+    "base44/functions/stripeBillingWebhook/entry.ts",
+    "base44/functions/reconcileRecoverBilling/entry.ts",
+    "base44/functions/reconcileRecoverBilling/function.jsonc",
+    "base44/functions/reconcileInvoice/entry.ts",
+    "base44/functions/recordPayment/entry.ts",
+    "base44/functions/createPaymentLink/entry.ts",
+    "src/lib/eclP6Closure.test.js",
+    "src/lib/productionFunctions.static.test.js"
   ]
 }
