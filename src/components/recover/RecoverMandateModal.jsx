@@ -1,36 +1,16 @@
-// RecoverMandateModal — RECOVER-1 (2026-08-03).
-//
-// The acceptance popup. Two server calls, in this order:
-//   1. startRecoverAcceptance on open  → creates the Mandate in 'acceptance_started'
-//      and returns the terms hash the signature will be checked against.
-//   2. acceptRecoverMandate on submit  → records the signature and authorizes.
-//
-// If the fee or the baseline moved while this modal was open, the server refuses
-// with `terms_changed` (409). We do NOT retry silently: the merchant is told the
-// terms changed and the popup reloads them, because re-signing stale terms is
-// exactly the bug the hash exists to prevent.
-//
-// COPY, v61 Checkpoint H (2026-08-06): the CONTRACTUAL wording is no longer
-// restated in this file. It is served by getRecoverAcceptanceContext
-// (`mandate_copy`) from base44/shared/recoverMandateCopy.ts — the same module the
-// PDF is built from — so the popup and the document cannot say different things.
-// The header note that used to sit here ("English-only, pending legal review") was
-// stale: the FR/ES mandate wording landed in RECOVER-3-FIX and this component was
-// simply not reading it. Legal review of the TRANSLATED wording is still pending
-// (Decision_Log_RECOVER3.md) — that caveat belongs to the copy module, not here.
-//
-// The SHELL copy below (titles, field labels, button states) is interface text,
-// not contractual text, and is still EN — see the deferred list in Checkpoint H.
-
+// Recover acceptance shell. Contractual wording still comes from the backend
+// (same copy used by the PDF); only interface copy lives in recoverUiCopy.
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { X, ShieldCheck, Loader2, AlertTriangle } from "lucide-react";
+import { useLanguage } from "@/lib/i18n.jsx";
 import MandateTermsSummary from "./MandateTermsSummary";
 import MandateLimitsBlock from "./MandateLimitsBlock";
-
-const errText = (e) => e?.response?.data?.error || e?.message || "Something went wrong";
+import { recoverUiCopy } from "./recoverUiCopy";
 
 export default function RecoverMandateModal({ context, onClose, onAccepted }) {
+  const { lang } = useLanguage();
+  const c = recoverUiCopy(lang).modal;
   const [mandateId, setMandateId] = useState(null);
   const [startedSnapshot, setStartedSnapshot] = useState(null);
   const [evidencePreview, setEvidencePreview] = useState(null);
@@ -44,20 +24,28 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
 
   useEffect(() => {
     let alive = true;
-    base44.functions
-      .invoke("startRecoverAcceptance", { deal_activation_id: context.deal_activation_id })
-      .then((r) => {
+    (async () => {
+      try {
+        const r = await base44.functions.invoke("startRecoverAcceptance", { deal_activation_id: context.deal_activation_id });
         if (!alive) return;
-        setMandateId(r?.data?.mandate_id || null);
-        setStartedSnapshot(r?.data?.acceptance_snapshot || null);
-        setEvidencePreview(r?.data?.evidence_preview || null);
-      })
-      .catch((e) => { if (alive) setError(errText(e)); })
-      .finally(() => { if (alive) setStarting(false); });
+        if (r?.data?.error || !r?.data?.mandate_id) {
+          setError(c.genericError);
+          return;
+        }
+        setMandateId(r.data.mandate_id);
+        setStartedSnapshot(r.data.acceptance_snapshot || null);
+        setEvidencePreview(r.data.evidence_preview || null);
+      } catch {
+        if (alive) setError(c.genericError);
+      } finally {
+        if (alive) setStarting(false);
+      }
+    })();
     return () => { alive = false; };
-  }, [context.deal_activation_id]);
+  }, [context.deal_activation_id, c.genericError]);
 
   const submit = async () => {
+    if (!mandateId || submitting) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -68,14 +56,15 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
         evidence_attestation_accepted: true,
         accepted: true,
       });
+      const code = r?.data?.error;
+      if (code) {
+        setError(code === "terms_changed" ? c.changed : c.genericError);
+        return;
+      }
       onAccepted(r?.data);
     } catch (e) {
-      const msg = errText(e);
-      setError(
-        msg === "terms_changed"
-          ? "The terms changed while this window was open, so we did not record your acceptance. Close and reopen it to review the updated terms."
-          : msg
-      );
+      const code = e?.response?.data?.error;
+      setError(code === "terms_changed" ? c.changed : c.genericError);
     } finally {
       setSubmitting(false);
     }
@@ -84,39 +73,31 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
   const canSubmit = !!mandateId && evidenceAgreed && agreed && name.trim().length >= 2 && !submitting;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="recover-title">
       <div className="cambra-card w-full max-w-lg max-h-[90vh] overflow-y-auto p-7">
         <div className="relative">
-          <button onClick={onClose} className="absolute right-0 top-0 text-white/50 hover:text-white transition-colors" aria-label="Close">
+          <button onClick={onClose} className="absolute right-0 top-0 text-white/50 hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" aria-label={c.close}>
             <X size={18} />
           </button>
 
-          <p className="cc-eyebrow mb-1">Recover margin</p>
-          <h3 className="text-xl font-black text-white tracking-tight mb-1">Authorize CAMBRA to recover your margin</h3>
-          <p className="text-[12.5px] text-white/60 mb-5">
-            You are authorizing us to negotiate with your provider, or to move you to a better rate, on your behalf.
-          </p>
+          <p className="cc-eyebrow mb-1">{c.eyebrow}</p>
+          <h3 id="recover-title" className="text-xl font-black text-white tracking-tight mb-1">{c.title}</h3>
+          <p className="text-[12.5px] text-white/60 mb-5">{c.intro}</p>
 
           {starting ? (
-            <div className="flex items-center gap-2 py-10 justify-center text-white/60 text-sm">
-              <Loader2 size={16} className="animate-spin" /> Preparing your terms…
+            <div className="flex items-center gap-2 py-10 justify-center text-white/60 text-sm" role="status">
+              <Loader2 size={16} className="animate-spin" /> {c.preparing}
             </div>
           ) : (
             <>
-              <MandateTermsSummary
-                snapshot={startedSnapshot || context.snapshot}
-                baseline={context.baseline}
-                copy={context.mandate_copy?.summary}
-              />
+              <MandateTermsSummary snapshot={startedSnapshot || context.snapshot} baseline={context.baseline} copy={context.mandate_copy?.summary} />
 
               {evidencePreview?.current_rate_pct != null && (
                 <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
-                  <p className="text-xs text-white/55 mb-1.5">Verified payment evidence</p>
+                  <p className="text-xs text-white/55 mb-1.5">{c.evidence}</p>
                   <p className="text-base font-black text-white tabular-nums">{Number(evidencePreview.current_rate_pct).toFixed(2)}%</p>
                   {(evidencePreview.period_start || evidencePreview.period_end) && (
-                    <p className="text-[11px] text-white/45 font-mono mt-1">
-                      {evidencePreview.period_start || "—"} → {evidencePreview.period_end || "—"}
-                    </p>
+                    <p className="text-[11px] text-white/45 font-mono mt-1">{evidencePreview.period_start || "—"} → {evidencePreview.period_end || "—"}</p>
                   )}
                 </div>
               )}
@@ -125,61 +106,36 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <label className="block">
-                  <span className="text-xs text-white/55">Your full name</span>
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Jane Doe"
-                    className="mt-1.5 w-full rounded-lg border border-white/12 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/25"
-                  />
+                  <span className="text-xs text-white/55">{c.name}</span>
+                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder={c.namePlaceholder} autoComplete="name" className="mt-1.5 w-full rounded-lg border border-white/12 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/25 focus-visible:ring-2 focus-visible:ring-white/25" />
                 </label>
                 <label className="block">
-                  <span className="text-xs text-white/55">Your role (optional)</span>
-                  <input
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    placeholder="Founder"
-                    className="mt-1.5 w-full rounded-lg border border-white/12 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/25"
-                  />
+                  <span className="text-xs text-white/55">{c.role}</span>
+                  <input value={role} onChange={(e) => setRole(e.target.value)} placeholder={c.rolePlaceholder} className="mt-1.5 w-full rounded-lg border border-white/12 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/25 focus-visible:ring-2 focus-visible:ring-white/25" />
                 </label>
               </div>
 
               <label className="mt-4 flex items-start gap-2.5 cursor-pointer">
                 <input type="checkbox" checked={evidenceAgreed} onChange={(e) => setEvidenceAgreed(e.target.checked)} className="mt-0.5" />
-                <span className="text-[12.5px] text-white/70 leading-relaxed">
-                  {context.evidence_attestation?.text ||
-                    "I confirm, to the best of my knowledge, that the verified baseline and payment-cost figures shown here are accurate."}
-                </span>
+                <span className="text-[12.5px] text-white/70 leading-relaxed">{context.evidence_attestation?.text || c.evidenceFallback}</span>
               </label>
 
               <label className="mt-3 flex items-start gap-2.5 cursor-pointer">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5" />
-                <span className="text-[12.5px] text-white/70 leading-relaxed">
-                  {/* RECOVER-3-FIX — the exact server-provided contractual checkbox text
-                      (same string the PDF prints), with the legacy EN fallback. */}
-                  {context.mandate_copy?.checkbox ||
-                    `I confirm I can legally bind ${context.legal_entity_name || "my business"} and I accept these terms.`}
-                </span>
+                <span className="text-[12.5px] text-white/70 leading-relaxed">{context.mandate_copy?.checkbox || c.legalFallback(context.legal_entity_name)}</span>
               </label>
 
               {error && (
-                <div className="mt-4 flex items-start gap-2 rounded-lg border border-[#F45B69]/30 bg-[#F45B69]/10 p-3 text-[12.5px] text-white/85">
+                <div className="mt-4 flex items-start gap-2 rounded-lg border border-[#F45B69]/30 bg-[#F45B69]/10 p-3 text-[12.5px] text-white/85" role="alert">
                   <AlertTriangle size={15} className="shrink-0 mt-0.5" /> {error}
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={submit}
-                disabled={!canSubmit}
-                className="mt-5 w-full rounded-full h-11 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
-              >
+              <button type="button" onClick={submit} disabled={!canSubmit} className="mt-5 w-full rounded-full h-11 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
                 {submitting ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
-                {submitting ? "Recording your acceptance…" : "Accept and authorize"}
+                {submitting ? c.recording : c.accept}
               </button>
-              <p className="mt-2.5 text-[11px] text-white/40 text-center font-mono">
-                Signed as {context.owner_email_display || "your account"} · {context.document_version}
-              </p>
+              <p className="mt-2.5 text-[11px] text-white/40 text-center font-mono">{c.signedAs(context.owner_email_display, context.document_version)}</p>
             </>
           )}
         </div>
