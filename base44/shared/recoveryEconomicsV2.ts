@@ -7,10 +7,13 @@ export const REFERRAL_STEP_PCT = 5;
 export const ABSOLUTE_FLOOR_PCT = 5;
 export const TERM_MONTHS = 24;
 
-function dateOnly(input: string | Date): string {
+const PARIS_DATE_FMT = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' });
+
+export function parisRecoveryDate(input: string | Date): string {
+  if (typeof input === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
   const d = input instanceof Date ? input : new Date(input);
   if (Number.isNaN(d.getTime())) throw new Error('invalid_recovery_date');
-  return d.toISOString().slice(0, 10);
+  return PARIS_DATE_FMT.format(d);
 }
 
 function addMonthsClamped(date: string, months: number): string {
@@ -23,7 +26,7 @@ function addMonthsClamped(date: string, months: number): string {
 }
 
 export function recoveryTermFromActivation(activationIso: string) {
-  const start = dateOnly(activationIso);
+  const start = parisRecoveryDate(activationIso);
   const year2Start = addMonthsClamped(start, 12);
   const endExclusive = addMonthsClamped(start, TERM_MONTHS);
   return { start, year2Start, endExclusive, months: TERM_MONTHS };

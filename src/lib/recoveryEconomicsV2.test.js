@@ -1,7 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { recoveryTermFromActivation, periodEconomicsV2, effectiveFee } from '../../base44/shared/recoveryEconomicsV2.ts';
+import { recoveryTermFromActivation, periodEconomicsV2, effectiveFee, parisRecoveryDate } from '../../base44/shared/recoveryEconomicsV2.ts';
 
 describe('Recover Economics V2', () => {
+  it('uses the contractual Paris calendar date around UTC midnight', () => {
+    expect(parisRecoveryDate('2026-10-01T22:30:00Z')).toBe('2026-10-02');
+    expect(parisRecoveryDate('2026-01-01T23:30:00Z')).toBe('2026-01-02');
+  });
   it('anchors exact 12/24 month boundaries', () => {
     expect(recoveryTermFromActivation('2026-10-01T12:00:00Z')).toEqual({start:'2026-10-01',year2Start:'2027-10-01',endExclusive:'2028-10-01',months:24});
   });
