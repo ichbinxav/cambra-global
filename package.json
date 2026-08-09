@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.67.0",
-  "releaseName": "CAMBRA v0.67.0 — ECL P8 Production Admin, Automation & AI Operations",
+  "version": "0.68.0",
+  "releaseName": "CAMBRA v0.68.0 — P9 Recover Fulfilment & Payments Migration Operations",
   "type": "module",
   "engines": {
     "node": ">=20 <23",
