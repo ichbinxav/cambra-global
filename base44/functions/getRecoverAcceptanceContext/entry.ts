@@ -89,7 +89,7 @@ export default async function (req: Request): Promise<Response> {
     if (activeMandate) blockers.push('mandate_already_active');
     if (PRODUCT_POLICY.economicTerms.recoveryEconomicsVersion === 'recover-economics-v2' && PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved !== true) blockers.push('recover_v2_legal_review_required');
 
-    const snapshot = buildAcceptanceSnapshot({ activation, baseline, fee, month });
+    const snapshot = buildAcceptanceSnapshot({ activation, baseline, fee, month, brand });
     const snapshot_hash = await hashSnapshot(snapshot);
 
     return Response.json({

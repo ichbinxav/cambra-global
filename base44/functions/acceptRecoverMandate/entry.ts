@@ -121,7 +121,7 @@ export default async function (req: Request): Promise<Response> {
     const evidenceBinding = projectRecoverEvidenceBinding(materialized.evidence);
     if (!evidenceBinding) return Response.json({ ok: false, error: 'ecl_evidence_binding_unavailable' }, { status: 409 });
 
-    const freshHash = await hashSnapshot(buildAcceptanceSnapshot({ activation, baseline, fee, month, evidenceBinding }));
+    const freshHash = await hashSnapshot(buildAcceptanceSnapshot({ activation, baseline, fee, month, evidenceBinding, brand: owned.brand }));
     if (freshHash !== mandate.acceptance_snapshot_hash) {
       return Response.json(
         { error: 'terms_changed', expected: mandate.acceptance_snapshot_hash, actual: freshHash },

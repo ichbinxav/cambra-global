@@ -11,6 +11,7 @@ import {
   firstMeasurementMonth,
   parisMonthOf,
 } from '../../shared/recoverBillingMath.ts';
+import { RECOVERY_ECONOMICS_V2, recoveryTermFromActivation } from '../../shared/recoveryEconomicsV2.ts';
 
 const SOURCES = [
   'provider_confirmation',
@@ -63,6 +64,9 @@ export default async function (req: Request): Promise<Response> {
 
     const iso = at.toISOString();
     const firstMonth = firstMeasurementMonth(iso);
+    const activeMandate = mandates[0];
+    const isV2 = activeMandate?.acceptance_snapshot_json?.recovery_economics?.version === RECOVERY_ECONOMICS_V2;
+    const v2Term = isV2 ? recoveryTermFromActivation(iso) : null;
     const endAt = agreementEndAt(iso);
     // First invoice is issuable in the month AFTER the first measured month.
     const [fy, fm] = firstMonth.split('-').map(Number);
@@ -74,8 +78,9 @@ export default async function (req: Request): Promise<Response> {
       conditions_activation_verified_by: user.email,
       conditions_activation_verified_at: new Date().toISOString(),
       first_measurement_month: firstMonth,
-      agreement_end_at: endAt,
+      agreement_end_at: isV2 ? new Date(`${v2Term.endExclusive}T00:00:00Z`).toISOString() : endAt,
       first_invoice_eligible_at: firstInvoiceEligible,
+      ...(isV2 ? { recovery_economics_version: RECOVERY_ECONOMICS_V2, recovery_term_start_date: v2Term.start, recovery_term_year2_start_date: v2Term.year2Start, recovery_term_end_date: v2Term.endExclusive, economic_right_status: 'active', verification_access_status: 'connected' } : {}),
     });
 
     await svc.entities.OperationalLog.create({
@@ -88,7 +93,8 @@ export default async function (req: Request): Promise<Response> {
         conditions_activated_at: iso,
         activation_month: parisMonthOf(iso),
         first_measurement_month: firstMonth,
-        agreement_end_at: endAt,
+        agreement_end_at: isV2 ? v2Term.endExclusive : endAt,
+        ...(isV2 ? { recovery_economics_version: RECOVERY_ECONOMICS_V2, recovery_term_start_date: v2Term.start, recovery_term_year2_start_date: v2Term.year2Start, recovery_term_end_date: v2Term.endExclusive, economic_right_status: 'active' } : {}),
         source,
         evidence_note: String(evidence_note).slice(0, 2000),
         previous_value: activation.conditions_activated_at || null,
@@ -105,7 +111,8 @@ export default async function (req: Request): Promise<Response> {
       activation_month_not_billable: parisMonthOf(iso),
       first_measurement_month: firstMonth,
       first_invoice_eligible_at: firstInvoiceEligible,
-      agreement_end_at: endAt,
+      agreement_end_at: isV2 ? v2Term.endExclusive : endAt,
+      ...(isV2 ? { recovery_term_start_date: v2Term.start, recovery_term_year2_start_date: v2Term.year2Start, recovery_term_end_date: v2Term.endExclusive, economic_right_status: 'active' } : {}),
     });
   } catch (error) {
     return Response.json({ error: (error as Error).message }, { status: 500 });

@@ -112,7 +112,7 @@ export async function findVerifiedBaseline(svc: any, activation: any) {
  * Everything shown to the merchant, frozen. The hash of THIS object is what makes
  * a mid-popup fee or baseline change fail loudly at signature.
  */
-export function buildAcceptanceSnapshot({ activation, baseline, fee, month, evidenceBinding = null }: any) {
+export function buildAcceptanceSnapshot({ activation, baseline, fee, month, evidenceBinding = null, brand = null }: any) {
   return {
     document_version: MANDATE_DOCUMENT_VERSION,
     month,
@@ -153,7 +153,11 @@ export function buildAcceptanceSnapshot({ activation, baseline, fee, month, evid
     referral_step_pct: Math.round(PRODUCT_POLICY.referralTerms.stepRate * 100),
     referral_floor_pct: Math.round(PRODUCT_POLICY.referralTerms.floorRate * 100),
     // Recover Economics V2 — frozen for NEW acceptances only. Historical Mandate snapshots are never rewritten.
-    recovery_economics: recoveryEconomicsSnapshot(),
+    recovery_economics: {
+      ...recoveryEconomicsSnapshot(),
+      referral_discount_at_acceptance_pct: Math.max(0, getSuccessFeePct() - Number(fee.pct)),
+    },
+    jurisdiction: String(brand?.country || brand?.billing_country || '').toUpperCase() || null,
   };
 }
 

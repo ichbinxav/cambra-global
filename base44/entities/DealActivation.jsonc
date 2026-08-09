@@ -178,6 +178,51 @@
       "type": "string",
       "format": "date-time",
       "description": "RECOVER-4 \u2014 when the first finalized invoice was issued. The first PAID invoice moves status live \u2192 monetizing (webhook-driven, idempotent)."
+    },
+    "recovery_economics_version": {
+      "type": "string",
+      "description": "Recover Economics version frozen for this activated Recover. New V2: recover-economics-v2; legacy rows absent."
+    },
+    "recovery_term_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "V2 load-bearing Paris calendar date when verified new conditions became effective."
+    },
+    "recovery_term_year2_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "V2 exact 12-month anniversary; Year 2 starts on this date."
+    },
+    "recovery_term_end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "V2 exclusive end date exactly 24 months after recovery_term_start_date. Fee is 0 on/after this date."
+    },
+    "economic_right_status": {
+      "type": "string",
+      "enum": [
+        "pending_activation",
+        "active",
+        "expired",
+        "waived",
+        "disputed"
+      ],
+      "description": "Economic right is independent from the operational mandate/service lifecycle. V2 becomes active only after evidenced conditions activation."
+    },
+    "service_cancelled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional service-level cancellation marker. Does not by itself terminate an already-active V2 Recovery Term."
+    },
+    "verification_access_status": {
+      "type": "string",
+      "enum": [
+        "connected",
+        "alternative_evidence",
+        "missing",
+        "not_required"
+      ],
+      "description": "Operational visibility for post-cancellation savings verification; never substitutes for evidence."
     }
   },
   "required": [
