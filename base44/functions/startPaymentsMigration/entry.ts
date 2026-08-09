@@ -67,7 +67,7 @@ export default async function (req: Request): Promise<Response> {
         requires_admin_review: p[3] === 'admin',
         completed_at: idx === 0 ? new Date().toISOString() : undefined,
         updated_at: new Date().toISOString(),
-        due_date: dueIn(Number(p[5] || 3)),
+        due_date: idx === 1 ? dueIn(Number(p[5] || 3)) : undefined,
         metadata_json: { plan_version: PLAN_VERSION, customer_stage: p[4], customer_visible: true, sla_days: Number(p[5] || 3), retry_count: 0 },
       })));
       tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
