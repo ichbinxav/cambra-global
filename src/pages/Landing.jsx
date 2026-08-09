@@ -50,7 +50,7 @@ const LANDING_JSON_LD = {
 function useJsonLd(data) {
   useEffect(() => {
     const id = "cambra-landing-jsonld";
-    let el = document.getElementById(id);
+    let el = /** @type {HTMLScriptElement | null} */ (document.getElementById(id));
     if (!el) {
       el = document.createElement("script");
       el.type = "application/ld+json";
