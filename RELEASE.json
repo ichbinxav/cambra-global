@@ -1,11 +1,11 @@
 {
   "releaseName": "CAMBRA v0.71.0 — Final Autonomous Platform Seal",
   "version": "0.71.0",
-  "sourceTreeHash": "c97be4463b49b611fac308417005e7023e83f7c8c9a8c8b33f49df7057b0059c",
+  "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 948,
+  "sourceTreeFileCount": 967,
   "sourceArchiveShaExternal": null,
-  "gitSha": "e9c89e9f8c37009c6b50db2c14ca0c3343a64ddf",
+  "gitSha": "91df86009d4d0beb7d4923c8deb8591e57a6cddc",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,7 +18,7 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "1ffd13c29d7377672dfc56c0896627ffcde7456a2e1eb3c0367f568efd88913a",
+  "durabilityManifestSha": "daae739a7b5ca9f40e08a387c434064df0c8a6b62caa2b4c8a168de4967002c1",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -43,57 +43,57 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "c97be4463b49b611fac308417005e7023e83f7c8c9a8c8b33f49df7057b0059c",
-    "startedAt": "2026-08-09T20:56:05.407Z",
-    "completedAt": "2026-08-09T20:56:25.577Z",
+    "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
+    "startedAt": "2026-08-09T21:15:41.576Z",
+    "completedAt": "2026-08-09T21:16:03.041Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 419,
-    "passed": 1631,
+    "testFiles": 429,
+    "passed": 1646,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "c97be4463b49b611fac308417005e7023e83f7c8c9a8c8b33f49df7057b0059c",
-    "startedAt": "2026-08-09T20:56:26.388Z",
-    "completedAt": "2026-08-09T20:56:46.007Z",
+    "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
+    "startedAt": "2026-08-09T21:16:03.829Z",
+    "completedAt": "2026-08-09T21:16:23.822Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "3badb248fcc53614708741c028547acd932ed8601b627c94f5dcf5bf63099a20",
-    "artifactCount": 63
+    "distHash": "29682549a5f237d91c8eba064cd86c9bafb28dd8d2c69611cc5c26eb13fe707b",
+    "artifactCount": 64
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "c97be4463b49b611fac308417005e7023e83f7c8c9a8c8b33f49df7057b0059c",
-    "startedAt": "2026-08-09T20:55:34.077Z",
-    "completedAt": "2026-08-09T20:55:46.792Z",
+    "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
+    "startedAt": "2026-08-09T21:15:09.260Z",
+    "completedAt": "2026-08-09T21:15:21.850Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "c97be4463b49b611fac308417005e7023e83f7c8c9a8c8b33f49df7057b0059c",
-    "startedAt": "2026-08-09T20:55:47.476Z",
-    "completedAt": "2026-08-09T20:55:51.195Z",
+    "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
+    "startedAt": "2026-08-09T21:15:22.563Z",
+    "completedAt": "2026-08-09T21:15:26.539Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "c97be4463b49b611fac308417005e7023e83f7c8c9a8c8b33f49df7057b0059c",
-    "startedAt": "2026-08-09T20:55:51.882Z",
-    "completedAt": "2026-08-09T20:56:04.675Z",
+    "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
+    "startedAt": "2026-08-09T21:15:27.278Z",
+    "completedAt": "2026-08-09T21:15:40.870Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
-    "dist": "3badb248fcc53614708741c028547acd932ed8601b627c94f5dcf5bf63099a20"
+    "dist": "29682549a5f237d91c8eba064cd86c9bafb28dd8d2c69611cc5c26eb13fe707b"
   },
   "manualRequirements": [
     "LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled",
     "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal"
   ],
-  "generatedAt": "2026-08-09T20:56:46.814Z"
+  "generatedAt": "2026-08-09T21:16:24.586Z"
 }
