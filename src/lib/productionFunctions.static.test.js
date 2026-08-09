@@ -24,7 +24,7 @@ const MANIFEST = [
   "_tenantGuard", "adminAgentOperations", "adminOverrides", "adminSummaries", "adminUpdateApplicationStatus",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
   "autonomousCommercialWorker", "commercialFollowUpWorker", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
-  "providerNegotiationAgent", "resendInboundWebhook", "resolveCommercialApproval", "reviewProviderContract", "startProviderNegotiation",
+  "outlookMeetingCoordinator", "providerNegotiationAgent", "resendInboundWebhook", "resolveCommercialApproval", "reviewProviderContract", "startProviderNegotiation",
   // REFERRAL-1 / REFERRAL-2 (2026-08-03) — referral programme surface.
   "applyReferralActivation", "getMyReferralStatus",
   // RECOVER-1 (2026-08-03) — Recover Margin mandate acceptance surface.
