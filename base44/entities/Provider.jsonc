@@ -57,6 +57,25 @@
         "resolved",
         "unresolved"
       ]
+    },
+    "preferred_status": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "preferred",
+        "strategic",
+        "category_leader"
+      ],
+      "default": "standard"
+    },
+    "strategic_importance": {
+      "type": "number"
+    },
+    "aggregate_responsiveness_score": {
+      "type": "number"
+    },
+    "aggregate_relationship_json": {
+      "type": "object"
     }
   },
   "required": [
