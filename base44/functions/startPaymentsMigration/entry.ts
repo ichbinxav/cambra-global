@@ -1,0 +1,79 @@
+// P9 — Recover Fulfilment & Migration Operations.
+// Idempotently turns an authorized payments Recover into an operational migration.
+// The merchant has already mandated CAMBRA to act: standard tasks are owned by
+// CAMBRA/provider, not pushed back to the merchant.
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+
+const PLAN_VERSION = 'payments-recover-p9-v1';
+const PLAN = [
+  ['takeover','CAMBRA takes over','We open the migration case, lock scope and assign operational ownership.','admin','preparing'],
+  ['provider_coordination','Provider coordination','CAMBRA coordinates commercial onboarding and required provider documentation.','admin','provider_coordination'],
+  ['provider_ready','Provider ready','The target PSP account, pricing and payment capabilities are confirmed.','provider','provider_coordination'],
+  ['technical_configuration','Payment configuration','CAMBRA prepares the payment configuration and integration changes required for cutover.','admin','preparing'],
+  ['migration_testing','Migration testing','CAMBRA validates payment, 3DS, refund, webhook and reconciliation flows before live traffic moves.','admin','scheduled'],
+  ['cutover_ready','Cutover ready','CAMBRA confirms rollback, timing and all go-live prerequisites.','admin','scheduled'],
+  ['go_live','Going live','CAMBRA moves the approved payment scope to the new provider or conditions.','admin','going_live'],
+  ['verify_savings','Verify savings','CAMBRA observes live payment data against the locked baseline before savings become billable.','admin','verifying'],
+];
+
+export default async function (req: Request): Promise<Response> {
+  try {
+    const base44 = createClientFromRequest(req);
+    const me = await base44.auth.me().catch(() => null);
+    if (!me) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const body = await req.json().catch(() => ({}));
+    const activationId = String(body?.deal_activation_id || '');
+    if (!activationId) return Response.json({ error: 'deal_activation_id required' }, { status: 400 });
+
+    const svc = base44.asServiceRole;
+    const rows = await svc.entities.DealActivation.filter({ id: activationId }, '-created_date', 1).catch(() => []);
+    const activation:any = rows?.[0];
+    if (!activation) return Response.json({ error: 'activation_not_found' }, { status: 404 });
+    const isOwner = String(activation.user_email || '').toLowerCase() === String(me.email || '').toLowerCase();
+    if (!isOwner && me.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+    if (activation.vertical !== 'payments') return Response.json({ error: 'payments_only' }, { status: 409 });
+    if (!['authorized','migrating','live','monetizing'].includes(activation.status)) {
+      return Response.json({ error: 'activation_not_ready', status: activation.status }, { status: 409 });
+    }
+
+    const mandates = await svc.entities.Mandate.filter({ deal_activation_id: activationId, status: 'active' }, '-created_date', 1).catch(() => []);
+    if (!mandates.length) return Response.json({ error: 'active_mandate_required' }, { status: 409 });
+
+    let tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
+    if (!tasks.length) {
+      await svc.entities.MigrationTask.bulkCreate(PLAN.map((p:any[], idx:number) => ({
+        deal_activation_id: activationId,
+        brand_id: activation.brand_id || '',
+        provider_id: activation.provider_id || '',
+        task_type: p[0], step_name: p[0], description: p[2],
+        status: idx === 0 ? 'done' : (idx === 1 ? 'in_progress' : 'pending'),
+        order: idx + 1, owner_type: p[3],
+        requires_provider_input: p[3] === 'provider',
+        requires_brand_input: false,
+        requires_admin_review: p[3] === 'admin',
+        completed_at: idx === 0 ? new Date().toISOString() : undefined,
+        updated_at: new Date().toISOString(),
+        metadata_json: { plan_version: PLAN_VERSION, customer_stage: p[4], customer_visible: true },
+      })));
+      tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
+      await svc.entities.OperationalLog.create({
+        deal_activation_id: activationId, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
+        event_type: 'tasks_generated', message: 'P9 payments migration orchestration started',
+        data_json: { plan_version: PLAN_VERSION, task_count: PLAN.length }, actor_email: me.email || 'system', created_at: new Date().toISOString(),
+      }).catch(() => null);
+    }
+
+    if (activation.status === 'authorized') {
+      await svc.entities.DealActivation.update(activationId, { status: 'migrating', last_updated: new Date().toISOString() });
+      await svc.entities.OperationalLog.create({
+        deal_activation_id: activationId, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
+        event_type: 'status_changed', message: 'Recover fulfilment started: authorized → migrating',
+        data_json: { from: 'authorized', to: 'migrating', plan_version: PLAN_VERSION }, actor_email: me.email || 'system', created_at: new Date().toISOString(),
+      }).catch(() => null);
+    }
+
+    return Response.json({ ok: true, activation_id: activationId, status: activation.status === 'authorized' ? 'migrating' : activation.status, task_count: tasks.length, plan_version: PLAN_VERSION });
+  } catch (error) {
+    return Response.json({ error: error?.message || 'migration_start_failed' }, { status: 500 });
+  }
+}
