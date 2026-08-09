@@ -4,7 +4,7 @@ import { ArrowUpRight, Check, Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionHeading from "@/components/landing/SectionHeading";
 import { useTranslation } from "@/lib/i18n.jsx";
-import { getSuccessFeePct } from "@/lib/productPolicy";
+import { getSuccessFeePct, PRODUCT_POLICY } from "@/lib/productPolicy";
 
 /**
  * Pricing — three-tier edition (Addendum R1, 2026-07-12).
@@ -181,6 +181,7 @@ function Tier({
 }
 
 export default function PricingDual() {
+  const recoveryV2Available = PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved === true;
   const { t } = useTranslation();
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
@@ -209,7 +210,7 @@ export default function PricingDual() {
         </SectionHeading>
         <div className="text-center mb-12 sm:mb-14">
           <p className="text-[13px] sm:text-[14px] max-w-lg mx-auto" style={{ color: "var(--gris-1)" }}>
-            {t("pd_sub")}
+            {t(recoveryV2Available ? "pd_sub_v2" : "pd_sub")}
           </p>
         </div>
 
@@ -335,8 +336,8 @@ export default function PricingDual() {
               <Tier
                 eyebrow={t("pd_t2_eyebrow")}
                 eyebrowAccent="voltio"
-                price={`${getSuccessFeePct()}→15→0%`}
-                priceSuffix={t("pd_t2_suffix")}
+                price={recoveryV2Available ? `${getSuccessFeePct()}→15→0%` : getSuccessFeePct() + "%"}
+                priceSuffix={t(recoveryV2Available ? "pd_t2_suffix_v2" : "pd_t2_suffix")}
                 priceGradient
                 caption={t("pd_t2_caption")}
                 features={RECOVERY_FEATURE_KEYS.map((k) => t(k))}

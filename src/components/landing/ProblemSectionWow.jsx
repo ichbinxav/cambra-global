@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { PRODUCT_POLICY } from "@/lib/productPolicy";
 import { motion } from "framer-motion";
 import { TrendingDown, Globe2, Coins, AlertTriangle } from "lucide-react";
 import AnimatedSection from "@/components/landing/AnimatedSection";
@@ -232,6 +233,7 @@ function Card({ item, index }) {
 }
 
 export default function ProblemSectionWow() {
+  const recoveryV2Available = PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved === true;
   const { t } = useTranslation();
   const [totalInView, setTotalInView] = useState(false);
   const totalRef = useRef(null);
@@ -332,7 +334,7 @@ export default function ProblemSectionWow() {
                   <span className="text-red-300/85 font-semibold">
                     {t("prob_total_line2")}
                   </span>
-                  {t("prob_total_line3")}
+                  {t(recoveryV2Available ? "prob_total_line3_v2" : "prob_total_line3")}
                 </p>
                 <p className="text-[11px] text-white/40 mt-2 leading-snug max-w-md">
                   {t("prob_total_note")}

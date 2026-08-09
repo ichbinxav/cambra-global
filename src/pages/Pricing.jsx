@@ -5,7 +5,7 @@ import PublicPageHero from "@/components/shared/PublicPageHero";
 import SectionHeading from "@/components/landing/SectionHeading";
 import PricingDual from "@/components/landing/PricingDual";
 import { useTranslation } from "@/lib/i18n.jsx";
-import { getMerchantSharePct, getSuccessFeePct } from "@/lib/productPolicy";
+import { getMerchantSharePct, getSuccessFeePct, PRODUCT_POLICY } from "@/lib/productPolicy";
 
 // Split heading — "you keep the margin." in the voltio gradient, per language.
 const PRC_SPLIT_TITLE = {
@@ -155,6 +155,7 @@ const PRC_HERO_TITLE = {
 };
 
 export default function Pricing() {
+  const recoveryV2Available = PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved === true;
   const { t, lang } = useTranslation();
   return (
     <PublicPageShell>
@@ -243,7 +244,7 @@ export default function Pricing() {
                     {t(item.q)}
                   </p>
                   <p className="text-[13.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
-                    {t(item.a)}
+                    {t(item.a === "prc_faq_a2" && recoveryV2Available ? "prc_faq_a2_v2" : item.a)}
                   </p>
                 </div>
               ))}
