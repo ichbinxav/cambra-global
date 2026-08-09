@@ -104,6 +104,10 @@
     "monthly_savings_report_id": {
       "type": "string"
     },
+    "execution_key": {
+      "type": "string",
+      "description": "P6 \u2014 deterministic local execution identity for Recover invoices (`recover-invoice:<monthly_savings_report_id>`). Used for replay-safe draft claiming and duplicate healing; Stripe idempotency remains the external exactly-once authority."
+    },
     "billing_snapshot_json": {
       "type": "object",
       "description": "RECOVER-4 \u2014 the immutable accounting/tax snapshot: report figures, baseline, fee percentages, tax decision, VIES evidence, supplier/customer details, period, rounding, Stripe references, calculation hash. v60.2 \u2014 also carries the contract policy provenance (policy_version, policy_source, snapshot_hash). Append-only after finalization."
@@ -207,7 +211,27 @@
     },
     "stripe_event_last_processed": {
       "type": "string",
-      "description": "RECOVER-4 \u2014 id of the last Stripe webhook event applied to this row (out-of-order guard aid)."
+      "description": "RECOVER-4/P6 \u2014 id of the last Stripe webhook event observed. P6 does not trust delivery order: invoice state is reconciled against a fresh Stripe GET before local mutation."
+    },
+    "reconciliation_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "ok",
+        "drift_corrected",
+        "mismatch",
+        "error"
+      ],
+      "description": "P6 \u2014 local\u2194Stripe reconciliation state. A mismatch never rewrites frozen invoice economics; it quarantines the row for operator review."
+    },
+    "last_reconciled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "P6 \u2014 last successful or attempted authoritative Stripe reconciliation."
+    },
+    "reconciliation_error": {
+      "type": "string",
+      "description": "P6 \u2014 normalized reconciliation blocker; never contains Stripe secrets or raw payloads."
     },
     "invoice_snapshot_hash": {
       "type": "string",
