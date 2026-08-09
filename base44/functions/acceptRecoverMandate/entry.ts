@@ -278,6 +278,13 @@ export default async function (req: Request): Promise<Response> {
     // here may fail the acceptance.
     await logContractEvent(svc, 'recover_contract_pdf_queued', { ...mandate, id: mandate_id }, { language }, email);
     fireAndForget(base44, 'generateRecoverContractPdf', { mandate_id });
+    // P9 — once Recover is authorized CAMBRA takes operational ownership. This
+    // is intentionally non-blocking: the legal acceptance remains valid even if
+    // orchestration infrastructure is temporarily unavailable; the client/admin
+    // migration surfaces can idempotently start it again.
+    if (authorized && activation.vertical === 'payments') {
+      fireAndForget(base44, 'startPaymentsMigration', { deal_activation_id: activation.id });
+    }
 
     return Response.json({
       ok: true,
