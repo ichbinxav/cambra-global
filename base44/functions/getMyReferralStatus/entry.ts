@@ -26,13 +26,17 @@ export default async function (req: Request): Promise<Response> {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const row = await findOrCreateReferralLink(base44.asServiceRole, user.email);
+    const svc = base44.asServiceRole;
+    const row = await findOrCreateReferralLink(svc, user.email);
+    const activations = await svc.entities.DealActivation.filter({ user_email: user.email }, '-created_date', 50).catch(() => []);
+    const economic = (activations || []).find((a:any) => a.recovery_economics_version || a.economic_right_status === 'active') || null;
 
     return Response.json({
       ok: true,
       code: row.code,
       times_used: Number(row.times_used) || 0,
       activated_count: Number(row.activated_count) || 0,
+      recovery_economics_version: economic?.recovery_economics_version || 'legacy-v1',
     });
   } catch (error) {
     return Response.json({ error: (error as any)?.message || 'internal_error' }, { status: 500 });

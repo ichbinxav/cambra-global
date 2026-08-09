@@ -97,6 +97,7 @@ export default function Referrals() {
           <ReferralFeeStatus
             activatedCount={state?.activated_count || 0}
             timesUsed={state?.times_used || 0}
+            economicsVersion={state?.recovery_economics_version || "legacy-v1"}
           />
         </>
       )}
