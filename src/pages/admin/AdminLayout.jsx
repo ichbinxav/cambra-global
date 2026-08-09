@@ -14,6 +14,7 @@ const NAV = [
   { path: "/admin/chat", label: "Chat", icon: MessageSquare },
   { path: "/admin/discovery", label: "Discovery", icon: Search },
   { path: "/admin/evidence-review", label: "Evidence Review", icon: FileSearch },
+  { path: "/admin/ecl-operations", label: "ECL Operations", icon: Activity },
   { path: "/admin/overview", label: "Overview", icon: BarChart3 },
   { path: "/admin/users", label: "Users & Companies", icon: Users },
   { path: "/admin/waitlist", label: "Waitlist", icon: Mail, showWaitlistBadge: true },
