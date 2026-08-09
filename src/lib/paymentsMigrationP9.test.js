@@ -37,6 +37,10 @@ describe('P9 Recover Fulfilment & Payments Migration invariants', () => {
     expect(update).toContain('verified_real_savings_report_required');
     expect(update).toContain("measurement_mode === 'fully_verified'");
     expect(update).toContain('Number(r.savings) > 0');
+    expect(update).toContain('task_changed_concurrently');
+    expect(update).toContain('migration_activation_not_operational');
+    expect(update).toContain('compensated_after_activation_race');
+    expect(start).toContain('activation_changed_concurrently');
     expect(update).toContain('retry_count');
     expect(update).toContain('merchant_required');
     expect(update).toContain('merchant_blocker_requires_en_fr_es');

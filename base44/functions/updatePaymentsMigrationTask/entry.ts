@@ -104,7 +104,32 @@ export default async function (req: Request): Promise<Response> {
 
     if (nextStatus === 'done') {
       if (task.step_name === 'go_live') {
-        await svc.entities.DealActivation.update(activation.id, { status: 'live', last_updated: now });
+        const liveClaim = await svc.entities.DealActivation.updateMany(
+          { id: activation.id, status: 'migrating' },
+          { $set: { status: 'live', last_updated: now } },
+        );
+        if (!updatedExactlyOne(liveClaim)) {
+          const fresh = (await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch(() => []))?.[0];
+          if (fresh?.status !== 'live') {
+            // The task write happened first because Base44 offers no transaction.
+            // Compensate only our just-completed task; never overwrite the newer
+            // activation state (e.g. a concurrent mandate revocation -> paused).
+            await svc.entities.MigrationTask.updateMany(
+              { id: taskId, status: 'done' },
+              { $set: {
+                status: 'in_progress', completed_at: '', updated_at: new Date().toISOString(),
+                metadata_json: { ...(taskPatch.metadata_json || {}), compensated_after_activation_race: true },
+              } },
+            ).catch(() => null);
+            await svc.entities.OperationalLog.create({
+              deal_activation_id: activation.id, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
+              event_type: 'task_update_compensated', message: 'Go-live task compensated after concurrent activation change',
+              data_json: { task_id: taskId, expected_activation_status: 'migrating', observed_activation_status: fresh?.status || 'unknown' },
+              actor_email: me.email, created_at: new Date().toISOString(),
+            }).catch(() => null);
+            return Response.json({ error: 'activation_changed_concurrently', activation_status: fresh?.status || 'unknown' }, { status: 409 });
+          }
+        }
         await svc.entities.OperationalLog.create({ deal_activation_id: activation.id, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '', event_type: 'go_live', message: 'Payments migration went live', data_json: { task_id: taskId }, actor_email: me.email, created_at: now }).catch(() => null);
       }
       const next = tasks.find(t => Number(t.order || 0) > Number(task.order || 0) && t.status === 'pending');
