@@ -5,7 +5,7 @@
     {
       "type": "scheduled",
       "name": "Recover Billing Reconciliation",
-      "description": "P6 read-only Stripe reconciliation every 15 minutes. Validates frozen local↔Stripe identity and amounts, heals transient duplicate drafts, and converges local invoice/report state without creating, paying, refunding or crediting Stripe objects.",
+      "description": "P6 read-only Stripe reconciliation every 15 minutes. Validates frozen local\u2194Stripe identity and amounts, heals transient duplicate drafts, and converges local invoice/report state without creating, paying, refunding or crediting Stripe objects.",
       "function_args": {
         "limit": 50
       },
@@ -14,7 +14,9 @@
       "schedule_type": "simple",
       "repeat_unit": "minutes",
       "repeat_interval": 15,
-      "ends_type": "never"
+      "ends_type": "never",
+      "function_name": "reconcileRecoverBilling",
+      "starts_at": "2026-08-09T16:00:00.000Z"
     }
   ]
 }

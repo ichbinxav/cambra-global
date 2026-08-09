@@ -12,7 +12,9 @@
       "schedule_type": "simple",
       "repeat_unit": "minutes",
       "repeat_interval": 10,
-      "ends_type": "never"
+      "ends_type": "never",
+      "function_name": "eclProductionHealth",
+      "starts_at": "2026-08-09T16:00:00.000Z"
     }
   ]
 }
