@@ -112,6 +112,18 @@
     "idempotency_hash": {
       "type": "string"
     },
+    "data_classification": {
+      "type": "string",
+      "enum": ["production", "internal_test", "sandbox", "demo", "unknown"],
+      "default": "unknown"
+    },
+    "learning_eligible": {
+      "type": "boolean",
+      "default": false
+    },
+    "classification_evidence": {
+      "type": "object"
+    },
     "is_demo": {
       "type": "boolean",
       "default": false
