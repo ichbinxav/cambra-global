@@ -15,7 +15,8 @@
     "year2SuccessFeeRate": 0.15,
     "postTermSuccessFeeRate": 0,
     "successFeeFloorRate": 0.05,
-    "referralDiscountStepRate": 0.05
+    "referralDiscountStepRate": 0.05,
+    "recoverEconomicsV2LegalApproved": false
   },
   "referralTerms": {
     "startRate": 0.25,

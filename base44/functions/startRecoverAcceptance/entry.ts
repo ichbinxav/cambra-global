@@ -8,6 +8,7 @@
 // re-opening the popup returns the SAME row, while a popup opened after the fee or
 // baseline moved produces a different hash — and therefore a different, honest
 // acceptance instead of quietly reusing stale terms.
+import { PRODUCT_POLICY } from '../../shared/generated/productPolicy.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { getSuccessFeePct, getFeeDurationMonths } from '../../shared/generated/productPolicy.ts';
@@ -36,6 +37,7 @@ export default async function (req: Request): Promise<Response> {
     const authenticatedAt = new Date().toISOString();
 
     const body = await req.json().catch(() => ({}));
+    if (PRODUCT_POLICY.economicTerms.recoveryEconomicsVersion === 'recover-economics-v2' && PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved !== true) return Response.json({ error: 'recover_v2_legal_review_required' }, { status: 409 });
     // v61 (Checkpoint C) — the client may never carry economic-term keys. Any
     // attempt to inject fee/share/duration/policy fields rejects the request.
     const termsGuard = rejectClientTerms(body);

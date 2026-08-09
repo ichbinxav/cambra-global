@@ -13,6 +13,8 @@ import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { checkboxTextFor, evidenceAttestationTextFor, mandateCopy, MANDATE_COPY_VERSION, RECOVER_EVIDENCE_ATTESTATION_VERSION } from '../../shared/recoverMandateCopy.ts';
 import { inspectRecoverEvidenceSource } from '../../shared/eclRecoverEvidence.ts';
+import { recoveryEconomicsCopy, RECOVERY_ECONOMICS_COPY_VERSION } from '../../shared/recoveryEconomicsCopy.ts';
+import { PRODUCT_POLICY } from '../../shared/generated/productPolicy.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   MANDATE_DOCUMENT_VERSION,
@@ -54,6 +56,7 @@ export default async function (req: Request): Promise<Response> {
     // Mandate at acceptance), never from Accept-Language.
     const locale = normalizeLocale(brand?.locale || '');
     const copy = mandateCopy(locale);
+    const economicsCopy = recoveryEconomicsCopy(locale);
 
     const month = currentMonth();
     const baseline = await findVerifiedBaseline(svc, activation);
@@ -84,6 +87,7 @@ export default async function (req: Request): Promise<Response> {
     else if (evidenceSource.ok === false) blockers.push(evidenceSource.code || 'ecl_verified_evidence_unavailable');
     if (!ACCEPTABLE_ACTIVATION_STATES.includes(activation.status)) blockers.push(`activation_status:${activation.status}`);
     if (activeMandate) blockers.push('mandate_already_active');
+    if (PRODUCT_POLICY.economicTerms.recoveryEconomicsVersion === 'recover-economics-v2' && PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved !== true) blockers.push('recover_v2_legal_review_required');
 
     const snapshot = buildAcceptanceSnapshot({ activation, baseline, fee, month });
     const snapshot_hash = await hashSnapshot(snapshot);
@@ -107,6 +111,8 @@ export default async function (req: Request): Promise<Response> {
         summary: copy.summary,
         checkbox: checkboxTextFor(locale, brand?.name || '', Number(fee.pct)),
       },
+      recovery_economics_copy: { version: RECOVERY_ECONOMICS_COPY_VERSION, ...economicsCopy },
+      legal_review_required: PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved !== true,
       evidence_attestation: {
         version: RECOVER_EVIDENCE_ATTESTATION_VERSION,
         text: evidenceAttestationTextFor(locale),
