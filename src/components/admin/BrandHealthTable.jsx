@@ -83,8 +83,8 @@ export default function BrandHealthTable({ brands = [], apps = [], activations =
       recent: (a,b) => (b.lastActivity?.getTime()||0) - (a.lastActivity?.getTime()||0),
       highest_savings: (a,b) => b.savings - a.savings,
       most_active: (a,b) => b.activeDeals - a.activeDeals,
-      needs_attention: (a,b) => (b.status==='Needs Attention') - (a.status==='Needs Attention') || ((b.lastActivity?.getTime()||0)-(a.lastActivity?.getTime()||0)),
-      dormant: (a,b) => (a.status==='Dormant') - (b.status==='Dormant') || ((a.lastActivity?.getTime()||0)-(b.lastActivity?.getTime()||0)),
+      needs_attention: (a,b) => Number(b.status==='Needs Attention') - Number(a.status==='Needs Attention') || ((b.lastActivity?.getTime()||0)-(a.lastActivity?.getTime()||0)),
+      dormant: (a,b) => Number(a.status==='Dormant') - Number(b.status==='Dormant') || ((a.lastActivity?.getTime()||0)-(b.lastActivity?.getTime()||0)),
     };
     const sorter = sorters[sortBy] || sorters.recent;
     return filt.sort(sorter);
