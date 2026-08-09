@@ -283,6 +283,9 @@ export default async function (req: Request): Promise<Response> {
     // orchestration infrastructure is temporarily unavailable; the client/admin
     // migration surfaces can idempotently start it again.
     if (authorized && activation.vertical === 'payments') {
+      // P14 — refresh private-program eligibility before/alongside operational takeover.
+      // This is advisory and non-blocking; it cannot activate pricing or execute a contract.
+      fireAndForget(base44, 'aggregateEligibilityWorker', {});
       fireAndForget(base44, 'startPaymentsMigration', { deal_activation_id: activation.id });
     }
 
