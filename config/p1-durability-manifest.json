@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.65.1 — Launch Security & Type Safety Hardening (durability manifest)",
-  "generatedAt": "2026-08-09T06:59:51.940Z",
+  "generatedAt": "2026-08-09T07:02:52.378Z",
   "packageVersion": "0.65.1",
   "stage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
   "freezeStage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
@@ -237,7 +237,7 @@
     },
     {
       "path": "config/typecheck-baseline.json",
-      "sha256": "624c00b1664c0100fe24da698eaaf3862a7ee0f57bc58daa634320e71734a5ff",
+      "sha256": "ab4bfcc25bb6f66dd4942bb59a0b87e4a96417cc3170b867622d3be3825132a1",
       "bytes": 284
     },
     {
