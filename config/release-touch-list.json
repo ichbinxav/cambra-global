@@ -1,6 +1,6 @@
 {
-  "release": "0.66.0",
-  "comment": "CAMBRA v0.66.0 — ECL P7 Production Operations & Incident Recovery. Active stage ECL_P7_PRODUCTION_OPERATIONS_INCIDENT_RECOVERY with 67 exact paths and 8 frozen entries. P7 adds authoritative worker/backlog/drift detection, idempotent OperationalIncident episodes, versioned webhook DLQ scheduling, and explicit admin-only bounded recovery while preserving P5/P6 economic authority and Stripe read-only reconciliation.",
+  "release": "0.67.0",
+  "comment": "CAMBRA v0.67.0 — ECL P8 Production Admin, Automation & AI Operations. Active stage ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS with 77 exact paths and 8 frozen entries. P8 consolidates the founder cockpit, AI agent operations and safe versioned production schedules while preserving P5/P6 economic authority and P7 recovery boundaries.",
   "files": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -97,6 +97,16 @@
     "base44/functions/processWebhookDeadLetters/entry.ts",
     "base44/functions/processWebhookDeadLetters/function.jsonc",
     "src/pages/admin/EclOperations.jsx",
-    "src/lib/eclP7Closure.test.js"
+    "src/lib/eclP7Closure.test.js",
+    "base44/functions/getAdminOperationsCockpit/entry.ts",
+    "base44/functions/adminAgentOperations/entry.ts",
+    "src/pages/admin/AdminCommand.jsx",
+    "src/pages/admin/AdminAgents.jsx",
+    "src/pages/admin/AdminAutomations.jsx",
+    "base44/functions/retryPendingRecoverContracts/function.jsonc",
+    "base44/functions/purgePaymentsAnalysisSessions/function.jsonc",
+    "base44/functions/purgeInactiveLeads/function.jsonc",
+    "base44/functions/scheduledBenchmarkRecompute/function.jsonc",
+    "src/lib/eclP8Closure.test.js"
   ]
 }

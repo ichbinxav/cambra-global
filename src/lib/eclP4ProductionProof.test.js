@@ -4,13 +4,13 @@ import {
   allowlistForStage,
   P4_ALLOWLIST,
   P4_PROOF_ALLOWLIST,
-  P7_ALLOWLIST,
+  P7_ALLOWLIST, P8_ALLOWLIST,
   resolveStage,
   STAGE_ECL_P4,
   STAGE_ECL_P4_PROOF,
   STAGE_ECL_P5,
   STAGE_ECL_P6,
-  STAGE_ECL_P7,
+  STAGE_ECL_P7, STAGE_ECL_P8,
   STAGE_TRANSITIONS,
 } from "../../scripts/lib/preEclFreeze.mjs";
 
@@ -42,13 +42,14 @@ describe("ECL P4 Production Proof closure", () => {
     }
   });
 
-  it("keeps the Production Proof contract exact while the live repo advances through P5/P6 to P7", () => {
+  it("keeps the Production Proof contract exact while the live repo advances through P5/P6/P7 to P8", () => {
     expect(allowlistForStage(STAGE_ECL_P4_PROOF)).toEqual(P4_PROOF_ALLOWLIST);
     const freeze = JSON.parse(read("config/pre-ecl-freeze.json"));
-    expect(resolveStage(freeze)).toBe(STAGE_ECL_P7);
-    expect([...freeze.allowlist].sort()).toEqual([...P7_ALLOWLIST].sort());
+    expect(resolveStage(freeze)).toBe(STAGE_ECL_P8);
+    expect([...freeze.allowlist].sort()).toEqual([...P8_ALLOWLIST].sort());
     expect(STAGE_TRANSITIONS[STAGE_ECL_P5]).toContain(STAGE_ECL_P6);
     expect(STAGE_TRANSITIONS[STAGE_ECL_P6]).toContain(STAGE_ECL_P7);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P7]).toContain(STAGE_ECL_P8);
     expect(freeze.entries).toHaveLength(8);
   });
 
