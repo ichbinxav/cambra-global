@@ -9,21 +9,21 @@ const COPY = {
     sub:'CAMBRA coordinates the provider, configuration, go-live and verification for you. You only need to step in if we explicitly ask.',
     savings:'Expected annual savings', needs:'We need something from you', needsSub:'This is required to keep the migration moving. CAMBRA handles everything else.',
     stages:{ preparing:'Preparing', provider_coordination:'Provider coordination', scheduled:'Migration scheduled', going_live:'Going live', verifying:'Verifying savings', completed:'Completed' },
-    complete:'Your migration is complete. CAMBRA is now measuring realized savings against your verified baseline.',
+    complete:'Your migration is complete. CAMBRA has verified the first realized savings against your baseline and will keep measuring them for billing.',
   },
   es: {
     eyebrow:'Migración de pagos', title:'Nos encargamos de tu migración.',
     sub:'CAMBRA coordina el proveedor, la configuración, el go-live y la verificación. Solo tendrás que intervenir si te lo pedimos expresamente.',
     savings:'Ahorro anual esperado', needs:'Necesitamos algo de ti', needsSub:'Es imprescindible para poder continuar. CAMBRA se encarga de todo lo demás.',
     stages:{ preparing:'Preparando', provider_coordination:'Coordinando proveedor', scheduled:'Migración programada', going_live:'Activando', verifying:'Verificando ahorro', completed:'Completado' },
-    complete:'La migración está completada. CAMBRA ya mide el ahorro real frente a tu baseline verificado.',
+    complete:'La migración está completada. CAMBRA ya ha verificado el primer ahorro real frente a tu baseline y seguirá midiéndolo para la facturación.',
   },
   fr: {
     eyebrow:'Migration des paiements', title:'Nous gérons votre migration.',
     sub:"CAMBRA coordonne le prestataire, la configuration, la mise en ligne et la vérification. Vous n'intervenez que si nous vous le demandons explicitement.",
     savings:'Économies annuelles attendues', needs:'Nous avons besoin de vous', needsSub:'Cette action est indispensable pour poursuivre. CAMBRA gère tout le reste.',
     stages:{ preparing:'Préparation', provider_coordination:'Coordination prestataire', scheduled:'Migration planifiée', going_live:'Mise en ligne', verifying:'Vérification des économies', completed:'Terminé' },
-    complete:'La migration est terminée. CAMBRA mesure désormais les économies réelles par rapport à votre référence vérifiée.',
+    complete:'La migration est terminée. CAMBRA a vérifié les premières économies réelles par rapport à votre référence et continuera à les mesurer pour la facturation.',
   },
 };
 const ORDER = ['preparing','provider_coordination','scheduled','going_live','verifying','completed'];
