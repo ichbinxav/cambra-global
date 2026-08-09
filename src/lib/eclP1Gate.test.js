@@ -19,6 +19,7 @@ import {
   STAGE_ECL_P4_PROOF,
   STAGE_ECL_P5,
   STAGE_ECL_P6,
+  STAGE_ECL_P7,
   STAGE_TRANSITIONS,
   P1_ALLOWLIST,
   P2_ALLOWLIST,
@@ -26,6 +27,7 @@ import {
   P4_ALLOWLIST,
   P4_PROOF_ALLOWLIST,
   P6_ALLOWLIST,
+  P7_ALLOWLIST,
   P1_ECL_FIELD_PATHS,
   ECL_NAME_PATTERN,
   eclPolicyFileAllowed,
@@ -45,8 +47,8 @@ describe("ECL stage gate (v62.3)", () => {
     expect(() => allowlistForStage("ECL_P2")).toThrow(/unknown stage/);
   });
 
-  it("declares exactly eight stages and NEVER a skip shortcut (v0.65.0)", () => {
-    expect(STAGES).toEqual([STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF, STAGE_ECL_P5, STAGE_ECL_P6]);
+  it("declares exactly nine stages and NEVER a skip shortcut (v0.66.0)", () => {
+    expect(STAGES).toEqual([STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF, STAGE_ECL_P5, STAGE_ECL_P6, STAGE_ECL_P7]);
     // P1 cannot be skipped: the only way out of PRE_ECL is P1.
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).toEqual([STAGE_ECL_P1]);
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).not.toContain(STAGE_ECL_P2);
@@ -57,7 +59,8 @@ describe("ECL stage gate (v62.3)", () => {
     expect(STAGE_TRANSITIONS[STAGE_ECL_P4]).toEqual([STAGE_ECL_P3, STAGE_ECL_P4_PROOF]);
     expect(STAGE_TRANSITIONS[STAGE_ECL_P4_PROOF]).toEqual([STAGE_ECL_P4, STAGE_ECL_P5]);
     expect(STAGE_TRANSITIONS[STAGE_ECL_P5]).toEqual([STAGE_ECL_P4_PROOF, STAGE_ECL_P6]);
-    expect(STAGE_TRANSITIONS[STAGE_ECL_P6]).toEqual([STAGE_ECL_P5]);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P6]).toEqual([STAGE_ECL_P5, STAGE_ECL_P7]);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P7]).toEqual([STAGE_ECL_P6]);
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).not.toContain(STAGE_ECL_P3);
     expect(STAGE_TRANSITIONS[STAGE_ECL_P1]).not.toContain(STAGE_ECL_P3);
     expect(STAGE_TRANSITIONS[STAGE_PRE_ECL]).not.toContain(STAGE_ECL_P4);
@@ -87,6 +90,7 @@ describe("ECL stage gate (v62.3)", () => {
     expect(eclPolicyFileAllowed(STAGE_ECL_P4_PROOF)).toBe(true);
     expect(eclPolicyFileAllowed(STAGE_ECL_P5)).toBe(true);
     expect(eclPolicyFileAllowed(STAGE_ECL_P6)).toBe(true);
+    expect(eclPolicyFileAllowed(STAGE_ECL_P7)).toBe(true);
   });
 
   it("the P2 allowlist is exact paths only — no wildcard, no directory, no pattern", () => {
@@ -160,12 +164,10 @@ describe("ECL stage gate (v62.3)", () => {
     expect(res.failures[0]).toContain("frozen file modified");
   });
 
-  it("the LIVE repo declares P6 Economic Execution & Reconciliation with an allowlist matching the code (v0.65.0)", () => {
+  it("the LIVE repo declares P7 Production Operations & Incident Recovery with an allowlist matching the code (v0.66.0)", () => {
     const freeze = JSON.parse(fs.readFileSync(new URL("../../config/pre-ecl-freeze.json", import.meta.url), "utf8"));
-    expect(resolveStage(freeze)).toBe(STAGE_ECL_P6);
-    expect([...freeze.allowlist].sort()).toEqual([...P6_ALLOWLIST].sort());
-    // P6 widens execution/reconciliation surfaces only; the original eight
-    // frozen evidence-boundary entries remain unchanged.
+    expect(resolveStage(freeze)).toBe(STAGE_ECL_P7);
+    expect([...freeze.allowlist].sort()).toEqual([...P7_ALLOWLIST].sort());
     expect(freeze.entries).toHaveLength(8);
   });
 
@@ -191,6 +193,7 @@ describe("ECL stage gate (v62.3)", () => {
     expect(log.changes.some((c) => c.type === "stage_advance" && c.fromStage === STAGE_ECL_P3 && c.toStage === STAGE_ECL_P4)).toBe(true);
     expect(log.changes.some((c) => c.type === "stage_advance" && c.fromStage === STAGE_ECL_P4_PROOF && c.toStage === STAGE_ECL_P5)).toBe(true);
     expect(log.changes.some((c) => c.type === "stage_advance" && c.fromStage === STAGE_ECL_P5 && c.toStage === STAGE_ECL_P6)).toBe(true);
+    expect(log.changes.some((c) => c.type === "stage_advance" && c.fromStage === STAGE_ECL_P6 && c.toStage === STAGE_ECL_P7)).toBe(true);
     expect(log.changes.every((c) => typeof c.reason === "string" && c.reason.trim().length > 0)).toBe(true);
   });
 
