@@ -49,12 +49,7 @@ Deno.serve(async (req) => {
         await log(activation_id, 'mandate_revoked', 'Mandate revoked', { response: res.data });
         result = res.data; activationId = activation_id; break;
       }
-      case 'regenerate_tasks': {
-        const { activation_id } = payload||{}; assert(activation_id, 'activation_id required');
-        const res = await base44.asServiceRole.functions.invoke('regenerateMigrationTasks', { activation_id });
-        await log(activation_id, 'override_applied', 'Tasks regenerated', { response: res.data });
-        result = res.data; activationId = activation_id; break;
-      }
+      case 'regenerate_tasks': throw new Error('legacy_migration_generator_retired_use_p9');
       default: throw new Error('Unsupported action');
     }
 
