@@ -24,7 +24,6 @@ const PUBLIC_ROUTES: Array<[string, string, string]> = [
   ["/HowItWorks",    "monthly", "0.8"],
   ["/ForProviders",  "monthly", "0.7"],
   ["/Pricing",       "monthly", "0.8"],
-  ["/Testimonials",  "monthly", "0.6"],
   ["/Contact",       "monthly", "0.6"],
   ["/Security",      "monthly", "0.5"],
   ["/Help",          "weekly",  "0.7"],

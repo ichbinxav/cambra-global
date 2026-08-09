@@ -86,7 +86,7 @@ describe("SEO config — every public route is complete", () => {
   const LANGS = ["en", "fr", "es"];
   const EXPECTED_ROUTES = [
     "/", "/Analyzer", "/HowItWorks", "/Pricing", "/Partners", "/ForProviders",
-    "/Testimonials", "/Contact", "/Security", "/Help", "/Privacy", "/Terms", "/Cookies",
+    "/Contact", "/Security", "/Help", "/Privacy", "/Terms", "/Cookies",
   ];
 
   it("has exactly the expected canonical public routes", () => {

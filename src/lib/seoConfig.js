@@ -162,21 +162,6 @@ export const SEO_STATIC = {
       es: "Cómo los proveedores de pago se unen al benchmark y al programa de partners de CAMBRA. Acceso igual, recomendaciones centradas en el comerciante, integridad del benchmark.",
     },
   },
-  "/Testimonials": {
-    canonicalPath: "/Testimonials",
-    ogType: "website",
-    robots: DEFAULT_ROBOTS,
-    title: {
-      en: "What brands say about CAMBRA",
-      fr: "Ce que les marques disent de CAMBRA",
-      es: "Lo que las marcas dicen de CAMBRA",
-    },
-    description: {
-      en: "Independent brands share how CAMBRA audited their card payment costs and recovered negotiable margin.",
-      fr: "Des marques indépendantes racontent comment CAMBRA a audité leurs coûts de paiement par carte et récupéré la marge négociable.",
-      es: "Marcas independientes cuentan cómo CAMBRA auditó sus costes de pago con tarjeta y recuperó el margen negociable.",
-    },
-  },
   "/Contact": {
     canonicalPath: "/Contact",
     ogType: "website",

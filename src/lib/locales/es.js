@@ -237,7 +237,7 @@ export default {
     hero_h1_line2:        "Recupera tu margen.",
     hero_sub:             "La mayoría de los comercios independientes pagan entre un 40 % y un 60 % de más en los pagos con tarjeta. Analizamos lo que pagas de más aceptando pagos y recuperamos la diferencia.",
     hero_cta_primary:     "Recupera tu margen — 3 min",
-    hero_cta_secondary:   "Mira lo que ahorran comercios reales",
+    hero_cta_secondary:   "Mira cómo funciona CAMBRA",
     hero_trust_1:         "Sin cuota fija · sin permanencia",
     hero_trust_2:         "Credenciales cifradas, nunca en texto plano",
     hero_trust_3:         "Solo para comercios de la UE",

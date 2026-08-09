@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ArrowRight, Tag, HelpCircle, Mail, Shield, Sparkles, Activity, MessageSquareQuote, UserPlus, Handshake } from "lucide-react";
+import { Menu, X, ArrowRight, Tag, HelpCircle, Mail, Shield, Sparkles, Activity, UserPlus, Handshake } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import MobileNavMenu from "@/components/landing/MobileNavMenu";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
@@ -20,7 +20,6 @@ import { BRAND_ASSETS } from "@/lib/brandAssets";
 const NAV_PUBLIC = [
   { label: "Analyzer",     href: "/Analyzer",     icon: Activity },
   { label: "How it works", href: "/HowItWorks",   icon: Sparkles },
-  { label: "Testimonials", href: "/Testimonials", icon: MessageSquareQuote },
   { label: "Pricing",      href: "/Pricing",      icon: Tag },
   { label: "Referrals",    href: "/Referrals",    icon: UserPlus },
   { label: "Partners",     href: "/Partners",     icon: Handshake },
@@ -40,7 +39,6 @@ export default function Navbar() {
   const labelKey = {
     Analyzer: "nav_analyzer",
     "How it works": "nav_how",
-    Testimonials: "nav_testimonials",
     Pricing: "nav_pricing",
     Referrals: "nav_referrals",
     Partners: "nav_partners",

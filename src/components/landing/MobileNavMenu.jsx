@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Settings, Shield, Activity, MessageSquareQuote, Handshake, UserPlus } from "lucide-react";
+import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Settings, Shield, Activity, Handshake, UserPlus } from "lucide-react";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
 
@@ -74,12 +74,6 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
         { label: t("nav_item_audit"), sub: t("nav_item_audit_sub"), href: "/Analyzer", Icon: ScanSearch },
         { label: t("nav_item_how"), sub: t("nav_item_how_sub"), href: "/HowItWorks", Icon: Workflow },
         { label: t("nav_item_pricing"), sub: t("nav_item_pricing_sub"), href: "/Pricing", Icon: Receipt },
-      ],
-    },
-    {
-      label: t("nav_group_proof"),
-      items: [
-        { label: t("nav_item_testimonials"), sub: t("nav_item_testimonials_sub"), href: "/Testimonials", Icon: MessageSquareQuote },
       ],
     },
     {

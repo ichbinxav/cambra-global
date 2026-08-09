@@ -7,7 +7,6 @@ import SectionHeading from "@/components/landing/SectionHeading";
 import Navbar from "@/components/landing/Navbar";
 import { useTranslation } from "@/lib/i18n.jsx"; // used by HowItWorksSection + LandingFooter
 import AnimatedSection from "@/components/landing/AnimatedSection";
-import TestimonialsCarousel from "@/components/landing/TestimonialsCarousel";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
 import FounderLetter from "@/components/landing/FounderLetter";
 import PricingDual from "@/components/landing/PricingDual";
@@ -163,7 +162,7 @@ function Hero() {
               </Link>
             </motion.div>
             <a
-              href="#testimonials"
+              href="#how"
               className="inline-flex items-center rounded-full px-8 py-4 text-[14px] font-medium transition-colors hover:border-[color:var(--ink)]"
               style={{
                 border: "1px solid var(--linea)",
@@ -460,7 +459,6 @@ export default function Landing() {
         <HowItWorksSection />
         <RealImpactSection />
         <PricingDual />
-        <TestimonialsCarousel />
         <ReferralProgramSection />
         <TrustSecuritySection />
         <FounderLetter />

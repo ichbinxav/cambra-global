@@ -83,7 +83,6 @@ import ForProviders from '@/pages/ForProviders';
 import Partners from '@/pages/Partners';
 import HowItWorks from '@/pages/HowItWorks';
 import Security from '@/pages/Security';
-import Testimonials from '@/pages/Testimonials';
 import Contact from '@/pages/Contact';
 import Help from '@/pages/Help';
 import HelpCategory from '@/pages/HelpCategory';
@@ -282,8 +281,8 @@ const AuthenticatedApp = () => {
         <Route path="/howitworks" element={<Navigate to="/HowItWorks" replace />} />
         <Route path="/Security" element={withBoundary(<Security />)} />
         <Route path="/security" element={<Navigate to="/Security" replace />} />
-        <Route path="/Testimonials" element={withBoundary(<Testimonials />)} />
-        <Route path="/testimonials" element={<Navigate to="/Testimonials" replace />} />
+        <Route path="/Testimonials" element={<Navigate to="/" replace />} />
+        <Route path="/testimonials" element={<Navigate to="/" replace />} />
         <Route path="/Contact" element={withBoundary(<Contact />)} />
         <Route path="/contact" element={<Navigate to="/Contact" replace />} />
         <Route path="/Help" element={withBoundary(<Help />)} />

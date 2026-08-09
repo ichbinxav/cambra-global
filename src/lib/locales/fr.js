@@ -237,7 +237,7 @@ export default {
     hero_h1_line2:        "Récupérez votre marge.",
     hero_sub:             "La plupart des commerces indépendants paient 40 à 60 % de trop sur les paiements par carte. Nous analysons ce que vous payez de trop pour accepter les paiements et nous récupérons la différence.",
     hero_cta_primary:     "Récupérez votre marge — 3 min",
-    hero_cta_secondary:   "Voyez ce qu'ont économisé de vrais commerces",
+    hero_cta_secondary:   "Voir comment fonctionne CAMBRA",
     hero_trust_1:         "Sans honoraires · sans engagement",
     hero_trust_2:         "Identifiants chiffrés, jamais en clair",
     hero_trust_3:         "Réservé aux commerces de l'UE",

@@ -241,7 +241,7 @@ export default {
     hero_h1_line2:        "Recover the margin.",
     hero_sub:             "Most independent businesses overpay 40–60% on card payments. We analyze what you overpay to accept payments and recover the difference.",
     hero_cta_primary:     "Recover your margin — 3 min",
-    hero_cta_secondary:   "See what real businesses saved",
+    hero_cta_secondary:   "See how CAMBRA works",
     hero_trust_1:         "No retainer · no contract",
     hero_trust_2:         "Credentials encrypted, never in plain text",
     hero_trust_3:         "EU businesses only",
