@@ -1,0 +1,57 @@
+# CAMBRA P12 — Intelligence & Proprietary Moat Layer
+
+Status: implemented foundation; production/runtime evidence is reported separately from code implementation.
+
+## Canonical knowledge contract
+
+P12 separates immutable `IntelligenceEvidence` from `IntelligenceObservation`, versioned `KnowledgeClaim`, privacy-safe benchmark projections, immutable `IntelligenceSnapshot`, `IntelligenceOutcome`, and derived `MoatMetric` / `KnowledgeGap`. Agents are producers and consumers, never canonical truth.
+
+Truth levels are `verified_official`, `observed`, and `inferred`. Knowledge lifecycle is candidate → observed → corroborated → verified → active → stale → superseded → archived, with quarantine available at any unsafe point. Inferred facts cannot be promoted to verified by a simple admin override.
+
+Bitemporal records preserve `effective_at` (external-world truth time) separately from `observed_at` / `recorded_at` (CAMBRA learning time). Pricing history is append/version oriented; a newer version does not rewrite historical Analyzer, negotiation, migration or Recover decision context.
+
+## Provider and market intelligence
+
+`PaymentsRateTable` remains the current production payments pricing source. `intelligenceMaintenanceWorker` versions it into `ProviderPricingVersion`; semantic pricing hashes include economic dimensions, not presentation/source copy, so copy-only changes do not become pricing changes. A change to prior verified pricing supersedes the historical version and creates an explicit conflict/impact review point rather than silently mutating the old fact.
+
+Existing `providerMonitorAgent` / `providerResearchAgent` are reused. External web/PDF/news text is explicitly untrusted and can only enter P12 as inferred candidate evidence. It cannot directly update `PaymentsRateTable`, approve a contract, modify Recover economics, bypass L4, or become verified pricing truth. Provider monitoring is scheduled daily for the most-used providers; deeper adaptive refresh tiers can be extended from exposure/volatility once source coverage is sufficient.
+
+## Central access and capability boundaries
+
+`intelligenceAccess` is the canonical service boundary. Internal callers must present an allowed capability (`provider_intelligence`, `analyzer`, `negotiation`, `migration`, `verification`, `moat_curator`, `knowledge_integrity`) and can access only the actions assigned to that capability. Admin callers remain authenticated/authorized by the normal admin gate.
+
+Analyzer and negotiation benchmark reads return aggregates only and suppress cohorts with n < 5. Comparable outcome reads also suppress n < 5 and never return merchant identifiers or raw foreign-tenant records. Tenant-specific raw evidence remains admin/service internal; cross-tenant learning is through approved aggregates.
+
+## Decision snapshots
+
+`intelligence_snapshot_id` is additive on AnalyzerResult, NegotiationCase, MigrationTask and MonthlySavingsReport. Current production paths create immutable snapshots for anonymous Analyzer materialization, provider negotiation start, payments migration start and monthly Recover measurement. The snapshot contains the applicable versions, inputs and provenance needed to reconstruct the decision without letting future intelligence rewrite history.
+
+## Outcomes and financial truth
+
+`outcomeLearningWorker` links fully verified `MonthlySavingsReport` rows to `IntelligenceOutcome`. It copies deterministic realized savings; it does not approve a report, calculate billing eligibility, create invoices, alter the baseline or invent financial truth. Zero/failed outcomes are retained as negative knowledge.
+
+## Integrity, conflicts and admin override
+
+`knowledgeIntegrityWorker` quarantines impossible future dates, invalid confidence and impossible pricing rather than silently correcting raw evidence. `KnowledgeConflict` makes contradictions explicit. `intelligenceAdmin` requires an admin and a reason, records before/after state in OperationalLog, and cannot promote inferred claims to verified without evidence.
+
+## Moat and gaps
+
+`moatCuratorWorker` uses a transparent bounded formula over sample depth, coverage/diversity, freshness, source quality, verified outcomes, contradiction rate and a concentration penalty. `KnowledgeGap` ranks strategic value × uncertainty × expected reuse. The worker never contacts merchants/providers merely to farm data.
+
+The initial formula is deliberately simple and versioned (`moat-p12-1.0.0`). It is an internal decision aid, not a valuation metric. Future tuning must be sample-backed and bounded.
+
+## Supervisor and observability
+
+P11 `autonomousOperationsSupervisor` is extended to surface stale verified provider pricing and unresolved knowledge conflicts that affect active operations. Safe repair stays separate from economic/material authority. Scheduled P12 maintenance includes provider monitoring, provider-pricing normalization, knowledge integrity, outcome learning and moat curation.
+
+## Legacy benchmark coexistence
+
+The old benchmark loop (`BenchmarkContribution` → `BenchmarkCohort` / `BenchmarkSnapshot`) remains live and privacy-thresholded. `scoreEngine.js` remains explicitly frozen until a dedicated benchmark migration. P12 does not duplicate or silently replace that engine; it provides a governed intelligence layer around it and uses its aggregate projection through the central access boundary.
+
+## Legal / privacy boundary
+
+P12 technically separates tenant-specific/PII-bearing evidence from global/aggregate intelligence, excludes demo data at canonical ingestion boundaries, and suppresses small cohorts. This does **not** itself establish a legal basis for retaining derived data after deletion or for every cross-tenant benchmark use. Retention, deletion/anonymization rules, contract wording and lawful-basis decisions require legal/privacy review before any broader production policy is activated.
+
+## Deliberately deferred
+
+No graph database is introduced. The existing relational/event model is sufficient for the current query patterns. No new production vertical is enabled: Product Policy remains authoritative and payments remains the production wedge. No autonomous internet-wide crawling is added. No low-confidence source can overwrite verified knowledge. No learning component can change authority, billing, legal gates or L4 requirements.

@@ -1,12 +1,12 @@
 {
-  "release": "CAMBRA v0.71.0 — Final Autonomous Platform Seal (durability manifest)",
-  "generatedAt": "2026-08-09T21:58:11.048Z",
-  "packageVersion": "0.71.0",
+  "release": "CAMBRA v0.72.0 — P12 Intelligence & Proprietary Moat Layer (durability manifest)",
+  "generatedAt": "2026-08-09T22:28:46.494Z",
+  "packageVersion": "0.72.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
   "allowlistCount": 77,
-  "fileCount": 118,
+  "fileCount": 158,
   "purpose": "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
   "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest covers every active ECL stage through P6 Economic Execution & Reconciliation.",
   "stageNote": "P1-P5 remain authoritative for evidence, lifecycle, review and economic authorization. P6 protects execution of already-authorized Recover invoices: deterministic local claims, Stripe idempotency, current-state webhook reconciliation, a versioned read-only Stripe reconciler, immutable finalized economics and no local/manual second payment truth. GitHub CI sealing remains a separate real-Actions proof.",
@@ -26,6 +26,11 @@
       "bytes": 793
     },
     {
+      "path": "base44/entities/AnalyzerResult.jsonc",
+      "sha256": "4db18b1cec0adbeb1259a698de310b777eab15647284021dba562b1aefa93060",
+      "bytes": 11399
+    },
+    {
       "path": "base44/entities/EvidenceAttestation.jsonc",
       "sha256": "1cb6bec24599aec271f527bc28d46697fe961c4a1427ab3bf7e0f5f10ce10d29",
       "bytes": 4839
@@ -41,9 +46,64 @@
       "bytes": 2658
     },
     {
+      "path": "base44/entities/IntelligenceEvidence.jsonc",
+      "sha256": "8c31a1c5944af7bb0443b060a0d80b9c17e02e9eabd0ca29778022bdb409aff8",
+      "bytes": 2361
+    },
+    {
+      "path": "base44/entities/IntelligenceObservation.jsonc",
+      "sha256": "1f8049edc2f62bf4a548f2354fdd959865c48421f11856750ee55e8b3a795c6b",
+      "bytes": 1923
+    },
+    {
+      "path": "base44/entities/IntelligenceOutcome.jsonc",
+      "sha256": "782d3a1863d5c41bd4732c8700dbc55a0e913b892dd88d4f6eba3299759cdf74",
+      "bytes": 1977
+    },
+    {
+      "path": "base44/entities/IntelligenceSnapshot.jsonc",
+      "sha256": "4cb7e8db817220f17eb1fe3acfa43066d4836bd25f74490bda7b63defc64b12d",
+      "bytes": 1468
+    },
+    {
       "path": "base44/entities/Invoice.jsonc",
       "sha256": "c578f89dbd4448e7abcc41aa783b535c0f44308d2721245f586e15cecf6c6041",
       "bytes": 9383
+    },
+    {
+      "path": "base44/entities/KnowledgeClaim.jsonc",
+      "sha256": "166bd5adb16dc0d34e41abe439dc6278d7b565f8a9a89b9ba517fff44b5f3337",
+      "bytes": 2312
+    },
+    {
+      "path": "base44/entities/KnowledgeConflict.jsonc",
+      "sha256": "d963ba2cfd3df0cd1b5a678be46c0f5f8ec58f7c56e545825cb635eb4bcfd76f",
+      "bytes": 1730
+    },
+    {
+      "path": "base44/entities/KnowledgeGap.jsonc",
+      "sha256": "0f60849a64fbed2b54cb91d75faa235f5a48672ec1a5c3a4ae27a3c539c2693d",
+      "bytes": 1352
+    },
+    {
+      "path": "base44/entities/MigrationTask.jsonc",
+      "sha256": "f2a931c9d3f5aaf2897404302a57081b7e07203dbda91ffd997962e0881ffd8d",
+      "bytes": 2028
+    },
+    {
+      "path": "base44/entities/MoatMetric.jsonc",
+      "sha256": "63beb8c3c04e37d84d607c7c3bec4b9df3b849fa6f94ce1d670397870abcbd1b",
+      "bytes": 1543
+    },
+    {
+      "path": "base44/entities/MonthlySavingsReport.jsonc",
+      "sha256": "7192124d9803ad081614b8acbe39f445a065ccf2a02b80345d69b8c076800de1",
+      "bytes": 9220
+    },
+    {
+      "path": "base44/entities/NegotiationCase.jsonc",
+      "sha256": "d9de301855aa7d4ecde9ff874255062c1f3e12b3db6470d31d726fc02d418f87",
+      "bytes": 2617
     },
     {
       "path": "base44/entities/OperationalIncident.jsonc",
@@ -51,9 +111,19 @@
       "bytes": 3393
     },
     {
+      "path": "base44/entities/OperationalLog.jsonc",
+      "sha256": "7cf488c03d8d779e4796c298e3413a8eada8c53c6bacc7669577b114829a5e19",
+      "bytes": 1400
+    },
+    {
       "path": "base44/entities/PaymentEvent.jsonc",
       "sha256": "0ace5472ca2730d99c90b7c7b87bf1e8ca9da2fec8427962908ad1fffc078434",
       "bytes": 2234
+    },
+    {
+      "path": "base44/entities/ProviderPricingVersion.jsonc",
+      "sha256": "aad8ecd8e6dafe3a3caafe20749bac15748f0142067236e58b32a81cacc2fc70",
+      "bytes": 2536
     },
     {
       "path": "base44/entities/ReviewCase.jsonc",
@@ -84,6 +154,16 @@
       "path": "base44/functions/approveRecoverReportForInvoicing/entry.ts",
       "sha256": "e7c60d61b6d2f95582dfb47698f37a28fc4e2771e0477408c8727af6137ad521",
       "bytes": 18665
+    },
+    {
+      "path": "base44/functions/autonomousOperationsSupervisor/entry.ts",
+      "sha256": "1ec4e4a7c55199bc809ab51b0ce6584d615778f0f0a70dfcead4ade094d6dc05",
+      "bytes": 6134
+    },
+    {
+      "path": "base44/functions/claimAnonPaymentsResult/entry.ts",
+      "sha256": "d395a7b0a60f67796573e894eac9f74ba562ff0105e41492011a7aae52ddb99b",
+      "bytes": 10928
     },
     {
       "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
@@ -137,8 +217,8 @@
     },
     {
       "path": "base44/functions/generateMonthlySavingsReport/entry.ts",
-      "sha256": "c184c5b3f437ae26f9803a08fb57079a0d962e47d227aa72f3d57baa7e3023a4",
-      "bytes": 15418
+      "sha256": "d408dfd04c9a0c806da77c558395bb079f200c576e0ba1703af87ae9afb22880",
+      "bytes": 16726
     },
     {
       "path": "base44/functions/generateRecoverContractPdf/entry.ts",
@@ -151,9 +231,69 @@
       "bytes": 6532
     },
     {
+      "path": "base44/functions/getIntelligenceCommandCenter/entry.ts",
+      "sha256": "871c871cc2ec32575bf78bd3e8a4a21ca013fa518464154da2619da4876a271c",
+      "bytes": 1791
+    },
+    {
       "path": "base44/functions/getRecoverAcceptanceContext/entry.ts",
       "sha256": "d28c5818b6d09c436a8b36d28b0a4a35960a1564f891d3d7e2687d95f246069d",
       "bytes": 7261
+    },
+    {
+      "path": "base44/functions/intelligenceAccess/entry.ts",
+      "sha256": "9b14317e9b2b1f47fddd48d39d9a5e6fb2cbc039475c707a89a3e756ba570de8",
+      "bytes": 7729
+    },
+    {
+      "path": "base44/functions/intelligenceAdmin/entry.ts",
+      "sha256": "09822173670f9c46f92876e88a73c14a0c687575a563d5bc7cdf2ee0e4f14714",
+      "bytes": 3121
+    },
+    {
+      "path": "base44/functions/intelligenceBackfill/entry.ts",
+      "sha256": "605305bae1a5290276dddf54871022a5f89810b82156229d418ab1783b749b8a",
+      "bytes": 1033
+    },
+    {
+      "path": "base44/functions/intelligenceMaintenanceWorker/entry.ts",
+      "sha256": "6e12e1b5b2e8d9d5aa78b858b6e20eadcf70400b264f5f9a963cd9ab7d135700",
+      "bytes": 3136
+    },
+    {
+      "path": "base44/functions/intelligenceMaintenanceWorker/function.jsonc",
+      "sha256": "476dfb10d62b8c04d6d6e574f84e338eed0f1f26defe8df7adce58ec66130414",
+      "bytes": 586
+    },
+    {
+      "path": "base44/functions/knowledgeIntegrityWorker/entry.ts",
+      "sha256": "d1946dc480f7845a97b5ae5a41c9b8fbd22a7207c05ad7e445c54d04e0d41cc8",
+      "bytes": 1656
+    },
+    {
+      "path": "base44/functions/knowledgeIntegrityWorker/function.jsonc",
+      "sha256": "35a10a2248203f3e719f0c8b415a985b34242ae217f08ee4936118e70c8eea9c",
+      "bytes": 530
+    },
+    {
+      "path": "base44/functions/moatCuratorWorker/entry.ts",
+      "sha256": "9868e348222c71be1c16ba4c2a734a0a891c325a3dea8157d0f5b499a5e3ab2c",
+      "bytes": 3509
+    },
+    {
+      "path": "base44/functions/moatCuratorWorker/function.jsonc",
+      "sha256": "6b870eadf20427122e138d68dcaee4f69dc9da6ccf88c4aab2c951ef052158fe",
+      "bytes": 507
+    },
+    {
+      "path": "base44/functions/outcomeLearningWorker/entry.ts",
+      "sha256": "1a7abb44a633acde83793d5fa45ce2354f09a6112006958ebffd06d9557ad240",
+      "bytes": 1911
+    },
+    {
+      "path": "base44/functions/outcomeLearningWorker/function.jsonc",
+      "sha256": "05717a50badf009e6d57aa794b5c4da14a1b4a7750511ba8f5d811e3dab9f8e1",
+      "bytes": 490
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
@@ -164,6 +304,21 @@
       "path": "base44/functions/processWebhookDeadLetters/function.jsonc",
       "sha256": "c2f7d19181086d9b2656feaa995142ff4003374aa0d66f0fab96b2b19287e3a4",
       "bytes": 743
+    },
+    {
+      "path": "base44/functions/providerMonitorAgent/entry.ts",
+      "sha256": "b4d5f126b0ee2fa1a2405f5209eb4ffe1ebd136826d6dcb83a9334771343783d",
+      "bytes": 8442
+    },
+    {
+      "path": "base44/functions/providerMonitorAgent/function.jsonc",
+      "sha256": "055ba6e1b9dd3e1882331cd7018abb7a12227cfb1813ec5ba9aa9efc64720478",
+      "bytes": 559
+    },
+    {
+      "path": "base44/functions/providerResearchAgent/entry.ts",
+      "sha256": "9e2a27bb4f9a5e352287750c9da62b6efa3f8a951f7195adb62fe65d84e0cc23",
+      "bytes": 7142
     },
     {
       "path": "base44/functions/purgeInactiveLeads/function.jsonc",
@@ -206,6 +361,16 @@
       "bytes": 596
     },
     {
+      "path": "base44/functions/startPaymentsMigration/entry.ts",
+      "sha256": "f44048025d7fda304b7b2c7407f14bea12f92a046a80c116e1fb8ec4092cab06",
+      "bytes": 10452
+    },
+    {
+      "path": "base44/functions/startProviderNegotiation/entry.ts",
+      "sha256": "17b676910cf8844a9f704f91350127add20b91773e62ce61d1be1cc926323e3e",
+      "bytes": 7293
+    },
+    {
       "path": "base44/functions/startRecoverAcceptance/entry.ts",
       "sha256": "28a9268bc14b21ad3d0885a51007963262428ee574bc5e9d905c5b0ba7c75702",
       "bytes": 8344
@@ -214,6 +379,11 @@
       "path": "base44/functions/stripeBillingWebhook/entry.ts",
       "sha256": "b0aaf45457140fdbe4a9d33e4ba51fe045f09e08f1ba319bb7865a8176ac0e84",
       "bytes": 10658
+    },
+    {
+      "path": "base44/shared/commercialModelRouter.ts",
+      "sha256": "272f1aa3dde05f45d39ee6611ffcdf6b0d5064af806d84cfcb81305843991651",
+      "bytes": 1603
     },
     {
       "path": "base44/shared/eclEconomicGate.ts",
@@ -249,6 +419,16 @@
       "path": "base44/shared/generated/eclPolicy.ts",
       "sha256": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
       "bytes": 5037
+    },
+    {
+      "path": "base44/shared/intelligenceCapabilities.ts",
+      "sha256": "c88a02bfd3fe5219a4673d129e9ee5d584288715142dc74b472a7984bd2b2b68",
+      "bytes": 851
+    },
+    {
+      "path": "base44/shared/intelligenceCore.ts",
+      "sha256": "24041d1e1e595f337a2456010881e0fecb98394083f59df3d51cf3be9d153459",
+      "bytes": 2638
     },
     {
       "path": "base44/shared/internalSecret.ts",
@@ -297,8 +477,8 @@
     },
     {
       "path": "config/release-touch-list.json",
-      "sha256": "8944f6d184f63d3978b7e69770b1f8961645388e226da6ff6eb98f2ff206e864",
-      "bytes": 5041
+      "sha256": "4c49775ce384d36cb22ced395cc6cfc69a6029da34f575876d364c0a0077f440",
+      "bytes": 7125
     },
     {
       "path": "config/typecheck-baseline.json",
@@ -307,13 +487,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "82193847233366ba9dcccf316f8751b8dc6efdf25cee63a1ccdc9ae0ece17a29",
+      "sha256": "7e0965c933ef8d218d4f12457369cee8e95c1c7cde81d62e2e44938ea27db38d",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "03a780147ca7c373abb82599942ddc7c225f6a6a12debfb0b15f3766ca609408",
-      "bytes": 5689
+      "sha256": "bd390fecd54280403ada61b851d76c9851967e49839deaade1574b55e8789072",
+      "bytes": 5700
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -397,8 +577,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "8fe036055e47182299d339579498af7566a0920761890c4b69e763088a89fb45",
-      "bytes": 21952
+      "sha256": "24cc99d01465bca7b80d41866d031902c9a02fbbde82d60d033649cb64256fb9",
+      "bytes": 22126
     },
     {
       "path": "src/components/recover/RecoverMandateModal.jsx",
@@ -416,9 +596,19 @@
       "bytes": 41485
     },
     {
+      "path": "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md",
+      "sha256": "27598a892ae7671f355e1eefc6ad44174040e57e908b44f7d5041601f207026b",
+      "bytes": 6377
+    },
+    {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "3085a9b2f1adc5cb2e59da9a949fda7698ba418331ebd96e78a9d45152f2e54b",
-      "bytes": 26926
+      "sha256": "5f3cd54cf29e6cfa9918b66816ae5eefc7cd5f48d4966910bd590d14bbe2ac92",
+      "bytes": 29004
+    },
+    {
+      "path": "src/lib/commercialModelRouter.test.js",
+      "sha256": "f23e1161fbfd5b2bd54d95db6eceefd6799e0b123be638dbfc83cd09c7fc3770",
+      "bytes": 1466
     },
     {
       "path": "src/lib/confidenceResult.js",
@@ -566,9 +756,14 @@
       "bytes": 6960
     },
     {
+      "path": "src/lib/p12Intelligence.test.js",
+      "sha256": "46fd1cb613091548eb43028834cc6eb07654d54af148ba49bf06e798b9507f4a",
+      "bytes": 8432
+    },
+    {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "d1da40e0189f5d01c3719731f0d75e81423c57b48c651f3d7280d22189a4bd3c",
-      "bytes": 7913
+      "sha256": "ab13f72c5d52c5fe03bff0055c459a58a3dd681ddace3dad0e051d5e4e24076a",
+      "bytes": 8119
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
@@ -586,9 +781,14 @@
       "bytes": 6765
     },
     {
+      "path": "src/pages/admin/AdminIntelligence.jsx",
+      "sha256": "36034e43a910903f2b47f3e096107fab7dc76dda16a152fdfcad0c1ee53aa3b7",
+      "bytes": 6633
+    },
+    {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "8465d1e876a256d2f6d27326b203e61f70955635d26756fbe0668bcb07a22566",
-      "bytes": 12344
+      "sha256": "81781ea9ff04393ee4645a4d28a693978e9210267fd7ec567cc1fbeb7e39bad4",
+      "bytes": 12436
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",
