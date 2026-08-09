@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useTranslation } from "@/lib/i18n.jsx";
-import { feeForActivated, BASE_FEE_PCT } from "@/lib/referralProgram";
+import { BASE_FEE_PCT } from "@/lib/referralProgram";
 import { ArrowRight } from "lucide-react";
 
 export default function EffectiveFeePanel({ report }) {
@@ -28,7 +28,8 @@ export default function EffectiveFeePanel({ report }) {
 
   if (activated === null) return null;
 
-  const fee = feeForActivated(activated);
+  const resolvedReportFee = Number(report?.effective_fee_pct);
+  const fee = Number.isFinite(resolvedReportFee) ? resolvedReportFee : BASE_FEE_PCT;
   const discounted = fee < BASE_FEE_PCT;
   const savings = Number(report?.savings || 0);
   const feeAmount = savings > 0 ? savings * (fee / 100) : 0;
