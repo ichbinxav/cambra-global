@@ -87,6 +87,7 @@ export default async function (req: Request): Promise<Response> {
     else if (evidenceSource.ok === false) blockers.push(evidenceSource.code || 'ecl_verified_evidence_unavailable');
     if (!ACCEPTABLE_ACTIVATION_STATES.includes(activation.status)) blockers.push(`activation_status:${activation.status}`);
     if (activeMandate) blockers.push('mandate_already_active');
+    if (brand?.service_status === 'cancelled') blockers.push('cambra_service_cancelled');
     if (PRODUCT_POLICY.economicTerms.recoveryEconomicsVersion === 'recover-economics-v2' && PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved !== true) blockers.push('recover_v2_legal_review_required');
 
     const snapshot = buildAcceptanceSnapshot({ activation, baseline, fee, month, brand });

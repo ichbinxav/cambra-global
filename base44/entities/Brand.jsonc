@@ -235,6 +235,24 @@
     },
     "vies_address": {
       "type": "string"
+    },
+    "service_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled"
+      ],
+      "default": "active",
+      "description": "CAMBRA service relationship. Separate from per-Recover economic rights."
+    },
+    "service_cancelled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the merchant cancelled the general CAMBRA service. Does not by itself terminate activated Recover V2 economic terms."
+    },
+    "service_cancellation_reason": {
+      "type": "string",
+      "description": "Optional merchant-provided cancellation reason; operational only."
     }
   },
   "required": [

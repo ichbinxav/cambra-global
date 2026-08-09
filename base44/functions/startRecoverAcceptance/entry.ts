@@ -53,6 +53,7 @@ export default async function (req: Request): Promise<Response> {
     const owned = await resolveOwnedActivation(svc, user, body?.deal_activation_id);
     if (!owned.ok) return Response.json({ error: owned.error }, { status: owned.status });
     const { activation, ownerEmail, brand } = owned;
+    if (brand?.service_status === 'cancelled') return Response.json({ error: 'cambra_service_cancelled' }, { status: 409 });
 
     if (!ACCEPTABLE_ACTIVATION_STATES.includes(activation.status)) {
       return Response.json({ error: 'activation_not_acceptable', activation_status: activation.status }, { status: 409 });
