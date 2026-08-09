@@ -1,0 +1,126 @@
+{
+  "name": "NegotiationCase",
+  "type": "object",
+  "description": "Persistent provider negotiation state for one Recover/provider pair. AI can reason and communicate inside authority_snapshot_json; material commitment remains L4.",
+  "properties": {
+    "recover_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "thread_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "ready",
+        "contacted",
+        "awaiting_provider",
+        "awaiting_cambra",
+        "negotiating",
+        "contract_received",
+        "awaiting_final_approval",
+        "approved",
+        "rejected",
+        "closed",
+        "expired"
+      ],
+      "default": "draft"
+    },
+    "round": {
+      "type": "number",
+      "default": 0
+    },
+    "currency": {
+      "type": "string"
+    },
+    "current_economics_json": {
+      "type": "object"
+    },
+    "target_economics_json": {
+      "type": "object"
+    },
+    "best_offer_json": {
+      "type": "object"
+    },
+    "authority_snapshot_json": {
+      "type": "object"
+    },
+    "authority_hash": {
+      "type": "string"
+    },
+    "strategy_json": {
+      "type": "object"
+    },
+    "unresolved_items": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_action": {
+      "type": "string"
+    },
+    "next_action_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "final_approval_id": {
+      "type": "string"
+    },
+    "approved_offer_id": {
+      "type": "string"
+    },
+    "contract_document_id": {
+      "type": "string"
+    },
+    "contract_match_status": {
+      "type": "string",
+      "enum": [
+        "not_received",
+        "pending_review",
+        "match",
+        "mismatch",
+        "manual_review"
+      ]
+    },
+    "contract_delta_json": {
+      "type": "object"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "closed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "recover_id",
+    "brand_id",
+    "provider_id",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
