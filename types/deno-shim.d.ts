@@ -50,6 +50,6 @@ declare module "npm:stripe@17.7.0" {
   export { default } from "stripe";
 }
 declare module "npm:stripe@14.25.0" {
-  export * from "stripe";
-  export { default } from "stripe";
+  export * from "stripe14";
+  export { default } from "stripe14";
 }
