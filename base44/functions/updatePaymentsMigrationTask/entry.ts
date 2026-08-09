@@ -22,8 +22,13 @@ export default async function (req: Request): Promise<Response> {
     const nextStatus = String(body?.status || '');
     const note = String(body?.note || '').trim();
     const merchantRequired = body?.merchant_required === true;
+    const merchantMessage = body?.merchant_message_i18n && typeof body.merchant_message_i18n === 'object' ? body.merchant_message_i18n : null;
+    const merchantMessageComplete = !!merchantMessage && ['en','fr','es'].every(lang => typeof merchantMessage?.[lang] === 'string' && merchantMessage[lang].trim().length >= 3);
     if (!taskId || !VALID.has(nextStatus)) return Response.json({ error: 'task_id and valid status required' }, { status: 400 });
     if (nextStatus === 'blocked' && note.length < 3) return Response.json({ error: 'blocker_note_required' }, { status: 400 });
+    if (nextStatus === 'blocked' && merchantRequired && !merchantMessageComplete) {
+      return Response.json({ error: 'merchant_blocker_requires_en_fr_es' }, { status: 400 });
+    }
 
     const svc = base44.asServiceRole;
     const found = await svc.entities.MigrationTask.filter({ id: taskId }, '-created_date', 1).catch(() => []);
@@ -70,7 +75,18 @@ export default async function (req: Request): Promise<Response> {
       completed_at: nextStatus === 'done' ? now : undefined,
       blocked_reason: nextStatus === 'blocked' ? note : '',
       requires_brand_input: nextStatus === 'blocked' ? merchantRequired : false,
-      metadata_json: { ...(task.metadata_json || {}), retry_count: retryCount, last_note: note || undefined, last_actor: me.email, last_transition_at: now },
+      metadata_json: {
+        ...(task.metadata_json || {}),
+        retry_count: retryCount,
+        last_note: note || undefined,
+        last_actor: me.email,
+        last_transition_at: now,
+        // Customer-safe copy is deliberately separated from internal notes.
+        // A merchant blocker is publishable only when EN/FR/ES are all present.
+        merchant_blocker_i18n: nextStatus === 'blocked' && merchantRequired
+          ? { en: merchantMessage.en.trim(), fr: merchantMessage.fr.trim(), es: merchantMessage.es.trim() }
+          : null,
+      },
     });
 
     if (nextStatus === 'done') {
@@ -89,7 +105,7 @@ export default async function (req: Request): Promise<Response> {
     await svc.entities.OperationalLog.create({
       deal_activation_id: activation.id, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
       event_type: 'task_updated', message: `${task.step_name}: ${task.status} → ${nextStatus}`,
-      data_json: { task_id: taskId, from: task.status, to: nextStatus, note: note || null, merchant_required: merchantRequired, retry_count: retryCount }, actor_email: me.email, created_at: now,
+      data_json: { task_id: taskId, from: task.status, to: nextStatus, note: note || null, merchant_required: merchantRequired, merchant_message_locales: merchantRequired ? ['en','fr','es'] : [], retry_count: retryCount }, actor_email: me.email, created_at: now,
     }).catch(() => null);
 
     return Response.json({ ok: true, task_id: taskId, status: nextStatus });

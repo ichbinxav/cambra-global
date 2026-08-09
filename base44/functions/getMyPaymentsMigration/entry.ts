@@ -45,7 +45,15 @@ export default async function (req: Request): Promise<Response> {
     const activeTasks = tasks.filter(t => t.status !== 'canceled');
     const done = activeTasks.filter(t => t.status === 'done').length;
     const blockers = activeTasks.filter(t => t.status === 'blocked');
-    const merchantBlockers = blockers.filter(t => t.requires_brand_input === true).map(t => ({ id: t.id, title: t.description || t.step_name, reason: t.blocked_reason || 'We need something from you to continue.' }));
+    const merchantBlockers = blockers
+      .filter(t => t.requires_brand_input === true)
+      .map(t => {
+        const copy = t?.metadata_json?.merchant_blocker_i18n;
+        const safe = copy && ['en','fr','es'].every(lang => typeof copy?.[lang] === 'string' && copy[lang].trim().length >= 3);
+        // Never fall back to blocked_reason/description: those are internal operational fields.
+        return safe ? { id: t.id, step_key: t.step_name, reason_i18n: { en: copy.en, fr: copy.fr, es: copy.es } } : null;
+      })
+      .filter(Boolean);
     const stage = customerStage(activeTasks, activation);
 
     return Response.json({ ok: true, migration: {
@@ -63,7 +71,6 @@ export default async function (req: Request): Promise<Response> {
       // Only customer-safe milestones. Internal owner/retry/admin notes stay server-side.
       milestones: activeTasks.filter(t => t?.metadata_json?.customer_visible !== false).map(t => ({
         key: t.step_name,
-        label: t.description || t.step_name,
         status: t.status === 'blocked' && !t.requires_brand_input ? 'in_progress' : t.status,
         customer_stage: t?.metadata_json?.customer_stage || 'preparing',
       })),
