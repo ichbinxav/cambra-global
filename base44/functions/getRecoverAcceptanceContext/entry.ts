@@ -32,7 +32,19 @@ export default async function (req: Request): Promise<Response> {
     const body = await req.json().catch(() => ({}));
     const svc = base44.asServiceRole;
 
-    const owned = await resolveOwnedActivation(svc, user, body?.deal_activation_id);
+    // P10 — the merchant UI may ask for its Recover context without first
+    // reading DealActivation rows in the browser. Resolve the latest relevant
+    // activation server-side from authenticated identity, then run the same
+    // ownership proof used for explicit ids.
+    let activationId = typeof body?.deal_activation_id === 'string' ? body.deal_activation_id : '';
+    if (!activationId) {
+      const mine = await svc.entities.DealActivation.filter({ user_email: user.email }, '-created_date', 25).catch(() => []);
+      const candidate = (mine || []).find((a: any) => ['activated','awaiting_authorization','authorized'].includes(a.status));
+      if (!candidate) return Response.json({ ok: true, exists: false });
+      activationId = candidate.id;
+    }
+
+    const owned = await resolveOwnedActivation(svc, user, activationId);
     if (!owned.ok) return Response.json({ error: owned.error }, { status: owned.status });
     const { activation, brand, ownerEmail } = owned;
 
@@ -78,6 +90,7 @@ export default async function (req: Request): Promise<Response> {
 
     return Response.json({
       ok: true,
+      exists: true,
       eligible: blockers.length === 0,
       blockers,
       document_version: MANDATE_DOCUMENT_VERSION,
