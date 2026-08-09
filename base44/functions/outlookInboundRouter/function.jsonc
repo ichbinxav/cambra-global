@@ -1,0 +1,15 @@
+{
+  "name": "outlookInboundRouter",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "connector",
+      "name": "Outlook Commercial Inbound — created",
+      "description": "Routes newly created Outlook emails into CAMBRA's canonical commercial thread ledger. Ignores calendar/contact events after a safe Graph message lookup.",
+      "function_args": {},
+      "is_active": true,
+      "integration_type": "outlook",
+      "events": ["created"]
+    }
+  ]
+}
