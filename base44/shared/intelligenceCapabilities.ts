@@ -1,7 +1,7 @@
 export const INTELLIGENCE_CAPABILITIES=Object.freeze({
  provider_intelligence:new Set(['record_evidence','record_observation','upsert_claim','pricing_at_date','current_pricing','create_snapshot']),
- analyzer:new Set(['pricing_at_date','current_pricing','create_snapshot']),
- negotiation:new Set(['pricing_at_date','current_pricing','create_snapshot','record_outcome']),
+ analyzer:new Set(['pricing_at_date','current_pricing','get_benchmark','create_snapshot']),
+ negotiation:new Set(['pricing_at_date','current_pricing','get_benchmark','get_comparable_outcomes','create_snapshot','record_outcome']),
  migration:new Set(['create_snapshot','record_outcome']),
  verification:new Set(['create_snapshot','record_outcome']),
  moat_curator:new Set(['pricing_at_date','current_pricing']),
