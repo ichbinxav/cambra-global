@@ -77,8 +77,8 @@ function AgentPanel({ title, description, icon: Icon, onRun, busy, lastTask, err
 
 export default function AdminCopilot() {
   const [busy, setBusy] = useState({ brief: false, investor: false, qa: false });
-  const [errors, setErrors] = useState({});
-  const [lastTasks, setLastTasks] = useState({});
+  const [errors, setErrors] = useState({ brief: null, investor: null, qa: null });
+  const [lastTasks, setLastTasks] = useState({ brief: null, investor: null, qa: null });
   const [brief, setBrief] = useState("");
   const [investorDraft, setInvestorDraft] = useState(null);
   const [qaReport, setQaReport] = useState("");
