@@ -92,12 +92,28 @@ export default async function (req: Request): Promise<Response> {
 
     const snapshot = buildAcceptanceSnapshot({ activation, baseline, fee, month, brand });
     const snapshot_hash = await hashSnapshot(snapshot);
+    // P14 Aggregate: expose only this merchant's eligibility projection. Potential eligibility is never presented as guaranteed pricing.
+    const aggregateEligibility = await svc.entities.MerchantRateEligibility.filter({ brand_id: activation.brand_id }, '-evaluated_at', 50).catch(() => []);
+    const aggregatePrograms:any[] = [];
+    for (const e of aggregateEligibility) {
+      const rate = await svc.entities.PrivateRateCard.get(e.rate_card_id).catch(() => null);
+      if (!rate || rate.status !== 'active') continue;
+      const provider = await svc.entities.Provider.get(e.provider_id).catch(() => null);
+      aggregatePrograms.push({
+        eligibility_id: e.id, status: e.status, provider_name: provider?.name || '', provider_id: e.provider_id,
+        currency: rate.currency, negotiated_variable_rate_bps: e.status === 'eligible' ? rate.variable_rate_bps : null,
+        negotiated_fixed_fee_minor: e.status === 'eligible' ? rate.fixed_fee_minor : null,
+        provider_underwriting_status: e.provider_underwriting_status, confidence: e.confidence,
+        reason_codes: e.reason_codes || [], rate_guaranteed: e.status === 'eligible' && e.provider_underwriting_status !== 'pending' && e.provider_underwriting_status !== 'not_started'
+      });
+    }
 
     return Response.json({
       ok: true,
       exists: true,
       eligible: blockers.length === 0,
       blockers,
+      aggregate_programs: aggregatePrograms,
       document_version: MANDATE_DOCUMENT_VERSION,
       locale, // RECOVER-3-FIX
       legal_entity_name: brand?.name || '',
