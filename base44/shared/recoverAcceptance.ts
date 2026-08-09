@@ -26,6 +26,7 @@
 //    signature so a fee change mid-popup refuses the acceptance instead of
 //    silently binding the merchant to different terms.
 
+import { recoveryEconomicsSnapshot } from './recoveryEconomicsV2.ts';
 import { PRODUCT_POLICY, getSuccessFeePct, getMerchantSharePct, getFeeDurationMonths } from './generated/productPolicy.ts';
 import { RECOVER_CONTRACT_TEMPLATE_VERSION } from './recoverContractTemplates.ts';
 import { SNAPSHOT_SCHEMA_VERSION, POLICY_SOURCE_REGISTRY } from './contractPolicySnapshot.ts';
@@ -151,6 +152,8 @@ export function buildAcceptanceSnapshot({ activation, baseline, fee, month, evid
     referral_start_pct: Math.round(PRODUCT_POLICY.referralTerms.startRate * 100),
     referral_step_pct: Math.round(PRODUCT_POLICY.referralTerms.stepRate * 100),
     referral_floor_pct: Math.round(PRODUCT_POLICY.referralTerms.floorRate * 100),
+    // Recover Economics V2 — frozen for NEW acceptances only. Historical Mandate snapshots are never rewritten.
+    recovery_economics: recoveryEconomicsSnapshot(),
   };
 }
 

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "policyVersion": "2026.08.01",
-  "effectiveDate": "2026-08-01",
+  "policyVersion": "2026.08.09-recover-v2",
+  "effectiveDate": "2026-08-09",
   "currency": "EUR",
   "economicTerms": {
     "analyzerPriceEur": 0,
@@ -9,7 +9,13 @@
     "merchantShareRate": 0.75,
     "feeDurationMonths": 24,
     "feeBase": "positive_verified_savings",
-    "recoveryOptional": true
+    "recoveryOptional": true,
+    "recoveryEconomicsVersion": "recover-economics-v2",
+    "year1SuccessFeeRate": 0.25,
+    "year2SuccessFeeRate": 0.15,
+    "postTermSuccessFeeRate": 0,
+    "successFeeFloorRate": 0.05,
+    "referralDiscountStepRate": 0.05
   },
   "referralTerms": {
     "startRate": 0.25,
@@ -17,14 +23,38 @@
     "floorRate": 0.05
   },
   "productScope": {
-    "payments": { "productionEnabled": true, "merchantVisible": true },
-    "shipping": { "productionEnabled": false, "merchantVisible": false },
-    "saas": { "productionEnabled": false, "merchantVisible": false },
-    "insurance": { "productionEnabled": false, "merchantVisible": false },
-    "telecom": { "productionEnabled": false, "merchantVisible": false },
-    "energy": { "productionEnabled": false, "merchantVisible": false },
-    "banking": { "productionEnabled": false, "merchantVisible": false },
-    "financing": { "productionEnabled": false, "merchantVisible": false }
+    "payments": {
+      "productionEnabled": true,
+      "merchantVisible": true
+    },
+    "shipping": {
+      "productionEnabled": false,
+      "merchantVisible": false
+    },
+    "saas": {
+      "productionEnabled": false,
+      "merchantVisible": false
+    },
+    "insurance": {
+      "productionEnabled": false,
+      "merchantVisible": false
+    },
+    "telecom": {
+      "productionEnabled": false,
+      "merchantVisible": false
+    },
+    "energy": {
+      "productionEnabled": false,
+      "merchantVisible": false
+    },
+    "banking": {
+      "productionEnabled": false,
+      "merchantVisible": false
+    },
+    "financing": {
+      "productionEnabled": false,
+      "merchantVisible": false
+    }
   },
   "supportedChannels": {
     "onlinePsp": true,

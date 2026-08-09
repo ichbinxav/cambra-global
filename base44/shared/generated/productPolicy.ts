@@ -1,17 +1,17 @@
 // GENERATED FILE — DO NOT EDIT DIRECTLY.
 // Source: config/product-policy.json
-// policyVersion: 2026.08.01
-// effectiveDate: 2026-08-01
+// policyVersion: 2026.08.09-recover-v2
+// effectiveDate: 2026-08-09
 // Regenerate: npm run policy:generate  ·  Drift check: npm run policy:check
-export const POLICY_VERSION = "2026.08.01";
-export const EFFECTIVE_DATE = "2026-08-01";
+export const POLICY_VERSION = "2026.08.09-recover-v2";
+export const EFFECTIVE_DATE = "2026-08-09";
 
 // Deep-frozen so no consumer can mutate the canonical values at runtime.
 export const PRODUCT_POLICY = (function () {
   const o = {
   "schemaVersion": 1,
-  "policyVersion": "2026.08.01",
-  "effectiveDate": "2026-08-01",
+  "policyVersion": "2026.08.09-recover-v2",
+  "effectiveDate": "2026-08-09",
   "currency": "EUR",
   "economicTerms": {
     "analyzerPriceEur": 0,
