@@ -76,6 +76,7 @@ export default async function (req: Request): Promise<Response> {
       sha256: mandate.contract_pdf_sha256,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('downloadRecoverContract failed', error);
+    return Response.json({ error: 'recover_contract_download_failed' }, { status: 500 });
   }
 }

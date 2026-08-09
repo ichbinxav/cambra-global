@@ -26,6 +26,7 @@ Deno.serve(async (req) => {
       saas: { completeness: sa?.completeness_score||0, readiness: sa?.readiness_score||0, missing_fields: sa?.missing_fields||[] }
     }});
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('getOnboardingStatus failed', error);
+    return Response.json({ error: 'onboarding_status_unavailable' }, { status: 500 });
   }
 });

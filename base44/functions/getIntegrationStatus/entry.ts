@@ -169,6 +169,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, brand_id, grouped, integrations });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    console.error('getIntegrationStatus failed', error);
+    return Response.json({ ok: false, error: 'integration_status_unavailable' }, { status: 500 });
   }
 });

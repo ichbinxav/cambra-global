@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     // Fail closed — on any error the UI treats upload as not-live (honest
     // "coming soon" rather than a false promise).
-    return Response.json({ ok: false, extraction_live: false, error: (error as Error).message }, { status: 500 });
+    console.error('getUploadCapability failed', error);
+    return Response.json({ ok: false, extraction_live: false, error: 'upload_capability_unavailable' }, { status: 500 });
   }
 });

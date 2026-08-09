@@ -87,6 +87,9 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: 'Brand not found' }, { status: 404 });
     }
 
+    const svc = base44.asServiceRole;
+    const now = new Date().toISOString();
+
     // Step 3+4 — Dual-row disconnect via service role.
     const counters = { integrations: 0, stripe_connections: 0, consents: 0 };
 
@@ -131,7 +134,6 @@ Deno.serve(async (req) => {
       const consents = await base44.asServiceRole.entities.ConsentRecord.filter(
         { brand_id, provider: 'stripe', status: 'active' }
       );
-      const now = new Date().toISOString();
       for (const c of consents) {
         await base44.asServiceRole.entities.ConsentRecord.update(c.id, {
           status: 'revoked',
@@ -148,6 +150,7 @@ Deno.serve(async (req) => {
     await svc.entities.OperationalLog.create({ brand_id, event_type: 'status_changed', message: 'recovery_verification_source_disconnected', data_json: { active_recovery_ids: (activeRecoveries || []).map((r:any)=>r.id), billing_effect: 'verification_required_no_estimated_billing' }, actor_email: user.email || '', created_at: now }).catch(() => null);
     return Response.json({ ok: true, disconnected: counters });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    console.error('stripeConnectionDisconnect failed', error);
+    return Response.json({ ok: false, error: 'stripe_disconnect_failed' }, { status: 500 });
   }
 });

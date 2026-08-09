@@ -117,6 +117,7 @@ Deno.serve(async (req) => {
       history: savingsRows,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    console.error('getBrandSavings failed', error);
+    return Response.json({ error: 'brand_savings_unavailable' }, { status: 500 });
   }
 });

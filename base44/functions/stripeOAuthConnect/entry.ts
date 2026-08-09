@@ -120,6 +120,7 @@ Deno.serve(async (req) => {
       connection_id: connection.id,
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    console.error('stripeOAuthConnect failed', error);
+    return Response.json({ ok: false, error: 'stripe_oauth_connect_failed' }, { status: 500 });
   }
 });
