@@ -1,19 +1,16 @@
-// PaymentMethodSetupCard — RECOVER-2 (2026-08-03).
-//
-// Collects the payment method for FUTURE success-fee invoices. Card data is typed
-// into Stripe's own iframe (Payment Element) and never touches our code or servers.
-//
-// Nothing here is trusted as proof: after confirmSetup we ask the BACKEND to read
-// the SetupIntent from Stripe (refreshPaymentMethodStatus) and only its answer
-// decides whether the method is ready.
-
+// RECOVER-2 — Stripe-hosted payment method setup. Browser confirmation is never
+// treated as evidence; backend reconciliation remains the source of truth.
 import { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { CreditCard, CheckCircle2, Loader2 } from "lucide-react";
 import { getStripe } from "@/lib/stripeJs";
+import { useLanguage } from "@/lib/i18n.jsx";
+import { recoverUiCopy } from "./recoverUiCopy";
 
 export default function PaymentMethodSetupCard({ dealActivationId, initialStatus }) {
+  const { lang } = useLanguage();
+  const c = recoverUiCopy(lang).payment;
   const [status, setStatus] = useState(initialStatus || "none");
   const [starting, setStarting] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -22,21 +19,28 @@ export default function PaymentMethodSetupCard({ dealActivationId, initialStatus
   const mountRef = useRef(null);
   const stripeRef = useRef(null);
   const elementsRef = useRef(null);
+  const paymentElementRef = useRef(null);
 
   const start = async () => {
+    if (starting || saving) return;
     setError("");
     setStarting(true);
-    const r = await base44.functions
-      .invoke("startPaymentMethodSetup", { deal_activation_id: dealActivationId })
-      .catch((e) => ({ data: { error: e?.message || "network_error" } }));
+    let r = null;
+    try {
+      r = await base44.functions.invoke("startPaymentMethodSetup", { deal_activation_id: dealActivationId });
+    } catch {
+      setError(c.startError);
+      setStarting(false);
+      return;
+    }
     setStarting(false);
-    if (!r?.data?.client_secret) {
-      setError(r?.data?.error || "We couldn't start the setup. Please try again.");
+    if (!r?.data?.client_secret || r?.data?.error) {
+      setError(c.startError);
       return;
     }
     stripeRef.current = await getStripe(r.data.publishable_key).catch(() => null);
     if (!stripeRef.current) {
-      setError("We couldn't reach Stripe. Please check your connection and retry.");
+      setError(c.stripeError);
       return;
     }
     elementsRef.current = stripeRef.current.elements({ clientSecret: r.data.client_secret });
@@ -44,76 +48,65 @@ export default function PaymentMethodSetupCard({ dealActivationId, initialStatus
   };
 
   useEffect(() => {
-    if (ready && elementsRef.current && mountRef.current) {
-      elementsRef.current.create("payment").mount(mountRef.current);
-    }
+    if (!ready || !elementsRef.current || !mountRef.current || paymentElementRef.current) return;
+    const element = elementsRef.current.create("payment");
+    paymentElementRef.current = element;
+    element.mount(mountRef.current);
+    return () => {
+      try { element.unmount(); } catch {}
+      paymentElementRef.current = null;
+    };
   }, [ready]);
 
   const submit = async () => {
+    if (saving || starting || !stripeRef.current || !elementsRef.current) return;
     setError("");
     setSaving(true);
-    const { error: stripeError } = await stripeRef.current.confirmSetup({
-      elements: elementsRef.current,
-      redirect: "if_required",
-    });
-    if (stripeError) {
+    try {
+      const { error: stripeError } = await stripeRef.current.confirmSetup({ elements: elementsRef.current, redirect: "if_required" });
+      if (stripeError) {
+        setError(c.bankError);
+        return;
+      }
+      const r = await base44.functions.invoke("refreshPaymentMethodStatus", { deal_activation_id: dealActivationId }).catch(() => null);
+      if (r?.data?.payment_method_status === "ready") {
+        setStatus("ready");
+        setReady(false);
+      } else {
+        setError(c.pending);
+      }
+    } finally {
       setSaving(false);
-      setError(stripeError.message || "Your bank declined the authorization.");
-      return;
-    }
-    // The browser's word is not evidence — the server reads the SetupIntent.
-    const r = await base44.functions
-      .invoke("refreshPaymentMethodStatus", { deal_activation_id: dealActivationId })
-      .catch(() => null);
-    setSaving(false);
-    if (r?.data?.payment_method_status === "ready") {
-      setStatus("ready");
-      setReady(false);
-    } else {
-      setError(r?.data?.error || "Stripe hasn't confirmed the method yet. Give it a moment and retry.");
     }
   };
 
   if (status === "ready") {
     return (
-      <div className="flex items-start gap-2.5 text-[12.5px] text-white/70 leading-relaxed mt-5 pt-5 border-t border-white/10">
+      <div className="flex items-start gap-2.5 text-[12.5px] text-white/70 leading-relaxed mt-5 pt-5 border-t border-white/10" role="status">
         <CheckCircle2 size={16} className="shrink-0 mt-0.5" style={{ color: "#2FE0A8" }} />
-        <span>Payment method saved. It is only charged against savings we've verified — never before.</span>
+        <span>{c.saved}</span>
       </div>
     );
   }
 
   return (
     <div className="mt-5 pt-5 border-t border-white/10">
-      <p className="text-[12.5px] text-white/60 leading-relaxed mb-4">
-        Add a payment method for future success-fee invoices. Nothing is charged now — we only invoice once savings are
-        verified against your own statements.
-      </p>
-
+      <p className="text-[12.5px] text-white/60 leading-relaxed mb-4">{c.intro}</p>
       {ready ? (
         <>
           <div ref={mountRef} className="cambra-card-inner-light p-4 mb-4" />
-          <Button
-            onClick={submit}
-            disabled={saving}
-            className="rounded-full h-10 px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2"
-          >
+          <Button onClick={submit} disabled={saving || starting} className="rounded-full h-10 px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2">
             {saving ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
-            {saving ? "Saving" : "Save payment method"}
+            {saving ? c.saving : c.save}
           </Button>
         </>
       ) : (
-        <Button
-          onClick={start}
-          disabled={starting}
-          className="rounded-full h-10 px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2"
-        >
+        <Button onClick={start} disabled={starting || saving} className="rounded-full h-10 px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2">
           {starting ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
-          {starting ? "Preparing" : "Add payment method"}
+          {starting ? c.preparing : c.add}
         </Button>
       )}
-
-      {error && <p className="text-[12px] text-white/70 mt-3" style={{ color: "#F45B69" }}>{error}</p>}
+      {error && <p className="text-[12px] mt-3" style={{ color: "#F45B69" }} role="alert">{error}</p>}
     </div>
   );
 }
