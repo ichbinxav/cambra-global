@@ -39,7 +39,7 @@ function parseAchievableBreakdown(assumptions) {
 // Display helper only — same value, merchant-readable unit.
 const asPct = (bps) => `${(bps / 100).toFixed(2)}%`;
 
-function Bar({ label, bps, color, note, negotiable, negotiableLabel }) {
+function Bar({ label, bps, color, note = null, negotiable = false, negotiableLabel = null }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between gap-3">
