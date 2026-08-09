@@ -33,7 +33,20 @@ async function ensureIncident(svc: any, signal: P7IncidentSignal, nowIso: string
   }
   const record = buildIncidentRecord(signal, nowIso);
   const claim = await createOnce(svc, 'OperationalIncident', record.idempotency_key, record);
-  return { id: claim.id, created: claim.created };
+  const claimed = await svc.entities.OperationalIncident.get(claim.id);
+  // A human may resolve while the authoritative signal is still present. A
+  // same-bucket createOnce must therefore reopen that exact episode rather than
+  // letting a manual resolution manufacture a temporary green window.
+  if (claimed?.status === 'resolved') {
+    await svc.entities.OperationalIncident.update(claimed.id, {
+      status: 'open', severity: signal.severity, summary: signal.summary.slice(0, 500), details_json: signal.details || {},
+      recovery_action: signal.recoveryAction, subject_type: signal.subjectType || '', subject_id: signal.subjectId || '',
+      last_seen_at: nowIso, occurrence_count: Number(claimed.occurrence_count || 0) + 1,
+      resolved_at: '', resolved_by: '', resolution_note: '',
+    });
+    return { id: claimed.id, created: false, reopened: true };
+  }
+  return { id: claim.id, created: claim.created, reopened: false };
 }
 
 async function activeHealthIncidents(svc: any) {
