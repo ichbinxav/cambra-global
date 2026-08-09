@@ -48,7 +48,7 @@ const MANIFEST = [
   "cancelCambraService", "claimAnonPaymentsResult", "codeReviewAgent", "competitorMonitorAgent",
   "complianceAgent", "computeStripeVerifiedGap", "computeVerticalStatus",
   "contractIPAgent", "copilotChat", "createApiKey", "createDocument",
-  "createPaymentLink", "createSelfTestBrand", "crmAgent", "dataSyncAgent",
+  "createPaymentLink", "createSelfTestBrand", "crmAgent", "dataSyncAgent", "developerMigrationEngine",
   "discoverCompanyInfrastructure", "discoveryTechStackAgent", "dispatchWebhook",
   "driveConnectionCheck",
   // v62.5 ECL P3 — único límite I/O del motor de ciclo de vida de evidencia.

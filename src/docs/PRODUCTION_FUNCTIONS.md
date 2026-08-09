@@ -176,3 +176,5 @@ _tenantGuard · createSelfTestBrand · phase2CleanupLegacyFields (migración one
 3. La clasificación de auth es estática (grep de mecanismos) — la verificación profunda vive en Decision_Log_SECURITY2.md.
 | acquisitionAttributionWorker | B/internal · scheduled | OutboundLead, CommunicationThread, Brand, AcquisitionAttribution | Hourly deterministic exact-email attribution from contacted merchant lead to Brand; ambiguous matches remain unattributed. |
 | acquisitionLearningWorker | B/internal · scheduled daily | AcquisitionLearningCohort, AcquisitionAttribution, MonthlySavingsReport | Bounded acquisition cohort learning; Verified Savings influence prioritization only through deterministic attribution. |
+
+| developerMigrationEngine | B · admin | DeveloperWorkspace, DeveloperMigrationRun, AgentTask, Approval + GitHub connector | CAMBRA Developer repo migration engine. Admin-only; scans repository, produces plan, writes only to a new branch/PR after approval, and requires separate L4 approval before merge/cutover. |
