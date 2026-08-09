@@ -1,0 +1,109 @@
+{
+  "name": "RoutingOpportunity",
+  "type": "object",
+  "description": "Material shadow-routing opportunity. Estimated/counterfactual only until a future separately authorized deployment phase.",
+  "properties": {
+    "opportunity_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "cost_optimization",
+        "approval_optimization",
+        "multi_psp_diversification",
+        "geographic_routing",
+        "payment_method_routing",
+        "failover_readiness",
+        "contract_optimization",
+        "migration_required"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "qualified",
+        "recommended",
+        "dismissed",
+        "expired"
+      ],
+      "default": "candidate"
+    },
+    "actual_provider_slug": {
+      "type": "string"
+    },
+    "candidate_provider_slug": {
+      "type": "string"
+    },
+    "estimated_annual_value": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "estimated_approval_delta": {
+      "type": "number"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "sample_size": {
+      "type": "number"
+    },
+    "coverage": {
+      "type": "number"
+    },
+    "deployable": {
+      "type": "boolean"
+    },
+    "required_change": {
+      "type": "string"
+    },
+    "decision_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_json": {
+      "type": "object"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "opportunity_key",
+    "brand_id",
+    "category",
+    "status",
+    "confidence",
+    "deployable",
+    "created_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
