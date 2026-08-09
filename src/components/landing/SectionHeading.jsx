@@ -8,7 +8,7 @@ import React from "react";
  * Keeping ALL section titles identical (same font, size, weight, spacing,
  * color) is the whole point — sections differ by content, not by title style.
  */
-export default function SectionHeading({ eyebrow, children, className = "" }) {
+export default function SectionHeading({ eyebrow = null, children, className = "" }) {
   return (
     <div className={`text-center ${className}`}>
       {eyebrow && (
