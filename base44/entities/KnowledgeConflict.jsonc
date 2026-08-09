@@ -73,6 +73,10 @@
     },
     "resolved_by": {
       "type": "string"
+    },
+    "impact_json": {
+      "type": "object",
+      "description": "Targeted provider-change impact summary; contains aggregate/internal entity references only, never cross-tenant raw evidence."
     }
   },
   "required": [

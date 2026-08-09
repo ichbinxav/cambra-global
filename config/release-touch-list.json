@@ -151,6 +151,8 @@
     "base44/functions/intelligenceAccess/function.jsonc",
     "base44/functions/intelligenceAdmin/function.jsonc",
     "base44/functions/intelligenceBackfill/function.jsonc",
-    "base44/functions/getIntelligenceCommandCenter/function.jsonc"
+    "base44/functions/getIntelligenceCommandCenter/function.jsonc",
+    "base44/functions/competitorMonitorAgent/entry.ts",
+    "base44/functions/providerContactResolver/entry.ts"
   ]
 }

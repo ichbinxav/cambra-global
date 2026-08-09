@@ -9,11 +9,11 @@ const RISK_LEVEL = 1;
 async function callPerplexity(prompt) {
   const key = Deno.env.get("PERPLEXITY_API_KEY");
   if (!key) return null;
-  const res = await fetch("https://api.perplexity.ai/chat/completions", {
+  const res = await fetch("https://api.perplexity.ai/v1/sonar", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
     body: JSON.stringify({
-      model: "llama-3.1-sonar-large-128k-online",
+      model: "sonar-pro",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 2500,
     }),

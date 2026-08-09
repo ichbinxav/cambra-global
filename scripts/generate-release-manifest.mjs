@@ -49,6 +49,9 @@ if (productPolicy?.economicTerms?.recoveryEconomicsVersion === "recover-economic
     productPolicy?.economicTerms?.recoverEconomicsV2LegalApproved !== true) {
   manualRequirements.push("LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled");
 }
+if (fs.existsSync('src/docs/P12_INTELLIGENCE_ARCHITECTURE.md')) {
+  manualRequirements.push('LEGAL/PRIVACY REVIEW REQUIRED: approve P12 retention/deletion, lawful basis and cross-tenant aggregation/anonymization policy before relying on derived intelligence retention beyond tenant deletion or widening benchmark use');
+}
 if (productPolicy?.integrationStatus?.stripe !== "live_verified") {
   manualRequirements.push(`PRODUCTION VALIDATION REQUIRED: Stripe live integration status is ${productPolicy?.integrationStatus?.stripe || "unknown"}; complete a real live-account connect/sync/verification proof before claiming full production seal`);
 }
