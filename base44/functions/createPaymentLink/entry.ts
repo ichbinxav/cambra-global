@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import Stripe from 'npm:stripe@14.25.0';
 
 Deno.serve(async (req) => {
@@ -16,6 +16,17 @@ Deno.serve(async (req) => {
     const rows = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id }, '-created_date', 1);
     const inv = rows?.[0];
     if (!inv) return Response.json({ error: 'Invoice not found' }, { status: 404 });
+
+    // P6 — Recover already uses Stripe Invoicing + its hosted invoice URL.
+    // Creating a separate Checkout Session for the same receivable would create
+    // a second payable object and a real double-charge path.
+    if (inv.monthly_savings_report_id || inv.stripe_invoice_id) {
+      return Response.json({
+        error: 'recover_invoice_already_has_stripe_payment_surface',
+        hosted_invoice_url: inv.hosted_invoice_url || null,
+        use: 'existing_stripe_invoice',
+      }, { status: 409 });
+    }
 
     const key = Deno.env.get('STRIPE_API_KEY');
     if (!key) {
