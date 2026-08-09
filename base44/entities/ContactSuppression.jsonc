@@ -1,0 +1,60 @@
+{
+  "name": "ContactSuppression",
+  "type": "object",
+  "description": "Global do-not-contact ledger. Autonomous outreach must fail closed against active suppressions.",
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "opt_out",
+        "bounce",
+        "complaint",
+        "legal",
+        "manual",
+        "customer_exclusion"
+      ]
+    },
+    "source": {
+      "type": "string"
+    },
+    "source_message_id": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "suppressed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "email",
+    "reason",
+    "active",
+    "suppressed_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
