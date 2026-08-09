@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.70.0 — Payments V1 Final Technical Seal (durability manifest)",
-  "generatedAt": "2026-08-09T17:01:20.411Z",
-  "packageVersion": "0.70.0",
+  "release": "CAMBRA v0.71.0 — Final Autonomous Platform Seal (durability manifest)",
+  "generatedAt": "2026-08-09T18:50:21.257Z",
+  "packageVersion": "0.71.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -307,13 +307,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "c05333a0232d3df8c803a4e34ee73bc67e91f9cef59219204c225ddbb02929d2",
+      "sha256": "82193847233366ba9dcccf316f8751b8dc6efdf25cee63a1ccdc9ae0ece17a29",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "f4cbf19e3afc2f7c3bc7d03d460f43646204e25e879dfde5ba80c7f993e645db",
-      "bytes": 5691
+      "sha256": "03a780147ca7c373abb82599942ddc7c225f6a6a12debfb0b15f3766ca609408",
+      "bytes": 5689
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -397,8 +397,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "da0ca83364568cff425ec95cb70b1e9028056870a999dbc7d29ef708639db1c7",
-      "bytes": 21590
+      "sha256": "514f7e76c5cc290707d99c4ec3ed83dfd6b9c0e7c69564247f9df9dd240db660",
+      "bytes": 21789
     },
     {
       "path": "src/components/recover/RecoverMandateModal.jsx",
@@ -417,8 +417,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "bc74163eb19293d5187dd98ed730bc299e9d7a5f907954c3bb6fc1a748c90b4e",
-      "bytes": 19532
+      "sha256": "29c40ed0beb69654331bdc2bef8483422df562439c3faee21fc5ce363d6aa863",
+      "bytes": 22929
     },
     {
       "path": "src/lib/confidenceResult.js",
@@ -567,8 +567,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "57eec6af0e030f3b347d5ff00e464691a5010f4ad8714d660edce42a6b253a73",
-      "bytes": 7108
+      "sha256": "87a6ffffead2c750578b8f6e3d4f5e8d949eeaa827d1905448423a9e92d22324",
+      "bytes": 7516
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
@@ -582,13 +582,13 @@
     },
     {
       "path": "src/pages/admin/AdminCommand.jsx",
-      "sha256": "43566b6c2311214f9c06044f1c5fe357d8d0aac5c5b3e914451d1d18359a1e32",
-      "bytes": 6626
+      "sha256": "c16ac7f87b063b371b792686c7820826eddcc3f79dad380660438c3efdcf149a",
+      "bytes": 6765
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "db16c3325d2449ec24cef5c6f4d59a8b4c7f582396c2069c98a98c779e881dca",
-      "bytes": 12163
+      "sha256": "42efc4eca3229042cda6048bd1ce9c2f288c571bc9ef8e91e749800906bfe608",
+      "bytes": 12265
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",
