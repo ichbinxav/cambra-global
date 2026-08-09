@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.67.0 — ECL P8 Production Admin, Automation & AI Operations (durability manifest)",
-  "generatedAt": "2026-08-09T14:06:24.027Z",
+  "generatedAt": "2026-08-09T14:06:38.622Z",
   "packageVersion": "0.67.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -502,13 +502,13 @@
     },
     {
       "path": "src/lib/eclP7Closure.test.js",
-      "sha256": "9e92e51cf91d5a5b4c58449d0379d98842ba61e532bc69d3703d3427d5e68801",
-      "bytes": 6929
+      "sha256": "d6fe8ea83e4f735cd5d029daa168158712b4ee501336678e28986caefdb70afb",
+      "bytes": 6981
     },
     {
       "path": "src/lib/eclP8Closure.test.js",
-      "sha256": "215082fe9420a1afa30595865c4c0a1581b8096d8bf467ec61c6498cce4153b7",
-      "bytes": 3478
+      "sha256": "673a4cfef5339e8e76a3fbcc41b2ea6a468d9ea16c6eb25e673da329ded6480e",
+      "bytes": 3492
     },
     {
       "path": "src/lib/eclParity.test.js",

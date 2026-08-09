@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
-import { P7_ALLOWLIST, P8_ALLOWLIST, STAGE_ECL_P7, STAGE_ECL_P8, STAGE_TRANSITIONS, allowlistForStage } from '../../scripts/lib/preEclFreeze.mjs';
+import { P7_ALLOWLIST, P8_ALLOWLIST, STAGE_ECL_P6, STAGE_ECL_P7, STAGE_ECL_P8, STAGE_TRANSITIONS, allowlistForStage } from '../../scripts/lib/preEclFreeze.mjs';
 const read = p => fs.readFileSync(new URL(`../../${p}`, import.meta.url), 'utf8');
 const APP = read('src/App.jsx'); const NAV = read('src/pages/admin/AdminLayout.jsx'); const AGENT_OPS = read('base44/functions/adminAgentOperations/entry.ts'); const COCKPIT = read('base44/functions/getAdminOperationsCockpit/entry.ts');
 const cfg = p => JSON.parse(read(p));

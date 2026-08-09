@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import {
-  P6_ALLOWLIST, P7_ALLOWLIST, STAGE_ECL_P6, STAGE_ECL_P7, STAGE_TRANSITIONS, allowlistForStage,
+  P6_ALLOWLIST, P7_ALLOWLIST, STAGE_ECL_P6, STAGE_ECL_P7, STAGE_ECL_P8, STAGE_TRANSITIONS, allowlistForStage,
 } from '../../scripts/lib/preEclFreeze.mjs';
 import {
   P7_WORKERS, buildIncidentRecord, incidentDedupeKey, incidentIdempotencyKey, recoveryInvocation, workerFreshness,
@@ -20,10 +20,10 @@ const ADMIN = read('src/pages/admin/AdminLayout.jsx');
 const INCIDENT_SCHEMA = read('base44/entities/OperationalIncident.jsonc');
 
 describe('ECL P7 — Production Operations & Incident Recovery', () => {
-  it('is reachable only from P6 and rolls back only to P6', () => {
+  it('keeps P7 historical rollback to P6 while allowing the sanctioned P8 advance', () => {
     expect(STAGE_TRANSITIONS[STAGE_ECL_P6]).toEqual([expect.any(String), STAGE_ECL_P7]);
     expect(STAGE_TRANSITIONS[STAGE_ECL_P6]).toContain(STAGE_ECL_P7);
-    expect(STAGE_TRANSITIONS[STAGE_ECL_P7]).toEqual([STAGE_ECL_P6]);
+    expect(STAGE_TRANSITIONS[STAGE_ECL_P7]).toEqual([STAGE_ECL_P6, STAGE_ECL_P8]);
     expect(allowlistForStage(STAGE_ECL_P7)).toEqual(P7_ALLOWLIST);
   });
 
