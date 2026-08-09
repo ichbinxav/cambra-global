@@ -43,6 +43,12 @@ const baseline = fs.existsSync("config/typecheck-baseline.json")
   ? JSON.parse(fs.readFileSync("config/typecheck-baseline.json", "utf8")) : null;
 if (!baseline || baseline.state !== "APPROVED") manualRequirements.push("typecheck baseline: candidate/approve flow not completed");
 if (!fs.existsSync(".github/workflows/ci.yml")) manualRequirements.push("CI workflow not installed (npm run ci:install from a real checkout)");
+const productPolicy = fs.existsSync("config/product-policy.json")
+  ? JSON.parse(fs.readFileSync("config/product-policy.json", "utf8")) : null;
+if (productPolicy?.economicTerms?.recoveryEconomicsVersion === "recover-economics-v2" &&
+    productPolicy?.economicTerms?.recoverEconomicsV2LegalApproved !== true) {
+  manualRequirements.push("LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled");
+}
 for (const [name, ev] of [["tests", testEvidence], ["build", buildEvidence], ["lint", lintEvidence], ["typecheck-critical", tcCritical], ["typecheck-baseline", tcBaseline]]) {
   const st = evidenceStatus(ev, tree.hash);
   if (st !== "valid") manualRequirements.push(`evidence ${name}: ${st} (run the *:evidence command)`);
