@@ -80,7 +80,9 @@ Deno.serve(async (req) => {
           updates.push({
             id: lead.id,
             attio_record_id: recordId,
-            stage: "contacted",
+            // CRM synchronization is not outreach. Preserve the commercial
+            // state so only a real sent message can move scored → contacted.
+            stage: lead.stage || "scored",
           });
           syncedAttio++;
           continue;
