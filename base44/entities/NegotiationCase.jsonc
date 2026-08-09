@@ -104,6 +104,31 @@
       "type": "string",
       "format": "date-time"
     },
+    "negotiation_scope": {
+      "type": "string",
+      "enum": [
+        "individual",
+        "aggregate"
+      ],
+      "default": "individual"
+    },
+    "aggregate_pool_id": {
+      "type": "string"
+    },
+    "aggregate_rfp_id": {
+      "type": "string"
+    },
+    "aggregate_bid_id": {
+      "type": "string"
+    },
+    "demand_snapshot_json": {
+      "type": "object",
+      "description": "P14 anonymized truthful observed/addressable/committed demand snapshot. Never contains merchant identities."
+    },
+    "misrepresentation_guard_json": {
+      "type": "object",
+      "description": "P14 guardrail recording claim classes and whether any committed-volume statement has explicit commitment evidence."
+    },
     "intelligence_snapshot_id": {
       "type": "string",
       "description": "P12 immutable decision-time intelligence provenance snapshot. Additive; historical rows may be null."
