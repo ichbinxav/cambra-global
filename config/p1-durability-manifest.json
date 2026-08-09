@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.65.0 — ECL P6 Economic Execution & Reconciliation (durability manifest)",
-  "generatedAt": "2026-08-09T00:59:15.415Z",
-  "packageVersion": "0.65.0",
+  "release": "CAMBRA v0.65.1 — Launch Security & Type Safety Hardening (durability manifest)",
+  "generatedAt": "2026-08-09T06:59:51.940Z",
+  "packageVersion": "0.65.1",
   "stage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
   "freezeStage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
   "freezeEntryCount": 8,
@@ -237,18 +237,18 @@
     },
     {
       "path": "config/typecheck-baseline.json",
-      "sha256": "2fc1d25432e3c581a8c20e7816eed6a38dbedcd9d476fdec20740fb2a0f34d38",
-      "bytes": 42264
+      "sha256": "624c00b1664c0100fe24da698eaaf3862a7ee0f57bc58daa634320e71734a5ff",
+      "bytes": 284
     },
     {
       "path": "package-lock.json",
-      "sha256": "74e513ceb4ee3d87aba759dca2dd885cc57d99e3e46a25b2b509dc533bccc64f",
-      "bytes": 406183
+      "sha256": "c522172541d15ebe0c2655136884a99670c9864c0cf5829f5bc2e2d9f43a8ad6",
+      "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "7c7277107183e3578af41452338391bab3690acb2a9665f59c69903cb5327121",
-      "bytes": 5682
+      "sha256": "ca430abd450704a110d296711378ba4ee8707dd72279b0b782cc31a8860928c0",
+      "bytes": 5698
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -347,8 +347,8 @@
     },
     {
       "path": "src/docs/OPERATIONS_STATUS.md",
-      "sha256": "78f28af83df6e78332a29b767a296dbfe0b495e4112da76181621c39e92738f5",
-      "bytes": 33686
+      "sha256": "1e5394c7fd88311d6337b9c7c01fa1ba4b07fd53e6dfafa5a3ff4b8b94cdf94e",
+      "bytes": 35845
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
