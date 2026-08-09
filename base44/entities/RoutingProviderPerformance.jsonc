@@ -1,0 +1,108 @@
+{
+  "name": "RoutingProviderPerformance",
+  "type": "object",
+  "description": "Privacy-safe aggregate routing performance benchmark. Never stores raw foreign-tenant transactions.",
+  "properties": {
+    "performance_key": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "issuer_country": {
+      "type": "string"
+    },
+    "network": {
+      "type": "string"
+    },
+    "payment_method": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "merchant_cohort": {
+      "type": "string"
+    },
+    "amount_bucket": {
+      "type": "string"
+    },
+    "three_ds_status": {
+      "type": "string"
+    },
+    "recurring_type": {
+      "type": "string"
+    },
+    "sample_size": {
+      "type": "number"
+    },
+    "approved_count": {
+      "type": "number"
+    },
+    "approval_rate": {
+      "type": "number"
+    },
+    "avg_effective_bps": {
+      "type": "number"
+    },
+    "avg_latency_ms": {
+      "type": "number"
+    },
+    "error_rate": {
+      "type": "number"
+    },
+    "window_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "window_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "freshness": {
+      "type": "number"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "specificity": {
+      "type": "number"
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "calculated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "performance_key",
+    "provider_slug",
+    "sample_size",
+    "confidence",
+    "calculated_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
