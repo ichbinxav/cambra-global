@@ -35,11 +35,17 @@ describe('P9 Recover Fulfilment & Payments Migration invariants', () => {
     expect(update).toContain("measurement_mode === 'fully_verified'");
     expect(update).toContain('retry_count');
     expect(update).toContain('merchant_required');
+    expect(update).toContain('merchant_blocker_requires_en_fr_es');
+    expect(update).toContain("['en','fr','es']");
+    expect(update).toContain('merchant_blocker_i18n');
   });
 
   it('keeps internal migration mechanics out of the merchant projection', () => {
     expect(projection).toContain('merchant_blockers');
     expect(projection).toContain("t.requires_brand_input === true");
+    expect(projection).toContain('reason_i18n');
+    expect(projection).not.toContain("reason: t.blocked_reason");
+    expect(projection).not.toContain("label: t.description");
     expect(projection).not.toContain('last_note:');
     expect(projection).not.toContain('last_actor:');
   });
