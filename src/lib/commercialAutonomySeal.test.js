@@ -105,5 +105,40 @@ describe("commercial autonomy static boundaries", () => {
     expect(src).toContain("acquisition_policy_missing");
     expect(src).toContain("outside_business_hours");
     expect(src).toContain("ContactSuppression");
+    expect(src).toContain("leadOrchestrator");
+  });
+
+  it("CRM sync does not pretend a lead was contacted", () => {
+    const src = read("base44/functions/crmAgent/entry.ts");
+    expect(src).toContain('stage: lead.stage || "scored"');
+    expect(src).not.toContain('attio_record_id: recordId,\n            stage: "contacted"');
+  });
+
+  it("commercial email has CAMBRA-owned idempotency and Outlook-first transport", () => {
+    const schema = read("base44/entities/CommunicationMessage.jsonc");
+    const src = read("base44/functions/commercialSendMessage/entry.ts");
+    expect(schema).toContain('"idempotency_key"');
+    expect(src).toContain("getConnection('outlook')");
+    expect(src).toContain("idempotency_key:idempotency");
+    expect(src).toContain("commercial_email_not_configured");
+  });
+
+  it("Outlook inbound is event-driven and routes only real mail", () => {
+    const cfg = read("base44/functions/outlookInboundRouter/function.jsonc");
+    const src = read("base44/functions/outlookInboundRouter/entry.ts");
+    expect(cfg).toContain('"integration_type": "outlook"');
+    expect(cfg).toContain('"events": ["created"]');
+    expect(src).toContain("/me/messages/");
+    expect(src).toContain("not_email_or_draft");
+    expect(src).toContain("commercialReplyAgent");
+  });
+
+  it("meeting coordinator uses real Outlook calendar and invites the lead", () => {
+    const src = read("base44/functions/outlookMeetingCoordinator/entry.ts");
+    expect(src).toContain("getConnection('outlook')");
+    expect(src).toContain("/me/calendarView");
+    expect(src).toContain("/me/events");
+    expect(src).toContain("attendees:[");
+    expect(src).toContain("no_calendar_slot");
   });
 });
