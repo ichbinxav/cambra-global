@@ -13,6 +13,7 @@ describe('P9 Recover Fulfilment & Payments Migration invariants', () => {
     expect(start).toContain("status: 'active'");
     expect(start).toContain("status: 'migrating'");
     expect(start).toContain("requires_brand_input: false");
+    expect(start).toContain('requireUserOrInternal');
     expect(accept).toContain("fireAndForget(base44, 'startPaymentsMigration'");
   });
 
@@ -26,8 +27,12 @@ describe('P9 Recover Fulfilment & Payments Migration invariants', () => {
 
   it('prevents unsafe completion and preserves retry/blocker evidence', () => {
     expect(update).toContain('earlier_tasks_incomplete');
+    expect(update).toContain('invalid_task_transition');
+    expect(update).toContain('completion_evidence_note_required');
     expect(update).toContain('go_live_requires_migrating');
     expect(update).toContain('conditions_activation_evidence_required');
+    expect(update).toContain('verified_real_savings_report_required');
+    expect(update).toContain("measurement_mode === 'fully_verified'");
     expect(update).toContain('retry_count');
     expect(update).toContain('merchant_required');
   });
