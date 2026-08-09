@@ -42,3 +42,14 @@ declare module "npm:jspdf@4.0.0" {
   export * from "jspdf";
   export { default } from "jspdf";
 }
+
+// P6 Stripe webhook/payment-link pinned Deno specifiers → the real installed
+// stripe@17.7.0 type surface. No blanket npm:* declaration is introduced.
+declare module "npm:stripe@17.7.0" {
+  export * from "stripe";
+  export { default } from "stripe";
+}
+declare module "npm:stripe@14.25.0" {
+  export * from "stripe";
+  export { default } from "stripe";
+}
