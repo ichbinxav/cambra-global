@@ -20,6 +20,13 @@
 //     remain due). monetizing/live/migrating now map to 'paused'.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
+function updatedExactlyOne(result:any){ return Boolean(result && (result.updated === 1 || result.modified_count === 1 || result.matched_count === 1)); }
+function statusAfterRevocation(status:string){
+  if (['migrating','live','monetizing'].includes(status)) return 'paused';
+  if (status === 'authorized') return 'awaiting_authorization';
+  return status;
+}
+
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
@@ -67,19 +74,40 @@ export default async function (req: Request): Promise<Response> {
     if (!allowed) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     const now = new Date().toISOString();
-    await svc.entities.Mandate.update(mandate.id, {
-      status: 'revoked',
-      revoked_at: now,
-      revoked_by: email,
-      revocation_reason: reason || 'revoked',
-    });
+    const mandateClaim = await svc.entities.Mandate.updateMany(
+      { id: mandate.id, status: mandate.status },
+      { $set: { status: 'revoked', revoked_at: now, revoked_by: email, revocation_reason: reason || 'revoked' } },
+    );
+    if (!updatedExactlyOne(mandateClaim)) {
+      const freshMandate = (await svc.entities.Mandate.filter({ id: mandate.id }, '-created_date', 1).catch(() => []))?.[0];
+      if (freshMandate?.status === 'revoked') return Response.json({ ok: true, already_revoked: true, mandate_id: mandate.id });
+      return Response.json({ error: 'mandate_changed_concurrently' }, { status: 409 });
+    }
 
-    // Revocation stops future action; it never rewinds an activation that is
-    // already operating or being billed.
-    const next = ['migrating', 'live', 'monetizing'].includes(activation.status)
-      ? 'paused'
-      : 'awaiting_authorization';
-    await svc.entities.DealActivation.update(activation.id, { status: next, last_updated: now });
+    // Revocation stops future action; it never rewinds terminal/history states.
+    // CAS prevents a stale revocation request from overwriting a concurrent
+    // go-live. If the state changed, recompute from the fresh state and retry once.
+    let previousStatus = String(activation.status || '');
+    let next = statusAfterRevocation(previousStatus);
+    if (next !== previousStatus) {
+      let changed = await svc.entities.DealActivation.updateMany(
+        { id: activation.id, status: previousStatus },
+        { $set: { status: next, last_updated: now } },
+      );
+      if (!updatedExactlyOne(changed)) {
+        const fresh = (await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch(() => []))?.[0];
+        if (!fresh) return Response.json({ error: 'activation_not_found_after_revocation' }, { status: 409 });
+        previousStatus = String(fresh.status || '');
+        next = statusAfterRevocation(previousStatus);
+        if (next !== previousStatus) {
+          changed = await svc.entities.DealActivation.updateMany(
+            { id: activation.id, status: previousStatus },
+            { $set: { status: next, last_updated: now } },
+          );
+          if (!updatedExactlyOne(changed)) return Response.json({ error: 'activation_changed_concurrently' }, { status: 409 });
+        }
+      }
+    }
 
     await svc.entities.OperationalLog.create({
       deal_activation_id: activation.id,
@@ -90,7 +118,7 @@ export default async function (req: Request): Promise<Response> {
       data_json: {
         reason: reason || 'revoked',
         mandate_id: mandate.id,
-        previous_activation_status: activation.status,
+        previous_activation_status: previousStatus,
         new_activation_status: next,
       },
       actor_email: email,
@@ -99,6 +127,7 @@ export default async function (req: Request): Promise<Response> {
 
     return Response.json({ ok: true, mandate_id: mandate.id, activation_status: next });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    console.error('revokeMandate failed', error);
+    return Response.json({ error: 'mandate_revocation_failed' }, { status: 500 });
   }
 }
