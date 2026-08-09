@@ -1,0 +1,85 @@
+{
+  "name": "RoutingPolicy",
+  "type": "object",
+  "description": "Versioned routing policy. P13 production boundary permits DRAFT/SHADOW/RECOMMENDED only; no payment execution endpoint consumes it.",
+  "properties": {
+    "policy_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "shadow",
+        "recommended",
+        "approved_for_config",
+        "active_external",
+        "active_cambra",
+        "paused",
+        "archived"
+      ]
+    },
+    "optimization_objective": {
+      "type": "string",
+      "enum": [
+        "minimize_cost",
+        "maximize_approval",
+        "maximize_expected_revenue",
+        "balanced",
+        "resilience_first",
+        "custom"
+      ]
+    },
+    "allowed_provider_slugs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints_json": {
+      "type": "object"
+    },
+    "minimum_confidence": {
+      "type": "number"
+    },
+    "minimum_sample": {
+      "type": "number"
+    },
+    "simulation_only": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "supersedes_policy_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "policy_key",
+    "brand_id",
+    "version",
+    "status",
+    "simulation_only"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
