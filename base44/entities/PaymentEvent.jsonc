@@ -32,7 +32,9 @@
         "payment_action_required",
         "invoice_voided",
         "dispute_created",
-        "credit_note_created"
+        "credit_note_created",
+        "reconciliation_corrected",
+        "reconciliation_mismatch"
       ]
     },
     "processor": {
