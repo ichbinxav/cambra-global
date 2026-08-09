@@ -1,0 +1,125 @@
+{
+  "name": "CommercialPolicy",
+  "type": "object",
+  "description": "Versioned founder-approved autonomy policy. Defines what CAMBRA may do automatically; never stores accepted Recover economics.",
+  "properties": {
+    "policy_key": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "engine": {
+      "type": "string",
+      "enum": [
+        "merchant_acquisition",
+        "provider_negotiation"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "superseded",
+        "paused"
+      ],
+      "default": "draft"
+    },
+    "countries": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "en",
+          "fr",
+          "es"
+        ]
+      }
+    },
+    "daily_send_limit": {
+      "type": "number"
+    },
+    "min_lead_score": {
+      "type": "number"
+    },
+    "business_hours_start": {
+      "type": "number"
+    },
+    "business_hours_end": {
+      "type": "number"
+    },
+    "max_followups": {
+      "type": "number"
+    },
+    "followup_intervals_hours": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "allowed_routine_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "prohibited_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "identity_label": {
+      "type": "string"
+    },
+    "style_policy_version": {
+      "type": "string"
+    },
+    "claims_policy_json": {
+      "type": "object"
+    },
+    "approval_snapshot_json": {
+      "type": "object"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "policy_key",
+    "version",
+    "engine",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
