@@ -53,16 +53,25 @@ Deno.serve(async (req) => {
     if (existing.length) return Response.json({ ok:true, duplicate:true, message_id:existing[0].id, provider:existing[0].provider || null });
 
     const now = new Date().toISOString();
-    let provider='outlook'; let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let raw:any={idempotency_key:idempotency};
+    const requestedProfileKey=String(body?.sending_profile_key||'').trim();
+    const profiles=requestedProfileKey?await svc.entities.OutboundSendingProfile.filter({profile_key:requestedProfileKey},'-created_date',1).catch(()=>[]):[];
+    const sendingProfile=profiles[0]||null;
+    if(requestedProfileKey&&!sendingProfile)return Response.json({ok:false,error:'sending_profile_not_found'},{status:409});
+    if(sendingProfile&&sendingProfile.status==='paused')return Response.json({ok:false,error:'sending_profile_paused'},{status:409});
+    if(sendingProfile&&['initial_outreach','partner_outreach'].includes(action)){
+      const day=new Date();day.setUTCHours(0,0,0,0);const sent=await svc.entities.CommunicationMessage.filter({direction:'outbound',provider:sendingProfile.provider,sent_at:{$gte:day.toISOString()}},'-sent_at',Math.min(Number(sendingProfile.current_daily_cap||1)+5,550)).catch(()=>[]);
+      if(sent.length>=Number(sendingProfile.current_daily_cap||0))return Response.json({ok:false,error:'sending_profile_daily_cap_reached',profile:requestedProfileKey,cap:sendingProfile.current_daily_cap},{status:409});
+    }
+    let provider=sendingProfile?.provider==='resend'?'resend':'outlook'; let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let raw:any={idempotency_key:idempotency};
     const outlook = await svc.connectors.getConnection('outlook').catch(()=>({accessToken:null}));
-    if (outlook?.accessToken) {
+    if (provider==='outlook' && outlook?.accessToken) {
       const meRes=await fetch('https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,displayName',{headers:{Authorization:`Bearer ${outlook.accessToken}`}});const me=await meRes.json().catch(()=>({}));if(!meRes.ok)throw new Error(`outlook_me_failed:${meRes.status}`);fromAddress=normalizeEmail(me.mail||me.userPrincipalName);
       const draftRes=await fetch('https://graph.microsoft.com/v1.0/me/messages',{method:'POST',headers:{Authorization:`Bearer ${outlook.accessToken}`,'Content-Type':'application/json'},body:JSON.stringify({subject,body:{contentType:'Text',content:text},toRecipients:[{emailAddress:{address:to}}],internetMessageHeaders:[{name:'X-CAMBRA-Thread',value:thread.id}]})});const draft=await draftRes.json().catch(()=>({}));if(!draftRes.ok)throw new Error(`outlook_draft_failed:${draftRes.status}`);
       const sendRes=await fetch(`https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(String(draft.id))}/send`,{method:'POST',headers:{Authorization:`Bearer ${outlook.accessToken}`}});if(!sendRes.ok)throw new Error(`outlook_send_failed:${sendRes.status}`);providerMessageId=draft.id||null;externalThreadId=draft.conversationId||externalThreadId;raw={...raw,outlook_message_id:draft.id||null,conversation_id:draft.conversationId||null};
     } else {
       const resendKey = Deno.env.get('RESEND_API_KEY');
       if (!resendKey) return Response.json({ ok:false, error:'commercial_email_not_configured', setup_required:true }, { status:503 });
-      provider='resend';const from=Deno.env.get('RESEND_FROM')||'CAMBRA <hello@contact.cambra.global>';fromAddress=from;const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
+      provider='resend';const from=sendingProfile?.from_address?`CAMBRA <${sendingProfile.from_address}>`:(Deno.env.get('RESEND_FROM')||'CAMBRA <hello@contact.cambra.global>');fromAddress=from;const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
       const res=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${resendKey}`,'Idempotency-Key':idempotency},body:JSON.stringify({from,to:[to],reply_to:replyTo,subject,text,tags:[{name:'thread_id',value:thread.id},{name:'engine',value:thread.engine}]})});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(`resend_send_failed:${res.status}`);providerMessageId=data?.id||null;raw={...raw,resend_id:data?.id||null};
     }
     const message = await svc.entities.CommunicationMessage.create({
