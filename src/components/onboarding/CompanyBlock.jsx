@@ -14,7 +14,8 @@ import CategorySelect from '@/components/inputs/CategorySelect';
 import { useTranslation } from '@/lib/i18n.jsx';
 import { Building2, Mail, Globe, Instagram, Linkedin, Twitter, Youtube, Music2, CheckCircle2, ArrowRight } from 'lucide-react';
 
-export default function CompanyBlock({ onCreated, autoRedirect = true } = {}){
+/** @param {{ onCreated?: (brand: any) => void, autoRedirect?: boolean }} [props] */
+export default function CompanyBlock({ onCreated = undefined, autoRedirect = true } = {}){
   const [brand, setBrand] = useState(null);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
