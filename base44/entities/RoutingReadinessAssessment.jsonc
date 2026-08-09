@@ -1,0 +1,96 @@
+{
+  "name": "RoutingReadinessAssessment",
+  "type": "object",
+  "description": "Internal R0-R5 readiness assessment. P13 must never claim activation readiness from code alone.",
+  "properties": {
+    "assessment_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "R0",
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5"
+      ]
+    },
+    "transaction_data_coverage": {
+      "type": "number"
+    },
+    "pricing_knowledge": {
+      "type": "number"
+    },
+    "approval_intelligence": {
+      "type": "number"
+    },
+    "provider_connectivity": {
+      "type": "number"
+    },
+    "provider_overlap": {
+      "type": "number"
+    },
+    "simulation_confidence": {
+      "type": "number"
+    },
+    "security_readiness": {
+      "type": "number"
+    },
+    "pci_readiness": {
+      "type": "number"
+    },
+    "operational_readiness": {
+      "type": "number"
+    },
+    "reconciliation_readiness": {
+      "type": "number"
+    },
+    "legal_readiness": {
+      "type": "number"
+    },
+    "real_routing_allowed": {
+      "type": "boolean",
+      "default": false
+    },
+    "blocking_gates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_json": {
+      "type": "object"
+    },
+    "calculated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "methodology_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "assessment_key",
+    "level",
+    "real_routing_allowed",
+    "calculated_at",
+    "methodology_version"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
