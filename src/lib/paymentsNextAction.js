@@ -44,6 +44,20 @@ export const NEXT_ACTION_INTENT = {
   ADD_CHANNEL: "add_channel",
 };
 
+/**
+ * @typedef {{ available: false } | {
+ *   available: true,
+ *   intent: string,
+ *   tone: "opportunity" | "positive",
+ *   effort: string,
+ *   impact: string,
+ *   recoverable_eur: number,
+ *   channels: string[],
+ *   missingChannel: string | null,
+ *   suggestAdd?: string | null,
+ * }} PaymentsNextAction
+ */
+
 // computePaymentsNextAction — decide the single next best step.
 //
 // Inputs:
@@ -58,6 +72,7 @@ export const NEXT_ACTION_INTENT = {
 //   { available: true, intent, tone, recoverable_eur, effort, impact,
 //     channels, missingChannel? }
 //     tone: "opportunity" | "positive"  (drives styling — green victory vs cyan action)
+/** @returns {PaymentsNextAction} */
 export function computePaymentsNextAction(account, latest, opts = {}) {
   const inCollective = opts.inCollective === true;
 
