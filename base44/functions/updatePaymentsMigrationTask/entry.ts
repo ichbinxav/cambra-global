@@ -44,7 +44,6 @@ export default async function (req: Request): Promise<Response> {
       if (earlier.length) return Response.json({ error: 'earlier_tasks_incomplete', task_ids: earlier.map(t => t.id) }, { status: 409 });
     }
     if (nextStatus === 'done') {
-      if (earlier.length) return Response.json({ error: 'earlier_tasks_incomplete', task_ids: earlier.map(t => t.id) }, { status: 409 });
       if (task.step_name === 'go_live' && activation.status !== 'migrating') {
         return Response.json({ error: 'go_live_requires_migrating', activation_status: activation.status }, { status: 409 });
       }
