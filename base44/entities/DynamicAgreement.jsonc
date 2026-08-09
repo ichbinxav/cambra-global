@@ -1,0 +1,114 @@
+{
+  "name": "DynamicAgreement",
+  "type": "object",
+  "description": "P14 immutable/versioned aggregate procurement agreement header. Activation requires founder authority and exact contract revalidation.",
+  "properties": {
+    "agreement_key": {
+      "type": "string"
+    },
+    "agreement_family_key": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number"
+    },
+    "pool_id": {
+      "type": "string"
+    },
+    "rfp_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "negotiation_case_id": {
+      "type": "string"
+    },
+    "approved_bid_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "contracting",
+        "active",
+        "renegotiating",
+        "expiring",
+        "terminated",
+        "archived"
+      ]
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "program_name": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "start_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "contract_document_id": {
+      "type": "string"
+    },
+    "legal_terms_json": {
+      "type": "object"
+    },
+    "commercial_terms_json": {
+      "type": "object"
+    },
+    "approval_id": {
+      "type": "string"
+    },
+    "execution_approval_id": {
+      "type": "string"
+    },
+    "terms_hash": {
+      "type": "string"
+    },
+    "supersedes_agreement_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "agreement_key",
+    "agreement_family_key",
+    "version",
+    "pool_id",
+    "provider_id",
+    "status",
+    "vertical",
+    "currency",
+    "terms_hash"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
