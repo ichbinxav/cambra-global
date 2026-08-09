@@ -68,13 +68,22 @@ function interpolate(str, params) {
 }
 
 /* ── Context ──────────────────────────────────────────────── */
-const LanguageContext = createContext({
+/**
+ * @typedef {{
+ *   lang: string,
+ *   setLang: (next: string) => void,
+ *   t: (keyOrObj: any, paramsOrLang?: any) => any,
+ *   formatCurrency: (amount: any) => string,
+ *   formatDate: (date: any) => string,
+ * }} TranslationContextValue
+ */
+const LanguageContext = createContext(/** @type {TranslationContextValue} */ ({
   lang: "en",
-  setLang: () => {},
-  t: (k) => k,
+  setLang: (_next) => {},
+  t: (keyOrObj, _paramsOrLang) => keyOrObj,
   formatCurrency: (n) => formatCurrency(n, "en"),
   formatDate: (d) => formatDate(d, "en"),
-});
+}));
 
 // UX-1 T0 — auto-detection. An explicit choice (stored) always wins; first
 // visit falls back to the browser's preferred languages (the best available
