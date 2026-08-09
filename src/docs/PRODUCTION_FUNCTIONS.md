@@ -211,3 +211,23 @@ _tenantGuard · createSelfTestBrand · phase2CleanupLegacyFields (migración one
 | routingSimulator | B/internal + admin gate | ShadowRoutingDecision → RoutingSimulation | Retrospective simulation only; never deploys a rule or touches payment execution. |
 | routingReadinessWorker | C/internal · scheduled | Production-eligible routing evidence → RoutingReadinessAssessment | R0–R3 evidence assessment only. Real routing is explicitly prohibited and gated on future PCI/regulatory/reliability decisions. |
 | getRoutingIntelligenceCommandCenter | B/admin | Routing aggregates | Admin-only read projection. No activation endpoint and no payment execution authority. |
+
+
+### P14 — Aggregate Demand & Dynamic Procurement + Final Revenue Engine (2026-08-10)
+
+| Function | Class / auth | Core data | Boundary |
+|---|---|---|---|
+| aggregateDemandWorker | C/internal · 6h | Production PaymentRoutingObservation, DemandUnit, AggregatePool, AggregateCommitment | Normalizes production-eligible demand. Observed/addressable/committed are distinct; committed comes only from explicit commitments. |
+| aggregateProcurementWorker | C/internal · 6h | AggregatePool, Provider Intelligence, AggregateRFP, NegotiationCase | Opens truthful competitive RFPs only when APS/readiness and active policy permit. |
+| collectiveNegotiationAgent | B/internal · gate | NegotiationCase/Offer, AggregateBid, CommunicationThread, Approval | Reuses canonical commercial stack. May negotiate, never guarantees uncommitted volume or executes material contracts. |
+| aggregateAgreementWorker | C/internal · 6h | DynamicAgreement, AgreementTier, PrivateRateCard | Watches machine-readable tiers; provider-confirmation/manual tiers never self-activate. |
+| aggregateEligibilityWorker | C/internal · 6h | PrivateRateCard, MerchantRateEligibility | Merchant-specific eligibility; underwriting-pending pricing remains potential, not guaranteed. |
+| getAggregateCommandCenter | B/admin | Aggregate projections | Admin-only read control plane. |
+| revenueLifecycleWorker | C/internal · 30m | DealActivation, MonthlySavingsReport, Invoice → RevenueLifecycle | Deterministic revenue-state projection; does not mutate financial source-of-truth records. |
+| getFinancialControlTower | B/admin | RevenueLifecycle, Savings, Invoice, PaymentEvent | Separates estimated, verified, billable, invoiced and collected values. |
+| operatingHealthWorker | C/internal · daily | cross-domain health signals | Advisory company-health score only. |
+| realWorldValidationWorker | C/internal · daily | production-classified evidence, PilotMerchantValidation, RealWorldGapReport | First-10 pilot ledger excludes internal/demo/test data. |
+| revenueGoldenPathSelfTest | C/internal · daily | structural flow checks, AgentTask | Recurrent technical contract test; explicitly does not move money or claim real-merchant validation. |
+| getFounderControlCenter | B/admin | Approval, incidents, meetings, health, finance, gaps | High-value founder governance projection; routine operations remain autonomous/observable. |
+
+P14 private rates are distinct from public ProviderPricingVersion and are consumed by Shadow Routing only when the merchant has an active `eligible` MerchantRateEligibility. Aggregate proposal approval and exact contract execution are separate L4 steps.

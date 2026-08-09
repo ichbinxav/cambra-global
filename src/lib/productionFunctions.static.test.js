@@ -22,6 +22,9 @@ const FUNCTIONS_DIR = path.join(REPO_ROOT, "base44", "functions");
 // Censo actualizado para ECL P4 — fuente: src/docs/PRODUCTION_FUNCTIONS.md.
 const MANIFEST = [
   "_tenantGuard", "adminAgentOperations", "adminOverrides", "adminSummaries", "adminUpdateApplicationStatus",
+  // P14 Aggregate + Final Autonomous Revenue Engine technical seal (2026-08-10).
+  "aggregateAgreementWorker", "aggregateDemandWorker", "aggregateEligibilityWorker", "aggregateProcurementWorker", "collectiveNegotiationAgent", "getAggregateCommandCenter",
+  "getFinancialControlTower", "getFounderControlCenter", "operatingHealthWorker", "realWorldValidationWorker", "revenueGoldenPathSelfTest", "revenueLifecycleWorker",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
   "acquisitionAttributionWorker", "acquisitionLearningWorker", "autonomousCommercialWorker", "autonomousOperationsSupervisor", "autonomousPartnerWorker", "commercialFollowUpWorker", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
   "getRoutingIntelligenceCommandCenter", "recordRoutingObservation", "routingHistoricalBackfill", "routingPerformanceWorker", "routingReadinessWorker", "routingSimulator", "shadowRoutingEngine",
