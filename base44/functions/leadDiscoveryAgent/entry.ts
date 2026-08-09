@@ -100,7 +100,8 @@ Deno.serve(async (req) => {
       completed_at: new Date().toISOString(),
     });
 
-    return Response.json({ ok: true, task_id: task.id, count: leads.length, leads });
+    const createdIds = Array.isArray(created) ? created.map((r:any)=>r?.id).filter(Boolean) : [];
+    return Response.json({ ok: true, task_id: task.id, count: leads.length, created_ids: createdIds, leads });
   } catch (error) {
     if (task?.id) {
       try {
