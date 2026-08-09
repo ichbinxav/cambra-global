@@ -6,6 +6,22 @@
 
 ---
 
+## Release v0.65.0 — ECL P6 Economic Execution & Reconciliation (2026-08-09)
+
+**Current stage: `ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION` — 58 exact paths, 8 frozen entries.** P1-P5 remain the authority for evidence, lifecycle, review and whether an economic effect is allowed. P6 starts only after P5 authorization and makes execution/reconciliation replay-safe and convergent.
+
+Recover invoice issuance now claims a deterministic local execution identity (`recover-invoice:<monthly_savings_report_id>`) before the first Stripe POST. Sequential retries reuse the same local invoice; concurrent duplicate drafts are deterministically collapsed on re-read, while multiple committed invoices are a hard conflict and are never auto-deleted. Stripe remains the external exactly-once authority through the existing per-report idempotency keys.
+
+`stripeBillingWebhook` still verifies the Stripe HMAC before side effects, but P6 no longer trusts webhook delivery order. After resolving the local invoice it performs a fresh Stripe GET and validates the exact remote invoice id, customer, currency, frozen total in integer cents and the local/report/activation metadata binding. A mismatch is quarantined as `reconciliation_status=mismatch`, logged append-only in `PaymentEvent`, and never rewrites the frozen invoice economics. A late event therefore cannot regress a paid/refunded/disputed invoice to a weaker state.
+
+`reconcileRecoverBilling` is a new **Stripe-read-only** reconciler, versioned with a Base44 automation every 15 minutes. It heals transient duplicate drafts, fetches current Stripe invoice state, corrects local lifecycle drift, synchronizes the linked MonthlySavingsReport/DealActivation and writes deduplicated reconciliation ledger events. It contains no Stripe POST path: it cannot create, finalize, pay, refund, void or credit an invoice.
+
+P6 removes secondary payment truths for Recover. `recordPayment` and `reconcileInvoice` return 409 for Stripe-managed Recover invoices, and `createPaymentLink` refuses to create a separate Checkout Session when a Recover/Stripe invoice already exists. Finalized invoice amounts cannot be manually adjusted; corrections require the legal void/credit-note/corrective-invoice path.
+
+The `Invoice` schema widens additively with `execution_key`, `reconciliation_status`, `last_reconciled_at` and `reconciliation_error`; `PaymentEvent` adds `reconciliation_corrected` and `reconciliation_mismatch`. These fields record execution truth only and do not change P5 authorization semantics.
+
+**Seal distinction:** repository/Base44 verification and a safe read-only runtime reconciliation can be proven here. The separate GitHub Actions CI seal remains external until the GitHub App installation is visible to this ChatGPT session.
+
 ## Release v0.64.0 — ECL P5 Economic Enforcement (2026-08-09)
 
 **Current stage: `ECL_P5_ECONOMIC_ENFORCEMENT` — 48 exact ECL paths, 8 frozen entries.** P1/P2/P3/P4/Production Proof remain the semantic and operational authority. P5 does not invent a second confidence model: it makes the existing canonical ECL gates mandatory at the Recover boundaries where verified evidence can become a contractual or monetary effect.
