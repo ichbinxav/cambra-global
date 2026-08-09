@@ -15,7 +15,7 @@ function pass(name, details) { return { name, status: "pass", details: details |
 function fail(name, details) { return { name, status: "fail", details }; }
 
 const EXPECTED_SCOPES = [
-  "read", "write", "admin",
+  "read", "write", "admin", "platform:read",
   "read:kpis", "read:brands", "read:analyses", "read:documents", "read:providers",
   "read:savings", "read:trackers", "read:reports", "read:integrations",
   "write:reports", "write:documents", "write:trackers",

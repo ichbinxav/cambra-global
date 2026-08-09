@@ -230,7 +230,7 @@ async function logActivity(base44, ctx) {
 // Tenant isolation — DENY BY DEFAULT (FIX 2 / FIX 3 / FIX 4)
 //
 // Rules:
-//   - API keys may carry organization_id; absence = platform-level (admin scope still required for writes).
+//   - API keys may carry organization_id; absence is NOT platform-level unless the key explicitly carries `platform:read` or `admin`.
 //   - OAuth tokens with organization_id → scope by organization_id.
 //   - OAuth tokens WITHOUT organization_id but WITH user_email → scope by created_by/user_email.
 //   - OAuth tokens with NEITHER → return an impossible filter (deny by default).
@@ -238,13 +238,13 @@ async function logActivity(base44, ctx) {
 // -----------------------------------------------------------------------------
 function isPlatformPrincipal(principal) {
   // Only API keys without an org may be "platform-level" — never OAuth tokens.
-  return principal.type === "api_key" && !principal.raw?.organization_id;
+  return principal.type === "api_key" && !principal.raw?.organization_id && (principal.scopes || []).some((scope) => scope === "admin" || scope === "platform:read");
 }
 
 function tenantFilter(principal, extra = {}) {
   const orgId = principal.raw?.organization_id;
   if (orgId) return { ...extra, organization_id: orgId };
-  if (isPlatformPrincipal(principal)) return extra; // platform API key — admin scope still required for writes
+  if (isPlatformPrincipal(principal)) return extra; // explicit platform API key
   // OAuth without org_id → fall through to created_by below; if neither works, deny.
   const userEmail = principal.user_email || principal.raw?.user_email;
   if (!userEmail) return { ...extra, _impossible_tenant_match: "__no_identity__" };

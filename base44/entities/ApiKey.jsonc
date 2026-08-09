@@ -42,6 +42,7 @@
           "read",
           "write",
           "admin",
+          "platform:read",
           "read:kpis",
           "read:brands",
           "read:analyses",
