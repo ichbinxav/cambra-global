@@ -16,7 +16,7 @@
 //     'partially_paid' / 'due' / 'overdue'. A 'paid' invoice is never
 //     modified again by this endpoint (refunds are an explicit separate
 //     event, out of scope here).
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 
 const MAX_PAYMENT_EUR = 1_000_000;
@@ -50,6 +50,13 @@ Deno.serve(async (req) => {
     const rows = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id }, '-created_date', 1);
     const inv = rows?.[0];
     if (!inv) return Response.json({ error: 'Invoice not found' }, { status: 404 });
+
+    // P6 — Recover invoices whose processor is Stripe have ONE payment truth:
+    // Stripe. Manual/local credits would race webhooks and could manufacture a
+    // paid state without processor evidence. Use Stripe + reconciliation only.
+    if (inv.monthly_savings_report_id && inv.payment_provider === 'stripe') {
+      return Response.json({ error: 'recover_stripe_invoice_is_processor_authoritative', use: 'reconcileRecoverBilling' }, { status: 409 });
+    }
 
     if (currency && inv.currency && String(currency).toUpperCase() !== String(inv.currency).toUpperCase()) {
       return Response.json({ error: `currency mismatch: invoice is ${inv.currency}` }, { status: 400 });
