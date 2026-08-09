@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 // Precise ECL artifact names — word-anchored so "declare"/"reclassify" never
 // false-positive the way a bare /ecl/i would. P4 explicitly covers the
 // camelCase production/domain names that the old pattern missed.
-export const ECL_NAME_PATTERN = /\becl(?:-policy|Policy(?:Schema)?|Domain|Gates|Serialize|Lifecycle(?:Scheduler)?|Reconcile|Strikes|Engine|Parity|ProcessEvidence|Operations|Persistence|ReviewWorkflow|EconomicGate|RecoverEvidence|P3Closure|P4Closure|P4ProductionProof|P5Closure)(?:\b|[._-])|EvidenceAttestation|EvidenceLifecycleEvent|EvidenceStrike|ReviewCase|ReviewQueue|ConfidenceResult|NormalizedEvidence/;
+export const ECL_NAME_PATTERN = /\becl(?:-policy|Policy(?:Schema)?|Domain|Gates|Serialize|Lifecycle(?:Scheduler)?|Reconcile|Strikes|Engine|Parity|ProcessEvidence|Operations|Persistence|ReviewWorkflow|EconomicGate|RecoverEvidence|OperationalRecovery|ProductionHealth|IncidentWorkflow|P3Closure|P4Closure|P4ProductionProof|P5Closure|P6Closure|P7Closure)(?:\b|[._-])|EvidenceAttestation|EvidenceLifecycleEvent|EvidenceStrike|ReviewCase|ReviewQueue|ConfidenceResult|NormalizedEvidence|OperationalIncident/;
 export const ECL_FIELD_PATTERN = /confidence_level_ecl|freeze_eligibility|"evidence_status"/;
 
 export const STAGE_PRE_ECL = "PRE_ECL";
@@ -41,7 +41,12 @@ export const STAGE_ECL_P5 = "ECL_P5_ECONOMIC_ENFORCEMENT";
 // authorized by P5 and makes their Stripe execution replay-safe, their local
 // mirror convergent, and their payment ledger auditable/reconcilable.
 export const STAGE_ECL_P6 = "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION";
-export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF, STAGE_ECL_P5, STAGE_ECL_P6];
+// v0.66.0 — ECL P7: production operations + incident recovery. P7 does not
+// authorize a new economic action and does not mutate ECL confidence. It adds
+// critical-worker liveness/SLO detection, idempotent operational incidents,
+// versioned DLQ scheduling, and explicit admin-only bounded recovery/replay.
+export const STAGE_ECL_P7 = "ECL_P7_PRODUCTION_OPERATIONS_INCIDENT_RECOVERY";
+export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF, STAGE_ECL_P5, STAGE_ECL_P6, STAGE_ECL_P7];
 
 // Declared transitions. PRE_ECL → P2 is DELIBERATELY ABSENT: P1 cannot be
 // skipped, so a repo that never applied the schemas can never reach the
@@ -58,7 +63,8 @@ export const STAGE_TRANSITIONS = {
   [STAGE_ECL_P4]: [STAGE_ECL_P3, STAGE_ECL_P4_PROOF],
   [STAGE_ECL_P4_PROOF]: [STAGE_ECL_P4, STAGE_ECL_P5],
   [STAGE_ECL_P5]: [STAGE_ECL_P4_PROOF, STAGE_ECL_P6],
-  [STAGE_ECL_P6]: [STAGE_ECL_P5],
+  [STAGE_ECL_P6]: [STAGE_ECL_P5, STAGE_ECL_P7],
+  [STAGE_ECL_P7]: [STAGE_ECL_P6],
 };
 
 // CODE-OWNED allowlist for ECL P1. The six schema paths, nothing else — no
@@ -192,7 +198,25 @@ export const P6_ALLOWLIST = [
   "src/lib/eclP6Closure.test.js",
 ];
 
+// P7 widens P6 by exactly nine operational artifacts. Existing P6 reconciler
+// may gain runtime telemetry without changing its read-only Stripe guarantee.
+// The pre-existing webhook DLQ worker becomes a versioned scheduled boundary;
+// manual replay is bounded/admin-only and preserves the stable delivery id.
+export const P7_ALLOWLIST = [
+  ...P6_ALLOWLIST,
+  "base44/entities/OperationalIncident.jsonc",
+  "base44/shared/eclOperationalRecovery.ts",
+  "base44/functions/eclProductionHealth/entry.ts",
+  "base44/functions/eclProductionHealth/function.jsonc",
+  "base44/functions/eclIncidentWorkflow/entry.ts",
+  "base44/functions/processWebhookDeadLetters/entry.ts",
+  "base44/functions/processWebhookDeadLetters/function.jsonc",
+  "src/pages/admin/EclOperations.jsx",
+  "src/lib/eclP7Closure.test.js",
+];
+
 export function allowlistForStage(stage) {
+  if (stage === STAGE_ECL_P7) return [...P7_ALLOWLIST];
   if (stage === STAGE_ECL_P6) return [...P6_ALLOWLIST];
   if (stage === STAGE_ECL_P5) return [...P5_ALLOWLIST];
   if (stage === STAGE_ECL_P4_PROOF) return [...P4_PROOF_ALLOWLIST];
@@ -207,7 +231,7 @@ export function allowlistForStage(stage) {
 // Stages in which the ECL policy file (config/ecl-policy.json) may exist.
 // PRE_ECL and P1 must keep failing on it — the policy layer starts in P2.
 export function eclPolicyFileAllowed(stage) {
-  return stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5 || stage === STAGE_ECL_P6;
+  return stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5 || stage === STAGE_ECL_P6 || stage === STAGE_ECL_P7;
 }
 
 /**
@@ -238,7 +262,7 @@ export function checkFreeze(entries, readFile, options = {}) {
   // carry ECL fields. Baseline.jsonc and processUploadedFile stay excluded in
   // every stage, and their hashes are still checked below without exception.
   const eclFieldsAllowedIn =
-    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5 || stage === STAGE_ECL_P6
+    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5 || stage === STAGE_ECL_P6 || stage === STAGE_ECL_P7
       ? P1_ECL_FIELD_PATHS
       : [];
   const failures = [];
