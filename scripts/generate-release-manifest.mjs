@@ -52,6 +52,9 @@ if (productPolicy?.economicTerms?.recoveryEconomicsVersion === "recover-economic
 if (fs.existsSync('src/docs/P12_INTELLIGENCE_ARCHITECTURE.md')) {
   manualRequirements.push('LEGAL/PRIVACY REVIEW REQUIRED: approve P12 retention/deletion, lawful basis and cross-tenant aggregation/anonymization policy before relying on derived intelligence retention beyond tenant deletion or widening benchmark use');
 }
+if (fs.existsSync('src/docs/P13_SHADOW_ROUTING_ARCHITECTURE.md')) {
+  manualRequirements.push('ROUTING ACTIVATION PROHIBITED: P13 is shadow/simulation only. Before any real routing, complete PCI DSS scope, PSD2/SCA and regulatory assessment, provider/network contractual review, real-time SLA/SLO and incident architecture, kill switch, payment idempotency/reconciliation proof, merchant controls and financial-liability review.');
+}
 if (productPolicy?.integrationStatus?.stripe !== "live_verified") {
   manualRequirements.push(`PRODUCTION VALIDATION REQUIRED: Stripe live integration status is ${productPolicy?.integrationStatus?.stripe || "unknown"}; complete a real live-account connect/sync/verification proof before claiming full production seal`);
 }
