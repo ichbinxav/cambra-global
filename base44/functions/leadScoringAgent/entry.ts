@@ -91,17 +91,19 @@ Deno.serve(async (req) => {
     }));
 
     const prompt = [
-      "Eres lead scoring engine de CAMBRA (infraestructura económica para ecommerce independientes).",
-      "Puntúa cada lead 0-100 con esta rúbrica:",
-      "- ICP fit: 40 pts (ecommerce real, founder/CEO, tamaño relevante)",
-      "- Overpayment likelihood: 35 pts (señales de stack caro, procesamiento alto, sin optimización)",
-      "- Conversion likelihood: 25 pts (alcanzabilidad, momento, señales de intención)",
-      "",
-      "Devuelve SOLO un JSON array, sin texto extra, con este shape:",
-      `[{"id":"<lead_id>","score":<0-100>,"breakdown":{"icp_fit":<0-40>,"overpayment":<0-35>,"conversion":<0-25>},"reasoning":"<1 línea>","next_action":"<acción concreta>"}]`,
-      "",
-      "Leads:",
-      JSON.stringify(compact),
+      "Eres el motor de priorización de merchants de CAMBRA. No inventes datos ausentes: una señal no observada vale 0, no una suposición.",
+      "Objetivo: priorizar merchants FR/ES con suficiente infraestructura de pagos para que un análisis de CAMBRA tenga ROI real.",
+      "Puntúa 0-100 con esta rúbrica explícita:",
+      "- Commerce/payment fit: 25 pts. Ecommerce/DTC/omnichannel real, retail físico, checkout propio, Shopify/WooCommerce/BigCommerce u otra evidencia de comercio.",
+      "- Economic potential: 25 pts. Tamaño/empleados/revenue/traffic/store count/funding u otras señales verificables que sugieran volumen de pagos material. No inventar GMV.",
+      "- Payments complexity/overpayment signals: 20 pts. PSP/TPV detectado, múltiples canales/países/tiendas, stack de payments visible, expansión internacional. No afirmar fees sin evidencia.",
+      "- Decision-maker quality: 15 pts. Founder/CEO/CFO/COO/Head of Ecommerce/Finance/Payments u otro decisor relevante y alcanzable.",
+      "- Timing/growth signal: 10 pts. Funding, hiring, expansión, nuevas tiendas/mercados, crecimiento o cambio de stack verificable.",
+      "- Data/contact confidence: 5 pts. Email corporativo y datos suficientemente completos/provenance clara.",
+      "Hard penalties: -40 si no hay evidencia de commerce; -25 si parece micro-negocio sin señal de volumen material; -20 si el contacto no tiene relación con decisión económica/commerce; score máximo 59 si falta email corporativo utilizable.",
+      "Devuelve SOLO JSON array con shape:",
+      `[{"id":"<lead_id>","score":<0-100>,"breakdown":{"commerce_fit":<0-25>,"economic_potential":<0-25>,"payments_complexity":<0-20>,"decision_maker":<0-15>,"timing":<0-10>,"data_confidence":<0-5>,"penalties":<0-negative>},"signals":{"commerce_platform":null,"payment_provider":null,"physical_retail":null,"store_count":null,"employee_range":null,"revenue_signal":null,"funding_signal":null,"international_signal":null},"reasoning":"<1 línea basada solo en evidencia>","next_action":"<acción concreta>"}]`,
+      "Leads:", JSON.stringify(compact),
     ].join("\n");
 
     const text = await callClaude(prompt);
