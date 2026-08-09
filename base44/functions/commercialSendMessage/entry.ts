@@ -38,12 +38,14 @@ Deno.serve(async (req) => {
 
     const policies = await svc.entities.CommercialPolicy.filter({ policy_key:thread.policy_key, status:'active' }, '-created_date', 5).catch(()=>[]);
     const policy = policies.find((p:any)=>p.version === thread.policy_version) || policies[0] || null;
-    const automatic = gate.isInternal && !gate.isAdmin;
+    const manualOverride = gate.isAdmin && body?.manual_override === true;
+    const automatic = !manualOverride;
     if (automatic) {
       if (!policyIsActive(policy)) return Response.json({ ok:false, error:'active_policy_required' }, { status:409 });
       const authz = routineActionAllowed(policy, action, classification);
       if (!authz.allowed) return Response.json({ ok:false, error:authz.reason, escalation_required:true }, { status:409 });
       if (thread.automation_paused) return Response.json({ ok:false, error:'thread_automation_paused' }, { status:409 });
+      if (!gate.isInternal) return Response.json({ ok:false, error:'internal_autonomy_proof_required' }, { status:403 });
     }
 
     const resendKey = Deno.env.get('RESEND_API_KEY');
