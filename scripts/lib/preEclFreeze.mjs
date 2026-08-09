@@ -36,7 +36,12 @@ export const STAGE_ECL_P4_PROOF = "ECL_P4_PRODUCTION_PROOF";
 // not change confidence; it makes the canonical ECL gates mandatory at the
 // existing Recover boundaries before a contractual/economic side effect.
 export const STAGE_ECL_P5 = "ECL_P5_ECONOMIC_ENFORCEMENT";
-export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF, STAGE_ECL_P5];
+// v0.65.0 — ECL P6: economic execution + reconciliation. P6 does not widen
+// the confidence model or authorize new money. It takes effects already
+// authorized by P5 and makes their Stripe execution replay-safe, their local
+// mirror convergent, and their payment ledger auditable/reconcilable.
+export const STAGE_ECL_P6 = "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION";
+export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF, STAGE_ECL_P5, STAGE_ECL_P6];
 
 // Declared transitions. PRE_ECL → P2 is DELIBERATELY ABSENT: P1 cannot be
 // skipped, so a repo that never applied the schemas can never reach the
@@ -52,7 +57,8 @@ export const STAGE_TRANSITIONS = {
   [STAGE_ECL_P3]: [STAGE_ECL_P2, STAGE_ECL_P4],
   [STAGE_ECL_P4]: [STAGE_ECL_P3, STAGE_ECL_P4_PROOF],
   [STAGE_ECL_P4_PROOF]: [STAGE_ECL_P4, STAGE_ECL_P5],
-  [STAGE_ECL_P5]: [STAGE_ECL_P4_PROOF],
+  [STAGE_ECL_P5]: [STAGE_ECL_P4_PROOF, STAGE_ECL_P6],
+  [STAGE_ECL_P6]: [STAGE_ECL_P5],
 };
 
 // CODE-OWNED allowlist for ECL P1. The six schema paths, nothing else — no
@@ -167,7 +173,27 @@ export const P5_ALLOWLIST = [
   "src/lib/eclP5Closure.test.js",
 ];
 
+// P6 widens P5 only around already-authorized economic execution. The Invoice
+// and PaymentEvent schemas gain additive execution/reconciliation fields; the
+// existing invoice issuer, webhook and admin/manual repair endpoints are
+// hardened; one read-only Stripe reconciler is scheduled; and a closure matrix
+// locks the guarantees. No new economic authorization gate is introduced.
+export const P6_ALLOWLIST = [
+  ...P5_ALLOWLIST,
+  "base44/shared/economicExecution.ts",
+  "base44/entities/Invoice.jsonc",
+  "base44/entities/PaymentEvent.jsonc",
+  "base44/functions/stripeBillingWebhook/entry.ts",
+  "base44/functions/reconcileRecoverBilling/entry.ts",
+  "base44/functions/reconcileRecoverBilling/function.jsonc",
+  "base44/functions/reconcileInvoice/entry.ts",
+  "base44/functions/recordPayment/entry.ts",
+  "base44/functions/createPaymentLink/entry.ts",
+  "src/lib/eclP6Closure.test.js",
+];
+
 export function allowlistForStage(stage) {
+  if (stage === STAGE_ECL_P6) return [...P6_ALLOWLIST];
   if (stage === STAGE_ECL_P5) return [...P5_ALLOWLIST];
   if (stage === STAGE_ECL_P4_PROOF) return [...P4_PROOF_ALLOWLIST];
   if (stage === STAGE_ECL_P4) return [...P4_ALLOWLIST];
@@ -181,7 +207,7 @@ export function allowlistForStage(stage) {
 // Stages in which the ECL policy file (config/ecl-policy.json) may exist.
 // PRE_ECL and P1 must keep failing on it — the policy layer starts in P2.
 export function eclPolicyFileAllowed(stage) {
-  return stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5;
+  return stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5 || stage === STAGE_ECL_P6;
 }
 
 /**
@@ -212,7 +238,7 @@ export function checkFreeze(entries, readFile, options = {}) {
   // carry ECL fields. Baseline.jsonc and processUploadedFile stay excluded in
   // every stage, and their hashes are still checked below without exception.
   const eclFieldsAllowedIn =
-    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5
+    stage === STAGE_ECL_P1 || stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5 || stage === STAGE_ECL_P6
       ? P1_ECL_FIELD_PATHS
       : [];
   const failures = [];
