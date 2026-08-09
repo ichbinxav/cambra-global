@@ -5,7 +5,7 @@
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 896,
   "sourceArchiveShaExternal": null,
-  "gitSha": "78bba18c329f37b9c4167fa65800376cb87baf81",
+  "gitSha": "cbfc0874ba1a2a11d05663e8c257966ed229d141",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -44,8 +44,8 @@
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
     "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
-    "startedAt": "2026-08-09T16:21:23.167Z",
-    "completedAt": "2026-08-09T16:21:32.461Z",
+    "startedAt": "2026-08-09T16:39:01.984Z",
+    "completedAt": "2026-08-09T16:39:11.564Z",
     "exitCode": 0,
     "ciRunId": null,
     "testFiles": 389,
@@ -57,8 +57,8 @@
   "buildEvidence": {
     "command": "npx vite build",
     "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
-    "startedAt": "2026-08-09T16:21:32.858Z",
-    "completedAt": "2026-08-09T16:21:45.122Z",
+    "startedAt": "2026-08-09T16:39:12.004Z",
+    "completedAt": "2026-08-09T16:39:24.836Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "8e7bf5ced9fe14c2d582a7b3149f95ba7dea14881710a8b94bcb1db989967cf3",
@@ -67,24 +67,24 @@
   "lintEvidence": {
     "command": "npx eslint . --quiet",
     "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
-    "startedAt": "2026-08-09T16:21:00.301Z",
-    "completedAt": "2026-08-09T16:21:08.629Z",
+    "startedAt": "2026-08-09T16:38:38.839Z",
+    "completedAt": "2026-08-09T16:38:47.361Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
     "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
-    "startedAt": "2026-08-09T16:21:09.027Z",
-    "completedAt": "2026-08-09T16:21:11.722Z",
+    "startedAt": "2026-08-09T16:38:47.797Z",
+    "completedAt": "2026-08-09T16:38:50.534Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
     "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
-    "startedAt": "2026-08-09T16:21:12.138Z",
-    "completedAt": "2026-08-09T16:21:22.759Z",
+    "startedAt": "2026-08-09T16:38:50.956Z",
+    "completedAt": "2026-08-09T16:39:01.549Z",
     "exitCode": 0,
     "ciRunId": null
   },
@@ -94,5 +94,5 @@
   "manualRequirements": [
     "LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled"
   ],
-  "generatedAt": "2026-08-09T16:21:45.553Z"
+  "generatedAt": "2026-08-09T16:39:25.279Z"
 }
