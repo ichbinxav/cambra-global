@@ -147,6 +147,10 @@
     "src/pages/admin/AdminIntelligence.jsx",
     "src/lib/p12Intelligence.test.js",
     "src/lib/commercialModelRouter.test.js",
-    "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+    "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md",
+    "base44/functions/intelligenceAccess/function.jsonc",
+    "base44/functions/intelligenceAdmin/function.jsonc",
+    "base44/functions/intelligenceBackfill/function.jsonc",
+    "base44/functions/getIntelligenceCommandCenter/function.jsonc"
   ]
 }

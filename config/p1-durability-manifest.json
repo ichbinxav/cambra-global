@@ -1,12 +1,12 @@
 {
   "release": "CAMBRA v0.72.0 — P12 Intelligence & Proprietary Moat Layer (durability manifest)",
-  "generatedAt": "2026-08-09T22:28:46.494Z",
+  "generatedAt": "2026-08-09T22:28:59.031Z",
   "packageVersion": "0.72.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
   "allowlistCount": 77,
-  "fileCount": 158,
+  "fileCount": 162,
   "purpose": "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
   "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest covers every active ECL stage through P6 Economic Execution & Reconciliation.",
   "stageNote": "P1-P5 remain authoritative for evidence, lifecycle, review and economic authorization. P6 protects execution of already-authorized Recover invoices: deterministic local claims, Stripe idempotency, current-state webhook reconciliation, a versioned read-only Stripe reconciler, immutable finalized economics and no local/manual second payment truth. GitHub CI sealing remains a separate real-Actions proof.",
@@ -236,6 +236,11 @@
       "bytes": 1791
     },
     {
+      "path": "base44/functions/getIntelligenceCommandCenter/function.jsonc",
+      "sha256": "2e76a79e27eaef646a9fd07181376100022714a3254ad4c2841161199c95a24a",
+      "bytes": 59
+    },
+    {
       "path": "base44/functions/getRecoverAcceptanceContext/entry.ts",
       "sha256": "d28c5818b6d09c436a8b36d28b0a4a35960a1564f891d3d7e2687d95f246069d",
       "bytes": 7261
@@ -246,14 +251,29 @@
       "bytes": 7729
     },
     {
+      "path": "base44/functions/intelligenceAccess/function.jsonc",
+      "sha256": "1cec0f2d8bd14eaa5df53560afb173c7f120a76a18cd176905672f2e2ad02977",
+      "bytes": 49
+    },
+    {
       "path": "base44/functions/intelligenceAdmin/entry.ts",
       "sha256": "09822173670f9c46f92876e88a73c14a0c687575a563d5bc7cdf2ee0e4f14714",
       "bytes": 3121
     },
     {
+      "path": "base44/functions/intelligenceAdmin/function.jsonc",
+      "sha256": "66d8935cca0a230c588f2d3d829624d82b818afb53f7df6f7aaa046f9f224f17",
+      "bytes": 48
+    },
+    {
       "path": "base44/functions/intelligenceBackfill/entry.ts",
       "sha256": "605305bae1a5290276dddf54871022a5f89810b82156229d418ab1783b749b8a",
       "bytes": 1033
+    },
+    {
+      "path": "base44/functions/intelligenceBackfill/function.jsonc",
+      "sha256": "1f5e851d7a8308104d8866558e4e2c514586d0925292a66aa0f20b3ea907bfd6",
+      "bytes": 51
     },
     {
       "path": "base44/functions/intelligenceMaintenanceWorker/entry.ts",
@@ -477,8 +497,8 @@
     },
     {
       "path": "config/release-touch-list.json",
-      "sha256": "4c49775ce384d36cb22ced395cc6cfc69a6029da34f575876d364c0a0077f440",
-      "bytes": 7125
+      "sha256": "dcfda852e037f66aefae96f5018f70041c102fe7c40e46dbe17b92f3048854fb",
+      "bytes": 7368
     },
     {
       "path": "config/typecheck-baseline.json",
