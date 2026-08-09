@@ -53,16 +53,22 @@ Deno.serve(async (req) => {
     if (existing.length) return Response.json({ ok:true, duplicate:true, message_id:existing[0].id, provider:existing[0].provider || null });
 
     const now = new Date().toISOString();
-    const requestedProfileKey=String(body?.sending_profile_key||'').trim();
+    const requestedProfileKey=String(body?.sending_profile_key||thread.sending_profile_key||'').trim();
     const profiles=requestedProfileKey?await svc.entities.OutboundSendingProfile.filter({profile_key:requestedProfileKey},'-created_date',1).catch(()=>[]):[];
     const sendingProfile=profiles[0]||null;
     if(requestedProfileKey&&!sendingProfile)return Response.json({ok:false,error:'sending_profile_not_found'},{status:409});
-    if(sendingProfile&&sendingProfile.status==='paused')return Response.json({ok:false,error:'sending_profile_paused'},{status:409});
-    if(sendingProfile&&['initial_outreach','partner_outreach'].includes(action)){
-      const day=new Date();day.setUTCHours(0,0,0,0);const sent=await svc.entities.CommunicationMessage.filter({direction:'outbound',provider:sendingProfile.provider,sent_at:{$gte:day.toISOString()}},'-sent_at',Math.min(Number(sendingProfile.current_daily_cap||1)+5,550)).catch(()=>[]);
+    const acquisitionAction=['initial_outreach','partner_outreach'].includes(action);
+    if(acquisitionAction&&!manualOverride){
+      const controls=await svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch(()=>[]);const control=controls[0]||null;
+      if(!control?.acquisition_enabled)return Response.json({ok:false,error:'outbound_master_paused'},{status:409});
+      if(!sendingProfile)return Response.json({ok:false,error:'sending_profile_required'},{status:409});
+      if(sendingProfile.status==='paused')return Response.json({ok:false,error:'sending_profile_paused'},{status:409});
+      if(sendingProfile.provider==='outlook'&&!control.premium_outlook_enabled)return Response.json({ok:false,error:'premium_outlook_paused'},{status:409});
+      if(sendingProfile.provider==='resend'&&!control.volume_resend_enabled)return Response.json({ok:false,error:'volume_resend_paused'},{status:409});
+      const day=new Date();day.setUTCHours(0,0,0,0);const sent=await svc.entities.CommunicationMessage.filter({direction:'outbound',sending_profile_key:sendingProfile.profile_key,sent_at:{$gte:day.toISOString()}},'-sent_at',Math.min(Number(sendingProfile.current_daily_cap||1)+5,550)).catch(()=>[]);
       if(sent.length>=Number(sendingProfile.current_daily_cap||0))return Response.json({ok:false,error:'sending_profile_daily_cap_reached',profile:requestedProfileKey,cap:sendingProfile.current_daily_cap},{status:409});
-    }
-    let provider=sendingProfile?.provider==='resend'?'resend':'outlook'; let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let raw:any={idempotency_key:idempotency};
+    } else if(sendingProfile&&sendingProfile.status==='paused'&&!manualOverride){return Response.json({ok:false,error:'sending_profile_paused'},{status:409});}
+    let provider=sendingProfile?.provider==='resend'?'resend':'outlook'; let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let raw:any={idempotency_key:idempotency,sending_profile_key:sendingProfile?.profile_key||null};
     const outlook = await svc.connectors.getConnection('outlook').catch(()=>({accessToken:null}));
     if (provider==='outlook' && outlook?.accessToken) {
       const meRes=await fetch('https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,displayName',{headers:{Authorization:`Bearer ${outlook.accessToken}`}});const me=await meRes.json().catch(()=>({}));if(!meRes.ok)throw new Error(`outlook_me_failed:${meRes.status}`);fromAddress=normalizeEmail(me.mail||me.userPrincipalName);
@@ -71,11 +77,11 @@ Deno.serve(async (req) => {
     } else {
       const resendKey = Deno.env.get('RESEND_API_KEY');
       if (!resendKey) return Response.json({ ok:false, error:'commercial_email_not_configured', setup_required:true }, { status:503 });
-      provider='resend';const from=sendingProfile?.from_address?`CAMBRA <${sendingProfile.from_address}>`:(Deno.env.get('RESEND_FROM')||'CAMBRA <hello@contact.cambra.global>');fromAddress=from;const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
+      provider='resend';const from=sendingProfile?.from_address?`CAMBRA <${sendingProfile.from_address}>`:(Deno.env.get('RESEND_FROM')||'CAMBRA <hello@contact.cambra.global>');fromAddress=String(sendingProfile?.from_address||'hello@contact.cambra.global');const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
       const res=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${resendKey}`,'Idempotency-Key':idempotency},body:JSON.stringify({from,to:[to],reply_to:replyTo,subject,text,tags:[{name:'thread_id',value:thread.id},{name:'engine',value:thread.engine}]})});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(`resend_send_failed:${res.status}`);providerMessageId=data?.id||null;raw={...raw,resend_id:data?.id||null};
     }
     const message = await svc.entities.CommunicationMessage.create({
-      thread_id:thread.id, direction:'outbound', channel:'email', provider, provider_message_id:String(providerMessageId||''), idempotency_key:idempotency,
+      thread_id:thread.id, direction:'outbound', channel:'email', provider, provider_message_id:String(providerMessageId||''), idempotency_key:idempotency, sending_profile_key:sendingProfile?.profile_key||thread.sending_profile_key||null,
       from_email:fromAddress, to_emails:[to], subject, text_body:text, classification, agent_name:String(body?.agent_name || 'commercial_orchestrator'), policy_key:thread.policy_key,
       policy_version:thread.policy_version, approval_id:body?.approval_id || null, send_status:'sent', sent_at:now, actual_sent_at:now, quality_gate_json:quality, raw_event_json:raw
     });

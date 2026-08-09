@@ -32,6 +32,8 @@ Deno.serve(async (req) => {
     const svc = base44.asServiceRole;
     const type = String(event?.type || '');
     const data = event?.data || {};
+    const lifecycleId=String(data?.email_id||'');
+    if(lifecycleId && ['email.delivered','email.bounced','email.complained','email.failed','email.suppressed'].includes(type)){const rows=await svc.entities.CommunicationMessage.filter({provider:'resend',provider_message_id:lifecycleId,direction:'outbound'},'-created_date',1).catch(()=>[]);if(rows.length){const status=type==='email.delivered'?'delivered':type==='email.bounced'?'bounced':type==='email.complained'?'complained':type==='email.suppressed'?'suppressed':'failed';await svc.entities.CommunicationMessage.update(rows[0].id,{send_status:status,raw_event_json:{...(rows[0].raw_event_json||{}),last_resend_event:type,last_resend_event_at:event?.created_at||new Date().toISOString()}}).catch(()=>null);}}
 
     if (['email.bounced','email.complained','email.suppressed'].includes(type)) {
       const emails = [...(Array.isArray(data?.to) ? data.to : []), data?.email].map(normalizeEmail).filter(Boolean);
