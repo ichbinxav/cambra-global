@@ -47,7 +47,7 @@ const MANIFEST = [
   "discoverCompanyInfrastructure", "discoveryTechStackAgent", "dispatchWebhook",
   "driveConnectionCheck",
   // v62.5 ECL P3 — único límite I/O del motor de ciclo de vida de evidencia.
-  "eclProcessEvidence", "eclLifecycleScheduler", "eclReviewWorkflow", "engineeringReportAgent", "fixValidatorAgent",
+  "eclProcessEvidence", "eclLifecycleScheduler", "eclReviewWorkflow", "eclProductionHealth", "eclIncidentWorkflow", "engineeringReportAgent", "fixValidatorAgent",
   "followUpAgent", "founderCopilotAgent", "gdprAgent", "generateInvoiceFromReport",
   "generateInvoicePdf", "generateMonthlySavingsReport", "generateRecommendations",
   "getActivationAdminDetail", "getAdminRecommendationQueue", "getBenchmarkForReport",
