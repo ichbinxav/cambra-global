@@ -3,6 +3,7 @@
 // The merchant has already mandated CAMBRA to act: standard tasks are owned by
 // CAMBRA/provider, not pushed back to the merchant.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { requireUserOrInternal } from '../../shared/internalGate.ts';
 
 const PLAN_VERSION = 'payments-recover-p9-v1';
 const PLAN = [
@@ -10,7 +11,7 @@ const PLAN = [
   ['takeover','CAMBRA takes over','We open the migration case, lock scope and assign operational ownership.','admin','preparing',1],
   ['provider_coordination','Provider coordination','CAMBRA coordinates commercial onboarding and required provider documentation.','admin','provider_coordination',2],
   ['provider_ready','Provider ready','The target PSP account, pricing and payment capabilities are confirmed.','provider','provider_coordination',5],
-  ['technical_configuration','Payment configuration','CAMBRA prepares the payment configuration and integration changes required for cutover.','admin','preparing',3],
+  ['technical_configuration','Payment configuration','CAMBRA prepares the payment configuration and integration changes required for cutover.','admin','provider_coordination',3],
   ['migration_testing','Migration testing','CAMBRA validates payment, 3DS, refund, webhook and reconciliation flows before live traffic moves.','admin','scheduled',2],
   ['cutover_ready','Cutover ready','CAMBRA confirms rollback, timing and all go-live prerequisites.','admin','scheduled',1],
   ['go_live','Going live','CAMBRA moves the approved payment scope to the new provider or conditions.','admin','going_live',1],
@@ -21,9 +22,14 @@ function dueIn(days:number){ const d=new Date(); d.setUTCDate(d.getUTCDate()+day
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const me = await base44.auth.me().catch(() => null);
-    if (!me) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const body = await req.json().catch(() => ({}));
+    // Accept the authenticated merchant/admin path AND the canonical internal
+    // secret used by acceptRecoverMandate's fire-and-forget handoff. Without
+    // this, the automatic takeover could silently fail when no user session is
+    // propagated through the service-role function invocation.
+    const gate = await requireUserOrInternal(req, base44, body);
+    if (!gate.ok) return gate.response;
+    const me = gate.user;
     const activationId = String(body?.deal_activation_id || '');
     if (!activationId) return Response.json({ error: 'deal_activation_id required' }, { status: 400 });
 
@@ -31,8 +37,8 @@ export default async function (req: Request): Promise<Response> {
     const rows = await svc.entities.DealActivation.filter({ id: activationId }, '-created_date', 1).catch(() => []);
     const activation:any = rows?.[0];
     if (!activation) return Response.json({ error: 'activation_not_found' }, { status: 404 });
-    const isOwner = String(activation.user_email || '').toLowerCase() === String(me.email || '').toLowerCase();
-    if (!isOwner && me.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
+    const isOwner = !!me && String(activation.user_email || '').toLowerCase() === String(me.email || '').toLowerCase();
+    if (!gate.isInternal && !isOwner && me?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
     if (activation.vertical !== 'payments') return Response.json({ error: 'payments_only' }, { status: 409 });
     if (!['authorized','migrating','live','monetizing'].includes(activation.status)) {
       return Response.json({ error: 'activation_not_ready', status: activation.status }, { status: 409 });
@@ -66,10 +72,26 @@ export default async function (req: Request): Promise<Response> {
       })));
       tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
       p9Tasks = tasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION);
+      // Base44 has no transaction/unique constraint here. Collapse a concurrent
+      // double-start deterministically: earliest task per step wins, later rows
+      // are retained as canceled audit evidence rather than silently deleted.
+      for (const step of PLAN.map((p:any[]) => p[0])) {
+        const same = p9Tasks.filter(t => t.step_name === step).sort((a,b) => String(a.created_date || a.id).localeCompare(String(b.created_date || b.id)));
+        for (const duplicate of same.slice(1)) {
+          if (duplicate.status !== 'canceled') {
+            await svc.entities.MigrationTask.update(duplicate.id, {
+              status: 'canceled', updated_at: new Date().toISOString(),
+              metadata_json: { ...(duplicate.metadata_json || {}), duplicate_of: same[0]?.id || null, duplicate_collapsed: true },
+            }).catch(() => null);
+          }
+        }
+      }
+      tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
+      p9Tasks = tasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION && t.status !== 'canceled');
       await svc.entities.OperationalLog.create({
         deal_activation_id: activationId, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
         event_type: 'tasks_generated', message: 'P9 payments migration orchestration started',
-        data_json: { plan_version: PLAN_VERSION, task_count: PLAN.length }, actor_email: me.email || 'system', created_at: new Date().toISOString(),
+        data_json: { plan_version: PLAN_VERSION, task_count: PLAN.length }, actor_email: me?.email || (gate.isInternal ? 'internal' : 'system'), created_at: new Date().toISOString(),
       }).catch(() => null);
     }
 
@@ -78,7 +100,7 @@ export default async function (req: Request): Promise<Response> {
       await svc.entities.OperationalLog.create({
         deal_activation_id: activationId, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
         event_type: 'status_changed', message: 'Recover fulfilment started: authorized → migrating',
-        data_json: { from: 'authorized', to: 'migrating', plan_version: PLAN_VERSION }, actor_email: me.email || 'system', created_at: new Date().toISOString(),
+        data_json: { from: 'authorized', to: 'migrating', plan_version: PLAN_VERSION }, actor_email: me?.email || (gate.isInternal ? 'internal' : 'system'), created_at: new Date().toISOString(),
       }).catch(() => null);
     }
 
