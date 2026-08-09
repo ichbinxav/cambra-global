@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     if (!gate.ok) return gate.response;
     const svc = base44.asServiceRole;
     const thread = await svc.entities.CommunicationThread.get(String(body?.thread_id || '')).catch(()=>null);
-    if (!thread || !['merchant_acquisition','partner_acquisition'].includes(thread.engine)) return Response.json({ok:false,error:'acquisition_thread_required'},{status:400});
+    if (!thread || !['merchant_acquisition','partner_acquisition','aggregate_procurement'].includes(thread.engine)) return Response.json({ok:false,error:'schedulable_commercial_thread_required'},{status:400});
     const attendee = normalizeEmail(body?.attendee_email || thread.counterparty_email);
     if (!attendee) return Response.json({ok:false,error:'attendee_email_required'},{status:400});
 
@@ -72,12 +72,12 @@ Deno.serve(async (req) => {
 
     const start=new Date(chosen); const end=new Date(chosen+SLOT_MS);
     const transactionId=`cambra-${thread.id}-${start.toISOString().slice(0,16)}`.replace(/[^a-zA-Z0-9-]/g,'').slice(0,120);
-    const subject=sanitizeExternalText(body?.subject || 'CAMBRA — Payments infrastructure review',200);
+    const subject=sanitizeExternalText(body?.subject || (thread.engine==='aggregate_procurement'?'CAMBRA — Aggregate procurement discussion':'CAMBRA — Payments infrastructure review'),200);
     const eventRes=await fetch('https://graph.microsoft.com/v1.0/me/events',{
       method:'POST', headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'},
       body:JSON.stringify({
         subject,
-        body:{contentType:'text',content:'CAMBRA payments infrastructure discussion.'},
+        body:{contentType:'text',content:thread.engine==='aggregate_procurement'?'CAMBRA aggregate procurement discussion.':'CAMBRA payments infrastructure discussion.'},
         start:{dateTime:start.toISOString(),timeZone:'UTC'}, end:{dateTime:end.toISOString(),timeZone:'UTC'},
         attendees:[{emailAddress:{address:attendee,name:thread.counterparty_name||attendee},type:'required'}],
         allowNewTimeProposals:true,
