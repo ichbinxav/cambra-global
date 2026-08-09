@@ -60,7 +60,7 @@ function money(amount, { period = "yearly", confidence = 0.85, source = "cambra-
 // Tenant isolation helpers — DENY BY DEFAULT (FIX 4)
 // Mirrors apiV1: OAuth tokens without organization_id are NEVER platform-level.
 function isPlatformPrincipal(principal) {
-  return principal.type === "api_key" && !principal.raw?.organization_id && (principal.scopes || []).some((scope) => scope === "admin" || scope === "platform:read");
+  return principal.type === "api_key" && !principal.raw?.organization_id && (principal.scopes || []).some((scope) => scope === "admin" || scope === "platform");
 }
 function tenantFilter(principal, extra = {}) {
   const orgId = principal.raw?.organization_id;

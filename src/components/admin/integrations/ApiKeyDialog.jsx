@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Copy, Check, AlertCircle } from "lucide-react";
 
 const SCOPES = [
-  { id: "platform:read", label: "Platform-wide read", desc: "Explicitly allow this key to read across merchants. Leave off for tenant-bound keys." },
+  { id: "platform", label: "Platform-wide boundary", desc: "Explicitly allow this key to operate across merchants, limited by its other scopes. Leave off for tenant-bound keys." },
   { id: "read:kpis", label: "Read KPIs", desc: "Platform-level aggregated metrics" },
   { id: "read:brands", label: "Read brands", desc: "Brand directory and details" },
   { id: "read:analyses", label: "Read analyses", desc: "Analyzer results" },

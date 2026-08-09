@@ -24,6 +24,15 @@ describe('P10 — external/AI economic authority boundary', () => {
     expect(MCP).toContain('tracker mutations deliberately NOT exposed through MCP');
   });
 
+
+  it('requires an explicit platform boundary for unbound API keys', () => {
+    for (const source of [API, MCP]) {
+      expect(source).toContain('scope === "admin" || scope === "platform"');
+      expect(source).not.toContain('return principal.type === "api_key" && !principal.raw?.organization_id;');
+    }
+    expect(CREATE_KEY).toContain('"platform"');
+  });
+
   it('does not grant or advertise the deprecated economic mutation scope', () => {
     expect(CREATE_KEY).not.toContain('"update:trackers"');
     expect(OPENAPI).not.toContain('"update:trackers"');

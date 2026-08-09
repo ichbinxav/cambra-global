@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     "read": "Read access to all CAMBRA resources",
     "write": "Write access to all CAMBRA resources",
     "admin": "Full administrative access",
-    "platform:read": "Explicit platform-wide read boundary for unbound API keys",
+    "platform": "Explicit platform-wide tenant boundary for unbound API keys; other scopes still limit allowed operations",
     "read:brands": "List & read brands",
     "read:analyses": "List & read analyzer results",
     "read:documents": "List & read documents",
