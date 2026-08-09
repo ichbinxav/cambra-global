@@ -4,6 +4,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 const VALID = new Set(['pending','in_progress','blocked','done']);
 const PLAN_VERSION = 'payments-recover-p9-v1';
+function updatedExactlyOne(result:any){ return Boolean(result && (result.updated === 1 || result.modified_count === 1 || result.matched_count === 1)); }
+
 const ALLOWED = {
   pending: new Set(['in_progress']),
   in_progress: new Set(['blocked','done']),
@@ -41,6 +43,9 @@ export default async function (req: Request): Promise<Response> {
     const acts = await svc.entities.DealActivation.filter({ id: task.deal_activation_id }, '-created_date', 1).catch(() => []);
     const activation:any = acts?.[0];
     if (!activation || activation.vertical !== 'payments') return Response.json({ error: 'payments_activation_not_found' }, { status: 404 });
+    if (!['migrating','live'].includes(activation.status)) {
+      return Response.json({ error: 'migration_activation_not_operational', activation_status: activation.status }, { status: 409 });
+    }
 
     const allTasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
     const tasks = allTasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION && t.status !== 'canceled');
@@ -70,7 +75,7 @@ export default async function (req: Request): Promise<Response> {
 
     const now = new Date().toISOString();
     const retryCount = Number(task?.metadata_json?.retry_count || 0) + (task.status === 'blocked' && nextStatus === 'in_progress' ? 1 : 0);
-    await svc.entities.MigrationTask.update(taskId, {
+    const taskPatch = {
       status: nextStatus,
       updated_at: now,
       completed_at: nextStatus === 'done' ? now : undefined,
@@ -88,7 +93,14 @@ export default async function (req: Request): Promise<Response> {
           ? { en: merchantMessage.en.trim(), fr: merchantMessage.fr.trim(), es: merchantMessage.es.trim() }
           : null,
       },
-    });
+    };
+    const claimed = await svc.entities.MigrationTask.updateMany(
+      { id: taskId, status: task.status },
+      { $set: taskPatch },
+    );
+    if (!updatedExactlyOne(claimed)) {
+      return Response.json({ error: 'task_changed_concurrently' }, { status: 409 });
+    }
 
     if (nextStatus === 'done') {
       if (task.step_name === 'go_live') {
@@ -99,7 +111,7 @@ export default async function (req: Request): Promise<Response> {
       if (next) {
         const slaDays = Number(next?.metadata_json?.sla_days || 3);
         const due = new Date(); due.setUTCDate(due.getUTCDate() + slaDays);
-        await svc.entities.MigrationTask.update(next.id, { status: 'in_progress', updated_at: now, due_date: due.toISOString().slice(0,10) }).catch(() => null);
+        await svc.entities.MigrationTask.updateMany({ id: next.id, status: 'pending' }, { $set: { status: 'in_progress', updated_at: now, due_date: due.toISOString().slice(0,10) } }).catch(() => null);
       }
     }
 

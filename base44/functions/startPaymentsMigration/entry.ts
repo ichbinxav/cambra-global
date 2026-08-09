@@ -17,6 +17,7 @@ const PLAN = [
   ['go_live','Going live','CAMBRA moves the approved payment scope to the new provider or conditions.','admin','going_live',1],
   ['verify_savings','Verify savings','CAMBRA observes live payment data against the locked baseline before savings become billable.','admin','verifying',35],
 ];
+function updatedExactlyOne(result:any){ return Boolean(result && (result.updated === 1 || result.modified_count === 1 || result.matched_count === 1)); }
 function dueIn(days:number){ const d=new Date(); d.setUTCDate(d.getUTCDate()+days); return d.toISOString().slice(0,10); }
 
 export default async function (req: Request): Promise<Response> {
@@ -46,6 +47,20 @@ export default async function (req: Request): Promise<Response> {
 
     const mandates = await svc.entities.Mandate.filter({ deal_activation_id: activationId, status: 'active' }, '-created_date', 1).catch(() => []);
     if (!mandates.length) return Response.json({ error: 'active_mandate_required' }, { status: 409 });
+
+    // Claim authorized → migrating before creating operational work. This is a
+    // compare-and-set so a concurrent revocation/pause cannot be overwritten by
+    // a stale start request. Concurrent starts converge on the already-migrating state.
+    if (activation.status === 'authorized') {
+      const claimed = await svc.entities.DealActivation.updateMany(
+        { id: activationId, status: 'authorized' },
+        { $set: { status: 'migrating', last_updated: new Date().toISOString() } },
+      );
+      if (!updatedExactlyOne(claimed)) {
+        const fresh = (await svc.entities.DealActivation.filter({ id: activationId }, '-created_date', 1).catch(() => []))?.[0];
+        if (fresh?.status !== 'migrating') return Response.json({ error: 'activation_changed_concurrently', status: fresh?.status || 'unknown' }, { status: 409 });
+      }
+    }
 
     let tasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
     let p9Tasks = tasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION);
@@ -96,7 +111,6 @@ export default async function (req: Request): Promise<Response> {
     }
 
     if (activation.status === 'authorized') {
-      await svc.entities.DealActivation.update(activationId, { status: 'migrating', last_updated: new Date().toISOString() });
       await svc.entities.OperationalLog.create({
         deal_activation_id: activationId, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
         event_type: 'status_changed', message: 'Recover fulfilment started: authorized → migrating',
