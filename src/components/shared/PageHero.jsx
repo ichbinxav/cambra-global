@@ -16,10 +16,10 @@ export default function PageHero({
   eyebrow,
   title,
   subtitle,
-  actions,
+  actions = null,
   icon: Icon = Activity,
   tone = "dark",
-  children,
+  children = null,
 }) {
   if (tone === "light") {
     return (
