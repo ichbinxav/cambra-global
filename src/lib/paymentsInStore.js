@@ -31,7 +31,6 @@ const BPS_PER_UNIT = 10000;
 const MINOR_PER_MAJOR = 100;
 
 const num = (v) => (isFinite(Number(v)) ? Number(v) : null);
-const bpsToPct = (bps) => (isFinite(bps) ? bps / 100 : null);
 
 /** @typedef {{ available: false, reason: string } | { available: true, rental_month_eur: number, rental_year_eur: number, rental_bps: number, rental_pct: number, current_bps: number, current_pct: number, rest_bps: number, rest_pct: number, annual_rental_eur: number, coherent: boolean }} TerminalRentalResult */
 /** @typedef {{ channel: "online" | "in_store", rate_pct: number, annual_fees_eur: number, annual_savings_eur: number }} ChannelSplitRow */
@@ -78,7 +77,7 @@ export function deriveTerminalRental(engineResult, inputSnapshot, rateRow) {
     rental_month_eur: rentalMonth,
     rental_year_eur: rentalMonth * 12,
     rental_bps: rentalBps,
-    rental_pct: bpsToPct(rentalBps),
+    rental_pct: rentalBps / 100,
     current_bps: currentBps,
     current_pct: currentBps / 100,
     rest_bps: restBps,
@@ -103,6 +102,7 @@ export function deriveChannelSplit(perChannel) {
   if (!Array.isArray(perChannel) || perChannel.length < 2) {
     return { available: false, reason: "not_combined" };
   }
+  /** @type {ChannelSplitRow[]} */
   const channels = [];
   let totalSavings = 0;
   for (const ch of perChannel) {
