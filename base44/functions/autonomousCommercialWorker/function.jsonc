@@ -1,0 +1,20 @@
+{
+  "name": "autonomousCommercialWorker",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "Merchant Acquisition Loop — hourly",
+      "description": "Policy-gated merchant acquisition sweep. Sends only inside an active founder-approved campaign policy and suppression/business-hours/daily-limit boundaries.",
+      "function_args": {},
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "hours",
+      "repeat_interval": 1,
+      "ends_type": "never",
+      "function_name": "autonomousCommercialWorker",
+      "starts_at": "2026-08-09T18:00:00.000Z"
+    }
+  ]
+}
