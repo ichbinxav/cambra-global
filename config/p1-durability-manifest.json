@@ -1,12 +1,12 @@
 {
   "release": "CAMBRA v0.72.0 — P12 Intelligence & Proprietary Moat Layer (durability manifest)",
-  "generatedAt": "2026-08-09T22:28:59.031Z",
+  "generatedAt": "2026-08-09T22:35:18.788Z",
   "packageVersion": "0.72.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
   "allowlistCount": 77,
-  "fileCount": 162,
+  "fileCount": 164,
   "purpose": "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
   "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest covers every active ECL stage through P6 Economic Execution & Reconciliation.",
   "stageNote": "P1-P5 remain authoritative for evidence, lifecycle, review and economic authorization. P6 protects execution of already-authorized Recover invoices: deterministic local claims, Stripe idempotency, current-state webhook reconciliation, a versioned read-only Stripe reconciler, immutable finalized economics and no local/manual second payment truth. GitHub CI sealing remains a separate real-Actions proof.",
@@ -77,8 +77,8 @@
     },
     {
       "path": "base44/entities/KnowledgeConflict.jsonc",
-      "sha256": "d963ba2cfd3df0cd1b5a678be46c0f5f8ec58f7c56e545825cb635eb4bcfd76f",
-      "bytes": 1730
+      "sha256": "a101ec4fc1d734d56d62123eb021b38ad9a49a49b65ea6c95e520ddf17490514",
+      "bytes": 1931
     },
     {
       "path": "base44/entities/KnowledgeGap.jsonc",
@@ -164,6 +164,11 @@
       "path": "base44/functions/claimAnonPaymentsResult/entry.ts",
       "sha256": "d395a7b0a60f67796573e894eac9f74ba562ff0105e41492011a7aae52ddb99b",
       "bytes": 10928
+    },
+    {
+      "path": "base44/functions/competitorMonitorAgent/entry.ts",
+      "sha256": "bc8cb1974ea9d0b7f4e35affceb930cb4516b9f59a48e5ddb223ea35ce232db5",
+      "bytes": 5565
     },
     {
       "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
@@ -277,8 +282,8 @@
     },
     {
       "path": "base44/functions/intelligenceMaintenanceWorker/entry.ts",
-      "sha256": "6e12e1b5b2e8d9d5aa78b858b6e20eadcf70400b264f5f9a963cd9ab7d135700",
-      "bytes": 3136
+      "sha256": "ae79d7ca025947e10146a7828a4442318cf3d3fefbf6ef991f0dde21e07fc149",
+      "bytes": 6856
     },
     {
       "path": "base44/functions/intelligenceMaintenanceWorker/function.jsonc",
@@ -307,8 +312,8 @@
     },
     {
       "path": "base44/functions/outcomeLearningWorker/entry.ts",
-      "sha256": "1a7abb44a633acde83793d5fa45ce2354f09a6112006958ebffd06d9557ad240",
-      "bytes": 1911
+      "sha256": "8dd8d2832c256c66a5a3c26063e0a7a59adef248bcca710da5168b6cc1001032",
+      "bytes": 5837
     },
     {
       "path": "base44/functions/outcomeLearningWorker/function.jsonc",
@@ -326,9 +331,14 @@
       "bytes": 743
     },
     {
+      "path": "base44/functions/providerContactResolver/entry.ts",
+      "sha256": "742b919024cfbce31765743005967edd767f24d6d30b34260268004d86a2ebc7",
+      "bytes": 6785
+    },
+    {
       "path": "base44/functions/providerMonitorAgent/entry.ts",
-      "sha256": "b4d5f126b0ee2fa1a2405f5209eb4ffe1ebd136826d6dcb83a9334771343783d",
-      "bytes": 8442
+      "sha256": "25fff93c6a6cdb6708986f332c6909260407a13f5e95a80886155e2ed2044ecf",
+      "bytes": 8410
     },
     {
       "path": "base44/functions/providerMonitorAgent/function.jsonc",
@@ -337,8 +347,8 @@
     },
     {
       "path": "base44/functions/providerResearchAgent/entry.ts",
-      "sha256": "9e2a27bb4f9a5e352287750c9da62b6efa3f8a951f7195adb62fe65d84e0cc23",
-      "bytes": 7142
+      "sha256": "764d85ffc3be228630354d64866e46478be9ed9915a73f248f4c112d0b1cba86",
+      "bytes": 7809
     },
     {
       "path": "base44/functions/purgeInactiveLeads/function.jsonc",
@@ -497,8 +507,8 @@
     },
     {
       "path": "config/release-touch-list.json",
-      "sha256": "dcfda852e037f66aefae96f5018f70041c102fe7c40e46dbe17b92f3048854fb",
-      "bytes": 7368
+      "sha256": "094b79fc57029b0bbc3d70c1caa685d0559e41f15fb7342473acd93465c709ee",
+      "bytes": 7481
     },
     {
       "path": "config/typecheck-baseline.json",
@@ -547,8 +557,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "a83ba1b97e42d507cd475b5bf9895c05178d62b8eade77cb8b76b8de7f4d7de1",
-      "bytes": 6016
+      "sha256": "2b4e75f1054c497339a11e949d7018bac1daceb30ba52182113e3659f7cf3c38",
+      "bytes": 6338
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
@@ -777,8 +787,8 @@
     },
     {
       "path": "src/lib/p12Intelligence.test.js",
-      "sha256": "46fd1cb613091548eb43028834cc6eb07654d54af148ba49bf06e798b9507f4a",
-      "bytes": 8432
+      "sha256": "b6854ddebaa8139f6caa8b81f836f88c6d277bbd42e4734265ded17e9e47b26c",
+      "bytes": 9254
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",

@@ -1,11 +1,11 @@
 {
   "releaseName": "CAMBRA v0.72.0 — P12 Intelligence & Proprietary Moat Layer",
   "version": "0.72.0",
-  "sourceTreeHash": "107a96e11ec239dadd12cacf0f5f4ba0d43c2a4379a99e408d934de0dc0d2e03",
+  "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 1023,
   "sourceArchiveShaExternal": null,
-  "gitSha": "30ab57fb9718ca12dbea59bf0f59017512b2f9bd",
+  "gitSha": "875dca6a41a95414ddf8f8e0a19395e0ab91a753",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,7 +18,7 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "9a38b54258956247c94dce0923ce4fb68f9922516bbd00c2a4e57bd38f411701",
+  "durabilityManifestSha": "1ebb7a00314d776e5418b734b07be5717566a0f19c30bc6b214d58bccfd2cb64",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -43,22 +43,22 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "107a96e11ec239dadd12cacf0f5f4ba0d43c2a4379a99e408d934de0dc0d2e03",
-    "startedAt": "2026-08-09T22:29:31.603Z",
-    "completedAt": "2026-08-09T22:29:48.753Z",
+    "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
+    "startedAt": "2026-08-09T22:35:50.740Z",
+    "completedAt": "2026-08-09T22:36:08.926Z",
     "exitCode": 0,
     "ciRunId": null,
     "testFiles": 443,
-    "passed": 1698,
+    "passed": 1700,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "107a96e11ec239dadd12cacf0f5f4ba0d43c2a4379a99e408d934de0dc0d2e03",
-    "startedAt": "2026-08-09T22:29:49.513Z",
-    "completedAt": "2026-08-09T22:30:09.791Z",
+    "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
+    "startedAt": "2026-08-09T22:36:09.636Z",
+    "completedAt": "2026-08-09T22:36:26.986Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "247295fbb13d2c7ca273204959b2d387d50e3d845d07c79a2879bd1cc3476bae",
@@ -66,25 +66,25 @@
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "107a96e11ec239dadd12cacf0f5f4ba0d43c2a4379a99e408d934de0dc0d2e03",
-    "startedAt": "2026-08-09T22:29:01.209Z",
-    "completedAt": "2026-08-09T22:29:13.197Z",
+    "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
+    "startedAt": "2026-08-09T22:35:21.101Z",
+    "completedAt": "2026-08-09T22:35:33.317Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "107a96e11ec239dadd12cacf0f5f4ba0d43c2a4379a99e408d934de0dc0d2e03",
-    "startedAt": "2026-08-09T22:29:13.800Z",
-    "completedAt": "2026-08-09T22:29:17.187Z",
+    "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
+    "startedAt": "2026-08-09T22:35:33.945Z",
+    "completedAt": "2026-08-09T22:35:37.517Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "107a96e11ec239dadd12cacf0f5f4ba0d43c2a4379a99e408d934de0dc0d2e03",
-    "startedAt": "2026-08-09T22:29:17.785Z",
-    "completedAt": "2026-08-09T22:29:30.853Z",
+    "sourceTreeHash": "3eb635d29d4db968016495785a900dd9f893e0a0b7c09e5f9939ee8afa0b0157",
+    "startedAt": "2026-08-09T22:35:38.155Z",
+    "completedAt": "2026-08-09T22:35:50.090Z",
     "exitCode": 0,
     "ciRunId": null
   },
@@ -93,7 +93,8 @@
   },
   "manualRequirements": [
     "LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled",
+    "LEGAL/PRIVACY REVIEW REQUIRED: approve P12 retention/deletion, lawful basis and cross-tenant aggregation/anonymization policy before relying on derived intelligence retention beyond tenant deletion or widening benchmark use",
     "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal"
   ],
-  "generatedAt": "2026-08-09T22:30:10.553Z"
+  "generatedAt": "2026-08-09T22:36:27.567Z"
 }
