@@ -1,0 +1,86 @@
+{
+  "name": "MerchantRateEligibility",
+  "type": "object",
+  "description": "P14 merchant-to-private-program eligibility. Provider underwriting remains explicit; potential eligibility is never represented as guaranteed pricing.",
+  "properties": {
+    "eligibility_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "pool_id": {
+      "type": "string"
+    },
+    "agreement_id": {
+      "type": "string"
+    },
+    "rate_card_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "eligible",
+        "potentially_eligible",
+        "not_yet_eligible",
+        "ineligible"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "estimated_value_json": {
+      "type": "object"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "provider_underwriting_status": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "not_started",
+        "pending",
+        "approved",
+        "rejected"
+      ]
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "eligibility_key",
+    "brand_id",
+    "pool_id",
+    "agreement_id",
+    "rate_card_id",
+    "provider_id",
+    "status",
+    "evaluated_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
