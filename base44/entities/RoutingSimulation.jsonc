@@ -1,0 +1,112 @@
+{
+  "name": "RoutingSimulation",
+  "type": "object",
+  "description": "Reproducible retrospective shadow-routing simulation. Never represents realized savings or deployed routing.",
+  "properties": {
+    "simulation_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "period_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "period_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "cost_only",
+        "approval_aware",
+        "cost_and_approval",
+        "contract_constrained",
+        "multi_provider",
+        "failover_simulation"
+      ]
+    },
+    "policy_version": {
+      "type": "number"
+    },
+    "routing_policy_id": {
+      "type": "string"
+    },
+    "decision_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "transactions_or_windows_evaluated": {
+      "type": "number"
+    },
+    "volume_evaluated_minor": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "coverage": {
+      "type": "number"
+    },
+    "estimated_cost_delta_minor": {
+      "type": "number"
+    },
+    "estimated_approval_delta": {
+      "type": "number"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "route_distribution_json": {
+      "type": "object"
+    },
+    "requirements_json": {
+      "type": "object"
+    },
+    "intelligence_snapshot_id": {
+      "type": "string"
+    },
+    "routing_model_version": {
+      "type": "string"
+    },
+    "simulation_hash": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "retrospective": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "simulation_key",
+    "brand_id",
+    "mode",
+    "simulation_hash",
+    "completed_at",
+    "retrospective"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
