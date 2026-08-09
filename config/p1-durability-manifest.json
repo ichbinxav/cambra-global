@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.64.0 — ECL P5 Economic Enforcement (durability manifest)",
-  "generatedAt": "2026-08-08T23:50:43.324Z",
+  "generatedAt": "2026-08-09T00:00:16.613Z",
   "packageVersion": "0.64.0",
   "stage": "ECL_P5_ECONOMIC_ENFORCEMENT",
   "freezeStage": "ECL_P5_ECONOMIC_ENFORCEMENT",
@@ -20,8 +20,8 @@
   "files": [
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "d9b096e8bbfd59795810b3c60b52fbdcba0f47b07f2e77d0453841044d6789c8",
-      "bytes": 861
+      "sha256": "f0ba65dc252f197a0c8671528d404243e4a4142418558b1515407ccf2a7c3b12",
+      "bytes": 793
     },
     {
       "path": "base44/entities/EvidenceAttestation.jsonc",
@@ -165,8 +165,8 @@
     },
     {
       "path": "ci/github-workflow-ci.yml",
-      "sha256": "d9b096e8bbfd59795810b3c60b52fbdcba0f47b07f2e77d0453841044d6789c8",
-      "bytes": 861
+      "sha256": "f0ba65dc252f197a0c8671528d404243e4a4142418558b1515407ccf2a7c3b12",
+      "bytes": 793
     },
     {
       "path": "config/ecl-policy.json",
@@ -220,8 +220,8 @@
     },
     {
       "path": "scripts/clean-check.mjs",
-      "sha256": "b772ab73eeecd797378d0ccb87aac25e6cc083057e57dc079a867224bd9fe546",
-      "bytes": 4538
+      "sha256": "8671a335ff28daffefc5face9882af828f80f397e2574edee08dfd23072d2974",
+      "bytes": 5346
     },
     {
       "path": "scripts/generate-durability-manifest.mjs",
@@ -380,8 +380,8 @@
     },
     {
       "path": "src/lib/eclP5Closure.test.js",
-      "sha256": "cba0a0f013d828d470efba15b247d93e18da8163e46d230352f60d8038037a58",
-      "bytes": 14865
+      "sha256": "c69cf9a39e802e89c561f21f66f95fb2b48f62077fd6ed903c90f87acc9a3af5",
+      "bytes": 15564
     },
     {
       "path": "src/lib/eclParity.test.js",
