@@ -37,6 +37,8 @@ const MANIFEST = [
   "createEligibleRecoverInvoices",
   // v61 Checkpoint D (2026-08-06) — merchant billing records, server-side scope.
   "getMyBillingRecords",
+  // P9 (2026-08-09) — Recover fulfilment & payments migration operations.
+  "getMyPaymentsMigration", "startPaymentsMigration", "updatePaymentsMigrationTask",
   "answerAgentQuestion", "apiAuth", "apiOpenApiSpec", "apiV1", "approveAgentRun",
   "authzScope", "benchmarkLearningEngine", "billApiUsage", "blogAgent",
   "brainOrchestrator", "buildInfrastructureGraph", "chatChiefOrchestrator",
