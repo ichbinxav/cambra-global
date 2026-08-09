@@ -1,0 +1,122 @@
+{
+  "name": "AggregatePool",
+  "type": "object",
+  "description": "P14 negotiable demand pool. Aggregate quantities are derived only from eligible DemandUnit rows plus explicit AggregateCommitment evidence.",
+  "properties": {
+    "pool_key": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "subcategory": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "discovered",
+        "pool_forming",
+        "threshold_waiting",
+        "negotiation_ready",
+        "rfp_preparing",
+        "rfp_open",
+        "negotiating",
+        "final_offer",
+        "human_approval",
+        "contracting",
+        "active",
+        "tier_upgrade_pending",
+        "renegotiating",
+        "expiring",
+        "terminated",
+        "archived"
+      ]
+    },
+    "merchant_count": {
+      "type": "number"
+    },
+    "observed_annual_volume_minor": {
+      "type": "number"
+    },
+    "addressable_annual_volume_minor": {
+      "type": "number"
+    },
+    "committed_annual_volume_minor": {
+      "type": "number"
+    },
+    "probable_annual_volume_minor": {
+      "type": "number"
+    },
+    "confidence_adjusted_volume_minor": {
+      "type": "number"
+    },
+    "transaction_count_annualized": {
+      "type": "number"
+    },
+    "aggregation_power_score": {
+      "type": "number"
+    },
+    "readiness_label": {
+      "type": "string"
+    },
+    "migration_readiness": {
+      "type": "number"
+    },
+    "concentration": {
+      "type": "number"
+    },
+    "growth_rate": {
+      "type": "number"
+    },
+    "current_best_private_rate_id": {
+      "type": "string"
+    },
+    "next_negotiation_threshold_json": {
+      "type": "object"
+    },
+    "active_rfp_id": {
+      "type": "string"
+    },
+    "last_negotiated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "pool_key",
+    "vertical",
+    "currency",
+    "status",
+    "merchant_count",
+    "observed_annual_volume_minor",
+    "addressable_annual_volume_minor",
+    "committed_annual_volume_minor",
+    "aggregation_power_score"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
