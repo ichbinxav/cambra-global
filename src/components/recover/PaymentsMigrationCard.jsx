@@ -10,6 +10,7 @@ const COPY = {
     savings:'Expected annual savings', needs:'We need something from you', needsSub:'This is required to keep the migration moving. CAMBRA handles everything else.',
     stages:{ preparing:'Preparing', provider_coordination:'Provider coordination', scheduled:'Migration scheduled', going_live:'Going live', verifying:'Verifying savings', completed:'Completed' },
     complete:'Your migration is complete. CAMBRA has verified the first realized savings against your baseline and will keep measuring them for billing.',
+    blockerTitles:{ takeover:'Migration setup', provider_coordination:'Provider coordination', provider_ready:'Provider setup', technical_configuration:'Payment configuration', migration_testing:'Migration testing', cutover_ready:'Go-live preparation', go_live:'Going live', verify_savings:'Savings verification' },
   },
   es: {
     eyebrow:'Migración de pagos', title:'Nos encargamos de tu migración.',
@@ -17,6 +18,7 @@ const COPY = {
     savings:'Ahorro anual esperado', needs:'Necesitamos algo de ti', needsSub:'Es imprescindible para poder continuar. CAMBRA se encarga de todo lo demás.',
     stages:{ preparing:'Preparando', provider_coordination:'Coordinando proveedor', scheduled:'Migración programada', going_live:'Activando', verifying:'Verificando ahorro', completed:'Completado' },
     complete:'La migración está completada. CAMBRA ya ha verificado el primer ahorro real frente a tu baseline y seguirá midiéndolo para la facturación.',
+    blockerTitles:{ takeover:'Preparación de la migración', provider_coordination:'Coordinación con el proveedor', provider_ready:'Alta con el proveedor', technical_configuration:'Configuración de pagos', migration_testing:'Pruebas de migración', cutover_ready:'Preparación del go-live', go_live:'Activación', verify_savings:'Verificación del ahorro' },
   },
   fr: {
     eyebrow:'Migration des paiements', title:'Nous gérons votre migration.',
@@ -24,6 +26,7 @@ const COPY = {
     savings:'Économies annuelles attendues', needs:'Nous avons besoin de vous', needsSub:'Cette action est indispensable pour poursuivre. CAMBRA gère tout le reste.',
     stages:{ preparing:'Préparation', provider_coordination:'Coordination prestataire', scheduled:'Migration planifiée', going_live:'Mise en ligne', verifying:'Vérification des économies', completed:'Terminé' },
     complete:'La migration est terminée. CAMBRA a vérifié les premières économies réelles par rapport à votre référence et continuera à les mesurer pour la facturation.',
+    blockerTitles:{ takeover:'Préparation de la migration', provider_coordination:'Coordination prestataire', provider_ready:'Configuration prestataire', technical_configuration:'Configuration des paiements', migration_testing:'Tests de migration', cutover_ready:'Préparation de la mise en ligne', go_live:'Mise en ligne', verify_savings:'Vérification des économies' },
   },
 };
 const ORDER = ['preparing','provider_coordination','scheduled','going_live','verifying','completed'];
@@ -71,7 +74,7 @@ export default function PaymentsMigrationCard(){
       {migration.needs_you ? <div className="rounded-xl border border-amber-400/25 bg-amber-400/[.07] p-4 flex gap-3">
         <AlertCircle size={17} className="text-amber-300 shrink-0 mt-0.5" />
         <div><p className="text-xs font-bold text-white">{c.needs}</p><p className="text-[11px] text-white/55 mt-0.5">{c.needsSub}</p>
-          {migration.merchant_blockers.map(b=><p key={b.id} className="text-[11px] text-white/75 mt-2">• {b.title}{b.reason ? ` — ${b.reason}` : ''}</p>)}
+          {migration.merchant_blockers.map(b=>{ const reason=b?.reason_i18n?.[lang] || b?.reason_i18n?.en || ''; const title=c.blockerTitles[b.step_key] || c.needs; return <p key={b.id} className="text-[11px] text-white/75 mt-2">• {title}{reason ? ` — ${reason}` : ''}</p>; })}
         </div>
       </div> : migration.stage === 'completed' ? <div className="flex gap-2.5 items-start text-[12px] text-white/65"><ShieldCheck size={16} className="text-emerald-400 shrink-0"/><span>{c.complete}</span></div> : null}
     </div>
