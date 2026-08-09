@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     if (!gate.ok) return gate.response;
     const svc = base44.asServiceRole;
     const thread = await svc.entities.CommunicationThread.get(String(body?.thread_id || '')).catch(()=>null);
-    if (!thread || thread.engine !== 'merchant_acquisition') return Response.json({ok:false,error:'acquisition_thread_required'},{status:400});
+    if (!thread || !['merchant_acquisition','partner_acquisition'].includes(thread.engine)) return Response.json({ok:false,error:'acquisition_thread_required'},{status:400});
     const attendee = normalizeEmail(body?.attendee_email || thread.counterparty_email);
     if (!attendee) return Response.json({ok:false,error:'attendee_email_required'},{status:400});
 
@@ -89,7 +89,8 @@ Deno.serve(async (req) => {
 
     const now=new Date().toISOString();
     await svc.entities.CommunicationThread.update(thread.id,{status:'closed',automation_paused:true,pause_reason:'meeting_booked',next_action_at:null,summary:`Meeting booked ${start.toISOString()} · ${attendee}`});
-    if(thread.lead_id) await svc.entities.OutboundLead.update(thread.lead_id,{stage:'meeting',next_action:`Meeting booked ${start.toISOString()}`}).catch(()=>null);
+    if(thread.engine==='merchant_acquisition'&&thread.lead_id) await svc.entities.OutboundLead.update(thread.lead_id,{stage:'meeting',next_action:`Meeting booked ${start.toISOString()}`}).catch(()=>null);
+    if(thread.engine==='partner_acquisition'&&thread.related_entity_id) await svc.entities.PartnerProspect.update(thread.related_entity_id,{stage:'meeting',next_action_at:null}).catch(()=>null);
     await svc.entities.OperationalLog.create({event_type:'commercial_meeting_booked',message:`Outlook meeting with ${attendee}`,data_json:{thread_id:thread.id,lead_id:thread.lead_id||null,event_id:event.id||null,start:start.toISOString(),end:end.toISOString(),organizer,attendee},created_at:now}).catch(()=>null);
     await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Outlook meeting booked ${start.toISOString()} with ${attendee}`,output_payload_json:{event_id:event.id||null,start:start.toISOString(),end:end.toISOString(),organizer,attendee},completed_at:now});
     return Response.json({ok:true,task_id:task.id,event_id:event.id||null,start:start.toISOString(),end:end.toISOString(),organizer,attendee});

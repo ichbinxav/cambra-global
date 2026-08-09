@@ -21,18 +21,20 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'create_draft') {
-      const engine = body?.engine === 'provider_negotiation' ? 'provider_negotiation' : 'merchant_acquisition';
+      const engine = body?.engine === 'provider_negotiation' ? 'provider_negotiation' : body?.engine === 'partner_acquisition' ? 'partner_acquisition' : 'merchant_acquisition';
       const version = String(body?.version || `2026.08.09-${engine}-v1`);
       const allowedDefault = engine === 'merchant_acquisition'
         ? ['initial_outreach','routine_reply','follow_up','meeting_offer']
-        : ['provider_contact','routine_reply','pricing_request','clarification','counterproposal','technical_question','implementation_question','contract_request','follow_up'];
+        : engine === 'partner_acquisition'
+          ? ['partner_outreach','routine_reply','follow_up','meeting_offer']
+          : ['provider_contact','routine_reply','pricing_request','clarification','counterproposal','technical_question','implementation_question','contract_request','follow_up'];
       const row = await svc.entities.CommercialPolicy.create({
         policy_key: `${engine}:${version}`,
         version,
         engine,
         status: 'draft',
         countries: Array.isArray(body?.countries) ? body.countries.slice(0, 20) : ['FR','ES'],
-        icp_json: engine === 'merchant_acquisition' ? (body?.icp_json || { industry:'ecommerce', titles:['founder','CEO','co-founder'], per_run:25 }) : {},
+        icp_json: engine === 'merchant_acquisition' ? (body?.icp_json || { industry:'ecommerce', titles:['founder','CEO','co-founder'], per_run:25 }) : engine === 'partner_acquisition' ? (body?.icp_json || { partner_types:['accounting_firm','fractional_cfo','ecommerce_agency','boutique_consultancy'], titles:['partner','founder','managing director','fractional CFO','ecommerce director','consultant'], per_run:20 }) : {},
         excluded_domains: Array.isArray(body?.excluded_domains) ? body.excluded_domains.map((x:any)=>String(x).toLowerCase()).slice(0,200) : [],
         languages: Array.isArray(body?.languages) ? body.languages.filter((x:any)=>['en','fr','es'].includes(x)) : ['en','fr','es'],
         daily_send_limit: Math.max(1, Math.min(Number(body?.daily_send_limit) || 30, 200)),
@@ -45,7 +47,7 @@ Deno.serve(async (req) => {
         followup_intervals_hours: Array.isArray(body?.followup_intervals_hours) ? body.followup_intervals_hours.slice(0,5) : [72,120,168],
         allowed_routine_actions: Array.isArray(body?.allowed_routine_actions) ? body.allowed_routine_actions : allowedDefault,
         prohibited_actions: Array.from(new Set([...(Array.isArray(body?.prohibited_actions) ? body.prohibited_actions : []), ...DEFAULT_PROHIBITED])),
-        identity_label: String(body?.identity_label || (engine === 'provider_negotiation' ? 'CAMBRA Payments' : 'CAMBRA')),
+        identity_label: String(body?.identity_label || (engine === 'provider_negotiation' ? 'CAMBRA Payments' : engine === 'partner_acquisition' ? 'CAMBRA Partnerships' : 'CAMBRA')),
         style_policy_version: COMMUNICATION_STYLE_POLICY_VERSION,
         claims_policy_json: body?.claims_policy_json || { financial_claims: 'evidence_required', identity: 'no_invented_staff', thread_language: 'preserve' }
       });

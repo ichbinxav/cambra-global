@@ -39,7 +39,7 @@ Deno.serve(async (req)=>{
         `Engine: ${thread.engine}. Language: ${thread.language||'en'}. Preserve thread language.`,
         'Never invent merchant fees, GMV, savings, provider responses, people, contract terms or authority.',
         'Escalate anything involving final pricing acceptance, custom economics, contract/legal/security/complaint, lock-in, minimum volume, termination fees, migration go-live, sensitive-document disclosure, press/investor/strategic partnership.',
-        'For merchant acquisition classifications use: interested, question, objection, not_interested, wrong_person, referral, meeting, unsubscribe, ooo, bounce, legal, security, complaint, custom_economics.',
+        'For merchant or partner acquisition classifications use: interested, question, objection, not_interested, wrong_person, referral, meeting, unsubscribe, ooo, bounce, legal, security, complaint, custom_economics. Ordinary partner interest is NOT strategic_partnership; use interested/question/referral/meeting unless terms are genuinely unusual or materially strategic.',
         'For provider negotiations use: acknowledgement, information_request, document_request, offer, counteroffer, rejection, manager_approval, contact_referral, contract, clarification, final_offer, technical_question, implementation_question, legal, security, complaint.',
         'Return ONLY JSON: {"classification":"...","confidence":0-1,"response_required":true|false,"action":"routine_reply|meeting_offer|pricing_request|clarification|technical_question|implementation_question|contract_request|contact_referral|escalate|stop","reply_subject":"...","reply_body":"...","referred_email":"...","referred_name":"...","referred_title":"...","escalation_reason":"...","material_commitment":true|false}',
         'Writing: concise, specific, natural, no fake human identity, no generic enthusiasm, no AI meta language, no formulaic opener, no unnecessary bullets or em-dash-heavy prose.',
@@ -49,6 +49,7 @@ Deno.serve(async (req)=>{
       if(!result||!result.classification)throw new Error('reply_classification_unparseable');
     }
     const classification=String(result.classification||'unknown');
+    if(thread.engine==='partner_acquisition'&&thread.related_entity_id) await svc.entities.PartnerProspect.update(thread.related_entity_id,{stage:classification==='meeting'?'replied':'replied'}).catch(()=>null);
     await svc.entities.CommunicationMessage.update(message.id,{ classification, classification_confidence:Math.max(0,Math.min(1,Number(result.confidence)||0)), classification_reason:sanitizeExternalText(result.escalation_reason||'',1000), agent_name:'commercial_reply' });
 
     if(['unsubscribe','not_interested'].includes(classification)){
@@ -58,7 +59,7 @@ Deno.serve(async (req)=>{
       return Response.json({ok:true,task_id:task.id,classification,stopped:true});
     }
 
-    if(thread.engine==='merchant_acquisition'&&classification==='meeting'){
+    if(['merchant_acquisition','partner_acquisition'].includes(thread.engine)&&classification==='meeting'){
       const due=Date.parse(message.scheduled_send_at||message.earliest_reply_at||''); if(!Number.isFinite(due)||Date.now()<due){await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',next_action_at:message.scheduled_send_at||message.earliest_reply_at});await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:'Meeting intent queued behind deterministic reply timing gate',output_payload_json:{classification,earliest_reply_at:message.earliest_reply_at,scheduled_send_at:message.scheduled_send_at},completed_at:new Date().toISOString()});return Response.json({ok:true,task_id:task.id,classification,automatic:true,queued:true,scheduled_send_at:message.scheduled_send_at});}
       const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
       const scheduled=await svc.functions.invoke('outlookMeetingCoordinator',{thread_id:thread.id,attendee_email:message.from_email,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));

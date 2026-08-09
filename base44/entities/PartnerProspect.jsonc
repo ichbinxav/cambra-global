@@ -1,0 +1,112 @@
+{
+  "name": "PartnerProspect",
+  "type": "object",
+  "description": "Outbound distribution-partner prospect for CAMBRA. Separate from merchant leads: accounting firms, fractional CFOs, ecommerce agencies, boutique consultancies, associations and advisors that can refer multiple merchants.",
+  "properties": {
+    "organization_name": {
+      "type": "string"
+    },
+    "organization_domain": {
+      "type": "string"
+    },
+    "partner_type": {
+      "type": "string",
+      "enum": [
+        "accounting_firm",
+        "fractional_cfo",
+        "ecommerce_agency",
+        "boutique_consultancy",
+        "association",
+        "accelerator",
+        "financial_advisor",
+        "other"
+      ]
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "contact_title": {
+      "type": "string"
+    },
+    "linkedin_url": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "discovered",
+        "enriched",
+        "scored",
+        "contacted",
+        "replied",
+        "meeting",
+        "qualified",
+        "won",
+        "lost",
+        "suppressed"
+      ],
+      "default": "discovered"
+    },
+    "score": {
+      "type": "number"
+    },
+    "score_breakdown_json": {
+      "type": "object"
+    },
+    "businesses_supported_estimate": {
+      "type": "number"
+    },
+    "specialisms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "legal_basis": {
+      "type": "string",
+      "enum": [
+        "legitimate_interest",
+        "consent"
+      ]
+    },
+    "legal_basis_note": {
+      "type": "string"
+    },
+    "raw_json": {
+      "type": "object"
+    },
+    "last_contacted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "next_action_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "organization_name",
+    "partner_type"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "autonomousPartnerWorker",
+  "entry": "entry.ts",
+  "automations": [{
+    "type": "scheduled",
+    "name": "Partner Acquisition Loop — hourly",
+    "description": "Policy-gated discovery, scoring and outreach to distribution partners such as accounting firms, fractional CFOs, ecommerce agencies and boutique consultancies.",
+    "function_args": {},
+    "is_active": true,
+    "schedule_mode": "recurring",
+    "schedule_type": "simple",
+    "repeat_unit": "hours",
+    "repeat_interval": 1,
+    "ends_type": "never",
+    "function_name": "autonomousPartnerWorker",
+    "starts_at": "2026-08-09T20:00:00.000Z"
+  }]
+}

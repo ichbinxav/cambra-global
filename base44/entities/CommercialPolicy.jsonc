@@ -13,6 +13,7 @@
       "type": "string",
       "enum": [
         "merchant_acquisition",
+        "partner_acquisition",
         "provider_negotiation"
       ]
     },
