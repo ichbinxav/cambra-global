@@ -87,7 +87,10 @@ Deno.serve(async (req) => {
 
       // Stripe live connection (M3)
       // FASE 1 — either the new Integration row OR the legacy StripeConnection counts as connected.
-      const isStripeConnected = c.integration_id === 'stripe' && (stripeConn.length > 0 || !!stripeIntegrationRow);
+      const directIntegrationRow = stripeIntegrations.find(i => i.provider === c.integration_id) || null;
+      const connectionRow = c.integration_id === 'stripe' ? (stripeIntegrationRow || null) : directIntegrationRow;
+      const legacyStripeRow = c.integration_id === 'stripe' && !connectionRow ? (stripeConn[0] || null) : null;
+      const isStripeConnected = c.integration_id === 'stripe' && (!!legacyStripeRow || !!connectionRow);
 
       // Stripe-inferred match: did vendor inference detect this catalog item?
       const inferredNode = stripeInferredNodes.find(n => nodeMatchesIntegration(n, c)) || null;
@@ -131,8 +134,13 @@ Deno.serve(async (req) => {
         confidence_score,
         detection_source: d?.detection_source || (inferredFromPayments ? 'stripe_inference' : null),
         connected_at: isStripeConnected
-          ? (stripeConn[0]?.last_sync_at || stripeIntegrationRow?.last_sync_at || null)
-          : (d?.connected_at || null),
+          ? (connectionRow?.connected_at || legacyStripeRow?.last_sync_at || null)
+          : (connectionRow?.connected_at || d?.connected_at || null),
+        // P10: safe operational reference only. Credentials/metadata never leave this function.
+        connection_id: connectionRow?.id || legacyStripeRow?.id || null,
+        connection_provider: connectionRow?.provider || (legacyStripeRow ? 'stripe_legacy' : null),
+        connection_kind: connectionRow ? 'integration' : (legacyStripeRow ? 'stripe_legacy' : null),
+        last_sync_at: connectionRow?.last_sync_at || legacyStripeRow?.last_sync_at || null,
         last_verified_at: d?.last_verified_at || inferredNode?.last_verified_at || null,
         latest_session_id: session?.id || null,
         latest_session_status: session?.status || null,

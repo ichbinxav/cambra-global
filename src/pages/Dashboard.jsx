@@ -99,26 +99,15 @@ export default function Dashboard() {
         setAllResults(results);
 
         if (b) {
-          // FASE 1 — Integration is the source of truth for "connected"; StripeConnection is legacy fallback.
+          // P10 — never read credential-bearing Integration/StripeConnection rows in the browser.
           try {
-            const integrations = await base44.entities.Integration.filter(
-              { brand_id: b.id, status: "connected" }, "-last_sync_at", 20
-            ).catch(() => []);
-            const stripeIntegration = integrations.find(i =>
-              i.provider === "stripe" || i.provider === "stripe_self" || i.provider === "stripe_self_test"
-            );
-            if (stripeIntegration) {
-              setStripeConn({
-                id: stripeIntegration.id,
-                brand_id: stripeIntegration.brand_id,
-                last_sync_at: stripeIntegration.last_sync_at,
-                provider: stripeIntegration.provider,
-              });
-            } else {
-              const sc = await base44.entities.StripeConnection
-                .filter({ brand_id: b.id, connection_status: "connected" }, "-last_sync_at", 1);
-              setStripeConn(sc[0] || null);
-            }
+            const statusRes = await base44.functions.invoke("getIntegrationStatus", { brand_id: b.id });
+            const statusData = statusRes?.data || statusRes;
+            const stripe = (statusData?.integrations || []).find(i => i.integration_id === "stripe" && i.is_connected);
+            setStripeConn(stripe?.connection_id ? {
+              id: stripe.connection_id, brand_id: statusData.brand_id,
+              last_sync_at: stripe.last_sync_at, provider: stripe.connection_provider,
+            } : null);
           } catch {}
 
           try {

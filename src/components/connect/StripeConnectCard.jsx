@@ -41,28 +41,15 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
   const loadConnection = async () => {
     setLoading(true);
     try {
-      const filter = { status: "connected" };
-      if (brandId) filter.brand_id = brandId;
-      const integrations = await base44.entities.Integration.filter(
-        filter, "-last_sync_at", 20
-      ).catch(() => []);
-      const stripeIntegration = integrations.find(i =>
-        i.provider === "stripe" || i.provider === "stripe_self" || i.provider === "stripe_self_test"
-      );
-      if (stripeIntegration) {
-        setConnection({
-          id: stripeIntegration.id,
-          brand_id: stripeIntegration.brand_id,
-          last_sync_at: stripeIntegration.last_sync_at,
-          provider: stripeIntegration.provider,
-        });
-      } else {
-        // Fallback: legacy StripeConnection (kept while migration completes)
-        const list = await base44.entities.StripeConnection.filter(
-          { connection_status: "connected" }, "-last_sync_at", 1
-        ).catch(() => []);
-        setConnection(list[0] || null);
-      }
+      const res = await base44.functions.invoke("getIntegrationStatus", brandId ? { brand_id: brandId } : {});
+      const data = res?.data || res;
+      const stripe = (data?.integrations || []).find(i => i.integration_id === "stripe" && i.is_connected);
+      setConnection(stripe?.connection_id ? {
+        id: stripe.connection_id,
+        brand_id: data.brand_id,
+        last_sync_at: stripe.last_sync_at,
+        provider: stripe.connection_kind === "integration" ? stripe.connection_provider : null,
+      } : null);
     } catch {
       setConnection(null);
     } finally {
@@ -282,8 +269,8 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
 
   if (connection) {
     // Verified analysis is only reachable through the Integration-backed
-    // path (Chunk 4 explicitly uses base44.entities.Integration.filter to
-    // find the Stripe row; a legacy-only StripeConnection returns 404
+    // path (P10 uses the safe getIntegrationStatus server projection;
+    // a legacy-only StripeConnection still cannot reach the verified bridge
     // no_stripe_integration). We surface the button only when it will work.
     const canRunVerified = !!connection?.provider;
     return (

@@ -147,12 +147,17 @@ export default function ConnectIntegrations() {
   const [busyProvider, setBusyProvider] = useState(null);
 
   const loadAll = async (bId) => {
-    const [det, integ] = await Promise.all([
-      base44.entities.DetectedIntegration.filter({ brand_id: bId }, "-created_date", 200).catch(() => []),
-      base44.entities.Integration.filter({ brand_id: bId }, "-created_date", 200).catch(() => []),
-    ]);
-    setDetected(det);
-    setIntegrations(integ);
+    const res = await base44.functions.invoke("getIntegrationStatus", { brand_id: bId }).catch(() => null);
+    const data = res?.data || res || {};
+    const projected = data.integrations || [];
+    setDetected(projected.filter(i => i.is_detected).map(i => ({
+      integration_id: i.integration_id, status: "detected", confidence_score: i.confidence_score,
+      detection_source: i.detection_source, connected_at: i.connected_at,
+    })));
+    setIntegrations(projected.filter(i => i.connection_kind === "integration" && i.connection_id).map(i => ({
+      id: i.connection_id, provider: i.connection_provider || i.integration_id, status: i.is_connected ? "connected" : i.display_status,
+      last_sync_at: i.last_sync_at, brand_id: data.brand_id,
+    })));
   };
 
   useEffect(() => {
