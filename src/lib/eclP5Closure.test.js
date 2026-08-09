@@ -195,7 +195,7 @@ describe("ECL P5 — Economic Enforcement", () => {
     expect(mandateCreate).toBeGreaterThan(startFreeze);
     expect(START).not.toContain("gateName: 'recover_proposal'");
     expect(START).toContain("projectRecoverEvidenceBinding(materialized.evidence)");
-    expect(START).toContain("buildAcceptanceSnapshot({ activation, baseline, fee, month, evidenceBinding })");
+    expect(START).toContain("buildAcceptanceSnapshot({ activation, baseline, fee, month, evidenceBinding, brand })");
 
     const explicitAttestation = ACCEPT.indexOf("evidence_attestation_accepted !== true");
     const refresh = ACCEPT.indexOf("ensureRecoverSavingsEvidence({");

@@ -46,6 +46,8 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | getMyPaymentsHistory | me | ✓ | AnalyzerResult | ResultsHistory |
 | getMyBillingRecords | me | ✓ | Brand, Invoice, MonthlySavingsReport, Baseline | Invoices, Reports (v61-D: tenant scope desde la sesión, sin brand_id del cliente; respuesta proyectada) |
 | getMyPaymentsMigration | me (+ ownership server-side) | ✓ | DealActivation, MigrationTask | PaymentsMigrationCard (P9: proyección customer-safe; oculta notas/owners/retries internos y solo expone blockers que requieren al comercio) |
+| getMyRecoveryCommitments | me (brand ownership server-side) | ✓ | Brand, DealActivation, BillingRule | Account / cancellation preview; proyección segura de Recovery Terms y fee actual |
+| cancelCambraService | me + confirmación explícita + acknowledgement de Recoveries | ✓ | Brand, DealActivation, OperationalLog | Account; cancela relación general, pausa Recoveries no activados y conserva V2 ya activados |
 | startPaymentsMigration | me owner o admin; exige Mandate active | ✓ | DealActivation, Mandate, MigrationTask, OperationalLog | acceptRecoverMandate fire-and-forget + bootstrap idempotente P9; authorized → migrating y crea plan CAMBRA-owned |
 | getBrandSavings | me | ✓ | Brand, AnalyzerResult, BrandSavings +3 | SavingsTrendPanel |
 | getInfrastructureGraph | me | ✓ | Brand, InfrastructureNode, InfrastructureEdge +1 | Dashboard |
