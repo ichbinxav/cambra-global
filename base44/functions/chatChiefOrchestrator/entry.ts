@@ -54,7 +54,7 @@ const CHAT_TOOLS = [
   // ═══ READ (L1) ═══════════════════════════════════════════════════
   {
     name: "read_state",
-    description: "READ-ONLY. Query any entity in the system to answer questions about state (tasks, approvals, leads, brands, integrations, benchmarks, events, users…). Use this instead of guessing. Supports filter, sort, limit. Returns raw rows.",
+    description: "READ-ONLY. Query approved operational fields for system state (tasks, approvals, leads, brands, integrations, benchmarks, events, users…). Sensitive fields, credentials, PII and raw document payloads are never returned. Supports filter, sort, limit.",
     function: "__READ_STATE__", // handled inline, not a real function
     risk_level: 1,
     input_schema: {
@@ -450,7 +450,40 @@ const CHAT_TOOLS = [
   },
 ];
 
-// Inline handler for read_state. Returns raw entity rows, admin-scoped.
+// P10 — AI data-minimization boundary. read_state is admin-only, but its rows
+// are persisted into ChatMessage history and therefore can enter future model
+// context. Never give the LLM raw entity rows: use explicit safe projections
+// so credentials, signed file URLs, PII, raw extraction payloads and future
+// schema additions stay server-side by default.
+const READ_SAFE_FIELDS: Record<string, string[]> = {
+  AgentTask: ['id','brand_id','agent_name','task_type','status','risk_level','requires_approval','input_summary','output_summary','error','created_date','started_at','completed_at'],
+  AgentQuestion: ['id','brand_id','agent_name','question','status','created_date','answered_at'],
+  Approval: ['id','brand_id','action_type','status','risk_level','summary','created_date','approved_at','rejected_at'],
+  Event: ['id','brand_id','event_type','source','entity_type','entity_id','status','created_date'],
+  ChatMessage: ['id','conversation_id','role','content','blocked_by_gate','created_date'],
+  Brand: ['id','name','category','country','sector','annual_revenue','created_date'],
+  AnalyzerInput: ['id','brand_id','vertical','created_date'],
+  AnalyzerResult: ['id','brand_id','infra_score','total_savings','payment_savings','created_date'],
+  Integration: ['id','brand_id','provider','category','status','scopes','connected_at','last_sync_at','last_sync_status','provider_account_id'],
+  IntegrationCatalog: ['id','provider','category','name','status','created_date'],
+  OutboundLead: ['id','company_name','country','status','fit_score','created_date'],
+  Lead: ['id','company','country','status','source','created_date'],
+  ProviderLead: ['id','provider_name','category','country','status','created_date'],
+  BenchmarkContribution: ['id','brand_id','cohort_key','vertical','created_date'],
+  BenchmarkCohort: ['id','cohort_key','vertical','sample_size','is_public','created_date'],
+  StatementImport: ['id','brand_id','provider','status','confidence','owner_email','created_date'],
+  Recommendation: ['id','brand_id','vertical','title','status','priority','created_date'],
+  User: ['id','name','role','created_date'],
+};
+
+function projectReadRow(entity: string, row: any) {
+  const fields = READ_SAFE_FIELDS[entity] || [];
+  const out: Record<string, unknown> = {};
+  for (const field of fields) if (row?.[field] !== undefined) out[field] = row[field];
+  return out;
+}
+
+// Inline handler for read_state. Returns a safe operational projection only.
 async function handleReadState(base44: any, input: any) {
   const entity = String(input?.entity || "");
   if (!READ_ENTITIES.includes(entity)) {
@@ -463,7 +496,7 @@ async function handleReadState(base44: any, input: any) {
     const rows = Object.keys(filter).length > 0
       ? await base44.asServiceRole.entities[entity].filter(filter, sort, limit)
       : await base44.asServiceRole.entities[entity].list(sort, limit);
-    return { ok: true, entity, count: rows.length, rows };
+    return { ok: true, entity, count: rows.length, rows: rows.map((row: any) => projectReadRow(entity, row)) };
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
@@ -472,7 +505,7 @@ async function handleReadState(base44: any, input: any) {
 const BULK_THRESHOLD = 5;
 const SYSTEM_PROMPT = `You are CAMBRA's Chief Orchestrator chat. You help the founder run the business by picking the right tool.
 
-You have full read access to the system via read_state (AgentTask, Approval, AgentQuestion, Brand, Integration, OutboundLead, Event, Recommendation, User, benchmarks, imports, …) and you can launch every agent and orchestrator we have.
+You have read access to approved operational projections via read_state (AgentTask, Approval, AgentQuestion, Brand, Integration, OutboundLead, Event, Recommendation, User, benchmarks, imports, …). Sensitive fields and credentials are intentionally unavailable. You can launch only the allowlisted agents and orchestrators exposed as tools.
 
 Strict rules you must follow:
 1. NEVER claim to have sent, emailed, contacted, published, or paid. Any risk_level >= 2 tool is structurally forced to DRAFT mode by the platform — the artifact lands in the Approval Inbox and requires human approve before anything external happens. Say "drafted" or "prepared for approval", not "sent".
