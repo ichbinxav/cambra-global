@@ -30,11 +30,16 @@ export default async function (req: Request): Promise<Response> {
     if (!activation) return Response.json({ ok: true, migration: null });
     if (String(activation.user_email || '').toLowerCase() !== email) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    let tasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
-    // Backward-compatible bootstrap for Recover mandates accepted before P9.
+    let allTasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
+    let tasks = allTasks.filter(t => t?.metadata_json?.plan_version === 'payments-recover-p9-v1');
+    // Backward-compatible bootstrap for Recover mandates accepted before P9 or
+    // carrying the legacy migration template.
     if (!tasks.length) {
       const started = await base44.functions.invoke('startPaymentsMigration', { deal_activation_id: activation.id }).catch(() => null);
-      if (started?.data?.ok) tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
+      if (started?.data?.ok) {
+        allTasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
+        tasks = allTasks.filter(t => t?.metadata_json?.plan_version === 'payments-recover-p9-v1');
+      }
     }
 
     const activeTasks = tasks.filter(t => t.status !== 'canceled');
