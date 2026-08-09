@@ -6,6 +6,7 @@ import { CheckCircle2, CircleDot, Ban, Play, RotateCcw } from 'lucide-react';
 export default function PaymentsMigrationOperations({ activation, tasks = [], onChanged }){
   const [busy,setBusy] = useState('');
   const [note,setNote] = useState({});
+  const [merchantRequired,setMerchantRequired] = useState({});
   const p9 = tasks.filter(t => t?.metadata_json?.plan_version === 'payments-recover-p9-v1');
   const rows = [...(p9.length ? p9 : [])].sort((a,b)=>(a.order||0)-(b.order||0));
   async function start(){
@@ -16,7 +17,7 @@ export default function PaymentsMigrationOperations({ activation, tasks = [], on
   }
   async function move(task,status){
     setBusy(task.id+status);
-    const r=await base44.functions.invoke('updatePaymentsMigrationTask',{task_id:task.id,status,note:note[task.id]||''}).catch(e=>({data:{error:e.message}}));
+    const r=await base44.functions.invoke('updatePaymentsMigrationTask',{task_id:task.id,status,note:note[task.id]||'',merchant_required:merchantRequired[task.id]===true}).catch(e=>({data:{error:e.message}}));
     if(r?.data?.error) toast.error(r.data.error); else toast.success(`${task.step_name} → ${status}`);
     setBusy(''); await onChanged?.();
   }
@@ -34,7 +35,7 @@ export default function PaymentsMigrationOperations({ activation, tasks = [], on
           {!['done','canceled'].includes(t.status)&&<button onClick={()=>move(t,'done')} disabled={!!busy} className="h-7 px-2 rounded bg-foreground text-background text-[10px] font-bold">Complete</button>}
         </div>
       </div>
-      {!['done','canceled'].includes(t.status)&&<div className="flex gap-2 mt-2 ml-6"><input value={note[t.id]||''} onChange={e=>setNote({...note,[t.id]:e.target.value})} placeholder="Operational note / blocker evidence" className="flex-1 min-w-0 h-7 px-2 rounded border bg-background text-[10px]"/><button onClick={()=>move(t,'blocked')} disabled={!!busy||!(note[t.id]||'').trim()} className="h-7 px-2 rounded border text-[10px]">Block</button></div>}
+      {!['done','canceled'].includes(t.status)&&<div className="mt-2 ml-6 space-y-1.5"><div className="flex gap-2"><input value={note[t.id]||''} onChange={e=>setNote({...note,[t.id]:e.target.value})} placeholder="Operational note / blocker evidence" className="flex-1 min-w-0 h-7 px-2 rounded border bg-background text-[10px]"/><button onClick={()=>move(t,'blocked')} disabled={!!busy||!(note[t.id]||'').trim()} className="h-7 px-2 rounded border text-[10px]">Block</button></div><label className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><input type="checkbox" checked={merchantRequired[t.id]===true} onChange={e=>setMerchantRequired({...merchantRequired,[t.id]:e.target.checked})}/> Merchant action genuinely required</label></div>}
     </div>)}</div>:<p className="text-xs text-muted-foreground">No P9 migration plan yet.</p>}
   </div>;
 }
