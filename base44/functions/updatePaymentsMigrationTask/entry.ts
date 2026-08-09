@@ -14,6 +14,7 @@ export default async function (req: Request): Promise<Response> {
     const taskId = String(body?.task_id || '');
     const nextStatus = String(body?.status || '');
     const note = String(body?.note || '').trim();
+    const merchantRequired = body?.merchant_required === true;
     if (!taskId || !VALID.has(nextStatus)) return Response.json({ error: 'task_id and valid status required' }, { status: 400 });
     if (nextStatus === 'blocked' && note.length < 3) return Response.json({ error: 'blocker_note_required' }, { status: 400 });
 
@@ -38,12 +39,14 @@ export default async function (req: Request): Promise<Response> {
     }
 
     const now = new Date().toISOString();
+    const retryCount = Number(task?.metadata_json?.retry_count || 0) + (task.status === 'blocked' && nextStatus === 'in_progress' ? 1 : 0);
     await svc.entities.MigrationTask.update(taskId, {
       status: nextStatus,
       updated_at: now,
       completed_at: nextStatus === 'done' ? now : undefined,
       blocked_reason: nextStatus === 'blocked' ? note : '',
-      metadata_json: { ...(task.metadata_json || {}), last_note: note || undefined, last_actor: me.email, last_transition_at: now },
+      requires_brand_input: nextStatus === 'blocked' ? merchantRequired : false,
+      metadata_json: { ...(task.metadata_json || {}), retry_count: retryCount, last_note: note || undefined, last_actor: me.email, last_transition_at: now },
     });
 
     if (nextStatus === 'done') {
@@ -58,7 +61,7 @@ export default async function (req: Request): Promise<Response> {
     await svc.entities.OperationalLog.create({
       deal_activation_id: activation.id, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
       event_type: 'task_updated', message: `${task.step_name}: ${task.status} → ${nextStatus}`,
-      data_json: { task_id: taskId, from: task.status, to: nextStatus, note: note || null }, actor_email: me.email, created_at: now,
+      data_json: { task_id: taskId, from: task.status, to: nextStatus, note: note || null, merchant_required: merchantRequired, retry_count: retryCount }, actor_email: me.email, created_at: now,
     }).catch(() => null);
 
     return Response.json({ ok: true, task_id: taskId, status: nextStatus });
