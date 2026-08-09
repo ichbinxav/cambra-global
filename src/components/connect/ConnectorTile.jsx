@@ -19,13 +19,15 @@ export default function ConnectorTile({ title, note, connectorId, functionName, 
 
   const fetchData = useCallback(async () => {
     setError('');
-    if (!connectorId) return;
+    if (!connectorId) return false;
     try {
       const res = await base44.functions.invoke(functionName, { connectorId });
       const ok = !!res?.data?.connected;
       setConnected(ok);
+      return ok;
     } catch {
       setConnected(false);
+      return false;
     }
   }, [functionName, connectorId]);
 
