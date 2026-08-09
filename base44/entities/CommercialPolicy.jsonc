@@ -15,6 +15,7 @@
         "merchant_acquisition",
         "partner_acquisition",
         "provider_negotiation",
+        "aggregate_procurement",
         "merchant_operations"
       ]
     },
