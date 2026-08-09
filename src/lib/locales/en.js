@@ -1082,7 +1082,7 @@ export default {
     prob_total_label:      "Identified over 24 months",
     prob_total_line1:      "€27,600/year identified",
     prob_total_line2:      "€41,400 stays with the business over 24 months",
-    prob_total_line3:      " — CAMBRA only earns 25% of what it actually recovers.",
+    prob_total_line3:      " — CAMBRA earns only from verified recovery: 25% in months 1–12, 15% in months 13–24, then 0%.",
     prob_total_note:       "Illustrative — a business with €2M in yearly sales, paying 2.30% when 0.92% was possible. Run the analyzer for your real number.",
     prob_total_per:        "over 24 months · identified",
 
@@ -1103,7 +1103,7 @@ export default {
     pd_t1_f4:        "Your savings estimate in euros",
     pd_t1_cta:       "Run audit",
     pd_t2_eyebrow:   "Recover",
-    pd_t2_suffix:    "of verified payment savings · 24-month agreement",
+    pd_t2_suffix:    "of positive verified payment savings · months 1–12 → 13–24 → after term",
     pd_t2_caption:   "No savings, no fee",
     pd_t2_f1:        "Comparison vs. the minimum allowed",
     pd_t2_f2:        "Payments rate negotiation",

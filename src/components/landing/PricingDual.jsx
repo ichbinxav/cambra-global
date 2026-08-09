@@ -335,7 +335,7 @@ export default function PricingDual() {
               <Tier
                 eyebrow={t("pd_t2_eyebrow")}
                 eyebrowAccent="voltio"
-                price={getSuccessFeePct() + "%"}
+                price={`${getSuccessFeePct()}→15→0%`}
                 priceSuffix={t("pd_t2_suffix")}
                 priceGradient
                 caption={t("pd_t2_caption")}

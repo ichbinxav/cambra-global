@@ -33,7 +33,7 @@ const LANDING_JSON_LD = {
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "EUR",
-    "description": "Free anonymous payments analysis during early access. Optional recovery service earns 25% of verified savings over 24 months — only when CAMBRA actually recovers margin. No upfront fee, no subscription."
+    "description": "Free anonymous payments analysis during early access. Optional Recover service is success-only: 25% of positive verified savings in months 1–12, 15% in months 13–24, then 0%. No verified savings, no fee. No upfront fee or subscription."
   },
   "featureList": [
     "Card fee comparison vs. industry",
