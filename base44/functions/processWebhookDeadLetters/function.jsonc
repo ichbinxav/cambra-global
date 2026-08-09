@@ -1,0 +1,18 @@
+{
+  "name": "processWebhookDeadLetters",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "Webhook Dead Letter Retry",
+      "description": "P7 bounded webhook retry worker every 5 minutes. Claims due rows before delivery, preserves the stable delivery id, and exhausts after the configured retry budget. Manual replay is a separate admin-confirmed path.",
+      "function_args": { "limit": 50 },
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 5,
+      "ends_type": "never"
+    }
+  ]
+}
