@@ -70,6 +70,7 @@ const AdminInbox = lazy(() => import('@/pages/admin/AdminInbox'));
 const AdminChat = lazy(() => import('@/pages/admin/AdminChat'));
 const AdminDiscovery = lazy(() => import('@/pages/admin/AdminDiscovery'));
 const ReviewQueue = lazy(() => import('@/pages/admin/ReviewQueue'));
+const EclOperations = lazy(() => import('@/pages/admin/EclOperations')); 
 import AuthRedirect from '@/pages/AuthRedirect';
 import Pricing from '@/pages/Pricing.jsx';
 // FASE 1.2 — /Developers, /Developers/MCP, /Snapshot deprecated.
@@ -314,6 +315,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/chat" element={withBoundary(<AdminChat />)} />
           <Route path="/admin/discovery" element={withBoundary(<AdminDiscovery />)} />
           <Route path="/admin/evidence-review" element={withBoundary(<ReviewQueue />)} />
+          <Route path="/admin/ecl-operations" element={withBoundary(<EclOperations />)} />
           <Route path="/admin/overview" element={withBoundary(<AdminOverview />)} />
           <Route path="/admin/users" element={withBoundary(<AdminUsers />)} />
           <Route path="/admin/users/:id" element={withBoundary(<AdminUserDetail />)} />
