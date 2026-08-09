@@ -1,183 +1,39 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Check, Circle, Clock3, ShieldCheck, TriangleAlert } from "lucide-react";
-import PageHero from "@/components/shared/PageHero";
-import { useTranslation } from "@/lib/i18n.jsx";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { ArrowLeft, Check, Circle, Loader2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n.jsx';
 
-const STAGES = [
-  { key: "plan", labelKey: "mig_stage_plan" },
-  { key: "prepare", labelKey: "mig_stage_prepare" },
-  { key: "test", labelKey: "mig_stage_test" },
-  { key: "approve", labelKey: "mig_stage_approve" },
-  { key: "live", labelKey: "mig_stage_live" },
-  { key: "verify", labelKey: "mig_stage_verify" },
-];
-
-const TASK_LABELS = {
-  plan_ready: "mig_task_plan_ready",
-  provider_setup: "mig_task_provider_setup",
-  technical_setup: "mig_task_technical_setup",
-  sandbox_testing: "mig_task_sandbox_testing",
-  merchant_approval: "mig_task_merchant_approval",
-  go_live: "mig_task_go_live",
-  verify_savings: "mig_task_verify_savings",
+const ORDER = ['preparing','provider_coordination','scheduled','going_live','verifying','completed'];
+const COPY = {
+  en:{ eyebrow:'Payments migration', title:"We’re handling your migration.", sub:'CAMBRA coordinates the provider, configuration, go-live and savings verification. You only need to step in if we explicitly ask.', back:'Back to reports', savings:'Expected annual savings', progress:'Progress', now:'What CAMBRA is doing now', noMigration:'There is no active payments migration on this account.', errorTitle:"We couldn't load your migration", errorBody:'Your migration data is safe. Try again in a moment.', retry:'Retry', needs:'We need something from you', needsSub:'This action is genuinely required to keep the migration moving. CAMBRA handles everything else.', complete:'Migration completed. The first realized savings have been verified against your locked baseline.', stages:{preparing:'Preparing',provider_coordination:'Provider coordination',scheduled:'Migration scheduled',going_live:'Going live',verifying:'Verifying savings',completed:'Completed'}, stageCopy:{preparing:'We are opening the case, locking scope and assigning operational ownership.',provider_coordination:'We are coordinating onboarding, commercial terms and provider requirements.',scheduled:'We are testing the configuration and preparing a controlled cutover.',going_live:'We are moving the approved payment scope to the new provider or conditions.',verifying:'We are measuring live payment data against your locked baseline. Nothing is billable until savings are verified.',completed:'The migration and first savings verification are complete.'}, blockerTitles:{takeover:'Migration setup',provider_coordination:'Provider coordination',provider_ready:'Provider setup',technical_configuration:'Payment configuration',migration_testing:'Migration testing',cutover_ready:'Go-live preparation',go_live:'Going live',verify_savings:'Savings verification'}},
+  fr:{ eyebrow:'Migration des paiements', title:'Nous gérons votre migration.', sub:"CAMBRA coordonne le prestataire, la configuration, la mise en ligne et la vérification des économies. Vous n'intervenez que si nous vous le demandons explicitement.", back:'Retour aux rapports', savings:'Économies annuelles attendues', progress:'Progression', now:'Ce que CAMBRA fait maintenant', noMigration:"Aucune migration de paiements n'est active sur ce compte.", errorTitle:'Impossible de charger votre migration', errorBody:'Vos données de migration sont intactes. Réessayez dans un instant.', retry:'Réessayer', needs:'Nous avons besoin de vous', needsSub:'Cette action est réellement indispensable pour poursuivre la migration. CAMBRA gère tout le reste.', complete:'Migration terminée. Les premières économies réalisées ont été vérifiées par rapport à votre référence verrouillée.', stages:{preparing:'Préparation',provider_coordination:'Coordination prestataire',scheduled:'Migration planifiée',going_live:'Mise en ligne',verifying:'Vérification des économies',completed:'Terminé'}, stageCopy:{preparing:'Nous ouvrons le dossier, verrouillons le périmètre et attribuons la responsabilité opérationnelle.',provider_coordination:'Nous coordonnons l’onboarding, les conditions commerciales et les exigences du prestataire.',scheduled:'Nous testons la configuration et préparons une bascule contrôlée.',going_live:'Nous transférons le périmètre de paiements approuvé vers le nouveau prestataire ou les nouvelles conditions.',verifying:'Nous mesurons les données de paiement réelles par rapport à votre référence verrouillée. Rien n’est facturable avant vérification des économies.',completed:'La migration et la première vérification des économies sont terminées.'}, blockerTitles:{takeover:'Préparation de la migration',provider_coordination:'Coordination prestataire',provider_ready:'Configuration prestataire',technical_configuration:'Configuration des paiements',migration_testing:'Tests de migration',cutover_ready:'Préparation de la mise en ligne',go_live:'Mise en ligne',verify_savings:'Vérification des économies'}},
+  es:{ eyebrow:'Migración de pagos', title:'Nos encargamos de tu migración.', sub:'CAMBRA coordina el proveedor, la configuración, el go-live y la verificación del ahorro. Solo tendrás que intervenir si te lo pedimos expresamente.', back:'Volver a informes', savings:'Ahorro anual esperado', progress:'Progreso', now:'Qué está haciendo CAMBRA ahora', noMigration:'No hay ninguna migración de pagos activa en esta cuenta.', errorTitle:'No hemos podido cargar tu migración', errorBody:'Tus datos de migración están a salvo. Inténtalo de nuevo en un momento.', retry:'Reintentar', needs:'Necesitamos algo de ti', needsSub:'Esta acción es realmente imprescindible para que la migración continúe. CAMBRA se encarga de todo lo demás.', complete:'Migración completada. El primer ahorro real ya se ha verificado frente a tu baseline bloqueada.', stages:{preparing:'Preparando',provider_coordination:'Coordinando proveedor',scheduled:'Migración programada',going_live:'Activando',verifying:'Verificando ahorro',completed:'Completado'}, stageCopy:{preparing:'Estamos abriendo el caso, fijando el alcance y asignando la responsabilidad operativa.',provider_coordination:'Estamos coordinando el alta, las condiciones comerciales y los requisitos del proveedor.',scheduled:'Estamos probando la configuración y preparando un cambio controlado.',going_live:'Estamos moviendo el alcance de pagos aprobado al nuevo proveedor o a las nuevas condiciones.',verifying:'Estamos midiendo los datos reales de pago frente a tu baseline bloqueada. Nada se factura hasta que el ahorro esté verificado.',completed:'La migración y la primera verificación del ahorro están completadas.'}, blockerTitles:{takeover:'Preparación de la migración',provider_coordination:'Coordinación con el proveedor',provider_ready:'Alta con el proveedor',technical_configuration:'Configuración de pagos',migration_testing:'Pruebas de migración',cutover_ready:'Preparación del go-live',go_live:'Activación',verify_savings:'Verificación del ahorro'}},
 };
 
-function money(n) {
-  return Number(n || 0).toLocaleString(undefined, { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
-}
+export default function PaymentsMigration(){
+  const { lang } = useTranslation();
+  const c = COPY[lang] || COPY.en;
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(false);
+  const [migration,setMigration]=useState(null);
+  const load=useCallback(async()=>{ setLoading(true); setError(false); try{ const r=await base44.functions.invoke('getMyPaymentsMigration',{}); if(r?.data?.error) throw new Error('load_failed'); setMigration(r?.data?.migration||null); }catch{ setError(true); }finally{ setLoading(false); } },[]);
+  useEffect(()=>{ load(); },[load]);
+  const current=Math.max(0,ORDER.indexOf(migration?.stage||'preparing'));
+  const money=useMemo(()=>new Intl.NumberFormat(lang==='fr'?'fr-FR':lang==='es'?'es-ES':'en-GB',{style:'currency',currency:'EUR',maximumFractionDigits:0}),[lang]);
 
-function StatusIcon({ status }) {
-  if (status === "done") return <Check size={14} />;
-  if (status === "blocked") return <TriangleAlert size={14} />;
-  if (status === "in_progress") return <Clock3 size={14} />;
-  return <Circle size={12} />;
-}
+  if(loading) return <div className="py-24 flex justify-center"><Loader2 className="animate-spin text-white/50" size={22}/></div>;
+  if(error) return <div className="cambra-card p-8 text-center"><p className="text-white font-bold">{c.errorTitle}</p><p className="text-sm text-white/55 mt-2">{c.errorBody}</p><button onClick={load} className="mt-5 h-10 px-5 rounded-full bg-white text-[#06080F] text-sm font-bold">{c.retry}</button></div>;
+  if(!migration) return <div className="cambra-card p-8 text-center"><ShieldCheck className="mx-auto text-white/40" size={22}/><p className="text-white font-bold mt-3">{c.noMigration}</p><Link to="/Reports" className="inline-flex mt-5 text-sm font-semibold text-white/65 hover:text-white"><ArrowLeft size={15} className="mr-2"/>{c.back}</Link></div>;
 
-export default function PaymentsMigration() {
-  const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [migration, setMigration] = useState(null);
-  const [error, setError] = useState("");
-
-  const load = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const r = await base44.functions.invoke("getMyPaymentsMigration", {});
-      const d = r?.data || r;
-      if (d?.error) throw new Error(d.error);
-      setMigration(d?.migration || null);
-    } catch (e) {
-      setError(e?.message || "Unable to load migration");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { load(); }, []);
-
-  const currentIndex = useMemo(() => {
-    if (!migration) return -1;
-    if (migration.current_stage === "complete") return STAGES.length;
-    return STAGES.findIndex(s => s.key === migration.current_stage);
-  }, [migration]);
-
-  if (loading) {
-    return <div className="py-24 text-center text-sm text-white/55">{t("mig_loading")}</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="cambra-card p-8 text-center">
-        <p className="text-white font-bold mb-2">{t("mig_error_title")}</p>
-        <p className="text-sm text-white/55 mb-5">{error}</p>
-        <button onClick={load} className="h-10 px-5 rounded-full bg-white text-[#06080F] text-sm font-bold">{t("mig_retry")}</button>
-      </div>
-    );
-  }
-
-  if (!migration) {
-    return (
-      <div>
-        <PageHero eyebrow={t("mig_eyebrow")} title={t("mig_title")} subtitle={t("mig_empty_subtitle")} icon={ShieldCheck} />
-        <div className="cambra-card p-8 text-center">
-          <p className="text-sm text-white/60 mb-5">{t("mig_empty_body")}</p>
-          <Link to="/Reports" className="inline-flex h-10 items-center px-5 rounded-full bg-white text-[#06080F] text-sm font-bold">{t("mig_back_reports")}</Link>
-        </div>
-      </div>
-    );
-  }
-
-  const providerLabel = migration.provider_from && migration.provider_to
-    ? `${migration.provider_from} → ${migration.provider_to}`
-    : migration.provider_to || t("mig_rate_change");
-
-  return (
-    <div>
-      <PageHero
-        eyebrow={t("mig_eyebrow")}
-        title={t("mig_title")}
-        subtitle={t("mig_subtitle")}
-        icon={ShieldCheck}
-        actions={<Link to="/Reports" className="inline-flex items-center gap-2 text-sm font-semibold text-white/60 hover:text-white"><ArrowLeft size={15} />{t("mig_back_reports")}</Link>}
-      />
-
-      <div className="cambra-card p-6 sm:p-8 mb-6 overflow-hidden">
-        <div className="grid sm:grid-cols-3 gap-5">
-          <div>
-            <p className="cc-eyebrow mb-1">{t("mig_move")}</p>
-            <p className="text-xl font-black text-white tracking-tight">{providerLabel}</p>
-          </div>
-          <div>
-            <p className="cc-eyebrow mb-1">{t("mig_savings")}</p>
-            <p className="text-xl font-black text-white tracking-tight">{money(migration.projected_savings_annual)}<span className="text-sm text-white/45 font-semibold">/yr</span></p>
-          </div>
-          <div>
-            <p className="cc-eyebrow mb-1">{t("mig_progress")}</p>
-            <p className="text-xl font-black text-white tracking-tight">{migration.progress_pct}%</p>
-          </div>
-        </div>
-        <div className="h-1.5 rounded-full bg-white/[0.07] mt-6 overflow-hidden"><div className="h-full rounded-full bg-white transition-all" style={{ width: `${migration.progress_pct}%` }} /></div>
-      </div>
-
-      <div className="cambra-card p-6 sm:p-8 mb-6">
-        <p className="cc-eyebrow mb-2">{t("mig_now")}</p>
-        <h2 className="text-lg font-black text-white mb-1">{migration.current_stage === "complete" ? t("mig_complete") : t(STAGES[Math.max(0, currentIndex)]?.labelKey || "mig_stage_plan")}</h2>
-        <p className="text-sm text-white/55 leading-relaxed max-w-2xl">
-          {migration.blocked_count > 0 ? t("mig_blocked_copy") : t(`mig_stage_${migration.current_stage}_copy`)}
-        </p>
-      </div>
-
-      <div className="grid lg:grid-cols-[220px_1fr] gap-6">
-        <div className="cambra-card p-4 h-fit">
-          <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-white/40 px-2 mb-2">{t("mig_journey")}</p>
-          <div className="space-y-1">
-            {STAGES.map((stage, index) => {
-              const complete = currentIndex > index || migration.current_stage === "complete";
-              const active = currentIndex === index;
-              return (
-                <div key={stage.key} className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm ${active ? "bg-white/[0.07] text-white" : "text-white/50"}`}>
-                  <span className={`h-5 w-5 rounded-full border flex items-center justify-center ${complete ? "bg-white text-[#06080F] border-white" : active ? "border-white/60" : "border-white/15"}`}>{complete ? <Check size={12} /> : <span className="text-[9px]">{index + 1}</span>}</span>
-                  <span className="font-semibold">{t(stage.labelKey)}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="cambra-card p-6 sm:p-8">
-          <div className="flex items-start justify-between gap-4 mb-5">
-            <div>
-              <p className="cc-eyebrow mb-1">{t("mig_plan")}</p>
-              <h2 className="text-lg font-black text-white">{t("mig_plan_title")}</h2>
-            </div>
-            <span className="text-[10px] uppercase tracking-[0.16em] font-bold text-white/45 border border-white/[0.10] rounded-full px-2.5 py-1">{t("mig_managed")}</span>
-          </div>
-
-          <div className="space-y-2">
-            {migration.tasks.map((task) => (
-              <div key={task.id} className="flex items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3.5">
-                <div className={`mt-0.5 h-6 w-6 rounded-full flex items-center justify-center border ${task.status === "done" ? "bg-white text-[#06080F] border-white" : task.status === "blocked" ? "border-amber-400/35 text-amber-300" : task.status === "in_progress" ? "border-cyan-300/35 text-cyan-300" : "border-white/15 text-white/35"}`}>
-                  <StatusIcon status={task.status} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-white">{t(TASK_LABELS[task.step_name] || "mig_task_generic")}</p>
-                  {task.blocked_reason && <p className="text-xs text-amber-300/80 mt-1">{task.blocked_reason}</p>}
-                  {task.requires_brand_input && task.status !== "done" && <p className="text-[11px] text-white/40 mt-1">{t("mig_we_will_ask")}</p>}
-                </div>
-                <span className="text-[10px] uppercase tracking-[0.12em] font-bold text-white/35 pt-1">{t(`mig_status_${task.status}`)}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 pt-5 border-t border-white/[0.08] flex items-start gap-3">
-            <ShieldCheck size={16} className="text-cyan-300 mt-0.5 shrink-0" />
-            <p className="text-xs text-white/50 leading-relaxed">{t("mig_safety")}</p>
-          </div>
-        </div>
-      </div>
+  return <div className="space-y-6">
+    <div className="flex items-center justify-between gap-4"><div><p className="cc-eyebrow mb-1">{c.eyebrow}</p><h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">{c.title}</h1><p className="text-sm text-white/55 max-w-2xl mt-2">{c.sub}</p></div><Link to="/Reports" className="hidden sm:inline-flex items-center text-sm font-semibold text-white/55 hover:text-white"><ArrowLeft size={15} className="mr-2"/>{c.back}</Link></div>
+    <div className="cambra-card p-6 sm:p-8">
+      <div className="grid sm:grid-cols-2 gap-5 mb-7"><div><p className="cc-eyebrow mb-1">{c.savings}</p><p className="text-2xl font-black text-white">{money.format(migration.projected_savings_annual||0)}</p></div><div><p className="cc-eyebrow mb-1">{c.progress}</p><p className="text-2xl font-black text-white">{migration.progress_pct||0}%</p></div></div>
+      <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">{ORDER.map((s,i)=>{const done=i<current||migration.stage==='completed';const active=i===current&&migration.stage!=='completed';return <div key={s} className={`rounded-xl border px-3 py-3 min-h-[82px] ${active?'border-cambra-cyan/40 bg-cambra-cyan/[.07]':'border-white/[.08] bg-white/[.025]'}`}><div className="mb-2">{done?<Check size={14} className="text-emerald-400"/>:active?<Loader2 size={14} className="text-cambra-cyan animate-spin"/>:<Circle size={12} className="text-white/20"/>}</div><p className={`text-[10.5px] leading-tight font-bold ${active?'text-white':'text-white/55'}`}>{c.stages[s]}</p></div>})}</div>
     </div>
-  );
+    <div className="cambra-card p-6 sm:p-8"><p className="cc-eyebrow mb-2">{c.now}</p><h2 className="text-lg font-black text-white">{c.stages[migration.stage]||c.stages.preparing}</h2><p className="text-sm text-white/55 leading-relaxed mt-2 max-w-2xl">{c.stageCopy[migration.stage]||c.stageCopy.preparing}</p></div>
+    {migration.needs_you && <div className="cambra-card p-5 border-amber-400/20"><div className="flex gap-3"><AlertCircle size={18} className="text-amber-300 shrink-0 mt-0.5"/><div><p className="text-sm font-bold text-white">{c.needs}</p><p className="text-xs text-white/55 mt-1">{c.needsSub}</p>{migration.merchant_blockers.map(b=>{const reason=b?.reason_i18n?.[lang]||b?.reason_i18n?.en||'';return <p key={b.id} className="text-xs text-white/75 mt-3">• {c.blockerTitles[b.step_key]||c.needs}{reason?` — ${reason}`:''}</p>})}</div></div></div>}
+    {migration.stage==='completed' && <div className="cambra-card p-5"><div className="flex gap-3"><ShieldCheck size={18} className="text-emerald-400 shrink-0"/><p className="text-sm text-white/65">{c.complete}</p></div></div>}
+  </div>;
 }
