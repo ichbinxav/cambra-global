@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 Deno.serve(async (req) => {
   try {
@@ -15,6 +15,12 @@ Deno.serve(async (req) => {
     const rows = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id }, '-created_date', 1);
     const inv = rows?.[0];
     if (!inv) return Response.json({ error: 'Invoice not found' }, { status: 404 });
+
+    // P6 — finalized Recover invoices are Stripe-authoritative. Local status or
+    // amount overrides would create a second ledger and can no longer be used.
+    if (inv.monthly_savings_report_id && inv.payment_provider === 'stripe') {
+      return Response.json({ error: 'recover_stripe_invoice_is_processor_authoritative', use: 'reconcileRecoverBilling' }, { status: 409 });
+    }
     // Enforce valid state transitions
     const ALLOWED = {
       draft: ['issued','void'],
@@ -35,6 +41,11 @@ Deno.serve(async (req) => {
 
     const patch = { status: target_status };
     if (adjustments && (typeof adjustments.amount_delta === 'number' || typeof adjustments.tax_delta === 'number')) {
+      // Finalized/issued invoices are immutable. Legacy draft-only adjustment
+      // remains available for non-Recover invoices before legal issuance.
+      if (inv.status !== 'draft') {
+        return Response.json({ error: 'finalized_invoice_amounts_are_immutable_use_credit_note_or_corrective_invoice' }, { status: 409 });
+      }
       const subtotal = Number(inv.subtotal_amount || 0) + Number(adjustments.amount_delta || 0);
       const tax = Number(inv.tax_amount || 0) + Number(adjustments.tax_delta || 0);
       const total = subtotal + tax;
